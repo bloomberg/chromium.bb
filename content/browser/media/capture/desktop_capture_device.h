@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "media/video/capture/video_capture_device.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -41,6 +42,9 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   virtual void AllocateAndStart(const media::VideoCaptureParams& params,
                                 scoped_ptr<Client> client) OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
+
+  // Set the platform-dependent window id for the notification window.
+  void SetNotificationWindowId(gfx::NativeViewId window_id);
 
  private:
   class Core;

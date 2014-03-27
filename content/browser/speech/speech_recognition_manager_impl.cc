@@ -301,7 +301,8 @@ void SpeechRecognitionManagerImpl::OnRecognitionStart(int session_id) {
   SessionsTable::iterator iter = sessions_.find(session_id);
   if (iter->second->ui) {
     // Notify the UI that the devices are being used.
-    iter->second->ui->OnStarted(base::Closure());
+    iter->second->ui->OnStarted(base::Closure(),
+                                MediaStreamUIProxy::WindowIdCallback());
   }
 
   DCHECK_EQ(primary_session_id_, session_id);

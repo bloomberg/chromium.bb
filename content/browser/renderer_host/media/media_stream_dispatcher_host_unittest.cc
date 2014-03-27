@@ -202,7 +202,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
 class MockMediaStreamUIProxy : public FakeMediaStreamUIProxy {
  public:
-  MOCK_METHOD1(OnStarted, void(const base::Closure& stop));
+  MOCK_METHOD2(
+      OnStarted,
+      void(const base::Closure& stop,
+           const MediaStreamUIProxy::WindowIdCallback& window_id_callback));
 };
 
 class MediaStreamDispatcherHostTest : public testing::Test {
@@ -248,7 +251,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   virtual void SetupFakeUI(bool expect_started) {
     scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
     if (expect_started) {
-      EXPECT_CALL(*stream_ui, OnStarted(_));
+      EXPECT_CALL(*stream_ui, OnStarted(_, _));
     }
     media_stream_manager_->UseFakeUI(
         stream_ui.PassAs<FakeMediaStreamUIProxy>());
@@ -803,7 +806,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
 
   base::Closure close_callback;
   scoped_ptr<MockMediaStreamUIProxy> stream_ui(new MockMediaStreamUIProxy());
-  EXPECT_CALL(*stream_ui, OnStarted(_))
+  EXPECT_CALL(*stream_ui, OnStarted(_, _))
       .WillOnce(SaveArg<0>(&close_callback));
   media_stream_manager_->UseFakeUI(stream_ui.PassAs<FakeMediaStreamUIProxy>());
 

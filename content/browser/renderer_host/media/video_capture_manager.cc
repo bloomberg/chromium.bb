@@ -196,6 +196,7 @@ void VideoCaptureManager::UseFakeDevice() {
 }
 
 void VideoCaptureManager::DoStartDeviceOnDeviceThread(
+    media::VideoCaptureSessionId session_id,
     DeviceEntry* entry,
     const media::VideoCaptureParams& params,
     scoped_ptr<media::VideoCaptureDevice::Client> device_client) {
@@ -243,6 +244,11 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
       if (id.type != DesktopMediaID::TYPE_NONE &&
           id.type != DesktopMediaID::TYPE_AURA_WINDOW) {
         video_capture_device = DesktopCaptureDevice::Create(id);
+        if (notification_window_ids_.find(session_id) !=
+            notification_window_ids_.end()) {
+          static_cast<DesktopCaptureDevice*>(video_capture_device.get())
+              ->SetNotificationWindowId(notification_window_ids_[session_id]);
+        }
       }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
       break;
@@ -292,6 +298,7 @@ void VideoCaptureManager::StartCaptureForClient(
         base::Bind(
             &VideoCaptureManager::DoStartDeviceOnDeviceThread,
             this,
+            session_id,
             entry,
             params,
             base::Passed(entry->video_capture_controller->NewDeviceClient())));
@@ -367,6 +374,43 @@ bool VideoCaptureManager::GetDeviceFormatsInUse(
         device_in_use->video_capture_controller->GetVideoCaptureFormat());
   }
   return true;
+}
+
+void VideoCaptureManager::SetDesktopCaptureWindowId(
+    media::VideoCaptureSessionId session_id,
+    gfx::NativeViewId window_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  std::map<media::VideoCaptureSessionId, MediaStreamDevice>::iterator
+      session_it = sessions_.find(session_id);
+  if (session_it == sessions_.end()) {
+    device_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &VideoCaptureManager::SaveDesktopCaptureWindowIdOnDeviceThread,
+            this,
+            session_id,
+            window_id));
+    return;
+  }
+
+  DeviceEntry* const existing_device =
+      GetDeviceEntryForMediaStreamDevice(session_it->second);
+  if (!existing_device)
+    return;
+
+  DCHECK_EQ(MEDIA_DESKTOP_VIDEO_CAPTURE, existing_device->stream_type);
+  DesktopMediaID id = DesktopMediaID::Parse(existing_device->id);
+  if (id.type == DesktopMediaID::TYPE_NONE ||
+      id.type == DesktopMediaID::TYPE_AURA_WINDOW) {
+    return;
+  }
+
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread,
+                 this,
+                 existing_device,
+                 window_id));
 }
 
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(DeviceEntry* entry) {
@@ -592,6 +636,27 @@ VideoCaptureManager::DeviceInfo* VideoCaptureManager::FindDeviceInfoById(
       return &(*it);
   }
   return NULL;
+}
+
+void VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread(
+    DeviceEntry* entry,
+    gfx::NativeViewId window_id) {
+  DCHECK(IsOnDeviceThread());
+  DCHECK(entry->stream_type == MEDIA_DESKTOP_VIDEO_CAPTURE);
+#if defined(ENABLE_SCREEN_CAPTURE)
+  DesktopCaptureDevice* device =
+      static_cast<DesktopCaptureDevice*>(entry->video_capture_device.get());
+  device->SetNotificationWindowId(window_id);
+#endif
+}
+
+void VideoCaptureManager::SaveDesktopCaptureWindowIdOnDeviceThread(
+    media::VideoCaptureSessionId session_id,
+    gfx::NativeViewId window_id) {
+  DCHECK(IsOnDeviceThread());
+  DCHECK(notification_window_ids_.find(session_id) ==
+         notification_window_ids_.end());
+  notification_window_ids_[session_id] = window_id;
 }
 
 }  // namespace content

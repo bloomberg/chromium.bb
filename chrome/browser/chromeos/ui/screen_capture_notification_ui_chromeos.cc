@@ -22,10 +22,11 @@ ScreenCaptureNotificationUIChromeOS::~ScreenCaptureNotificationUIChromeOS() {
   ash::Shell::GetInstance()->system_tray_notifier()->NotifyScreenCaptureStop();
 }
 
-void ScreenCaptureNotificationUIChromeOS::OnStarted(
+gfx::NativeViewId ScreenCaptureNotificationUIChromeOS::OnStarted(
     const base::Closure& stop_callback) {
   ash::Shell::GetInstance()->system_tray_notifier()->NotifyScreenCaptureStart(
       stop_callback, text_);
+  return 0;
 }
 
 }  // namespace chromeos

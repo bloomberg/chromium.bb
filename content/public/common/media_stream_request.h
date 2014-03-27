@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
+#include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -233,8 +234,9 @@ class MediaStreamUI {
   virtual ~MediaStreamUI() {}
 
   // Called when MediaStream capturing is started. Chrome layer can call |stop|
-  // to stop the stream.
-  virtual void OnStarted(const base::Closure& stop) = 0;
+  // to stop the stream. Returns the platform-dependent window ID for the UI, or
+  // 0 if not applicable.
+  virtual gfx::NativeViewId OnStarted(const base::Closure& stop) = 0;
 };
 
 // Callback used return results of media access requests.

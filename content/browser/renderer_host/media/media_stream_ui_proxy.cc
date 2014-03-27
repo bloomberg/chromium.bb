@@ -18,7 +18,7 @@ class MediaStreamUIProxy::Core {
   ~Core();
 
   void RequestAccess(const MediaStreamRequest& request);
-  void OnStarted();
+  void OnStarted(gfx::NativeViewId* window_id);
 
  private:
   void ProcessAccessRequestResponse(const MediaStreamDevices& devices,
@@ -78,11 +78,11 @@ void MediaStreamUIProxy::Core::RequestAccess(
                           weak_factory_.GetWeakPtr()));
 }
 
-void MediaStreamUIProxy::Core::OnStarted() {
+void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (ui_) {
-    ui_->OnStarted(base::Bind(&Core::ProcessStopRequestFromUI,
-                              base::Unretained(this)));
+    *window_id = ui_->OnStarted(
+        base::Bind(&Core::ProcessStopRequestFromUI, base::Unretained(this)));
   }
 }
 
@@ -142,13 +142,30 @@ void MediaStreamUIProxy::RequestAccess(
       base::Bind(&Core::RequestAccess, base::Unretained(core_.get()), request));
 }
 
-void MediaStreamUIProxy::OnStarted(const base::Closure& stop_callback) {
+void MediaStreamUIProxy::OnStarted(const base::Closure& stop_callback,
+                                   const WindowIdCallback& window_id_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   stop_callback_ = stop_callback;
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&Core::OnStarted, base::Unretained(core_.get())));
+
+  // Owned by the PostTaskAndReply callback.
+  gfx::NativeViewId* window_id = new gfx::NativeViewId(0);
+
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&Core::OnStarted, base::Unretained(core_.get()), window_id),
+      base::Bind(&MediaStreamUIProxy::OnWindowId,
+                 weak_factory_.GetWeakPtr(),
+                 window_id_callback,
+                 base::Owned(window_id)));
+}
+
+void MediaStreamUIProxy::OnWindowId(const WindowIdCallback& window_id_callback,
+                                    gfx::NativeViewId* window_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!window_id_callback.is_null())
+    window_id_callback.Run(*window_id);
 }
 
 void MediaStreamUIProxy::ProcessAccessRequestResponse(
@@ -230,7 +247,8 @@ void FakeMediaStreamUIProxy::RequestAccess(
                      MEDIA_DEVICE_OK));
 }
 
-void FakeMediaStreamUIProxy::OnStarted(const base::Closure& stop_callback) {
-}
+void FakeMediaStreamUIProxy::OnStarted(
+    const base::Closure& stop_callback,
+    const WindowIdCallback& window_id_callback) {}
 
 }  // namespace content

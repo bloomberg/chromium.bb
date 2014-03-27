@@ -53,7 +53,7 @@ ScreenCaptureNotificationUICocoa::ScreenCaptureNotificationUICocoa(
 
 ScreenCaptureNotificationUICocoa::~ScreenCaptureNotificationUICocoa() {}
 
-void ScreenCaptureNotificationUICocoa::OnStarted(
+gfx::NativeViewId ScreenCaptureNotificationUICocoa::OnStarted(
     const base::Closure& stop_callback) {
   DCHECK(!stop_callback.is_null());
   DCHECK(!windowController_);
@@ -62,6 +62,7 @@ void ScreenCaptureNotificationUICocoa::OnStarted(
       initWithCallback:stop_callback
                   text:text_]);
   [windowController_ showWindow:nil];
+  return [[windowController_ window] windowNumber];
 }
 
 scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(

@@ -338,6 +338,12 @@ class CONTENT_EXPORT MediaStreamManager
       const std::string& source_id,
       std::string* device_id) const;
 
+  // Handles the callback from MediaStreamUIProxy to receive the UI window id,
+  // used for excluding the notification window in desktop capturing.
+  void OnMediaStreamUIWindowId(MediaStreamType video_type,
+                               StreamDeviceInfoArray devices,
+                               gfx::NativeViewId window_id);
+
   // Task runner shared by VideoCaptureManager and AudioInputDeviceManager.
   // Note: Enumeration tasks may take seconds to complete so must never be run
   // on any of the BrowserThreads (UI, IO, etc).  See http://crbug.com/256945.

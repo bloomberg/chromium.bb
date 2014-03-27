@@ -24,6 +24,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/shadow_types.h"
 
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 namespace {
 
 const int kMinimumWidth = 460;
@@ -79,7 +83,8 @@ class ScreenCaptureNotificationUIViews
   virtual ~ScreenCaptureNotificationUIViews();
 
   // ScreenCaptureNotificationUI interface.
-  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
+  virtual gfx::NativeViewId OnStarted(const base::Closure& stop_callback)
+      OVERRIDE;
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -158,7 +163,7 @@ ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
   delete GetWidget();
 }
 
-void ScreenCaptureNotificationUIViews::OnStarted(
+gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
     const base::Closure& stop_callback) {
   stop_callback_ = stop_callback;
 
@@ -204,6 +209,12 @@ void ScreenCaptureNotificationUIViews::OnStarted(
   widget->SetBounds(bounds);
 
   widget->Show();
+
+#if defined(OS_WIN)
+  return gfx::NativeViewId(views::HWNDForWidget(widget));
+#else
+  return 0;
+#endif
 }
 
 gfx::Size ScreenCaptureNotificationUIViews::GetPreferredSize() {

@@ -25,6 +25,8 @@ class CONTENT_EXPORT MediaStreamUIProxy {
             content::MediaStreamRequestResult result)>
         ResponseCallback;
 
+  typedef base::Callback<void(gfx::NativeViewId window_id)> WindowIdCallback;
+
   static scoped_ptr<MediaStreamUIProxy> Create();
   static scoped_ptr<MediaStreamUIProxy> CreateForTests(
       RenderViewHostDelegate* render_delegate);
@@ -41,8 +43,10 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   // Notifies the UI that the MediaStream has been started. Must be called after
   // access has been approved using RequestAccess(). |stop_callback| is be
   // called on the IO thread after the user has requests the stream to be
-  // stopped.
-  virtual void OnStarted(const base::Closure& stop_callback);
+  // stopped. |window_id_callback| is called on the IO thread with the platform-
+  // dependent window ID of the UI.
+  virtual void OnStarted(const base::Closure& stop_callback,
+                         const WindowIdCallback& window_id_callback);
 
   void SetRenderViewHostDelegateForTests(RenderViewHostDelegate* delegate);
 
@@ -58,6 +62,8 @@ class CONTENT_EXPORT MediaStreamUIProxy {
       const MediaStreamDevices& devices,
       content::MediaStreamRequestResult result);
   void ProcessStopRequestFromUI();
+  void OnWindowId(const WindowIdCallback& window_id_callback,
+                  gfx::NativeViewId* window_id);
 
   scoped_ptr<Core> core_;
   ResponseCallback response_callback_;
@@ -79,7 +85,8 @@ class CONTENT_EXPORT FakeMediaStreamUIProxy : public MediaStreamUIProxy {
   virtual void RequestAccess(
       const MediaStreamRequest& request,
       const ResponseCallback& response_callback) OVERRIDE;
-  virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
+  virtual void OnStarted(const base::Closure& stop_callback,
+                         const WindowIdCallback& window_id_callback) OVERRIDE;
 
  private:
   MediaStreamDevices devices_;

@@ -179,11 +179,13 @@ class MediaStreamCaptureIndicator::UIDelegate
 
  private:
   // content::MediaStreamUI interface.
-  virtual void OnStarted(const base::Closure& close_callback) OVERRIDE {
+  virtual gfx::NativeViewId OnStarted(const base::Closure& close_callback)
+      OVERRIDE {
     DCHECK(!started_);
     started_ = true;
     if (device_usage_.get())
       device_usage_->AddDevices(devices_);
+    return 0;
   }
 
   base::WeakPtr<WebContentsDeviceUsage> device_usage_;

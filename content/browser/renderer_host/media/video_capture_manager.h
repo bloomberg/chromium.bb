@@ -98,6 +98,11 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   bool GetDeviceFormatsInUse(media::VideoCaptureSessionId capture_session_id,
                              media::VideoCaptureFormats* formats_in_use);
 
+  // Sets the platform-dependent window ID for the desktop capture notification
+  // UI for the given session.
+  void SetDesktopCaptureWindowId(media::VideoCaptureSessionId session_id,
+                                 gfx::NativeViewId window_id);
+
  private:
   virtual ~VideoCaptureManager();
   struct DeviceEntry;
@@ -156,6 +161,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // |entry->video_capture_device|. Ownership of |client| passes to
   // the device.
   void DoStartDeviceOnDeviceThread(
+      media::VideoCaptureSessionId session_id,
       DeviceEntry* entry,
       const media::VideoCaptureParams& params,
       scoped_ptr<media::VideoCaptureDevice::Client> client);
@@ -166,6 +172,13 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   DeviceInfo* FindDeviceInfoById(const std::string& id,
                                  DeviceInfos& device_vector);
+
+  void SetDesktopCaptureWindowIdOnDeviceThread(DeviceEntry* entry,
+                                               gfx::NativeViewId window_id);
+
+  void SaveDesktopCaptureWindowIdOnDeviceThread(
+      media::VideoCaptureSessionId session_id,
+      gfx::NativeViewId window_id);
 
   // The message loop of media stream device thread, where VCD's live.
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
@@ -225,6 +238,10 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
     TEST_PATTERN,
     Y4M_FILE
   } artificial_device_source_for_testing_;
+
+  // Accessed on the device thread only.
+  std::map<media::VideoCaptureSessionId, gfx::NativeViewId>
+      notification_window_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureManager);
 };

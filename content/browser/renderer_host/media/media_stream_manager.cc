@@ -1476,7 +1476,12 @@ void MediaStreamManager::HandleRequestDone(const std::string& label,
   if (request->ui_proxy.get()) {
     request->ui_proxy->OnStarted(
         base::Bind(&MediaStreamManager::StopMediaStreamFromBrowser,
-                   base::Unretained(this), label));
+                   base::Unretained(this),
+                   label),
+        base::Bind(&MediaStreamManager::OnMediaStreamUIWindowId,
+                   base::Unretained(this),
+                   request->video_type(),
+                   request->devices));
   }
 }
 
@@ -1859,6 +1864,27 @@ void MediaStreamManager::OnDevicesChanged(
   // change.
   ++active_enumeration_ref_count_[stream_type];
   GetDeviceManager(stream_type)->EnumerateDevices(stream_type);
+}
+
+void MediaStreamManager::OnMediaStreamUIWindowId(MediaStreamType video_type,
+                                                 StreamDeviceInfoArray devices,
+                                                 gfx::NativeViewId window_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!window_id)
+    return;
+
+  // Pass along for desktop capturing. Ignored for other stream types.
+  if (video_type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
+    for (StreamDeviceInfoArray::iterator it = devices.begin();
+         it != devices.end();
+         ++it) {
+      if (it->device.type == MEDIA_DESKTOP_VIDEO_CAPTURE) {
+        video_capture_manager_->SetDesktopCaptureWindowId(it->session_id,
+                                                          window_id);
+        break;
+      }
+    }
+  }
 }
 
 }  // namespace content
