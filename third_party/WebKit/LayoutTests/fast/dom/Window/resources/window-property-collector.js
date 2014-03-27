@@ -85,16 +85,16 @@ function collectPropertiesHelper(object, path)
         // As for 'localStorage', local storage is not reliably cleared between tests.
         if (property == 'localStorage')
             continue;
-        if (!object[property])
-            continue;
         path.push(property);
         var type = typeof(object[property]);
         if (type == "object") {
-            // Skip some traversing through types that will end up in cycles...
-            if (!object[property].Window
+            if (object[property] === null) {
+                emitExpectedResult(path, "null");
+            } else if (!object[property].Window
                 && !(object[property] instanceof Node)
                 && !(object[property] instanceof MimeTypeArray)
                 && !(object[property] instanceof PluginArray)) {
+                // Skip some traversing through types that will end up in cycles...
                 collectPropertiesHelper(object[property], path);
             }
         } else if (type == "string") {
