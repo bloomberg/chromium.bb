@@ -60,6 +60,13 @@ void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& docume
     updateAnimationTiming(document);
 }
 
+void DocumentAnimations::updateOutdatedAnimationPlayersAfterFrameCallbacks(Document& document)
+{
+    if (document.timeline().hasOutdatedAnimationPlayer()) {
+        updateAnimationTiming(document);
+    }
+}
+
 void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CSSPropertyID property)
 {
     if (!node.isElementNode())
