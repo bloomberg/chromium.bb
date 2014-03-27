@@ -41,10 +41,6 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/wm/core/window_util.h"
 
-#if defined(OS_WIN)
-#include "ui/views/test/test_views_delegate.h"
-#endif
-
 using base::ASCIIToUTF16;
 
 namespace {
@@ -3761,6 +3757,17 @@ TEST_F(ViewTest, RecreateLayers) {
   }
   // The views and the widgets are destroyed when AuraTestHelper::TearDown()
   // destroys root_window().
+}
+
+// Verifies when a view is deleted it is removed from ViewStorage.
+TEST_F(ViewTest, UpdateViewStorageOnDelete) {
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  const int storage_id = view_storage->CreateStorageID();
+  {
+    View view;
+    view_storage->StoreView(storage_id, &view);
+  }
+  EXPECT_TRUE(view_storage->RetrieveView(storage_id) == NULL);
 }
 
 }  // namespace views

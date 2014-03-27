@@ -17,7 +17,7 @@ template <typename T> struct DefaultSingletonTraits;
 // used for example in the FocusManager to store/restore focused views when the
 // main window becomes active/inactive.
 // It automatically removes a view from the storage if the view is removed from
-// the tree hierarchy.
+// the tree hierarchy or when the view is destroyed, which ever comes first.
 //
 // To use it, you first need to create a view storage id that can then be used
 // to store/retrieve views.
