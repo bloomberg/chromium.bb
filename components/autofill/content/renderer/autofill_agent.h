@@ -77,10 +77,6 @@ class AutofillAgent : public content::RenderViewObserver,
   // blink::WebAutofillClient:
   virtual void textFieldDidEndEditing(
       const blink::WebInputElement& element) OVERRIDE;
-  // TODO(ziran.sun): To be removed once next Blink roll is done
-  virtual void textFieldDidChange(
-      const blink::WebInputElement& element);
-  // TODO(ziran.sun): OVERRIDE this function once next Blink roll is done
   virtual void textFieldDidChange(
       const blink::WebFormControlElement& element);
   virtual void textFieldDidReceiveKeyDown(

@@ -319,13 +319,6 @@ void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
   Send(new AutofillHostMsg_DidEndTextFieldEditing(routing_id()));
 }
 
-// TODO(ziran.sun): This function is to be removed once next Blink roll is done
-void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
-  const WebFormControlElement control_element =
-      element.toConst<WebFormControlElement>();
-  textFieldDidChange(control_element);
-}
-
 void AutofillAgent::textFieldDidChange(const WebFormControlElement& element) {
   if (ignore_text_changes_)
     return;
