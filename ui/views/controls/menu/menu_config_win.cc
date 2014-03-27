@@ -53,23 +53,18 @@ void MenuConfig::Init(const NativeTheme* theme) {
   extra.menu_check.is_radio = true;
   gfx::Size radio_size = NativeThemeWin::instance()->GetPartSize(
       NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
-  if (!radio_size.IsEmpty()) {
+  if (!radio_size.IsEmpty())
     radio_width = radio_size.width();
-    radio_height = radio_size.height();
-  } else {
+  else
     radio_width = GetSystemMetrics(SM_CXMENUCHECK);
-    radio_height = GetSystemMetrics(SM_CYMENUCHECK);
-  }
 
   gfx::Size arrow_size = NativeThemeWin::instance()->GetPartSize(
       NativeTheme::kMenuPopupArrow, NativeTheme::kNormal, extra);
   if (!arrow_size.IsEmpty()) {
     arrow_width = arrow_size.width();
-    arrow_height = arrow_size.height();
   } else {
     // Sadly I didn't see a specify metrics for this.
     arrow_width = GetSystemMetrics(SM_CXMENUCHECK);
-    arrow_height = GetSystemMetrics(SM_CYMENUCHECK);
   }
 
   BOOL show_cues;

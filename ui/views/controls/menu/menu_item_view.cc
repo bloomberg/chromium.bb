@@ -742,13 +742,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
        (NonIconChildViewsCount() == 0));
 
-  int icon_x = config.item_left_margin + left_icon_margin_;
-  int top_margin = GetTopMargin();
-  int bottom_margin = GetBottomMargin();
-  int icon_y = top_margin + (height() - config.item_top_margin -
-                             bottom_margin - config.check_height) / 2;
-  int icon_height = config.check_height;
-  int available_height = height() - top_margin - bottom_margin;
   MenuDelegate *delegate = GetDelegate();
   // Render the background. As MenuScrollViewContainer draws the background, we
   // only need the background when we want it to look different, as when we're
@@ -770,21 +763,27 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                         ui::NativeTheme::ExtraParams());
   }
 
+  const int icon_x = config.item_left_margin + left_icon_margin_;
+  const int top_margin = GetTopMargin();
+  const int bottom_margin = GetBottomMargin();
+  const int available_height = height() - top_margin - bottom_margin;
+
   // Render the check.
   if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {
     gfx::ImageSkia check = GetMenuCheckImage(IsSelected());
     // Don't use config.check_width here as it's padded
     // to force more padding (AURA).
-    gfx::Rect check_bounds(icon_x, icon_y, check.width(), icon_height);
+    gfx::Rect check_bounds(icon_x,
+                           top_margin + (available_height - check.height()) / 2,
+                           check.width(),
+                           check.height());
     AdjustBoundsForRTLUI(&check_bounds);
     canvas->DrawImageInt(check, check_bounds.x(), check_bounds.y());
   } else if (type_ == RADIO) {
     gfx::ImageSkia image =
         GetRadioButtonImage(delegate->IsItemChecked(GetCommand()));
     gfx::Rect radio_bounds(icon_x,
-                           top_margin +
-                           (height() - top_margin - bottom_margin -
-                               image.height()) / 2,
+                           top_margin + (available_height - image.height()) / 2,
                            image.width(),
                            image.height());
     AdjustBoundsForRTLUI(&radio_bounds);
@@ -843,14 +842,14 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 
   // Render the submenu indicator (arrow).
   if (HasSubmenu()) {
+    gfx::ImageSkia arrow = GetSubmenuArrowImage(IsSelected());
     gfx::Rect arrow_bounds(this->width() - config.arrow_width -
                                config.arrow_to_edge_padding,
-                           top_margin + (available_height -
-                                         config.arrow_width) / 2,
-                           config.arrow_width, height());
+                           top_margin + (available_height - arrow.height()) / 2,
+                           config.arrow_width,
+                           arrow.height());
     AdjustBoundsForRTLUI(&arrow_bounds);
-    canvas->DrawImageInt(GetSubmenuArrowImage(IsSelected()),
-                         arrow_bounds.x(), arrow_bounds.y());
+    canvas->DrawImageInt(arrow, arrow_bounds.x(), arrow_bounds.y());
   }
 }
 

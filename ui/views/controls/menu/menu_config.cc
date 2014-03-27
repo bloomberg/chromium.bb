@@ -27,8 +27,6 @@ MenuConfig::MenuConfig(const ui::NativeTheme* theme)
       check_width(16),
       check_height(16),
       radio_width(16),
-      radio_height(16),
-      arrow_height(9),
       arrow_width(9),
       gutter_width(0),
       separator_height(11),

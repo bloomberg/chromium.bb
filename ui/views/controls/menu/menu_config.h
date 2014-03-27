@@ -67,12 +67,10 @@ struct VIEWS_EXPORT MenuConfig {
   int check_width;
   int check_height;
 
-  // Size of the radio bullet.
+  // Width of the radio bullet.
   int radio_width;
-  int radio_height;
 
-  // Size of the submenu arrow.
-  int arrow_height;
+  // Width of the submenu arrow.
   int arrow_width;
 
   // Width of the gutter. Only used if render_gutter is true.
