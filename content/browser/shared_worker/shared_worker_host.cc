@@ -4,6 +4,7 @@
 
 #include "content/browser/shared_worker/shared_worker_host.h"
 
+#include "base/metrics/histogram.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_service.h"
@@ -31,12 +32,15 @@ void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
 SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance)
     : instance_(instance),
       container_render_filter_(NULL),
-      worker_route_id_(MSG_ROUTING_NONE) {
+      worker_route_id_(MSG_ROUTING_NONE),
+      creation_time_(base::TimeTicks::Now()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  UMA_HISTOGRAM_LONG_TIMES("SharedWorker.TimeToDeleted",
+                           base::TimeTicks::Now() - creation_time_);
   // If we crashed, tell the RenderViewHosts.
   if (instance_ && !instance_->load_failed()) {
     const WorkerDocumentSet::DocumentInfoSet& parents =
@@ -137,9 +141,13 @@ void SharedWorkerHost::WorkerContextDestroyed() {
 
 void SharedWorkerHost::WorkerScriptLoaded() {
   // TODO(horo): implement this.
+  UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoaded",
+                      base::TimeTicks::Now() - creation_time_);
 }
 
 void SharedWorkerHost::WorkerScriptLoadFailed() {
+  UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoadFailed",
+                      base::TimeTicks::Now() - creation_time_);
   if (!instance_)
     return;
   instance_->set_load_failed(true);

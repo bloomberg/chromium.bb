@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
 
 class GURL;
@@ -88,6 +89,7 @@ class SharedWorkerHost {
   scoped_ptr<SharedWorkerInstance> instance_;
   SharedWorkerMessageFilter* container_render_filter_;
   int worker_route_id_;
+  const base::TimeTicks creation_time_;
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);
 };
 }  // namespace content
