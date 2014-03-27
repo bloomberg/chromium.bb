@@ -371,7 +371,7 @@ enum PageshowEventPersistence {
 
         mutable RefPtrWillBeMember<Performance> m_performance;
 
-        mutable RefPtr<DOMWindowCSS> m_css;
+        mutable RefPtrWillBeMember<DOMWindowCSS> m_css;
 
         RefPtr<DOMWindowEventQueue> m_eventQueue;
         RefPtr<SerializedScriptValue> m_pendingStateObject;

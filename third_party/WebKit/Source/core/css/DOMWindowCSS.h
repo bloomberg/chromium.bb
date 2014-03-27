@@ -30,18 +30,21 @@
 #ifndef DOMWindowCSS_h
 #define DOMWindowCSS_h
 
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class DOMWindowCSS : public RefCounted<DOMWindowCSS> {
+class DOMWindowCSS : public RefCountedWillBeGarbageCollected<DOMWindowCSS> {
 public:
-    static PassRefPtr<DOMWindowCSS> create();
+    static PassRefPtrWillBeRawPtr<DOMWindowCSS> create();
 
     bool supports(const String& property, const String& value) const;
     bool supports(const String& conditionText) const;
+
+    void trace(Visitor*) { }
 
 private:
     DOMWindowCSS()

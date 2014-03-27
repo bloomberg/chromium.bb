@@ -37,9 +37,9 @@
 
 namespace WebCore {
 
-PassRefPtr<DOMWindowCSS> DOMWindowCSS::create()
+PassRefPtrWillBeRawPtr<DOMWindowCSS> DOMWindowCSS::create()
 {
-    return adoptRef(new DOMWindowCSS());
+    return adoptRefWillBeNoop(new DOMWindowCSS());
 }
 
 static String valueWithoutImportant(const String& value)
