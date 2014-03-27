@@ -210,7 +210,6 @@ bool AbstractPropertySetCSSStyleDeclaration::isPropertyImplicit(const String& pr
 
 void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyName, const String& value, const String& priority, ExceptionState& exceptionState)
 {
-    StyleAttributeMutationScope mutationScope(this);
     CSSPropertyID propertyID = cssPropertyID(propertyName);
     if (!propertyID)
         return;
@@ -219,17 +218,7 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(const String& propertyN
     if (!important && !priority.isEmpty())
         return;
 
-    willMutate();
-
-    bool changed = propertySet().setProperty(propertyID, value, important, contextStyleSheet());
-
-    didMutate(changed ? PropertyChanged : NoChanges);
-
-    if (changed) {
-        // CSS DOM requires raising SyntaxError of parsing failed, but this is too dangerous for compatibility,
-        // see <http://bugs.webkit.org/show_bug.cgi?id=7296>.
-        mutationScope.enqueueMutationRecord();
-    }
+    setPropertyInternal(propertyID, value, important, exceptionState);
 }
 
 String AbstractPropertySetCSSStyleDeclaration::removeProperty(const String& propertyName, ExceptionState& exceptionState)
