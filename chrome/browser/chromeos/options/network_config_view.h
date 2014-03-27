@@ -141,6 +141,9 @@ class ChildNetworkConfigView : public views::View {
   // being active. For example, clicking on "Advanced" button.
   virtual void InitFocus() = 0;
 
+  // Returns 'true' if the dialog is for configuration only (default is false).
+  virtual bool IsConfigureDialog();
+
   // Minimum with of input fields / combo boxes.
   static const int kInputFieldMinWidth;
 

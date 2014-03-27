@@ -55,9 +55,15 @@ ASH_EXPORT void ConfigureNetworkAndConnect(
     bool shared);
 
 // Requests a new network configuration to be created from a dictionary of
-// Shill properties. The profile used is determined by |shared|.
+// Shill properties and sends a connect request if the configuration succeeds.
+// The profile used is determined by |shared|.
 ASH_EXPORT void CreateConfigurationAndConnect(base::DictionaryValue* properties,
                                               bool shared);
+
+// Requests a new network configuration to be created from a dictionary of
+// Shill properties. The profile used is determined by |shared|.
+ASH_EXPORT void CreateConfiguration(base::DictionaryValue* properties,
+                                    bool shared);
 
 // Returns the localized string for shill error string |error|.
 ASH_EXPORT base::string16 ErrorString(const std::string& error,

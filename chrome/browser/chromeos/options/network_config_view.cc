@@ -87,12 +87,14 @@ NetworkConfigView::NetworkConfigView()
 bool NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
   DCHECK(network);
   std::string service_path = network->path();
-  if (network->type() == shill::kTypeWifi)
+  if (network->type() == shill::kTypeWifi ||
+      network->type() == shill::kTypeEthernet) {
     child_config_view_ = new WifiConfigView(this, service_path, false);
-  else if (network->type() == shill::kTypeWimax)
+  } else if (network->type() == shill::kTypeWimax) {
     child_config_view_ = new WimaxConfigView(this, service_path);
-  else if (network->type() == shill::kTypeVPN)
+  } else if (network->type() == shill::kTypeVPN) {
     child_config_view_ = new VPNConfigView(this, service_path);
+  }
   return child_config_view_ != NULL;
 }
 
@@ -158,8 +160,11 @@ gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
 
 base::string16 NetworkConfigView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
+  if (button == ui::DIALOG_BUTTON_OK) {
+    if (child_config_view_->IsConfigureDialog())
+      return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONFIGURE);
     return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONNECT);
+  }
   return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
 
@@ -289,6 +294,10 @@ ChildNetworkConfigView::ChildNetworkConfigView(
 }
 
 ChildNetworkConfigView::~ChildNetworkConfigView() {
+}
+
+bool ChildNetworkConfigView::IsConfigureDialog() {
+  return false;
 }
 
 // ControlledSettingIndicatorView

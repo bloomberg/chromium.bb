@@ -810,6 +810,9 @@ cr.define('options.internet', function() {
           data.type == Constants.TYPE_WIMAX ||
           data.type == Constants.TYPE_VPN)) {
       $('details-internet-configure').hidden = false;
+    } else if (data.type == Constants.TYPE_ETHERNET) {
+      // Ethernet (802.1x) can be configured while connected.
+      $('details-internet-configure').hidden = false;
     } else {
       $('details-internet-configure').hidden = true;
     }

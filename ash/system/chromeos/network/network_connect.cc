@@ -109,6 +109,32 @@ void HandleUnconfiguredNetwork(const std::string& service_path,
   NOTREACHED();
 }
 
+// If |shared| is true, sets |profile_path| to the shared profile path.
+// Otherwise sets |profile_path| to the user profile path if authenticated and
+// available. Returns 'false' if unable to set |profile_path|.
+bool GetNetworkProfilePath(bool shared, std::string* profile_path) {
+  if (shared) {
+    *profile_path = NetworkProfileHandler::GetSharedProfilePath();
+    return true;
+  }
+
+  if (!chromeos::LoginState::Get()->IsUserAuthenticated()) {
+    NET_LOG_ERROR("User profile specified before login", "");
+    return false;
+  }
+
+  const NetworkProfile* profile  =
+      NetworkHandler::Get()->network_profile_handler()->
+      GetDefaultUserProfile();
+  if (!profile) {
+    NET_LOG_ERROR("No user profile for unshared network configuration", "");
+    return false;
+  }
+
+  *profile_path = profile->path;
+  return true;
+}
+
 void OnConnectFailed(const std::string& service_path,
                      gfx::NativeWindow parent_window,
                      const std::string& error_name,
@@ -213,12 +239,31 @@ void OnConfigureFailed(const std::string& error_name,
   ShowErrorNotification(NetworkConnectionHandler::kErrorConfigureFailed, "");
 }
 
-void OnConfigureSucceeded(const std::string& service_path) {
+void OnConfigureSucceeded(bool connect_on_configure,
+                          const std::string& service_path) {
   NET_LOG_USER("Configure Succeeded", service_path);
+  if (!connect_on_configure)
+    return;
   // After configuring a network, ignore any (possibly stale) error state.
   const bool check_error_state = false;
   const gfx::NativeWindow parent_window = NULL;
   CallConnectToNetwork(service_path, check_error_state, parent_window);
+}
+
+void CallCreateConfiguration(base::DictionaryValue* properties,
+                             bool shared,
+                             bool connect_on_configure) {
+  std::string profile_path;
+  if (!GetNetworkProfilePath(shared, &profile_path)) {
+    ShowErrorNotification(NetworkConnectionHandler::kErrorConfigureFailed, "");
+    return;
+  }
+  properties->SetStringWithoutPathExpansion(
+      shill::kProfileProperty, profile_path);
+  NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(
+      *properties,
+      base::Bind(&OnConfigureSucceeded, connect_on_configure),
+      base::Bind(&OnConfigureFailed));
 }
 
 void SetPropertiesFailed(const std::string& desc,
@@ -260,31 +305,6 @@ void ClearPropertiesAndConnect(
                  service_path, check_error_state,
                  parent_window),
       base::Bind(&SetPropertiesFailed, "ClearProperties", service_path));
-}
-
-// Returns false if !shared and no valid profile is available, which will
-// trigger an error and abort.
-bool GetNetworkProfilePath(bool shared, std::string* profile_path) {
-  if (shared) {
-    *profile_path = NetworkProfileHandler::GetSharedProfilePath();
-    return true;
-  }
-
-  if (!chromeos::LoginState::Get()->IsUserAuthenticated()) {
-    NET_LOG_ERROR("User profile specified before login", "");
-    return false;
-  }
-
-  const NetworkProfile* profile  =
-      NetworkHandler::Get()->network_profile_handler()->
-      GetDefaultUserProfile();
-  if (!profile) {
-    NET_LOG_ERROR("No user profile for unshared network configuration", "");
-    return false;
-  }
-
-  *profile_path = profile->path;
-  return true;
 }
 
 void ConfigureSetProfileSucceeded(
@@ -466,17 +486,12 @@ void ConfigureNetworkAndConnect(const std::string& service_path,
 void CreateConfigurationAndConnect(base::DictionaryValue* properties,
                                    bool shared) {
   NET_LOG_USER("CreateConfigurationAndConnect", "");
-  std::string profile_path;
-  if (!GetNetworkProfilePath(shared, &profile_path)) {
-    ShowErrorNotification(NetworkConnectionHandler::kErrorConfigureFailed, "");
-    return;
-  }
-  properties->SetStringWithoutPathExpansion(
-      shill::kProfileProperty, profile_path);
-  NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(
-      *properties,
-      base::Bind(&OnConfigureSucceeded),
-      base::Bind(&OnConfigureFailed));
+  CallCreateConfiguration(properties, shared, true /* connect_on_configure */);
+}
+
+void CreateConfiguration(base::DictionaryValue* properties, bool shared) {
+  NET_LOG_USER("CreateConfiguration", "");
+  CallCreateConfiguration(properties, shared, false /* connect_on_configure */);
 }
 
 base::string16 ErrorString(const std::string& error,

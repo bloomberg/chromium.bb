@@ -204,11 +204,11 @@ void WimaxConfigView::Init() {
       GetNetworkState(service_path_);
   DCHECK(wimax && wimax->type() == shill::kTypeWimax);
 
-  WifiConfigView::ParseWiFiEAPUIProperty(
+  WifiConfigView::ParseEAPUIProperty(
       &save_credentials_ui_data_, wimax, ::onc::eap::kSaveCredentials);
-  WifiConfigView::ParseWiFiEAPUIProperty(
+  WifiConfigView::ParseEAPUIProperty(
       &identity_ui_data_, wimax, ::onc::eap::kIdentity);
-  WifiConfigView::ParseWiFiUIProperty(
+  WifiConfigView::ParseUIProperty(
       &passphrase_ui_data_, wimax, ::onc::wifi::kPassphrase);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
