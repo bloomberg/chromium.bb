@@ -64,7 +64,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
-#include "core/loader/ProgressTracker.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/FrameView.h"
@@ -493,28 +492,22 @@ void FrameLoaderClientImpl::dispatchWillSubmitForm(HTMLFormElement* form)
         m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(form));
 }
 
-void FrameLoaderClientImpl::postProgressStartedNotification(LoadStartType loadStartType)
+void FrameLoaderClientImpl::didStartLoading(LoadStartType loadStartType)
 {
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->client())
-        webview->client()->didStartLoading(loadStartType == NavigationToDifferentDocument);
+    if (m_webFrame->client())
+        m_webFrame->client()->didStartLoading(loadStartType == NavigationToDifferentDocument);
 }
 
-void FrameLoaderClientImpl::postProgressEstimateChangedNotification()
+void FrameLoaderClientImpl::progressEstimateChanged(double progressEstimate)
 {
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->client()) {
-        webview->client()->didChangeLoadProgress(
-            m_webFrame, m_webFrame->frame()->page()->progress().estimatedProgress());
-    }
+    if (m_webFrame->client())
+        m_webFrame->client()->didChangeLoadProgress(progressEstimate);
 }
 
-void FrameLoaderClientImpl::postProgressFinishedNotification()
+void FrameLoaderClientImpl::didStopLoading()
 {
-    // FIXME: why might the webview be null?  http://b/1234461
-    WebViewImpl* webview = m_webFrame->viewImpl();
-    if (webview && webview->client())
-        webview->client()->didStopLoading();
+    if (m_webFrame->client())
+        m_webFrame->client()->didStopLoading();
 }
 
 void FrameLoaderClientImpl::loadURLExternally(const ResourceRequest& request, NavigationPolicy policy, const String& suggestedName)
