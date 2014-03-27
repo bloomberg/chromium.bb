@@ -38,20 +38,6 @@ const int kMaxVideoEventEntries = kMaxSerializedBytes / 150;
 // Assume serialized log data for each frame will take up to 75 bytes.
 const int kMaxAudioEventEntries = kMaxSerializedBytes / 75;
 
-void CreateVideoEncodeAccelerator(const base::Callback<
-    void(scoped_refptr<base::SingleThreadTaskRunner>,
-         scoped_ptr<media::VideoEncodeAccelerator>)>& callback) {
-  NOTIMPLEMENTED();
-  // Delegate the call to content API on the render thread.
-}
-
-void CreateVideoEncodeMemory(
-    size_t size,
-    const base::Callback<void(scoped_ptr<base::SharedMemory>)>&) {
-  NOTIMPLEMENTED();
-  // Delegate the call to content API on the render thread.
-}
-
 }  // namespace
 
 CastSessionDelegate::CastSessionDelegate()
@@ -102,7 +88,10 @@ void CastSessionDelegate::StartAudio(
 void CastSessionDelegate::StartVideo(
     const VideoSenderConfig& config,
     const VideoFrameInputAvailableCallback& callback,
-    const ErrorCallback& error_callback) {
+    const ErrorCallback& error_callback,
+    const media::cast::CreateVideoEncodeAcceleratorCallback& create_vea_cb,
+    const media::cast::CreateVideoEncodeMemoryCallback&
+        create_video_encode_mem_cb) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
   if (!cast_transport_ || !cast_sender_) {
@@ -121,8 +110,8 @@ void CastSessionDelegate::StartVideo(
       config,
       base::Bind(&CastSessionDelegate::InitializationResultCB,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&CreateVideoEncodeAccelerator),
-      base::Bind(&CreateVideoEncodeMemory));
+      create_vea_cb,
+      create_video_encode_mem_cb);
 }
 
 void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {

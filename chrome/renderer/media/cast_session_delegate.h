@@ -73,7 +73,11 @@ class CastSessionDelegate {
 
   void StartVideo(const media::cast::VideoSenderConfig& config,
                   const VideoFrameInputAvailableCallback& callback,
-                  const ErrorCallback& error_callback);
+                  const ErrorCallback& error_callback,
+                  const media::cast::CreateVideoEncodeAcceleratorCallback&
+                      create_vea_cb,
+                  const media::cast::CreateVideoEncodeMemoryCallback&
+                      create_video_encode_mem_cb);
 
   void ToggleLogging(bool is_audio, bool enable);
   void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);

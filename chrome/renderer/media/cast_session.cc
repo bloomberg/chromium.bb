@@ -7,11 +7,38 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/renderer/media/cast_session_delegate.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/video_encode_accelerator.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
+
+namespace {
+
+void CreateVideoEncodeAccelerator(
+    const media::cast::ReceiveVideoEncodeAcceleratorCallback& callback) {
+  DCHECK(content::RenderThread::Get());
+
+  // Delegate the call to content API on the render thread.
+  content::CreateVideoEncodeAccelerator(callback);
+}
+
+void CreateVideoEncodeMemory(
+    size_t size,
+    const media::cast::ReceiveVideoEncodeMemoryCallback& callback) {
+  DCHECK(content::RenderThread::Get());
+
+  scoped_ptr<base::SharedMemory> shm =
+      content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(size);
+  DCHECK(shm) << "Failed to allocate shared memory";
+  if (!shm->Map(size)) {
+    NOTREACHED() << "Map failed";
+  }
+  callback.Run(shm.Pass());
+}
+
+}  // namespace
 
 CastSession::CastSession()
     : delegate_(new CastSessionDelegate()),
@@ -54,7 +81,11 @@ void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
                  base::Unretained(delegate_.get()),
                  config,
                  media::BindToCurrentLoop(callback),
-                 media::BindToCurrentLoop(error_callback)));
+                 media::BindToCurrentLoop(error_callback),
+                 media::BindToCurrentLoop(
+                     base::Bind(&CreateVideoEncodeAccelerator)),
+                 media::BindToCurrentLoop(
+                     base::Bind(&CreateVideoEncodeMemory))));
 }
 
 void CastSession::StartUDP(const net::IPEndPoint& remote_endpoint) {
