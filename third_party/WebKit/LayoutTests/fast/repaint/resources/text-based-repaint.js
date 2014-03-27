@@ -16,10 +16,7 @@ function runRepaintTest()
     if (window.testIsAsync)
         testRunner.waitUntilDone();
 
-    if (document.body)
-        document.body.offsetTop;
-    else if (document.documentElement)
-        document.documentElement.offsetTop;
+    forceStyleRecalc();
 
     window.internals.startTrackingRepaints(document);
 
@@ -29,10 +26,18 @@ function runRepaintTest()
         finishRepaintTest();
 }
 
+function forceStyleRecalc()
+{
+    if (document.body)
+        document.body.offsetTop;
+    else if (document.documentElement)
+        document.documentElement.offsetTop;
+}
+
 function finishRepaintTest()
 {
     // Force a style recalc.
-    var dummy = document.body.offsetTop;
+    forceStyleRecalc();
 
     var repaintRects = window.internals.repaintRectsAsText(document);
 

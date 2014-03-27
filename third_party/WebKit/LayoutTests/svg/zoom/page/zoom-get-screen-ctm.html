@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<body style="margin: 0px; padding: 0px;" onload="runRepaintTest()">
+<body style="margin: 0px; padding: 0px;" onload="forceStyleRecalc();repaintTest();">
   <div style="width: 100px; height: 100px;"></div>
   <svg id="svg1" xmlns="http://www.w3.org/2000/svg" width="400" height="400">
     <rect width="100" height="100" fill="green"/>
@@ -45,7 +45,7 @@
 
 </script>
 <script src="../../../resources/js-test.js"></script>
-<script src="../../../fast/repaint/resources/repaint.js"></script>
+<script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
 
 </body>
