@@ -108,7 +108,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
 
  private:
   bool IsReadyToStart();
-  bool IsStarted();
+  bool IsStarted() const;
 
   void StartInvalidator(InvalidationNetworkChannel network_channel);
   void UpdateInvalidationNetworkChannel();

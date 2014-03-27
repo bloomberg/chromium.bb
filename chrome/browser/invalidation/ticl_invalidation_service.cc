@@ -183,8 +183,10 @@ TiclInvalidationService::GetInvalidationAuthProvider() {
 
 void TiclInvalidationService::RequestDetailedStatus(
     base::Callback<void(const base::DictionaryValue&)> return_callback) const {
-  return_callback.Run(network_channel_options_);
-  invalidator_->RequestDetailedStatus(return_callback);
+  if (IsStarted()) {
+    return_callback.Run(network_channel_options_);
+    invalidator_->RequestDetailedStatus(return_callback);
+  }
 }
 
 void TiclInvalidationService::RequestAccessToken() {
@@ -355,7 +357,7 @@ bool TiclInvalidationService::IsReadyToStart() {
   return true;
 }
 
-bool TiclInvalidationService::IsStarted() {
+bool TiclInvalidationService::IsStarted() const {
   return invalidator_.get() != NULL;
 }
 
