@@ -40,6 +40,7 @@ class DescWrapperFactory;
 }  // namespace nacl
 
 namespace pp {
+class CompletionCallback;
 class URLLoader;
 class URLUtil_Dev;
 }
@@ -198,7 +199,7 @@ class Plugin : public pp::Instance {
   // a PP_Error indicating status. On success an open file descriptor
   // corresponding to the url body is recorded for further lookup.
   bool StreamAsFile(const nacl::string& url,
-                    PP_CompletionCallback pp_callback);
+                    const pp::CompletionCallback& callback);
 
   // Returns rich information for a file retrieved by StreamAsFile(). This info
   // contains a file descriptor. The caller must take ownership of this
@@ -354,8 +355,8 @@ class Plugin : public pp::Instance {
 
   // Callback used when loading a URL for SRPC-based StreamAsFile().
   void UrlDidOpenForStreamAsFile(int32_t pp_error,
-                                 FileDownloader*& url_downloader,
-                                 PP_CompletionCallback pp_callback);
+                                 FileDownloader* url_downloader,
+                                 pp::CompletionCallback pp_callback);
 
   // Copy the main service runtime's most recent NaClLog output to the
   // JavaScript console.  Valid to use only after a crash, e.g., via a

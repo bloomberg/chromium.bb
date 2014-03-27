@@ -210,7 +210,6 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
 void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     OpenManifestEntryResource* p,
     int32_t err) {
-  OpenManifestEntryResource *open_cont;
   UNREFERENCED_PARAMETER(err);
   // CallOnMainThread continuations always called with err == PP_OK.
 
@@ -239,54 +238,7 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
           "ResolveKey: %s -> %s (pnacl_translate(%d))\n",
           p->url.c_str(), mapped_url.c_str(), pnacl_options.translate());
 
-  open_cont = new OpenManifestEntryResource(*p);  // copy ctor!
-  CHECK(open_cont != NULL);
-  open_cont->url = mapped_url;
-  if (!pnacl_options.translate()) {
-    pp::CompletionCallback stream_cc = WeakRefNewCallback(
-        anchor_,
-        this,
-        &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
-        open_cont);
-    // Normal files.
-    if (!PnaclUrls::IsPnaclComponent(mapped_url)) {
-      if (!plugin_->StreamAsFile(mapped_url,
-                                 stream_cc.pp_completion_callback())) {
-        NaClLog(4,
-                "OpenManifestEntry_MainThreadContinuation: "
-                "StreamAsFile failed\n");
-        nacl::MutexLocker take(&mu_);
-        *p->op_complete_ptr = true;  // done...
-        p->file_info->desc = -1;       // but failed.
-        NaClXCondVarBroadcast(&cv_);
-        return;
-      }
-      NaClLog(4,
-              "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
-    } else {
-      // Special PNaCl support files, that are installed on the
-      // user machine.
-      int32_t fd = PnaclResources::GetPnaclFD(
-          plugin_,
-          PnaclUrls::PnaclComponentURLToFilename(mapped_url).c_str());
-      if (fd < 0) {
-        // We checked earlier if the pnacl component wasn't installed
-        // yet, so this shouldn't happen. At this point, we can't do much
-        // anymore, so just continue with an invalid fd.
-        NaClLog(4,
-                "OpenManifestEntry_MainThreadContinuation: "
-                "GetReadonlyPnaclFd failed\n");
-      }
-      nacl::MutexLocker take(&mu_);
-      *p->op_complete_ptr = true;  // done!
-      // TODO(ncbray): enable the fast loading and validation paths for this
-      // type of file.
-      p->file_info->desc = fd;
-      NaClXCondVarBroadcast(&cv_);
-      NaClLog(4,
-              "OpenManifestEntry_MainThreadContinuation: GetPnaclFd okay\n");
-    }
-  } else {
+  if (pnacl_options.translate()) {
     // Requires PNaCl translation, but that's not supported.
     NaClLog(4,
             "OpenManifestEntry_MainThreadContinuation: "
@@ -297,6 +249,56 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     NaClXCondVarBroadcast(&cv_);
     return;
   }
+
+  if (PnaclUrls::IsPnaclComponent(mapped_url)) {
+    // Special PNaCl support files, that are installed on the
+    // user machine.
+    int32_t fd = PnaclResources::GetPnaclFD(
+        plugin_,
+        PnaclUrls::PnaclComponentURLToFilename(mapped_url).c_str());
+    if (fd < 0) {
+      // We checked earlier if the pnacl component wasn't installed
+      // yet, so this shouldn't happen. At this point, we can't do much
+      // anymore, so just continue with an invalid fd.
+      NaClLog(4,
+              "OpenManifestEntry_MainThreadContinuation: "
+              "GetReadonlyPnaclFd failed\n");
+    }
+    nacl::MutexLocker take(&mu_);
+    *p->op_complete_ptr = true;  // done!
+    // TODO(ncbray): enable the fast loading and validation paths for this
+    // type of file.
+    p->file_info->desc = fd;
+    NaClXCondVarBroadcast(&cv_);
+    NaClLog(4,
+            "OpenManifestEntry_MainThreadContinuation: GetPnaclFd okay\n");
+    return;
+  }
+
+  // Hereafter, normal files.
+
+  // Because p is owned by the callback of this invocation, so it is necessary
+  // to create another instance.
+  OpenManifestEntryResource* open_cont = new OpenManifestEntryResource(*p);
+  open_cont->url = mapped_url;
+  pp::CompletionCallback stream_cc = WeakRefNewCallback(
+      anchor_,
+      this,
+      &PluginReverseInterface::StreamAsFile_MainThreadContinuation,
+      open_cont);
+
+  if (!plugin_->StreamAsFile(mapped_url, stream_cc)) {
+    NaClLog(4,
+            "OpenManifestEntry_MainThreadContinuation: "
+            "StreamAsFile failed\n");
+    // Here, StreamAsFile is failed and stream_cc is not called.
+    // However, open_cont will be released only by the invocation.
+    // So, we manually call it here with error.
+    stream_cc.Run(PP_ERROR_FAILED);
+    return;
+  }
+
+  NaClLog(4, "OpenManifestEntry_MainThreadContinuation: StreamAsFile okay\n");
   // p is deleted automatically
 }
 

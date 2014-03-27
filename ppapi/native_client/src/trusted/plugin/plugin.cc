@@ -1168,9 +1168,10 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
   return true;
 }
 
-void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
-                                       FileDownloader*& url_downloader,
-                                       PP_CompletionCallback callback) {
+void Plugin::UrlDidOpenForStreamAsFile(
+    int32_t pp_error,
+    FileDownloader* url_downloader,
+    pp::CompletionCallback callback) {
   PLUGIN_PRINTF(("Plugin::UrlDidOpen (pp_error=%" NACL_PRId32
                  ", url_downloader=%p)\n", pp_error,
                  static_cast<void*>(url_downloader)));
@@ -1180,7 +1181,7 @@ void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
   NaClFileInfoAutoCloser *info = new NaClFileInfoAutoCloser(&tmp_info);
 
   if (pp_error != PP_OK) {
-    PP_RunCompletionCallback(&callback, pp_error);
+    callback.Run(pp_error);
     delete info;
   } else if (info->get_desc() > NACL_NO_FILE_DESC) {
     std::map<nacl::string, NaClFileInfoAutoCloser*>::iterator it =
@@ -1189,9 +1190,9 @@ void Plugin::UrlDidOpenForStreamAsFile(int32_t pp_error,
       delete it->second;
     }
     url_file_info_map_[url_downloader->url()] = info;
-    PP_RunCompletionCallback(&callback, PP_OK);
+    callback.Run(PP_OK);
   } else {
-    PP_RunCompletionCallback(&callback, PP_ERROR_FAILED);
+    callback.Run(PP_ERROR_FAILED);
     delete info;
   }
 }
@@ -1211,7 +1212,7 @@ struct NaClFileInfo Plugin::GetFileInfo(const nacl::string& url) {
 }
 
 bool Plugin::StreamAsFile(const nacl::string& url,
-                          PP_CompletionCallback callback) {
+                          const pp::CompletionCallback& callback) {
   PLUGIN_PRINTF(("Plugin::StreamAsFile (url='%s')\n", url.c_str()));
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
