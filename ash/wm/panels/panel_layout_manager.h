@@ -18,7 +18,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/window_observer.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -56,7 +55,6 @@ class ASH_EXPORT PanelLayoutManager
     : public aura::LayoutManager,
       public ShelfIconObserver,
       public ShellObserver,
-      public aura::WindowObserver,
       public aura::client::ActivationChangeObserver,
       public keyboard::KeyboardControllerObserver,
       public DisplayController::Observer,
@@ -100,10 +98,6 @@ class ASH_EXPORT PanelLayoutManager
   virtual void OnPostWindowStateTypeChange(
       wm::WindowState* window_state,
       wm::WindowStateType old_type) OVERRIDE;
-
-  // Overridden from aura::WindowObserver
-  virtual void OnWindowVisibilityChanged(aura::Window* window,
-                                         bool visible) OVERRIDE;
 
   // Overridden from aura::client::ActivationChangeObserver
   virtual void OnWindowActivated(aura::Window* gained_active,
