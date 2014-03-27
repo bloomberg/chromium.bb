@@ -45,8 +45,8 @@ set -eu
 OS="$(uname -s)"
 
 # Parse command line options.
+if_needed=
 force_local_build=
-mac_only=
 run_tests=
 bootstrap=
 with_android=yes
@@ -67,11 +67,11 @@ while [[ $# > 0 ]]; do
     --bootstrap)
       bootstrap=yes
       ;;
+    --if-needed)
+      if_needed=yes
+      ;;
     --force-local-build)
       force_local_build=yes
-      ;;
-    --mac-only)
-      mac_only=yes
       ;;
     --run-tests)
       run_tests=yes
@@ -103,10 +103,10 @@ while [[ $# > 0 ]]; do
       ;;
 
     --help)
-      echo "usage: $0 [--force-local-build] [--mac-only] [--run-tests] "
+      echo "usage: $0 [--force-local-build] [--if-needed] [--run-tests] "
       echo "--bootstrap: First build clang with CC, then with itself."
       echo "--force-local-build: Don't try to download prebuilt binaries."
-      echo "--mac-only: Do initial download only on Mac systems."
+      echo "--if-needed: Download clang only if the script thinks it is needed."
       echo "--run-tests: Run tests after building. Only for local builds."
       echo "--without-android: Don't build ASan Android runtime library."
       echo "--with-chrome-tools: Select which chrome tools to build." \
@@ -127,14 +127,21 @@ while [[ $# > 0 ]]; do
   shift
 done
 
-# --mac-only prevents the initial download on non-mac systems, but if clang has
-# already been downloaded in the past, this script keeps it up to date even if
-# --mac-only is passed in and the system isn't a mac. People who don't like this
-# can just delete their third_party/llvm-build directory.
-if [[ -n "$mac_only" ]] && [[ "${OS}" != "Darwin" ]] &&
-    [[ ! ( "$GYP_DEFINES" =~ .*(clang|tsan|asan|lsan|msan)=1.* ) ]] &&
-    ! [[ -d "${LLVM_BUILD_DIR}" ]]; then
-  exit 0
+if [[ -n "$if_needed" ]]; then
+  if [[ "${OS}" == "Darwin" ]]; then
+    # clang is used on Mac.
+    true
+  elif [[ "$GYP_DEFINES" =~ .*(clang|tsan|asan|lsan|msan)=1.* ]]; then
+    # clang requested via $GYP_DEFINES.
+    true
+  elif [[ -d "${LLVM_BUILD_DIR}" ]]; then
+    # clang previously downloaded, remove third_party/llvm-build to prevent
+    # updating.
+    true
+  else
+    # clang wasn't needed, not doing anything.
+    exit 0
+  fi
 fi
 
 # Xcode and clang don't get along when predictive compilation is enabled.

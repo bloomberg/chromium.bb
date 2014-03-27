@@ -642,12 +642,10 @@ hooks = [
         "--arch=i386"],
   },
   {
-    # Pull clang on mac. If nothing changed, or on non-mac platforms, this takes
-    # zero seconds to run. If something changed, it downloads a prebuilt clang,
-    # which takes ~20s, but clang speeds up builds by more than 20s.
+    # Pull clang if on Mac or clang is requested via GYP_DEFINES.
     "name": "clang",
     "pattern": ".",
-    "action": ["python", "src/tools/clang/scripts/update.py", "--mac-only"],
+    "action": ["python", "src/tools/clang/scripts/update.py", "--if-needed"],
   },
   {
     # Update LASTCHANGE. This is also run by export_tarball.py in
