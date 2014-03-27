@@ -162,8 +162,10 @@ def RequestGsAuthentication():
   print
   print '    download_from_google_storage --config'
   print
-  print 'and follow the instructions. NOTE: Just press Enter when asked for'
-  print 'a "project-id".'
+  print 'and follow the instructions.'
+  print
+  print 'NOTE 1: Use your google.com credentials, not chromium.org.'
+  print 'NOTE 2: Just press Enter when asked for a "project-id".'
   print
   print '-----------------------------------------------------------------'
   print
