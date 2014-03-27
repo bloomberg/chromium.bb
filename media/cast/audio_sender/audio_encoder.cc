@@ -15,7 +15,22 @@
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/logging/logging_defines.h"
 #include "third_party/opus/src/include/opus.h"
+
+namespace {
+
+void LogAudioFrameEvent(
+    const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
+    base::TimeTicks event_time,
+    media::cast::CastLoggingEvent event_type,
+    media::cast::RtpTimestamp rtp_timestamp,
+    uint32 frame_id) {
+  cast_environment->Logging()->InsertFrameEvent(
+      event_time, event_type, rtp_timestamp, frame_id);
+}
+
+}  // namespace
 
 namespace media {
 namespace cast {
@@ -55,13 +70,6 @@ class AudioEncoder::ImplBase
     return cast_initialization_status_;
   }
 
-  void LogAudioFrameEvent(uint32 rtp_timestamp,
-                          uint32 frame_id,
-                          CastLoggingEvent type) {
-    cast_environment_->Logging()->InsertFrameEvent(
-        cast_environment_->Clock()->NowTicks(), type, rtp_timestamp, frame_id);
-  }
-
   void EncodeAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time) {
     DCHECK_EQ(cast_initialization_status_, STATUS_AUDIO_INITIALIZED);
@@ -86,23 +94,27 @@ class AudioEncoder::ImplBase
         audio_frame->rtp_timestamp = rtp_timestamp_;
 
         // Update logging.
-        cast_environment_->PostTask(CastEnvironment::MAIN,
-                                    FROM_HERE,
-                                    base::Bind(&ImplBase::LogAudioFrameEvent,
-                                               this,
-                                               audio_frame->rtp_timestamp,
-                                               audio_frame->frame_id,
-                                               kAudioFrameReceived));
+        cast_environment_->PostTask(
+            CastEnvironment::MAIN,
+            FROM_HERE,
+            base::Bind(&LogAudioFrameEvent,
+                       cast_environment_,
+                       cast_environment_->Clock()->NowTicks(),
+                       kAudioFrameReceived,
+                       audio_frame->rtp_timestamp,
+                       audio_frame->frame_id));
 
         if (EncodeFromFilledBuffer(&audio_frame->data)) {
           // Update logging.
-          cast_environment_->PostTask(CastEnvironment::MAIN,
-                                      FROM_HERE,
-                                      base::Bind(&ImplBase::LogAudioFrameEvent,
-                                                 this,
-                                                 audio_frame->rtp_timestamp,
-                                                 audio_frame->frame_id,
-                                                 kAudioFrameEncoded));
+          cast_environment_->PostTask(
+              CastEnvironment::MAIN,
+              FROM_HERE,
+              base::Bind(&LogAudioFrameEvent,
+                         cast_environment_,
+                         cast_environment_->Clock()->NowTicks(),
+                         kAudioFrameEncoded,
+                         audio_frame->rtp_timestamp,
+                         audio_frame->frame_id));
           // Compute an offset to determine the recorded time for the first
           // audio sample in the buffer.
           const base::TimeDelta buffer_time_offset =

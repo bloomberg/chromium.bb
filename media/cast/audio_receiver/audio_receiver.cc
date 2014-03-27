@@ -108,7 +108,6 @@ void AudioReceiver::OnReceivedPayloadData(const uint8* payload_data,
       payload_size);
 
   // TODO(pwestin): update this as video to refresh over time.
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (time_first_incoming_packet_.is_null()) {
     InitializeTimers();
     first_incoming_rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
