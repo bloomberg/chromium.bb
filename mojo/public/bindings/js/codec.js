@@ -84,6 +84,7 @@ define("mojo/public/bindings/js/codec", function() {
   var kArrayHeaderSize = 8;
   var kStructHeaderSize = 8;
   var kMessageHeaderSize = 16;
+  var kMessageWithRequestIDHeaderSize = 24;
 
   // Decoder ------------------------------------------------------------------
 
@@ -287,10 +288,23 @@ define("mojo/public/bindings/js/codec", function() {
 
   // Message ------------------------------------------------------------------
 
+  var kMessageExpectsResponse = 1 << 0;
+  var kMessageIsResponse      = 1 << 1;
+
   function Message(memory, handles) {
     this.memory = memory;
     this.handles = handles;
   }
+
+  Message.prototype.setRequestID = function(requestID) {
+    // TODO(darin): Verify that space was reserved for this field!
+    store64(this.memory, 4 + 4 + 4 + 4, requestID);
+  };
+
+  Message.prototype.getFlags = function() {
+    // Skip over num_bytes, num_fields, and message_name.
+    return load32(this.memory, 4 + 4 + 4);
+  };
 
   // MessageBuilder -----------------------------------------------------------
 
@@ -310,7 +324,7 @@ define("mojo/public/bindings/js/codec", function() {
   MessageBuilder.prototype.createEncoder = function(size) {
     var pointer = this.buffer.alloc(size);
     return new Encoder(this.buffer, this.handles, pointer);
-  }
+  };
 
   MessageBuilder.prototype.encodeStruct = function(cls, val) {
     cls.encode(this.createEncoder(cls.encodedSize), val);
@@ -327,16 +341,40 @@ define("mojo/public/bindings/js/codec", function() {
     return message;
   };
 
+  // MessageWithRequestIDBuilder -----------------------------------------------
+
+  function MessageWithRequestIDBuilder(messageName, payloadSize, flags,
+                                       requestID) {
+    // Currently, we don't compute the payload size correctly ahead of time.
+    // Instead, we resize the buffer at the end.
+    var numberOfBytes = kMessageWithRequestIDHeaderSize + payloadSize;
+    this.buffer = new Buffer(numberOfBytes);
+    this.handles = [];
+    var encoder = this.createEncoder(kMessageWithRequestIDHeaderSize);
+    encoder.write32(kMessageWithRequestIDHeaderSize);
+    encoder.write32(3);  // num_fields.
+    encoder.write32(messageName);
+    encoder.write32(flags);
+    encoder.write64(requestID);
+  }
+
+  MessageWithRequestIDBuilder.prototype =
+      Object.create(MessageBuilder.prototype);
+  MessageWithRequestIDBuilder.prototype.constructor =
+      MessageWithRequestIDBuilder;
+
   // MessageReader ------------------------------------------------------------
 
   function MessageReader(message) {
     this.decoder = new Decoder(message.memory, message.handles, 0);
     var messageHeaderSize = this.decoder.read32();
     this.payloadSize = message.memory.length - messageHeaderSize;
-    var numberOfFields = this.decoder.read32();
-    // TODO: better handling of messages of different size.
+    var numFields = this.decoder.read32();
     this.messageName = this.decoder.read32();
-    var flags = this.decoder.read32();
+    this.flags = this.decoder.read32();
+    if (numFields >= 3)
+      this.requestID = this.decoder.read64();
+    this.decoder.skip(messageHeaderSize - this.decoder.next);
   }
 
   MessageReader.prototype.decodeStruct = function(cls) {
@@ -449,10 +487,13 @@ define("mojo/public/bindings/js/codec", function() {
   exports.align = align;
   exports.Message = Message;
   exports.MessageBuilder = MessageBuilder;
+  exports.MessageWithRequestIDBuilder = MessageWithRequestIDBuilder;
   exports.MessageReader = MessageReader;
   exports.kArrayHeaderSize = kArrayHeaderSize;
   exports.kStructHeaderSize = kStructHeaderSize;
   exports.kMessageHeaderSize = kMessageHeaderSize;
+  exports.kMessageExpectsResponse = kMessageExpectsResponse;
+  exports.kMessageIsResponse = kMessageIsResponse;
   exports.Uint8 = Uint8;
   exports.Uint16 = Uint16;
   exports.Uint32 = Uint32;

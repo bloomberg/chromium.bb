@@ -81,6 +81,8 @@ class Generator(object):
     for interface in self.module.interfaces:
       for method in interface.methods:
         result.append(GetStructFromMethod(interface, method))
+        if method.response_parameters != None:
+          result.append(GetResponseStructFromMethod(interface, method))
     return map(partial(GetStructInfo, False), result)
 
   def GetStructs(self):
