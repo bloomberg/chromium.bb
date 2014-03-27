@@ -167,6 +167,7 @@ static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style, El
         switch (style->willChangeProperties()[i]) {
         case CSSPropertyOpacity:
         case CSSPropertyWebkitTransform:
+        case CSSPropertyTransformStyle:
         case CSSPropertyWebkitTransformStyle:
         case CSSPropertyWebkitPerspective:
         case CSSPropertyWebkitMask:
