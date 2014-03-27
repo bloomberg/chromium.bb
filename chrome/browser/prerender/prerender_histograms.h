@@ -65,6 +65,11 @@ class PrerenderHistograms {
   void RecordTimeUntilUsed(Origin origin,
                            base::TimeDelta time_until_used) const;
 
+  // Records the time from when a prerender is abandoned to when the user
+  // navigates to it. This must be called on the UI thread.
+  void RecordAbandonTimeUntilUsed(Origin origin,
+                                  base::TimeDelta time_until_used) const;
+
   // Record a PerSessionCount data point.
   void RecordPerSessionCount(Origin origin, int count) const;
 

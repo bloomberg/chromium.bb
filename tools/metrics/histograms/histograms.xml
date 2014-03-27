@@ -18765,6 +18765,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.AbandonTimeUntilUsed" units="milliseconds">
+  <owner>davidben@chromium.org</owner>
+  <owner>tburkard@chromium.org</owner>
+  <summary>
+    Time from when a prerendered page is abandoned to when it is first used due
+    to user navigation. If the page is swapped before begin abandoned, a zero is
+    recorded.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.CookieSendType" enum="PrerenderCookieSendType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -43123,6 +43133,7 @@ other types of suffix sets.
   <group name="websame"
       label="Link triggered prerender, rel=prerender, same domain."/>
   <group name="webnext" label="Link triggered prerender, rel=next."/>
+  <affected-histogram name="Prerender.AbandonTimeUntilUsed"/>
   <affected-histogram name="Prerender.CookieSendType"/>
   <affected-histogram name="Prerender.CookieStatus"/>
   <affected-histogram name="Prerender.Event"/>

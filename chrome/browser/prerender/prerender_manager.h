@@ -396,6 +396,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
     int handle_count() const { return handle_count_; }
 
+    base::TimeTicks abandon_time() const { return abandon_time_; }
+
     base::TimeTicks expiry_time() const { return expiry_time_; }
     void set_expiry_time(base::TimeTicks expiry_time) {
       expiry_time_ = expiry_time;
@@ -418,6 +420,9 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     // pending prerenders, this will always be 1, since the PrerenderManager
     // only merges handles of running prerenders.
     int handle_count_;
+
+    // The time when OnHandleNavigatedAway was called.
+    base::TimeTicks abandon_time_;
 
     // After this time, this prerender is no longer fresh, and should be
     // removed.

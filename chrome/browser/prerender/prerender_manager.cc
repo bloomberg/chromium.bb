@@ -578,6 +578,21 @@ WebContents* PrerenderManager::SwapInternal(
   }
 
   // At this point, we've determined that we will use the prerender.
+  if (!prerender_data->contents()->load_start_time().is_null()) {
+    histograms_->RecordTimeUntilUsed(
+        prerender_data->contents()->origin(),
+        GetCurrentTimeTicks() - prerender_data->contents()->load_start_time());
+  }
+  histograms_->RecordAbandonTimeUntilUsed(
+      prerender_data->contents()->origin(),
+      prerender_data->abandon_time().is_null() ?
+          base::TimeDelta() :
+          GetCurrentTimeTicks() - prerender_data->abandon_time());
+
+  histograms_->RecordPerSessionCount(prerender_data->contents()->origin(),
+                                     ++prerenders_per_session_count_);
+  histograms_->RecordUsedPrerender(prerender_data->contents()->origin());
+
   if (prerender_data->pending_swap())
     prerender_data->pending_swap()->set_swap_successful(true);
   ScopedVector<PrerenderData>::iterator to_erase =
@@ -587,16 +602,6 @@ WebContents* PrerenderManager::SwapInternal(
   scoped_ptr<PrerenderContents>
       prerender_contents(prerender_data->ReleaseContents());
   active_prerenders_.erase(to_erase);
-
-  if (!prerender_contents->load_start_time().is_null()) {
-    histograms_->RecordTimeUntilUsed(
-        prerender_contents->origin(),
-        GetCurrentTimeTicks() - prerender_contents->load_start_time());
-  }
-
-  histograms_->RecordPerSessionCount(prerender_contents->origin(),
-                                     ++prerenders_per_session_count_);
-  histograms_->RecordUsedPrerender(prerender_contents->origin());
 
   // Mark prerender as used.
   prerender_contents->PrepareForUse();
@@ -988,6 +993,8 @@ void PrerenderManager::PrerenderData::OnHandleNavigatedAway(
     PrerenderHandle* handle) {
   DCHECK_LT(0, handle_count_);
   DCHECK_NE(static_cast<PrerenderContents*>(NULL), contents_);
+  if (abandon_time_.is_null())
+    abandon_time_ = base::TimeTicks::Now();
   // We intentionally don't decrement the handle count here, so that the
   // prerender won't be canceled until it times out.
   manager_->SourceNavigatedAway(this);

@@ -349,6 +349,19 @@ void PrerenderHistograms::RecordTimeUntilUsed(
           50));
 }
 
+void PrerenderHistograms::RecordAbandonTimeUntilUsed(
+    Origin origin,
+    base::TimeDelta time_until_used) const {
+  PREFIXED_HISTOGRAM(
+      "AbandonTimeUntilUsed", origin,
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          name,
+          time_until_used,
+          base::TimeDelta::FromMilliseconds(10),
+          base::TimeDelta::FromSeconds(30),
+          50));
+}
+
 void PrerenderHistograms::RecordPerSessionCount(Origin origin,
                                                 int count) const {
   PREFIXED_HISTOGRAM(
