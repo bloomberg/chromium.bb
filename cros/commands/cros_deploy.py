@@ -190,9 +190,9 @@ For more information of cros build usage:
       cmd.append(extra_args)
 
     try:
-      result = device.RunCommand(cmd, extra_env=extra_env,
-                                 capture_output=True, remote_sudo=True)
-      logging.debug(result.output)
+      # Always showing the emerge output for clarity.
+      device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
+                        capture_output=False, debug_level=logging.INFO)
     except Exception:
       logging.error('Failed to emerge package %s', pkg)
       raise
@@ -227,7 +227,7 @@ For more information of cros build usage:
     """Returns True if |path| on |device| is writable."""
     tmp_file = os.path.join(path, 'tmp.cros_flash')
     result = device.RunCommand(['touch', tmp_file], remote_sudo=True,
-                               error_code_ok=True)
+                               error_code_ok=True, capture_output=True)
 
     if result.returncode != 0:
       return False

@@ -220,18 +220,16 @@ class RemoteAccess(object):
       ssh_cmd += cmd
 
     try:
-      result = cros_build_lib.RunCommand(ssh_cmd, **kwargs)
+      return cros_build_lib.RunCommand(ssh_cmd, **kwargs)
     except cros_build_lib.RunCommandError as e:
       if ((e.result.returncode == SSH_ERROR_CODE and ssh_error_ok) or
           (e.result.returncode and e.result.returncode != SSH_ERROR_CODE
            and error_code_ok)):
-        result = e.result
+        return e.result
       elif e.result.returncode == SSH_ERROR_CODE:
         raise SSHConnectionError(e.result.error)
       else:
         raise
-
-    return result
 
   def _CheckIfRebooted(self):
     """Checks whether a remote device has rebooted successfully.
@@ -637,7 +635,7 @@ class ChromiumOSDevice(RemoteDevice):
 
   def _RootfsIsReadOnly(self):
     """Returns True if rootfs on is mounted as read-only."""
-    r = self.RunCommand(self.LIST_MOUNTS_CMD)
+    r = self.RunCommand(self.LIST_MOUNTS_CMD, capture_output=True)
     for line in r.output.splitlines():
       if not line:
         continue
@@ -689,7 +687,7 @@ class ChromiumOSDevice(RemoteDevice):
     entry or if the command failed, returns an empty string.
     """
     try:
-      result = self._BaseRunCommand(self.GET_BOARD_CMD)
+      result = self._BaseRunCommand(self.GET_BOARD_CMD, capture_output=True)
     except cros_build_lib.RunCommandError:
       logging.warning('Error detecting the board.')
       return ''

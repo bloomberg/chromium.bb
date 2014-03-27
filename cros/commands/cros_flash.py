@@ -399,7 +399,8 @@ class RemoteDeviceUpdater(object):
       A list of values in the order of |keys|.
     """
     keys = ['CURRENT_OP'] if not keys else keys
-    result = device.RunCommand([cls.UPDATE_ENGINE_BIN, '--status'])
+    result = device.RunCommand([cls.UPDATE_ENGINE_BIN, '--status'],
+                               capture_output=True)
     if not result.output:
       raise Exception('Cannot get update status')
 
