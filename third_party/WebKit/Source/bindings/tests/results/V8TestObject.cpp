@@ -68,7 +68,8 @@ template <typename T> void V8_USE(T) { }
 
 static void readOnlyLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->readOnlyLongAttr());
 }
 
@@ -81,7 +82,8 @@ static void readOnlyLongAttrAttributeGetterCallback(v8::Local<v8::String>, const
 
 static void readOnlyStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->readOnlyStringAttr(), info.GetIsolate());
 }
 
@@ -94,13 +96,14 @@ static void readOnlyStringAttrAttributeGetterCallback(v8::Local<v8::String>, con
 
 static void readOnlyTestObjectAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     RefPtr<TestObject> result(impl->readOnlyTestObjectAttr());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "readOnlyTestObjectAttr"), wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "readOnlyTestObjectAttr"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -151,7 +154,8 @@ static void staticStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::L
 
 static void enumAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->enumAttr(), info.GetIsolate());
 }
 
@@ -164,7 +168,8 @@ static void enumAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::Pro
 
 static void enumAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     String string = cppValue;
     if (!(string == "" || string == "EnumValue1" || string == "EnumValue2" || string == "EnumValue3"))
@@ -181,7 +186,8 @@ static void enumAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8:
 
 static void readOnlyEnumAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->readOnlyEnumAttr(), info.GetIsolate());
 }
 
@@ -194,7 +200,8 @@ static void readOnlyEnumAttrAttributeGetterCallback(v8::Local<v8::String>, const
 
 static void byteAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->byteAttr());
 }
 
@@ -207,8 +214,9 @@ static void byteAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::Pro
 
 static void byteAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "byteAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "byteAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt8(jsValue, exceptionState), exceptionState);
     impl->setByteAttr(cppValue);
 }
@@ -222,7 +230,8 @@ static void byteAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8:
 
 static void octetAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueUnsigned(info, impl->octetAttr());
 }
 
@@ -235,8 +244,9 @@ static void octetAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::Pr
 
 static void octetAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "octetAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "octetAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt8(jsValue, exceptionState), exceptionState);
     impl->setOctetAttr(cppValue);
 }
@@ -250,7 +260,8 @@ static void octetAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8
 
 static void shortAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->shortAttr());
 }
 
@@ -263,8 +274,9 @@ static void shortAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::Pr
 
 static void shortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "shortAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "shortAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt16(jsValue, exceptionState), exceptionState);
     impl->setShortAttr(cppValue);
 }
@@ -278,7 +290,8 @@ static void shortAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8
 
 static void unsignedShortAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueUnsigned(info, impl->unsignedShortAttr());
 }
 
@@ -291,8 +304,9 @@ static void unsignedShortAttrAttributeGetterCallback(v8::Local<v8::String>, cons
 
 static void unsignedShortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedShortAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedShortAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt16(jsValue, exceptionState), exceptionState);
     impl->setUnsignedShortAttr(cppValue);
 }
@@ -306,7 +320,8 @@ static void unsignedShortAttrAttributeSetterCallback(v8::Local<v8::String>, v8::
 
 static void longAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->longAttr());
 }
 
@@ -319,8 +334,9 @@ static void longAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::Pro
 
 static void longAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "longAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "longAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setLongAttr(cppValue);
 }
@@ -334,7 +350,8 @@ static void longAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8:
 
 static void longLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, static_cast<double>(impl->longLongAttr()));
 }
 
@@ -347,8 +364,9 @@ static void longLongAttrAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void longLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "longLongAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "longLongAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(long long, cppValue, toInt64(jsValue, exceptionState), exceptionState);
     impl->setLongLongAttr(cppValue);
 }
@@ -362,7 +380,8 @@ static void longLongAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 
 static void unsignedLongLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, static_cast<double>(impl->unsignedLongLongAttr()));
 }
 
@@ -375,8 +394,9 @@ static void unsignedLongLongAttrAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void unsignedLongLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongLongAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongLongAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned long long, cppValue, toUInt64(jsValue, exceptionState), exceptionState);
     impl->setUnsignedLongLongAttr(cppValue);
 }
@@ -390,7 +410,8 @@ static void unsignedLongLongAttrAttributeSetterCallback(v8::Local<v8::String>, v
 
 static void stringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->stringAttr(), info.GetIsolate());
 }
 
@@ -403,7 +424,8 @@ static void stringAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::P
 
 static void stringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     impl->setStringAttr(cppValue);
 }
@@ -417,7 +439,8 @@ static void stringAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void treatNullAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->treatNullAsNullStringStringAttr(), info.GetIsolate());
 }
 
@@ -430,7 +453,8 @@ static void treatNullAsNullStringStringAttrAttributeGetterCallback(v8::Local<v8:
 
 static void treatNullAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
     impl->setTreatNullAsNullStringStringAttr(cppValue);
 }
@@ -444,7 +468,8 @@ static void treatNullAsNullStringStringAttrAttributeSetterCallback(v8::Local<v8:
 
 static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->treatNullAsNullStringTreatUndefinedAsNullStringStringAttr(), info.GetIsolate());
 }
 
@@ -457,7 +482,8 @@ static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGe
 
 static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
     impl->setTreatNullAsNullStringTreatUndefinedAsNullStringStringAttr(cppValue);
 }
@@ -471,7 +497,8 @@ static void treatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSe
 
 static void eventHandlerAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     EventListener* jsValue = impl->eventHandlerAttr();
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
 }
@@ -485,8 +512,9 @@ static void eventHandlerAttrAttributeGetterCallback(v8::Local<v8::String>, const
 
 static void eventHandlerAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    moveEventListenerToNewWrapper(info.Holder(), impl->eventHandlerAttr(), jsValue, V8TestObject::eventListenerCacheIndex, info.GetIsolate());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    moveEventListenerToNewWrapper(holder, impl->eventHandlerAttr(), jsValue, V8TestObject::eventListenerCacheIndex, info.GetIsolate());
     impl->setEventHandlerAttr(V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
@@ -499,7 +527,8 @@ static void eventHandlerAttrAttributeSetterCallback(v8::Local<v8::String>, v8::L
 
 static void testObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->testObjAttr()), impl);
 }
 
@@ -513,7 +542,8 @@ static void testObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::
 
 static void testObjAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(TestObject*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     impl->setTestObjAttr(WTF::getPtr(cppValue));
 }
@@ -528,7 +558,8 @@ static void testObjAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<
 
 static void attrWithJSGetterAndSetterAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->attrWithJSGetterAndSetter(), info.GetIsolate());
 }
 
@@ -541,7 +572,8 @@ static void attrWithJSGetterAndSetterAttributeGetterCallback(const v8::FunctionC
 
 static void attrWithJSGetterAndSetterAttributeSetter(v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     impl->setAttrWithJSGetterAndSetter(cppValue);
 }
@@ -556,7 +588,8 @@ static void attrWithJSGetterAndSetterAttributeSetterCallback(const v8::FunctionC
 
 static void XMLObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->xmlObjAttr()), impl);
 }
 
@@ -569,7 +602,8 @@ static void XMLObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::P
 
 static void XMLObjAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(TestObject*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     impl->setXMLObjAttr(WTF::getPtr(cppValue));
 }
@@ -583,7 +617,8 @@ static void XMLObjAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void reflectedStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(HTMLNames::reflectedstringattrAttr), info.GetIsolate());
 }
 
@@ -596,7 +631,8 @@ static void reflectedStringAttrAttributeGetterCallback(v8::Local<v8::String>, co
 
 static void reflectedStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedstringattrAttr, cppValue);
@@ -612,7 +648,8 @@ static void reflectedStringAttrAttributeSetterCallback(v8::Local<v8::String>, v8
 
 static void reflectedTreatNullAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(HTMLNames::reflectedtreatnullasnullstringstringattrAttr), info.GetIsolate());
 }
 
@@ -625,7 +662,8 @@ static void reflectedTreatNullAsNullStringStringAttrAttributeGetterCallback(v8::
 
 static void reflectedTreatNullAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedtreatnullasnullstringstringattrAttr, cppValue);
@@ -641,7 +679,8 @@ static void reflectedTreatNullAsNullStringStringAttrAttributeSetterCallback(v8::
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringstringattrAttr), info.GetIsolate());
 }
 
@@ -654,7 +693,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAt
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringstringattrAttr, cppValue);
@@ -670,7 +710,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringStringAttrAt
 
 static void reflectedIntegralAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->getIntegralAttribute(HTMLNames::reflectedintegralattrAttr));
 }
 
@@ -683,8 +724,9 @@ static void reflectedIntegralAttrAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void reflectedIntegralAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectedIntegralAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectedIntegralAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setIntegralAttribute(HTMLNames::reflectedintegralattrAttr, cppValue);
@@ -700,7 +742,8 @@ static void reflectedIntegralAttrAttributeSetterCallback(v8::Local<v8::String>, 
 
 static void reflectedUnsignedIntegralAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueUnsigned(info, std::max(0, impl->getIntegralAttribute(HTMLNames::reflectedunsignedintegralattrAttr)));
 }
 
@@ -713,8 +756,9 @@ static void reflectedUnsignedIntegralAttrAttributeGetterCallback(v8::Local<v8::S
 
 static void reflectedUnsignedIntegralAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectedUnsignedIntegralAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectedUnsignedIntegralAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt32(jsValue, exceptionState), exceptionState);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setUnsignedIntegralAttribute(HTMLNames::reflectedunsignedintegralattrAttr, cppValue);
@@ -730,7 +774,8 @@ static void reflectedUnsignedIntegralAttrAttributeSetterCallback(v8::Local<v8::S
 
 static void reflectedBooleanAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueBool(info, impl->fastHasAttribute(HTMLNames::reflectedbooleanattrAttr));
 }
 
@@ -743,7 +788,8 @@ static void reflectedBooleanAttrAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void reflectedBooleanAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(bool, cppValue, jsValue->BooleanValue());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setBooleanAttribute(HTMLNames::reflectedbooleanattrAttr, cppValue);
@@ -759,7 +805,8 @@ static void reflectedBooleanAttrAttributeSetterCallback(v8::Local<v8::String>, v
 
 static void reflectedURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::reflectedurlattrAttr), info.GetIsolate());
 }
 
@@ -772,7 +819,8 @@ static void reflectedURLAttrAttributeGetterCallback(v8::Local<v8::String>, const
 
 static void reflectedURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedurlattrAttr, cppValue);
@@ -788,7 +836,8 @@ static void reflectedURLAttrAttributeSetterCallback(v8::Local<v8::String>, v8::L
 
 static void reflectedTreatNullAsNullStringURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::reflectedtreatnullasnullstringurlattrAttr), info.GetIsolate());
 }
 
@@ -801,7 +850,8 @@ static void reflectedTreatNullAsNullStringURLAttrAttributeGetterCallback(v8::Loc
 
 static void reflectedTreatNullAsNullStringURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedtreatnullasnullstringurlattrAttr, cppValue);
@@ -817,7 +867,8 @@ static void reflectedTreatNullAsNullStringURLAttrAttributeSetterCallback(v8::Loc
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringurlattrAttr), info.GetIsolate());
 }
 
@@ -830,7 +881,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttri
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::reflectedtreatnullasnullstringtreatundefinedasnullstringurlattrAttr, cppValue);
@@ -846,7 +898,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringURLAttrAttri
 
 static void reflectedCustomStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(HTMLNames::customContentStringAttrAttr), info.GetIsolate());
 }
 
@@ -859,7 +912,8 @@ static void reflectedCustomStringAttrAttributeGetterCallback(v8::Local<v8::Strin
 
 static void reflectedCustomStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::customContentStringAttrAttr, cppValue);
@@ -875,7 +929,8 @@ static void reflectedCustomStringAttrAttributeSetterCallback(v8::Local<v8::Strin
 
 static void reflectedTreatNullAsNullStringCustomStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(HTMLNames::customContentStringAttrAttr), info.GetIsolate());
 }
 
@@ -888,7 +943,8 @@ static void reflectedTreatNullAsNullStringCustomStringAttrAttributeGetterCallbac
 
 static void reflectedTreatNullAsNullStringCustomStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::customContentStringAttrAttr, cppValue);
@@ -904,7 +960,8 @@ static void reflectedTreatNullAsNullStringCustomStringAttrAttributeSetterCallbac
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(HTMLNames::customContentStringAttrAttr), info.GetIsolate());
 }
 
@@ -917,7 +974,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomString
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomStringAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::customContentStringAttrAttr, cppValue);
@@ -933,7 +991,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomString
 
 static void reflectedCustomIntegralAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->getIntegralAttribute(HTMLNames::customContentIntegralAttrAttr));
 }
 
@@ -946,8 +1005,9 @@ static void reflectedCustomIntegralAttrAttributeGetterCallback(v8::Local<v8::Str
 
 static void reflectedCustomIntegralAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectedCustomIntegralAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectedCustomIntegralAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setIntegralAttribute(HTMLNames::customContentIntegralAttrAttr, cppValue);
@@ -963,7 +1023,8 @@ static void reflectedCustomIntegralAttrAttributeSetterCallback(v8::Local<v8::Str
 
 static void reflectedCustomBooleanAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueBool(info, impl->fastHasAttribute(HTMLNames::customContentBooleanAttrAttr));
 }
 
@@ -976,7 +1037,8 @@ static void reflectedCustomBooleanAttrAttributeGetterCallback(v8::Local<v8::Stri
 
 static void reflectedCustomBooleanAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(bool, cppValue, jsValue->BooleanValue());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setBooleanAttribute(HTMLNames::customContentBooleanAttrAttr, cppValue);
@@ -992,7 +1054,8 @@ static void reflectedCustomBooleanAttrAttributeSetterCallback(v8::Local<v8::Stri
 
 static void reflectedCustomURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::customContentURLAttrAttr), info.GetIsolate());
 }
 
@@ -1005,7 +1068,8 @@ static void reflectedCustomURLAttrAttributeGetterCallback(v8::Local<v8::String>,
 
 static void reflectedCustomURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::customContentURLAttrAttr, cppValue);
@@ -1021,7 +1085,8 @@ static void reflectedCustomURLAttrAttributeSetterCallback(v8::Local<v8::String>,
 
 static void reflectedTreatNullAsNullStringCustomURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::customContentURLAttrAttr), info.GetIsolate());
 }
 
@@ -1034,7 +1099,8 @@ static void reflectedTreatNullAsNullStringCustomURLAttrAttributeGetterCallback(v
 
 static void reflectedTreatNullAsNullStringCustomURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::customContentURLAttrAttr, cppValue);
@@ -1050,7 +1116,8 @@ static void reflectedTreatNullAsNullStringCustomURLAttrAttributeSetterCallback(v
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->getURLAttribute(HTMLNames::customContentURLAttrAttr), info.GetIsolate());
 }
 
@@ -1063,7 +1130,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAtt
 
 static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::customContentURLAttrAttr, cppValue);
@@ -1079,7 +1147,8 @@ static void reflectedTreatNullAsNullStringTreatUndefinedAsNullStringCustomURLAtt
 
 static void limitedToOnlyOneAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::limitedtoonlyoneattributeAttr);
     if (jsValue.isEmpty()) {
         ;
@@ -1100,7 +1169,8 @@ static void limitedToOnlyOneAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void limitedToOnlyOneAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedtoonlyoneattributeAttr, cppValue);
@@ -1116,7 +1186,8 @@ static void limitedToOnlyOneAttributeAttributeSetterCallback(v8::Local<v8::Strin
 
 static void limitedToOnlyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::limitedtoonlyattributeAttr);
     if (jsValue.isEmpty()) {
         ;
@@ -1141,7 +1212,8 @@ static void limitedToOnlyAttributeAttributeGetterCallback(v8::Local<v8::String>,
 
 static void limitedToOnlyAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedtoonlyattributeAttr, cppValue);
@@ -1157,7 +1229,8 @@ static void limitedToOnlyAttributeAttributeSetterCallback(v8::Local<v8::String>,
 
 static void limitedToOnlyOtherAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::OtherAttr);
     if (jsValue.isEmpty()) {
         ;
@@ -1180,7 +1253,8 @@ static void limitedToOnlyOtherAttributeAttributeGetterCallback(v8::Local<v8::Str
 
 static void limitedToOnlyOtherAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::OtherAttr, cppValue);
@@ -1196,7 +1270,8 @@ static void limitedToOnlyOtherAttributeAttributeSetterCallback(v8::Local<v8::Str
 
 static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr);
     if (jsValue.isEmpty()) {
         jsValue = "rsa";
@@ -1219,7 +1294,8 @@ static void limitedWithMissingDefaultAttributeAttributeGetterCallback(v8::Local<
 
 static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr, cppValue);
@@ -1235,7 +1311,8 @@ static void limitedWithMissingDefaultAttributeAttributeSetterCallback(v8::Local<
 
 static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr);
     if (jsValue.isEmpty()) {
         jsValue = "auto";
@@ -1260,7 +1337,8 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback(v8:
 
 static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr, cppValue);
@@ -1276,7 +1354,8 @@ static void limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(v8:
 
 static void limitedWithInvalidAndMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::limitedwithinvalidandmissingdefaultattributeAttr);
     if (jsValue.isEmpty()) {
         jsValue = "left";
@@ -1299,7 +1378,8 @@ static void limitedWithInvalidAndMissingDefaultAttributeAttributeGetterCallback(
 
 static void limitedWithInvalidAndMissingDefaultAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(HTMLNames::limitedwithinvalidandmissingdefaultattributeAttr, cppValue);
@@ -1315,7 +1395,8 @@ static void limitedWithInvalidAndMissingDefaultAttributeAttributeSetterCallback(
 
 static void corsSettingAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::corssettingattributeAttr);
     if (jsValue.isNull()) {
         ;
@@ -1340,7 +1421,8 @@ static void corsSettingAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void limitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     String jsValue = impl->fastGetAttribute(HTMLNames::limitedwithemptymissinginvalidattributeAttr);
     if (jsValue.isNull()) {
         jsValue = "missing";
@@ -1369,7 +1451,8 @@ static void limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback(v8::L
 
 static void typedArrayAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->typedArrayAttr()), impl);
 }
 
@@ -1382,7 +1465,8 @@ static void typedArrayAttrAttributeGetterCallback(v8::Local<v8::String>, const v
 
 static void typedArrayAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(Float32Array*, cppValue, jsValue->IsFloat32Array() ? V8Float32Array::toNative(v8::Handle<v8::Float32Array>::Cast(jsValue)) : 0);
     impl->setTypedArrayAttr(WTF::getPtr(cppValue));
 }
@@ -1396,8 +1480,9 @@ static void typedArrayAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 
 static void attrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "attrWithGetterException", "TestObject", info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    ExceptionState exceptionState(ExceptionState::GetterContext, "attrWithGetterException", "TestObject", holder, info.GetIsolate());
     int jsValue = impl->attrWithGetterException(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -1413,8 +1498,9 @@ static void attrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String>
 
 static void attrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithGetterException", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithGetterException", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setAttrWithGetterException(cppValue);
 }
@@ -1428,7 +1514,8 @@ static void attrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 
 static void attrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->attrWithSetterException());
 }
 
@@ -1441,8 +1528,9 @@ static void attrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::String>
 
 static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithSetterException", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithSetterException", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setAttrWithSetterException(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
@@ -1457,8 +1545,9 @@ static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 
 static void stringAttrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttrWithGetterException", "TestObject", info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttrWithGetterException", "TestObject", holder, info.GetIsolate());
     String jsValue = impl->stringAttrWithGetterException(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -1474,7 +1563,8 @@ static void stringAttrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::S
 
 static void stringAttrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     impl->setStringAttrWithGetterException(cppValue);
 }
@@ -1488,7 +1578,8 @@ static void stringAttrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::S
 
 static void stringAttrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueString(info, impl->stringAttrWithSetterException(), info.GetIsolate());
 }
 
@@ -1501,8 +1592,9 @@ static void stringAttrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::S
 
 static void stringAttrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttrWithSetterException", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttrWithSetterException", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     impl->setStringAttrWithSetterException(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
@@ -1531,7 +1623,8 @@ static void customAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void withExecutionContextAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     v8SetReturnValueFast(info, WTF::getPtr(impl->withExecutionContextAttribute(scriptContext)), impl);
 }
@@ -1545,7 +1638,8 @@ static void withExecutionContextAttributeAttributeGetterCallback(v8::Local<v8::S
 
 static void withExecutionContextAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(TestObject*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     impl->setWithExecutionContextAttribute(scriptContext, WTF::getPtr(cppValue));
@@ -1560,7 +1654,8 @@ static void withExecutionContextAttributeAttributeSetterCallback(v8::Local<v8::S
 
 static void withActiveWindowAndFirstWindowAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->withActiveWindowAndFirstWindowAttribute()), impl);
 }
 
@@ -1573,7 +1668,8 @@ static void withActiveWindowAndFirstWindowAttributeAttributeGetterCallback(v8::L
 
 static void withActiveWindowAndFirstWindowAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(TestObject*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     impl->setWithActiveWindowAndFirstWindowAttribute(callingDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), WTF::getPtr(cppValue));
 }
@@ -1587,8 +1683,9 @@ static void withActiveWindowAndFirstWindowAttributeAttributeSetterCallback(v8::L
 
 static void withScriptStateAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "withScriptStateAttributeRaises", "TestObject", info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    ExceptionState exceptionState(ExceptionState::GetterContext, "withScriptStateAttributeRaises", "TestObject", holder, info.GetIsolate());
     RefPtr<TestObject> jsValue = impl->withScriptStateAttributeRaises(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -1604,7 +1701,8 @@ static void withScriptStateAttributeRaisesAttributeGetterCallback(v8::Local<v8::
 
 static void withScriptStateAttributeRaisesAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(TestObject*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     impl->setWithScriptStateAttributeRaises(WTF::getPtr(cppValue));
 }
@@ -1618,7 +1716,8 @@ static void withScriptStateAttributeRaisesAttributeSetterCallback(v8::Local<v8::
 
 static void enforcedRangeByteAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->enforcedRangeByteAttr());
 }
 
@@ -1631,8 +1730,9 @@ static void enforcedRangeByteAttrAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void enforcedRangeByteAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeByteAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeByteAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt8(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeByteAttr(cppValue);
 }
@@ -1646,7 +1746,8 @@ static void enforcedRangeByteAttrAttributeSetterCallback(v8::Local<v8::String>, 
 
 static void enforcedRangeOctetAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueUnsigned(info, impl->enforcedRangeOctetAttr());
 }
 
@@ -1659,8 +1760,9 @@ static void enforcedRangeOctetAttrAttributeGetterCallback(v8::Local<v8::String>,
 
 static void enforcedRangeOctetAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeOctetAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeOctetAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt8(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeOctetAttr(cppValue);
 }
@@ -1674,7 +1776,8 @@ static void enforcedRangeOctetAttrAttributeSetterCallback(v8::Local<v8::String>,
 
 static void enforcedRangeShortAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->enforcedRangeShortAttr());
 }
 
@@ -1687,8 +1790,9 @@ static void enforcedRangeShortAttrAttributeGetterCallback(v8::Local<v8::String>,
 
 static void enforcedRangeShortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeShortAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeShortAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt16(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeShortAttr(cppValue);
 }
@@ -1702,7 +1806,8 @@ static void enforcedRangeShortAttrAttributeSetterCallback(v8::Local<v8::String>,
 
 static void enforcedRangeUnsignedShortAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueUnsigned(info, impl->enforcedRangeUnsignedShortAttr());
 }
 
@@ -1715,8 +1820,9 @@ static void enforcedRangeUnsignedShortAttrAttributeGetterCallback(v8::Local<v8::
 
 static void enforcedRangeUnsignedShortAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeUnsignedShortAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeUnsignedShortAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt16(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeUnsignedShortAttr(cppValue);
 }
@@ -1730,7 +1836,8 @@ static void enforcedRangeUnsignedShortAttrAttributeSetterCallback(v8::Local<v8::
 
 static void enforcedRangeLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->enforcedRangeLongAttr());
 }
 
@@ -1743,8 +1850,9 @@ static void enforcedRangeLongAttrAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void enforcedRangeLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeLongAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeLongAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeLongAttr(cppValue);
 }
@@ -1758,7 +1866,8 @@ static void enforcedRangeLongAttrAttributeSetterCallback(v8::Local<v8::String>, 
 
 static void enforcedRangeUnsignedLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueUnsigned(info, impl->enforcedRangeUnsignedLongAttr());
 }
 
@@ -1771,8 +1880,9 @@ static void enforcedRangeUnsignedLongAttrAttributeGetterCallback(v8::Local<v8::S
 
 static void enforcedRangeUnsignedLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeUnsignedLongAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeUnsignedLongAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt32(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeUnsignedLongAttr(cppValue);
 }
@@ -1786,7 +1896,8 @@ static void enforcedRangeUnsignedLongAttrAttributeSetterCallback(v8::Local<v8::S
 
 static void enforcedRangeLongLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, static_cast<double>(impl->enforcedRangeLongLongAttr()));
 }
 
@@ -1799,8 +1910,9 @@ static void enforcedRangeLongLongAttrAttributeGetterCallback(v8::Local<v8::Strin
 
 static void enforcedRangeLongLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeLongLongAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeLongLongAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(long long, cppValue, toInt64(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeLongLongAttr(cppValue);
 }
@@ -1814,7 +1926,8 @@ static void enforcedRangeLongLongAttrAttributeSetterCallback(v8::Local<v8::Strin
 
 static void enforcedRangeUnsignedLongLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, static_cast<double>(impl->enforcedRangeUnsignedLongLongAttr()));
 }
 
@@ -1827,8 +1940,9 @@ static void enforcedRangeUnsignedLongLongAttrAttributeGetterCallback(v8::Local<v
 
 static void enforcedRangeUnsignedLongLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeUnsignedLongLongAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforcedRangeUnsignedLongLongAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned long long, cppValue, toUInt64(jsValue, EnforceRange, exceptionState), exceptionState);
     impl->setEnforcedRangeUnsignedLongLongAttr(cppValue);
 }
@@ -1843,7 +1957,8 @@ static void enforcedRangeUnsignedLongLongAttrAttributeSetterCallback(v8::Local<v
 #if ENABLE(Condition1)
 static void conditionalAttr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->conditionalAttr1());
 }
 #endif // ENABLE(Condition1)
@@ -1860,8 +1975,9 @@ static void conditionalAttr1AttributeGetterCallback(v8::Local<v8::String>, const
 #if ENABLE(Condition1)
 static void conditionalAttr1AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAttr1", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAttr1", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setConditionalAttr1(cppValue);
 }
@@ -1879,7 +1995,8 @@ static void conditionalAttr1AttributeSetterCallback(v8::Local<v8::String>, v8::L
 #if ENABLE(Condition1) && ENABLE(Condition2)
 static void conditionalAttr2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->conditionalAttr2());
 }
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
@@ -1896,8 +2013,9 @@ static void conditionalAttr2AttributeGetterCallback(v8::Local<v8::String>, const
 #if ENABLE(Condition1) && ENABLE(Condition2)
 static void conditionalAttr2AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAttr2", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAttr2", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setConditionalAttr2(cppValue);
 }
@@ -1915,7 +2033,8 @@ static void conditionalAttr2AttributeSetterCallback(v8::Local<v8::String>, v8::L
 #if ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 static void conditionalAttr3AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->conditionalAttr3());
 }
 #endif // ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
@@ -1932,8 +2051,9 @@ static void conditionalAttr3AttributeGetterCallback(v8::Local<v8::String>, const
 #if ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 static void conditionalAttr3AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAttr3", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAttr3", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setConditionalAttr3(cppValue);
 }
@@ -1950,7 +2070,8 @@ static void conditionalAttr3AttributeSetterCallback(v8::Local<v8::String>, v8::L
 
 static void cachedAttribute1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, impl->cachedAttribute1().v8Value());
 }
 
@@ -1963,7 +2084,8 @@ static void cachedAttribute1AttributeGetterCallback(v8::Local<v8::String>, const
 
 static void cachedAttribute2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, impl->cachedAttribute2().v8Value());
 }
 
@@ -1976,17 +2098,18 @@ static void cachedAttribute2AttributeGetterCallback(v8::Local<v8::String>, const
 
 static void cachedDirtyableAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    v8::Handle<v8::Object> holder = info.Holder();
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedDirtyableAttribute");
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TestObject* impl = V8TestObject::toNative(holder);
     if (!impl->isValueDirty()) {
-        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
+        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
         }
     }
     ScriptValue jsValue = impl->cachedDirtyableAttribute();
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, jsValue.v8Value());
     v8SetReturnValue(info, jsValue.v8Value());
 }
 
@@ -1999,20 +2122,21 @@ static void cachedDirtyableAttributeAttributeGetterCallback(v8::Local<v8::String
 
 static void cachedDirtyableAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    v8::Handle<v8::Object> holder = info.Holder();
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedDirtyableAttributeRaises");
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TestObject* impl = V8TestObject::toNative(holder);
     if (!impl->isValueDirty()) {
-        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
+        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
         }
     }
-    ExceptionState exceptionState(ExceptionState::GetterContext, "cachedDirtyableAttributeRaises", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "cachedDirtyableAttributeRaises", "TestObject", holder, info.GetIsolate());
     ScriptValue jsValue = impl->cachedDirtyableAttributeRaises(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, jsValue.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, jsValue.v8Value());
     v8SetReturnValue(info, jsValue.v8Value());
 }
 
@@ -2025,7 +2149,8 @@ static void cachedDirtyableAttributeRaisesAttributeGetterCallback(v8::Local<v8::
 
 static void anyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, impl->anyAttribute().v8Value());
 }
 
@@ -2038,7 +2163,8 @@ static void anyAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void anyAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
     impl->setAnyAttribute(cppValue);
 }
@@ -2052,7 +2178,8 @@ static void anyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local
 
 static void callbackFunctionAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, impl->callbackFunctionAttribute().v8Value());
 }
 
@@ -2065,7 +2192,8 @@ static void callbackFunctionAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void callbackFunctionAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
     impl->setCallbackFunctionAttribute(cppValue);
 }
@@ -2079,7 +2207,8 @@ static void callbackFunctionAttributeAttributeSetterCallback(v8::Local<v8::Strin
 
 static void enabledAtRuntimeAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->enabledAtRuntimeAttr());
 }
 
@@ -2092,8 +2221,9 @@ static void enabledAtRuntimeAttrAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void enabledAtRuntimeAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enabledAtRuntimeAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enabledAtRuntimeAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setEnabledAtRuntimeAttr(cppValue);
 }
@@ -2107,7 +2237,8 @@ static void enabledAtRuntimeAttrAttributeSetterCallback(v8::Local<v8::String>, v
 
 static void enabledPerContextAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->enabledPerContextAttr());
 }
 
@@ -2120,8 +2251,9 @@ static void enabledPerContextAttrAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void enabledPerContextAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "enabledPerContextAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enabledPerContextAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setEnabledPerContextAttr(cppValue);
 }
@@ -2135,7 +2267,8 @@ static void enabledPerContextAttrAttributeSetterCallback(v8::Local<v8::String>, 
 
 static void floatArrayAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, v8Array(impl->floatArray(), info.GetIsolate()));
 }
 
@@ -2148,7 +2281,8 @@ static void floatArrayAttributeGetterCallback(v8::Local<v8::String>, const v8::P
 
 static void floatArrayAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(Vector<float>, cppValue, toNativeArray<float>(jsValue, 0, info.GetIsolate()));
     impl->setFloatArray(cppValue);
 }
@@ -2162,7 +2296,8 @@ static void floatArrayAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void doubleArrayAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, v8Array(impl->doubleArray(), info.GetIsolate()));
 }
 
@@ -2175,7 +2310,8 @@ static void doubleArrayAttributeGetterCallback(v8::Local<v8::String>, const v8::
 
 static void doubleArrayAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(Vector<double>, cppValue, toNativeArray<double>(jsValue, 0, info.GetIsolate()));
     impl->setDoubleArray(cppValue);
 }
@@ -2189,7 +2325,8 @@ static void doubleArrayAttributeSetterCallback(v8::Local<v8::String>, v8::Local<
 
 static void messagePortArrayAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, v8Array(impl->messagePortArray(), info.GetIsolate()));
 }
 
@@ -2202,7 +2339,8 @@ static void messagePortArrayAttributeGetterCallback(v8::Local<v8::String>, const
 
 static void messagePortArrayAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(Vector<RefPtr<MessagePort> >, cppValue, (toRefPtrNativeArray<MessagePort, V8MessagePort>(jsValue, 0, info.GetIsolate())));
     impl->setMessagePortArray(cppValue);
 }
@@ -2216,8 +2354,9 @@ static void messagePortArrayAttributeSetterCallback(v8::Local<v8::String>, v8::L
 
 static void contentDocumentAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "contentDocument", "TestObject", info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
+    ExceptionState exceptionState(ExceptionState::GetterContext, "contentDocument", "TestObject", holder, info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode(info.GetIsolate(), impl->contentDocument(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -2235,7 +2374,8 @@ static void contentDocumentAttributeGetterCallback(v8::Local<v8::String>, const 
 
 static void strawberryAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->blueberry());
 }
 
@@ -2248,8 +2388,9 @@ static void strawberryAttributeGetterCallback(v8::Local<v8::String>, const v8::P
 
 static void strawberryAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "strawberry", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "strawberry", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setBlueberry(cppValue);
 }
@@ -2263,7 +2404,8 @@ static void strawberryAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v
 
 static void strictFloatAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValue(info, impl->strictFloat());
 }
 
@@ -2276,7 +2418,8 @@ static void strictFloatAttributeGetterCallback(v8::Local<v8::String>, const v8::
 
 static void strictFloatAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(float, cppValue, static_cast<float>(jsValue->NumberValue()));
     impl->setStrictFloat(cppValue);
 }
@@ -2290,7 +2433,8 @@ static void strictFloatAttributeSetterCallback(v8::Local<v8::String>, v8::Local<
 
 static void replaceableAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->replaceableAttribute());
 }
 
@@ -2303,7 +2447,8 @@ static void replaceableAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void nullableDoubleAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
     double jsValue = impl->nullableDoubleAttribute(isNull);
     if (isNull) {
@@ -2322,7 +2467,8 @@ static void nullableDoubleAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void nullableLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
     int jsValue = impl->nullableLongAttribute(isNull);
     if (isNull) {
@@ -2341,7 +2487,8 @@ static void nullableLongAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void nullableBooleanAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
     bool jsValue = impl->nullableBooleanAttribute(isNull);
     if (isNull) {
@@ -2360,7 +2507,8 @@ static void nullableBooleanAttributeAttributeGetterCallback(v8::Local<v8::String
 
 static void nullableStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
     String jsValue = impl->nullableStringAttribute(isNull);
     if (isNull) {
@@ -2379,7 +2527,8 @@ static void nullableStringAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void nullableLongSettableAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     bool isNull = false;
     int jsValue = impl->nullableLongSettableAttribute(isNull);
     if (isNull) {
@@ -2398,8 +2547,9 @@ static void nullableLongSettableAttributeAttributeGetterCallback(v8::Local<v8::S
 
 static void nullableLongSettableAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "nullableLongSettableAttribute", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "nullableLongSettableAttribute", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setNullableLongSettableAttribute(cppValue);
 }
@@ -2413,13 +2563,14 @@ static void nullableLongSettableAttributeAttributeSetterCallback(v8::Local<v8::S
 
 static void perWorldReadOnlyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     RefPtr<TestObject> result(impl->perWorldReadOnlyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "perWorldReadOnlyAttribute"), wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldReadOnlyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -2433,13 +2584,14 @@ static void perWorldReadOnlyAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void perWorldReadOnlyAttributeAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     RefPtr<TestObject> result(impl->perWorldReadOnlyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestObject>(info.GetReturnValue(), result.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "perWorldReadOnlyAttribute"), wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "perWorldReadOnlyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -2453,7 +2605,8 @@ static void perWorldReadOnlyAttributeAttributeGetterCallbackForMainWorld(v8::Loc
 
 static void perWorldAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->perWorldAttribute()), impl);
 }
 
@@ -2466,7 +2619,8 @@ static void perWorldAttributeAttributeGetterCallback(v8::Local<v8::String>, cons
 
 static void perWorldAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(TestObject*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     impl->setPerWorldAttribute(WTF::getPtr(cppValue));
 }
@@ -2480,7 +2634,8 @@ static void perWorldAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::
 
 static void perWorldAttributeAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueForMainWorld(info, WTF::getPtr(impl->perWorldAttribute()));
 }
 
@@ -2493,7 +2648,8 @@ static void perWorldAttributeAttributeGetterCallbackForMainWorld(v8::Local<v8::S
 
 static void perWorldAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_VOID(TestObject*, cppValue, V8TestObject::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     impl->setPerWorldAttribute(WTF::getPtr(cppValue));
 }
@@ -2507,7 +2663,8 @@ static void perWorldAttributeAttributeSetterCallbackForMainWorld(v8::Local<v8::S
 
 static void activityLoggedAttr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttr1());
 }
 
@@ -2523,8 +2680,9 @@ static void activityLoggedAttr1AttributeGetterCallback(v8::Local<v8::String>, co
 
 static void activityLoggedAttr1AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttr1", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttr1", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttr1(cppValue);
 }
@@ -2543,7 +2701,8 @@ static void activityLoggedAttr1AttributeSetterCallback(v8::Local<v8::String>, v8
 
 static void activityLoggedAttr2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttr2());
 }
 
@@ -2559,8 +2718,9 @@ static void activityLoggedAttr2AttributeGetterCallback(v8::Local<v8::String>, co
 
 static void activityLoggedAttr2AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttr2", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttr2", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttr2(cppValue);
 }
@@ -2579,7 +2739,8 @@ static void activityLoggedAttr2AttributeSetterCallback(v8::Local<v8::String>, v8
 
 static void activityLoggedAttr2AttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttr2());
 }
 
@@ -2595,8 +2756,9 @@ static void activityLoggedAttr2AttributeGetterCallbackForMainWorld(v8::Local<v8:
 
 static void activityLoggedAttr2AttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttr2", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttr2", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttr2(cppValue);
 }
@@ -2615,7 +2777,8 @@ static void activityLoggedAttr2AttributeSetterCallbackForMainWorld(v8::Local<v8:
 
 static void activityLoggedInIsolatedWorldsAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedInIsolatedWorldsAttr());
 }
 
@@ -2631,8 +2794,9 @@ static void activityLoggedInIsolatedWorldsAttrAttributeGetterCallback(v8::Local<
 
 static void activityLoggedInIsolatedWorldsAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedInIsolatedWorldsAttr(cppValue);
 }
@@ -2651,7 +2815,8 @@ static void activityLoggedInIsolatedWorldsAttrAttributeSetterCallback(v8::Local<
 
 static void activityLoggedInIsolatedWorldsAttrAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedInIsolatedWorldsAttr());
 }
 
@@ -2664,8 +2829,9 @@ static void activityLoggedInIsolatedWorldsAttrAttributeGetterCallbackForMainWorl
 
 static void activityLoggedInIsolatedWorldsAttrAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedInIsolatedWorldsAttr(cppValue);
 }
@@ -2679,7 +2845,8 @@ static void activityLoggedInIsolatedWorldsAttrAttributeSetterCallbackForMainWorl
 
 static void activityLoggedAttrSetter1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttrSetter1());
 }
 
@@ -2692,8 +2859,9 @@ static void activityLoggedAttrSetter1AttributeGetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrSetter1AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrSetter1", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrSetter1", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttrSetter1(cppValue);
 }
@@ -2712,7 +2880,8 @@ static void activityLoggedAttrSetter1AttributeSetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrSetter2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttrSetter2());
 }
 
@@ -2725,8 +2894,9 @@ static void activityLoggedAttrSetter2AttributeGetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrSetter2AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrSetter2", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrSetter2", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttrSetter2(cppValue);
 }
@@ -2745,7 +2915,8 @@ static void activityLoggedAttrSetter2AttributeSetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrSetter2AttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttrSetter2());
 }
 
@@ -2758,8 +2929,9 @@ static void activityLoggedAttrSetter2AttributeGetterCallbackForMainWorld(v8::Loc
 
 static void activityLoggedAttrSetter2AttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrSetter2", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrSetter2", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttrSetter2(cppValue);
 }
@@ -2778,7 +2950,8 @@ static void activityLoggedAttrSetter2AttributeSetterCallbackForMainWorld(v8::Loc
 
 static void activityLoggedInIsolatedWorldsAttrSetterAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedInIsolatedWorldsAttrSetter());
 }
 
@@ -2791,8 +2964,9 @@ static void activityLoggedInIsolatedWorldsAttrSetterAttributeGetterCallback(v8::
 
 static void activityLoggedInIsolatedWorldsAttrSetterAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrSetter", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrSetter", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedInIsolatedWorldsAttrSetter(cppValue);
 }
@@ -2811,7 +2985,8 @@ static void activityLoggedInIsolatedWorldsAttrSetterAttributeSetterCallback(v8::
 
 static void activityLoggedInIsolatedWorldsAttrSetterAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedInIsolatedWorldsAttrSetter());
 }
 
@@ -2824,8 +2999,9 @@ static void activityLoggedInIsolatedWorldsAttrSetterAttributeGetterCallbackForMa
 
 static void activityLoggedInIsolatedWorldsAttrSetterAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrSetter", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrSetter", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedInIsolatedWorldsAttrSetter(cppValue);
 }
@@ -2839,7 +3015,8 @@ static void activityLoggedInIsolatedWorldsAttrSetterAttributeSetterCallbackForMa
 
 static void activityLoggedAttrGetter1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttrGetter1());
 }
 
@@ -2855,8 +3032,9 @@ static void activityLoggedAttrGetter1AttributeGetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrGetter1AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrGetter1", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrGetter1", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttrGetter1(cppValue);
 }
@@ -2870,7 +3048,8 @@ static void activityLoggedAttrGetter1AttributeSetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrGetter2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttrGetter2());
 }
 
@@ -2886,8 +3065,9 @@ static void activityLoggedAttrGetter2AttributeGetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrGetter2AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrGetter2", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrGetter2", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttrGetter2(cppValue);
 }
@@ -2901,7 +3081,8 @@ static void activityLoggedAttrGetter2AttributeSetterCallback(v8::Local<v8::Strin
 
 static void activityLoggedAttrGetter2AttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedAttrGetter2());
 }
 
@@ -2917,8 +3098,9 @@ static void activityLoggedAttrGetter2AttributeGetterCallbackForMainWorld(v8::Loc
 
 static void activityLoggedAttrGetter2AttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrGetter2", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedAttrGetter2", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedAttrGetter2(cppValue);
 }
@@ -2932,7 +3114,8 @@ static void activityLoggedAttrGetter2AttributeSetterCallbackForMainWorld(v8::Loc
 
 static void activityLoggedInIsolatedWorldsAttrGetterAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedInIsolatedWorldsAttrGetter());
 }
 
@@ -2948,8 +3131,9 @@ static void activityLoggedInIsolatedWorldsAttrGetterAttributeGetterCallback(v8::
 
 static void activityLoggedInIsolatedWorldsAttrGetterAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrGetter", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrGetter", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedInIsolatedWorldsAttrGetter(cppValue);
 }
@@ -2963,7 +3147,8 @@ static void activityLoggedInIsolatedWorldsAttrGetterAttributeSetterCallback(v8::
 
 static void activityLoggedInIsolatedWorldsAttrGetterAttributeGetterForMainWorld(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->activityLoggedInIsolatedWorldsAttrGetter());
 }
 
@@ -2976,8 +3161,9 @@ static void activityLoggedInIsolatedWorldsAttrGetterAttributeGetterCallbackForMa
 
 static void activityLoggedInIsolatedWorldsAttrGetterAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrGetter", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggedInIsolatedWorldsAttrGetter", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setActivityLoggedInIsolatedWorldsAttrGetter(cppValue);
 }
@@ -3017,7 +3203,7 @@ static void deprecatedStaticAttrAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void deprecatedStaticAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "deprecatedStaticAttr", "TestObject", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "deprecatedStaticAttr", "TestObject", holder, info.GetIsolate());
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     TestObject::setDeprecatedStaticAttr(cppValue);
 }
@@ -3032,7 +3218,8 @@ static void deprecatedStaticAttrAttributeSetterCallback(v8::Local<v8::String>, v
 
 static void deprecatedReadonlyAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->deprecatedReadonlyAttr());
 }
 
@@ -3046,7 +3233,8 @@ static void deprecatedReadonlyAttrAttributeGetterCallback(v8::Local<v8::String>,
 
 static void deprecatedAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueInt(info, impl->deprecatedAttr());
 }
 
@@ -3060,8 +3248,9 @@ static void deprecatedAttrAttributeGetterCallback(v8::Local<v8::String>, const v
 
 static void deprecatedAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "deprecatedAttr", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "deprecatedAttr", "TestObject", holder, info.GetIsolate());
+    TestObject* impl = V8TestObject::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setDeprecatedAttr(cppValue);
 }
@@ -3076,7 +3265,8 @@ static void deprecatedAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 
 static void locationAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
 }
 
@@ -3089,7 +3279,8 @@ static void locationAttributeGetterCallback(v8::Local<v8::String>, const v8::Pro
 
 static void locationAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* proxyImpl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* proxyImpl = V8TestObject::toNative(holder);
     RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->location());
     if (!impl)
         return;
@@ -3106,7 +3297,8 @@ static void locationAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8:
 
 static void locationWithExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestObject* impl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* impl = V8TestObject::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->locationWithException()), impl);
 }
 
@@ -3119,7 +3311,8 @@ static void locationWithExceptionAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestObject* proxyImpl = V8TestObject::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestObject* proxyImpl = V8TestObject::toNative(holder);
     RefPtr<TestNode> impl = WTF::getPtr(proxyImpl->locationWithException());
     if (!impl)
         return;

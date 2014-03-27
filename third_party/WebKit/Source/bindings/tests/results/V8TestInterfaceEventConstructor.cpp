@@ -51,7 +51,8 @@ template <typename T> void V8_USE(T) { }
 
 static void readonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
@@ -64,7 +65,8 @@ static void readonlyStringAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void initializedByEventConstructorReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValueString(info, impl->initializedByEventConstructorReadonlyStringAttribute(), info.GetIsolate());
 }
 
@@ -77,7 +79,8 @@ static void initializedByEventConstructorReadonlyStringAttributeAttributeGetterC
 
 static void initializedByEventConstructorReadonlyAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValue(info, impl->initializedByEventConstructorReadonlyAnyAttribute().v8Value());
 }
 
@@ -90,7 +93,8 @@ static void initializedByEventConstructorReadonlyAnyAttributeAttributeGetterCall
 
 static void initializedByEventConstructorReadonlyBooleanAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValueBool(info, impl->initializedByEventConstructorReadonlyBooleanAttribute());
 }
 
@@ -103,7 +107,8 @@ static void initializedByEventConstructorReadonlyBooleanAttributeAttributeGetter
 
 static void initializedByEventConstructorReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValueInt(info, impl->initializedByEventConstructorReadonlyLongAttribute());
 }
 
@@ -116,13 +121,14 @@ static void initializedByEventConstructorReadonlyLongAttributeAttributeGetterCal
 
 static void initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     RefPtr<Uint8Array> result(impl->initializedByEventConstructorReadonlyUint8ArrayAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8Uint8Array>(info.GetReturnValue(), result.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "initializedByEventConstructorReadonlyUint8ArrayAttribute"), wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "initializedByEventConstructorReadonlyUint8ArrayAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -136,13 +142,14 @@ static void initializedByEventConstructorReadonlyUint8ArrayAttributeAttributeGet
 
 static void initializedByEventConstructorReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     RefPtr<TestInterfaceEmpty> result(impl->initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute());
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute"), wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "initializedByEventConstructorReadonlyTestInterfaceEmptyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -156,7 +163,8 @@ static void initializedByEventConstructorReadonlyTestInterfaceEmptyAttributeAttr
 
 static void initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValue(info, v8Array(impl->initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribute(), info.GetIsolate()));
 }
 
@@ -169,7 +177,8 @@ static void initializedByEventConstructorReadonlyTestInterfaceEmptyArrayAttribut
 
 static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     bool isNull = false;
     RefPtr<TestInterfaceEmpty> jsValue = impl->initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute(isNull);
     if (isNull) {
@@ -179,9 +188,9 @@ static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttri
     RefPtr<TestInterfaceEmpty> result(jsValue);
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute"), wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute"), wrapper);
         v8SetReturnValue(info, wrapper);
     }
 }
@@ -195,7 +204,8 @@ static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttri
 
 static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValueString(info, impl->deprecatedInitializedByEventConstructorReadonlyStringAttribute(), info.GetIsolate());
 }
 
@@ -209,7 +219,8 @@ static void deprecatedInitializedByEventConstructorReadonlyStringAttributeAttrib
 
 static void implementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValueString(info, impl->implementedAsName(), info.GetIsolate());
 }
 
@@ -222,7 +233,8 @@ static void implementedAsInitializedByEventConstructorReadonlyStringAttributeAtt
 
 static void deprecatedImplementedAsInitializedByEventConstructorReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     v8SetReturnValueString(info, impl->deprecatedImplementedAsName(), info.GetIsolate());
 }
 

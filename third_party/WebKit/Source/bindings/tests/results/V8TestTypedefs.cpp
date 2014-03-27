@@ -50,7 +50,8 @@ template <typename T> void V8_USE(T) { }
 
 static void unsignedLongLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     v8SetReturnValue(info, static_cast<double>(impl->unsignedLongLongAttr()));
 }
 
@@ -63,8 +64,9 @@ static void unsignedLongLongAttrAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void unsignedLongLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongLongAttr", "TestTypedefs", info.Holder(), info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongLongAttr", "TestTypedefs", holder, info.GetIsolate());
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned long long, cppValue, toUInt64(jsValue, exceptionState), exceptionState);
     impl->setUnsignedLongLongAttr(cppValue);
 }
@@ -78,8 +80,9 @@ static void unsignedLongLongAttrAttributeSetterCallback(v8::Local<v8::String>, v
 
 static void attrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "attrWithGetterException", "TestTypedefs", info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
+    ExceptionState exceptionState(ExceptionState::GetterContext, "attrWithGetterException", "TestTypedefs", holder, info.GetIsolate());
     int jsValue = impl->attrWithGetterException(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -95,8 +98,9 @@ static void attrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String>
 
 static void attrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithGetterException", "TestTypedefs", info.Holder(), info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithGetterException", "TestTypedefs", holder, info.GetIsolate());
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setAttrWithGetterException(cppValue);
 }
@@ -110,7 +114,8 @@ static void attrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 
 static void attrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     v8SetReturnValueInt(info, impl->attrWithSetterException());
 }
 
@@ -123,8 +128,9 @@ static void attrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::String>
 
 static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithSetterException", "TestTypedefs", info.Holder(), info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithSetterException", "TestTypedefs", holder, info.GetIsolate());
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setAttrWithSetterException(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
@@ -139,8 +145,9 @@ static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 
 static void stringAttrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttrWithGetterException", "TestTypedefs", info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
+    ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttrWithGetterException", "TestTypedefs", holder, info.GetIsolate());
     String jsValue = impl->stringAttrWithGetterException(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -156,7 +163,8 @@ static void stringAttrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::S
 
 static void stringAttrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     impl->setStringAttrWithGetterException(cppValue);
 }
@@ -170,7 +178,8 @@ static void stringAttrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::S
 
 static void stringAttrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     v8SetReturnValueString(info, impl->stringAttrWithSetterException(), info.GetIsolate());
 }
 
@@ -183,8 +192,9 @@ static void stringAttrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::S
 
 static void stringAttrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttrWithSetterException", "TestTypedefs", info.Holder(), info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttrWithSetterException", "TestTypedefs", holder, info.GetIsolate());
+    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     impl->setStringAttrWithSetterException(cppValue, exceptionState);
     exceptionState.throwIfNeeded();

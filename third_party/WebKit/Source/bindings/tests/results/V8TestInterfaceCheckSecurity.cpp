@@ -45,7 +45,8 @@ template <typename T> void V8_USE(T) { }
 
 static void longAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(holder);
     v8SetReturnValueInt(info, impl->longAttribute());
 }
 
@@ -58,7 +59,8 @@ static void longAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 
 static void doNotCheckSecurityLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityLongAttribute());
 }
 
@@ -71,8 +73,9 @@ static void doNotCheckSecurityLongAttributeAttributeGetterCallback(v8::Local<v8:
 
 static void doNotCheckSecurityLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityLongAttribute", "TestInterfaceCheckSecurity", info.Holder(), info.GetIsolate());
-    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
+    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setDoNotCheckSecurityLongAttribute(cppValue);
 }
@@ -86,7 +89,8 @@ static void doNotCheckSecurityLongAttributeAttributeSetterCallback(v8::Local<v8:
 
 static void doNotCheckSecurityReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityReadonlyLongAttribute());
 }
 
@@ -99,7 +103,8 @@ static void doNotCheckSecurityReadonlyLongAttributeAttributeGetterCallback(v8::L
 
 static void doNotCheckSecurityOnSetterLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityOnSetterLongAttribute());
 }
 
@@ -112,8 +117,9 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeGetterCallback(v8::L
 
 static void doNotCheckSecurityOnSetterLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityOnSetterLongAttribute", "TestInterfaceCheckSecurity", info.Holder(), info.GetIsolate());
-    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    ExceptionState exceptionState(ExceptionState::SetterContext, "doNotCheckSecurityOnSetterLongAttribute", "TestInterfaceCheckSecurity", holder, info.GetIsolate());
+    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     impl->setDoNotCheckSecurityOnSetterLongAttribute(cppValue);
 }
@@ -127,7 +133,8 @@ static void doNotCheckSecurityOnSetterLongAttributeAttributeSetterCallback(v8::L
 
 static void doNotCheckSecurityReplaceableReadonlyLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceCheckSecurity* impl = V8TestInterfaceCheckSecurity::toNative(holder);
     v8SetReturnValueInt(info, impl->doNotCheckSecurityReplaceableReadonlyLongAttribute());
 }
 

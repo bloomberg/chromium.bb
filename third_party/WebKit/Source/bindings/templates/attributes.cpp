@@ -12,31 +12,29 @@ const v8::PropertyCallbackInfo<v8::Value>& info
           attribute.idl_type == 'DOMString' and is_node %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
-    {# impl #}
-    {# FIXME: use a local variable for holder more often and simplify below #}
-    {% if attribute.is_unforgeable or
-          interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
-    {% if interface_name == 'Window' %}
-    v8::Handle<v8::Object> holder = info.Holder();
-    {% else %}{# perform lookup first #}
+    {# holder #}
+    {% if attribute.is_unforgeable and interface_name != 'Window' %}
+    {# perform lookup first #}
     {# FIXME: can we remove this lookup? #}
     v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), info.GetIsolate());
     if (holder.IsEmpty())
         return;
-    {% endif %}{# Window #}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
-    {% elif attribute.cached_attribute_validation_method %}
+    {% elif not attribute.is_static %}
+    v8::Handle<v8::Object> holder = info.Holder();
+    {% endif %}
+    {# impl #}
+    {% if attribute.cached_attribute_validation_method %}
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     if (!impl->{{attribute.cached_attribute_validation_method}}()) {
-        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), info.Holder(), propertyName);
+        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
         if (!jsValue.IsEmpty()) {
             v8SetReturnValue(info, jsValue);
             return;
         }
     }
-    {% elif not (attribute.is_static or attribute.is_unforgeable) %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {% elif not attribute.is_static %}
+    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     {% endif %}
     {% if attribute.is_implemented_by and not attribute.is_static %}
     ASSERT(impl);
@@ -51,7 +49,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {% if attribute.is_check_security_for_node or
           attribute.is_getter_raises_exception %}
-    ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
     {% endif %}
     {% if attribute.is_nullable %}
     bool isNull = false;
@@ -89,7 +87,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     }
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), propertyName, {{attribute.cpp_value}}.v8Value());
+    V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, propertyName, {{attribute.cpp_value}}.v8Value());
     {% endif %}
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
@@ -97,9 +95,9 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {{attribute.cpp_type}} result({{attribute.cpp_value}});
     if (result && DOMDataStore::setReturnValueFromWrapper{{world_suffix}}<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
         return;
-    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {
-        V8HiddenValue::setHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), wrapper);
+        V8HiddenValue::setHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}"), wrapper);
         {{attribute.v8_set_return_value}};
     }
     {% elif world_suffix %}
@@ -211,9 +209,14 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
           is_node %}
     {% set cpp_class, v8_class = 'Element', 'V8Element' %}
     {% endif %}
-    {% if attribute.has_setter_exception_state %}
-    ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {# Local variables #}
+    {% if not attribute.is_static %}
+    v8::Handle<v8::Object> holder = info.Holder();
     {% endif %}
+    {% if attribute.has_setter_exception_state %}
+    ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", holder, info.GetIsolate());
+    {% endif %}
+    {# Type checking #}
     {% if attribute.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
@@ -225,12 +228,12 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {# impl #}
     {% if attribute.put_forwards %}
-    {{cpp_class}}* proxyImpl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* proxyImpl = {{v8_class}}::toNative(holder);
     {{attribute.ref_ptr}}<{{attribute.idl_type}}> impl = WTF::getPtr(proxyImpl->{{attribute.name}}());
     if (!impl)
         return;
     {% elif not attribute.is_static %}
-    {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
+    {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     {% endif %}
     {% if attribute.is_implemented_by and not attribute.is_static %}
     ASSERT(impl);
@@ -243,7 +246,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.idl_type != 'EventHandler' %}
     {{attribute.v8_value_to_local_cpp_value}};
     {% elif not is_node %}{# EventHandler hack #}
-    moveEventListenerToNewWrapper(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
+    moveEventListenerToNewWrapper(holder, {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
     {% if attribute.enum_validation_expression %}
     {# Setter ignores invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
@@ -269,7 +272,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     exceptionState.throwIfNeeded();
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    V8HiddenValue::deleteHiddenValue(info.GetIsolate(), info.Holder(), v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
+    V8HiddenValue::deleteHiddenValue(info.GetIsolate(), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}
 }
 {% endfilter %}

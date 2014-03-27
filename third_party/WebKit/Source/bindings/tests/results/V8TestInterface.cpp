@@ -91,7 +91,8 @@ static void implementsStaticStringAttributeAttributeSetterCallback(v8::Local<v8:
 
 static void implementsReadonlyStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueString(info, TestImplements::implementsReadonlyStringAttribute(*impl), info.GetIsolate());
 }
@@ -105,7 +106,8 @@ static void implementsReadonlyStringAttributeAttributeGetterCallback(v8::Local<v
 
 static void implementsStringAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueString(info, TestImplements::implementsStringAttribute(*impl), info.GetIsolate());
 }
@@ -119,7 +121,8 @@ static void implementsStringAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     TestImplements::setImplementsStringAttribute(*impl, cppValue);
@@ -134,7 +137,8 @@ static void implementsStringAttributeAttributeSetterCallback(v8::Local<v8::Strin
 
 static void implementsNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsNodeAttribute(*impl)), impl);
 }
@@ -148,7 +152,8 @@ static void implementsNodeAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsNodeAttribute(*impl, WTF::getPtr(cppValue));
@@ -163,7 +168,8 @@ static void implementsNodeAttributeAttributeSetterCallback(v8::Local<v8::String>
 
 static void implementsEventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(*impl);
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(impl->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
@@ -178,9 +184,10 @@ static void implementsEventHandlerAttributeAttributeGetterCallback(v8::Local<v8:
 
 static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
-    moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(*impl), jsValue, V8TestInterface::eventListenerCacheIndex, info.GetIsolate());
+    moveEventListenerToNewWrapper(holder, TestImplements::implementsEventHandlerAttribute(*impl), jsValue, V8TestInterface::eventListenerCacheIndex, info.GetIsolate());
     TestImplements::setImplementsEventHandlerAttribute(*impl, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
@@ -193,7 +200,8 @@ static void implementsEventHandlerAttributeAttributeSetterCallback(v8::Local<v8:
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsRuntimeEnabledNodeAttribute(*impl)), impl);
 }
@@ -207,7 +215,8 @@ static void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(v8::Loc
 
 static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsRuntimeEnabledNodeAttribute(*impl, WTF::getPtr(cppValue));
@@ -222,7 +231,8 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(v8::Loc
 
 static void implementsPerContextEnabledNodeAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(TestImplements::implementsPerContextEnabledNodeAttribute(*impl)), impl);
 }
@@ -236,7 +246,8 @@ static void implementsPerContextEnabledNodeAttributeAttributeGetterCallback(v8::
 
 static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsPerContextEnabledNodeAttribute(*impl, WTF::getPtr(cppValue));
@@ -301,7 +312,8 @@ static void supplementalStaticAttrAttributeSetterCallback(v8::Local<v8::String>,
 #if ENABLE(CONDITION_PARTIAL)
 static void supplementalStr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueString(info, TestPartialInterface::supplementalStr1(*impl), info.GetIsolate());
 }
@@ -319,7 +331,8 @@ static void supplementalStr1AttributeGetterCallback(v8::Local<v8::String>, const
 #if ENABLE(CONDITION_PARTIAL)
 static void supplementalStr2AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueString(info, TestPartialInterface::supplementalStr2(*impl), info.GetIsolate());
 }
@@ -337,7 +350,8 @@ static void supplementalStr2AttributeGetterCallback(v8::Local<v8::String>, const
 #if ENABLE(CONDITION_PARTIAL)
 static void supplementalStr2AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     TestPartialInterface::setSupplementalStr2(*impl, cppValue);
@@ -356,7 +370,8 @@ static void supplementalStr2AttributeSetterCallback(v8::Local<v8::String>, v8::L
 #if ENABLE(CONDITION_PARTIAL)
 static void supplementalNodeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(TestPartialInterface::supplementalNode(*impl)), impl);
 }
@@ -374,7 +389,8 @@ static void supplementalNodeAttributeGetterCallback(v8::Local<v8::String>, const
 #if ENABLE(CONDITION_PARTIAL)
 static void supplementalNodeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestPartialInterface::setSupplementalNode(*impl, WTF::getPtr(cppValue));
@@ -393,7 +409,8 @@ static void supplementalNodeAttributeSetterCallback(v8::Local<v8::String>, v8::L
 #if ENABLE(CONDITION_PARTIAL)
 static void Node13AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     v8SetReturnValueFast(info, WTF::getPtr(TestPartialInterface::node13(*impl)), impl);
 }
@@ -411,7 +428,8 @@ static void Node13AttributeGetterCallback(v8::Local<v8::String>, const v8::Prope
 #if ENABLE(CONDITION_PARTIAL)
 static void Node13AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterface* impl = V8TestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterface* impl = V8TestInterface::toNative(holder);
     ASSERT(impl);
     V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestPartialInterface::setNode13(*impl, WTF::getPtr(cppValue));

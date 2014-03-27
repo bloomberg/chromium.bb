@@ -45,7 +45,8 @@ template <typename T> void V8_USE(T) { }
 
 static void attr1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(holder);
     v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
@@ -58,7 +59,8 @@ static void attr1AttributeGetterCallback(v8::Local<v8::String>, const v8::Proper
 
 static void attr1AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(holder);
     V8TRYCATCH_VOID(TestInterfaceWillBeGarbageCollected*, cppValue, V8TestInterfaceWillBeGarbageCollected::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     impl->setAttr1(WTF::getPtr(cppValue));
 }

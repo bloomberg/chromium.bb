@@ -46,7 +46,8 @@ template <typename T> void V8_USE(T) { }
 
 static void typeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    SVGTestInterface* impl = V8SVGTestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    SVGTestInterface* impl = V8SVGTestInterface::toNative(holder);
     v8SetReturnValueString(info, impl->fastGetAttribute(SVGNames::typeAttr), info.GetIsolate());
 }
 
@@ -59,7 +60,8 @@ static void typeAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 
 static void typeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    SVGTestInterface* impl = V8SVGTestInterface::toNative(info.Holder());
+    v8::Handle<v8::Object> holder = info.Holder();
+    SVGTestInterface* impl = V8SVGTestInterface::toNative(holder);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     impl->setAttribute(SVGNames::typeAttr, cppValue);
