@@ -325,7 +325,7 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
     DCHECK_EQ(inline_text_box.role(), blink::WebAXRoleInlineTextBox);
     int start = end;
     end += inline_text_box.stringValue().length();
-    if (end <= characterIndex)
+    if (characterIndex < start || characterIndex >= end)
       continue;
     blink::WebRect inline_text_box_rect = inline_text_box.boundingBoxRect();
     int localIndex = characterIndex - start;
