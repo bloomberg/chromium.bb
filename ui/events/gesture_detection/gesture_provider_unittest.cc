@@ -208,10 +208,9 @@ TEST_F(GestureProviderTest, GestureTapTap) {
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
   // Ensure tap details have been set.
-  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.width);
-  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.height);
-  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap.tap_count);
-
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.bounding_box().width());
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.bounding_box().height());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
 }
 
 // Verify that a DOWN followed shortly by an UP will trigger
@@ -231,9 +230,9 @@ TEST_F(GestureProviderTest, GestureTapTapWithDelay) {
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP_UNCONFIRMED, GetMostRecentGestureEventType());
   // Ensure tap details have been set.
-  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.width);
-  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.height);
-  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap.tap_count);
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.bounding_box().width());
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.bounding_box().height());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
 
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_TAP));
 }
@@ -306,8 +305,8 @@ TEST_F(GestureProviderTest, FlingEventSequence) {
 
   // We don't want to take a dependency here on exactly how hints are calculated
   // for a fling (eg. may depend on velocity), so just validate the direction.
-  int hint_x = GetReceivedGesture(2).details.scroll_begin.delta_x_hint;
-  int hint_y = GetReceivedGesture(2).details.scroll_begin.delta_y_hint;
+  int hint_x = GetReceivedGesture(2).details.scroll_x_hint();
+  int hint_y = GetReceivedGesture(2).details.scroll_y_hint();
   EXPECT_TRUE(hint_x > 0 && hint_y > 0 && hint_x > hint_y)
       << "ScrollBegin hint should be in positive X axis";
 
@@ -401,9 +400,9 @@ TEST_F(GestureProviderTest, DoubleTap) {
   const GestureEventData& double_tap = GetMostRecentGestureEvent();
   EXPECT_EQ(ET_GESTURE_DOUBLE_TAP, double_tap.type);
   // Ensure tap details have been set.
-  EXPECT_EQ(10, double_tap.details.tap.width);
-  EXPECT_EQ(10, double_tap.details.tap.height);
-  EXPECT_EQ(1, double_tap.details.tap.tap_count);
+  EXPECT_EQ(10, double_tap.details.bounding_box().width());
+  EXPECT_EQ(10, double_tap.details.bounding_box().height());
+  EXPECT_EQ(1, double_tap.details.tap_count());
 }
 
 TEST_F(GestureProviderTest, DoubleTapDragZoom) {
@@ -434,8 +433,8 @@ TEST_F(GestureProviderTest, DoubleTapDragZoom) {
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SCROLL_BEGIN));
   const GestureEventData* scroll_begin_gesture = GetActiveScrollBeginEvent();
   ASSERT_TRUE(!!scroll_begin_gesture);
-  EXPECT_EQ(0, scroll_begin_gesture->details.scroll_begin.delta_x_hint);
-  EXPECT_EQ(100, scroll_begin_gesture->details.scroll_begin.delta_y_hint);
+  EXPECT_EQ(0, scroll_begin_gesture->details.scroll_x_hint());
+  EXPECT_EQ(100, scroll_begin_gesture->details.scroll_y_hint());
   EXPECT_EQ(ET_GESTURE_PINCH_BEGIN, GetMostRecentGestureEventType());
 
   event = ObtainMotionEvent(down_time_2 + kOneMicrosecond * 2,
@@ -538,8 +537,8 @@ TEST_F(GestureProviderTest, ScrollUpdateValues) {
   EXPECT_EQ(kFakeCoordY - delta_y, gesture.y);
 
   // No horizontal delta because of snapping.
-  EXPECT_EQ(0, gesture.details.scroll_update.delta_x);
-  EXPECT_EQ(-delta_y / 2, gesture.details.scroll_update.delta_y);
+  EXPECT_EQ(0, gesture.details.scroll_x());
+  EXPECT_EQ(-delta_y / 2, gesture.details.scroll_y());
 }
 
 // Verify that fractional scroll deltas are rounded as expected and that
@@ -585,11 +584,11 @@ TEST_F(GestureProviderTest, FractionalScroll) {
 
     // Verify that we're scrolling vertically by the expected amount
     // (modulo rounding).
-    EXPECT_GE(gesture.details.scroll_update.delta_y, (int)delta_y);
-    EXPECT_LE(gesture.details.scroll_update.delta_y, ((int)delta_y) + 1);
+    EXPECT_GE(gesture.details.scroll_y(), (int)delta_y);
+    EXPECT_LE(gesture.details.scroll_y(), ((int)delta_y) + 1);
 
     // And that there has been no horizontal motion at all.
-    EXPECT_EQ(0, gesture.details.scroll_update.delta_x);
+    EXPECT_EQ(0, gesture.details.scroll_x());
   }
 }
 
@@ -623,8 +622,8 @@ TEST_F(GestureProviderTest, ScrollBeginValues) {
 
   const GestureEventData* scroll_begin_gesture = GetActiveScrollBeginEvent();
   ASSERT_TRUE(!!scroll_begin_gesture);
-  EXPECT_EQ(delta_x, scroll_begin_gesture->details.scroll_begin.delta_x_hint);
-  EXPECT_EQ(delta_y, scroll_begin_gesture->details.scroll_begin.delta_y_hint);
+  EXPECT_EQ(delta_x, scroll_begin_gesture->details.scroll_x_hint());
+  EXPECT_EQ(delta_y, scroll_begin_gesture->details.scroll_y_hint());
 }
 
 TEST_F(GestureProviderTest, LongPressAndTapCancelledWhenScrollBegins) {
@@ -764,8 +763,8 @@ TEST_F(GestureProviderTest, TouchSlopRemovedFromScroll) {
 
   EXPECT_EQ(ET_GESTURE_SCROLL_UPDATE, GetMostRecentGestureEventType());
   GestureEventData gesture = GetMostRecentGestureEvent();
-  EXPECT_EQ(0, gesture.details.scroll_update.delta_x);
-  EXPECT_EQ(scroll_delta, gesture.details.scroll_update.delta_y);
+  EXPECT_EQ(0, gesture.details.scroll_x());
+  EXPECT_EQ(scroll_delta, gesture.details.scroll_y());
 }
 
 TEST_F(GestureProviderTest, NoDoubleTapWhenExplicitlyDisabled) {

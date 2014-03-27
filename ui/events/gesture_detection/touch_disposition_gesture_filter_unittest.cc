@@ -168,8 +168,7 @@ class TouchDispositionGestureFilterTest
   }
 
   static GestureEventData CreateGesture(EventType type) {
-    return GestureEventData(
-        type, base::TimeTicks(), 0, 0, GestureEventData::Details());
+    return GestureEventData(type, base::TimeTicks(), 0, 0);
   }
 
  private:

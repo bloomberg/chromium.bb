@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "ui/events/gesture_event_details.h"
 
 namespace ui {
 namespace {
@@ -16,7 +17,7 @@ COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
 
 GestureEventData CreateGesture(EventType type) {
   return GestureEventData(
-      type, base::TimeTicks(), 0, 0, GestureEventData::Details());
+      type, base::TimeTicks(), 0, 0, GestureEventDetails(type, 0, 0));
 }
 
 enum RequiredTouches {

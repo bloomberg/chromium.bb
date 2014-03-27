@@ -11,6 +11,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
 // A GestureRecognizer is an abstract base class for conversion of touch events

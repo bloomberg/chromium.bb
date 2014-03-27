@@ -1,10 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/gestures/gesture_types.h"
+#include "ui/events/gesture_detection/gesture_event_details.h"
 
 namespace ui {
+
+GestureEventDetails::GestureEventDetails() : type_(ET_UNKNOWN) {}
 
 GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          float delta_x,

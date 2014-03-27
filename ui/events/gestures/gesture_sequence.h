@@ -7,6 +7,7 @@
 
 #include "base/timer/timer.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/gesture_event_details.h"
 #include "ui/events/gestures/gesture_point.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/rect.h"

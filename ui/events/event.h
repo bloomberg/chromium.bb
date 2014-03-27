@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/gesture_event_details.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/latency_info.h"

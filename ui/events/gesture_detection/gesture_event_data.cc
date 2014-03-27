@@ -8,18 +8,27 @@
 
 namespace ui {
 
-GestureEventData::GestureEventData()
-    : type(ET_UNKNOWN), x(0), y(0) {}
-
 GestureEventData::GestureEventData(EventType type,
                                    base::TimeTicks time,
                                    float x,
                                    float y,
-                                   const Details& details)
+                                   const GestureEventDetails& details)
     : type(type), time(time), x(x), y(y), details(details) {
   DCHECK(ET_GESTURE_TYPE_START <= type && type <= ET_GESTURE_TYPE_END);
 }
 
-GestureEventData::Details::Details() { memset(this, 0, sizeof(Details)); }
+GestureEventData::GestureEventData(EventType type,
+                                   base::TimeTicks time,
+                                   float x,
+                                   float y)
+    : type(type),
+      time(time),
+      x(x),
+      y(y),
+      details(GestureEventDetails(type, 0, 0)) {
+  DCHECK(ET_GESTURE_TYPE_START <= type && type <= ET_GESTURE_TYPE_END);
+}
+
+GestureEventData::GestureEventData() : type(ET_UNKNOWN), x(0), y(0) {}
 
 }  //  namespace ui

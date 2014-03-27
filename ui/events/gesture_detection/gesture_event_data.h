@@ -8,78 +8,30 @@
 #include "base/time/time.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_detection_export.h"
+#include "ui/events/gesture_event_details.h"
 
 namespace ui {
 
 class GestureEventDataPacket;
 
-// Simple transport construct for gesture-related event data.
-// TODO(jdduke): Merge this class with ui::GestureEventDetails.
 struct GESTURE_DETECTION_EXPORT GestureEventData {
-  struct Details;
   GestureEventData(EventType type,
                    base::TimeTicks time,
                    float x,
                    float y,
-                   const Details& details);
+                   const GestureEventDetails& details);
+
+  GestureEventData(EventType type,
+                   base::TimeTicks time,
+                   float x,
+                   float y);
 
   EventType type;
   base::TimeTicks time;
   float x;
   float y;
 
-  // TODO(jdduke): Determine if we can simply re-use blink::WebGestureEvent, as
-  // this is more or less straight up duplication.
-  struct GESTURE_DETECTION_EXPORT Details {
-    Details();
-    union {
-      // Tap information must be set for ET_GESTURE_TAP,
-      // ET_GESTURE_TAP_UNCONFIRMED, and ET_GESTURE_DOUBLE_TAP events.
-      struct {
-        int tap_count;
-        float width;
-        float height;
-      } tap;
-
-      struct {
-        float width;
-        float height;
-      } tap_down;
-
-      struct {
-        float width;
-        float height;
-      } show_press;
-
-      struct {
-        float width;
-        float height;
-      } long_press;
-
-      struct {
-        // Initial motion that triggered the scroll.
-        // May be redundant with delta_x/delta_y in the first scroll_update.
-        float delta_x_hint;
-        float delta_y_hint;
-      } scroll_begin;
-
-      struct {
-        float delta_x;
-        float delta_y;
-        float velocity_x;
-        float velocity_y;
-      } scroll_update;
-
-      struct {
-        float velocity_x;
-        float velocity_y;
-      } fling_start;
-
-      struct {
-        float scale;
-      } pinch_update;
-    };
-  } details;
+  GestureEventDetails details;
 
  private:
   friend class GestureEventDataPacket;
