@@ -24,7 +24,7 @@ STUBBY_CMD = """target: {
 target_credential: {
   type: OAUTH2_TOKEN
   oauth2_attributes: {
-    scope: 'https://www.googleapis.com/auth/devstorage.read_only'
+    scope: 'https://www.googleapis.com/auth/devstorage.read_write'
   }
 }"""
 
