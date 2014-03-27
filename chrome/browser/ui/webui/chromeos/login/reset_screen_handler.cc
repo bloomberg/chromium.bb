@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -97,7 +96,11 @@ void ResetScreenHandler::Show() {
   rollback_available_ = false;
   if (!restart_required_)  // First exec after boot.
     reboot_was_requested_ = prefs->GetBoolean(prefs::kFactoryResetRequested);
-  if (!restart_required_ && reboot_was_requested_) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableRollbackOption)) {
+    rollback_available_ = false;
+    ShowWithParams();
+  } else if (!restart_required_ && reboot_was_requested_) {
     // First exec after boot.
     rollback_available_ = prefs->GetBoolean(prefs::kRollbackRequested);
     ShowWithParams();
