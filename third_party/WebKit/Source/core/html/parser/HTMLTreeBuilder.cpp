@@ -35,6 +35,7 @@
 #include "XMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
@@ -133,18 +134,10 @@ static bool isFormattingTag(const AtomicString& tagName)
     return tagName == aTag || isNonAnchorFormattingTag(tagName);
 }
 
-static HTMLFormElement* closestFormAncestor(Element* element)
+static HTMLFormElement* closestFormAncestor(Element& element)
 {
     ASSERT(isMainThread());
-    while (element) {
-        if (isHTMLFormElement(*element))
-            return toHTMLFormElement(element);
-        ContainerNode* parent = element->parentNode();
-        if (!parent || !parent->isElementNode())
-            return 0;
-        element = toElement(parent);
-    }
-    return 0;
+    return Traversal<HTMLFormElement>::firstAncestorOrSelf(element);
 }
 
 class HTMLTreeBuilder::CharacterTokenBuffer {
@@ -315,7 +308,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* f
             m_templateInsertionModes.append(TemplateContentsMode);
 
         resetInsertionModeAppropriately();
-        m_tree.setForm(closestFormAncestor(contextElement));
+        m_tree.setForm(closestFormAncestor(*contextElement));
     }
 }
 

@@ -259,23 +259,12 @@ void HTMLOptionElement::childrenChanged(bool changedByParser, Node* beforeChange
 
 HTMLDataListElement* HTMLOptionElement::ownerDataListElement() const
 {
-    for (ContainerNode* parent = parentNode(); parent ; parent = parent->parentNode()) {
-        if (isHTMLDataListElement(*parent))
-            return toHTMLDataListElement(parent);
-    }
-    return 0;
+    return Traversal<HTMLDataListElement>::firstAncestor(*this);
 }
 
 HTMLSelectElement* HTMLOptionElement::ownerSelectElement() const
 {
-    ContainerNode* select = parentNode();
-    while (select && !isHTMLSelectElement(*select))
-        select = select->parentNode();
-
-    if (!select)
-        return 0;
-
-    return toHTMLSelectElement(select);
+    return Traversal<HTMLSelectElement>::firstAncestor(*this);
 }
 
 String HTMLOptionElement::label() const

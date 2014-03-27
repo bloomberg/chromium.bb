@@ -420,8 +420,8 @@ void HTMLObjectElement::renderFallbackContent()
 bool HTMLObjectElement::isExposed() const
 {
     // http://www.whatwg.org/specs/web-apps/current-work/#exposed
-    for (Node* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-        if (isHTMLObjectElement(*ancestor) && toHTMLObjectElement(ancestor)->isExposed())
+    for (HTMLObjectElement* ancestor = Traversal<HTMLObjectElement>::firstAncestor(*this); ancestor; ancestor = Traversal<HTMLObjectElement>::firstAncestor(*ancestor)) {
+        if (ancestor->isExposed())
             return false;
     }
     for (HTMLElement* element = Traversal<HTMLElement>::firstWithin(*this); element; element = Traversal<HTMLElement>::next(*element, this)) {

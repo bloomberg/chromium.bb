@@ -56,15 +56,6 @@ RenderObject* HTMLFrameElement::createRenderer(RenderStyle*)
     return new RenderFrame(this);
 }
 
-static inline HTMLFrameSetElement* containingFrameSetElement(Node* node)
-{
-    while ((node = node->parentNode())) {
-        if (isHTMLFrameSetElement(*node))
-            return toHTMLFrameSetElement(node);
-    }
-    return 0;
-}
-
 bool HTMLFrameElement::noResize() const
 {
     return hasAttribute(noresizeAttr);
@@ -74,7 +65,7 @@ void HTMLFrameElement::attach(const AttachContext& context)
 {
     HTMLFrameElementBase::attach(context);
 
-    if (HTMLFrameSetElement* frameSetElement = containingFrameSetElement(this)) {
+    if (HTMLFrameSetElement* frameSetElement = Traversal<HTMLFrameSetElement>::firstAncestor(*this)) {
         if (!m_frameBorderSet)
             m_frameBorder = frameSetElement->hasFrameBorder();
     }

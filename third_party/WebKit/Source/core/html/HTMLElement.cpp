@@ -610,13 +610,11 @@ TranslateAttributeMode HTMLElement::translateAttributeMode() const
 
 bool HTMLElement::translate() const
 {
-    for (const Node* n = this; n; n = n->parentNode()) {
-        if (n->isHTMLElement()) {
-            TranslateAttributeMode mode = toHTMLElement(n)->translateAttributeMode();
-            if (mode != TranslateAttributeInherit) {
-                ASSERT(mode == TranslateAttributeYes || mode == TranslateAttributeNo);
-                return mode == TranslateAttributeYes;
-            }
+    for (const HTMLElement* element = this; element; element = Traversal<HTMLElement>::firstAncestor(*element)) {
+        TranslateAttributeMode mode = element->translateAttributeMode();
+        if (mode != TranslateAttributeInherit) {
+            ASSERT(mode == TranslateAttributeYes || mode == TranslateAttributeNo);
+            return mode == TranslateAttributeYes;
         }
     }
 
@@ -631,11 +629,7 @@ void HTMLElement::setTranslate(bool enable)
 
 HTMLFormElement* HTMLElement::findFormAncestor() const
 {
-    for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-        if (isHTMLFormElement(*ancestor))
-            return toHTMLFormElement(ancestor);
-    }
-    return 0;
+    return Traversal<HTMLFormElement>::firstAncestor(*this);
 }
 
 static inline bool elementAffectsDirectionality(const Node* node)

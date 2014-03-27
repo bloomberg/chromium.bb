@@ -54,11 +54,8 @@ PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool c
 
 static inline RenderWidget* findWidgetRenderer(const Node* n)
 {
-    if (!n->renderer()) {
-        do {
-            n = n->parentNode();
-        } while (n && !isHTMLObjectElement(*n));
-    }
+    if (!n->renderer())
+        n = Traversal<HTMLObjectElement>::firstAncestor(*n);
 
     if (n && n->renderer() && n->renderer()->isWidget())
         return toRenderWidget(n->renderer());
@@ -199,8 +196,8 @@ bool HTMLEmbedElement::isInteractiveContent() const
 bool HTMLEmbedElement::isExposed() const
 {
     // http://www.whatwg.org/specs/web-apps/current-work/#exposed
-    for (Node* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-        if (isHTMLObjectElement(*ancestor) && toHTMLObjectElement(*ancestor).isExposed())
+    for (HTMLObjectElement* object = Traversal<HTMLObjectElement>::firstAncestor(*this); object; object = Traversal<HTMLObjectElement>::firstAncestor(*object)) {
+        if (object->isExposed())
             return false;
     }
     return true;

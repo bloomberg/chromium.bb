@@ -1467,13 +1467,8 @@ HTMLLabelElement* AXNodeObject::labelElementContainer() const
     if (isControl())
         return 0;
 
-    // find if this has a parent that is a label
-    for (Node* parentNode = node(); parentNode; parentNode = parentNode->parentNode()) {
-        if (isHTMLLabelElement(*parentNode))
-            return toHTMLLabelElement(parentNode);
-    }
-
-    return 0;
+    // find if this has a ancestor that is a label
+    return Traversal<HTMLLabelElement>::firstAncestorOrSelf(*node());
 }
 
 void AXNodeObject::setFocused(bool on)

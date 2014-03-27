@@ -40,6 +40,11 @@ public:
     static ElementType* lastChild(const ContainerNode& current) { return lastChildTemplate(current); }
     static ElementType* lastChild(const Node& current) { return lastChildTemplate(current); }
 
+    // First ElementType ancestor of the node.
+    static ElementType* firstAncestor(const Node& current);
+    static ElementType* firstAncestorOrSelf(Node& current) { return firstAncestorOrSelfTemplate(current); }
+    static ElementType* firstAncestorOrSelf(Element& current) { return firstAncestorOrSelfTemplate(current); }
+
     // First or last ElementType descendant of the node.
     // For Elements firstWithin() is always the same as firstChild().
     static ElementType* firstWithin(const ContainerNode& current) { return firstWithinTemplate(current); }
@@ -80,6 +85,8 @@ private:
     static ElementType* firstChildTemplate(NodeType&);
     template <class NodeType>
     static ElementType* lastChildTemplate(NodeType&);
+    template <class NodeType>
+    static ElementType* firstAncestorOrSelfTemplate(NodeType&);
     template <class NodeType>
     static ElementType* firstWithinTemplate(NodeType&);
     template <class NodeType>
@@ -164,6 +171,24 @@ inline ElementType* Traversal<ElementType>::firstChildTemplate(NodeType& current
     while (node && !isElementOfType<const ElementType>(*node))
         node = node->nextSibling();
     return toElement<ElementType>(node);
+}
+
+template <class ElementType>
+inline ElementType* Traversal<ElementType>::firstAncestor(const Node& current)
+{
+    ContainerNode* ancestor = current.parentNode();
+    while (ancestor && !isElementOfType<const ElementType>(*ancestor))
+        ancestor = ancestor->parentNode();
+    return toElement<ElementType>(ancestor);
+}
+
+template <class ElementType>
+template <class NodeType>
+inline ElementType* Traversal<ElementType>::firstAncestorOrSelfTemplate(NodeType& current)
+{
+    if (isElementOfType<const ElementType>(current))
+        return &toElement<ElementType>(current);
+    return firstAncestor(current);
 }
 
 template <class ElementType>

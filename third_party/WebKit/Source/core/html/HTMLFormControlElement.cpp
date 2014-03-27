@@ -26,6 +26,7 @@
 #include "core/html/HTMLFormControlElement.h"
 
 #include "core/events/Event.h"
+#include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -101,7 +102,7 @@ void HTMLFormControlElement::updateAncestorDisabledState() const
 {
     HTMLFieldSetElement* fieldSetAncestor = 0;
     ContainerNode* legendAncestor = 0;
-    for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
+    for (HTMLElement* ancestor = Traversal<HTMLElement>::firstAncestor(*this); ancestor; ancestor = Traversal<HTMLElement>::firstAncestor(*ancestor)) {
         if (!legendAncestor && isHTMLLegendElement(*ancestor))
             legendAncestor = ancestor;
         if (isHTMLFieldSetElement(*ancestor)) {
@@ -355,13 +356,9 @@ short HTMLFormControlElement::tabIndex() const
 bool HTMLFormControlElement::recalcWillValidate() const
 {
     if (m_dataListAncestorState == Unknown) {
-        for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-            if (isHTMLDataListElement(*ancestor)) {
-                m_dataListAncestorState = InsideDataList;
-                break;
-            }
-        }
-        if (m_dataListAncestorState == Unknown)
+        if (Traversal<HTMLDataListElement>::firstAncestor(*this))
+            m_dataListAncestorState = InsideDataList;
+        else
             m_dataListAncestorState = NotInsideDataList;
     }
     return m_dataListAncestorState == NotInsideDataList && !isDisabledOrReadOnly();
@@ -482,11 +479,9 @@ bool HTMLFormControlElement::isDefaultButtonForForm() const
 
 HTMLFormControlElement* HTMLFormControlElement::enclosingFormControlElement(Node* node)
 {
-    for (; node; node = node->parentNode()) {
-        if (node->isElementNode() && toElement(node)->isFormControlElement())
-            return toHTMLFormControlElement(node);
-    }
-    return 0;
+    if (!node)
+        return 0;
+    return Traversal<HTMLFormControlElement>::firstAncestorOrSelf(*node);
 }
 
 String HTMLFormControlElement::nameForAutofill() const
