@@ -176,7 +176,7 @@ NOINLINE static void CrashIntentionally() {
   *zero = 0;
 }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
   //     order to trigger an Address Sanitizer (ASAN) error report.
@@ -208,7 +208,7 @@ NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
   // Make sure the assignments to the dummy value aren't optimized away.
   base::debug::Alias(&dummy);
 }
-#endif  // ADDRESS_SANITIZER
+#endif  // ADDRESS_SANITIZER || SYZYASAN
 
 static void MaybeHandleDebugURL(const GURL& url) {
   if (!url.SchemeIs(kChromeUIScheme))
@@ -225,9 +225,9 @@ static void MaybeHandleDebugURL(const GURL& url) {
     base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(20));
   }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
   MaybeTriggerAsanError(url);
-#endif  // ADDRESS_SANITIZER
+#endif  // ADDRESS_SANITIZER || SYZYASAN
 }
 
 // Returns false unless this is a top-level navigation.

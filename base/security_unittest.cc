@@ -43,11 +43,11 @@ Type HideValueFromCompiler(volatile Type value) {
 }
 
 // - NO_TCMALLOC (should be defined if compiled with use_allocator!="tcmalloc")
-// - ADDRESS_SANITIZER because it has its own memory allocator
+// - ADDRESS_SANITIZER and SYZYASAN because they have their own memory allocator
 // - IOS does not use tcmalloc
 // - OS_MACOSX does not use tcmalloc
 #if !defined(NO_TCMALLOC) && !defined(ADDRESS_SANITIZER) && \
-    !defined(OS_IOS) && !defined(OS_MACOSX)
+    !defined(OS_IOS) && !defined(OS_MACOSX) && !defined(SYZYASAN)
   #define TCMALLOC_TEST(function) function
 #else
   #define TCMALLOC_TEST(function) DISABLED_##function

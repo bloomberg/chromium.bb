@@ -27,7 +27,7 @@ std::string VersionInfo::GetVersionStringModifier() {
     GoogleUpdateSettings::GetChromeChannelAndModifiers(is_system_install,
                                                        &channel);
   }
-#if defined(ADDRESS_SANITIZER)
+#if defined(SYZYASAN)
   if (base::debug::IsBinaryInstrumented())
     channel += L" SyzyASan";
 #endif

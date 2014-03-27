@@ -20,7 +20,7 @@ const base::subtle::Atomic32 kMagicValue = 42;
 
 // Helper for memory accesses that can potentially corrupt memory or cause a
 // crash during a native run.
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 #if defined(OS_IOS)
 // EXPECT_DEATH is not supported on IOS.
 #define HARMFUL_ACCESS(action,error_regexp) do { action; } while (0)
@@ -113,7 +113,7 @@ TEST(ToolsSanityTest, MemoryLeak) {
 // tests should be put back under the (defined(OS_IOS) || defined(OS_WIN))
 // clause above.
 // See also http://crbug.com/172614.
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 #define MAYBE_SingleElementDeletedWithBraces \
     DISABLED_SingleElementDeletedWithBraces
 #define MAYBE_ArrayDeletedWithoutBraces DISABLED_ArrayDeletedWithoutBraces
@@ -135,7 +135,7 @@ TEST(ToolsSanityTest, MAYBE_AccessesToMallocMemory) {
 }
 
 TEST(ToolsSanityTest, MAYBE_ArrayDeletedWithoutBraces) {
-#if !defined(ADDRESS_SANITIZER)
+#if !defined(ADDRESS_SANITIZER) && !defined(SYZYASAN)
   // This test may corrupt memory if not run under Valgrind or compiled with
   // AddressSanitizer.
   if (!RunningOnValgrind())
@@ -161,7 +161,7 @@ TEST(ToolsSanityTest, MAYBE_SingleElementDeletedWithBraces) {
   delete [] foo;
 }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 TEST(ToolsSanityTest, DISABLED_AddressSanitizerNullDerefCrashTest) {
   // Intentionally crash to make sure AddressSanitizer is running.
   // This test should not be ran on bots.

@@ -61,12 +61,13 @@ TEST_F(ELFImportsTest, ChromeElfSanityCheck) {
   std::vector<std::string>::iterator it(elf_imports.begin());
 
   static const char* const kValidFilePatterns[] = {
-      "KERNEL32.dll",
-      "MSVC*",
-#if defined(ADDRESS_SANITIZER)
-      "syzyasan_rtl.dll",
+    "KERNEL32.dll",
+    "MSVC*",
+#if defined(SYZYASAN)
+    "syzyasan_rtl.dll",
 #endif
-      "ADVAPI32.dll"};
+    "ADVAPI32.dll"
+  };
 
   // Make sure all of ELF's imports are in the valid imports list.
   for (; it != elf_imports.end(); it++) {

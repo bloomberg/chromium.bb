@@ -16,8 +16,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
 
-// Times out on win asan, http://crbug.com/166026
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+// Times out on win syzyasan, http://crbug.com/166026
+#if defined(SYZYASAN)
 #define MAYBE_BookmarkManager DISABLED_BookmarkManager
 #else
 #define MAYBE_BookmarkManager BookmarkManager

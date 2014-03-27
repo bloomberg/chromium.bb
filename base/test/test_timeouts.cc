@@ -16,7 +16,7 @@ namespace {
 
 // ASan and TSan instrument each memory access. This may slow the execution
 // down significantly.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || defined(SYZYASAN)
 static const int kTimeoutMultiplier = 2;
 #else
 static const int kTimeoutMultiplier = 1;

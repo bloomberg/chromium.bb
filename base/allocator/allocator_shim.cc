@@ -41,8 +41,8 @@ typedef enum {
 // See SetupSubprocessAllocator() to specify a default secondary (subprocess)
 // allocator.
 // TODO(jar): Switch to using TCMALLOC for the renderer as well.
-#if (defined(ADDRESS_SANITIZER) && defined(OS_WIN))
-// The Windows implementation of Asan requires the use of "WINHEAP".
+#if defined(SYZYASAN)
+// SyzyASan requires the use of "WINHEAP".
 static Allocator allocator = WINHEAP;
 #else
 static Allocator allocator = TCMALLOC;
@@ -228,9 +228,9 @@ static void release_free_memory_thunk() {
 
 // The CRT heap initialization stub.
 extern "C" int _heap_init() {
-// Don't use the environment variable if ADDRESS_SANITIZER is defined on
-// Windows, as the implementation requires Winheap to be the allocator.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_WIN))
+// Don't use the environment variable if SYZYASAN is defined, as the
+// implementation requires Winheap to be the allocator.
+#if !defined(SYZYASAN)
   const char* environment_value = GetenvBeforeMain(primary_name);
   if (environment_value) {
     if (!stricmp(environment_value, "winheap"))
@@ -356,9 +356,9 @@ void SetupSubprocessAllocator() {
   buffer[sizeof(buffer) - 1] = '\0';
 
   if (secondary_length || !primary_length) {
-    // Don't use the environment variable if ADDRESS_SANITIZER is defined on
-    // Windows, as the implementation require Winheap to be the allocator.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_WIN))
+// Don't use the environment variable if SYZYASAN is defined, as the
+// implementation require Winheap to be the allocator.
+#if !defined(SYZYASAN)
     const char* secondary_value = secondary_length ? buffer : "TCMALLOC";
     // Force renderer (or other subprocesses) to use secondary_value.
 #else

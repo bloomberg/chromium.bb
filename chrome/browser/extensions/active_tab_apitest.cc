@@ -13,8 +13,8 @@
 namespace extensions {
 namespace {
 
-// Times out on win asan, http://crbug.com/166026
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
+// Times out on win syzyasan, http://crbug.com/166026
+#if defined(SYZYASAN)
 #define MAYBE_ActiveTab DISABLED_ActiveTab
 #else
 #define MAYBE_ActiveTab ActiveTab

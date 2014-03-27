@@ -2436,7 +2436,7 @@
           },
         },
         'defines': [
-            'ADDRESS_SANITIZER',
+            'SYZYASAN',
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
         ],
       }],
