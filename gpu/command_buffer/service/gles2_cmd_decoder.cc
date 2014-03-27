@@ -4177,7 +4177,25 @@ bool GLES2DecoderImpl::GetHelper(
     switch (pname) {
       case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
         *num_written = 1;
+        // Return the GL implementation's preferred format and (see below type)
+        // if we have the GL extension that exposes this. This allows the GPU
+        // client to use the implementation's preferred format for glReadPixels
+        // for optimisation.
+        //
+        // A conflicting extension (GL_ARB_ES2_compatibility) specifies an error
+        // case when requested on integer/floating point buffers but which is
+        // acceptable on GLES2 and with the GL_OES_read_format extension.
+        //
+        // Therefore if an error occurs we swallow the error and use the
+        // internal implementation.
         if (params) {
+          if (context_->HasExtension("GL_OES_read_format")) {
+            ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::GetHelper",
+                                               GetErrorState());
+            glGetIntegerv(pname, params);
+            if (glGetError() == GL_NO_ERROR)
+              return true;
+          }
           *params = GLES2Util::GetPreferredGLReadPixelsFormat(
               GetBoundReadFrameBufferInternalFormat());
         }
@@ -4185,6 +4203,13 @@ bool GLES2DecoderImpl::GetHelper(
       case GL_IMPLEMENTATION_COLOR_READ_TYPE:
         *num_written = 1;
         if (params) {
+          if (context_->HasExtension("GL_OES_read_format")) {
+            ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::GetHelper",
+                                               GetErrorState());
+            glGetIntegerv(pname, params);
+            if (glGetError() == GL_NO_ERROR)
+              return true;
+          }
           *params = GLES2Util::GetPreferredGLReadPixelsType(
               GetBoundReadFrameBufferInternalFormat(),
               GetBoundReadFrameBufferTextureType());
@@ -7234,6 +7259,7 @@ void GLES2DecoderImpl::FinishReadPixels(
 
 error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 immediate_data_size, const cmds::ReadPixels& c) {
+  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleReadPixels");
   error::Error fbo_error = WillAccessBoundFramebufferForRead();
   if (fbo_error != error::kNoError)
     return fbo_error;
