@@ -355,14 +355,14 @@ function test()
                 for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
                     loader.write(sourceStringified.slice(i, i + partSize));
                 loader.close();
-                var result = loader.buildSnapshot("JSHeapSnapshot");
+                var result = loader.buildSnapshot(false);
                 result._nodes = new Uint32Array(result._nodes);
                 result._containmentEdges = new Uint32Array(result._containmentEdges);
                 function assertSnapshotEquals(reference, actual)
                 {
                     InspectorTest.assertEquals(JSON.stringify(reference), JSON.stringify(actual));
                 }
-                assertSnapshotEquals(new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress()), result);
+                assertSnapshotEquals(new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress(), false), result);
             },
         ];
 
