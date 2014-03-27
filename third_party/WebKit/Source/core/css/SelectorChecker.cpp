@@ -383,7 +383,10 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element*
 
         // If a given scope is a shadow host of an insertion point but behaviorAtBoundary doesn't have ScopeIsShadowHost,
         // we need to update behaviorAtBoundary to make selectors like ":host > ::content" work correctly.
-        if (scope == insertionPoints[i]->containingShadowRoot()->shadowHost() && !(behaviorAtBoundary & ScopeIsShadowHost))
+        if (m_mode == SharingRules) {
+            nextContext.behaviorAtBoundary = static_cast<BehaviorAtBoundary>(behaviorAtBoundary | ScopeIsShadowHost);
+            nextContext.scope = insertionPoints[i]->containingShadowRoot()->shadowHost();
+        } else if (scope == insertionPoints[i]->containingShadowRoot()->shadowHost() && !(behaviorAtBoundary & ScopeIsShadowHost))
             nextContext.behaviorAtBoundary = static_cast<BehaviorAtBoundary>(behaviorAtBoundary | ScopeIsShadowHost);
         else
             nextContext.behaviorAtBoundary = behaviorAtBoundary;
@@ -393,7 +396,7 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element*
         if (match(nextContext, siblingTraversalStrategy, result) == SelectorMatches)
             return SelectorMatches;
     }
-    return SelectorFailsCompletely;
+    return SelectorFailsLocally;
 }
 
 static inline bool containsHTMLSpace(const AtomicString& string)
@@ -547,6 +550,10 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 ASSERT(subContext.selector->pseudoType() != CSSSelector::PseudoNot);
                 // We select between :visited and :link when applying. We don't know which one applied (or not) yet.
                 if (subContext.selector->pseudoType() == CSSSelector::PseudoVisited || (subContext.selector->pseudoType() == CSSSelector::PseudoLink && subContext.visitedMatchType == VisitedMatchEnabled))
+                    return true;
+                // context.scope is not available if m_mode == SharingRules.
+                // We cannot determine whether :host or :scope matches a given element or not.
+                if (m_mode == SharingRules && (subContext.selector->isHostPseudoClass() || subContext.selector->pseudoType() == CSSSelector::PseudoScope))
                     return true;
                 if (!checkOne(subContext, DOMSiblingTraversalStrategy()))
                     return true;
@@ -887,6 +894,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
         case CSSSelector::PseudoScope:
             {
+                if (m_mode == SharingRules)
+                    return true;
                 const Node* contextualReferenceNode = !context.scope ? element.document().documentElement() : context.scope;
                 if (element == contextualReferenceNode)
                     return true;
@@ -901,6 +910,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoHost:
         case CSSSelector::PseudoHostContext:
             {
+                if (m_mode == SharingRules)
+                    return true;
                 // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
                 if (!context.scope)
                     return false;
