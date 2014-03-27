@@ -24,7 +24,7 @@ def _CreatePermissionMessageEnumChecker(input_api, output_api):
     sys.path = original_sys_path
 
   return StrictEnumValueChecker(input_api, output_api,
-      start_marker='enum ID {', end_marker='  kEnumBoundary',
+      start_marker='  enum ID {', end_marker='    kEnumBoundary',
       path='extensions/common/permissions/permission_message.h')
 
 def CheckChangeOnUpload(input_api, output_api):

@@ -101,7 +101,7 @@ class StrictEnumValueChecker(object):
                "types of invalid changes, especially when the diffs are "
                "complex. For example, an invalid deletion may be reported "
                "whereas the change contains a valid rename."
-               % local_path, self.start_marker)
+               % (local_path, self.start_marker))
 
   def EmitWarning(self, message, line_number=None, line_text=None):
     """Emits a presubmit prompt warning containing the short message
