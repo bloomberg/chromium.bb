@@ -105,6 +105,10 @@ void DynamicServiceLoader::LoadService(ServiceManager* manager,
       this, url, service_handle.Pass(), runner_factory_->Create(context_));
 }
 
+void DynamicServiceLoader::OnServiceError(ServiceManager* manager,
+                                          const GURL& url) {
+}
+
 void DynamicServiceLoader::AppCompleted(const GURL& url) {
   DCHECK(context_->task_runners()->ui_runner()->BelongsToCurrentThread());
   DVLOG(2) << "App completed (url: " << url << ")";

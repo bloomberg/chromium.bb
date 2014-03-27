@@ -37,6 +37,8 @@ class DynamicServiceLoader : public ServiceLoader {
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedShellHandle service_handle) OVERRIDE;
+  virtual void OnServiceError(ServiceManager* manager, const GURL& url)
+      OVERRIDE;
 
  private:
   class LoadContext;

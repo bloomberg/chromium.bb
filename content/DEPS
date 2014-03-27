@@ -38,6 +38,7 @@ include_rules = [
   "+mojo/public",
   "+mojo/bindings/js",
   "+mojo/embedder",
+  "+mojo/service_manager",
   "+net",
   "+ppapi",
   "+printing",

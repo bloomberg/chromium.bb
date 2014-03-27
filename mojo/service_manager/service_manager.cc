@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdio.h>
+
 #include "mojo/service_manager/service_manager.h"
 
 #include "base/lazy_instance.h"
@@ -13,6 +15,11 @@
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
+
+namespace {
+// Used by TestAPI.
+bool has_created_instance = false;
+}
 
 class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
  public:
@@ -40,7 +47,7 @@ class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
   }
 
   virtual void OnError() OVERRIDE {
-    manager_->RemoveServiceFactory(this);
+    manager_->OnServiceFactoryError(this);
   }
 
   const GURL& url() const { return url_; }
@@ -51,6 +58,11 @@ class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
   RemotePtr<ShellClient> shell_client_;
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };
+
+// static
+bool ServiceManager::TestAPI::HasCreatedInstance() {
+  return has_created_instance;
+}
 
 bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
   return manager_->url_to_service_factory_.find(url) !=
@@ -69,9 +81,10 @@ ServiceManager::~ServiceManager() {
 }
 
 // static
-ServiceManager* GetInstance() {
+ServiceManager* ServiceManager::GetInstance() {
   static base::LazyInstance<ServiceManager> instance =
       LAZY_INSTANCE_INITIALIZER;
+  has_created_instance = true;
   return &instance.Get();
 }
 
@@ -102,12 +115,13 @@ void ServiceManager::Connect(const GURL& url,
   service_factory->ConnectToClient(client_handle.Pass());
 }
 
-void ServiceManager::RemoveServiceFactory(ServiceFactory* service_factory) {
-  ServiceFactoryMap::iterator it =
-      url_to_service_factory_.find(service_factory->url());
+void ServiceManager::OnServiceFactoryError(ServiceFactory* service_factory) {
+  const GURL url = service_factory->url();
+  ServiceFactoryMap::iterator it = url_to_service_factory_.find(url);
   DCHECK(it != url_to_service_factory_.end());
   delete it->second;
   url_to_service_factory_.erase(it);
+  GetLoaderForURL(url)->OnServiceError(this, url);
 }
 
 }  // namespace mojo

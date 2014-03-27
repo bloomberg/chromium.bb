@@ -71,7 +71,7 @@
         'mojo_environment_chromium',
         'mojo_gles2_service',
         'mojo_native_viewport_bindings',
-        'mojo_shell_bindings',
+        'mojo_shell_client',
       ],
       'defines': [
         'MOJO_NATIVE_VIEWPORT_IMPLEMENTATION',

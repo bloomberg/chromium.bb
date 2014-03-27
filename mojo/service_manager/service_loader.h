@@ -6,6 +6,7 @@
 #define MOJO_SERVICE_MANAGER_SERVICE_LOADER_H_
 
 #include "mojo/public/shell/shell.mojom.h"
+#include "mojo/service_manager/service_manager_export.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -14,12 +15,14 @@ class ServiceManager;
 
 // Interface to allowing default loading behavior to be overridden for a
 // specific url.
-class ServiceLoader {
+class MOJO_SERVICE_MANAGER_EXPORT ServiceLoader {
  public:
   virtual ~ServiceLoader() {};
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
                            ScopedShellHandle service_handle) = 0;
+  virtual void OnServiceError(ServiceManager* manager, const GURL& url) = 0;
+
  protected:
   ServiceLoader() {}
 };

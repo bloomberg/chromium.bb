@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop/message_loop.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/shell/application.h"
 #include "mojo/public/shell/shell.mojom.h"
-#include "mojo/public/utility/run_loop.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/service_manager/test.mojom.h"
@@ -57,7 +57,7 @@ class TestClientImpl : public TestClient {
 
   virtual void AckTest() OVERRIDE {
     if (quit_after_ack_)
-      mojo::RunLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   void Test(std::string test_string) {
@@ -103,6 +103,12 @@ class ServiceManagerTest : public testing::Test, public ServiceLoader {
         new ServiceFactory<TestServiceImpl, TestContext>(&context_));
   }
 
+  virtual void OnServiceError(ServiceManager* manager,
+                              const GURL& url) OVERRIDE {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+                                           base::MessageLoop::QuitClosure());
+  }
+
   bool HasFactoryForTestURL() {
     ServiceManager::TestAPI manager_test_api(service_manager_.get());
     return manager_test_api.HasFactoryForURL(GURL(kTestURLString));
@@ -110,7 +116,7 @@ class ServiceManagerTest : public testing::Test, public ServiceLoader {
 
  protected:
   mojo::Environment env_;
-  mojo::RunLoop loop_;
+  base::MessageLoop loop_;
   TestContext context_;
   scoped_ptr<Application> test_app_;
   scoped_ptr<TestClientImpl> test_client_;

@@ -357,10 +357,6 @@
       'target_name': 'mojo_shell_bindings',
       'type': 'static_library',
       'sources': [
-        'public/shell/lib/application.cc',
-        'public/shell/lib/service.cc',
-        'public/shell/application.h',
-        'public/shell/service.h',
         'public/shell/shell.mojom',
       ],
       'variables': {
@@ -373,7 +369,22 @@
       ],
       'export_dependent_settings': [
         'mojo_bindings',
-        'mojo_system',
+      ],
+    },
+    {
+      'target_name': 'mojo_shell_client',
+      'type': 'static_library',
+      'sources': [
+        'public/shell/lib/application.cc',
+        'public/shell/lib/service.cc',
+        'public/shell/application.h',
+        'public/shell/service.h',
+      ],
+      'dependencies': [
+        'mojo_shell_bindings',
+      ],
+      'export_dependent_settings': [
+        'mojo_shell_bindings',
       ],
     },
   ],

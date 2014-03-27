@@ -31,10 +31,6 @@ class CONTENT_EXPORT MojoChannelInit {
   MojoChannelInit();
   ~MojoChannelInit();
 
-  // Initializes mojo. This is done implicitly when creating a MojoChannelInit,
-  // but can be done explicitly as necessary.
-  static void InitMojo();
-
   // Inits the channel. This takes ownership of |file|.
   void Init(base::PlatformFile file,
             scoped_refptr<base::TaskRunner> io_thread_task_runner);

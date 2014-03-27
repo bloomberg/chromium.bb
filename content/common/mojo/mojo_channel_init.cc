@@ -5,23 +5,10 @@
 #include "content/common/mojo/mojo_channel_init.h"
 
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/synchronization/lock.h"
 #include "mojo/embedder/embedder.h"
 
 namespace content {
-
-namespace {
-
-struct Initializer {
-  Initializer() {
-    mojo::embedder::Init();
-  }
-};
-
-
-}  // namespace
 
 MojoChannelInit::MojoChannelInit()
     : channel_info_(NULL),
@@ -37,22 +24,11 @@ MojoChannelInit::~MojoChannelInit() {
   }
 }
 
-// static
-void MojoChannelInit::InitMojo() {
-  static base::LazyInstance<Initializer>::Leaky initializer =
-      LAZY_INSTANCE_INITIALIZER;
-  // Initializes mojo. Use a lazy instance to ensure we only do this once.
-  // TODO(sky): this likely wants to move to a more central location, such as
-  // startup.
-  initializer.Get();
-}
-
 void MojoChannelInit::Init(
     base::PlatformFile file,
     scoped_refptr<base::TaskRunner> io_thread_task_runner) {
   DCHECK(!io_thread_task_runner_.get());  // Should only init once.
   io_thread_task_runner_ = io_thread_task_runner;
-  InitMojo();
   bootstrap_message_pipe_ = mojo::embedder::CreateChannel(
       mojo::embedder::ScopedPlatformHandle(
           mojo::embedder::PlatformHandle(file)),

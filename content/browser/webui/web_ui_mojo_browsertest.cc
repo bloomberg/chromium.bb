@@ -149,7 +149,6 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
 class WebUIMojoTest : public ContentBrowserTest {
  public:
   WebUIMojoTest() {
-    MojoChannelInit::InitMojo();
     WebUIControllerFactory::RegisterFactory(&factory_);
   }
 

@@ -46,6 +46,11 @@ class NativeViewportServiceLoader : public ServiceLoader {
     app_.reset(CreateNativeViewportService(g_context.Get().get(),
                                            service_handle.Pass()));
   }
+
+  virtual void OnServiceError(ServiceManager* manager,
+                              const GURL& url) OVERRIDE {
+  }
+
   scoped_ptr<Application> app_;
 };
 
