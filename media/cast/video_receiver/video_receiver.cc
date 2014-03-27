@@ -86,7 +86,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                NULL,
                NULL,
                packet_sender,
-               this, // rtp receiver statistics
+               GetStatistics(),
                video_config.rtcp_mode,
                base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
                video_config.feedback_ssrc,

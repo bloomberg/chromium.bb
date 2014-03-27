@@ -38,8 +38,8 @@ static RtpParserConfig GetRtpParserConfig(
 RtpReceiver::RtpReceiver(base::TickClock* clock,
                          const AudioReceiverConfig* audio_config,
                          const VideoReceiverConfig* video_config) :
-    RtpParser(GetRtpParserConfig(audio_config, video_config)) {
-  stats_.reset(new ReceiverStats(clock));
+    RtpParser(GetRtpParserConfig(audio_config, video_config)),
+    stats_(clock) {
 }
 
 RtpReceiver::~RtpReceiver() {}
@@ -60,16 +60,8 @@ bool RtpReceiver::ReceivedPacket(const uint8* packet, size_t length) {
   if (!ParsePacket(packet, length, &rtp_header))
     return false;
 
-  stats_->UpdateStatistics(rtp_header);
+  stats_.UpdateStatistics(rtp_header);
   return true;
-}
-
-void RtpReceiver::GetStatistics(uint8* fraction_lost,
-                                uint32* cumulative_lost,
-                                uint32* extended_high_sequence_number,
-                                uint32* jitter) {
-  stats_->GetStatistics(
-      fraction_lost, cumulative_lost, extended_high_sequence_number, jitter);
 }
 
 }  // namespace cast

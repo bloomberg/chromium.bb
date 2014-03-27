@@ -7,20 +7,21 @@
 
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {
 
-class ReceiverStats {
+class ReceiverStats : public RtpReceiverStatistics {
  public:
   explicit ReceiverStats(base::TickClock* clock);
-  ~ReceiverStats();
+  virtual ~ReceiverStats() OVERRIDE;
 
-  void GetStatistics(uint8* fraction_lost,
-                     uint32* cumulative_lost,  // 24 bits valid.
-                     uint32* extended_high_sequence_number,
-                     uint32* jitter);
+  virtual void GetStatistics(uint8* fraction_lost,
+                             uint32* cumulative_lost,  // 24 bits valid.
+                             uint32* extended_high_sequence_number,
+                             uint32* jitter) OVERRIDE;
   void UpdateStatistics(const RtpCastHeader& header);
 
  private:

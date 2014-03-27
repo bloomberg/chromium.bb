@@ -10,16 +10,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/rtcp/rtcp.h"
+#include "media/cast/rtp_receiver/receiver_stats.h"
 #include "media/cast/rtp_receiver/rtp_parser/rtp_parser.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 
 namespace media {
 namespace cast {
 
-class ReceiverStats;
-
-class RtpReceiver : public RtpParser,
-                    public RtpReceiverStatistics {
+class RtpReceiver : public RtpParser {
  public:
   RtpReceiver(base::TickClock* clock,
               const AudioReceiverConfig* audio_config,
@@ -30,13 +28,12 @@ class RtpReceiver : public RtpParser,
 
   bool ReceivedPacket(const uint8* packet, size_t length);
 
-  virtual void GetStatistics(uint8* fraction_lost,
-                             uint32* cumulative_lost,  // 24 bits valid.
-                             uint32* extended_high_sequence_number,
-                             uint32* jitter) OVERRIDE;
+  RtpReceiverStatistics* GetStatistics() {
+    return &stats_;
+  }
 
  private:
-  scoped_ptr<ReceiverStats> stats_;
+  ReceiverStats stats_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpReceiver);
 };
