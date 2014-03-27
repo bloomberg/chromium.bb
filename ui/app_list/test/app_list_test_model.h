@@ -47,6 +47,9 @@ class AppListTestModel : public AppListModel {
   // Populate the model with |n| items titled "Item #".
   void PopulateApps(int n);
 
+  // Creates and populate a folder with |n| test apps in it.
+  void CreateAndPopulateFolderWithApps(int n);
+
   // Populate the model with an item titled "Item |id|".
   void PopulateAppWithId(int id);
 
