@@ -2113,6 +2113,7 @@
         'test/base/chrome_render_view_test.h',
         'test/perf/browser_perf_test.cc',
         'test/perf/browser_perf_test.h',
+        'test/perf/mach_ports_performancetest.cc',
       ],
       'rules': [
         {
@@ -2209,6 +2210,10 @@
           'dependencies': [
             'chrome',
             '../components/components.gyp:breakpad_stubs',
+          ],
+        }, {  # OS!="mac"
+          'sources!': [
+            'test/perf/mach_ports_performancetest.cc',
           ],
         }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {
