@@ -125,7 +125,7 @@ KURL History::urlForState(const String& urlString)
 
 void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& /* title */, const String& urlString, UpdateBackForwardListPolicy updateBackForwardListPolicy, ExceptionState& exceptionState)
 {
-    if (!m_frame || !m_frame->page())
+    if (!m_frame || !m_frame->page() || !m_frame->loader().documentLoader())
         return;
 
     KURL fullURL = urlForState(urlString);
