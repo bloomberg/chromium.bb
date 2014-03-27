@@ -554,27 +554,24 @@ struct ScopedFramePaintingState {
     Color backgroundColor;
 };
 
-PassOwnPtr<DragImage> LocalFrame::nodeImage(Node* node)
+PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
-    if (!node->renderer())
+    if (!node.renderer())
         return nullptr;
 
-    const ScopedFramePaintingState state(this, node);
+    const ScopedFramePaintingState state(this, &node);
+
+    m_view->updateLayoutAndStyleForPainting();
 
     m_view->setPaintBehavior(state.paintBehavior | PaintBehaviorFlattenCompositingLayers);
 
     // When generating the drag image for an element, ignore the document background.
     m_view->setBaseBackgroundColor(Color::transparent);
 
-    // Updating layout can tear everything down, so ref the LocalFrame and Node to keep them alive.
-    RefPtr<LocalFrame> frameProtector(this);
-    RefPtr<Node> nodeProtector(node);
-    m_view->updateLayoutAndStyleForPainting();
-
-    m_view->setNodeToDraw(node); // Enable special sub-tree drawing mode.
+    m_view->setNodeToDraw(&node); // Enable special sub-tree drawing mode.
 
     // Document::updateLayout may have blown away the original RenderObject.
-    RenderObject* renderer = node->renderer();
+    RenderObject* renderer = node.renderer();
     if (!renderer)
         return nullptr;
 

@@ -243,9 +243,7 @@ PassOwnPtr<DragImage> Clipboard::createDragImage(IntPoint& loc, LocalFrame* fram
     if (m_dragImageElement) {
         loc = m_dragLoc;
 
-        // https://code.google.com/p/chromium/issues/detail?id=354373
-        DisableCompositingQueryAsserts disabler;
-        return frame->nodeImage(m_dragImageElement.get());
+        return frame->nodeImage(*m_dragImageElement);
     }
     if (m_dragImage) {
         loc = m_dragLoc;

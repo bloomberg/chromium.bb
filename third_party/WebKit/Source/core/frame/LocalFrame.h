@@ -129,7 +129,7 @@ namespace WebCore {
 
         String documentTypeString() const;
 
-        PassOwnPtr<DragImage> nodeImage(Node*);
+        PassOwnPtr<DragImage> nodeImage(Node&);
         PassOwnPtr<DragImage> dragImageForSelection();
 
         String selectedText() const;
