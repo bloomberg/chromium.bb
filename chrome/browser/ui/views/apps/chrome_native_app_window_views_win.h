@@ -17,6 +17,9 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViews {
  private:
   void ActivateParentDesktopIfNecessary();
 
+  void OnShortcutInfoLoaded(
+      const ShellIntegration::ShortcutInfo& shortcut_info);
+
   HWND GetNativeAppWindowHWND() const;
 
   // Overridden from ChromeNativeAppWindowViews:
