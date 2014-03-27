@@ -423,6 +423,38 @@
         <message desc="Text shown in tooltip when user touches an offline host on the device." name="IDS_HOST_OFFLINE_TOOLTIP" formatter_data="android_java">
           Host is offline.
         </message>
+
+<!-- Play Store listings text. These Android-specific strings are not marked
+     with formatter_data="android_java" since they are used only for the Play
+     Store listings, and should not be bundled in the APK.
+-->
+        <message name="IDS_PLAY_STORE_TITLE" desc="Play Store title of the Chrome Remote Desktop app for Android. [CHAR-LIMIT=30] [NAME=play_store_title]">
+          Chrome Remote Desktop
+        </message>
+        <message name="IDS_PLAY_STORE_TAGLINE" desc="Play Store tagline for the Chrome Remote Desktop app for Android. [CHAR-LIMIT=80] [NAME=play_store_tagline]">
+          Securely access your computers from your Android device.
+        </message>
+        <message name="IDS_PLAY_STORE_DESCRIPTION" desc="Play Store description of the Chrome Remote Desktop app for Android. [CHAR-LIMIT=4000] [NAME=play_store_description]">
+Securely access your computers from your Android device.
+
+• On each of your computers, set up remote access using the Chrome Remote Desktop app from Chrome Web Store: https://chrome.google.com/remotedesktop
+• On your Android device, open the app and tap on any of your online computers to connect.
+
+For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj) and the Chrome Privacy Policy (http://goo.gl/0uXE5d).
+        </message>
+        <message name="IDS_PLAY_STORE_DESCRIPTION_ALTERNATE" desc="Play Store description of the Chrome Remote Desktop app for Android. [CHAR-LIMIT=4000] [NAME=play_store_description_alternate]">
+Securely access your computers from your Android device.
+
+• On each of your computers, set up remote access using the Chrome Remote Desktop app from Chrome Web Store: https://chrome.google.com/remotedesktop
+• On your Android device, open the app and tap on any of your online computers to connect.
+
+Remote computers with non US-English keyboards may receive incorrect text input. Support for other keyboard layouts is coming soon!
+
+For information about privacy, please see the Google Privacy Policy (http://goo.gl/SyrVzj) and the Chrome Privacy Policy (http://goo.gl/0uXE5d).
+        </message>
+        <message name="IDS_PLAY_STORE_CHANGES" desc="List of what's changed in this release of Chrome Remote Desktop for Android. [CHAR-LIMIT=500] [NAME=play_store_changes]">
+First release of Chrome Remote Desktop for Android.
+        </message>
       </if>
 
       <message desc="Label for the access code entry box. This is where the client user enters the code that permits access to the host." name="IDS_ACCESS_CODE">
