@@ -394,12 +394,13 @@ static void makeLayerChildFrameMap(const LocalFrame* currentFrame, LayerFrameMap
     map->clear();
     const FrameTree& tree = currentFrame->tree();
     for (const LocalFrame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
-        const RenderLayer* containingLayer = child->ownerRenderer()->enclosingLayer();
-        LayerFrameMap::iterator iter = map->find(containingLayer);
-        if (iter == map->end())
-            map->add(containingLayer, Vector<const LocalFrame*>()).storedValue->value.append(child);
-        else
-            iter->value.append(child);
+        if (const RenderLayer* containingLayer = child->ownerRenderer()->enclosingLayer()) {
+            LayerFrameMap::iterator iter = map->find(containingLayer);
+            if (iter == map->end())
+                map->add(containingLayer, Vector<const LocalFrame*>()).storedValue->value.append(child);
+            else
+                iter->value.append(child);
+        }
     }
 }
 
