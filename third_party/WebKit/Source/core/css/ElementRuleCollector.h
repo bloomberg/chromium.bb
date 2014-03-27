@@ -98,10 +98,18 @@ template <> struct VectorTraits<WebCore::MatchedRule> : VectorTraitsBase<WebCore
 namespace WebCore {
 
 // FIXME: oilpan: when transition types are gone this class can be replaced with HeapVector.
-class StyleRuleList : public RefCounted<StyleRuleList> {
+class StyleRuleList FINAL : public RefCountedWillBeGarbageCollected<StyleRuleList> {
 public:
-    static PassRefPtr<StyleRuleList> create() { return adoptRef(new StyleRuleList()); }
-    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRule> > m_list;
+    static PassRefPtrWillBeRawPtr<StyleRuleList> create() { return adoptRefWillBeNoop(new StyleRuleList()); }
+
+    void trace(Visitor* visitor)
+    {
+#if ENABLE(OILPAN)
+        visitor->trace(m_list);
+#endif
+    }
+
+    WillBeHeapVector<RawPtrWillBeMember<StyleRule> > m_list;
 };
 
 // ElementRuleCollector is designed to be used as a stack object.
@@ -123,7 +131,7 @@ public:
     bool hasAnyMatchingRules(RuleSet*);
 
     MatchResult& matchedResult();
-    PassRefPtr<StyleRuleList> matchedStyleRuleList();
+    PassRefPtrWillBeRawPtr<StyleRuleList> matchedStyleRuleList();
     PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 
     void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
@@ -176,7 +184,7 @@ private:
 
     // Output.
     RefPtrWillBeMember<StaticCSSRuleList> m_cssRuleList;
-    RefPtr<StyleRuleList> m_styleRuleList;
+    RefPtrWillBeMember<StyleRuleList> m_styleRuleList;
     MatchResult m_result;
 };
 

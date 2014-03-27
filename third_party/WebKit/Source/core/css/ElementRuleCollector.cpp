@@ -65,7 +65,7 @@ MatchResult& ElementRuleCollector::matchedResult()
     return m_result;
 }
 
-PassRefPtr<StyleRuleList> ElementRuleCollector::matchedStyleRuleList()
+PassRefPtrWillBeRawPtr<StyleRuleList> ElementRuleCollector::matchedStyleRuleList()
 {
     ASSERT(m_mode == SelectorChecker::CollectingStyleRules);
     return m_styleRuleList.release();

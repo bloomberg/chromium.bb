@@ -1016,7 +1016,7 @@ void StyleResolver::updateFont(StyleResolverState& state)
         state.style()->setHasViewportUnits();
 }
 
-PassRefPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
+PassRefPtrWillBeRawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
 {
     ASSERT(element);
     StyleResolverState state(document(), element);
