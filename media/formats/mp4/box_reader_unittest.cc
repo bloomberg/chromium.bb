@@ -181,12 +181,9 @@ TEST_F(BoxReaderTest, ReadAllChildrenTest) {
   EXPECT_EQ(kids[0].val, 0xdeadbeef);   // Ensure order is preserved
 }
 
-TEST_F(BoxReaderTest, SkippingBloc) {
-  static const uint8 kData[] = {
-    0x00, 0x00, 0x00, 0x09,  'b',  'l',  'o',  'c', 0x00
-  };
+static void TestTopLevelBox(const uint8* data, int size, uint32 fourCC) {
 
-  std::vector<uint8> buf(kData, kData + sizeof(kData));
+  std::vector<uint8> buf(data, data + size);
 
   bool err;
   scoped_ptr<BoxReader> reader(
@@ -194,7 +191,44 @@ TEST_F(BoxReaderTest, SkippingBloc) {
 
   EXPECT_FALSE(err);
   EXPECT_TRUE(reader);
-  EXPECT_EQ(FOURCC_BLOC, reader->type());
+  EXPECT_EQ(fourCC, reader->type());
+  EXPECT_EQ(reader->size(), size);
+}
+
+TEST_F(BoxReaderTest, SkippingBloc) {
+  static const uint8 kData[] = {
+    0x00, 0x00, 0x00, 0x09,  'b',  'l',  'o',  'c', 0x00
+  };
+
+  TestTopLevelBox(kData, sizeof(kData), FOURCC_BLOC);
+}
+
+TEST_F(BoxReaderTest, SkippingEmsg) {
+  static const uint8 kData[] = {
+    0x00, 0x00, 0x00, 0x24,  'e',  'm',  's',  'g',
+    0x00,  // version = 0
+    0x00, 0x00, 0x00,  // flags = 0
+    0x61, 0x00,  // scheme_id_uri = "a"
+    0x61, 0x00,  // value = "a"
+    0x00, 0x00, 0x00, 0x01,  // timescale = 1
+    0x00, 0x00, 0x00, 0x02,  // presentation_time_delta = 2
+    0x00, 0x00, 0x00, 0x03,  // event_duration = 3
+    0x00, 0x00, 0x00, 0x04,  // id = 3
+    0x05, 0x06, 0x07, 0x08,  // message_data[4] = 0x05060708
+  };
+
+  TestTopLevelBox(kData, sizeof(kData), FOURCC_EMSG);
+}
+
+TEST_F(BoxReaderTest, SkippingUuid) {
+  static const uint8 kData[] = {
+    0x00, 0x00, 0x00, 0x19,  'u',  'u',  'i',  'd',
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,  // usertype
+    0x00,
+  };
+
+  TestTopLevelBox(kData, sizeof(kData), FOURCC_UUID);
 }
 
 }  // namespace mp4

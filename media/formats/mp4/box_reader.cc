@@ -155,11 +155,13 @@ bool BoxReader::IsValidTopLevelBox(const FourCC& type,
     case FOURCC_SIDX:
     case FOURCC_SSIX:
     case FOURCC_PRFT:
+    case FOURCC_UUID:
+    case FOURCC_EMSG:
       return true;
     default:
       // Hex is used to show nonprintable characters and aid in debugging
-      MEDIA_LOG(log_cb) << "Unrecognized top-level box type 0x"
-                        << std::hex << type;
+      MEDIA_LOG(log_cb) << "Unrecognized top-level box type "
+                        << FourCCToString(type);
       return false;
   }
 }
