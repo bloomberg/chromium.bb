@@ -28,6 +28,7 @@
 #define StyleMedia_h
 
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -35,12 +36,14 @@ namespace WebCore {
 
 class LocalFrame;
 
-class StyleMedia : public RefCounted<StyleMedia>, public DOMWindowProperty {
+class StyleMedia : public RefCountedWillBeGarbageCollectedFinalized<StyleMedia>, public DOMWindowProperty {
 public:
-    static PassRefPtr<StyleMedia> create(LocalFrame* frame) { return adoptRef(new StyleMedia(frame));}
+    static PassRefPtrWillBeRawPtr<StyleMedia> create(LocalFrame* frame) { return adoptRefWillBeNoop(new StyleMedia(frame));}
 
     AtomicString type() const;
     bool matchMedium(const String&) const;
+
+    void trace(Visitor*) { }
 
 private:
     explicit StyleMedia(LocalFrame*);

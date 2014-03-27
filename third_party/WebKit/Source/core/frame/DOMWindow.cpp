@@ -1878,6 +1878,7 @@ void DOMWindow::trace(Visitor* visitor)
     visitor->trace(m_console);
     visitor->trace(m_navigator);
     visitor->trace(m_location);
+    visitor->trace(m_media);
     visitor->trace(m_sessionStorage);
     visitor->trace(m_localStorage);
     visitor->trace(m_applicationCache);

@@ -360,7 +360,7 @@ enum PageshowEventPersistence {
         mutable RefPtrWillBeMember<Console> m_console;
         mutable RefPtrWillBeMember<Navigator> m_navigator;
         mutable RefPtrWillBeMember<Location> m_location;
-        mutable RefPtr<StyleMedia> m_media;
+        mutable RefPtrWillBeMember<StyleMedia> m_media;
 
         String m_status;
         String m_defaultStatus;

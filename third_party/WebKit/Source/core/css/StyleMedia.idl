@@ -25,7 +25,8 @@
  */
 
 [
-    NoInterfaceObject
+    NoInterfaceObject,
+    WillBeGarbageCollected
 ] interface StyleMedia {
     readonly attribute DOMString type;
     boolean matchMedium([Default=Undefined] optional DOMString mediaquery);
