@@ -37,14 +37,12 @@ class SmoothnessUnitTest(
      i.e. it only checks if the metrics are present and non-zero.
   """
   def testSyntheticDelayConfiguration(self):
-    attributes = {
-      'synthetic_delays': {
+    test_page = page.Page('http://dummy', None)
+    test_page.synthetic_delays = {
         'cc.BeginMainFrame': { 'target_duration': 0.012 },
         'cc.DrawAndSwap': { 'target_duration': 0.012, 'mode': 'alternating' },
         'gpu.SwapBuffers': { 'target_duration': 0.012 }
-      }
     }
-    test_page = page.Page('http://dummy', None, attributes=attributes)
 
     tab = FakeTab()
     measurement = smoothness.Smoothness()
