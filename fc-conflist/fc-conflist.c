@@ -1,7 +1,9 @@
 /*
- * fontconfig/fc-pattern/fc-pattern.c
+ * fontconfig/fc-conflist/fc-conflist.c
  *
  * Copyright © 2003 Keith Packard
+ * Copyright © 2014 Red Hat, Inc.
+ * Red Hat Author(s): Akira TAGOH
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -57,9 +59,6 @@
 #define _GNU_SOURCE
 #include <getopt.h>
 static const struct option longopts[] = {
-    {"config", 0, 0, 'c'},
-    {"default", 0, 0, 'd'},
-    {"format", 1, 0, 'f'},
     {"version", 0, 0, 'V'},
     {"help", 0, 0, 'h'},
     {NULL,0,0,0},
@@ -76,26 +75,20 @@ usage (char *program, int error)
 {
     FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (file, _("usage: %s [-cdVh] [-f FORMAT] [--config] [--default] [--verbose] [--format=FORMAT] [--version] [--help] [pattern] {element...}\n"),
+    fprintf (file, _("usage: %s [-Vh] [--version] [--help]\n"),
 	     program);
 #else
-    fprintf (file, _("usage: %s [-cdVh] [-f FORMAT] [pattern] {element...}\n"),
+    fprintf (file, _("usage: %s [-Vh]\n"),
 	     program);
 #endif
-    fprintf (file, _("List best font matching [pattern]\n"));
+    fprintf (file, _("Show the ruleset files information on the system\n"));
     fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
-    fprintf (file, _("  -c, --config         perform config substitution on pattern\n"));
-    fprintf (file, _("  -d, -default         perform default substitution on pattern\n"));
-    fprintf (file, _("  -f, --format=FORMAT  use the given output format\n"));
     fprintf (file, _("  -V, --version        display font config version and exit\n"));
     fprintf (file, _("  -h, --help           display this help and exit\n"));
 #else
-    fprintf (file, _("  -c,        (config)  perform config substitution on pattern\n"));
-    fprintf (file, _("  -d,        (default) perform default substitution on pattern\n"));
-    fprintf (file, _("  -f FORMAT  (format)  use the given output format\n"));
-    fprintf (file, _("  -V         (version) display font config version and exit\n"));
-    fprintf (file, _("  -h         (help)    display this help and exit\n"));
+    fprintf (file, _("  -V         (version)      display font config version and exit\n"));
+    fprintf (file, _("  -h         (help)         display this help and exit\n"));
 #endif
     exit (error);
 }
@@ -103,32 +96,21 @@ usage (char *program, int error)
 int
 main (int argc, char **argv)
 {
-    int		do_config = 0, do_default = 0;
-    FcChar8     *format = NULL;
-    int		i;
-    FcObjectSet *os = 0;
-    FcPattern   *pat;
+    FcConfig *config;
+    FcConfigFileInfoIter iter;
+
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "cdf:Vh", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "Vh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "cdf:Vh")) != -1)
+    while ((c = getopt (argc, argv, "Vh")) != -1)
 #endif
     {
 	switch (c) {
-	case 'c':
-	    do_config = 1;
-	    break;
-	case 'd':
-	    do_default = 1;
-	    break;
-	case 'f':
-	    format = (FcChar8 *) strdup (optarg);
-	    break;
 	case 'V':
-	    fprintf (stderr, "fontconfig version %d.%d.%d\n", 
+	    fprintf (stderr, "fontconfig version %d.%d.%d\n",
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
 	case 'h':
@@ -137,65 +119,22 @@ main (int argc, char **argv)
 	    usage (argv[0], 1);
 	}
     }
-    i = optind;
-#else
-    i = 1;
 #endif
 
-    if (argv[i])
+    config = FcConfigGetCurrent ();
+    FcConfigFileInfoIterInit (config, &iter);
+    do
     {
-	pat = FcNameParse ((FcChar8 *) argv[i]);
-	if (!pat)
+	FcChar8 *name, *desc;
+	FcBool enabled;
+
+	if (FcConfigFileInfoIterGet (config, &iter, &name, &desc, &enabled))
 	{
-	    fprintf (stderr, _("Unable to parse the pattern\n"));
-	    return 1;
+	    printf ("%c %s: %s\n", enabled ? '+' : '-', name, desc);
+	    FcStrFree (name);
+	    FcStrFree (desc);
 	}
-	while (argv[++i])
-	{
-	    if (!os)
-		os = FcObjectSetCreate ();
-	    FcObjectSetAdd (os, argv[i]);
-	}
-    }
-    else
-	pat = FcPatternCreate ();
-
-    if (!pat)
-	return 1;
-
-    if (do_config)
-      FcConfigSubstitute (0, pat, FcMatchPattern);
-    if (do_default)
-      FcDefaultSubstitute (pat);
-
-    if (os)
-    {
-      FcPattern *new;
-      new = FcPatternFilter (pat, os);
-      FcPatternDestroy (pat);
-      pat = new;
-    }
-
-    if (format)
-    {
-	FcChar8 *s;
-
-	s = FcPatternFormat (pat, format);
-	if (s)
-	{
-	    printf ("%s", s);
-	    FcStrFree (s);
-	}
-    }
-    else
-    {
-	FcPatternPrint (pat);
-    }
-
-    FcPatternDestroy (pat);
-
-    if (os)
-	FcObjectSetDestroy (os);
+    } while (FcConfigFileInfoIterNext (config, &iter));
 
     FcFini ();
 

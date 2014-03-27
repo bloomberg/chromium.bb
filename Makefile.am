@@ -22,8 +22,9 @@
 #  PERFORMANCE OF THIS SOFTWARE.
 
 SUBDIRS=fontconfig fc-case fc-lang src \
-	fc-cache fc-cat fc-list fc-match fc-pattern fc-query fc-scan \
-	fc-validate conf.d test
+	fc-cache fc-cat fc-conflist fc-list fc-match \
+	fc-pattern fc-query fc-scan fc-validate conf.d \
+	po po-conf test
 if ENABLE_DOCS
 SUBDIRS += doc
 endif
@@ -31,11 +32,12 @@ endif
 ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = \
-        fontconfig.pc.in \
-        fonts.conf.in \
+	config.rpath  \
+	fontconfig.pc.in \
+	fonts.conf.in \
 	fonts.dtd \
-        fontconfig.spec.in \
-        fontconfig.spec \
+	fontconfig.spec.in \
+	fontconfig.spec \
 	fontconfig-zip.in \
 	config-fixups.h
 CLEANFILES = fonts.conf

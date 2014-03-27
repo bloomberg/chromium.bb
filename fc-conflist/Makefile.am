@@ -1,5 +1,5 @@
 #
-#  fontconfig/fc-validate/Makefile.am
+#  fontconfig/fc-conflist/Makefile.am
 #
 #  Copyright © 2003 Keith Packard
 #
@@ -21,27 +21,27 @@
 #  TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 #  PERFORMANCE OF THIS SOFTWARE.
 
-bin_PROGRAMS=fc-validate
+bin_PROGRAMS=fc-conflist
 
 DOC2MAN = docbook2man
 
-FC_VALIDATE_SRC=${top_srcdir}/fc-validate
+FC_VALIDATE_SRC=${top_srcdir}/fc-conflist
 
-SGML = ${FC_VALIDATE_SRC}/fc-validate.sgml
+SGML = ${FC_VALIDATE_SRC}/fc-conflist.sgml
 
 AM_CPPFLAGS=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
-BUILT_MANS=fc-validate.1
+BUILT_MANS=fc-conflist.1
 
 if ENABLE_DOCS
 man_MANS=${BUILT_MANS}
 endif
 
-EXTRA_DIST=fc-validate.sgml $(BUILT_MANS)
+EXTRA_DIST=fc-conflist.sgml $(BUILT_MANS)
 
 CLEANFILES =
 
-fc_validate_LDADD = ${top_builddir}/src/libfontconfig.la $(FREETYPE_LIBS)
+fc_conflist_LDADD = ${top_builddir}/src/libfontconfig.la $(FREETYPE_LIBS)
 
 if USEDOCBOOK
 
