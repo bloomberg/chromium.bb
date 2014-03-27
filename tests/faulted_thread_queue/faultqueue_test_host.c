@@ -38,6 +38,9 @@ static const int kBreakInstructionSignal = NACL_ABI_SIGSEGV;
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 static const int kBreakInstructionSize = 4;
 static const int kBreakInstructionSignal = NACL_ABI_SIGILL;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+static const int kBreakInstructionSize = 4;
+static const int kBreakInstructionSignal = NACL_ABI_SIGTRAP;
 #else
 # error Unsupported architecture
 #endif
@@ -165,9 +168,10 @@ void TestSingleStepping(struct NaClAppThread *natp) {
   NaClAppThreadSetSuspendedRegisters(natp, &regs);
 }
 
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm || \
+      NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
 
-/* ARM does not have hardware single-stepping, so nothing to do here. */
+/* ARM/MIPS do not have hardware single-stepping, so nothing to do here. */
 void TestSingleStepping(struct NaClAppThread *natp) {
   UNREFERENCED_PARAMETER(natp);
 }

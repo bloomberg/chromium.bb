@@ -76,6 +76,23 @@ int main(int argc, char **argv) {
          */
         "b DoLongjmp\n"
         ".p2align 4\n");
+#elif defined(__mips__)
+    ASM_WITH_REGS(
+        expected_regs,
+        ".p2align 4\n"
+        ".global FaultAddr\n"
+        "FaultAddr: .word " NACL_TO_STRING(NACL_HALT_WORD) "\n"
+        "nop\n"
+        /*
+         * MIPS does not provide hardware single-stepping so we do not
+         * test it here, unlike in the x86 case.
+         */
+        "lui $t9, %%hi(DoLongjmp)\n"
+        "addiu $t9, $t9, %%lo(DoLongjmp)\n"
+        "and $t9, $t9, $t6\n"
+        "jr $t9\n"
+        "nop\n"
+        ".p2align 4\n");
 #else
 # error Unknown architecture
 #endif
