@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
@@ -102,6 +103,44 @@ void ProfileDownloaderAndroid::OnProfileDownloadSuccess(
       base::android::ConvertUTF8ToJavaString(env, account_id).obj(),
       base::android::ConvertUTF16ToJavaString(env, full_name).obj(),
       jbitmap.obj());
+}
+
+// static
+jstring GetCachedNameForPrimaryAccount(JNIEnv* env,
+                                       jclass clazz,
+                                       jobject jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  ProfileInfoInterface& info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  const size_t index = info.GetIndexOfProfileWithPath(profile->GetPath());
+
+  base::string16 name;
+  if (index != std::string::npos) {
+    name = info.GetGAIANameOfProfileAtIndex(index);
+    if (name.empty())
+      name = info.GetNameOfProfileAtIndex(index);
+  }
+
+  return base::android::ConvertUTF16ToJavaString(env, name).Release();
+}
+
+// static
+jobject GetCachedAvatarForPrimaryAccount(JNIEnv* env,
+                                         jclass clazz,
+                                         jobject jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  ProfileInfoInterface& info =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  const size_t index = info.GetIndexOfProfileWithPath(profile->GetPath());
+
+  ScopedJavaLocalRef<jobject> jbitmap;
+  if (index != std::string::npos) {
+    const gfx::Image& img = info.GetAvatarIconOfProfileAtIndex(index);
+    if (!img.IsEmpty() && img.AsImageSkia().bitmap())
+      jbitmap = gfx::ConvertToJavaBitmap(img.AsImageSkia().bitmap());
+  }
+
+  return jbitmap.Release();
 }
 
 // static

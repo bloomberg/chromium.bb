@@ -67,7 +67,25 @@ public class ProfileDownloader {
         }
     }
 
+    /**
+     * @param profile Profile
+     * @return The profile name if cached, or null.
+     */
+    public static String getCachedName(Profile profile) {
+        return nativeGetCachedNameForPrimaryAccount(profile);
+    }
+
+    /**
+     * @param profile Profile
+     * @return The profile avatar if cached, or null.
+     */
+    public static Bitmap getCachedAvatar(Profile profile) {
+        return nativeGetCachedAvatarForPrimaryAccount(profile);
+    }
+
     // Native methods.
     private static native void nativeStartFetchingAccountInfoFor(
             Profile profile, String accountId, int imageSidePixels);
+    private static native String nativeGetCachedNameForPrimaryAccount(Profile profile);
+    private static native Bitmap nativeGetCachedAvatarForPrimaryAccount(Profile profile);
 }
