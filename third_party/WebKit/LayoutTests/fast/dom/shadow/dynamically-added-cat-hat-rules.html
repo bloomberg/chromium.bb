@@ -38,8 +38,8 @@ sandbox.appendChild(
 document.body.offsetLeft;
 
 var style = document.createElement('style');
-style.innerHTML = 'div /shadow/ .foo { background: green; }'
-    + 'div /shadow/ #target2 { background: green; }'
+style.innerHTML = 'div::shadow .foo { background: green; }'
+    + 'div::shadow #target2 { background: green; }'
     + 'div /deep/ .bar { background: blue; }'
     + 'div /deep/ #target4 { background: blue; }';
 document.body.appendChild(style);

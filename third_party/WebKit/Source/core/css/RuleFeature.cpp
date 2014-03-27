@@ -51,6 +51,7 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
         case CSSSelector::PseudoBefore:
         case CSSSelector::PseudoAfter:
         case CSSSelector::PseudoBackdrop:
+        case CSSSelector::PseudoShadow:
             return true;
         default:
             return false;
@@ -128,7 +129,7 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
         switch (component->relation()) {
         case CSSSelector::Descendant:
         case CSSSelector::Child:
-        case CSSSelector::Shadow:
+        case CSSSelector::ShadowPseudo:
         case CSSSelector::ShadowDeep:
             foundDescendantRelation = true;
             // Fall through!

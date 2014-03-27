@@ -126,6 +126,8 @@ private:
     Match matchForRelation(const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
     template<typename SiblingTraversalStrategy>
     Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
+    template<typename SiblingTraversalStrategy>
+    Match matchForPseudoShadow(const ContainerNode*, const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
 
     bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector&) const;
     Element* parentElement(const SelectorCheckingContext&, bool allowToCrossBoundary = false) const;

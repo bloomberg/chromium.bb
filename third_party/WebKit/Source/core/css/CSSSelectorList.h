@@ -61,7 +61,7 @@ public:
     bool selectorsNeedNamespaceResolution();
 
     bool hasShadowDistributedAt(size_t index) const;
-    bool hasCombinatorCrossingTreeBoundaryAt(size_t index) const;
+    bool selectorCrossesTreeScopes(size_t index) const;
 
     String selectorsText() const;
 

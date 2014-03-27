@@ -40,7 +40,7 @@ sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host /shadow/ div { background: green; }')),
+                document.createTextNode(':host::shadow div { background: green; }')),
             createDOM('div', {},
                 document.createTextNode('older div'))),
         createShadowRoot(

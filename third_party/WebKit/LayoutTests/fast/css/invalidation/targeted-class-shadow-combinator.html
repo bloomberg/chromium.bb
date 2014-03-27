@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../../../resources/js-test.js"></script>
 <style>
-.t1 #host1 /shadow/ .match { background-color: green; }
+.t1 #host1::shadow .match { background-color: green; }
 .t2 /deep/ .match { background-color: green; }
 </style>
 <div id="t1">
@@ -13,7 +13,7 @@
     <div></div>
 </div>
 <script>
-description("Check that targeted class invalidation works for /shadow/ and /deep/ combinators.");
+description("Check that targeted class invalidation works for ::shadow and /deep/ combinators.");
 
 // Create shadow trees
 

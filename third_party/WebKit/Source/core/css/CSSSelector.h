@@ -128,11 +128,8 @@ namespace WebCore {
             DirectAdjacent, // + combinator
             IndirectAdjacent, // ~ combinator
             SubSelector, // "No space" combinator
-            ShadowPseudo, // Special case of shadow DOM pseudo elements
-            // FIXME: implement named combinator (i.e. named relation) and
-            // replace the following /shadow/ and /shadow-deep/ with the implementation.
-            Shadow, // /shadow/ combinator
-            ShadowDeep, // /shadow-deep/ combinator
+            ShadowPseudo, // Special case of shadow DOM pseudo elements / shadow pseudo element
+            ShadowDeep // /shadow-deep/ combinator
         };
 
         enum PseudoType {
@@ -217,7 +214,8 @@ namespace WebCore {
             PseudoUnresolved,
             PseudoContent,
             PseudoHost,
-            PseudoHostContext
+            PseudoHostContext,
+            PseudoShadow
         };
 
         enum MarginBoxType {
@@ -287,6 +285,7 @@ namespace WebCore {
         bool isSiblingSelector() const;
         bool isAttributeSelector() const;
         bool isContentPseudoElement() const;
+        bool isShadowPseudoElement() const;
         bool isHostPseudoClass() const;
 
         // FIXME: selectors with no tagHistory() get a relation() of Descendant. It should instead be
@@ -415,6 +414,11 @@ inline bool CSSSelector::isAttributeSelector() const
 inline bool CSSSelector::isContentPseudoElement() const
 {
     return m_match == PseudoElement && pseudoType() == PseudoContent;
+}
+
+inline bool CSSSelector::isShadowPseudoElement() const
+{
+    return m_match == PseudoElement && pseudoType() == PseudoShadow;
 }
 
 inline void CSSSelector::setValue(const AtomicString& value)

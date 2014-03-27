@@ -1899,7 +1899,7 @@ QualifiedName BisonCSSParser::determineNameInNamespace(const AtomicString& prefi
 
 CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithNamespaceIfNeeded(CSSParserSelector* specifiers)
 {
-    if (m_defaultNamespace != starAtom || specifiers->needsCrossingTreeScopeBoundary())
+    if (m_defaultNamespace != starAtom || specifiers->crossesTreeScopes())
         return rewriteSpecifiersWithElementName(nullAtom, starAtom, specifiers, /*tagIsForNamespaceRule*/true);
     return specifiers;
 }
@@ -1909,7 +1909,7 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementName(const Atomic
     AtomicString determinedNamespace = namespacePrefix != nullAtom && m_styleSheet ? m_styleSheet->determineNamespace(namespacePrefix) : m_defaultNamespace;
     QualifiedName tag(namespacePrefix, elementName, determinedNamespace);
 
-    if (specifiers->needsCrossingTreeScopeBoundary())
+    if (specifiers->crossesTreeScopes())
         return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
 
     if (specifiers->isContentPseudoElement())
@@ -1933,7 +1933,7 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForCustomPseu
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
         history = history->tagHistory();
-        if (history->needsCrossingTreeScopeBoundary() || history->hasShadowPseudo())
+        if (history->crossesTreeScopes() || history->hasShadowPseudo())
             lastShadowPseudo = history;
     }
 
@@ -1977,7 +1977,7 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForContentPse
 
 CSSParserSelector* BisonCSSParser::rewriteSpecifiers(CSSParserSelector* specifiers, CSSParserSelector* newSpecifier)
 {
-    if (newSpecifier->needsCrossingTreeScopeBoundary()) {
+    if (newSpecifier->crossesTreeScopes()) {
         // Unknown pseudo element always goes at the top of selector chain.
         newSpecifier->appendTagHistory(CSSSelector::ShadowPseudo, sinkFloatingSelector(specifiers));
         return newSpecifier;
@@ -1986,7 +1986,7 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiers(CSSParserSelector* specifie
         newSpecifier->appendTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(specifiers));
         return newSpecifier;
     }
-    if (specifiers->needsCrossingTreeScopeBoundary()) {
+    if (specifiers->crossesTreeScopes()) {
         // Specifiers for unknown pseudo element go right behind it in the chain.
         specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::ShadowPseudo);
         return specifiers;

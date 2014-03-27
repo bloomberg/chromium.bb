@@ -234,7 +234,7 @@ public:
 
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
     bool isCustomPseudoElement() const { return m_selector->isCustomPseudoElement(); }
-    bool needsCrossingTreeScopeBoundary() const { return isCustomPseudoElement() || pseudoType() == CSSSelector::PseudoCue; }
+    bool crossesTreeScopes() const { return isCustomPseudoElement() || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow; }
 
     bool isSimple() const;
     bool hasShadowPseudo() const;

@@ -254,6 +254,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoContent:
     case PseudoHost:
     case PseudoHostContext:
+    case PseudoShadow:
     case PseudoFullScreen:
     case PseudoFullScreenDocument:
     case PseudoFullScreenAncestor:
@@ -354,6 +355,7 @@ const static NameToPseudoStruct pseudoTypeMap[] = {
 {"host(",                         CSSSelector::PseudoHost},
 {"host-context(",                 CSSSelector::PseudoHostContext},
 {"content",                       CSSSelector::PseudoContent},
+{"shadow",                        CSSSelector::PseudoShadow},
 };
 
 static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
@@ -454,6 +456,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoUserAgentCustomElement:
     case PseudoWebKitCustomElement:
     case PseudoContent:
+    case PseudoShadow:
         element = true;
         break;
     case PseudoUnknown:
@@ -690,8 +693,6 @@ String CSSSelector::selectorText(const String& rightSide) const
             return tagHistory->selectorText(" " + str.toString() + rightSide);
         case CSSSelector::Child:
             return tagHistory->selectorText(" > " + str.toString() + rightSide);
-        case CSSSelector::Shadow:
-            return tagHistory->selectorText(" /shadow/ " + str.toString() + rightSide);
         case CSSSelector::ShadowDeep:
             return tagHistory->selectorText(" /deep/ " + str.toString() + rightSide);
         case CSSSelector::DirectAdjacent:

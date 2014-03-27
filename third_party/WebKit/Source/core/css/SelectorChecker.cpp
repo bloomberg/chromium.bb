@@ -154,6 +154,9 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
         } else if (context.selector->isContentPseudoElement()) {
             if (!context.element->isInShadowTree() || !context.element->isInsertionPoint())
                 return SelectorFailsLocally;
+        } else if (context.selector->isShadowPseudoElement()) {
+            if (!context.element->isInShadowTree())
+                return SelectorFailsLocally;
         } else {
             if ((!context.elementStyle && m_mode == ResolvingStyle) || m_mode == QueryingRules)
                 return SelectorFailsLocally;
@@ -211,6 +214,11 @@ static inline SelectorChecker::SelectorCheckingContext prepareNextContextForRela
     return nextContext;
 }
 
+static inline bool isAuthorShadowRoot(const Node* node)
+{
+    return node && node->isShadowRoot() && toShadowRoot(node)->type() == ShadowRoot::AuthorShadowRoot;
+}
+
 template<typename SiblingTraversalStrategy>
 SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
 {
@@ -229,6 +237,19 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
 
     nextContext.isSubSelector = true;
     return match(nextContext, siblingTraversalStrategy, result);
+}
+
+static bool selectorMatchesShadowRoot(const CSSSelector* selector)
+{
+    return selector && selector->isShadowPseudoElement();
+}
+
+template<typename SiblingTraversalStrategy>
+SelectorChecker::Match SelectorChecker::matchForPseudoShadow(const ContainerNode* node, const SelectorCheckingContext& context, const SiblingTraversalStrategy& siblingTraversalStrategy, MatchResult* result) const
+{
+    if (!isAuthorShadowRoot(node))
+        return SelectorFailsCompletely;
+    return match(context, siblingTraversalStrategy, result);
 }
 
 template<typename SiblingTraversalStrategy>
@@ -255,6 +276,10 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         }
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
+
+        if (selectorMatchesShadowRoot(nextContext.selector))
+            return matchForPseudoShadow(context.element->containingShadowRoot(), nextContext, siblingTraversalStrategy, result);
+
         for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
             Match match = this->match(nextContext, siblingTraversalStrategy, result);
             if (match == SelectorMatches || match == SelectorFailsCompletely)
@@ -268,12 +293,15 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             if (context.selector->relationIsAffectedByPseudoContent())
                 return matchForShadowDistributed(context.element, siblingTraversalStrategy, nextContext, result);
 
+            nextContext.isSubSelector = false;
+            nextContext.elementStyle = 0;
+
+            if (selectorMatchesShadowRoot(nextContext.selector))
+                return matchForPseudoShadow(context.element->parentNode(), nextContext, siblingTraversalStrategy, result);
+
             nextContext.element = parentElement(context);
             if (!nextContext.element)
                 return SelectorFailsCompletely;
-
-            nextContext.isSubSelector = false;
-            nextContext.elementStyle = 0;
             return match(nextContext, siblingTraversalStrategy, result);
         }
     case CSSSelector::DirectAdjacent:
@@ -304,7 +332,6 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         return SelectorFailsAllSiblings;
 
     case CSSSelector::ShadowPseudo:
-    case CSSSelector::Shadow:
         {
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
             if (context.scope && context.scope->treeScope() == context.element->treeScope() && (context.behaviorAtBoundary & BoundaryBehaviorMask) != StaysWithinTreeScope)

@@ -274,7 +274,7 @@ void RuleSet::addChildRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleB
 
             const CSSSelectorList& selectorList = styleRule->selectorList();
             for (size_t selectorIndex = 0; selectorIndex != kNotFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
-                if (selectorList.hasCombinatorCrossingTreeBoundaryAt(selectorIndex)) {
+                if (selectorList.selectorCrossesTreeScopes(selectorIndex)) {
                     m_treeBoundaryCrossingRules.append(MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
                 } else if (selectorList.hasShadowDistributedAt(selectorIndex)) {
                     m_shadowDistributedRules.append(MinimalRuleData(styleRule, selectorIndex, addRuleFlags));

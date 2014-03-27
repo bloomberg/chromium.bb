@@ -110,7 +110,7 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
     unsigned index = 0;
     for (const CSSSelector* selector = selectorList.first(); selector; selector = CSSSelectorList::next(*selector), ++index) {
         m_selectors.uncheckedAppend(selector);
-        m_crossesTreeBoundary |= selectorList.hasCombinatorCrossingTreeBoundaryAt(index);
+        m_crossesTreeBoundary |= selectorList.selectorCrossesTreeScopes(index);
     }
 }
 

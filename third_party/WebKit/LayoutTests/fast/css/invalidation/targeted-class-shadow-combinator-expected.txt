@@ -1,4 +1,4 @@
-Check that targeted class invalidation works for /shadow/ and /deep/ combinators.
+Check that targeted class invalidation works for ::shadow and /deep/ combinators.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

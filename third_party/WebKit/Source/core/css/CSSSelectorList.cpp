@@ -182,17 +182,17 @@ bool CSSSelectorList::hasShadowDistributedAt(size_t index) const
     return forEachTagSelector(functor, selectorAt(index));
 }
 
-class SelectorHasCombinatorCrossingTreeBoundary {
+class SelectorCrossesTreeScopes {
 public:
     bool operator()(const CSSSelector& selector)
     {
-        return selector.relation() == CSSSelector::Shadow || selector.relation() == CSSSelector::ShadowDeep;
+        return selector.relation() == CSSSelector::ShadowDeep || selector.isShadowPseudoElement();
     }
 };
 
-bool CSSSelectorList::hasCombinatorCrossingTreeBoundaryAt(size_t index) const
+bool CSSSelectorList::selectorCrossesTreeScopes(size_t index) const
 {
-    SelectorHasCombinatorCrossingTreeBoundary functor;
+    SelectorCrossesTreeScopes functor;
     return forEachTagSelector(functor, selectorAt(index));
 }
 
