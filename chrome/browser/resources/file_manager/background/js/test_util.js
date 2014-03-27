@@ -72,6 +72,21 @@ test.util.sync.getWindows = function() {
 };
 
 /**
+ * Closes the specified window.
+ *
+ * @param {string} appId AppId of window to be closed.
+ * @return {boolean} Result: True if success, false otherwise.
+ */
+test.util.sync.closeWindow = function(appId) {
+  if (appId in background.appWindows &&
+      background.appWindows[appId].contentWindow) {
+    background.appWindows[appId].close();
+    return true;
+  }
+  return false;
+};
+
+/**
  * Gets a document in the Files.app's window, including iframes.
  *
  * @param {Window} contentWindow Window to be used.
