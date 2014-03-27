@@ -1509,6 +1509,25 @@ void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegi
     m_canvas->clipRRect(rect, op, aa == AntiAliased);
 }
 
+void GraphicsContext::beginCull(const FloatRect& rect)
+{
+    if (paintingDisabled())
+        return;
+
+    realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
+    m_canvas->pushCull(rect);
+}
+
+void GraphicsContext::endCull()
+{
+    if (paintingDisabled())
+        return;
+
+    realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
+
+    m_canvas->popCull();
+}
+
 void GraphicsContext::rotate(float angleInRadians)
 {
     if (paintingDisabled())

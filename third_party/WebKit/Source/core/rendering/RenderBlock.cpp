@@ -64,6 +64,7 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
+#include "platform/graphics/GraphicsContextCullSaver.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
@@ -1839,11 +1840,12 @@ void RenderBlock::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 
     PaintPhase phase = paintInfo.phase;
 
+    LayoutRect overflowBox;
     // Check if we need to do anything at all.
     // FIXME: Could eliminate the isRoot() check if we fix background painting so that the RenderView
     // paints the root's background.
     if (!isRoot()) {
-        LayoutRect overflowBox = overflowRectForPaintRejection();
+        overflowBox = overflowRectForPaintRejection();
         flipForWritingMode(overflowBox);
         overflowBox.moveBy(adjustedPaintOffset);
         if (!overflowBox.intersects(paintInfo.rect))
@@ -1857,7 +1859,16 @@ void RenderBlock::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         contentsClipBehavior = SkipContentsClipIfPossible;
 
     bool pushedClip = pushContentsClip(paintInfo, adjustedPaintOffset, contentsClipBehavior);
-    paintObject(paintInfo, adjustedPaintOffset);
+    {
+        GraphicsContextCullSaver cullSaver(*paintInfo.context);
+        // Cull if we have more than one child and we didn't already clip.
+        bool shouldCull = document().settings()->containerCullingEnabled() && !pushedClip && !isRoot()
+            && firstChild() && lastChild() && firstChild() != lastChild();
+        if (shouldCull)
+            cullSaver.cull(overflowBox);
+
+        paintObject(paintInfo, adjustedPaintOffset);
+    }
     if (pushedClip)
         popContentsClip(paintInfo, phase, adjustedPaintOffset);
 

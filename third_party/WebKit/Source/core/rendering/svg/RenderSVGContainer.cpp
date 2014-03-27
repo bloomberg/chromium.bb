@@ -25,6 +25,7 @@
 
 #include "core/rendering/svg/RenderSVGContainer.h"
 
+#include "core/frame/Settings.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/LayoutRepainter.h"
@@ -32,6 +33,7 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResources.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
+#include "platform/graphics/GraphicsContextCullSaver.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace WebCore {
@@ -130,10 +132,14 @@ void RenderSVGContainer::paint(PaintInfo& paintInfo, const LayoutPoint&)
         childPaintInfo.applyTransform(localToParentTransform());
 
         SVGRenderingContext renderingContext;
+        GraphicsContextCullSaver cullSaver(*childPaintInfo.context);
         bool continueRendering = true;
         if (childPaintInfo.phase == PaintPhaseForeground) {
             renderingContext.prepareToRenderSVGContent(this, childPaintInfo);
             continueRendering = renderingContext.isRenderingPrepared();
+
+            if (continueRendering && document().settings()->containerCullingEnabled())
+                cullSaver.cull(repaintRectInLocalCoordinates());
         }
 
         if (continueRendering) {

@@ -87,6 +87,7 @@ public:
     virtual void setClobberUserAgentInitialScaleQuirk(bool) = 0;
     virtual void setCompositedScrollingForFramesEnabled(bool) = 0;
     virtual void setCompositorTouchHitTesting(bool) = 0;
+    virtual void setContainerCullingEnabled(bool) = 0;
     virtual void setCookieEnabled(bool) = 0;
     virtual void setNavigateOnDragDrop(bool) = 0;
     virtual void setCursiveFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;

@@ -522,6 +522,11 @@ void WebSettingsImpl::setAntialiased2dCanvasEnabled(bool enabled)
     m_settings->setAntialiased2dCanvasEnabled(enabled);
 }
 
+void WebSettingsImpl::setContainerCullingEnabled(bool enabled)
+{
+    m_settings->setContainerCullingEnabled(enabled);
+}
+
 void WebSettingsImpl::setDeferredImageDecodingEnabled(bool enabled)
 {
     DeferredImageDecoder::setEnabled(enabled);
