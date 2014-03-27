@@ -191,10 +191,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
         if (mAccounts.length == 1) {
             getActionBar().setDisplayShowTitleEnabled(true);
+            getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
             getActionBar().setTitle(R.string.mode_me2me);
             getActionBar().setSubtitle(mAccount.name);
         } else {
             mAccountsAdapter = new AccountsAdapter(this, mAccounts);
+            getActionBar().setDisplayShowTitleEnabled(false);
             getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
             getActionBar().setListNavigationCallbacks(mAccountsAdapter, this);
             getActionBar().setSelectedNavigationItem(index);
