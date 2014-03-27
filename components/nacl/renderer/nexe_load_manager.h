@@ -28,9 +28,7 @@ class NexeLoadManager {
   explicit NexeLoadManager(PP_Instance instance);
   ~NexeLoadManager();
 
-  void ReportLoadError(PP_NaClError error,
-                       const std::string& error_message,
-                       bool is_installed);
+  void ReportLoadError(PP_NaClError error, const std::string& error_message);
 
   // TODO(dmichael): Everything below this comment should eventually be made
   // private, when ppb_nacl_private_impl.cc is no longer using them directly.
@@ -62,12 +60,26 @@ class NexeLoadManager {
 
   void SetReadOnlyProperty(PP_Var key, PP_Var value);
 
+  bool is_installed() { return is_installed_; }
+  void set_is_installed(bool installed) { is_installed_ = installed; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
 
   PP_Instance pp_instance_;
   PP_NaClReadyState nacl_ready_state_;
   bool nexe_error_reported_;
+
+  // A flag indicating if the NaCl executable is being loaded from an installed
+  // application.  This flag is used to bucket UMA statistics more precisely to
+  // help determine whether nexe loading problems are caused by networking
+  // issues.  (Installed applications will be loaded from disk.)
+  // Unfortunately, the definition of what it means to be part of an installed
+  // application is a little murky - for example an installed application can
+  // register a mime handler that loads NaCl executables into an arbitrary web
+  // page.  As such, the flag actually means "our best guess, based on the URLs
+  // for NaCl resources that we have seen so far".
+  bool is_installed_;
 
   // Non-owning.
   content::PepperPluginInstance* plugin_instance_;

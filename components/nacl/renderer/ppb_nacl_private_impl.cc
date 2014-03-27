@@ -443,17 +443,13 @@ void SetReadOnlyProperty(PP_Instance instance,
     load_manager->SetReadOnlyProperty(key, value);
 }
 
-void SetNaClReadyState(PP_Instance instance, PP_NaClReadyState ready_state);
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
                      const char* error_message,
-                     const char* console_message,
-                     PP_Bool is_installed) {
+                     const char* console_message) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager) {
-    load_manager->ReportLoadError(error, error_message,
-                                  PP_ToBool(is_installed));
-  }
+  if (load_manager)
+    load_manager->ReportLoadError(error, error_message);
   LogToConsole(instance, console_message);
 }
 
@@ -531,6 +527,21 @@ void SetNaClReadyState(PP_Instance instance, PP_NaClReadyState ready_state) {
     load_manager->set_nacl_ready_state(ready_state);
 }
 
+PP_Bool GetIsInstalled(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    return PP_FromBool(load_manager->is_installed());
+  return PP_FALSE;
+}
+
+void SetIsInstalled(PP_Instance instance, PP_Bool installed) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    load_manager->set_is_installed(PP_ToBool(installed));
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -556,7 +567,9 @@ const PPB_NaCl_Private nacl_interface = {
   &GetNexeErrorReported,
   &SetNexeErrorReported,
   &GetNaClReadyState,
-  &SetNaClReadyState
+  &SetNaClReadyState,
+  &GetIsInstalled,
+  &SetIsInstalled
 };
 
 }  // namespace

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed Mar 26 10:20:49 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Mar 27 10:43:40 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -294,8 +294,7 @@ struct PPB_NaCl_Private_1_0 {
   void (*ReportLoadError)(PP_Instance instance,
                           PP_NaClError error,
                           const char* error_message,
-                          const char* console_message,
-                          PP_Bool is_installed);
+                          const char* console_message);
   /* Performs internal setup when an instance is created. */
   void (*InstanceCreated)(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */
@@ -321,6 +320,10 @@ struct PPB_NaCl_Private_1_0 {
   /* Sets the NaCl readiness status for this instance. */
   void (*SetNaClReadyState)(PP_Instance instance,
                             PP_NaClReadyState ready_state);
+  /* Returns true if the plugin is an installed app. */
+  PP_Bool (*GetIsInstalled)(PP_Instance instance);
+  /* Sets whether the plugin is an installed app. */
+  void (*SetIsInstalled)(PP_Instance instance, PP_Bool is_installed);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

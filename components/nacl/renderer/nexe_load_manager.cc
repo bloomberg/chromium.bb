@@ -97,8 +97,7 @@ NexeLoadManager::~NexeLoadManager() {
 }
 
 void NexeLoadManager::ReportLoadError(PP_NaClError error,
-                                      const std::string& error_message,
-                                      bool is_installed) {
+                                      const std::string& error_message) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
 
@@ -138,7 +137,7 @@ void NexeLoadManager::ReportLoadError(PP_NaClError error,
 
   HistogramEnumerate("NaCl.LoadStatus.Plugin", error,
                      PP_NACL_ERROR_MAX);
-  std::string uma_name = is_installed ?
+  std::string uma_name = is_installed_ ?
                          "NaCl.LoadStatus.Plugin.InstalledApp" :
                          "NaCl.LoadStatus.Plugin.NotInstalledApp";
   HistogramEnumerate(uma_name, error, PP_NACL_ERROR_MAX);
