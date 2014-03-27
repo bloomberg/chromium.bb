@@ -33,7 +33,7 @@
   width: 100%;
 }
 
-track-list:not([expanded]) > .track:not([active]) {
+:host(:not([expanded]):host) > .track:not([active]) {
   display: none;
 }
 
