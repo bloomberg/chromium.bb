@@ -470,15 +470,13 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   std::string constraints_4_3 = GenerateGetUserMediaCall(
       kGetUserMediaAndAnalyseAndStop, 640, 640, 480, 480, 30, 30);
 
-  // TODO(mcasas): add more aspect ratios, in particular 16:10 crbug.com/275594.
-
   NavigateToURL(shell(), url);
-  ASSERT_EQ("4:3 letterbox",
+  ASSERT_EQ("w=640:h=480",
             ExecuteJavascriptAndReturnResult(constraints_4_3));
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
-// TODO(perkj): Enable this test as soon as crbug/349450 is fixed.
+// TODO(perkj): Enable this test as soon as http://crbug.com/349450 is fixed.
 // Currently the render pipeline doesn't support cropping where the new cropped
 // frame doesn't have the same top left coordinates as the original frame.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
@@ -491,8 +489,26 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
       kGetUserMediaAndAnalyseAndStop, 640, 640, 360, 360, 30, 30);
 
   NavigateToURL(shell(), url);
-  ASSERT_EQ("16:9 letterbox",
+  ASSERT_EQ("w=640:h=360",
             ExecuteJavascriptAndReturnResult(constraints_16_9));
+}
+
+// This test calls getUserMedia and checks for aspect ratio behavior.
+// TODO(perkj): Enable this test as soon as http://crbug.com/349450 is fixed.
+// Currently the render pipeline doesn't support cropping where the new cropped
+// frame doesn't have the same top left coordinates as the original frame.
+IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
+                       DISABLED_TestGetUserMediaAspectRatio1To1) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  std::string constraints_1_1 = GenerateGetUserMediaCall(
+      kGetUserMediaAndAnalyseAndStop, 320, 320, 320, 320, 30, 30);
+
+  NavigateToURL(shell(), url);
+  ASSERT_EQ("w=320:h=320",
+            ExecuteJavascriptAndReturnResult(constraints_1_1));
 }
 
 namespace {
