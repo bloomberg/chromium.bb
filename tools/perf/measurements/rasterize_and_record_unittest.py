@@ -48,3 +48,7 @@ class RasterizeAndRecordUnitTest(
     recorded_pixels = results.FindAllPageSpecificValuesNamed('recorded_pixels')
     self.assertEquals(len(recorded_pixels), 1)
     self.assertGreater(recorded_pixels[0].GetRepresentativeNumber(), 0)
+
+  def testCleanUpTrace(self):
+    self.TestTracingCleanedUp(rasterize_and_record.RasterizeAndRecord,
+                              self._options)

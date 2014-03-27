@@ -62,3 +62,7 @@ class ImageDecoding(page_measurement.PageMeasurement):
     results.Add('ImageDecoding_avg', 'ms', image_decoding_avg)
     results.Add('ImageLoading_avg', 'ms',
                 tab.EvaluateJavaScript('averageLoadingTimeMs()'))
+
+  def CleanUpAfterPage(self, page, tab):
+    if tab.browser.is_tracing_running:
+      tab.browser.StopTracing()

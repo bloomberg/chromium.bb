@@ -54,6 +54,10 @@ class TimelineController(object):
     for combo in itertools.combinations(self._action_ranges, 2):
       assert not combo[0].Intersects(combo[1])
 
+  def CleanUp(self, tab):
+    if tab.browser.is_tracing_running:
+      tab.browser.StopTracing()
+
   def AddActionToIncludeInMetric(self, action):
     self._actions.append(action)
 

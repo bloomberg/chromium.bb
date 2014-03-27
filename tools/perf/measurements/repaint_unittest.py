@@ -42,3 +42,6 @@ class RepaintUnitTest(
     mostly_smooth = results.FindAllPageSpecificValuesNamed('mostly_smooth')
     self.assertEquals(len(mostly_smooth), 1)
     self.assertGreaterEqual(mostly_smooth[0].GetRepresentativeNumber(), 0)
+
+  def testCleanUpTrace(self):
+    self.TestTracingCleanedUp(repaint.Repaint, self._options)

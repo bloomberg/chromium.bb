@@ -24,3 +24,6 @@ class ThreadTimesUnitTest(
       cpu_time_name = timeline.ThreadCpuTimeResultName(category)
       cpu_time = results.FindAllPageSpecificValuesNamed(cpu_time_name)
       self.assertEquals(len(cpu_time), 1)
+
+  def testCleanUpTrace(self):
+    self.TestTracingCleanedUp(thread_times.ThreadTimes, self._options)

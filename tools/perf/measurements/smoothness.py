@@ -33,3 +33,6 @@ class Smoothness(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     self._power_metric.AddResults(tab, results)
     self._smoothness_controller.AddResults(tab, results)
+
+  def CleanUpAfterPage(self, _, tab):
+    self._smoothness_controller.CleanUp(tab)

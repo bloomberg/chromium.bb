@@ -33,3 +33,6 @@ class LoadingTrace(page_measurement.PageMeasurement):
       self._timeline_controller.renderer_process,
       self._timeline_controller.action_ranges)
     timeline_metric.AddResults(tab, results)
+
+  def CleanUpAfterPage(self, _, tab):
+    self._timeline_controller.CleanUp(tab)

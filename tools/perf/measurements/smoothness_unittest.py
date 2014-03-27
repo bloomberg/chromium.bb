@@ -99,3 +99,6 @@ class SmoothnessUnitTest(
       self.assertEquals(len(mean_touch_scroll_latency), 1)
       self.assertGreater(
           mean_touch_scroll_latency[0].GetRepresentativeNumber(), 0)
+
+  def testCleanUpTrace(self):
+    self.TestTracingCleanedUp(smoothness.Smoothness, self._options)

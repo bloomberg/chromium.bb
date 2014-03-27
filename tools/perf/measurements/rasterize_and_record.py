@@ -121,3 +121,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
                 max(FlattenList(stats.rasterized_pixel_counts)))
     results.Add('recorded_pixels', 'pixels',
                 max(FlattenList(stats.recorded_pixel_counts)))
+
+  def CleanUpAfterPage(self, page, tab):
+    if tab.browser.is_tracing_running:
+      tab.browser.StopTracing()

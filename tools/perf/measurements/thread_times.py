@@ -48,3 +48,6 @@ class ThreadTimes(page_measurement.PageMeasurement):
     if self.options.report_silk_details:
       metric.details_to_report = timeline.ReportSilkDetails
     metric.AddResults(tab, results)
+
+  def CleanUpAfterPage(self, _, tab):
+    self._timeline_controller.CleanUp(tab)

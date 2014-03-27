@@ -18,3 +18,6 @@ class LoadingTraceUnitTest(
     trace_options = self._options
     results = self.RunMeasurement(measurement, ps, options = trace_options)
     self.assertEquals(0, len(results.failures))
+
+  def testCleanUpTrace(self):
+    self.TestTracingCleanedUp(loading_trace.LoadingTrace, self._options)

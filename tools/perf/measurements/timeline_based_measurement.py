@@ -132,3 +132,7 @@ class TimelineBasedMeasurement(page_measurement.PageMeasurement):
     meta_metrics = _TimelineBasedMetrics(
       model, renderer_thread, self.CreateMetricsForTimelineInteractionRecord)
     meta_metrics.AddResults(results)
+
+  def CleanUpAfterPage(self, page, tab):
+    if tab.browser.is_tracing_running:
+      tab.browser.StopTracing()
