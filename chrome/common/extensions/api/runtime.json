@@ -113,7 +113,6 @@
       {
         "name": "setUninstallURL",
         "type": "function",
-        "unpriviledged": true,
         "description": "Sets the URL to be visited upon uninstallation. This may be used to clean up server-side data, do analytics, and implement surveys. Maximum 255 characters.",
         "parameters": [
           {
@@ -127,7 +126,6 @@
         "name": "reload",
         "description": "Reloads the app or extension.",
         "type": "function",
-        "nocompile": true,
         "parameters": []
       },
       {
@@ -165,7 +163,6 @@
         "name": "restart",
         "description": "Restart the ChromeOS device when the app runs in kiosk mode. Otherwise, it's no-op.",
         "type": "function",
-        "nocompile": true,
         "parameters": []
       },
       {

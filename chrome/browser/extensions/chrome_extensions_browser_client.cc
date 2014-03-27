@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
@@ -228,13 +227,6 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
       extensions::chromedirectsetting::SetDirectSettingFunction>();
   registry->RegisterFunction<
       extensions::chromedirectsetting::ClearDirectSettingFunction>();
-
-  // Runtime.
-  registry->RegisterFunction<extensions::RuntimeGetBackgroundPageFunction>();
-  registry->RegisterFunction<extensions::RuntimeSetUninstallURLFunction>();
-  registry->RegisterFunction<extensions::RuntimeReloadFunction>();
-  registry->RegisterFunction<extensions::RuntimeRequestUpdateCheckFunction>();
-  registry->RegisterFunction<extensions::RuntimeRestartFunction>();
 
   // Generated APIs.
   extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);

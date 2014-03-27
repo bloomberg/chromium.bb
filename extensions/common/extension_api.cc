@@ -232,13 +232,11 @@ void ExtensionAPI::InitDefaultConfiguration() {
   CHECK(unloaded_schemas_.empty());
   RegisterSchemaResource("app", IDR_EXTENSION_API_JSON_APP);
   RegisterSchemaResource("browserAction", IDR_EXTENSION_API_JSON_BROWSERACTION);
-  RegisterSchemaResource("browsingData", IDR_EXTENSION_API_JSON_BROWSINGDATA);
   RegisterSchemaResource("commands", IDR_EXTENSION_API_JSON_COMMANDS);
   RegisterSchemaResource("declarativeContent",
       IDR_EXTENSION_API_JSON_DECLARATIVE_CONTENT);
   RegisterSchemaResource("declarativeWebRequest",
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
-  RegisterSchemaResource("runtime", IDR_EXTENSION_API_JSON_RUNTIME);
   RegisterSchemaResource("fileBrowserHandler",
       IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER);
   RegisterSchemaResource("inputMethodPrivate",
@@ -256,12 +254,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
   RegisterSchemaResource("webRequestInternal",
       IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL);
   RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
-  RegisterSchemaResource("webstorePrivate",
-      IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE);
   RegisterSchemaResource("webViewRequest",
       IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST);
-  RegisterSchemaResource("contextMenusInternal",
-                         IDR_EXTENSION_API_JSON_CONTEXTMENUSINTERNAL);
 
   default_configuration_initialized_ = true;
 }
