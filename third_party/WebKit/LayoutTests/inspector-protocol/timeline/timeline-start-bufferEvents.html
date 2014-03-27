@@ -3,35 +3,49 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script>
 
+function testFunction()
+{
+    console.timeStamp("Timestamp");
+    setTimeout(function() {
+        console.timeStamp("Timestamp in timer");
+    });
+}
+
 function test()
 {
     InspectorTest.eventHandler["Timeline.eventRecorded"] = eventRecorded;
-    InspectorTest.sendCommand("Timeline.start", { "bufferEvents": true }, onStart);
+    InspectorTest.log("Recording started");
+    InspectorTest.sendCommand("Timeline.start", { bufferEvents: true, liveEvents: "TimerFire" }, onStart);
 
     function onStart(response)
     {
-        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "0" }, onEvaluate);
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "testFunction()" });
     }
 
-    function onEvaluate(response)
+    function eventRecorded(event)
     {
         InspectorTest.sendCommand("Timeline.stop", {}, onStop);
+        InspectorTest.log("    Event recorded: " + event.params.record.type);
     }
 
     function onStop(response)
     {
+        InspectorTest.log("Recording stopped");
+        InspectorTest.log("Events:");
         var events = response.result.events;
-        for (var i = 0; i < events.length; ++i) {
-            if (events[i].type === "GCEvent")
-                continue;
-            InspectorTest.log("Recording stopped: " + events[i].type);
-        }
+        for (var i = 0; i < events.length; ++i)
+            dump(events[i], "");
         InspectorTest.completeTest();
     }
 
-    function eventRecorded(message)
+    function dump(event, prefix)
     {
-        InspectorTest.log("Event recorded: " + message);
+        var eventTypes = { "FunctionCall":true, "TimeStamp":true, "TimerInstall":true, "TimerFire":true };
+        if (!(event.type in eventTypes))
+            return;
+        InspectorTest.log(prefix + event.type);
+        for (var i = 0; event.children && i < event.children.length; ++i)
+            dump(event.children[i], "    " + prefix);
     }
 }
 </script>

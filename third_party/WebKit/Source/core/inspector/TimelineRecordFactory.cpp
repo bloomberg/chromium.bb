@@ -324,5 +324,12 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createEmbedderCallbackData(const S
     return data.release();
 }
 
+String TimelineRecordFactory::type(TypeBuilder::Timeline::TimelineEvent* event)
+{
+    String type;
+    event->type(&type);
+    return type;
+}
+
 } // namespace WebCore
 

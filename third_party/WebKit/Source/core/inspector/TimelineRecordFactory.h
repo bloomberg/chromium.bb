@@ -103,6 +103,8 @@ public:
     }
 
     static PassRefPtr<JSONObject> createEmbedderCallbackData(const String& callbackName);
+
+    static String type(TypeBuilder::Timeline::TimelineEvent*);
 private:
     TimelineRecordFactory() { }
 };

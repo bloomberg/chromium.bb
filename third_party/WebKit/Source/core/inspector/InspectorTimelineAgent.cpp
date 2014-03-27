@@ -71,6 +71,7 @@ static const char timelineMaxCallStackDepth[] = "timelineMaxCallStackDepth";
 static const char includeCounters[] = "includeCounters";
 static const char includeGPUEvents[] = "includeGPUEvents";
 static const char bufferEvents[] = "bufferEvents";
+static const char liveEvents[] = "liveEvents";
 }
 
 // Must be kept in sync with WebInspector.TimelineModel.RecordType in TimelineModel.js
@@ -304,6 +305,8 @@ void InspectorTimelineAgent::restore()
     if (m_state->getBoolean(TimelineAgentState::startedFromProtocol)) {
         if (m_state->getBoolean(TimelineAgentState::bufferEvents))
             m_bufferedEvents = TypeBuilder::Array<TimelineEvent>::create();
+
+        setLiveEvents(m_state->getString(TimelineAgentState::liveEvents));
         innerStart();
     } else if (isStarted()) {
         // Timeline was started from console.timeline, it is not restored.
@@ -324,7 +327,7 @@ void InspectorTimelineAgent::disable(ErrorString*)
     m_state->setBoolean(TimelineAgentState::enabled, false);
 }
 
-void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeCounters, const bool* includeGPUEvents)
+void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* bufferEvents, const String* liveEvents, const bool* includeCounters, const bool* includeGPUEvents)
 {
     if (!m_frontend)
         return;
@@ -343,11 +346,14 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
 
     if (bufferEvents && *bufferEvents)
         m_bufferedEvents = TypeBuilder::Array<TimelineEvent>::create();
+    if (liveEvents)
+        setLiveEvents(*liveEvents);
 
     m_state->setLong(TimelineAgentState::timelineMaxCallStackDepth, m_maxCallStackDepth);
     m_state->setBoolean(TimelineAgentState::includeCounters, includeCounters && *includeCounters);
     m_state->setBoolean(TimelineAgentState::includeGPUEvents, includeGPUEvents && *includeGPUEvents);
     m_state->setBoolean(TimelineAgentState::bufferEvents, bufferEvents && *bufferEvents);
+    m_state->setString(TimelineAgentState::liveEvents, liveEvents ? *liveEvents : "");
 
     innerStart();
     bool fromConsole = false;
@@ -398,6 +404,7 @@ void InspectorTimelineAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
 {
     m_state->setBoolean(TimelineAgentState::startedFromProtocol, false);
     m_state->setBoolean(TimelineAgentState::bufferEvents, false);
+    m_state->setString(TimelineAgentState::liveEvents, "");
 
     if (!isStarted()) {
         *errorString = "Timeline was not started";
@@ -406,6 +413,7 @@ void InspectorTimelineAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
     innerStop(false);
     if (m_bufferedEvents)
         events = m_bufferedEvents.release();
+    m_liveEvents.clear();
 }
 
 void InspectorTimelineAgent::innerStop(bool fromConsole)
@@ -1209,10 +1217,13 @@ void InspectorTimelineAgent::appendRecord(PassRefPtr<JSONObject> data, const Str
 
 void InspectorTimelineAgent::sendEvent(PassRefPtr<TimelineEvent> record)
 {
-    if (m_bufferedEvents)
-        m_bufferedEvents->addItem(record);
-    else
-        m_frontend->eventRecorded(record);
+    RefPtr<TimelineEvent> retain = record;
+    if (m_bufferedEvents) {
+        m_bufferedEvents->addItem(retain);
+        if (!m_liveEvents.contains(TimelineRecordFactory::type(retain.get())))
+            return;
+    }
+    m_frontend->eventRecorded(retain.release());
 }
 
 void InspectorTimelineAgent::pushCurrentRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, LocalFrame* frame, bool hasLowLevelDetails)
@@ -1298,6 +1309,17 @@ PassRefPtr<TimelineEvent> InspectorTimelineAgent::createRecordForEvent(const Tra
 {
     double timeestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
     return TimelineRecordFactory::createBackgroundRecord(timeestamp, String::number(event.threadIdentifier()), type, data);
+}
+
+void InspectorTimelineAgent::setLiveEvents(const String& liveEvents)
+{
+    m_liveEvents.clear();
+    if (liveEvents.isNull() || liveEvents.isEmpty())
+        return;
+    Vector<String> eventList;
+    liveEvents.split(",", eventList);
+    for (Vector<String>::iterator it = eventList.begin(); it != eventList.end(); ++it)
+        m_liveEvents.add(*it);
 }
 
 TimelineRecordStack::TimelineRecordStack(InspectorTimelineAgent* timelineAgent)
