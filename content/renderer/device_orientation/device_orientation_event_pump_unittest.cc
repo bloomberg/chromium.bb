@@ -85,6 +85,11 @@ class DeviceOrientationEventPumpTest : public testing::Test {
     data.allAvailableSensorsAreActive = true;
   }
 
+  void InitBufferNoData() {
+    blink::WebDeviceOrientationData& data = buffer_->data;
+    data.allAvailableSensorsAreActive = true;
+  }
+
   scoped_ptr<MockDeviceOrientationListener> listener_;
   scoped_ptr<DeviceOrientationEventPumpForTesting> orientation_pump_;
   base::SharedMemoryHandle handle_;
@@ -116,6 +121,29 @@ TEST_F(DeviceOrientationEventPumpTest, MAYBE_DidStartPolling) {
   EXPECT_TRUE(received_data.hasBeta);
   EXPECT_EQ(3, (double)received_data.gamma);
   EXPECT_TRUE(received_data.hasGamma);
+}
+
+// Always failing in the win try bot. See http://crbug.com/256782.
+#if defined(OS_WIN)
+#define MAYBE_FireAllNullEvent DISABLED_FireAllNullEvent
+#else
+#define MAYBE_FireAllNullEvent FireAllNullEvent
+#endif
+TEST_F(DeviceOrientationEventPumpTest, MAYBE_FireAllNullEvent) {
+  base::MessageLoop loop;
+
+  InitBufferNoData();
+  orientation_pump_->SetListener(listener_.get());
+  orientation_pump_->OnDidStart(handle_);
+
+  base::MessageLoop::current()->Run();
+
+  blink::WebDeviceOrientationData& received_data = listener_->data_;
+  EXPECT_TRUE(listener_->did_change_device_orientation_);
+  EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
+  EXPECT_FALSE(received_data.hasAlpha);
+  EXPECT_FALSE(received_data.hasBeta);
+  EXPECT_FALSE(received_data.hasGamma);
 }
 
 // Always failing in the win try bot. See http://crbug.com/256782.

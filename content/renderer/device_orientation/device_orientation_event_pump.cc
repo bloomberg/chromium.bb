@@ -60,13 +60,20 @@ static bool IsSignificantlyDifferent(bool hasAngle1, double angle1,
 
 bool DeviceOrientationEventPump::ShouldFireEvent(
     const blink::WebDeviceOrientationData& data) const {
-  return data.allAvailableSensorsAreActive &&
-      (IsSignificantlyDifferent(
-          data_.hasAlpha, data_.alpha, data.hasAlpha, data.alpha) ||
-       IsSignificantlyDifferent(
-          data_.hasBeta, data_.beta, data.hasBeta, data.beta) ||
-       IsSignificantlyDifferent(
-          data_.hasGamma, data_.gamma, data.hasGamma, data.gamma));
+  if (!data.allAvailableSensorsAreActive)
+    return false;
+
+  if (!data.hasAlpha && !data.hasBeta && !data.hasGamma) {
+    // no data can be provided, this is an all-null event.
+    return true;
+  }
+
+  return IsSignificantlyDifferent(
+             data_.hasAlpha, data_.alpha, data.hasAlpha, data.alpha) ||
+         IsSignificantlyDifferent(
+             data_.hasBeta, data_.beta, data.hasBeta, data.beta) ||
+         IsSignificantlyDifferent(
+             data_.hasGamma, data_.gamma, data.hasGamma, data.gamma);
 }
 
 bool DeviceOrientationEventPump::InitializeReader(
