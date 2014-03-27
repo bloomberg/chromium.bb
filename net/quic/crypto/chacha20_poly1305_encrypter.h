@@ -11,7 +11,8 @@ namespace net {
 
 // A ChaCha20Poly1305Encrypter is a QuicEncrypter that implements the
 // AEAD_CHACHA20_POLY1305 algorithm specified in
-// draft-agl-tls-chacha20poly1305-04. Create an instance by calling
+// draft-agl-tls-chacha20poly1305-04, except that it truncates the Poly1305
+// authenticator to 12 bytes. Create an instance by calling
 // QuicEncrypter::Create(kCC12).
 //
 // It uses an authentication tag of 16 bytes (128 bits). There is no
@@ -19,7 +20,7 @@ namespace net {
 class NET_EXPORT_PRIVATE ChaCha20Poly1305Encrypter : public AeadBaseEncrypter {
  public:
   enum {
-    kAuthTagSize = 16,
+    kAuthTagSize = 12,
   };
 
   ChaCha20Poly1305Encrypter();

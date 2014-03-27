@@ -101,8 +101,8 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
 
   const QuicCryptoNegotiatedParameters& crypto_params(
       stream_->crypto_negotiated_params());
-  EXPECT_EQ(kAESG, crypto_params.aead);
-  EXPECT_EQ(kC255, crypto_params.key_exchange);
+  EXPECT_EQ(crypto_config_.aead[0], crypto_params.aead);
+  EXPECT_EQ(crypto_config_.kexs[0], crypto_params.key_exchange);
 }
 
 TEST_F(QuicCryptoClientStreamTest, InvalidHostname) {

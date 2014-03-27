@@ -65,6 +65,15 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
 }
 
+TEST(QuicCryptoClientConfigTest, PreferAesGcm) {
+  QuicCryptoClientConfig config;
+  config.SetDefaults();
+  if (config.aead.size() > 1)
+    EXPECT_NE(kAESG, config.aead[0]);
+  config.PreferAesGcm();
+  EXPECT_EQ(kAESG, config.aead[0]);
+}
+
 TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
   QuicVersionVector supported_versions = QuicSupportedVersions();
   if (supported_versions.size() == 1) {

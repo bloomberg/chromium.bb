@@ -33,7 +33,7 @@ const TestVector test_vectors[] = {
         "0a1007",
     "cd7cf67be39c794a",
     "87e229d4500845a079c0",
-    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb284753896e1d6",
+    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb28475",  // "3896e1d6" truncated.
     "86d09974840bded2a5ca"
   },
   // Modify the ciphertext (ChaCha20 encryption output).
@@ -41,7 +41,7 @@ const TestVector test_vectors[] = {
         "0a1007",
     "cd7cf67be39c794a",
     "87e229d4500845a079c0",
-    "f3e446f7ede9a19b62a4677dabf4e3d24b876bb284753896e1d6",
+    "f3e446f7ede9a19b62a4677dabf4e3d24b876bb28475",  // "3896e1d6" truncated.
     NULL  // FAIL
   },
   // Modify the ciphertext (Poly1305 authenticator).
@@ -49,7 +49,7 @@ const TestVector test_vectors[] = {
         "0a1007",
     "cd7cf67be39c794a",
     "87e229d4500845a079c0",
-    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb284753896e1d7",
+    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb28476",  // "3896e1d6" truncated.
     NULL  // FAIL
   },
   // Modify the associated data.
@@ -57,7 +57,7 @@ const TestVector test_vectors[] = {
         "0a1007",
     "dd7cf67be39c794a",
     "87e229d4500845a079c0",
-    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb284753896e1d6",
+    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb28475",  // "3896e1d6" truncated.
     NULL  // FAIL
   },
   { NULL }

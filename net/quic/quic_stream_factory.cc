@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/cpu.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
@@ -395,6 +396,10 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".c.youtube.com");
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.SetProofVerifier(new ProofVerifierChromium(cert_verifier));
+  base::CPU cpu;
+  if (cpu.has_aesni() && cpu.has_avx()) {
+    crypto_config_.PreferAesGcm();
+  }
 }
 
 QuicStreamFactory::~QuicStreamFactory() {

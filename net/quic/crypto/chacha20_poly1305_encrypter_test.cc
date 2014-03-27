@@ -29,7 +29,7 @@ const TestVector test_vectors[] = {
     "86d09974840bded2a5ca",
     "cd7cf67be39c794a",
     "87e229d4500845a079c0",
-    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb284753896e1d6"
+    "e3e446f7ede9a19b62a4677dabf4e3d24b876bb28475"  // "3896e1d6" truncated.
   },
   { NULL }
 };
@@ -92,16 +92,16 @@ TEST(ChaCha20Poly1305EncrypterTest, Encrypt) {
 
 TEST(ChaCha20Poly1305EncrypterTest, GetMaxPlaintextSize) {
   ChaCha20Poly1305Encrypter encrypter;
-  EXPECT_EQ(1000u, encrypter.GetMaxPlaintextSize(1016));
-  EXPECT_EQ(100u, encrypter.GetMaxPlaintextSize(116));
-  EXPECT_EQ(10u, encrypter.GetMaxPlaintextSize(26));
+  EXPECT_EQ(1000u, encrypter.GetMaxPlaintextSize(1012));
+  EXPECT_EQ(100u, encrypter.GetMaxPlaintextSize(112));
+  EXPECT_EQ(10u, encrypter.GetMaxPlaintextSize(22));
 }
 
 TEST(ChaCha20Poly1305EncrypterTest, GetCiphertextSize) {
   ChaCha20Poly1305Encrypter encrypter;
-  EXPECT_EQ(1016u, encrypter.GetCiphertextSize(1000));
-  EXPECT_EQ(116u, encrypter.GetCiphertextSize(100));
-  EXPECT_EQ(26u, encrypter.GetCiphertextSize(10));
+  EXPECT_EQ(1012u, encrypter.GetCiphertextSize(1000));
+  EXPECT_EQ(112u, encrypter.GetCiphertextSize(100));
+  EXPECT_EQ(22u, encrypter.GetCiphertextSize(10));
 }
 
 }  // namespace test

@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "net/quic/crypto/cert_compressor.h"
+#include "net/quic/crypto/chacha20_poly1305_encrypter.h"
 #include "net/quic/crypto/channel_id.h"
 #include "net/quic/crypto/common_cert_set.h"
 #include "net/quic/crypto/crypto_framer.h"
@@ -24,6 +25,7 @@
 #endif
 
 using base::StringPiece;
+using std::find;
 using std::make_pair;
 using std::map;
 using std::string;
@@ -250,9 +252,12 @@ void QuicCryptoClientConfig::SetDefaults() {
   kexs[0] = kC255;
   kexs[1] = kP256;
 
-  // Authenticated encryption algorithms.
-  aead.resize(1);
-  aead[0] = kAESG;
+  // Authenticated encryption algorithms. Prefer ChaCha20 by default.
+  aead.clear();
+  if (ChaCha20Poly1305Encrypter::IsSupported()) {
+    aead.push_back(kCC12);
+  }
+  aead.push_back(kAESG);
 }
 
 QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
@@ -365,13 +370,18 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
 
+  // AEAD: the work loads on the client and server are symmetric. Since the
+  // client is more likely to be CPU-constrained, break the tie by favoring
+  // the client's preference.
+  // Key exchange: the client does more work than the server, so favor the
+  // client's preference.
   size_t key_exchange_index;
   if (!QuicUtils::FindMutualTag(
-          aead, their_aeads, num_their_aeads, QuicUtils::PEER_PRIORITY,
+          aead, their_aeads, num_their_aeads, QuicUtils::LOCAL_PRIORITY,
           &out_params->aead, NULL) ||
       !QuicUtils::FindMutualTag(
           kexs, their_key_exchanges, num_their_key_exchanges,
-          QuicUtils::PEER_PRIORITY, &out_params->key_exchange,
+          QuicUtils::LOCAL_PRIORITY, &out_params->key_exchange,
           &key_exchange_index)) {
     *error_details = "Unsupported AEAD or KEXS";
     return QUIC_CRYPTO_NO_SUPPORT;
@@ -681,8 +691,20 @@ void QuicCryptoClientConfig::InitializeFrom(
   cached->InitializeFrom(*canonical_cached);
 }
 
-void QuicCryptoClientConfig::AddCanonicalSuffix(const std::string& suffix) {
+void QuicCryptoClientConfig::AddCanonicalSuffix(const string& suffix) {
   canoncial_suffixes_.push_back(suffix);
+}
+
+void QuicCryptoClientConfig::PreferAesGcm() {
+  DCHECK(!aead.empty());
+  if (aead.size() <= 1) {
+    return;
+  }
+  QuicTagVector::iterator pos = find(aead.begin(), aead.end(), kAESG);
+  if (pos != aead.end()) {
+    aead.erase(pos);
+    aead.insert(aead.begin(), kAESG);
+  }
 }
 
 void QuicCryptoClientConfig::PopulateFromCanonicalConfig(

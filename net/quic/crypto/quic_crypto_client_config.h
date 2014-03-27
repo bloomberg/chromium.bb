@@ -224,6 +224,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // suffix will be used to initialize the cached state for this server.
   void AddCanonicalSuffix(const std::string& suffix);
 
+  // Prefers AES-GCM (kAESG) over other AEAD algorithms. Call this method if
+  // the CPU has hardware acceleration for AES-GCM. This method can only be
+  // called after SetDefaults().
+  void PreferAesGcm();
+
  private:
   typedef std::map<QuicSessionKey, CachedState*> CachedStateMap;
 
