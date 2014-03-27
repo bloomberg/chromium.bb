@@ -178,7 +178,7 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
       scoped_ptr<base::Value> action = GetAction(lid_close_action);
       if (action) {
         ApplyValueAsMandatoryPolicy(
-            action.release(), key::kLidCloseAction, &user_policy_map);
+            action.get(), key::kLidCloseAction, &user_policy_map);
       }
       policy_value->Remove(kLidCloseAction, NULL);
     }
@@ -194,7 +194,7 @@ void LoginProfilePolicyProvider::UpdateFromDevicePolicy() {
     // |policy_value| is expected to be a valid value for the
     // PowerManagementIdleSettings policy now.
     if (!policy_value->empty()) {
-      ApplyValueAsMandatoryPolicy(policy_value.release(),
+      ApplyValueAsMandatoryPolicy(policy_value.get(),
                                   key::kPowerManagementIdleSettings,
                                   &user_policy_map);
     }
