@@ -1916,7 +1916,7 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     StyleDifference diff = StyleDifferenceEqual;
     unsigned contextSensitiveProperties = ContextSensitivePropertyNone;
     if (m_style)
-        diff = m_style->diff(style.get(), contextSensitiveProperties);
+        diff = m_style->visualInvalidationDiff(style.get(), contextSensitiveProperties);
 
     diff = adjustStyleDifference(diff, contextSensitiveProperties);
 

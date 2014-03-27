@@ -150,7 +150,7 @@ ALWAYS_INLINE RenderStyle::RenderStyle(const RenderStyle& o)
 {
 }
 
-static StyleRecalcChange comparePseudoStyles(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+static StyleRecalcChange diffPseudoStyles(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     // If the pseudoStyles have changed, we want any StyleRecalcChange that is not NoChange
     // because setStyle will do the right thing with anything else.
@@ -169,7 +169,7 @@ static StyleRecalcChange comparePseudoStyles(const RenderStyle* oldStyle, const 
     return NoChange;
 }
 
-StyleRecalcChange RenderStyle::compare(const RenderStyle* oldStyle, const RenderStyle* newStyle)
+StyleRecalcChange RenderStyle::stylePropagationDiff(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     if ((!oldStyle && newStyle) || (oldStyle && !newStyle))
         return Reattach;
@@ -186,7 +186,7 @@ StyleRecalcChange RenderStyle::compare(const RenderStyle* oldStyle, const Render
         return Reattach;
 
     if (*oldStyle == *newStyle)
-        return comparePseudoStyles(oldStyle, newStyle);
+        return diffPseudoStyles(oldStyle, newStyle);
 
     if (oldStyle->inheritedNotEqual(newStyle)
         || oldStyle->hasExplicitlyInheritedProperties()
@@ -367,7 +367,7 @@ static bool positionedObjectMovedOnly(const LengthBox& a, const LengthBox& b, co
     return true;
 }
 
-StyleDifference RenderStyle::diff(const RenderStyle* other, unsigned& changedContextSensitiveProperties) const
+StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle* other, unsigned& changedContextSensitiveProperties) const
 {
     changedContextSensitiveProperties = ContextSensitivePropertyNone;
 

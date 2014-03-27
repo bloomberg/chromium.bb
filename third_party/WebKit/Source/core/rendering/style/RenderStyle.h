@@ -356,7 +356,11 @@ public:
     static PassRefPtr<RenderStyle> createAnonymousStyleWithDisplay(const RenderStyle* parentStyle, EDisplay);
     static PassRefPtr<RenderStyle> clone(const RenderStyle*);
 
-    static StyleRecalcChange compare(const RenderStyle* oldStyle, const RenderStyle* newStyle);
+    // Computes how the style change should be propagated down the tree.
+    static StyleRecalcChange stylePropagationDiff(const RenderStyle* oldStyle, const RenderStyle* newStyle);
+
+    // Computes how much visual invalidation the style change causes: layout, repaint or recomposite.
+    StyleDifference visualInvalidationDiff(const RenderStyle*, unsigned& changedContextSensitiveProperties) const;
 
     enum IsAtShadowBoundary {
         AtShadowBoundary,
@@ -1493,8 +1497,6 @@ public:
 
     bool inheritedNotEqual(const RenderStyle*) const;
     bool inheritedDataShared(const RenderStyle*) const;
-
-    StyleDifference diff(const RenderStyle*, unsigned& changedContextSensitiveProperties) const;
 
     bool isDisplayReplacedType() const { return isDisplayReplacedType(display()); }
     bool isDisplayInlineType() const { return isDisplayInlineType(display()); }

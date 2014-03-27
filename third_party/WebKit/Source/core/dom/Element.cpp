@@ -1576,7 +1576,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 
     RefPtr<RenderStyle> oldStyle = renderStyle();
     RefPtr<RenderStyle> newStyle = styleForRenderer();
-    StyleRecalcChange localChange = RenderStyle::compare(oldStyle.get(), newStyle.get());
+    StyleRecalcChange localChange = RenderStyle::stylePropagationDiff(oldStyle.get(), newStyle.get());
 
     ASSERT(newStyle);
 
