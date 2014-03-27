@@ -405,8 +405,6 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
     if (m_treeBoundaryCrossingRules.isEmpty())
         return;
 
-    RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
-
     // When comparing rules declared in outer treescopes, outer's rules win.
     CascadeOrder outerCascadeOrder = m_treeBoundaryCrossingRules.size() + m_treeBoundaryCrossingRules.size();
     // When comparing rules declared in inner treescopes, inner's rules win.
@@ -427,8 +425,7 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
         }
 
         CascadeOrder cascadeOrder = isInnerTreeScope ? innerCascadeOrder : outerCascadeOrder;
-
-        collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder);
+        collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), collector.matchedResult().ranges.authorRuleRange(), static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder);
         ++innerCascadeOrder;
         --outerCascadeOrder;
     }
@@ -442,7 +439,7 @@ static inline bool applyAuthorStylesOf(const Element* element)
 void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleCollector& collector, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree)
 {
     collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
+    collector.matchedResult().ranges.authorRuleRange().setLast(collector.matchedResult().matchedProperties.size() - 1);
 
     CascadeScope cascadeScope = 0;
     CascadeOrder cascadeOrder = 0;
@@ -464,7 +461,7 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
 void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
     collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
+    collector.matchedResult().ranges.authorRuleRange().setLast(collector.matchedResult().matchedProperties.size() - 1);
 
     bool applyAuthorStyles = applyAuthorStylesOf(element);
     if (m_styleTree.hasOnlyScopedResolverForDocument()) {
@@ -505,12 +502,10 @@ void StyleResolver::matchWatchSelectorRules(ElementRuleCollector& collector)
         return;
 
     collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastUserRule = collector.matchedResult().matchedProperties.size() - 1;
+    collector.matchedResult().ranges.userRuleRange().setLast(collector.matchedResult().matchedProperties.size() - 1);
 
     MatchRequest matchRequest(m_watchedSelectorsRules.get());
-    RuleRange ruleRange = collector.matchedResult().ranges.userRuleRange();
-    collector.collectMatchingRules(matchRequest, ruleRange);
-
+    collector.collectMatchingRules(matchRequest, collector.matchedResult().ranges.userRuleRange());
     collector.sortAndTransferMatchedRules();
 }
 
@@ -539,11 +534,8 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
 void StyleResolver::matchUARules(ElementRuleCollector& collector, RuleSet* rules)
 {
     collector.clearMatchedRules();
-    collector.matchedResult().ranges.lastUARule = collector.matchedResult().matchedProperties.size() - 1;
-
-    RuleRange ruleRange = collector.matchedResult().ranges.UARuleRange();
-    collector.collectMatchingRules(MatchRequest(rules), ruleRange);
-
+    collector.matchedResult().ranges.UARuleRange().setLast(collector.matchedResult().matchedProperties.size() - 1);
+    collector.collectMatchingRules(MatchRequest(rules), collector.matchedResult().ranges.UARuleRange());
     collector.sortAndTransferMatchedRules();
 }
 
@@ -769,8 +761,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
     bool inheritedOnly = false;
-    applyMatchedProperties<AnimationProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
-    applyMatchedProperties<HighPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<AnimationProperties>(state, result, false, RuleRange(0, result.matchedProperties.size() - 1), inheritedOnly);
+    applyMatchedProperties<HighPriorityProperties>(state, result, false, RuleRange(0, result.matchedProperties.size() - 1), inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
@@ -780,7 +772,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
         StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
     // Now do rest of the properties.
-    applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<LowPriorityProperties>(state, result, false, RuleRange(0, result.matchedProperties.size() - 1), inheritedOnly);
 
     // If our font got dirtied by one of the non-essential font props,
     // go ahead and update it a second time.
@@ -953,7 +945,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     bool inheritedOnly = false;
 
     MatchResult& result = collector.matchedResult();
-    applyMatchedProperties<HighPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<HighPriorityProperties>(state, result, false, RuleRange(0, result.matchedProperties.size() - 1), inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
     updateFont(state);
@@ -962,7 +954,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     if (state.lineHeightValue())
         StyleBuilder::applyProperty(CSSPropertyLineHeight, state, state.lineHeightValue());
 
-    applyMatchedProperties<LowPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
+    applyMatchedProperties<LowPriorityProperties>(state, result, false, RuleRange(0, result.matchedProperties.size() - 1), inheritedOnly);
 
     addContentAttrValuesToFeatures(state.contentAttrValues(), m_features);
 
@@ -1215,13 +1207,13 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
 }
 
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, bool isImportant, int startIndex, int endIndex, bool inheritedOnly)
+void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult, bool isImportant, const RuleRange& range, bool inheritedOnly)
 {
-    if (startIndex == -1)
+    if (range.collapsed())
         return;
 
     if (state.style()->insideLink() != NotInsideLink) {
-        for (int i = startIndex; i <= endIndex; ++i) {
+        for (int i = range.first(); i <= range.last(); ++i) {
             const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
             unsigned linkMatchType = matchedProperties.linkMatchType;
             // FIXME: It would be nicer to pass these as arguments but that requires changes in many places.
@@ -1234,7 +1226,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         state.setApplyPropertyToVisitedLinkStyle(false);
         return;
     }
-    for (int i = startIndex; i <= endIndex; ++i) {
+    for (int i = range.first(); i <= range.last(); ++i) {
         const MatchedProperties& matchedProperties = matchResult.matchedProperties[i];
         applyProperties<pass>(state, matchedProperties.properties.get(), matchResult.matchedRules[i], isImportant, inheritedOnly, static_cast<PropertyWhitelistType>(matchedProperties.whitelistType));
     }
@@ -1291,10 +1283,10 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     }
 
     // Apply animation properties in order to apply animation results and trigger transitions below.
-    applyMatchedProperties<AnimationProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<AnimationProperties>(state, matchResult, false, RuleRange(0, matchResult.matchedProperties.size() - 1), applyInheritedOnly);
+    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.authorRuleRange(), applyInheritedOnly);
+    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.userRuleRange(), applyInheritedOnly);
+    applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.UARuleRange(), applyInheritedOnly);
 
     // Match transition-property / animation-name length by trimming and
     // lengthening other transition / animation property lists
@@ -1307,10 +1299,10 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // The order is (1) high-priority not important, (2) high-priority important, (3) normal not important
     // and (4) normal important.
     state.setLineHeightValue(0);
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, false, 0, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<HighPriorityProperties>(state, matchResult, false, RuleRange(0, matchResult.matchedProperties.size() - 1), applyInheritedOnly);
+    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.authorRuleRange(), applyInheritedOnly);
+    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.userRuleRange(), applyInheritedOnly);
+    applyMatchedProperties<HighPriorityProperties>(state, matchResult, true, matchResult.ranges.UARuleRange(), applyInheritedOnly);
 
     if (cachedMatchedProperties && cachedMatchedProperties->renderStyle->effectiveZoom() != state.style()->effectiveZoom()) {
         state.fontBuilder().setFontDirty(true);
@@ -1329,16 +1321,16 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
         applyInheritedOnly = false;
 
     // Now do the normal priority UA properties.
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.UARuleRange(), applyInheritedOnly);
 
     // Cache the UA properties to pass them to RenderTheme in adjustRenderStyle.
     state.cacheUserAgentBorderAndBackground();
 
     // Now do the author and user normal priority properties and all the !important properties.
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, matchResult.ranges.lastUARule + 1, matchResult.matchedProperties.size() - 1, applyInheritedOnly);
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
+    applyMatchedProperties<LowPriorityProperties>(state, matchResult, false, RuleRange(matchResult.ranges.UARuleRange().last() + 1, matchResult.matchedProperties.size() - 1), applyInheritedOnly);
+    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.authorRuleRange(), applyInheritedOnly);
+    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.userRuleRange(), applyInheritedOnly);
+    applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.UARuleRange(), applyInheritedOnly);
 
     loadPendingResources(state);
 

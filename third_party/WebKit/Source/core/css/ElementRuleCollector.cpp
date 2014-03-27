@@ -109,9 +109,8 @@ void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* pro
 {
     if (!propertySet)
         return;
-    m_result.ranges.lastAuthorRule = m_result.matchedProperties.size();
-    if (m_result.ranges.firstAuthorRule == -1)
-        m_result.ranges.firstAuthorRule = m_result.ranges.lastAuthorRule;
+
+    m_result.ranges.authorRuleRange().shiftLast(m_result.matchedProperties.size());
     m_result.addMatchedProperties(propertySet);
     if (!isCacheable)
         m_result.isCacheable = false;
@@ -301,10 +300,7 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, Select
                 m_style->setHasPseudoStyle(dynamicPseudo);
         } else {
             // Update our first/last rule indices in the matched rules array.
-            ++ruleRange.lastRuleIndex;
-            if (ruleRange.firstRuleIndex == -1)
-                ruleRange.firstRuleIndex = ruleRange.lastRuleIndex;
-
+            ruleRange.shiftLastByOne();
             // Add this rule to our list of matched rules.
             addMatchedRule(&ruleData, result.specificity, cascadeScope, cascadeOrder, matchRequest.styleSheetIndex, matchRequest.styleSheet);
             return;
@@ -339,9 +335,8 @@ bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
     // To check whether a given RuleSet has any rule matching a given element,
     // should not see the element's treescope. Because RuleSet has no
     // information about "scope".
-    int firstRuleIndex = -1, lastRuleIndex = -1;
-    RuleRange ruleRange(firstRuleIndex, lastRuleIndex);
     // FIXME: Verify whether it's ok to ignore CascadeScope here.
+    RuleRange ruleRange;
     collectMatchingRules(MatchRequest(ruleSet), ruleRange, SelectorChecker::StaysWithinTreeScope);
 
     return m_matchedRules && !m_matchedRules->isEmpty();
