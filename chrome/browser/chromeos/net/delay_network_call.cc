@@ -19,18 +19,21 @@ void chromeos::DelayNetworkCall(const base::Closure& callback,
                                 base::TimeDelta retry) {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
-  NetworkPortalDetector* detector = NetworkPortalDetector::Get();
-  if (!default_network ||
-      default_network->connection_state() == shill::kStatePortal ||
-      (detector &&
-       detector->GetCaptivePortalState(default_network->path()).status !=
-           NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)) {
+  bool delay_network_call = !default_network ||
+    !NetworkState::StateIsConnected(default_network->connection_state());
+  if (!delay_network_call && NetworkPortalDetector::IsInitialized()) {
+    NetworkPortalDetector* detector = NetworkPortalDetector::Get();
+    if (detector->GetCaptivePortalState(default_network->path()).status !=
+            NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)
+      delay_network_call = true;
+  }
+  if (delay_network_call) {
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::UI,
         FROM_HERE,
         base::Bind(&chromeos::DelayNetworkCall, callback, retry),
         retry);
-    return;
+  } else {
+    callback.Run();
   }
-  callback.Run();
 }

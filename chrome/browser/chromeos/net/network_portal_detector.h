@@ -118,6 +118,10 @@ class NetworkPortalDetector : public ErrorScreen::Observer {
   // Returns non-localized string representation of |status|.
   static std::string CaptivePortalStatusString(CaptivePortalStatus status);
 
+  // Returns |true| if NetworkPortalDetector was Initialized and it is safe to
+  // call Get.
+  static bool IsInitialized();
+
  protected:
   NetworkPortalDetector() {}
   virtual ~NetworkPortalDetector() {}

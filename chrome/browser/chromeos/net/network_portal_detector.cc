@@ -88,10 +88,8 @@ void NetworkPortalDetector::Shutdown() {
   CHECK(g_network_portal_detector || g_network_portal_detector_set_for_testing)
       << "NetworkPortalDetectorImpl::Shutdown() is called "
       << "without previous call to Initialize()";
-  if (g_network_portal_detector) {
-    delete g_network_portal_detector;
-    g_network_portal_detector = NULL;
-  }
+  delete g_network_portal_detector;
+  g_network_portal_detector = NULL;
 }
 
 // static
@@ -119,6 +117,11 @@ std::string NetworkPortalDetector::CaptivePortalStatusString(
       NOTREACHED();
   }
   return kCaptivePortalStatusUnrecognized;
+}
+
+// static
+bool NetworkPortalDetector::IsInitialized() {
+  return g_network_portal_detector;
 }
 
 }  // namespace chromeos
