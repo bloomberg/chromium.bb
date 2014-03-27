@@ -103,7 +103,8 @@ SpdyStream::SpdyStream(SpdyStreamType type,
       net_log_(net_log),
       raw_received_bytes_(0),
       send_bytes_(0),
-      recv_bytes_(0) {
+      recv_bytes_(0),
+      write_handler_guard_(false) {
   CHECK(type_ == SPDY_BIDIRECTIONAL_STREAM ||
         type_ == SPDY_REQUEST_RESPONSE_STREAM ||
         type_ == SPDY_PUSH_STREAM);
@@ -112,6 +113,7 @@ SpdyStream::SpdyStream(SpdyStreamType type,
 }
 
 SpdyStream::~SpdyStream() {
+  CHECK(!write_handler_guard_);
   UpdateHistograms();
 }
 
@@ -544,12 +546,14 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
   CHECK(delegate_);
   {
     base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
+    write_handler_guard_ = true;
     if (frame_type == SYN_STREAM) {
       delegate_->OnRequestHeadersSent();
     } else {
       delegate_->OnDataSent();
     }
     CHECK(weak_this);
+    write_handler_guard_ = false;
   }
 
   if (io_state_ == STATE_CLOSED) {

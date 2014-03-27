@@ -557,6 +557,11 @@ class NET_EXPORT_PRIVATE SpdyStream {
   std::string domain_bound_cert_;
   ServerBoundCertService::RequestHandle domain_bound_cert_request_handle_;
 
+  // Guards calls of delegate write handlers ensuring |this| is not destroyed.
+  // TODO(jgraettinger): Consider removing after crbug.com/35511 is tracked
+  // down.
+  bool write_handler_guard_;
+
   DISALLOW_COPY_AND_ASSIGN(SpdyStream);
 };
 
