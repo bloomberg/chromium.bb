@@ -45,7 +45,7 @@
               jsdisplay="diagnose"></button>
           <div id="diagnose-frame" class="hidden"></div>
           <form class="suggestions" jsdisplay="searchUrl"
-              jsvalues=".url:searchUrl" onclick="return search(this.url)">
+              jsvalues=".url:searchUrl" onsubmit="return search(this.url)">
             <div class="suggestion-header" jscontent="searchHeader"></div>
             <div id="search-container">
               <input type="text" name="q" id="search-box"
