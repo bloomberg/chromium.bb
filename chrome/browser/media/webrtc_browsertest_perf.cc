@@ -45,12 +45,12 @@ static bool MaybePrintResultsForAudioSend(
   }
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("bytesSent", ssrc), &value));
-  perf_test::PrintResult("audio_recv", "", "bytes_sent", value, "bytes", false);
+  perf_test::PrintResult("audio_send", "", "bytes_sent", value, "bytes", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterReceived", ssrc), &value));
-  perf_test::PrintResult("audio_recv", "", "goog_jitter_recv", value, "",
+  perf_test::PrintResult("audio_send", "", "goog_jitter_recv", value, "",
                          false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
-  perf_test::PrintResult("audio_recv", "", "goog_rtt", value, "ms", false);
+  perf_test::PrintResult("audio_send", "", "goog_rtt", value, "ms", false);
   return true;
 }
 
@@ -81,6 +81,23 @@ static bool MaybePrintResultsForVideoReceive(
       pc_dict.GetString(Statistic("googFrameHeightSent", ssrc), &value));
   perf_test::PrintResult("video_recv", "", "goog_frame_height_sent", value,
                          "pixels", false);
+  EXPECT_TRUE(pc_dict.GetString(
+      Statistic("googCaptureJitterMs", ssrc), &value));
+  perf_test::PrintResult("video_send", "", "goog_capture_jitter_ms", value,
+                         "ms", false);
+  EXPECT_TRUE(pc_dict.GetString(
+      Statistic("googCaptureQueueDelayMsPerS", ssrc), &value));
+  perf_test::PrintResult("video_send", "", "goog_capture_queue_delay_ms_per_s",
+                         value, "ms/s", false);
+  EXPECT_TRUE(pc_dict.GetString(
+      Statistic("googEncodeUsagePercent", ssrc), &value));
+  perf_test::PrintResult("video_send", "", "goog_encode_usage_percent",
+                         value, "%", false);
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googAvgEncodeMs", ssrc), &value));
+  perf_test::PrintResult("video_send", "", "goog_avg_encode_ms", value, "ms",
+                         false);
+  EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
+  perf_test::PrintResult("video_send", "", "goog_rtt", value, "ms", false);
   return true;
 }
 
