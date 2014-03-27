@@ -383,7 +383,6 @@ static const char* const kLavabitAcceptableCerts[] = {
 static const struct HSTSPreload kPreloadedSTS[] = {
   {25, true, "\013pinningtest\007appspot\003com", false, kTestPins, DOMAIN_APPSPOT_COM },
   {12, true, "\006google\003com", false, kGooglePins, DOMAIN_GOOGLE_COM },
-  {18, true, "\005admin\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {19, true, "\006wallet\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {21, true, "\010checkout\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {19, true, "\006chrome\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
@@ -406,6 +405,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {17, true, "\004goto\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {18, true, "\005cloud\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {18, true, "\005glass\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
+  {18, true, "\005admin\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {17, false, "\004play\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {20, true, "\006market\007android\003com", true, kGooglePins, DOMAIN_ANDROID_COM },
   {26, true, "\003ssl\020google-analytics\003com", true, kGooglePins, DOMAIN_GOOGLE_ANALYTICS_COM },
@@ -923,6 +923,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {19, false, "\003www\007banking\002co\002at", true, kNoPins, DOMAIN_NOT_PINNED },
   {19, false, "\003mbp\007banking\002co\002at", true, kNoPins, DOMAIN_NOT_PINNED },
   {13, false, "\007feedbin\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {9, true, "\004heha\002co", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
