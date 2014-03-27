@@ -80,8 +80,8 @@ private:
 
     OwnPtr<blink::WebStorageArea> m_storageArea;
     StorageType m_storageType;
-    mutable bool m_canAccessStorageCachedResult;
-    mutable LocalFrame* m_canAccessStorageCachedFrame;
+    bool m_canAccessStorageCachedResult;
+    LocalFrame* m_canAccessStorageCachedFrame;
 };
 
 } // namespace WebCore

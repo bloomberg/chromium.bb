@@ -205,7 +205,7 @@ private:
     float calculateAnimationPercentAndRepeat(SMILTime elapsed, unsigned& repeat) const;
     SMILTime calculateNextProgressTime(SMILTime elapsed) const;
 
-    mutable SVGElement* m_targetElement;
+    SVGElement* m_targetElement;
 
     Vector<Condition> m_conditions;
     bool m_syncBaseConditionsConnected;
