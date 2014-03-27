@@ -90,7 +90,7 @@ public:
     void save();
     void restore();
 
-    void saveLayer(const SkRect* bounds, const SkPaint*, SkCanvas::SaveFlags = SkCanvas::kARGB_ClipLayer_SaveFlag);
+    void saveLayer(const SkRect* bounds, const SkPaint*);
     void restoreLayer();
 
     float strokeThickness() const { return immutableState()->strokeData().thickness(); }
