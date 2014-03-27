@@ -1483,6 +1483,8 @@ def GetFinalizedPexe(env, pexe):
   assert len(node) == 1, node
   return node[0]
 
+pre_base_env.AddMethod(GetFinalizedPexe)
+
 
 # Translate the given pexe.
 def GetTranslatedNexe(env, pexe):
@@ -3160,6 +3162,7 @@ irt_variant_tests = [
     'tests/process_create/nacl.scons',
     'tests/redir/nacl.scons',
     'tests/rodata_not_writable/nacl.scons',
+    'tests/run_py/nacl.scons',
     'tests/sel_ldr/nacl.scons',
     'tests/sel_ldr_seccomp/nacl.scons',
     'tests/sel_main_chrome/nacl.scons',

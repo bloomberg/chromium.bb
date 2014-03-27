@@ -5,7 +5,6 @@
 
 import argparse
 import os
-import platform
 import subprocess
 import sys
 import tempfile
@@ -23,19 +22,16 @@ class Environment:
 env = Environment()
 
 def SetupEnvironment():
-  # linux, win, or mac
-  env.scons_os = GetSconsOS()
-
   # native_client/ directory
   env.nacl_root = FindBaseDir()
 
   # Path to Native NaCl toolchain (glibc)
   env.nnacl_root = os.path.join(env.nacl_root,
                                 'toolchain',
-                                env.scons_os + '_x86')
+                                pynacl.platform.GetOS() + '_x86')
 
   # Path to PNaCl toolchain
-  pnacl_label = 'pnacl_%s_x86' % GetSconsOS()
+  pnacl_label = 'pnacl_%s_x86' % pynacl.platform.GetOS()
   env.pnacl_base = os.path.join(env.nacl_root, 'toolchain', pnacl_label)
 
   # QEMU
@@ -152,7 +148,11 @@ def main(argv):
 
     # Add default sel_ldr options
     if not env.paranoid:
-      sel_ldr_options += ['-S', '-a']
+      sel_ldr_options += ['-a']
+      # -S signal handling is not supported on windows, but otherwise
+      # it is useful getting the address of crashes.
+      if not pynacl.platform.IsWindows():
+        sel_ldr_options += ['-S']
       # X86-64 glibc static has validation problems without stub out (-s)
       if arch == 'x86-64' and is_glibc_static:
         sel_ldr_options += ['-s']
@@ -194,7 +194,10 @@ def main(argv):
       sel_ldr_args += [env.runnable_ld,
                        '--library-path', ':'.join(env.library_path)]
 
-    sel_ldr_args += [os.path.abspath(nexe)] + nexe_params
+    # The NaCl dynamic loader prefers posixy paths.
+    nexe_path = os.path.abspath(nexe)
+    nexe_path = nexe_path.replace('\\', '/')
+    sel_ldr_args += [nexe_path] + nexe_params
 
     # Run sel_ldr!
     retries = 0
@@ -256,7 +259,7 @@ def RunSelLdr(args, quiet_args=[], collate=False, stdin_string=None):
     args = ['-Q'] + args
 
   # Use the bootstrap loader on linux.
-  if env.scons_os == 'linux':
+  if pynacl.platform.IsLinux():
     bootstrap = os.path.join(os.path.dirname(env.sel_ldr),
                              'nacl_helper_bootstrap')
     loader = [bootstrap, env.sel_ldr]
@@ -324,9 +327,12 @@ def FindOrBuildSelLdr(allow_build=True):
 
   loaders = []
   for mode in modes:
-    sel_ldr = os.path.join(env.nacl_root, 'scons-out',
-                           '%s-%s-%s' % (mode, env.scons_os, env.arch),
-                           'staging', 'sel_ldr')
+    sel_ldr = os.path.join(
+        env.nacl_root, 'scons-out',
+        '%s-%s-%s' % (mode, pynacl.platform.GetOS(), env.arch),
+        'staging', 'sel_ldr')
+    if pynacl.platform.IsWindows():
+      sel_ldr += '.exe'
     loaders.append(sel_ldr)
 
   # If one exists, use it.
@@ -422,8 +428,11 @@ def Run(args, cwd=None, verbose=True, exit_on_failure=False,
 
   p = None
   try:
+    # PNaCl toolchain executables (pnacl-translate, readelf) are scripts
+    # not binaries, so it doesn't want to run on Windows without a shell.
+    use_shell = True if pynacl.platform.IsWindows() else False
     p = subprocess.Popen(args, stdin=stdin_redir, stdout=stdout_redir,
-                         stderr=stderr_redir, cwd=cwd)
+                         stderr=stderr_redir, cwd=cwd, shell=use_shell)
     (stdout_contents, stderr_contents) = p.communicate()
   except KeyboardInterrupt, e:
     if p:
@@ -519,10 +528,11 @@ def ArgSplit(argv):
     # architecture, but for PNaCl we first need to translate and the
     # user didn't tell us which architecture to translate to. Be nice
     # and just translate to the current machine's architecture.
-    env.arch = pynacl.platform.GetArch()
+    env.arch = pynacl.platform.GetArch3264()
   # Canonicalize env.arch.
-  env.arch = pynacl.platform.GetArch(env.arch)
+  env.arch = pynacl.platform.GetArch3264(env.arch)
   return nexe, args[1:]
+
 
 def Fatal(msg, *args):
   if len(args) > 0:
@@ -536,12 +546,8 @@ def FindReadElf():
 
   candidates = []
   # Use PNaCl's if it available.
-  # TODO(robertm): standardize on one of the pnacl dirs
   candidates.append(
-    os.path.join(env.pnacl_base, 'host', 'bin', 'arm-pc-nacl-readelf'))
-  candidates.append(
-    os.path.join(env.pnacl_base,
-                 'pkg', 'binutils', 'bin', 'arm-pc-nacl-readelf'))
+    os.path.join(env.pnacl_base, 'bin', 'pnacl-readelf'))
 
   # Otherwise, look for the system readelf
   for path in os.environ['PATH'].split(os.pathsep):
@@ -588,16 +594,6 @@ def ReadELFInfo(f):
 
   return (arch, is_dynamic, is_glibc_static)
 
-
-def GetSconsOS():
-  name = platform.system().lower()
-  if name == 'linux':
-    return 'linux'
-  if name == 'darwin':
-    return 'mac'
-  if 'cygwin' in name or 'windows' in name:
-    return 'win'
-  Fatal('Unsupported platform "%s"' % name)
 
 def FindBaseDir():
   '''Crawl backwards, starting from the directory containing this script,
