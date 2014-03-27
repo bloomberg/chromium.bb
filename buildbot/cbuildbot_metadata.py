@@ -57,8 +57,22 @@ class CBuildbotMetadata(object):
       self.UpdateWithDict(metadata_dict)
 
   def UpdateWithDict(self, metadata_dict):
-    """Update metadata dictionary with values supplied in |metadata_dict|"""
-    # This is effectively the inverse of the dictionar construction in GetDict,
+    """Update metadata dictionary with values supplied in |metadata_dict|
+
+    This method is effectively the inverse of GetDict. Existing key-values
+    in metadata will be overwritten by those supplied in |metadata_dict|,
+    with the exception of the cl_actions list which will be extended with
+    the contents (if any) of the supplied dict's cl_actions list.
+
+    Args:
+      metadata_dict: A dictionary of key-value pairs to be added this
+                     metadata instance. Keys should be strings, values
+                     should be json-able.
+
+    Returns:
+      self
+    """
+    # This is effectively the inverse of the dictionary construction in GetDict,
     # to reconstruct the correct internal representation of a metadata
     # object.
     metadata_dict = metadata_dict.copy()
@@ -66,6 +80,8 @@ class CBuildbotMetadata(object):
     self._metadata_dict.update(metadata_dict)
     if cl_action_list:
       self._cl_action_list.extend(cl_action_list)
+
+    return self
 
   def GetDict(self):
     """Returns a dictionary representation of metadata."""
@@ -81,7 +97,7 @@ class CBuildbotMetadata(object):
     """Return a JSON string representation of metadata."""
     return json.dumps(self.GetDict())
 
-  def RecordCLAction(self, change, action, timestamp=None, reason=None):
+  def RecordCLAction(self, change, action, timestamp=None, reason=''):
     """Record an action that was taken on a CL, to the metadata.
 
     Args:
@@ -90,6 +106,9 @@ class CBuildbotMetadata(object):
       timestamp: An integer timestamp such as int(time.time()) at which
                  the action was taken. Default: Now.
       reason: Description of the reason the action was taken. Default: ''
+
+    Returns:
+      self
     """
     cl_action = (self._ChangeAsSmallDictionary(change),
                  action,
@@ -97,18 +116,19 @@ class CBuildbotMetadata(object):
                  reason or '')
 
     self._cl_action_list.append(cl_action)
+    return self
 
   @staticmethod
   def _ChangeAsSmallDictionary(change):
     """Returns a small dictionary representation of a gerrit change.
 
     Args:
-      change: A GerritPatch object.
+      change: A GerritPatch or GerritPatchTuple object.
 
     Returns:
       A dictionary of the form {'gerrit_number': change.gerrit_number,
                                 'patch_number': change.patch_number,
-                                 'internal': change.internal}
+                                'internal': change.internal}
     """
     return  {'gerrit_number': change.gerrit_number,
              'patch_number': change.patch_number,

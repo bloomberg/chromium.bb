@@ -413,16 +413,18 @@ class StatsManager(object):
 
   def Gather(self, start_date, sort_by_build_number=True,
              starting_build_number=0):
-    cros_build_lib.Info('Gathering data for %s since %s', self.config_target,
-                        start_date)
-    urls = cbuildbot_metadata.GetMetadataURLsSince(self.config_target,
-                                                   start_date)
-    cros_build_lib.Info('Found %d metadata.json URLs to process.\n'
-                        '  From: %s\n  To  : %s', len(urls), urls[0], urls[-1])
+    """Fetches build data into self.builds.
 
-    self.builds = cbuildbot_metadata.BuildData.ReadMetadataURLs(urls,
-        gs_ctx=self.gs_ctx)
-    cros_build_lib.Info('Read %d total metadata files.', len(self.builds))
+    Args:
+      start_date: A datetime.date instance for the earliest build to
+                  examine.
+      sort_by_build_number: Optional boolean. If True, builds will be
+                            sorted by build number.
+      starting_build_number: The lowest build number to include in
+                             self.builds.
+    """
+    self.builds = self._FetchBuildData(start_date, self.config_target,
+                                       self.gs_ctx)
 
     if sort_by_build_number:
       # Sort runs by build_number, from newest to oldest.
@@ -434,7 +436,39 @@ class StatsManager(object):
                           starting_build_number)
       self.builds = filter(lambda b: b.build_number >= starting_build_number,
                            self.builds)
+
+  @staticmethod
+  def _FetchBuildData(start_date, config_target, gs_ctx):
+    """Fetches BuildData for builds of |config_target| since |start_date|.
+
+    Args:
+      start_date: A datetime.date instance.
+      config_target: String config name to fetch metadata for.
+      gs_ctx: A gs.GSContext instance.
+
+    Returns:
+      A list of of cbuildbot_metadata.BuildData objects that were fetched.
+    """
+    cros_build_lib.Info('Gathering data for %s since %s', config_target,
+                        start_date)
+    urls = cbuildbot_metadata.GetMetadataURLsSince(config_target,
+                                                   start_date)
+    cros_build_lib.Info('Found %d metadata.json URLs to process.\n'
+                        '  From: %s\n  To  : %s', len(urls), urls[0], urls[-1])
+
+    builds = cbuildbot_metadata.BuildData.ReadMetadataURLs(urls, gs_ctx)
+    cros_build_lib.Info('Read %d total metadata files.', len(builds))
+    return builds
+
+  # TODO(akeshet): Return statistics in dictionary rather than just printing
+  # them.
   def Summarize(self):
+    """Process and print a summary of statistics.
+
+    Returns:
+      An empty dictionary. Note: subclasses can extend this method and return
+      non-empty dictionaries, with summarized statistics.
+    """
     if self.builds:
       cros_build_lib.Info('%d total runs included, from build %d to %d.',
                           len(self.builds), self.builds[-1].build_number,
@@ -444,6 +478,7 @@ class StatsManager(object):
                           len(self.builds))
     else:
       cros_build_lib.Info('No runs included.')
+    return {}
 
   @property
   def sheets_version(self):
@@ -633,17 +668,17 @@ class CLStats(StatsManager):
 
 
   def Summarize(self):
-    """Process and generate a summary of cl action statistics."""
-    super(CLStats, self).Summarize()
+    """Process, print, and return a summary of cl action statistics.
+
+    Returns:
+      A dictionary summarizing the statistics.
+    """
+    super_summary = super(CLStats, self).Summarize()
 
     self.actions = self.CollectActions()
 
     (self.per_patch_actions,
      self.per_cl_actions) = self.CollateActions(self.actions)
-
-    logging.info('      Total CL actions: %d.', len(self.actions))
-    logging.info('    Unique CLs touched: %d.', len(self.per_cl_actions))
-    logging.info('Unique patches touched: %d.', len(self.per_patch_actions))
 
     submit_actions = [a for a in self.actions
                       if a.action == constants.CL_ACTION_SUBMITTED]
@@ -652,17 +687,12 @@ class CLStats(StatsManager):
     sbfail_actions = [a for a in self.actions
                       if a.action == constants.CL_ACTION_SUBMIT_FAILED]
 
-    logging.info('   Total CLs submitted: %d.', len(submit_actions))
-    logging.info('      Total rejections: %d.', len(reject_actions))
-    logging.info(' Total submit failures: %d.', len(sbfail_actions))
-
     rejected_then_submitted = {}
     for k, v in self.per_patch_actions.iteritems():
       if (any(a.action==constants.CL_ACTION_KICKED_OUT for a in v) and
           any(a.action==constants.CL_ACTION_SUBMITTED for a in v)):
         rejected_then_submitted[k] = v
 
-    logging.info(' Good patches rejected: %d.', len(rejected_then_submitted))
 
 
     submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
@@ -675,20 +705,13 @@ class CLStats(StatsManager):
     was_rejected = lambda x: x.action == constants.CL_ACTION_KICKED_OUT
     good_patch_rejections = {k: len(filter(was_rejected, v))
                              for k, v in submitted_patches.items()}
-    logging.info('   Mean rejections per')
-    logging.info('            good patch: %.2f',
-                 numpy.mean(good_patch_rejections.values()))
-
+    good_patch_rejection_breakdown = []
     for x in range(max(good_patch_rejections.values()) + 1):
-      logging.info('%d good patches were rejected %d times',
-                   good_patch_rejections.values().count(x), x)
+      good_patch_rejection_breakdown.append(
+          (x, good_patch_rejections.values().count(x)))
 
     patch_handle_times =  [v[-1].timestamp - v[0].timestamp
                            for v in submitted_patches.values()]
-
-    logging.info('     Median good patch')
-    logging.info('         handling time: %.2f hours',
-                 numpy.median(patch_handle_times)/3600)
 
     # Count CLs that were rejected, then a subsequent patch was submitted.
     # These are good candidates for bad CLs.
@@ -704,15 +727,54 @@ class CLStats(StatsManager):
              a.change['patch_number'] != submitted_patch_number for a in v):
         submitted_after_new_patch[k] = v
 
-    logging.info('  Possibly bad patches: %s', len(submitted_after_new_patch))
+    # Sort the candidate bad CLs in order of submit time.
+    bad_cl_candidates = [x[0] for x in
+                         sorted(submitted_after_new_patch.items(),
+                               key=lambda x: x[1][-1].timestamp)]
 
-    # Log the candidate bad CLs in order of submit time.
-    for k, _ in sorted(submitted_after_new_patch.items(),
-                       key=lambda x: x[1][-1].timestamp):
+    summary = {'total_cl_actions'      : len(self.actions),
+               'unique_cls'            : len(self.per_cl_actions),
+               'unique_patches'        : len(self.per_patch_actions),
+               'submitted_patches'     : len(submit_actions),
+               'rejections'            : len(reject_actions),
+               'submit_fails'          : len(sbfail_actions),
+               'good_patches_rejected' : len(rejected_then_submitted),
+               'mean_good_patch_rejections' :
+                   numpy.mean(good_patch_rejections.values()),
+               'good_patch_rejection_breakdown' :
+                   good_patch_rejection_breakdown,
+               'median_handling_time' : numpy.median(patch_handle_times),
+               'bad_cl_candidates' : bad_cl_candidates
+               }
+
+    logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
+    logging.info('    Unique CLs touched: %d.', summary['unique_cls'])
+    logging.info('Unique patches touched: %d.', summary['unique_patches'])
+    logging.info('   Total CLs submitted: %d.', summary['submitted_patches'])
+    logging.info('      Total rejections: %d.', summary['rejections'])
+    logging.info(' Total submit failures: %d.', summary['submit_fails'])
+    logging.info(' Good patches rejected: %d.',
+                 summary['good_patches_rejected'])
+    logging.info('   Mean rejections per')
+    logging.info('            good patch: %.2f',
+                 summary['mean_good_patch_rejections'])
+
+    for x, p in summary['good_patch_rejection_breakdown']:
+      logging.info('%d good patches were rejected %d times.', p, x)
+    logging.info('     Median good patch')
+    logging.info('         handling time: %.2f hours',
+                 summary['median_handling_time']/3600.0)
+
+    logging.info('  Possibly bad patches: %s',
+                 len(summary['bad_cl_candidates']))
+    for k in summary['bad_cl_candidates']:
       logging.info('Bad patch candidate in: CL:%s%s',
                    constants.INTERNAL_CHANGE_PREFIX
                    if k.internal else constants.EXTERNAL_CHANGE_PREFIX,
                    k.gerrit_number)
+
+    super_summary.update(summary)
+    return super_summary
 
 # TODO(mtennant): Add token file support.  See upload_package_status.py.
 def _PrepareCreds(email, password=None):
