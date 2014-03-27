@@ -36,6 +36,7 @@
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
@@ -1319,7 +1320,22 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 {
     const Vector<HTMLElement*>& listItems = this->listItems();
     bool dragSelection = false;
-    if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
+    if (event->type() == EventTypeNames::gesturetap && event->isGestureEvent()) {
+        focus();
+        // Calling focus() may cause us to lose our renderer or change the render type, in which case do not want to handle the event.
+        if (!renderer() || !renderer()->isListBox())
+            return;
+
+        // Convert to coords relative to the list box if needed.
+        GestureEvent& gestureEvent = toGestureEvent(*event);
+        IntPoint localOffset = roundedIntPoint(renderer()->absoluteToLocal(gestureEvent.absoluteLocation(), UseTransforms));
+        int listIndex = toRenderListBox(renderer())->listIndexAtOffset(toIntSize(localOffset));
+        if (listIndex >= 0) {
+            if (!isDisabledFormControl())
+                updateSelectedState(listIndex, true, gestureEvent.shiftKey());
+            event->setDefaultHandled();
+        }
+    } else if (event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         focus();
         // Calling focus() may cause us to lose our renderer, in which case do not want to handle the event.
         if (!renderer())
