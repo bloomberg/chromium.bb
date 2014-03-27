@@ -155,6 +155,16 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
         // Bring native components online.
         JniInterface.loadLibrary(this);
+    }
+
+    /**
+     * Called when the activity becomes visible. This happens on initial launch and whenever the
+     * user switches to the activity, for example, by using the window-switcher or when coming from
+     * the device's lock screen.
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
 
         mAccounts = AccountManager.get(this).getAccountsByType(ACCOUNT_TYPE);
         if (mAccounts.length == 0) {
