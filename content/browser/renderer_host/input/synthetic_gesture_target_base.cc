@@ -21,8 +21,8 @@ namespace content {
 namespace {
 
 // This value was determined experimentally. It was sufficient to not cause a
-// fling on Android.
-const int kPointerAssumedStoppedTimeMs = 50;
+// fling on Android and Aura.
+const int kPointerAssumedStoppedTimeMs = 100;
 
 // SyntheticGestureTargetBase passes input events straight on to the renderer
 // without going through a gesture recognition framework. There is thus no touch
