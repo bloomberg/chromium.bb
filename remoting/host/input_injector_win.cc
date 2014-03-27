@@ -22,6 +22,7 @@ namespace {
 
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
+using protocol::TextEvent;
 using protocol::MouseEvent;
 
 // A class to generate events on Windows.
@@ -36,6 +37,7 @@ class InputInjectorWin : public InputInjector {
 
   // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // InputInjector interface.
@@ -54,6 +56,7 @@ class InputInjectorWin : public InputInjector {
 
     // Mirrors the InputStub interface.
     void InjectKeyEvent(const KeyEvent& event);
+    void InjectTextEvent(const TextEvent& event);
     void InjectMouseEvent(const MouseEvent& event);
 
     // Mirrors the InputInjector interface.
@@ -66,6 +69,7 @@ class InputInjectorWin : public InputInjector {
     virtual ~Core();
 
     void HandleKey(const KeyEvent& event);
+    void HandleText(const TextEvent& event);
     void HandleMouse(const MouseEvent& event);
 
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -96,6 +100,10 @@ void InputInjectorWin::InjectClipboardEvent(const ClipboardEvent& event) {
 
 void InputInjectorWin::InjectKeyEvent(const KeyEvent& event) {
   core_->InjectKeyEvent(event);
+}
+
+void InputInjectorWin::InjectTextEvent(const TextEvent& event) {
+  core_->InjectTextEvent(event);
 }
 
 void InputInjectorWin::InjectMouseEvent(const MouseEvent& event) {
@@ -134,6 +142,16 @@ void InputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   }
 
   HandleKey(event);
+}
+
+void InputInjectorWin::Core::InjectTextEvent(const TextEvent& event) {
+  if (!main_task_runner_->BelongsToCurrentThread()) {
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Core::InjectTextEvent, this, event));
+    return;
+  }
+
+  HandleText(event);
 }
 
 void InputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
@@ -206,6 +224,10 @@ void InputInjectorWin::Core::HandleKey(const KeyEvent& event) {
 
   if (SendInput(1, &input, sizeof(INPUT)) == 0)
     LOG_GETLASTERROR(ERROR) << "Failed to inject a key event";
+}
+
+void InputInjectorWin::Core::HandleText(const TextEvent& event) {
+  NOTIMPLEMENTED();
 }
 
 void InputInjectorWin::Core::HandleMouse(const MouseEvent& event) {

@@ -25,6 +25,10 @@ void IpcInputInjector::InjectKeyEvent(const protocol::KeyEvent& event) {
   desktop_session_proxy_->InjectKeyEvent(event);
 }
 
+void IpcInputInjector::InjectTextEvent(const protocol::TextEvent& event) {
+  desktop_session_proxy_->InjectTextEvent(event);
+}
+
 void IpcInputInjector::InjectMouseEvent(const protocol::MouseEvent& event) {
   desktop_session_proxy_->InjectMouseEvent(event);
 }

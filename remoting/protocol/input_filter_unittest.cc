@@ -19,6 +19,10 @@ MATCHER_P2(EqualsKeyEvent, usb_keycode, pressed, "") {
          arg.pressed() == pressed;
 }
 
+MATCHER_P(EqualsTextEvent, text, "") {
+  return arg.text() == text;
+}
+
 MATCHER_P2(EqualsMouseMoveEvent, x, y, "") {
   return arg.x() == x && arg.y() == y;
 }
@@ -27,6 +31,12 @@ static KeyEvent NewKeyEvent(uint32 usb_keycode, bool pressed) {
   KeyEvent event;
   event.set_usb_keycode(usb_keycode);
   event.set_pressed(pressed);
+  return event;
+}
+
+static TextEvent NewTextEvent(const std::string& text) {
+  TextEvent event;
+  event.set_text(text);
   return event;
 }
 
@@ -42,17 +52,21 @@ static void InjectTestSequence(protocol::InputStub* input_stub) {
   input_stub->InjectKeyEvent(NewKeyEvent(0, true));
   input_stub->InjectKeyEvent(NewKeyEvent(0, false));
 
+  // Inject a text event
+  input_stub->InjectTextEvent(NewTextEvent("test"));
+
   // Inject mouse movemement.
   input_stub->InjectMouseEvent(MouseMoveEvent(10, 20));
 }
 
 // Verify that the filter passes events on correctly to a configured stub.
 TEST(InputFilterTest, EventsPassThroughFilter) {
-  MockInputStub input_stub;
+  testing::StrictMock<MockInputStub> input_stub;
   InputFilter input_filter(&input_stub);
 
   EXPECT_CALL(input_stub, InjectKeyEvent(EqualsKeyEvent(0, true)));
   EXPECT_CALL(input_stub, InjectKeyEvent(EqualsKeyEvent(0, false)));
+  EXPECT_CALL(input_stub, InjectTextEvent(EqualsTextEvent("test")));
   EXPECT_CALL(input_stub, InjectMouseEvent(EqualsMouseMoveEvent(10, 20)));
 
   InjectTestSequence(&input_filter);
@@ -60,14 +74,10 @@ TEST(InputFilterTest, EventsPassThroughFilter) {
 
 // Verify that the filter ignores events if disabled.
 TEST(InputFilterTest, IgnoreEventsIfDisabled) {
-  MockInputStub input_stub;
+  testing::StrictMock<MockInputStub> input_stub;
   InputFilter input_filter(&input_stub);
 
   input_filter.set_enabled(false);
-
-  EXPECT_CALL(input_stub, InjectKeyEvent(_)).Times(0);
-  EXPECT_CALL(input_stub, InjectMouseEvent(_)).Times(0);
-
   InjectTestSequence(&input_filter);
 }
 

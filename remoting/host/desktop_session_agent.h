@@ -124,6 +124,7 @@ class DesktopSessionAgent
   // Handles event executor requests from the client.
   void OnInjectClipboardEvent(const std::string& serialized_event);
   void OnInjectKeyEvent(const std::string& serialized_event);
+  void OnInjectTextEvent(const std::string& serialized_event);
   void OnInjectMouseEvent(const std::string& serialized_event);
 
   // Handles ChromotingNetworkDesktopMsg_SetScreenResolution request from

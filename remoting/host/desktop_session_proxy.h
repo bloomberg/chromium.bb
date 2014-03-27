@@ -112,6 +112,7 @@ class DesktopSessionProxy
   // APIs used to implement the InputInjector interface.
   void InjectClipboardEvent(const protocol::ClipboardEvent& event);
   void InjectKeyEvent(const protocol::KeyEvent& event);
+  void InjectTextEvent(const protocol::TextEvent& event);
   void InjectMouseEvent(const protocol::MouseEvent& event);
   void StartInputInjector(scoped_ptr<protocol::ClipboardStub> client_clipboard);
 

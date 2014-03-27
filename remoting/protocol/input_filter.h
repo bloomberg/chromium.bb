@@ -36,6 +36,7 @@ class InputFilter : public InputStub {
 
   // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
  private:

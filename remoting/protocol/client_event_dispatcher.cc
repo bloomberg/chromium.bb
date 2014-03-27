@@ -38,6 +38,14 @@ void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientEventDispatcher::InjectTextEvent(const TextEvent& event) {
+  DCHECK(event.has_text());
+  EventMessage message;
+  message.set_sequence_number(base::Time::Now().ToInternalValue());
+  message.mutable_text_event()->CopyFrom(event);
+  writer_.Write(SerializeAndFrameMessage(message), base::Closure());
+}
+
 void ClientEventDispatcher::InjectMouseEvent(const MouseEvent& event) {
   EventMessage message;
   message.set_sequence_number(base::Time::Now().ToInternalValue());

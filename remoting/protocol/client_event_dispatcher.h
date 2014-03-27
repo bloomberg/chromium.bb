@@ -22,6 +22,7 @@ class ClientEventDispatcher : public ChannelDispatcherBase, public InputStub {
 
   // InputStub implementation.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
  protected:

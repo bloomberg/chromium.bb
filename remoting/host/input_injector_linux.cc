@@ -27,6 +27,7 @@ namespace {
 
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
+using protocol::TextEvent;
 using protocol::MouseEvent;
 
 // Pixel-to-wheel-ticks conversion ratio used by GTK.
@@ -47,6 +48,7 @@ class InputInjectorLinux : public InputInjector {
 
   // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // InputInjector interface.
@@ -66,6 +68,7 @@ class InputInjectorLinux : public InputInjector {
 
     // Mirrors the InputStub interface.
     void InjectKeyEvent(const KeyEvent& event);
+    void InjectTextEvent(const TextEvent& event);
     void InjectMouseEvent(const MouseEvent& event);
 
     // Mirrors the InputInjector interface.
@@ -146,6 +149,10 @@ void InputInjectorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
 
 void InputInjectorLinux::InjectKeyEvent(const KeyEvent& event) {
   core_->InjectKeyEvent(event);
+}
+
+void InputInjectorLinux::InjectTextEvent(const TextEvent& event) {
+  core_->InjectTextEvent(event);
 }
 
 void InputInjectorLinux::InjectMouseEvent(const MouseEvent& event) {
@@ -251,6 +258,10 @@ void InputInjectorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
 
   XTestFakeKeyEvent(display_, keycode, event.pressed(), CurrentTime);
   XFlush(display_);
+}
+
+void InputInjectorLinux::Core::InjectTextEvent(const TextEvent& event) {
+  NOTIMPLEMENTED();
 }
 
 InputInjectorLinux::Core::~Core() {

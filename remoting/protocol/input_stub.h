@@ -14,6 +14,7 @@ namespace remoting {
 namespace protocol {
 
 class KeyEvent;
+class TextEvent;
 class MouseEvent;
 
 class InputStub {
@@ -24,6 +25,7 @@ class InputStub {
   // Implementations must never assume the presence of any |event| fields,
   // nor assume that their contents are valid.
   virtual void InjectKeyEvent(const KeyEvent& event) = 0;
+  virtual void InjectTextEvent(const TextEvent& event) = 0;
   virtual void InjectMouseEvent(const MouseEvent& event) = 0;
 
  private:

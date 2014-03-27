@@ -337,7 +337,7 @@ DesktopEnvironment* IpcDesktopEnvironmentTest::CreateDesktopEnvironment() {
 
 InputInjector* IpcDesktopEnvironmentTest::CreateInputInjector() {
   EXPECT_TRUE(remote_input_injector_ == NULL);
-  remote_input_injector_ = new MockInputInjector();
+  remote_input_injector_ = new testing::StrictMock<MockInputInjector>();
 
   EXPECT_CALL(*remote_input_injector_, StartPtr(_));
   return remote_input_injector_;
@@ -426,14 +426,6 @@ TEST_F(IpcDesktopEnvironmentTest, Basic) {
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
 
-  // Input injector should receive no events.
-  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
-      .Times(0);
-
   // Stop the test.
   DeleteDesktopEnvironment();
 
@@ -455,14 +447,6 @@ TEST_F(IpcDesktopEnvironmentTest, CaptureFrame) {
 
   // Run the message loop until the desktop is attached.
   setup_run_loop_->Run();
-
-  // Input injector should receive no events.
-  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
-      .Times(0);
 
   // Stop the test when the first frame is captured.
   EXPECT_CALL(screen_capturer_callback_, OnCaptureCompleted(_))
@@ -499,14 +483,6 @@ TEST_F(IpcDesktopEnvironmentTest, Reattach) {
   CreateDesktopProcess();
   setup_run_loop_->Run();
 
-  // Input injector should receive no events.
-  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
-      .Times(0);
-
   // Stop the test.
   DeleteDesktopEnvironment();
 
@@ -539,10 +515,6 @@ TEST_F(IpcDesktopEnvironmentTest, InjectClipboardEvent) {
       .Times(1)
       .WillOnce(Invoke(this,
                        &IpcDesktopEnvironmentTest::ReflectClipboardEvent));
-  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
-      .Times(0);
 
   // Send a clipboard event.
   protocol::ClipboardEvent event;
@@ -570,20 +542,46 @@ TEST_F(IpcDesktopEnvironmentTest, InjectKeyEvent) {
   setup_run_loop_->Run();
 
   // Expect a single key event.
-  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
-      .Times(0);
   EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
       .Times(AtLeast(1))
       .WillRepeatedly(InvokeWithoutArgs(
           this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
-  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
-      .Times(0);
 
   // Send a key event.
   protocol::KeyEvent event;
   event.set_usb_keycode(0x070004);
   event.set_pressed(true);
   input_injector_->InjectKeyEvent(event);
+
+  task_runner_ = NULL;
+  io_task_runner_ = NULL;
+  main_run_loop_.Run();
+}
+
+// Tests injection of text events.
+TEST_F(IpcDesktopEnvironmentTest, InjectTextEvent) {
+  scoped_ptr<protocol::MockClipboardStub> clipboard_stub(
+      new protocol::MockClipboardStub());
+  EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
+      .Times(0);
+
+  // Start the input injector and screen capturer.
+  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
+  video_capturer_->Start(&screen_capturer_callback_);
+
+  // Run the message loop until the desktop is attached.
+  setup_run_loop_->Run();
+
+  // Expect a single text event.
+  EXPECT_CALL(*remote_input_injector_, InjectTextEvent(_))
+      .Times(AtLeast(1))
+      .WillRepeatedly(InvokeWithoutArgs(
+          this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
+
+  // Send a text event.
+  protocol::TextEvent event;
+  event.set_text("hello");
+  input_injector_->InjectTextEvent(event);
 
   task_runner_ = NULL;
   io_task_runner_ = NULL;
@@ -605,10 +603,6 @@ TEST_F(IpcDesktopEnvironmentTest, InjectMouseEvent) {
   setup_run_loop_->Run();
 
   // Expect a single mouse event.
-  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
-      .Times(0);
   EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(

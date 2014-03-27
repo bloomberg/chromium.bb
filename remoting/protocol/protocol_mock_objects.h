@@ -96,6 +96,7 @@ class MockInputStub : public InputStub {
   virtual ~MockInputStub();
 
   MOCK_METHOD1(InjectKeyEvent, void(const KeyEvent& event));
+  MOCK_METHOD1(InjectTextEvent, void(const TextEvent& event));
   MOCK_METHOD1(InjectMouseEvent, void(const MouseEvent& event));
 
  private:

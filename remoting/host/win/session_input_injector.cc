@@ -40,8 +40,9 @@ bool CheckCtrlAndAltArePressed(const std::set<uint32>& pressed_keys) {
 namespace remoting {
 
 using protocol::ClipboardEvent;
-using protocol::MouseEvent;
 using protocol::KeyEvent;
+using protocol::MouseEvent;
+using protocol::TextEvent;
 
 class SessionInputInjectorWin::Core
     : public base::RefCountedThreadSafe<SessionInputInjectorWin::Core>,
@@ -63,6 +64,7 @@ class SessionInputInjectorWin::Core
 
   // protocol::InputStub implementation.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
+  virtual void InjectTextEvent(const protocol::TextEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
  private:
@@ -165,6 +167,17 @@ void SessionInputInjectorWin::Core::InjectKeyEvent(const KeyEvent& event) {
   nested_executor_->InjectKeyEvent(event);
 }
 
+void SessionInputInjectorWin::Core::InjectTextEvent(const TextEvent& event) {
+  if (!input_task_runner_->BelongsToCurrentThread()) {
+    input_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Core::InjectTextEvent, this, event));
+    return;
+  }
+
+  SwitchToInputDesktop();
+  nested_executor_->InjectTextEvent(event);
+}
+
 void SessionInputInjectorWin::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!input_task_runner_->BelongsToCurrentThread()) {
     input_task_runner_->PostTask(
@@ -215,6 +228,11 @@ void SessionInputInjectorWin::InjectClipboardEvent(
 
 void SessionInputInjectorWin::InjectKeyEvent(const protocol::KeyEvent& event) {
   core_->InjectKeyEvent(event);
+}
+
+void SessionInputInjectorWin::InjectTextEvent(
+    const protocol::TextEvent& event) {
+  core_->InjectTextEvent(event);
 }
 
 void SessionInputInjectorWin::InjectMouseEvent(

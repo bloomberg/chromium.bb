@@ -37,6 +37,7 @@ const int kVK_RightCommand = 0x36;
 
 using protocol::ClipboardEvent;
 using protocol::KeyEvent;
+using protocol::TextEvent;
 using protocol::MouseEvent;
 
 // A class to generate events on Mac.
@@ -51,6 +52,7 @@ class InputInjectorMac : public InputInjector {
 
   // InputStub interface.
   virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+  virtual void InjectTextEvent(const TextEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
   // InputInjector interface.
@@ -68,6 +70,7 @@ class InputInjectorMac : public InputInjector {
 
     // Mirrors the InputStub interface.
     void InjectKeyEvent(const KeyEvent& event);
+    void InjectTextEvent(const TextEvent& event);
     void InjectMouseEvent(const MouseEvent& event);
 
     // Mirrors the InputInjector interface.
@@ -109,6 +112,10 @@ void InputInjectorMac::InjectClipboardEvent(const ClipboardEvent& event) {
 
 void InputInjectorMac::InjectKeyEvent(const KeyEvent& event) {
   core_->InjectKeyEvent(event);
+}
+
+void InputInjectorMac::InjectTextEvent(const TextEvent& event) {
+  core_->InjectTextEvent(event);
 }
 
 void InputInjectorMac::InjectMouseEvent(const MouseEvent& event) {
@@ -201,6 +208,10 @@ void InputInjectorMac::Core::InjectKeyEvent(const KeyEvent& event) {
     // Post the event to the current session.
     CGEventPost(kCGSessionEventTap, eventRef);
   }
+}
+
+void InputInjectorMac::Core::InjectTextEvent(const TextEvent& event) {
+  NOTIMPLEMENTED();
 }
 
 void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
@@ -305,8 +316,7 @@ void InputInjectorMac::Core::Stop() {
   clipboard_->Stop();
 }
 
-InputInjectorMac::Core::~Core() {
-}
+InputInjectorMac::Core::~Core() {}
 
 }  // namespace
 

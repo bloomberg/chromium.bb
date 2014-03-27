@@ -75,6 +75,12 @@ void RemoteInputFilter::InjectKeyEvent(const protocol::KeyEvent& event) {
   event_tracker_->InjectKeyEvent(event);
 }
 
+void RemoteInputFilter::InjectTextEvent(const protocol::TextEvent& event) {
+  if (ShouldIgnoreInput())
+    return;
+  event_tracker_->InjectTextEvent(event);
+}
+
 void RemoteInputFilter::InjectMouseEvent(const protocol::MouseEvent& event) {
   if (ShouldIgnoreInput())
     return;

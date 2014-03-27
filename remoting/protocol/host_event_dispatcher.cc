@@ -43,6 +43,13 @@ void HostEventDispatcher::OnMessageReceived(
     } else {
       LOG(WARNING) << "Received invalid key event.";
     }
+  } else if (message->has_text_event()) {
+    const TextEvent& event = message->text_event();
+    if (event.has_text()) {
+      input_stub_->InjectTextEvent(event);
+    } else {
+      LOG(WARNING) << "Received invalid text event.";
+    }
   } else if (message->has_mouse_event()) {
     input_stub_->InjectMouseEvent(message->mouse_event());
   } else {

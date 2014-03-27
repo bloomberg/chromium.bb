@@ -15,8 +15,7 @@ InputEventTracker::InputEventTracker(InputStub* input_stub)
       mouse_button_state_(0) {
 }
 
-InputEventTracker::~InputEventTracker() {
-}
+InputEventTracker::~InputEventTracker() {}
 
 bool InputEventTracker::IsKeyPressed(uint32 usb_keycode) const {
   return pressed_keys_.find(usb_keycode) != pressed_keys_.end();
@@ -69,6 +68,10 @@ void InputEventTracker::InjectKeyEvent(const KeyEvent& event) {
     }
   }
   input_stub_->InjectKeyEvent(event);
+}
+
+void InputEventTracker::InjectTextEvent(const TextEvent& event) {
+  input_stub_->InjectTextEvent(event);
 }
 
 void InputEventTracker::InjectMouseEvent(const MouseEvent& event) {

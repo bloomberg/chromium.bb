@@ -353,6 +353,19 @@ void DesktopSessionProxy::InjectKeyEvent(const protocol::KeyEvent& event) {
       new ChromotingNetworkDesktopMsg_InjectKeyEvent(serialized_event));
 }
 
+void DesktopSessionProxy::InjectTextEvent(const protocol::TextEvent& event) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+
+  std::string serialized_event;
+  if (!event.SerializeToString(&serialized_event)) {
+    LOG(ERROR) << "Failed to serialize protocol::TextEvent.";
+    return;
+  }
+
+  SendToDesktop(
+      new ChromotingNetworkDesktopMsg_InjectTextEvent(serialized_event));
+}
+
 void DesktopSessionProxy::InjectMouseEvent(const protocol::MouseEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 

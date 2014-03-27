@@ -34,6 +34,7 @@ class RemoteInputFilter : public protocol::InputStub {
 
   // InputStub overrides.
   virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
+  virtual void InjectTextEvent(const protocol::TextEvent& event) OVERRIDE;
   virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
  private:
