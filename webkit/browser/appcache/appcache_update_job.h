@@ -13,6 +13,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -38,7 +39,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   // Used for uma stats only for now, so new values are append only.
   enum ResultType {
     UPDATE_OK, DB_ERROR, DISKCACHE_ERROR, QUOTA_ERROR, REDIRECT_ERROR,
-    MANIFEST_ERROR, NETWORK_ERROR, SERVER_ERROR,
+    MANIFEST_ERROR, NETWORK_ERROR, SERVER_ERROR, CANCELLED_ERROR,
     NUM_UPDATE_JOB_RESULT_TYPES
   };
 
@@ -175,7 +176,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   virtual void OnServiceReinitialized(
       AppCacheStorageReference* old_storage) OVERRIDE;
 
-  void HandleCacheFailure(const std::string& error_message, ResultType result);
+  void HandleCacheFailure(const std::string& error_message,
+                          ResultType result,
+                          const GURL& failed_resource_url);
 
   void FetchManifest(bool is_first_fetch);
   void HandleManifestFetchCompleted(URLFetcher* fetcher);
@@ -245,6 +248,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   void DiscardInprogressCache();
   void DiscardDuplicateResponses();
 
+  void LogHistogramStats(ResultType result, const GURL& failed_resource_url);
+  void MadeProgress() { last_progress_time_ = base::Time::Now(); }
+
   // Deletes this object after letting the stack unwind.
   void DeleteSoon();
 
@@ -265,6 +271,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
 
   UpdateType update_type_;
   InternalUpdateState internal_state_;
+  base::Time last_progress_time_;
 
   PendingMasters pending_master_entries_;
   size_t master_entries_completed_;

@@ -103,14 +103,14 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForRedirect(
     // 6.9.6, step 4: If this results in a redirect to another origin,
     // get the resource of the fallback entry.
     job_ = new AppCacheURLRequestJob(request, network_delegate,
-                                     storage(), host_);
+                                     storage(), host_, is_main_resource());
     DeliverAppCachedResponse(
         found_fallback_entry_, found_cache_id_, found_group_id_,
         found_manifest_url_,  true, found_namespace_entry_url_);
   } else if (!found_network_namespace_) {
     // 6.9.6, step 6: Fail the resource load.
     job_ = new AppCacheURLRequestJob(request, network_delegate,
-                                     storage(), host_);
+                                     storage(), host_, is_main_resource());
     DeliverErrorResponse();
   } else {
     // 6.9.6 step 3 and 5: Fetch the resource normally.
@@ -156,7 +156,7 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadFallbackForResponse(
   // 6.9.6, step 4: If this results in a 4xx or 5xx status code
   // or there were network errors, get the resource of the fallback entry.
   job_ = new AppCacheURLRequestJob(request, network_delegate,
-                                   storage(), host_);
+                                   storage(), host_, is_main_resource());
   DeliverAppCachedResponse(
       found_fallback_entry_, found_cache_id_, found_group_id_,
       found_manifest_url_, true, found_namespace_entry_url_);
@@ -240,7 +240,7 @@ void AppCacheRequestHandler::MaybeLoadMainResource(
   // We may have to wait for our storage query to complete, but
   // this query can also complete syncrhonously.
   job_ = new AppCacheURLRequestJob(request, network_delegate,
-                                   storage(), host_);
+                                   storage(), host_, is_main_resource());
   storage()->FindResponseForMainRequest(
       request->url(), preferred_manifest_url, this);
 }
@@ -314,17 +314,18 @@ void AppCacheRequestHandler::MaybeLoadSubResource(
     // selected cache is loaded.
     is_waiting_for_cache_selection_ = true;
     job_ = new AppCacheURLRequestJob(request, network_delegate,
-                                     storage(), host_);
+                                     storage(), host_, is_main_resource());
     return;
   }
 
   if (!host_->associated_cache() ||
-      !host_->associated_cache()->is_complete()) {
+      !host_->associated_cache()->is_complete() ||
+      host_->associated_cache()->owning_group()->is_being_deleted()) {
     return;
   }
 
   job_ = new AppCacheURLRequestJob(request, network_delegate,
-                                   storage(), host_);
+                                   storage(), host_, is_main_resource());
   ContinueMaybeLoadSubResource();
 }
 

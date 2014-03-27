@@ -31,7 +31,13 @@ class AppCacheHistograms {
     NUM_CHECK_RESPONSE_RESULT_TYPES
   };
   static void CountCheckResponseResult(CheckResponseResultType result);
-
+  static void CountResponseRetrieval(
+      bool success, bool is_main_resource, const GURL& origin_url);
+  static void LogUpdateFailureStats(
+      const GURL& origin_url,
+      int percent_complete,
+      bool was_making_progress,
+      bool off_origin_resource_failure);
   static void AddTaskQueueTimeSample(const base::TimeDelta& duration);
   static void AddTaskRunTimeSample(const base::TimeDelta& duration);
   static void AddCompletionQueueTimeSample(const base::TimeDelta& duration);

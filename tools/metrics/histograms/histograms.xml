@@ -331,6 +331,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="appcache.MainResourceResponseRetrieval" enum="BooleanSuccess">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Tracks the success rate of retrieving a main resource from the appcache.
+  </summary>
+</histogram>
+
 <histogram name="appcache.MissingManifestDetectedAtCallsite"
     enum="AppCacheErrorSite">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -354,6 +361,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="appcache.SubResourceResponseRetrieval" enum="BooleanSuccess">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Tracks the success rate of retrieving a sub resource from the appcache.
+  </summary>
+</histogram>
+
 <histogram name="appcache.TaskQueueTime" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -371,9 +385,23 @@ other types of suffix sets.
   <summary>AppCache update job result code.</summary>
 </histogram>
 
-<histogram name="appcache.UpdateJobResult.Docs" enum="AppCacheUpdateJobResult">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <summary>AppCache update job result code, only for docs.google.com.</summary>
+<histogram name="appcache.UpdateProgressAtPointOfFaliure" units="percent">
+  <owner>michaeln@chromium.org</owner>
+  <summary>Percent completion at point of failure of an update job.</summary>
+</histogram>
+
+<histogram name="appcache.UpdateWasOffOriginAtPointOfFailure" enum="Boolean">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Whether the resource causing the failure was from a different origin.
+  </summary>
+</histogram>
+
+<histogram name="appcache.UpdateWasStalledAtPointOfFailure" enum="Boolean">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    Whether any progresss had been made in the 5 minutes preceeding failure.
+  </summary>
 </histogram>
 
 <histogram name="Apps.AppLaunch" enum="AppLaunch">
@@ -29219,6 +29247,7 @@ other types of suffix sets.
   <int value="5" label="Manifest Error"/>
   <int value="6" label="Network Error"/>
   <int value="7" label="Server Error"/>
+  <int value="8" label="Cancelled"/>
 </enum>
 
 <enum name="AppLaunch" type="int">
@@ -41096,6 +41125,16 @@ other types of suffix sets.
              parallel"/>
   <affected-histogram name="DNS.ResolveCategory"/>
   <affected-histogram name="DNS.ResolveSuccess"/>
+</fieldtrial>
+
+<fieldtrial name="DocsSpecific" separator="">
+  <group name="Docs" label="Only for docs.google.com"/>
+  <affected-histogram name="appcache.MainResourceResponseRetrieval"/>
+  <affected-histogram name="appcache.SubResourceResponseRetrieval"/>
+  <affected-histogram name="appcache.UpdateJobResult"/>
+  <affected-histogram name="appcache.UpdateProgressAtPointOfFaliure"/>
+  <affected-histogram name="appcache.UpdateWasOffOriginAtPointOfFailure"/>
+  <affected-histogram name="appcache.UpdateWasStalledAtPointOfFailure"/>
 </fieldtrial>
 
 <fieldtrial name="DomainGoogle" separator="">

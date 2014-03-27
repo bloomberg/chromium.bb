@@ -33,13 +33,15 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     AppCacheStorage* storage,
-    AppCacheHost* host)
+    AppCacheHost* host,
+    bool is_main_resource)
     : net::URLRequestJob(request, network_delegate),
       host_(host),
       storage_(storage),
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
       group_id_(0), cache_id_(kNoCacheId), is_fallback_(false),
+      is_main_resource_(is_main_resource),
       cache_entry_not_found_(false),
       weak_factory_(this) {
   DCHECK(storage_);
@@ -287,6 +289,8 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
       // from the appcache.
       storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                  entry_.response_id());
+      AppCacheHistograms::CountResponseRetrieval(
+          false, is_main_resource_, manifest_url_.GetOrigin());
     }
     cache_entry_not_found_ = true;
     NotifyRestartRequired();
@@ -331,12 +335,16 @@ void AppCacheURLRequestJob::OnReadComplete(int result) {
   DCHECK(is_delivering_appcache_response());
   if (result == 0) {
     NotifyDone(net::URLRequestStatus());
+    AppCacheHistograms::CountResponseRetrieval(
+        true, is_main_resource_, manifest_url_.GetOrigin());
   } else if (result < 0) {
     if (storage_->service()->storage() == storage_) {
       storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                  entry_.response_id());
     }
     NotifyDone(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
+    AppCacheHistograms::CountResponseRetrieval(
+        false, is_main_resource_, manifest_url_.GetOrigin());
   } else {
     SetStatus(net::URLRequestStatus());  // Clear the IO_PENDING status
   }

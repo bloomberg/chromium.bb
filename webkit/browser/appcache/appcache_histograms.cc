@@ -53,6 +53,58 @@ void AppCacheHistograms::CountCheckResponseResult(
        result, NUM_CHECK_RESPONSE_RESULT_TYPES);
 }
 
+void AppCacheHistograms::CountResponseRetrieval(
+    bool success, bool is_main_resource, const GURL& origin_url) {
+  std::string label;
+  if (is_main_resource) {
+    label = "appcache.MainResourceResponseRetrieval";
+    UMA_HISTOGRAM_BOOLEAN(label, success);
+  } else {
+    label = "appcache.SubResourceResponseRetrieval";
+    UMA_HISTOGRAM_BOOLEAN(label, success);
+  }
+  const std::string suffix = OriginToCustomHistogramSuffix(origin_url);
+  if (!suffix.empty()) {
+    base::BooleanHistogram::FactoryGet(
+        label + suffix,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(success);
+  }
+}
+
+void AppCacheHistograms::LogUpdateFailureStats(
+      const GURL& origin_url,
+      int percent_complete,
+      bool was_stalled,
+      bool was_off_origin_resource_failure) {
+  const std::string suffix = OriginToCustomHistogramSuffix(origin_url);
+
+  std::string label = "appcache.UpdateProgressAtPointOfFaliure";
+  UMA_HISTOGRAM_PERCENTAGE(label, percent_complete);
+  if (!suffix.empty()) {
+    base::LinearHistogram::FactoryGet(
+        label + suffix,
+        1, 101, 102,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(percent_complete);
+  }
+
+  label = "appcache.UpdateWasStalledAtPointOfFailure";
+  UMA_HISTOGRAM_BOOLEAN(label, was_stalled);
+  if (!suffix.empty()) {
+    base::BooleanHistogram::FactoryGet(
+        label + suffix,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(was_stalled);
+  }
+
+  label = "appcache.UpdateWasOffOriginAtPointOfFailure";
+  UMA_HISTOGRAM_BOOLEAN(label, was_off_origin_resource_failure);
+  if (!suffix.empty()) {
+    base::BooleanHistogram::FactoryGet(
+        label + suffix,
+        base::HistogramBase::kUmaTargetedHistogramFlag)->Add(
+            was_off_origin_resource_failure);
+  }
+}
+
 void AppCacheHistograms::AddTaskQueueTimeSample(
     const base::TimeDelta& duration) {
   UMA_HISTOGRAM_TIMES("appcache.TaskQueueTime", duration);
