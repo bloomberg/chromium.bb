@@ -34,4 +34,5 @@
   attribute EventHandler oninstall;
   attribute EventHandler onactivate;
   attribute EventHandler onfetch;
+  attribute EventHandler onsync;
 };

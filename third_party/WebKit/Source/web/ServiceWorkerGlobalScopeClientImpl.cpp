@@ -50,14 +50,11 @@ ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result)
 {
-    if (m_client)
-        m_client->didHandleInstallEvent(installEventID, result);
+    m_client->didHandleInstallEvent(installEventID, result);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, PassRefPtr<WebCore::Response> response)
 {
-    if (!m_client)
-        return;
     if (!response) {
         m_client->didHandleFetchEvent(fetchEventID);
         return;
@@ -66,6 +63,11 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, P
     WebServiceWorkerResponse webResponse;
     response->populateWebServiceWorkerResponse(webResponse);
     m_client->didHandleFetchEvent(fetchEventID, webResponse);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID)
+{
+    m_client->didHandleSyncEvent(syncEventID);
 }
 
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(PassOwnPtr<WebServiceWorkerContextClient> client)

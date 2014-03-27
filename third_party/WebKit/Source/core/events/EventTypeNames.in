@@ -172,6 +172,7 @@ storage
 submit
 success
 suspend
+sync
 textInput
 timeout
 timeupdate

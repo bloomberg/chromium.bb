@@ -95,6 +95,11 @@ public:
 
     // Ownership of the returned object is transferred to the caller.
     virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(blink::WebDataSource*) { return 0; }
+
+    // ServiceWorker specific method. Called after SyncEvent (dispatched via
+    // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
+    // context.
+    virtual void didHandleSyncEvent(int syncEventID) { }
 };
 
 } // namespace blink

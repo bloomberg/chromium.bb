@@ -85,6 +85,13 @@ void ServiceWorkerGlobalScopeProxy::dispatchMessageEvent(const WebString& messag
     m_workerGlobalScope->dispatchEvent(MessageEvent::create(ports.release(), value));
 }
 
+void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID)
+{
+    ASSERT(m_workerGlobalScope);
+    m_workerGlobalScope->dispatchEvent(Event::create(EventTypeNames::sync));
+    ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->didHandleSyncEvent(eventID);
+}
+
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL)
 {
     m_client.reportException(errorMessage, lineNumber, columnNumber, sourceURL);
