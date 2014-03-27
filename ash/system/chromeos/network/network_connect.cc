@@ -321,8 +321,8 @@ void ConnectToNetwork(const std::string& service_path,
                       gfx::NativeWindow parent_window) {
   NET_LOG_USER("ConnectToNetwork", service_path);
   const NetworkState* network = GetNetworkState(service_path);
-  if (network && !network->last_error().empty()) {
-    NET_LOG_USER("Configure: " + network->last_error(), service_path);
+  if (network && !network->error().empty() && !network->security().empty()) {
+    NET_LOG_USER("Configure: " + network->error(), service_path);
     // If the network is in an error state, show the configuration UI directly
     // to avoid a spurious notification.
     HandleUnconfiguredNetwork(service_path, parent_window);
