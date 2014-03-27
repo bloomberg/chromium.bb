@@ -42,14 +42,15 @@ void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
     base::ListValue* values) {
   DCHECK(profile);
   DCHECK(values);
-  std::map<GURL, std::string> status_map;
-  SyncFileSystemServiceFactory::GetForProfile(profile)->GetExtensionStatusMap(
-      &status_map);
-
+  sync_file_system::SyncFileSystemService* sync_service =
+      SyncFileSystemServiceFactory::GetForProfile(profile);
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
+  if (!sync_service || !extension_service)
     return;
+
+  std::map<GURL, std::string> status_map;
+  sync_service->GetExtensionStatusMap(&status_map);
   for (std::map<GURL, std::string>::const_iterator itr = status_map.begin();
        itr != status_map.end();
        ++itr) {

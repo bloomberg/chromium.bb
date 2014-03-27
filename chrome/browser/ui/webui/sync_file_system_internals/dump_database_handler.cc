@@ -26,8 +26,11 @@ void DumpDatabaseHandler::RegisterMessages() {
 }
 
 void DumpDatabaseHandler::GetDatabaseDump(const base::ListValue* args) {
-  scoped_ptr<base::ListValue> list =
-      SyncFileSystemServiceFactory::GetForProfile(profile_)->DumpDatabase();
+  scoped_ptr<base::ListValue> list;
+  sync_file_system::SyncFileSystemService* sync_service =
+      SyncFileSystemServiceFactory::GetForProfile(profile_);
+  if (sync_service)
+    list = sync_service->DumpDatabase();
   if (!list)
     list.reset(new base::ListValue);
   web_ui()->CallJavascriptFunction("DumpDatabase.onGetDatabaseDump",

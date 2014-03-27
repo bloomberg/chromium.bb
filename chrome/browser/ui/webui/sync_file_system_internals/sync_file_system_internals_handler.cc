@@ -30,14 +30,14 @@ SyncFileSystemInternalsHandler::SyncFileSystemInternalsHandler(Profile* profile)
     : profile_(profile) {
   sync_file_system::SyncFileSystemService* sync_service =
       SyncFileSystemServiceFactory::GetForProfile(profile);
-  DCHECK(sync_service);
-  sync_service->AddSyncEventObserver(this);
+  if (sync_service)
+    sync_service->AddSyncEventObserver(this);
 }
 
 SyncFileSystemInternalsHandler::~SyncFileSystemInternalsHandler() {
   sync_file_system::SyncFileSystemService* sync_service =
       SyncFileSystemServiceFactory::GetForProfile(profile_);
-  if (sync_service != NULL)
+  if (sync_service)
     sync_service->RemoveSyncEventObserver(this);
 }
 
@@ -83,9 +83,12 @@ void SyncFileSystemInternalsHandler::OnFileSynced(
 
 void SyncFileSystemInternalsHandler::GetServiceStatus(
     const base::ListValue* args) {
-  SyncServiceState state_enum = SyncFileSystemServiceFactory::GetForProfile(
-      profile_)->GetSyncServiceState();
-  std::string state_string = extensions::api::sync_file_system::ToString(
+  SyncServiceState state_enum = sync_file_system::SYNC_SERVICE_DISABLED;
+  sync_file_system::SyncFileSystemService* sync_service =
+      SyncFileSystemServiceFactory::GetForProfile(profile_);
+  if (sync_service)
+    state_enum = sync_service->GetSyncServiceState();
+  const std::string state_string = extensions::api::sync_file_system::ToString(
       extensions::SyncServiceStateToExtensionEnum(state_enum));
   web_ui()->CallJavascriptFunction("SyncService.onGetServiceStatus",
                                    base::StringValue(state_string));
@@ -95,6 +98,8 @@ void SyncFileSystemInternalsHandler::GetNotificationSource(
     const base::ListValue* args) {
   drive::DriveNotificationManager* drive_notification_manager =
       drive::DriveNotificationManagerFactory::GetForBrowserContext(profile_);
+  if (!drive_notification_manager)
+    return;
   bool xmpp_enabled = drive_notification_manager->push_notification_enabled();
   std::string notification_source = xmpp_enabled ? "XMPP" : "Polling";
   web_ui()->CallJavascriptFunction("SyncService.onGetNotificationSource",
