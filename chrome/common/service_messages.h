@@ -37,6 +37,9 @@ IPC_MESSAGE_CONTROL0(ServiceMsg_GetCloudPrintProxyInfo)
 // Requests a message back with serialized UMA histograms.
 IPC_MESSAGE_CONTROL0(ServiceMsg_GetHistograms)
 
+// Requests a message back with all available printers.
+IPC_MESSAGE_CONTROL0(ServiceMsg_GetPrinters)
+
 // Tell the service process to shutdown.
 IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
 
@@ -53,3 +56,7 @@ IPC_MESSAGE_CONTROL1(ServiceHostMsg_CloudPrintProxy_Info,
 // Sent as a response to ServiceMsg_GetHistograms.
 IPC_MESSAGE_CONTROL1(ServiceHostMsg_Histograms,
                      std::vector<std::string> /* pickled_histograms */)
+
+// Sent as a response to ServiceMsg_GetPrinters.
+IPC_MESSAGE_CONTROL1(ServiceHostMsg_Printers,
+                     std::vector<std::string> /* printers */)

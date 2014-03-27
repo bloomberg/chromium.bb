@@ -51,6 +51,8 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   void DisableForUser();
   // Returns the proxy info.
   void GetProxyInfo(CloudPrintProxyInfo* info);
+  // Return accessible printers.
+  void GetPrinters(std::vector<std::string>* printers);
 
   // Launches a browser to see if the proxy policy has been set.
   void CheckCloudPrintProxyPolicy();
@@ -92,8 +94,6 @@ class CloudPrintProxy : public CloudPrintProxyFrontend,
   // This is set to true when the Cloud Print proxy is enabled and after
   // successful authentication with the Cloud Print service.
   bool enabled_;
-  // Connector settings.
-  ConnectorSettings settings_;
   // This is a cleanup class for unregistering printers on proxy disable.
   scoped_ptr<CloudPrintWipeout> wipeout_;
 

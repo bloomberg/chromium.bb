@@ -192,6 +192,7 @@ bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_Info,
                         OnCloudPrintProxyInfo)
     IPC_MESSAGE_HANDLER(ServiceHostMsg_Histograms, OnHistograms)
+    IPC_MESSAGE_HANDLER(ServiceHostMsg_Printers, OnPrinters)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -272,8 +273,20 @@ void ServiceProcessControl::RunHistogramsCallback() {
   histograms_timeout_callback_.Cancel();
 }
 
+void ServiceProcessControl::OnPrinters(
+    const std::vector<std::string>& printers) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  UMA_HISTOGRAM_ENUMERATION(
+      "CloudPrint.ServiceEvents", SERVICE_PRINTERS_REPLY, SERVICE_EVENT_MAX);
+  UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrinters", printers.size());
+  if (!printers_callback_.is_null()) {
+    printers_callback_.Run(printers);
+    printers_callback_.Reset();
+  }
+}
+
 bool ServiceProcessControl::GetCloudPrintProxyInfo(
-    const CloudPrintProxyInfoHandler& cloud_print_info_callback) {
+    const CloudPrintProxyInfoCallback& cloud_print_info_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!cloud_print_info_callback.is_null());
   cloud_print_info_callback_.Reset();
@@ -313,6 +326,19 @@ bool ServiceProcessControl::GetHistograms(
                                  timeout);
 
   histograms_callback_ = histograms_callback;
+  return true;
+}
+
+bool ServiceProcessControl::GetPrinters(
+    const PrintersCallback& printers_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!printers_callback.is_null());
+  printers_callback_.Reset();
+  UMA_HISTOGRAM_ENUMERATION(
+      "CloudPrint.ServiceEvents", SERVICE_PRINTERS_REQUEST, SERVICE_EVENT_MAX);
+  if (!Send(new ServiceMsg_GetPrinters()))
+    return false;
+  printers_callback_ = printers_callback;
   return true;
 }
 

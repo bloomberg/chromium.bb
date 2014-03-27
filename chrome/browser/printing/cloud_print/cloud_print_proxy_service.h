@@ -33,9 +33,15 @@ class CloudPrintProxyService : public KeyedService {
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();
 
+  typedef base::Callback<void(const std::vector<std::string>&)>
+      PrintersCallback;
+
   // Initializes the object. This should be called every time an object of this
   // class is constructed.
   void Initialize();
+
+  // Returns list of printer names available for registration.
+  void GetPrinters(const PrintersCallback& callback);
 
   // Enables/disables cloud printing for the user
   virtual void EnableForUserWithRobot(
@@ -56,16 +62,13 @@ class CloudPrintProxyService : public KeyedService {
 
   std::string proxy_id() const { return proxy_id_; }
 
-  // Returns list of printer names available for registration.
-  static void GetPrintersAvalibleForRegistration(
-      std::vector<std::string>* printers);
-
  private:
   // NotificationDelegate implementation for the token expired notification.
   class TokenExpiredNotificationDelegate;
   friend class TokenExpiredNotificationDelegate;
 
   // Methods that send an IPC to the service.
+  void GetCloudPrintProxyPrinters(const PrintersCallback& callback);
   void RefreshCloudPrintProxyStatus();
   void EnableCloudPrintProxyWithRobot(
       const std::string& robot_auth_code,

@@ -87,7 +87,8 @@ class CloudPrintPrivateGetPrintersFunction
  protected:
   virtual ~CloudPrintPrivateGetPrintersFunction();
 
-  void CollectPrinters();
+ private:
+  void SendResults(const std::vector<std::string>& printers);
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;

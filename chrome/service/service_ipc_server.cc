@@ -100,6 +100,7 @@ bool ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ServiceMsg_GetCloudPrintProxyInfo,
                         OnGetCloudPrintProxyInfo)
     IPC_MESSAGE_HANDLER(ServiceMsg_GetHistograms, OnGetHistograms)
+    IPC_MESSAGE_HANDLER(ServiceMsg_GetPrinters, OnGetPrinters)
     IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
     IPC_MESSAGE_HANDLER(ServiceMsg_UpdateAvailable, OnUpdateAvailable);
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -130,6 +131,12 @@ void ServiceIPCServer::OnGetHistograms() {
   std::vector<std::string> deltas;
   histogram_delta_serializer_->PrepareAndSerializeDeltas(&deltas);
   channel_->Send(new ServiceHostMsg_Histograms(deltas));
+}
+
+void ServiceIPCServer::OnGetPrinters() {
+  std::vector<std::string> printers;
+  g_service_process->GetCloudPrintProxy()->GetPrinters(&printers);
+  channel_->Send(new ServiceHostMsg_Printers(printers));
 }
 
 void ServiceIPCServer::OnDisableCloudPrintProxy() {

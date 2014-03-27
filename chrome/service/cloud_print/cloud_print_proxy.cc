@@ -143,7 +143,8 @@ bool CloudPrintProxy::CreateBackend() {
   if (backend_.get())
     return false;
 
-  settings_.InitFrom(service_prefs_);
+  ConnectorSettings settings;
+  settings.InitFrom(service_prefs_);
 
   // By default we don't poll for jobs when we lose XMPP connection. But this
   // behavior can be overridden by a preference.
@@ -156,8 +157,8 @@ bool CloudPrintProxy::CreateBackend() {
   oauth_client_info.client_secret =
     google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_CLOUD_PRINT);
   oauth_client_info.redirect_uri = "oob";
-  backend_.reset(new CloudPrintProxyBackend(this, settings_, oauth_client_info,
-                                            enable_job_poll));
+  backend_.reset(new CloudPrintProxyBackend(
+      this, settings, oauth_client_info, enable_job_poll));
   return true;
 }
 
@@ -188,12 +189,25 @@ void CloudPrintProxy::GetProxyInfo(CloudPrintProxyInfo* info) {
   info->email.clear();
   if (enabled_)
     info->email = user_email();
-  info->proxy_id = settings_.proxy_id();
-  // If the Cloud Print service is not enabled, we may need to read the old
-  // value of proxy_id from prefs.
-  if (info->proxy_id.empty())
-    info->proxy_id =
-        service_prefs_->GetString(prefs::kCloudPrintProxyId, std::string());
+  ConnectorSettings settings;
+  settings.InitFrom(service_prefs_);
+  info->proxy_id = settings.proxy_id();
+}
+
+void CloudPrintProxy::GetPrinters(std::vector<std::string>* printers) {
+  ConnectorSettings settings;
+  settings.InitFrom(service_prefs_);
+  scoped_refptr<PrintSystem> print_system =
+      PrintSystem::CreateInstance(settings.print_system_settings());
+  if (!print_system)
+    return;
+  PrintSystem::PrintSystemResult result = print_system->Init();
+  if (!result.succeeded())
+    return;
+  printing::PrinterList printer_list;
+  print_system->EnumeratePrinters(&printer_list);
+  for (size_t i = 0; i < printer_list.size(); ++i)
+    printers->push_back(printer_list[i].printer_name);
 }
 
 void CloudPrintProxy::CheckCloudPrintProxyPolicy() {
@@ -253,7 +267,9 @@ void CloudPrintProxy::OnUnregisterPrinters(
   UMA_HISTOGRAM_COUNTS_10000("CloudPrint.UnregisterPrinters",
                              printer_ids.size());
   ShutdownBackend();
-  wipeout_.reset(new CloudPrintWipeout(this, settings_.server_url()));
+  ConnectorSettings settings;
+  settings.InitFrom(service_prefs_);
+  wipeout_.reset(new CloudPrintWipeout(this, settings.server_url()));
   wipeout_->UnregisterPrinters(auth_token, printer_ids);
 }
 

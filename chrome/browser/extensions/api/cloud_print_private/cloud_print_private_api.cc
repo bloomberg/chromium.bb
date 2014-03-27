@@ -49,19 +49,22 @@ bool CloudPrintPrivateSetupConnectorFunction::RunImpl() {
         params->credentials,
         params->user_settings);
   } else {
-    if (!CloudPrintProxyServiceFactory::GetForProfile(GetProfile()))
+    CloudPrintProxyService* service =
+        CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
+    if (!service)
       return false;
     scoped_ptr<base::DictionaryValue> user_setings(
         params->user_settings.ToValue());
-    CloudPrintProxyServiceFactory::GetForProfile(GetProfile())
-        ->EnableForUserWithRobot(params->credentials,
-                                 params->robot_email,
-                                 params->user_email,
-                                 *user_setings);
+    service->EnableForUserWithRobot(params->credentials,
+                                    params->robot_email,
+                                    params->user_email,
+                                    *user_setings);
   }
   SendResponse(true);
-#endif
   return true;
+#else
+  return false;
+#endif
 }
 
 CloudPrintPrivateGetHostNameFunction::CloudPrintPrivateGetHostNameFunction() {
@@ -85,26 +88,29 @@ CloudPrintPrivateGetPrintersFunction::CloudPrintPrivateGetPrintersFunction() {
 CloudPrintPrivateGetPrintersFunction::~CloudPrintPrivateGetPrintersFunction() {
 }
 
-void CloudPrintPrivateGetPrintersFunction::CollectPrinters() {
+void CloudPrintPrivateGetPrintersFunction::SendResults(
+    const std::vector<std::string>& printers) {
+  results_ = api::cloud_print_private::GetPrinters::Results::Create(printers);
+  SendResponse(true);
+}
+
+bool CloudPrintPrivateGetPrintersFunction::RunImpl() {
 #if defined(ENABLE_FULL_PRINTING)
   std::vector<std::string> result;
   if (CloudPrintTestsDelegate::instance()) {
-    result = CloudPrintTestsDelegate::instance()->GetPrinters();
+    SendResults(CloudPrintTestsDelegate::instance()->GetPrinters());
   } else {
-    CloudPrintProxyService::GetPrintersAvalibleForRegistration(&result);
+    CloudPrintProxyService* service =
+        CloudPrintProxyServiceFactory::GetForProfile(GetProfile());
+    if (!service)
+      return false;
+    service->GetPrinters(
+        base::Bind(&CloudPrintPrivateGetPrintersFunction::SendResults, this));
   }
-  results_ = api::cloud_print_private::GetPrinters::Results::Create(result);
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&CloudPrintPrivateGetPrintersFunction::SendResponse,
-                 this, true));
-#endif
-}
-
-
-bool CloudPrintPrivateGetPrintersFunction::RunImpl() {
-  content::BrowserThread::GetBlockingPool()->PostTask(FROM_HERE,
-      base::Bind(&CloudPrintPrivateGetPrintersFunction::CollectPrinters, this));
   return true;
+#else
+  return false;
+#endif
 }
 
 

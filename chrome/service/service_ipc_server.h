@@ -60,6 +60,7 @@ class ServiceIPCServer : public IPC::Listener, public IPC::Sender {
       const base::DictionaryValue& user_settings);
   void OnGetCloudPrintProxyInfo();
   void OnGetHistograms();
+  void OnGetPrinters();
   void OnDisableCloudPrintProxy();
 
   void OnShutdown();
