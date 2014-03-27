@@ -1027,6 +1027,7 @@
             'browser/media/encrypted_media_browsertest.cc',
             'browser/media/media_browsertest.cc',
             'browser/media/media_browsertest.h',
+            'browser/media/media_canplaytype_browsertest.cc',
             'browser/media/media_source_browsertest.cc',
             'browser/media/webrtc_internals_browsertest.cc',
             'browser/plugin_data_remover_impl_browsertest.cc',
