@@ -171,9 +171,6 @@ cr.define('options', function() {
       };
 
       chrome.send('requestHotwordAvailable');
-      var hotwordIndicator = $('hotword-search-setting-indicator');
-      HotwordSearchSettingIndicator.decorate(hotwordIndicator);
-      hotwordIndicator.disabledOnErrorSection = $('hotword-search-enable');
 
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
@@ -976,7 +973,6 @@ cr.define('options', function() {
      */
     showHotwordSection_: function(opt_error) {
       $('hotword-search').hidden = false;
-      $('hotword-search-setting-indicator').errorText = opt_error;
     },
 
     /**

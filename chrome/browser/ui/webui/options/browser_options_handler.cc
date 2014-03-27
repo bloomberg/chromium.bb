@@ -1623,14 +1623,8 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
   if (group != "" && group != "Disabled") {
-    if (HotwordServiceFactory::IsServiceAvailable(profile)) {
+    if (HotwordServiceFactory::IsServiceAvailable(profile))
       web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
-    } else if (HotwordServiceFactory::IsHotwordAllowed(profile)) {
-      base::StringValue error_message(l10n_util::GetStringUTF16(
-          IDS_HOTWORD_GENERIC_ERROR_MESSAGE));
-      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
-                                       error_message);
-    }
   }
 }
 
