@@ -27,19 +27,21 @@
     DCHECK(context_);
     needsDisplay_ = NO;
 
+    ScopedCAActionDisabler disabler;
     [self setBackgroundColor:CGColorGetConstantColor(kCGColorWhite)];
-    [self setAnchorPoint:CGPointMake(0, 0)];
-    if (renderWidgetHostView_->compositing_iosurface_ &&
-        [self respondsToSelector:(@selector(setContentsScale:))]) {
+    [self setContentsGravity:kCAGravityTopLeft];
+    [self setFrame:NSRectToCGRect(
+        [renderWidgetHostView_->cocoa_view() bounds])];
+    if ([self respondsToSelector:(@selector(setContentsScale:))]) {
       [self setContentsScale:
-          renderWidgetHostView_->compositing_iosurface_->scale_factor()];
+          renderWidgetHostView_->backing_store_scale_factor_];
     }
+    [self setNeedsDisplay];
   }
   return self;
 }
 
 - (void)disableCompositing{
-  // Disable the fade-out animation as the layer is removed.
   ScopedCAActionDisabler disabler;
   [self removeFromSuperlayer];
   renderWidgetHostView_ = nil;
