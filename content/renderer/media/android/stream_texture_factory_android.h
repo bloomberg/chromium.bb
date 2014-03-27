@@ -29,8 +29,6 @@ class StreamTextureProxy {
   // a connected client will receive callbacks on.
   virtual void BindToCurrentThread(int32 stream_id) = 0;
 
-  virtual bool IsBoundToThread() = 0;
-
   // Setting the target for callback when a frame is available. This function
   // could be called on both the main thread and the compositor thread.
   virtual void SetClient(cc::VideoFrameProvider::Client* client) = 0;

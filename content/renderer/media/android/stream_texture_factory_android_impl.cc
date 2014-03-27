@@ -23,7 +23,6 @@ class StreamTextureProxyImpl : public StreamTextureProxy,
 
   // StreamTextureProxy implementation:
   virtual void BindToCurrentThread(int32 stream_id) OVERRIDE;
-  virtual bool IsBoundToThread() OVERRIDE { return loop_.get() != NULL; }
   virtual void SetClient(cc::VideoFrameProvider::Client* client) OVERRIDE;
   virtual void Release() OVERRIDE;
 

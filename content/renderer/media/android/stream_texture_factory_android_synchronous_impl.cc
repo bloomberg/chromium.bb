@@ -15,6 +15,7 @@
 #include "base/synchronization/lock.h"
 #include "cc/output/context_provider.h"
 #include "content/common/android/surface_texture_peer.h"
+#include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/gl/android/surface_texture.h"
 
@@ -34,11 +35,11 @@ class StreamTextureProxyImpl
 
   // StreamTextureProxy implementation:
   virtual void BindToCurrentThread(int32 stream_id) OVERRIDE;
-  virtual bool IsBoundToThread() OVERRIDE { return loop_.get() != NULL; }
   virtual void SetClient(cc::VideoFrameProvider::Client* client) OVERRIDE;
   virtual void Release() OVERRIDE;
 
  private:
+  void BindOnCompositorThread(int stream_id);
   void OnFrameAvailable();
 
   scoped_refptr<base::MessageLoopProxy> loop_;
@@ -59,6 +60,8 @@ class StreamTextureProxyImpl
 StreamTextureProxyImpl::StreamTextureProxyImpl(
     StreamTextureFactorySynchronousImpl::ContextProvider* provider)
     : context_provider_(provider), has_updated_(false) {
+  DCHECK(RenderThreadImpl::current());
+  loop_ = RenderThreadImpl::current()->compositor_message_loop_proxy();
   std::fill(current_matrix_, current_matrix_ + 16, 0);
 }
 
@@ -66,7 +69,7 @@ StreamTextureProxyImpl::~StreamTextureProxyImpl() {}
 
 void StreamTextureProxyImpl::Release() {
   SetClient(NULL);
-  if (loop_.get() && !loop_->BelongsToCurrentThread())
+  if (!loop_->BelongsToCurrentThread())
     loop_->DeleteSoon(FROM_HERE, this);
   else
     delete this;
@@ -78,8 +81,19 @@ void StreamTextureProxyImpl::SetClient(cc::VideoFrameProvider::Client* client) {
 }
 
 void StreamTextureProxyImpl::BindToCurrentThread(int stream_id) {
-  loop_ = base::MessageLoopProxy::current();
+  if (loop_->BelongsToCurrentThread()) {
+    BindOnCompositorThread(stream_id);
+    return;
+  }
 
+  // Weakptr is only used on compositor thread loop, so this is safe.
+  loop_->PostTask(FROM_HERE,
+                  base::Bind(&StreamTextureProxyImpl::BindOnCompositorThread,
+                             AsWeakPtr(),
+                             stream_id));
+}
+
+void StreamTextureProxyImpl::BindOnCompositorThread(int stream_id) {
   surface_texture_ = context_provider_->GetSurfaceTexture(stream_id);
   if (!surface_texture_) {
     LOG(ERROR) << "Failed to get SurfaceTexture for stream.";
