@@ -495,8 +495,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Ensure that the display link is associated with the correct display.
   void UpdateDisplayLink();
 
-  // The scale factor of the backing store and all CALayers. Note that this is
-  // updated based on ViewScaleFactor with some delay.
+  // The scale factor of the backing store. Note that this is updated based on
+  // ViewScaleFactor with some delay.
   float backing_store_scale_factor_;
 
   void AddPendingLatencyInfo(
@@ -507,6 +507,12 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   void SendPendingSwapAck();
 
   void PauseForPendingResizeOrRepaintsAndDraw();
+
+  // The geometric arrangement of the layers depends on cocoa_view's size, the
+  // compositing IOSurface's rounded size, and the software frame size. Update
+  // all of them using this function when any of those parameters changes. Also
+  // update the scale factor of the layers.
+  void LayoutLayers();
 
  private:
   friend class RenderWidgetHostView;
