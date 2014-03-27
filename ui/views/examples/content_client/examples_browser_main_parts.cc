@@ -18,7 +18,6 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/wm/core/wm_state.h"
 #include "url/gurl.h"
@@ -28,6 +27,8 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/wm/test/wm_test_helper.h"
+#else  // !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
 namespace views {

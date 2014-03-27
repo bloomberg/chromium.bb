@@ -17,7 +17,6 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_ASH)
@@ -40,6 +39,8 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
+#else  // !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
 namespace {

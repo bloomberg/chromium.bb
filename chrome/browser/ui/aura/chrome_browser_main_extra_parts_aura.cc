@@ -16,7 +16,6 @@
 #include "ui/aura/env.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/screen.h"
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 #if defined(OS_LINUX)
@@ -32,6 +31,10 @@
 #include "chrome/common/chrome_switches.h"
 #endif  // defined(OS_WIN)
 #endif  // defined(USE_ASH)
+
+#if !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
+#endif
 
 namespace {
 

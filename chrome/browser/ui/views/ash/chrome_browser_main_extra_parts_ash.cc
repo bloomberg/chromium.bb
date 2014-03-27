@@ -19,7 +19,6 @@
 #include "ui/gfx/screen_type_delegate.h"
 #include "ui/keyboard/keyboard.h"
 #include "ui/keyboard/keyboard_util.h"
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"

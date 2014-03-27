@@ -33,7 +33,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/test/desktop_test_views_delegate.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -41,6 +40,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/wm/test/wm_test_helper.h"
+#else  // !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
 #if defined(OS_WIN)
