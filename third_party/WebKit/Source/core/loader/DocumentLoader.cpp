@@ -187,8 +187,6 @@ void DocumentLoader::stopLoading()
             m_frame->loader().stopLoading();
     }
 
-    clearArchiveResources();
-
     if (!loading)
         return;
 
@@ -644,11 +642,6 @@ void DocumentLoader::prepareSubframeArchiveLoadIfNeeded()
 
     ArchiveResource* mainResource = m_archive->mainResource();
     m_substituteData = SubstituteData(mainResource->data(), mainResource->mimeType(), mainResource->textEncoding(), KURL());
-}
-
-void DocumentLoader::clearArchiveResources()
-{
-    m_archiveResourceCollection.clear();
 }
 
 bool DocumentLoader::scheduleArchiveLoad(Resource* cachedResource, const ResourceRequest& request)

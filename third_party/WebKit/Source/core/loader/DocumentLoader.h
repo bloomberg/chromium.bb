@@ -154,7 +154,6 @@ namespace WebCore {
         void clearMainResourceHandle();
 
         bool maybeCreateArchive();
-        void clearArchiveResources();
 
         void prepareSubframeArchiveLoadIfNeeded();
         void addAllArchiveResources(MHTMLArchive*);
