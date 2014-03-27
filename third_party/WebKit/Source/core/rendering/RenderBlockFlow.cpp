@@ -446,7 +446,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     // Add overflow from children (unless we're multi-column, since in that case all our child overflow is clipped anyway).
     computeOverflow(oldClientAfterEdge);
 
-    m_descendantsWithFloatsMarkedForLayout = false;
     return true;
 }
 
@@ -1691,10 +1690,6 @@ void RenderBlockFlow::markAllDescendantsWithFloatsForLayout(RenderBox* floatToRe
 {
     if (!everHadLayout() && !containsFloats())
         return;
-
-    if (m_descendantsWithFloatsMarkedForLayout)
-        return;
-    m_descendantsWithFloatsMarkedForLayout = true;
 
     MarkingBehavior markParents = inLayout ? MarkOnlyThis : MarkContainingBlockChain;
     setChildNeedsLayout(markParents);

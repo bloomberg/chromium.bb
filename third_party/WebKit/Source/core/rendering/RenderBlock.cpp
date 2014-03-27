@@ -161,7 +161,6 @@ RenderBlock::RenderBlock(ContainerNode* node)
     , m_hasMarkupTruncation(false)
     , m_hasBorderOrPaddingLogicalWidthChanged(false)
     , m_hasOnlySelfCollapsingChildren(false)
-    , m_descendantsWithFloatsMarkedForLayout(false)
 {
     setChildrenInline(true);
 }
