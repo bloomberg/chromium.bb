@@ -130,12 +130,17 @@ void InsertTextCommand::doApply()
     if (endingSelection().isRange()) {
         if (performTrivialReplace(m_text, m_selectInsertedText))
             return;
+        bool endOfSelectionWasAtStartOfBlock = isStartOfBlock(endingSelection().visibleEnd());
         deleteSelection(false, true, false, false);
         // deleteSelection eventually makes a new endingSelection out of a Position. If that Position doesn't have
         // a renderer (e.g. it is on a <frameset> in the DOM), the VisibleSelection cannot be canonicalized to
         // anything other than NoSelection. The rest of this function requires a real endingSelection, so bail out.
         if (endingSelection().isNone())
             return;
+        if (endOfSelectionWasAtStartOfBlock) {
+            if (EditingStyle* typingStyle = document().frame()->selection().typingStyle())
+                typingStyle->removeBlockProperties();
+        }
     } else if (document().frame()->editor().isOverwriteModeEnabled()) {
         if (performOverwrite(m_text, m_selectInsertedText))
             return;

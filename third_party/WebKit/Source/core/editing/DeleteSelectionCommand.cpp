@@ -375,10 +375,16 @@ void DeleteSelectionCommand::removeNode(PassRefPtr<Node> node, ShouldAssumeConte
         return;
     }
 
-    if (node == m_startBlock && !isEndOfBlock(VisiblePosition(firstPositionInNode(m_startBlock.get())).previous()))
-        m_needPlaceholder = true;
-    else if (node == m_endBlock && !isStartOfBlock(VisiblePosition(lastPositionInNode(m_startBlock.get())).next()))
-        m_needPlaceholder = true;
+    if (node == m_startBlock) {
+        VisiblePosition previous = VisiblePosition(firstPositionInNode(m_startBlock.get())).previous();
+        if (previous.isNotNull() && !isEndOfBlock(previous))
+            m_needPlaceholder = true;
+    }
+    if (node == m_endBlock) {
+        VisiblePosition next = VisiblePosition(lastPositionInNode(m_endBlock.get())).next();
+        if (next.isNotNull() && !isStartOfBlock(next))
+            m_needPlaceholder = true;
+    }
 
     // FIXME: Update the endpoints of the range being deleted.
     updatePositionForNodeRemoval(m_endingPosition, *node);
