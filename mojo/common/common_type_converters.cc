@@ -14,6 +14,8 @@ namespace mojo {
 String TypeConverter<String, base::StringPiece>::ConvertFrom(
     const base::StringPiece& input,
     Buffer* buf) {
+  if (input.empty())
+    return String();
   String::Builder result(input.size(), buf);
   memcpy(&result[0], input.data(), input.size());
   return result.Finish();

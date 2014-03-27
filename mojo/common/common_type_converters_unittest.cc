@@ -67,6 +67,9 @@ TEST(CommonTypeConvertersTest, String16) {
   // Test implicit construction and conversion:
   ExpectEqualsMojoString(string16, string16);
   ExpectEqualsString16(string16, mojo_string);
+
+  // Test empty string conversion.
+  ExpectEqualsMojoString(base::string16(), base::string16());
 }
 
 }  // namespace test
