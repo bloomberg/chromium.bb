@@ -8,8 +8,7 @@ import os
 import posixpath
 
 from environment import IsPreviewServer
-from extensions_paths import (
-    API_FEATURES, JSON_TEMPLATES, PRIVATE_TEMPLATES)
+from extensions_paths import JSON_TEMPLATES, PRIVATE_TEMPLATES
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 from environment import IsPreviewServer
@@ -74,6 +73,7 @@ class _JSCModel(object):
                availability_finder,
                json_cache,
                template_cache,
+               features_bundle,
                event_byname_function):
     self._ref_resolver = ref_resolver
     self._disable_refs = disable_refs
@@ -82,7 +82,7 @@ class _JSCModel(object):
         posixpath.join(JSON_TEMPLATES, 'api_availabilities.json'))
     self._intro_tables = json_cache.GetFromFile(
         posixpath.join(JSON_TEMPLATES, 'intro_tables.json'))
-    self._api_features = json_cache.GetFromFile(API_FEATURES)
+    self._api_features = features_bundle.GetAPIFeatures()
     self._template_cache = template_cache
     self._event_byname_function = event_byname_function
     self._namespace = api_models.GetModel(api_name).Get()
@@ -386,28 +386,20 @@ class _JSCModel(object):
     # Devtools aren't in _api_features. If we're dealing with devtools, bail.
     if 'devtools' in self._namespace.name:
       return []
-    feature = self._api_features.Get().get(self._namespace.name)
-    assert feature, ('"%s" not found in _api_features.json.'
-                     % self._namespace.name)
 
-    # TODO(tbarzic, kalman): Move this logic into features_utility.
-    if isinstance(feature, list):
-      dependencies_set = set()
-      for subfeature in feature:
-        dependencies_set.update(subfeature.get('dependencies', ()))
-      dependencies = list(dependencies_set)
-    else:
-      dependencies = feature.get('dependencies')
-    if dependencies is None:
+    api_feature = self._api_features.Get().get(self._namespace.name)
+    if not api_feature:
+      logging.error('"%s" not found in _api_features.json' %
+                    self._namespace.name)
       return []
-
-    def make_code_node(text):
-      return { 'class': 'code', 'text': text }
 
     permissions_content = []
     manifest_content = []
 
     def categorize_dependency(dependency):
+      def make_code_node(text):
+        return { 'class': 'code', 'text': text }
+
       context, name = dependency.split(':', 1)
       if context == 'permission':
         permissions_content.append(make_code_node('"%s"' % name))
@@ -419,10 +411,10 @@ class _JSCModel(object):
         for transitive_dependency in transitive_dependencies:
           categorize_dependency(transitive_dependency)
       else:
-        raise ValueError('Unrecognized dependency for %s: %s' % (
-            self._namespace.name, context))
+        logging.error('Unrecognized dependency for %s: %s' %
+                      (self._namespace.name, context))
 
-    for dependency in dependencies:
+    for dependency in api_feature.get('dependencies', ()):
       categorize_dependency(dependency)
 
     dependency_rows = []
@@ -494,11 +486,13 @@ class APIDataSource(object):
                  file_system,
                  availability_finder,
                  api_models,
+                 features_bundle,
                  object_store_creator):
       self._json_cache = compiled_fs_factory.ForJson(file_system)
       self._template_cache = compiled_fs_factory.ForTemplates(file_system)
       self._availability_finder = availability_finder
       self._api_models = api_models
+      self._features_bundle = features_bundle
       self._model_cache_refs = object_store_creator.Create(
           APIDataSource, 'model-cache-refs')
       self._model_cache_no_refs = object_store_creator.Create(
@@ -558,6 +552,7 @@ class APIDataSource(object):
           self._availability_finder,
           self._json_cache,
           self._template_cache,
+          self._features_bundle,
           self._LoadEventByName).ToDict()
 
       self._GetModelCache(disable_refs).Set(api_name, jsc_model)

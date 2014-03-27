@@ -7,9 +7,9 @@ import posixpath
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
-from extensions_paths import (
-    API, CHROME_API, JSON_TEMPLATES, API_FEATURES, MANIFEST_FEATURES,
-    PERMISSION_FEATURES)
+from extensions_paths import API, CHROME_API, JSON_TEMPLATES
+from features_bundle import FeaturesBundle
+import features_utility
 from file_system import FileNotFoundError
 from third_party.json_schema_compiler.model import UnixName
 
@@ -27,34 +27,12 @@ _EXTENSION_API_MAX_VERSION = 17
 _SVN_MIN_VERSION = 5
 
 
-def _GetChannelFromFeatures(api_name, json_fs, filename):
-  '''Finds API channel information from the features |filename| within the the
-  given |json_fs|. Returns None if channel information for the API cannot be
-  located.
+def _GetChannelFromFeatures(api_name, features):
+  '''Finds API channel information for |api_name| from |features|.
+  Returns None if channel information for the API cannot be located.
   '''
-  feature = json_fs.GetFromFile(filename).Get().get(api_name)
-  if feature is None:
-    return None
-  if isinstance(feature, Mapping):
-    # The channel information exists as a solitary dict.
-    return feature.get('channel')
-  # The channel information dict is nested within a list for whitelisting
-  # purposes. Take the newest channel out of all of the entries.
-  return BranchUtility.NewestChannel(entry.get('channel') for entry in feature)
-
-
-def _GetChannelFromApiFeatures(api_name, json_fs):
-  return _GetChannelFromFeatures(api_name, json_fs, API_FEATURES)
-
-
-def _GetChannelFromManifestFeatures(api_name, json_fs):
-  # _manifest_features.json uses unix_style API names.
-  api_name = UnixName(api_name)
-  return _GetChannelFromFeatures(api_name, json_fs, MANIFEST_FEATURES)
-
-
-def _GetChannelFromPermissionFeatures(api_name, json_fs):
-  return _GetChannelFromFeatures(api_name, json_fs, PERMISSION_FEATURES)
+  feature = features.Get().get(api_name)
+  return feature.get('channel') if feature else None
 
 
 class AvailabilityFinder(object):
@@ -154,19 +132,21 @@ class AvailabilityFinder(object):
     if version < _SVN_MIN_VERSION:
       # SVN data isn't available below this version.
       return False
+    features_bundle = self._CreateFeaturesBundle(file_system)
     available_channel = None
-    json_fs = self._compiled_fs_factory.ForJson(file_system)
     if version >= _API_FEATURES_MIN_VERSION:
       # The _api_features.json file first appears in version 28 and should be
       # the most reliable for finding API availability.
-      available_channel = _GetChannelFromApiFeatures(api_name, json_fs)
+      available_channel = self._GetChannelFromApiFeatures(api_name,
+                                                          features_bundle)
     if version >= _ORIGINAL_FEATURES_MIN_VERSION:
       # The _permission_features.json and _manifest_features.json files are
       # present in Chrome 20 and onwards. Use these if no information could be
       # found using _api_features.json.
-      available_channel = available_channel or (
-          _GetChannelFromPermissionFeatures(api_name, json_fs)
-          or _GetChannelFromManifestFeatures(api_name, json_fs))
+      available_channel = (
+          available_channel or
+          self._GetChannelFromPermissionFeatures(api_name, features_bundle) or
+          self._GetChannelFromManifestFeatures(api_name, features_bundle))
       if available_channel is not None:
         return available_channel == 'stable'
     if version >= _SVN_MIN_VERSION:
@@ -180,10 +160,11 @@ class AvailabilityFinder(object):
     back to checking the file system for API schema existence, to determine
     whether or not an API is available on the given channel, |channel_info|.
     '''
-    json_fs = self._compiled_fs_factory.ForJson(file_system)
-    available_channel = (_GetChannelFromApiFeatures(api_name, json_fs)
-        or _GetChannelFromPermissionFeatures(api_name, json_fs)
-        or _GetChannelFromManifestFeatures(api_name, json_fs))
+    features_bundle = self._CreateFeaturesBundle(file_system)
+    available_channel = (
+        self._GetChannelFromApiFeatures(api_name, features_bundle) or
+        self._GetChannelFromPermissionFeatures(api_name, features_bundle) or
+        self._GetChannelFromManifestFeatures(api_name, features_bundle))
     if (available_channel is None and
         self._HasApiSchema(api_name, file_system, channel_info.version)):
       # If an API is not represented in any of the _features files, but exists
@@ -195,6 +176,24 @@ class AvailabilityFinder(object):
     newest = BranchUtility.NewestChannel((available_channel,
                                           channel_info.channel))
     return available_channel is not None and newest == channel_info.channel
+
+  def _CreateFeaturesBundle(self, file_system):
+    return FeaturesBundle(file_system,
+                          self._compiled_fs_factory,
+                          self._object_store_creator)
+
+  def _GetChannelFromApiFeatures(self, api_name, features_bundle):
+    return _GetChannelFromFeatures(api_name, features_bundle.GetAPIFeatures())
+
+  def _GetChannelFromManifestFeatures(self, api_name, features_bundle):
+    # _manifest_features.json uses unix_style API names.
+    api_name = UnixName(api_name)
+    return _GetChannelFromFeatures(api_name,
+                                   features_bundle.GetManifestFeatures())
+
+  def _GetChannelFromPermissionFeatures(self, api_name, features_bundle):
+    return _GetChannelFromFeatures(api_name,
+                                   features_bundle.GetPermissionFeatures())
 
   def _CheckApiAvailability(self, api_name, file_system, channel_info):
     '''Determines the availability for an API at a certain version of Chrome.

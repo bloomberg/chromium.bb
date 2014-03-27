@@ -182,7 +182,9 @@ CANNED_TRUNK_FS_DATA = {
               }
             ]
           }
-        })
+        }),
+        'manifest.json': '{}',
+        'permissions.json': '{}'
       },
       'private': {
         'intro_tables': {

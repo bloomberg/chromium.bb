@@ -205,9 +205,9 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
           { 'channel': 'beta',
             'extension_types': ['extension']
           },
-          # whitelist
           { 'channel': 'stable',
-            'extension_types': ['extension']
+            'extension_types': ['extension'],
+            'whitelist': ['aaa']
           },
         ],
         'falseBetaAPI': {
@@ -370,8 +370,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
-          # whitelist
-          { 'channel': 'stable'}
+          { 'channel': 'stable', 'whitelist': ['aaa'] }
         ],
         'downloads': {
           'channel': 'beta'
@@ -500,8 +499,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
-          # whitelist
-          { 'channel': 'stable'}
+          { 'channel': 'stable', 'whitelist': ['aaa'] }
         ],
         'downloads': {
           'channel': 'dev'
@@ -614,8 +612,7 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(CHROME_EXTENSIONS, {
         },
         'declarativeWebRequest': [
           { 'channel': 'beta' },
-          # whitelist
-          { 'channel': 'stable'}
+          { 'channel': 'stable', 'whitelist': ['aaa'] }
         ],
         'systemInfo.display': {
           'channel': 'stable'

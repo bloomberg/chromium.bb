@@ -8,6 +8,7 @@ from compiled_file_system import Unicode
 from extensions_paths import (
     API_FEATURES, JSON_TEMPLATES, MANIFEST_FEATURES, PERMISSION_FEATURES)
 import features_utility
+from file_system import FileNotFoundError
 from future import Future
 from third_party.json_schema_compiler.json_parse import Parse
 
@@ -51,7 +52,11 @@ class _FeaturesCache(object):
                           for path in self._extra_paths]
     features = features_utility.Parse(Parse(features_json))
     for path_future in extra_path_futures:
-      extra_json = path_future.Get()
+      try:
+        extra_json = path_future.Get()
+      except FileNotFoundError:
+        # Not all file system configurations have the extra files.
+        continue
       features = features_utility.MergedWith(
           features_utility.Parse(Parse(extra_json)), features)
     return features
@@ -80,7 +85,11 @@ class FeaturesBundle(object):
         compiled_fs_factory,
         PERMISSION_FEATURES,
         posixpath.join(JSON_TEMPLATES, 'permissions.json'))
-    self._object_store = object_store_creator.Create(_FeaturesCache, 'features')
+    # Namespace the object store by the file system ID because this class is
+    # used by the availability finder cross-channel.
+    # TODO(kalman): Configure this at the ObjectStore level.
+    self._object_store = object_store_creator.Create(
+        _FeaturesCache, category=file_system.GetIdentity())
 
   def GetPermissionFeatures(self):
     return self._permission_cache.GetFeatures()

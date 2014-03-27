@@ -98,6 +98,7 @@ class ServerInstance(object):
         host_fs_at_trunk,
         self.availability_finder,
         self.api_models,
+        self.features_bundle,
         self.object_store_creator)
 
     self.ref_resolver_factory = ReferenceResolver.Factory(

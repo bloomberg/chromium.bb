@@ -13,6 +13,8 @@ from api_data_source import (_JSCModel,
                              _GetEventByNameFromEvents)
 from branch_utility import ChannelInfo
 from extensions_paths import CHROME_EXTENSIONS
+from fake_host_file_system_provider import FakeHostFileSystemProvider
+from features_bundle import FeaturesBundle
 from file_system import FileNotFoundError
 from future import Future
 from object_store_creator import ObjectStoreCreator
@@ -39,19 +41,6 @@ class _FakeAvailabilityFinder(object):
 
   def GetApiAvailability(self, version):
     return ChannelInfo('stable', '396', 5)
-
-
-class _FakeHostFileSystemProvider(object):
-
-  def __init__(self, file_system_data):
-    self._file_system_data = file_system_data
-
-  def GetTrunk(self):
-    return self.GetBranch('trunk')
-
-  @memoize
-  def GetBranch(self, branch):
-    return TestFileSystem(self._file_system_data[str(branch)])
 
 
 class _FakeSamplesDataSource(object):
@@ -97,13 +86,16 @@ class APIDataSourceTest(unittest.TestCase):
 
     server_instance = ServerInstance.ForTest(
         TestFileSystem(CANNED_TRUNK_FS_DATA, relative_to=CHROME_EXTENSIONS))
-    self._json_cache = server_instance.compiled_fs_factory.ForJson(
-        server_instance.host_file_system_provider.GetTrunk())
+    file_system = server_instance.host_file_system_provider.GetTrunk()
+    self._json_cache = server_instance.compiled_fs_factory.ForJson(file_system)
+    self._features_bundle = FeaturesBundle(file_system,
+                                           server_instance.compiled_fs_factory,
+                                           server_instance.object_store_creator)
     self._api_models = server_instance.api_models
 
     # Used for testGetApiAvailability() so that valid-ish data is processed.
     server_instance = ServerInstance.ForTest(
-        file_system_provider=_FakeHostFileSystemProvider(
+        file_system_provider=FakeHostFileSystemProvider(
             CANNED_API_FILE_SYSTEM_DATA))
     self._avail_api_models = server_instance.api_models
     self._avail_json_cache = server_instance.compiled_fs_factory.ForJson(
@@ -131,6 +123,7 @@ class APIDataSourceTest(unittest.TestCase):
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
+                      self._features_bundle,
                       None).ToDict()
     self.assertEquals('type-TypeA', dict_['types'][0]['id'])
     self.assertEquals('property-TypeA-b',
@@ -148,6 +141,7 @@ class APIDataSourceTest(unittest.TestCase):
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
+                      self._features_bundle,
                       None).ToDict()
     self.assertEquals(expected_json, dict_)
 
@@ -164,6 +158,7 @@ class APIDataSourceTest(unittest.TestCase):
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
+                      self._features_bundle,
                       None).ToDict()
     self.assertEquals(_MakeLink('ref_test.html#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
@@ -194,6 +189,7 @@ class APIDataSourceTest(unittest.TestCase):
                         self._avail_finder,
                         self._avail_json_cache,
                         _FakeTemplateCache(),
+                        self._features_bundle,
                         None)
       self.assertEquals(availability, model._GetApiAvailability())
 
@@ -205,6 +201,7 @@ class APIDataSourceTest(unittest.TestCase):
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
+                      self._features_bundle,
                       None)
     expected_list = [
       { 'title': 'Description',
@@ -277,6 +274,7 @@ class APIDataSourceTest(unittest.TestCase):
                       _FakeAvailabilityFinder(),
                       self._json_cache,
                       _FakeTemplateCache(),
+                      self._features_bundle,
                       self._FakeLoadAddRulesSchema).ToDict()
 
     # Check that the first event has the addRulesFunction defined.
