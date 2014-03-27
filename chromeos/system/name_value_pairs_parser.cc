@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
+#include "base/sys_info.h"
 
 namespace chromeos {  // NOLINT
 namespace system {
@@ -126,7 +127,8 @@ bool NameValuePairsParser::GetNameValuePairsFromFile(
   if (base::ReadFileToString(file_path, &contents)) {
     return ParseNameValuePairs(contents, eq, delim);
   } else {
-    LOG(WARNING) << "Unable to read statistics file: " << file_path.value();
+    if (base::SysInfo::IsRunningOnChromeOS())
+      LOG(WARNING) << "Unable to read statistics file: " << file_path.value();
     return false;
   }
 }

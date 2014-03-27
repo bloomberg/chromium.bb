@@ -226,9 +226,9 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
   if (cancellation_flag_.IsSet())
     return;
 
+  NameValuePairsParser parser(&machine_info_);
   if (base::SysInfo::IsRunningOnChromeOS()) {
     // Parse all of the key/value pairs from the crossystem tool.
-    NameValuePairsParser parser(&machine_info_);
     if (!parser.ParseNameValuePairsFromTool(arraysize(kCrosSystemTool),
                                             kCrosSystemTool,
                                             kCrosSystemEq,
@@ -236,17 +236,17 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
                                             kCrosSystemCommentDelim)) {
       LOG(ERROR) << "Errors parsing output from: " << kCrosSystemTool;
     }
-
-    parser.GetNameValuePairsFromFile(base::FilePath(kMachineHardwareInfoFile),
-                                     kMachineHardwareInfoEq,
-                                     kMachineHardwareInfoDelim);
-    parser.GetNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
-                                     kEchoCouponEq,
-                                     kEchoCouponDelim);
-    parser.GetNameValuePairsFromFile(base::FilePath(kVpdFile),
-                                     kVpdEq,
-                                     kVpdDelim);
   }
+
+  parser.GetNameValuePairsFromFile(base::FilePath(kMachineHardwareInfoFile),
+                                   kMachineHardwareInfoEq,
+                                   kMachineHardwareInfoDelim);
+  parser.GetNameValuePairsFromFile(base::FilePath(kEchoCouponFile),
+                                   kEchoCouponEq,
+                                   kEchoCouponDelim);
+  parser.GetNameValuePairsFromFile(base::FilePath(kVpdFile),
+                                   kVpdEq,
+                                   kVpdDelim);
 
   // Ensure that the hardware class key is present with the expected
   // key name, and if it couldn't be retrieved, that the value is "unknown".
