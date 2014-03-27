@@ -22,7 +22,6 @@
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/env_idb.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
-#include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
@@ -55,27 +54,26 @@ static StringPiece MakeStringPiece(const leveldb::Slice& s) {
   return StringPiece(s.data(), s.size());
 }
 
-class ComparatorAdapter : public leveldb::Comparator {
- public:
-  explicit ComparatorAdapter(const LevelDBComparator* comparator)
-      : comparator_(comparator) {}
+LevelDBDatabase::ComparatorAdapter::ComparatorAdapter(
+    const LevelDBComparator* comparator)
+    : comparator_(comparator) {}
 
-  virtual int Compare(const leveldb::Slice& a, const leveldb::Slice& b) const
-      OVERRIDE {
-    return comparator_->Compare(MakeStringPiece(a), MakeStringPiece(b));
-  }
+int LevelDBDatabase::ComparatorAdapter::Compare(const leveldb::Slice& a,
+                                                const leveldb::Slice& b) const {
+  return comparator_->Compare(MakeStringPiece(a), MakeStringPiece(b));
+}
 
-  virtual const char* Name() const OVERRIDE { return comparator_->Name(); }
+const char* LevelDBDatabase::ComparatorAdapter::Name() const {
+  return comparator_->Name();
+}
 
-  // TODO(jsbell): Support the methods below in the future.
-  virtual void FindShortestSeparator(std::string* start,
-                                     const leveldb::Slice& limit) const
-      OVERRIDE {}
-  virtual void FindShortSuccessor(std::string* key) const OVERRIDE {}
+// TODO(jsbell): Support the methods below in the future.
+void LevelDBDatabase::ComparatorAdapter::FindShortestSeparator(
+    std::string* start,
+    const leveldb::Slice& limit) const {}
 
- private:
-  const LevelDBComparator* comparator_;
-};
+void LevelDBDatabase::ComparatorAdapter::FindShortSuccessor(
+    std::string* key) const {}
 
 LevelDBSnapshot::LevelDBSnapshot(LevelDBDatabase* db)
     : db_(db->db_.get()), snapshot_(db_->GetSnapshot()) {}

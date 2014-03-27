@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
@@ -44,6 +45,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
     : public base::RefCounted<IndexedDBBackingStore> {
  public:
   class CONTENT_EXPORT Transaction;
+
+  class Comparator : public LevelDBComparator {
+   public:
+    virtual int Compare(const base::StringPiece& a,
+                        const base::StringPiece& b) const OVERRIDE;
+    virtual const char* Name() const OVERRIDE;
+  };
 
   const GURL& origin_url() const { return origin_url_; }
   base::OneShotTimer<IndexedDBBackingStore>* close_timer() {

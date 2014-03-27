@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
@@ -212,14 +211,14 @@ static int CompareIndexKeys(const StringPiece& a, const StringPiece& b) {
   return Compare(a, b, true /*index_keys*/);
 }
 
-class Comparator : public LevelDBComparator {
- public:
-  virtual int Compare(const StringPiece& a, const StringPiece& b) const
-      OVERRIDE {
-    return content::Compare(a, b, false /*index_keys*/);
-  }
-  virtual const char* Name() const OVERRIDE { return "idb_cmp1"; }
-};
+int IndexedDBBackingStore::Comparator::Compare(const StringPiece& a,
+                                               const StringPiece& b) const {
+  return content::Compare(a, b, false /*index_keys*/);
+}
+
+const char* IndexedDBBackingStore::Comparator::Name() const {
+  return "idb_cmp1";
+}
 
 // 0 - Initial version.
 // 1 - Adds UserIntVersion to DatabaseMetaData.
