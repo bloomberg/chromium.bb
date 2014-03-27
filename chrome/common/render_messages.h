@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 // Multiply-included file, no traditional include guard.
+#include <stdint.h>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
@@ -401,6 +401,17 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_RetrieveMetaTagContent,
                     std::string /* tag_name */ )
 #endif  // defined(OS_ANDROID)
 
+#if defined(CLD2_DYNAMIC_MODE)
+// Informs the renderer process that Compact Language Detector (CLD) data is
+// available and provides an IPC::PlatformFileForTransit obtained from
+// IPC::GetFileHandleForProcess(...)
+// See also: ChromeViewHostMsg_NeedCLDData
+IPC_MESSAGE_ROUTED3(ChromeViewMsg_CLDDataAvailable,
+                    IPC::PlatformFileForTransit /* ipc_file_handle */,
+                    uint64 /* data_offset */,
+                    uint64 /* data_length */)
+#endif
+
 // chrome.principals messages ------------------------------------------------
 
 // Message sent from the renderer to the browser to get the list of browser
@@ -778,3 +789,12 @@ IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_DetailedConsoleMessageAdded,
 // Sent by the renderer to check if crash reporting is enabled.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
                             bool /* enabled */)
+
+#if defined(CLD2_DYNAMIC_MODE)
+// Informs the browser process that Compact Language Detector (CLD) data is
+// required by the originating renderer. The browser process should respond
+// with a ChromeViewMsg_CLDDataAvailable if the data is available, else it
+// should go unanswered (the renderer will ask again later).
+// See also: ChromeViewMsg_CLDDataAvailable
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_NeedCLDData)
+#endif

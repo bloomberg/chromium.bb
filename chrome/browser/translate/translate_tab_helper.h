@@ -7,7 +7,17 @@
 
 #include <string>
 
+#if defined(CLD2_DYNAMIC_MODE)
+#include "base/basictypes.h"
+#include "base/lazy_instance.h"
+#endif
 #include "base/memory/scoped_ptr.h"
+#if defined(CLD2_DYNAMIC_MODE)
+#include "base/memory/weak_ptr.h"
+#include "base/platform_file.h"
+#include "base/synchronization/lock.h"
+#include "base/task_runner.h"
+#endif
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/browser/translate_client.h"
@@ -100,6 +110,45 @@ class TranslateTabHelper
                         const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
+
+#if defined(CLD2_DYNAMIC_MODE)
+  // Called when we receive ChromeViewHostMsg_NeedCLDData from a renderer.
+  // If we have already cached the data, responds immediately; else, enqueues
+  // a HandleCLDDataRequest on the blocking pool to cache the data.
+  // Acquires and releases s_file_lock_ in a non-blocking manner; queries
+  // handled while the file is being cached will gracefully and immediately
+  // fail.
+  // It is up to the originator of the message to poll again later if required;
+  // no "negative response" will be generated.
+  void OnCLDDataRequested();
+
+  // Invoked on the blocking pool in order to cache the data. When successful,
+  // immediately responds to the request that initiated OnCLDDataRequested.
+  // Holds s_file_lock_ while the file is being cached.
+  static void HandleCLDDataRequest();
+
+  // If the CLD data is ready, send it to the renderer. Briefly checks the lock.
+  void MaybeSendCLDDataAvailable();
+
+  // Sends the renderer a response containing the data file handle. No locking.
+  void SendCLDDataAvailable(const base::PlatformFile handle,
+                            const uint64 data_offset,
+                            const uint64 data_length);
+
+  // Necessary for binding the callback to HandleCLDDataRequest on the blocking
+  // pool.
+  base::WeakPtrFactory<TranslateTabHelper> weak_pointer_factory_;
+
+  // The data file,  cached as long as the process stays alive.
+  // We also track the offset at which the data starts, and its length.
+  static base::PlatformFile s_cached_platform_file_; // guarded by file_lock_
+  static uint64 s_cached_data_offset_; // guarded by file_lock_
+  static uint64 s_cached_data_length_; // guarded by file_lock_
+
+  // Guards s_cached_platform_file_
+  static base::LazyInstance<base::Lock> s_file_lock_;
+
+#endif
 
   // Shows the translate bubble.
   void ShowBubble(TranslateStep step, TranslateErrors::Type error_type);

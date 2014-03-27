@@ -7,11 +7,21 @@
 
 #include <string>
 
+#if defined(CLD2_DYNAMIC_MODE)
+#include "base/files/memory_mapped_file.h"
+#endif
 #include "base/gtest_prod_util.h"
+#if defined(CLD2_DYNAMIC_MODE)
+#include "base/lazy_instance.h"
+#endif
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/renderer/render_view_observer.h"
+#if defined(CLD2_DYNAMIC_MODE)
+#include "ipc/ipc_platform_file.h"
+#include "url/gurl.h"
+#endif
 
 namespace blink {
 class WebDocument;
@@ -28,6 +38,11 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Informs us that the page's text has been extracted.
   void PageCaptured(int page_id, const base::string16& contents);
+
+  // Lets the translation system know that we are preparing to navigate to
+  // the specified URL. If there is anything that can or should be done before
+  // this URL loads, this is the time to prepare for it.
+  void PrepareForUrl(const GURL& url);
 
  protected:
   // The following methods are protected so they can be overridden in
@@ -147,6 +162,73 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Method factory used to make calls to TranslatePageImpl.
   base::WeakPtrFactory<TranslateHelper> weak_method_factory_;
+
+#if defined(CLD2_DYNAMIC_MODE)
+  // Do not ask for CLD data any more.
+  void CancelCLD2DataFilePolling();
+
+  // Invoked when PageCaptured is called prior to obtaining CLD data. This
+  // method stores the page ID into deferred_page_id_ and COPIES the contents
+  // of the page, then sets deferred_page_capture_ to true. When CLD data is
+  // eventually received (in OnCLDDataAvailable), any deferred request will be
+  // "resurrected" and allowed to proceed automatically, assuming that the
+  // page ID has not changed.
+  void DeferPageCaptured(const int page_id, const base::string16& contents);
+
+  // Immediately send an IPC request to the browser process to get the CLD
+  // data file. In most cases, the file will already exist and we will only
+  // poll once; but since the file might need to be downloaded first, poll
+  // indefinitely until a ChromeViewMsg_CLDDataAvailable message is received
+  // from the browser process.
+  // Polling will automatically halt as soon as the renderer obtains a
+  // reference to the data file.
+  void SendCLD2DataFileRequest(const int delay_millis,
+                               const int next_delay_millis);
+
+  // Invoked when a ChromeViewMsg_CLDDataAvailable message is received from
+  // the browser process, providing a file handle for the CLD data file. If a
+  // PageCaptured request was previously deferred with DeferPageCaptured and
+  // the page ID has not yet changed, the PageCaptured is reinvoked to
+  // "resurrect" the language detection pathway.
+  void OnCLDDataAvailable(const IPC::PlatformFileForTransit ipc_file_handle,
+                          const uint64 data_offset,
+                          const uint64 data_length);
+
+  // After receiving data in OnCLDDataAvailable, loads the data into CLD2.
+  void LoadCLDDData(const IPC::PlatformFileForTransit ipc_file_handle,
+                    const uint64 data_offset,
+                    const uint64 data_length);
+
+  // A struct that contains the pointer to the CLD mmap. Used so that we can
+  // leverage LazyInstance:Leaky to properly scope the lifetime of the mmap.
+  struct CLDMmapWrapper {
+    CLDMmapWrapper() {
+      value = NULL;
+    }
+    base::MemoryMappedFile* value;
+  };
+  static base::LazyInstance<CLDMmapWrapper>::Leaky s_cld_mmap_;
+
+  // Whether or not polling for CLD2 data has started.
+  bool cld2_data_file_polling_started_;
+
+  // Whether or not CancelCLD2DataFilePolling has been called.
+  bool cld2_data_file_polling_canceled_;
+
+  // Whether or not a PageCaptured event arrived prior to CLD data becoming
+  // available. If true, deferred_page_id_ contains the most recent page ID
+  // and deferred_contents_ contains the most recent contents.
+  bool deferred_page_capture_;
+
+  // The ID of the page most recently reported to PageCaptured if
+  // deferred_page_capture_ is true.
+  int deferred_page_id_;
+
+  // The contents of the page most recently reported to PageCaptured if
+  // deferred_page_capture_ is true.
+  base::string16 deferred_contents_;
+
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TranslateHelper);
 };

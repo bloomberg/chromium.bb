@@ -4,8 +4,15 @@
 
 #include "chrome/renderer/translate/translate_helper.h"
 
+#if defined(CLD2_DYNAMIC_MODE)
+#include <stdint.h>
+#endif
+
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#if defined(CLD2_DYNAMIC_MODE)
+#include "base/files/memory_mapped_file.h"
+#endif
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
@@ -19,6 +26,12 @@
 #include "components/translate/core/common/translate_util.h"
 #include "components/translate/language_detection/language_detection_util.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/constants.h"
+#include "ipc/ipc_platform_file.h"
+#if defined(CLD2_DYNAMIC_MODE)
+#include "content/public/common/url_constants.h"
+#include "third_party/cld_2/src/public/compact_lang_det.h"
+#endif
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -64,6 +77,13 @@ const char kContentSecurityPolicy[] = "script-src 'self' 'unsafe-eval'";
 
 }  // namespace
 
+#if defined(CLD2_DYNAMIC_MODE)
+// The mmap for the CLD2 data must be held forever once it is available in the
+// process. This is declared static in the translate_helper.h.
+base::LazyInstance<TranslateHelper::CLDMmapWrapper>::Leaky
+  TranslateHelper::s_cld_mmap_ = LAZY_INSTANCE_INITIALIZER;
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, public:
 //
@@ -71,12 +91,63 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       page_id_(-1),
       translation_pending_(false),
-      weak_method_factory_(this) {
+      weak_method_factory_(this)
+#if defined(CLD2_DYNAMIC_MODE)
+      ,cld2_data_file_polling_started_(false),
+      cld2_data_file_polling_canceled_(false),
+      deferred_page_capture_(false),
+      deferred_page_id_(-1),
+      deferred_contents_(ASCIIToUTF16(""))
+#endif
+  {
 }
 
 TranslateHelper::~TranslateHelper() {
   CancelPendingTranslation();
+#if defined(CLD2_DYNAMIC_MODE)
+  CancelCLD2DataFilePolling();
+#endif
 }
+
+void TranslateHelper::PrepareForUrl(const GURL& url) {
+#if defined(CLD2_DYNAMIC_MODE)
+  deferred_page_capture_ = false;
+  deferred_contents_.clear();
+  if (cld2_data_file_polling_started_)
+    return;
+
+  // TODO(andrewhayden): Refactor translate_manager.cc's IsTranslatableURL to
+  // components/translate/core/common/translate_util.cc, and ignore any URL
+  // that fails that check. This will require moving unit tests and rewiring
+  // other function calls as well, so for now replicate the logic here.
+  if (url.is_empty())
+    return;
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return;
+  if (url.SchemeIs(content::kChromeDevToolsScheme))
+    return;
+  if (url.SchemeIs(content::kFtpScheme))
+    return;
+#if defined(OS_CHROMEOS)
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      url.DomainIs(file_manager::kFileManagerAppId))
+    return;
+#endif
+
+  // Start polling for CLD data.
+  cld2_data_file_polling_started_ = true;
+  TranslateHelper::SendCLD2DataFileRequest(0, 1000);
+#endif
+}
+
+#if defined(CLD2_DYNAMIC_MODE)
+void TranslateHelper::DeferPageCaptured(const int page_id,
+                                        const base::string16& contents) {
+  deferred_page_capture_ = true;
+  deferred_page_id_ = page_id;
+  deferred_contents_ = contents;
+}
+#endif
 
 void TranslateHelper::PageCaptured(int page_id,
                                    const base::string16& contents) {
@@ -92,6 +163,17 @@ void TranslateHelper::PageCaptured(int page_id,
   WebFrame* main_frame = GetMainFrame();
   if (!main_frame || render_view()->GetPageId() != page_id)
     return;
+
+  // TODO(andrewhayden): UMA insertion point here: Track if data is available.
+  // TODO(andrewhayden): Retry insertion point here, retry till data available.
+#if defined(CLD2_DYNAMIC_MODE)
+  if (!CLD2::isDataLoaded()) {
+    // We're in dynamic mode and CLD data isn't loaded. Retry when CLD data
+    // is loaded, if ever.
+    TranslateHelper::DeferPageCaptured(page_id, contents);
+    return;
+  }
+#endif
   page_id_ = page_id;
   WebDocument document = main_frame->document();
   std::string content_language = document.contentLanguage().utf8();
@@ -136,6 +218,9 @@ void TranslateHelper::CancelPendingTranslation() {
   translation_pending_ = false;
   source_lang_.clear();
   target_lang_.clear();
+#if defined(CLD2_DYNAMIC_MODE)
+  CancelCLD2DataFilePolling();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -310,6 +395,9 @@ bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(TranslateHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_TranslatePage, OnTranslatePage)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RevertTranslation, OnRevertTranslation)
+#if defined(CLD2_DYNAMIC_MODE)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_CLDDataAvailable, OnCLDDataAvailable);
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -499,3 +587,100 @@ WebFrame* TranslateHelper::GetMainFrame() {
 
   return web_view->mainFrame();
 }
+
+#if defined(CLD2_DYNAMIC_MODE)
+void TranslateHelper::CancelCLD2DataFilePolling() {
+  cld2_data_file_polling_canceled_ = true;
+}
+
+void TranslateHelper::SendCLD2DataFileRequest(const int delay_millis,
+                                              const int next_delay_millis) {
+  // Terminate immediately if told to stop polling.
+  if (cld2_data_file_polling_canceled_)
+    return;
+
+  // Terminate immediately if data is already loaded.
+  if (CLD2::isDataLoaded())
+    return;
+
+  // Else, send the IPC message to the browser process requesting the data...
+  Send(new ChromeViewHostMsg_NeedCLDData(routing_id()));
+
+  // ... and enqueue another delayed task to call again. This will start a
+  // chain of polling that will last until the pointer stops being NULL,
+  // which is the right thing to do.
+  // NB: In the great majority of cases, the data file will be available and
+  // the very first delayed task will be a no-op that terminates the chain.
+  // It's only while downloading the file that this will chain for a
+  // nontrivial amount of time.
+  // Use a weak pointer to avoid keeping this helper object around forever.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&TranslateHelper::SendCLD2DataFileRequest,
+                 weak_method_factory_.GetWeakPtr(),
+                 next_delay_millis, next_delay_millis),
+      base::TimeDelta::FromMilliseconds(delay_millis));
+}
+
+void TranslateHelper::OnCLDDataAvailable(
+    const IPC::PlatformFileForTransit ipc_file_handle,
+    const uint64 data_offset,
+    const uint64 data_length) {
+  LoadCLDDData(ipc_file_handle, data_offset, data_length);
+  if (deferred_page_capture_ && CLD2::isDataLoaded()) {
+    deferred_page_capture_ = false; // Don't do this a second time.
+    PageCaptured(deferred_page_id_, deferred_contents_);
+    deferred_page_id_ = -1; // Clean up for sanity
+    deferred_contents_.clear(); // Clean up for sanity
+  }
+}
+
+void TranslateHelper::LoadCLDDData(
+    const IPC::PlatformFileForTransit ipc_file_handle,
+    const uint64 data_offset,
+    const uint64 data_length) {
+  // Terminate immediately if told to stop polling.
+  if (cld2_data_file_polling_canceled_)
+    return;
+
+  // Terminate immediately if data is already loaded.
+  if (CLD2::isDataLoaded())
+    return;
+
+  // Grab the file handle
+  base::PlatformFile platform_file =
+      IPC::PlatformFileForTransitToPlatformFile(ipc_file_handle);
+  if (platform_file == base::kInvalidPlatformFileValue) {
+    LOG(ERROR) << "Can't find the CLD data file.";
+    return;
+  }
+  base::File basic_file(platform_file);
+
+  // mmap the file
+  s_cld_mmap_.Get().value = new base::MemoryMappedFile();
+  bool initialized = s_cld_mmap_.Get().value->Initialize(basic_file.Pass());
+  if (!initialized) {
+    LOG(ERROR) << "mmap initialization failed";
+    delete s_cld_mmap_.Get().value;
+    s_cld_mmap_.Get().value = NULL;
+    return;
+  }
+
+  // Sanity checks
+  uint64 max_int32 = std::numeric_limits<int32>::max();
+  if (data_length + data_offset > s_cld_mmap_.Get().value->length()
+      || data_length > max_int32) { // max signed 32 bit integer
+    LOG(ERROR) << "Illegal mmap config: data_offset="
+        << data_offset << ", data_length=" << data_length
+        << ", mmap->length()=" << s_cld_mmap_.Get().value->length();
+    delete s_cld_mmap_.Get().value;
+    s_cld_mmap_.Get().value = NULL;
+    return;
+  }
+
+  // Initialize the CLD subsystem... and it's all done!
+  const uint8* data_ptr = s_cld_mmap_.Get().value->data() + data_offset;
+  CLD2::loadDataFromRawAddress(data_ptr, data_length);
+  DCHECK(CLD2::isDataLoaded()) << "Failed to load CLD data from mmap";
+}
+#endif

@@ -353,6 +353,9 @@ void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // event (including tab reload).
   if (chrome_render_process_observer_)
     chrome_render_process_observer_->ExecutePendingClearCache();
+  // Let translate_helper do any preparatory work for loading a URL.
+  if (translate_helper_)
+    translate_helper_->PrepareForUrl(url);
 }
 
 void ChromeRenderViewObserver::OnSetClientSidePhishingDetection(

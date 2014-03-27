@@ -8,3 +8,42 @@ Security Critical: yes
 Description:
 The CLD is used to determine the language of text. In Chromium, this is used
 to determine if Chrome should offer Translate UX to the user.
+
+
+Dynamic Mode
+============
+Prior to CLD2's trunk@155, Chromium has always built CLD2 statically. The data
+needed for CLD2 to perform its language detection has been compiled straight
+into the binary. This contributes around 1.5 megabytes to the size of Chrome
+and embeds one or more large rodata sections to the executable.
+
+Starting with CLD2's trunk@r155, there is a new option available: dynamic mode.
+In dynamic mode, CLD2 is built without its data; only the code is compiled, and
+the data must be supplied at runtime via a file or a pointer to a (presumably
+mmap'ed) read-only region of memory.
+
+Tradeoffs to consider before enabling dynamic mode:
+
+  Pros:
+    * Reduces the size of the Chromium binary by a bit over a megabyte.
+    * As the data file rarely changes, it can be updated independently.
+    * Depending upon the update process on your platform, this may also reduce
+      the size of Chromium updates.
+    * It is possible to run Chromium without CLD2 data at all (language
+      detection will always fail, but fails gracefully).
+    * Different types of CLD2 data files (larger and more accurate or smaller
+      and less accurate) can be dynamically downloaded or chosen depending
+      on runtime choices.
+
+  Cons:
+    * Data files must be generated and checked into source control by hand.
+    * At runtime a data file must be opened and its headers parsed before CLD2
+      can be used in any given process (this time should be negligible in most
+      circumstances). This will prevent language detection from working until
+      a data file has been loaded.
+
+To enable dynamic mode, set 'cld_dynamic' to '1' in ../../build/common.gypi.
+
+For more information on the changes required to use dynamic mode, see:
+  https://codereview.chromium.org/187393005
+

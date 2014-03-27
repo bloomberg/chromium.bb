@@ -432,12 +432,19 @@
       'cld_version%': 2,
 
       # For CLD2, the size of the tables that should be included in the build
-      # Only evaluated if cld_version == 2.
+      # Only evaluated if cld_version == 2 or if building the CLD2 dynamic data
+      # tool explicitly.
       # See third_party/cld_2/cld_2.gyp for more information.
       #   0: Small tables, lower accuracy
       #   1: Medium tables, medium accuracy
       #   2: Large tables, high accuracy
       'cld2_table_size%': 2,
+
+      # Set the way CLD is compiled. Only evaluated if cld_version == 2.
+      #   0: static, language scoring tables compiled into the binary
+      #   1: dynamic, language scoring tables live in a data file that must
+      #      be loaded at runtime.
+      'cld2_dynamic%': 0,
 
       # Enable spell checker.
       'enable_spellcheck%': 1,
@@ -636,6 +643,7 @@
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
+          'cld2_dynamic%': 0,
           'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
@@ -686,6 +694,7 @@
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
+          'cld2_dynamic%': 0,
           'enable_printing%': 0,
           'enable_session_service%': 0,
           'enable_themes%': 0,
@@ -1002,6 +1011,7 @@
     'enable_google_now%': '<(enable_google_now)',
     'cld_version%': '<(cld_version)',
     'cld2_table_size%': '<(cld2_table_size)',
+    'cld2_dynamic%': '<(cld2_dynamic)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_ftp_support%': '<(disable_ftp_support)',
     'enable_task_manager%': '<(enable_task_manager)',
@@ -2512,6 +2522,9 @@
       }],
       ['cld_version!=0', {
         'defines': ['CLD_VERSION=<(cld_version)'],
+      }],
+      ['cld2_dynamic!=0', {
+        'defines': ['CLD2_DYNAMIC_MODE=1'],
       }],
       ['enable_printing==1', {
         'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],
