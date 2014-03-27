@@ -61,8 +61,7 @@ _TEST_ONLY_WARNING = (
     'You might be calling functions intended only for testing from\n'
     'production code.  It is OK to ignore this warning if you know what\n'
     'you are doing, as the heuristics used to detect the situation are\n'
-    'not perfect.  The commit queue will not block on this warning.\n'
-    'Email joi@chromium.org if you have questions.')
+    'not perfect.  The commit queue will not block on this warning.')
 
 
 _INCLUDE_ORDER_WARNING = (
@@ -760,7 +759,7 @@ def _CheckHardcodedGoogleHostsInLowerLayers(input_api, output_api):
   if problems:
     return [output_api.PresubmitPromptOrNotify(
         'Most layers below src/chrome/ should not hardcode service URLs.\n'
-        'Are you sure this is correct? (Contact: joi@chromium.org)',
+        'Are you sure this is correct?',
         ['  %s:%d:  %s' % (
             problem[0], problem[1], problem[2]) for problem in problems])]
   else:
