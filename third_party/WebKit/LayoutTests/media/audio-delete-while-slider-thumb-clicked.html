@@ -15,9 +15,21 @@
                 var console = document.getElementById('console');
                 console.innerHTML = console.innerHTML + msg + "<br>";
             }
-            
+
+            function forceGC()
+            {
+                if (window.GCController)
+                    return GCController.collect();
+
+                // Force garbage collection
+                for (var ndx = 0; ndx < 99000; ndx++)
+                    var str = new String("1234");
+            }
+
             function buttonClick()
             {
+                forceGC();
+
                 if (document.getElementById('audio'))
                     log("<br>FAIL: audio element not deleted!!");
 
@@ -31,7 +43,7 @@
 
                 testRunner.notifyDone();
             }
-            
+
             function deleteAudio()
             {
                 var audio = document.getElementById('audio');
@@ -43,7 +55,7 @@
 
                 setTimeout(buttonClick, 10);
             }
-            
+
             function drag()
             {
                 if (!window.testRunner)

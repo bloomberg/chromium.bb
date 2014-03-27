@@ -226,12 +226,12 @@ bool SliderThumbElement::isDisabledFormControl() const
 
 bool SliderThumbElement::matchesReadOnlyPseudoClass() const
 {
-    return hostInput()->matchesReadOnlyPseudoClass();
+    return hostInput() && hostInput()->matchesReadOnlyPseudoClass();
 }
 
 bool SliderThumbElement::matchesReadWritePseudoClass() const
 {
-    return hostInput()->matchesReadWritePseudoClass();
+    return hostInput() && hostInput()->matchesReadWritePseudoClass();
 }
 
 Node* SliderThumbElement::focusDelegate()
@@ -322,7 +322,8 @@ void SliderThumbElement::stopDragging()
     m_inDragMode = false;
     if (renderer())
         renderer()->setNeedsLayout();
-    hostInput()->dispatchFormControlChangeEvent();
+    if (hostInput())
+        hostInput()->dispatchFormControlChangeEvent();
 }
 
 void SliderThumbElement::defaultEventHandler(Event* event)
