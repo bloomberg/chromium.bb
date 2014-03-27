@@ -45,18 +45,40 @@ def LoadGenerators(generators_string):
   return generators
 
 
-def ProcessFile(args, generator_modules, filename, processed_files):
-  # Ensure we only visit each file once.
+def _PrintImportStack(imported_filename_stack):
+  """Prints a chain of imports, given by imported_filename_stack."""
+  for i in reversed(xrange(0, len(imported_filename_stack)-1)):
+    print "  %s was imported by %s" % (imported_filename_stack[i+1],
+                                       imported_filename_stack[i])
+
+def ProcessFile(args, generator_modules, filename, processed_files={},
+                imported_filename_stack=[]):
+  # Memoized results.
   if filename in processed_files:
-    if processed_files[filename] is None:
-      raise Exception("Circular dependency: " + filename)
     return processed_files[filename]
-  processed_files[filename] = None
+
+  # Ensure we only visit each file once.
+  if filename in imported_filename_stack:
+    print "%s: Error: Circular dependency" % filename
+    _PrintImportStack(imported_filename_stack + [filename])
+    sys.exit(1)
+
+  try:
+    with open(filename) as f:
+      source = f.read()
+  except IOError as e:
+    print "%s: Error: %s" % (e.filename, e.strerror)
+    _PrintImportStack(imported_filename_stack + [filename])
+    sys.exit(1)
+
+  try:
+    tree = mojo_parser.Parse(source, filename)
+  except mojo_parser.ParseError as e:
+    print e
+    _PrintImportStack(imported_filename_stack + [filename])
+    sys.exit(1)
 
   dirname, name = os.path.split(filename)
-  # TODO(darin): There's clearly too many layers of translation here!  We can
-  # at least avoid generating the serialized Mojom IR.
-  tree = mojo_parser.Parse(filename)
   mojom = mojo_translate.Translate(tree, name)
   if args.debug_print_intermediate:
     pprint.PrettyPrinter().pprint(mojom)
@@ -66,7 +88,9 @@ def ProcessFile(args, generator_modules, filename, processed_files):
   for import_data in mojom['imports']:
     import_filename = os.path.join(dirname, import_data['filename'])
     import_data['module'] = ProcessFile(
-        args, generator_modules, import_filename, processed_files)
+        args, generator_modules, import_filename,
+        processed_files=processed_files,
+        imported_filename_stack=imported_filename_stack + [filename])
 
   module = mojom_data.OrderedModuleFromData(mojom)
 
@@ -81,6 +105,7 @@ def ProcessFile(args, generator_modules, filename, processed_files):
     generator = generator_module.Generator(module, args.output_dir)
     generator.GenerateFiles()
 
+  # Save result.
   processed_files[filename] = module
   return module
 
@@ -107,11 +132,7 @@ def Main():
     os.makedirs(args.output_dir)
 
   for filename in args.filename:
-    try:
-      ProcessFile(args, generator_modules, filename, {})
-    except mojo_parser.ParseError, e:
-      print e
-      return 1
+    ProcessFile(args, generator_modules, filename)
 
   return 0
 

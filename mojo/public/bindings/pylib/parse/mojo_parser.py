@@ -53,8 +53,8 @@ class ParseError(Exception):
     self.eof = eof
 
   def __str__(self):
-    return "%s: error: unexpected end of file" % self.filename if self.eof \
-        else "%s:%d: error: unexpected %r:\n%s" % (
+    return "%s: Error: Unexpected end of file" % self.filename if self.eof \
+        else "%s:%d: Error: Unexpected %r:\n%s" % (
             self.filename, self.lineno + 1, self.bad_char, self.snippet)
 
   def __repr__(self):
@@ -350,9 +350,7 @@ class Parser(object):
                      bad_char=e.value)
 
 
-def Parse(filename):
-  source = open(filename).read()
-
+def Parse(source, filename):
   lexer = Lexer()
   parser = Parser(lexer, source, filename)
 
@@ -369,12 +367,13 @@ def main(argv):
     return 0
 
   for filename in argv[1:]:
-    print "%s:" % filename
-    try:
-      print Parse(filename)
-    except ParseError, e:
-      print e
-      return 1
+    with open(filename) as f:
+      print "%s:" % filename
+      try:
+        print Parse(f.read(), filename)
+      except ParseError, e:
+        print e
+        return 1
 
   return 0
 
