@@ -186,6 +186,10 @@ def main():
     print 'Skipping Clang update (clang=1 was not set in GYP_DEFINES).'
     return 0
 
+  if re.search(r'\b(make_clang_dir)=\b', os.environ.get('GYP_DEFINES', '')):
+    print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
+    return 0
+
   return UpdateClang()
 
 
