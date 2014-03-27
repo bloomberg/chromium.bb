@@ -526,8 +526,6 @@ void HTMLMediaElement::scheduleEvent(PassRefPtr<Event> event)
 
 void HTMLMediaElement::loadTimerFired(Timer<HTMLMediaElement>*)
 {
-    RefPtr<HTMLMediaElement> protect(this); // loadNextSourceChild may fire 'beforeload', which can make arbitrary DOM mutations.
-
     if (RuntimeEnabledFeatures::videoTrackEnabled() && (m_pendingActionFlags & LoadTextTrackResource))
         configureTextTracks();
 
@@ -585,8 +583,6 @@ String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySy
 
 void HTMLMediaElement::load()
 {
-    RefPtr<HTMLMediaElement> protect(this); // loadInternal may result in a 'beforeload' event, which can make arbitrary DOM mutations.
-
     WTF_LOG(Media, "HTMLMediaElement::load()");
 
     if (UserGestureIndicator::processingUserGesture())
@@ -705,9 +701,6 @@ void HTMLMediaElement::prepareForLoad()
 
 void HTMLMediaElement::loadInternal()
 {
-    // FIXME: Now that we don't have beforeload events we should make this ASSERT the opposite.
-    ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-
     // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose mode was not in the
     // disabled state when the element's resource selection algorithm last started".
     if (RuntimeEnabledFeatures::videoTrackEnabled()) {
