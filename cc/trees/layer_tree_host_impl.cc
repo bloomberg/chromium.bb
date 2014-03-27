@@ -938,8 +938,7 @@ void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
   if (should_background_tick)
     DCHECK(active_tree_->root_layer());
 
-  bool enabled = should_background_tick &&
-                 !animation_registrar_->active_animation_controllers().empty();
+  bool enabled = should_background_tick && needs_animate_layers();
 
   // Lazily create the time_source adapter so that we can vary the interval for
   // testing.
@@ -2683,7 +2682,7 @@ void LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
 
 void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled ||
-      animation_registrar_->active_animation_controllers().empty() ||
+      !needs_animate_layers() ||
       !active_tree_->root_layer())
     return;
 
@@ -2705,7 +2704,7 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
   if (!settings_.accelerated_animation_enabled ||
-      animation_registrar_->active_animation_controllers().empty() ||
+      !needs_animate_layers() ||
       !active_tree_->root_layer())
     return;
 
