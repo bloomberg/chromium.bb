@@ -1023,7 +1023,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     hashed_keys = map(lambda key: hashlib.sha256(key.decode('hex')).digest(),
                       set(state_keys))
     return filter(
-        lambda hash : int(hash.encode('hex'), 16) & modulus == remainder,
+        lambda hash : int(hash.encode('hex'), 16) % modulus == remainder,
         hashed_keys)
 
   def UnregisterDevice(self, dmtoken):
