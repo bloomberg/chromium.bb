@@ -308,13 +308,6 @@ void ToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
     extension_message_bubble_factory_->MaybeShow(app_menu_);
 }
 
-void ToolbarView::OnWidgetActivationChanged(views::Widget* widget,
-                                            bool active) {
-  // Safe to call multiple times; the bubble will only appear once.
-  if (active)
-    extension_message_bubble_factory_->MaybeShow(app_menu_);
-}
-
 void ToolbarView::Update(WebContents* tab) {
   if (location_bar_)
     location_bar_->Update(tab);

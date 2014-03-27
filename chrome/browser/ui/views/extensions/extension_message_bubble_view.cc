@@ -284,6 +284,7 @@ ExtensionMessageBubbleFactory::~ExtensionMessageBubbleFactory() {
 }
 
 void ExtensionMessageBubbleFactory::MaybeShow(views::View* anchor_view) {
+#if defined(OS_WIN)
   // The list of suspicious extensions takes priority over the dev mode bubble
   // and the settings API bubble, since that needs to be shown as soon as we
   // disable something. The settings API bubble is shown on first startup after
@@ -306,6 +307,7 @@ void ExtensionMessageBubbleFactory::MaybeShow(views::View* anchor_view) {
     MaybeShowDevModeExtensionsBubble(anchor_view);
 
   RecordProfileCheck(profile_->GetOriginalProfile());
+#endif  // OS_WIN
 }
 
 bool ExtensionMessageBubbleFactory::MaybeShowSuspiciousExtensionsBubble(
