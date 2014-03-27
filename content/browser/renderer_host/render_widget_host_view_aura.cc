@@ -1262,6 +1262,9 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
           window_->GetBoundsInRootWindow());
     }
   }
+
+  if (mouse_locked_)
+    UpdateMouseLockRegion();
 #endif
 }
 
@@ -1401,6 +1404,14 @@ void RenderWidgetHostViewAura::UpdateConstrainedWindowRects(
   params.geometry = &plugin_window_moves_;
   LPARAM lparam = reinterpret_cast<LPARAM>(&params);
   EnumChildWindows(parent, SetCutoutRectsCallback, lparam);
+}
+
+void RenderWidgetHostViewAura::UpdateMouseLockRegion() {
+  // Clip the cursor if chrome is running on regular desktop.
+  if (gfx::Screen::GetScreenFor(window_) == gfx::Screen::GetNativeScreen()) {
+    RECT window_rect = window_->GetBoundsInScreen().ToRECT();
+    ::ClipCursor(&window_rect);
+  }
 }
 #endif
 
@@ -2271,6 +2282,8 @@ bool RenderWidgetHostViewAura::LockMouse() {
   mouse_locked_ = true;
 #if !defined(OS_WIN)
   window_->SetCapture();
+#else
+  UpdateMouseLockRegion();
 #endif
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
@@ -2284,8 +2297,6 @@ bool RenderWidgetHostViewAura::LockMouse() {
     window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
   }
   tooltip_disabler_.reset(new aura::client::ScopedTooltipDisabler(root_window));
-
-  root_window->GetHost()->ConfineCursorToRootWindow();
   return true;
 }
 
@@ -2300,6 +2311,8 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 
 #if !defined(OS_WIN)
   window_->ReleaseCapture();
+#else
+  ::ClipCursor(NULL);
 #endif
   window_->MoveCursorTo(unlocked_mouse_position_);
   aura::client::CursorClient* cursor_client =
@@ -2310,7 +2323,6 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   }
 
   host_->LostMouseLock();
-  root_window->GetHost()->UnConfineCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

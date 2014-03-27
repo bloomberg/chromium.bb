@@ -346,6 +346,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // windowed NPAPI plugins shouldn't paint in. Overwrites any previous cutout
   // rects.
   void UpdateConstrainedWindowRects(const std::vector<gfx::Rect>& rects);
+
+  // Updates the cursor clip region. Used for mouse locking.
+  void UpdateMouseLockRegion();
 #endif
 
   // Method to indicate if this instance is shutting down or closing.
