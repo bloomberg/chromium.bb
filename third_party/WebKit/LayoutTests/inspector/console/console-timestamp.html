@@ -40,6 +40,9 @@ function test()
     addMessageWithFixedTimestamp("<After>");
     addMessageWithFixedTimestamp("<After>", baseTimestamp + 456);
 
+    WebInspector.settings.consoleTimestampsEnabled.set(false);
+    WebInspector.settings.consoleTimestampsEnabled.set(true);
+
     InspectorTest.dumpConsoleMessages();
     InspectorTest.completeTest();
 }
