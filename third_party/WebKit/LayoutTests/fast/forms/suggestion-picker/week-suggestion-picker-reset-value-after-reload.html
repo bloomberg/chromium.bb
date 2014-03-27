@@ -13,7 +13,12 @@ var iframe;
 var testInput1;
 var testInput2;
 
+var iframeReloaded = false;
+
 function runOnOpenPopup1() {
+    if (iframeReloaded)
+        return;
+
     iframe = document.getElementById('iframe');
 
     popupWindow.focus();
@@ -48,6 +53,7 @@ function runOnOpenPopup2AfterClosing() {
 
     iframe.addEventListener('load', function () { parent.runOnIFrameLoad(); });
     iframe.contentWindow.location.reload();
+    iframeReloaded = true;
 }
 
 function runOnIFrameLoad()
