@@ -457,7 +457,6 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   // PushedStreamReplayData().
   if (io_state_ == STATE_HALF_CLOSED_LOCAL_UNCLAIMED) {
     DCHECK_EQ(type_, SPDY_PUSH_STREAM);
-    CHECK(!delegate_);
     // It should be valid for this to happen in the server push case.
     // We'll return received data when delegate gets attached to the stream.
     if (buffer) {
