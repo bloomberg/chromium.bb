@@ -43,22 +43,17 @@ static typename V::iterator FindTrack(V* vector,
   return it;
 };
 
-MockMediaStream::MockMediaStream(const std::string& label)
-    : label_(label),
-      observer_(NULL) {
-}
+MockMediaStream::MockMediaStream(const std::string& label) : label_(label) {}
 
 bool MockMediaStream::AddTrack(AudioTrackInterface* track) {
   audio_track_vector_.push_back(track);
-  if (observer_)
-    observer_->OnChanged();
+  NotifyObservers();
   return true;
 }
 
 bool MockMediaStream::AddTrack(VideoTrackInterface* track) {
   video_track_vector_.push_back(track);
-  if (observer_)
-    observer_->OnChanged();
+  NotifyObservers();
   return true;
 }
 
@@ -68,8 +63,7 @@ bool MockMediaStream::RemoveTrack(AudioTrackInterface* track) {
   if (it == audio_track_vector_.end())
     return false;
   audio_track_vector_.erase(it);
-  if (observer_)
-    observer_->OnChanged();
+  NotifyObservers();
   return true;
 }
 
@@ -79,8 +73,7 @@ bool MockMediaStream::RemoveTrack(VideoTrackInterface* track) {
   if (it == video_track_vector_.end())
     return false;
   video_track_vector_.erase(it);
-  if (observer_)
-    observer_->OnChanged();
+  NotifyObservers();
   return true;
 }
 
@@ -109,13 +102,21 @@ talk_base::scoped_refptr<VideoTrackInterface> MockMediaStream::FindVideoTrack(
 }
 
 void MockMediaStream::RegisterObserver(ObserverInterface* observer) {
-  DCHECK(!observer_);
-  observer_ = observer;
+  DCHECK(observers_.find(observer) == observers_.end());
+  observers_.insert(observer);
 }
 
 void MockMediaStream::UnregisterObserver(ObserverInterface* observer) {
-  DCHECK(observer_ == observer);
-  observer_ = NULL;
+  ObserverSet::iterator it = observers_.find(observer);
+  DCHECK(it != observers_.end());
+  observers_.erase(it);
+}
+
+void MockMediaStream::NotifyObservers() {
+  for (ObserverSet::iterator it = observers_.begin(); it != observers_.end();
+       ++it) {
+    (*it)->OnChanged();
+  }
 }
 
 MockMediaStream::~MockMediaStream() {}

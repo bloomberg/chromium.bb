@@ -41,13 +41,21 @@ class MediaStreamTrackMetricsHost
   void OnAddTrack(uint64 id, bool is_audio, bool is_remote);
   void OnRemoveTrack(uint64 id);
 
-  void ReportDuration(bool is_audio, base::TimeTicks start_time);
+  // Information for a track we're keeping in |tracks_|. |is_audio|
+  // specifies whether it's an audio or video track, |is_remote|
+  // specifies whether it's remote (received over a PeerConnection) or
+  // local (sent over a PeerConnection). |timestamp| specifies when
+  // the track was connected.
+  struct TrackInfo {
+    bool is_audio;
+    bool is_remote;
+    base::TimeTicks timestamp;
+  };
 
-  // Keys are unique (per renderer) track IDs, values are pairs: A
-  // boolean indicating whether the track is an audio track, and a
-  // timestamp from when the track was created.
-  typedef std::pair<bool, base::TimeTicks> IsAudioPlusTimestamp;
-  typedef std::map<uint64, IsAudioPlusTimestamp> TrackMap;
+  void ReportDuration(const TrackInfo& info);
+
+  // Values are unique (per renderer) track IDs.
+  typedef std::map<uint64, TrackInfo> TrackMap;
   TrackMap tracks_;
 };
 

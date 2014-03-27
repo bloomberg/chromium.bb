@@ -29001,40 +29001,43 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebRTC.DataChannelCounters" enum="DataChannelCounters">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tommi@chromium.org</owner>
   <summary>
     Counters on creation, opening, and a few main attributes of data channels.
   </summary>
 </histogram>
 
 <histogram name="WebRTC.NumDataChannelsPerPeerConnection">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tommi@chromium.org</owner>
   <summary>
     Number of data channels created per PeerConnection. Sample added to the
-    histogram when the PeerConnection is destroyed.
+    histogram when the PeerConnection is destroyed. Note that this is done
+    purely on the renderer side, so no sample will be generated when the
+    renderer process is destroyed (as in the fast shutdown path for the
+    renderer) before the PeerConnection is destroyed.
   </summary>
 </histogram>
 
 <histogram name="WebRTC.ReceivedAudioTrackDuration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>
-    Durations of audio tracks received over a PeerConnection. This metric is
-    generated based on the lifetime of an observer added for all received tracks
-    by content::RemoteMediaStreamImpl.
+    Durations of audio tracks received over a PeerConnection. The stopwatch
+    starts when the track first becomes connected, and ends when it is
+    disconnected or very soon thereafter.
   </summary>
 </histogram>
 
 <histogram name="WebRTC.ReceivedVideoTrackDuration" units="milliseconds">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>
-    Durations of video tracks received over a PeerConnection. This metric is
-    generated based on the lifetime of an observer added for all received tracks
-    by content::RemoteMediaStreamImpl.
+    Durations of video tracks received over a PeerConnection. The stopwatch
+    starts when the track first becomes connected, and ends when it is
+    disconnected or very soon thereafter.
   </summary>
 </histogram>
 
 <histogram name="WebRTC.ReliableDataChannelMessageSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tommi@chromium.org</owner>
   <summary>
     Sizes of messages sent over reliable data channels. The size of an
     individual message is added to the histogram as a sample immediately when a
@@ -29042,8 +29045,26 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.SentAudioTrackDuration" units="milliseconds">
+  <owner>perkj@chromium.org</owner>
+  <summary>
+    Durations of audio tracks sent over a PeerConnection. The stopwatch starts
+    when the track first becomes connected, and ends when it is disconnected or
+    very soon thereafter.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.SentVideoTrackDuration" units="milliseconds">
+  <owner>perkj@chromium.org</owner>
+  <summary>
+    Durations of video tracks sent over a PeerConnection. The stopwatch starts
+    when the track first becomes connected, and ends when it is disconnected or
+    very soon thereafter.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.UnreliableDataChannelMessageSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>perkj@chromium.org</owner>
   <summary>
     Sizes of messages sent over unreliable data channels. The size of an
     individual message is added to the histogram as a sample immediately when a
@@ -29052,7 +29073,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="WebRTC.webkitApiCount" enum="JavaScriptAPIName">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>tommi@chromium.org</owner>
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
 </histogram>
 

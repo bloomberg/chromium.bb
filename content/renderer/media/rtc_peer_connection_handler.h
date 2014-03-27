@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/peer_connection_handler_base.h"
+#include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCStatsRequest.h"
 #include "third_party/WebKit/public/platform/WebRTCStatsResponse.h"
@@ -178,6 +179,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   blink::WebFrame* frame_;
 
   PeerConnectionTracker* peer_connection_tracker_;
+
+  MediaStreamTrackMetrics track_metrics_;
 
   // Counter for a UMA stat reported at destruction time.
   int num_data_channels_created_;

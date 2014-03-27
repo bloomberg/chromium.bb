@@ -154,10 +154,14 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
   virtual ~MockMediaStream();
 
  private:
+  void NotifyObservers();
+
   std::string label_;
   webrtc::AudioTrackVector audio_track_vector_;
   webrtc::VideoTrackVector video_track_vector_;
-  webrtc::ObserverInterface* observer_;
+
+  typedef std::set<webrtc::ObserverInterface*> ObserverSet;
+  ObserverSet observers_;
 };
 
 // A mock factory for creating different objects for

@@ -27,8 +27,8 @@ MediaStreamTrackMetricsHost::~MediaStreamTrackMetricsHost() {
   for (TrackMap::iterator it = tracks_.begin();
        it != tracks_.end();
        ++it) {
-    IsAudioPlusTimestamp& audio_and_timestamp = it->second;
-    ReportDuration(audio_and_timestamp.first, audio_and_timestamp.second);
+    TrackInfo& info = it->second;
+    ReportDuration(info);
   }
   tracks_.clear();
 }
@@ -53,26 +53,36 @@ void MediaStreamTrackMetricsHost::OnAddTrack(uint64 id,
                                              bool is_audio,
                                              bool is_remote) {
   DCHECK(tracks_.find(id) == tracks_.end());
-  DCHECK(is_remote);  // Always the case for now.
-
-  tracks_[id] = IsAudioPlusTimestamp(is_audio, base::TimeTicks::Now());
+  TrackInfo info = {is_audio, is_remote, base::TimeTicks::Now()};
+  tracks_[id] = info;
 }
 
 void MediaStreamTrackMetricsHost::OnRemoveTrack(uint64 id) {
   DCHECK(tracks_.find(id) != tracks_.end());
 
-  IsAudioPlusTimestamp& info = tracks_[id];
-  ReportDuration(info.first, info.second);
+  TrackInfo& info = tracks_[id];
+  ReportDuration(info);
   tracks_.erase(id);
 }
 
-void MediaStreamTrackMetricsHost::ReportDuration(bool is_audio,
-                                                 base::TimeTicks start_time) {
-  base::TimeDelta duration = base::TimeTicks::Now() - start_time;
-  if (is_audio) {
-    UMA_HISTOGRAM_TIMES_16H("WebRTC.ReceivedAudioTrackDuration", duration);
+void MediaStreamTrackMetricsHost::ReportDuration(const TrackInfo& info) {
+  base::TimeDelta duration = base::TimeTicks::Now() - info.timestamp;
+  if (info.is_remote) {
+    if (info.is_audio) {
+      DVLOG(3) << "WebRTC.ReceivedAudioTrackDuration: " << duration.InSeconds();
+      UMA_HISTOGRAM_TIMES_16H("WebRTC.ReceivedAudioTrackDuration", duration);
+    } else {
+      DVLOG(3) << "WebRTC.ReceivedVideoTrackDuration: " << duration.InSeconds();
+      UMA_HISTOGRAM_TIMES_16H("WebRTC.ReceivedVideoTrackDuration", duration);
+    }
   } else {
-    UMA_HISTOGRAM_TIMES_16H("WebRTC.ReceivedVideoTrackDuration", duration);
+    if (info.is_audio) {
+      DVLOG(3) << "WebRTC.SentAudioTrackDuration: " << duration.InSeconds();
+      UMA_HISTOGRAM_TIMES_16H("WebRTC.SentAudioTrackDuration", duration);
+    } else {
+      DVLOG(3) << "WebRTC.SentVideoTrackDuration: " << duration.InSeconds();
+      UMA_HISTOGRAM_TIMES_16H("WebRTC.SentVideoTrackDuration", duration);
+    }
   }
 }
 
