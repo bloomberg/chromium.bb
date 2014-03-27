@@ -369,8 +369,9 @@ class TestReceiverVideoCallback
         << "time_since_capture - upper_bound == "
         << (time_since_capture - upper_bound).InMilliseconds() << " mS";
     EXPECT_LE(expected_video_frame.capture_time, render_time);
-    EXPECT_EQ(expected_video_frame.width, video_frame->coded_size().width());
-    EXPECT_EQ(expected_video_frame.height, video_frame->coded_size().height());
+    EXPECT_EQ(expected_video_frame.width, video_frame->visible_rect().width());
+    EXPECT_EQ(expected_video_frame.height,
+              video_frame->visible_rect().height());
 
     gfx::Size size(expected_video_frame.width, expected_video_frame.height);
     scoped_refptr<media::VideoFrame> expected_I420_frame =

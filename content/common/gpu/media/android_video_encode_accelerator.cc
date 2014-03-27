@@ -208,8 +208,8 @@ void AndroidVideoEncodeAccelerator::Encode(
                             frame->stride(VideoFrame::kUPlane) &&
                         frame->row_bytes(VideoFrame::kVPlane) ==
                             frame->stride(VideoFrame::kVPlane) &&
-                        gfx::Rect(frame->coded_size()) == frame->visible_rect(),
-                    "Non-packed frame, or visible rect != coded size",
+                        frame->coded_size() == frame->visible_rect().size(),
+                    "Non-packed frame, or visible_rect != coded_size",
                     kInvalidArgumentError);
 
   pending_frames_.push(MakeTuple(frame, force_keyframe, base::Time::Now()));

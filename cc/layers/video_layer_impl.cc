@@ -240,14 +240,13 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
-      gfx::Size visible_size(visible_rect.width(), visible_rect.height());
       scoped_ptr<IOSurfaceDrawQuad> io_surface_quad =
           IOSurfaceDrawQuad::Create();
       io_surface_quad->SetNew(shared_quad_state,
                               quad_rect,
                               opaque_rect,
                               visible_quad_rect,
-                              visible_size,
+                              visible_rect.size(),
                               frame_resources_[0],
                               IOSurfaceDrawQuad::UNFLIPPED);
       quad_sink->Append(io_surface_quad.PassAs<DrawQuad>());

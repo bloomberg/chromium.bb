@@ -404,6 +404,11 @@ void AVStreamToVideoDecoderConfig(
     coded_size = natural_size;
   }
 
+  // Pad out |coded_size| for subsampled YUV formats.
+  coded_size.set_width((coded_size.width() + 1) / 2 * 2);
+  if (format != VideoFrame::YV16)
+    coded_size.set_height((coded_size.height() + 1) / 2 * 2);
+
   bool is_encrypted = false;
   AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL, 0);
   if (key)

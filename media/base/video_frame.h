@@ -60,11 +60,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Creates a new frame in system memory with given parameters. Buffers for
   // the frame are allocated but not initialized.
-  // |coded_size| is the width and height of the frame data in pixels.
-  // |visible_rect| is the visible portion of |coded_size|, after cropping (if
-  // any) is applied.
-  // |natural_size| is the width and height of the frame when the frame's aspect
-  // ratio is applied to |visible_rect|.
   static scoped_refptr<VideoFrame> CreateFrame(
       Format format,
       const gfx::Size& coded_size,
@@ -91,12 +86,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // backing of the VideoFrame is held in the mailbox held by |mailbox_holder|,
   // and |mailbox_holder_release_cb| will be called with |mailbox_holder| as the
   // argument when the VideoFrame is to be destroyed.
-  // |coded_size| is the width and height of the frame data in pixels.
-  // |visible_rect| is the visible portion of |coded_size|, after cropping (if
-  // any) is applied.
-  // |natural_size| is the width and height of the frame when the frame's aspect
-  // ratio is applied to |visible_rect|.
-
   // |read_pixels_cb| may be used to do (slow!) readbacks from the
   // texture to main memory.
   static scoped_refptr<VideoFrame> WrapNativeTexture(
@@ -110,7 +99,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
 
   // Read pixels from the native texture backing |*this| and write
   // them to |pixels| as BGRA.  |pixels| must point to a buffer at
-  // least as large as 4*visible_rect().width()*visible_rect().height().
+  // least as large as 4 * visible_rect().size().GetArea().
   void ReadPixelsFromNativeTexture(const SkBitmap& pixels);
 
   // Wraps packed image data residing in a memory buffer with a VideoFrame.
@@ -182,6 +171,11 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // given coded size and format.
   static size_t AllocationSize(Format format, const gfx::Size& coded_size);
 
+  // Returns the plane size for a plane of the given coded size and format.
+  static gfx::Size PlaneSize(Format format,
+                             size_t plane,
+                             const gfx::Size& coded_size);
+
   // Returns the required allocation size for a (tightly packed) plane of the
   // given coded size and format.
   static size_t PlaneAllocationSize(Format format,
@@ -246,17 +240,23 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   bool IsValidPlane(size_t plane) const;
 
   // Frame format.
-  Format format_;
+  const Format format_;
 
-  // Width and height of the video frame.
-  gfx::Size coded_size_;
+  // Width and height of the video frame, in pixels. This must include pixel
+  // data for the whole image; i.e. for YUV formats with subsampled chroma
+  // planes, in the case that the visible portion of the image does not line up
+  // on a sample boundary, |coded_size_| must be rounded up appropriately and
+  // the pixel data provided for the odd pixels.
+  const gfx::Size coded_size_;
 
-  // Width, height, and offsets of the visible portion of the video frame.
-  gfx::Rect visible_rect_;
+  // Width, height, and offsets of the visible portion of the video frame. Must
+  // be a subrect of |coded_size_|. Can be odd with respect to the sample
+  // boundaries, e.g. for formats with subsampled chroma.
+  const gfx::Rect visible_rect_;
 
-  // Width and height of the visible portion of the video frame with aspect
-  // ratio taken into account.
-  gfx::Size natural_size_;
+  // Width and height of the visible portion of the video frame
+  // (|visible_rect_.size()|) with aspect ratio taken into account.
+  const gfx::Size natural_size_;
 
   // Array of strides for each plane, typically greater or equal to the width
   // of the surface divided by the horizontal sampling period.  Note that

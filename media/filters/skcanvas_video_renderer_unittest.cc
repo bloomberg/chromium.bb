@@ -109,8 +109,8 @@ SkCanvasVideoRendererTest::SkCanvasVideoRendererTest()
 
   // Make sure the cropped video frame's aspect ratio matches the output device.
   // Update cropped_frame_'s crop dimensions if this is not the case.
-  EXPECT_EQ(cropped_frame()->natural_size().width() * kHeight,
-      cropped_frame()->natural_size().height() * kWidth);
+  EXPECT_EQ(cropped_frame()->visible_rect().width() * kHeight,
+            cropped_frame()->visible_rect().height() * kWidth);
 
   // Fill in the cropped frame's entire data with colors:
   //
