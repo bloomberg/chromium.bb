@@ -37,14 +37,13 @@ static const char kMainWebrtcTestHtmlPage[] =
 
 // Top-level integration test for WebRTC. The test methods here must run
 // sequentially since they use a server binary on the system (hence they are
-// tagged as MANUAL). In addition, they need the reference videos which require
-// the webrtc.DEPS solution, which is not generally available on Chromium bots.
+// tagged as MANUAL).
 class WebRtcBrowserTest : public WebRtcTestBase,
                           public testing::WithParamInterface<bool> {
  public:
   WebRtcBrowserTest() {}
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
+    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
@@ -52,12 +51,8 @@ class WebRtcBrowserTest : public WebRtcTestBase,
     // Ensure the infobar is enabled, since we expect that in this test.
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
-    // Play a suitable, somewhat realistic video file.
-    base::FilePath input_video = test::GetReferenceVideosDir()
-        .Append(test::kReferenceFileName360p)
-        .AddExtension(test::kY4mFileExtension);
-    command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
-                                   input_video);
+    // TODO(phoglund): allow this test to also run with real devices once we
+    // get real webcam bots up.
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
@@ -118,7 +113,7 @@ class WebRtcBrowserTest : public WebRtcTestBase,
     return NULL;
   }
 
-  test::PeerConnectionServerRunner peerconnection_server_;
+  PeerConnectionServerRunner peerconnection_server_;
 };
 
 static const bool kRunTestsWithFlag[] = { false, true };
@@ -128,7 +123,6 @@ INSTANTIATE_TEST_CASE_P(WebRtcBrowserTests,
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoWebRTCCallInTwoTabs) {
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -153,7 +147,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -189,7 +182,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
 
   EstablishCall(left_tab, right_tab);
 
-  test::SleepInJavascript(left_tab, 15000);
+  SleepInJavascript(left_tab, 15000);
 
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
@@ -206,7 +199,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
 // This is manual for its long execution time.
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetrics) {
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -228,7 +220,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   WaitForVideoToPlay(right_tab);
 
   // Let values stabilize, bandwidth ramp up, etc.
-  test::SleepInJavascript(left_tab, 60000);
+  SleepInJavascript(left_tab, 60000);
 
   // Start measurements.
   chrome::AddTabAt(browser(), GURL(), -1, true);
@@ -236,7 +228,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   content::WebContents* webrtc_internals_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  test::SleepInJavascript(left_tab, 10000);
+  SleepInJavascript(left_tab, 10000);
 
   scoped_ptr<base::DictionaryValue> all_data(
       GetWebrtcInternalsData(webrtc_internals_tab));
@@ -245,8 +237,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   const base::DictionaryValue* first_pc_dict =
       GetDataOnFirstPeerConnection(all_data.get());
   ASSERT_TRUE(first_pc_dict != NULL);
-  test::PrintBweForVideoMetrics(*first_pc_dict);
-  test::PrintMetricsForAllStreams(*first_pc_dict);
+  PrintBweForVideoMetrics(*first_pc_dict);
+  PrintMetricsForAllStreams(*first_pc_dict);
 
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
@@ -255,8 +247,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_TestWebAudioMediaStream) {
-  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, TestWebAudioMediaStream) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL url(embedded_test_server()->GetURL("/webrtc/webaudio_crash.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -264,7 +255,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_TestWebAudioMediaStream) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
   // A sleep is necessary to be able to detect the crash.
-  test::SleepInJavascript(tab, 1000);
+  SleepInJavascript(tab, 1000);
 
   ASSERT_FALSE(tab->IsCrashed());
 }

@@ -91,8 +91,8 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
 
   // Wait for WebRTC to call the success callback.
   const char kOkGotStream[] = "ok-got-stream";
-  EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
-                                     tab_contents));
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()", kOkGotStream,
+                               tab_contents));
 }
 
 void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
@@ -108,9 +108,8 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
   CloseInfoBarInTab(tab_contents, infobar);
 
   // Wait for WebRTC to call the fail callback.
-  EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
-                                     kFailedWithPermissionDeniedError,
-                                     tab_contents));
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                               kFailedWithPermissionDeniedError, tab_contents));
 }
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
@@ -121,9 +120,9 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
   CloseInfoBarInTab(tab_contents, infobar);
 
   // A dismiss should be treated like a deny.
-  EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
-                                     kFailedWithPermissionDismissedError,
-                                     tab_contents));
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                               kFailedWithPermissionDismissedError,
+                               tab_contents));
 }
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
@@ -233,7 +232,7 @@ void WebRtcTestBase::ConnectToPeerConnectionServer(
     content::WebContents* tab_contents) const {
   std::string javascript = base::StringPrintf(
       "connect('http://localhost:%s', '%s');",
-      test::PeerConnectionServerRunner::kDefaultPort, peer_name.c_str());
+      PeerConnectionServerRunner::kDefaultPort, peer_name.c_str());
   EXPECT_EQ("ok-connected", ExecuteJavascript(javascript, tab_contents));
 }
 
@@ -248,10 +247,10 @@ void WebRtcTestBase::EstablishCall(content::WebContents* from_tab,
   EXPECT_EQ("ok-negotiating", ExecuteJavascript("negotiateCall()", from_tab));
 
   // Ensure the call gets up on both sides.
-  EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                     "active", from_tab));
-  EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                     "active", to_tab));
+  EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                               "active", from_tab));
+  EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                               "active", to_tab));
 }
 
 void WebRtcTestBase::HangUp(content::WebContents* from_tab) const {
@@ -260,8 +259,8 @@ void WebRtcTestBase::HangUp(content::WebContents* from_tab) const {
 
 void WebRtcTestBase::WaitUntilHangupVerified(
     content::WebContents* tab_contents) const {
-  EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                     "no-peer-connection", tab_contents));
+  EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                               "no-peer-connection", tab_contents));
 }
 
 void WebRtcTestBase::DetectErrorsInJavaScript() {
@@ -278,6 +277,6 @@ void WebRtcTestBase::StartDetectingVideo(
 
 void WebRtcTestBase::WaitForVideoToPlay(
     content::WebContents* tab_contents) const {
-  EXPECT_TRUE(test::PollingWaitUntil("isVideoPlaying()", "video-playing",
-                                     tab_contents));
+  EXPECT_TRUE(PollingWaitUntil("isVideoPlaying()", "video-playing",
+                               tab_contents));
 }

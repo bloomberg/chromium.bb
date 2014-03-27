@@ -172,8 +172,6 @@ static std::set<std::string> FindAllSsrcIdentifiers(
   return result;
 }
 
-namespace test {
-
 void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict) {
   const std::string kBweStatsKey = "bweforvideo";
   std::string value;
@@ -220,5 +218,3 @@ void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict) {
                                            << " is. ";
   }
 }
-
-}  // namespace test

@@ -52,7 +52,7 @@ class WebRtcTypingDetectionBrowserTest : public WebRtcTestBase {
   // TODO(phoglund): clean up duplication from audio quality browser test when
   // this test is complete and is proven to work.
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
+    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
   }
 
   bool HasAllRequiredResources() {
@@ -88,13 +88,13 @@ class WebRtcTypingDetectionBrowserTest : public WebRtcTestBase {
               ExecuteJavascript("negotiateCall()", from_tab));
 
     // Ensure the call gets up on both sides.
-    EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                       "active", from_tab));
-    EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                       "active", to_tab));
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "active", from_tab));
+    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
+                                 "active", to_tab));
   }
 
-  test::PeerConnectionServerRunner peerconnection_server_;
+  PeerConnectionServerRunner peerconnection_server_;
 };
 
 // TODO(phoglund): enable when fully implemented.
@@ -133,13 +133,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcTypingDetectionBrowserTest,
   // because the ready state is ok on both sides. We sleep a bit between call
   // establishment and playing to avoid cutting of the beginning of the audio
   // file.
-  test::SleepInJavascript(left_tab, 2000);
+  SleepInJavascript(left_tab, 2000);
 
   PlayAudioFile(left_tab);
 
   // TODO(phoglund): simulate key presses, look for changes in typing detection
   // state.
-  test::SleepInJavascript(left_tab, 10000);
+  SleepInJavascript(left_tab, 10000);
 
   HangUp(left_tab);
   WaitUntilHangupVerified(left_tab);
