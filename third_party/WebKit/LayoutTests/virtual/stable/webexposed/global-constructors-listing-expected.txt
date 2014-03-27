@@ -38,6 +38,7 @@ CSSRuleList
 CSSStyleDeclaration
 CSSStyleRule
 CSSStyleSheet
+CSSUnknownRule
 CSSValue
 CSSValueList
 CSSViewportRule

@@ -26,9 +26,7 @@
             'css/CSSStyleRule.idl',
             'css/CSSStyleSheet.idl',
             'css/CSSSupportsRule.idl',
-            # We should probably add CSSUnknownRule.idl to this list,
-            # but it currently causes a compile error.
-            # 'css/CSSUnknownRule.idl',
+            'css/CSSUnknownRule.idl',
             'css/CSSValue.idl',
             'css/CSSValueList.idl',
             'css/CSSViewportRule.idl',
