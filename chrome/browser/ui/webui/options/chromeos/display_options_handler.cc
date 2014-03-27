@@ -74,6 +74,8 @@ base::string16 GetColorProfileName(ui::ColorCalibrationProfile profile) {
     case ui::COLOR_PROFILE_READING:
       return l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE_READING);
+    case ui::NUM_COLOR_PROFILES:
+      break;
   }
 
   NOTREACHED();

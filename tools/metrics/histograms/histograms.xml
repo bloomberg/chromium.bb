@@ -2121,6 +2121,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.Display.ColorProfile" enum="ChromeOSColorProfile">
+  <owner>xiaowenx@chromium.org</owner>
+  <owner>mukai@chromium.org</owner>
+  <summary>
+    The name of the current color calibration of the display on ChromeOS. This
+    value is sent when the color calibration is changed by the user.
+  </summary>
+</histogram>
+
 <histogram name="ChromeOS.SAML.APIUsed" enum="BooleanUsage">
   <owner>bartfab@chromium.org</owner>
   <summary>
@@ -30066,6 +30075,14 @@ other types of suffix sets.
   <int value="0" label="Unknown"/>
   <int value="1" label="First service enabled"/>
   <int value="2" label="First service disabled"/>
+</enum>
+
+<enum name="ChromeOSColorProfile" type="int">
+  <summary>See ui/display/display_constants.h for the variation.</summary>
+  <int value="0" label="Standard"/>
+  <int value="1" label="Dynamic"/>
+  <int value="2" label="Movie"/>
+  <int value="3" label="Reading"/>
 </enum>
 
 <enum name="ChromeOSUserImageId" type="int">

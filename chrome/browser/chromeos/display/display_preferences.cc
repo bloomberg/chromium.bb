@@ -72,6 +72,8 @@ std::string ColorProfileToString(ui::ColorCalibrationProfile profile) {
       return "movie";
     case ui::COLOR_PROFILE_READING:
       return "reading";
+    case ui::NUM_COLOR_PROFILES:
+      break;
   }
   NOTREACHED();
   return "";
