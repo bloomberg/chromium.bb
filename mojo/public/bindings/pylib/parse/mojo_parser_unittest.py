@@ -48,14 +48,50 @@ struct MyStruct {
   double b;
 };
 
-}  // module test
+}  // module my_module
 """
-    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"),
-                      [("MODULE", "my_module",
-                       [("STRUCT", "MyStruct",
-                         None,
-                         [("FIELD", "int32", "a", None, None),
-                          ("FIELD", "double", "b", None, None)])])])
+    # Note: Output as pretty-printed on failure by the test harness.
+    expected = \
+[('MODULE',
+  'my_module',
+  [('STRUCT',
+    'MyStruct',
+    None,
+    [('FIELD', 'int32', 'a', None, None),
+     ('FIELD', 'double', 'b', None, None)])])]
+    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+
+  def testEnumExpressions(self):
+    """Tests an enum with values calculated using simple expressions."""
+    source = """\
+module my_module {
+
+enum MyEnum {
+  MY_ENUM_1 = 1,
+  MY_ENUM_2 = 1 + 1,
+  MY_ENUM_3 = 1 * 3,
+  MY_ENUM_4 = 2 * (1 + 1),
+  MY_ENUM_5 = 1 + 2 * 2
+};
+
+}  // my_module
+"""
+    expected = \
+[('MODULE',
+  'my_module',
+  [('ENUM',
+    'MyEnum',
+    [('ENUM_FIELD', 'MY_ENUM_1', ('EXPRESSION', ['1'])),
+     ('ENUM_FIELD', 'MY_ENUM_2', ('EXPRESSION', ['1', '+', '1'])),
+     ('ENUM_FIELD', 'MY_ENUM_3', ('EXPRESSION', ['1', '*', '3'])),
+     ('ENUM_FIELD',
+      'MY_ENUM_4',
+      ('EXPRESSION',
+       ['2', '*', '(', ('EXPRESSION', ['1', '+', '1']), ')'])),
+     ('ENUM_FIELD',
+      'MY_ENUM_5',
+      ('EXPRESSION', ['1', '+', '2', '*', '2']))])])]
+    self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
 
 
 if __name__ == "__main__":

@@ -58,7 +58,7 @@ class Lexer(object):
     # Identifiers
     'NAME',
 
-    # constants
+    # Constants
     'ORDINAL',
     'INT_CONST_DEC', 'INT_CONST_OCT', 'INT_CONST_HEX',
     'FLOAT_CONST', 'HEX_FLOAT_CONST',
@@ -76,23 +76,19 @@ class Lexer(object):
     # Assignment
     'EQUALS',
 
-    # Conditional operator (?)
-    'CONDOP',
-
     # Request / response
     'RESPONSE',
 
-    # Delimeters
+    # Delimiters
     'LPAREN', 'RPAREN',         # ( )
     'LBRACKET', 'RBRACKET',     # [ ]
     'LBRACE', 'RBRACE',         # { }
-    'SEMI', 'COLON',            # ; :
+    'SEMI',                     # ;
     'COMMA', 'DOT'              # , .
   )
 
   ##
   ## Regexes for use in tokens
-  ##
   ##
 
   # valid C identifiers (K&R2: A.2.3), plus '$' (supported by some compilers)
@@ -185,13 +181,10 @@ class Lexer(object):
   # =
   t_EQUALS            = r'='
 
-  # ?
-  t_CONDOP            = r'\?'
-
   # =>
   t_RESPONSE          = r'=>'
 
-  # Delimeters
+  # Delimiters
   t_LPAREN            = r'\('
   t_RPAREN            = r'\)'
   t_LBRACKET          = r'\['
@@ -201,7 +194,6 @@ class Lexer(object):
   t_COMMA             = r','
   t_DOT               = r'.'
   t_SEMI              = r';'
-  t_COLON             = r':'
 
   t_STRING_LITERAL    = string_literal
   t_ORDINAL           = r'@[0-9]*'
