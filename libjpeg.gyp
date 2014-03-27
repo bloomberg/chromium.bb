@@ -277,9 +277,6 @@
               }],
             ],
           },
-          'include_dirs': [
-            '<(prefix_dir)/include',
-          ],
         }],
       ],
       'rules': [
