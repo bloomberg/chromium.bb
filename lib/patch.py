@@ -540,7 +540,7 @@ class GitRepoPatch(object):
   # ensuring CQ's internals can do the translation (almost can now,
   # but will fail in the case of a CQ-DEPEND on a change w/in the
   # same pool).
-  pattern = (r'^'+ re.escape(_GERRIT_CHANGE_ID_PREFIX) + 'r[0-9a-fA-F]{' +
+  pattern = (r'^'+ re.escape(_GERRIT_CHANGE_ID_PREFIX) + r'[0-9a-fA-F]{' +
              re.escape(str(_GERRIT_CHANGE_ID_LENGTH)) + r'}$')
   _STRICT_VALID_CHANGE_ID_RE = re.compile(pattern)
   _GIT_CHANGE_ID_RE = re.compile(r'^Change-Id:[\t ]*(\w+)\s*$',
