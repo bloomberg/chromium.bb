@@ -179,6 +179,10 @@ class AppListSyncableService : public syncer::SyncableService,
   // folder id.
   std::string FindOrCreateOemFolder();
 
+  // Returns true if an extension matching |id| exists and was installed by
+  // an OEM (extension->was_installed_by_oem() is true).
+  bool AppIsOem(const std::string& id);
+
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
   content::NotificationRegistrar registrar_;

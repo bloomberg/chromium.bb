@@ -102,13 +102,6 @@ bool AppIsDefault(ExtensionService* service, const std::string& id) {
                         ->WasInstalledByDefault(id);
 }
 
-bool AppIsOem(ExtensionService* service, const std::string& id) {
-  if (!service)
-    return false;
-  const extensions::Extension* extension = service->GetExtensionById(id, true);
-  return extension && extension->was_installed_by_oem();
-}
-
 void UninstallExtension(ExtensionService* service, const std::string& id) {
   if (service && service->GetInstalledExtension(id))
     service->UninstallExtension(id, false, NULL);
@@ -269,11 +262,14 @@ void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
   if (!sync_item)
     return;  // Item is not valid.
 
-  DVLOG(1) << this << ": AddItem: " << sync_item->ToString();
-  std::string folder_id = sync_item->parent_id;
-  if (folder_id.empty()) {
-    if (AppIsOem(extension_system_->extension_service(), app_item->id()))
-      folder_id = FindOrCreateOemFolder();
+  std::string folder_id;
+  if (AppIsOem(app_item->id())) {
+    folder_id = FindOrCreateOemFolder();
+    DVLOG(1) << this << ": AddItem to OEM folder: " << sync_item->ToString();
+  } else {
+    folder_id = sync_item->parent_id;
+    DVLOG(1) << this << ": AddItem: " << sync_item->ToString()
+             << " Folder: '" << folder_id << "'";
   }
   model_->AddItemToFolder(app_item.Pass(), folder_id);
 }
@@ -381,8 +377,7 @@ void AppListSyncableService::RemoveItem(const std::string& id) {
 
 void AppListSyncableService::UpdateItem(AppListItem* app_item) {
   // Check to see if the item needs to be moved to/from the OEM folder.
-  bool is_oem =
-      AppIsOem(extension_system_->extension_service(), app_item->id());
+  bool is_oem = AppIsOem(app_item->id());
   if (!is_oem && app_item->folder_id() == kOemFolderId)
     model_->MoveItemToFolder(app_item, "");
   else if (is_oem && app_item->folder_id() != kOemFolderId)
@@ -666,7 +661,8 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
   }
   // This is the only place where sync can cause an item to change folders.
   if (app_list::switches::IsFolderUIEnabled() &&
-      app_item->folder_id() != sync_item->parent_id) {
+      app_item->folder_id() != sync_item->parent_id &&
+      !AppIsOem(app_item->id())) {
     DVLOG(2) << " Moving Item To Folder: " << sync_item->parent_id;
     model_->MoveItemToFolder(app_item, sync_item->parent_id);
   }
@@ -766,6 +762,14 @@ std::string AppListSyncableService::FindOrCreateOemFolder() {
   }
   model_->SetItemName(oem_folder, oem_folder_name_);
   return oem_folder->id();
+}
+
+bool AppListSyncableService::AppIsOem(const std::string& id) {
+  if (!extension_system_->extension_service())
+    return false;
+  const extensions::Extension* extension =
+      extension_system_->extension_service()->GetExtensionById(id, true);
+  return extension && extension->was_installed_by_oem();
 }
 
 std::string AppListSyncableService::SyncItem::ToString() const {
