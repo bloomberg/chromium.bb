@@ -24,6 +24,7 @@ class CommitContributor;
 class DirectoryCommitContributor;
 class DirectoryUpdateHandler;
 class NonBlockingTypeProcessorCore;
+class NonBlockingTypeProcessor;
 class UpdateHandler;
 
 typedef std::map<ModelType, UpdateHandler*> UpdateHandlerMap;
@@ -32,6 +33,11 @@ typedef std::map<ModelType, CommitContributor*> CommitContributorMap;
 // Keeps track of the sets of active update handlers and commit contributors.
 class SYNC_EXPORT_PRIVATE ModelTypeRegistry {
  public:
+  // This alternative constructor does not support any directory types.
+  // It is used only in tests.
+  ModelTypeRegistry();
+
+  // Constructs a ModelTypeRegistry that supports directory types.
   ModelTypeRegistry(
       const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
       syncable::Directory* directory);
@@ -40,10 +46,14 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry {
   // Sets the set of enabled types.
   void SetEnabledDirectoryTypes(const ModelSafeRoutingInfo& routing_info);
 
-  // Enables an off-thread type for syncing.
+  // Enables an off-thread type for syncing.  Connects the given processor
+  // and its task_runner to the newly created processor core.
   //
-  // Expects that the type is not currently enabled.
-  void InitializeNonBlockingType(syncer::ModelType type);
+  // Expects that the processor's ModelType is not currently enabled.
+  void InitializeNonBlockingType(
+      syncer::ModelType type,
+      scoped_refptr<base::SequencedTaskRunner> type_task_runner,
+      base::WeakPtr<NonBlockingTypeProcessor> processor);
 
   // Disables the syncing of an off-thread type.
   //

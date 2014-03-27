@@ -32,6 +32,7 @@
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
+#include "sync/internal_api/sync_core.h"
 #include "sync/internal_api/syncapi_internal.h"
 #include "sync/internal_api/syncapi_server_connection_manager.h"
 #include "sync/js/js_arg_list.h"
@@ -409,6 +410,8 @@ void SyncManagerImpl::Init(
   allstatus_.SetInvalidatorClientId(invalidator_client_id);
 
   model_type_registry_.reset(new ModelTypeRegistry(workers, directory()));
+
+  sync_core_.reset(new SyncCore(model_type_registry_.get()));
 
   // Build a SyncSessionContext and store the worker in it.
   DVLOG(1) << "Sync is bringing up SyncSessionContext.";
@@ -1064,6 +1067,11 @@ void SyncManagerImpl::SaveChanges() {
 UserShare* SyncManagerImpl::GetUserShare() {
   DCHECK(initialized_);
   return &share_;
+}
+
+syncer::SyncCore* SyncManagerImpl::GetSyncCore() {
+  DCHECK(initialized_);
+  return sync_core_.get();
 }
 
 const std::string SyncManagerImpl::cache_guid() {

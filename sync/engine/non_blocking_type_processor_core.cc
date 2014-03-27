@@ -10,7 +10,13 @@
 namespace syncer {
 
 NonBlockingTypeProcessorCore::NonBlockingTypeProcessorCore(
-    ModelType type) : type_(type), weak_ptr_factory_(this) {
+      ModelType type,
+      scoped_refptr<base::SequencedTaskRunner> processor_task_runner,
+      base::WeakPtr<NonBlockingTypeProcessor> processor)
+    : type_(type),
+      processor_task_runner_(processor_task_runner),
+      processor_(processor),
+      weak_ptr_factory_(this) {
   progress_marker_.set_data_type_id(GetSpecificsFieldNumberFromModelType(type));
 }
 

@@ -4,11 +4,16 @@
 
 #include "sync/sessions/model_type_registry.h"
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
 #include "sync/engine/non_blocking_type_processor_core.h"
+#include "sync/internal_api/public/non_blocking_type_processor.h"
 
 namespace syncer {
+
+ModelTypeRegistry::ModelTypeRegistry() : directory_(NULL) {}
 
 ModelTypeRegistry::ModelTypeRegistry(
     const std::vector<scoped_refptr<ModelSafeWorker> >& workers,
@@ -67,13 +72,28 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
   }
 
   enabled_directory_types_ = GetRoutingInfoTypes(routing_info);
+  DCHECK(Intersection(GetEnabledDirectoryTypes(),
+                      GetEnabledNonBlockingTypes()).Empty());
 }
 
-void ModelTypeRegistry::InitializeNonBlockingType(syncer::ModelType type) {
+void ModelTypeRegistry::InitializeNonBlockingType(
+    ModelType type,
+    scoped_refptr<base::SequencedTaskRunner> type_task_runner,
+    base::WeakPtr<NonBlockingTypeProcessor> processor) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
+  // Initialize CoreProcessor -> Processor communication channel.
   scoped_ptr<NonBlockingTypeProcessorCore> core(
-      new NonBlockingTypeProcessorCore(type));
+      new NonBlockingTypeProcessorCore(type, type_task_runner, processor));
+
+  // Initialize Processor -> CoreProcessor communication channel.
+  type_task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&NonBlockingTypeProcessor::OnConnect,
+                 processor->AsWeakPtr(),
+                 core->AsWeakPtr(),
+                 scoped_refptr<base::SequencedTaskRunner>(
+                     base::MessageLoopProxy::current())));
 
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
@@ -83,6 +103,9 @@ void ModelTypeRegistry::InitializeNonBlockingType(syncer::ModelType type) {
 
   // The container takes ownership.
   non_blocking_type_processor_cores_.push_back(core.release());
+
+  DCHECK(Intersection(GetEnabledDirectoryTypes(),
+                      GetEnabledNonBlockingTypes()).Empty());
 }
 
 void ModelTypeRegistry::RemoveNonBlockingType(ModelType type) {

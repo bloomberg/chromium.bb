@@ -13,7 +13,13 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace syncer {
+
+class NonBlockingTypeProcessor;
 
 // A smart cache for sync types that use message passing (rather than
 // transactions and the syncable::Directory) to communicate with the sync
@@ -35,12 +41,15 @@ namespace syncer {
 // example, if the sync server sends down an update for a sync entity that is
 // currently pending for commit, this object will detect this condition and
 // cancel the pending commit.
-class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessorCore
+class SYNC_EXPORT NonBlockingTypeProcessorCore
     : public UpdateHandler,
       public CommitContributor,
       public base::NonThreadSafe {
  public:
-  explicit NonBlockingTypeProcessorCore(ModelType type);
+  NonBlockingTypeProcessorCore(
+      ModelType type,
+      scoped_refptr<base::SequencedTaskRunner> processor_task_runner,
+      base::WeakPtr<NonBlockingTypeProcessor> processor);
   virtual ~NonBlockingTypeProcessorCore();
 
   ModelType GetModelType() const;
@@ -64,6 +73,9 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessorCore
  private:
   ModelType type_;
   sync_pb::DataTypeProgressMarker progress_marker_;
+
+  scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
+  base::WeakPtr<NonBlockingTypeProcessor> processor_;
 
   base::WeakPtrFactory<NonBlockingTypeProcessorCore> weak_ptr_factory_;
 };
