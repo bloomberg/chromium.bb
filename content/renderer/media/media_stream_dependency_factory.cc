@@ -402,7 +402,7 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   signaling_thread_ = jingle_glue::JingleThreadWrapper::current();
   CHECK(signaling_thread_);
 
-  chrome_worker_thread_.Start();
+  CHECK(chrome_worker_thread_.Start());
 
   base::WaitableEvent start_worker_event(true, false);
   chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
