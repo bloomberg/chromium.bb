@@ -105,9 +105,10 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(void* domTemplate
     DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
     DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
     if (result != domTemplateMap.end())
-        return result->value.newLocal(m_isolate);
+        return result->value.Get(m_isolate);
+
     v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate, callback, data, signature, length);
-    domTemplateMap.add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    domTemplateMap.add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(m_isolate, templ));
     return templ;
 }
 
@@ -116,13 +117,13 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(void* dom
     DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
     DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
     if (result != domTemplateMap.end())
-        return result->value.newLocal(m_isolate);
+        return result->value.Get(m_isolate);
     return v8::Local<v8::FunctionTemplate>();
 }
 
 void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
 {
-    currentDOMTemplateMap().add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    currentDOMTemplateMap().add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(m_isolate, v8::Local<v8::FunctionTemplate>(templ)));
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
@@ -143,7 +144,7 @@ bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::V
     DOMTemplateMap::iterator result = domTemplateMap.find(info);
     if (result == domTemplateMap.end())
         return false;
-    v8::Handle<v8::FunctionTemplate> templ = result->value.newLocal(m_isolate);
+    v8::Handle<v8::FunctionTemplate> templ = result->value.Get(m_isolate);
     return templ->HasInstance(value);
 }
 
@@ -162,7 +163,7 @@ v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const Wrap
     DOMTemplateMap::iterator result = domTemplateMap.find(info);
     if (result == domTemplateMap.end())
         return v8::Handle<v8::Object>();
-    v8::Handle<v8::FunctionTemplate> templ = result->value.newLocal(m_isolate);
+    v8::Handle<v8::FunctionTemplate> templ = result->value.Get(m_isolate);
     return v8::Handle<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);
 }
 

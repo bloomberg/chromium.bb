@@ -106,7 +106,7 @@ private:
     explicit V8PerIsolateData(v8::Isolate*);
     ~V8PerIsolateData();
 
-    typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > DOMTemplateMap;
+    typedef HashMap<const void*, v8::Eternal<v8::FunctionTemplate> > DOMTemplateMap;
     DOMTemplateMap& currentDOMTemplateMap();
     bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
     v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
