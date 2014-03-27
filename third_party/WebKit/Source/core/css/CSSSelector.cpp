@@ -420,7 +420,7 @@ CSSSelector::PseudoType CSSSelector::parsePseudoType(const AtomicString& name)
 
     if (name.startsWith("-webkit-"))
         return PseudoWebKitCustomElement;
-    if (name.startsWith("x-") || name.startsWith("cue"))
+    if (name.startsWith("cue"))
         return PseudoUserAgentCustomElement;
 
     return PseudoUnknown;
