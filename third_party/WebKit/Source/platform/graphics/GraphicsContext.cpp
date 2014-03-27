@@ -93,9 +93,10 @@ private:
 } // unnamed namespace
 
 struct GraphicsContext::CanvasSaveState {
-    CanvasSaveState(unsigned mask, int count) : m_flags(mask), m_restoreCount(count) { }
+    CanvasSaveState(bool pendingSave, int count)
+        : m_pendingSave(pendingSave), m_restoreCount(count) { }
 
-    unsigned m_flags;
+    bool m_pendingSave;
     int m_restoreCount;
 };
 
@@ -116,7 +117,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
     : m_canvas(canvas)
     , m_paintStateStack()
     , m_paintStateIndex(0)
-    , m_canvasSaveFlags(0)
+    , m_pendingCanvasSave(false)
     , m_annotationMode(0)
 #if !ASSERT_DISABLED
     , m_annotationCount(0)
@@ -152,8 +153,8 @@ void GraphicsContext::save()
 
     m_paintState->incrementSaveCount();
 
-    m_canvasStateStack.append(CanvasSaveState(m_canvasSaveFlags, m_canvas->getSaveCount()));
-    m_canvasSaveFlags |= SkCanvas::kMatrixClip_SaveFlag;
+    m_canvasStateStack.append(CanvasSaveState(m_pendingCanvasSave, m_canvas->getSaveCount()));
+    m_pendingCanvasSave = true;
 }
 
 void GraphicsContext::restore()
@@ -175,7 +176,7 @@ void GraphicsContext::restore()
 
     CanvasSaveState savedState = m_canvasStateStack.last();
     m_canvasStateStack.removeLast();
-    m_canvasSaveFlags = savedState.m_flags;
+    m_pendingCanvasSave = savedState.m_pendingSave;
     m_canvas->restoreToCount(savedState.m_restoreCount);
 }
 
@@ -184,7 +185,7 @@ void GraphicsContext::saveLayer(const SkRect* bounds, const SkPaint* paint)
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->saveLayer(bounds, paint);
     if (m_trackOpaqueRegion)
@@ -421,7 +422,7 @@ void GraphicsContext::setMatrix(const SkMatrix& matrix)
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrix_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->setMatrix(matrix);
 }
@@ -434,7 +435,7 @@ void GraphicsContext::concat(const SkMatrix& matrix)
     if (matrix.isIdentity())
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrix_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->concat(matrix);
 }
@@ -529,7 +530,7 @@ void GraphicsContext::drawDisplayList(DisplayList* displayList)
     if (paintingDisabled() || displayList->bounds().isEmpty())
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
+    realizeCanvasSave();
 
     const FloatRect& bounds = displayList->bounds();
     if (bounds.x() || bounds.y())
@@ -1484,7 +1485,7 @@ void GraphicsContext::clipRect(const SkRect& rect, AntiAliasingMode aa, SkRegion
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kClip_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->clipRect(rect, op, aa == AntiAliased);
 }
@@ -1494,7 +1495,7 @@ void GraphicsContext::clipPath(const SkPath& path, AntiAliasingMode aa, SkRegion
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kClip_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->clipPath(path, op, aa == AntiAliased);
 }
@@ -1504,7 +1505,7 @@ void GraphicsContext::clipRRect(const SkRRect& rect, AntiAliasingMode aa, SkRegi
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kClip_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->clipRRect(rect, op, aa == AntiAliased);
 }
@@ -1514,7 +1515,7 @@ void GraphicsContext::beginCull(const FloatRect& rect)
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
+    realizeCanvasSave();
     m_canvas->pushCull(rect);
 }
 
@@ -1523,7 +1524,7 @@ void GraphicsContext::endCull()
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrixClip_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->popCull();
 }
@@ -1533,7 +1534,7 @@ void GraphicsContext::rotate(float angleInRadians)
     if (paintingDisabled())
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrix_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->rotate(WebCoreFloatToSkScalar(angleInRadians * (180.0f / 3.14159265f)));
 }
@@ -1546,7 +1547,7 @@ void GraphicsContext::translate(float w, float h)
     if (!w && !h)
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrix_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->translate(WebCoreFloatToSkScalar(w), WebCoreFloatToSkScalar(h));
 }
@@ -1559,7 +1560,7 @@ void GraphicsContext::scale(const FloatSize& size)
     if (size.width() == 1.0f && size.height() == 1.0f)
         return;
 
-    realizeCanvasSave(SkCanvas::kMatrix_SaveFlag);
+    realizeCanvasSave();
 
     m_canvas->scale(WebCoreFloatToSkScalar(size.width()), WebCoreFloatToSkScalar(size.height()));
 }
