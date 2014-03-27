@@ -39,14 +39,9 @@ class ChromotingBase(chromotinglib.ChromotingMixIn, pyauto.PyUITest):
     self.client_tab_index = 2 if self.client_local else 1
 
   def ExtraChromeFlags(self):
-    """Add extra flags for chromoting testing
+    """Add extra flags for chromoting testing.
 
     Add --allow-nacl-socket-api to connect chromoting successfully.
-    Add --allow-legacy-extension-manifests so that chrome can load
-    chromoting webapp in v1 format.
     """
-    extra_chrome_flags = [
-        '--allow-nacl-socket-api=*',
-        '--allow-legacy-extension-manifests'
-        ]
+    extra_chrome_flags = ['--allow-nacl-socket-api=*']
     return pyauto.PyUITest.ExtraChromeFlags(self) + extra_chrome_flags
