@@ -63,6 +63,7 @@
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/css/resolver/SharedStyleFinder.h"
 #include "core/css/resolver/StyleAdjuster.h"
+#include "core/css/resolver/StyleResolverParentScope.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/CSSSelectorWatch.h"
@@ -651,6 +652,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     didAccess();
 
+    StyleResolverParentScope::ensureParentStackIsPushed();
+
     if (element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), element, defaultParent);
@@ -856,6 +859,8 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     ASSERT(document().frame());
     ASSERT(documentSettings());
     ASSERT(pseudoStyleRequest.pseudoId != FIRST_LINE_INHERITED);
+
+    StyleResolverParentScope::ensureParentStackIsPushed();
 
     if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
         state.setStyle(RenderStyle::create());

@@ -885,6 +885,8 @@
             'css/resolver/StyleBuilderCustom.cpp',
             'css/resolver/StyleResolver.cpp',
             'css/resolver/StyleResolver.h',
+            'css/resolver/StyleResolverParentScope.cpp',
+            'css/resolver/StyleResolverParentScope.h',
             'css/resolver/StyleResolverState.cpp',
             'css/resolver/StyleResolverState.h',
             'css/resolver/StyleResolverStats.cpp',

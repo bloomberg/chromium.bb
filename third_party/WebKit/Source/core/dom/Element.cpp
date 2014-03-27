@@ -43,6 +43,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverParentScope.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/ClientRect.h"
@@ -109,41 +110,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 using namespace XMLNames;
-
-class StyleResolverParentPusher {
-    STACK_ALLOCATED();
-public:
-    explicit StyleResolverParentPusher(Element& parent)
-        : m_parent(parent)
-        , m_pushedStyleResolver(nullptr)
-    {
-    }
-    void push()
-    {
-        if (m_pushedStyleResolver)
-            return;
-        m_pushedStyleResolver = &m_parent.document().ensureStyleResolver();
-        m_pushedStyleResolver->pushParentElement(m_parent);
-    }
-    ~StyleResolverParentPusher()
-    {
-
-        if (!m_pushedStyleResolver)
-            return;
-
-        // This tells us that our pushed style selector is in a bad state,
-        // so we should just bail out in that scenario.
-        ASSERT(m_pushedStyleResolver == m_parent.document().styleResolver());
-        if (m_pushedStyleResolver != m_parent.document().styleResolver())
-            return;
-
-        m_pushedStyleResolver->popParentElement(m_parent);
-    }
-
-private:
-    Element& m_parent;
-    RawPtrWillBeMember<StyleResolver> m_pushedStyleResolver;
-};
 
 typedef Vector<RefPtr<Attr> > AttrNodeList;
 typedef HashMap<Element*, OwnPtr<AttrNodeList> > AttrNodeListMap;
@@ -1414,8 +1380,6 @@ void Element::attach(const AttachContext& context)
 {
     ASSERT(document().inStyleRecalc());
 
-    StyleResolverParentPusher parentPusher(*this);
-
     // We've already been through detach when doing an attach, but we might
     // need to clear any state that's been added since then.
     if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
@@ -1431,15 +1395,13 @@ void Element::attach(const AttachContext& context)
 
     addCallbackSelectors();
 
+    StyleResolverParentScope parentScope(*this);
+
     createPseudoElementIfNeeded(BEFORE);
 
     // When a shadow root exists, it does the work of attaching the children.
-    if (ElementShadow* shadow = this->shadow()) {
-        parentPusher.push();
+    if (ElementShadow* shadow = this->shadow())
         shadow->attach(context);
-    } else if (firstChild()) {
-        parentPusher.push();
-    }
 
     ContainerNode::attach(context);
 
@@ -1667,18 +1629,16 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     ASSERT(change >= UpdatePseudoElements || childNeedsStyleRecalc());
     ASSERT(!needsStyleRecalc());
 
-    StyleResolverParentPusher parentPusher(*this);
+    StyleResolverParentScope parentScope(*this);
+
+    updatePseudoElement(BEFORE, change);
 
     if (change > UpdatePseudoElements || childNeedsStyleRecalc()) {
         for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-            if (root->shouldCallRecalcStyle(change)) {
-                parentPusher.push();
+            if (root->shouldCallRecalcStyle(change))
                 root->recalcStyle(change);
-            }
         }
     }
-
-    updatePseudoElement(BEFORE, change);
 
     if (change < Force && hasRareData() && childNeedsStyleRecalc())
         checkForChildrenAdjacentRuleChanges();
@@ -1696,12 +1656,10 @@ void Element::recalcChildStyle(StyleRecalcChange change)
                 lastTextNode = toText(child);
             } else if (child->isElementNode()) {
                 Element* element = toElement(child);
-                if (element->shouldCallRecalcStyle(change)) {
-                    parentPusher.push();
+                if (element->shouldCallRecalcStyle(change))
                     element->recalcStyle(change, lastTextNode);
-                } else if (element->supportsStyleSharing()) {
+                else if (element->supportsStyleSharing())
                     styleResolver.addToStyleSharingList(*element);
-                }
                 if (element->renderer())
                     lastTextNode = 0;
             }
