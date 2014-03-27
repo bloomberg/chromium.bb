@@ -52,6 +52,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
     // The path to this user's profile directory.
     base::FilePath profile_path;
+
+    // Whether or not the current profile requires sign-in beofre use.
+    bool signin_required;
   };
   typedef std::vector<User> Users;
 

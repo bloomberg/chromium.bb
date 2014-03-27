@@ -79,6 +79,7 @@ void PopulateUsers(const ProfileInfoCache& profile_info,
     user.name = profile_info.GetNameOfProfileAtIndex(i);
     user.email = profile_info.GetUserNameOfProfileAtIndex(i);
     user.profile_path = profile_info.GetPathOfProfileAtIndex(i);
+    user.signin_required = profile_info.ProfileIsSigninRequiredAtIndex(i);
     user.active = active_profile_path == user.profile_path;
     users->push_back(user);
   }
