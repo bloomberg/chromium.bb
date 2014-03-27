@@ -420,6 +420,13 @@ crbug.com/248938 [ Debug ] virtual/threaded/animations/animation-hit-test-transf
 crbug.com/320477 [ Debug ] inspector/sources/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 crbug.com/347484 [ Debug ] inspector/profiler/canvas2d/canvas-replay-log-grid.html [ Timeout ]
 
+crbug.com/345452 [ Mac ] fast/repaint/border-radius-repaint.html [ NeedsRebaseline ]
+crbug.com/345452 [ Mac ] fast/repaint/border-repaint-glitch.html [ NeedsRebaseline ]
+crbug.com/345452 [ Mac ] fast/repaint/box-shadow-dynamic.html [ NeedsRebaseline ]
+crbug.com/345452 [ Mac ] fast/repaint/repaint-resized-overflow.html [ NeedsRebaseline ]
+crbug.com/345452 [ Mac ] fast/repaint/selection-after-delete.html [ NeedsRebaseline ]
+crbug.com/345452 [ Mac ] fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+
 # Not yet supported on Win/Mac. See bug for details.
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ Skip ]
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ Skip ]

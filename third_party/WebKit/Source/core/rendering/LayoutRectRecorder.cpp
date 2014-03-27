@@ -54,9 +54,6 @@ LayoutRectRecorder::LayoutRectRecorder(RenderObject& object, bool record)
     if (!m_object.layoutDidGetCalled()) {
         RenderLayerModelObject* containerForRepaint = m_object.containerForRepaint();
         m_object.setOldRepaintRect(m_object.clippedOverflowRectForRepaint(containerForRepaint));
-
-        if (m_object.hasOutline())
-            m_object.setOldOutlineRect(m_object.outlineBoundsForRepaint(containerForRepaint));
     }
 
     // If should do repaint was set previously make sure we don't accidentally unset it.
@@ -78,9 +75,6 @@ LayoutRectRecorder::~LayoutRectRecorder()
     // Note, we don't store the repaint container because it can change during layout.
     RenderLayerModelObject* containerForRepaint = m_object.containerForRepaint();
     m_object.setNewRepaintRect(m_object.clippedOverflowRectForRepaint(containerForRepaint));
-
-    if (m_object.hasOutline())
-        m_object.setNewOutlineRect(m_object.outlineBoundsForRepaint(containerForRepaint));
 }
 
 } // namespace WebCore

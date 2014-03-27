@@ -76,12 +76,9 @@ void RenderLayerRepainter::repaintAfterLayout(RenderGeometryMap* geometryMap, bo
 
         RenderLayerModelObject* repaintContainer = m_renderer->containerForRepaint();
         LayoutRect oldRepaintRect = m_repaintRect;
-        LayoutRect oldOutlineBox = m_outlineBox;
         computeRepaintRects(repaintContainer, geometryMap);
         shouldCheckForRepaint &= shouldRepaintLayer();
 
-        // FIXME: Should ASSERT that value calculated for m_outlineBox using the cached offset is the same
-        // as the value not using the cached offset, but we can't due to https://bugs.webkit.org/show_bug.cgi?id=37048
         if (shouldCheckForRepaint) {
             if (view && !view->document().printing()) {
                 if (m_repaintStatus & NeedsFullRepaint) {
@@ -89,7 +86,7 @@ void RenderLayerRepainter::repaintAfterLayout(RenderGeometryMap* geometryMap, bo
                     if (m_repaintRect != oldRepaintRect)
                         m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect));
                 } else {
-                    m_renderer->repaintAfterLayoutIfNeeded(repaintContainer, m_renderer->selfNeedsLayout(), oldRepaintRect, oldOutlineBox, &m_repaintRect, &m_outlineBox);
+                    m_renderer->repaintAfterLayoutIfNeeded(repaintContainer, m_renderer->selfNeedsLayout(), oldRepaintRect, &m_repaintRect);
                 }
             }
         }
@@ -106,7 +103,6 @@ void RenderLayerRepainter::clearRepaintRects()
     ASSERT(!m_renderer->layer()->hasVisibleContent());
 
     m_repaintRect = IntRect();
-    m_outlineBox = IntRect();
 }
 
 void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* geometryMap)
@@ -115,7 +111,6 @@ void RenderLayerRepainter::computeRepaintRects(const RenderLayerModelObject* rep
         return;
 
     m_repaintRect = m_renderer->clippedOverflowRectForRepaint(repaintContainer);
-    m_outlineBox = m_renderer->outlineBoundsForRepaint(repaintContainer, geometryMap);
 }
 
 void RenderLayerRepainter::computeRepaintRectsIncludingDescendants()

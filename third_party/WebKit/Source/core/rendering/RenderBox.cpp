@@ -588,30 +588,6 @@ FloatQuad RenderBox::absoluteContentQuad() const
     return localToAbsoluteQuad(FloatRect(rect));
 }
 
-LayoutRect RenderBox::outlineBoundsForRepaint(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* geometryMap) const
-{
-    LayoutRect box = borderBoundingBox();
-    adjustRectForOutline(box);
-
-    if (repaintContainer != this) {
-        FloatQuad containerRelativeQuad;
-        if (geometryMap)
-            containerRelativeQuad = geometryMap->mapToContainer(box, repaintContainer);
-        else
-            containerRelativeQuad = localToContainerQuad(FloatRect(box), repaintContainer);
-
-        box = containerRelativeQuad.enclosingBoundingBox();
-    }
-
-    if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        // FIXME: layoutDelta needs to be applied in parts before/after transforms and
-        // repaint containers. https://bugs.webkit.org/show_bug.cgi?id=23308
-        box.move(view()->layoutDelta());
-    }
-
-    return box;
-}
-
 void RenderBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*)
 {
     if (!size().isEmpty())

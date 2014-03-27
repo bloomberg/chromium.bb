@@ -1059,17 +1059,8 @@ void FrameView::repaintTree(RenderObject* root)
             }
 
         } else {
-            LayoutRect oldOutlineRect;
-            LayoutRect newOutlineRect;
-
-            if (renderer->hasOutline()) {
-                newOutlineRect = renderer->newOutlineRect();
-                oldOutlineRect = renderer->oldOutlineRect();
-            }
-
             didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(),
-                renderer->shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldOutlineRect,
-                &newRepaintRect, &newOutlineRect);
+                renderer->shouldDoFullRepaintAfterLayout(), oldRepaintRect, &newRepaintRect);
         }
 
         if (!didFullRepaint)

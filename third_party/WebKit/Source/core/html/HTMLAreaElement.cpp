@@ -103,7 +103,7 @@ Path HTMLAreaElement::computePath(RenderObject* obj) const
     // Default should default to the size of the containing object.
     LayoutSize size = m_lastSize;
     if (m_shape == Default)
-        size = obj->absoluteOutlineBounds().size();
+        size = obj->absoluteClippedOverflowRect().size();
 
     Path p = getRegion(size);
     float zoomFactor = obj->style()->effectiveZoom();

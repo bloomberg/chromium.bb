@@ -807,9 +807,9 @@ public:
     // Repaint a specific subrectangle within a given object.  The rect |r| is in the object's coordinate space.
     void repaintRectangle(const LayoutRect&) const;
 
-    // Repaint only if our old bounds and new bounds are different. The caller may pass in newBounds and newOutlineBox if they are known.
+    // Repaint only if our old bounds and new bounds are different. The caller may pass in newBounds if they are known.
     bool repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
-        const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox, const LayoutRect* newBoundsPtr = 0, const LayoutRect* newOutlineBoxPtr = 0);
+        const LayoutRect& oldBounds, const LayoutRect* newBoundsPtr = 0);
 
     virtual void repaintOverflow();
     void repaintOverflowIfNeeded();
@@ -826,7 +826,6 @@ public:
     IntRect pixelSnappedAbsoluteClippedOverflowRect() const;
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const;
     virtual LayoutRect rectWithOutlineForRepaint(const RenderLayerModelObject* repaintContainer, LayoutUnit outlineWidth) const;
-    virtual LayoutRect outlineBoundsForRepaint(const RenderLayerModelObject* /*repaintContainer*/, const RenderGeometryMap* = 0) const { return LayoutRect(); }
 
     // Given a rect in the object's coordinate space, compute a rect suitable for repainting
     // that rect in the coordinate space of repaintContainer.
@@ -957,11 +956,6 @@ public:
     // Compute a list of hit-test rectangles per layer rooted at this renderer.
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
 
-    LayoutRect absoluteOutlineBounds() const
-    {
-        return outlineBoundsForRepaint(0);
-    }
-
     // Return the renderer whose background style is used to paint the root background. Should only be called on the renderer for which isRoot() is true.
     RenderObject* rendererForRootBackground();
 
@@ -1025,8 +1019,6 @@ protected:
     void addPDFURLRect(GraphicsContext*, const LayoutRect&);
 
     virtual LayoutRect viewRect() const;
-
-    void adjustRectForOutline(LayoutRect&) const;
 
     void clearLayoutRootIfNeeded() const;
     virtual void willBeDestroyed();

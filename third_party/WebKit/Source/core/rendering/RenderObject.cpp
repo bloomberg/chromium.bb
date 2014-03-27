@@ -1486,8 +1486,7 @@ IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
 }
 
 bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
-    const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox,
-    const LayoutRect* newBoundsPtr, const LayoutRect* newOutlineBoxRectPtr)
+    const LayoutRect& oldBounds, const LayoutRect* newBoundsPtr)
 {
     RenderView* v = view();
     if (v->document().printing())
@@ -1496,7 +1495,6 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
     // ASSERT(!newBoundsPtr || *newBoundsPtr == clippedOverflowRectForRepaint(repaintContainer));
     LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : clippedOverflowRectForRepaint(repaintContainer);
-    LayoutRect newOutlineBox;
 
     bool fullRepaint = wasSelfLayout;
     // Presumably a background or a border exists if border-fit:lines was specified.
@@ -1509,15 +1507,9 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         RoundedRect newRoundedRect = style()->getRoundedBorderFor(newBounds);
         fullRepaint = oldRoundedRect.radii() != newRoundedRect.radii();
     }
-    if (!fullRepaint) {
-        // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
-        // ASSERT(!newOutlineBoxRectPtr || *newOutlineBoxRectPtr == outlineBoundsForRepaint(repaintContainer));
-        newOutlineBox = newOutlineBoxRectPtr ? *newOutlineBoxRectPtr : outlineBoundsForRepaint(repaintContainer);
 
-        if ((hasOutline() && newOutlineBox.location() != oldOutlineBox.location())
-            || (mustRepaintBackgroundOrBorder() && (newBounds != oldBounds || (hasOutline() && newOutlineBox != oldOutlineBox))))
-            fullRepaint = true;
-    }
+    if (!fullRepaint && (mustRepaintBackgroundOrBorder() && (newBounds != oldBounds)))
+        fullRepaint = true;
 
     // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
     // be caused by some layout property (left / top) or some in-flow renderer inserted / removed before us in the tree.
@@ -1534,7 +1526,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         return true;
     }
 
-    if (newBounds == oldBounds && newOutlineBox == oldOutlineBox)
+    if (oldBounds == newBounds)
         return false;
 
     LayoutUnit deltaLeft = newBounds.x() - oldBounds.x();
@@ -1561,7 +1553,8 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     else if (deltaBottom < 0)
         repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom));
 
-    if (newOutlineBox == oldOutlineBox)
+    // FIXME: This is a limitation of our visual overflow being a single rectangle.
+    if (!style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
         return false;
 
     // We didn't move, but we did change size. Invalidate the delta, which will consist of possibly
@@ -1569,7 +1562,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     RenderStyle* outlineStyle = outlineStyleForRepaint();
     LayoutUnit outlineWidth = outlineStyle->outlineSize();
     LayoutBoxExtent insetShadowExtent = style()->getBoxShadowInsetExtent();
-    LayoutUnit width = absoluteValue(newOutlineBox.width() - oldOutlineBox.width());
+    LayoutUnit width = absoluteValue(newBounds.width() - oldBounds.width());
     if (width) {
         LayoutUnit shadowLeft;
         LayoutUnit shadowRight;
@@ -1580,17 +1573,17 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         LayoutUnit borderWidth = max<LayoutUnit>(borderRight, max<LayoutUnit>(valueForLength(style()->borderTopRightRadius().width(), boxWidth), valueForLength(style()->borderBottomRightRadius().width(), boxWidth)));
         LayoutUnit decorationsLeftWidth = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + max<LayoutUnit>(outlineWidth, -shadowLeft);
         LayoutUnit decorationsRightWidth = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderWidth + minInsetRightShadowExtent) + max<LayoutUnit>(outlineWidth, shadowRight);
-        LayoutRect rightRect(newOutlineBox.x() + min(newOutlineBox.width(), oldOutlineBox.width()) - decorationsLeftWidth,
-            newOutlineBox.y(),
+        LayoutRect rightRect(newBounds.x() + min(newBounds.width(), oldBounds.width()) - decorationsLeftWidth,
+            newBounds.y(),
             width + decorationsLeftWidth + decorationsRightWidth,
-            max(newOutlineBox.height(), oldOutlineBox.height()));
+            max(newBounds.height(), oldBounds.height()));
         LayoutUnit right = min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
         if (rightRect.x() < right) {
             rightRect.setWidth(min(rightRect.width(), right - rightRect.x()));
             repaintUsingContainer(repaintContainer, pixelSnappedIntRect(rightRect));
         }
     }
-    LayoutUnit height = absoluteValue(newOutlineBox.height() - oldOutlineBox.height());
+    LayoutUnit height = absoluteValue(newBounds.height() - oldBounds.height());
     if (height) {
         LayoutUnit shadowTop;
         LayoutUnit shadowBottom;
@@ -1601,9 +1594,9 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         LayoutUnit borderHeight = max<LayoutUnit>(borderBottom, max<LayoutUnit>(valueForLength(style()->borderBottomLeftRadius().height(), boxHeight), valueForLength(style()->borderBottomRightRadius().height(), boxHeight)));
         LayoutUnit decorationsTopHeight = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + max<LayoutUnit>(outlineWidth, -shadowTop);
         LayoutUnit decorationsBottomHeight = max<LayoutUnit>(-outlineStyle->outlineOffset(), borderHeight + minInsetBottomShadowExtent) + max<LayoutUnit>(outlineWidth, shadowBottom);
-        LayoutRect bottomRect(newOutlineBox.x(),
-            min(newOutlineBox.maxY(), oldOutlineBox.maxY()) - decorationsTopHeight,
-            max(newOutlineBox.width(), oldOutlineBox.width()),
+        LayoutRect bottomRect(newBounds.x(),
+            min(newBounds.maxY(), oldBounds.maxY()) - decorationsTopHeight,
+            max(newBounds.width(), oldBounds.width()),
             height + decorationsTopHeight + decorationsBottomHeight);
         LayoutUnit bottom = min(newBounds.maxY(), oldBounds.maxY());
         if (bottomRect.y() < bottom) {
@@ -3134,11 +3127,6 @@ int RenderObject::nextOffset(int current) const
     return current + 1;
 }
 
-void RenderObject::adjustRectForOutline(LayoutRect& rect) const
-{
-    rect.inflate(outlineStyleForRepaint()->outlineSize());
-}
-
 bool RenderObject::isInert() const
 {
     const RenderObject* renderer = this;
@@ -3326,62 +3314,12 @@ bool RenderObject::isRelayoutBoundaryForInspector() const
     return objectIsRelayoutBoundary(this);
 }
 
-LayoutRect RenderObject::newOutlineRect()
-{
-    ASSERT(hasOutline());
-
-    OutlineRects& outlineRects = view()->outlineRects();
-    OutlineRects::iterator it = outlineRects.find(this);
-    if (it == outlineRects.end())
-        return outlineBoundsForRepaint(containerForRepaint());
-    return it->value->newOutlineRect;
-}
-
-void RenderObject::setNewOutlineRect(const LayoutRect& rect)
-{
-    ASSERT(hasOutline());
-
-    OutlineRects& outlineRects = view()->outlineRects();
-    OutlineRects::iterator it = outlineRects.find(this);
-    if (it == outlineRects.end())
-        outlineRects.set(this, adoptPtr(new OutlineRectInfo()));
-
-    outlineRects.get(this)->newOutlineRect = rect;
-}
-
-LayoutRect RenderObject::oldOutlineRect()
-{
-    ASSERT(hasOutline());
-
-    OutlineRects& outlineRects = view()->outlineRects();
-    OutlineRects::iterator it = outlineRects.find(this);
-    if (it == outlineRects.end())
-        return LayoutRect();
-    return it->value->oldOutlineRect;
-}
-
-void RenderObject::setOldOutlineRect(const LayoutRect& rect)
-{
-    ASSERT(hasOutline());
-
-    OutlineRects& outlineRects = view()->outlineRects();
-    OutlineRects::iterator it = outlineRects.find(this);
-    if (it == outlineRects.end())
-        outlineRects.set(this, adoptPtr(new OutlineRectInfo()));
-    outlineRects.get(this)->oldOutlineRect = rect;
-}
-
 void RenderObject::clearRepaintState()
 {
     setShouldDoFullRepaintAfterLayout(false);
     setShouldDoFullRepaintIfSelfPaintingLayer(false);
     setShouldRepaintOverflow(false);
     setLayoutDidGetCalled(false);
-
-    OutlineRects& outlineRects = view()->outlineRects();
-    OutlineRects::iterator it = outlineRects.find(this);
-    if (it != outlineRects.end())
-        outlineRects.remove(it);
 }
 
 } // namespace WebCore

@@ -35,12 +35,6 @@ class FlowThreadController;
 class RenderLayerCompositor;
 class RenderQuote;
 
-struct OutlineRectInfo {
-    LayoutRect oldOutlineRect;
-    LayoutRect newOutlineRect;
-};
-typedef HashMap<RenderObject*, OwnPtr<OutlineRectInfo> > OutlineRects;
-
 // The root of the render tree, corresponding to the CSS initial containing block.
 // It's dimensions match that of the logical viewport (which may be different from
 // the visible viewport in fixed-layout mode), and it is always at position (0,0)
@@ -201,8 +195,6 @@ public:
     void disableLayoutState() { m_layoutStateDisableCount++; }
     void enableLayoutState() { ASSERT(m_layoutStateDisableCount > 0); m_layoutStateDisableCount--; }
 
-    OutlineRects& outlineRects() { return m_outlineRects; }
-
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;
     virtual const RenderObject* pushMappingToContainer(const RenderLayerModelObject* ancestorToStopAt, RenderGeometryMap&) const OVERRIDE;
@@ -263,8 +255,6 @@ private:
 
     RenderQuote* m_renderQuoteHead;
     unsigned m_renderCounterCount;
-
-    OutlineRects m_outlineRects;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderView, isRenderView());
