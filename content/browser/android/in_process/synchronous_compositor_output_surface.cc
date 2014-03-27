@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -38,9 +37,7 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
   : public cc::SoftwareOutputDevice {
  public:
   SoftwareDevice(SynchronousCompositorOutputSurface* surface)
-    : surface_(surface),
-      null_device_(SkBitmap::kARGB_8888_Config, 1, 1),
-      null_canvas_(&null_device_) {
+    : surface_(surface) {
   }
   virtual void Resize(const gfx::Size& size) OVERRIDE {
     // Intentional no-op: canvas size is controlled by the embedder.
@@ -62,7 +59,6 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
 
  private:
   SynchronousCompositorOutputSurface* surface_;
-  SkBitmapDevice null_device_;
   SkCanvas null_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareDevice);
