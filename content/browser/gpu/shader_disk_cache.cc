@@ -524,7 +524,7 @@ void ShaderDiskCache::Init() {
 
   int rv = disk_cache::CreateCacheBackend(
       net::SHADER_CACHE,
-      net::CACHE_BACKEND_BLOCKFILE,
+      net::CACHE_BACKEND_DEFAULT,
       cache_path_.Append(kGpuCachePath),
       gpu::kDefaultMaxProgramCacheMemoryBytes,
       true,
@@ -541,7 +541,7 @@ void ShaderDiskCache::Cache(const std::string& key, const std::string& shader) {
   if (!cache_available_)
     return;
 
-  ShaderDiskCacheEntry* shim =
+  scoped_refptr<ShaderDiskCacheEntry> shim =
       new ShaderDiskCacheEntry(AsWeakPtr(), key, shader);
   shim->Cache();
 

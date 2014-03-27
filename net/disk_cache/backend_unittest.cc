@@ -668,6 +668,9 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingCreate_Fast) {
 }
 #endif
 
+// Disabled on android since this test requires cache creator to create
+// blockfile caches.
+#if !defined(OS_ANDROID)
 TEST_F(DiskCacheTest, TruncatedIndex) {
   ASSERT_TRUE(CleanupCacheDir());
   base::FilePath index = cache_path_.AppendASCII("index");
@@ -693,6 +696,7 @@ TEST_F(DiskCacheTest, TruncatedIndex) {
 
   ASSERT_FALSE(backend);
 }
+#endif
 
 void DiskCacheBackendTest::BackendSetSize() {
   const int cache_size = 0x10000;  // 64 kB
@@ -1837,6 +1841,9 @@ class BadEntropyProvider : public base::FieldTrial::EntropyProvider {
 
 // Tests that the disk cache successfully joins the control group, dropping the
 // existing cache in favour of a new empty cache.
+// Disabled on android since this test requires cache creator to create
+// blockfile caches.
+#if !defined(OS_ANDROID)
 TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
   base::Thread cache_thread("CacheThread");
   ASSERT_TRUE(cache_thread.StartWithOptions(
@@ -1867,6 +1874,7 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
   ASSERT_EQ(net::OK, cb.GetResult(rv));
   EXPECT_EQ(0, base_cache->GetEntryCount());
 }
+#endif
 
 // Tests that the disk cache can restart in the control group preserving
 // existing entries.
@@ -1945,6 +1953,9 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
 }
 
 // Tests that the cache is properly restarted on recovery error.
+// Disabled on android since this test requires cache creator to create
+// blockfile caches.
+#if !defined(OS_ANDROID)
 TEST_F(DiskCacheBackendTest, DeleteOld) {
   ASSERT_TRUE(CopyTestCache("wrong_version"));
   SetNewEviction();
@@ -1971,6 +1982,7 @@ TEST_F(DiskCacheBackendTest, DeleteOld) {
   cache_.reset();
   EXPECT_TRUE(CheckCacheIntegrity(cache_path_, new_eviction_, mask_));
 }
+#endif
 
 // We want to be able to deal with messed up entries on disk.
 void DiskCacheBackendTest::BackendInvalidEntry2() {

@@ -16,6 +16,9 @@
 
 #define SIMPLE_CACHE_THUNK(uma_type, args) UMA_HISTOGRAM_##uma_type args
 
+// TODO(pasko): add histograms for shader cache as soon as it becomes possible
+// for a user to get shader cache with the |SimpleBackendImpl| without altering
+// any flags.
 #define SIMPLE_CACHE_UMA(uma_type, uma_name, cache_type, ...)          \
   do {                                                                 \
     switch (cache_type) {                                              \
@@ -30,6 +33,8 @@
       case net::MEDIA_CACHE:                                           \
         SIMPLE_CACHE_THUNK(                                            \
             uma_type, ("SimpleCache.Media." uma_name, ##__VA_ARGS__)); \
+        break;                                                         \
+      case net::SHADER_CACHE:                                          \
         break;                                                         \
       default:                                                         \
         NOTREACHED();                                                  \

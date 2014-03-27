@@ -79,11 +79,14 @@ CacheCreator::~CacheCreator() {
 }
 
 int CacheCreator::Run() {
-  // TODO(gavinp,pasko): Turn Simple Cache on for more cache types as
-  // appropriate.
-  if (backend_type_ == net::CACHE_BACKEND_SIMPLE &&
-      (type_ == net::DISK_CACHE || type_ == net::APP_CACHE ||
-       type_ == net::MEDIA_CACHE)) {
+#if defined(OS_ANDROID)
+  static const bool kSimpleBackendIsDefault = true;
+#else
+  static const bool kSimpleBackendIsDefault = false;
+#endif
+  if (backend_type_ == net::CACHE_BACKEND_SIMPLE ||
+      (backend_type_ == net::CACHE_BACKEND_DEFAULT &&
+       kSimpleBackendIsDefault)) {
     disk_cache::SimpleBackendImpl* simple_cache =
         new disk_cache::SimpleBackendImpl(path_, max_bytes_, type_,
                                           thread_.get(), net_log_);
@@ -91,6 +94,11 @@ int CacheCreator::Run() {
     return simple_cache->Init(
         base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   }
+
+  // Avoid references to blockfile functions on Android to reduce binary size.
+#if defined(OS_ANDROID)
+  return net::ERR_FAILED;
+#else
   disk_cache::BackendImpl* new_cache =
       new disk_cache::BackendImpl(path_, thread_.get(), net_log_);
   created_cache_.reset(new_cache);
@@ -101,6 +109,7 @@ int CacheCreator::Run() {
       base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
   return rv;
+#endif
 }
 
 void CacheCreator::DoCallback(int result) {

@@ -55,6 +55,9 @@
 namespace {
 
 net::BackendType ChooseCacheBackendType() {
+#if defined(OS_ANDROID)
+  return net::CACHE_BACKEND_SIMPLE;
+#else
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kUseSimpleCacheBackend)) {
     const std::string opt_value =
@@ -66,13 +69,6 @@ net::BackendType ChooseCacheBackendType() {
   }
   const std::string experiment_name =
       base::FieldTrialList::FindFullName("SimpleCacheTrial");
-#if defined(OS_ANDROID)
-  if (experiment_name == "ExperimentNo" ||
-      experiment_name == "ExperimentControl") {
-    return net::CACHE_BACKEND_BLOCKFILE;
-  }
-  return net::CACHE_BACKEND_SIMPLE;
-#else
   if (experiment_name == "ExperimentYes" ||
       experiment_name == "ExperimentYes2") {
     return net::CACHE_BACKEND_SIMPLE;
