@@ -11,6 +11,7 @@ import android.hardware.usb.UsbEndpoint;
 import android.hardware.usb.UsbInterface;
 import android.hardware.usb.UsbManager;
 import android.hardware.usb.UsbRequest;
+import android.os.Handler;
 import android.util.SparseArray;
 
 import org.chromium.base.CalledByNative;
@@ -29,7 +30,7 @@ class UsbMidiDeviceAndroid {
     /**
      * A connection handle for this device.
      */
-    private UsbDeviceConnection mConnection;
+    private final UsbDeviceConnection mConnection;
 
     /**
      * A map from endpoint number to UsbEndpoint.
@@ -40,6 +41,21 @@ class UsbMidiDeviceAndroid {
      * A map from UsbEndpoint to UsbRequest associated to it.
      */
     private final Map<UsbEndpoint, UsbRequest> mRequestMap;
+
+    /**
+     * The handler used for posting events on the main thread.
+     */
+    private final Handler mHandler;
+
+    /**
+     * True if this device is closed.
+     */
+    private boolean mIsClosed;
+
+    /**
+     * The identifier of this device.
+     */
+    private long mNativePointer;
 
     /**
      * Audio interface subclass code for MIDI.
@@ -55,6 +71,9 @@ class UsbMidiDeviceAndroid {
         mConnection = manager.openDevice(device);
         mEndpointMap = new SparseArray<UsbEndpoint>();
         mRequestMap = new HashMap<UsbEndpoint, UsbRequest>();
+        mHandler = new Handler();
+        mIsClosed = false;
+        mNativePointer = 0;
 
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
             UsbInterface iface = device.getInterface(i);
@@ -70,6 +89,89 @@ class UsbMidiDeviceAndroid {
                 }
             }
         }
+        // Start listening for input endpoints.
+        // This function will create and run a thread if there is USB-MIDI endpoints in the
+        // device. Note that because UsbMidiDevice is shared among all tabs and the thread
+        // will be terminated when the device is disconnected, at most one thread can be created
+        // for each connected USB-MIDI device.
+        startListen(device);
+    }
+
+    /**
+     * Starts listening for input endpoints.
+     */
+    private void startListen(final UsbDevice device) {
+        final Map<UsbEndpoint, ByteBuffer> bufferForEndpoints =
+            new HashMap<UsbEndpoint, ByteBuffer>();
+
+        for (int i = 0; i < device.getInterfaceCount(); ++i) {
+            UsbInterface iface = device.getInterface(i);
+            if (iface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO ||
+                iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
+                continue;
+            }
+            for (int j = 0; j < iface.getEndpointCount(); ++j) {
+                UsbEndpoint endpoint = iface.getEndpoint(j);
+                if (endpoint.getDirection() == UsbConstants.USB_DIR_IN) {
+                    ByteBuffer buffer = ByteBuffer.allocate(endpoint.getMaxPacketSize());
+                    UsbRequest request = new UsbRequest();
+                    request.initialize(mConnection, endpoint);
+                    request.queue(buffer, buffer.remaining());
+                    bufferForEndpoints.put(endpoint, buffer);
+                }
+            }
+        }
+        if (bufferForEndpoints.isEmpty()) {
+            return;
+        }
+        // bufferForEndpoints must not be accessed hereafter on this thread.
+        new Thread() {
+            public void run() {
+                while (true) {
+                    UsbRequest request = mConnection.requestWait();
+                    if (request == null) {
+                        // When the device is closed requestWait will fail.
+                        break;
+                    }
+                    UsbEndpoint endpoint = request.getEndpoint();
+                    if (endpoint.getDirection() != UsbConstants.USB_DIR_IN) {
+                        continue;
+                    }
+                    ByteBuffer buffer = bufferForEndpoints.get(endpoint);
+                    int length = getInputDataLength(buffer);
+                    if (length > 0) {
+                        buffer.rewind();
+                        final byte[] bs = new byte[length];
+                        buffer.get(bs, 0, length);
+                        postOnDataEvent(endpoint.getEndpointNumber(), bs);
+                    }
+                    buffer.rewind();
+                    request.queue(buffer, buffer.capacity());
+                }
+            }
+        }.start();
+    }
+
+    /**
+     * Posts a data input event to the main thread.
+     */
+    private void postOnDataEvent(final int endpointNumber, final byte[] bs) {
+        mHandler.post(new Runnable() {
+                public void run() {
+                    if (mIsClosed) {
+                        return;
+                    }
+                    nativeOnData(mNativePointer, endpointNumber, bs);
+                }
+            });
+    }
+
+    /**
+     * Register the own native pointer.
+     */
+    @CalledByNative
+    void registerSelf(long nativePointer) {
+        mNativePointer = nativePointer;
     }
 
     /**
@@ -79,7 +181,7 @@ class UsbMidiDeviceAndroid {
      */
     @CalledByNative
     void send(int endpointNumber, byte[] bs) {
-        if (mConnection == null) {
+        if (mIsClosed) {
             return;
         }
         UsbEndpoint endpoint = mEndpointMap.get(endpointNumber);
@@ -117,9 +219,29 @@ class UsbMidiDeviceAndroid {
             request.close();
         }
         mRequestMap.clear();
-        if (mConnection != null) {
-            mConnection.close();
-            mConnection = null;
-        }
+        mConnection.close();
+        mNativePointer = 0;
+        mIsClosed = true;
     }
+
+    /**
+     * Returns the length of a USB-MIDI input.
+     * Since the Android API doesn't provide us the length,
+     * we calculate it manually.
+     */
+    private static int getInputDataLength(ByteBuffer buffer) {
+        int position = buffer.position();
+        // We assume that the data length is always divisable by 4.
+        for (int i = 0; i < position; i += 4) {
+            // Since Code Index Number 0 is reserved, it is not a valid USB-MIDI data.
+            if (buffer.get(i) == 0) {
+                return i;
+            }
+        }
+        return position;
+    }
+
+    private static native void nativeOnData(long nativeUsbMidiDeviceAndroid,
+                                            int endpointNumber,
+                                            byte[] data);
 }

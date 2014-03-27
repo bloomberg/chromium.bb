@@ -30,6 +30,12 @@ class MEDIA_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
   virtual void Send(int endpoint_number,
                     const std::vector<uint8>& data) OVERRIDE;
 
+  // Called by the Java world.
+  void OnData(JNIEnv* env,
+              jobject caller,
+              jint endpoint_number,
+              jbyteArray data);
+
   static bool RegisterUsbMidiDevice(JNIEnv* env);
 
  private:
