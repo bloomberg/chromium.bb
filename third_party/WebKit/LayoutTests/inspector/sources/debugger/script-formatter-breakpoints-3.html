@@ -3,16 +3,7 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="resources/unformatted.js"></script>
-
 <script>
-
-function f1()
-{
-    var a=0;var b=1;var c=3;var d=4;var e=5;
-    var f=0;
-    return 0;
-}
-
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
@@ -22,43 +13,31 @@ var test = function()
     var formattedSourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
-        function testBreakpointsInOriginalAndFormattedSource(next)
+        function testBreakpointsSetInFormattedAndRemoveInOriginalSource(next)
         {
-            InspectorTest.showScriptSource("script-formatter-breakpoints-1.html", didShowScriptSource);
+            InspectorTest.showScriptSource("unformatted.js", didShowScriptSource);
 
             function didShowScriptSource(frame)
             {
                 sourceFrame = frame;
-                InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
-                InspectorTest.waitUntilPaused(pausedInF1);
-                InspectorTest.evaluateInPageWithTimeout("f1()");
-            }
-
-            function pausedInF1(callFrames)
-            {
-                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
-                InspectorTest.resumeExecution(resumed);
-            }
-
-            function resumed()
-            {
                 InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
-
+                
             function uiSourceCodeScriptFormatted()
             {
-                // There should be a breakpoint in f1 although script is pretty-printed.
-                InspectorTest.waitUntilPaused(pausedInF1Again);
-                InspectorTest.evaluateInPageWithTimeout("f1()");
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.setBreakpoint(formattedSourceFrame, 3, "", true);
+                InspectorTest.waitUntilPaused(pausedInF2);
+                InspectorTest.evaluateInPageWithTimeout("f2()");
             }
 
-            function pausedInF1Again(callFrames)
+            function pausedInF2(callFrames)
             {
                 InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
                 InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
-                InspectorTest.removeBreakpoint(sourceFrame, 11);
+                // No need to remove breakpoint since formattedUISourceCode was removed.
                 InspectorTest.resumeExecution(next);
             }
         }

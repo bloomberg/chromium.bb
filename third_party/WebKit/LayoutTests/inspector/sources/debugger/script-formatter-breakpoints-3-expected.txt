@@ -2,7 +2,7 @@ Tests the script formatting is working fine with breakpoints.
 
 Debugger was enabled.
 
-Running: testBreakpointsSetAndRemoveInFormattedSource
+Running: testBreakpointsSetInFormattedAndRemoveInOriginalSource
 Script execution paused.
 Breakpoint sidebar pane while paused in pretty printed
 

@@ -22,44 +22,35 @@ var test = function()
     var formattedSourceFrame;
 
     InspectorTest.runDebuggerTestSuite([
-        function testBreakpointsInOriginalAndFormattedSource(next)
+        function testBreakpointSetInOriginalAndRemovedInFormatted(next)
         {
-            InspectorTest.showScriptSource("script-formatter-breakpoints-1.html", didShowScriptSource);
+            InspectorTest.showScriptSource("script-formatter-breakpoints-4.html", didShowScriptSource);
 
             function didShowScriptSource(frame)
             {
                 sourceFrame = frame;
+                InspectorTest.addResult("Adding breakpoint.");
+                InspectorTest.addSniffer(WebInspector.BreakpointManager.Breakpoint.prototype, "_addResolvedLocation", breakpointResolved);
                 InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
-                InspectorTest.waitUntilPaused(pausedInF1);
-                InspectorTest.evaluateInPageWithTimeout("f1()");
             }
 
-            function pausedInF1(callFrames)
+            function breakpointResolved()
             {
-                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
-                InspectorTest.resumeExecution(resumed);
-            }
-
-            function resumed()
-            {
+                InspectorTest.addResult("Formatting.");
                 InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
                 scriptFormatter._toggleFormatScriptSource();
             }
 
             function uiSourceCodeScriptFormatted()
             {
-                // There should be a breakpoint in f1 although script is pretty-printed.
-                InspectorTest.waitUntilPaused(pausedInF1Again);
-                InspectorTest.evaluateInPageWithTimeout("f1()");
-            }
-
-            function pausedInF1Again(callFrames)
-            {
-                InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
+                InspectorTest.addResult("Removing breakpoint.");
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 16);
+                InspectorTest.addResult("Unformatting.");
                 scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
-                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
-                InspectorTest.removeBreakpoint(sourceFrame, 11);
-                InspectorTest.resumeExecution(next);
+                var breakpoints = WebInspector.breakpointManager._storage._setting.get();
+                InspectorTest.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
+                next();
             }
         }
     ]);
