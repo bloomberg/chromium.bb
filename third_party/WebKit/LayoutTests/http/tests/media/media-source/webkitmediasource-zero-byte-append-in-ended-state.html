@@ -28,7 +28,7 @@
 
                         MediaSourceTest.expectSourceState(mediaSource, "ended");
 
-                        MediaSourceTest.expectBufferedRange(mediaSource.sourceBuffers[0], [[0, 0.399]]);
+                        MediaSourceTest.expectBufferedRange(mediaSource.sourceBuffers[0], [[0, 0.398]]);
 
                         consoleWrite("Appending zero length Uint8Array.");
                         segmentHelper.sourceBuffer.append(new Uint8Array(0));

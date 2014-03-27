@@ -28,7 +28,7 @@
 
                         MediaSourceTest.expectSourceState(mediaSource, "ended");
 
-                        MediaSourceTest.expectBufferedRange(mediaSource.sourceBuffers[0], [[0, 0.399]]);
+                        MediaSourceTest.expectBufferedRange(mediaSource.sourceBuffers[0], [[0, 0.398]]);
 
                         consoleWrite("Appending second media segment.");
                         segmentHelper.sourceBuffer.append(segmentHelper.mediaSegments[1]);

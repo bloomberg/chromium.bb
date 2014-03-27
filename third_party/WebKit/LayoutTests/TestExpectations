@@ -507,6 +507,11 @@ crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/embedded-svg-size-changes-n
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Pass ImageOnlyFailure ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Pass ImageOnlyFailure ]
 
+# 351166 tracks changing Chromium implementation. These will Fail until Chromium-side (https://codereview.chromium.org/213253006/) lands.
+crbug.com/351166 http/tests/media/media-source/mediasource-buffered.html [ Failure Pass ]
+crbug.com/351166 http/tests/media/media-source/webkitmediasource-append-in-ended-state.html [ Failure Pass ]
+crbug.com/351166 http/tests/media/media-source/webkitmediasource-zero-byte-append-in-ended-state.html [ Failure Pass ]
+
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 
