@@ -934,7 +934,6 @@ crbug.com/356995 [ Debug ] fast/mediastream/MediaStreamConstructor.html [ Crash 
 crbug.com/356996 [ Debug ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356996 [ Mac Release ] html5lib/generated/run-tests1-data.html [ Pass Timeout ]
 crbug.com/356997 http/tests/security/isolatedWorld/events.html [ Failure Pass ]
-crbug.com/357001 fast/forms/select-set-length-with-mutation-remove.html [ Pass Timeout ]
 crbug.com/357002 [ Linux ] http/tests/misc/cache-hit-resource-timing-buffer-full-crash.html [ Failure Pass ]
 crbug.com/357003 [ Linux Release ] inspector/elements/styles/stylesheet-source-url-comment.html [ Pass Timeout ]
 crbug.com/357004 [ Linux Mac Release ] inspector/sources/debugger/script-formatter-breakpoints-2.html [ Pass Timeout ]
