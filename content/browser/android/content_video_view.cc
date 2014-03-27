@@ -107,10 +107,8 @@ void ContentVideoView::OnPlaybackComplete() {
 void ContentVideoView::OnExitFullscreen() {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> content_video_view = GetJavaObject(env);
-  if (!content_video_view.is_null()) {
+  if (!content_video_view.is_null())
     Java_ContentVideoView_onExitFullscreen(env, content_video_view.obj());
-    j_content_video_view_.reset();
-  }
 }
 
 void ContentVideoView::UpdateMediaMetadata() {
