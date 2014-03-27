@@ -76,10 +76,12 @@ class TiclInvalidationServiceChannelTest : public ::testing::Test {
   virtual ~TiclInvalidationServiceChannelTest() {}
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile());
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
+    profile_ = builder.Build();
     fake_signin_manager_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManagerBase::Build));
+        SigninManagerFactory::GetForProfile(profile_.get()));
     token_service_.reset(new FakeProfileOAuth2TokenService);
 
     scoped_ptr<InvalidationAuthProvider> auth_provider(

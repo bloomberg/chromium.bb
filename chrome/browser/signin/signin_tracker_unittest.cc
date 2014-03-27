@@ -54,7 +54,8 @@ class SigninTrackerTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
-
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
     profile_ = builder.Build();
 
     fake_oauth2_token_service_ =
@@ -62,8 +63,7 @@ class SigninTrackerTest : public testing::Test {
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get()));
 
     mock_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManagerBase::Build));
+        SigninManagerFactory::GetForProfile(profile_.get()));
 
     tracker_.reset(new SigninTracker(profile_.get(), &observer_));
   }

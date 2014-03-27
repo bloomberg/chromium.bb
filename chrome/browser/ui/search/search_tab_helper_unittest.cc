@@ -67,12 +67,18 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
     SearchTabHelper::CreateForWebContents(web_contents());
   }
 
+  virtual content::BrowserContext* CreateBrowserContext() OVERRIDE {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
+    return builder.Build().release();
+  }
+
   // Creates a sign-in manager for tests.  If |username| is not empty, the
   // testing profile of the WebContents will be connected to the given account.
   void CreateSigninManager(const std::string& username) {
     SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), FakeSigninManagerBase::Build));
+        SigninManagerFactory::GetForProfile(profile()));
 
     if (!username.empty()) {
       ASSERT_TRUE(signin_manager);

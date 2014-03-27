@@ -98,6 +98,8 @@ class SigninManagerTest : public testing::Test {
     TestingProfile::Builder builder;
     builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                               BuildFakeProfileOAuth2TokenService);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              SigninManagerBuild);
     profile_ = builder.Build();
   }
 
@@ -122,14 +124,13 @@ class SigninManagerTest : public testing::Test {
 
   TestingProfile* profile() { return profile_.get(); }
 
-  // Create a signin manager as a service if other code will try to get it as
+  // Sets up the signin manager as a service if other code will try to get it as
   // a PKS.
-  void CreateSigninManagerAsService() {
+  void SetUpSigninManagerAsService() {
     DCHECK(!manager_);
     DCHECK(!naked_manager_);
     manager_ = static_cast<SigninManager*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile(), SigninManagerBuild));
+        SigninManagerFactory::GetForProfile(profile()));
     manager_->AddObserver(&test_observer_);
   }
 
@@ -183,7 +184,7 @@ class SigninManagerTest : public testing::Test {
 };
 
 TEST_F(SigninManagerTest, SignInWithRefreshToken) {
-  CreateSigninManagerAsService();
+  SetUpSigninManagerAsService();
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   manager_->StartSignInWithRefreshToken(
@@ -202,7 +203,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshToken) {
 }
 
 TEST_F(SigninManagerTest, SignInWithRefreshTokenCallbackComplete) {
-  CreateSigninManagerAsService();
+  SetUpSigninManagerAsService();
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Since the password is empty, must verify the gaia cookies first.
@@ -221,7 +222,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshTokenCallbackComplete) {
 }
 
 TEST_F(SigninManagerTest, SignOut) {
-  CreateSigninManagerAsService();
+  SetUpSigninManagerAsService();
   manager_->StartSignInWithRefreshToken(
       "rt1",
       "user@gmail.com",
@@ -237,7 +238,7 @@ TEST_F(SigninManagerTest, SignOut) {
 }
 
 TEST_F(SigninManagerTest, SignOutWhileProhibited) {
-  CreateSigninManagerAsService();
+  SetUpSigninManagerAsService();
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   manager_->SetAuthenticatedUsername("user@gmail.com");
@@ -335,5 +336,5 @@ TEST_F(SigninManagerTest, SigninNotAllowed) {
   std::string user("user@google.com");
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, user);
   profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
-  CreateSigninManagerAsService();
+  SetUpSigninManagerAsService();
 }

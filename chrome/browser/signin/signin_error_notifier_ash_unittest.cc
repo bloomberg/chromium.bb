@@ -66,11 +66,11 @@ class SigninErrorNotifierTest : public AshTestBase {
     views::ViewsDelegate::views_delegate = &views_delegate_;
 
     // Create a signed-in profile.
-    profile_.reset(new TestingProfile());
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
+    profile_ = builder.Build();
     profile_->set_profile_name(kTestAccountId);
-
-    SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManagerBase::Build);
 
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));

@@ -29,17 +29,20 @@ class OneClickSigninSyncStarterTest : public testing::Test {
   // testing::Test:
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    profile_.reset(new TestingProfile());
+
+    // Create the sign in manager required by OneClickSigninSyncStarter.
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(
+        SigninManagerFactory::GetInstance(),
+        &OneClickSigninSyncStarterTest::BuildSigninManager);
+    profile_ = builder.Build();
+
+    SigninManagerBase* signin_manager = static_cast<FakeSigninManager*>(
+        SigninManagerFactory::GetForProfile(profile_.get()));
 
     // Disable sync to simplify the creation of a OneClickSigninSyncStarter.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
 
-    // Create the sign in manager required by OneClickSigninSyncStarter.
-    SigninManagerBase* signin_manager =
-        static_cast<FakeSigninManager*>(
-            SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile_.get(),
-                &OneClickSigninSyncStarterTest::BuildSigninManager));
     signin_manager->Initialize(profile_.get(), NULL);
     signin_manager->SetAuthenticatedUsername(kTestingUsername);
   }

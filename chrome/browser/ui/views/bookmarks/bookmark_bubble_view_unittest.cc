@@ -44,6 +44,14 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::TearDown();
   }
 
+  // BrowserWithTestWindowTest:
+  virtual TestingProfile* CreateProfile() OVERRIDE {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
+    return builder.Build().release();
+  }
+
  protected:
   // Creates a bookmark bubble view.
   void CreateBubbleView() {
@@ -56,39 +64,24 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
                                          true));
   }
 
-  void CreateSigninManager(const std::string& username) {
-    SigninManagerBase* signin_manager =
-        static_cast<SigninManagerBase*>(
-            SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile(),
-                &BookmarkBubbleViewTest::BuildFakeSignInManager));
-    signin_manager->Initialize(profile(), NULL);
-
-    if (!username.empty()) {
-      ASSERT_TRUE(signin_manager);
-      signin_manager->SetAuthenticatedUsername(username);
-    }
+  void SetUpSigninManager(const std::string& username) {
+    if (username.empty())
+      return;
+    SigninManagerBase* signin_manager = static_cast<SigninManagerBase*>(
+        SigninManagerFactory::GetForProfile(profile()));
+    ASSERT_TRUE(signin_manager);
+    signin_manager->SetAuthenticatedUsername(username);
   }
 
   scoped_ptr<BookmarkBubbleView> bubble_;
 
  private:
-  static KeyedService* BuildFakeSignInManager(
-      content::BrowserContext* context) {
-    Profile* profile = static_cast<Profile*>(context);
-#if defined(OS_CHROMEOS)
-    return new FakeSigninManagerBase(profile);
-#else  // !defined(OS_CHROMEOS)
-    return new FakeSigninManager(profile);
-#endif
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleViewTest);
 };
 
 // Verifies that the sync promo is not displayed for a signed in user.
 TEST_F(BookmarkBubbleViewTest, SyncPromoSignedIn) {
-  CreateSigninManager("fake_username");
+  SetUpSigninManager("fake_username");
   CreateBubbleView();
   bubble_->Init();
   EXPECT_FALSE(bubble_->sync_promo_view_);

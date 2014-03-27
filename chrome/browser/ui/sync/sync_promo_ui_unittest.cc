@@ -21,23 +21,13 @@ class SyncPromoUITest : public testing::Test {
   // testing::Test:
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    profile_.reset(new TestingProfile());
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
+    profile_ = builder.Build();
   }
 
  protected:
-  void CreateSigninManager(const std::string& username) {
-    FakeSigninManagerForTesting* signin_manager =
-        static_cast<FakeSigninManagerForTesting*>(
-            SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile_.get(),
-                &FakeSigninManagerBase::Build));
-
-    if (!username.empty()) {
-      ASSERT_TRUE(signin_manager);
-      signin_manager->SetAuthenticatedUsername(username);
-    }
-  }
-
   void DisableSync() {
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
   }
@@ -51,7 +41,6 @@ class SyncPromoUITest : public testing::Test {
 // Verifies that ShouldShowSyncPromo returns false if sync is disabled by
 // policy.
 TEST_F(SyncPromoUITest, ShouldShowSyncPromoSyncDisabled) {
-  CreateSigninManager("");
   DisableSync();
   EXPECT_FALSE(SyncPromoUI::ShouldShowSyncPromo(profile_.get()));
 }
@@ -59,7 +48,6 @@ TEST_F(SyncPromoUITest, ShouldShowSyncPromoSyncDisabled) {
 // Verifies that ShouldShowSyncPromo returns true if all conditions to
 // show the promo are met.
 TEST_F(SyncPromoUITest, ShouldShowSyncPromoSyncEnabled) {
-  CreateSigninManager("");
 #if defined(OS_CHROMEOS)
   // No sync promo on CrOS.
   EXPECT_FALSE(SyncPromoUI::ShouldShowSyncPromo(profile_.get()));

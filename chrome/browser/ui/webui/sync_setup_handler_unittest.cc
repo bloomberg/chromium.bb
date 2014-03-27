@@ -280,13 +280,19 @@ class SyncSetupHandlerTest : public testing::Test {
   SyncSetupHandlerTest() : error_(GoogleServiceAuthError::NONE) {}
   virtual void SetUp() OVERRIDE {
     error_ = GoogleServiceAuthError::AuthErrorNone();
-    profile_.reset(ProfileSyncServiceMock::MakeSignedInTestingProfile());
 
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManagerBase::Build);
+    profile_ = builder.Build();
+
+    // Sign in the user.
     mock_signin_ = static_cast<SigninManagerBase*>(
-        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManagerBase::Build));
-    profile_->GetPrefs()->SetString(
-        prefs::kGoogleServicesUsername, GetTestUser());
+        SigninManagerFactory::GetForProfile(profile_.get()));
+    mock_signin_->SetAuthenticatedUsername(GetTestUser());
+    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                    GetTestUser());
+
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(),

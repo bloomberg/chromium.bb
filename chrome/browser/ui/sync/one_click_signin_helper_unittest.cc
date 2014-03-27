@@ -202,10 +202,10 @@ class OneClickSigninHelperTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-  // Creates the sign-in manager for tests.  If |username| is
+  // Sets up the sign-in manager for tests.  If |username| is
   // is not empty, the profile of the mock WebContents will be connected to
   // the given account.
-  void CreateSigninManager(const std::string& username);
+  void SetUpSigninManager(const std::string& username);
 
   // Set the ID of the signin process that the test will assume to be the
   // only process allowed to sign the user in to Chrome.
@@ -258,11 +258,9 @@ void OneClickSigninHelperTest::SetTrustedSigninProcessID(int id) {
   trusted_signin_process_id_ = id;
 }
 
-void OneClickSigninHelperTest::CreateSigninManager(
-    const std::string& username) {
+void OneClickSigninHelperTest::SetUpSigninManager(const std::string& username) {
   signin_manager_ = static_cast<SigninManagerMock*>(
-      SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-          profile(), BuildSigninManagerMock));
+      SigninManagerFactory::GetForProfile(profile()));
   if (signin_manager_)
     signin_manager_->SetSigninProcess(trusted_signin_process_id_);
 
@@ -329,6 +327,8 @@ content::BrowserContext* OneClickSigninHelperTest::CreateBrowserContext() {
   TestingProfile::Builder builder;
   builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
                             BuildFakeProfileOAuth2TokenService);
+  builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                            BuildSigninManagerMock);
   scoped_ptr<TestingProfile> profile = builder.Build();
 
   fake_oauth2_token_service_ =
@@ -411,7 +411,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoContents) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOffer) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -449,7 +449,7 @@ TEST_F(OneClickSigninHelperTest, CanOffer) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -479,7 +479,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferFirstSetup) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
-  CreateSigninManager("foo@gmail.com");
+  SetUpSigninManager("foo@gmail.com");
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
       WillRepeatedly(Return(true));
@@ -519,7 +519,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferUsernameNotAllowed) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
       WillRepeatedly(Return(false));
@@ -543,7 +543,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferUsernameNotAllowed) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferWithRejectedEmail) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -572,7 +572,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferWithRejectedEmail) {
 }
 
 TEST_F(OneClickSigninHelperIncognitoTest, CanOfferIncognito) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
 
   std::string error_message;
   EXPECT_FALSE(OneClickSigninHelper::CanOffer(
@@ -592,7 +592,7 @@ TEST_F(OneClickSigninHelperIncognitoTest, CanOfferIncognito) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
   AllowSigninCookies(false);
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
@@ -616,7 +616,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferNoSigninCookies) {
 }
 
 TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
 
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_)).
         WillRepeatedly(Return(true));
@@ -651,7 +651,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferDisabledByPolicy) {
 // Should not crash if a helper instance is not associated with an incognito
 // web contents.
 TEST_F(OneClickSigninHelperIncognitoTest, ShowInfoBarUIThreadIncognito) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
   OneClickSigninHelper* helper =
       OneClickSigninHelper::FromWebContents(web_contents());
   EXPECT_EQ(NULL, helper);
@@ -666,7 +666,7 @@ TEST_F(OneClickSigninHelperIncognitoTest, ShowInfoBarUIThreadIncognito) {
 // config sync, then Chrome should redirect immediately to sync settings page,
 // and upon successful setup, redirect back to webstore.
 TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
-  CreateSigninManager(std::string());
+  SetUpSigninManager(std::string());
   EXPECT_CALL(*signin_manager_, IsAllowedUsername(_))
       .WillRepeatedly(Return(true));
 
