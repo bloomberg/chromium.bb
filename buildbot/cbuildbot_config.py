@@ -2110,6 +2110,11 @@ _arm_release.add_config('nyan_big-release',
   boards=['nyan_big'],
 )
 
+_arm_release.add_config('nyan_blaze-release',
+  boards=['nyan_blaze'],
+  hw_tests=[],
+)
+
 # Brillo devices do not have Chrome or currently need for test or dev images.
 _brillo_release = _release.derive(brillo,
   dev_installer_prebuilts=False,
@@ -2248,6 +2253,7 @@ _config.add_group('peach-release-group',
 _config.add_group('nyan-release-group',
   config['nyan-release'],
   config['nyan_big-release'].derive(_grouped_config),
+  config['nyan_blaze-release'].derive(_grouped_config),
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
