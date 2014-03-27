@@ -15,6 +15,10 @@
 #include "components/cloud_devices/cloud_device_description.h"
 #include "printing/pdf_render_settings.h"
 
+namespace printing {
+struct PwgRasterSettings;
+};
+
 namespace local_discovery {
 
 class PrivetHTTPClientImpl;
@@ -247,6 +251,7 @@ class PrivetLocalPrintOperationImpl
   void OnCreatejobResponse(bool has_error,
                            const base::DictionaryValue* value);
   void OnPWGRasterConverted(bool success, const base::FilePath& pwg_file_path);
+  void FillPwgRasterSettings(printing::PwgRasterSettings* transfrom_settings);
 
   PrivetHTTPClientImpl* privet_client_;
   PrivetLocalPrintOperation::Delegate* delegate_;

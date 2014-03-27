@@ -18,6 +18,7 @@ class Size;
 
 namespace printing {
 class PdfRenderSettings;
+struct PwgRasterSettings;
 }
 
 namespace local_discovery {
@@ -37,6 +38,7 @@ class PWGRasterConverter {
 
   virtual void Start(base::RefCountedMemory* data,
                      const printing::PdfRenderSettings& conversion_settings,
+                     const printing::PwgRasterSettings& bitmap_settings,
                      const ResultCallback& callback) = 0;
 };
 

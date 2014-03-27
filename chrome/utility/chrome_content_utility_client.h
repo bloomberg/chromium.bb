@@ -28,6 +28,7 @@ class MediaMetadataParser;
 
 namespace printing {
 class PdfRenderSettings;
+struct PwgRasterSettings;
 struct PageRange;
 }
 
@@ -62,6 +63,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnRenderPDFPagesToPWGRaster(
       IPC::PlatformFileForTransit pdf_transit,
       const printing::PdfRenderSettings& settings,
+      const printing::PwgRasterSettings& bitmap_settings,
       IPC::PlatformFileForTransit bitmap_transit);
   void OnRobustJPEGDecodeImage(
       const std::vector<unsigned char>& encoded_data);
@@ -88,6 +90,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   bool RenderPDFPagesToPWGRaster(
       base::PlatformFile pdf_file,
       const printing::PdfRenderSettings& settings,
+      const printing::PwgRasterSettings& bitmap_settings,
       base::PlatformFile bitmap_file);
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);

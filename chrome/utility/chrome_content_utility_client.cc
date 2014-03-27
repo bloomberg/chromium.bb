@@ -581,12 +581,13 @@ void ChromeContentUtilityClient::OnRenderPDFPagesToMetafile(
 void ChromeContentUtilityClient::OnRenderPDFPagesToPWGRaster(
     IPC::PlatformFileForTransit pdf_transit,
     const printing::PdfRenderSettings& settings,
+    const printing::PwgRasterSettings& bitmap_settings,
     IPC::PlatformFileForTransit bitmap_transit) {
   base::PlatformFile pdf =
       IPC::PlatformFileForTransitToPlatformFile(pdf_transit);
   base::PlatformFile bitmap =
       IPC::PlatformFileForTransitToPlatformFile(bitmap_transit);
-  if (RenderPDFPagesToPWGRaster(pdf, settings, bitmap)) {
+  if (RenderPDFPagesToPWGRaster(pdf, settings, bitmap_settings, bitmap)) {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Succeeded());
   } else {
     Send(new ChromeUtilityHostMsg_RenderPDFPagesToPWGRaster_Failed());
@@ -674,6 +675,7 @@ bool ChromeContentUtilityClient::RenderPDFToWinMetafile(
 bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
     base::PlatformFile pdf_file,
     const printing::PdfRenderSettings& settings,
+    const printing::PwgRasterSettings& bitmap_settings,
     base::PlatformFile bitmap_file) {
   bool autoupdate = true;
   if (!g_pdf_lib.Get().IsValid())
@@ -706,10 +708,21 @@ bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
   cloud_print::BitmapImage image(settings.area().size(),
                                  cloud_print::BitmapImage::BGRA);
   for (int i = 0; i < total_page_count; ++i) {
-    if (!g_pdf_lib.Get().RenderPDFPageToBitmap(
-             data.data(), data.size(), i, image.pixel_data(),
-             image.size().width(), image.size().height(), settings.dpi(),
-             settings.dpi(), autoupdate)) {
+    int page_number = i;
+
+    if (bitmap_settings.reverse_page_order) {
+      page_number = total_page_count - 1 - page_number;
+    }
+
+    if (!g_pdf_lib.Get().RenderPDFPageToBitmap(data.data(),
+                                               data.size(),
+                                               page_number,
+                                               image.pixel_data(),
+                                               image.size().width(),
+                                               image.size().height(),
+                                               settings.dpi(),
+                                               settings.dpi(),
+                                               autoupdate)) {
       return false;
     }
     std::string pwg_page;

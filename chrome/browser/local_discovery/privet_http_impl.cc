@@ -16,9 +16,12 @@
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "components/cloud_devices/printer_description.h"
 #include "net/base/url_util.h"
+#include "printing/pwg_raster_settings.h"
 #include "printing/units.h"
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
+
+using namespace cloud_devices::printer;
 
 namespace local_discovery {
 
@@ -513,7 +516,7 @@ void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
 
 void PrivetLocalPrintOperationImpl::StartInitialRequest() {
   use_pdf_ = false;
-  cloud_devices::printer::ContentTypesCapability content_types;
+  ContentTypesCapability content_types;
   if (content_types.LoadFrom(capabilities_)) {
     use_pdf_ = content_types.Contains(kPrivetContentTypePDF) ||
                content_types.Contains(kPrivetContentTypeAny);
@@ -522,7 +525,7 @@ void PrivetLocalPrintOperationImpl::StartInitialRequest() {
   if (use_pdf_) {
     StartPrinting();
   } else {
-    cloud_devices::printer::DpiCapability dpis;
+    DpiCapability dpis;
     if (dpis.LoadFrom(capabilities_)) {
       dpi_ = std::max(dpis.GetDefault().horizontal, dpis.GetDefault().vertical);
     }
@@ -534,6 +537,14 @@ void PrivetLocalPrintOperationImpl::DoCreatejob() {
   current_response_ = base::Bind(
       &PrivetLocalPrintOperationImpl::OnCreatejobResponse,
       base::Unretained(this));
+
+  // Add PWG raster settings to ticket if they are supplied by the printer.
+  PwgRasterConfigCapability raster_capability;
+  PwgRasterConfigTicketItem raster_ticket_item;
+  if (raster_capability.LoadFrom(capabilities_)) {
+    raster_ticket_item.set_value(raster_capability.value());
+    raster_ticket_item.SaveTo(&ticket_);
+  }
 
   url_fetcher_= privet_client_->CreateURLFetcher(
       CreatePrivetURL(kPrivetCreatejobPath), net::URLFetcher::POST, this);
@@ -605,9 +616,60 @@ void PrivetLocalPrintOperationImpl::StartPrinting() {
   }
 }
 
+void PrivetLocalPrintOperationImpl::FillPwgRasterSettings(
+    printing::PwgRasterSettings* transform_settings) {
+  PwgRasterConfigCapability raster_capability;
+  // If the raster capability fails to load, raster_capability will contain
+  // the default value.
+  raster_capability.LoadFrom(capabilities_);
+
+  DuplexTicketItem duplex_item;
+  DuplexType duplex_value = NO_DUPLEX;
+
+  DocumentSheetBack document_sheet_back =
+      raster_capability.value().document_sheet_back;
+
+  if (duplex_item.LoadFrom(ticket_)) {
+    duplex_value = duplex_item.value();
+  }
+
+  transform_settings->odd_page_transform = printing::TRANSFORM_NORMAL;
+  switch (duplex_value) {
+    case NO_DUPLEX:
+      transform_settings->odd_page_transform = printing::TRANSFORM_NORMAL;
+      break;
+    case LONG_EDGE:
+      if (document_sheet_back == ROTATED) {
+        transform_settings->odd_page_transform = printing::TRANSFORM_ROTATE_180;
+      } else if (document_sheet_back == FLIPPED) {
+        transform_settings->odd_page_transform =
+            printing::TRANSFORM_FLIP_VERTICAL;
+      }
+      break;
+    case SHORT_EDGE:
+      if (document_sheet_back == MANUAL_TUMBLE) {
+        transform_settings->odd_page_transform = printing::TRANSFORM_ROTATE_180;
+      } else if (document_sheet_back == FLIPPED) {
+        transform_settings->odd_page_transform =
+            printing::TRANSFORM_FLIP_HORIZONTAL;
+      }
+  }
+
+  transform_settings->rotate_all_pages =
+      raster_capability.value().rotate_all_pages;
+
+  transform_settings->reverse_page_order =
+      raster_capability.value().reverse_order_streaming;
+}
+
 void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
+  printing::PwgRasterSettings transform_settings;
+
+  FillPwgRasterSettings(&transform_settings);
+
   if (!pwg_raster_converter_)
     pwg_raster_converter_ = PWGRasterConverter::CreateDefault();
+
   double scale = dpi_;
   scale /= printing::kPointsPerInch;
   // Make vertical rectangle to optimize streaming to printer. Fix orientation
@@ -615,7 +677,9 @@ void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
   gfx::Rect area(std::min(page_size_.width(), page_size_.height()) * scale,
                  std::max(page_size_.width(), page_size_.height()) * scale);
   pwg_raster_converter_->Start(
-      data_, printing::PdfRenderSettings(area, dpi_, true),
+      data_,
+      printing::PdfRenderSettings(area, dpi_, true),
+      transform_settings,
       base::Bind(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
                  base::Unretained(this)));
 }

@@ -23,6 +23,7 @@
 #include "printing/backend/print_backend.h"
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
+#include "printing/pwg_raster_settings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #define IPC_MESSAGE_START ChromeUtilityMsgStart
@@ -73,6 +74,14 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults)
 #endif
   IPC_STRUCT_TRAITS_MEMBER(duplex_capable)
   IPC_STRUCT_TRAITS_MEMBER(duplex_default)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(printing::PwgRasterTransformType);
+
+IPC_STRUCT_TRAITS_BEGIN(printing::PwgRasterSettings)
+  IPC_STRUCT_TRAITS_MEMBER(odd_page_transform)
+  IPC_STRUCT_TRAITS_MEMBER(rotate_all_pages)
+  IPC_STRUCT_TRAITS_MEMBER(reverse_page_order)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(UpdateManifest::Result)
@@ -177,10 +186,12 @@ IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToMetafile,
                      std::vector<printing::PageRange>)
 
 // Tell the utility process to render the given PDF into a PWGRaster.
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
-                     IPC::PlatformFileForTransit,  /* Input PDF file */
-                     printing::PdfRenderSettings,  /* PDF render settings */
-                     IPC::PlatformFileForTransit   /* Output PWG file */)
+IPC_MESSAGE_CONTROL4(ChromeUtilityMsg_RenderPDFPagesToPWGRaster,
+                     IPC::PlatformFileForTransit, /* Input PDF file */
+                     printing::PdfRenderSettings, /* PDF render settings */
+                     // PWG transform settings.
+                     printing::PwgRasterSettings,
+                     IPC::PlatformFileForTransit /* Output PWG file */)
 
 // Tell the utility process to decode the given JPEG image data with a robust
 // libjpeg codec.

@@ -11,6 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "printing/pwg_raster_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -188,6 +189,37 @@ const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
 const char kSampleEmptyJSONResponse[] = "{}";
 
 const char kSampleCJT[] = "{ \"version\" : \"1.0\" }";
+
+const char kSampleCapabilitiesResponsePWGSettings[] =
+    "{"
+    "\"version\" : \"1.0\","
+    "\"printer\" : {"
+    " \"pwg_raster_config\" : {"
+    "   \"document_sheet_back\" : \"MANUAL_TUMBLE\","
+    "   \"reverse_order_streaming\": true"
+    "  },"
+    "  \"supported_content_type\" : ["
+    "   { \"content_type\" : \"image/pwg-raster\" }"
+    "  ]"
+    "}"
+    "}";
+
+const char kSampleCJTDuplex[] =
+    "{"
+    "\"version\" : \"1.0\","
+    "\"print\": { \"duplex\": {\"type\": \"SHORT_EDGE\"} }"
+    "}";
+
+const char kSampleCJTDuplexPWGSettings[] =
+    "{"
+    "\"version\" : \"1.0\","
+    "\"print\": {"
+    "  \"pwg_raster_config\" : {"
+    "    \"document_sheet_back\" : \"MANUAL_TUMBLE\","
+    "    \"reverse_order_streaming\": true"
+    "   },"
+    "  \"duplex\": {\"type\": \"SHORT_EDGE\"} }"
+    "}";
 
 // Return the representation of the given JSON that would be outputted by
 // JSONWriter. This ensures the same JSON values are represented by the same
@@ -423,10 +455,19 @@ class FakePWGRasterConverter : public PWGRasterConverter {
 
   virtual void Start(base::RefCountedMemory* data,
                      const printing::PdfRenderSettings& conversion_settings,
+                     const printing::PwgRasterSettings& bitmap_settings,
                      const ResultCallback& callback) OVERRIDE {
+    bitmap_settings_ = bitmap_settings;
     std::string data_str(data->front_as<char>(), data->size());
     callback.Run(true, base::FilePath().AppendASCII(data_str + "test.pdf"));
   }
+
+  const printing::PwgRasterSettings& bitmap_settings() {
+    return bitmap_settings_;
+  }
+
+ private:
+  printing::PwgRasterSettings bitmap_settings_;
 };
 
 TEST_F(PrivetHTTPTest, CreatePrivetStorageList) {
@@ -776,8 +817,11 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
     local_print_operation_ = privet_client_->CreateLocalPrintOperation(
         &local_print_delegate_);
 
+    scoped_ptr<FakePWGRasterConverter> pwg_converter(
+        new FakePWGRasterConverter);
+    pwg_converter_ = pwg_converter.get();
     local_print_operation_->SetPWGRasterConverterForTesting(
-        scoped_ptr<PWGRasterConverter>(new FakePWGRasterConverter));
+        pwg_converter.PassAs<PWGRasterConverter>());
   }
 
   scoped_refptr<base::RefCountedBytes> RefCountedBytesFromString(
@@ -791,6 +835,7 @@ class PrivetLocalPrintTest : public PrivetHTTPTest {
  protected:
   scoped_ptr<PrivetLocalPrintOperation> local_print_operation_;
   StrictMock<MockLocalPrintDelegate> local_print_delegate_;
+  FakePWGRasterConverter* pwg_converter_;
 };
 
 TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrint) {
@@ -870,6 +915,48 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
            "&job_name=Sample+job+name"),
       base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
       kSampleLocalPrintResponse));
+
+  EXPECT_EQ(printing::TRANSFORM_NORMAL,
+            pwg_converter_->bitmap_settings().odd_page_transform);
+  EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
+  EXPECT_FALSE(pwg_converter_->bitmap_settings().reverse_page_order);
+};
+
+TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrintDuplex) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetData(RefCountedBytesFromString("path/to/"));
+  local_print_operation_->SetTicket(kSampleCJTDuplex);
+  local_print_operation_->SetCapabilities(
+      kSampleCapabilitiesResponsePWGSettings);
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
+                                      kSampleInfoResponseWithCreatejob));
+
+  EXPECT_TRUE(SuccessfulResponseToURL(GURL("http://10.0.0.8:6006/privet/info"),
+                                      kSampleInfoResponse));
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndJSONData(
+      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
+      kSampleCJTDuplexPWGSettings,
+      kSampleCreatejobResponse));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+
+  // TODO(noamsml): Is encoding spaces as pluses standard?
+  EXPECT_TRUE(SuccessfulResponseToURLAndFilePath(
+      GURL(
+          "http://10.0.0.8:6006/privet/printer/submitdoc?"
+          "client_name=Chrome&user_name=sample%40gmail.com"
+          "&job_name=Sample+job+name&job_id=1234"),
+      base::FilePath(FILE_PATH_LITERAL("path/to/test.pdf")),
+      kSampleLocalPrintResponse));
+
+  EXPECT_EQ(printing::TRANSFORM_ROTATE_180,
+            pwg_converter_->bitmap_settings().odd_page_transform);
+  EXPECT_FALSE(pwg_converter_->bitmap_settings().rotate_all_pages);
+  EXPECT_TRUE(pwg_converter_->bitmap_settings().reverse_page_order);
 };
 
 TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {

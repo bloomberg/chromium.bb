@@ -108,7 +108,8 @@ bool FileHandlers::IsValid() {
 class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
  public:
   explicit PwgUtilityProcessHostClient(
-      const printing::PdfRenderSettings& settings);
+      const printing::PdfRenderSettings& settings,
+      const printing::PwgRasterSettings& bitmap_settings);
 
   void Convert(base::RefCountedMemory* data,
                const PWGRasterConverter::ResultCallback& callback);
@@ -134,6 +135,7 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
 
   scoped_ptr<FileHandlers> files_;
   printing::PdfRenderSettings settings_;
+  printing::PwgRasterSettings bitmap_settings_;
   PWGRasterConverter::ResultCallback callback_;
   base::WeakPtr<content::UtilityProcessHost> utility_process_host_;
 
@@ -141,8 +143,9 @@ class PwgUtilityProcessHostClient : public content::UtilityProcessHostClient {
 };
 
 PwgUtilityProcessHostClient::PwgUtilityProcessHostClient(
-    const printing::PdfRenderSettings& settings) : settings_(settings) {
-}
+    const printing::PdfRenderSettings& settings,
+    const printing::PwgRasterSettings& bitmap_settings)
+    : settings_(settings), bitmap_settings_(bitmap_settings) {}
 
 PwgUtilityProcessHostClient::~PwgUtilityProcessHostClient() {
   // Delete temp directory.
@@ -189,11 +192,11 @@ void PwgUtilityProcessHostClient::OnProcessStarted() {
   }
 
   base::ProcessHandle process = utility_process_host_->GetData().handle;
-  utility_process_host_->Send(
-      new ChromeUtilityMsg_RenderPDFPagesToPWGRaster(
-          files_->GetPdfForProcess(process),
-          settings_,
-          files_->GetPwgForProcess(process)));
+  utility_process_host_->Send(new ChromeUtilityMsg_RenderPDFPagesToPWGRaster(
+      files_->GetPdfForProcess(process),
+      settings_,
+      bitmap_settings_,
+      files_->GetPwgForProcess(process)));
   utility_process_host_.reset();
 }
 
@@ -252,7 +255,9 @@ class PWGRasterConverterImpl : public PWGRasterConverter {
 
   virtual void Start(base::RefCountedMemory* data,
                      const printing::PdfRenderSettings& conversion_settings,
+                     const printing::PwgRasterSettings& bitmap_settings,
                      const ResultCallback& callback) OVERRIDE;
+
  private:
   scoped_refptr<PwgUtilityProcessHostClient> utility_client_;
   base::CancelableCallback<ResultCallback::RunType> callback_;
@@ -269,11 +274,13 @@ PWGRasterConverterImpl::~PWGRasterConverterImpl() {
 void PWGRasterConverterImpl::Start(
     base::RefCountedMemory* data,
     const printing::PdfRenderSettings& conversion_settings,
+    const printing::PwgRasterSettings& bitmap_settings,
     const ResultCallback& callback) {
   // Rebind cancelable callback to avoid calling callback if
   // PWGRasterConverterImpl is destroyed.
   callback_.Reset(callback);
-  utility_client_ = new PwgUtilityProcessHostClient(conversion_settings);
+  utility_client_ =
+      new PwgUtilityProcessHostClient(conversion_settings, bitmap_settings);
   utility_client_->Convert(data, callback_.callback());
 }
 
