@@ -753,13 +753,15 @@ void RenderWidgetHostViewMac::UpdateDisplayLink() {
 }
 
 void RenderWidgetHostViewMac::SendVSyncParametersToRenderer() {
+  if (!render_widget_host_ || !display_link_)
+    return;
+
   base::TimeTicks timebase;
   base::TimeDelta interval;
-  if (display_link_ &&
-      display_link_->GetVSyncParameters(
-          &timebase, &interval)) {
-    render_widget_host_->UpdateVSyncParameters(timebase, interval);
-  }
+  if (!display_link_->GetVSyncParameters(&timebase, &interval))
+    return;
+
+  render_widget_host_->UpdateVSyncParameters(timebase, interval);
 }
 
 void RenderWidgetHostViewMac::UpdateBackingStoreScaleFactor() {
