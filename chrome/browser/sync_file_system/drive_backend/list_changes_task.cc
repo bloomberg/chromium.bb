@@ -13,6 +13,8 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -45,31 +47,34 @@ ListChangesTask::ListChangesTask(SyncEngineContext* sync_context)
 ListChangesTask::~ListChangesTask() {
 }
 
-void ListChangesTask::RunSequential(const SyncStatusCallback& callback) {
+void ListChangesTask::Run(scoped_ptr<SyncTaskToken> token) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Changes] Start.");
 
   if (!IsContextReady()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
-              "[Changes] Failed to get required sercive.");
-    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
+              "[Changes] Failed to get required service.");
+    RunSoon(FROM_HERE, base::Bind(&SyncTaskManager::NotifyTaskDone,
+                                  base::Passed(&token),
+                                  SYNC_STATUS_FAILED));
     return;
   }
 
   drive_service()->GetChangeList(
       metadata_database()->GetLargestFetchedChangeID() + 1,
       base::Bind(&ListChangesTask::DidListChanges,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }
 
 void ListChangesTask::DidListChanges(
-    const SyncStatusCallback& callback,
+    scoped_ptr<SyncTaskToken> token,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceList> resource_list) {
   SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Changes] Failed to fetch change list.");
-    callback.Run(SYNC_STATUS_NETWORK_ERROR);
+    SyncTaskManager::NotifyTaskDone(
+        token.Pass(), SYNC_STATUS_NETWORK_ERROR);
     return;
   }
 
@@ -77,7 +82,8 @@ void ListChangesTask::DidListChanges(
     NOTREACHED();
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Changes] Got invalid change list.");
-    callback.Run(SYNC_STATUS_FAILED);
+    SyncTaskManager::NotifyTaskDone(
+        token.Pass(), SYNC_STATUS_FAILED);
     return;
   }
 
@@ -97,13 +103,14 @@ void ListChangesTask::DidListChanges(
         base::Bind(
             &ListChangesTask::DidListChanges,
             weak_ptr_factory_.GetWeakPtr(),
-            callback));
+            base::Passed(&token)));
     return;
   }
 
   if (change_list_.empty()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Changes] Got no change.");
-    callback.Run(SYNC_STATUS_NO_CHANGE_TO_SYNC);
+    SyncTaskManager::NotifyTaskDone(
+        token.Pass(), SYNC_STATUS_NO_CHANGE_TO_SYNC);
     return;
   }
 
@@ -112,7 +119,8 @@ void ListChangesTask::DidListChanges(
             change_list_.size());
   metadata_database()->UpdateByChangeList(
       resource_list->largest_changestamp(),
-      change_list_.Pass(), callback);
+      change_list_.Pass(),
+      base::Bind(&SyncTaskManager::NotifyTaskDone, base::Passed(&token)));
 }
 
 bool ListChangesTask::IsContextReady() {

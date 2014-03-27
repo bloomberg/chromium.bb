@@ -9,7 +9,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
-#include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "google_apis/drive/gdata_errorcode.h"
 
 namespace drive {
@@ -27,15 +26,15 @@ namespace drive_backend {
 class MetadataDatabase;
 class SyncEngineContext;
 
-class ListChangesTask : public SequentialSyncTask {
+class ListChangesTask : public SyncTask {
  public:
   explicit ListChangesTask(SyncEngineContext* sync_context);
   virtual ~ListChangesTask();
 
-  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void Run(scoped_ptr<SyncTaskToken> token) OVERRIDE;
 
  private:
-  void DidListChanges(const SyncStatusCallback& callback,
+  void DidListChanges(scoped_ptr<SyncTaskToken> token,
                       google_apis::GDataErrorCode error,
                       scoped_ptr<google_apis::ResourceList> resource_list);
 

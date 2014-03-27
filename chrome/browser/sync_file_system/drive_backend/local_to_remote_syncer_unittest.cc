@@ -22,6 +22,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/fake_remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
@@ -69,9 +70,16 @@ class LocalToRemoteSyncerTest : public testing::Test,
     fake_remote_change_processor_.reset(new FakeRemoteChangeProcessor);
 
     RegisterSyncableFileSystem();
+
+    sync_task_manager_.reset(new SyncTaskManager(
+        base::WeakPtr<SyncTaskManager::Client>(),
+        10 /* maximum_background_task */));
+    sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 
   virtual void TearDown() OVERRIDE {
+    sync_task_manager_.reset();
+
     RevokeSyncableFileSystem();
 
     fake_remote_change_processor_.reset();
@@ -170,9 +178,12 @@ class LocalToRemoteSyncerTest : public testing::Test,
   }
 
   SyncStatusCode ListChanges() {
-    ListChangesTask list_changes(this);
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    list_changes.RunSequential(CreateResultReceiver(&status));
+    sync_task_manager_->ScheduleSyncTask(
+        FROM_HERE,
+        scoped_ptr<SyncTask>(new ListChangesTask(this)),
+        SyncTaskManager::PRIORITY_MED,
+        CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }
@@ -234,6 +245,7 @@ class LocalToRemoteSyncerTest : public testing::Test,
   scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
   scoped_ptr<MetadataDatabase> metadata_database_;
   scoped_ptr<FakeRemoteChangeProcessor> fake_remote_change_processor_;
+  scoped_ptr<SyncTaskManager> sync_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalToRemoteSyncerTest);
 };
