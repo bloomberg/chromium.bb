@@ -37,8 +37,6 @@ nsfw_urls = set([
   "http://sunporno.com/",
   "http://tnaflix.com/",
   "http://pornerbros.com/",
-  "http://snapdeal.com/",
-  "http://costco.com/",
   "http://h2porn.com/",
   "http://adult-empire.com/",
   "http://pornhublive.com/",
