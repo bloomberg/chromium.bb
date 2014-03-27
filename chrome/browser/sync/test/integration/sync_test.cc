@@ -157,7 +157,8 @@ SyncTest::SyncTest(TestType test_type)
       test_server_handle_(base::kNullProcessHandle) {
   sync_datatype_helper::AssociateWithTest(this);
   switch (test_type_) {
-    case SINGLE_CLIENT: {
+    case SINGLE_CLIENT:
+    case SINGLE_CLIENT_LEGACY: {
       num_clients_ = 1;
       break;
     }
@@ -187,38 +188,11 @@ void SyncTest::SetUp() {
     password_ = "password";
   }
 
-  // Only set |server_type_| if it hasn't already been set. This allows for
-  // IN_PROCESS_FAKE_SERVER tests to set this value in each test class.
-  if (server_type_ == SERVER_TYPE_UNDECIDED) {
-    if (!cl->HasSwitch(switches::kSyncServiceURL) &&
-        !cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If neither a sync server URL nor a sync server command line is
-      // provided, start up a local python sync test server and point Chrome
-      // to its URL.  This is the most common configuration, and the only
-      // one that makes sense for most developers.
-      server_type_ = LOCAL_PYTHON_SERVER;
-    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
-               cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If a sync server URL and a sync server command line are provided,
-      // start up a local sync server by running the command line. Chrome
-      // will connect to the server at the URL that was provided.
-      server_type_ = LOCAL_LIVE_SERVER;
-    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
-               !cl->HasSwitch(switches::kSyncServerCommandLine)) {
-      // If a sync server URL is provided, but not a server command line,
-      // it is assumed that the server is already running. Chrome will
-      // automatically connect to it at the URL provided. There is nothing
-      // to do here.
-      server_type_ = EXTERNAL_LIVE_SERVER;
-    } else {
-      // If a sync server command line is provided, but not a server URL,
-      // we flag an error.
-      LOG(FATAL) << "Can't figure out how to run a server.";
-    }
-  }
-
   if (username_.empty() || password_.empty())
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
+
+  // Sets |server_type_| if it wasn't specified by the test.
+  DecideServerType();
 
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
 #if defined(OS_MACOSX)
@@ -543,6 +517,44 @@ void SyncTest::ClearMockGaiaResponses() {
   // created.
   net::URLFetcher::CancelAll();
   factory_.reset();
+}
+
+void SyncTest::DecideServerType() {
+  // Only set |server_type_| if it hasn't already been set. This allows for
+  // tests to explicitly set this value in each test class if needed.
+  if (server_type_ == SERVER_TYPE_UNDECIDED) {
+    base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+    if (!cl->HasSwitch(switches::kSyncServiceURL) &&
+        !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+      // If neither a sync server URL nor a sync server command line is
+      // provided, start up a local sync test server and point Chrome
+      // to its URL.  This is the most common configuration, and the only
+      // one that makes sense for most developers. FakeServer is the
+      // current solution but some scenarios are only supported by the
+      // legacy python server.
+      // TODO(pvalenzuela): Make FAKE_SERVER the default and LOCAL_PYTHON
+      // the exception once more scenarios are supported.
+        server_type_ = test_type_ == SINGLE_CLIENT ?
+              IN_PROCESS_FAKE_SERVER : LOCAL_PYTHON_SERVER;
+    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
+               cl->HasSwitch(switches::kSyncServerCommandLine)) {
+      // If a sync server URL and a sync server command line are provided,
+      // start up a local sync server by running the command line. Chrome
+      // will connect to the server at the URL that was provided.
+      server_type_ = LOCAL_LIVE_SERVER;
+    } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
+               !cl->HasSwitch(switches::kSyncServerCommandLine)) {
+      // If a sync server URL is provided, but not a server command line,
+      // it is assumed that the server is already running. Chrome will
+      // automatically connect to it at the URL provided. There is nothing
+      // to do here.
+      server_type_ = EXTERNAL_LIVE_SERVER;
+    } else {
+      // If a sync server command line is provided, but not a server URL,
+      // we flag an error.
+      LOG(FATAL) << "Can't figure out how to run a server.";
+    }
+  }
 }
 
 // Start up a local sync server based on the value of server_type_, which
@@ -936,9 +948,4 @@ void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
       base::Bind(&SetProxyConfigCallback, &done,
                  make_scoped_refptr(context_getter), proxy_config));
   done.Wait();
-}
-
-void SyncTest::UseFakeServer() {
-  DCHECK_EQ(SERVER_TYPE_UNDECIDED, server_type_);
-  server_type_ = IN_PROCESS_FAKE_SERVER;
 }

@@ -72,7 +72,9 @@ std::string TestForAuthError::GetDebugMessage() const {
 
 class SyncAuthTest : public SyncTest {
  public:
-  SyncAuthTest() : SyncTest(SINGLE_CLIENT), bookmark_index_(0) {}
+  // TODO(pvalenzuela): Switch to SINGLE_CLIENT once FakeServer
+  // supports this scenario.
+  SyncAuthTest() : SyncTest(SINGLE_CLIENT_LEGACY), bookmark_index_(0) {}
   virtual ~SyncAuthTest() {}
 
   // Helper function that adds a bookmark and waits for either an auth error, or

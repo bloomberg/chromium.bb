@@ -44,7 +44,9 @@ bool AwaitSyncDisabled(ProfileSyncService* service) {
 
 class SyncErrorTest : public SyncTest {
  public:
-  SyncErrorTest() : SyncTest(SINGLE_CLIENT) {}
+  // TODO(pvalenzuela): Switch to SINGLE_CLIENT once FakeServer
+  // supports this scenario.
+  SyncErrorTest() : SyncTest(SINGLE_CLIENT_LEGACY) {}
   virtual ~SyncErrorTest() {}
 
  private:

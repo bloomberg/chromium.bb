@@ -21,7 +21,9 @@ using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class SyncExponentialBackoffTest : public SyncTest {
  public:
-  SyncExponentialBackoffTest() : SyncTest(SINGLE_CLIENT) {}
+  // TODO(pvalenzuela): Switch to SINGLE_CLIENT once FakeServer
+  // supports this scenario.
+  SyncExponentialBackoffTest() : SyncTest(SINGLE_CLIENT_LEGACY) {}
   virtual ~SyncExponentialBackoffTest() {}
 
  private:

@@ -45,8 +45,14 @@ class SyncTest : public InProcessBrowserTest {
   // The different types of live sync tests that can be implemented.
   enum TestType {
     // Tests where only one client profile is synced with the server. Typically
-    // sanity level tests.
+    // sanity level tests. Safe to run against the FakeServer, not just the
+    // older python test server.
     SINGLE_CLIENT,
+
+    // Tests where only one client profile is synced with the server. "Legacy"
+    // means that the scenario isn't yet supported by the FakeServer so they
+    // should be run against the python server instead.
+    SINGLE_CLIENT_LEGACY,
 
     // Tests where two client profiles are synced with the server. Typically
     // functionality level tests.
@@ -73,17 +79,6 @@ class SyncTest : public InProcessBrowserTest {
                             // in-process (bypassing HTTP calls). This
                             // ServerType will eventually replace
                             // LOCAL_PYTHON_SERVER.
-  };
-
-  // This enum is used in conjunction with WithParamInterface to run tests with
-  // and without the fake server.
-  // TODO(pvalenzuela): Remove this when FakeServer is the default server.
-  enum FakeServerExperiment {
-    // The test should use the default logic for determining the test server.
-    USE_DEFAULT_SERVER,
-
-    // The test should use the fake server.
-    USE_FAKE_SERVER,
   };
 
   // NOTE: IMPORTANT the enum here should match with
@@ -267,12 +262,6 @@ class SyncTest : public InProcessBrowserTest {
   void DisableNotificationsImpl();
   void EnableNotificationsImpl();
 
-  // Set up the test to use the in-process fake server. This must be called
-  // before SetUp().
-  // TODO(pvalenzuela): Remove this method when the C++ fake server becomes
-  // the default server type.
-  void UseFakeServer();
-
   // GAIA account used by the test case.
   std::string username_;
 
@@ -338,6 +327,10 @@ class SyncTest : public InProcessBrowserTest {
   // various gaia URLs, cancel any outstanding URL requests, and return to using
   // the default URLFetcher creation mechanism.
   void ClearMockGaiaResponses();
+
+  // Decide which sync server implementation to run against based on the type
+  // of test being run and command line args passed in.
+  void DecideServerType();
 
   // Python sync test server, started on demand.
   syncer::LocalSyncTestServer sync_server_;
