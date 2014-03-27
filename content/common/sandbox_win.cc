@@ -654,10 +654,6 @@ base::ProcessHandle StartSandboxedProcess(
                   true,
                   sandbox::TargetPolicy::FILES_ALLOW_READONLY,
                   policy);
-      // We do not automatically propagate this from the browser command line,
-      // and instead only add it when we're actually setting up the sandbox to
-      // work with DirectWrite.
-      cmd_line->AppendSwitch(switches::kEnableDirectWrite);
     }
   } else {
     // Hack for Google Desktop crash. Trick GD into not injecting its DLL into

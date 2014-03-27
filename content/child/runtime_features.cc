@@ -134,11 +134,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableFileSystem))
     WebRuntimeFeatures::enableFileSystem(false);
 
-#if defined(OS_WIN)
-  if (command_line.HasSwitch(switches::kEnableDirectWrite))
-    WebRuntimeFeatures::enableDirectWrite(true);
-#endif
-
   if (command_line.HasSwitch(switches::kEnableExperimentalCanvasFeatures))
     WebRuntimeFeatures::enableExperimentalCanvasFeatures(true);
 

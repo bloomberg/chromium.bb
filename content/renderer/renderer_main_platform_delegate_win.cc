@@ -18,6 +18,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "sandbox/win/src/sandbox.h"
 #include "skia/ext/vector_platform_device_emf_win.h"
+#include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
@@ -118,6 +119,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
   // malicious code if the renderer gets compromised.
   bool no_sandbox = command_line.HasSwitch(switches::kNoSandbox);
 
+  bool use_direct_write = ShouldUseDirectWrite();
   if (!no_sandbox) {
     // ICU DateFormat class (used in base/time_format.cc) needs to get the
     // Olson timezone ID by accessing the registry keys under
@@ -127,7 +129,7 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
     // is disabled, we don't have to make this dummy call.
     scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
 
-    if (ShouldUseDirectWrite()) {
+    if (use_direct_write) {
       WarmupDirectWrite();
     } else {
       SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
@@ -135,6 +137,8 @@ void RendererMainPlatformDelegate::PlatformInitialize() {
           SkiaPreCacheFontCharacters);
     }
   }
+  blink::WebFontRendering::setUseDirectWrite(use_direct_write);
+  blink::WebFontRendering::setUseSubpixelPositioning(use_direct_write);
 }
 
 void RendererMainPlatformDelegate::PlatformUninitialize() {

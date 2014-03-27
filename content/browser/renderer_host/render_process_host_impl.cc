@@ -1213,6 +1213,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kChildCleanExit,
 #endif
 #if defined(OS_WIN)
+    switches::kEnableDirectWrite,
     switches::kEnableHighResolutionTime,
     switches::kHighDPISupport,
 #endif
