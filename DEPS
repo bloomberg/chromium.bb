@@ -68,19 +68,79 @@ deps_os = {
 }
 
 hooks = [
+  # Pull NaCl Toolchain binaries. This needs to be before running GYP below.
   {
     "pattern": ".",
     "action": ["python", "native_client/build/download_toolchains.py",
-               "--keep", "--arm-untrusted", "native_client/TOOL_REVISIONS"],
+               "--keep", "--arm-untrusted", "native_client/TOOL_REVISIONS"
+    ],
+  },
+  # Pull GN binaries. This needs to be before running GYP below.
+  {
+    "name": "gn_win",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=win32",
+                "--no_auth",
+                "--bucket", "chromium-gn",
+                "-s", "native_client/tools/gn/bin/win/gn.exe.sha1",
+    ],
   },
   {
+    "name": "gn_mac",
     "pattern": ".",
-    "action": ["python", "native_client/build/gyp_nacl"],
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=darwin",
+                "--no_auth",
+                "--bucket", "chromium-gn",
+                "-s", "native_client/tools/gn/bin/mac/gn.sha1",
+    ],
   },
+  {
+    "name": "gn_linux",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-gn",
+                "-s", "native_client/tools/gn/bin/linux/gn.sha1",
+    ],
+  },
+  {
+    "name": "gn_linux",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-gn",
+                "-s", "native_client/tools/gn/bin/linux/gn.sha1",
+    ],
+  },
+  {
+    "name": "gn_linux32",
+    "pattern": ".",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-gn",
+                "-s", "native_client/tools/gn/bin/linux/gn32.sha1",
+    ],
+  },
+  # Update clang
   {
     "name": "clang",
     "pattern": ".",
     "action": ["python", "tools/clang/scripts/update.py", "--mac-only"],
+  },
+  # Run GYP, do this last to make sure all the tools are present first.
+  {
+    "pattern": ".",
+    "action": ["python", "native_client/build/gyp_nacl"],
   },
 ]
 
