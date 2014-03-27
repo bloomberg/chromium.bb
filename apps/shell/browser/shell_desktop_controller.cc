@@ -75,7 +75,7 @@ aura::WindowTreeHost* ShellDesktopController::GetWindowTreeHost() {
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
 void ShellDesktopController::OnDisplayModeChanged(
-    const std::vector<ui::OutputConfigurator::DisplayState>& outputs) OVERRIDE {
+    const std::vector<ui::OutputConfigurator::DisplayState>& outputs) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
     wm_test_helper_->host()->UpdateRootWindowSize(size);
