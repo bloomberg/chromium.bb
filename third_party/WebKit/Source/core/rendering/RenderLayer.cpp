@@ -855,9 +855,8 @@ void RenderLayer::updateDescendantDependentFlags()
             if (!child->stackingNode()->isStackingContext())
                 child->updateDescendantDependentFlags();
 
-            bool childLayerHasBlendMode = child->blendInfo().childLayerHasBlendModeWhileDirty();
-            childLayerHasBlendMode |= child->paintsWithBlendMode()
-                || (childLayerHasBlendMode && !child->stackingNode()->isStackingContext());
+            bool childLayerHadBlendMode = child->blendInfo().childLayerHasBlendModeWhileDirty();
+            bool childLayerHasBlendMode = childLayerHadBlendMode || child->blendInfo().hasBlendMode();
 
             m_blendInfo.setChildLayerHasBlendMode(childLayerHasBlendMode);
 
@@ -1456,7 +1455,7 @@ void RenderLayer::addChild(RenderLayer* child, RenderLayer* beforeChild)
     if (child->isSelfPaintingLayer() || child->hasSelfPaintingLayerDescendant())
         setAncestorChainHasSelfPaintingLayerDescendant();
 
-    if (child->paintsWithBlendMode() || child->blendInfo().childLayerHasBlendMode())
+    if (child->blendInfo().hasBlendMode() || child->blendInfo().childLayerHasBlendMode())
         m_blendInfo.setAncestorChainBlendedDescendant();
 
     if (subtreeContainsOutOfFlowPositionedLayer(child)) {
@@ -1520,7 +1519,7 @@ RenderLayer* RenderLayer::removeChild(RenderLayer* oldChild)
     if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
         dirtyAncestorChainVisibleDescendantStatus();
 
-    if (oldChild->paintsWithBlendMode() || oldChild->blendInfo().childLayerHasBlendMode())
+    if (oldChild->m_blendInfo.hasBlendMode() || oldChild->blendInfo().childLayerHasBlendMode())
         m_blendInfo.dirtyAncestorChainBlendedDescendantStatus();
 
     if (oldChild->isSelfPaintingLayer() || oldChild->hasSelfPaintingLayerDescendant())
@@ -3671,8 +3670,6 @@ bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const
 
 bool RenderLayer::paintsWithBlendMode() const
 {
-    // https://code.google.com/p/chromium/issues/detail?id=343759
-    DisableCompositingQueryAsserts disabler;
     return m_blendInfo.hasBlendMode() && compositingState() != PaintsIntoOwnBacking;
 }
 
