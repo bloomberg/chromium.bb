@@ -384,21 +384,15 @@ void MediaStreamVideoSource::DeliverVideoFrame(
     const int visible_width = std::min(frame_output_size_.width(),
                                        frame->visible_rect().width());
 
-    // TODO(perkj): horiz_crop and vert_crop must be 0 until local
-    // rendering can support offsets on media::VideoFrame::visible_rect().
-    // crbug/349450. The effect of this is that the cropped frame originates
-    // from the top left of the original frame instead of being centered.
-    // Find a new horizontal offset within |frame|.
-    // const int horiz_crop = frame->visible_rect().x() +
-    //     ((frame->visible_rect().width() - visible_width) / 2);
-    // Find a new vertical offset within |frame|.
-    // const int vert_crop = frame->visible_rect().y() +
-    //     ((frame->visible_rect().height() - visible_height) / 2);
-    const int horiz_crop = 0;
-    const int vert_crop = 0;
-
     const int visible_height = std::min(frame_output_size_.height(),
                                         frame->visible_rect().height());
+
+    // Find a new horizontal offset within |frame|.
+    const int horiz_crop = frame->visible_rect().x() +
+        ((frame->visible_rect().width() - visible_width) / 2);
+    // Find a new vertical offset within |frame|.
+    const int vert_crop = frame->visible_rect().y() +
+        ((frame->visible_rect().height() - visible_height) / 2);
 
     gfx::Rect rect(horiz_crop, vert_crop, visible_width, visible_height);
     video_frame = media::VideoFrame::WrapVideoFrame(

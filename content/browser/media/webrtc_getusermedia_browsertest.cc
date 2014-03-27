@@ -476,11 +476,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
-// TODO(perkj): Enable this test as soon as http://crbug.com/349450 is fixed.
-// Currently the render pipeline doesn't support cropping where the new cropped
-// frame doesn't have the same top left coordinates as the original frame.
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_TestGetUserMediaAspectRatio16To9) {
+                       TestGetUserMediaAspectRatio16To9) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -494,11 +491,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 }
 
 // This test calls getUserMedia and checks for aspect ratio behavior.
-// TODO(perkj): Enable this test as soon as http://crbug.com/349450 is fixed.
-// Currently the render pipeline doesn't support cropping where the new cropped
-// frame doesn't have the same top left coordinates as the original frame.
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       DISABLED_TestGetUserMediaAspectRatio1To1) {
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       TestGetUserMediaAspectRatio1To1) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
