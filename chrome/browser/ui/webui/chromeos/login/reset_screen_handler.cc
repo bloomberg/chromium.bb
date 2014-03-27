@@ -198,10 +198,13 @@ void ResetScreenHandler::HandleOnRestart(bool should_rollback) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RequestRestart();
 }
 
-void ResetScreenHandler::HandleOnPowerwash() {
-  if (rollback_available_) {
+void ResetScreenHandler::HandleOnPowerwash(bool rollback_checked) {
+  if (rollback_checked && rollback_available_) {
       chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->Rollback();
   } else {
+    if (rollback_checked)
+      NOTREACHED() <<
+          "Rollback was checked but not available. Starting powerwash.";
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         StartDeviceWipe();
   }

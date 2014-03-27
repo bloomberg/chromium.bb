@@ -41,7 +41,7 @@ class ResetScreenHandler : public ResetScreenActor,
   // JS messages handlers.
   void HandleOnCancel();
   void HandleOnRestart(bool should_rollback);
-  void HandleOnPowerwash();
+  void HandleOnPowerwash(bool rollback_checked);
   void HandleOnLearnMore();
 
   void ShowWithParams();

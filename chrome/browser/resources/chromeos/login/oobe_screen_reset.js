@@ -37,7 +37,8 @@ login.createScreen('ResetScreen', 'reset', function() {
         if ($('reset').needRestart)
           chrome.send('restartOnReset', [$('reset-rollback-checkbox').checked]);
         else
-          chrome.send('powerwashOnReset');
+          chrome.send('powerwashOnReset',
+                      [$('reset-rollback-checkbox').checked]);
         e.stopPropagation();
       });
       buttons.push(resetButton);
