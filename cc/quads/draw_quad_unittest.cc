@@ -589,7 +589,7 @@ TEST(DrawQuadTest, CopyTileDrawQuad) {
 TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  gfx::SizeF tex_scale(0.75f, 0.5f);
+  gfx::RectF tex_coord_rect(0.0f, 0.0f, 0.75f, 0.5f);
   ResourceProvider::ResourceId y_plane_resource_id = 45;
   ResourceProvider::ResourceId u_plane_resource_id = 532;
   ResourceProvider::ResourceId v_plane_resource_id = 4;
@@ -599,7 +599,7 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   CREATE_QUAD_7_NEW(YUVVideoDrawQuad,
                     opaque_rect,
                     visible_rect,
-                    tex_scale,
+                    tex_coord_rect,
                     y_plane_resource_id,
                     u_plane_resource_id,
                     v_plane_resource_id,
@@ -607,20 +607,20 @@ TEST(DrawQuadTest, CopyYUVVideoDrawQuad) {
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
   EXPECT_RECT_EQ(opaque_rect, copy_quad->opaque_rect);
   EXPECT_RECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(tex_scale, copy_quad->tex_scale);
+  EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(y_plane_resource_id, copy_quad->y_plane_resource_id);
   EXPECT_EQ(u_plane_resource_id, copy_quad->u_plane_resource_id);
   EXPECT_EQ(v_plane_resource_id, copy_quad->v_plane_resource_id);
   EXPECT_EQ(a_plane_resource_id, copy_quad->a_plane_resource_id);
 
   CREATE_QUAD_5_ALL(YUVVideoDrawQuad,
-                    tex_scale,
+                    tex_coord_rect,
                     y_plane_resource_id,
                     u_plane_resource_id,
                     v_plane_resource_id,
                     a_plane_resource_id);
   EXPECT_EQ(DrawQuad::YUV_VIDEO_CONTENT, copy_quad->material);
-  EXPECT_EQ(tex_scale, copy_quad->tex_scale);
+  EXPECT_EQ(tex_coord_rect, copy_quad->tex_coord_rect);
   EXPECT_EQ(y_plane_resource_id, copy_quad->y_plane_resource_id);
   EXPECT_EQ(u_plane_resource_id, copy_quad->u_plane_resource_id);
   EXPECT_EQ(v_plane_resource_id, copy_quad->v_plane_resource_id);
@@ -848,7 +848,7 @@ TEST_F(DrawQuadIteratorTest, TileDrawQuad) {
 TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   gfx::Rect opaque_rect(33, 47, 10, 12);
   gfx::Rect visible_rect(40, 50, 30, 20);
-  gfx::SizeF tex_scale(0.75f, 0.5f);
+  gfx::RectF tex_coord_rect(0.0f, 0.0f, 0.75f, 0.5f);
   ResourceProvider::ResourceId y_plane_resource_id = 45;
   ResourceProvider::ResourceId u_plane_resource_id = 532;
   ResourceProvider::ResourceId v_plane_resource_id = 4;
@@ -858,7 +858,7 @@ TEST_F(DrawQuadIteratorTest, YUVVideoDrawQuad) {
   CREATE_QUAD_7_NEW(YUVVideoDrawQuad,
                     opaque_rect,
                     visible_rect,
-                    tex_scale,
+                    tex_coord_rect,
                     y_plane_resource_id,
                     u_plane_resource_id,
                     v_plane_resource_id,

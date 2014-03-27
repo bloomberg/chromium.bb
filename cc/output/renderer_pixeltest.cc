@@ -403,28 +403,30 @@ TEST_F(GLRendererPixelTest, NonPremultipliedTextureWithBackground) {
 class VideoGLRendererPixelTest : public GLRendererPixelTest {
  protected:
   scoped_ptr<YUVVideoDrawQuad> CreateTestYUVVideoDrawQuad(
-      SharedQuadState* shared_state, bool with_alpha, bool is_transparent) {
-    gfx::Rect rect(this->device_viewport_size_);
-    gfx::Rect opaque_rect(0, 0, 0, 0);
+      SharedQuadState* shared_state,
+      bool with_alpha,
+      bool is_transparent,
+      const gfx::RectF& tex_coord_rect) {
+    const gfx::Rect rect(this->device_viewport_size_);
+    const gfx::Rect uv_rect(
+        0, 0, (rect.width() + 1) / 2, (rect.height() + 1) / 2);
+    const gfx::Rect opaque_rect(0, 0, 0, 0);
 
     ResourceProvider::ResourceId y_resource =
-        resource_provider_->CreateResource(
-            this->device_viewport_size_,
-            GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny,
-            LUMINANCE_8);
+        resource_provider_->CreateResource(rect.size(),
+                                           GL_CLAMP_TO_EDGE,
+                                           ResourceProvider::TextureUsageAny,
+                                           LUMINANCE_8);
     ResourceProvider::ResourceId u_resource =
-        resource_provider_->CreateResource(
-            this->device_viewport_size_,
-            GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny,
-            LUMINANCE_8);
+        resource_provider_->CreateResource(uv_rect.size(),
+                                           GL_CLAMP_TO_EDGE,
+                                           ResourceProvider::TextureUsageAny,
+                                           LUMINANCE_8);
     ResourceProvider::ResourceId v_resource =
-        resource_provider_->CreateResource(
-            this->device_viewport_size_,
-            GL_CLAMP_TO_EDGE,
-            ResourceProvider::TextureUsageAny,
-            LUMINANCE_8);
+        resource_provider_->CreateResource(uv_rect.size(),
+                                           GL_CLAMP_TO_EDGE,
+                                           ResourceProvider::TextureUsageAny,
+                                           LUMINANCE_8);
     ResourceProvider::ResourceId a_resource = 0;
     if (with_alpha) {
       a_resource = resource_provider_->CreateResource(
@@ -434,10 +436,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
                        LUMINANCE_8);
     }
 
-    int w = this->device_viewport_size_.width();
-    int h = this->device_viewport_size_.height();
-    const int y_plane_size = w * h;
-    gfx::Rect uv_rect((w + 1) / 2, (h + 1) / 2);
+    const int y_plane_size = rect.size().GetArea();
     const int uv_plane_size = uv_rect.size().GetArea();
     scoped_ptr<uint8_t[]> y_plane(new uint8_t[y_plane_size]);
     scoped_ptr<uint8_t[]> u_plane(new uint8_t[uv_plane_size]);
@@ -445,19 +444,26 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
     scoped_ptr<uint8_t[]> a_plane;
     if (with_alpha)
       a_plane.reset(new uint8_t[y_plane_size]);
-    // YUV values representing Green.
-    memset(y_plane.get(), 149, y_plane_size);
-    memset(u_plane.get(), 43, uv_plane_size);
-    memset(v_plane.get(), 21, uv_plane_size);
+    // YUV values representing a striped pattern, for validating texture
+    // coordinates for sampling.
+    uint8_t y_value = 0;
+    uint8_t u_value = 0;
+    uint8_t v_value = 0;
+    for (int i = 0; i < y_plane_size; ++i)
+      y_plane.get()[i] = (y_value += 1);
+    for (int i = 0; i < uv_plane_size; ++i) {
+      u_plane.get()[i] = (u_value += 3);
+      v_plane.get()[i] = (v_value += 5);
+    }
     if (with_alpha)
       memset(a_plane.get(), is_transparent ? 0 : 128, y_plane_size);
 
-    resource_provider_->SetPixels(y_resource, y_plane.get(), rect, rect,
-                                  gfx::Vector2d());
-    resource_provider_->SetPixels(u_resource, u_plane.get(), uv_rect, uv_rect,
-                                  gfx::Vector2d());
-    resource_provider_->SetPixels(v_resource, v_plane.get(), uv_rect, uv_rect,
-                                  gfx::Vector2d());
+    resource_provider_->SetPixels(
+        y_resource, y_plane.get(), rect, rect, gfx::Vector2d());
+    resource_provider_->SetPixels(
+        u_resource, u_plane.get(), uv_rect, uv_rect, gfx::Vector2d());
+    resource_provider_->SetPixels(
+        v_resource, v_plane.get(), uv_rect, uv_rect, gfx::Vector2d());
     if (with_alpha) {
       resource_provider_->SetPixels(a_resource, a_plane.get(), rect, rect,
                                     gfx::Vector2d());
@@ -468,7 +474,7 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
                      rect,
                      opaque_rect,
                      rect,
-                     gfx::Size(),
+                     tex_coord_rect,
                      y_resource,
                      u_resource,
                      v_resource,
@@ -486,8 +492,32 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
   scoped_ptr<SharedQuadState> shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
-      CreateTestYUVVideoDrawQuad(shared_state.get(), false, false);
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
+      shared_state.get(), false, false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
+
+  pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  EXPECT_TRUE(
+      this->RunPixelTest(&pass_list,
+                         PixelTest::NoOffscreenContext,
+                         base::FilePath(FILE_PATH_LITERAL("yuv_stripes.png")),
+                         FuzzyPixelOffByOneComparator(true)));
+}
+
+TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
+  gfx::Rect rect(this->device_viewport_size_);
+
+  RenderPass::Id id(1, 1);
+  scoped_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
+
+  scoped_ptr<SharedQuadState> shared_state =
+      CreateTestSharedQuadState(gfx::Transform(), rect);
+
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
+      shared_state.get(), false, false, gfx::RectF(0.125f, 0.25f, 0.75f, 0.5f));
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 
@@ -497,8 +527,8 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       PixelTest::NoOffscreenContext,
-      base::FilePath(FILE_PATH_LITERAL("green.png")),
-      ExactPixelComparator(true)));
+      base::FilePath(FILE_PATH_LITERAL("yuv_stripes_offset.png")),
+      FuzzyPixelOffByOneComparator(true)));
 }
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
@@ -510,8 +540,8 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   scoped_ptr<SharedQuadState> shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
-      CreateTestYUVVideoDrawQuad(shared_state.get(), true, false);
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
+      shared_state.get(), true, false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 
@@ -526,8 +556,8 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
       PixelTest::NoOffscreenContext,
-      base::FilePath(FILE_PATH_LITERAL("green_alpha.png")),
-      ExactPixelComparator(true)));
+      base::FilePath(FILE_PATH_LITERAL("yuv_stripes_alpha.png")),
+      FuzzyPixelOffByOneComparator(true)));
 }
 
 TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
@@ -539,8 +569,8 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
   scoped_ptr<SharedQuadState> shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
-      CreateTestYUVVideoDrawQuad(shared_state.get(), true, true);
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
+      shared_state.get(), true, true, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 

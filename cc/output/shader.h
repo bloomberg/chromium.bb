@@ -72,9 +72,9 @@ class VertexShaderPosTex {
   DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTex);
 };
 
-class VertexShaderPosTexYUVStretch {
+class VertexShaderPosTexYUVStretchOffset {
  public:
-  VertexShaderPosTexYUVStretch();
+  VertexShaderPosTexYUVStretchOffset();
 
   void Init(gpu::gles2::GLES2Interface* context,
             unsigned program,
@@ -83,12 +83,14 @@ class VertexShaderPosTexYUVStretch {
 
   int matrix_location() const { return matrix_location_; }
   int tex_scale_location() const { return tex_scale_location_; }
+  int tex_offset_location() const { return tex_offset_location_; }
 
  private:
   int matrix_location_;
   int tex_scale_location_;
+  int tex_offset_location_;
 
-  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexYUVStretch);
+  DISALLOW_COPY_AND_ASSIGN(VertexShaderPosTexYUVStretchOffset);
 };
 
 class VertexShaderPos {

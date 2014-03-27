@@ -185,16 +185,16 @@ std::string VertexShaderPosTex::GetShaderString() const {
   );  // NOLINT(whitespace/parens)
 }
 
-VertexShaderPosTexYUVStretch::VertexShaderPosTexYUVStretch()
-    : matrix_location_(-1),
-      tex_scale_location_(-1) {}
+VertexShaderPosTexYUVStretchOffset::VertexShaderPosTexYUVStretchOffset()
+    : matrix_location_(-1), tex_scale_location_(-1), tex_offset_location_(-1) {}
 
-void VertexShaderPosTexYUVStretch::Init(GLES2Interface* context,
-                                        unsigned program,
-                                        int* base_uniform_index) {
+void VertexShaderPosTexYUVStretchOffset::Init(GLES2Interface* context,
+                                              unsigned program,
+                                              int* base_uniform_index) {
   static const char* uniforms[] = {
     "matrix",
     "texScale",
+    "texOffset",
   };
   int locations[arraysize(uniforms)];
 
@@ -206,9 +206,10 @@ void VertexShaderPosTexYUVStretch::Init(GLES2Interface* context,
                              base_uniform_index);
   matrix_location_ = locations[0];
   tex_scale_location_ = locations[1];
+  tex_offset_location_ = locations[2];
 }
 
-std::string VertexShaderPosTexYUVStretch::GetShaderString() const {
+std::string VertexShaderPosTexYUVStretchOffset::GetShaderString() const {
   return VERTEX_SHADER(
     precision mediump float;
     attribute vec4 a_position;
@@ -216,9 +217,10 @@ std::string VertexShaderPosTexYUVStretch::GetShaderString() const {
     uniform mat4 matrix;
     varying TexCoordPrecision vec2 v_texCoord;
     uniform TexCoordPrecision vec2 texScale;
+    uniform TexCoordPrecision vec2 texOffset;
     void main() {
         gl_Position = matrix * a_position;
-        v_texCoord = a_texCoord * texScale;
+        v_texCoord = a_texCoord * texScale + texOffset;
     }
   );  // NOLINT(whitespace/parens)
 }

@@ -23,7 +23,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
-              const gfx::SizeF& tex_scale,
+              const gfx::RectF& tex_coord_rect,
               unsigned y_plane_resource_id,
               unsigned u_plane_resource_id,
               unsigned v_plane_resource_id,
@@ -34,13 +34,13 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              const gfx::SizeF& tex_scale,
+              const gfx::RectF& tex_coord_rect,
               unsigned y_plane_resource_id,
               unsigned u_plane_resource_id,
               unsigned v_plane_resource_id,
               unsigned a_plane_resource_id);
 
-  gfx::SizeF tex_scale;
+  gfx::RectF tex_coord_rect;
   unsigned y_plane_resource_id;
   unsigned u_plane_resource_id;
   unsigned v_plane_resource_id;

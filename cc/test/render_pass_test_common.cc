@@ -230,7 +230,7 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                    rect,
                    opaque_rect,
                    visible_rect,
-                   gfx::Size(100, 100),
+                   gfx::RectF(0, 0, 100, 100),
                    plane_resources[0],
                    plane_resources[1],
                    plane_resources[2],

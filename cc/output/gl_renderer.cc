@@ -1631,8 +1631,9 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), a_plane_lock->target());
   }
 
-  int tex_scale_location = -1;
   int matrix_location = -1;
+  int tex_scale_location = -1;
+  int tex_offset_location = -1;
   int y_texture_location = -1;
   int u_texture_location = -1;
   int v_texture_location = -1;
@@ -1644,8 +1645,9 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     const VideoYUVAProgram* program = GetVideoYUVAProgram(tex_coord_precision);
     DCHECK(program && (program->initialized() || IsContextLost()));
     SetUseProgram(program->program());
-    tex_scale_location = program->vertex_shader().tex_scale_location();
     matrix_location = program->vertex_shader().matrix_location();
+    tex_scale_location = program->vertex_shader().tex_scale_location();
+    tex_offset_location = program->vertex_shader().tex_offset_location();
     y_texture_location = program->fragment_shader().y_texture_location();
     u_texture_location = program->fragment_shader().u_texture_location();
     v_texture_location = program->fragment_shader().v_texture_location();
@@ -1657,8 +1659,9 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
     const VideoYUVProgram* program = GetVideoYUVProgram(tex_coord_precision);
     DCHECK(program && (program->initialized() || IsContextLost()));
     SetUseProgram(program->program());
-    tex_scale_location = program->vertex_shader().tex_scale_location();
     matrix_location = program->vertex_shader().matrix_location();
+    tex_scale_location = program->vertex_shader().tex_scale_location();
+    tex_offset_location = program->vertex_shader().tex_offset_location();
     y_texture_location = program->fragment_shader().y_texture_location();
     u_texture_location = program->fragment_shader().u_texture_location();
     v_texture_location = program->fragment_shader().v_texture_location();
@@ -1669,8 +1672,12 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
 
   GLC(gl_,
       gl_->Uniform2f(tex_scale_location,
-                     quad->tex_scale.width(),
-                     quad->tex_scale.height()));
+                     quad->tex_coord_rect.width(),
+                     quad->tex_coord_rect.height()));
+  GLC(gl_,
+      gl_->Uniform2f(tex_offset_location,
+                     quad->tex_coord_rect.x(),
+                     quad->tex_coord_rect.y()));
   GLC(gl_, gl_->Uniform1i(y_texture_location, 1));
   GLC(gl_, gl_->Uniform1i(u_texture_location, 2));
   GLC(gl_, gl_->Uniform1i(v_texture_location, 3));

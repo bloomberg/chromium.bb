@@ -58,12 +58,6 @@ VideoFrameExternalResources VideoResourceUpdater::
 
 bool VideoResourceUpdater::VerifyFrame(
     const scoped_refptr<media::VideoFrame>& video_frame) {
-  // If these fail, we'll have to add logic that handles offset bitmap/texture
-  // UVs. For now, just expect (0, 0) offset, since all our decoders so far
-  // don't offset.
-  DCHECK_EQ(video_frame->visible_rect().x(), 0);
-  DCHECK_EQ(video_frame->visible_rect().y(), 0);
-
   switch (video_frame->format()) {
     // Acceptable inputs.
     case media::VideoFrame::YV12:

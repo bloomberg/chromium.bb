@@ -215,7 +215,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::YUVVideoDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
-  IPC_STRUCT_TRAITS_MEMBER(tex_scale)
+  IPC_STRUCT_TRAITS_MEMBER(tex_coord_rect)
   IPC_STRUCT_TRAITS_MEMBER(y_plane_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(u_plane_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(v_plane_resource_id)
