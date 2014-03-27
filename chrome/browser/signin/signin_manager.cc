@@ -199,6 +199,7 @@ void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
   DCHECK_NE(this, &source);
   possibly_invalid_username_ = source.possibly_invalid_username_;
   temp_refresh_token_ = source.temp_refresh_token_;
+  password_ = source.password_;
 }
 
 void SigninManager::ClearTransientSigninData() {
