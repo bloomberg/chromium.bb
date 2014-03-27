@@ -478,10 +478,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OverscrollScreenshot) {
   }
 }
 
+// Crashes under ThreadSanitizer, http://crbug.com/356758.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ScreenshotForSwappedOutRenderViews \
+    DISABLED_ScreenshotForSwappedOutRenderViews
+#else
+#define MAYBE_ScreenshotForSwappedOutRenderViews \
+    ScreenshotForSwappedOutRenderViews
+#endif
 // Tests that screenshot is taken correctly when navigation causes a
 // RenderViewHost to be swapped out.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       ScreenshotForSwappedOutRenderViews) {
+                       MAYBE_ScreenshotForSwappedOutRenderViews) {
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
   // Create a new server with a different site.

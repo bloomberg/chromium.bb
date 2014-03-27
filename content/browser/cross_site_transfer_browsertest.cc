@@ -234,10 +234,22 @@ class CrossSiteTransferTest : public ContentBrowserTest {
   ResourceDispatcherHostDelegate* old_delegate_;
 };
 
+// The following tests crash in the ThreadSanitizer runtime,
+// http://crbug.com/356758.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_ReplaceEntryCrossProcessThenTransfer \
+    DISABLED_ReplaceEntryCrossProcessThenTransfer
+#define MAYBE_ReplaceEntryCrossProcessTwice \
+    DISABLED_ReplaceEntryCrossProcessTwice
+#else
+#define MAYBE_ReplaceEntryCrossProcessThenTransfer \
+    ReplaceEntryCrossProcessThenTransfer
+#define MAYBE_ReplaceEntryCrossProcessTwice ReplaceEntryCrossProcessTwice
+#endif
 // Tests that the |should_replace_current_entry| flag persists correctly across
 // request transfers that began with a cross-process navigation.
 IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
-                       ReplaceEntryCrossProcessThenTransfer) {
+                       MAYBE_ReplaceEntryCrossProcessThenTransfer) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -347,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
 // Tests that the |should_replace_current_entry| flag persists correctly across
 // request transfers that cross processes twice from renderer policy.
 IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest,
-                       ReplaceEntryCrossProcessTwice) {
+                       MAYBE_ReplaceEntryCrossProcessTwice) {
   const NavigationController& controller =
       shell()->web_contents()->GetController();
   host_resolver()->AddRule("*", "127.0.0.1");

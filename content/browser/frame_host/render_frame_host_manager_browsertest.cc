@@ -391,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 // Test that setting the opener to null in a window affects cross-process
 // navigations, including those to existing entries.  http://crbug.com/156669.
 // Flaky on windows: http://crbug.com/291249
-#if defined(OS_WIN)
+// This test also crashes under ThreadSanitizer, http://crbug.com/356758.
+#if defined(OS_WIN) || defined(THREAD_SANITIZER)
 #define MAYBE_DisownOpener DISABLED_DisownOpener
 #else
 #define MAYBE_DisownOpener DisownOpener
@@ -978,10 +979,16 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_FALSE(contents->GetController().GetVisibleEntry());
 }
 
+// Crashes under ThreadSanitizer, http://crbug.com/356758.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_BackForwardNotStale DISABLED_BackForwardNotStale
+#else
+#define MAYBE_BackForwardNotStale BackForwardNotStale
+#endif
 // Test for http://crbug.com/93427.  Ensure that cross-site navigations
 // do not cause back/forward navigations to be considered stale by the
 // renderer.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, BackForwardNotStale) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_BackForwardNotStale) {
   StartServer();
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
@@ -1143,12 +1150,19 @@ class RenderViewHostDestructionObserver : public WebContentsObserver {
   std::set<RenderViewHost*> watched_render_view_hosts_;
 };
 
+// Crashes under ThreadSanitizer, http://crbug.com/356758.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_LeakingRenderViewHosts DISABLED_LeakingRenderViewHosts
+#else
+#define MAYBE_LeakingRenderViewHosts LeakingRenderViewHosts
+#endif
 // Test for crbug.com/90867. Make sure we don't leak render view hosts since
 // they may cause crashes or memory corruptions when trying to call dead
 // delegate_. This test also verifies crbug.com/117420 and crbug.com/143255 to
 // ensure that a separate SiteInstance is created when navigating to view-source
 // URLs, regardless of current URL.
-IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LeakingRenderViewHosts) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       MAYBE_LeakingRenderViewHosts) {
   StartServer();
 
   // Observe the created render_view_host's to make sure they will not leak.
@@ -1364,7 +1378,8 @@ class RFHMProcessPerTabTest : public RenderFrameHostManagerTest {
 // Test that we still swap processes for BrowsingInstance changes even in
 // --process-per-tab mode.  See http://crbug.com/343017.
 // Disabled on Android: http://crbug.com/345873.
-#if defined(OS_ANDROID)
+// Crashes under ThreadSanitizer, http://crbug.com/356758.
+#if defined(OS_ANDROID) || defined(THREAD_SANITIZER)
 #define MAYBE_BackFromWebUI DISABLED_BackFromWebUI
 #else
 #define MAYBE_BackFromWebUI BackFromWebUI
