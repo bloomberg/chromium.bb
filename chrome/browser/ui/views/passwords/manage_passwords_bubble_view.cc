@@ -324,6 +324,7 @@ void ManagePasswordsBubbleView::Init() {
 
     manage_link_ =
         new views::Link(manage_passwords_bubble_model_->manage_link());
+    manage_link_->SetUnderline(false);
     manage_link_->set_listener(this);
     layout->StartRowWithPadding(0, kSingleButtonSetId,
                                 0, views::kRelatedControlVerticalSpacing);
