@@ -17,6 +17,12 @@ namespace gfx {
 
 // static
 bool GLSurface::InitializeOneOffInternal() {
+  if (gfx::SurfaceFactoryOzone::GetInstance()->InitializeHardware() !=
+      gfx::SurfaceFactoryOzone::INITIALIZED) {
+    LOG(ERROR) << "Ozone failed to initialize hardware";
+    return false;
+  }
+
   switch (GetGLImplementation()) {
     case kGLImplementationEGLGLES2:
       if (!GLSurfaceEGL::InitializeOneOff()) {
