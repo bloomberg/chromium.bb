@@ -1881,9 +1881,9 @@ int ChromeLauncherController::FindInsertionPoint(bool is_app_list) {
     ash::ShelfItemType type = model_->items()[i].type;
     if (type == ash::TYPE_APP_SHORTCUT ||
         ((is_app_list || alternate) && type == ash::TYPE_APP_LIST) ||
-        type == ash::TYPE_BROWSER_SHORTCUT ||
-        type == ash::TYPE_WINDOWED_APP)
+        type == ash::TYPE_BROWSER_SHORTCUT) {
       return i;
+    }
   }
   return 0;
 }
