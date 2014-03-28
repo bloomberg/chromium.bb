@@ -201,6 +201,9 @@ void AssociatedURLLoader::ClientAdapter::didSendData(unsigned long long bytesSen
 
 void AssociatedURLLoader::ClientAdapter::didReceiveResponse(unsigned long, const ResourceResponse& response)
 {
+    if (!m_client)
+        return;
+
     // Try to use the original ResourceResponse if possible.
     WebURLResponse validatedResponse = WrappedResourceResponse(response);
     HTTPResponseHeaderValidator validator(m_options.crossOriginRequestPolicy == WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl);
