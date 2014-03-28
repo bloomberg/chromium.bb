@@ -399,7 +399,7 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
   thunk_offset &= kPageSize - 1;
 
   // Make an aligned, padded allocation, and move the pointer to our chunk.
-  size_t thunk_bytes_padded = (thunk_bytes + kPageSize - 1) & kPageSize;
+  size_t thunk_bytes_padded = (thunk_bytes + kPageSize - 1) & ~(kPageSize - 1);
   thunk_base = reinterpret_cast<BYTE*>(
                    ::VirtualAllocEx(child, thunk_base, thunk_bytes_padded,
                                     MEM_COMMIT, PAGE_EXECUTE_READWRITE));
