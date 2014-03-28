@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
+#include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/profiles/profile.h"
@@ -306,6 +307,11 @@ base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
           device_name);
 }
 
+void InitializeImportedMediaGalleryRegistryOnFileThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  ImportedMediaGalleryRegistry::GetInstance()->Initialize();
+}
+
 }  // namespace
 
 MediaGalleryPrefInfo::MediaGalleryPrefInfo()
@@ -575,7 +581,7 @@ void MediaGalleriesPreferences::OnStorageMonitorInit(
 }
 
 void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
-  if (!device_id.empty() && !UpdateDeviceIDForSingletonType(device_id)) {
+  if (!device_id.empty()) {
     std::string gallery_name;
     if (StorageInfo::IsIPhotoDevice(device_id))
       gallery_name = kIPhotoGalleryName;
@@ -583,13 +589,25 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
       gallery_name = kITunesGalleryName;
     else if (StorageInfo::IsPicasaDevice(device_id))
       gallery_name = kPicasaGalleryName;
-    else
-      NOTREACHED();
 
-    AddGalleryInternal(device_id, base::ASCIIToUTF16(gallery_name),
-                       base::FilePath(), MediaGalleryPrefInfo::kAutoDetected,
-                       base::string16(), base::string16(), base::string16(), 0,
-                       base::Time(), false, 0, 0, 0, kCurrentPrefsVersion);
+    if (!gallery_name.empty()) {
+      pre_initialization_callbacks_waiting_++;
+      content::BrowserThread::PostTaskAndReply(
+          content::BrowserThread::FILE,
+          FROM_HERE,
+          base::Bind(&InitializeImportedMediaGalleryRegistryOnFileThread),
+          base::Bind(
+              &MediaGalleriesPreferences::OnInitializationCallbackReturned,
+              weak_factory_.GetWeakPtr()));
+    }
+
+    if (!UpdateDeviceIDForSingletonType(device_id)) {
+      DCHECK(!gallery_name.empty());
+      AddGalleryInternal(device_id, base::ASCIIToUTF16(gallery_name),
+                         base::FilePath(), MediaGalleryPrefInfo::kAutoDetected,
+                         base::string16(), base::string16(), base::string16(),
+                         0, base::Time(), false, 0, 0, 0, kCurrentPrefsVersion);
+    }
   }
 
   OnInitializationCallbackReturned();

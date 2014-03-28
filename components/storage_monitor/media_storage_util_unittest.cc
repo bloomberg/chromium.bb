@@ -119,6 +119,8 @@ TEST_F(MediaStorageUtilTest, CanCreateFileSystemForImageCapture) {
   EXPECT_TRUE(MediaStorageUtil::CanCreateFileSystem(kImageCaptureDeviceId,
                                                     base::FilePath()));
   EXPECT_FALSE(MediaStorageUtil::CanCreateFileSystem(
+      "dcim:xyz", base::FilePath()));
+  EXPECT_FALSE(MediaStorageUtil::CanCreateFileSystem(
       "dcim:xyz", base::FilePath(FILE_PATH_LITERAL("relative"))));
   EXPECT_FALSE(MediaStorageUtil::CanCreateFileSystem(
       "dcim:xyz", base::FilePath(FILE_PATH_LITERAL("../refparent"))));

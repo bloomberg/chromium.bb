@@ -47,6 +47,21 @@ bool ContainsElement(const std::vector<T>& collection, const T& key) {
   return false;
 }
 
+std::vector<std::string> GetVirtualPathComponents(
+    const fileapi::FileSystemURL& url) {
+  ImportedMediaGalleryRegistry* imported_registry =
+      ImportedMediaGalleryRegistry::GetInstance();
+  base::FilePath root = imported_registry->ImportedRoot().AppendASCII("iphoto");
+
+  DCHECK(root.IsParent(url.path()) || root == url.path());
+  base::FilePath virtual_path;
+  root.AppendRelativePath(url.path(), &virtual_path);
+
+  std::vector<std::string> result;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
+  return result;
+}
+
 }  // namespace
 
 const char kIPhotoAlbumsDir[] = "Albums";
@@ -156,8 +171,7 @@ base::File::Error IPhotoFileUtil::GetFileInfoSync(
     const fileapi::FileSystemURL& url,
     base::File::Info* file_info,
     base::FilePath* platform_path) {
-  std::vector<std::string> components;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
+  std::vector<std::string> components = GetVirtualPathComponents(url);
 
   if (components.size() == 0) {
     return MakeDirectoryFileInfo(file_info);
@@ -206,8 +220,7 @@ base::File::Error IPhotoFileUtil::ReadDirectorySync(
     const fileapi::FileSystemURL& url,
     EntryList* file_list) {
   DCHECK(file_list->empty());
-  std::vector<std::string> components;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
+  std::vector<std::string> components = GetVirtualPathComponents(url);
 
   // Root directory. Child is the /Albums dir.
   if (components.size() == 0) {
@@ -290,8 +303,7 @@ base::File::Error IPhotoFileUtil::GetLocalFilePath(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
     base::FilePath* local_file_path) {
-  std::vector<std::string> components;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
+  std::vector<std::string> components = GetVirtualPathComponents(url);
 
   if (components.size() == 3 && components[0] == kIPhotoAlbumsDir) {
     base::FilePath location = GetDataProvider()->GetPhotoLocationInAlbum(

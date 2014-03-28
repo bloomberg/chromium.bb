@@ -34,6 +34,21 @@ base::File::Error MakeDirectoryFileInfo(base::File::Info* file_info) {
   return base::File::FILE_OK;
 }
 
+std::vector<std::string> GetVirtualPathComponents(
+    const fileapi::FileSystemURL& url) {
+  ImportedMediaGalleryRegistry* imported_registry =
+      ImportedMediaGalleryRegistry::GetInstance();
+  base::FilePath root = imported_registry->ImportedRoot().AppendASCII("itunes");
+
+  DCHECK(root.IsParent(url.path()) || root == url.path());
+  base::FilePath virtual_path;
+  root.AppendRelativePath(url.path(), &virtual_path);
+
+  std::vector<std::string> result;
+  fileapi::VirtualPath::GetComponentsUTF8Unsafe(virtual_path, &result);
+  return result;
+}
+
 }  // namespace
 
 const char kITunesLibraryXML[] = "iTunes Music Library.xml";
@@ -91,8 +106,7 @@ base::File::Error ITunesFileUtil::GetFileInfoSync(
     const fileapi::FileSystemURL& url,
     base::File::Info* file_info,
     base::FilePath* platform_path) {
-  std::vector<std::string> components;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
+  std::vector<std::string> components = GetVirtualPathComponents(url);
 
   if (components.size() == 0)
     return MakeDirectoryFileInfo(file_info);
@@ -153,8 +167,7 @@ base::File::Error ITunesFileUtil::ReadDirectorySync(
     const fileapi::FileSystemURL& url,
     EntryList* file_list) {
   DCHECK(file_list->empty());
-  std::vector<std::string> components;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
+  std::vector<std::string> components = GetVirtualPathComponents(url);
 
   if (components.size() == 0) {
     base::File::Info xml_info;
@@ -264,8 +277,8 @@ base::File::Error ITunesFileUtil::CreateSnapshotFileSync(
     base::File::Info* file_info,
     base::FilePath* platform_path,
     scoped_refptr<webkit_blob::ShareableFileReference>* file_ref) {
-  DCHECK(!url.path().IsAbsolute());
-  if (url.path() != base::FilePath().AppendASCII(kITunesLibraryXML)) {
+  std::vector<std::string> components = GetVirtualPathComponents(url);
+  if (components.size() != 1 || components[0] != kITunesLibraryXML) {
     return NativeMediaFileUtil::CreateSnapshotFileSync(context, url, file_info,
                                                        platform_path, file_ref);
   }
@@ -284,8 +297,7 @@ base::File::Error ITunesFileUtil::GetLocalFilePath(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,
     base::FilePath* local_file_path) {
-  std::vector<std::string> components;
-  fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
+  std::vector<std::string> components = GetVirtualPathComponents(url);
 
   if (components.size() == 1 && components[0] == kITunesLibraryXML) {
     *local_file_path = GetDataProvider()->library_path();

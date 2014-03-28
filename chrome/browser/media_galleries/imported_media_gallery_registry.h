@@ -37,17 +37,24 @@ class ImportedMediaGalleryRegistry {
  public:
   static ImportedMediaGalleryRegistry* GetInstance();
 
+  void Initialize();
+
   // Should be called on the UI thread only.
-  std::string RegisterPicasaFilesystemOnUIThread(
-      const base::FilePath& database_path);
+  bool RegisterPicasaFilesystemOnUIThread(const std::string& fs_name,
+                                          const base::FilePath& database_path);
 
-  std::string RegisterITunesFilesystemOnUIThread(
+  bool RegisterITunesFilesystemOnUIThread(
+      const std::string& fs_name,
       const base::FilePath& xml_library_path);
 
-  std::string RegisterIPhotoFilesystemOnUIThread(
+  bool RegisterIPhotoFilesystemOnUIThread(
+      const std::string& fs_name,
       const base::FilePath& xml_library_path);
 
-  bool RevokeImportedFilesystemOnUIThread(const std::string& fsid);
+  bool RevokeImportedFilesystemOnUIThread(const std::string& fs_name);
+
+  // Path where all virtual file systems are "mounted."
+  base::FilePath ImportedRoot();
 
   // Should be called on the MediaTaskRunner thread only.
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -81,14 +88,16 @@ class ImportedMediaGalleryRegistry {
   void RevokeIPhotoFileSystem();
 #endif  // defined(OS_MACOSX)
 
+  base::FilePath imported_root_;
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // The data providers are only set or accessed on the task runner thread.
   scoped_ptr<picasa::PicasaDataProvider> picasa_data_provider_;
   scoped_ptr<itunes::ITunesDataProvider> itunes_data_provider_;
 
   // The remaining members are only accessed on the IO thread.
-  std::set<std::string> picasa_fsids_;
-  std::set<std::string> itunes_fsids_;
+  std::set<std::string> picasa_fs_names_;
+  std::set<std::string> itunes_fs_names_;
 
 #ifndef NDEBUG
   base::FilePath picasa_database_path_;
@@ -99,7 +108,7 @@ class ImportedMediaGalleryRegistry {
 #if defined(OS_MACOSX)
   scoped_ptr<iphoto::IPhotoDataProvider> iphoto_data_provider_;
 
-  std::set<std::string> iphoto_fsids_;
+  std::set<std::string> iphoto_fs_names_;
 
 #ifndef NDEBUG
   base::FilePath iphoto_xml_library_path_;

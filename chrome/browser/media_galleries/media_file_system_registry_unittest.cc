@@ -65,47 +65,47 @@ class TestMediaFileSystemContext : public MediaFileSystemContext {
   struct FSInfo {
     FSInfo() {}
     FSInfo(const std::string& device_id, const base::FilePath& path,
-           const std::string& fsid);
+           const std::string& fs_name);
 
     bool operator<(const FSInfo& other) const;
 
     std::string device_id;
     base::FilePath path;
-    std::string fsid;
+    std::string fs_name;
   };
 
   explicit TestMediaFileSystemContext(MediaFileSystemRegistry* registry);
   virtual ~TestMediaFileSystemContext() {}
 
   // MediaFileSystemContext implementation.
-  virtual std::string RegisterFileSystem(
-      const std::string& device_id, const base::FilePath& path) OVERRIDE;
+  virtual bool RegisterFileSystem(const std::string& device_id,
+                                  const std::string& fs_name,
+                                  const base::FilePath& path) OVERRIDE;
 
-  virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE;
+  virtual void RevokeFileSystem(const std::string& fs_name) OVERRIDE;
 
-  base::FilePath GetPathForId(const std::string& fsid) const;
+  virtual base::FilePath GetRegisteredPath(
+      const std::string& fs_name) const OVERRIDE;
 
   MediaFileSystemRegistry* registry() { return registry_; }
 
  private:
-  std::string AddFSEntry(const std::string& device_id,
-                         const base::FilePath& path);
+  void AddFSEntry(const std::string& device_id,
+                  const base::FilePath& path,
+                  const std::string& fs_name);
 
   MediaFileSystemRegistry* registry_;
 
-  // A counter used to construct mock FSIDs.
-  int fsid_;
-
   // The currently allocated mock file systems.
-  std::map<std::string /*fsid*/, FSInfo> file_systems_by_id_;
+  std::map<std::string /*fs_name*/, FSInfo> file_systems_by_name_;
 };
 
 TestMediaFileSystemContext::FSInfo::FSInfo(const std::string& device_id,
                                            const base::FilePath& path,
-                                           const std::string& fsid)
+                                           const std::string& fs_name)
     : device_id(device_id),
       path(path),
-      fsid(fsid) {
+      fs_name(fs_name) {
 }
 
 bool TestMediaFileSystemContext::FSInfo::operator<(const FSInfo& other) const {
@@ -113,47 +113,47 @@ bool TestMediaFileSystemContext::FSInfo::operator<(const FSInfo& other) const {
     return device_id < other.device_id;
   if (path.value() != other.path.value())
     return path.value() < other.path.value();
-  return fsid < other.fsid;
+  return fs_name < other.fs_name;
 }
 
 TestMediaFileSystemContext::TestMediaFileSystemContext(
     MediaFileSystemRegistry* registry)
-    : registry_(registry),
-      fsid_(0) {
+    : registry_(registry) {
   registry_->file_system_context_.reset(this);
 }
 
-std::string TestMediaFileSystemContext::RegisterFileSystem(
-    const std::string& device_id, const base::FilePath& path) {
-  std::string fsid = AddFSEntry(device_id, path);
-  return fsid;
+bool TestMediaFileSystemContext::RegisterFileSystem(
+    const std::string& device_id,
+    const std::string& fs_name,
+    const base::FilePath& path) {
+  AddFSEntry(device_id, path, fs_name);
+  return true;
 }
 
-void TestMediaFileSystemContext::RevokeFileSystem(const std::string& fsid) {
-  if (!ContainsKey(file_systems_by_id_, fsid))
+void TestMediaFileSystemContext::RevokeFileSystem(const std::string& fs_name) {
+  if (!ContainsKey(file_systems_by_name_, fs_name))
     return;
-  EXPECT_EQ(1U, file_systems_by_id_.erase(fsid));
+  EXPECT_EQ(1U, file_systems_by_name_.erase(fs_name));
 }
 
-base::FilePath TestMediaFileSystemContext::GetPathForId(
-    const std::string& fsid) const {
-  std::map<std::string /*fsid*/, FSInfo>::const_iterator it =
-      file_systems_by_id_.find(fsid);
-  if (it == file_systems_by_id_.end())
+base::FilePath TestMediaFileSystemContext::GetRegisteredPath(
+    const std::string& fs_name) const {
+  std::map<std::string /*fs_name*/, FSInfo>::const_iterator it =
+      file_systems_by_name_.find(fs_name);
+  if (it == file_systems_by_name_.end())
     return base::FilePath();
   return it->second.path;
 }
 
-std::string TestMediaFileSystemContext::AddFSEntry(const std::string& device_id,
-                                                   const base::FilePath& path) {
+void TestMediaFileSystemContext::AddFSEntry(const std::string& device_id,
+                                            const base::FilePath& path,
+                                            const std::string& fs_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(path.IsAbsolute());
   DCHECK(!path.ReferencesParent());
 
-  std::string fsid = base::StringPrintf("FSID:%d", ++fsid_);
-  FSInfo info(device_id, path, fsid);
-  file_systems_by_id_[fsid] = info;
-  return fsid;
+  FSInfo info(device_id, path, fs_name);
+  file_systems_by_name_[fs_name] = info;
 }
 
 namespace {
@@ -184,7 +184,7 @@ void CheckGalleryInfo(const MediaFileSystemInfo& info,
   else
     EXPECT_EQ(0UL, info.transient_device_id.size());
 
-  base::FilePath fsid_path = fs_context->GetPathForId(info.fsid);
+  base::FilePath fsid_path = fs_context->GetRegisteredPath(info.fsid);
   EXPECT_EQ(path, fsid_path);
 }
 
@@ -1067,7 +1067,7 @@ TEST_F(MediaFileSystemRegistryTest, PreferenceListener) {
   FSInfoMap fs_info = profile_state->GetGalleriesInfo(
       profile_state->regular_permission_extension());
   ASSERT_EQ(1U, fs_info.size());
-  EXPECT_FALSE(test_file_system_context()->GetPathForId(
+  EXPECT_FALSE(test_file_system_context()->GetRegisteredPath(
       fs_info.begin()->second.fsid).empty());
 
   // Revoke permission and ensure that the file system is revoked.
@@ -1075,6 +1075,6 @@ TEST_F(MediaFileSystemRegistryTest, PreferenceListener) {
                        profile_state->regular_permission_extension(),
                        device_id,
                        false /*has access*/);
-  EXPECT_TRUE(test_file_system_context()->GetPathForId(
+  EXPECT_TRUE(test_file_system_context()->GetRegisteredPath(
       fs_info.begin()->second.fsid).empty());
 }

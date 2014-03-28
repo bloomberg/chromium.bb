@@ -2567,6 +2567,10 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
 
 void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
     std::vector<fileapi::URLRequestAutoMountHandler>* handlers) {
+#if !defined(OS_ANDROID)
+  handlers->push_back(
+      base::Bind(MediaFileSystemBackend::AttemptAutoMountForURLRequest));
+#endif  // OS_ANDROID
 }
 
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(

@@ -78,15 +78,17 @@ int FileSystemContext::GetPermissionPolicy(FileSystemType type) {
       return FILE_PERMISSION_READ_ONLY |
              FILE_PERMISSION_USE_FILE_PERMISSION;
 
-    // Following types are only accessed via IsolatedFileSystem, and
-    // don't have their own permission policies.
     case kFileSystemTypeDeviceMedia:
-    case kFileSystemTypeDragged:
-    case kFileSystemTypeForTransientFile:
     case kFileSystemTypeIphoto:
     case kFileSystemTypeItunes:
     case kFileSystemTypeNativeMedia:
     case kFileSystemTypePicasa:
+      return FILE_PERMISSION_USE_FILE_PERMISSION;
+
+    // Following types are only accessed via IsolatedFileSystem, and
+    // don't have their own permission policies.
+    case kFileSystemTypeDragged:
+    case kFileSystemTypeForTransientFile:
     case kFileSystemTypePluginPrivate:
       return FILE_PERMISSION_ALWAYS_DENY;
 

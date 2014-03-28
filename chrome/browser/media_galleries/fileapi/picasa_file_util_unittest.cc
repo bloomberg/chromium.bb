@@ -22,6 +22,7 @@
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
+#include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -228,6 +229,7 @@ class PicasaFileUtilTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+    ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
         new quota::MockSpecialStoragePolicy();
@@ -356,10 +358,14 @@ class PicasaFileUtilTest : public testing::Test {
     EXPECT_EQ(0u, contents.size());
   }
 
-  FileSystemURL CreateURL(const std::string& virtual_path) const {
+  FileSystemURL CreateURL(const std::string& path) const {
+    base::FilePath virtual_path =
+        ImportedMediaGalleryRegistry::GetInstance()->ImportedRoot();
+    virtual_path = virtual_path.AppendASCII("picasa");
+    virtual_path = virtual_path.AppendASCII(path);
     return file_system_context_->CreateCrackedFileSystemURL(
         GURL("http://www.example.com"), fileapi::kFileSystemTypePicasa,
-        base::FilePath::FromUTF8Unsafe(virtual_path));
+        virtual_path);
   }
 
   fileapi::FileSystemOperationRunner* operation_runner() const {

@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "chrome/browser/media_galleries/fileapi/iphoto_data_provider.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
@@ -12,10 +13,11 @@
 #include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/common/fileapi/file_system_mount_option.h"
 
 using base::Bind;
-using fileapi::IsolatedContext;
+using fileapi::ExternalMountPoints;
 
 namespace {
 
@@ -29,25 +31,38 @@ ImportedMediaGalleryRegistry* ImportedMediaGalleryRegistry::GetInstance() {
   return g_imported_media_gallery_registry.Pointer();
 }
 
-std::string ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
-    const base::FilePath& database_path) {
+void ImportedMediaGalleryRegistry::Initialize() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  if (imported_root_.empty()) {
+    if (!base::CreateTemporaryFile(&imported_root_))
+      imported_root_ = base::FilePath();
+    // TODO(vandebo) Setting the permissions of |imported_root_| in CPSP to
+    // zero would be an extra step to ensure permissions are correctly
+    // enforced.
+  }
+}
+
+bool ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
+    const std::string& fs_name, const base::FilePath& database_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!fs_name.empty());
   DCHECK(!database_path.empty());
 
-  std::string fsid;
+  bool result = false;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  fsid = IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
-           fileapi::kFileSystemTypePicasa,
-           extension_misc::kMediaFileSystemPathPart,
-           base::FilePath());
+  base::FilePath root = ImportedRoot();
+  if (root.empty())
+    return false;
+  result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+      fs_name, fileapi::kFileSystemTypePicasa, fileapi::FileSystemMountOption(),
+      root.AppendASCII("picasa"));
+  if (!result)
+    return result;
 
-  if (fsid.empty())
-    return fsid;
+  picasa_fs_names_.insert(fs_name);
 
-  picasa_fsids_.insert(fsid);
-
-  if (picasa_fsids_.size() == 1) {
+  if (picasa_fs_names_.size() == 1) {
     MediaFileSystemBackend::MediaTaskRunner()->PostTask(
         FROM_HERE,
         Bind(&ImportedMediaGalleryRegistry::RegisterPicasaFileSystem,
@@ -60,28 +75,29 @@ std::string ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
   }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-  return fsid;
+  return result;
 }
 
-std::string ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
-    const base::FilePath& library_xml_path) {
+bool ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
+    const std::string& fs_name, const base::FilePath& library_xml_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!library_xml_path.empty());
 
-  std::string fsid;
+  bool result = false;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  fsid = IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
-           fileapi::kFileSystemTypeItunes,
-           extension_misc::kMediaFileSystemPathPart,
-           base::FilePath());
+  base::FilePath root = ImportedRoot();
+  if (root.empty())
+    return false;
+  result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+      fs_name, fileapi::kFileSystemTypeItunes, fileapi::FileSystemMountOption(),
+      root.AppendASCII("itunes"));
+  if (!result)
+    return result;
 
-  if (fsid.empty())
-    return fsid;
+  itunes_fs_names_.insert(fs_name);
 
-  itunes_fsids_.insert(fsid);
-
-  if (itunes_fsids_.size() == 1) {
+  if (itunes_fs_names_.size() == 1) {
     MediaFileSystemBackend::MediaTaskRunner()->PostTask(
         FROM_HERE,
         Bind(&ImportedMediaGalleryRegistry::RegisterITunesFileSystem,
@@ -94,30 +110,31 @@ std::string ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
   }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-  return fsid;
+  return result;
 }
 
-std::string ImportedMediaGalleryRegistry::RegisterIPhotoFilesystemOnUIThread(
-    const base::FilePath& library_xml_path) {
+bool ImportedMediaGalleryRegistry::RegisterIPhotoFilesystemOnUIThread(
+    const std::string& fs_name, const base::FilePath& library_xml_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!library_xml_path.empty());
 
-  std::string fsid;
+  bool result = false;
 
   // TODO(gbillock): Investigate how to refactor this to reduce duplicated
   // code.
 #if defined(OS_MACOSX)
-  fsid = IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
-           fileapi::kFileSystemTypeIphoto,
-           extension_misc::kMediaFileSystemPathPart,
-           base::FilePath());
+  base::FilePath root = ImportedRoot();
+  if (root.empty())
+    return false;
+  result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+      fs_name, fileapi::kFileSystemTypeIphoto, fileapi::FileSystemMountOption(),
+      root.AppendASCII("iphoto"));
+  if (!result)
+    return result;
 
-  if (fsid.empty())
-    return fsid;
+  iphoto_fs_names_.insert(fs_name);
 
-  iphoto_fsids_.insert(fsid);
-
-  if (iphoto_fsids_.size() == 1) {
+  if (iphoto_fs_names_.size() == 1) {
     MediaFileSystemBackend::MediaTaskRunner()->PostTask(
         FROM_HERE,
         Bind(&ImportedMediaGalleryRegistry::RegisterIPhotoFileSystem,
@@ -130,48 +147,53 @@ std::string ImportedMediaGalleryRegistry::RegisterIPhotoFilesystemOnUIThread(
   }
 #endif  // defined(OS_MACOSX)
 
-  return fsid;
+  return result;
 }
 
 bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
-    const std::string& fsid) {
+    const std::string& fs_name) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  if (picasa_fsids_.erase(fsid)) {
-    if (picasa_fsids_.empty()) {
+  if (picasa_fs_names_.erase(fs_name)) {
+    if (picasa_fs_names_.empty()) {
       MediaFileSystemBackend::MediaTaskRunner()->PostTask(
           FROM_HERE,
           Bind(&ImportedMediaGalleryRegistry::RevokePicasaFileSystem,
                base::Unretained(this)));
     }
-    return IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+    return ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
   }
 
-  if (itunes_fsids_.erase(fsid)) {
-    if (itunes_fsids_.empty()) {
+  if (itunes_fs_names_.erase(fs_name)) {
+    if (itunes_fs_names_.empty()) {
       MediaFileSystemBackend::MediaTaskRunner()->PostTask(
           FROM_HERE,
           Bind(&ImportedMediaGalleryRegistry::RevokeITunesFileSystem,
                base::Unretained(this)));
     }
-    return IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+    return ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
   }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if defined(OS_MACOSX)
-  if (iphoto_fsids_.erase(fsid)) {
-    if (iphoto_fsids_.empty()) {
+  if (iphoto_fs_names_.erase(fs_name)) {
+    if (iphoto_fs_names_.empty()) {
       MediaFileSystemBackend::MediaTaskRunner()->PostTask(
           FROM_HERE,
           Bind(&ImportedMediaGalleryRegistry::RevokeIPhotoFileSystem,
                base::Unretained(this)));
     }
-    return IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+    return ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
   }
 #endif  // defined(OS_MACOSX)
 
   return false;
+}
+
+base::FilePath ImportedMediaGalleryRegistry::ImportedRoot() {
+  DCHECK(!imported_root_.empty());
+  return imported_root_;
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -205,12 +227,14 @@ ImportedMediaGalleryRegistry::IPhotoDataProvider() {
 ImportedMediaGalleryRegistry::ImportedMediaGalleryRegistry() {}
 
 ImportedMediaGalleryRegistry::~ImportedMediaGalleryRegistry() {
+  if (!imported_root_.empty())
+    base::DeleteFile(imported_root_, false);
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  DCHECK_EQ(0U, picasa_fsids_.size());
-  DCHECK_EQ(0U, itunes_fsids_.size());
+  DCHECK_EQ(0U, picasa_fs_names_.size());
+  DCHECK_EQ(0U, itunes_fs_names_.size());
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 #if defined(OS_MACOSX)
-  DCHECK_EQ(0U, iphoto_fsids_.size());
+  DCHECK_EQ(0U, iphoto_fs_names_.size());
 #endif  // defined(OS_MACOSX)
 }
 

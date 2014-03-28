@@ -12,19 +12,31 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_validator_factory.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
+#include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_info.h"
+#include "extensions/browser/extension_system.h"
+#include "net/url_request/url_request.h"
 #include "webkit/browser/blob/file_stream_reader.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_stream_writer.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
-#include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/native_file_util.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -40,6 +52,67 @@
 
 using fileapi::FileSystemContext;
 using fileapi::FileSystemURL;
+
+namespace {
+
+const char kMediaGalleryMountPrefix[] = "media_galleries-";
+
+void OnPreferencesInit(
+    const content::RenderViewHost* rvh,
+    const extensions::Extension* extension,
+    MediaGalleryPrefId pref_id,
+    const base::Callback<void(base::File::Error result)>& callback) {
+  MediaFileSystemRegistry* registry =
+      g_browser_process->media_file_system_registry();
+  registry->RegisterMediaFileSystemForExtension(rvh, extension, pref_id,
+                                                callback);
+}
+
+void AttemptAutoMountOnUIThread(
+    int32 process_id,
+    int32 routing_id,
+    const std::string& storage_domain,
+    const std::string& mount_point,
+    const base::Callback<void(base::File::Error result)>& callback) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(process_id, routing_id);
+  if (rvh) {
+    Profile* profile =
+        Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());
+
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    const extensions::Extension* extension =
+        extension_service->GetExtensionById(storage_domain,
+                                            false /*include disabled*/);
+    std::string expected_mount_prefix =
+        MediaFileSystemBackend::ConstructMountName(
+            profile->GetPath(), storage_domain, kInvalidMediaGalleryPrefId);
+    MediaGalleryPrefId pref_id = kInvalidMediaGalleryPrefId;
+    if (extension &&
+        extension->id() == storage_domain &&
+        StartsWithASCII(mount_point, expected_mount_prefix, true) &&
+        base::StringToUint64(mount_point.substr(expected_mount_prefix.size()),
+                             &pref_id) &&
+        pref_id != kInvalidMediaGalleryPrefId) {
+      MediaGalleriesPreferences* preferences =
+          g_browser_process->media_file_system_registry()->GetPreferences(
+              profile);
+      preferences->EnsureInitialized(
+          base::Bind(&OnPreferencesInit, rvh, extension, pref_id, callback));
+      return;
+    }
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
+}
+
+}  // namespace
 
 const char MediaFileSystemBackend::kMediaTaskRunnerName[] =
     "media-task-runner";
@@ -87,6 +160,59 @@ MediaFileSystemBackend::MediaTaskRunner() {
   return pool->GetSequencedTaskRunner(media_sequence_token);
 }
 
+// static
+std::string MediaFileSystemBackend::ConstructMountName(
+    const base::FilePath& profile_path,
+    const std::string& extension_id,
+    MediaGalleryPrefId pref_id) {
+  std::string name(kMediaGalleryMountPrefix);
+  name.append(profile_path.BaseName().MaybeAsASCII());
+  name.append("-");
+  name.append(extension_id);
+  name.append("-");
+  if (pref_id != kInvalidMediaGalleryPrefId)
+    name.append(base::Uint64ToString(pref_id));
+  base::ReplaceChars(name, " /", "_", &name);
+  return name;
+}
+
+// static
+bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
+    const net::URLRequest* url_request,
+    const fileapi::FileSystemURL& filesystem_url,
+    const std::string& storage_domain,
+    const base::Callback<void(base::File::Error result)>& callback) {
+  if (storage_domain.empty() ||
+      filesystem_url.type() != fileapi::kFileSystemTypeExternal ||
+      storage_domain != filesystem_url.origin().host()) {
+    return false;
+  }
+
+  const base::FilePath& virtual_path = filesystem_url.path();
+  if (virtual_path.ReferencesParent())
+    return false;
+  std::vector<base::FilePath::StringType> components;
+  virtual_path.GetComponents(&components);
+  if (components.empty())
+    return false;
+  std::string mount_point = base::FilePath(components[0]).AsUTF8Unsafe();
+  if (!StartsWithASCII(mount_point, kMediaGalleryMountPrefix, true))
+    return false;
+
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(url_request);
+  if (!request_info)
+    return false;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&AttemptAutoMountOnUIThread, request_info->GetChildID(),
+                 request_info->GetRouteID(), storage_domain, mount_point,
+                 callback));
+  return true;
+}
+
 bool MediaFileSystemBackend::CanHandleType(
     fileapi::FileSystemType type) const {
   switch (type) {
@@ -112,7 +238,7 @@ void MediaFileSystemBackend::ResolveURL(
     const FileSystemURL& url,
     fileapi::OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
-  // We never allow opening a new isolated FileSystem via usual ResolveURL.
+  // We never allow opening a new FileSystem via usual ResolveURL.
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback,

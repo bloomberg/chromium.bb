@@ -176,11 +176,11 @@ base::ListValue* ConstructFileSystemList(
     if (has_read_permission) {
       content::ChildProcessSecurityPolicy* policy =
           content::ChildProcessSecurityPolicy::GetInstance();
-      policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
+      policy->GrantReadFile(child_id, filesystems[i].path);
       if (has_delete_permission) {
-        policy->GrantDeleteFromFileSystem(child_id, filesystems[i].fsid);
+        policy->GrantDeleteFrom(child_id, filesystems[i].path);
         if (has_copy_to_permission) {
-          policy->GrantCopyIntoFileSystem(child_id, filesystems[i].fsid);
+          policy->GrantCopyInto(child_id, filesystems[i].path);
         }
       }
     }

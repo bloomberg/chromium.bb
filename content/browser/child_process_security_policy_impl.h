@@ -45,6 +45,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   virtual void GrantReadFile(int child_id, const base::FilePath& file) OVERRIDE;
   virtual void GrantCreateReadWriteFile(int child_id,
                                         const base::FilePath& file) OVERRIDE;
+  virtual void GrantCopyInto(int child_id, const base::FilePath& dir) OVERRIDE;
+  virtual void GrantDeleteFrom(int child_id,
+                               const base::FilePath& dir) OVERRIDE;
   virtual void GrantReadFileSystem(
       int child_id,
       const std::string& filesystem_id) OVERRIDE;

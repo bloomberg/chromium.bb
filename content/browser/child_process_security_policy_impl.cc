@@ -461,6 +461,16 @@ void ChildProcessSecurityPolicyImpl::GrantCreateReadWriteFile(
   GrantPermissionsForFile(child_id, file, CREATE_READ_WRITE_FILE_GRANT);
 }
 
+void ChildProcessSecurityPolicyImpl::GrantCopyInto(int child_id,
+                                                   const base::FilePath& dir) {
+  GrantPermissionsForFile(child_id, dir, COPY_INTO_FILE_GRANT);
+}
+
+void ChildProcessSecurityPolicyImpl::GrantDeleteFrom(
+    int child_id, const base::FilePath& dir) {
+  GrantPermissionsForFile(child_id, dir, DELETE_FILE_GRANT);
+}
+
 void ChildProcessSecurityPolicyImpl::GrantPermissionsForFile(
     int child_id, const base::FilePath& file, int permissions) {
   base::AutoLock lock(lock_);

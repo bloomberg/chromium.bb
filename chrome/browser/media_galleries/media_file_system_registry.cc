@@ -13,6 +13,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
@@ -36,14 +37,15 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
-#include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
+#include "webkit/common/fileapi/file_system_mount_option.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
 using content::BrowserThread;
 using content::NavigationController;
 using content::RenderProcessHost;
 using content::WebContents;
-using fileapi::IsolatedContext;
+using fileapi::ExternalMountPoints;
 using storage_monitor::MediaStorageUtil;
 using storage_monitor::StorageInfo;
 using storage_monitor::StorageMonitor;
@@ -261,15 +263,19 @@ class ExtensionGalleriesHost
   // |no_references_callback| is called when the last RenderViewHost reference
   // goes away. RenderViewHost references are added through ReferenceFromRVH().
   ExtensionGalleriesHost(MediaFileSystemContext* file_system_context,
+                         const base::FilePath& profile_path,
+                         const std::string& extension_id,
                          const base::Closure& no_references_callback)
       : file_system_context_(file_system_context),
+        profile_path_(profile_path),
+        extension_id_(extension_id),
         no_references_callback_(no_references_callback),
         rph_refs_(base::Bind(&ExtensionGalleriesHost::CleanUp,
                              base::Unretained(this))) {
   }
 
   // For each gallery in the list of permitted |galleries|, checks if the
-  // device is attached and if so looks up or creates a file system id and
+  // device is attached and if so looks up or creates a file system name and
   // passes the information needed for the renderer to create those file
   // system objects to the |callback|.
   void GetMediaFileSystems(const MediaGalleryPrefIdSet& galleries,
@@ -286,6 +292,20 @@ class ExtensionGalleriesHost
     MediaStorageUtil::FilterAttachedDevices(device_ids, base::Bind(
         &ExtensionGalleriesHost::GetMediaFileSystemsForAttachedDevices, this,
         base::Owned(device_ids), galleries, galleries_info, callback));
+  }
+
+  // Checks if |gallery| is attached and if so, registers the file system and
+  // then calls |callback| with the result.
+  void RegisterMediaFileSystem(
+      const MediaGalleryPrefInfo& gallery,
+      const base::Callback<void(base::File::Error result)>& callback) {
+    // Extract all the device ids so we can make sure they are attached.
+    MediaStorageUtil::DeviceIdSet* device_ids =
+        new MediaStorageUtil::DeviceIdSet;
+    device_ids->insert(gallery.device_id);
+    MediaStorageUtil::FilterAttachedDevices(device_ids, base::Bind(
+        &ExtensionGalleriesHost::RegisterAttachedMediaFileSystem, this,
+        base::Owned(device_ids), gallery, callback));
   }
 
   // Revoke the file system for |id| if this extension has created one for |id|.
@@ -357,15 +377,15 @@ class ExtensionGalleriesHost
       if (!MediaStorageUtil::CanCreateFileSystem(device_id, path))
         continue;
 
-      std::string fsid =
-          file_system_context_->RegisterFileSystem(device_id, path);
-      if (fsid.empty())
+      std::string fs_name = MediaFileSystemBackend::ConstructMountName(
+          profile_path_, extension_id_, pref_id);
+      if (!file_system_context_->RegisterFileSystem(device_id, fs_name, path))
         continue;
 
       MediaFileSystemInfo new_entry(
           gallery_info.GetGalleryDisplayName(),
-          path,
-          fsid,
+          file_system_context_->GetRegisteredPath(fs_name),
+          fs_name,
           pref_id,
           GetTransientIdForRemovableDeviceId(device_id),
           StorageInfo::IsRemovableDevice(device_id),
@@ -381,6 +401,46 @@ class ExtensionGalleriesHost
 
     DCHECK_EQ(pref_id_map_.size(), result.size());
     callback.Run(result);
+  }
+
+  void RegisterAttachedMediaFileSystem(
+      const MediaStorageUtil::DeviceIdSet* attached_device,
+      const MediaGalleryPrefInfo& gallery,
+      const base::Callback<void(base::File::Error result)>& callback) {
+    base::File::Error result = base::File::FILE_ERROR_NOT_FOUND;
+
+    // If rph_refs is empty then we're actually in the middle of shutdown, and
+    // Filter...() lagging which can invoke this method interleaved in the
+    // destruction callback sequence and re-populate pref_id_map_.
+    if (!attached_device->empty() && !rph_refs_.empty()) {
+      std::string fs_name = MediaFileSystemBackend::ConstructMountName(
+          profile_path_, extension_id_, gallery.pref_id);
+      base::FilePath path = gallery.AbsolutePath();
+      const std::string& device_id = gallery.device_id;
+
+      if (ContainsKey(pref_id_map_, gallery.pref_id)) {
+        result = base::File::FILE_OK;
+      } else if (MediaStorageUtil::CanCreateFileSystem(device_id, path) &&
+                 file_system_context_->RegisterFileSystem(device_id, fs_name,
+                                                          path)) {
+        result = base::File::FILE_OK;
+        pref_id_map_[gallery.pref_id] = MediaFileSystemInfo(
+            gallery.GetGalleryDisplayName(),
+            file_system_context_->GetRegisteredPath(fs_name),
+            fs_name,
+            gallery.pref_id,
+            GetTransientIdForRemovableDeviceId(device_id),
+            StorageInfo::IsRemovableDevice(device_id),
+            StorageInfo::IsMediaDevice(device_id));
+      }
+    }
+
+    if (pref_id_map_.empty()) {
+      rph_refs_.Reset();
+      CleanUp();
+    }
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(callback, result));
   }
 
   std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
@@ -405,6 +465,12 @@ class ExtensionGalleriesHost
   // MediaFileSystemRegistry owns |this| and |file_system_context_|, so it's
   // safe to store a raw pointer.
   MediaFileSystemContext* file_system_context_;
+
+  // Path for the active profile.
+  const base::FilePath profile_path_;
+
+  // Id of the extension this host belongs to.
+  const std::string extension_id_;
 
   // A callback to call when the last RVH reference goes away.
   base::Closure no_references_callback_;
@@ -440,28 +506,49 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     return;
   }
 
-  ExtensionGalleriesHostMap::iterator extension_hosts =
-      extension_hosts_map_.find(profile);
-  if (extension_hosts->second.empty())
-    preferences->AddGalleryChangeObserver(this);
-
   ExtensionGalleriesHost* extension_host =
-      extension_hosts->second[extension->id()].get();
-  if (!extension_host) {
-    extension_host = new ExtensionGalleriesHost(
-        file_system_context_.get(),
-        base::Bind(&MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty,
-                   base::Unretained(this),
-                   profile,
-                   extension->id()));
-    extension_hosts_map_[profile][extension->id()] = extension_host;
-  }
+      GetExtensionGalleryHost(profile, preferences, extension->id());
+
   // This must come before the GetMediaFileSystems call to make sure the
   // RVH of the context is referenced before the filesystems are retrieved.
   extension_host->ReferenceFromRVH(rvh);
 
   extension_host->GetMediaFileSystems(galleries, preferences->known_galleries(),
                                       callback);
+}
+
+void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
+    const content::RenderViewHost* rvh,
+    const extensions::Extension* extension,
+    MediaGalleryPrefId pref_id,
+    const base::Callback<void(base::File::Error result)>& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_NE(kInvalidMediaGalleryPrefId, pref_id);
+
+  Profile* profile =
+      Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());
+  MediaGalleriesPreferences* preferences = GetPreferences(profile);
+  MediaGalleriesPrefInfoMap::const_iterator gallery =
+      preferences->known_galleries().find(pref_id);
+  MediaGalleryPrefIdSet permitted_galleries =
+      preferences->GalleriesForExtension(*extension);
+
+  if (gallery == preferences->known_galleries().end() ||
+      !ContainsKey(permitted_galleries, pref_id)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
+    return;
+  }
+
+  ExtensionGalleriesHost* extension_host =
+      GetExtensionGalleryHost(profile, preferences, extension->id());
+
+  // This must come before the GetMediaFileSystems call to make sure the
+  // RVH of the context is referenced before the filesystems are retrieved.
+  extension_host->ReferenceFromRVH(rvh);
+
+  extension_host->RegisterMediaFileSystem(gallery->second, callback);
 }
 
 MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(
@@ -538,41 +625,49 @@ void MediaFileSystemRegistry::OnRemovableStorageDetached(
 class MediaFileSystemRegistry::MediaFileSystemContextImpl
     : public MediaFileSystemContext {
  public:
-  explicit MediaFileSystemContextImpl(MediaFileSystemRegistry* registry)
-      : registry_(registry) {
-    DCHECK(registry_);  // Suppresses unused warning on Android.
-  }
+  MediaFileSystemContextImpl() {}
   virtual ~MediaFileSystemContextImpl() {}
 
-  virtual std::string RegisterFileSystem(
-      const std::string& device_id, const base::FilePath& path) OVERRIDE {
+  virtual bool RegisterFileSystem(const std::string& device_id,
+                                  const std::string& fs_name,
+                                  const base::FilePath& path) OVERRIDE {
     if (StorageInfo::IsMassStorageDevice(device_id)) {
-      return RegisterFileSystemForMassStorage(device_id, path);
+      return RegisterFileSystemForMassStorage(device_id, fs_name, path);
     } else {
-      return RegisterFileSystemForMTPDevice(device_id, path);
+      return RegisterFileSystemForMTPDevice(device_id, fs_name, path);
     }
   }
 
-  virtual void RevokeFileSystem(const std::string& fsid) OVERRIDE {
+  virtual void RevokeFileSystem(const std::string& fs_name) OVERRIDE {
     ImportedMediaGalleryRegistry* imported_registry =
         ImportedMediaGalleryRegistry::GetInstance();
-    if (imported_registry->RevokeImportedFilesystemOnUIThread(fsid))
+    if (imported_registry->RevokeImportedFilesystemOnUIThread(fs_name))
       return;
 
-    IsolatedContext::GetInstance()->RevokeFileSystem(fsid);
+    ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
 
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE, base::Bind(
-            &MTPDeviceMapService::RevokeMTPFileSystem,
-            base::Unretained(MTPDeviceMapService::GetInstance()),
-            fsid));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+        &MTPDeviceMapService::RevokeMTPFileSystem,
+        base::Unretained(MTPDeviceMapService::GetInstance()),
+        fs_name));
+  }
+
+  virtual base::FilePath GetRegisteredPath(
+      const std::string& fs_name) const OVERRIDE {
+    base::FilePath result;
+    if (!ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(fs_name,
+                                                                     &result)) {
+      return base::FilePath();
+    }
+    return result;
   }
 
  private:
   // Registers and returns the file system id for the mass storage device
   // specified by |device_id| and |path|.
-  std::string RegisterFileSystemForMassStorage(
-      const std::string& device_id, const base::FilePath& path) {
+  bool RegisterFileSystemForMassStorage(const std::string& device_id,
+                                        const std::string& fs_name,
+                                        const base::FilePath& path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(StorageInfo::IsMassStorageDevice(device_id));
 
@@ -584,57 +679,52 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     // call tree, probably by having it figure out by device id what
     // registration is needed, or having per-device-type handlers at the
     // next higher level.
-    std::string fsid;
+    bool result = false;
     if (StorageInfo::IsITunesDevice(device_id)) {
-      ImportedMediaGalleryRegistry* imported_registry =
+      ImportedMediaGalleryRegistry* registry =
           ImportedMediaGalleryRegistry::GetInstance();
-      fsid = imported_registry->RegisterITunesFilesystemOnUIThread(path);
+      result = registry->RegisterITunesFilesystemOnUIThread(fs_name, path);
     } else if (StorageInfo::IsPicasaDevice(device_id)) {
-      ImportedMediaGalleryRegistry* imported_registry =
+      ImportedMediaGalleryRegistry* registry =
           ImportedMediaGalleryRegistry::GetInstance();
-      fsid = imported_registry->RegisterPicasaFilesystemOnUIThread(
-          path);
+      result = registry->RegisterPicasaFilesystemOnUIThread(fs_name, path);
     } else if (StorageInfo::IsIPhotoDevice(device_id)) {
-      ImportedMediaGalleryRegistry* imported_registry =
+      ImportedMediaGalleryRegistry* registry =
           ImportedMediaGalleryRegistry::GetInstance();
-      fsid = imported_registry->RegisterIPhotoFilesystemOnUIThread(
-          path);
+      result = registry->RegisterIPhotoFilesystemOnUIThread(fs_name, path);
     } else {
-      std::string fs_name(extension_misc::kMediaFileSystemPathPart);
-      fsid = IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          fileapi::kFileSystemTypeNativeMedia, path, &fs_name);
+      result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+          fs_name, fileapi::kFileSystemTypeNativeMedia,
+          fileapi::FileSystemMountOption(), path);
     }
-    return fsid;
+    return result;
   }
 
-  std::string RegisterFileSystemForMTPDevice(
-      const std::string& device_id, const base::FilePath& path) {
+  bool RegisterFileSystemForMTPDevice(const std::string& device_id,
+                                      const std::string fs_name,
+                                      const base::FilePath& path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 
     // Sanity checks for |path|.
     CHECK(MediaStorageUtil::CanCreateFileSystem(device_id, path));
-    std::string fs_name(extension_misc::kMediaFileSystemPathPart);
-    const std::string fsid =
-        IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-            fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
-    CHECK(!fsid.empty());
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE, base::Bind(
-            &MTPDeviceMapService::RegisterMTPFileSystem,
-            base::Unretained(MTPDeviceMapService::GetInstance()),
-            path.value(), fsid));
-    return fsid;
+    bool result = ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
+        fs_name, fileapi::kFileSystemTypeDeviceMedia,
+        fileapi::FileSystemMountOption(), path);
+    CHECK(result);
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
+        &MTPDeviceMapService::RegisterMTPFileSystem,
+        base::Unretained(MTPDeviceMapService::GetInstance()),
+        path.value(), fs_name));
+    return result;
   }
-
-  MediaFileSystemRegistry* registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemContextImpl);
 };
 
 // Constructor in 'private' section because depends on private class definition.
 MediaFileSystemRegistry::MediaFileSystemRegistry()
-    : file_system_context_(new MediaFileSystemContextImpl(this)) {
+    : file_system_context_(new MediaFileSystemContextImpl) {
   StorageMonitor::GetInstance()->AddObserver(this);
 }
 
@@ -696,6 +786,33 @@ void MediaFileSystemRegistry::OnGalleryRemoved(
       continue;
     gallery_host_it->second->RevokeGalleryByPrefId(pref_id);
   }
+}
+
+ExtensionGalleriesHost* MediaFileSystemRegistry::GetExtensionGalleryHost(
+    Profile* profile,
+    MediaGalleriesPreferences* preferences,
+    const std::string& extension_id) {
+  ExtensionGalleriesHostMap::iterator extension_hosts =
+      extension_hosts_map_.find(profile);
+  // GetPreferences(), which had to be called because preferences is an
+  // argument, ensures that profile is in the map.
+  DCHECK(extension_hosts != extension_hosts_map_.end());
+  if (extension_hosts->second.empty())
+    preferences->AddGalleryChangeObserver(this);
+
+  ExtensionGalleriesHost* result = extension_hosts->second[extension_id].get();
+  if (!result) {
+    result = new ExtensionGalleriesHost(
+        file_system_context_.get(),
+        profile->GetPath(),
+        extension_id,
+        base::Bind(&MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty,
+                   base::Unretained(this),
+                   profile,
+                   extension_id));
+    extension_hosts_map_[profile][extension_id] = result;
+  }
+  return result;
 }
 
 void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(

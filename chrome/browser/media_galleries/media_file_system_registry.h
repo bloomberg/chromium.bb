@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -80,6 +81,14 @@ class MediaFileSystemRegistry
       const extensions::Extension* extension,
       const MediaFileSystemsCallback& callback);
 
+  // Attempt to register the file system for |pref_id|. If |extension| does not
+  // have permission to |pref_id|, sends |callback| FILE_ERROR_NOT_FOUND.
+  void RegisterMediaFileSystemForExtension(
+      const content::RenderViewHost* rvh,
+      const extensions::Extension* extension,
+      MediaGalleryPrefId pref_id,
+      const base::Callback<void(base::File::Error result)>& callback);
+
   // Returns the media galleries preferences for the specified |profile|.
   // Caller is responsible for ensuring that the preferences are initialized
   // before use.
@@ -109,6 +118,12 @@ class MediaFileSystemRegistry
                                    MediaGalleryPrefId pref_id) OVERRIDE;
   virtual void OnGalleryRemoved(MediaGalleriesPreferences* pref,
                                 MediaGalleryPrefId pref_id) OVERRIDE;
+
+  // Look up or create the extension gallery host.
+  ExtensionGalleriesHost* GetExtensionGalleryHost(
+      Profile* profile,
+      MediaGalleriesPreferences* preferences,
+      const std::string& extension_id);
 
   void OnExtensionGalleriesHostEmpty(Profile* profile,
                                      const std::string& extension_id);

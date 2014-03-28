@@ -51,6 +51,12 @@ class ChildProcessSecurityPolicy {
   virtual void GrantCreateReadWriteFile(int child_id,
                                         const base::FilePath& file) = 0;
 
+  // This permission grants copy-into permission for |dir|.
+  virtual void GrantCopyInto(int child_id, const base::FilePath& dir) = 0;
+
+  // This permission grants delete permission for |dir|.
+  virtual void GrantDeleteFrom(int child_id, const base::FilePath& dir) = 0;
+
   // These methods verify whether or not the child process has been granted
   // permissions perform these functions on |file|.
 

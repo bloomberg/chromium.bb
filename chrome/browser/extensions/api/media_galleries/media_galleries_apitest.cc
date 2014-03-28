@@ -195,7 +195,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   // This function makes a single fake gallery. This is needed to test platforms
   // with no default media galleries, such as CHROMEOS. This fake gallery is
   // pre-populated with a test.jpg and test.txt.
-  void MakeSingleFakeGallery() {
+  void MakeSingleFakeGallery(MediaGalleryPrefId* pref_id) {
     ASSERT_FALSE(fake_gallery_temp_dir_.IsValid());
     ASSERT_TRUE(fake_gallery_temp_dir_.CreateUniqueTempDir());
 
@@ -204,15 +204,18 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
     MediaGalleryPrefInfo gallery_info;
     ASSERT_FALSE(preferences->LookUpGalleryByPath(fake_gallery_temp_dir_.path(),
                                                   &gallery_info));
-    preferences->AddGallery(gallery_info.device_id,
-                            gallery_info.path,
-                            MediaGalleryPrefInfo::kAutoDetected,
-                            gallery_info.volume_label,
-                            gallery_info.vendor_name,
-                            gallery_info.model_name,
-                            gallery_info.total_size_in_bytes,
-                            gallery_info.last_attach_time,
-                            0, 0, 0);
+    MediaGalleryPrefId id = preferences->AddGallery(
+        gallery_info.device_id,
+        gallery_info.path,
+        MediaGalleryPrefInfo::kAutoDetected,
+        gallery_info.volume_label,
+        gallery_info.vendor_name,
+        gallery_info.model_name,
+        gallery_info.total_size_in_bytes,
+        gallery_info.last_attach_time,
+        0, 0, 0);
+    if (pref_id)
+      *pref_id = id;
 
     content::RunAllPendingInMessageLoop();
 
@@ -427,7 +430,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MAYBE_MediaGalleriesNoAccess) {
-  MakeSingleFakeGallery();
+  MakeSingleFakeGallery(NULL);
 
   base::ListValue custom_args;
   custom_args.AppendInteger(num_galleries() + 1);
@@ -448,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesRead) {
   RemoveAllGalleries();
-  MakeSingleFakeGallery();
+  MakeSingleFakeGallery(NULL);
   base::ListValue custom_args;
   custom_args.AppendInteger(test_jpg_size());
 
@@ -466,13 +469,13 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MAYBE_MediaGalleriesCopyTo) {
   RemoveAllGalleries();
-  MakeSingleFakeGallery();
+  MakeSingleFakeGallery(NULL);
   ASSERT_TRUE(RunMediaGalleriesTest("copy_to_access")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesDelete) {
-  MakeSingleFakeGallery();
+  MakeSingleFakeGallery(NULL);
   base::ListValue custom_args;
   custom_args.AppendInteger(num_galleries() + 1);
   ASSERT_TRUE(RunMediaGalleriesTestWithArg("delete_access", custom_args))
@@ -584,9 +587,22 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, MAYBE_Scan) {
   ASSERT_TRUE(RunMediaGalleriesTest("scan")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, ToURL) {
+  RemoveAllGalleries();
+  MediaGalleryPrefId pref_id;
+  MakeSingleFakeGallery(&pref_id);
+
+  base::ListValue custom_args;
+  custom_args.AppendInteger(base::checked_cast<int>(pref_id));
+  custom_args.AppendString(
+      browser()->profile()->GetPath().BaseName().MaybeAsASCII());
+
+  ASSERT_TRUE(RunMediaGalleriesTestWithArg("tourl", custom_args)) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, GetMetadata) {
   RemoveAllGalleries();
-  MakeSingleFakeGallery();
+  MakeSingleFakeGallery(NULL);
 
   AddFileToSingleFakeGallery(media::GetTestDataFilePath("90rotation.mp4"));
   AddFileToSingleFakeGallery(media::GetTestDataFilePath("id3_png_test.mp3"));

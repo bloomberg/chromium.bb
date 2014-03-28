@@ -19,7 +19,7 @@ class IOBuffer;
 }
 
 // Asynchronous delegate for media transfer protocol (MTP) device to perform
-// media device isolated file system operations. Class that implements this
+// media device file system operations. Class that implements this
 // delegate does the actual communication with the MTP device.
 // The lifetime of the delegate is managed by the MTPDeviceMapService class.
 // Member functions and callbacks run on the IO thread.

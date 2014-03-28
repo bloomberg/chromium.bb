@@ -116,7 +116,7 @@ bool MediaStorageUtil::CanCreateFileSystem(const std::string& device_id,
   if (type == StorageInfo::MAC_IMAGE_CAPTURE)
     return true;
 
-  return path.IsAbsolute() && !path.ReferencesParent();
+  return !path.empty() && path.IsAbsolute() && !path.ReferencesParent();
 }
 
 // static

@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "content/public/browser/browser_thread.h"
-#include "webkit/browser/fileapi/isolated_context.h"
+#include "webkit/browser/fileapi/external_mount_points.h"
 
 namespace {
 
@@ -85,7 +85,7 @@ MTPDeviceAsyncDelegate* MTPDeviceMapService::GetMTPDeviceAsyncDelegate(
     const std::string& filesystem_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   base::FilePath device_path;
-  if (!fileapi::IsolatedContext::GetInstance()->GetRegisteredPath(
+  if (!fileapi::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
           filesystem_id, &device_path)) {
     return NULL;
   }
