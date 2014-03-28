@@ -71,7 +71,7 @@ void RenderLayerClipper::updateClipRects(const ClipRectsContext& clipRectsContex
 
     // For transformed layers, the root layer was shifted to be us, so there is no need to
     // examine the parent. We want to cache clip rects with us as the root.
-    RenderLayer* parentLayer = clipRectsContext.rootLayer != m_renderer->layer() ? m_renderer->layer()->parent() : 0;
+    RenderLayer* parentLayer = !isClippingRootForContext(clipRectsContext) ? m_renderer->layer()->parent() : 0;
     if (parentLayer)
         parentLayer->clipper().updateClipRects(clipRectsContext);
 
@@ -169,7 +169,9 @@ LayoutRect RenderLayerClipper::localClipRect() const
 void RenderLayerClipper::calculateRects(const ClipRectsContext& clipRectsContext, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
     ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot) const
 {
-    if (clipRectsContext.rootLayer != m_renderer->layer() && m_renderer->layer()->parent()) {
+    bool isClippingRoot = isClippingRootForContext(clipRectsContext);
+
+    if (!isClippingRoot && m_renderer->layer()->parent()) {
         backgroundRect = backgroundClipRect(clipRectsContext);
         backgroundRect.move(roundedIntSize(clipRectsContext.subPixelAccumulation));
         backgroundRect.intersect(paintDirtyRect);
@@ -190,7 +192,7 @@ void RenderLayerClipper::calculateRects(const ClipRectsContext& clipRectsContext
     // Update the clip rects that will be passed to child layers.
     if (m_renderer->hasOverflowClip()) {
         // This layer establishes a clip of some kind.
-        if (m_renderer->layer() != clipRectsContext.rootLayer || clipRectsContext.respectOverflowClip == RespectOverflowClip) {
+        if (!isClippingRoot || clipRectsContext.respectOverflowClip == RespectOverflowClip) {
             foregroundRect.intersect(toRenderBox(m_renderer)->overflowClipRect(offset, clipRectsContext.overlayScrollbarSizeRelevancy));
             if (m_renderer->style()->hasBorderRadius())
                 foregroundRect.setHasRadius(true);
@@ -207,12 +209,12 @@ void RenderLayerClipper::calculateRects(const ClipRectsContext& clipRectsContext
             LayoutRect layerBoundsWithVisualOverflow = toRenderBox(m_renderer)->visualOverflowRect();
             toRenderBox(m_renderer)->flipForWritingMode(layerBoundsWithVisualOverflow); // Layers are in physical coordinates, so the overflow has to be flipped.
             layerBoundsWithVisualOverflow.moveBy(offset);
-            if (m_renderer->layer() != clipRectsContext.rootLayer || clipRectsContext.respectOverflowClip == RespectOverflowClip)
+            if (!isClippingRoot || clipRectsContext.respectOverflowClip == RespectOverflowClip)
                 backgroundRect.intersect(layerBoundsWithVisualOverflow);
         } else {
             LayoutRect bounds = toRenderBox(m_renderer)->borderBoxRect();
             bounds.moveBy(offset);
-            if (m_renderer->layer() != clipRectsContext.rootLayer || clipRectsContext.respectOverflowClip == RespectOverflowClip)
+            if (!isClippingRoot || clipRectsContext.respectOverflowClip == RespectOverflowClip)
                 backgroundRect.intersect(bounds);
         }
     }
@@ -238,9 +240,11 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& clipRectsCon
     ClipRectsType clipRectsType = clipRectsContext.clipRectsType;
     bool useCached = clipRectsType != TemporaryClipRects;
 
+    bool isClippingRoot = isClippingRootForContext(clipRectsContext);
+
     // For transformed layers, the root layer was shifted to be us, so there is no need to
     // examine the parent. We want to cache clip rects with us as the root.
-    RenderLayer* parentLayer = clipRectsContext.rootLayer != m_renderer->layer() ? m_renderer->layer()->parent() : 0;
+    RenderLayer* parentLayer = !isClippingRoot ? m_renderer->layer()->parent() : 0;
 
     // Ensure that our parent's clip has been calculated so that we can examine the values.
     if (parentLayer) {
@@ -268,7 +272,7 @@ void RenderLayerClipper::calculateClipRects(const ClipRectsContext& clipRectsCon
     }
 
     // Update the clip rects that will be passed to child layers.
-    if ((m_renderer->hasOverflowClip() && (clipRectsContext.respectOverflowClip == RespectOverflowClip || m_renderer->layer() != clipRectsContext.rootLayer)) || m_renderer->hasClip()) {
+    if ((m_renderer->hasOverflowClip() && (clipRectsContext.respectOverflowClip == RespectOverflowClip || !isClippingRoot)) || m_renderer->hasClip()) {
         // This layer establishes a clip of some kind.
 
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
@@ -345,8 +349,19 @@ ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& clipRect
     return backgroundClipRect;
 }
 
+bool RenderLayerClipper::isClippingRootForContext(const ClipRectsContext& clipRectsContext) const
+{
+    return clipRectsContext.rootLayer == m_renderer->layer();
+}
+
 void RenderLayerClipper::parentClipRects(const ClipRectsContext& clipRectsContext, ClipRects& clipRects) const
 {
+    // The root is not clipped.
+    if (isClippingRootForContext(clipRectsContext)) {
+        clipRects.reset(PaintInfo::infiniteRect());
+        return;
+    }
+
     ASSERT(m_renderer->layer()->parent());
 
     RenderLayerClipper& parentClipper = m_renderer->layer()->parent()->clipper();

@@ -115,6 +115,8 @@ private:
     // The layer relative to which clipping rects for this layer are computed.
     RenderLayer* clippingRootForPainting() const;
 
+    bool isClippingRootForContext(const ClipRectsContext&) const;
+
     // FIXME: Could this be a RenderBox?
     RenderLayerModelObject* m_renderer;
     OwnPtr<ClipRectsCache> m_clipRectsCache;
