@@ -31,14 +31,20 @@ class ToolbarModel {
 
   virtual ~ToolbarModel();
 
-  // Returns the text for the current page's URL. This will have been formatted
-  // for display to the user:
-  //   - Some characters may be unescaped.
-  //   - The scheme and/or trailing slash may be dropped.
+  // Returns the text to be displayed in the toolbar for the current page.
+  // The text is formatted in various ways:
   //   - If the current page's URL is a search URL for the user's default search
   //     engine, the query will be extracted and returned for display instead
   //     of the URL.
+  //   - If the origin chip is enabled and visible, the text will be empty.
+  //   - Otherwise, the text will contain the URL returned by GetFormattedURL().
   virtual base::string16 GetText() const = 0;
+
+  // Returns a formatted URL for display in the toolbar. The formatting
+  // includes:
+  //   - Some characters may be unescaped.
+  //   - The scheme and/or trailing slash may be dropped.
+  virtual base::string16 GetFormattedURL() const = 0;
 
   // Some search URLs bundle a special "corpus" param that we can extract and
   // display next to users' search terms in cases where we'd show the search

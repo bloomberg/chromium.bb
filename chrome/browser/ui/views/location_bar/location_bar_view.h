@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/button.h"
@@ -56,6 +57,10 @@ namespace content {
 struct SSLStatus;
 }
 
+namespace gfx {
+class SlideAnimation;
+}
+
 namespace views {
 class BubbleDelegateView;
 class ImageButton;
@@ -80,6 +85,7 @@ class LocationBarView : public LocationBar,
                         public views::DragController,
                         public OmniboxEditController,
                         public DropdownBarHostDelegate,
+                        public gfx::AnimationDelegate,
                         public TemplateURLServiceObserver,
                         public content::NotificationObserver,
                         public SearchModelObserver {
@@ -91,8 +97,8 @@ class LocationBarView : public LocationBar,
   virtual void SetFocusAndSelection(bool select_all) OVERRIDE;
   virtual void SetAnimationOffset(int offset) OVERRIDE;
 
-  // Returns the offset used while animating.
-  int animation_offset() const { return animation_offset_; }
+  // Returns the offset used during dropdown animation.
+  int dropdown_animation_offset() const { return dropdown_animation_offset_; }
 
   class Delegate {
    public:
@@ -255,6 +261,7 @@ class LocationBarView : public LocationBar,
   virtual void Update(const content::WebContents* contents) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
+  virtual void ShowURL() OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
@@ -352,10 +359,17 @@ class LocationBarView : public LocationBar,
   // Space between the edge and a bubble.
   static const int kBubblePadding;
 
- protected:
+ private:
+  // views::View:
   virtual void OnFocus() OVERRIDE;
 
- private:
+  // OmniboxEditController:
+  virtual void HideURL() OVERRIDE;
+
+  // gfx::AnimationDelegate:
+  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
+
   typedef std::vector<ContentSettingImageView*> ContentSettingViews;
 
   friend class PageActionImageView;
@@ -415,6 +429,10 @@ class LocationBarView : public LocationBar,
   // using an accessibility API (typically automation software, screen readers
   // don't normally use this). Sets the value and clears the selection.
   void AccessibilitySetValue(const base::string16& new_value);
+
+  // Origin chip animation control methods.
+  void OnShowURLAnimationEnded();
+  void OnHideURLAnimationEnded();
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
@@ -511,11 +529,18 @@ class LocationBarView : public LocationBar,
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
 
-  // While animating, the host clips the widget and draws only the bottom
-  // part of it. The view needs to know the pixel offset at which we are drawing
-  // the widget so that we can draw the curved edges that attach to the toolbar
-  // in the right location.
-  int animation_offset_;
+  // During dropdown animation, the host clips the widget and draws only the
+  // bottom part of it. The view needs to know the pixel offset at which we are
+  // drawing the widget so that we can draw the curved edges that attach to the
+  // toolbar in the right location.
+  int dropdown_animation_offset_;
+
+  // Origin chip animations.
+  scoped_ptr<gfx::SlideAnimation> show_url_animation_;
+  scoped_ptr<gfx::SlideAnimation> hide_url_animation_;
+
+  // Text label shown only during origin chip animations.
+  views::Label* animated_host_label_;
 
   // Used to register for notifications received by NotificationObserver.
   content::NotificationRegistrar registrar_;

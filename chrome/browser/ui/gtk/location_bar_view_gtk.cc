@@ -635,6 +635,10 @@ void LocationBarViewGtk::OnSetFocus() {
   OnChanged();
 }
 
+void LocationBarViewGtk::ShowURL() {
+  omnibox_view_->ShowURL();
+}
+
 InstantController* LocationBarViewGtk::GetInstant() {
   return browser_->instant_controller() ?
       browser_->instant_controller()->instant() : NULL;
@@ -1569,6 +1573,10 @@ void LocationBarViewGtk::UpdateStarIcon() {
 
 bool LocationBarViewGtk::ShouldOnlyShowLocation() {
   return !browser_->is_type_tabbed();
+}
+
+void LocationBarViewGtk::HideURL() {
+  omnibox_view_->HideURL();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

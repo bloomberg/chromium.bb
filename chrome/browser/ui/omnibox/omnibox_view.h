@@ -137,6 +137,9 @@ class OmniboxView {
   // selects all.
   void ShowURL();
 
+  // Enables search term replacement and reverts the omnibox.
+  void HideURL();
+
   // Re-enables search term replacement on the ToolbarModel, and reverts the
   // edit and popup back to their unedited state (permanent text showing, popup
   // closed, no user input in progress).

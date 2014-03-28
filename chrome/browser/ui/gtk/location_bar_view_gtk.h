@@ -112,6 +112,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual void Update(const content::WebContents* contents) OVERRIDE;
   virtual void OnChanged() OVERRIDE;
   virtual void OnSetFocus() OVERRIDE;
+  virtual void ShowURL() OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
@@ -211,6 +212,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   };
 
  private:
+  // OmniboxEditController:
+  virtual void HideURL() OVERRIDE;
+
   class PageActionViewGtk :
        public ExtensionActionIconFactory::Observer,
        public content::NotificationObserver,

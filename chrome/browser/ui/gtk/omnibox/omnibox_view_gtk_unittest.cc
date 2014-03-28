@@ -26,10 +26,12 @@ class OmniboxEditControllerMock : public OmniboxEditController {
   MOCK_METHOD1(Update, void(const content::WebContents* contents));
   MOCK_METHOD0(OnChanged, void());
   MOCK_METHOD0(OnSetFocus, void());
+  MOCK_METHOD0(ShowURL, void());
   MOCK_METHOD0(GetInstant, InstantController*());
   MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD0(GetToolbarModel, ToolbarModel*());
   MOCK_CONST_METHOD0(GetToolbarModel, ToolbarModel*());
+  MOCK_METHOD0(HideURL, void());
 };
 }  // namespace
 
