@@ -308,6 +308,9 @@ class TitleCard : public views::View {
 
     title_label_ = new views::Label(l10n_util::GetStringUTF16(message_id));
     title_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    const gfx::FontList& medium_font_list =
+        rb->GetFontList(ui::ResourceBundle::MediumFont);
+    title_label_->SetFontList(medium_font_list);
 
     AddChildView(back_button_);
     AddChildView(title_label_);
@@ -1015,20 +1018,27 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 views::View* ProfileChooserView::CreateGaiaSigninView(
     bool add_secondary_account) {
   views::View* view = new views::View();
-  int available_width = kFixedGaiaViewWidth - 2 * views::kButtonHEdgeMarginNew;
-  views::GridLayout* layout = CreateSingleColumnLayout(view, available_width);
-  layout->SetInsets(views::kButtonVEdgeMarginNew,
-                    views::kButtonHEdgeMarginNew,
-                    views::kButtonVEdgeMarginNew,
-                    views::kButtonHEdgeMarginNew);
+  views::GridLayout* layout =
+      CreateSingleColumnLayout(view, kFixedGaiaViewWidth);
 
   // Adds title.
-  layout->StartRow(1, 0);
-  layout->AddView(new TitleCard(
+  views::View* padded_title = new views::View();
+  int available_width = kFixedGaiaViewWidth - 2 * views::kButtonHEdgeMarginNew;
+  views::GridLayout* padded_layout = CreateSingleColumnLayout(
+      padded_title, available_width);
+  padded_layout->SetInsets(views::kButtonVEdgeMarginNew,
+                           views::kButtonHEdgeMarginNew,
+                           views::kButtonVEdgeMarginNew,
+                           views::kButtonHEdgeMarginNew);
+  padded_layout->StartRow(1, 0);
+  padded_layout->AddView(new TitleCard(
       add_secondary_account ? IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE :
                               IDS_PROFILES_GAIA_SIGNIN_TITLE,
       this, &gaia_signin_cancel_button_));
-  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+
+  layout->StartRow(1, 0);
+  layout->AddView(padded_title);
+  layout->StartRow(1, 0);
   layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
 
   // Adds Gaia signin webview
@@ -1040,11 +1050,12 @@ views::View* ProfileChooserView::CreateGaiaSigninView(
   GURL url(signin::GetPromoURL(
       source, false /* auto_close */, true /* is_constrained */));
   web_view->LoadInitialURL(url);
-  web_view->SetPreferredSize(gfx::Size(available_width, kFixedGaiaViewHeight));
+  web_view->SetPreferredSize(
+      gfx::Size(kFixedGaiaViewWidth, kFixedGaiaViewHeight));
 
   layout->StartRow(1, 0);
   layout->AddView(web_view);
-  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+
   return view;
 }
 
