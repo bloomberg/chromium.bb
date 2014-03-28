@@ -229,4 +229,14 @@ bool RenderMultiColumnFlowThread::addForcedRegionBreak(LayoutUnit offset, Render
     return false;
 }
 
+bool RenderMultiColumnFlowThread::isPageLogicalHeightKnown() const
+{
+    for (RenderBox* renderer = parentBox()->lastChildBox(); renderer; renderer = renderer->previousSiblingBox()) {
+        if (renderer->isRenderMultiColumnSet())
+            return toRenderMultiColumnSet(renderer)->computedColumnHeight();
+    }
+    // A column set hasn't been created yet. Height may already be known if column-fill is 'auto', though.
+    return !requiresBalancing();
+}
+
 }

@@ -58,6 +58,7 @@ private:
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) OVERRIDE;
     virtual void updateMinimumPageHeight(LayoutUnit offset, LayoutUnit minHeight) OVERRIDE;
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) OVERRIDE;
+    virtual bool isPageLogicalHeightKnown() const OVERRIDE;
 
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnWidth; // The used value of column-width
