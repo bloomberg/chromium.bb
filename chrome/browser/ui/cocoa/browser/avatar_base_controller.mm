@@ -97,7 +97,8 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
   return button_.get();
 }
 
-- (void)showAvatarBubble:(NSView*)anchor {
+- (void)showAvatarBubble:(NSView*)anchor
+                withMode:(BrowserWindow::AvatarBubbleMode)mode {
   if (menuController_)
     return;
 
@@ -121,9 +122,14 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
 
   // |menuController_| will automatically release itself on close.
   if (switches::IsNewProfileManagement()) {
+    BubbleViewMode viewMode =
+        mode == BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT ?
+        PROFILE_CHOOSER_VIEW :
+        ACCOUNT_MANAGEMENT_VIEW;
     menuController_ =
-      [[ProfileChooserController alloc] initWithBrowser:browser_
-                                             anchoredAt:point];
+        [[ProfileChooserController alloc] initWithBrowser:browser_
+                                               anchoredAt:point
+                                                 withMode:viewMode];
   } else {
     menuController_ =
       [[AvatarMenuBubbleController alloc] initWithBrowser:browser_
@@ -142,7 +148,8 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
 
 - (IBAction)buttonClicked:(id)sender {
   DCHECK_EQ(sender, button_.get());
-  [self showAvatarBubble:button_];
+  [self showAvatarBubble:button_
+                withMode:BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT];
 }
 
 - (void)bubbleWillClose:(NSNotification*)notif {

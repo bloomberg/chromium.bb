@@ -9,6 +9,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/browser_window.h"
 
 @class BaseBubbleController;
 class Browser;
@@ -38,8 +39,9 @@ class ProfileInfoUpdateObserver;
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;
 
-// Shows the avatar bubble.
-- (void)showAvatarBubble:(NSView*)anchor;
+// Shows the avatar bubble in the given mode.
+- (void)showAvatarBubble:(NSView*)anchor
+                withMode:(BrowserWindow::AvatarBubbleMode)mode;
 
 @end
 

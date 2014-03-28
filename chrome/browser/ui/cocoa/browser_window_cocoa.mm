@@ -708,7 +708,7 @@ void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
 void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode) {
   AvatarBaseController* controller = [controller_ avatarButtonController];
-  [controller showAvatarBubble:[controller buttonView]];
+  [controller showAvatarBubble:[controller buttonView] withMode:mode];
 }
 
 void BrowserWindowCocoa::ShowPasswordGenerationBubble(

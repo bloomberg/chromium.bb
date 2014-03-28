@@ -627,7 +627,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   webContents_.reset();
 }
 
-- (id)initWithBrowser:(Browser*)browser anchoredAt:(NSPoint)point {
+- (id)initWithBrowser:(Browser*)browser
+           anchoredAt:(NSPoint)point
+             withMode:(BubbleViewMode)mode {
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
@@ -638,7 +640,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                        parentWindow:browser->window()->GetNativeWindow()
                          anchoredAt:point])) {
     browser_ = browser;
-    viewMode_ = PROFILE_CHOOSER_VIEW;
+    viewMode_ = mode;
     tutorialShowing_ = false;
     observer_.reset(new ActiveProfileObserverBridge(self, browser_));
 

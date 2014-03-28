@@ -65,9 +65,10 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   void StartProfileChooserController() {
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
-    controller_.reset(
-        [[ProfileChooserController alloc] initWithBrowser:browser()
-                                               anchoredAt:point]);
+    controller_.reset([[ProfileChooserController alloc]
+        initWithBrowser:browser()
+             anchoredAt:point
+               withMode:PROFILE_CHOOSER_VIEW]);
     [controller_ showWindow:nil];
   }
 
