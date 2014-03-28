@@ -19,6 +19,9 @@
                 run('video.setMediaKeys(null)');
                 testExpected('video.mediaKeys', null);
 
+                consoleWrite("Try setting mediaKeys to the wrong type of object.");
+                testException('video.setMediaKeys(new Date())', '"TypeError: Failed to execute \'setMediaKeys\' on \'HTMLMediaElement\': parameter 1 is not of type \'MediaKeys\'."');
+
                 consoleWrite("Create a MediaKeys object and assign it to video.");
                 run('mediaKeys = new MediaKeys("org.w3.clearkey")');
                 testExpected('mediaKeys', null, '!=');
