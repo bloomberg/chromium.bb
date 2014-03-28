@@ -20,10 +20,6 @@
 #include "net/quic/quic_session_key.h"
 #include "net/quic/quic_utils.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using base::StringPiece;
 using std::find;
 using std::make_pair;
@@ -33,7 +29,8 @@ using std::vector;
 
 namespace net {
 
-QuicCryptoClientConfig::QuicCryptoClientConfig() {}
+QuicCryptoClientConfig::QuicCryptoClientConfig()
+    : disable_ecdsa_(false) {}
 
 QuicCryptoClientConfig::~QuicCryptoClientConfig() {
   STLDeleteValues(&cached_states_);
@@ -258,6 +255,8 @@ void QuicCryptoClientConfig::SetDefaults() {
     aead.push_back(kCC12);
   }
   aead.push_back(kAESG);
+
+  disable_ecdsa_ = false;
 }
 
 QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
@@ -294,14 +293,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   }
 
   if (server_key.is_https()) {
-    // Don't request ECDSA proofs on platforms that do not support ECDSA
-    // certificates.
-    bool disableECDSA = false;
-#if defined(OS_WIN)
-    if (base::win::GetVersion() < base::win::VERSION_VISTA)
-      disableECDSA = true;
-#endif
-    if (disableECDSA) {
+    if (disable_ecdsa_) {
       out->SetTaglist(kPDMD, kX59R, 0);
     } else {
       out->SetTaglist(kPDMD, kX509, 0);
@@ -705,6 +697,10 @@ void QuicCryptoClientConfig::PreferAesGcm() {
     aead.erase(pos);
     aead.insert(aead.begin(), kAESG);
   }
+}
+
+void QuicCryptoClientConfig::DisableEcdsa() {
+  disable_ecdsa_ = true;
 }
 
 void QuicCryptoClientConfig::PopulateFromCanonicalConfig(

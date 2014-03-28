@@ -74,6 +74,35 @@ TEST(QuicCryptoClientConfigTest, PreferAesGcm) {
   EXPECT_EQ(kAESG, config.aead[0]);
 }
 
+TEST(QuicCryptoClientConfigTest, InchoateChloSecure) {
+  QuicCryptoClientConfig::CachedState state;
+  QuicCryptoClientConfig config;
+  QuicCryptoNegotiatedParameters params;
+  CryptoHandshakeMessage msg;
+  QuicSessionKey server_key("www.google.com", 443, true, kPrivacyModeDisabled);
+  config.FillInchoateClientHello(server_key, QuicVersionMax(), &state,
+                                 &params, &msg);
+
+  QuicTag pdmd;
+  EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));
+  EXPECT_EQ(kX509, pdmd);
+}
+
+TEST(QuicCryptoClientConfigTest, InchoateChloSecureNoEcdsa) {
+  QuicCryptoClientConfig::CachedState state;
+  QuicCryptoClientConfig config;
+  config.DisableEcdsa();
+  QuicCryptoNegotiatedParameters params;
+  CryptoHandshakeMessage msg;
+  QuicSessionKey server_key("www.google.com", 443, true, kPrivacyModeDisabled);
+  config.FillInchoateClientHello(server_key, QuicVersionMax(), &state,
+                                 &params, &msg);
+
+  QuicTag pdmd;
+  EXPECT_EQ(QUIC_NO_ERROR, msg.GetUint32(kPDMD, &pdmd));
+  EXPECT_EQ(kX59R, pdmd);
+}
+
 TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
   QuicVersionVector supported_versions = QuicSupportedVersions();
   if (supported_versions.size() == 1) {

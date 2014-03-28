@@ -229,6 +229,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // called after SetDefaults().
   void PreferAesGcm();
 
+  // Disables the use of ECDSA for proof verification.
+  // Call this method on platforms that do not support ECDSA.
+  // TODO(rch): remove this method when we drop support for Windows XP.
+  void DisableEcdsa();
+
  private:
   typedef std::map<QuicSessionKey, CachedState*> CachedStateMap;
 
@@ -254,6 +259,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   scoped_ptr<ProofVerifier> proof_verifier_;
   scoped_ptr<ChannelIDSigner> channel_id_signer_;
+
+  // True if ECDSA should be disabled.
+  bool disable_ecdsa_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientConfig);
 };

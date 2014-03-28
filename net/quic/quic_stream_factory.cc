@@ -35,6 +35,10 @@
 #include "net/quic/quic_session_key.h"
 #include "net/socket/client_socket_factory.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using std::string;
 using std::vector;
 
@@ -54,6 +58,15 @@ const uint64 kBrokenAlternateProtocolDelaySecs = 300;
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
+}
+
+bool IsEcdsaSupported() {
+#if defined(OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return false;
+#endif
+
+  return true;
 }
 
 }  // namespace
@@ -397,9 +410,10 @@ QuicStreamFactory::QuicStreamFactory(
   crypto_config_.AddCanonicalSuffix(".googlevideo.com");
   crypto_config_.SetProofVerifier(new ProofVerifierChromium(cert_verifier));
   base::CPU cpu;
-  if (cpu.has_aesni() && cpu.has_avx()) {
+  if (cpu.has_aesni() && cpu.has_avx())
     crypto_config_.PreferAesGcm();
-  }
+  if (!IsEcdsaSupported())
+    crypto_config_.DisableEcdsa();
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
