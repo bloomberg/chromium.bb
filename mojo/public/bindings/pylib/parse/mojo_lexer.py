@@ -14,22 +14,38 @@ try:
   from ply.lex import TOKEN
 except ImportError:
   module_path, module_name = os.path.split(__file__)
-  third_party = os.path.join(
-      module_path, os.pardir, os.pardir, os.pardir, os.pardir, 'third_party')
+  third_party = os.path.join(module_path, os.pardir, os.pardir, os.pardir,
+                             os.pardir, os.pardir, 'third_party')
   sys.path.append(third_party)
   # pylint: disable=F0401
   from ply.lex import TOKEN
 
 
+class LexError(Exception):
+  def __init__(self, filename, lineno, msg):
+    self.filename = filename
+    self.lineno = lineno
+    self.msg = msg
+
+  def __str__(self):
+    return "%s:%d: Error: %s" % (self.filename, self.lineno, self.msg)
+
+  def __repr__(self):
+    return str(self)
+
+
 class Lexer(object):
+
+  def __init__(self, filename):
+    self.filename = filename
+
   ######################--   PRIVATE   --######################
 
   ##
   ## Internal auxiliary methods
   ##
   def _error(self, msg, token):
-    print('%s at line %d' % (msg, token.lineno))
-    self.lexer.skip(1)
+    raise LexError(self.filename, token.lineno, msg)
 
   ##
   ## Reserved keywords
@@ -192,7 +208,7 @@ class Lexer(object):
   t_LBRACE            = r'\{'
   t_RBRACE            = r'\}'
   t_COMMA             = r','
-  t_DOT               = r'.'
+  t_DOT               = r'\.'
   t_SEMI              = r';'
 
   t_STRING_LITERAL    = string_literal

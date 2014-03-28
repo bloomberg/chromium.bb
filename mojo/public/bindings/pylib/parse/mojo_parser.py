@@ -345,7 +345,7 @@ class Parser(object):
 
 
 def Parse(source, filename):
-  lexer = Lexer()
+  lexer = Lexer(filename)
   parser = Parser(lexer, source, filename)
 
   lex.lex(object=lexer)

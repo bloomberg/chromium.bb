@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import mojo_lexer
 import mojo_parser
 import unittest
 
@@ -92,6 +93,22 @@ enum MyEnum {
       'MY_ENUM_5',
       ('EXPRESSION', ['1', '+', '2', '*', '2']))])])]
     self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
+
+  def testNoConditionals(self):
+    """Tests that ?: is not allowed."""
+    source = """\
+module my_module {
+
+enum MyEnum {
+  MY_ENUM_1 = 1 ? 2 : 3
+};
+
+}  // my_module
+"""
+    with self.assertRaisesRegexp(
+        mojo_lexer.LexError,
+        r"^my_file\.mojom:4: Error: Illegal character '\?'$"):
+      mojo_parser.Parse(source, "my_file.mojom")
 
 
 if __name__ == "__main__":

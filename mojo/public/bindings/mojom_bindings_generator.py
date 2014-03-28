@@ -16,6 +16,7 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, os.path.join(script_dir, "pylib"))
 
 from generate import mojom_data
+from parse import mojo_lexer
 from parse import mojo_parser
 from parse import mojo_translate
 
@@ -73,7 +74,7 @@ def ProcessFile(args, generator_modules, filename, processed_files={},
 
   try:
     tree = mojo_parser.Parse(source, filename)
-  except mojo_parser.ParseError as e:
+  except (mojo_lexer.LexError, mojo_parser.ParseError) as e:
     print e
     _PrintImportStack(imported_filename_stack + [filename])
     sys.exit(1)
