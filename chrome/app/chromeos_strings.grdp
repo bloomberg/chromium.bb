@@ -4756,6 +4756,12 @@ Battery full
   <message name="IDS_KIOSK_OFFLINE_MESSAGE" desc="An offline message that shows up when a kiosk app can't launch without network connectivity.">
     Please connect to the Internet to launch your app in kiosk mode.
   </message>
+  <message name="IDS_LOGIN_NETWORK_RESTORED_TITLE" desc="An message title shown when network connectivity is restored during kiosk app launch.">
+    Network connectivity restored
+  </message>
+  <message name="IDS_KIOSK_ONLINE_MESSAGE" desc="An message that shows up when a kiosk app is ready to launch after established network connectivity.">
+    Your network connectivity is restored. Please select a different network or press 'Continue' button below to launch your kiosk app.
+  </message>
   <message name="IDS_UPDATE_OFFLINE_MESSAGE" desc="An offline message that shows up in the OOBE update screen.">
     Please connect to the Internet to update your Chromebook.
   </message>

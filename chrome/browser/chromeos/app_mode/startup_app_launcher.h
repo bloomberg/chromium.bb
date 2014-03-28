@@ -50,6 +50,7 @@ class StartupAppLauncher
     virtual void OnReadyToLaunch() = 0;
     virtual void OnLaunchSucceeded() = 0;
     virtual void OnLaunchFailed(KioskAppLaunchError::Error error) = 0;
+    virtual bool IsShowingNetworkConfigScreen() = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -70,6 +71,9 @@ class StartupAppLauncher
 
   // Launches the app after the initialization is successful.
   void LaunchApp();
+
+  // Restarts launcher;
+  void RestartLauncher();
 
  private:
   // OAuth parameters from /home/chronos/kiosk_auth file.

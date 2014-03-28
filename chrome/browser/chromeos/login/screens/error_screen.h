@@ -47,7 +47,8 @@ class ErrorScreen : public WizardScreen,
     ERROR_STATE_PORTAL,
     ERROR_STATE_OFFLINE,
     ERROR_STATE_PROXY,
-    ERROR_STATE_AUTH_EXT_TIMEOUT
+    ERROR_STATE_AUTH_EXT_TIMEOUT,
+    ERROR_STATE_KIOSK_ONLINE
   };
 
   ErrorScreen(ScreenObserver* screen_observer, ErrorScreenActor* actor);

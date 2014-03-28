@@ -36,6 +36,8 @@
 /** @const */ var ACCELERATOR_DEVICE_REQUISITION_REMORA =
     'device_requisition_remora';
 /** @const */ var ACCELERATOR_APP_LAUNCH_BAILOUT = 'app_launch_bailout';
+/** @const */ var ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG =
+    'app_launch_network_config';
 
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
@@ -255,6 +257,10 @@ cr.define('cr.ui.login', function() {
         var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('cancelAppLaunch');
+      } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
+        var currentStepId = this.screens_[this.currentStep_];
+        if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
+          chrome.send('networkConfigRequest');
       }
 
       if (!this.forceKeyboardFlow_)
