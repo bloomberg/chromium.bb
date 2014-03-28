@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/generated_resources.h"
@@ -27,21 +26,15 @@ namespace chrome {
 
 namespace {
 
-// Multiple SimpleMessageBoxViews can show up at the same time. Each of these
-// start a nested message-loop. However, these SimpleMessageBoxViews can be
-// deleted in any order. This creates problems if a box in an inner-loop gets
-// destroyed before a box in an outer-loop. So to avoid this, ref-counting is
-// used so that the SimpleMessageBoxViews gets deleted at the right time.
-class SimpleMessageBoxViews : public views::DialogDelegate,
-                              public base::RefCounted<SimpleMessageBoxViews> {
+class SimpleMessageBoxViews : public views::DialogDelegate {
  public:
   SimpleMessageBoxViews(const base::string16& title,
                         const base::string16& message,
                         MessageBoxType type,
                         const base::string16& yes_text,
-                        const base::string16& no_text);
-
-  MessageBoxResult result() const { return result_; }
+                        const base::string16& no_text,
+                        MessageBoxResult* result);
+  virtual ~SimpleMessageBoxViews();
 
   // Overridden from views::DialogDelegate:
   virtual int GetDialogButtons() const OVERRIDE;
@@ -59,8 +52,6 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
  private:
-  friend class base::RefCounted<SimpleMessageBoxViews>;
-  virtual ~SimpleMessageBoxViews();
 
   // This terminates the nested message-loop.
   void Done();
@@ -69,7 +60,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   const MessageBoxType type_;
   base::string16 yes_text_;
   base::string16 no_text_;
-  MessageBoxResult result_;
+  MessageBoxResult* result_;
   views::MessageBoxView* message_box_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
@@ -82,16 +73,16 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
                                              const base::string16& message,
                                              MessageBoxType type,
                                              const base::string16& yes_text,
-                                             const base::string16& no_text)
+                                             const base::string16& no_text,
+                                             MessageBoxResult* result)
     : window_title_(title),
       type_(type),
       yes_text_(yes_text),
       no_text_(no_text),
-      result_(MESSAGE_BOX_RESULT_NO),
+      result_(result),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))) {
-  AddRef();
-
+  CHECK(result_);
   if (yes_text_.empty()) {
     if (type_ == MESSAGE_BOX_TYPE_QUESTION)
       yes_text_ =
@@ -111,6 +102,9 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
   }
 }
 
+SimpleMessageBoxViews::~SimpleMessageBoxViews() {
+}
+
 int SimpleMessageBoxViews::GetDialogButtons() const {
   if (type_ == MESSAGE_BOX_TYPE_QUESTION ||
       type_ == MESSAGE_BOX_TYPE_OK_CANCEL) {
@@ -128,13 +122,13 @@ base::string16 SimpleMessageBoxViews::GetDialogButtonLabel(
 }
 
 bool SimpleMessageBoxViews::Cancel() {
-  result_ = MESSAGE_BOX_RESULT_NO;
+  *result_ = MESSAGE_BOX_RESULT_NO;
   Done();
   return true;
 }
 
 bool SimpleMessageBoxViews::Accept() {
-  result_ = MESSAGE_BOX_RESULT_YES;
+  *result_ = MESSAGE_BOX_RESULT_YES;
   Done();
   return true;
 }
@@ -144,7 +138,7 @@ base::string16 SimpleMessageBoxViews::GetWindowTitle() const {
 }
 
 void SimpleMessageBoxViews::DeleteDelegate() {
-  Release();
+  delete this;
 }
 
 ui::ModalType SimpleMessageBoxViews::GetModalType() const {
@@ -165,9 +159,6 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, private:
-
-SimpleMessageBoxViews::~SimpleMessageBoxViews() {
-}
 
 void SimpleMessageBoxViews::Done() {
   aura::Window* window = GetWidget()->GetNativeView();
@@ -210,9 +201,10 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
   }
 #endif
 
-  scoped_refptr<SimpleMessageBoxViews> dialog(
-      new SimpleMessageBoxViews(title, message, type, yes_text, no_text));
-  CreateBrowserModalDialogViews(dialog.get(), parent)->Show();
+  MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
+  SimpleMessageBoxViews* dialog = new SimpleMessageBoxViews(
+      title, message, type, yes_text, no_text, &result);
+  CreateBrowserModalDialogViews(dialog, parent)->Show();
 
   // Use the widget's window itself so that the message loop
   // exists when the dialog is closed by some other means than
@@ -221,7 +213,9 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
   aura::client::DispatcherClient* client =
       aura::client::GetDispatcherClient(anchor->GetRootWindow());
   client->RunWithDispatcher(NULL);
-  return dialog->result();
+  // NOTE: |dialog| will have been deleted by the time control returns here.
+
+  return result;
 }
 
 }  // namespace
