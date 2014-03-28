@@ -14,6 +14,8 @@
 //   should have protected or private destructors.
 // - WeakPtrFactory members that refer to their outer class should be the last
 //   member.
+// - Enum types with a xxxx_LAST or xxxxLast const actually have that constant
+//   have the maximal value for that type.
 
 #include "clang/AST/ASTConsumer.h"
 #include "clang/AST/AST.h"
@@ -48,6 +50,9 @@ const char kProtectedNonVirtualDtor[] =
 const char kWeakPtrFactoryOrder[] =
     "[chromium-style] WeakPtrFactory members which refer to their outer class "
     "must be the last member in the outer class definition.";
+const char kBadLastEnumValue[] =
+    "[chromium-style] _LAST/Last constants of enum types must have the maximal "
+    "value for any constant of that type.";
 const char kNoteInheritance[] =
     "[chromium-style] %0 inherits from %1 here";
 const char kNoteImplicitDtor[] =
@@ -78,11 +83,13 @@ const Type* UnwrapType(const Type* type) {
 struct FindBadConstructsOptions {
   FindBadConstructsOptions() : check_base_classes(false),
                                check_virtuals_in_implementations(true),
-                               check_weak_ptr_factory_order(false) {
+                               check_weak_ptr_factory_order(false),
+                               check_enum_last_value(false) {
   }
   bool check_base_classes;
   bool check_virtuals_in_implementations;
   bool check_weak_ptr_factory_order;
+  bool check_enum_last_value;
 };
 
 // Searches for constructs that we know we don't want in the Chromium code base.
@@ -105,6 +112,8 @@ class FindBadConstructsConsumer : public ChromeClassTester {
         getErrorLevel(), kProtectedNonVirtualDtor);
     diag_weak_ptr_factory_order_ = diagnostic().getCustomDiagID(
         getErrorLevel(), kWeakPtrFactoryOrder);
+    diag_bad_enum_last_value_ = diagnostic().getCustomDiagID(
+        getErrorLevel(), kBadLastEnumValue);
 
     // Registers notes to make it easier to interpret warnings.
     diag_note_inheritance_ = diagnostic().getCustomDiagID(
@@ -141,6 +150,45 @@ class FindBadConstructsConsumer : public ChromeClassTester {
       CheckWeakPtrFactoryMembers(record_location, record);
   }
 
+  virtual void CheckChromeEnum(SourceLocation enum_location,
+                               EnumDecl* enum_decl) {
+    if (!options_.check_enum_last_value)
+      return;
+
+    bool got_one = false;
+    bool is_signed = false;
+    llvm::APSInt max_so_far;
+    EnumDecl::enumerator_iterator iter;
+    for (iter = enum_decl->enumerator_begin();
+         iter != enum_decl->enumerator_end(); ++iter) {
+          llvm::APSInt current_value = iter->getInitVal();
+      if (!got_one) {
+        max_so_far = current_value;
+        is_signed = current_value.isSigned();
+        got_one = true;
+      } else {
+        if (is_signed != current_value.isSigned()) {
+          // This only happens in some cases when compiling C (not C++) files,
+          // so it is OK to bail out here.
+          return;
+        }
+        if (current_value > max_so_far)
+          max_so_far = current_value;
+      }
+    }
+    for (iter = enum_decl->enumerator_begin();
+         iter != enum_decl->enumerator_end(); ++iter) {
+      std::string name = iter->getNameAsString();
+      if (((name.size() > 4 &&
+            name.compare(name.size() - 4, 4, "Last") == 0) ||
+           (name.size() > 5 &&
+            name.compare(name.size() - 5, 5, "_LAST") == 0)) &&
+          iter->getInitVal() < max_so_far) {
+        diagnostic().Report(iter->getLocation(), diag_bad_enum_last_value_);
+      }
+    }
+  }
+
  private:
   // The type of problematic ref-counting pattern that was encountered.
   enum RefcountIssue {
@@ -157,6 +205,7 @@ class FindBadConstructsConsumer : public ChromeClassTester {
   unsigned diag_public_dtor_;
   unsigned diag_protected_non_virtual_dtor_;
   unsigned diag_weak_ptr_factory_order_;
+  unsigned diag_bad_enum_last_value_;
   unsigned diag_note_inheritance_;
   unsigned diag_note_implicit_dtor_;
   unsigned diag_note_public_dtor_;
@@ -707,6 +756,10 @@ class FindBadConstructsAction : public PluginASTAction {
       } else if (args[i] == "check-weak-ptr-factory-order") {
         // TODO(dmichael): Remove this once http://crbug.com/303818 is fixed.
         options_.check_weak_ptr_factory_order = true;
+      } else if (args[i] == "check-enum-last-value") {
+        // TODO(tsepez): Enable this by default once http://crbug.com/356815
+        // and http://crbug.com/356816 are fixed.
+        options_.check_enum_last_value = true;
       } else {
         parsed = false;
         llvm::errs() << "Unknown clang plugin argument: " << args[i] << "\n";

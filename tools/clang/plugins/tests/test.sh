@@ -71,6 +71,10 @@ for input in *.cpp; do
   do_testcase "${input}" "${input%cpp}txt" "${input%cpp}flags"
 done
 
+for input in *.c; do
+  do_testcase "${input}" "${input%c}txt" "${input%c}flags"
+done
+
 if [[ "${failed_any_test}" ]]; then
   exit ${E_FAILEDTEST}
 fi
