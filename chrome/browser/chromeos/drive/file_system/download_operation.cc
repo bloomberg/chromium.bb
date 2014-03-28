@@ -263,9 +263,14 @@ class DownloadOperation::DownloadParams {
       : initialized_callback_(initialized_callback),
         get_content_callback_(get_content_callback),
         completion_callback_(completion_callback),
-        entry_(entry.Pass()) {
+        entry_(entry.Pass()),
+        weak_ptr_factory_(this) {
     DCHECK(!completion_callback_.is_null());
     DCHECK(entry_);
+  }
+
+  base::Closure GetCancelClosure() {
+    return base::Bind(&DownloadParams::Cancel, weak_ptr_factory_.GetWeakPtr());
   }
 
   void OnCacheFileFound(const base::FilePath& cache_file_path) const {
@@ -273,20 +278,19 @@ class DownloadOperation::DownloadParams {
       return;
 
     DCHECK(entry_);
-    initialized_callback_.Run(
-        FILE_ERROR_OK, make_scoped_ptr(new ResourceEntry(*entry_)),
-        cache_file_path, base::Closure());
+    initialized_callback_.Run(FILE_ERROR_OK, cache_file_path,
+                              make_scoped_ptr(new ResourceEntry(*entry_)));
   }
 
-  void OnStartDownloading(const base::Closure& cancel_download_closure) const {
+  void OnStartDownloading(const base::Closure& cancel_download_closure) {
+    cancel_download_closure_ = cancel_download_closure;
     if (initialized_callback_.is_null()) {
       return;
     }
 
     DCHECK(entry_);
-    initialized_callback_.Run(
-        FILE_ERROR_OK, make_scoped_ptr(new ResourceEntry(*entry_)),
-        base::FilePath(), cancel_download_closure);
+    initialized_callback_.Run(FILE_ERROR_OK, base::FilePath(),
+                              make_scoped_ptr(new ResourceEntry(*entry_)));
   }
 
   void OnError(FileError error) const {
@@ -305,12 +309,19 @@ class DownloadOperation::DownloadParams {
   const ResourceEntry& entry() const { return *entry_; }
 
  private:
+  void Cancel() {
+    if (!cancel_download_closure_.is_null())
+      cancel_download_closure_.Run();
+  }
+
   const GetFileContentInitializedCallback initialized_callback_;
   const google_apis::GetContentCallback get_content_callback_;
   const GetFileCallback completion_callback_;
 
   scoped_ptr<ResourceEntry> entry_;
+  base::Closure cancel_download_closure_;
 
+  base::WeakPtrFactory<DownloadParams> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DownloadParams);
 };
 
@@ -333,7 +344,7 @@ DownloadOperation::DownloadOperation(
 DownloadOperation::~DownloadOperation() {
 }
 
-void DownloadOperation::EnsureFileDownloadedByLocalId(
+base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
     const std::string& local_id,
     const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
@@ -348,6 +359,7 @@ void DownloadOperation::EnsureFileDownloadedByLocalId(
   scoped_ptr<DownloadParams> params(new DownloadParams(
       initialized_callback, get_content_callback, completion_callback,
       make_scoped_ptr(entry)));
+  base::Closure cancel_closure = params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -365,9 +377,10 @@ void DownloadOperation::EnsureFileDownloadedByLocalId(
                  context,
                  base::Owned(drive_file_path),
                  base::Owned(cache_file_path)));
+  return cancel_closure;
 }
 
-void DownloadOperation::EnsureFileDownloadedByPath(
+base::Closure DownloadOperation::EnsureFileDownloadedByPath(
     const base::FilePath& file_path,
     const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
@@ -382,6 +395,7 @@ void DownloadOperation::EnsureFileDownloadedByPath(
   scoped_ptr<DownloadParams> params(new DownloadParams(
       initialized_callback, get_content_callback, completion_callback,
       make_scoped_ptr(entry)));
+  base::Closure cancel_closure = params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -398,6 +412,7 @@ void DownloadOperation::EnsureFileDownloadedByPath(
                  context,
                  base::Owned(drive_file_path),
                  base::Owned(cache_file_path)));
+  return cancel_closure;
 }
 
 void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(

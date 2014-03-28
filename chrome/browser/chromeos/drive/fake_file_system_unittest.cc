@@ -38,7 +38,6 @@ TEST_F(FakeFileSystemTest, GetFileContent) {
   FileError initialize_error = FILE_ERROR_FAILED;
   scoped_ptr<ResourceEntry> entry;
   base::FilePath cache_file_path;
-  base::Closure cancel_download;
   google_apis::test_util::TestGetContentCallback get_content_callback;
   FileError completion_error = FILE_ERROR_FAILED;
 
@@ -46,10 +45,10 @@ TEST_F(FakeFileSystemTest, GetFileContent) {
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
 
   // For the first time, the file should be downloaded from the service.
-  fake_file_system_->GetFileContent(
+  base::Closure cancel_download = fake_file_system_->GetFileContent(
       kDriveFile,
       google_apis::test_util::CreateCopyResultCallback(
-          &initialize_error, &entry, &cache_file_path, &cancel_download),
+          &initialize_error, &cache_file_path, &entry),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   base::RunLoop().RunUntilIdle();
@@ -72,10 +71,10 @@ TEST_F(FakeFileSystemTest, GetFileContent) {
   completion_error = FILE_ERROR_FAILED;
 
   // For the second time, the cache file should be found.
-  fake_file_system_->GetFileContent(
+  cancel_download = fake_file_system_->GetFileContent(
       kDriveFile,
       google_apis::test_util::CreateCopyResultCallback(
-          &initialize_error, &entry, &cache_file_path, &cancel_download),
+          &initialize_error, &cache_file_path, &entry),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   base::RunLoop().RunUntilIdle();
@@ -103,12 +102,10 @@ TEST_F(FakeFileSystemTest, GetFileContent_Directory) {
   base::FilePath cache_file_path;
   google_apis::test_util::TestGetContentCallback get_content_callback;
   FileError completion_error = FILE_ERROR_FAILED;
-  base::Closure cancel_download;
-
-  fake_file_system_->GetFileContent(
+  base::Closure cancel_download = fake_file_system_->GetFileContent(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(
-          &initialize_error, &entry, &cache_file_path, &cancel_download),
+          &initialize_error, &cache_file_path, &entry),
       get_content_callback.callback(),
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   base::RunLoop().RunUntilIdle();

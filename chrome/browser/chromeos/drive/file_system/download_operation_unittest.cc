@@ -298,27 +298,24 @@ TEST_F(DownloadOperationTest,
     FileError initialized_error = FILE_ERROR_FAILED;
     scoped_ptr<ResourceEntry> entry, entry_dontcare;
     base::FilePath local_path, local_path_dontcare;
-    base::Closure cancel_download;
     google_apis::test_util::TestGetContentCallback get_content_callback;
-
     FileError completion_error = FILE_ERROR_FAILED;
-
-    operation_->EnsureFileDownloadedByPath(
+    base::Closure cancel_download = operation_->EnsureFileDownloadedByPath(
         file_in_root,
         ClientContext(USER_INITIATED),
         google_apis::test_util::CreateCopyResultCallback(
-            &initialized_error, &entry, &local_path, &cancel_download),
+            &initialized_error, &local_path, &entry),
         get_content_callback.callback(),
         google_apis::test_util::CreateCopyResultCallback(
             &completion_error, &local_path_dontcare, &entry_dontcare));
     test_util::RunBlockingPoolTask();
 
     // For the first time, file is downloaded from the remote server.
-    // In this case, |local_path| is empty while |cancel_download| is not.
+    // In this case, |local_path| is empty.
     EXPECT_EQ(FILE_ERROR_OK, initialized_error);
     ASSERT_TRUE(entry);
     ASSERT_TRUE(local_path.empty());
-    EXPECT_TRUE(!cancel_download.is_null());
+    EXPECT_FALSE(cancel_download.is_null());
     // Content is available through the second callback argument.
     EXPECT_EQ(static_cast<size_t>(entry->file_info().size()),
               get_content_callback.GetConcatenatedData().size());
@@ -335,27 +332,24 @@ TEST_F(DownloadOperationTest,
     FileError initialized_error = FILE_ERROR_FAILED;
     scoped_ptr<ResourceEntry> entry, entry_dontcare;
     base::FilePath local_path, local_path_dontcare;
-    base::Closure cancel_download;
     google_apis::test_util::TestGetContentCallback get_content_callback;
-
     FileError completion_error = FILE_ERROR_FAILED;
-
-    operation_->EnsureFileDownloadedByPath(
+    base::Closure cancel_download = operation_->EnsureFileDownloadedByPath(
         file_in_root,
         ClientContext(USER_INITIATED),
         google_apis::test_util::CreateCopyResultCallback(
-            &initialized_error, &entry, &local_path, &cancel_download),
+            &initialized_error, &local_path, &entry),
         get_content_callback.callback(),
         google_apis::test_util::CreateCopyResultCallback(
             &completion_error, &local_path_dontcare, &entry_dontcare));
     test_util::RunBlockingPoolTask();
 
     // Try second download. In this case, the file should be cached, so
-    // |local_path| should not be empty while |cancel_download| is empty.
+    // |local_path| should not be empty.
     EXPECT_EQ(FILE_ERROR_OK, initialized_error);
     ASSERT_TRUE(entry);
     ASSERT_TRUE(!local_path.empty());
-    EXPECT_TRUE(cancel_download.is_null());
+    EXPECT_FALSE(cancel_download.is_null());
     // The content is available from the cache file.
     EXPECT_TRUE(get_content_callback.data().empty());
     int64 local_file_size = 0;
@@ -439,15 +433,13 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_DirtyCache) {
   FileError init_error;
   base::FilePath init_path;
   scoped_ptr<ResourceEntry> init_entry;
-  base::Closure cancel_callback;
-
   base::FilePath file_path;
   scoped_ptr<ResourceEntry> entry;
-  operation_->EnsureFileDownloadedByPath(
+  base::Closure cancel_callback = operation_->EnsureFileDownloadedByPath(
       file_in_root,
       ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(
-          &init_error, &init_entry, &init_path, &cancel_callback),
+          &init_error, &init_path, &init_entry),
       google_apis::GetContentCallback(),
       google_apis::test_util::CreateCopyResultCallback(
           &error, &file_path, &entry));

@@ -665,6 +665,7 @@
         'browser/chromeos/drive/drive_file_stream_reader_unittest.cc',
         'browser/chromeos/drive/drive_integration_service_unittest.cc',
         'browser/chromeos/drive/drive_url_request_job_unittest.cc',
+        'browser/chromeos/drive/dummy_file_system.cc',
         'browser/chromeos/drive/dummy_file_system.h',
         'browser/chromeos/drive/fake_file_system.cc',
         'browser/chromeos/drive/fake_file_system.h',

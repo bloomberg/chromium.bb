@@ -101,7 +101,7 @@ class SyncClient {
     SyncTask();
     ~SyncTask();
     SyncState state;
-    base::Closure task;
+    base::Callback<base::Closure()> task;
     bool should_run_again;
     base::Closure cancel_closure;
   };
@@ -131,13 +131,6 @@ class SyncClient {
 
   // Adds fetch tasks.
   void AddFetchTasks(const std::vector<std::string>* local_ids);
-
-  // Used as GetFileContentInitializedCallback.
-  void OnGetFileContentInitialized(
-      FileError error,
-      scoped_ptr<ResourceEntry> entry,
-      const base::FilePath& local_cache_file_path,
-      const base::Closure& cancel_download_closure);
 
   // Erases the task and returns true if task is completed.
   bool OnTaskComplete(SyncType type, const std::string& local_id);

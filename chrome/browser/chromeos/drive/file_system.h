@@ -127,7 +127,7 @@ class FileSystem : public FileSystemInterface,
                              const GetFileCallback& callback) OVERRIDE;
   virtual void GetFileForSaving(const base::FilePath& file_path,
                                       const GetFileCallback& callback) OVERRIDE;
-  virtual void GetFileContent(
+  virtual base::Closure GetFileContent(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,

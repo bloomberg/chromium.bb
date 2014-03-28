@@ -127,7 +127,7 @@ void FakeFileSystem::GetFileForSaving(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::GetFileContent(
+base::Closure FakeFileSystem::GetFileContent(
     const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
@@ -140,6 +140,7 @@ void FakeFileSystem::GetFileContent(
                  weak_ptr_factory_.GetWeakPtr(),
                  initialized_callback, get_content_callback,
                  completion_callback));
+  return base::Bind(&base::DoNothing);
 }
 
 void FakeFileSystem::GetResourceEntry(
@@ -295,14 +296,12 @@ void FakeFileSystem::GetFileContentAfterGetWapiResourceEntry(
       cache_dir_.path().AppendASCII(entry->resource_id());
   if (base::PathExists(cache_path)) {
     // Cache file is found.
-    initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), cache_path,
-                             base::Closure());
+    initialized_callback.Run(FILE_ERROR_OK, cache_path, entry.Pass());
     completion_callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  initialized_callback.Run(FILE_ERROR_OK, entry.Pass(), base::FilePath(),
-                           base::Bind(&base::DoNothing));
+  initialized_callback.Run(FILE_ERROR_OK, base::FilePath(), entry.Pass());
   drive_service_->DownloadFile(
       cache_path,
       gdata_entry->resource_id(),

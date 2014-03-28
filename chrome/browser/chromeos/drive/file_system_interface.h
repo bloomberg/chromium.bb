@@ -71,15 +71,11 @@ typedef base::Callback<void(FileError error,
 
 // Used to get file content from the file system.
 // If the file content is available in local cache, |local_file| is filled with
-// the path to the cache file and |cancel_download_closure| is null. If the file
-// content starts to be downloaded from the server, |local_file| is empty and
-// |cancel_download_closure| is filled with a closure by calling which the
-// download job can be cancelled.
-// |cancel_download_closure| must be called on the UI thread.
+// the path to the cache file. If the file content starts to be downloaded from
+// the server, |local_file| is empty.
 typedef base::Callback<void(FileError error,
-                            scoped_ptr<ResourceEntry> entry,
                             const base::FilePath& local_file,
-                            const base::Closure& cancel_download_closure)>
+                            scoped_ptr<ResourceEntry> entry)>
     GetFileContentInitializedCallback;
 
 // Used to get list of entries under a directory.
@@ -336,7 +332,8 @@ class FileSystemInterface {
   virtual void GetFileForSaving(const base::FilePath& file_path,
                                 const GetFileCallback& callback) = 0;
 
-  // Gets a file by the given |file_path|.
+  // Gets a file by the given |file_path| and returns a closure to cancel the
+  // task.
   // Calls |initialized_callback| when either:
   //   1) The cached file (or JSON file for hosted file) is found, or
   //   2) Starting to download the file from drive server.
@@ -347,7 +344,7 @@ class FileSystemInterface {
   // is successfully done.
   // |initialized_callback|, |get_content_callback| and |completion_callback|
   // must not be null.
-  virtual void GetFileContent(
+  virtual base::Closure GetFileContent(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
