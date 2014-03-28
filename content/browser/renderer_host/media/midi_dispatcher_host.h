@@ -32,7 +32,8 @@ class MidiDispatcherHost : public BrowserMessageFilter {
  private:
   void OnRequestSysExPermission(int render_view_id,
                                 int bridge_id,
-                                const GURL& origin);
+                                const GURL& origin,
+                                bool user_gesture);
   void OnCancelSysExPermissionRequest(int render_view_id,
                                       int bridge_id,
                                       const GURL& requesting_frame);

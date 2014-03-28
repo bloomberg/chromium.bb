@@ -27,6 +27,7 @@ class MidiPermissionRequest : public PermissionBubbleRequest {
       ChromeMidiPermissionContext* context,
       const PermissionRequestID& id,
       const GURL& requesting_frame,
+      bool user_gesture,
       const std::string& display_languages,
       const content::BrowserContext::MidiSysExPermissionCallback& callback);
   virtual ~MidiPermissionRequest();
@@ -46,6 +47,7 @@ class MidiPermissionRequest : public PermissionBubbleRequest {
   ChromeMidiPermissionContext* context_;
   const PermissionRequestID id_;
   GURL requesting_frame_;
+  bool user_gesture_;
   std::string display_languages_;
   const content::BrowserContext::MidiSysExPermissionCallback& callback_;
 
@@ -56,11 +58,13 @@ MidiPermissionRequest::MidiPermissionRequest(
     ChromeMidiPermissionContext* context,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
+    bool user_gesture,
     const std::string& display_languages,
     const content::BrowserContext::MidiSysExPermissionCallback& callback)
     : context_(context),
       id_(id),
       requesting_frame_(requesting_frame),
+      user_gesture_(user_gesture),
       display_languages_(display_languages),
       callback_(callback) {}
 
@@ -81,8 +85,7 @@ base::string16 MidiPermissionRequest::GetMessageTextFragment() const {
 }
 
 bool MidiPermissionRequest::HasUserGesture() const {
-  // TODO(gbillock): plumb through.
-  return false;
+  return user_gesture_;
 }
 
 GURL MidiPermissionRequest::GetRequestingHostname() const {
@@ -127,6 +130,7 @@ void ChromeMidiPermissionContext::RequestMidiSysExPermission(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
+    bool user_gesture,
     const content::BrowserContext::MidiSysExPermissionCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!shutting_down_);
@@ -156,7 +160,8 @@ void ChromeMidiPermissionContext::RequestMidiSysExPermission(
     return;
   }
 
-  DecidePermission(web_contents, id, requesting_frame, embedder, callback);
+  DecidePermission(web_contents, id, requesting_frame, embedder, user_gesture,
+                   callback);
 }
 
 void ChromeMidiPermissionContext::CancelMidiSysExPermissionRequest(
@@ -173,6 +178,7 @@ void ChromeMidiPermissionContext::DecidePermission(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const GURL& embedder,
+    bool user_gesture,
     const content::BrowserContext::MidiSysExPermissionCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -194,7 +200,7 @@ void ChromeMidiPermissionContext::DecidePermission(
         PermissionBubbleManager* bubble_manager =
             PermissionBubbleManager::FromWebContents(web_contents);
         bubble_manager->AddRequest(new MidiPermissionRequest(
-            this, id, requesting_frame,
+            this, id, requesting_frame, user_gesture,
             profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
             callback));
         return;

@@ -113,11 +113,12 @@ IPC_MESSAGE_CONTROL0(MediaStreamMsg_DisableAecDump)
 // Messages sent from the renderer to the browser.
 
 // Request a new media stream.
-IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_GenerateStream,
+IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_GenerateStream,
                      int /* render view id */,
                      int /* request id */,
                      content::StreamOptions /* components */,
-                     GURL /* security origin */)
+                     GURL /* security origin */,
+                     bool /* user_gesture */)
 
 // Request to cancel the request for a new media stream.
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelGenerateStream,

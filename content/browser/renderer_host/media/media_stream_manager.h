@@ -97,7 +97,8 @@ class CONTENT_EXPORT MediaStreamManager
                       const ResourceContext::SaltCallback& sc,
                       int page_request_id,
                       const StreamOptions& components,
-                      const GURL& security_origin);
+                      const GURL& security_origin,
+                      bool user_gesture);
 
   void CancelRequest(int render_process_id,
                      int render_view_id,

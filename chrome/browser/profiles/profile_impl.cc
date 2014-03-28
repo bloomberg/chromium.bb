@@ -939,6 +939,7 @@ void ProfileImpl::RequestMidiSysExPermission(
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       const MidiSysExPermissionCallback& callback) {
   ChromeMidiPermissionContext* context =
       ChromeMidiPermissionContextFactory::GetForProfile(this);
@@ -946,6 +947,7 @@ void ProfileImpl::RequestMidiSysExPermission(
                                       render_view_id,
                                       bridge_id,
                                       requesting_frame,
+                                      user_gesture,
                                       callback);
 }
 

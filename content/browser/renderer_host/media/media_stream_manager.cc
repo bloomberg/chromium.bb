@@ -173,6 +173,7 @@ class MediaStreamManager::DeviceRequest {
                 int requesting_view_id,
                 int page_request_id,
                 const GURL& security_origin,
+                bool user_gesture,
                 MediaStreamRequestType request_type,
                 const StreamOptions& options,
                 const ResourceContext::SaltCallback& salt_callback)
@@ -181,6 +182,7 @@ class MediaStreamManager::DeviceRequest {
         requesting_view_id(requesting_view_id),
         page_request_id(page_request_id),
         security_origin(security_origin),
+        user_gesture(user_gesture),
         request_type(request_type),
         options(options),
         salt_callback(salt_callback),
@@ -214,6 +216,7 @@ class MediaStreamManager::DeviceRequest {
                                              requesting_view_id,
                                              page_request_id,
                                              security_origin,
+                                             user_gesture,
                                              request_type,
                                              requested_audio_device_id,
                                              requested_video_device_id,
@@ -231,6 +234,7 @@ class MediaStreamManager::DeviceRequest {
                                              target_render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             user_gesture,
                                              request_type,
                                              "",
                                              "",
@@ -298,6 +302,8 @@ class MediaStreamManager::DeviceRequest {
   const int page_request_id;
 
   const GURL security_origin;
+
+  const bool user_gesture;
 
   const MediaStreamRequestType request_type;
 
@@ -389,6 +395,7 @@ std::string MediaStreamManager::MakeMediaAccessRequest(
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             false,  // user gesture
                                              MEDIA_DEVICE_ACCESS,
                                              options,
                                              base::Bind(&ReturnEmptySalt));
@@ -414,7 +421,8 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                         const ResourceContext::SaltCallback& sc,
                                         int page_request_id,
                                         const StreamOptions& options,
-                                        const GURL& security_origin) {
+                                        const GURL& security_origin,
+                                        bool user_gesture) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "GenerateStream()";
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -427,6 +435,7 @@ void MediaStreamManager::GenerateStream(MediaStreamRequester* requester,
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             user_gesture,
                                              MEDIA_GENERATE_STREAM,
                                              options,
                                              sc);
@@ -619,6 +628,7 @@ std::string MediaStreamManager::EnumerateDevices(
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             false,  // user gesture
                                              MEDIA_ENUMERATE_DEVICES,
                                              StreamOptions(),
                                              sc);
@@ -698,6 +708,7 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
                                              render_view_id,
                                              page_request_id,
                                              security_origin,
+                                             false,  // user gesture
                                              MEDIA_OPEN_DEVICE,
                                              options,
                                              sc);

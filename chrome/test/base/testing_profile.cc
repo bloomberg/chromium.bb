@@ -739,6 +739,7 @@ void TestingProfile::RequestMidiSysExPermission(
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       const MidiSysExPermissionCallback& callback) {
   // Always reject requests for testing.
   callback.Run(false);

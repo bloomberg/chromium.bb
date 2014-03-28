@@ -388,8 +388,7 @@ base::string16 MediaStreamDevicesController::GetMessageTextFragment() const {
 }
 
 bool MediaStreamDevicesController::HasUserGesture() const {
-  // TODO(gbillock): plumb this through
-  return false;
+  return request_.user_gesture;
 }
 
 GURL MediaStreamDevicesController::GetRequestingHostname() const {

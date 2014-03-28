@@ -45,7 +45,8 @@ void MidiDispatcherHost::OverrideThreadForMessage(
 
 void MidiDispatcherHost::OnRequestSysExPermission(int render_view_id,
                                                   int bridge_id,
-                                                  const GURL& origin) {
+                                                  const GURL& origin,
+                                                  bool user_gesture) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   browser_context_->RequestMidiSysExPermission(
@@ -53,6 +54,7 @@ void MidiDispatcherHost::OnRequestSysExPermission(int render_view_id,
       render_view_id,
       bridge_id,
       origin,
+      user_gesture,
       base::Bind(&MidiDispatcherHost::WasSysExPermissionGranted,
                  base::Unretained(this),
                  render_view_id,

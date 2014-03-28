@@ -10,6 +10,7 @@
 #include "content/renderer/media/media_stream_dispatcher_eventhandler.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -78,10 +79,9 @@ void MediaStreamDispatcher::GenerateStream(
   DVLOG(1) << "MediaStreamDispatcher::GenerateStream(" << request_id << ")";
 
   requests_.push_back(Request(event_handler, request_id, next_ipc_id_));
-  Send(new MediaStreamHostMsg_GenerateStream(routing_id(),
-                                             next_ipc_id_++,
-                                             components,
-                                             security_origin));
+  Send(new MediaStreamHostMsg_GenerateStream(
+      routing_id(), next_ipc_id_++, components, security_origin,
+      blink::WebUserGestureIndicator::isProcessingUserGesture()));
 }
 
 void MediaStreamDispatcher::CancelGenerateStream(

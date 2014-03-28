@@ -105,6 +105,7 @@ class OffTheRecordProfileImpl : public Profile {
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       const MidiSysExPermissionCallback& callback) OVERRIDE;
   virtual void CancelMidiSysExPermissionRequest(
       int render_process_id,

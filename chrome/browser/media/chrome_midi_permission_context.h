@@ -33,6 +33,7 @@ class ChromeMidiPermissionContext : public KeyedService {
       int render_view_id,
       int bridge_id,
       const GURL& requesting_frame,
+      bool user_gesture,
       const content::BrowserContext::MidiSysExPermissionCallback& callback);
 
   // Cancel a pending MIDI permission request.
@@ -59,6 +60,7 @@ class ChromeMidiPermissionContext : public KeyedService {
       const PermissionRequestID& id,
       const GURL& requesting_frame,
       const GURL& embedder,
+      bool user_gesture,
       const content::BrowserContext::MidiSysExPermissionCallback& callback);
 
   // Called when permission is granted without interactively asking the user.

@@ -127,21 +127,23 @@ void MediaStreamDispatcherHost::OnGenerateStream(
     int render_view_id,
     int page_request_id,
     const StreamOptions& components,
-    const GURL& security_origin) {
+    const GURL& security_origin,
+    bool user_gesture) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnGenerateStream("
            << render_view_id << ", "
            << page_request_id << ", ["
            << " audio:" << components.audio_requested
            << " video:" << components.video_requested
            << " ], "
-           << security_origin.spec() << ")";
+           << security_origin.spec()
+           << ", " << user_gesture << ")";
 
   if (!IsURLAllowed(security_origin))
     return;
 
   media_stream_manager_->GenerateStream(
       this, render_process_id_, render_view_id, salt_callback_,
-      page_request_id, components, security_origin);
+      page_request_id, components, security_origin, user_gesture);
 }
 
 void MediaStreamDispatcherHost::OnCancelGenerateStream(int render_view_id,

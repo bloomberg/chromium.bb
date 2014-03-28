@@ -25,10 +25,11 @@ IPC_STRUCT_TRAITS_END()
 // Messages for IPC between MidiDispatcher and MidiDispatcherHost.
 
 // Renderer request to browser for using system exclusive messages.
-IPC_MESSAGE_CONTROL3(MidiHostMsg_RequestSysExPermission,
+IPC_MESSAGE_CONTROL4(MidiHostMsg_RequestSysExPermission,
                      int /* routing id */,
                      int /* client id */,
-                     GURL /* origin */)
+                     GURL /* origin */,
+                     bool /* user_gesture */)
 
 // Renderer request to browser for canceling a previous permission request.
 IPC_MESSAGE_CONTROL3(MidiHostMsg_CancelSysExPermissionRequest,
