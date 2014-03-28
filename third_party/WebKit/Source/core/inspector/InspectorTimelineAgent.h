@@ -286,7 +286,7 @@ private:
 
     void commitFrameRecord();
 
-    void addRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
+    void addRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>, double ts);
     void innerAddRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
     void clearRecordStack();
     PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createRecordForEvent(const TraceEventDispatcher::TraceEvent&, const String& type, PassRefPtr<JSONObject> data);
@@ -340,6 +340,7 @@ private:
     ThreadStateMap m_threadStates;
     bool m_mayEmitFirstPaint;
     HashSet<String> m_liveEvents;
+    double m_lastProgressTimestamp;
 };
 
 } // namespace WebCore

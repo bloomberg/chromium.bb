@@ -270,9 +270,10 @@ void InspectorTimelineAgent::pushGCEventRecords()
     GCEvents events = m_gcEvents;
     m_gcEvents.clear();
     for (GCEvents::iterator i = events.begin(); i != events.end(); ++i) {
-        RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(m_timeConverter.fromMonotonicallyIncreasingTime(i->startTime), m_maxCallStackDepth, TimelineRecordType::GCEvent, TimelineRecordFactory::createGCEventData(i->collectedBytes));
+        double ts = m_timeConverter.fromMonotonicallyIncreasingTime(i->startTime);
+        RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(ts, m_maxCallStackDepth, TimelineRecordType::GCEvent, TimelineRecordFactory::createGCEventData(i->collectedBytes));
         record->setEndTime(m_timeConverter.fromMonotonicallyIncreasingTime(i->endTime));
-        addRecordToTimeline(record.release());
+        addRecordToTimeline(record.release(), ts);
     }
 }
 
@@ -344,8 +345,11 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
     else
         m_maxCallStackDepth = 5;
 
-    if (bufferEvents && *bufferEvents)
+    if (bufferEvents && *bufferEvents) {
         m_bufferedEvents = TypeBuilder::Array<TimelineEvent>::create();
+        m_lastProgressTimestamp = timestamp();
+    }
+
     if (liveEvents)
         setLiveEvents(*liveEvents);
 
@@ -593,7 +597,7 @@ void InspectorTimelineAgent::willPaint(RenderObject* renderer, const GraphicsLay
         if (paintSetupStart) {
             RefPtr<TimelineEvent> paintSetupRecord = TimelineRecordFactory::createGenericRecord(paintSetupStart, 0, TimelineRecordType::PaintSetup, TimelineRecordFactory::createLayerData(nodeIdentifier));
             paintSetupRecord->setEndTime(m_paintSetupEnd);
-            addRecordToTimeline(paintSetupRecord);
+            addRecordToTimeline(paintSetupRecord, paintSetupStart);
         }
     }
     pushCurrentRecord(JSONObject::create(), TimelineRecordType::Paint, true, frame, true);
@@ -1093,10 +1097,14 @@ void InspectorTimelineAgent::onEmbedderCallbackEnd(const TraceEventDispatcher::T
     state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
 }
 
-void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<TimelineEvent> record)
+void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<TimelineEvent> record, double ts)
 {
     commitFrameRecord();
     innerAddRecordToTimeline(record);
+    if (m_bufferedEvents && ts - m_lastProgressTimestamp > 300) {
+        m_lastProgressTimestamp = ts;
+        m_frontend->progress(m_bufferedEvents->length());
+    }
 }
 
 void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<TimelineEvent> record)
@@ -1170,11 +1178,12 @@ void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
         }
         ASSERT(entry.type == type);
         entry.record->setChildren(entry.children);
-        entry.record->setEndTime(timestamp());
+        double ts = timestamp();
+        entry.record->setEndTime(ts);
         ptrdiff_t usedHeapSizeDelta = getUsedHeapSize() - entry.usedHeapSizeAtStart;
         if (usedHeapSizeDelta)
             entry.record->setUsedHeapSizeDelta(usedHeapSizeDelta);
-        addRecordToTimeline(entry.record);
+        addRecordToTimeline(entry.record, ts);
     }
 }
 
@@ -1204,15 +1213,17 @@ InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, In
     , m_paintSetupStart(0)
     , m_styleRecalcElementCounter(0)
     , m_mayEmitFirstPaint(false)
+    , m_lastProgressTimestamp(0)
 {
 }
 
 void InspectorTimelineAgent::appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, LocalFrame* frame)
 {
     pushGCEventRecords();
-    RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(timestamp(), captureCallStack ? m_maxCallStackDepth : 0, type, data);
+    double ts = timestamp();
+    RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(ts, captureCallStack ? m_maxCallStackDepth : 0, type, data);
     setFrameIdentifier(record.get(), frame);
-    addRecordToTimeline(record.release());
+    addRecordToTimeline(record.release(), ts);
 }
 
 void InspectorTimelineAgent::sendEvent(PassRefPtr<TimelineEvent> record)
