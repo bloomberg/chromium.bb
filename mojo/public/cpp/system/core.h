@@ -11,8 +11,8 @@
 #include <limits>
 
 #include "mojo/public/c/system/core.h"
-#include "mojo/public/c/system/macros.h"
 #include "mojo/public/c/system/system_export.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

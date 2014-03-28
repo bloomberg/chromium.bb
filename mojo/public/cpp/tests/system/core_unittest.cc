@@ -10,7 +10,7 @@
 
 #include <map>
 
-#include "mojo/public/c/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

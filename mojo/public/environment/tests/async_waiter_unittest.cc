@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/environment/default_async_waiter.h"
 #include "mojo/public/environment/environment.h"
 #include "mojo/public/tests/test_utils.h"

@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "mojo/public/c/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/tests/test_support.h"
 #include "mojo/public/tests/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

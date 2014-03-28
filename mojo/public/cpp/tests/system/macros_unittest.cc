@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file consists of "positive" tests, i.e., those verifying that things
-// work (without compile errors, or even warnings if warnings are treated as
-// errors).
+// This file tests the C++ Mojo system macros and consists of "positive" tests,
+// i.e., those verifying that things work (without compile errors, or even
+// warnings if warnings are treated as errors).
+// TODO(vtl): Maybe rename "MacrosCppTest" -> "MacrosTest" if/when this gets
+// compiled into a different binary from the C API tests.
 // TODO(vtl): Fix no-compile tests (which are all disabled; crbug.com/105388)
 // and write some "negative" tests.
 
-#include "mojo/public/c/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -18,21 +20,6 @@
 
 namespace mojo {
 namespace {
-
-TEST(MacrosTest, AllowUnused) {
-  // Test that no warning/error is issued even though |x| is unused.
-  int x MOJO_ALLOW_UNUSED = 123;
-}
-
-int MustUseReturnedResult() MOJO_WARN_UNUSED_RESULT;
-int MustUseReturnedResult() {
-  return 456;
-}
-
-TEST(MacrosTest, WarnUnusedResult) {
-  if (!MustUseReturnedResult())
-    abort();
-}
 
 // Note: MSVS is very strict (and arguably buggy) about warnings for classes
 // defined in a local scope, so define these globally.
@@ -48,7 +35,7 @@ struct TestOverrideSubclass : public TestOverrideBaseClass {
   virtual void AlsoToBeOverridden() MOJO_OVERRIDE {}
 };
 
-TEST(MacrosTest, Override) {
+TEST(MacrosCppTest, Override) {
   TestOverrideSubclass x;
   x.ToBeOverridden();
   x.AlsoToBeOverridden();
@@ -66,21 +53,11 @@ class TestDisallowCopyAndAssignClass {
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestDisallowCopyAndAssignClass);
 };
 
-TEST(MacrosTest, DisallowCopyAndAssign) {
+TEST(MacrosCppTest, DisallowCopyAndAssign) {
   TestDisallowCopyAndAssignClass x;
   x.NoOp();
   TestDisallowCopyAndAssignClass y(789);
   y.NoOp();
-}
-
-// First test |MOJO_COMPILE_ASSERT()| in a global scope.
-MOJO_COMPILE_ASSERT(sizeof(int64_t) == 2 * sizeof(int32_t),
-                    bad_compile_assert_failure_in_global_scope);
-
-TEST(MacrosTest, CompileAssert) {
-  // Then in a local scope.
-  MOJO_COMPILE_ASSERT(sizeof(int32_t) == 2 * sizeof(int16_t),
-                      bad_compile_assert_failure);
 }
 
 // Test that |MOJO_ARRAYSIZE()| works in a |MOJO_COMPILE_ASSERT()|.
@@ -88,7 +65,7 @@ const int kGlobalArray[5] = { 1, 2, 3, 4, 5 };
 MOJO_COMPILE_ASSERT(MOJO_ARRAYSIZE(kGlobalArray) == 5u,
                     mojo_array_size_failed_in_compile_assert);
 
-TEST(MacrosTest, ArraySize) {
+TEST(MacrosCppTest, ArraySize) {
   double local_array[4] = { 6.7, 7.8, 8.9, 9.0 };
   EXPECT_EQ(4u, MOJO_ARRAYSIZE(local_array));
 }
@@ -125,7 +102,7 @@ class MoveOnlyInt {
   int value_;
 };
 
-TEST(MacrosTest, MoveOnlyTypeForCpp03) {
+TEST(MacrosCppTest, MoveOnlyTypeForCpp03) {
   MoveOnlyInt x(123);
   EXPECT_TRUE(x.is_set());
   EXPECT_EQ(123, x.value());

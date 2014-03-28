@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_ENVIRONMENT_ENVIRONMENT_H_
 #define MOJO_PUBLIC_ENVIRONMENT_ENVIRONMENT_H_
 
-#include "mojo/public/c/system/macros.h"
+#include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
 

@@ -20,6 +20,7 @@
         'public/c/system/macros.h',
         'public/c/system/system_export.h',
         'public/cpp/system/core.h',
+        'public/cpp/system/macros.h',
         'public/system/core_private.cc',
         'public/system/core_private.h',
       ],
@@ -193,8 +194,9 @@
       'sources': [
         'public/c/tests/system/core_unittest.cc',
         'public/c/tests/system/core_unittest_pure_c.c',
+        'public/c/tests/system/macros_unittest.cc',
         'public/cpp/tests/system/core_unittest.cc',
-        'public/tests/system/macros_unittest.cc',
+        'public/cpp/tests/system/macros_unittest.cc',
       ],
     },
     {
