@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
@@ -295,22 +294,17 @@ void IndexedDBDatabase::CreateObjectStoreOperation(
     const IndexedDBObjectStoreMetadata& object_store_metadata,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::CreateObjectStoreOperation");
-  leveldb::Status s =
-      backing_store_->CreateObjectStore(transaction->BackingStoreTransaction(),
-                                        transaction->database()->id(),
-                                        object_store_metadata.id,
-                                        object_store_metadata.name,
-                                        object_store_metadata.key_path,
-                                        object_store_metadata.auto_increment);
-  if (!s.ok()) {
-    IndexedDBDatabaseError error(
+  if (!backing_store_->CreateObjectStore(
+          transaction->BackingStoreTransaction(),
+          transaction->database()->id(),
+          object_store_metadata.id,
+          object_store_metadata.name,
+          object_store_metadata.key_path,
+          object_store_metadata.auto_increment).ok()) {
+    transaction->Abort(IndexedDBDatabaseError(
         blink::WebIDBDatabaseExceptionUnknownError,
         ASCIIToUTF16("Internal error creating object store '") +
-            object_store_metadata.name + ASCIIToUTF16("'."));
-    transaction->Abort(error);
-    if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+            object_store_metadata.name + ASCIIToUTF16("'.")));
     return;
   }
 }
@@ -442,12 +436,8 @@ void IndexedDBDatabase::DeleteIndexOperation(
     base::string16 error_string =
         ASCIIToUTF16("Internal error deleting index '") +
         index_metadata.name + ASCIIToUTF16("'.");
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 error_string);
-    transaction->Abort(error);
-    if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+    transaction->Abort(IndexedDBDatabaseError(
+        blink::WebIDBDatabaseExceptionUnknownError, error_string));
   }
 }
 
@@ -579,13 +569,9 @@ void IndexedDBDatabase::GetOperation(
                                   *key,
                                   &value);
     if (!s.ok()) {
-      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                   "Internal error in GetRecord.");
-      callbacks->OnError(error);
-
-      if (s.IsCorruption())
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+      callbacks->OnError(
+          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error in GetRecord."));
       return;
     }
 
@@ -613,12 +599,9 @@ void IndexedDBDatabase::GetOperation(
       *key,
       &primary_key);
   if (!s.ok()) {
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 "Internal error in GetPrimaryKeyViaIndex.");
-    callbacks->OnError(error);
-    if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+    callbacks->OnError(
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error in GetPrimaryKeyViaIndex."));
     return;
   }
   if (!primary_key) {
@@ -639,12 +622,9 @@ void IndexedDBDatabase::GetOperation(
                                 *primary_key,
                                 &value);
   if (!s.ok()) {
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 "Internal error in GetRecord.");
-    callbacks->OnError(error);
-    if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+    callbacks->OnError(
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error in GetRecord."));
     return;
   }
 
@@ -781,12 +761,9 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
         &record_identifier,
         &found);
     if (!s.ok()) {
-      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                   "Internal error checking key existence.");
-      params->callbacks->OnError(error);
-      if (s.IsCorruption())
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+      params->callbacks->OnError(
+          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error checking key existence."));
       return;
     }
     if (found) {
@@ -832,13 +809,9 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                 params->value,
                                 &record_identifier);
   if (!s.ok()) {
-    IndexedDBDatabaseError error(
+    params->callbacks->OnError(IndexedDBDatabaseError(
         blink::WebIDBDatabaseExceptionUnknownError,
-        "Internal error: backing store error performing put/add.");
-    params->callbacks->OnError(error);
-    if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+        "Internal error: backing store error performing put/add."));
     return;
   }
 
@@ -861,12 +834,9 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
                                            *key,
                                            !key_was_generated);
     if (!s.ok()) {
-      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                   "Internal error updating key generator.");
-      params->callbacks->OnError(error);
-      if (s.IsCorruption())
-        factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                               error);
+      params->callbacks->OnError(
+          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error updating key generator."));
       return;
     }
   }
@@ -896,12 +866,9 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
       &record_identifier,
       &found);
   if (!s.ok()) {
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 "Internal error setting index keys.");
-    transaction->Abort(error);
-    if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+    transaction->Abort(
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                               "Internal error setting index keys."));
     return;
   }
   if (!found) {
@@ -1239,12 +1206,8 @@ void IndexedDBDatabase::DeleteObjectStoreOperation(
     base::string16 error_string =
         ASCIIToUTF16("Internal error deleting object store '") +
         object_store_metadata.name + ASCIIToUTF16("'.");
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 error_string);
-    transaction->Abort(error);
-    if (s.IsCorruption())
-      factory_->HandleBackingStoreCorruption(backing_store_->origin_url(),
-                                             error);
+    transaction->Abort(IndexedDBDatabaseError(
+        blink::WebIDBDatabaseExceptionUnknownError, error_string));
   }
 }
 

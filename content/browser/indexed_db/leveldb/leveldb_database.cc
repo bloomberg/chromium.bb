@@ -459,6 +459,4 @@ void LevelDBDatabase::Compact(const base::StringPiece& start,
   db_->CompactRange(&start_slice, &stop_slice);
 }
 
-void LevelDBDatabase::CompactAll() { db_->CompactRange(NULL, NULL); }
-
 }  // namespace content

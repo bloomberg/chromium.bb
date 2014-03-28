@@ -50,12 +50,12 @@ class CONTENT_EXPORT IndexedDBFactory
                       const base::FilePath& data_directory);
 
   void HandleBackingStoreFailure(const GURL& origin_url);
-  void HandleBackingStoreCorruption(const GURL& origin_url,
-                                    const IndexedDBDatabaseError& error);
 
   std::pair<OriginDBMapIterator, OriginDBMapIterator> GetOpenDatabasesForOrigin(
       const GURL& origin_url) const;
 
+  // Called by IndexedDBContext after all connections are closed, to
+  // ensure the backing store closed immediately.
   void ForceClose(const GURL& origin_url);
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.

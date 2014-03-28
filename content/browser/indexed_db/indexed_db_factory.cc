@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
-#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
@@ -233,24 +232,6 @@ void IndexedDBFactory::HandleBackingStoreFailure(const GURL& origin_url) {
     return;
   context_->ForceClose(origin_url,
                        IndexedDBContextImpl::FORCE_CLOSE_BACKING_STORE_FAILURE);
-}
-
-void IndexedDBFactory::HandleBackingStoreCorruption(
-    const GURL& origin_url,
-    const IndexedDBDatabaseError& error) {
-  // Make a copy of origin_url as this is likely a reference to a member of a
-  // backing store which this function will be deleting.
-  GURL saved_origin_url(origin_url);
-  DCHECK(context_);
-  base::FilePath path_base = context_->data_path();
-  IndexedDBBackingStore::RecordCorruptionInfo(
-      path_base, saved_origin_url, base::UTF16ToUTF8(error.message()));
-  HandleBackingStoreFailure(saved_origin_url);
-  // Note: DestroyBackingStore only deletes LevelDB files, leaving all others,
-  //       so our corruption info file will remain.
-  if (!IndexedDBBackingStore::DestroyBackingStore(path_base, saved_origin_url)
-           .ok())
-    DLOG(ERROR) << "Unable to delete backing store";
 }
 
 bool IndexedDBFactory::IsDatabaseOpen(const GURL& origin_url,
