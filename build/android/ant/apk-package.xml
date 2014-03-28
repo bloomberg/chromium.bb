@@ -56,9 +56,6 @@
   <property name="dex.file.name" value="classes.dex" />
   <property name="intermediate.dex.file" location="${out.absolute.dir}/${dex.file.name}" />
 
-  <property name="source.dir" value="${SOURCE_DIR}" />
-  <property name="source.absolute.dir" location="${source.dir}" />
-
   <!-- Macro that enables passing a variable list of external jar files
        to ApkBuilder. -->
   <macrodef name="package-helper">
@@ -75,7 +72,6 @@
           previousBuildType="/"
           buildType="${build.is.packaging.debug}/${build.is.signing.debug}">
         <dex path="${intermediate.dex.file}"/>
-        <sourcefolder path="${source.absolute.dir}"/>
         <nativefolder path="${native.libs.absolute.dir}" />
         <extra-jars/>
       </apkbuilder>
