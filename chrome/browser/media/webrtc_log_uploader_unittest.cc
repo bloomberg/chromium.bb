@@ -175,6 +175,8 @@ TEST_F(WebRtcLogUploaderTest, AddLocallyStoredLogInfoToUploadListFile) {
                                                                 kTestLocalId);
   ASSERT_TRUE(VerifyNumberOfLines(expected_line_limit));
   ASSERT_TRUE(VerifyLastLineHasLocalIdOnly());
+
+  webrtc_log_uploader_->StartShutdown();
 }
 
 TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
@@ -199,4 +201,6 @@ TEST_F(WebRtcLogUploaderTest, AddUploadedLogInfoToUploadListFile) {
       test_list_path_, "dummy id", kTestReportId);
   ASSERT_TRUE(VerifyNumberOfLines(2));
   ASSERT_TRUE(VerifyLastLineHasUploadTimeAndIdOnly());
+
+  webrtc_log_uploader_->StartShutdown();
 }

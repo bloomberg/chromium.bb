@@ -294,7 +294,6 @@ void WebRtcLoggingHandlerHost::StartLoggingIfAllowed() {
           "simultaneuos logs has been reached.");
     return;
   }
-  system_request_context_ = g_browser_process->system_request_context();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
       &WebRtcLoggingHandlerHost::DoStartLogging, this));
 }
@@ -439,7 +438,6 @@ void WebRtcLoggingHandlerHost::TriggerUploadLog(
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, base::Bind(
       &WebRtcLogUploader::LoggingStoppedDoUpload,
       base::Unretained(g_browser_process->webrtc_log_uploader()),
-      system_request_context_,
       Passed(&log_buffer_),
       kWebRtcLogSize,
       meta_data_,

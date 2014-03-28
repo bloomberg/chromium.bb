@@ -11,8 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -25,7 +23,6 @@ class SharedMemory;
 
 namespace net {
 class URLFetcher;
-class URLRequestContextGetter;
 }
 
 typedef struct z_stream_s z_stream;
@@ -41,8 +38,6 @@ struct WebRtcLogUploadDoneData {
   scoped_refptr<WebRtcLoggingHandlerHost> host;
   std::string local_log_id;
 };
-
-class WebRtcLogURLRequestContextGetter;
 
 // WebRtcLogUploader uploads WebRTC logs, keeps count of how many logs have
 // been started and denies further logs if a limit is reached. It also adds
@@ -77,11 +72,15 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // |upload_done_data.local_log_id| is set and used internally and should be
   // left empty.
   void LoggingStoppedDoUpload(
-      net::URLRequestContextGetter* request_context,
       scoped_ptr<unsigned char[]> log_buffer,
       uint32 length,
       const std::map<std::string, std::string>& meta_data,
       const WebRtcLogUploadDoneData& upload_done_data);
+
+  // Cancels URL fetcher operation by deleting all URL fetchers. This cancels
+  // any pending uploads and releases SystemURLRequestContextGetter references.
+  // Sets |shutting_down_| which prevent new fetchers to be created.
+  void StartShutdown();
 
   // For testing purposes. If called, the multipart will not be uploaded, but
   // written to |post_data_| instead.
@@ -114,7 +113,6 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
                            z_stream* stream);
 
   void CreateAndStartURLFetcher(
-      scoped_refptr<net::URLRequestContextGetter> request_context,
       const WebRtcLogUploadDoneData& upload_done_data,
       scoped_ptr<std::string> post_data);
 
@@ -158,6 +156,8 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
   // This is the FILE thread for Chromium. Some other thread for tests.
   base::ThreadChecker file_thread_checker_;
 
+  // Keeps track of number of currently open logs. Must be accessed on the UI
+  // thread.
   int log_count_;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
@@ -168,6 +168,9 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
       UploadDoneDataMap;
   // Only accessed on the UI thread.
   UploadDoneDataMap upload_done_data_;
+
+  // When shutting down, don't create new URLFetchers.
+  bool shutting_down_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLogUploader);
 };

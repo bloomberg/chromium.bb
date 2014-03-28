@@ -129,8 +129,6 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                                bool success,
                                const std::string& error_message);
 
-  scoped_refptr<net::URLRequestContextGetter> system_request_context_;
-
   scoped_ptr<unsigned char[]> log_buffer_;
   scoped_ptr<PartialCircularBuffer> circular_buffer_;
 
