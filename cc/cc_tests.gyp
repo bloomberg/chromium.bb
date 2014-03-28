@@ -103,7 +103,6 @@
       'trees/layer_tree_host_unittest_delegated.cc',
       'trees/layer_tree_host_unittest_occlusion.cc',
       'trees/layer_tree_host_unittest_picture.cc',
-      'trees/layer_tree_host_unittest_pinch_zoom.cc',
       'trees/layer_tree_host_unittest_scroll.cc',
       'trees/layer_tree_host_unittest_video.cc',
       'trees/occlusion_tracker_unittest.cc',

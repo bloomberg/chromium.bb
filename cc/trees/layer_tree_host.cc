@@ -1059,50 +1059,6 @@ void LayerTreeHost::ApplyScrollAndScale(const ScrollAndScaleSet& info) {
   }
 }
 
-gfx::Vector2d LayerTreeHost::DistributeScrollOffsetToViewports(
-    const gfx::Vector2d offset,
-    Layer* layer) {
-  DCHECK(layer);
-  if (layer != outer_viewport_scroll_layer_.get())
-    return offset;
-
-  gfx::Vector2d inner_viewport_offset =
-      inner_viewport_scroll_layer_->scroll_offset();
-  gfx::Vector2d outer_viewport_offset =
-      outer_viewport_scroll_layer_->scroll_offset();
-
-  if (offset == inner_viewport_offset + outer_viewport_offset) {
-    // In this case, nothing should change, so we just return to the outer
-    // viewport the offset is already has.
-    return outer_viewport_offset;
-  }
-
-  // In the spirit of document-scrolls-first, we always want any change to
-  // go to the outer viewport first.
-  gfx::Vector2d max_outer_viewport_scroll_offset =
-      outer_viewport_scroll_layer_->MaxScrollOffset();
-  gfx::Vector2d max_inner_viewport_scroll_offset =
-      inner_viewport_scroll_layer_->MaxScrollOffset();
-
-  // TODO(bokan): This trips on zoom-out due to how Blink orders scale-scroll.
-  //              Disabled until that's sorted out: crbug.com/336574
-  // gfx::Vector2d total_max_scroll_offset =
-  //    max_outer_viewport_scroll_offset + max_inner_viewport_scroll_offset;
-  // DCHECK(total_max_scroll_offset.x() >= offset.x() &&
-  //       total_max_scroll_offset.y() >= offset.y());
-
-  outer_viewport_offset = offset - inner_viewport_offset;
-  outer_viewport_offset.SetToMin(max_outer_viewport_scroll_offset);
-  outer_viewport_offset.SetToMax(gfx::Vector2d());
-
-  inner_viewport_offset = offset - outer_viewport_offset;
-  inner_viewport_offset.SetToMin(max_inner_viewport_scroll_offset);
-  inner_viewport_offset.SetToMax(gfx::Vector2d());
-  inner_viewport_scroll_layer_->SetScrollOffset(inner_viewport_offset);
-
-  return outer_viewport_offset;
-}
-
 void LayerTreeHost::StartRateLimiter() {
   if (animating_)
     return;

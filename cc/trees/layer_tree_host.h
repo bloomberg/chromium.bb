@@ -239,9 +239,6 @@ class CC_EXPORT LayerTreeHost {
                                base::TimeDelta duration);
 
   void ApplyScrollAndScale(const ScrollAndScaleSet& info);
-  gfx::Vector2d DistributeScrollOffsetToViewports(const gfx::Vector2d offset,
-                                                  Layer* layer);
-
   void SetImplTransform(const gfx::Transform& transform);
 
   // Virtual for tests.
