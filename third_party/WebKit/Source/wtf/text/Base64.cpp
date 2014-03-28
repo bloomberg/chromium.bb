@@ -149,21 +149,33 @@ static inline bool base64DecodeInternal(const T* data, unsigned length, Vector<c
 
     unsigned equalsSignCount = 0;
     unsigned outLength = 0;
+    bool hadError = false;
     for (unsigned idx = 0; idx < length; ++idx) {
         unsigned ch = data[idx];
         if (ch == '=') {
             ++equalsSignCount;
             // There should never be more than 2 padding characters.
-            if (policy == Base64ValidatePadding && equalsSignCount > 2)
-                return false;
+            if (policy == Base64ValidatePadding && equalsSignCount > 2) {
+                hadError = true;
+                break;
+            }
         } else if (('0' <= ch && ch <= '9') || ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || ch == '+' || ch == '/') {
-            if (equalsSignCount)
-                return false;
+            if (equalsSignCount) {
+                hadError = true;
+                break;
+            }
             out[outLength++] = base64DecMap[ch];
         } else if (!shouldIgnoreCharacter || !shouldIgnoreCharacter(ch)) {
-            return false;
+            hadError = true;
+            break;
         }
     }
+
+    if (outLength < out.size())
+        out.shrink(outLength);
+
+    if (hadError)
+        return false;
 
     if (!outLength)
         return !equalsSignCount;
