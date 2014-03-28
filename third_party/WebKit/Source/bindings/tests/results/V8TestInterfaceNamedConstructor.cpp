@@ -53,14 +53,14 @@ static void TestInterfaceNamedConstructorConstructorGetter(v8::Local<v8::String>
     v8SetReturnValue(info, perContextData->constructorForType(WrapperTypeInfo::unwrap(data)));
 }
 
-static void TestInterfaceNamedConstructorReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void TestInterfaceNamedConstructorReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    info.This()->ForceSet(name, jsValue);
+    info.This()->ForceSet(name, v8Value);
 }
 
-static void TestInterfaceNamedConstructorReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void TestInterfaceNamedConstructorReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorReplaceableAttributeSetter(name, jsValue, info);
+    TestInterfaceNamedConstructorV8Internal::TestInterfaceNamedConstructorReplaceableAttributeSetter(name, v8Value, info);
 }
 
 } // namespace TestInterfaceNamedConstructorV8Internal
@@ -159,14 +159,14 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceNamedConstructor::domTemplate(v8
     return result;
 }
 
-bool V8TestInterfaceNamedConstructor::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool V8TestInterfaceNamedConstructor::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Handle<v8::Object> V8TestInterfaceNamedConstructor::findInstanceInPrototypeChain(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestInterfaceNamedConstructor::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceNamedConstructor* V8TestInterfaceNamedConstructor::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)

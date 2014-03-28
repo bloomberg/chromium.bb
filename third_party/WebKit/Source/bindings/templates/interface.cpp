@@ -82,7 +82,7 @@ static void {{cpp_class}}ConstructorGetter(v8::Local<v8::String>, const v8::Prop
 {% block replaceable_attribute_setter_and_callback %}
 {% if has_replaceable_attributes or has_constructor_attributes %}
 {# FIXME: rename to ForceSetAttributeOnThis, since also used for Constructors #}
-static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     {% if is_check_security %}
     {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
@@ -94,13 +94,13 @@ static void {{cpp_class}}ReplaceableAttributeSetter(v8::Local<v8::String> name, 
         return;
     }
     {% endif %}
-    info.This()->ForceSet(name, jsValue);
+    info.This()->ForceSet(name, v8Value);
 }
 
 {# FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors #}
-static void {{cpp_class}}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}ReplaceableAttributeSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
-    {{cpp_class}}V8Internal::{{cpp_class}}ReplaceableAttributeSetter(name, jsValue, info);
+    {{cpp_class}}V8Internal::{{cpp_class}}ReplaceableAttributeSetter(name, v8Value, info);
 }
 
 {% endif %}
@@ -176,7 +176,7 @@ static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCall
 {% block indexed_property_setter %}
 {% if indexed_property_setter and not indexed_property_setter.is_custom %}
 {% set setter = indexed_property_setter %}
-static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {{cpp_class}}* impl = {{v8_class}}::toNative(info.Holder());
     {{setter.v8_value_to_local_cpp_value}};
@@ -186,7 +186,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
     {% if setter.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if (!isUndefinedOrNull(jsValue) && !V8{{setter.idl_type}}::hasInstance(jsValue, info.GetIsolate())) {
+    if (!isUndefinedOrNull(v8Value) && !V8{{setter.idl_type}}::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type '{{setter.idl_type}}'.");
         exceptionState.throwIfNeeded();
         return;
@@ -202,7 +202,7 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
     {% endif %}
     if (!result)
         return;
-    v8SetReturnValue(info, jsValue);
+    v8SetReturnValue(info, v8Value);
 }
 
 {% endif %}
@@ -213,13 +213,13 @@ static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, 
 {% block indexed_property_setter_callback %}
 {% if indexed_property_setter %}
 {% set setter = indexed_property_setter %}
-static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void indexedPropertySetterCallback(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMIndexedProperty");
     {% if setter.is_custom %}
-    {{v8_class}}::indexedPropertySetterCustom(index, jsValue, info);
+    {{v8_class}}::indexedPropertySetterCustom(index, v8Value, info);
     {% else %}
-    {{cpp_class}}V8Internal::indexedPropertySetter(index, jsValue, info);
+    {{cpp_class}}V8Internal::indexedPropertySetter(index, v8Value, info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -334,7 +334,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 {% block named_property_setter %}
 {% if named_property_setter and not named_property_setter.is_custom %}
 {% set setter = named_property_setter %}
-static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     {% if not is_override_builtins %}
     if (info.Holder()->HasRealNamedProperty(name))
@@ -363,7 +363,7 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
     {% endif %}
     if (!result)
         return;
-    v8SetReturnValue(info, jsValue);
+    v8SetReturnValue(info, v8Value);
 }
 
 {% endif %}
@@ -374,13 +374,13 @@ static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value>
 {% block named_property_setter_callback %}
 {% if named_property_setter %}
 {% set setter = named_property_setter %}
-static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMNamedProperty");
     {% if setter.is_custom %}
-    {{v8_class}}::namedPropertySetterCustom(name, jsValue, info);
+    {{v8_class}}::namedPropertySetterCustom(name, v8Value, info);
     {% else %}
-    {{cpp_class}}V8Internal::namedPropertySetter(name, jsValue, info);
+    {{cpp_class}}V8Internal::namedPropertySetter(name, v8Value, info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
@@ -524,7 +524,7 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 {##############################################################################}
 {% block origin_safe_method_setter %}
 {% if has_origin_safe_method_setter %}
-static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     v8::Handle<v8::Object> holder = {{v8_class}}::findInstanceInPrototypeChain(info.This(), isolate);
@@ -538,13 +538,13 @@ static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::
         return;
     }
 
-    V8HiddenValue::setHiddenValue(isolate, info.This(), name, jsValue);
+    V8HiddenValue::setHiddenValue(isolate, info.This(), name, v8Value);
 }
 
-static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    {{cpp_class}}V8Internal::{{cpp_class}}OriginSafeMethodSetter(name, jsValue, info);
+    {{cpp_class}}V8Internal::{{cpp_class}}OriginSafeMethodSetter(name, v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -1113,14 +1113,14 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 
 {##############################################################################}
 {% block has_instance %}
-bool {{v8_class}}::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool {{v8_class}}::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+v8::Handle<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 {% endblock %}

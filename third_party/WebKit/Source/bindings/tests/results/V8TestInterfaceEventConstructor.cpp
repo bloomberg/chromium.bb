@@ -180,12 +180,12 @@ static void initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttri
     v8::Handle<v8::Object> holder = info.Holder();
     TestInterfaceEventConstructor* impl = V8TestInterfaceEventConstructor::toNative(holder);
     bool isNull = false;
-    RefPtr<TestInterfaceEmpty> jsValue = impl->initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute(isNull);
+    RefPtr<TestInterfaceEmpty> v8Value = impl->initializedByEventConstructorReadonlyNullableTestInterfaceEmptyAttribute(isNull);
     if (isNull) {
         v8SetReturnValueNull(info);
         return;
     }
-    RefPtr<TestInterfaceEmpty> result(jsValue);
+    RefPtr<TestInterfaceEmpty> result(v8Value);
     if (result && DOMDataStore::setReturnValueFromWrapper<V8TestInterfaceEmpty>(info.GetReturnValue(), result.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8(result.get(), holder, info.GetIsolate());
@@ -385,14 +385,14 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceEventConstructor::domTemplate(v8
     return result;
 }
 
-bool V8TestInterfaceEventConstructor::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool V8TestInterfaceEventConstructor::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Handle<v8::Object> V8TestInterfaceEventConstructor::findInstanceInPrototypeChain(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestInterfaceEventConstructor::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceEventConstructor* V8TestInterfaceEventConstructor::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)

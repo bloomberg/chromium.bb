@@ -148,14 +148,14 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructor2::domTemplate(v8::Is
     return result;
 }
 
-bool V8TestInterfaceConstructor2::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool V8TestInterfaceConstructor2::hasInstance(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
 }
 
-v8::Handle<v8::Object> V8TestInterfaceConstructor2::findInstanceInPrototypeChain(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestInterfaceConstructor2::findInstanceInPrototypeChain(v8::Handle<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, jsValue);
+    return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
 }
 
 TestInterfaceConstructor2* V8TestInterfaceConstructor2::toNativeWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)

@@ -607,7 +607,7 @@ def property_setter(setter):
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
-            extended_attributes, 'jsValue', 'propertyValue'),
+            extended_attributes, 'v8Value', 'propertyValue'),
     }
 
 

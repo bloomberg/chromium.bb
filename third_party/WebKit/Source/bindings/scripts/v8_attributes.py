@@ -172,7 +172,7 @@ def generate_getter(interface, attribute, contents):
         'ReflectOnly' in extended_attributes or
         contents['is_getter_raises_exception']):
         contents['cpp_value_original'] = cpp_value
-        cpp_value = 'jsValue'
+        cpp_value = 'v8Value'
         # EventHandler has special handling
         if base_idl_type != 'EventHandler' and idl_type.is_interface_type:
             release = True
@@ -280,7 +280,7 @@ def generate_setter(interface, attribute, contents):
 
     contents.update({
         'cpp_setter': setter_expression(interface, attribute, contents),
-        'v8_value_to_local_cpp_value': attribute.idl_type.v8_value_to_local_cpp_value(extended_attributes, 'jsValue', 'cppValue'),
+        'v8_value_to_local_cpp_value': attribute.idl_type.v8_value_to_local_cpp_value(extended_attributes, 'v8Value', 'cppValue'),
     })
 
 
@@ -302,9 +302,9 @@ def setter_expression(interface, attribute, contents):
         if (interface.name in ['Window', 'WorkerGlobalScope'] and
             attribute.name == 'onerror'):
             includes.add('bindings/v8/V8ErrorHandler.h')
-            arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(jsValue, true, info.GetIsolate())')
+            arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(v8Value, true, info.GetIsolate())')
         else:
-            arguments.append('V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)')
+            arguments.append('V8EventListenerList::getEventListener(v8Value, true, ListenerFindOrCreate)')
     elif idl_type.is_interface_type and not idl_type.array_type:
         # FIXME: should be able to eliminate WTF::getPtr in most or all cases
         arguments.append('WTF::getPtr(cppValue)')

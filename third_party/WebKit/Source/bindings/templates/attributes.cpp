@@ -27,9 +27,9 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {{cpp_class}}* impl = {{v8_class}}::toNative(holder);
     if (!impl->{{attribute.cached_attribute_validation_method}}()) {
-        v8::Handle<v8::Value> jsValue = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
-        if (!jsValue.IsEmpty()) {
-            v8SetReturnValue(info, jsValue);
+        v8::Handle<v8::Value> v8Value = V8HiddenValue::getHiddenValue(info.GetIsolate(), holder, propertyName);
+        if (!v8Value.IsEmpty()) {
+            v8SetReturnValue(info, v8Value);
             return;
         }
     }
@@ -116,29 +116,29 @@ const v8::PropertyCallbackInfo<v8::Value>& info
    one of those. If not, set it to the empty string.
    http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values #}
 {% if reflect_empty %}
-if (jsValue.isNull()) {
+if (v8Value.isNull()) {
 {% if reflect_missing %}
-    jsValue = "{{reflect_missing}}";
+    v8Value = "{{reflect_missing}}";
 {% else %}
     ;
 {% endif %}
-} else if (jsValue.isEmpty()) {
-    jsValue = "{{reflect_empty}}";
+} else if (v8Value.isEmpty()) {
+    v8Value = "{{reflect_empty}}";
 {% else %}
-if (jsValue.isEmpty()) {
+if (v8Value.isEmpty()) {
 {# FIXME: should use [ReflectEmpty] instead; need to change IDL files #}
 {% if reflect_missing %}
-    jsValue = "{{reflect_missing}}";
+    v8Value = "{{reflect_missing}}";
 {% else %}
     ;
 {% endif %}
 {% endif %}
 {% for value in reflect_only_values %}
-} else if (equalIgnoringCase(jsValue, "{{value}}")) {
-    jsValue = "{{value}}";
+} else if (equalIgnoringCase(v8Value, "{{value}}")) {
+    v8Value = "{{value}}";
 {% endfor %}
 } else {
-    jsValue = "{{reflect_invalid}}";
+    v8Value = "{{reflect_invalid}}";
 }
 {% endmacro %}
 
@@ -200,9 +200,9 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
 {% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(
 {%- if attribute.is_expose_js_accessors %}
-v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info
+v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 {%- else %}
-v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
+v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
     {% if attribute.is_reflect and attribute.idl_type == 'DOMString' and
@@ -220,7 +220,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.has_strict_type_checking %}
     {# Type checking for interface types (if interface not implemented, throw
        TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if (!isUndefinedOrNull(jsValue) && !V8{{attribute.idl_type}}::hasInstance(jsValue, info.GetIsolate())) {
+    if (!isUndefinedOrNull(v8Value) && !V8{{attribute.idl_type}}::hasInstance(v8Value, info.GetIsolate())) {
         exceptionState.throwTypeError("The provided value is not of type '{{attribute.idl_type}}'.");
         exceptionState.throwIfNeeded();
         return;
@@ -246,7 +246,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.idl_type != 'EventHandler' %}
     {{attribute.v8_value_to_local_cpp_value}};
     {% elif not is_node %}{# EventHandler hack #}
-    moveEventListenerToNewWrapper(holder, {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
+    moveEventListenerToNewWrapper(holder, {{attribute.event_handler_getter_expression}}, v8Value, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
     {% if attribute.enum_validation_expression %}
     {# Setter ignores invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
@@ -286,11 +286,11 @@ static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
 {%- if attribute.is_expose_js_accessors %}
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- else %}
-v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
+v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
     {% if attribute.is_expose_js_accessors %}
-    v8::Local<v8::Value> jsValue = info[0];
+    v8::Local<v8::Value> v8Value = info[0];
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     {% if attribute.deprecate_as %}
@@ -302,7 +302,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
     if (contextData && contextData->activityLogger()) {
-        v8::Handle<v8::Value> loggerArg[] = { jsValue };
+        v8::Handle<v8::Value> loggerArg[] = { v8Value };
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 1, &loggerArg[0], "Setter");
     }
     {% endif %}
@@ -310,9 +310,9 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.has_custom_setter %}
-    {{v8_class}}::{{attribute.name}}AttributeSetterCustom(jsValue, info);
+    {{v8_class}}::{{attribute.name}}AttributeSetterCustom(v8Value, info);
     {% else %}
-    {{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(jsValue, info);
+    {{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(v8Value, info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
