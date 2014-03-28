@@ -14,12 +14,15 @@
 #import "base/mac/scoped_nsexception_enabler.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/phone_number.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -46,7 +49,8 @@ class AuxiliaryProfilesImpl {
   virtual ~AuxiliaryProfilesImpl() {}
 
   // Import the "me" card from the Mac Address Book and fill in |profiles_|.
-  void GetAddressBookMeCard(const std::string& app_locale);
+  void GetAddressBookMeCard(const std::string& app_locale,
+                            PrefService* pref_service);
 
  private:
   void GetAddressBookNames(ABPerson* me,
@@ -73,8 +77,8 @@ class AuxiliaryProfilesImpl {
 // from the active user's address book.  It looks for the user address
 // information and translates it to the internal list of |AutofillProfile| data
 // structures.
-void AuxiliaryProfilesImpl::GetAddressBookMeCard(
-    const std::string& app_locale) {
+void AuxiliaryProfilesImpl::GetAddressBookMeCard(const std::string& app_locale,
+                                                 PrefService* pref_service) {
   profiles_.clear();
 
   // +[ABAddressBook sharedAddressBook] throws an exception internally in
@@ -85,6 +89,13 @@ void AuxiliaryProfilesImpl::GetAddressBookMeCard(
   ABAddressBook* addressBook = base::mac::RunBlockIgnoringExceptions(^{
       return [ABAddressBook sharedAddressBook];
   });
+  UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailable", addressBook != nil);
+  if (!pref_service->GetBoolean(prefs::kAutofillAuxiliaryProfilesQueried)) {
+    pref_service->SetBoolean(prefs::kAutofillAuxiliaryProfilesQueried, true);
+    UMA_HISTOGRAM_BOOLEAN("Autofill.AddressBookAvailableOnFirstAttempt",
+                          addressBook != nil);
+  }
+
   ABPerson* me = [addressBook me];
   if (!me)
     return;
@@ -267,7 +278,7 @@ void AuxiliaryProfilesImpl::GetAddressBookPhoneNumbers(
 // Populate |auxiliary_profiles_| with the Address Book data.
 void PersonalDataManager::LoadAuxiliaryProfiles() const {
   AuxiliaryProfilesImpl impl(&auxiliary_profiles_);
-  impl.GetAddressBookMeCard(app_locale_);
+  impl.GetAddressBookMeCard(app_locale_, pref_service_);
 }
 
 }  // namespace autofill

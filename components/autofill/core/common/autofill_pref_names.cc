@@ -12,6 +12,12 @@ namespace prefs {
 const char kAutofillAuxiliaryProfilesEnabled[] =
     "autofill.auxiliary_profiles_enabled";
 
+// Boolean that is true when at least one read request for auxiliary Autofill
+// profiles has been issued.  Currently applies only to auxiliary profiles on
+// Mac.
+const char kAutofillAuxiliaryProfilesQueried[] =
+    "autofill.auxiliary_profiles_queried";
+
 // Boolean that is true if Autofill is enabled and allowed to save profile data.
 const char kAutofillEnabled[] = "autofill.enabled";
 

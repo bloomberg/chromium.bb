@@ -206,12 +206,18 @@ void AutofillManager::RegisterProfilePrefs(
       prefs::kAutofillAuxiliaryProfilesEnabled,
       true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#else
+#else  // defined(OS_MACOSX) || defined(OS_ANDROID)
   registry->RegisterBooleanPref(
       prefs::kAutofillAuxiliaryProfilesEnabled,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-#endif
+#endif  // defined(OS_MACOSX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX)
+  registry->RegisterBooleanPref(
+      prefs::kAutofillAuxiliaryProfilesQueried,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+#endif  // defined(OS_MACOSX)
   registry->RegisterDoublePref(
       prefs::kAutofillPositiveUploadRate,
       kAutofillPositiveUploadRateDefaultValue,

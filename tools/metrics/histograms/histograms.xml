@@ -1487,6 +1487,23 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Autofill.AddressBookAvailable" enum="BooleanAvailable">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    Whether the Mac AddressBook was available on an attempt to read data from
+    it.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.AddressBookAvailableOnFirstAttempt"
+    enum="BooleanAvailable">
+  <owner>isherman@chromium.org</owner>
+  <summary>
+    Whether the Mac AddressBook was available on the *first* attempt to read
+    data from it.  This is only recorded once per Chrome profile.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.AddressSuggestionsCount">
   <owner>isherman@chromium.org</owner>
   <summary>

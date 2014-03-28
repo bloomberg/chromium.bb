@@ -11,6 +11,7 @@ namespace prefs {
 // Alphabetical list of preference names specific to the Autofill
 // component. Keep alphabetized, and document each in the .cc file.
 extern const char kAutofillAuxiliaryProfilesEnabled[];
+extern const char kAutofillAuxiliaryProfilesQueried[];
 extern const char kAutofillEnabled[];
 extern const char kAutofillNegativeUploadRate[];
 extern const char kAutofillPositiveUploadRate[];
