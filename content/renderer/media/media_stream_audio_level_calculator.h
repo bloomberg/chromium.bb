@@ -20,8 +20,7 @@ class MediaStreamAudioLevelCalculator {
   ~MediaStreamAudioLevelCalculator();
 
   // Calculates the signal level of the audio data.
-  // Returns the level of bars that the volume animation UI uses for
-  // presenting the energy level of the audio data.
+  // Returns the absolute value of the amplitude of the signal.
   int Calculate(const int16* audio_data, int number_of_channels,
                 int number_of_frames);
 
