@@ -15,6 +15,7 @@
 
 namespace base {
 class TaskRunner;
+class TimeDelta;
 }
 
 namespace tracked_objects {
@@ -55,8 +56,10 @@ class OneShotEvent {
   void Signal();
 
   // Scheduled |task| to be called on |runner| after is_signaled()
-  // becomes true.  Inside |task|, if this OneShotEvent is still
-  // alive, CHECK(is_signaled()) will never fail (which implies that
+  // becomes true. If called with |delay|, then the task will happen
+  // (roughly) |delay| after is_signaled(), *not* |delay| after the
+  // post. Inside |task|, if this OneShotEvent is still alive,
+  // CHECK(is_signaled()) will never fail (which implies that
   // OneShotEvent::Reset() doesn't exist).
   //
   // If |*this| is destroyed before being released, none of these
@@ -78,9 +81,17 @@ class OneShotEvent {
   void Post(const tracked_objects::Location& from_here,
             const base::Closure& task,
             const scoped_refptr<base::TaskRunner>& runner) const;
+  void PostDelayed(const tracked_objects::Location& from_here,
+                   const base::Closure& task,
+                   const base::TimeDelta& delay) const;
 
  private:
   struct TaskInfo;
+
+  void PostImpl(const tracked_objects::Location& from_here,
+                const base::Closure& task,
+                const scoped_refptr<base::TaskRunner>& runner,
+                const base::TimeDelta& delay) const;
 
   base::ThreadChecker thread_checker_;
 

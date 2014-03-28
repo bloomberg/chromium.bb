@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_error_ui.h"
+#include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
@@ -57,7 +58,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/features/feature_channel.h"
-#include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -146,13 +146,6 @@ static const int kMaxExtensionAcknowledgePromptCount = 3;
 
 // Wait this many seconds after an extensions becomes idle before updating it.
 static const int kUpdateIdleDelay = 5;
-
-// Wait this many seconds before trying to garbage collect extensions again.
-static const int kGarbageCollectRetryDelay = 30;
-
-// Wait this many seconds after startup to see if there are any extensions
-// which can be garbage collected.
-static const int kGarbageCollectStartupDelay = 30;
 
 static bool IsSharedModule(const Extension* extension) {
   return SharedModuleInfo::IsSharedModule(extension);
@@ -340,10 +333,8 @@ ExtensionService::ExtensionService(Profile* profile,
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
       installs_delayed_for_gc_(false),
-      is_first_run_(false) {
-#if defined(OS_CHROMEOS)
-  disable_garbage_collection_ = false;
-#endif
+      is_first_run_(false),
+      garbage_collector_(new extensions::ExtensionGarbageCollector(this)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
@@ -529,15 +520,6 @@ void ExtensionService::Init() {
     // rather than running immediately at startup.
     CheckForExternalUpdates();
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
-        base::TimeDelta::FromSeconds(kGarbageCollectStartupDelay));
-
-    if (extension_prefs_->NeedsStorageGarbageCollection()) {
-      GarbageCollectIsolatedStorage();
-      extension_prefs_->SetNeedsStorageGarbageCollection(false);
-    }
     system_->management_policy()->RegisterProvider(
         shared_module_policy_provider_.get());
 
@@ -1563,52 +1545,6 @@ void ExtensionService::ReloadExtensionsForTest() {
   // times.
 }
 
-void ExtensionService::GarbageCollectExtensions() {
-#if defined(OS_CHROMEOS)
-  if (disable_garbage_collection_)
-    return;
-#endif
-
-  if (extension_prefs_->pref_service()->ReadOnly())
-    return;
-
-  bool clean_temp_dir = true;
-
-  if (pending_extension_manager()->HasPendingExtensions()) {
-    // Don't garbage collect temp dir while there are pending installations,
-    // which may be using the temporary installation directory. Try to garbage
-    // collect again later.
-    clean_temp_dir = false;
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&ExtensionService::GarbageCollectExtensions, AsWeakPtr()),
-        base::TimeDelta::FromSeconds(kGarbageCollectRetryDelay));
-  }
-
-  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> info(
-      extension_prefs_->GetInstalledExtensionsInfo());
-
-  std::multimap<std::string, base::FilePath> extension_paths;
-  for (size_t i = 0; i < info->size(); ++i)
-    extension_paths.insert(std::make_pair(info->at(i)->extension_id,
-                                          info->at(i)->extension_path));
-
-  info = extension_prefs_->GetAllDelayedInstallInfo();
-  for (size_t i = 0; i < info->size(); ++i)
-    extension_paths.insert(std::make_pair(info->at(i)->extension_id,
-                                          info->at(i)->extension_path));
-
-  if (!GetFileTaskRunner()->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &extension_file_util::GarbageCollectExtensions,
-              install_directory_,
-              extension_paths,
-              clean_temp_dir))) {
-    NOTREACHED();
-  }
-}
-
 void ExtensionService::SetReadyAndNotifyListeners() {
   ready_->Signal();
   content::NotificationService::current()->Notify(
@@ -2094,7 +2030,7 @@ void ExtensionService::OnExtensionInstalled(
   }
 
   ImportStatus status = SatisfyImports(extension);
-  if (installs_delayed_for_gc()) {
+  if (installs_delayed_for_gc_) {
     extension_prefs_->SetDelayedInstallInfo(
         extension,
         initial_state,
@@ -2549,44 +2485,14 @@ bool ExtensionService::ShouldDelayExtensionUpdate(
   }
 }
 
-void ExtensionService::GarbageCollectIsolatedStorage() {
-  scoped_ptr<base::hash_set<base::FilePath> > active_paths(
-      new base::hash_set<base::FilePath>());
-  const ExtensionSet& extensions = registry_->enabled_extensions();
-  for (ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end(); ++it) {
-    if (extensions::AppIsolationInfo::HasIsolatedStorage(it->get())) {
-      active_paths->insert(BrowserContext::GetStoragePartitionForSite(
-                               profile_,
-                               extensions::util::GetSiteForExtensionId(
-                                   (*it)->id(), profile()))->GetPath());
-    }
-  }
-
-  // The data of ephemeral apps can outlive their cache lifetime. Ensure
-  // they are not garbage collected.
-  scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> evicted_apps_info(
-      extension_prefs_->GetEvictedEphemeralAppsInfo());
-  for (size_t i = 0; i < evicted_apps_info->size(); ++i) {
-    extensions::ExtensionInfo* info = evicted_apps_info->at(i).get();
-    if (extensions::util::HasIsolatedStorage(*info)) {
-      active_paths->insert(BrowserContext::GetStoragePartitionForSite(
-          profile_,
-          extensions::util::GetSiteForExtensionId(
-              info->extension_id, profile()))->GetPath());
-    }
-  }
-
-  DCHECK(!installs_delayed_for_gc());
-  set_installs_delayed_for_gc(true);
-  BrowserContext::GarbageCollectStoragePartitions(
-      profile_, active_paths.Pass(),
-      base::Bind(&ExtensionService::OnGarbageCollectIsolatedStorageFinished,
-                 AsWeakPtr()));
+void ExtensionService::OnGarbageCollectIsolatedStorageStart() {
+  DCHECK(!installs_delayed_for_gc_);
+  installs_delayed_for_gc_ = true;
 }
 
 void ExtensionService::OnGarbageCollectIsolatedStorageFinished() {
-  set_installs_delayed_for_gc(false);
+  DCHECK(installs_delayed_for_gc_);
+  installs_delayed_for_gc_ = false;
   MaybeFinishDelayedInstallations();
 }
 
