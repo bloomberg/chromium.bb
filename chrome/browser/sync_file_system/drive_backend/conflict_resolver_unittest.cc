@@ -94,16 +94,29 @@ class ConflictResolverTest : public testing::Test {
   }
 
   void InitializeMetadataDatabase() {
-    SyncEngineInitializer initializer(context_.get(),
-                                      base::MessageLoopProxy::current(),
-                                      context_->GetDriveService(),
-                                      database_dir_.path(),
-                                      in_memory_env_.get());
+    SyncEngineInitializer* initializer =
+        new SyncEngineInitializer(context_.get(),
+                                  base::MessageLoopProxy::current(),
+                                  context_->GetDriveService(),
+                                  database_dir_.path(),
+                                  in_memory_env_.get());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    initializer.RunSequential(CreateResultReceiver(&status));
+    sync_task_manager_->ScheduleSyncTask(
+        FROM_HERE,
+        scoped_ptr<SyncTask>(initializer),
+        SyncTaskManager::PRIORITY_MED,
+        base::Bind(&ConflictResolverTest::DidInitializeMetadataDatabase,
+                   base::Unretained(this), initializer, &status));
+
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(SYNC_STATUS_OK, status);
-    context_->SetMetadataDatabase(initializer.PassMetadataDatabase());
+  }
+
+  void DidInitializeMetadataDatabase(SyncEngineInitializer* initializer,
+                                     SyncStatusCode* status_out,
+                                     SyncStatusCode status) {
+    context_->SetMetadataDatabase(initializer->PassMetadataDatabase());
+    *status_out = status;
   }
 
   void RegisterApp(const std::string& app_id,

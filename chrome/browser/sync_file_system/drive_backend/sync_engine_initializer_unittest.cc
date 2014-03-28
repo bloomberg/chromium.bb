@@ -13,6 +13,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -48,10 +49,15 @@ class SyncEngineInitializerTest : public testing::Test {
         "sync_file_system/account_metadata.json"));
     ASSERT_TRUE(fake_drive_service_.LoadResourceListForWapi(
         "gdata/empty_feed.json"));
+
+    sync_task_manager_.reset(new SyncTaskManager(
+        base::WeakPtr<SyncTaskManager::Client>(),
+        1 /* maximum_parallel_task */));
+    sync_task_manager_->Initialize(SYNC_STATUS_OK);
   }
 
   virtual void TearDown() OVERRIDE {
-    initializer_.reset();
+    sync_task_manager_.reset();
     metadata_database_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -61,19 +67,31 @@ class SyncEngineInitializerTest : public testing::Test {
   }
 
   SyncStatusCode RunInitializer() {
-    initializer_.reset(new SyncEngineInitializer(
-        NULL,
-        base::MessageLoopProxy::current(),
-        &fake_drive_service_,
-        database_path(),
-        in_memory_env_.get()));
+    SyncEngineInitializer* initializer =
+        new SyncEngineInitializer(
+            NULL,
+            base::MessageLoopProxy::current(),
+            &fake_drive_service_,
+            database_path(),
+            in_memory_env_.get());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
 
-    initializer_->RunSequential(CreateResultReceiver(&status));
-    base::RunLoop().RunUntilIdle();
+    sync_task_manager_->ScheduleSyncTask(
+        FROM_HERE,
+        scoped_ptr<SyncTask>(initializer),
+        SyncTaskManager::PRIORITY_MED,
+        base::Bind(&SyncEngineInitializerTest::DidRunInitializer,
+                   base::Unretained(this), initializer, &status));
 
-    metadata_database_ = initializer_->PassMetadataDatabase();
+    base::RunLoop().RunUntilIdle();
     return status;
+  }
+
+  void DidRunInitializer(SyncEngineInitializer* initializer,
+                         SyncStatusCode* status_out,
+                         SyncStatusCode status) {
+    *status_out = status;
+    metadata_database_ = initializer->PassMetadataDatabase();
   }
 
   SyncStatusCode PopulateDatabase(
@@ -201,8 +219,8 @@ class SyncEngineInitializerTest : public testing::Test {
   scoped_ptr<leveldb::Env> in_memory_env_;
   drive::FakeDriveService fake_drive_service_;
 
-  scoped_ptr<SyncEngineInitializer> initializer_;
   scoped_ptr<MetadataDatabase> metadata_database_;
+  scoped_ptr<SyncTaskManager> sync_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngineInitializerTest);
 };
