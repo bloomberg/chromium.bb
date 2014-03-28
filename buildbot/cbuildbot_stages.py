@@ -1205,8 +1205,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
       for builder_run in self._run.GetUngroupedBuilderRuns():
         for board in builder_run.config.boards:
           SetupBoardStage(builder_run, board=board, suffix=suffix).Run()
-          BuildPackagesStage(builder_run, board=board, archive_stage=None,
-                             suffix=suffix).Run()
+          BuildPackagesStage(builder_run, board=board, suffix=suffix).Run()
     except results_lib.StepFailure:
       return False
 
