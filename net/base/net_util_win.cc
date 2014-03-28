@@ -138,8 +138,7 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
   return true;
 }
 
-bool GetNetworkList(NetworkInterfaceList* networks,
-                    HostScopeVirtualInterfacePolicy policy) {
+bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   // GetAdaptersAddresses() may require IO operations.
   base::ThreadRestrictions::AssertIOAllowed();
   bool is_xp = base::win::GetVersion() < base::win::VERSION_VISTA;

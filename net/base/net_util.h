@@ -530,10 +530,13 @@ struct NET_EXPORT NetworkInterface {
 
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
 
-// Policy settings to include/exclude VMWare host only network interfaces.
-enum HostScopeVirtualInterfacePolicy {
-  INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
-  EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
+// Policy settings to include/exclude network interfaces.
+enum HostAddressSelectionPolicy {
+  EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES           = 0x1,
+  INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES           = 0x2,
+  // Include temp address only when interface has both permanent and
+  // temp addresses.
+  INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE      = 0x4,
 };
 
 // Returns list of network interfaces except loopback interface. If an
@@ -541,7 +544,7 @@ enum HostScopeVirtualInterfacePolicy {
 // the list for each address.
 // Can be called only on a thread that allows IO.
 NET_EXPORT bool GetNetworkList(NetworkInterfaceList* networks,
-                               HostScopeVirtualInterfacePolicy policy);
+                               int policy);
 
 // General category of the IEEE 802.11 (wifi) physical layer operating mode.
 enum WifiPHYLayerProtocol {
