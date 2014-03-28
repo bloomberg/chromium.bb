@@ -114,8 +114,10 @@ class ReferenceResolver(object):
       category, node_name = node_info
       if namespace is not None and text.startswith('%s.' % namespace):
         text = text[len('%s.' % namespace):]
+      api_model = self._api_models.GetModel(api_name).Get()
+      filename = api_model.documentation_options.get('documented_in', api_name)
       return {
-        'href': '%s.html#%s-%s' % (api_name, category, name.replace('.', '-')),
+        'href': '%s#%s-%s' % (filename, category, name.replace('.', '-')),
         'text': text,
         'name': node_name
       }
@@ -125,7 +127,7 @@ class ReferenceResolver(object):
     # to other APIs.
     if ref in api_list:
       return {
-        'href': '%s.html' % ref,
+        'href': '%s' % ref,
         'text': ref,
         'name': ref
       }

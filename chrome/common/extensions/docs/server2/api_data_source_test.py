@@ -64,6 +64,12 @@ class _FakeAPIDataSource(object):
     return self._json[key]
 
 
+class _FakeNamespace(object):
+
+  def __init__(self):
+    self.documentation_options = {}
+
+
 class _FakeAPIModels(object):
 
   def __init__(self, names):
@@ -71,6 +77,9 @@ class _FakeAPIModels(object):
 
   def GetNames(self):
     return self._names
+
+  def GetModel(self, name):
+    return Future(value=_FakeNamespace())
 
 
 class _FakeTemplateCache(object):
@@ -160,15 +169,15 @@ class APIDataSourceTest(unittest.TestCase):
                       _FakeTemplateCache(),
                       self._features_bundle,
                       None).ToDict()
-    self.assertEquals(_MakeLink('ref_test.html#type-type2', 'type2'),
+    self.assertEquals(_MakeLink('ref_test#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
     self.assertEquals(
-        'A %s, or %s' % (_MakeLink('ref_test.html#type-type3', 'type3'),
-                         _MakeLink('ref_test.html#type-type2', 'type2')),
+        'A %s, or %s' % (_MakeLink('ref_test#type-type3', 'type3'),
+                         _MakeLink('ref_test#type-type2', 'type2')),
         _GetType(dict_, 'type2')['description'])
     self.assertEquals(
-        '%s != %s' % (_MakeLink('other.html#type-type2', 'other.type2'),
-                      _MakeLink('ref_test.html#type-type2', 'type2')),
+        '%s != %s' % (_MakeLink('other#type-type2', 'other.type2'),
+                      _MakeLink('ref_test#type-type2', 'type2')),
         _GetType(dict_, 'type3')['description'])
 
 
