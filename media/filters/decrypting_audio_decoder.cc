@@ -42,9 +42,6 @@ DecryptingAudioDecoder::DecryptingAudioDecoder(
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
       key_added_while_decode_pending_(false),
-      bits_per_channel_(0),
-      channel_layout_(CHANNEL_LAYOUT_NONE),
-      samples_per_second_(0),
       weak_factory_(this) {}
 
 void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
@@ -185,21 +182,6 @@ void DecryptingAudioDecoder::Stop(const base::Closure& closure) {
   task_runner_->PostTask(FROM_HERE, closure);
 }
 
-int DecryptingAudioDecoder::bits_per_channel() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return bits_per_channel_;
-}
-
-ChannelLayout DecryptingAudioDecoder::channel_layout() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return channel_layout_;
-}
-
-int DecryptingAudioDecoder::samples_per_second() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return samples_per_second_;
-}
-
 DecryptingAudioDecoder::~DecryptingAudioDecoder() {
   DCHECK(state_ == kUninitialized || state_ == kStopped) << state_;
 }
@@ -260,7 +242,8 @@ void DecryptingAudioDecoder::FinishInitialization(bool success) {
   }
 
   // Success!
-  UpdateDecoderConfig();
+  timestamp_helper_.reset(
+      new AudioTimestampHelper(config_.samples_per_second()));
 
   decryptor_->RegisterNewKeyCB(
       Decryptor::kAudio,
@@ -378,13 +361,6 @@ void DecryptingAudioDecoder::DoReset() {
   timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
   state_ = kIdle;
   base::ResetAndReturn(&reset_cb_).Run();
-}
-
-void DecryptingAudioDecoder::UpdateDecoderConfig() {
-  bits_per_channel_ = kSupportedBitsPerChannel;
-  channel_layout_ = config_.channel_layout();
-  samples_per_second_ = config_.samples_per_second();
-  timestamp_helper_.reset(new AudioTimestampHelper(samples_per_second_));
 }
 
 void DecryptingAudioDecoder::EnqueueFrames(

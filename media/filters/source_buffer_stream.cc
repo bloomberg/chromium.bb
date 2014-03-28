@@ -1352,21 +1352,6 @@ bool SourceBufferStream::UpdateAudioConfig(const AudioDecoderConfig& config) {
     return false;
   }
 
-  if (audio_configs_[0].samples_per_second() != config.samples_per_second()) {
-    MEDIA_LOG(log_cb_) << "Audio sample rate changes not allowed.";
-    return false;
-  }
-
-  if (audio_configs_[0].channel_layout() != config.channel_layout()) {
-    MEDIA_LOG(log_cb_) << "Audio channel layout changes not allowed.";
-    return false;
-  }
-
-  if (audio_configs_[0].bits_per_channel() != config.bits_per_channel()) {
-    MEDIA_LOG(log_cb_) << "Audio bits per channel changes not allowed.";
-    return false;
-  }
-
   if (audio_configs_[0].is_encrypted() != config.is_encrypted()) {
     MEDIA_LOG(log_cb_) << "Audio encryption changes not allowed.";
     return false;

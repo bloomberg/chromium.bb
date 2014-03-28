@@ -50,9 +50,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   virtual scoped_refptr<AudioBuffer> GetDecodeOutput() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
-  virtual int bits_per_channel() OVERRIDE;
-  virtual ChannelLayout channel_layout() OVERRIDE;
-  virtual int samples_per_second() OVERRIDE;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok
@@ -93,10 +90,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   // Resets decoder and calls |reset_cb_|.
   void DoReset();
 
-  // Updates audio configs from |demuxer_stream_| and resets
-  // |output_timestamp_base_| and |total_samples_decoded_|.
-  void UpdateDecoderConfig();
-
   // Sets timestamp and duration for |queued_audio_frames_| to make sure the
   // renderer always receives continuous frames without gaps and overlaps.
   void EnqueueFrames(const Decryptor::AudioBuffers& frames);
@@ -129,11 +122,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   bool key_added_while_decode_pending_;
 
   Decryptor::AudioBuffers queued_audio_frames_;
-
-  // Decoded audio format.
-  int bits_per_channel_;
-  ChannelLayout channel_layout_;
-  int samples_per_second_;
 
   scoped_ptr<AudioTimestampHelper> timestamp_helper_;
 

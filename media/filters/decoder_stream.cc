@@ -376,6 +376,10 @@ void DecoderStream<StreamType>::OnBufferReady(
   if (status == DemuxerStream::kConfigChanged) {
     FUNCTION_DVLOG(2) << ": " << "ConfigChanged";
     DCHECK(stream_->SupportsConfigChanges());
+
+    if (!config_change_observer_cb_.is_null())
+      config_change_observer_cb_.Run();
+
     state_ = STATE_FLUSHING_DECODER;
     if (!reset_cb_.is_null()) {
       AbortRead();

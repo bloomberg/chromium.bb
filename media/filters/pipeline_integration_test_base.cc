@@ -29,11 +29,12 @@ const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
       clockless_playback_(false),
-      pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
-                             new MediaLog())),
+      pipeline_(
+          new Pipeline(message_loop_.message_loop_proxy(), new MediaLog())),
       ended_(false),
       pipeline_status_(PIPELINE_OK),
-      last_video_frame_format_(VideoFrame::UNKNOWN) {
+      last_video_frame_format_(VideoFrame::UNKNOWN),
+      hardware_config_(AudioParameters(), AudioParameters()) {
   base::MD5Init(&md5_context_);
   EXPECT_CALL(*this, OnSetOpaque(true)).Times(AnyNumber());
 }
@@ -266,6 +267,13 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   audio_decoders.push_back(
       new OpusAudioDecoder(message_loop_.message_loop_proxy()));
 
+  AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                             CHANNEL_LAYOUT_STEREO,
+                             44100,
+                             16,
+                             512);
+  hardware_config_.UpdateOutputConfig(out_params);
+
   AudioRendererImpl* audio_renderer_impl = new AudioRendererImpl(
       message_loop_.message_loop_proxy(),
       (clockless_playback_)
@@ -274,7 +282,8 @@ PipelineIntegrationTestBase::CreateFilterCollection(
       audio_decoders.Pass(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this),
-                 decryptor));
+                 decryptor),
+      &hardware_config_);
   // Disable underflow if hashing is enabled.
   if (hashing_enabled_) {
     audio_sink_->StartAudioHashForTesting();

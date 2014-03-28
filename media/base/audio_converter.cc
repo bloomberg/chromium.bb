@@ -25,7 +25,7 @@ namespace media {
 AudioConverter::AudioConverter(const AudioParameters& input_params,
                                const AudioParameters& output_params,
                                bool disable_fifo)
-    : chunk_size_(output_params.frames_per_buffer()),
+    : chunk_size_(input_params.frames_per_buffer()),
       downmix_early_(false),
       resampler_frame_delay_(0),
       input_channel_count_(input_params.channels()) {
@@ -48,15 +48,16 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
   if (input_params.sample_rate() != output_params.sample_rate()) {
     DVLOG(1) << "Resampling from " << input_params.sample_rate() << " to "
              << output_params.sample_rate();
-    const double io_sample_rate_ratio = input_params.sample_rate() /
-        static_cast<double>(output_params.sample_rate());
     const int request_size = disable_fifo ? SincResampler::kDefaultRequestSize :
         input_params.frames_per_buffer();
+    const double io_sample_rate_ratio =
+        input_params.sample_rate() /
+        static_cast<double>(output_params.sample_rate());
     resampler_.reset(new MultiChannelResampler(
-        downmix_early_ ? output_params.channels() :
-            input_params.channels(),
-        io_sample_rate_ratio, request_size, base::Bind(
-            &AudioConverter::ProvideInput, base::Unretained(this))));
+        downmix_early_ ? output_params.channels() : input_params.channels(),
+        io_sample_rate_ratio,
+        request_size,
+        base::Bind(&AudioConverter::ProvideInput, base::Unretained(this))));
   }
 
   input_frame_duration_ = base::TimeDelta::FromMicroseconds(

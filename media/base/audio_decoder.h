@@ -69,11 +69,6 @@ class MEDIA_EXPORT AudioDecoder {
   // complete before deleting the decoder.
   virtual void Stop(const base::Closure& closure) = 0;
 
-  // Returns various information about the decoded audio format.
-  virtual int bits_per_channel() = 0;
-  virtual ChannelLayout channel_layout() = 0;
-  virtual int samples_per_second() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoder);
 };

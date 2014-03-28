@@ -38,8 +38,10 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class AudioBus;
+class AudioBufferConverter;
 class AudioSplicer;
 class DecryptingDemuxerStream;
+class AudioHardwareConfig;
 
 class MEDIA_EXPORT AudioRendererImpl
     : public AudioRenderer,
@@ -57,7 +59,8 @@ class MEDIA_EXPORT AudioRendererImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       AudioRendererSink* sink,
       ScopedVector<AudioDecoder> decoders,
-      const SetDecryptorReadyCB& set_decryptor_ready_cb);
+      const SetDecryptorReadyCB& set_decryptor_ready_cb,
+      AudioHardwareConfig* hardware_params);
   virtual ~AudioRendererImpl();
 
   // AudioRenderer implementation.
@@ -182,9 +185,16 @@ class MEDIA_EXPORT AudioRendererImpl
   // Called by the AudioBufferStream when a splice buffer is demuxed.
   void OnNewSpliceBuffer(base::TimeDelta);
 
+  // Called by the AudioBufferStream when a config change occurs.
+  void OnConfigChange();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   scoped_ptr<AudioSplicer> splicer_;
+  scoped_ptr<AudioBufferConverter> buffer_converter_;
+
+  // Whether or not we expect to handle config changes.
+  bool expecting_config_changes_;
 
   // The sink (destination) for rendered audio. |sink_| must only be accessed
   // on |task_runner_|. |sink_| must never be called under |lock_| or else we
@@ -193,7 +203,10 @@ class MEDIA_EXPORT AudioRendererImpl
 
   AudioBufferStream audio_buffer_stream_;
 
-  // AudioParameters constructed during Initialize().
+  // Interface to the hardware audio params.
+  const AudioHardwareConfig* const hardware_config_;
+
+  // Cached copy of hardware params from |hardware_config_|.
   AudioParameters audio_parameters_;
 
   // Callbacks provided during Initialize().

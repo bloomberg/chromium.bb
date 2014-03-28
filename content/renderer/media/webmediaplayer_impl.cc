@@ -40,6 +40,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/audio/null_audio_sink.h"
+#include "media/base/audio_hardware_config.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/filter_collection.h"
 #include "media/base/limits.h"
@@ -1165,11 +1166,12 @@ void WebMediaPlayerImpl::StartPipeline() {
   audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_));
   audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
 
-  scoped_ptr<media::AudioRenderer> audio_renderer(
-      new media::AudioRendererImpl(media_loop_,
-                                   audio_source_provider_.get(),
-                                   audio_decoders.Pass(),
-                                   set_decryptor_ready_cb));
+  scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
+      media_loop_,
+      audio_source_provider_.get(),
+      audio_decoders.Pass(),
+      set_decryptor_ready_cb,
+      RenderThreadImpl::current()->GetAudioHardwareConfig()));
   filter_collection->SetAudioRenderer(audio_renderer.Pass());
 
   // Create our video decoders and renderer.

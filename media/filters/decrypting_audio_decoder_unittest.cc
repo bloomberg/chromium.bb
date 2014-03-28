@@ -118,11 +118,6 @@ class DecryptingAudioDecoderTest : public testing::Test {
                        CHANNEL_LAYOUT_STEREO, kSampleRate, NULL, 0, true, true,
                        base::TimeDelta(), base::TimeDelta());
     InitializeAndExpectStatus(config_, PIPELINE_OK);
-
-    EXPECT_EQ(DecryptingAudioDecoder::kSupportedBitsPerChannel,
-              decoder_->bits_per_channel());
-    EXPECT_EQ(config_.channel_layout(), decoder_->channel_layout());
-    EXPECT_EQ(config_.samples_per_second(), decoder_->samples_per_second());
   }
 
   void Reinitialize() {
@@ -405,10 +400,6 @@ TEST_F(DecryptingAudioDecoderTest, Reinitialize_ConfigChange) {
 
   ReinitializeConfigChange(new_config);
   message_loop_.RunUntilIdle();
-
-  EXPECT_EQ(new_config.bits_per_channel(), decoder_->bits_per_channel());
-  EXPECT_EQ(new_config.channel_layout(), decoder_->channel_layout());
-  EXPECT_EQ(new_config.samples_per_second(), decoder_->samples_per_second());
 }
 
 // Test the case where the a key is added when the decryptor is in

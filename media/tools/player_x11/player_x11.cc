@@ -16,6 +16,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/null_audio_sink.h"
+#include "media/base/audio_hardware_config.h"
 #include "media/base/decryptor.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media.h"
@@ -137,11 +138,21 @@ void InitPipeline(
 
   ScopedVector<media::AudioDecoder> audio_decoders;
   audio_decoders.push_back(new media::FFmpegAudioDecoder(task_runner));
-  scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
-      task_runner,
-      new media::NullAudioSink(task_runner),
-      audio_decoders.Pass(),
-      media::SetDecryptorReadyCB()));
+  media::AudioParameters out_params(
+      media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+      media::CHANNEL_LAYOUT_STEREO,
+      44100,
+      16,
+      512);
+  media::AudioHardwareConfig hardware_config(out_params, out_params);
+
+  scoped_ptr<media::AudioRenderer> audio_renderer(
+      new media::AudioRendererImpl(task_runner,
+                                   new media::NullAudioSink(task_runner),
+                                   audio_decoders.Pass(),
+                                   media::SetDecryptorReadyCB(),
+                                   &hardware_config));
+
   collection->SetAudioRenderer(audio_renderer.Pass());
 
   base::WaitableEvent event(true, false);

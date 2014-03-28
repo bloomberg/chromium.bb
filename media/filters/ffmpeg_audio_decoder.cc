@@ -128,10 +128,6 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
       state_(kUninitialized),
-      bytes_per_channel_(0),
-      channel_layout_(CHANNEL_LAYOUT_NONE),
-      channels_(0),
-      samples_per_second_(0),
       av_sample_format_(0),
       last_input_timestamp_(kNoTimestamp()),
       output_frames_to_drop_(0) {}
@@ -195,21 +191,6 @@ scoped_refptr<AudioBuffer> FFmpegAudioDecoder::GetDecodeOutput() {
   scoped_refptr<AudioBuffer> out = queued_audio_.front();
   queued_audio_.pop_front();
   return out;
-}
-
-int FFmpegAudioDecoder::bits_per_channel() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return bytes_per_channel_ * 8;
-}
-
-ChannelLayout FFmpegAudioDecoder::channel_layout() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return channel_layout_;
-}
-
-int FFmpegAudioDecoder::samples_per_second() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return samples_per_second_;
 }
 
 void FFmpegAudioDecoder::Reset(const base::Closure& closure) {
@@ -286,8 +267,8 @@ void FFmpegAudioDecoder::DecodeBuffer(
         buffer->timestamp() < base::TimeDelta()) {
       // Dropping frames for negative timestamps as outlined in section A.2
       // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
-      output_frames_to_drop_ = floor(
-          0.5 + -buffer->timestamp().InSecondsF() * samples_per_second_);
+      output_frames_to_drop_ = floor(0.5 + -buffer->timestamp().InSecondsF() *
+                                               config_.samples_per_second());
     } else {
       if (last_input_timestamp_ != kNoTimestamp() &&
           buffer->timestamp() < last_input_timestamp_) {
@@ -392,17 +373,14 @@ bool FFmpegAudioDecoder::FFmpegDecode(
     int original_frames = 0;
     int channels = DetermineChannels(av_frame_.get());
     if (frame_decoded) {
-
-      // TODO(rileya) Remove this check once we properly support midstream audio
-      // config changes.
       if (av_frame_->sample_rate != config_.samples_per_second() ||
-          channels != channels_ ||
+          channels != ChannelLayoutToChannelCount(config_.channel_layout()) ||
           av_frame_->format != av_sample_format_) {
         DLOG(ERROR) << "Unsupported midstream configuration change!"
                     << " Sample Rate: " << av_frame_->sample_rate << " vs "
-                    << samples_per_second_
+                    << config_.samples_per_second()
                     << ", Channels: " << channels << " vs "
-                    << channels_
+                    << ChannelLayoutToChannelCount(config_.channel_layout())
                     << ", Sample Format: " << av_frame_->format << " vs "
                     << av_sample_format_;
 
@@ -417,7 +395,8 @@ bool FFmpegAudioDecoder::FFmpegDecode(
       output = reinterpret_cast<AudioBuffer*>(
           av_buffer_get_opaque(av_frame_->buf[0]));
 
-      DCHECK_EQ(channels_, output->channel_count());
+      DCHECK_EQ(ChannelLayoutToChannelCount(config_.channel_layout()),
+                output->channel_count());
       original_frames = av_frame_->nb_samples;
       int unread_frames = output->frame_count() - original_frames;
       DCHECK_GE(unread_frames, 0);
@@ -480,21 +459,6 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  // TODO(rileya) Remove this check once we properly support midstream audio
-  // config changes.
-  if (codec_context_.get() &&
-      (channel_layout_ != config_.channel_layout() ||
-       samples_per_second_ != config_.samples_per_second())) {
-    DVLOG(1) << "Unsupported config change :";
-    DVLOG(1) << "\tbytes_per_channel : " << bytes_per_channel_
-             << " -> " << config_.bytes_per_channel();
-    DVLOG(1) << "\tchannel_layout : " << channel_layout_
-             << " -> " << config_.channel_layout();
-    DVLOG(1) << "\tsample_rate : " << samples_per_second_
-             << " -> " << config_.samples_per_second();
-    return false;
-  }
-
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();
 
@@ -517,27 +481,21 @@ bool FFmpegAudioDecoder::ConfigureDecoder() {
 
   // Success!
   av_frame_.reset(av_frame_alloc());
-  channel_layout_ = config_.channel_layout();
-  samples_per_second_ = config_.samples_per_second();
   output_timestamp_helper_.reset(
       new AudioTimestampHelper(config_.samples_per_second()));
 
-  // Store initial values to guard against midstream configuration changes.
-  channels_ = codec_context_->channels;
-  if (channels_ != ChannelLayoutToChannelCount(channel_layout_)) {
+  av_sample_format_ = codec_context_->sample_fmt;
+
+  if (codec_context_->channels !=
+      ChannelLayoutToChannelCount(config_.channel_layout())) {
     DLOG(ERROR) << "Audio configuration specified "
-                << ChannelLayoutToChannelCount(channel_layout_)
+                << ChannelLayoutToChannelCount(config_.channel_layout())
                 << " channels, but FFmpeg thinks the file contains "
-                << channels_ << " channels";
+                << codec_context_->channels << " channels";
     ReleaseFFmpegResources();
     state_ = kUninitialized;
     return false;
   }
-  av_sample_format_ = codec_context_->sample_fmt;
-  sample_format_ = AVSampleFormatToSampleFormat(
-      static_cast<AVSampleFormat>(av_sample_format_));
-  bytes_per_channel_ = SampleFormatToBytesPerChannel(sample_format_);
-
   return true;
 }
 

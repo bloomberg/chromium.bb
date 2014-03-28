@@ -98,6 +98,15 @@ class MEDIA_EXPORT DecoderStream {
     splice_observer_cb_ = splice_observer;
   }
 
+  // Allows callers to register for notification of config changes; this is
+  // called immediately after recieving the 'kConfigChanged' status from the
+  // DemuxerStream, before any action is taken to handle the config change.
+  typedef base::Closure ConfigChangeObserverCB;
+  void set_config_change_observer(
+      const ConfigChangeObserverCB& config_change_observer) {
+    config_change_observer_cb_ = config_change_observer;
+  }
+
  private:
   enum State {
     STATE_UNINITIALIZED,
@@ -174,6 +183,7 @@ class MEDIA_EXPORT DecoderStream {
   scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
   SpliceObserverCB splice_observer_cb_;
+  ConfigChangeObserverCB config_change_observer_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;

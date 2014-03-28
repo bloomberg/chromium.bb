@@ -39,9 +39,6 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual scoped_refptr<AudioBuffer> GetDecodeOutput() OVERRIDE;
-  virtual int bits_per_channel() OVERRIDE;
-  virtual ChannelLayout channel_layout() OVERRIDE;
-  virtual int samples_per_second() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
 
@@ -79,17 +76,10 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
   scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
-  // Decoded audio format.
-  int bytes_per_channel_;
-  ChannelLayout channel_layout_;
-  int channels_;
-  int samples_per_second_;
+  AudioDecoderConfig config_;
 
   // AVSampleFormat initially requested; not Chrome's SampleFormat.
   int av_sample_format_;
-  SampleFormat sample_format_;
-
-  AudioDecoderConfig config_;
 
   // Used for computing output timestamps.
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;

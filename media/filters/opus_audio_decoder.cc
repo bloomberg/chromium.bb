@@ -251,10 +251,6 @@ OpusAudioDecoder::OpusAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
       opus_decoder_(NULL),
-      channel_layout_(CHANNEL_LAYOUT_NONE),
-      samples_per_second_(0),
-      sample_format_(kSampleFormatF32),
-      bits_per_channel_(SampleFormatToBytesPerChannel(sample_format_) * 8),
       last_input_timestamp_(kNoTimestamp()),
       frames_to_discard_(0),
       frame_delay_at_start_(0),
@@ -281,21 +277,6 @@ void OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DCHECK(!decode_cb.is_null());
 
   DecodeBuffer(buffer, BindToCurrentLoop(decode_cb));
-}
-
-int OpusAudioDecoder::bits_per_channel() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return bits_per_channel_;
-}
-
-ChannelLayout OpusAudioDecoder::channel_layout() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return channel_layout_;
-}
-
-int OpusAudioDecoder::samples_per_second() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return samples_per_second_;
 }
 
 void OpusAudioDecoder::Reset(const base::Closure& closure) {
@@ -401,19 +382,6 @@ bool OpusAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  // TODO(rileya) Remove this check once we properly support midstream audio
-  // config changes.
-  if (opus_decoder_ &&
-      (channel_layout_ != config_.channel_layout() ||
-       samples_per_second_ != config_.samples_per_second())) {
-    DLOG(ERROR) << "Unsupported config change -"
-                << ", channel_layout: " << channel_layout_
-                << " -> " << config_.channel_layout()
-                << ", sample_rate: " << samples_per_second_
-                << " -> " << config_.samples_per_second();
-    return false;
-  }
-
   // Clean up existing decoder if necessary.
   CloseDecoder();
 
@@ -473,8 +441,6 @@ bool OpusAudioDecoder::ConfigureDecoder() {
     return false;
   }
 
-  channel_layout_ = config_.channel_layout();
-  samples_per_second_ = config_.samples_per_second();
   output_timestamp_helper_.reset(
       new AudioTimestampHelper(config_.samples_per_second()));
   start_input_timestamp_ = kNoTimestamp();
@@ -491,22 +457,21 @@ void OpusAudioDecoder::CloseDecoder() {
 void OpusAudioDecoder::ResetTimestampState() {
   output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
   last_input_timestamp_ = kNoTimestamp();
-  frames_to_discard_ =
-      TimeDeltaToAudioFrames(config_.seek_preroll(), samples_per_second_);
+  frames_to_discard_ = TimeDeltaToAudioFrames(config_.seek_preroll(),
+                                              config_.samples_per_second());
 }
 
 bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
                               scoped_refptr<AudioBuffer>* output_buffer) {
   // Allocate a buffer for the output samples.
-  *output_buffer = AudioBuffer::CreateBuffer(
-      sample_format_,
-      channel_layout_,
-      samples_per_second_,
-      kMaxOpusOutputPacketSizeSamples);
+  *output_buffer = AudioBuffer::CreateBuffer(config_.sample_format(),
+                                             config_.channel_layout(),
+                                             config_.samples_per_second(),
+                                             kMaxOpusOutputPacketSizeSamples);
   const int buffer_size =
       output_buffer->get()->channel_count() *
       output_buffer->get()->frame_count() *
-      SampleFormatToBytesPerChannel(sample_format_);
+      SampleFormatToBytesPerChannel(config_.sample_format());
 
   float* float_output_buffer = reinterpret_cast<float*>(
       output_buffer->get()->channel_data()[0]);
@@ -548,8 +513,8 @@ bool OpusAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& input,
       frames_to_discard_ = 0;
     }
     if (input->discard_padding().InMicroseconds() > 0) {
-      int discard_padding = TimeDeltaToAudioFrames(input->discard_padding(),
-                                                   samples_per_second_);
+      int discard_padding = TimeDeltaToAudioFrames(
+          input->discard_padding(), config_.samples_per_second());
       if (discard_padding < 0 || discard_padding > frames_to_output) {
         DVLOG(1) << "Invalid file. Incorrect discard padding value.";
         return false;

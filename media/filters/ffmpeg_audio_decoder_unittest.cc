@@ -174,9 +174,6 @@ TEST_F(FFmpegAudioDecoderTest, Initialize) {
                             vorbis_extradata_->data(),
                             vorbis_extradata_->data_size(),
                             false);  // Not encrypted.
-  EXPECT_EQ(config.bits_per_channel(), decoder_->bits_per_channel());
-  EXPECT_EQ(config.channel_layout(), decoder_->channel_layout());
-  EXPECT_EQ(config.samples_per_second(), decoder_->samples_per_second());
   Stop();
 }
 

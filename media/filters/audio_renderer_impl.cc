@@ -15,6 +15,8 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"
+#include "media/base/audio_buffer_converter.h"
+#include "media/base/audio_hardware_config.h"
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
@@ -41,12 +43,14 @@ AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     media::AudioRendererSink* sink,
     ScopedVector<AudioDecoder> decoders,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb)
+    const SetDecryptorReadyCB& set_decryptor_ready_cb,
+    AudioHardwareConfig* hardware_config)
     : task_runner_(task_runner),
       sink_(sink),
       audio_buffer_stream_(task_runner,
                            decoders.Pass(),
                            set_decryptor_ready_cb),
+      hardware_config_(hardware_config),
       now_cb_(base::Bind(&base::TimeTicks::Now)),
       state_(kUninitialized),
       sink_playing_(false),
@@ -60,6 +64,8 @@ AudioRendererImpl::AudioRendererImpl(
       weak_factory_(this) {
   audio_buffer_stream_.set_splice_observer(base::Bind(
       &AudioRendererImpl::OnNewSpliceBuffer, weak_factory_.GetWeakPtr()));
+  audio_buffer_stream_.set_config_change_observer(base::Bind(
+      &AudioRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
 }
 
 AudioRendererImpl::~AudioRendererImpl() {
@@ -171,6 +177,8 @@ void AudioRendererImpl::ResetDecoderDone() {
 
     earliest_end_time_ = now_cb_.Run();
     splicer_->Reset();
+    if (buffer_converter_)
+      buffer_converter_->Reset();
     algorithm_->FlushBuffers();
   }
   base::ResetAndReturn(&flush_cb_).Run();
@@ -253,6 +261,26 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   disabled_cb_ = disabled_cb;
   error_cb_ = error_cb;
 
+  expecting_config_changes_ = stream->SupportsConfigChanges();
+  if (!expecting_config_changes_) {
+    // The actual buffer size is controlled via the size of the AudioBus
+    // provided to Render(), so just choose something reasonable here for looks.
+    int buffer_size = stream->audio_decoder_config().samples_per_second() / 100;
+    audio_parameters_.Reset(
+        AudioParameters::AUDIO_PCM_LOW_LATENCY,
+        stream->audio_decoder_config().channel_layout(),
+        ChannelLayoutToChannelCount(
+            stream->audio_decoder_config().channel_layout()),
+        0,
+        stream->audio_decoder_config().samples_per_second(),
+        stream->audio_decoder_config().bits_per_channel(),
+        buffer_size);
+    buffer_converter_.reset();
+  } else {
+    // TODO(rileya): Support hardware config changes
+    audio_parameters_ = hardware_config_->GetOutputConfig();
+  }
+
   audio_buffer_stream_.Initialize(
       stream,
       statistics_cb,
@@ -276,27 +304,15 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
     return;
   }
 
-  int sample_rate = audio_buffer_stream_.decoder()->samples_per_second();
-
-  // The actual buffer size is controlled via the size of the AudioBus
-  // provided to Render(), so just choose something reasonable here for looks.
-  int buffer_size = audio_buffer_stream_.decoder()->samples_per_second() / 100;
-
-  // TODO(rileya): Remove the channel_layout/bits_per_channel/samples_per_second
-  // getters from AudioDecoder, and adjust this accordingly.
-  audio_parameters_ =
-      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                      audio_buffer_stream_.decoder()->channel_layout(),
-                      sample_rate,
-                      audio_buffer_stream_.decoder()->bits_per_channel(),
-                      buffer_size);
   if (!audio_parameters_.IsValid()) {
     ChangeState_Locked(kUninitialized);
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
     return;
   }
 
-  splicer_.reset(new AudioSplicer(sample_rate));
+  if (expecting_config_changes_)
+    buffer_converter_.reset(new AudioBufferConverter(audio_parameters_));
+  splicer_.reset(new AudioSplicer(audio_parameters_.sample_rate()));
 
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.
@@ -376,9 +392,20 @@ void AudioRendererImpl::DecodedAudioReady(
     return;
   }
 
-  if (!splicer_->AddInput(buffer)) {
-    HandleAbortedReadOrDecodeError(true);
-    return;
+  if (expecting_config_changes_) {
+    DCHECK(buffer_converter_);
+    buffer_converter_->AddInput(buffer);
+    while (buffer_converter_->HasNextBuffer()) {
+      if (!splicer_->AddInput(buffer_converter_->GetNextBuffer())) {
+        HandleAbortedReadOrDecodeError(true);
+        return;
+      }
+    }
+  } else {
+    if (!splicer_->AddInput(buffer)) {
+      HandleAbortedReadOrDecodeError(true);
+      return;
+    }
   }
 
   if (!splicer_->HasNextBuffer()) {
@@ -717,6 +744,12 @@ void AudioRendererImpl::ChangeState_Locked(State new_state) {
 void AudioRendererImpl::OnNewSpliceBuffer(base::TimeDelta splice_timestamp) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   splicer_->SetSpliceTimestamp(splice_timestamp);
+}
+
+void AudioRendererImpl::OnConfigChange() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(expecting_config_changes_);
+  buffer_converter_->ResetTimestampState();
 }
 
 }  // namespace media
