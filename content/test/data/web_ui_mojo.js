@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 define('main', [
-    'mojo/public/bindings/js/connector',
+    'mojo/public/bindings/js/connection',
     'content/test/data/web_ui_test_mojo_bindings.mojom',
-], function(connector, bindings) {
+], function(connection, bindings) {
 
   function RendererTargetTest(bindings) {
     this.bindings_ = bindings;
@@ -22,10 +22,10 @@ define('main', [
     this.bindings_.test();
   };
 
-  var connection;
+  var retainedConnection;
 
   return function(handle) {
-    connection = new connector.Connection(handle, RendererTargetTest,
-                                          bindings.BrowserTargetProxy);
+    retainedConnection = new connection.Connection(handle, RendererTargetTest,
+                                                   bindings.BrowserTargetProxy);
   };
 });

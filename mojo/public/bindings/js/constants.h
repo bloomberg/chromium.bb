@@ -7,11 +7,11 @@
 
 namespace mojo {
 
-// Module name of the codec JavaScript module.
+// JavaScript module names:
 extern const char kCodecModuleName[];
-
-// Module name of the connector JavaScript module.
+extern const char kConnectionModuleName[];
 extern const char kConnectorModuleName[];
+extern const char kRouterModuleName[];
 
 }  // namespace mojo
 

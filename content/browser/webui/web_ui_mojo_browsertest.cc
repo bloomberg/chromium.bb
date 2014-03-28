@@ -48,7 +48,10 @@ base::FilePath GetFilePathForJSResource(const std::string& path) {
 bool GetResource(const std::string& id,
                  const WebUIDataSource::GotDataCallback& callback) {
   // These are handled by the WebUIDataSource that AddMojoDataSource() creates.
-  if (id == mojo::kCodecModuleName || id == mojo::kConnectorModuleName)
+  if (id == mojo::kCodecModuleName ||
+      id == mojo::kConnectionModuleName ||
+      id == mojo::kConnectorModuleName ||
+      id == mojo::kRouterModuleName)
     return false;
 
   std::string contents;
@@ -166,8 +169,7 @@ class WebUIMojoTest : public ContentBrowserTest {
 
 // Loads a webui page that contains mojo bindings and verifies a message makes
 // it from the browser to the page and back.
-// http://crbug.com/357308
-IN_PROC_BROWSER_TEST_F(WebUIMojoTest, DISABLED_EndToEnd) {
+IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEnd) {
   // Currently there is no way to have a generated file included in the isolate
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.

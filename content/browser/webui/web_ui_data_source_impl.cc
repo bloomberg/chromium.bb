@@ -30,9 +30,19 @@ WebUIDataSource* WebUIDataSource::Create(const std::string& source_name) {
 WebUIDataSource* WebUIDataSource::AddMojoDataSource(
     BrowserContext* browser_context) {
   WebUIDataSource* mojo_source = Create("mojo");
-  mojo_source->AddResourcePath(mojo::kCodecModuleName, IDR_MOJO_CODEC_JS);
-  mojo_source->AddResourcePath(mojo::kConnectorModuleName,
-                               IDR_MOJO_CONNECTOR_JS);
+
+  static const struct {
+    const char* path;
+    int id;
+  } resources[] = {
+    { mojo::kCodecModuleName, IDR_MOJO_CODEC_JS },
+    { mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS },
+    { mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS },
+    { mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(resources); ++i)
+    mojo_source->AddResourcePath(resources[i].path, resources[i].id);
+
   URLDataManager::AddWebUIDataSource(browser_context, mojo_source);
   return mojo_source;
 }
