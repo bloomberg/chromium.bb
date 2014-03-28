@@ -1003,6 +1003,10 @@ crbug.com/357088 [ Debug ] web-animations-api/timeline-updates-players.html [ Fa
 crbug.com/357088 [ Linux Release ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357097 editing/context-menu-leak-document.html [ Failure ]
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation.html [ Crash Pass Slow Timeout ]
+crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
+crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
+crbug.com/357438 [ Win ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure Pass ]
+crbug.com/357439 svg/custom/js-late-pattern-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-005.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
