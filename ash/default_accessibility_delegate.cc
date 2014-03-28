@@ -83,6 +83,10 @@ bool DefaultAccessibilityDelegate::ShouldShowAccessibilityMenu() const {
          virtual_keyboard_enabled_;
 }
 
+bool DefaultAccessibilityDelegate::IsBrailleDisplayConnected() const {
+  return false;
+}
+
 void DefaultAccessibilityDelegate::SilenceSpokenFeedback() const {
 }
 

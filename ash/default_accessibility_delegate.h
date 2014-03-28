@@ -32,6 +32,7 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   virtual void SetVirtualKeyboardEnabled(bool enabled) OVERRIDE;
   virtual bool IsVirtualKeyboardEnabled() const OVERRIDE;
   virtual bool ShouldShowAccessibilityMenu() const OVERRIDE;
+  virtual bool IsBrailleDisplayConnected() const OVERRIDE;
   virtual void SilenceSpokenFeedback() const OVERRIDE;
   virtual void ToggleSpokenFeedback(
       AccessibilityNotificationVisibility notify) OVERRIDE;

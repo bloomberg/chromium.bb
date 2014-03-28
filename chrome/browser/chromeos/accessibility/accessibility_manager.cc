@@ -308,7 +308,9 @@ AccessibilityManager::AccessibilityManager()
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
       weak_ptr_factory_(this),
       should_speak_chrome_vox_announcements_on_user_screen_(true),
-      system_sounds_enabled_(false) {
+      system_sounds_enabled_(false),
+      braille_display_connected_(false),
+      scoped_braille_observer_(this) {
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());
@@ -321,8 +323,6 @@ AccessibilityManager::AccessibilityManager()
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                               content::NotificationService::AllSources());
-
-  GetBrailleController()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
@@ -739,11 +739,19 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
 #endif
 }
 
+bool AccessibilityManager::IsBrailleDisplayConnected() const {
+  return braille_display_connected_;
+}
+
 void AccessibilityManager::CheckBrailleState() {
+  BrailleController* braille_controller = GetBrailleController();
+  if (!scoped_braille_observer_.IsObserving(braille_controller))
+    scoped_braille_observer_.Add(braille_controller);
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE, base::Bind(
-          &BrailleController::GetDisplayState,
-          base::Unretained(GetBrailleController())),
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&BrailleController::GetDisplayState,
+                 base::Unretained(braille_controller)),
       base::Bind(&AccessibilityManager::ReceiveBrailleDisplayState,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -811,10 +819,12 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
   virtual_keyboard_pref_handler_.HandleProfileChanged(profile_, profile);
 
-  if (!profile_ && profile)
+  bool had_profile = (profile_ != NULL);
+  profile_ = profile;
+
+  if (!had_profile && profile)
     CheckBrailleState();
 
-  profile_ = profile;
   UpdateLargeCursorFromPref();
   UpdateStickyKeysFromPref();
   UpdateSpokenFeedbackFromPref();
@@ -962,8 +972,15 @@ void AccessibilityManager::Observe(
 
 void AccessibilityManager::OnDisplayStateChanged(
     const DisplayState& display_state) {
-  if (display_state.available)
+  braille_display_connected_ = display_state.available;
+  if (braille_display_connected_)
     EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_SHOW);
+
+  AccessibilityStatusEventDetails details(
+      ACCESSIBILITY_BRAILLE_DISPLAY_CONNECTION_STATE_CHANGED,
+      braille_display_connected_,
+      ash::A11Y_NOTIFICATION_SHOW);
+  NotifyAccessibilityStatusChanged(details);
 }
 
 void AccessibilityManager::PostLoadChromeVox(Profile* profile) {

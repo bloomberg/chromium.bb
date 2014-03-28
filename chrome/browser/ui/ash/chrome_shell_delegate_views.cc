@@ -121,6 +121,8 @@ class EmptyAccessibilityDelegate : public ash::AccessibilityDelegate {
     return false;
   }
 
+  virtual bool IsBrailleDisplayConnected() const OVERRIDE { return false; }
+
   virtual void SilenceSpokenFeedback() const OVERRIDE {
   }
 

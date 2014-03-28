@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
+#include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,8 +36,12 @@
 #include "content/public/test/test_utils.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
+using extensions::api::braille_display_private::BrailleObserver;
+using extensions::api::braille_display_private::DisplayState;
+using extensions::api::braille_display_private::MockBrailleController;
 using testing::Return;
 using testing::_;
 using testing::WithParamInterface;
@@ -58,13 +64,14 @@ class TrayAccessibilityTest
   TrayAccessibilityTest() {}
   virtual ~TrayAccessibilityTest() {}
 
-  // The profile which should be used by tese tests.
+  // The profile which should be used by these tests.
   Profile* GetProfile() { return ProfileManager::GetActiveUserProfile(); }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+    AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -82,6 +89,10 @@ class TrayAccessibilityTest
     // Need to mark oobe completed to show detailed views.
     StartupUtils::MarkOobeCompleted();
     InProcessBrowserTest::RunTestOnMainThreadLoop();
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    AccessibilityManager::SetBrailleControllerForTest(NULL);
   }
 
   void SetShowAccessibilityOptionsInSystemTrayMenu(bool value) {
@@ -107,9 +118,13 @@ class TrayAccessibilityTest
         GetTrayAccessibilityForTest();
   }
 
-  bool IsTrayIconVisible() {
-    return tray()->tray_icon_visible_;
+  const ash::internal::TrayAccessibility* tray() const {
+    return ash::Shell::GetInstance()
+        ->GetPrimarySystemTray()
+        ->GetTrayAccessibilityForTest();
   }
+
+  bool IsTrayIconVisible() const { return tray()->tray_icon_visible_; }
 
   views::View* CreateMenuItem() {
     return tray()->CreateDefaultView(GetLoginStatus());
@@ -174,55 +189,74 @@ class TrayAccessibilityTest
     tray()->detailed_menu_->OnViewClicked(button);
   }
 
-  bool IsSpokenFeedbackEnabledOnDetailMenu() {
+  bool IsSpokenFeedbackEnabledOnDetailMenu() const {
     return tray()->detailed_menu_->spoken_feedback_enabled_;
   }
 
-  bool IsHighContrastEnabledOnDetailMenu() {
+  bool IsHighContrastEnabledOnDetailMenu() const {
     return tray()->detailed_menu_->high_contrast_enabled_;
   }
 
-  bool IsScreenMagnifierEnabledOnDetailMenu() {
+  bool IsScreenMagnifierEnabledOnDetailMenu() const {
     return tray()->detailed_menu_->screen_magnifier_enabled_;
   }
 
-  bool IsLargeCursorEnabledOnDetailMenu() {
+  bool IsLargeCursorEnabledOnDetailMenu() const {
     return tray()->detailed_menu_->large_cursor_enabled_;
   }
 
-  bool IsAutoclickEnabledOnDetailMenu() {
+  bool IsAutoclickEnabledOnDetailMenu() const {
     return tray()->detailed_menu_->autoclick_enabled_;
   }
 
-  bool IsVirtualKeyboardEnabledOnDetailMenu() {
+  bool IsVirtualKeyboardEnabledOnDetailMenu() const {
     return tray()->detailed_menu_->virtual_keyboard_enabled_;
   }
 
-  bool IsSpokenFeedbackMenuShownOnDetailMenu() {
+  bool IsSpokenFeedbackMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->spoken_feedback_view_;
   }
 
-  bool IsHighContrastMenuShownOnDetailMenu() {
+  bool IsHighContrastMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->high_contrast_view_;
   }
 
-  bool IsScreenMagnifierMenuShownOnDetailMenu() {
+  bool IsScreenMagnifierMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->screen_magnifier_view_;
   }
 
-  bool IsLargeCursorMenuShownOnDetailMenu() {
+  bool IsLargeCursorMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->large_cursor_view_;
   }
 
-  bool IsAutoclickMenuShownOnDetailMenu() {
+  bool IsAutoclickMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->autoclick_view_;
   }
 
-  bool IsVirtualKeyboardMenuShownOnDetailMenu() {
+  bool IsVirtualKeyboardMenuShownOnDetailMenu() const {
     return tray()->detailed_menu_->virtual_keyboard_view_;
   }
 
+  bool IsNotificationShown() const {
+    return (tray()->detailed_popup_ &&
+            !tray()->detailed_popup_->GetWidget()->IsClosed());
+  }
+
+  base::string16 GetNotificationText() const {
+    if (IsNotificationShown())
+      return tray()->detailed_popup_->label_for_test()->text();
+    else
+      return base::string16();
+  }
+
+  void SetBrailleConnected(bool connected) {
+    braille_controller_.SetAvailable(connected);
+    braille_controller_.GetObserver()->OnDisplayStateChanged(
+        *braille_controller_.GetDisplayState());
+  }
+
   policy::MockConfigurationPolicyProvider provider_;
+  MockBrailleController braille_controller_;
 };
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, LoginStatus) {
@@ -506,6 +540,43 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowOnLoginScreen) {
 
   // Confirms that the menu remains visible.
   EXPECT_TRUE(CanCreateMenuItem());
+}
+
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowNotification) {
+  const base::string16 BRAILLE_CONNECTED =
+      base::ASCIIToUTF16("Braille display connected.");
+  const base::string16 CHROMEVOX_ENABLED = base::ASCIIToUTF16(
+      "ChromeVox (spoken feedback) is enabled.\nPress Ctrl+Alt+Z to disable.");
+  const base::string16 BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED(
+      BRAILLE_CONNECTED + base::ASCIIToUTF16(" ") + CHROMEVOX_ENABLED);
+
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  // Enabling spoken feedback should show the notification.
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_SHOW);
+  EXPECT_EQ(CHROMEVOX_ENABLED, GetNotificationText());
+
+  // Connecting a braille display when spoken feedback is already enabled
+  // should only show the message about the braille display.
+  SetBrailleConnected(true);
+  EXPECT_EQ(BRAILLE_CONNECTED, GetNotificationText());
+
+  // Neither disconnecting a braille display, nor disabling spoken feedback
+  // should show any notification.
+  SetBrailleConnected(false);
+  EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  EXPECT_FALSE(IsNotificationShown());
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      false, ash::A11Y_NOTIFICATION_SHOW);
+  EXPECT_FALSE(IsNotificationShown());
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  // Connecting a braille display should enable spoken feedback and show
+  // both messages.
+  SetBrailleConnected(true);
+  EXPECT_TRUE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  EXPECT_EQ(BRAILLE_CONNECTED_AND_CHROMEVOX_ENABLED, GetNotificationText());
 }
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, KeepMenuVisibilityOnLockScreen) {

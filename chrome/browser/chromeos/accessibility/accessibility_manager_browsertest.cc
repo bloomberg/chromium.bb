@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
+#include "chrome/browser/extensions/api/braille_display_private/mock_braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
@@ -28,7 +28,7 @@
 
 using extensions::api::braille_display_private::BrailleObserver;
 using extensions::api::braille_display_private::DisplayState;
-using extensions::api::braille_display_private::StubBrailleController;
+using extensions::api::braille_display_private::MockBrailleController;
 
 namespace chromeos {
 
@@ -80,39 +80,6 @@ class MockAccessibilityObserver {
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAccessibilityObserver);
-};
-
-class MockBrailleController : public StubBrailleController {
- public:
-
-  MockBrailleController() : available_(false), observer_(NULL) {}
-
-  virtual scoped_ptr<DisplayState> GetDisplayState() OVERRIDE {
-    scoped_ptr<DisplayState> state(new DisplayState());
-    state->available = available_;
-    return state.Pass();
-  }
-
-  virtual void AddObserver(BrailleObserver* observer) OVERRIDE {
-    ASSERT_EQ(NULL, observer_);
-    observer_ = observer;
-  }
-
-  virtual void RemoveObserver(BrailleObserver* observer) OVERRIDE {
-    ASSERT_EQ(observer_, observer);
-  }
-
-  void SetAvailable(bool available) {
-    available_ = available;
-  }
-
-  BrailleObserver* GetObserver() {
-    return observer_;
-  }
-
- private:
-  bool available_;
-  BrailleObserver* observer_;
 };
 
 void SetLargeCursorEnabled(bool enabled) {

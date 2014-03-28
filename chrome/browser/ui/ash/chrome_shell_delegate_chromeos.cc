@@ -146,6 +146,11 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
         ShouldShowAccessibilityMenu();
   }
 
+  virtual bool IsBrailleDisplayConnected() const OVERRIDE {
+    DCHECK(chromeos::AccessibilityManager::Get());
+    return chromeos::AccessibilityManager::Get()->IsBrailleDisplayConnected();
+  }
+
   virtual void SilenceSpokenFeedback() const OVERRIDE {
     TtsController::GetInstance()->Stop();
   }

@@ -12,6 +12,7 @@
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
@@ -33,7 +34,8 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_LARGE_CURSOR,
   ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
   ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
-  ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD
+  ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
+  ACCESSIBILITY_BRAILLE_DISPLAY_CONNECTION_STATE_CHANGED
 };
 
 struct AccessibilityStatusEventDetails {
@@ -66,9 +68,10 @@ typedef AccessibilityStatusCallbackList::Subscription
 // AccessibilityManager changes the statuses of accessibility features
 // watching profile notifications and pref-changes.
 // TODO(yoshiki): merge MagnificationManager with AccessibilityManager.
-class AccessibilityManager : public content::NotificationObserver,
-    extensions::api::braille_display_private::BrailleObserver,
-    public ash::SessionStateObserver {
+class AccessibilityManager
+    : public content::NotificationObserver,
+      public extensions::api::braille_display_private::BrailleObserver,
+      public ash::SessionStateObserver {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
   // because only one instance should exist at the same time.
@@ -148,6 +151,10 @@ class AccessibilityManager : public content::NotificationObserver,
   void EnableVirtualKeyboard(bool enabled);
   // Returns true if the virtual keyboard is enabled, otherwise false.
   bool IsVirtualKeyboardEnabled();
+
+  // Returns true if a braille display is connected to the system, otherwise
+  // false.
+  bool IsBrailleDisplayConnected() const;
 
   // SessionStateObserver overrides:
   virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE;
@@ -255,6 +262,10 @@ class AccessibilityManager : public content::NotificationObserver,
   bool system_sounds_enabled_;
 
   AccessibilityStatusCallbackList callback_list_;
+
+  bool braille_display_connected_;
+  ScopedObserver<extensions::api::braille_display_private::BrailleController,
+                 AccessibilityManager> scoped_braille_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityManager);
 };

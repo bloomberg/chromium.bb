@@ -9,6 +9,7 @@
 #include "ash/shell_observer.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/view_click_listener.h"
 #include "base/gtest_prod_util.h"
 #include "ui/gfx/font.h"
@@ -21,6 +22,7 @@ class TrayAccessibilityTest;
 namespace views {
 class Button;
 class ImageView;
+class Label;
 class View;
 }
 
@@ -43,7 +45,19 @@ class HoverHighlightView;
 
 namespace tray {
 
-class AccessibilityPopupView;
+class AccessibilityPopupView : public TrayNotificationView {
+ public:
+  AccessibilityPopupView(SystemTrayItem* owner, uint32 enabled_state_bits);
+
+  const views::Label* label_for_test() const { return label_; }
+
+ private:
+  views::Label* CreateLabel(uint32 enabled_state_bits);
+
+  views::Label* label_;
+
+  DISALLOW_COPY_AND_ASSIGN(AccessibilityPopupView);
+};
 
 class AccessibilityDetailedView : public TrayDetailsView,
                                   public ViewClickListener,
@@ -119,7 +133,10 @@ class TrayAccessibility : public TrayImageItem,
   tray::AccessibilityPopupView* detailed_popup_;
   tray::AccessibilityDetailedView* detailed_menu_;
 
-  bool request_popup_view_;
+  // Bitmap of fvalues from AccessibilityState.  Can contain any or
+  // both of A11Y_SPOKEN_FEEDBACK A11Y_BRAILLE_DISPLAY_CONNECTED.
+  uint32 request_popup_view_state_;
+
   bool tray_icon_visible_;
   user::LoginStatus login_;
 
