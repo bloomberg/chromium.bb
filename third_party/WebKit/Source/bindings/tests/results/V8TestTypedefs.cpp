@@ -48,162 +48,33 @@ namespace TestTypedefsV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-static void unsignedLongLongAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void uLongLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    v8SetReturnValue(info, static_cast<double>(impl->unsignedLongLongAttr()));
+    v8SetReturnValue(info, static_cast<double>(impl->uLongLongAttribute()));
 }
 
-static void unsignedLongLongAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void uLongLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestTypedefsV8Internal::unsignedLongLongAttrAttributeGetter(info);
+    TestTypedefsV8Internal::uLongLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void unsignedLongLongAttrAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void uLongLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongLongAttr", "TestTypedefs", holder, info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "uLongLongAttribute", "TestTypedefs", holder, info.GetIsolate());
     TestTypedefs* impl = V8TestTypedefs::toNative(holder);
     V8TRYCATCH_EXCEPTION_VOID(unsigned long long, cppValue, toUInt64(v8Value, exceptionState), exceptionState);
-    impl->setUnsignedLongLongAttr(cppValue);
+    impl->setULongLongAttribute(cppValue);
 }
 
-static void unsignedLongLongAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
+static void uLongLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestTypedefsV8Internal::unsignedLongLongAttrAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void attrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    ExceptionState exceptionState(ExceptionState::GetterContext, "attrWithGetterException", "TestTypedefs", holder, info.GetIsolate());
-    int v8Value = impl->attrWithGetterException(exceptionState);
-    if (UNLIKELY(exceptionState.throwIfNeeded()))
-        return;
-    v8SetReturnValueInt(info, v8Value);
-}
-
-static void attrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestTypedefsV8Internal::attrWithGetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void attrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithGetterException", "TestTypedefs", holder, info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    impl->setAttrWithGetterException(cppValue);
-}
-
-static void attrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestTypedefsV8Internal::attrWithGetterExceptionAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void attrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    v8SetReturnValueInt(info, impl->attrWithSetterException());
-}
-
-static void attrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestTypedefsV8Internal::attrWithSetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithSetterException", "TestTypedefs", holder, info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(v8Value, exceptionState), exceptionState);
-    impl->setAttrWithSetterException(cppValue, exceptionState);
-    exceptionState.throwIfNeeded();
-}
-
-static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestTypedefsV8Internal::attrWithSetterExceptionAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void stringAttrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    ExceptionState exceptionState(ExceptionState::GetterContext, "stringAttrWithGetterException", "TestTypedefs", holder, info.GetIsolate());
-    String v8Value = impl->stringAttrWithGetterException(exceptionState);
-    if (UNLIKELY(exceptionState.throwIfNeeded()))
-        return;
-    v8SetReturnValueString(info, v8Value, info.GetIsolate());
-}
-
-static void stringAttrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void stringAttrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
-    impl->setStringAttrWithGetterException(cppValue);
-}
-
-static void stringAttrWithGetterExceptionAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void stringAttrWithSetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    v8SetReturnValueString(info, impl->stringAttrWithSetterException(), info.GetIsolate());
-}
-
-static void stringAttrWithSetterExceptionAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestTypedefsV8Internal::stringAttrWithSetterExceptionAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void stringAttrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    v8::Handle<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "stringAttrWithSetterException", "TestTypedefs", holder, info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(holder);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, v8Value);
-    impl->setStringAttrWithSetterException(cppValue, exceptionState);
-    exceptionState.throwIfNeeded();
-}
-
-static void stringAttrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestTypedefsV8Internal::stringAttrWithSetterExceptionAttributeSetter(v8Value, info);
+    TestTypedefsV8Internal::uLongLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -227,91 +98,80 @@ static void TestTypedefsReplaceableAttributeSetterCallback(v8::Local<v8::String>
     TestTypedefsV8Internal::TestTypedefsReplaceableAttributeSetter(name, v8Value, info);
 }
 
-static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodArrayOfLongsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
-        impl->func();
+        impl->voidMethodArrayOfLongsArg();
         return;
     }
-    V8TRYCATCH_VOID(Vector<int>, x, toNativeArray<int>(info[0], 1, info.GetIsolate()));
-    impl->func(x);
+    V8TRYCATCH_VOID(Vector<int>, arrayOfLongsArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    impl->voidMethodArrayOfLongsArg(arrayOfLongsArg);
 }
 
-static void funcMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::funcMethod(info);
+    TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void setShadowMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 3)) {
-        throwTypeError(ExceptionMessages::failedToExecute("setShadow", "TestTypedefs", ExceptionMessages::notEnoughArguments(3, info.Length())), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodFloatArgStringArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(float, width, static_cast<float>(info[0]->NumberValue()));
-    V8TRYCATCH_VOID(float, height, static_cast<float>(info[1]->NumberValue()));
-    V8TRYCATCH_VOID(float, blur, static_cast<float>(info[2]->NumberValue()));
-    if (UNLIKELY(info.Length() <= 3)) {
-        impl->setShadow(width, height, blur);
-        return;
-    }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, color, info[3]);
-    if (UNLIKELY(info.Length() <= 4)) {
-        impl->setShadow(width, height, blur, color);
-        return;
-    }
-    V8TRYCATCH_VOID(float, alpha, static_cast<float>(info[4]->NumberValue()));
-    impl->setShadow(width, height, blur, color, alpha);
+    V8TRYCATCH_VOID(float, floatArg, static_cast<float>(info[0]->NumberValue()));
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[1]);
+    impl->voidMethodFloatArgStringArg(floatArg, stringArg);
 }
 
-static void setShadowMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::setShadowMethod(info);
+    TestTypedefsV8Internal::voidMethodFloatArgStringArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void voidMethodTestCallbackInterfaceArgumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArgument", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
     if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceArgument", "TestTypedefs", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    OwnPtr<TestCallbackInterface> testCallbackInterface = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
-    impl->voidMethodTestCallbackInterfaceArgument(testCallbackInterface.release());
+    OwnPtr<TestCallbackInterface> testCallbackInterfaceTypeArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
+    impl->voidMethodTestCallbackInterfaceTypeArg(testCallbackInterfaceTypeArg.release());
 }
 
-static void voidMethodTestCallbackInterfaceArgumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::voidMethodTestCallbackInterfaceArgumentMethod(info);
+    TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void methodWithSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("methodWithSequenceArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("uLongLongMethodTestInterfaceEmptyTypeSequenceArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<RefPtr<TestInterfaceEmpty> >, sequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
-    v8SetReturnValue(info, static_cast<double>(impl->methodWithSequenceArg(sequenceArg)));
+    V8TRYCATCH_VOID(Vector<RefPtr<TestInterfaceEmpty> >, testInterfaceEmptyTypeSequenceArg, (toRefPtrNativeArray<TestInterfaceEmpty, V8TestInterfaceEmpty>(info[0], 1, info.GetIsolate())));
+    v8SetReturnValue(info, static_cast<double>(impl->uLongLongMethodTestInterfaceEmptyTypeSequenceArg(testInterfaceEmptyTypeSequenceArg)));
 }
 
-static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::methodWithSequenceArgMethod(info);
+    TestTypedefsV8Internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -341,65 +201,39 @@ static void fooOrBarMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayFunction", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
+        throwTypeError(ExceptionMessages::failedToExecute("arrayOfStringsMethodArrayOfStringsArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(info[0], 1, info.GetIsolate()));
-    Vector<String> result = impl->stringArrayFunction(values, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValue(info, v8Array(result, info.GetIsolate()));
+    V8TRYCATCH_VOID(Vector<String>, arrayOfStringsArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(impl->arrayOfStringsMethodArrayOfStringsArg(arrayOfStringsArg), info.GetIsolate()));
 }
 
-static void stringArrayFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::stringArrayFunctionMethod(info);
+    TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
-static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayFunction2", "TestTypedefs", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
+        throwTypeError(ExceptionMessages::failedToExecute("stringArrayMethodStringArrayArg", "TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(info[0], 1, info.GetIsolate()));
-    Vector<String> result = impl->stringArrayFunction2(values, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    v8SetReturnValue(info, v8Array(result, info.GetIsolate()));
+    V8TRYCATCH_VOID(Vector<String>, stringArrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
+    v8SetReturnValue(info, v8Array(impl->stringArrayMethodStringArrayArg(stringArrayArg), info.GetIsolate()));
 }
 
-static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void stringArrayMethodStringArrayArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::stringArrayFunction2Method(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "methodWithException", "TestTypedefs", info.Holder(), info.GetIsolate());
-    TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
-    impl->methodWithException(exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-}
-
-static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestTypedefsV8Internal::methodWithExceptionMethod(info);
+    TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -410,8 +244,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToConstruct("TestTypedefs", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, hello, info[0]);
-    RefPtr<TestTypedefs> impl = TestTypedefs::create(hello);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);
+    RefPtr<TestTypedefs> impl = TestTypedefs::create(stringArg);
 
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestTypedefs>(impl.release(), &V8TestTypedefs::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
@@ -421,23 +255,18 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 } // namespace TestTypedefsV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestTypedefsAttributes[] = {
-    {"unsignedLongLongAttr", TestTypedefsV8Internal::unsignedLongLongAttrAttributeGetterCallback, TestTypedefsV8Internal::unsignedLongLongAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"TestSubObj", TestTypedefsV8Internal::TestTypedefsConstructorGetter, TestTypedefsV8Internal::TestTypedefsReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
-    {"attrWithGetterException", TestTypedefsV8Internal::attrWithGetterExceptionAttributeGetterCallback, TestTypedefsV8Internal::attrWithGetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"attrWithSetterException", TestTypedefsV8Internal::attrWithSetterExceptionAttributeGetterCallback, TestTypedefsV8Internal::attrWithSetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"stringAttrWithGetterException", TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeGetterCallback, TestTypedefsV8Internal::stringAttrWithGetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    {"stringAttrWithSetterException", TestTypedefsV8Internal::stringAttrWithSetterExceptionAttributeGetterCallback, TestTypedefsV8Internal::stringAttrWithSetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"uLongLongAttribute", TestTypedefsV8Internal::uLongLongAttributeAttributeGetterCallback, TestTypedefsV8Internal::uLongLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"tAttribute", TestTypedefsV8Internal::TestTypedefsConstructorGetter, TestTypedefsV8Internal::TestTypedefsReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
-    {"func", TestTypedefsV8Internal::funcMethodCallback, 0, 0},
-    {"setShadow", TestTypedefsV8Internal::setShadowMethodCallback, 0, 3},
-    {"voidMethodTestCallbackInterfaceArgument", TestTypedefsV8Internal::voidMethodTestCallbackInterfaceArgumentMethodCallback, 0, 1},
-    {"methodWithSequenceArg", TestTypedefsV8Internal::methodWithSequenceArgMethodCallback, 0, 1},
+    {"voidMethodArrayOfLongsArg", TestTypedefsV8Internal::voidMethodArrayOfLongsArgMethodCallback, 0, 0},
+    {"voidMethodFloatArgStringArg", TestTypedefsV8Internal::voidMethodFloatArgStringArgMethodCallback, 0, 2},
+    {"voidMethodTestCallbackInterfaceTypeArg", TestTypedefsV8Internal::voidMethodTestCallbackInterfaceTypeArgMethodCallback, 0, 1},
+    {"uLongLongMethodTestInterfaceEmptyTypeSequenceArg", TestTypedefsV8Internal::uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethodCallback, 0, 1},
     {"fooOrBarMethod", TestTypedefsV8Internal::fooOrBarMethodMethodCallback, 0, 0},
-    {"stringArrayFunction", TestTypedefsV8Internal::stringArrayFunctionMethodCallback, 0, 1},
-    {"stringArrayFunction2", TestTypedefsV8Internal::stringArrayFunction2MethodCallback, 0, 1},
-    {"methodWithException", TestTypedefsV8Internal::methodWithExceptionMethodCallback, 0, 0},
+    {"arrayOfStringsMethodArrayOfStringsArg", TestTypedefsV8Internal::arrayOfStringsMethodArrayOfStringsArgMethodCallback, 0, 1},
+    {"stringArrayMethodStringArrayArg", TestTypedefsV8Internal::stringArrayMethodStringArrayArgMethodCallback, 0, 1},
 };
 
 void V8TestTypedefs::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
