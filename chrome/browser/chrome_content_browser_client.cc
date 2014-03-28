@@ -1552,6 +1552,17 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
     }
 
+    {
+      // Enable auto-reload if this session is in the field trial or the user
+      // explicitly enabled it.
+      std::string group =
+          base::FieldTrialList::FindFullName("AutoReloadExperiment");
+      if (group == "Enabled" ||
+          browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload)) {
+        command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
+      }
+    }
+
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
       autofill::switches::kDisableIgnoreAutocompleteOff,
@@ -1581,7 +1592,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
       switches::kEnableNetBenchmarking,
-      switches::kEnableOfflineAutoReload,
       switches::kEnableStreamlinedHostedApps,
       switches::kEnableWatchdog,
       switches::kMemoryProfiling,
