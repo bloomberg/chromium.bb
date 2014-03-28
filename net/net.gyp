@@ -1415,22 +1415,17 @@
               'third_party/mozilla_security_manager/nsPKCS12Blob.cpp',
               'third_party/mozilla_security_manager/nsPKCS12Blob.h',
             ],
+            'dependencies': [
+              '../third_party/openssl/openssl.gyp:openssl',
+            ],
           },
           {  # else !use_openssl: remove the unneeded files
             'sources!': [
               'base/crypto_module_openssl.cc',
               'base/keygen_handler_openssl.cc',
-              'base/openssl_private_key_store.h',
-              'base/openssl_private_key_store_android.cc',
-              'base/openssl_private_key_store_memory.cc',
-              'cert/cert_database_openssl.cc',
-              'cert/cert_verify_proc_openssl.cc',
-              'cert/cert_verify_proc_openssl.h',
               'cert/ct_log_verifier_openssl.cc',
               'cert/ct_objects_extractor_openssl.cc',
               'cert/jwk_serializer_openssl.cc',
-              'cert/test_root_certs_openssl.cc',
-              'cert/x509_certificate_openssl.cc',
               'cert/x509_util_openssl.cc',
               'cert/x509_util_openssl.h',
               'quic/crypto/aead_base_decrypter_openssl.cc',
@@ -1448,11 +1443,23 @@
               'socket/ssl_server_socket_openssl.cc',
               'socket/ssl_session_cache_openssl.cc',
               'socket/ssl_session_cache_openssl.h',
-              'ssl/openssl_client_key_store.cc',
-              'ssl/openssl_client_key_store.h',
             ],
           },
         ],
+        [ 'use_openssl_certs == 0', {
+            'sources!': [
+              'base/openssl_private_key_store.h',
+              'base/openssl_private_key_store_android.cc',
+              'base/openssl_private_key_store_memory.cc',
+              'cert/cert_database_openssl.cc',
+              'cert/cert_verify_proc_openssl.cc',
+              'cert/cert_verify_proc_openssl.h',
+              'cert/test_root_certs_openssl.cc',
+              'cert/x509_certificate_openssl.cc',
+              'ssl/openssl_client_key_store.cc',
+              'ssl/openssl_client_key_store.h',
+            ],
+        }],
         [ 'use_glib == 1', {
             'dependencies': [
               '../build/linux/system.gyp:gconf',
@@ -1461,12 +1468,8 @@
         }],
         [ 'desktop_linux == 1 or chromeos == 1', {
             'conditions': [
-              ['use_openssl==1', {
-                'dependencies': [
-                  '../third_party/openssl/openssl.gyp:openssl',
-                ],
-              },
-              {  # else use_openssl==0, use NSS
+              ['use_openssl == 0', {
+                 # use NSS
                 'dependencies': [
                   '../build/linux/system.gyp:ssl',
                 ],
@@ -1575,10 +1578,15 @@
           },
         ],
         [ 'OS == "mac"', {
-            'dependencies': [
-              '../third_party/nss/nss.gyp:nspr',
-              '../third_party/nss/nss.gyp:nss',
-              'third_party/nss/ssl.gyp:libssl',
+            'conditions': [
+              [ 'use_openssl == 0', {
+                'dependencies': [
+                  # defaults to nss
+                  '../third_party/nss/nss.gyp:nspr',
+                  '../third_party/nss/nss.gyp:nss',
+                  'third_party/nss/ssl.gyp:libssl',
+                ],
+              }],
             ],
             'link_settings': {
               'libraries': [
@@ -2268,10 +2276,14 @@
               'quic/test_tools/crypto_test_utils_openssl.cc',
               'socket/ssl_client_socket_openssl_unittest.cc',
               'socket/ssl_session_cache_openssl_unittest.cc',
-              'ssl/openssl_client_key_store_unittest.cc',
             ],
           },
         ],
+        [ 'use_openssl_certs == 0', {
+            'sources!': [
+              'ssl/openssl_client_key_store_unittest.cc',
+            ],
+        }],
         [ 'enable_websockets != 1', {
             'sources/': [
               ['exclude', '^socket_stream/'],
@@ -2339,7 +2351,7 @@
             'msvs_disabled_warnings': [4267, ],
           },
         ],
-        [ 'OS == "mac"', {
+        [ 'OS == "mac" and use_openssl == 0', {
             'dependencies': [
               '../third_party/nss/nss.gyp:nspr',
               '../third_party/nss/nss.gyp:nss',

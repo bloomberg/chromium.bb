@@ -80,7 +80,7 @@
             'mac_security_services_lock.h',
           ],
         }],
-        [ 'OS == "mac" or OS == "ios" or OS == "win"', {
+        [ 'use_openssl == 0 and (OS == "mac" or OS == "ios" or OS == "win")', {
           'dependencies': [
             '../third_party/nss/nss.gyp:nspr',
             '../third_party/nss/nss.gyp:nss',
@@ -201,12 +201,7 @@
             'openpgp_symmetric_encryption_unittest.cc',
           ]
         }],
-        [ 'OS == "mac" or OS == "ios" or OS == "win"', {
-          'dependencies': [
-            '../third_party/nss/nss.gyp:nss',
-          ],
-        }],
-        [ 'OS == "mac"', {
+        [ 'use_openssl == 0 and (OS == "mac" or OS == "ios" or OS == "win")', {
           'dependencies': [
             '../third_party/nss/nss.gyp:nspr',
           ],

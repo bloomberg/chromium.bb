@@ -13,7 +13,8 @@
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
 
-#if defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(USE_NSS) || \
+    (!defined(USE_OPENSSL) && (defined(OS_WIN) || defined(OS_MACOSX)))
 #include "crypto/scoped_nss_types.h"
 #endif
 

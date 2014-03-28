@@ -57,8 +57,14 @@
           # Whether we are using Views Toolkit
           'toolkit_views%': 0,
 
-          # Use OpenSSL instead of NSS. Under development: see http://crbug.com/62803
+          # Use OpenSSL instead of NSS as the underlying SSL and crypto
+          # implementation. Certificate verification will in most cases be
+          # handled by the OS. If OpenSSL's struct X509 is used to represent
+          # certificates, use_openssl_certs must be set.
           'use_openssl%': 0,
+
+          # Typedef X509Certificate::OSCertHandle to OpenSSL's struct X509*.
+          'use_openssl_certs%': 0,
 
           # Disable viewport meta tag by default.
           'enable_viewport%': 0,
@@ -135,6 +141,7 @@
         'use_ozone%': '<(use_ozone)',
         'embedded%': '<(embedded)',
         'use_openssl%': '<(use_openssl)',
+        'use_openssl_certs%': '<(use_openssl_certs)',
         'use_system_fontconfig%': '<(use_system_fontconfig)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
@@ -256,6 +263,7 @@
       'use_clipboard_aurax11%': '<(use_clipboard_aurax11)',
       'embedded%': '<(embedded)',
       'use_openssl%': '<(use_openssl)',
+      'use_openssl_certs%': '<(use_openssl_certs)',
       'use_system_fontconfig%': '<(use_system_fontconfig)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
@@ -566,6 +574,14 @@
           'use_nss%': 1,
         }, {
           'use_nss%': 0,
+        }],
+
+        # When OpenSSL is used for SSL and crypto on Unix-like systems, use
+        # OpenSSL's certificate definition.
+        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_openssl==1', {
+          'use_openssl_certs%': 1,
+        }, {
+          'use_openssl_certs%': 0,
         }],
 
         # libudev usage.  This currently only affects the content layer.
@@ -932,6 +948,7 @@
     'use_cras%': '<(use_cras)',
     'use_mojo%': '<(use_mojo)',
     'use_openssl%': '<(use_openssl)',
+    'use_openssl_certs%': '<(use_openssl_certs)',
     'use_nss%': '<(use_nss)',
     'use_udev%': '<(use_udev)',
     'os_bsd%': '<(os_bsd)',
@@ -1556,6 +1573,7 @@
 
         # Always uses openssl.
         'use_openssl%': 1,
+        'use_openssl_certs%': 1,
 
         'proprietary_codecs%': '<(proprietary_codecs)',
         'safe_browsing%': 2,
@@ -2588,8 +2606,17 @@
       }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [
-      ['<(use_openssl)==1 or >(nacl_untrusted_build)==1', {
+      ['<(use_openssl)==1', {
         'defines': ['USE_OPENSSL=1'],
+      }],
+      ['<(use_openssl_certs)==1', {
+        'defines': ['USE_OPENSSL_CERTS=1'],
+      }],
+      ['>(nacl_untrusted_build)==1', {
+        'defines': [
+          'USE_OPENSSL=1',
+          'USE_OPENSSL_CERTS=1',
+        ],
       }],
       ['<(use_nss)==1 and >(nacl_untrusted_build)==0', {
         'defines': ['USE_NSS=1'],

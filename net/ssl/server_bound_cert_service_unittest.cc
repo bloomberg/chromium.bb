@@ -24,7 +24,6 @@ namespace net {
 
 namespace {
 
-#if !defined(USE_OPENSSL)
 void FailTest(int /* result */) {
   FAIL();
 }
@@ -117,8 +116,6 @@ MockServerBoundCertStoreWithAsyncGet::CallGetServerBoundCertCallbackWithResult(
                                                     cert));
 }
 
-#endif  // !defined(USE_OPENSSL)
-
 class ServerBoundCertServiceTest : public testing::Test {
  public:
   ServerBoundCertServiceTest()
@@ -149,9 +146,6 @@ TEST_F(ServerBoundCertServiceTest, GetDomainForHost) {
   EXPECT_EQ("127.0.0.1",
             ServerBoundCertService::GetDomainForHost("127.0.0.1"));
 }
-
-// See http://crbug.com/91512 - implement OpenSSL version of CreateSelfSigned.
-#if !defined(USE_OPENSSL)
 
 TEST_F(ServerBoundCertServiceTest, GetCacheMiss) {
   std::string host("encrypted.google.com");
@@ -774,8 +768,6 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
   EXPECT_FALSE(request_handle1.is_active());
   EXPECT_FALSE(request_handle2.is_active());
 }
-
-#endif  // !defined(USE_OPENSSL)
 
 }  // namespace
 

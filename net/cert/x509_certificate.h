@@ -25,7 +25,7 @@
 #include <CoreFoundation/CFArray.h>
 #include <Security/SecBase.h>
 
-#elif defined(USE_OPENSSL)
+#elif defined(USE_OPENSSL_CERTS)
 // Forward declaration; real one in <x509.h>
 typedef struct x509_st X509;
 typedef struct x509_store_st X509_STORE;
@@ -58,7 +58,7 @@ class NET_EXPORT X509Certificate
   typedef PCCERT_CONTEXT OSCertHandle;
 #elif defined(OS_MACOSX)
   typedef SecCertificateRef OSCertHandle;
-#elif defined(USE_OPENSSL)
+#elif defined(USE_OPENSSL_CERTS)
   typedef X509* OSCertHandle;
 #elif defined(USE_NSS)
   typedef struct CERTCertificateStr* OSCertHandle;
@@ -304,7 +304,7 @@ class NET_EXPORT X509Certificate
   PCCERT_CONTEXT CreateOSCertChainForCert() const;
 #endif
 
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
   // Returns a handle to a global, in-memory certificate store. We
   // use it for test code, e.g. importing the test server's certificate.
   static X509_STORE* cert_store();
@@ -413,7 +413,7 @@ class NET_EXPORT X509Certificate
   // Common object initialization code.  Called by the constructors only.
   void Initialize();
 
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
   // Resets the store returned by cert_store() to default state. Used by
   // TestRootCerts to undo modifications.
   static void ResetCertStore();

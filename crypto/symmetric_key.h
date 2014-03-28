@@ -14,7 +14,8 @@
 // See comments for crypto_nacl_win64 in crypto.gyp.
 // Must test for NACL_WIN64 before OS_WIN since former is a subset of latter.
 #include "crypto/scoped_capi_types.h"
-#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+#elif defined(USE_NSS) || \
+    (!defined(USE_OPENSSL) && (defined(OS_WIN) || defined(OS_MACOSX)))
 #include "crypto/scoped_nss_types.h"
 #endif
 

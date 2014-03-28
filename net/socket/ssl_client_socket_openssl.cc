@@ -389,7 +389,7 @@ SSLClientSocketOpenSSL::PeerCertificateChain::operator=(
   return *this;
 }
 
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL_CERTS)
 // When OSCertHandle is typedef'ed to X509, this implementation does a short cut
 // to avoid converting back and forth between der and X509 struct.
 void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
@@ -417,7 +417,7 @@ void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
     CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
   }
 }
-#else  // !defined(USE_OPENSSL)
+#else  // !defined(USE_OPENSSL_CERTS)
 void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
     STACK_OF(X509)* chain) {
   openssl_chain_.reset(NULL);
@@ -455,7 +455,7 @@ void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(
     os_chain_ = NULL;
   }
 }
-#endif  // USE_OPENSSL
+#endif  // defined(USE_OPENSSL_CERTS)
 
 // static
 SSLSessionCacheOpenSSL::Config
@@ -471,7 +471,9 @@ void SSLClientSocket::ClearSessionCache() {
   SSLClientSocketOpenSSL::SSLContext* context =
       SSLClientSocketOpenSSL::SSLContext::GetInstance();
   context->session_cache()->Flush();
+#if defined(USE_OPENSSL_CERTS)
   OpenSSLClientKeyStore::GetInstance()->Flush();
+#endif
 }
 
 SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
@@ -1419,7 +1421,7 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
   DCHECK(ssl == ssl_);
   DCHECK(*x509 == NULL);
   DCHECK(*pkey == NULL);
-
+#if defined(USE_OPENSSL_CERTS)
   if (!ssl_config_.send_client_cert) {
     // First pass: we know that a client certificate is needed, but we do not
     // have one at hand.
@@ -1456,6 +1458,10 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl,
     }
     LOG(WARNING) << "Client cert found without private key";
   }
+#else  // !defined(USE_OPENSSL_CERTS)
+  // OS handling of client certificates is not yet implemented.
+  NOTIMPLEMENTED();
+#endif  // defined(USE_OPENSSL_CERTS)
 
   // Send no client certificate.
   return 0;
