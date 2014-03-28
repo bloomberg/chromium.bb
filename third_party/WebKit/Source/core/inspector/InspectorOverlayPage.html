@@ -425,14 +425,15 @@ function _drawElementTitle(highlight)
     var titleWidth = elementTitle.offsetWidth + 6;
     var titleHeight = elementTitle.offsetHeight + 4;
 
-    var anchorTop = marginQuad[0].y;
-    var anchorBottom = marginQuad[3].y
+    var anchorTop = Math.min(marginQuad[0].y, marginQuad[1].y, marginQuad[2].y, marginQuad[3].y);
+    var anchorBottom = Math.max(marginQuad[0].y, marginQuad[1].y, marginQuad[2].y, marginQuad[3].y);
+    var anchorLeft = Math.min(marginQuad[0].x, marginQuad[1].x, marginQuad[2].x, marginQuad[3].x);
 
     const arrowHeight = 7;
     var renderArrowUp = false;
     var renderArrowDown = false;
 
-    var boxX = Math.max(2, marginQuad[0].x);
+    var boxX = Math.max(2, anchorLeft);
     if (boxX + titleWidth > canvasWidth)
         boxX = canvasWidth - titleWidth - 2;
 
