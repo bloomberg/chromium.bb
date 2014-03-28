@@ -2439,8 +2439,18 @@ public class AwSettingsTest extends AwTestBase {
         AwSettings settings = getAwSettingsOnUiThread(awContents);
         settings.setBuiltInZoomControls(true);
 
-        final String page = "<html><body>Page Text</body></html>";
+        DeviceDisplayInfo deviceInfo =
+                DeviceDisplayInfo.create(testContainerView.getContext());
+        int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+        int layoutWidth = displayWidth * 2;
+        final String page = "<html>" +
+                "<head><meta name='viewport' content='width=" + layoutWidth + "'>" +
+                "<style> body { width: " + layoutWidth + "px; }</style></head>" +
+                "<body>Page Text</body></html>";
+
         assertFalse(settings.getUseWideViewPort());
+        // Without wide viewport the <meta viewport> tag will be ignored by WebView,
+        // but it doesn't really matter as we don't expect double tap to change the scale.
         loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         final float initialScale = getScaleOnUiThread(awContents);
         simulateDoubleTapCenterOfWebViewOnUiThread(testContainerView);
