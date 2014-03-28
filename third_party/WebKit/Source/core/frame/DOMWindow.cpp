@@ -111,7 +111,7 @@ namespace WebCore {
 
 class PostMessageTimer FINAL : public SuspendableTimer {
 public:
-    PostMessageTimer(DOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace)
+    PostMessageTimer(DOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
         , m_window(&window)
         , m_message(message)
@@ -120,6 +120,7 @@ public:
         , m_channels(channels)
         , m_targetOrigin(targetOrigin)
         , m_stackTrace(stackTrace)
+        , m_userGestureToken(userGestureToken)
     {
     }
 
@@ -130,6 +131,7 @@ public:
     }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
     ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
+    UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
 
 private:
     virtual void fired() OVERRIDE
@@ -145,6 +147,7 @@ private:
     OwnPtr<MessagePortChannelArray> m_channels;
     RefPtr<SecurityOrigin> m_targetOrigin;
     RefPtr<ScriptCallStack> m_stackTrace;
+    RefPtr<UserGestureToken> m_userGestureToken;
 };
 
 static void disableSuddenTermination()
@@ -851,7 +854,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         stackTrace = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture, true);
 
     // Schedule the message.
-    PostMessageTimer* timer = new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release());
+    PostMessageTimer* timer = new PostMessageTimer(*this, message, sourceOrigin, source, channels.release(), target.get(), stackTrace.release(), UserGestureIndicator::currentToken());
     timer->startOneShot(0, FROM_HERE);
     timer->suspendIfNeeded();
 }
@@ -870,6 +873,8 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
     // postMessage calls across WebKit instances.
     if (m_frame->loader().client()->willCheckAndDispatchMessageEvent(timer->targetOrigin(), event.get()))
         return;
+
+    UserGestureIndicator gestureIndicator(timer->userGestureToken());
 
     event->entangleMessagePorts(document());
     dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->stackTrace());
