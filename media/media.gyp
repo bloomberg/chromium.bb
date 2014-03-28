@@ -1458,6 +1458,7 @@
           'type': 'executable',
           'dependencies': [
             'media',
+	    'shared_memory_support',
             '../base/base.gyp:base',
             '../ui/gl/gl.gyp:gl',
             '../ui/gfx/gfx.gyp:gfx',
