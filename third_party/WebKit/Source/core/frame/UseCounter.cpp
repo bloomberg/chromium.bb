@@ -500,12 +500,6 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyJustifySelf: return 443;
     case CSSPropertyScrollBehavior: return 444;
     case CSSPropertyWillChange: return 445;
-    case CSSPropertyTransform: return 446;
-    case CSSPropertyTransformOrigin: return 447;
-    case CSSPropertyTransformStyle: return 448;
-    case CSSPropertyPerspective: return 449;
-    case CSSPropertyPerspectiveOrigin: return 450;
-    case CSSPropertyBackfaceVisibility: return 451;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
@@ -525,7 +519,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 451; }
+static int maximumCSSSampleId() { return 445; }
 
 void UseCounter::muteForInspector()
 {
