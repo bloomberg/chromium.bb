@@ -5,10 +5,11 @@
 #ifndef UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_
 #define UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
@@ -70,7 +71,7 @@ class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   virtual void GrabServer() OVERRIDE;
   virtual void UngrabServer() OVERRIDE;
   virtual void SyncWithServer() OVERRIDE;
-  virtual void SetBackgroundColor(uint32 color_argb) OVERRIDE;
+  virtual void SetBackgroundColor(uint32_t color_argb) OVERRIDE;
   virtual void ForceDPMSOn() OVERRIDE;
   virtual std::vector<DisplaySnapshot*> GetOutputs() OVERRIDE;
   virtual void AddMode(const DisplaySnapshot& output,

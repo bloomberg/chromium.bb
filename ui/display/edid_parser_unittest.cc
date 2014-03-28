@@ -97,7 +97,7 @@ const unsigned char kLP2565B[] =
 
 TEST(EDIDParserTest, ParseOverscanFlag) {
   bool flag = false;
-  std::vector<uint8> edid(
+  std::vector<uint8_t> edid(
       kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
   EXPECT_FALSE(ParseOutputOverscanFlag(edid, &flag));
 
@@ -127,7 +127,7 @@ TEST(EDIDParserTest, ParseOverscanFlag) {
 
 TEST(EDIDParserTest, ParseBrokenOverscanData) {
   // Do not fill valid data here because it anyway fails to parse the data.
-  std::vector<uint8> data;
+  std::vector<uint8_t> data;
   bool flag = false;
   EXPECT_FALSE(ParseOutputOverscanFlag(data, &flag));
   data.assign(126, '\0');
@@ -145,9 +145,9 @@ TEST(EDIDParserTest, ParseBrokenOverscanData) {
 }
 
 TEST(EDIDParserTest, ParseEDID) {
-  uint16 manufacturer_id = 0;
+  uint16_t manufacturer_id = 0;
   std::string human_readable_name;
-  std::vector<uint8> edid(
+  std::vector<uint8_t> edid(
       kNormalDisplay, kNormalDisplay + charsize(kNormalDisplay));
   EXPECT_TRUE(ParseOutputDeviceData(
       edid, &manufacturer_id, &human_readable_name));
@@ -175,9 +175,9 @@ TEST(EDIDParserTest, ParseEDID) {
 }
 
 TEST(EDIDParserTest, ParseBrokenEDID) {
-  uint16 manufacturer_id = 0;
+  uint16_t manufacturer_id = 0;
   std::string human_readable_name;
-  std::vector<uint8> edid;
+  std::vector<uint8_t> edid;
 
   // length == 0
   EXPECT_FALSE(ParseOutputDeviceData(
@@ -201,9 +201,9 @@ TEST(EDIDParserTest, ParseBrokenEDID) {
 
 TEST(EDIDParserTest, GetDisplayId) {
   // EDID of kLP2565A and B are slightly different but actually the same device.
-  int64 id1 = -1;
-  int64 id2 = -1;
-  std::vector<uint8> edid(kLP2565A, kLP2565A + charsize(kLP2565A));
+  int64_t id1 = -1;
+  int64_t id2 = -1;
+  std::vector<uint8_t> edid(kLP2565A, kLP2565A + charsize(kLP2565A));
   EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id1));
   edid.assign(kLP2565B, kLP2565B + charsize(kLP2565B));
   EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id2));
@@ -212,16 +212,16 @@ TEST(EDIDParserTest, GetDisplayId) {
 }
 
 TEST(EDIDParserTest, GetDisplayIdFromInternal) {
-  int64 id = -1;
-  std::vector<uint8> edid(
+  int64_t id = -1;
+  std::vector<uint8_t> edid(
       kInternalDisplay, kInternalDisplay + charsize(kInternalDisplay));
   EXPECT_TRUE(GetDisplayIdFromEDID(edid, 0, &id));
   EXPECT_NE(-1, id);
 }
 
 TEST(EDIDParserTest, GetDisplayIdFailure) {
-  int64 id = -1;
-  std::vector<uint8> edid;
+  int64_t id = -1;
+  std::vector<uint8_t> edid;
   EXPECT_FALSE(GetDisplayIdFromEDID(edid, 0, &id));
   EXPECT_EQ(-1, id);
 }

@@ -195,7 +195,7 @@ void NativeDisplayDelegateX11::UngrabServer() {
 
 void NativeDisplayDelegateX11::SyncWithServer() { XSync(display_, 0); }
 
-void NativeDisplayDelegateX11::SetBackgroundColor(uint32 color_argb) {
+void NativeDisplayDelegateX11::SetBackgroundColor(uint32_t color_argb) {
   // Configuring CRTCs/Framebuffer clears the boot screen image.  Set the
   // same background color while configuring the display to minimize the
   // duration of black screen at boot time. The background is filled with
@@ -344,7 +344,7 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     int index) {
   int64_t display_id = 0;
   bool has_display_id = GetDisplayId(
-      id, static_cast<uint8>(index), &display_id);
+      id, static_cast<uint8_t>(index), &display_id);
 
   OutputType type = GetOutputTypeFromName(info->name);
   if (type == OUTPUT_TYPE_UNKNOWN)

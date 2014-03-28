@@ -23,7 +23,7 @@ typedef std::vector<const DisplayMode*> DisplayModeList;
 
 // The delay to perform configuration after RRNotify.  See the comment
 // in |Dispatch()|.
-const int64 kConfigureDelayMs = 500;
+const int kConfigureDelayMs = 500;
 
 // Returns a string describing |state|.
 std::string DisplayPowerStateToString(chromeos::DisplayPowerState state) {
@@ -197,7 +197,7 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
     touchscreen_delegate_.reset(new TouchscreenDelegateX11());
 }
 
-void OutputConfigurator::ForceInitialConfigure(uint32 background_color_argb) {
+void OutputConfigurator::ForceInitialConfigure(uint32_t background_color_argb) {
   if (!configure_display_)
     return;
 
@@ -285,7 +285,7 @@ void OutputConfigurator::UnregisterOutputProtectionClient(
 
 bool OutputConfigurator::QueryOutputProtectionStatus(
     OutputProtectionClientId client_id,
-    int64 display_id,
+    int64_t display_id,
     uint32_t* link_mask,
     uint32_t* protection_mask) {
   if (!configure_display_)
@@ -342,7 +342,7 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
 
 bool OutputConfigurator::EnableOutputProtection(
     OutputProtectionClientId client_id,
-    int64 display_id,
+    int64_t display_id,
     uint32_t desired_method_mask) {
   if (!configure_display_)
     return false;
@@ -381,7 +381,7 @@ bool OutputConfigurator::EnableOutputProtection(
 
 std::vector<ui::ColorCalibrationProfile>
 OutputConfigurator::GetAvailableColorCalibrationProfiles(
-    int64 display_id) {
+    int64_t display_id) {
   for (size_t i = 0; i < cached_outputs_.size(); ++i) {
     if (cached_outputs_[i].display &&
         cached_outputs_[i].display->display_id() == display_id) {
@@ -394,7 +394,7 @@ OutputConfigurator::GetAvailableColorCalibrationProfiles(
 }
 
 bool OutputConfigurator::SetColorCalibrationProfile(
-    int64 display_id,
+    int64_t display_id,
     ui::ColorCalibrationProfile new_profile) {
   for (size_t i = 0; i < cached_outputs_.size(); ++i) {
     if (cached_outputs_[i].display &&
@@ -916,7 +916,7 @@ OutputState OutputConfigurator::ChooseOutputState(
           return OUTPUT_STATE_DUAL_EXTENDED;
         // With either both outputs on or both outputs off, use one of the
         // dual modes.
-        std::vector<int64> display_ids;
+        std::vector<int64_t> display_ids;
         for (size_t i = 0; i < cached_outputs_.size(); ++i) {
           // If display id isn't available, switch to extended mode.
           if (!cached_outputs_[i].display->has_proper_display_id())

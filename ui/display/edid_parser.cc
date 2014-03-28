@@ -21,19 +21,19 @@ namespace {
 // treated as swap. The 'serial number' field in EDID isn't used here because
 // it is not guaranteed to have unique number and it may have the same fixed
 // value (like 0).
-int64 GetID(uint16 manufacturer_id,
-            uint32 product_code_hash,
-            uint8 output_index) {
-  return ((static_cast<int64>(manufacturer_id) << 40) |
-          (static_cast<int64>(product_code_hash) << 8) | output_index);
+int64_t GetID(uint16_t manufacturer_id,
+              uint32_t product_code_hash,
+              uint8_t output_index) {
+  return ((static_cast<int64_t>(manufacturer_id) << 40) |
+          (static_cast<int64_t>(product_code_hash) << 8) | output_index);
 }
 
 }  // namespace
 
-bool GetDisplayIdFromEDID(const std::vector<uint8>& edid,
-                          uint8 output_index,
-                          int64* display_id_out) {
-  uint16 manufacturer_id = 0;
+bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
+                          uint8_t output_index,
+                          int64_t* display_id_out) {
+  uint16_t manufacturer_id = 0;
   std::string product_name;
 
   // ParseOutputDeviceData fails if it doesn't have product_name.
@@ -41,7 +41,7 @@ bool GetDisplayIdFromEDID(const std::vector<uint8>& edid,
 
   // Generates product specific value from product_name instead of product code.
   // See crbug.com/240341
-  uint32 product_code_hash = product_name.empty() ?
+  uint32_t product_code_hash = product_name.empty() ?
       0 : base::Hash(product_name);
   if (manufacturer_id != 0) {
     // An ID based on display's index will be assigned later if this call
@@ -53,8 +53,8 @@ bool GetDisplayIdFromEDID(const std::vector<uint8>& edid,
   return false;
 }
 
-bool ParseOutputDeviceData(const std::vector<uint8>& edid,
-                           uint16* manufacturer_id,
+bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
+                           uint16_t* manufacturer_id,
                            std::string* human_readable_name) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the details of EDID data format.  We use the following data:
@@ -76,7 +76,7 @@ bool ParseOutputDeviceData(const std::vector<uint8>& edid,
     }
 
     *manufacturer_id =
-        *reinterpret_cast<const uint16*>(&edid[kManufacturerOffset]);
+        *reinterpret_cast<const uint16_t*>(&edid[kManufacturerOffset]);
 #if defined(ARCH_CPU_LITTLE_ENDIAN)
     *manufacturer_id = base::ByteSwap(*manufacturer_id);
 #endif
@@ -121,7 +121,7 @@ bool ParseOutputDeviceData(const std::vector<uint8>& edid,
   return true;
 }
 
-bool ParseOutputOverscanFlag(const std::vector<uint8>& edid,
+bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
                              bool* flag) {
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the extension format of EDID.  Also see EIA/CEA-861 spec for

@@ -5,6 +5,8 @@
 #ifndef UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
 #define UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "ui/display/display_constants.h"
@@ -40,7 +42,7 @@ class DISPLAY_EXPORT NativeDisplayDelegate {
   virtual void SyncWithServer() = 0;
 
   // Sets the window's background color to |color_argb|.
-  virtual void SetBackgroundColor(uint32 color_argb) = 0;
+  virtual void SetBackgroundColor(uint32_t color_argb) = 0;
 
   // Enables DPMS and forces it to the "on" state.
   virtual void ForceDPMSOn() = 0;

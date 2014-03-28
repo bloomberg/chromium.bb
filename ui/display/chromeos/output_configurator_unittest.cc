@@ -4,13 +4,14 @@
 
 #include "ui/display/chromeos/output_configurator.h"
 
+#include <stdint.h>
+
 #include <cmath>
 #include <cstdarg>
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_vector.h"
@@ -43,7 +44,7 @@ std::string DisplaySnapshotToString(const DisplaySnapshot& output) {
 
 // Returns a string describing a TestNativeDisplayDelegate::SetBackgroundColor()
 // call.
-std::string GetBackgroundAction(uint32 color_argb) {
+std::string GetBackgroundAction(uint32_t color_argb) {
   return base::StringPrintf("background(0x%x)", color_argb);
 }
 
@@ -212,7 +213,7 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   virtual void GrabServer() OVERRIDE { log_->AppendAction(kGrab); }
   virtual void UngrabServer() OVERRIDE { log_->AppendAction(kUngrab); }
   virtual void SyncWithServer() OVERRIDE { log_->AppendAction(kSync); }
-  virtual void SetBackgroundColor(uint32 color_argb) OVERRIDE {
+  virtual void SetBackgroundColor(uint32_t color_argb) OVERRIDE {
     log_->AppendAction(GetBackgroundAction(color_argb));
   }
   virtual void ForceDPMSOn() OVERRIDE { log_->AppendAction(kForceDPMS); }
@@ -349,10 +350,10 @@ class TestStateController : public OutputConfigurator::StateController {
 
   // OutputConfigurator::StateController overrides:
   virtual OutputState GetStateForDisplayIds(
-      const std::vector<int64>& outputs) const OVERRIDE {
+      const std::vector<int64_t>& outputs) const OVERRIDE {
     return state_;
   }
-  virtual bool GetResolutionForDisplayId(int64 display_id,
+  virtual bool GetResolutionForDisplayId(int64_t display_id,
                                          gfx::Size* size) const OVERRIDE {
     return false;
   }

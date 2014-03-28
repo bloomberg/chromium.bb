@@ -28,7 +28,7 @@ bool IsRandRAvailable() {
 // Get the EDID data from the |output| and stores to |edid|.
 // Returns true if EDID property is successfully obtained. Otherwise returns
 // false and does not touch |edid|.
-bool GetEDIDProperty(XID output, std::vector<uint8>* edid) {
+bool GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
   if (!IsRandRAvailable())
     return false;
 
@@ -81,9 +81,9 @@ bool GetEDIDProperty(XID output, std::vector<uint8>* edid) {
 // fails to get those data and doesn't touch manufacturer ID/product code/name.
 // NULL can be passed for unwanted output parameters.
 bool GetOutputDeviceData(XID output,
-                         uint16* manufacturer_id,
+                         uint16_t* manufacturer_id,
                          std::string* human_readable_name) {
-  std::vector<uint8> edid;
+  std::vector<uint8_t> edid;
   if (!GetEDIDProperty(output, &edid))
     return false;
 
@@ -94,8 +94,10 @@ bool GetOutputDeviceData(XID output,
 
 }  // namespace
 
-bool GetDisplayId(XID output_id, uint8 output_index, int64* display_id_out) {
-  std::vector<uint8> edid;
+bool GetDisplayId(XID output_id,
+                  uint8_t output_index,
+                  int64_t* display_id_out) {
+  std::vector<uint8_t> edid;
   if (!GetEDIDProperty(output_id, &edid))
     return false;
 
@@ -110,7 +112,7 @@ std::string GetDisplayName(RROutput output) {
 }
 
 bool GetOutputOverscanFlag(RROutput output, bool* flag) {
-  std::vector<uint8> edid;
+  std::vector<uint8_t> edid;
   if (!GetEDIDProperty(output, &edid))
     return false;
 

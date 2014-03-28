@@ -5,10 +5,11 @@
 #ifndef UI_DISPLAY_EDID_PARSER_H_
 #define UI_DISPLAY_EDID_PARSER_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "ui/display/display_export.h"
 
 // EDID (Extended Display Identification Data) is a format for monitor
@@ -19,19 +20,19 @@ namespace ui {
 // Generates the display id for the pair of |edid| and |index|, and store in
 // |display_id_out|. Returns true if the display id is successfully generated,
 // or false otherwise.
-DISPLAY_EXPORT bool GetDisplayIdFromEDID(const std::vector<uint8>& edid,
-                                         uint8 index,
-                                         int64* display_id_out);
+DISPLAY_EXPORT bool GetDisplayIdFromEDID(const std::vector<uint8_t>& edid,
+                                         uint8_t index,
+                                         int64_t* display_id_out);
 
 // Parses |edid| as EDID data and stores extracted data into |manufacturer_id|
 // and |human_readable_name| and returns true. NULL can be passed for unwanted
 // output parameters. Some devices (especially internal displays) may not have
 // the field for |human_readable_name|, and it will return true in that case.
-DISPLAY_EXPORT bool ParseOutputDeviceData(const std::vector<uint8>& edid,
-                                          uint16* manufacturer_id,
+DISPLAY_EXPORT bool ParseOutputDeviceData(const std::vector<uint8_t>& edid,
+                                          uint16_t* manufacturer_id,
                                           std::string* human_readable_name);
 
-DISPLAY_EXPORT bool ParseOutputOverscanFlag(const std::vector<uint8>& edid,
+DISPLAY_EXPORT bool ParseOutputOverscanFlag(const std::vector<uint8_t>& edid,
                                             bool* flag);
 
 }  // namespace ui

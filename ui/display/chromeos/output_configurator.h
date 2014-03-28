@@ -5,11 +5,12 @@
 #ifndef UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_
 #define UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/event_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -88,11 +89,11 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
 
     // Called when displays are detected.
     virtual OutputState GetStateForDisplayIds(
-        const std::vector<int64>& display_ids) const = 0;
+        const std::vector<int64_t>& display_ids) const = 0;
 
     // Queries the resolution (|size|) in pixels to select output mode for the
     // given display id.
-    virtual bool GetResolutionForDisplayId(int64 display_id,
+    virtual bool GetResolutionForDisplayId(int64_t display_id,
                                            gfx::Size* size) const = 0;
   };
 
@@ -199,7 +200,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   // If |background_color_argb| is non zero and there are multiple displays,
   // OutputConfigurator sets the background color of X's RootWindow to this
   // color.
-  void ForceInitialConfigure(uint32 background_color_argb);
+  void ForceInitialConfigure(uint32_t background_color_argb);
 
   // Stop handling display configuration events/requests.
   void PrepareForExit();
@@ -247,7 +248,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   // which is a bitmask of the OutputProtectionMethod values.
   // Returns true on success.
   bool QueryOutputProtectionStatus(OutputProtectionClientId client_id,
-                                   int64 display_id,
+                                   int64_t display_id,
                                    uint32_t* link_mask,
                                    uint32_t* protection_mask);
 
@@ -256,22 +257,22 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   // of the OutputProtectionMethod values.
   // Returns true when the protection request has been made.
   bool EnableOutputProtection(OutputProtectionClientId client_id,
-                              int64 display_id,
+                              int64_t display_id,
                               uint32_t desired_protection_mask);
 
   // Checks the available color profiles for |display_id| and fills the result
   // into |profiles|.
   std::vector<ui::ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
-      int64 display_id);
+      int64_t display_id);
 
   // Updates the color calibration to |new_profile|.
   bool SetColorCalibrationProfile(
-      int64 display_id,
+      int64_t display_id,
       ui::ColorCalibrationProfile new_profile);
 
  private:
   // Mapping a display_id to a protection request bitmask.
-  typedef std::map<int64, uint32_t> DisplayProtections;
+  typedef std::map<int64_t, uint32_t> DisplayProtections;
   // Mapping a client to its protection request.
   typedef std::map<OutputProtectionClientId, DisplayProtections>
       ProtectionRequests;
