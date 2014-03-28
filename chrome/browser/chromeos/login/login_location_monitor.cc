@@ -118,7 +118,7 @@ void LoginLocationMonitor::OnLocationUpdatedIO(
 
 void LoginLocationMonitor::OnLocationUpdatedUI(
     const content::Geoposition& position) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(position.Validate());
 
   LoginLocationMonitor* self = GetInstance();
