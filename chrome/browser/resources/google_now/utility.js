@@ -648,9 +648,22 @@ function fillFromChromeLocalStorage(
     defaultStorageObject,
     opt_allowPromiseRejection) {
   return new Promise(function(resolve, reject) {
-    instrumented.storage.local.get(defaultStorageObject, function(items) {
+    // We have to create a keys array because keys with a default value
+    // of undefined will cause that key to not be looked up!
+    var keysToGet = [];
+    for (var key in defaultStorageObject) {
+      keysToGet.push(key);
+    }
+    instrumented.storage.local.get(keysToGet, function(items) {
       if (items) {
-        resolve(items);
+        // Merge the result with the default storage object to ensure all keys
+        // requested have either the default value or the retrieved storage
+        // value.
+        var result = {};
+        for (var key in defaultStorageObject) {
+          result[key] = (key in items) ? items[key] : defaultStorageObject[key];
+        }
+        resolve(result);
       } else if (opt_allowPromiseRejection === PromiseRejection.ALLOW) {
         reject();
       } else {

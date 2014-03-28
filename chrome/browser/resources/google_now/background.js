@@ -52,6 +52,19 @@ var MINIMUM_POLLING_PERIOD_SECONDS = 5 * 60;  // 5 minutes
 var MAXIMUM_POLLING_PERIOD_SECONDS = 60 * 60;  // 1 hour
 
 /**
+ * Initial period for polling for Google Now optin notification after push
+ * messaging indicates Google Now is enabled.
+ */
+var INITIAL_OPTIN_POLLING_PERIOD_SECONDS = 60;  // 1 minute
+
+/**
+ * Maximum period for polling for Google Now optin notification after push
+ * messaging indicates Google Now is enabled. It is expected that the alarm
+ * will be stopped after this.
+ */
+var MAXIMUM_OPTIN_POLLING_PERIOD_SECONDS = 16 * 60;  // 16 minutes
+
+/**
  * Initial period for retrying the server request for dismissing cards.
  */
 var INITIAL_RETRY_DISMISS_PERIOD_SECONDS = 60;  // 1 minute
@@ -202,6 +215,11 @@ var updateCardsAttempts = buildAttemptManager(
     requestCards,
     INITIAL_POLLING_PERIOD_SECONDS,
     MAXIMUM_POLLING_PERIOD_SECONDS);
+var optInCheckAttempts = buildAttemptManager(
+    'optin',
+    pollOptedIn,
+    INITIAL_OPTIN_POLLING_PERIOD_SECONDS,
+    MAXIMUM_OPTIN_POLLING_PERIOD_SECONDS);
 var dismissalAttempts = buildAttemptManager(
     'dismiss',
     retryPendingDismissals,
@@ -1096,6 +1114,48 @@ function isGoogleNowEnabled() {
       });
 }
 
+/**
+ * Polls the optin state.
+ * Sometimes we get the response to the opted in result too soon during
+ * push messaging. We'll recheck the optin state a few times before giving up.
+ */
+function pollOptedIn() {
+  /**
+   * Cleans up any state used to recheck the opt-in poll.
+   */
+  function clearPollingState() {
+    localStorage.removeItem('optedInCheckCount');
+    optInCheckAttempts.stop();
+  }
+
+  /**
+   * Performs the actual work for checking the opt-in state and requesting cards
+   * on opted-in.
+   */
+  function checkOptedIn() {
+    // Limit retries to 5.
+    if (localStorage.optedInCheckCount < 5) {
+      console.log(new Date() +
+          ' checkOptedIn Attempt ' + localStorage.optedInCheckCount);
+      localStorage.optedInCheckCount++;
+      requestOptedIn(function() {
+        clearPollingState();
+        requestCards();
+      });
+    } else {
+      clearPollingState();
+    }
+  }
+
+  if (localStorage.optedInCheckCount === undefined) {
+    localStorage.optedInCheckCount = 0;
+    optInCheckAttempts.start();
+    checkOptedIn();
+  } else {
+    optInCheckAttempts.planForNext(checkOptedIn);
+  }
+}
+
 instrumented.runtime.onInstalled.addListener(function(details) {
   console.log('onInstalled ' + JSON.stringify(details));
   if (details.reason != 'chrome_update') {
@@ -1202,7 +1262,7 @@ instrumented.pushMessaging.onMessage.addListener(function(message) {
             notificationGroups: items.notificationGroups
           });
 
-          requestCards();
+          pollOptedIn();
         }
       });
     });
