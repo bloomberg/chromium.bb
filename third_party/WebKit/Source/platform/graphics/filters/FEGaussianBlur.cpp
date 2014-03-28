@@ -332,7 +332,8 @@ bool FEGaussianBlur::applySkia()
     GraphicsContext* dstContext = resultImage->context();
     paint.setImageFilter(new SkBlurImageFilter(stdX, stdY))->unref();
 
-    dstContext->saveLayer(0, &paint);
+    SkRect bounds = SkRect::MakeWH(absolutePaintRect().width(), absolutePaintRect().height());
+    dstContext->saveLayer(&bounds, &paint);
     paint.setColor(0xFFFFFFFF);
     dstContext->drawImage(image.get(), drawingRegion.location(), CompositeCopy);
     dstContext->restoreLayer();

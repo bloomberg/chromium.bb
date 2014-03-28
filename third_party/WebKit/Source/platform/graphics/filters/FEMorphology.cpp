@@ -244,7 +244,8 @@ bool FEMorphology::applySkia()
     else if (m_type == FEMORPHOLOGY_OPERATOR_ERODE)
         paint.setImageFilter(new SkErodeImageFilter(radiusX, radiusY))->unref();
 
-    dstContext->saveLayer(0, &paint);
+    SkRect bounds = SkRect::MakeWH(absolutePaintRect().width(), absolutePaintRect().height());
+    dstContext->saveLayer(&bounds, &paint);
     dstContext->drawImage(image.get(), drawingRegion.location(), CompositeCopy);
     dstContext->restoreLayer();
     return true;
