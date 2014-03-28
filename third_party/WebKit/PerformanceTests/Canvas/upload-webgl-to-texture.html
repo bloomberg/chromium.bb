@@ -2,6 +2,7 @@
 <html>
 <body>
 <script src="../resources/runner.js"></script>
+<script src="resources/canvas_runner.js"></script>
 <script>
 
 var sourceCanvas3D = document.createElement('canvas');
@@ -9,10 +10,8 @@ var sourceCtx = sourceCanvas3D.getContext('experimental-webgl');
 var destCanvas3D = document.createElement('canvas');
 var destCtx = destCanvas3D.getContext('experimental-webgl');
 if (!sourceCtx || !destCtx)
-    PerfTestRunner.logFatalError("\nWebGL is not supported or enabled on this platform!\n");
-var MEASURE_DRAW_TIMES = 100;
-var MAX_COUNT = 60000;
-var count = 0;
+    CanvasRunner.logFatalError("\nWebGL is not supported or enabled on this platform!\n");
+var tex = null;
  
 function setSize(width, height) {
     sourceCanvas3D.width = width;
@@ -34,35 +33,32 @@ function renderWebGL(gl) {
     gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
-function uploadWebGLToWebGLTexture() {
-    var tex = destCtx.createTexture();
+function preRun() {
+    tex = destCtx.createTexture();
     destCtx.bindTexture(destCtx.TEXTURE_2D, tex);
-
-    var start = PerfTestRunner.now();
-
-    for (var i = 0; i < MEASURE_DRAW_TIMES; i++) {
-        destCtx.texImage2D(destCtx.TEXTURE_2D, 0, destCtx.RGBA, destCtx.RGBA, destCtx.UNSIGNED_BYTE, sourceCanvas3D);
-    }
-    destCtx.readPixels(0, 0, 1, 1, sourceCtx.RGBA, sourceCtx.UNSIGNED_BYTE, new Uint8Array(4));
-    destCtx.deleteTexture(tex);
-    count++;
-
-    var elapsedTime = PerfTestRunner.now() - start;
-    PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * 1000 / elapsedTime);
-    if (count < MAX_COUNT)
-        requestAnimationFrame(uploadWebGLToWebGLTexture);
 }
 
-function onCompletedRun() {
-    count = MAX_COUNT;
+function doRun() {
+    destCtx.texImage2D(destCtx.TEXTURE_2D, 0, destCtx.RGBA, destCtx.RGBA, destCtx.UNSIGNED_BYTE, sourceCanvas3D);
+}
+
+function ensureComplete() {
+    destCtx.readPixels(0, 0, 1, 1, sourceCtx.RGBA, sourceCtx.UNSIGNED_BYTE, new Uint8Array(4));
+}
+
+function postRun() {
+    destCtx.deleteTexture(tex);
 }
 
 window.onload = function () {
-    PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'runs/s',
-        description: "This benchmark checks the speed on uploading WebGL(1024x1024) to WebGL Texture(1024x1024)."});
     setSize(1024, 1024);
     renderWebGL(sourceCtx);
-    uploadWebGLToWebGLTexture();
+    CanvasRunner.start({
+        description: "This benchmark checks the speed on uploading WebGL(1024x1024) to WebGL Texture(1024x1024).",
+        preRun: preRun,
+        doRun: doRun,
+        ensureComplete: ensureComplete,
+        postRun: postRun});
 }
 
 </script>
