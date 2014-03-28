@@ -29,7 +29,11 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
+<<<<<<< HEAD
+BIONIC_VERSION = 'dc6a3b05fb2b0894088905031f8a5a92e975d023'
+=======
 BIONIC_VERSION = '1e9ce12c90dea60529450823aa07a76d76344386'
+>>>>>>> master
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -213,7 +217,6 @@ def CreateBasicToolchain():
       '-lgcc': '-lgcc --as-needed %{!static: -lgcc_s} --no-as-needed %{!shared: -lgcc_eh}',
       '--hash-style=gnu': '--hash-style=sysv',
     }])
-
     open(specs, 'w').write(text)
 
 
@@ -574,6 +577,9 @@ def main(argv):
 
   # Configure Bionic Projects, libc, libm, linker, tests, ...
   ConfigureBionicProjects(clobber=options.buildbot)
+
+  # Build and install IRT header before building GCC
+  MakeBionicProject('libc', ['irt'])
 
   if not options.skip_gcc:
     # Build newlib gcc_libs for use by bionic
