@@ -196,9 +196,9 @@ void MouseEvent::trace(Visitor* visitor)
     MouseRelatedEvent::trace(visitor);
 }
 
-PassRefPtr<SimulatedMouseEvent> SimulatedMouseEvent::create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
+PassRefPtrWillBeRawPtr<SimulatedMouseEvent> SimulatedMouseEvent::create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<Event> underlyingEvent)
 {
-    return adoptRef(new SimulatedMouseEvent(eventType, view, underlyingEvent));
+    return adoptRefWillBeRefCountedGarbageCollected(new SimulatedMouseEvent(eventType, view, underlyingEvent));
 }
 
 SimulatedMouseEvent::~SimulatedMouseEvent()

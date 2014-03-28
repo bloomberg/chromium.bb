@@ -113,7 +113,7 @@ private:
 
 class SimulatedMouseEvent FINAL : public MouseEvent {
 public:
-    static PassRefPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);
+    static PassRefPtrWillBeRawPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);
     virtual ~SimulatedMouseEvent();
 
     virtual void trace(Visitor*) OVERRIDE;
