@@ -236,11 +236,8 @@ struct MojoCreateDataPipeOptions {
   uint32_t element_num_bytes;
   uint32_t capacity_num_bytes;
 };
-// TODO(vtl): Can we make this assertion work in C?
-#ifdef __cplusplus
 MOJO_COMPILE_ASSERT(sizeof(MojoCreateDataPipeOptions) == 16,
                     MojoCreateDataPipeOptions_has_wrong_size);
-#endif
 
 // |MojoWriteDataFlags|: Used to specify different modes to |MojoWriteData()|
 // and |MojoBeginWriteData()|.
@@ -312,11 +309,8 @@ struct MojoCreateSharedBufferOptions {
   uint32_t struct_size;
   MojoCreateSharedBufferOptionsFlags flags;
 };
-// TODO(vtl): Can we make this assertion work in C?
-#ifdef __cplusplus
 MOJO_COMPILE_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
                     MojoCreateSharedBufferOptions_has_wrong_size);
-#endif
 
 // |MojoDuplicateBufferHandleOptions|: Used to specify parameters in duplicating
 // access to a shared buffer to |MojoDuplicateBufferHandle()|.
@@ -343,11 +337,8 @@ struct MojoDuplicateBufferHandleOptions {
   uint32_t struct_size;
   MojoDuplicateBufferHandleOptionsFlags flags;
 };
-// TODO(vtl): Can we make this assertion work in C?
-#ifdef __cplusplus
 MOJO_COMPILE_ASSERT(sizeof(MojoDuplicateBufferHandleOptions) == 8,
                     MojoDuplicateBufferHandleOptions_has_wrong_size);
-#endif
 
 // |MojoMapBufferFlags|: Used to specify different modes to |MojoMapBuffer()|.
 //   |MOJO_MAP_BUFFER_FLAG_NONE| - No flags; default mode.

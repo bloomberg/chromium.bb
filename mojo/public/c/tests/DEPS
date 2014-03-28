@@ -1,3 +1,8 @@
 include_rules = [
   "+testing",
+  # Our test harness is C++, so allow use C++:
+  "+mojo/public/cpp",
+  # TODO(vtl): Temporary until these are moved to mojo/public/cpp:
+  "+mojo/public/tests",
+  "+mojo/public/utility",
 ]
