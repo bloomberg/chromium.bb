@@ -109,8 +109,6 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
     if (!found)
       return gfx::ImageSkiaRep();
 
-    float loaded_image_scale = ui::GetImageScale(scale_factor);
-
     if (fell_back_to_1x) {
       // GRIT fell back to the 100% image, so rescale it to the correct size.
       image = skia::ImageOperations::Resize(
@@ -132,7 +130,9 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
         image = SkBitmapOperations::CreateBlendedBitmap(image, mask, 0.2);
       }
     } else {
-      image = PlatformScaleImage(image, loaded_image_scale, scale);
+      image = PlatformScaleImage(image,
+                                 ui::GetScaleForScaleFactor(scale_factor),
+                                 scale);
     }
     return gfx::ImageSkiaRep(image, scale);
   }
@@ -353,7 +353,13 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     DCHECK(!data_packs_.empty()) <<
         "Missing call to SetResourcesDataDLL?";
 
-    float scale = PlatformGetImageScale();
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  ui::ScaleFactor scale_factor_to_load = GetMaxScaleFactor();
+#else
+  ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
+#endif
+
+    float scale = GetImageScale(scale_factor_to_load);
 
     // TODO(oshima): Consider reading the image size from png IHDR chunk and
     // skip decoding here and remove #ifdef below.
@@ -822,15 +828,6 @@ SkBitmap ResourceBundle::PlatformScaleImage(const SkBitmap& image,
                                             float loaded_image_scale,
                                             float desired_scale) {
   return image;
-}
-
-float ResourceBundle::PlatformGetImageScale() {
-#if defined(OS_CHROMEOS)
-  ui::ScaleFactor scale_factor_to_load = GetMaxScaleFactor();
-#else
-  ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
-#endif
-  return GetImageScale(scale_factor_to_load);
 }
 #endif
 

@@ -93,12 +93,6 @@ SkBitmap ResourceBundle::PlatformScaleImage(const SkBitmap& image,
   return scaled_image;
 }
 
-float ResourceBundle::PlatformGetImageScale() {
-  if (!gfx::IsHighDPIEnabled())
-    return ui::GetImageScale(GetMaxScaleFactor());
-  return gfx::win::GetDeviceScaleFactor();
-}
-
 void SetResourcesDataDLL(HINSTANCE handle) {
   resources_data_dll = handle;
 }

@@ -57,7 +57,8 @@ UI_BASE_EXPORT void SetSupportedScaleFactors(
 // platform, in ascending order.
 UI_BASE_EXPORT const std::vector<ScaleFactor>& GetSupportedScaleFactors();
 
-// Returns the float scale value for |scale_factor|.
+// Returns the actual image scale to be used for the scale factor passed in.
+// On Windows high dpi, this returns the dpi scale for the display.
 UI_BASE_EXPORT float GetImageScale(ScaleFactor scale_factor);
 
 // Returns the supported ScaleFactor which most closely matches |scale|.
@@ -76,6 +77,9 @@ UI_BASE_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
 // Note that it does NOT rely on the list of supported scale factors.
 // Finding the closest match is inefficient and shouldn't be done frequently.
 UI_BASE_EXPORT ScaleFactor FindClosestScaleFactorUnsafe(float scale);
+
+// Returns the image scale for the scale factor passed in.
+UI_BASE_EXPORT float GetScaleForScaleFactor(ScaleFactor scale_factor);
 
 namespace test {
 // Class which changes the value of GetSupportedScaleFactors() to

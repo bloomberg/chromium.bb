@@ -363,11 +363,6 @@ class UI_BASE_EXPORT ResourceBundle {
                                     float loaded_image_scale,
                                     float desired_scale);
 
- // Returns the scale to be used for loading an image. In all platforms except
- // windows this is based on the scale factors of the loaded resource packs.
- // On Windows this returns the device scale factor if high dpi is enabled.
- float PlatformGetImageScale();
-
   // This pointer is guaranteed to outlive the ResourceBundle instance and may
   // be NULL.
   Delegate* delegate_;
