@@ -5,10 +5,14 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
@@ -39,6 +43,11 @@ static base::FilePath ComputeFileName(const GURL& origin_url) {
   return base::FilePath()
       .AppendASCII(webkit_database::GetIdentifierFromOrigin(origin_url))
       .AddExtension(FILE_PATH_LITERAL(".indexeddb.leveldb"));
+}
+
+static base::FilePath ComputeCorruptionFileName(const GURL& origin_url) {
+  return ComputeFileName(origin_url)
+      .Append(FILE_PATH_LITERAL("corruption_info.json"));
 }
 
 }  // namespace
@@ -84,13 +93,12 @@ static void RecordInternalError(const char* type,
       ->Add(location);
 }
 
-// Use to signal conditions that usually indicate developer error, but
-// could be caused by data corruption.  A macro is used instead of an
-// inline function so that the assert and log report the line number.
+// Use to signal conditions caused by data corruption.
+// A macro is used instead of an inline function so that the assert and log
+// report the line number.
 #define REPORT_ERROR(type, location)                      \
   do {                                                    \
     LOG(ERROR) << "IndexedDB " type " Error: " #location; \
-    NOTREACHED();                                         \
     RecordInternalError(type, location);                  \
   } while (0)
 
@@ -98,6 +106,25 @@ static void RecordInternalError(const char* type,
 #define INTERNAL_CONSISTENCY_ERROR(location) \
   REPORT_ERROR("Consistency", location)
 #define INTERNAL_WRITE_ERROR(location) REPORT_ERROR("Write", location)
+
+// Use to signal conditions that usually indicate developer error, but
+// could be caused by data corruption.  A macro is used instead of an
+// inline function so that the assert and log report the line number.
+// TODO: Improve test coverage so that all error conditions are "tested" and
+//       then delete this macro.
+#define REPORT_ERROR_UNTESTED(type, location)             \
+  do {                                                    \
+    LOG(ERROR) << "IndexedDB " type " Error: " #location; \
+    NOTREACHED();                                         \
+    RecordInternalError(type, location);                  \
+  } while (0)
+
+#define INTERNAL_READ_ERROR_UNTESTED(location) \
+  REPORT_ERROR_UNTESTED("Read", location)
+#define INTERNAL_CONSISTENCY_ERROR_UNTESTED(location) \
+  REPORT_ERROR_UNTESTED("Consistency", location)
+#define INTERNAL_WRITE_ERROR_UNTESTED(location) \
+  REPORT_ERROR_UNTESTED("Write", location)
 
 static void PutBool(LevelDBTransaction* transaction,
                     const StringPiece& key,
@@ -276,7 +303,7 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
   leveldb::Status s =
       GetInt(transaction.get(), schema_version_key, &db_schema_version, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(SET_UP_METADATA);
+    INTERNAL_READ_ERROR_UNTESTED(SET_UP_METADATA);
     return false;
   }
   if (!found) {
@@ -303,11 +330,11 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
         found = false;
         s = GetInt(transaction.get(), it->Key(), &database_id, &found);
         if (!s.ok()) {
-          INTERNAL_READ_ERROR(SET_UP_METADATA);
+          INTERNAL_READ_ERROR_UNTESTED(SET_UP_METADATA);
           return false;
         }
         if (!found) {
-          INTERNAL_CONSISTENCY_ERROR(SET_UP_METADATA);
+          INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_UP_METADATA);
           return false;
         }
         std::string int_version_key = DatabaseMetaDataKey::Encode(
@@ -329,11 +356,11 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
   found = false;
   s = GetInt(transaction.get(), data_version_key, &db_data_version, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(SET_UP_METADATA);
+    INTERNAL_READ_ERROR_UNTESTED(SET_UP_METADATA);
     return false;
   }
   if (!found) {
-    INTERNAL_CONSISTENCY_ERROR(SET_UP_METADATA);
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_UP_METADATA);
     return false;
   }
   if (db_data_version < latest_known_data_version) {
@@ -346,7 +373,7 @@ WARN_UNUSED_RESULT static bool SetUpMetadata(
 
   s = transaction->Commit();
   if (!s.ok()) {
-    INTERNAL_WRITE_ERROR(SET_UP_METADATA);
+    INTERNAL_WRITE_ERROR_UNTESTED(SET_UP_METADATA);
     return false;
   }
   return true;
@@ -437,6 +464,7 @@ enum IndexedDBBackingStoreOpenResult {
   INDEXED_DB_BACKING_STORE_OPEN_DISK_FULL_DEPRECATED,
   INDEXED_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
   INDEXED_DB_BACKING_STORE_OPEN_NO_RECOVERY,
+  INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
   INDEXED_DB_BACKING_STORE_OPEN_MAX,
 };
 
@@ -513,6 +541,91 @@ static bool IsPathTooLong(const base::FilePath& leveldb_dir) {
   return false;
 }
 
+leveldb::Status IndexedDBBackingStore::DestroyBackingStore(
+    const base::FilePath& path_base,
+    const GURL& origin_url) {
+  const base::FilePath file_path =
+      path_base.Append(ComputeFileName(origin_url));
+  DefaultLevelDBFactory leveldb_factory;
+  return leveldb_factory.DestroyLevelDB(file_path);
+}
+
+bool IndexedDBBackingStore::ReadCorruptionInfo(const base::FilePath& path_base,
+                                               const GURL& origin_url,
+                                               std::string& message) {
+
+  const base::FilePath info_path =
+      path_base.Append(ComputeCorruptionFileName(origin_url));
+
+  if (IsPathTooLong(info_path))
+    return false;
+
+  const int64 max_json_len = 4096;
+  int64 file_size(0);
+  if (!GetFileSize(info_path, &file_size) || file_size > max_json_len)
+    return false;
+  if (!file_size) {
+    NOTREACHED();
+    return false;
+  }
+
+  bool created(false);
+  base::PlatformFileError error(base::PLATFORM_FILE_OK);
+  base::PlatformFile file = base::CreatePlatformFile(
+      info_path,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+      &created,
+      &error);
+  bool success = false;
+  if (file) {
+    std::vector<char> bytes(file_size);
+    if (file_size == base::ReadPlatformFile(file, 0, &bytes[0], file_size)) {
+      std::string input_js(&bytes[0], file_size);
+      base::JSONReader reader;
+      scoped_ptr<base::Value> val(reader.ReadToValue(input_js));
+      if (val && val->GetType() == base::Value::TYPE_DICTIONARY) {
+        base::DictionaryValue* dict_val =
+            static_cast<base::DictionaryValue*>(val.get());
+        success = dict_val->GetString("message", &message);
+      }
+    }
+    base::ClosePlatformFile(file);
+  }
+
+  base::DeleteFile(info_path, false);
+
+  return success;
+}
+
+bool IndexedDBBackingStore::RecordCorruptionInfo(
+    const base::FilePath& path_base,
+    const GURL& origin_url,
+    const std::string& message) {
+  const base::FilePath info_path =
+      path_base.Append(ComputeCorruptionFileName(origin_url));
+  if (IsPathTooLong(info_path))
+    return false;
+
+  base::DictionaryValue root_dict;
+  root_dict.SetString("message", message);
+  std::string output_js;
+  base::JSONWriter::Write(&root_dict, &output_js);
+
+  bool created(false);
+  base::PlatformFileError error(base::PLATFORM_FILE_OK);
+  base::PlatformFile file = base::CreatePlatformFile(
+      info_path,
+      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+      &created,
+      &error);
+  if (!file)
+    return false;
+  int written =
+      base::WritePlatformFile(file, 0, output_js.c_str(), output_js.length());
+  base::ClosePlatformFile(file);
+  return size_t(written) == output_js.length();
+}
+
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const GURL& origin_url,
@@ -566,8 +679,17 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   bool is_schema_known = false;
   if (db) {
-    bool ok = IsSchemaKnown(db.get(), &is_schema_known);
-    if (!ok) {
+    std::string corruption_message;
+    if (ReadCorruptionInfo(path_base, origin_url, corruption_message)) {
+      LOG(ERROR) << "IndexedDB recovering from a corrupted (and deleted) "
+                    "database.";
+      HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
+                          origin_url);
+      db.reset();
+      *data_loss = blink::WebIDBDataLossTotal;
+      *data_loss_message =
+          "IndexedDB (database was corrupt): " + corruption_message;
+    } else if (!IsSchemaKnown(db.get(), &is_schema_known)) {
       LOG(ERROR) << "IndexedDB had IO error checking schema, treating it as "
                     "failure to open";
       HistogramOpenStatus(
@@ -689,7 +811,7 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames() {
     StringPiece slice(it->Key());
     DatabaseNameKey database_name_key;
     if (!DatabaseNameKey::Decode(&slice, &database_name_key)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_DATABASE_NAMES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_DATABASE_NAMES);
       continue;
     }
     found_names.push_back(database_name_key.database_name());
@@ -706,7 +828,7 @@ leveldb::Status IndexedDBBackingStore::GetIDBDatabaseMetaData(
 
   leveldb::Status s = GetInt(db_.get(), key, &metadata->id, found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_IDBDATABASE_METADATA);
+    INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return s;
   }
   if (!*found)
@@ -718,11 +840,11 @@ leveldb::Status IndexedDBBackingStore::GetIDBDatabaseMetaData(
                 &metadata->version,
                 found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_IDBDATABASE_METADATA);
+    INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return s;
   }
   if (!*found) {
-    INTERNAL_CONSISTENCY_ERROR(GET_IDBDATABASE_METADATA);
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return InternalInconsistencyStatus();
   }
 
@@ -732,11 +854,11 @@ leveldb::Status IndexedDBBackingStore::GetIDBDatabaseMetaData(
                 &metadata->int_version,
                 found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_IDBDATABASE_METADATA);
+    INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return s;
   }
   if (!*found) {
-    INTERNAL_CONSISTENCY_ERROR(GET_IDBDATABASE_METADATA);
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
     return InternalInconsistencyStatus();
   }
 
@@ -746,7 +868,7 @@ leveldb::Status IndexedDBBackingStore::GetIDBDatabaseMetaData(
   s = GetMaxObjectStoreId(
       db_.get(), metadata->id, &metadata->max_object_store_id);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_IDBDATABASE_METADATA);
+    INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
   }
 
   return s;
@@ -761,7 +883,7 @@ WARN_UNUSED_RESULT static leveldb::Status GetNewDatabaseId(
   leveldb::Status s =
       GetInt(transaction, MaxDatabaseIdKey::Encode(), &max_database_id, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_NEW_DATABASE_ID);
+    INTERNAL_READ_ERROR_UNTESTED(GET_NEW_DATABASE_ID);
     return s;
   }
   if (!found)
@@ -804,7 +926,7 @@ leveldb::Status IndexedDBBackingStore::CreateIDBDatabaseMetaData(
             int_version);
   s = transaction->Commit();
   if (!s.ok())
-    INTERNAL_WRITE_ERROR(CREATE_IDBDATABASE_METADATA);
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_IDBDATABASE_METADATA);
   return s;
 }
 
@@ -860,7 +982,7 @@ leveldb::Status IndexedDBBackingStore::DeleteDatabase(
 
   s = transaction->Commit();
   if (!s.ok()) {
-    INTERNAL_WRITE_ERROR(DELETE_DATABASE);
+    INTERNAL_WRITE_ERROR_UNTESTED(DELETE_DATABASE);
     return s;
   }
   db_->Compact(start_key, stop_key);
@@ -908,7 +1030,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
     bool ok = ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key);
     DCHECK(ok);
     if (meta_data_key.MetaDataType() != ObjectStoreMetaDataKey::NAME) {
-      INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       // Possible stale metadata, but don't fail the load.
       it->Next();
       continue;
@@ -922,7 +1044,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
     {
       StringPiece slice(it->Value());
       if (!DecodeString(&slice, &object_store_name) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
     }
 
     it->Next();
@@ -930,14 +1052,14 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
                                          stop_key,
                                          object_store_id,
                                          ObjectStoreMetaDataKey::KEY_PATH)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       break;
     }
     IndexedDBKeyPath key_path;
     {
       StringPiece slice(it->Value());
       if (!DecodeIDBKeyPath(&slice, &key_path) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
     }
 
     it->Next();
@@ -946,14 +1068,14 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
              stop_key,
              object_store_id,
              ObjectStoreMetaDataKey::AUTO_INCREMENT)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       break;
     }
     bool auto_increment;
     {
       StringPiece slice(it->Value());
       if (!DecodeBool(&slice, &auto_increment) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
     }
 
     it->Next();  // Is evicatble.
@@ -961,7 +1083,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
                                          stop_key,
                                          object_store_id,
                                          ObjectStoreMetaDataKey::EVICTABLE)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       break;
     }
 
@@ -971,7 +1093,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
              stop_key,
              object_store_id,
              ObjectStoreMetaDataKey::LAST_VERSION)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       break;
     }
 
@@ -981,14 +1103,14 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
              stop_key,
              object_store_id,
              ObjectStoreMetaDataKey::MAX_INDEX_ID)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       break;
     }
     int64 max_index_id;
     {
       StringPiece slice(it->Value());
       if (!DecodeInt(&slice, &max_index_id) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
     }
 
     it->Next();  // [optional] has key path (is not null)
@@ -1000,7 +1122,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
       {
         StringPiece slice(it->Value());
         if (!DecodeBool(&slice, &has_key_path))
-          INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+          INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       }
       // This check accounts for two layers of legacy coding:
       // (1) Initially, has_key_path was added to distinguish null vs. string.
@@ -1009,7 +1131,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
       if (!has_key_path &&
           (key_path.type() == blink::WebIDBKeyPathTypeString &&
            !key_path.string().empty())) {
-        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
         break;
       }
       if (!has_key_path)
@@ -1025,7 +1147,7 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
             ObjectStoreMetaDataKey::KEY_GENERATOR_CURRENT_NUMBER)) {
       StringPiece slice(it->Value());
       if (!DecodeInt(&slice, &key_generator_current_number) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_OBJECT_STORES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
 
       // TODO(jsbell): Return key_generator_current_number, cache in
       // object store, and write lazily to backing store.  For now,
@@ -1058,17 +1180,19 @@ WARN_UNUSED_RESULT static leveldb::Status SetMaxObjectStoreId(
   leveldb::Status s = GetMaxObjectStoreId(
       transaction, max_object_store_id_key, &max_object_store_id);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(SET_MAX_OBJECT_STORE_ID);
+    INTERNAL_READ_ERROR_UNTESTED(SET_MAX_OBJECT_STORE_ID);
     return s;
   }
 
   if (object_store_id <= max_object_store_id) {
-    INTERNAL_CONSISTENCY_ERROR(SET_MAX_OBJECT_STORE_ID);
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_MAX_OBJECT_STORE_ID);
     return InternalInconsistencyStatus();
   }
   PutInt(transaction, max_object_store_id_key, object_store_id);
   return s;
 }
+
+void IndexedDBBackingStore::Compact() { db_->CompactAll(); }
 
 leveldb::Status IndexedDBBackingStore::CreateObjectStore(
     IndexedDBBackingStore::Transaction* transaction,
@@ -1139,11 +1263,11 @@ leveldb::Status IndexedDBBackingStore::DeleteObjectStore(
                 &object_store_name,
                 &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(DELETE_OBJECT_STORE);
+    INTERNAL_READ_ERROR_UNTESTED(DELETE_OBJECT_STORE);
     return s;
   }
   if (!found) {
-    INTERNAL_CONSISTENCY_ERROR(DELETE_OBJECT_STORE);
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(DELETE_OBJECT_STORE);
     return InternalInconsistencyStatus();
   }
 
@@ -1191,14 +1315,14 @@ leveldb::Status IndexedDBBackingStore::GetRecord(
   if (!found)
     return s;
   if (data.empty()) {
-    INTERNAL_READ_ERROR(GET_RECORD);
+    INTERNAL_READ_ERROR_UNTESTED(GET_RECORD);
     return leveldb::Status::NotFound("Record contained no data");
   }
 
   int64 version;
   StringPiece slice(data);
   if (!DecodeVarInt(&slice, &version)) {
-    INTERNAL_READ_ERROR(GET_RECORD);
+    INTERNAL_READ_ERROR_UNTESTED(GET_RECORD);
     return InternalInconsistencyStatus();
   }
 
@@ -1220,7 +1344,7 @@ WARN_UNUSED_RESULT static leveldb::Status GetNewVersionNumber(
   leveldb::Status s =
       GetInt(transaction, last_version_key, &last_version, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_NEW_VERSION_NUMBER);
+    INTERNAL_READ_ERROR_UNTESTED(GET_NEW_VERSION_NUMBER);
     return s;
   }
   if (!found)
@@ -1336,13 +1460,13 @@ leveldb::Status IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
   leveldb::Status s =
       leveldb_transaction->Get(key_generator_current_number_key, &data, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_KEY_GENERATOR_CURRENT_NUMBER);
+    INTERNAL_READ_ERROR_UNTESTED(GET_KEY_GENERATOR_CURRENT_NUMBER);
     return s;
   }
   if (found && !data.empty()) {
     StringPiece slice(data);
     if (!DecodeInt(&slice, key_generator_current_number) || !slice.empty()) {
-      INTERNAL_READ_ERROR(GET_KEY_GENERATOR_CURRENT_NUMBER);
+      INTERNAL_READ_ERROR_UNTESTED(GET_KEY_GENERATOR_CURRENT_NUMBER);
       return InternalInconsistencyStatus();
     }
     return s;
@@ -1367,7 +1491,7 @@ leveldb::Status IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
     StringPiece slice(it->Key());
     ObjectStoreDataKey data_key;
     if (!ObjectStoreDataKey::Decode(&slice, &data_key)) {
-      INTERNAL_READ_ERROR(GET_KEY_GENERATOR_CURRENT_NUMBER);
+      INTERNAL_READ_ERROR_UNTESTED(GET_KEY_GENERATOR_CURRENT_NUMBER);
       return InternalInconsistencyStatus();
     }
     scoped_ptr<IndexedDBKey> user_key = data_key.user_key();
@@ -1429,13 +1553,13 @@ leveldb::Status IndexedDBBackingStore::KeyExistsInObjectStore(
   leveldb::Status s =
       transaction->transaction()->Get(leveldb_key, &data, found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(KEY_EXISTS_IN_OBJECT_STORE);
+    INTERNAL_READ_ERROR_UNTESTED(KEY_EXISTS_IN_OBJECT_STORE);
     return s;
   }
   if (!*found)
     return leveldb::Status::OK();
   if (!data.size()) {
-    INTERNAL_READ_ERROR(KEY_EXISTS_IN_OBJECT_STORE);
+    INTERNAL_READ_ERROR_UNTESTED(KEY_EXISTS_IN_OBJECT_STORE);
     return InternalInconsistencyStatus();
   }
 
@@ -1492,7 +1616,7 @@ leveldb::Status IndexedDBBackingStore::GetIndexes(
     bool ok = IndexMetaDataKey::Decode(&slice, &meta_data_key);
     DCHECK(ok);
     if (meta_data_key.meta_data_type() != IndexMetaDataKey::NAME) {
-      INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
       // Possible stale metadata due to http://webkit.org/b/85557 but don't fail
       // the load.
       it->Next();
@@ -1506,33 +1630,33 @@ leveldb::Status IndexedDBBackingStore::GetIndexes(
     {
       StringPiece slice(it->Value());
       if (!DecodeString(&slice, &index_name) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
     }
 
     it->Next();  // unique flag
     if (!CheckIndexAndMetaDataKey(
              it.get(), stop_key, index_id, IndexMetaDataKey::UNIQUE)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
       break;
     }
     bool index_unique;
     {
       StringPiece slice(it->Value());
       if (!DecodeBool(&slice, &index_unique) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
     }
 
     it->Next();  // key_path
     if (!CheckIndexAndMetaDataKey(
              it.get(), stop_key, index_id, IndexMetaDataKey::KEY_PATH)) {
-      INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+      INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
       break;
     }
     IndexedDBKeyPath key_path;
     {
       StringPiece slice(it->Value());
       if (!DecodeIDBKeyPath(&slice, &key_path) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
     }
 
     it->Next();  // [optional] multi_entry flag
@@ -1541,7 +1665,7 @@ leveldb::Status IndexedDBBackingStore::GetIndexes(
             it.get(), stop_key, index_id, IndexMetaDataKey::MULTI_ENTRY)) {
       StringPiece slice(it->Value());
       if (!DecodeBool(&slice, &index_multi_entry) || !slice.empty())
-        INTERNAL_CONSISTENCY_ERROR(GET_INDEXES);
+        INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_INDEXES);
 
       it->Next();
     }
@@ -1564,14 +1688,14 @@ WARN_UNUSED_RESULT static leveldb::Status SetMaxIndexId(
   leveldb::Status s =
       GetInt(transaction, max_index_id_key, &max_index_id, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(SET_MAX_INDEX_ID);
+    INTERNAL_READ_ERROR_UNTESTED(SET_MAX_INDEX_ID);
     return s;
   }
   if (!found)
     max_index_id = kMinimumIndexId;
 
   if (index_id <= max_index_id) {
-    INTERNAL_CONSISTENCY_ERROR(SET_MAX_INDEX_ID);
+    INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_MAX_INDEX_ID);
     return InternalInconsistencyStatus();
   }
 
@@ -1709,7 +1833,7 @@ static leveldb::Status VersionExists(LevelDBTransaction* transaction,
 
   leveldb::Status s = transaction->Get(key, &data, exists);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(VERSION_EXISTS);
+    INTERNAL_READ_ERROR_UNTESTED(VERSION_EXISTS);
     return s;
   }
   if (!*exists)
@@ -1753,7 +1877,7 @@ leveldb::Status IndexedDBBackingStore::FindKeyInIndex(
 
     int64 version;
     if (!DecodeVarInt(&slice, &version)) {
-      INTERNAL_READ_ERROR(FIND_KEY_IN_INDEX);
+      INTERNAL_READ_ERROR_UNTESTED(FIND_KEY_IN_INDEX);
       return InternalInconsistencyStatus();
     }
     *found_encoded_primary_key = slice.as_string();
@@ -1799,13 +1923,13 @@ leveldb::Status IndexedDBBackingStore::GetPrimaryKeyViaIndex(
                                      &found_encoded_primary_key,
                                      &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(GET_PRIMARY_KEY_VIA_INDEX);
+    INTERNAL_READ_ERROR_UNTESTED(GET_PRIMARY_KEY_VIA_INDEX);
     return s;
   }
   if (!found)
     return s;
   if (!found_encoded_primary_key.size()) {
-    INTERNAL_READ_ERROR(GET_PRIMARY_KEY_VIA_INDEX);
+    INTERNAL_READ_ERROR_UNTESTED(GET_PRIMARY_KEY_VIA_INDEX);
     return InvalidDBKeyStatus();
   }
 
@@ -1838,13 +1962,13 @@ leveldb::Status IndexedDBBackingStore::KeyExistsInIndex(
                                      &found_encoded_primary_key,
                                      exists);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(KEY_EXISTS_IN_INDEX);
+    INTERNAL_READ_ERROR_UNTESTED(KEY_EXISTS_IN_INDEX);
     return s;
   }
   if (!*exists)
     return leveldb::Status::OK();
   if (found_encoded_primary_key.empty()) {
-    INTERNAL_READ_ERROR(KEY_EXISTS_IN_INDEX);
+    INTERNAL_READ_ERROR_UNTESTED(KEY_EXISTS_IN_INDEX);
     return InvalidDBKeyStatus();
   }
 
@@ -2087,7 +2211,7 @@ bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
   StringPiece slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
   if (!ObjectStoreDataKey::Decode(&slice, &object_store_data_key)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2096,7 +2220,7 @@ bool ObjectStoreKeyCursorImpl::LoadCurrentRow() {
   int64 version;
   slice = StringPiece(iterator_->Value());
   if (!DecodeVarInt(&slice, &version)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2144,7 +2268,7 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   StringPiece key_slice(iterator_->Key());
   ObjectStoreDataKey object_store_data_key;
   if (!ObjectStoreDataKey::Decode(&key_slice, &object_store_data_key)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2153,7 +2277,7 @@ bool ObjectStoreCursorImpl::LoadCurrentRow() {
   int64 version;
   StringPiece value_slice = StringPiece(iterator_->Value());
   if (!DecodeVarInt(&value_slice, &version)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2218,7 +2342,7 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
   StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
   if (!IndexDataKey::Decode(&slice, &index_data_key)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2228,12 +2352,12 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
   slice = StringPiece(iterator_->Value());
   int64 index_data_version;
   if (!DecodeVarInt(&slice, &index_data_version)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
   if (!DecodeIDBKey(&slice, &primary_key_) || !slice.empty()) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2246,7 +2370,7 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
   bool found = false;
   leveldb::Status s = transaction_->Get(primary_leveldb_key, &result, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
   if (!found) {
@@ -2254,14 +2378,14 @@ bool IndexKeyCursorImpl::LoadCurrentRow() {
     return false;
   }
   if (!result.size()) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
   int64 object_store_data_version;
   slice = StringPiece(result);
   if (!DecodeVarInt(&slice, &object_store_data_version)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2326,7 +2450,7 @@ bool IndexCursorImpl::LoadCurrentRow() {
   StringPiece slice(iterator_->Key());
   IndexDataKey index_data_key;
   if (!IndexDataKey::Decode(&slice, &index_data_key)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2336,11 +2460,11 @@ bool IndexCursorImpl::LoadCurrentRow() {
   slice = StringPiece(iterator_->Value());
   int64 index_data_version;
   if (!DecodeVarInt(&slice, &index_data_version)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
   if (!DecodeIDBKey(&slice, &primary_key_)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2353,7 +2477,7 @@ bool IndexCursorImpl::LoadCurrentRow() {
   bool found = false;
   leveldb::Status s = transaction_->Get(primary_leveldb_key_, &result, &found);
   if (!s.ok()) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
   if (!found) {
@@ -2361,14 +2485,14 @@ bool IndexCursorImpl::LoadCurrentRow() {
     return false;
   }
   if (!result.size()) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
   int64 object_store_data_version;
   slice = StringPiece(result);
   if (!DecodeVarInt(&slice, &object_store_data_version)) {
-    INTERNAL_READ_ERROR(LOAD_CURRENT_ROW);
+    INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
 
@@ -2639,7 +2763,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::Commit() {
   leveldb::Status s = transaction_->Commit();
   transaction_ = NULL;
   if (!s.ok())
-    INTERNAL_WRITE_ERROR(TRANSACTION_COMMIT_METHOD);
+    INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
   return s;
 }
 

@@ -34020,6 +34020,9 @@ other types of suffix sets.
     An open attempt failed with an I/O error that doesn't necessitate a recovery
     attempt.
   </int>
+  <int value="14" label="OpenAttemptPriorCorruption">
+    The corrupted open database was deleted.
+  </int>
 </enum>
 
 <enum name="ImporterType" type="int">

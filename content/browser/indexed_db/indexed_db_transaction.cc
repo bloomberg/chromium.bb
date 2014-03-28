@@ -259,10 +259,9 @@ void IndexedDBTransaction::Commit() {
     while (!abort_task_stack_.empty())
       abort_task_stack_.pop().Run(NULL);
 
-    callbacks_->OnAbort(
-        id_,
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
-                               "Internal error committing transaction."));
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Internal error committing transaction.");
+    callbacks_->OnAbort(id_, error);
     database_->TransactionFinished(this, false);
     database_->TransactionCommitFailed();
   }
