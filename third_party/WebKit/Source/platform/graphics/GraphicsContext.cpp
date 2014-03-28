@@ -391,6 +391,8 @@ bool GraphicsContext::couldUseLCDRenderedText()
 
 void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
 {
+    if (paintingDisabled())
+        return;
     mutableState()->setCompositeOperation(compositeOperation, blendMode);
 }
 
@@ -488,16 +490,18 @@ void GraphicsContext::beginRecording(const FloatRect& bounds)
     SkCanvas* savedCanvas = m_canvas;
     SkMatrix savedMatrix = getTotalMatrix();
 
-    IntRect recordingRect = enclosingIntRect(bounds);
-    m_canvas = displayList->picture()->beginRecording(recordingRect.width(), recordingRect.height(),
-        SkPicture::kUsePathBoundsForClip_RecordingFlag);
+    if (!paintingDisabled()) {
+        IntRect recordingRect = enclosingIntRect(bounds);
+        m_canvas = displayList->picture()->beginRecording(recordingRect.width(), recordingRect.height(),
+            SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
-    // We want the bounds offset mapped to (0, 0), such that the display list content
-    // is fully contained within the SkPictureRecord's bounds.
-    if (!toFloatSize(bounds.location()).isZero()) {
-        m_canvas->translate(-bounds.x(), -bounds.y());
-        // To avoid applying the offset repeatedly in getTotalMatrix(), we pre-apply it here.
-        savedMatrix.preTranslate(bounds.x(), bounds.y());
+        // We want the bounds offset mapped to (0, 0), such that the display list content
+        // is fully contained within the SkPictureRecord's bounds.
+        if (!toFloatSize(bounds.location()).isZero()) {
+            m_canvas->translate(-bounds.x(), -bounds.y());
+            // To avoid applying the offset repeatedly in getTotalMatrix(), we pre-apply it here.
+            savedMatrix.preTranslate(bounds.x(), bounds.y());
+        }
     }
 
     m_recordingStateStack.append(RecordingState(savedCanvas, savedMatrix, displayList));
@@ -508,8 +512,10 @@ PassRefPtr<DisplayList> GraphicsContext::endRecording()
     ASSERT(!m_recordingStateStack.isEmpty());
 
     RecordingState recording = m_recordingStateStack.last();
-    ASSERT(recording.m_displayList->picture()->getRecordingCanvas());
-    recording.m_displayList->picture()->endRecording();
+    if (!paintingDisabled()) {
+        ASSERT(recording.m_displayList->picture()->getRecordingCanvas());
+        recording.m_displayList->picture()->endRecording();
+    }
 
     m_recordingStateStack.removeLast();
     m_canvas = recording.m_savedCanvas;
@@ -649,6 +655,9 @@ static inline IntRect areaCastingShadowInHole(const IntRect& holeRect, int shado
 
 void GraphicsContext::drawInnerShadow(const RoundedRect& rect, const Color& shadowColor, const IntSize shadowOffset, int shadowBlur, int shadowSpread, Edges clippedEdges)
 {
+    if (paintingDisabled())
+        return;
+
     IntRect holeRect(rect.rect());
     holeRect.inflate(-shadowSpread);
 
@@ -1124,6 +1133,9 @@ void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, s
 
 void GraphicsContext::writePixels(const SkBitmap& bitmap, int x, int y)
 {
+    if (paintingDisabled())
+        return;
+
     if (!bitmap.getTexture()) {
         SkAutoLockPixels alp(bitmap);
         if (bitmap.getPixels())
@@ -1194,6 +1206,9 @@ void GraphicsContext::drawRect(const SkRect& rect, const SkPaint& paint)
 
 void GraphicsContext::didDrawRect(const SkRect& rect, const SkPaint& paint, const SkBitmap* bitmap)
 {
+    if (paintingDisabled())
+        return;
+
     if (m_trackOpaqueRegion)
         m_opaqueRegion.didDrawRect(this, rect, paint, bitmap);
 }
@@ -1619,6 +1634,9 @@ void GraphicsContext::fillRect(const FloatRect& rect, const Color& color, Compos
 
 void GraphicsContext::fillRoundedRect(const RoundedRect& rect, const Color& color)
 {
+    if (paintingDisabled())
+        return;
+
     if (rect.isRounded())
         fillRoundedRect(rect.rect(), rect.radii().topLeft(), rect.radii().topRight(), rect.radii().bottomLeft(), rect.radii().bottomRight(), color);
     else
