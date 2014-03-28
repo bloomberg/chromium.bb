@@ -1832,9 +1832,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   EXPECT_EQ(url_c, omnibox_view->GetText());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, InputResetsSearchTermReplacement) {
-  browser()->toolbar_model()->set_url_replacement_enabled(false);
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, EscDisablesSearchTermReplacement) {
+  browser()->toolbar_model()->set_url_replacement_enabled(true);
   chrome::FocusLocationBar(browser());
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
-  EXPECT_TRUE(browser()->toolbar_model()->url_replacement_enabled());
+  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_ESCAPE, 0));
+  EXPECT_FALSE(browser()->toolbar_model()->url_replacement_enabled());
 }

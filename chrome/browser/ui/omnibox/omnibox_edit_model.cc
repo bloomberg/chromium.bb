@@ -501,24 +501,15 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     time_user_first_modified_omnibox_ = base::TimeTicks::Now();
     content::RecordAction(base::UserMetricsAction("OmniboxInputInProgress"));
     autocomplete_controller()->ResetSession();
-    // Once the user starts editing, re-enable URL replacement, so that it will
-    // kick in if applicable once the edit is committed or reverted. (While the
-    // edit is in progress, this won't have a visible effect.)
-    controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   }
 
-  // The following code handles three cases:
+  // The following code handles two cases:
   // * For HIDE_ON_USER_INPUT, it hides the chip when user input begins.
   // * For HIDE_ON_MOUSE_RELEASE, which only hides the chip on mouse release if
   //   the omnibox is empty, it handles the "omnibox was not empty" case by
-  //   acting like HIDE_ON_USER_INPUT.  (If the omnibox was empty, it
-  //   effectively no-ops.)
-  // * For both hide behaviors, it allows the chip to be reshown once input
-  //   ends.  (The chip won't actually be re-shown until there's no pending
-  //   typed navigation; see OriginChipView::ShouldShow() and
-  //   OriginChipDecoration::ShouldShow().)
-  if (chrome::ShouldDisplayOriginChipV2())
-    controller()->GetToolbarModel()->set_origin_chip_enabled(!in_progress);
+  //   acting like HIDE_ON_USER_INPUT.
+  if (chrome::ShouldDisplayOriginChipV2() && in_progress)
+    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
 
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);
   controller_->Update(NULL);
@@ -970,6 +961,15 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
     view_->Update();
   }
 
+  // When using the origin chip, hitting escape to revert all should either
+  // display the URL (when search term replacement would not be performed for
+  // this page) or the search terms (when it would).  To accomplish this,
+  // we'll need to disable URL replacement iff it's currently enabled and
+  // search term replacement wouldn't normally happen.
+  bool should_disable_url_replacement =
+      controller_->GetToolbarModel()->url_replacement_enabled() &&
+      !controller_->GetToolbarModel()->WouldPerformSearchTermReplacement(true);
+
   // If the user wasn't editing, but merely had focus in the edit, allow <esc>
   // to be processed as an accelerator, so it can still be used to stop a load.
   // When the permanent text isn't all selected we still fall through to the
@@ -977,8 +977,8 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // <esc> to quickly replace all the text; this matches IE.
   const bool has_zero_suggest_match = match.provider &&
       (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST);
-  if (!has_zero_suggest_match && !user_input_in_progress_ &&
-      view_->IsSelectAll())
+  if (!has_zero_suggest_match && !should_disable_url_replacement &&
+      !user_input_in_progress_ && view_->IsSelectAll())
     return false;
 
   if (!user_text_.empty()) {
@@ -986,7 +986,12 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
                               OMNIBOX_USER_TEXT_CLEARED_WITH_ESCAPE,
                               OMNIBOX_USER_TEXT_CLEARED_NUM_OF_ITEMS);
   }
-  view_->RevertAll();
+
+  if (should_disable_url_replacement) {
+    controller_->GetToolbarModel()->set_url_replacement_enabled(false);
+    UpdatePermanentText();
+  }
+  view_->RevertWithoutResettingSearchTermReplacement();
   view_->SelectAll(true);
   return true;
 }
