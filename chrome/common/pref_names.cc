@@ -1836,10 +1836,6 @@ const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 const char kInvalidationServiceUseGCMChannel[] =
     "invalidation_service.use_gcm_channel";
 
-// Obfuscated account ID that identifies the current user logged into sync and
-// other google services.
-const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
-
 // Local state pref containing a string regex that restricts which accounts
 // can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,
 // all accounts are allowed (no restrictions).

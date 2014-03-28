@@ -5,7 +5,9 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/common/profile_management_switches.h"
 #include "url/gurl.h"
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -73,4 +75,13 @@ bool ChromeSigninClient::CanRevokeCredentials() {
 
 net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
   return profile_->GetRequestContext();
+}
+
+void ChromeSigninClient::GoogleSigninSucceeded(const std::string& username,
+                                               const std::string& password) {
+#if !defined(OS_ANDROID)
+  // Don't store password hash except for users of new profile features.
+  if (switches::IsNewProfileManagement())
+    chrome::SetLocalAuthCredentials(profile_, password);
+#endif
 }

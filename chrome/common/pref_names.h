@@ -602,7 +602,6 @@ extern const char kSpdyProxyAuthEnabled[];
 extern const char kSpdyProxyAuthWasEnabledBefore[];
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-extern const char kGoogleServicesUserAccountId[];
 extern const char kGoogleServicesUsernamePattern[];
 extern const char kGoogleServicesPasswordHash[];
 

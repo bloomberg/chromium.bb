@@ -8,6 +8,7 @@
 namespace prefs {
 
 extern const char kGoogleServicesLastUsername[];
+extern const char kGoogleServicesUserAccountId[];
 extern const char kGoogleServicesUsername[];
 extern const char kSigninAllowed[];
 

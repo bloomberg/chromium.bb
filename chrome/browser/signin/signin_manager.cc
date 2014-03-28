@@ -14,7 +14,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/common/pref_names.h"
@@ -302,7 +301,10 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
   }
 
   InitTokenService();
-  account_id_helper_.reset(new SigninAccountIdHelper(profile_, this));
+  account_id_helper_.reset(new SigninAccountIdHelper(
+      client_,
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
+      this));
 }
 
 void SigninManager::Shutdown() {
@@ -437,11 +439,7 @@ void SigninManager::OnSignedIn(const std::string& username) {
                     GoogleSigninSucceeded(GetAuthenticatedUsername(),
                                           password_));
 
-#if !defined(OS_ANDROID)
-  // Don't store password hash except for users of new profile features.
-  if (switches::IsNewProfileManagement())
-    chrome::SetLocalAuthCredentials(profile_, password_);
-#endif
+  client_->GoogleSigninSucceeded(GetAuthenticatedUsername(), password_);
 
   password_.clear();  // Don't need it anymore.
   DisableOneClickSignIn(profile_);  // Don't ever offer again.

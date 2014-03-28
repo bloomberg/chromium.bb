@@ -12,6 +12,10 @@ namespace prefs {
 // be the same.
 const char kGoogleServicesLastUsername[] = "google.services.last_username";
 
+// Obfuscated account ID that identifies the current user logged into sync and
+// other google services.
+const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
+
 // String that identifies the current user logged into sync and other google
 // services.
 const char kGoogleServicesUsername[] = "google.services.username";

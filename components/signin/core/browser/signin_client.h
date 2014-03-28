@@ -8,6 +8,7 @@
 #include "components/signin/core/browser/webdata/token_web_data.h"
 
 class PrefService;
+class SigninManagerBase;
 class TokenWebData;
 
 namespace net {
@@ -31,6 +32,10 @@ class SigninClient {
 
   // Returns the URL request context information associated with the client.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
+
+  // Called when Google signin has succeeded.
+  virtual void GoogleSigninSucceeded(const std::string& username,
+                                     const std::string& password) {}
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_

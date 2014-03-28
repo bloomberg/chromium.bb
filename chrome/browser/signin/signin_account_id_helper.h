@@ -11,7 +11,8 @@
 
 class CookieSettings;
 class GaiaAuthFetcher;
-class Profile;
+class ProfileOAuth2TokenService;
+class SigninClient;
 
 // The helper class for managing the obfuscated GAIA ID of the primary
 // account. It fetches the ID when user first signs into Chrome or when user
@@ -20,7 +21,9 @@ class Profile;
 class SigninAccountIdHelper : public SigninManagerBase::Observer,
                               public OAuth2TokenService::Observer {
  public:
-  SigninAccountIdHelper(Profile* profile, SigninManagerBase* signin_manager);
+  SigninAccountIdHelper(SigninClient* client,
+                        ProfileOAuth2TokenService* token_service,
+                        SigninManagerBase* signin_manager);
   virtual ~SigninAccountIdHelper();
 
   // SigninManagerBase::Observer:
@@ -43,7 +46,8 @@ class SigninAccountIdHelper : public SigninManagerBase::Observer,
 
   static bool disable_for_test_;
 
-  Profile* profile_;
+  SigninClient* client_;
+  ProfileOAuth2TokenService* token_service_;
   SigninManagerBase* signin_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninAccountIdHelper);
