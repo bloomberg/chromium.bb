@@ -881,9 +881,6 @@ void GLES2AsyncTexImage2DCHROMIUM(GLenum target,
 void GLES2WaitAsyncTexImage2DCHROMIUM(GLenum target) {
   gles2::GetGLContext()->WaitAsyncTexImage2DCHROMIUM(target);
 }
-void GLES2WaitAllAsyncTexImage2DCHROMIUM() {
-  gles2::GetGLContext()->WaitAllAsyncTexImage2DCHROMIUM();
-}
 void GLES2DiscardFramebufferEXT(GLenum target,
                                 GLsizei count,
                                 const GLenum* attachments) {
@@ -1262,9 +1259,6 @@ extern const NameToFunc g_gles2_function_table[] = {
      reinterpret_cast<GLES2FunctionPointer>(glAsyncTexImage2DCHROMIUM), },
     {"glWaitAsyncTexImage2DCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(glWaitAsyncTexImage2DCHROMIUM), },
-    {"glWaitAllAsyncTexImage2DCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(
-         glWaitAllAsyncTexImage2DCHROMIUM), },
     {"glDiscardFramebufferEXT",
      reinterpret_cast<GLES2FunctionPointer>(glDiscardFramebufferEXT), },
     {"glLoseContextCHROMIUM",

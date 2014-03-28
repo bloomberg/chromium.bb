@@ -128,9 +128,6 @@ bool AsyncPixelTransferManagerSync::NeedsProcessMorePendingTransfers() {
   return false;
 }
 
-void AsyncPixelTransferManagerSync::WaitAllAsyncTexImage2D() {
-}
-
 AsyncPixelTransferDelegate*
 AsyncPixelTransferManagerSync::CreatePixelTransferDelegateImpl(
     gles2::TextureRef* ref,

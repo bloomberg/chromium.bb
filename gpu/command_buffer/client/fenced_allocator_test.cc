@@ -29,7 +29,6 @@ using testing::Truly;
 using testing::Sequence;
 using testing::DoAll;
 using testing::Invoke;
-using testing::InvokeWithoutArgs;
 using testing::_;
 
 class BaseFencedAllocatorTest : public testing::Test {
@@ -89,11 +88,6 @@ class BaseFencedAllocatorTest : public testing::Test {
 const unsigned int BaseFencedAllocatorTest::kBufferSize;
 #endif
 
-namespace {
-void EmptyPoll() {
-}
-}
-
 // Test fixture for FencedAllocator test - Creates a FencedAllocator, using a
 // CommandBufferHelper with a mock AsyncAPIInterface for its interface (calling
 // it directly, not through the RPC mechanism), making sure Noops are ignored
@@ -102,9 +96,7 @@ class FencedAllocatorTest : public BaseFencedAllocatorTest {
  protected:
   virtual void SetUp() {
     BaseFencedAllocatorTest::SetUp();
-    allocator_.reset(new FencedAllocator(kBufferSize,
-                                         helper_.get(),
-                                         base::Bind(&EmptyPoll)));
+    allocator_.reset(new FencedAllocator(kBufferSize, helper_.get()));
   }
 
   virtual void TearDown() {
@@ -399,63 +391,6 @@ TEST_F(FencedAllocatorTest, TestGetLargestFreeOrPendingSize) {
   EXPECT_EQ(kBufferSize, allocator_->GetLargestFreeSize());
 }
 
-class FencedAllocatorPollTest : public BaseFencedAllocatorTest {
- public:
-  static const unsigned int kAllocSize = 128;
-
-  MOCK_METHOD0(MockedPoll, void());
-
- protected:
-  virtual void TearDown() {
-    // If the GpuScheduler posts any tasks, this forces them to run.
-    base::MessageLoop::current()->RunUntilIdle();
-
-    BaseFencedAllocatorTest::TearDown();
-  }
-};
-
-TEST_F(FencedAllocatorPollTest, TestPoll) {
-  scoped_ptr<FencedAllocator> allocator(
-      new FencedAllocator(kBufferSize,
-                          helper_.get(),
-                          base::Bind(&FencedAllocatorPollTest::MockedPoll,
-                                     base::Unretained(this))));
-
-  FencedAllocator::Offset mem1 = allocator->Alloc(kAllocSize);
-  FencedAllocator::Offset mem2 = allocator->Alloc(kAllocSize);
-  EXPECT_NE(mem1, FencedAllocator::kInvalidOffset);
-  EXPECT_NE(mem2, FencedAllocator::kInvalidOffset);
-  EXPECT_TRUE(allocator->CheckConsistency());
-  EXPECT_EQ(allocator->bytes_in_use(), kAllocSize * 2);
-
-  // Check that no-op Poll doesn't affect the state.
-  EXPECT_CALL(*this, MockedPoll()).RetiresOnSaturation();
-  allocator->FreeUnused();
-  EXPECT_TRUE(allocator->CheckConsistency());
-  EXPECT_EQ(allocator->bytes_in_use(), kAllocSize * 2);
-
-  // Check that freeing in Poll works.
-  base::Closure free_mem1_closure =
-      base::Bind(&FencedAllocator::Free,
-                 base::Unretained(allocator.get()),
-                 mem1);
-  EXPECT_CALL(*this, MockedPoll())
-      .WillOnce(InvokeWithoutArgs(&free_mem1_closure, &base::Closure::Run))
-      .RetiresOnSaturation();
-  allocator->FreeUnused();
-  EXPECT_TRUE(allocator->CheckConsistency());
-  EXPECT_EQ(allocator->bytes_in_use(), kAllocSize * 1);
-
-  // Check that freeing still works.
-  EXPECT_CALL(*this, MockedPoll()).RetiresOnSaturation();
-  allocator->Free(mem2);
-  allocator->FreeUnused();
-  EXPECT_TRUE(allocator->CheckConsistency());
-  EXPECT_EQ(allocator->bytes_in_use(), 0u);
-
-  allocator.reset();
-}
-
 // Test fixture for FencedAllocatorWrapper test - Creates a
 // FencedAllocatorWrapper, using a CommandBufferHelper with a mock
 // AsyncAPIInterface for its interface (calling it directly, not through the
@@ -471,9 +406,7 @@ class FencedAllocatorWrapperTest : public BaseFencedAllocatorTest {
     // something.
     buffer_.reset(static_cast<char*>(base::AlignedAlloc(
         kBufferSize, kAllocAlignment)));
-    allocator_.reset(new FencedAllocatorWrapper(kBufferSize,
-                                                helper_.get(),
-                                                base::Bind(&EmptyPoll),
+    allocator_.reset(new FencedAllocatorWrapper(kBufferSize, helper_.get(),
                                                 buffer_.get()));
   }
 

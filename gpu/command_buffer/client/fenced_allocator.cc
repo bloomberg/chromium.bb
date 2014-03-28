@@ -34,10 +34,8 @@ const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
 #endif
 
 FencedAllocator::FencedAllocator(unsigned int size,
-                                 CommandBufferHelper* helper,
-                                 const base::Closure& poll_callback)
+                                 CommandBufferHelper *helper)
     : helper_(helper),
-      poll_callback_(poll_callback),
       bytes_in_use_(0) {
   Block block = { FREE, 0, RoundDown(size), kUnusedToken };
   blocks_.push_back(block);
@@ -205,13 +203,10 @@ FencedAllocator::BlockIndex FencedAllocator::WaitForTokenAndFreeBlock(
 
 // Frees any blocks pending a token for which the token has been read.
 void FencedAllocator::FreeUnused() {
-  // Free any potential blocks that has its lifetime handled outside.
-  poll_callback_.Run();
-
+  int32 last_token_read = helper_->last_token_read();
   for (unsigned int i = 0; i < blocks_.size();) {
     Block& block = blocks_[i];
-    if (block.state == FREE_PENDING_TOKEN &&
-        helper_->HasTokenPassed(block.token)) {
+    if (block.state == FREE_PENDING_TOKEN && block.token <= last_token_read) {
       block.state = FREE;
       i = CollapseFreeBlock(i);
     } else {

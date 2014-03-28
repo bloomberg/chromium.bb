@@ -54,8 +54,6 @@
 
 // TODO(gman): WaitAsyncTexImage2DCHROMIUM
 
-// TODO(gman): WaitAllAsyncTexImage2DCHROMIUM
-
 // TODO(gman): DiscardFramebufferEXT
 // TODO(gman): DiscardFramebufferEXTImmediate
 // TODO(gman): LoseContextCHROMIUM

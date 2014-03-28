@@ -84,15 +84,6 @@ class GPU_EXPORT CommandBufferHelper {
   //   shutdown.
   int32 InsertToken();
 
-  // Returns true if the token has passed.
-  // Parameters:
-  //   the value of the token to check whether it has passed
-  bool HasTokenPassed(int32 token) const {
-    if (token > token_)
-      return true;  // we wrapped
-    return last_token_read() >= token;
-  }
-
   // Waits until the token of a particular value has passed through the command
   // stream (i.e. commands inserted before that token have been executed).
   // NOTE: This will call Flush if it needs to block.

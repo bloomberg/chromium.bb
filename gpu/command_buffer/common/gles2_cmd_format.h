@@ -152,25 +152,6 @@ struct QuerySync {
   uint64 result;
 };
 
-struct AsyncUploadSync {
-  void Reset() {
-    base::subtle::Release_Store(&async_upload_token, 0);
-  }
-
-  void SetAsyncUploadToken(uint32 token) {
-    DCHECK_NE(token, 0u);
-    base::subtle::Release_Store(&async_upload_token, token);
-  }
-
-  bool HasAsyncUploadTokenPassed(uint32 token) {
-    DCHECK_NE(token, 0u);
-    uint32_t current_token = base::subtle::Acquire_Load(&async_upload_token);
-    return (current_token - token < 0x80000000);
-  }
-
-  base::subtle::Atomic32 async_upload_token;
-};
-
 COMPILE_ASSERT(sizeof(ProgramInput) == 20, ProgramInput_size_not_20);
 COMPILE_ASSERT(offsetof(ProgramInput, type) == 0,
                OffsetOf_ProgramInput_type_not_0);

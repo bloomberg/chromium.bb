@@ -3638,10 +3638,7 @@ TEST_F(GLES2FormatTest, AsyncTexSubImage2DCHROMIUM) {
                            static_cast<GLenum>(17),
                            static_cast<GLenum>(18),
                            static_cast<uint32>(19),
-                           static_cast<uint32>(20),
-                           static_cast<uint32>(21),
-                           static_cast<uint32>(22),
-                           static_cast<uint32>(23));
+                           static_cast<uint32>(20));
   EXPECT_EQ(static_cast<uint32>(cmds::AsyncTexSubImage2DCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -3655,9 +3652,6 @@ TEST_F(GLES2FormatTest, AsyncTexSubImage2DCHROMIUM) {
   EXPECT_EQ(static_cast<GLenum>(18), cmd.type);
   EXPECT_EQ(static_cast<uint32>(19), cmd.data_shm_id);
   EXPECT_EQ(static_cast<uint32>(20), cmd.data_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(21), cmd.async_upload_token);
-  EXPECT_EQ(static_cast<uint32>(22), cmd.sync_data_shm_id);
-  EXPECT_EQ(static_cast<uint32>(23), cmd.sync_data_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -3674,10 +3668,7 @@ TEST_F(GLES2FormatTest, AsyncTexImage2DCHROMIUM) {
                            static_cast<GLenum>(17),
                            static_cast<GLenum>(18),
                            static_cast<uint32>(19),
-                           static_cast<uint32>(20),
-                           static_cast<uint32>(21),
-                           static_cast<uint32>(22),
-                           static_cast<uint32>(23));
+                           static_cast<uint32>(20));
   EXPECT_EQ(static_cast<uint32>(cmds::AsyncTexImage2DCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -3691,9 +3682,6 @@ TEST_F(GLES2FormatTest, AsyncTexImage2DCHROMIUM) {
   EXPECT_EQ(static_cast<GLenum>(18), cmd.type);
   EXPECT_EQ(static_cast<uint32>(19), cmd.pixels_shm_id);
   EXPECT_EQ(static_cast<uint32>(20), cmd.pixels_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(21), cmd.async_upload_token);
-  EXPECT_EQ(static_cast<uint32>(22), cmd.sync_data_shm_id);
-  EXPECT_EQ(static_cast<uint32>(23), cmd.sync_data_shm_offset);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -3705,16 +3693,6 @@ TEST_F(GLES2FormatTest, WaitAsyncTexImage2DCHROMIUM) {
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(GLES2FormatTest, WaitAllAsyncTexImage2DCHROMIUM) {
-  cmds::WaitAllAsyncTexImage2DCHROMIUM& cmd =
-      *GetBufferAs<cmds::WaitAllAsyncTexImage2DCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd);
-  EXPECT_EQ(static_cast<uint32>(cmds::WaitAllAsyncTexImage2DCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

@@ -2462,14 +2462,6 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'immediate': False,
     'client_test': False,
-    'cmd_args': 'GLenumTextureTarget target, GLint level, '
-        'GLintTextureInternalFormat internalformat, '
-        'GLsizei width, GLsizei height, '
-        'GLintTextureBorder border, '
-        'GLenumTextureFormat format, GLenumPixelType type, '
-        'const void* pixels, '
-        'uint32 async_upload_token, '
-        'void* sync_data',
     'extension': True,
     'chromium': True,
   },
@@ -2477,24 +2469,10 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'immediate': False,
     'client_test': False,
-    'cmd_args': 'GLenumTextureTarget target, GLint level, '
-        'GLint xoffset, GLint yoffset, '
-        'GLsizei width, GLsizei height, '
-        'GLenumTextureFormat format, GLenumPixelType type, '
-        'const void* data, '
-        'uint32 async_upload_token, '
-        'void* sync_data',
     'extension': True,
     'chromium': True,
   },
   'WaitAsyncTexImage2DCHROMIUM': {
-    'type': 'Manual',
-    'immediate': False,
-    'client_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'WaitAllAsyncTexImage2DCHROMIUM': {
     'type': 'Manual',
     'immediate': False,
     'client_test': False,

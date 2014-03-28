@@ -8223,16 +8223,12 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   // Tex(Sub)Image2D upload commands.
   AsyncTexImage2DCHROMIUM teximage_cmd;
   teximage_cmd.Init(GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA,
-                    GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset,
-                    0, 0, 0);
+                    GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
   AsyncTexSubImage2DCHROMIUM texsubimage_cmd;
   texsubimage_cmd.Init(GL_TEXTURE_2D, 0, 0, 0, 8, 8, GL_RGBA,
-                      GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset,
-                      0, 0, 0);
+                      GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
   WaitAsyncTexImage2DCHROMIUM wait_cmd;
   wait_cmd.Init(GL_TEXTURE_2D);
-  WaitAllAsyncTexImage2DCHROMIUM wait_all_cmd;
-  wait_all_cmd.Init();
 
   // No transfer state exists initially.
   EXPECT_FALSE(
@@ -8364,7 +8360,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   // WaitAsyncTexImage2D
   {
     // Get a fresh texture since the existing texture cannot be respecified
-    // asynchronously and AsyncTexSubImage2D does not involve binding.
+    // asynchronously and AsyncTexSubImage2D does not involved binding.
     EXPECT_CALL(*gl_, GenTextures(1, _))
         .WillOnce(SetArgumentPointee<1>(kServiceTextureId));
     DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -8393,46 +8389,6 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     EXPECT_EQ(error::kNoError, ExecuteCmd(wait_cmd));
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
-
-  // WaitAllAsyncTexImage2D
-  EXPECT_CALL(*delegate, Destroy()).RetiresOnSaturation();
-  DoDeleteTexture(client_texture_id_, kServiceTextureId);
-  EXPECT_FALSE(
-      decoder_->GetAsyncPixelTransferManager()->GetPixelTransferDelegate(
-          texture_ref));
-  texture->SetImmutable(false);
-  delegate = NULL;
-  {
-    // Get a fresh texture since the existing texture cannot be respecified
-    // asynchronously and AsyncTexSubImage2D does not involve binding.
-    EXPECT_CALL(*gl_, GenTextures(1, _))
-        .WillOnce(SetArgumentPointee<1>(kServiceTextureId));
-    DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
-    texture_ref = GetTexture(client_texture_id_);
-    texture = texture_ref->texture();
-    texture->SetImmutable(false);
-    // Create transfer state since it doesn't exist.
-    EXPECT_CALL(*manager, CreatePixelTransferDelegateImpl(texture_ref, _))
-        .WillOnce(Return(
-            delegate = new StrictMock<gpu::MockAsyncPixelTransferDelegate>))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*delegate, AsyncTexImage2D(_, _, _))
-        .RetiresOnSaturation();
-    // Start async transfer.
-    EXPECT_EQ(error::kNoError, ExecuteCmd(teximage_cmd));
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    EXPECT_EQ(
-        delegate,
-        decoder_->GetAsyncPixelTransferManager()->GetPixelTransferDelegate(
-            texture_ref));
-
-    EXPECT_TRUE(texture->IsImmutable());
-    // Wait for completion of all uploads.
-    EXPECT_CALL(*manager, WaitAllAsyncTexImage2D()).RetiresOnSaturation();
-    EXPECT_CALL(*manager, BindCompletedAsyncTransfers());
-    EXPECT_EQ(error::kNoError, ExecuteCmd(wait_all_cmd));
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  }
 }
 
 TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
@@ -8456,8 +8412,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransferManager) {
 
   AsyncTexImage2DCHROMIUM teximage_cmd;
   teximage_cmd.Init(GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA,
-                    GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset,
-                    0, 0, 0);
+                    GL_UNSIGNED_BYTE, kSharedMemoryId, kSharedMemoryOffset);
 
   // No transfer delegate exists initially.
   EXPECT_FALSE(

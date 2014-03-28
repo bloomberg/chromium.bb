@@ -1441,12 +1441,6 @@ void GLES2TraceImplementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
   gl_->WaitAsyncTexImage2DCHROMIUM(target);
 }
 
-void GLES2TraceImplementation::WaitAllAsyncTexImage2DCHROMIUM() {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::WaitAllAsyncTexImage2DCHROMIUM");
-  gl_->WaitAllAsyncTexImage2DCHROMIUM();
-}
-
 void GLES2TraceImplementation::DiscardFramebufferEXT(
     GLenum target,
     GLsizei count,

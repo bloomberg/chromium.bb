@@ -23,7 +23,6 @@ class AsyncPixelTransferManagerStub : public AsyncPixelTransferManager {
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
   virtual void ProcessMorePendingTransfers() OVERRIDE;
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
-  virtual void WaitAllAsyncTexImage2D() OVERRIDE;
 
  private:
   // AsyncPixelTransferManager implementation:

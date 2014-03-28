@@ -35,8 +35,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
           shm_offset_(shm_offset),
           address_(address),
           mapped_(false),
-          last_usage_token_(0),
-          last_async_upload_token_(0) {
+          transfer_ready_token_(0) {
     }
 
     GLenum id() const {
@@ -67,20 +66,12 @@ class GLES2_IMPL_EXPORT BufferTracker {
       return mapped_;
     }
 
-    void set_last_usage_token(int token) {
-      last_usage_token_ = token;
+    void set_transfer_ready_token(int token) {
+      transfer_ready_token_ = token;
     }
 
-    int last_usage_token() const {
-      return last_usage_token_;
-    }
-
-    void set_last_async_upload_token(uint32 async_token) {
-      last_async_upload_token_ = async_token;
-    }
-
-    GLuint last_async_upload_token() const {
-      return last_async_upload_token_;
+    uint32 transfer_ready_token() const {
+      return transfer_ready_token_;
     }
 
    private:
@@ -93,8 +84,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
     uint32 shm_offset_;
     void* address_;
     bool mapped_;
-    int32 last_usage_token_;
-    GLuint last_async_upload_token_;
+    int32 transfer_ready_token_;
   };
 
   BufferTracker(MappedMemoryManager* manager);
@@ -106,9 +96,7 @@ class GLES2_IMPL_EXPORT BufferTracker {
 
   // Frees the block of memory associated with buffer, pending the passage
   // of a token.
-  void FreePendingToken(Buffer* buffer, int32 token);
-  void Unmanage(Buffer* buffer);
-  void Free(Buffer* buffer);
+  void FreePendingToken(Buffer*, int32 token);
 
  private:
   typedef base::hash_map<GLuint, Buffer*> BufferMap;
