@@ -893,22 +893,22 @@ crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-nega
 crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pass Crash ]
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 
-# Disable failing tests for the new WebSocket implementation
-crbug.com/339373 http/tests/security/contentSecurityPolicy/connect-src-websocket-allowed.html [ Skip ]
+# Still-failing tests for the new WebSocket implementation.
+crbug.com/339373 http/tests/websocket/close-before-handshake-response.html [ Failure ]
+crbug.com/339373 http/tests/websocket/handshake-error.html [ Failure ]
+crbug.com/339373 http/tests/websocket/multiple-connections.html [ Timeout ]
+crbug.com/347109 http/tests/websocket/useragent-in-openinghandshake.html [ Failure ]
+crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Failure ]
+
+# Tests of functionality not implemented in the new WebSocket
+# implementation. These tests will be removed when the old implementation is
+# removed.
 crbug.com/339373 http/tests/websocket/FIXME-handshake-fail-by-null-subprotocol-selection-whitelist.html [ Skip ]
-crbug.com/339373 http/tests/websocket/close-before-handshake-response.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-comp-bit-onoff.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-invalid-parameter.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-parameter.html [ Skip ]
 crbug.com/339373 http/tests/websocket/deflate-frame-set-bfinal.html [ Skip ]
-crbug.com/339373 http/tests/websocket/handshake-error.html [ Skip ]
 crbug.com/339373 http/tests/websocket/handshake-fail-by-no-cr.html [ Skip ]
-crbug.com/339373 http/tests/websocket/interleaved-fragments.html [ Skip ]
-crbug.com/339373 http/tests/websocket/invalid-continuation.html [ Skip ]
-crbug.com/339373 http/tests/websocket/multiple-connections.html [ Skip ]
-crbug.com/339373 http/tests/websocket/useragent-in-openinghandshake.html [ Skip ]
-crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
-crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Skip ]
 
 crbug.com/349537 [ Win Linux ] http/tests/websocket/workers/worker-reload-repeated.html [ Crash Pass Timeout ]
 crbug.com/349537 virtual/stable/http/tests/websocket/workers/worker-reload-repeated.html [ Crash Pass Timeout ]
