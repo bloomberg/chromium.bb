@@ -124,6 +124,24 @@ class ServiceManagerTest : public testing::Test, public ServiceLoader {
   DISALLOW_COPY_AND_ASSIGN(ServiceManagerTest);
 };
 
+class TestServiceLoader : public ServiceLoader {
+ public:
+  TestServiceLoader() : num_loads_(0) {}
+  int num_loads() const { return num_loads_; }
+
+ private:
+  virtual void LoadService(ServiceManager* manager,
+                           const GURL& url,
+                           ScopedShellHandle service_handle) OVERRIDE {
+    ++num_loads_;
+  }
+  virtual void OnServiceError(ServiceManager* manager, const GURL& url)
+      OVERRIDE {}
+
+  int num_loads_;
+  DISALLOW_COPY_AND_ASSIGN(TestServiceLoader);
+};
+
 TEST_F(ServiceManagerTest, Basic) {
   test_client_->Test("test");
   loop_.Run();
@@ -140,4 +158,37 @@ TEST_F(ServiceManagerTest, ClientError) {
   EXPECT_EQ(0, context_.num_impls);
   EXPECT_FALSE(HasFactoryForTestURL());
 }
+
+// Confirm that both urls and schemes can have their loaders explicitly set.
+TEST_F(ServiceManagerTest, SetLoaders) {
+  ServiceManager sm;
+  TestServiceLoader default_loader;
+  TestServiceLoader url_loader;
+  TestServiceLoader scheme_loader;
+  sm.set_default_loader(&default_loader);
+  sm.SetLoaderForURL(&url_loader, GURL("test:test1"));
+  sm.SetLoaderForScheme(&scheme_loader, "test");
+
+  // test::test1 should go to url_loader.
+  InterfacePipe<TestService, AnyInterface> pipe1;
+  sm.Connect(GURL("test:test1"), pipe1.handle_to_peer.Pass());
+  EXPECT_EQ(1, url_loader.num_loads());
+  EXPECT_EQ(0, scheme_loader.num_loads());
+  EXPECT_EQ(0, default_loader.num_loads());
+
+  // test::test2 should go to scheme loader.
+  InterfacePipe<TestService, AnyInterface> pipe2;
+  sm.Connect(GURL("test:test2"), pipe2.handle_to_peer.Pass());
+  EXPECT_EQ(1, url_loader.num_loads());
+  EXPECT_EQ(1, scheme_loader.num_loads());
+  EXPECT_EQ(0, default_loader.num_loads());
+
+  // http::test1 should go to default loader.
+  InterfacePipe<TestService, AnyInterface> pipe3;
+  sm.Connect(GURL("http:test1"), pipe3.handle_to_peer.Pass());
+  EXPECT_EQ(1, url_loader.num_loads());
+  EXPECT_EQ(1, scheme_loader.num_loads());
+  EXPECT_EQ(1, default_loader.num_loads());
+}
+
 }  // namespace mojo

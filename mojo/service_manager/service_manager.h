@@ -45,28 +45,40 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // Returns a shared instance, creating it if necessary.
   static ServiceManager* GetInstance();
 
-  // Sets the default Loader to be used if not overridden by SetLoaderForURL().
+  // Loads a service if necessary and establishes a new client connection.
+  void Connect(const GURL& url, ScopedMessagePipeHandle client_handle);
+
+  // Sets the default Loader to be used if not overridden by
+  // SetLoaderForURL() or SetLoaderForScheme().
   // Does not take ownership of |loader|.
   void set_default_loader(ServiceLoader* loader) { default_loader_ = loader; }
   // Sets a Loader to be used for a specific url.
   // Does not take ownership of |loader|.
-  void SetLoaderForURL(ServiceLoader* loader, const GURL& gurl);
-  // Returns the Loader to use for a url (using default if not overridden.)
-  ServiceLoader* GetLoaderForURL(const GURL& gurl);
-  // Loads a service if necessary and establishes a new client connection.
-  void Connect(const GURL& url, ScopedMessagePipeHandle client_handle);
+  void SetLoaderForURL(ServiceLoader* loader, const GURL& url);
+  // Sets a Loader to be used for a specific url scheme.
+  // Does not take ownership of |loader|.
+  void SetLoaderForScheme(ServiceLoader* loader, const std::string& scheme);
 
  private:
   class ServiceFactory;
+  typedef std::map<std::string, ServiceLoader*> SchemeToLoaderMap;
+  typedef std::map<GURL, ServiceLoader*> URLToLoaderMap;
+  typedef std::map<GURL, ServiceFactory*> URLToServiceFactoryMap;
+
+  // Returns the Loader to use for a url (using default if not overridden.)
+  // The preference is to use a loader that's been specified for an url first,
+  // then one that's been specified for a scheme, then the default.
+  ServiceLoader* GetLoaderForURL(const GURL& url);
 
   // Removes a ServiceFactory when it no longer has any connections.
   void OnServiceFactoryError(ServiceFactory* service_factory);
 
+  // Loader management.
+  URLToLoaderMap url_to_loader_;
+  SchemeToLoaderMap scheme_to_loader_;
   ServiceLoader* default_loader_;
-  typedef std::map<GURL, ServiceFactory*> ServiceFactoryMap;
-  ServiceFactoryMap url_to_service_factory_;
-  typedef std::map<GURL, ServiceLoader*> LoaderMap;
-  LoaderMap url_to_loader_;
+
+  URLToServiceFactoryMap url_to_service_factory_;
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };
 
