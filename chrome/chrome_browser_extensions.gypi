@@ -39,6 +39,7 @@
         '../device/bluetooth/bluetooth.gyp:device_bluetooth',
         '../device/hid/hid.gyp:device_hid',
         '../device/serial/serial.gyp:device_serial',
+        '../extensions/common/api/api.gyp:extensions_api',
         '../extensions/extensions.gyp:extensions_browser',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
@@ -65,6 +66,7 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'export_dependent_settings': [
+        'common/extensions/api/api.gyp:chrome_api',
         '../content/content.gyp:content_browser',
       ],
       'sources': [

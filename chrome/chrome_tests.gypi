@@ -88,7 +88,6 @@
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:packed_extra_resources',
         'chrome_resources.gyp:packed_resources',
-        'common/extensions/api/api.gyp:chrome_api',
         'debugger',
         'renderer',
         'test_support_common',
@@ -1717,6 +1716,7 @@
                     '../third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc',
                   ],
                   'dependencies': [
+                    'browser_chromeos',
                     '../third_party/liblouis/liblouis_nacl.gyp:liblouis_test_data',
                   ],
                 }],
@@ -2442,7 +2442,6 @@
         'chrome_resources.gyp:packed_extra_resources',
         'chrome_resources.gyp:packed_resources',
         'common',
-        'common/extensions/api/api.gyp:chrome_api',
         'renderer',
         'test_support_sync_integration',
         '../sync/sync.gyp:sync',
@@ -2595,7 +2594,6 @@
       'target_name': 'sync_performance_tests',
       'type': 'executable',
       'dependencies': [
-        'common/extensions/api/api.gyp:chrome_api',
         'test/perf/perf_test.gyp:*',
         'test_support_sync_integration',
         '../sync/sync.gyp:sync',

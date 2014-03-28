@@ -11,7 +11,6 @@
       'target_name': 'extensions_common',
       'type': 'static_library',
       'dependencies': [
-        'common/api/api.gyp:extensions_api',
         '../third_party/re2/re2.gyp:re2',
         # TODO(benwells): figure out what to do with the api target and
         # api resources compiled into the chrome resource bundle.
@@ -175,6 +174,7 @@
       'type': 'static_library',
       'dependencies': [
         'extensions_common',
+        'common/api/api.gyp:extensions_api',
         # TODO(jamescook|derat): Pull strings into extensions module.
         '../chrome/chrome_resources.gyp:chrome_strings',
         '../chrome/common/extensions/api/api.gyp:chrome_api',

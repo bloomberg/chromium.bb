@@ -406,10 +406,14 @@
             '<(DEPTH)/components/components.gyp:signin_core_common',
             '<(DEPTH)/components/nacl.gyp:nacl_common',
             '<(DEPTH)/components/components.gyp:visitedlink_common',
+            '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
             '<(DEPTH)/extensions/extensions.gyp:extensions_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
             '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
+          ],
+          'export_dependent_settings': [
+            '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
           ],
         }, {  # OS == ios
           'sources/': [

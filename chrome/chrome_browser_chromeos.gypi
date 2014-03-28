@@ -41,7 +41,6 @@
         'installer_util',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
-        '../third_party/re2/re2.gyp:re2',
         '../breakpad/breakpad.gyp:breakpad_client',
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
@@ -84,6 +83,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf/protobuf.gyp:protoc#host',
+        '../third_party/re2/re2.gyp:re2',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/base/ui_base.gyp:ui_base',
@@ -110,6 +110,7 @@
         ],
       },
       'export_dependent_settings': [
+        'common/extensions/api/api.gyp:chrome_api',
         '../sync/sync.gyp:sync',
       ],
       'include_dirs': [

@@ -313,6 +313,9 @@
             '..',
             '<(grit_out_dir)',
           ],
+          'export_dependent_settings': [
+            'common/extensions/api/api.gyp:chrome_api',
+          ],
           'conditions': [
             ['toolkit_uses_gtk == 1', {
               'dependencies': [
