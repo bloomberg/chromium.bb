@@ -1,5 +1,5 @@
-<svg viewBox="-10 -10 280 220" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintTest()">
-	<script xlink:href="../../fast/repaint/resources/repaint.js"></script>
+<svg viewBox="-10 -10 280 220" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
+	<script xlink:href="../../fast/repaint/resources/text-based-repaint.js"></script>
 	<script>
 	<![CDATA[
 		function repaintTest() {

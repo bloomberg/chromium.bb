@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintTest()">
- <script xlink:href="../../../fast/repaint/resources/repaint.js"></script>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
+ <script xlink:href="../../../fast/repaint/resources/text-based-repaint.js"></script>
  <script type="text/javascript">
   var start = new Date();
  </script>

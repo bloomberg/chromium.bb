@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Basic//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-basic.dtd">
-<svg version="1.1" baseProfile="basic" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="svg-root" width="400" height="400" onload="runRepaintTest()">
-    <script xlink:href="../../fast/repaint/resources/repaint.js"/>
+<svg version="1.1" baseProfile="basic" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="svg-root" width="400" height="400" onload="runRepaintAndPixelTest()">
+    <script xlink:href="../../fast/repaint/resources/text-based-repaint.js"/>
     <script type="text/ecmascript">
         <![CDATA[
         function repaintTest() {

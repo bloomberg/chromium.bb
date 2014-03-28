@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  style="width:300px;height:400px" onload="runRepaintTest()">
+  style="width:300px;height:400px" onload="runRepaintAndPixelTest()">
 
-<script xlink:href="../../fast/repaint/resources/repaint.js"/>
+<script xlink:href="../../fast/repaint/resources/text-based-repaint.js"/>
 <!-- This tests filters failing to refresh after the initial rendering
 (https://bugs.webkit.org/show_bug.cgi?id=53088).
 There should be two green squares in the output. -->

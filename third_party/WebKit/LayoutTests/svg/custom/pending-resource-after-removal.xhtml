@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<script src="../../fast/repaint/resources/repaint.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <title>The rectangle should be green.</title></head>
 <script>
 
@@ -54,7 +54,7 @@ function repaintTest() {
     setTimeout("updateFill()", 0);
 }
 </script>
-<body onload="runRepaintTest()">
+<body onload="runRepaintAndPixelTest()">
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="position: absolute; top: 0px; left: 0px; bottom: 0px; right: 0px">
 <defs id="defs"></defs>
 <rect id="shape" width="200" height="200"></rect>

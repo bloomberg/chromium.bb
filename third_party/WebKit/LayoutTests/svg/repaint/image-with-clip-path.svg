@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="startTest()" width="1000" height="600">
-    <script xlink:href="../../fast/repaint/resources/repaint.js" type="text/javascript"></script>
+    <script xlink:href="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
     <text y="-10">Bug 76559: All red should disappear</text>
     <g id="g" transform="translate(0, 0)">
         <defs>
@@ -16,7 +16,7 @@
     var count = 0;
     function startTest() {
         if (count == 0)
-            runRepaintTest();
+            runRepaintAndPixelTest();
         count = count + 1;
     }
 

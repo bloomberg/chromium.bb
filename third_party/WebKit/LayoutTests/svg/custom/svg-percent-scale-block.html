@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Test for https://bugs.webkit.org/show_bug.cgi?id=79490</title>
-  <script src="../../fast/repaint/resources/repaint.js"></script>
+  <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
   <script>
     function repaintTest()
     {
@@ -11,7 +11,7 @@
   </script>
 </head>
 
-<body style="margin: 0; padding: 0; overflow: hidden;" onload="runRepaintTest()">
+<body style="margin: 0; padding: 0; overflow: hidden;" onload="runRepaintAndPixelTest()">
   <div id="resize-target" style="width: 400px; height: 400px; position: absolute;">
     <!-- After vertical window resizing, this SVG element should not be visible -->
     <svg width="25%" height="50%" xmlns="http://www.w3.org/2000/svg" style="display: block;">

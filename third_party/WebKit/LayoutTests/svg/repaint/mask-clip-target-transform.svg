@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-100 -100 800 600" onload="runRepaintTest();">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-100 -100 800 600" onload="runRepaintAndPixelTest();">
   <!--
     Test for https://bugs.webkit.org/show_bug.cgi?id=76527.
     Only two green circles should be visible.
   -->
-  <script xlink:href="../../fast/repaint/resources/repaint.js" type="text/javascript"></script>
+  <script xlink:href="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
   <defs>
     <mask id="mask">
       <circle cx="100" r="50" fill="white"/>

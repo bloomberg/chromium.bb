@@ -1,5 +1,6 @@
 // Asynchronous tests should manually call finishRepaintTest at the appropriate time.
 window.testIsAsync = false;
+window.outputRepaintRects = true;
 
 function runRepaintTest()
 {
@@ -26,6 +27,13 @@ function runRepaintTest()
         finishRepaintTest();
 }
 
+function runRepaintAndPixelTest()
+{
+    window.enablePixelTesting = true;
+    window.outputRepaintRects = false;
+    runRepaintTest();
+}
+
 function forceStyleRecalc()
 {
     if (document.body)
@@ -43,10 +51,20 @@ function finishRepaintTest()
 
     internals.stopTrackingRepaints(document);
 
-    var pre = document.createElement('pre');
-    pre.style.opacity = 0;  // appear in text dumps, but not images
-    document.body.appendChild(pre);
-    pre.textContent += repaintRects;
+    if (window.outputRepaintRects) {
+        if (document.body) {
+            var root = document.body;
+        } else if (document.documentElement) {
+            var root = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+            document.documentElement.appendChild(root);
+        }
+        var pre = document.createElementNS('http://www.w3.org/1999/xhtml', 'pre');
+        // Make this element appear in text dumps, but try to avoid affecting
+        // output pixels (being visible, creating overflow, &c).
+        pre.style.opacity = 0;
+        pre.textContent += repaintRects;
+        root.appendChild(pre);
+    }
 
     if (window.afterTest)
         window.afterTest();

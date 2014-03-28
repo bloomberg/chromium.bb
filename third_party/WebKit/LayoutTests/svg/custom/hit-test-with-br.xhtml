@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-  <script src="../../fast/repaint/resources/repaint.js"></script>
+  <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <title>&lt;br&gt; prevents click handler from firing</title>
 <script>
 function clickHandler(evt) {
@@ -19,7 +19,7 @@ function repaintTest() {
 }
 </script>
   </head>
-  <body onload="runRepaintTest()">
+  <body onload="runRepaintAndPixelTest()">
     <p>
     A test for hit testing when an svg container is relatively positioned in
     a containing block. See bug 13981.

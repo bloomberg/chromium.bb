@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink='http://www.w3.org/1999/xlink' width="300px" height="300px" viewBox="0 0 300 300" onload="runRepaintTest()">
-    <script xlink:href="../../fast/repaint/resources/repaint.js" type="text/javascript"></script>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink='http://www.w3.org/1999/xlink' width="300px" height="300px" viewBox="0 0 300 300" onload="runRepaintAndPixelTest()">
+    <script xlink:href="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
     <script type="text/javascript">
     function repaintTest() {
         var smile = document.getElementById('smile');

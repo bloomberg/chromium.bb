@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintTest();">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest();">
   <!--
     Test for https://bugs.webkit.org/show_bug.cgi?id=79682.
   -->
-  <script xlink:href="../../fast/repaint/resources/repaint.js" type="text/javascript"></script>
+  <script xlink:href="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
   <defs>
     <mask id="mask1">
       <text id="text1" x="10" y="20" fill="#fff" font-size="20px"></text>

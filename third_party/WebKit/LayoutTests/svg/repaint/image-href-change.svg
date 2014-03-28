@@ -1,5 +1,5 @@
- <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintTest()">
-    <script xlink:href="../../fast/repaint/resources/repaint.js" type="text/javascript"></script>
+ <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
+    <script xlink:href="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
     <text y="-50">200x200 green rect should be visible</text>
 
     <!-- 216x14 green rect -->

@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>SVG img and bg test</title>
-  <script src="../../fast/repaint/resources/repaint.js" type="text/javascript"></script>
+  <script src="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
   <script type="text/javascript">
   function repaintTest() {
     document.getElementById('test').className = 'revealed';
@@ -40,7 +40,7 @@
     }
   </style>
 </head>
-<body onload="runRepaintTest()">
+<body onload="runRepaintAndPixelTest()">
 
 <p>You should continue see a full blue circle when part of the element is redrawn (hover to test interactively).</p>
 <div id="test">

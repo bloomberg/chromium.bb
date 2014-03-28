@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
- width="300" height="300" onload="runRepaintTest()">
-<script xlink:href="../../fast/repaint/resources/repaint.js" />
+ width="300" height="300" onload="runRepaintAndPixelTest()">
+<script xlink:href="../../fast/repaint/resources/text-based-repaint.js" />
 <script><![CDATA[
-function repaintTest() { 
+function repaintTest() {
     document.getElementById("inner").setAttribute("viewBox", "0 0 200 200");
 }
 ]]></script>
