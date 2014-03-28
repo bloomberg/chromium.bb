@@ -4,12 +4,12 @@
 
 #include "apps/ui/views/app_window_frame_view.h"
 
-#include "apps/ui/native_app_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/draggable_region.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"  // Accessibility names
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -37,9 +37,9 @@ namespace apps {
 const char AppWindowFrameView::kViewClassName[] =
     "browser/ui/views/extensions/AppWindowFrameView";
 
-AppWindowFrameView::AppWindowFrameView(NativeAppWindow* window)
-    : window_(window),
-      widget_(NULL),
+AppWindowFrameView::AppWindowFrameView()
+    : widget_(NULL),
+      draggable_region_(NULL),
       close_button_(NULL),
       maximize_button_(NULL),
       restore_button_(NULL),
@@ -51,18 +51,22 @@ AppWindowFrameView::AppWindowFrameView(NativeAppWindow* window)
 AppWindowFrameView::~AppWindowFrameView() {}
 
 void AppWindowFrameView::Init(views::Widget* widget,
+                              bool draw_frame,
                               const SkColor& frame_color,
+                              const SkRegion* draggable_region,
                               int resize_inside_bounds_size,
                               int resize_outside_bounds_size,
                               int resize_outside_scale_for_touch,
                               int resize_area_corner_size) {
   widget_ = widget;
+  draw_frame_ = draw_frame;
   frame_color_ = frame_color;
+  draggable_region_ = draggable_region;
   resize_inside_bounds_size_ = resize_inside_bounds_size;
   resize_outside_bounds_size_ = resize_outside_bounds_size;
   resize_area_corner_size_ = resize_area_corner_size;
 
-  if (!window_->IsFrameless()) {
+  if (draw_frame) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     close_button_ = new views::ImageButton(this);
     close_button_->SetImage(
@@ -125,7 +129,7 @@ void AppWindowFrameView::Init(views::Widget* widget,
 // views::NonClientFrameView implementation.
 
 gfx::Rect AppWindowFrameView::GetBoundsForClientView() const {
-  if (window_->IsFrameless() || widget_->IsFullscreen())
+  if (!draw_frame_ || widget_->IsFullscreen())
     return bounds();
   return gfx::Rect(
       0, kCaptionHeight, width(), std::max(0, height() - kCaptionHeight));
@@ -133,8 +137,16 @@ gfx::Rect AppWindowFrameView::GetBoundsForClientView() const {
 
 gfx::Rect AppWindowFrameView::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  if (window_->IsFrameless()) {
-    gfx::Rect window_bounds = client_bounds;
+  gfx::Rect window_bounds = client_bounds;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Get the difference between the widget's client area bounds and window
+  // bounds, and grow |window_bounds| by that amount.
+  gfx::Insets native_frame_insets =
+      widget_->GetClientAreaBoundsInScreen().InsetsFrom(
+          widget_->GetWindowBoundsInScreen());
+  window_bounds.Inset(native_frame_insets);
+#endif
+  if (!draw_frame_) {
     // Enforce minimum size (1, 1) in case that client_bounds is passed with
     // empty size. This could occur when the frameless window is being
     // initialized.
@@ -147,10 +159,10 @@ gfx::Rect AppWindowFrameView::GetWindowBoundsForClientBounds(
 
   int closeButtonOffsetX = (kCaptionHeight - close_button_->height()) / 2;
   int header_width = close_button_->width() + closeButtonOffsetX * 2;
-  return gfx::Rect(client_bounds.x(),
-                   client_bounds.y() - kCaptionHeight,
-                   std::max(header_width, client_bounds.width()),
-                   client_bounds.height() + kCaptionHeight);
+  return gfx::Rect(window_bounds.x(),
+                   window_bounds.y() - kCaptionHeight,
+                   std::max(header_width, window_bounds.width()),
+                   window_bounds.height() + kCaptionHeight);
 }
 
 int AppWindowFrameView::NonClientHitTest(const gfx::Point& point) {
@@ -189,11 +201,8 @@ int AppWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // Check for possible draggable region in the client area for the frameless
   // window.
-  if (window_->IsFrameless()) {
-    SkRegion* draggable_region = window_->GetDraggableRegion();
-    if (draggable_region && draggable_region->contains(point.x(), point.y()))
-      return HTCAPTION;
-  }
+  if (draggable_region_ && draggable_region_->contains(point.x(), point.y()))
+    return HTCAPTION;
 
   int client_component = widget_->client_view()->NonClientHitTest(point);
   if (client_component != HTNOWHERE)
@@ -235,7 +244,7 @@ gfx::Size AppWindowFrameView::GetPreferredSize() {
 }
 
 void AppWindowFrameView::Layout() {
-  if (window_->IsFrameless())
+  if (!draw_frame_)
     return;
   gfx::Size close_size = close_button_->GetPreferredSize();
   const int kButtonOffsetY = 0;
@@ -282,7 +291,7 @@ void AppWindowFrameView::Layout() {
 }
 
 void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (window_->IsFrameless())
+  if (!draw_frame_)
     return;
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -314,7 +323,7 @@ const char* AppWindowFrameView::GetClassName() const { return kViewClassName; }
 
 gfx::Size AppWindowFrameView::GetMinimumSize() {
   gfx::Size min_size = widget_->client_view()->GetMinimumSize();
-  if (window_->IsFrameless())
+  if (!draw_frame_)
     return min_size;
 
   // Ensure we can display the top of the caption area.
@@ -346,7 +355,7 @@ gfx::Size AppWindowFrameView::GetMaximumSize() {
 
 void AppWindowFrameView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  DCHECK(!window_->IsFrameless());
+  DCHECK(draw_frame_);
   if (sender == close_button_)
     widget_->Close();
   else if (sender == maximize_button_)

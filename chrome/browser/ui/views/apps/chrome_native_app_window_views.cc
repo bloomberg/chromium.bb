@@ -210,13 +210,7 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
 
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_WINDOW);
   init_params.delegate = this;
-  init_params.remove_standard_frame = !ShouldUseNativeFrame();
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // On Linux, remove the standard frame. Instead, we will use CustomFrameView
-  // to draw a native-like frame.
-  // TODO(mgiuca): Remove this during fix for http://crbug.com/322256.
-  init_params.remove_standard_frame = true;
-#endif
+  init_params.remove_standard_frame = IsFrameless() || has_frame_color_;
   init_params.use_system_default_icon = true;
   // TODO(erg): Conceptually, these are toplevel windows, but we theoretically
   // could plumb context through to here in some cases.
@@ -337,10 +331,6 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
 #endif
 }
 
-bool ChromeNativeAppWindowViews::ShouldUseNativeFrame() const {
-  return !IsFrameless() && !has_frame_color_;
-}
-
 void ChromeNativeAppWindowViews::InstallEasyResizeTargeterOnContainer() const {
   aura::Window* root_window = widget()->GetNativeWindow()->GetRootWindow();
   gfx::Insets inset(kResizeInsideBoundsSize, kResizeInsideBoundsSize,
@@ -366,9 +356,11 @@ ChromeNativeAppWindowViews::CreateAppWindowFrameView() {
     resize_area_corner_size = ash::kResizeAreaCornerSize;
   }
 #endif
-  apps::AppWindowFrameView* frame_view = new apps::AppWindowFrameView(this);
+  apps::AppWindowFrameView* frame_view = new apps::AppWindowFrameView();
   frame_view->Init(widget(),
+                   has_frame_color_,
                    frame_color_,
+                   GetDraggableRegion(),
                    resize_inside_bounds_size,
                    resize_outside_bounds_size,
                    resize_outside_scale_for_touch,
@@ -517,8 +509,12 @@ views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
     }
   }
 #endif
-  if (!ShouldUseNativeFrame())
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return CreateAppWindowFrameView();
+#else
+  if (IsFrameless() || has_frame_color_)
     return CreateAppWindowFrameView();
+#endif
   return views::WidgetDelegateView::CreateNonClientFrameView(widget);
 }
 
@@ -676,7 +672,7 @@ void ChromeNativeAppWindowViews::InitializeWindow(
       NULL));
 
 #if defined(OS_WIN)
-  if (!ShouldUseNativeFrame() &&
+  if ((IsFrameless() || has_frame_color_) &&
       chrome::GetHostDesktopTypeForNativeWindow(widget()->GetNativeWindow()) !=
           chrome::HOST_DESKTOP_TYPE_ASH) {
     InstallEasyResizeTargeterOnContainer();
