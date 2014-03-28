@@ -4,10 +4,12 @@
 
 #include <vector>
 
+#include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/audio/chromeos_sounds.h"
@@ -166,14 +168,14 @@ class VolumeControllerSoundsTest : public VolumeControllerTest {
     media::SoundsManager::InitializeForTesting(sounds_manager_);
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    VolumeControllerTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(ash::switches::kAshEnableSystemSounds);
+  void EnableSpokenFeedback(bool enabled) {
+    chromeos::AccessibilityManager* manager =
+        chromeos::AccessibilityManager::Get();
+    manager->EnableSpokenFeedback(enabled, ash::A11Y_NOTIFICATION_NONE);
   }
 
   bool is_sound_initialized() const {
-    return sounds_manager_->is_sound_initialized(
-        chromeos::SOUND_VOLUME_ADJUST);
+    return sounds_manager_->is_sound_initialized(chromeos::SOUND_VOLUME_ADJUST);
   }
 
   int num_play_requests() const {
@@ -186,8 +188,23 @@ class VolumeControllerSoundsTest : public VolumeControllerTest {
   DISALLOW_COPY_AND_ASSIGN(VolumeControllerSoundsTest);
 };
 
-IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, VolumeAdjustSounds) {
+IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, Simple) {
+  audio_handler_->SetOutputVolumePercent(50);
+
+  EnableSpokenFeedback(false /* enabled */);
+  VolumeUp();
+  VolumeDown();
+  EXPECT_EQ(0, num_play_requests());
+
+  EnableSpokenFeedback(true /* enabled */);
+  VolumeUp();
+  VolumeDown();
+  EXPECT_EQ(2, num_play_requests());
+}
+
+IN_PROC_BROWSER_TEST_F(VolumeControllerSoundsTest, EdgeCases) {
   EXPECT_TRUE(is_sound_initialized());
+  EnableSpokenFeedback(true /* enabled */);
 
   // Check that sound is played on volume up and volume down.
   audio_handler_->SetOutputVolumePercent(50);

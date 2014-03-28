@@ -30,7 +30,7 @@ bool VolumeAdjustSoundEnabled() {
 
 void PlayVolumeAdjustSound() {
   if (VolumeAdjustSoundEnabled())
-    ash::PlaySystemSoundAlways(chromeos::SOUND_VOLUME_ADJUST);
+    ash::PlaySystemSoundIfSpokenFeedback(chromeos::SOUND_VOLUME_ADJUST);
 }
 
 }  // namespace
