@@ -214,19 +214,75 @@ whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
 ``i686-nacl-gdb`` is an alias for ``x86_64-nacl-gdb``, and the ``newlib``
 and ``glibc`` toolchains both contain the same version of GDB.
 
-Debugging PNaCl pexes
-~~~~~~~~~~~~~~~~~~~~~
+Debugging PNaCl pexes (with Pepper 35+)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you want to use GDB to debug a program that is compiled with the PNaCl
+toolchain, you must have a copy of the pexe from **before** running
+``pnacl-finalize``. The ``pnacl-finalize`` tool converts LLVM bitcode
+to the stable PNaCl bitcode format, but it also strips out debug
+metadata, which we need for debugging.
+
+**Note** unlike the finalized copy of the pexe, the non-finalized debug copy
+is not considered stable. This means that a debug copy of the PNaCl
+application created by a Pepper N SDK is only guaranteed to run
+with a matching Chrome version N. If the version of the debug bitcode pexe
+does not match that of Chrome then the translation process may fail, and
+you will see and error message in the JavaScript console.
+
+Also, make sure you are passing the ``-g`` :ref:`compile option
+<compile_flags>` to ``pnacl-clang`` to enable generating debugging info.
+You might also want to omit ``-O2`` from the compile-time and link-time
+options, otherwise GDB not might be able to print variables' values when
+debugging (this is more of a problem with the PNaCl/LLVM toolchain than
+with GCC).
+
+Once you have built a non-stable debug copy of the pexe, list the URL of
+that copy in your application's manifest file:
+
+.. naclcode::
+
+  {
+    "program": {
+      "pnacl-translate": {
+        "url": "release_version.pexe",
+        "optlevel": 2
+      },
+      "pnacl-debug": {
+        "url": "debug_version.bc",
+        "optlevel": 0
+      }
+    }
+  }
+
+Copy the ``debug_version.bc`` and ``nmf`` files to the location that
+your local web server serves files from.
+
+When you run Chrome with ``--enable-nacl-debug``, Chrome will translate
+and run the ``debug_version.bc`` instead of ``release_version.pexe``.
+Once the debug version is loaded, you are ready to :ref:`run nacl-gdb
+<running_nacl_gdb>`
+
+Whether you publish the NMF file containing the debug URL to the release
+web server, is up to you. One reason to avoid publishing the debug URL
+is that it is only guaranteed to work for the Chrome version that matches
+the SDK version. Developers who may have left the ``--enable-nacl-debug``
+flag turned on may end up loading the debug copy of your application
+(which may or may not work, depending on their version of Chrome).
+
+
+Debugging PNaCl pexes (with older Pepper toolchains)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to use GDB to debug a program that is compiled with the PNaCl
 toolchain, you must convert the ``pexe`` file to a ``nexe``.  (You can skip
-this step if you are using the GCC toolchain.)
+this step if you are using the GCC toolchain, or if you are using
+pepper 35 or later.)
 
 * Firstly, make sure you are passing the ``-g`` :ref:`compile option
   <compile_flags>` to ``pnacl-clang`` to enable generating debugging info.
   You might also want to omit ``-O2`` from the compile-time and link-time
-  options, otherwise GDB not might be able to print variables' values when
-  debugging (this is more of a problem with the PNaCl/LLVM toolchain than
-  with GCC).
+  options.
 
 * Secondly, use ``pnacl-translate`` to convert your ``pexe`` to one or more
   ``nexe`` files.  For example:
@@ -274,6 +330,8 @@ this step if you are using the GCC toolchain.)
   ``pexe`` once to a single x86-32 or x86-64 ``nexe``.  Otherwise, you
   might find it easier to translate the ``pexe`` to both ``nexe``
   formats as described above.
+
+.. _running_nacl_gdb:
 
 Running nacl-gdb
 ~~~~~~~~~~~~~~~~
@@ -331,6 +389,19 @@ Follow the instructions below to debug your module with nacl-gdb:
      not affect your personal Chrome data (history, cookies, bookmarks, themes,
      and settings).
 
+   ``--nacl-debug-mask=<nmf_url_mask1,nmf_url_mask2,...>``
+     Specifies a set of debug mask patterns. This allows you to selectively
+     choose to debug certain applications and not debug others. For example,
+     if you only want to debug the NMF files for your applications at
+     ``https://example.com/app``, and no other NaCl applications found
+     on the web, specify ``--nacl-debug-mask=https://example.com/app/*.nmf``.
+     This helps prevent accidentally debugging other NaCl applications if
+     you like to leave the ``--enable-nacl-debug`` flag turned on.
+     The pattern language for the mask follows `chrome extension match patterns
+     <http://developer.chrome.com/extensions/match_patterns>`_.
+     The pattern set can be inverted by prefixing the pattern set with
+     the ``!`` character.
+
    ``<URL>``
      Specifies the URL Chrome should open when it launches. The local server
      that comes with the SDK listens on port 5103 by default, so the URL when
@@ -353,33 +424,60 @@ Follow the instructions below to debug your module with nacl-gdb:
 
      (gdb)
 
-#. Run the following three commands from the gdb command line::
+#. For debugging PNaCl pexes run the following gdb command lines
+   (skip to the next item if you are using NaCl instead of PNaCl)::
 
-     (gdb) nacl-manifest <path-to-your-.nmf-file>
-     (gdb) nacl-irt <path-to-Chrome-NaCl-integrated-runtime>
      (gdb) target remote localhost:4014
+     (gdb) remote get nexe <path-to-save-translated-nexe-with-debug-info>
+     (gdb) file <path-to-save-translated-nexe-with-debug-info>
+     (gdb) remote get irt <path-to-save-NaCl-integrated-runtime>
+     (gdb) nacl-irt <path-to-saved-NaCl-integrated-runtime>
 
-   These commands are described below:
+#. For NaCl nexes, run the following commands from the gdb command line::
 
-   ``nacl-manifest <path>``
-     Tells the debugger about your Native Client application by pointing it to
-     the application's manifest (.nmf) file. The manifest file lists your
-     application's executable (.nexe) files, as well as any libraries that are
-     linked with the application dynamically.
+     (gdb) target remote localhost:4014
+     (gdb) nacl-manifest <path-to-your-.nmf-file>
+     (gdb) remote get irt <path-to-save-NaCl-integrated-runtime>
+     (gdb) nacl-irt <path-to-saved-NaCl-integrated-runtime>
 
-   ``nacl-irt <path>``
-     Tells the debugger where to find the Native Client Integrated Runtime
-     (IRT). The IRT is located in the same directory as the Chrome executable,
-     or in a subdirectory named after the Chrome version. For example, if
-     you're running Chrome canary on Windows, the path to the IRT typically
-     looks something like ``C:/Users/<username>/AppData/Local/Google/Chrome
-     SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe``.
+#. The command used for PNaCl and NaCl are described below:
 
    ``target remote localhost:4014``
      Tells the debugger how to connect to the debug stub in the Native Client
      application loader. This connection occurs through TCP port 4014 (note
      that this port is distinct from the port which the local web server uses
-     to listen for incoming requests, typically port 5103).
+     to listen for incoming requests, typically port 5103). If you are
+     debugging multiple applications at the same time, the loader may choose
+     a port that is different from the default 4014 port. See the Chrome
+     task manager for the debug port.
+
+   ``remote get nexe <path>``
+     This saves the application's main executable (nexe) to ``<path>``.
+     For PNaCl, this provides a convenient way to access the nexe that is
+     a **result** of translating your pexe. This can then be loaded with
+     the ``file <path>`` command.
+
+   ``nacl-manifest <path>``
+     For NaCl (not PNaCl), this tells the debugger where to find your
+     application's executable (.nexe) files. The application's manifest
+     (.nmf) file lists your application's executable files, as well as any
+     libraries that are linked with the application dynamically.
+
+   ``remote get irt <path>``
+     This saves the Native Client Integrated Runtime (IRT). Normally,
+     the IRT is located in the same directory as the Chrome executable,
+     or in a subdirectory named after the Chrome version. For example, if
+     you're running Chrome canary on Windows, the path to the IRT typically
+     looks something like ``C:/Users/<username>/AppData/Local/Google/Chrome
+     SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe``.
+     The ``remote get irt <path>`` saves that to the current working
+     directory so that you do not need to find where exactly the IRT
+     is stored alongside Chrome.
+
+   ``nacl-irt <path>``
+     Tells the debugger where to find the Native Client Integrated Runtime
+     (IRT). ``<path>`` can either be the location of the copy saved by
+     ``remote get irt <path>`` or the copy that is installed alongside Chrome.
 
    A couple of notes on how to specify path names in the nacl-gdb commands
    above:
@@ -394,9 +492,9 @@ Follow the instructions below to debug your module with nacl-gdb:
    As an example, here is a what these nacl-gdb commands might look like on
    Windows::
 
+     target remote localhost:4014
      nacl-manifest "C:/<NACL_SDK_ROOT>/examples/hello_world_gles/newlib/Debug/hello_world_gles.nmf"
      nacl-irt "C:/Users/<username>/AppData/Local/Google/Chrome SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe"
-     target remote localhost:4014
 
    To save yourself some typing, you can put put these nacl-gdb commands in a
    script file, and execute the file when you run nacl-gdb, like so::

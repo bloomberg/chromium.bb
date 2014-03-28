@@ -7,34 +7,35 @@ and measure your application&#8217;s performance.</p>
 <div class="contents local" id="table-of-contents" style="display: none">
 <p class="topic-title first">Table Of Contents</p>
 <ul class="small-gap">
-<li><p class="first"><a class="reference internal" href="#diagnostic-information" id="id1">Diagnostic information</a></p>
+<li><p class="first"><a class="reference internal" href="#diagnostic-information" id="id2">Diagnostic information</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#viewing-process-statistics-with-the-task-manager" id="id2">Viewing process statistics with the task manager</a></li>
-<li><a class="reference internal" href="#controlling-the-level-of-native-client-error-and-warning-messages" id="id3">Controlling the level of Native Client error and warning messages</a></li>
+<li><a class="reference internal" href="#viewing-process-statistics-with-the-task-manager" id="id3">Viewing process statistics with the task manager</a></li>
+<li><a class="reference internal" href="#controlling-the-level-of-native-client-error-and-warning-messages" id="id4">Controlling the level of Native Client error and warning messages</a></li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#basic-debugging" id="id4">Basic debugging</a></p>
+<li><p class="first"><a class="reference internal" href="#basic-debugging" id="id5">Basic debugging</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#writing-messages-to-the-javascript-console" id="id5">Writing messages to the JavaScript console</a></li>
-<li><p class="first"><a class="reference internal" href="#debugging-with-printf" id="id6">Debugging with printf</a></p>
+<li><a class="reference internal" href="#writing-messages-to-the-javascript-console" id="id6">Writing messages to the JavaScript console</a></li>
+<li><p class="first"><a class="reference internal" href="#debugging-with-printf" id="id7">Debugging with printf</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#redirecting-output-to-log-files" id="id7">Redirecting output to log files</a></li>
-<li><a class="reference internal" href="#redirecting-output-to-the-javascript-console" id="id8">Redirecting output to the JavaScript console</a></li>
+<li><a class="reference internal" href="#redirecting-output-to-log-files" id="id8">Redirecting output to log files</a></li>
+<li><a class="reference internal" href="#redirecting-output-to-the-javascript-console" id="id9">Redirecting output to the JavaScript console</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#logging-calls-to-pepper-interfaces" id="id9">Logging calls to Pepper interfaces</a></li>
-<li><a class="reference internal" href="#debugging-with-visual-studio" id="id10">Debugging with Visual Studio</a></li>
-<li><p class="first"><a class="reference internal" href="#debugging-with-nacl-gdb" id="id11">Debugging with nacl-gdb</a></p>
+<li><a class="reference internal" href="#logging-calls-to-pepper-interfaces" id="id10">Logging calls to Pepper interfaces</a></li>
+<li><a class="reference internal" href="#debugging-with-visual-studio" id="id11">Debugging with Visual Studio</a></li>
+<li><p class="first"><a class="reference internal" href="#debugging-with-nacl-gdb" id="id12">Debugging with nacl-gdb</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#debugging-pnacl-pexes" id="id12">Debugging PNaCl pexes</a></li>
-<li><a class="reference internal" href="#running-nacl-gdb" id="id13">Running nacl-gdb</a></li>
+<li><a class="reference internal" href="#debugging-pnacl-pexes-with-pepper-35" id="id13">Debugging PNaCl pexes (with Pepper 35+)</a></li>
+<li><a class="reference internal" href="#debugging-pnacl-pexes-with-older-pepper-toolchains" id="id14">Debugging PNaCl pexes (with older Pepper toolchains)</a></li>
+<li><a class="reference internal" href="#running-nacl-gdb" id="id15">Running nacl-gdb</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><p class="first"><a class="reference internal" href="#debugging-with-other-tools" id="id14">Debugging with other tools</a></p>
+<li><p class="first"><a class="reference internal" href="#debugging-with-other-tools" id="id16">Debugging with other tools</a></p>
 <ul class="small-gap">
-<li><a class="reference internal" href="#open-source-profiling-tools" id="id15">Open source profiling tools</a></li>
+<li><a class="reference internal" href="#open-source-profiling-tools" id="id17">Open source profiling tools</a></li>
 </ul>
 </li>
 </ul>
@@ -209,17 +210,61 @@ is the platform of your development machine: <code>win</code>, <code>mac</code>,
 whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
 <code>i686-nacl-gdb</code> is an alias for <code>x86_64-nacl-gdb</code>, and the <code>newlib</code>
 and <code>glibc</code> toolchains both contain the same version of GDB.</p>
-<section id="debugging-pnacl-pexes">
-<h4 id="debugging-pnacl-pexes">Debugging PNaCl pexes</h4>
+<section id="debugging-pnacl-pexes-with-pepper-35">
+<h4 id="debugging-pnacl-pexes-with-pepper-35">Debugging PNaCl pexes (with Pepper 35+)</h4>
 <p>If you want to use GDB to debug a program that is compiled with the PNaCl
-toolchain, you must convert the <code>pexe</code> file to a <code>nexe</code>.  (You can skip
-this step if you are using the GCC toolchain.)</p>
-<ul class="small-gap">
-<li>Firstly, make sure you are passing the <code>-g</code> <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>compile option</em></a> to <code>pnacl-clang</code> to enable generating debugging info.
+toolchain, you must have a copy of the pexe from <strong>before</strong> running
+<code>pnacl-finalize</code>. The <code>pnacl-finalize</code> tool converts LLVM bitcode
+to the stable PNaCl bitcode format, but it also strips out debug
+metadata, which we need for debugging.</p>
+<p><strong>Note</strong> unlike the finalized copy of the pexe, the non-finalized debug copy
+is not considered stable. This means that a debug copy of the PNaCl
+application created by a Pepper N SDK is only guaranteed to run
+with a matching Chrome version N. If the version of the debug bitcode pexe
+does not match that of Chrome then the translation process may fail, and
+you will see and error message in the JavaScript console.</p>
+<p>Also, make sure you are passing the <code>-g</code> <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>compile option</em></a> to <code>pnacl-clang</code> to enable generating debugging info.
 You might also want to omit <code>-O2</code> from the compile-time and link-time
 options, otherwise GDB not might be able to print variables&#8217; values when
 debugging (this is more of a problem with the PNaCl/LLVM toolchain than
-with GCC).</li>
+with GCC).</p>
+<p>Once you have built a non-stable debug copy of the pexe, list the URL of
+that copy in your application&#8217;s manifest file:</p>
+<pre class="prettyprint">
+{
+  &quot;program&quot;: {
+    &quot;pnacl-translate&quot;: {
+      &quot;url&quot;: &quot;release_version.pexe&quot;,
+      &quot;optlevel&quot;: 2
+    },
+    &quot;pnacl-debug&quot;: {
+      &quot;url&quot;: &quot;debug_version.bc&quot;,
+      &quot;optlevel&quot;: 0
+    }
+  }
+}
+</pre>
+<p>Copy the <code>debug_version.bc</code> and <code>nmf</code> files to the location that
+your local web server serves files from.</p>
+<p>When you run Chrome with <code>--enable-nacl-debug</code>, Chrome will translate
+and run the <code>debug_version.bc</code> instead of <code>release_version.pexe</code>.
+Once the debug version is loaded, you are ready to <a class="reference internal" href="#running-nacl-gdb"><em>run nacl-gdb</em></a></p>
+<p>Whether you publish the NMF file containing the debug URL to the release
+web server, is up to you. One reason to avoid publishing the debug URL
+is that it is only guaranteed to work for the Chrome version that matches
+the SDK version. Developers who may have left the <code>--enable-nacl-debug</code>
+flag turned on may end up loading the debug copy of your application
+(which may or may not work, depending on their version of Chrome).</p>
+</section><section id="debugging-pnacl-pexes-with-older-pepper-toolchains">
+<h4 id="debugging-pnacl-pexes-with-older-pepper-toolchains">Debugging PNaCl pexes (with older Pepper toolchains)</h4>
+<p>If you want to use GDB to debug a program that is compiled with the PNaCl
+toolchain, you must convert the <code>pexe</code> file to a <code>nexe</code>.  (You can skip
+this step if you are using the GCC toolchain, or if you are using
+pepper 35 or later.)</p>
+<ul class="small-gap">
+<li>Firstly, make sure you are passing the <code>-g</code> <a class="reference internal" href="/native-client/devguide/devcycle/building.html#compile-flags"><em>compile option</em></a> to <code>pnacl-clang</code> to enable generating debugging info.
+You might also want to omit <code>-O2</code> from the compile-time and link-time
+options.</li>
 <li><p class="first">Secondly, use <code>pnacl-translate</code> to convert your <code>pexe</code> to one or more
 <code>nexe</code> files.  For example:</p>
 <pre>
@@ -260,7 +305,7 @@ might find it easier to translate the <code>pexe</code> to both <code>nexe</code
 formats as described above.
 </aside>
 </section><section id="running-nacl-gdb">
-<h4 id="running-nacl-gdb">Running nacl-gdb</h4>
+<span id="id1"></span><h4 id="running-nacl-gdb"><span id="id1"></span>Running nacl-gdb</h4>
 <p>Before you start using nacl-gdb, make sure you can <a class="reference internal" href="/native-client/devguide/devcycle/building.html"><em>build</em></a> your
 module and <a class="reference internal" href="/native-client/devguide/devcycle/running.html"><em>run</em></a> your application normally. This will verify
 that you have created all the required <a class="reference internal" href="/native-client/devguide/coding/application-structure.html"><em>application parts</em></a> (.html, .nmf, and .nexe files, shared
@@ -312,6 +357,18 @@ directory so that changes you make to Chrome in your debugging session do
 not affect your personal Chrome data (history, cookies, bookmarks, themes,
 and settings).</p>
 </dd>
+<dt><code>--nacl-debug-mask=&lt;nmf_url_mask1,nmf_url_mask2,...&gt;</code></dt>
+<dd><p class="first last">Specifies a set of debug mask patterns. This allows you to selectively
+choose to debug certain applications and not debug others. For example,
+if you only want to debug the NMF files for your applications at
+<code>https://example.com/app</code>, and no other NaCl applications found
+on the web, specify <code>--nacl-debug-mask=https://example.com/app/*.nmf</code>.
+This helps prevent accidentally debugging other NaCl applications if
+you like to leave the <code>--enable-nacl-debug</code> flag turned on.
+The pattern language for the mask follows <a class="reference external" href="http://developer.chrome.com/extensions/match_patterns">chrome extension match patterns</a>.
+The pattern set can be inverted by prefixing the pattern set with
+the <code>!</code> character.</p>
+</dd>
 <dt><code>&lt;URL&gt;</code></dt>
 <dd><p class="first last">Specifies the URL Chrome should open when it launches. The local server
 that comes with the SDK listens on port 5103 by default, so the URL when
@@ -337,33 +394,62 @@ cd &lt;NACL_SDK_ROOT&gt;/examples/hello_world_gles
 (gdb)
 </pre>
 </li>
-<li><p class="first">Run the following three commands from the gdb command line:</p>
+<li><p class="first">For debugging PNaCl pexes run the following gdb command lines
+(skip to the next item if you are using NaCl instead of PNaCl):</p>
 <pre class="prettyprint">
-(gdb) nacl-manifest &lt;path-to-your-.nmf-file&gt;
-(gdb) nacl-irt &lt;path-to-Chrome-NaCl-integrated-runtime&gt;
 (gdb) target remote localhost:4014
+(gdb) remote get nexe &lt;path-to-save-translated-nexe-with-debug-info&gt;
+(gdb) file &lt;path-to-save-translated-nexe-with-debug-info&gt;
+(gdb) remote get irt &lt;path-to-save-NaCl-integrated-runtime&gt;
+(gdb) nacl-irt &lt;path-to-saved-NaCl-integrated-runtime&gt;
 </pre>
-<p>These commands are described below:</p>
+</li>
+<li><p class="first">For NaCl nexes, run the following commands from the gdb command line:</p>
+<pre class="prettyprint">
+(gdb) target remote localhost:4014
+(gdb) nacl-manifest &lt;path-to-your-.nmf-file&gt;
+(gdb) remote get irt &lt;path-to-save-NaCl-integrated-runtime&gt;
+(gdb) nacl-irt &lt;path-to-saved-NaCl-integrated-runtime&gt;
+</pre>
+</li>
+<li><p class="first">The command used for PNaCl and NaCl are described below:</p>
 <dl class="docutils">
-<dt><code>nacl-manifest &lt;path&gt;</code></dt>
-<dd><p class="first last">Tells the debugger about your Native Client application by pointing it to
-the application&#8217;s manifest (.nmf) file. The manifest file lists your
-application&#8217;s executable (.nexe) files, as well as any libraries that are
-linked with the application dynamically.</p>
-</dd>
-<dt><code>nacl-irt &lt;path&gt;</code></dt>
-<dd><p class="first last">Tells the debugger where to find the Native Client Integrated Runtime
-(IRT). The IRT is located in the same directory as the Chrome executable,
-or in a subdirectory named after the Chrome version. For example, if
-you&#8217;re running Chrome canary on Windows, the path to the IRT typically
-looks something like <code>C:/Users/&lt;username&gt;/AppData/Local/Google/Chrome
-SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe</code>.</p>
-</dd>
 <dt><code>target remote localhost:4014</code></dt>
 <dd><p class="first last">Tells the debugger how to connect to the debug stub in the Native Client
 application loader. This connection occurs through TCP port 4014 (note
 that this port is distinct from the port which the local web server uses
-to listen for incoming requests, typically port 5103).</p>
+to listen for incoming requests, typically port 5103). If you are
+debugging multiple applications at the same time, the loader may choose
+a port that is different from the default 4014 port. See the Chrome
+task manager for the debug port.</p>
+</dd>
+<dt><code>remote get nexe &lt;path&gt;</code></dt>
+<dd><p class="first last">This saves the application&#8217;s main executable (nexe) to <code>&lt;path&gt;</code>.
+For PNaCl, this provides a convenient way to access the nexe that is
+a <strong>result</strong> of translating your pexe. This can then be loaded with
+the <code>file &lt;path&gt;</code> command.</p>
+</dd>
+<dt><code>nacl-manifest &lt;path&gt;</code></dt>
+<dd><p class="first last">For NaCl (not PNaCl), this tells the debugger where to find your
+application&#8217;s executable (.nexe) files. The application&#8217;s manifest
+(.nmf) file lists your application&#8217;s executable files, as well as any
+libraries that are linked with the application dynamically.</p>
+</dd>
+<dt><code>remote get irt &lt;path&gt;</code></dt>
+<dd><p class="first last">This saves the Native Client Integrated Runtime (IRT). Normally,
+the IRT is located in the same directory as the Chrome executable,
+or in a subdirectory named after the Chrome version. For example, if
+you&#8217;re running Chrome canary on Windows, the path to the IRT typically
+looks something like <code>C:/Users/&lt;username&gt;/AppData/Local/Google/Chrome
+SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe</code>.
+The <code>remote get irt &lt;path&gt;</code> saves that to the current working
+directory so that you do not need to find where exactly the IRT
+is stored alongside Chrome.</p>
+</dd>
+<dt><code>nacl-irt &lt;path&gt;</code></dt>
+<dd><p class="first last">Tells the debugger where to find the Native Client Integrated Runtime
+(IRT). <code>&lt;path&gt;</code> can either be the location of the copy saved by
+<code>remote get irt &lt;path&gt;</code> or the copy that is installed alongside Chrome.</p>
 </dd>
 </dl>
 <p>A couple of notes on how to specify path names in the nacl-gdb commands
@@ -381,9 +467,9 @@ quotation marks around the path.</p>
 <p>As an example, here is a what these nacl-gdb commands might look like on
 Windows:</p>
 <pre class="prettyprint">
+target remote localhost:4014
 nacl-manifest &quot;C:/&lt;NACL_SDK_ROOT&gt;/examples/hello_world_gles/newlib/Debug/hello_world_gles.nmf&quot;
 nacl-irt &quot;C:/Users/&lt;username&gt;/AppData/Local/Google/Chrome SxS/Application/23.0.1247.1/nacl_irt_x86_64.nexe&quot;
-target remote localhost:4014
 </pre>
 <p>To save yourself some typing, you can put put these nacl-gdb commands in a
 script file, and execute the file when you run nacl-gdb, like so:</p>

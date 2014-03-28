@@ -63,7 +63,15 @@ section for the rules on URL resolution.</p>
   &quot;program&quot;: {
     &quot;pnacl-translate&quot;: {
       // url is required
-      &quot;url&quot;: &quot;url_to_my_pexe&quot;
+      &quot;url&quot;: &quot;url_to_my_pexe&quot;,
+
+      // optlevel is optional
+      &quot;optlevel&quot;: 2
+    },
+    // pnacl-debug is optional
+    &quot;pnacl-debug&quot;: {
+      // url is required
+      &quot;url&quot;: &quot;url_to_my_bitcode_bc&quot;,
 
       // optlevel is optional
       &quot;optlevel&quot;: 0
@@ -82,6 +90,10 @@ as first load speed, an application could specify an <code>optlevel</code>
 of <code>0</code>. Note that <code>optlevel</code> is only a <em>hint</em>. In the future, the
 Portable Native Client translator and runtime may <em>automatically</em> choose
 an <code>optlevel</code> to best balance load time and application performance.</p>
+<p>A <code>pnacl-debug</code> section can specify an unfinalized pnacl llvm bitcode file
+for debugging. The <code>url</code> provided in this section will be used when Native
+Client debugging is enabled with either the <code>--enable-nacl-debug</code> Chrome
+command line switch, or via <code>about://flags</code>.</p>
 </section><section id="example-of-a-program-for-statically-linked-native-client-executables">
 <h4 id="example-of-a-program-for-statically-linked-native-client-executables">Example of a <code>program</code> for statically linked Native Client executables</h4>
 <pre class="prettyprint">
