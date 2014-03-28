@@ -783,7 +783,7 @@ bool RenderLayerCompositor::canSquashIntoCurrentSquashingOwner(const RenderLayer
 RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::computeCompositedLayerUpdate(RenderLayer* layer)
 {
     CompositingStateTransitionType update = NoCompositingStateChange;
-    if (needsOwnBacking(layer)) {
+    if (!layer->subtreeIsInvisible() && needsOwnBacking(layer)) {
         if (!layer->hasCompositedLayerMapping()) {
             update = AllocateOwnCompositedLayerMapping;
         }
@@ -792,7 +792,7 @@ RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::com
             update = RemoveOwnCompositedLayerMapping;
 
         if (layerSquashingEnabled()) {
-            if (requiresSquashing(layer->compositingReasons())) {
+            if (!layer->subtreeIsInvisible() && requiresSquashing(layer->compositingReasons())) {
                 // We can't compute at this time whether the squashing layer update is a no-op,
                 // since that requires walking the render layer tree.
                 update = PutInSquashingLayer;
