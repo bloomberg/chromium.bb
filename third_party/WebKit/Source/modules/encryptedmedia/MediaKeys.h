@@ -82,6 +82,8 @@ protected:
 
     // FIXME: Check whether |initData| can be changed by JS. Maybe we should not pass it as a pointer.
     struct InitializeNewSessionData {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
         InitializeNewSessionData(PassRefPtrWillBeRawPtr<MediaKeySession> session, const String& contentType, PassRefPtr<Uint8Array> initData)
             : session(session)
             , contentType(contentType)

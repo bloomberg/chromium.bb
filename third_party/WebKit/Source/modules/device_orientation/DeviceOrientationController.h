@@ -63,7 +63,7 @@ private:
     virtual PassRefPtr<Event> getLastEvent() OVERRIDE;
     virtual bool isNullEvent(Event*) OVERRIDE;
 
-    RefPtrWillBeMember<DeviceOrientationData> m_overrideOrientationData;
+    RefPtrWillBePersistent<DeviceOrientationData> m_overrideOrientationData;
 };
 
 } // namespace WebCore
