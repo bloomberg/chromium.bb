@@ -32,7 +32,7 @@ protected:
         return toInterpolableBool(interpolationValue(*i.get()))->value();
     }
 
-    PassRefPtrWillBeRawPtr<Interpolation> interpolateLists(PassOwnPtr<InterpolableList> listA, PassOwnPtr<InterpolableList> listB, double progress)
+    PassRefPtrWillBeRawPtr<Interpolation> interpolateLists(PassOwnPtrWillBeRawPtr<InterpolableList> listA, PassOwnPtrWillBeRawPtr<InterpolableList> listB, double progress)
     {
         RefPtrWillBeRawPtr<Interpolation> i = Interpolation::create(listA, listB);
         i->interpolate(0, progress);
@@ -62,12 +62,12 @@ TEST_F(AnimationInterpolableValueTest, InterpolateBools)
 
 TEST_F(AnimationInterpolableValueTest, SimpleList)
 {
-    OwnPtr<InterpolableList> listA = InterpolableList::create(3);
+    OwnPtrWillBeRawPtr<InterpolableList> listA = InterpolableList::create(3);
     listA->set(0, InterpolableNumber::create(0));
     listA->set(1, InterpolableNumber::create(42));
     listA->set(2, InterpolableNumber::create(20.5));
 
-    OwnPtr<InterpolableList> listB = InterpolableList::create(3);
+    OwnPtrWillBeRawPtr<InterpolableList> listB = InterpolableList::create(3);
     listB->set(0, InterpolableNumber::create(100));
     listB->set(1, InterpolableNumber::create(-200));
     listB->set(2, InterpolableNumber::create(300));
@@ -81,16 +81,16 @@ TEST_F(AnimationInterpolableValueTest, SimpleList)
 
 TEST_F(AnimationInterpolableValueTest, NestedList)
 {
-    OwnPtr<InterpolableList> listA = InterpolableList::create(3);
+    OwnPtrWillBeRawPtr<InterpolableList> listA = InterpolableList::create(3);
     listA->set(0, InterpolableNumber::create(0));
-    OwnPtr<InterpolableList> subListA = InterpolableList::create(1);
+    OwnPtrWillBeRawPtr<InterpolableList> subListA = InterpolableList::create(1);
     subListA->set(0, InterpolableNumber::create(100));
     listA->set(1, subListA.release());
     listA->set(2, InterpolableBool::create(false));
 
-    OwnPtr<InterpolableList> listB = InterpolableList::create(3);
+    OwnPtrWillBeRawPtr<InterpolableList> listB = InterpolableList::create(3);
     listB->set(0, InterpolableNumber::create(100));
-    OwnPtr<InterpolableList> subListB = InterpolableList::create(1);
+    OwnPtrWillBeRawPtr<InterpolableList> subListB = InterpolableList::create(1);
     subListB->set(0, InterpolableNumber::create(50));
     listB->set(1, subListB.release());
     listB->set(2, InterpolableBool::create(true));

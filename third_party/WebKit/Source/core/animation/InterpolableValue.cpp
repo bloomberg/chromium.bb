@@ -7,7 +7,9 @@
 
 namespace WebCore {
 
-PassOwnPtr<InterpolableValue> InterpolableNumber::interpolate(const InterpolableValue &to, const double progress) const
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
+
+PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableNumber::interpolate(const InterpolableValue &to, const double progress) const
 {
     const InterpolableNumber* toNumber = toInterpolableNumber(&to);
     if (!progress)
@@ -17,7 +19,7 @@ PassOwnPtr<InterpolableValue> InterpolableNumber::interpolate(const Interpolable
     return create(m_value * (1 - progress) + toNumber->m_value * progress);
 }
 
-PassOwnPtr<InterpolableValue> InterpolableBool::interpolate(const InterpolableValue &to, const double progress) const
+PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableBool::interpolate(const InterpolableValue &to, const double progress) const
 {
     if (progress < 0.5) {
         return clone();
@@ -25,7 +27,7 @@ PassOwnPtr<InterpolableValue> InterpolableBool::interpolate(const InterpolableVa
     return to.clone();
 }
 
-PassOwnPtr<InterpolableValue> InterpolableList::interpolate(const InterpolableValue &to, const double progress) const
+PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableList::interpolate(const InterpolableValue &to, const double progress) const
 {
     const InterpolableList* toList = toInterpolableList(&to);
     ASSERT(toList->m_size == m_size);
@@ -37,16 +39,23 @@ PassOwnPtr<InterpolableValue> InterpolableList::interpolate(const InterpolableVa
         return InterpolableList::create(*toList);
     }
 
-    OwnPtr<InterpolableList> result = create(m_size);
+    OwnPtrWillBeRawPtr<InterpolableList> result = create(m_size);
     for (size_t i = 0; i < m_size; i++) {
-        ASSERT(m_values.get()[i]);
-        ASSERT(toList->m_values.get()[i]);
-        result->set(i, m_values.get()[i]->interpolate(*(toList->m_values.get()[i]), progress));
+        ASSERT(m_values[i]);
+        ASSERT(toList->m_values[i]);
+        result->set(i, m_values[i]->interpolate(*(toList->m_values[i]), progress));
     }
     return result.release();
 }
 
-PassOwnPtr<InterpolableValue> InterpolableAnimatableValue::interpolate(const InterpolableValue &other, const double percentage) const
+void InterpolableList::trace(Visitor* visitor)
+{
+#if ENABLE_OILPAN
+    visitor->trace(m_values);
+#endif
+}
+
+PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableAnimatableValue::interpolate(const InterpolableValue &other, const double percentage) const
 {
     const InterpolableAnimatableValue *otherValue = toInterpolableAnimatableValue(&other);
     if (!percentage)
@@ -54,6 +63,11 @@ PassOwnPtr<InterpolableValue> InterpolableAnimatableValue::interpolate(const Int
     if (percentage == 1)
         return create(otherValue->m_value);
     return create(AnimatableValue::interpolate(m_value.get(), otherValue->m_value.get(), percentage));
+}
+
+void InterpolableAnimatableValue::trace(Visitor* visitor)
+{
+    visitor->trace(m_value);
 }
 
 }

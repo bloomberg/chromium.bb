@@ -10,6 +10,8 @@
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(Interpolation);
+
 namespace {
 
 bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
@@ -35,7 +37,7 @@ bool typesMatch(const InterpolableValue* start, const InterpolableValue* end)
 
 }
 
-Interpolation::Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
+Interpolation::Interpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
     : m_start(start)
     , m_end(end)
     , m_cachedFraction(0)
@@ -52,6 +54,13 @@ void Interpolation::interpolate(int iteration, double fraction) const
         m_cachedIteration = iteration;
         m_cachedFraction = fraction;
     }
+}
+
+void Interpolation::trace(Visitor* visitor)
+{
+    visitor->trace(m_start);
+    visitor->trace(m_end);
+    visitor->trace(m_cachedValue);
 }
 
 void StyleInterpolation::trace(Visitor* visitor)

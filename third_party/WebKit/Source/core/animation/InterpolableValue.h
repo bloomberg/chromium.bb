@@ -8,21 +8,24 @@
 #include "core/animation/AnimatableValue.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class InterpolableValue {
+class InterpolableValue : public NoBaseWillBeGarbageCollected<InterpolableValue> {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
 public:
     virtual bool isNumber() const { return false; }
     virtual bool isBool() const { return false; }
     virtual bool isList() const { return false; }
     virtual bool isAnimatableValue() const { return false; }
 
-    virtual ~InterpolableValue() { }
-    virtual PassOwnPtr<InterpolableValue> clone() const = 0;
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const = 0;
+
+    virtual void trace(Visitor*) = 0;
 
 private:
-    virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const = 0;
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const = 0;
 
     friend class Interpolation;
 
@@ -35,111 +38,124 @@ private:
 
 class InterpolableNumber : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableNumber> create(double value)
+    static PassOwnPtrWillBeRawPtr<InterpolableNumber> create(double value)
     {
-        return adoptPtr(new InterpolableNumber(value));
+        return adoptPtrWillBeNoop(new InterpolableNumber(value));
     }
 
     virtual bool isNumber() const OVERRIDE FINAL { return true; }
     double value() const { return m_value; }
-    virtual PassOwnPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
+
+    virtual void trace(Visitor*) OVERRIDE { }
 
 private:
-    virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const OVERRIDE FINAL;
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const OVERRIDE FINAL;
     double m_value;
 
-    InterpolableNumber(double value)
+    explicit InterpolableNumber(double value)
         : m_value(value)
-    { }
+    {
+    }
 
 };
 
 class InterpolableBool : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableBool> create(bool value)
+    static PassOwnPtrWillBeRawPtr<InterpolableBool> create(bool value)
     {
-        return adoptPtr(new InterpolableBool(value));
+        return adoptPtrWillBeNoop(new InterpolableBool(value));
     }
 
     virtual bool isBool() const OVERRIDE FINAL { return true; }
     bool value() const { return m_value; }
-    virtual PassOwnPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
+
+    virtual void trace(Visitor*) OVERRIDE { }
 
 private:
-    virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const OVERRIDE FINAL;
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const OVERRIDE FINAL;
     bool m_value;
 
-    InterpolableBool(bool value)
+    explicit InterpolableBool(bool value)
         : m_value(value)
-    { }
+    {
+    }
 
 };
 
 class InterpolableList : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableList> create(const InterpolableList &other)
+    static PassOwnPtrWillBeRawPtr<InterpolableList> create(const InterpolableList &other)
     {
-        return adoptPtr(new InterpolableList(other));
+        return adoptPtrWillBeNoop(new InterpolableList(other));
     }
 
-    static PassOwnPtr<InterpolableList> create(size_t size)
+    static PassOwnPtrWillBeRawPtr<InterpolableList> create(size_t size)
     {
-        return adoptPtr(new InterpolableList(size));
+        return adoptPtrWillBeNoop(new InterpolableList(size));
     }
 
     virtual bool isList() const OVERRIDE FINAL { return true; }
-    void set(size_t position, PassOwnPtr<InterpolableValue> value)
+    void set(size_t position, PassOwnPtrWillBeRawPtr<InterpolableValue> value)
     {
         ASSERT(position < m_size);
-        m_values.get()[position] = value;
+        m_values[position] = value;
     }
     const InterpolableValue* get(size_t position) const
     {
         ASSERT(position < m_size);
-        return m_values.get()[position].get();
+        return m_values[position].get();
     }
     size_t length() const { return m_size; }
-    virtual PassOwnPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(*this); }
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(*this); }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const OVERRIDE FINAL;
-    InterpolableList(size_t size)
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const OVERRIDE FINAL;
+    explicit InterpolableList(size_t size)
         : m_size(size)
     {
-        m_values = adoptArrayPtr(new OwnPtr<InterpolableValue>[size]);
+        m_values.reserveCapacity(m_size);
+        m_values.resize(m_size);
     }
 
     InterpolableList(const InterpolableList& other)
         : m_size(other.m_size)
     {
-        m_values = adoptArrayPtr(new OwnPtr<InterpolableValue>[m_size]);
+        m_values.reserveCapacity(m_size);
+        m_values.resize(m_size);
         for (size_t i = 0; i < m_size; i++)
-            set(i, other.m_values.get()[i]->clone());
+            set(i, other.m_values[i]->clone());
     }
 
     size_t m_size;
-    OwnPtr<OwnPtr<InterpolableValue>[]> m_values;
+    WillBeHeapVector<OwnPtrWillBeMember<InterpolableValue> > m_values;
 };
 
 // FIXME: Remove this when we can.
 class InterpolableAnimatableValue : public InterpolableValue {
 public:
-    static PassOwnPtr<InterpolableAnimatableValue> create(PassRefPtrWillBeRawPtr<AnimatableValue> value)
+    static PassOwnPtrWillBeRawPtr<InterpolableAnimatableValue> create(PassRefPtrWillBeRawPtr<AnimatableValue> value)
     {
-        return adoptPtr(new InterpolableAnimatableValue(value));
+        return adoptPtrWillBeNoop(new InterpolableAnimatableValue(value));
     }
 
     virtual bool isAnimatableValue() const OVERRIDE FINAL { return true; }
     AnimatableValue* value() const { return m_value.get(); }
-    virtual PassOwnPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> clone() const OVERRIDE FINAL { return create(m_value); }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    virtual PassOwnPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const OVERRIDE FINAL;
-    RefPtrWillBePersistent<AnimatableValue> m_value;
+    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const OVERRIDE FINAL;
+    RefPtrWillBeMember<AnimatableValue> m_value;
 
     InterpolableAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)
         : m_value(value)
-    { }
+    {
+    }
 };
 
 DEFINE_TYPE_CASTS(InterpolableNumber, InterpolableValue, value, value->isNumber(), value.isNumber());

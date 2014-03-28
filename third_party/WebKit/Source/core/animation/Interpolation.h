@@ -14,9 +14,10 @@ namespace WebCore {
 
 class StyleResolverState;
 
-class Interpolation : public RefCountedWillBeGarbageCollectedFinalized<Interpolation> {
+class Interpolation : public RefCountedWillBeGarbageCollected<Interpolation> {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(Interpolation);
 public:
-    static PassRefPtrWillBeRawPtr<Interpolation> create(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end)
+    static PassRefPtrWillBeRawPtr<Interpolation> create(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end)
     {
         return adoptRefWillBeNoop(new Interpolation(start, end));
     }
@@ -26,19 +27,17 @@ public:
     virtual bool isStyleInterpolation() const { return false; }
     virtual bool isLegacyStyleInterpolation() const { return false; }
 
-    virtual ~Interpolation() { }
-
-    virtual void trace(Visitor*) { }
+    virtual void trace(Visitor*);
 
 protected:
-    const OwnPtr<InterpolableValue> m_start;
-    const OwnPtr<InterpolableValue> m_end;
+    const OwnPtrWillBeMember<InterpolableValue> m_start;
+    const OwnPtrWillBeMember<InterpolableValue> m_end;
 
     mutable double m_cachedFraction;
     mutable int m_cachedIteration;
-    mutable OwnPtr<InterpolableValue> m_cachedValue;
+    mutable OwnPtrWillBeMember<InterpolableValue> m_cachedValue;
 
-    Interpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end);
+    Interpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end);
 
 private:
     InterpolableValue* getCachedValueForTesting() const { return m_cachedValue.get(); }
@@ -67,7 +66,7 @@ public:
 protected:
     CSSPropertyID m_id;
 
-    StyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
+    StyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
         : Interpolation(start, end)
         , m_id(id)
     {
@@ -93,7 +92,7 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    LegacyStyleInterpolation(PassOwnPtr<InterpolableValue> start, PassOwnPtr<InterpolableValue> end, CSSPropertyID id)
+    LegacyStyleInterpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, PassOwnPtrWillBeRawPtr<InterpolableValue> end, CSSPropertyID id)
         : StyleInterpolation(start, end, id)
     {
     }
