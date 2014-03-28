@@ -93,6 +93,8 @@
       'StorageClientImpl.h',
       'StorageQuotaClientImpl.cpp',
       'StorageQuotaClientImpl.h',
+      'TextFinder.cpp',
+      'TextFinder.h',
       'UserMediaClientImpl.cpp',
       'UserMediaClientImpl.h',
       'ValidationMessageClientImpl.cpp',
