@@ -1,32 +1,3 @@
-// FIXME: Delete this (tests should import their own keys).
-function importTestKeys()
-{
-    var data = asciiToUint8Array("16 bytes of key!");
-    var extractable = true;
-    var keyUsages = ['wrapKey', 'unwrapKey', 'encrypt', 'decrypt', 'sign', 'verify'];
-
-    var hmacPromise = crypto.subtle.importKey('raw', data, {name: 'hmac', hash: {name: 'sha-1'}}, extractable, keyUsages);
-    var aesCbcPromise = crypto.subtle.importKey('raw', data, {name: 'AES-CBC'}, extractable, keyUsages);
-    var aesCbcJustDecrypt = crypto.subtle.importKey('raw', data, {name: 'AES-CBC'}, false, ['decrypt']);
-    // FIXME: use AES-CTR key type once it's implemented
-    var aesCtrPromise = crypto.subtle.importKey('raw', data, {name: 'AES-CBC'}, extractable, keyUsages);
-    var aesGcmPromise = crypto.subtle.importKey('raw', data, {name: 'AES-GCM'}, extractable, keyUsages);
-    var rsaSsaSha1PublicPromise = crypto.subtle.importKey('spki', hexStringToUint8Array(kKeyData.rsa1.spki), {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}}, extractable, keyUsages);
-    var rsaSsaSha1PrivatePromise = crypto.subtle.importKey('pkcs8', hexStringToUint8Array(kKeyData.rsa1.pkcs8), {name: 'RSASSA-PKCS1-v1_5', hash: {name: 'sha-1'}}, extractable, keyUsages);
-
-    return Promise.all([hmacPromise, aesCbcPromise, aesCbcJustDecrypt, aesCtrPromise, aesGcmPromise, rsaSsaSha1PublicPromise, rsaSsaSha1PrivatePromise]).then(function(results) {
-        return {
-            hmacSha1: results[0],
-            aesCbc: results[1],
-            aesCbcJustDecrypt: results[2],
-            aesCtr: results[3],
-            aesGcm: results[4],
-            rsaSsaSha1Public: results[5],
-            rsaSsaSha1Private: results[6],
-        };
-    });
-}
-
 // Verifies that the given "bytes" holds the same value as "expectedHexString".
 // "bytes" can be anything recognized by "bytesToHexString()".
 function bytesShouldMatchHexString(testDescription, expectedHexString, bytes)
@@ -89,75 +60,9 @@ function asciiToUint8Array(str)
 
 function failAndFinishJSTest(error)
 {
-    if (error)
-       debug(error);
+    testFailed(error);
     finishJSTest();
 }
-
-// =====================================================
-// FIXME: Delete the addTask() functions (better to test results directly)
-// =====================================================
-
-numOutstandingTasks = 0;
-
-function addTask(promise)
-{
-    numOutstandingTasks++;
-
-    function taskFinished()
-    {
-        numOutstandingTasks--;
-        completeTestWhenAllTasksDone();
-    }
-
-    promise.then(taskFinished, taskFinished);
-}
-
-function completeTestWhenAllTasksDone()
-{
-    if (numOutstandingTasks == 0) {
-        finishJSTest();
-    }
-}
-
-function shouldRejectPromiseWithNull(code)
-{
-    var promise = eval(code);
-
-    function acceptCallback(result)
-    {
-        debug("FAIL: '" + code + "' accepted with " + result + " but should have been rejected");
-    }
-
-    function rejectCallback(result)
-    {
-        if (result == null)
-            debug("PASS: '" + code + "' rejected with null");
-        else
-            debug("FAIL: '" + code + "' rejected with " + result + " but was expecting null");
-    }
-
-    addTask(promise.then(acceptCallback, rejectCallback));
-}
-
-function shouldAcceptPromise(code)
-{
-    var promise = eval(code);
-
-    function acceptCallback(result)
-    {
-        debug("PASS: '" + code + "' accepted with " + result);
-    }
-
-    function rejectCallback(result)
-    {
-        debug("FAIL: '" + code + "' rejected with " + result);
-    }
-
-    addTask(promise.then(acceptCallback, rejectCallback));
-}
-
-// =====================================================
 
 // Returns a Promise for the cloned key.
 function cloneKey(key)
