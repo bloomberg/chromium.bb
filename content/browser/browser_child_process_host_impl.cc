@@ -144,9 +144,6 @@ void BrowserChildProcessHostImpl::Launch(
     switches::kTraceToConsole,
     switches::kV,
     switches::kVModule,
-#if defined(OS_POSIX)
-    switches::kChildCleanExit,
-#endif
 #if defined(OS_WIN)
     switches::kEnableHighResolutionTime,
 #endif

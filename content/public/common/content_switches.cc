@@ -1047,11 +1047,6 @@ const char kDisableCoreAnimationPlugins[] =
     "disable-core-animation-plugins";
 #endif
 
-#if defined(OS_POSIX)
-// Causes the child processes to cleanly exit via calling exit().
-const char kChildCleanExit[]                = "child-clean-exit";
-#endif
-
 // Don't dump stuff here, follow the same order as the header.
 
 }  // namespace switches
