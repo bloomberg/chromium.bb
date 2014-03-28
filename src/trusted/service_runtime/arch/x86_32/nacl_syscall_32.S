@@ -46,8 +46,8 @@
          * are still using a stack in untrusted memory, and we need to
          * figure out the per-thread secure stack first.
          */
-MACRO(syscallseg)
-MACROENTRY
+.macro syscallseg arg1, arg2, arg3, arg4
+DEFINE_GLOBAL_HIDDEN_LOCATION(\arg1):
         cld
         xor     %eax, %eax
         movw    %gs, %ax
@@ -63,10 +63,10 @@ MACROENTRY
          * jump into this code.
          */
         movl    %eax, %edx
-        andl    MACROIMMED(7), %edx  /* extract TI and RPL fields */
-        cmpl    MACROIMMED(7), %edx  /* make sure it's LDT, ring 3 */
+        andl    $7, %edx  /* extract TI and RPL fields */
+        cmpl    $7, %edx  /* make sure it's LDT, ring 3 */
         jne     1f
-        shr     MACROIMMED(3), %eax
+        shr     $3, %eax
         test    %eax, %eax  /* zero is illegal (and default) */
         jz      1f
 
@@ -93,7 +93,7 @@ MACROENTRY
         fnstcw  NACL_THREAD_CONTEXT_OFFSET_FCW(%edx)
         fldcw   NACL_THREAD_CONTEXT_OFFSET_SYS_FCW(%edx)
 
-.if MACROARG2
+.if \arg2
         /*
          * Save the SSE control word.  Then reload the system default
          * state to use while running trusted code.
@@ -101,7 +101,7 @@ MACROENTRY
         stmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%edx)
         ldmxcsr NACL_THREAD_CONTEXT_OFFSET_SYS_MXCSR(%edx)
 .endif
-DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG3): /* NaClSyscallSegRegsSaved */
+DEFINE_GLOBAL_HIDDEN_LOCATION(\arg3): /* NaClSyscallSegRegsSaved */
 
         /*
          * We do not save segment registers, which untrusted code is
@@ -142,10 +142,10 @@ DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG3): /* NaClSyscallSegRegsSaved */
          * If stack usage in the above code changes, modify initial %esp
          * computation -- see nacl_switch_to_app.c:NaClStartThreadInApp.
          */
-DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG4): /* NaClSyscallThreadCaptureFault */
+DEFINE_GLOBAL_HIDDEN_LOCATION(\arg4): /* NaClSyscallThreadCaptureFault */
 1:      hlt
         /* noret */
-ENDMACRO
+.endm
 
         /*
          * Note that long lines are required here because "\" does not

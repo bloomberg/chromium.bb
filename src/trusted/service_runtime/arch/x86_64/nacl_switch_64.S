@@ -23,15 +23,9 @@
          */
 
         .text
-#define MACRO(name)    .macro name arg1, arg2=0
-#define ENDMACRO       .endm
-#define MACROENTRY     DEFINE_GLOBAL_HIDDEN_FUNCTION(\arg1):
-#define MACROARG1      \arg1
-#define MACROARG2      \arg2
 
-
-MACRO(switcher)
-MACROENTRY
+.macro switcher arg1, arg2
+DEFINE_GLOBAL_HIDDEN_FUNCTION(\arg1):
 #if NACL_WINDOWS
         /* On Windows, 1st param is in %rcx. */
         mov     %rcx, %r11
@@ -97,7 +91,7 @@ MACROENTRY
         fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%r11)
         ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%r11)
 
-.if MACROARG2
+.if \arg2
         /*
          * Clear the AVX state that the "fxrstor" instruction doesn't cover.
          * We could roll them together by using the "xrstor" instruction, but
@@ -117,7 +111,7 @@ MACROENTRY
          */
         movq    NACL_THREAD_CONTEXT_OFFSET_NEW_PROG_CTR(%r11), %r11
         jmp     *%r11
-ENDMACRO
+.endm
 
         switcher NaClSwitchSSE, 0
         switcher NaClSwitchAVX, 1

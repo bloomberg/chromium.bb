@@ -263,21 +263,4 @@ EXTERN_C_END
 
 #endif
 
-#if defined(__ASSEMBLER__)
-/* TODO(thakis): Remove the clang branch once clang 202554 is everywhere. */
-#if defined(__clang__)
-# define MACRO(name)    .macro name arg1, arg2=0, arg3=0, arg4=0
-#else
-# define MACRO(name)    .macro name arg1, arg2=0, arg3=, arg4=
-#endif
-# define ENDMACRO       .endm
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_LOCATION(\arg1):
-# define MACROARG1      \arg1
-# define MACROARG2      \arg2
-# define MACROARG3      \arg3
-# define MACROARG4      \arg4
-# define MACROIMMED(x)  $##x
-
-#endif
-
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_X86_32_SEL_RT_32_H__ */

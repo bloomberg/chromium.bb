@@ -24,9 +24,9 @@
 #define DO_AVX 2
 #define DO_USING_ARG_IN_ECX 3
 
-MACRO(switcher)
-MACROENTRY
-.if MACROARG2 != DO_USING_ARG_IN_ECX
+.macro switcher arg1, arg2
+DEFINE_GLOBAL_HIDDEN_LOCATION(\arg1):
+.if \arg2 != DO_USING_ARG_IN_ECX
         /*
          * For DO_USING_ARG_IN_ECX don't touch the stack and get the
          * thread context from ecx instead of the stack.
@@ -54,7 +54,7 @@ MACROENTRY
          * code.  As well as being unnecessary, it's unsafe to use it here
          * because the 'call' below might use an untrusted stack.
          */
-.if MACROARG2 != DO_USING_ARG_IN_ECX
+.if \arg2 != DO_USING_ARG_IN_ECX
         /*
          * Clear the x87, MMX, and SSE state.
          * Then restore the untrusted code's x87 and SSE control words.
@@ -65,7 +65,7 @@ MACROENTRY
          * seems to be immeasurably small.
          */
         call __x86.get_pc_thunk.ax /* PIC support */
-.if MACROARG2 == DO_AVX || MACROARG2 == DO_SSE
+.if \arg2 == DO_AVX || \arg2 == DO_SSE
         fxrstor fxrstor_default_state-.(%eax)
         ldmxcsr NACL_THREAD_CONTEXT_OFFSET_MXCSR(%ecx)
 .else
@@ -73,7 +73,7 @@ MACROENTRY
 .endif
         fldcw   NACL_THREAD_CONTEXT_OFFSET_FCW(%ecx)
 
-.if MACROARG2 == DO_AVX
+.if \arg2 == DO_AVX
         /*
          * Clear the AVX state that the "fxrstor" instruction doesn't cover.
          * We could roll them together by using the "xrstor" instruction, but
@@ -87,7 +87,7 @@ MACROENTRY
 .endif
 
         ljmp    *NACL_THREAD_CONTEXT_OFFSET_SPRING_ADDR(%ecx)
-ENDMACRO
+.endm
 
         switcher NaClSwitchNoSSE, DO_NONE
         switcher NaClSwitchSSE, DO_SSE

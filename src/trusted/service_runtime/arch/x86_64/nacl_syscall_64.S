@@ -4,20 +4,6 @@
  * found in the LICENSE file.
  */
 
-#define MACRO(name)    .macro name arg1=0, arg2=0, arg3=0, arg4=0
-#define ENDMACRO       .endm
-#define MACROARG1      \arg1
-#define MACROARG2      \arg2
-#define MACROARG3      \arg3
-#define MACROARG4      \arg4
-
-/*
- * We must write x86 assembly immediates as "$ 0" rather than "$0" to
- * avoid this being treated as a macro argument by the Mac/Clang
- * assemblers.  We use DOLLAR below to make this more explicit.
- */
-#define DOLLAR $
-
 /*
  * This code gets executed when switching from a 64-bit nacl module to
  * the 64-bit service. NaClSyscallSeg is the lcall target from the
@@ -39,7 +25,7 @@
  *
  * If %rdx contains 0, then this is an invalid thread.
  */
-MACRO(get_tls)
+.macro get_tls
         /*
          * WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
          *
@@ -100,7 +86,7 @@ MACRO(get_tls)
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
-ENDMACRO
+.endm
 
 /*
  * On untrusted stack:
@@ -221,15 +207,15 @@ DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegRegsSaved):
          * 0x00 -0x18 rdi
          */
 
-MACRO(tls_syscall)
-DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG1):  /* Entry */
+.macro tls_syscall arg1, arg2, arg3, arg4
+DEFINE_GLOBAL_HIDDEN_LOCATION(\arg1):  /* Entry */
         get_tls
-        movl    MACROARG4(%rdx), %eax
+        movl    \arg4(%rdx), %eax
         /* sandbox the return, straight off the untrusted stack */
         pop     %rcx
-DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG2):  /* RspRestored */
-        addl    DOLLAR 31, %ecx
-        andl    DOLLAR 0xffffffe0, %ecx
+DEFINE_GLOBAL_HIDDEN_LOCATION(\arg2):  /* RspRestored */
+        addl    $31, %ecx
+        andl    $0xffffffe0, %ecx
         leaq    (%r15, %rcx), %r11
         /*
          * Set %rdx to zero so that we do not leak the address of the
@@ -240,8 +226,8 @@ DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG2):  /* RspRestored */
          */
         xorl    %edx, %edx
         jmp     *%r11
-DEFINE_GLOBAL_HIDDEN_LOCATION(MACROARG3):  /* End */
-ENDMACRO
+DEFINE_GLOBAL_HIDDEN_LOCATION(\arg3):  /* End */
+.endm
 
         /*
          * Note that long lines are required here because "\" does not
