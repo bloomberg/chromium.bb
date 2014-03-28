@@ -18,6 +18,8 @@ const int kMaxInputChannels = 2;
 // to resolve http://crbug.com/79936 for Windows platforms.  This then caused
 // breakage (very hard to repro bugs!) on other platforms: See
 // http://crbug.com/226327 and http://crbug.com/230972.
+// See also that the timer has been disabled on Mac now due to
+// crbug.com/357501.
 const int kTimerResetIntervalSeconds = 1;
 // We have received reports that the timer can be too trigger happy on some
 // Mac devices and the initial timer interval has therefore been increased
@@ -199,6 +201,13 @@ void AudioInputController::DoCreateForStream(
   }
 
   DCHECK(!no_data_timer_.get());
+
+#if defined(OS_MACOSX)
+  // This is a fix for crbug.com/357501.  The timer can trigger when closing
+  // the lid on Macs, which causes more problems than the timer fixes.
+  enable_nodata_timer = false;
+#endif
+
   if (enable_nodata_timer) {
     // Create the data timer which will call DoCheckForNoData(). The timer
     // is started in DoRecord() and restarted in each DoCheckForNoData()
