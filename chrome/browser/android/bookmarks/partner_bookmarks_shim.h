@@ -36,6 +36,14 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
   // Registers preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Disables the editing and stops any edits from being applied.
+  // The user will start to see the original (unedited) partner bookmarks.
+  // Edits are stored in the user profile, so once the editing is enabled
+  // ("not disabled") the user would see the edited partner bookmarks.
+  // This method should be called as early as possible: it does NOT send any
+  // notifications to already existing shims.
+  static void DisablePartnerBookmarksEditing();
+
   // Returns true if everything got loaded.
   bool IsLoaded() const;
 
@@ -45,6 +53,9 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
   // Returns true if a given bookmark is reachable (i.e. neither the bookmark,
   // nor any of its parents were "removed").
   bool IsReachable(const BookmarkNode* node) const;
+
+  // Returns true if a given node is editable and if editing is allowed.
+  bool IsEditable(const BookmarkNode* node) const;
 
   // Removes a given bookmark.
   // Makes the |node| (and, consequently, all its children) unreachable.
@@ -103,6 +114,9 @@ class PartnerBookmarksShim : public base::SupportsUserData::Data {
 
   // For testing: clears partner bookmark model data.
   static void ClearPartnerModelForTesting();
+
+  // For testing: re-enables partner bookmarks editing.
+  static void EnablePartnerBookmarksEditing();
 
  private:
   explicit PartnerBookmarksShim(PrefService* prefs);

@@ -278,7 +278,7 @@ bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {
   if (!IsEditBookmarksEnabled())
     return false;
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
-    return true;
+    return partner_bookmarks_shim_->IsEditable(node);
   return !managed_bookmarks_shim_->IsManagedBookmark(node);
 }
 
