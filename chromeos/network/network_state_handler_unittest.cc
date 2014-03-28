@@ -476,20 +476,6 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
       kShillManagerClientStubDefaultWireless));
-
-  // Request an update for all networks.
-  network_state_handler_->RequestUpdateForAllNetworks();
-  message_loop_.RunUntilIdle();
-  // kShillManagerClientStubDefaultWireless should now have 3 updates
-  EXPECT_EQ(3, test_observer_->PropertyUpdatesForService(
-      kShillManagerClientStubDefaultWireless));
-  // Other networks should have 2 updates (inital + request).
-  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
-      kShillManagerClientStubDefaultService));
-  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
-      kShillManagerClientStubWireless2));
-  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
-      kShillManagerClientStubCellular));
 }
 
 }  // namespace chromeos

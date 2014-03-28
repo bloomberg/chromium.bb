@@ -201,10 +201,10 @@ void ShillPropertyHandler::ConnectToBestServices() const {
 
 void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
                                              const std::string& path) {
-  VLOG(2) << "Request Properties: " << type << " : " << path;
   if (pending_updates_[type].find(path) != pending_updates_[type].end())
     return;  // Update already requested.
 
+  NET_LOG_DEBUG("Request Properties", path);
   pending_updates_[type].insert(path);
   if (type == ManagedState::MANAGED_TYPE_NETWORK ||
       type == ManagedState::MANAGED_TYPE_FAVORITE) {
@@ -344,7 +344,9 @@ void ShillPropertyHandler::UpdateProperties(ManagedState::ManagedType type,
   std::set<std::string>& requested_service_updates =
       requested_updates_[ManagedState::MANAGED_TYPE_NETWORK];  // For favorites
   std::set<std::string> new_requested_updates;
-  VLOG(2) << "Update Properties: " << type << " Entries: " << entries.GetSize();
+  NET_LOG_DEBUG(
+      base::StringPrintf("UpdateProperties: %" PRIuS, entries.GetSize()),
+      ManagedState::TypeToString(type));
   for (base::ListValue::const_iterator iter = entries.begin();
        iter != entries.end(); ++iter) {
     std::string path;
@@ -465,7 +467,8 @@ void ShillPropertyHandler::GetPropertiesCallback(
     const std::string& path,
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties) {
-  VLOG(2) << "GetPropertiesCallback: " << type << " : " << path;
+  NET_LOG_DEBUG("GetPropertiesCallback: " + ManagedState::TypeToString(type),
+                path);
   pending_updates_[type].erase(path);
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     // The shill service no longer exists.  This can happen when a network

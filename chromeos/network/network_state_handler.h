@@ -203,11 +203,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // properties actually changed.
   void RequestUpdateForNetwork(const std::string& service_path);
 
-  // Request an update for all existing NetworkState entries, e.g. after
-  // loading an ONC configuration file that may have updated one or more
-  // existing networks.
-  void RequestUpdateForAllNetworks();
-
   // Clear the last_error value for the NetworkState for |service_path|.
   void ClearLastErrorForNetwork(const std::string& service_path);
 

@@ -19,6 +19,19 @@ bool ManagedState::Matches(const NetworkTypePattern& pattern) const {
   return pattern.MatchesType(type());
 }
 
+// static
+std::string ManagedState::TypeToString(ManagedType type) {
+  switch (type) {
+    case MANAGED_TYPE_NETWORK:
+      return "Network";
+    case MANAGED_TYPE_FAVORITE:
+      return "Favorite";
+    case MANAGED_TYPE_DEVICE:
+      return "Device";
+  }
+  return "Unknown";
+}
+
 ManagedState::ManagedState(ManagedType type, const std::string& path)
     : managed_type_(type),
       path_(path),
@@ -107,7 +120,7 @@ bool ManagedState::GetStringValue(const std::string& key,
                                   std::string* out_value) {
   std::string new_value;
   if (!value.GetAsString(&new_value)) {
-    NET_LOG_ERROR("Error parsing state value", path() + "." + key);
+    NET_LOG_ERROR("Error parsing state: " + key, path());
     return false;
   }
   if (*out_value == new_value)

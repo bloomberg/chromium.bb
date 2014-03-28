@@ -304,7 +304,7 @@ void NetworkStateHandler::GetFavoriteListByType(const NetworkTypePattern& type,
        iter != favorite_list_.end(); ++iter) {
     const FavoriteState* favorite = (*iter)->AsFavoriteState();
     DCHECK(favorite);
-    if (favorite->update_received() && favorite->is_favorite() &&
+    if (favorite->update_received() && favorite->IsFavorite() &&
         favorite->Matches(type)) {
       list->push_back(favorite);
     }
@@ -319,7 +319,7 @@ const FavoriteState* NetworkStateHandler::GetFavoriteState(
     return NULL;
   const FavoriteState* favorite = managed->AsFavoriteState();
   DCHECK(favorite);
-  if (!favorite->update_received() || !favorite->is_favorite())
+  if (!favorite->update_received() || !favorite->IsFavorite())
     return NULL;
   return favorite;
 }
@@ -351,17 +351,6 @@ void NetworkStateHandler::RequestUpdateForNetwork(
   NET_LOG_EVENT("RequestUpdate", service_path);
   shill_property_handler_->RequestProperties(
       ManagedState::MANAGED_TYPE_NETWORK, service_path);
-}
-
-void NetworkStateHandler::RequestUpdateForAllNetworks() {
-  NET_LOG_EVENT("RequestUpdateForAllNetworks", "");
-  for (ManagedStateList::iterator iter = network_list_.begin();
-       iter != network_list_.end(); ++iter) {
-    ManagedState* network = *iter;
-    network->set_update_requested(true);
-    shill_property_handler_->RequestProperties(
-        ManagedState::MANAGED_TYPE_NETWORK, network->path());
-  }
 }
 
 void NetworkStateHandler::ClearLastErrorForNetwork(
@@ -483,8 +472,8 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
 
 void NetworkStateHandler::ProfileListChanged() {
   NET_LOG_EVENT("ProfileListChanged", "Re-Requesting Network Properties");
-  for (ManagedStateList::iterator iter = network_list_.begin();
-       iter != network_list_.end(); ++iter) {
+  for (ManagedStateList::iterator iter = favorite_list_.begin();
+       iter != favorite_list_.end(); ++iter) {
     shill_property_handler_->RequestProperties(
         ManagedState::MANAGED_TYPE_NETWORK, (*iter)->path());
   }
@@ -510,7 +499,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
   }
   managed->set_update_received();
 
-  std::string desc = GetManagedStateLogType(managed) + " PropertiesReceived";
+  std::string desc = GetManagedStateLogType(managed) + " Properties Received";
   NET_LOG_DEBUG(desc, GetManagedStateLogName(managed));
 
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
@@ -679,7 +668,7 @@ void NetworkStateHandler::ManagedStateListChanged(
     for (ManagedStateList::iterator iter = favorite_list_.begin();
          iter != favorite_list_.end(); ++iter) {
       FavoriteState* favorite = (*iter)->AsFavoriteState();
-      if (!favorite->is_favorite())
+      if (!favorite->IsFavorite())
         continue;
       if (favorite->IsPrivate())
         ++unshared;
