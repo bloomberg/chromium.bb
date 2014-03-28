@@ -247,11 +247,6 @@ bool RenderObject::isDescendantOf(const RenderObject* obj) const
     return false;
 }
 
-bool RenderObject::isBody() const
-{
-    return isHTMLBodyElement(node());
-}
-
 bool RenderObject::isHR() const
 {
     return isHTMLHRElement(node());

@@ -381,7 +381,8 @@ public:
     virtual bool isRenderScrollbarPart() const { return false; }
 
     bool isRoot() const { return document().documentElement() == m_node; }
-    bool isBody() const;
+    // isBody is called from RenderBox::styleWillChange and is thus quite hot.
+    bool isBody() const { return node() && node()->hasTagName(HTMLNames::bodyTag); }
     bool isHR() const;
     bool isLegend() const;
 

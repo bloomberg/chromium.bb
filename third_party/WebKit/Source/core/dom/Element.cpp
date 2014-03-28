@@ -2601,7 +2601,9 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId)
     if (isPseudoElement())
         return;
 
-    RefPtr<PseudoElement> element = document().ensureStyleResolver().createPseudoElementIfNeeded(*this, pseudoId);
+    // Document::ensureStyleResolver is not inlined and shows up on profiles, avoid it here.
+    StyleEngine* engine = document().styleEngine();
+    RefPtr<PseudoElement> element = engine->ensureResolver().createPseudoElementIfNeeded(*this, pseudoId);
     if (!element)
         return;
 
