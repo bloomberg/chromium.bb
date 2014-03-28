@@ -93,6 +93,8 @@ const char kChromeUIVersionURL[] = "chrome://version/";
 
 #if defined(OS_ANDROID)
 const char kChromeUINativeNewTabURL[] = "chrome-native://newtab/";
+const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
+const char kChromeUINativeRecentTabsURL[] = "chrome-native://recent-tabs/";
 const char kChromeUIWelcomeURL[] = "chrome://welcome/";
 #endif
 

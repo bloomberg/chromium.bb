@@ -173,6 +173,7 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
+#include "chrome/browser/android/new_tab_page_url_handler.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/browser/media/encrypted_media_message_filter_android.h"
@@ -2397,9 +2398,15 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
 
+#if defined(OS_ANDROID)
+  // Handler to rewrite chrome://newtab on Android.
+  handler->AddHandlerPair(&chrome::android::HandleAndroidNewTabURL,
+                          BrowserURLHandler::null_handler());
+#else
   // Handler to rewrite chrome://newtab for InstantExtended.
   handler->AddHandlerPair(&chrome::HandleNewTabURLRewrite,
                           &chrome::HandleNewTabURLReverseRewrite);
+#endif
 
   // chrome: & friends.
   handler->AddHandlerPair(&HandleWebUI, &HandleWebUIReverse);
