@@ -49,20 +49,24 @@ namespace WebCore {
 
 class RepeatEvent FINAL : public Event {
 public:
-    static PassRefPtr<RepeatEvent> create(const AtomicString& type, int repeat)
+    static PassRefPtrWillBeRawPtr<RepeatEvent> create(const AtomicString& type, int repeat)
     {
-        return adoptRef(new RepeatEvent(type, false, false, repeat));
+        return adoptRefWillBeRefCountedGarbageCollected(new RepeatEvent(type, false, false, repeat));
     }
 
     virtual ~RepeatEvent() { }
 
     int repeat() const { return m_repeat; }
+
+    virtual void trace(Visitor* visitor) { }
+
 protected:
     RepeatEvent(const AtomicString& type, bool canBubble, bool cancelable, int repeat = -1)
         : Event(type, canBubble, cancelable)
         , m_repeat(repeat)
     {
     }
+
 private:
     int m_repeat;
 };
