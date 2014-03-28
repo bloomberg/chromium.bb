@@ -91,7 +91,7 @@ namespace WebCore {
         ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState*);
 
         v8::Isolate* isolate() const { return m_isolate; }
-        DOMWrapperWorld& world() const { return *m_world; }
+        DOMWrapperWorld* world() const { return m_world.get(); }
         v8::Local<v8::Context> context() { return m_perContextData ? m_perContextData->context() : v8::Local<v8::Context>(); }
 
         // Send a notification about current thread is going to be idle.

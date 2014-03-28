@@ -170,7 +170,7 @@ namespace WebCore {
 
         virtual ObjectContentType objectContentType(const KURL&, const String& mimeType, bool shouldPreferPlugInsForImages) = 0;
 
-        virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld&) = 0;
+        virtual void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*) = 0;
         virtual void documentElementAvailable() = 0;
 
         virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) = 0;

@@ -76,7 +76,7 @@ public:
     {
         v8::AccessorGetterCallback getter = attribute.getter;
         v8::AccessorSetterCallback setter = attribute.setter;
-        if (DOMWrapperWorld::current(isolate).isMainWorld()) {
+        if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
             if (attribute.getterForMainWorld)
                 getter = attribute.getterForMainWorld;
             if (attribute.setterForMainWorld)

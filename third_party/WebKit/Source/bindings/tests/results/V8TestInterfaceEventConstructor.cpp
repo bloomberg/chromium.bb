@@ -272,7 +272,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     RefPtrWillBeRawPtr<TestInterfaceEventConstructor> event = TestInterfaceEventConstructor::create(type, eventInit, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
+    if (DOMWrapperWorld::current(isolate)->isIsolatedWorld()) {
         if (!initializedByEventConstructorReadonlyAnyAttribute.IsEmpty())
             event->setSerializedInitializedByEventConstructorReadonlyAnyAttribute(SerializedScriptValue::createAndSwallowExceptions(initializedByEventConstructorReadonlyAnyAttribute, isolate));
     }

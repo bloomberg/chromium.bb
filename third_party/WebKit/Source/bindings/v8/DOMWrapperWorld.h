@@ -69,25 +69,26 @@ public:
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
     static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds);
 
-    static DOMWrapperWorld& world(v8::Handle<v8::Context> context)
+    static DOMWrapperWorld* world(v8::Handle<v8::Context> context)
     {
         ASSERT(!context.IsEmpty());
         return V8PerContextData::world(context);
     }
 
-    static DOMWrapperWorld& current(v8::Isolate* isolate)
+    // Will return null if there is no DOMWrapperWorld for the current context.
+    static DOMWrapperWorld* current(v8::Isolate* isolate)
     {
         if (isMainThread() && worldOfInitializingWindow) {
             // It's possible that current() is being called while window is being initialized.
             // In order to make current() workable during the initialization phase,
             // we cache the world of the initializing window on worldOfInitializingWindow.
             // If there is no initiazing window, worldOfInitializingWindow is 0.
-            return *worldOfInitializingWindow;
+            return worldOfInitializingWindow;
         }
         return world(isolate->GetCurrentContext());
     }
 
-    static DOMWrapperWorld& mainWorld();
+    static DOMWrapperWorld* mainWorld();
 
     // Associates an isolated world (see above for description) with a security
     // origin. XMLHttpRequest instances used in that world will be considered

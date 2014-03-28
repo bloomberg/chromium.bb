@@ -549,7 +549,7 @@ LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
     return 0;
 }
 
-v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& world)
+v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* world)
 {
     ASSERT(context);
     if (context->isDocument()) {
@@ -562,7 +562,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
     return v8::Local<v8::Context>();
 }
 
-v8::Local<v8::Context> toV8Context(v8::Isolate* isolate, LocalFrame* frame, DOMWrapperWorld& world)
+v8::Local<v8::Context> toV8Context(v8::Isolate* isolate, LocalFrame* frame, DOMWrapperWorld* world)
 {
     if (!frame)
         return v8::Local<v8::Context>();

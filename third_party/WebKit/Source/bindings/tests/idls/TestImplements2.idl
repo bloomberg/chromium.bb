@@ -29,8 +29,8 @@
  */
 
 [
-    ImplementedAs=TestImplements2Implementation, // Conflicts with default implements class name
-    NoInterfaceObject, // Always used on target of 'implements'
+    ImplementedAs=TestImplements2Implementation,  // Conflicts with default implements class name
+    NoInterfaceObject,
     RuntimeEnabled=Implements2FeatureName,
 ] interface TestImplements2 {
     static attribute DOMString implements2StaticStringAttribute;

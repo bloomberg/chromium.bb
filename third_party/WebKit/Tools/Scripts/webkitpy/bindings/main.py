@@ -54,12 +54,14 @@ NOTRY=true
 TBR=(someone in Source/bindings/OWNERS or WATCHLISTS:bindings)
 """
 
-DEPENDENCY_IDL_FILES = frozenset([
+DEPENDENCY_IDL_FILES = set([
+    'SupportTestPartialInterface.idl',
     'TestImplements.idl',
     'TestImplements2.idl',
     'TestImplements3.idl',
     'TestPartialInterface.idl',
-    'TestPartialInterface2.idl',
+    'TestPartialInterfacePython.idl',
+    'TestPartialInterfacePython2.idl',
 ])
 
 

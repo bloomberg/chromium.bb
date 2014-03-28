@@ -36,7 +36,7 @@ namespace WebCore {
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         {{return_default}};
 

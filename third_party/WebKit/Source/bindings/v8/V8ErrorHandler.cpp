@@ -56,7 +56,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* cont
     ErrorEvent* errorEvent = static_cast<ErrorEvent*>(event);
 
     v8::Isolate* isolate = toV8Context(context, world())->GetIsolate();
-    if (errorEvent->world() && errorEvent->world() != &world())
+    if (errorEvent->world() && errorEvent->world() != world())
         return v8::Null(isolate);
 
     v8::Local<v8::Object> listener = getListenerObject(context);
@@ -72,7 +72,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* cont
         v8::Handle<v8::Value> parameters[5] = { v8String(isolate, errorEvent->message()), v8String(isolate, errorEvent->filename()), v8::Integer::New(isolate, errorEvent->lineno()), v8::Integer::New(isolate, errorEvent->colno()), error };
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
-        if (DOMWrapperWorld::current(isolate).isWorkerWorld())
+        if (DOMWrapperWorld::current(isolate)->isWorkerWorld())
             returnValue = V8ScriptRunner::callFunction(callFunction, context, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate);
         else
             returnValue = ScriptController::callFunction(context, callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters, isolate);

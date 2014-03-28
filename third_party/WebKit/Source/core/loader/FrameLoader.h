@@ -147,7 +147,7 @@ public:
 
     String userAgent(const KURL&) const;
 
-    void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld&);
+    void dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*);
     void dispatchDidClearWindowObjectsInAllWorlds();
     void dispatchDocumentElementAvailable();
 

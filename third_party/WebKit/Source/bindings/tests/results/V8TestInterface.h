@@ -7,9 +7,8 @@
 #ifndef V8TestInterface_h
 #define V8TestInterface_h
 
-#if ENABLE(CONDITION)
-#include "V8TestInterfaceEmpty.h"
-#include "bindings/tests/idls/TestInterfaceImplementation.h"
+#if ENABLE(Condition1) || ENABLE(Condition2)
+#include "bindings/tests/idls/TestInterface.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -22,77 +21,119 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::Object> findInstanceInPrototypeChain(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate*);
-    static TestInterfaceImplementation* toNative(v8::Handle<v8::Object> object)
+    static TestInterface* toNative(v8::Handle<v8::Object> object)
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
-    static TestInterfaceImplementation* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
+    static TestInterface* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
     static void visitDOMWrapper(void*, const v8::Persistent<v8::Object>&, v8::Isolate*);
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static void implementsCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+#if ENABLE(CONDITION_PARTIAL)
+    static void supplementalMethod3MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+#endif // ENABLE(CONDITION_PARTIAL)
+    static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void namedPropertySetterCustom(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline void* toInternalPointer(TestInterfaceImplementation* impl)
+    static inline void* toInternalPointer(TestInterface* impl)
     {
-        return V8TestInterfaceEmpty::toInternalPointer(impl);
+        return impl;
     }
 
-    static inline TestInterfaceImplementation* fromInternalPointer(void* object)
+    static inline TestInterface* fromInternalPointer(void* object)
     {
-        return static_cast<TestInterfaceImplementation*>(V8TestInterfaceEmpty::fromInternalPointer(object));
+        return static_cast<TestInterface*>(object);
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceImplementation*, v8::Isolate*);
-    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterface*, v8::Isolate*);
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
+    friend v8::Handle<v8::Object> wrap(TestInterface*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterface>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
-class TestInterfaceImplementation;
-v8::Handle<v8::Value> toV8(TestInterfaceImplementation*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-
-template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceImplementation* impl)
+inline v8::Handle<v8::Object> wrap(TestInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+    ASSERT(impl);
+    ASSERT(!DOMDataStore::containsWrapper<V8TestInterface>(impl, isolate));
+    return V8TestInterface::createWrapper(impl, creationContext, isolate);
 }
 
-template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestInterfaceImplementation* impl)
+inline v8::Handle<v8::Value> toV8(TestInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+    if (UNLIKELY(!impl))
+        return v8::Null(isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterface>(impl, isolate);
+    if (!wrapper.IsEmpty())
+        return wrapper;
+    return wrap(impl, creationContext, isolate);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface* impl)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFromWrapper<V8TestInterface>(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestInterface* impl)
+{
+    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate())->isMainWorld());
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestInterface>(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Value> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfaceImplementation* impl, Wrappable*)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface* impl, Wrappable* wrappable)
 {
-     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFromWrapperFast<V8TestInterface>(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+        return;
+    v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
 }
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr<TestInterfaceImplementation> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(PassRefPtr<TestInterface> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceImplementation> impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestInterface> impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceImplementation> impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestInterface> impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfaceImplementation> impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestInterface> impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
 }
-#endif // ENABLE(CONDITION)
+#endif // ENABLE(Condition1) || ENABLE(Condition2)
 #endif // V8TestInterface_h

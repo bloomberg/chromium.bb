@@ -34,6 +34,6 @@
 [
     DependentLifetime,
 ] interface SVGTestInterface {
-    [Reflect] attribute DOMString type; // Test SVGNames namespace
+    [Reflect] attribute DOMString type;  // Test SVGNames namespace
     // [Immutable] attribute SVGPoint immutablePoint; // [Immutable] is a nop
 };

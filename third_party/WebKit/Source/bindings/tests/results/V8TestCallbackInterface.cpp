@@ -37,7 +37,7 @@ void V8TestCallbackInterface::voidMethod()
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -54,7 +54,7 @@ bool V8TestCallbackInterface::booleanMethod()
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return true;
 
@@ -71,7 +71,7 @@ void V8TestCallbackInterface::voidMethodBooleanArg(bool boolArg)
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -94,7 +94,7 @@ void V8TestCallbackInterface::voidMethodSequenceArg(const Vector<RefPtr<TestInte
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -117,7 +117,7 @@ void V8TestCallbackInterface::voidMethodFloatArg(float floatArg)
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -140,7 +140,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -163,7 +163,7 @@ void V8TestCallbackInterface::voidMethodTestInterfaceEmptyStringArg(TestInterfac
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -192,7 +192,7 @@ void V8TestCallbackInterface::callbackWithThisValueVoidMethodStringArg(ScriptVal
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -222,7 +222,7 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedSequenceArg(const 
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 
@@ -245,7 +245,7 @@ void V8TestCallbackInterface::voidMethodWillBeGarbageCollectedArrayArg(const Wil
 
     v8::HandleScope handleScope(m_isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return;
 

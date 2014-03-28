@@ -116,7 +116,7 @@ V8PerContextData* V8CustomElementLifecycleCallbacks::creationContextData()
     if (!executionContext())
         return 0;
 
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
     if (context.IsEmpty())
         return 0;
 
@@ -160,7 +160,7 @@ void V8CustomElementLifecycleCallbacks::created(Element* element)
     element->setCustomElementState(Element::Upgraded);
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 
@@ -212,7 +212,7 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
         return;
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 
@@ -247,7 +247,7 @@ void V8CustomElementLifecycleCallbacks::call(const ScopedPersistent<v8::Function
         return;
 
     v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::Context> context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> context = toV8Context(executionContext(), m_world.get());
     if (context.IsEmpty())
         return;
 

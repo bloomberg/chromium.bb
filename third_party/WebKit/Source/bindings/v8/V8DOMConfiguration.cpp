@@ -41,7 +41,7 @@ void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instan
 
 void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, const AccessorConfiguration* accessors, size_t accessorCount, v8::Isolate* isolate)
 {
-    bool isMainWorld = DOMWrapperWorld::current(isolate).isMainWorld();
+    bool isMainWorld = DOMWrapperWorld::current(isolate)->isMainWorld();
     for (size_t i = 0; i < accessorCount; ++i) {
         v8::FunctionCallback getterCallback = accessors[i].getter;
         v8::FunctionCallback setterCallback = accessors[i].setter;
@@ -78,7 +78,7 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
 
 void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate)
 {
-    bool isMainWorld = DOMWrapperWorld::current(isolate).isMainWorld();
+    bool isMainWorld = DOMWrapperWorld::current(isolate)->isMainWorld();
     for (size_t i = 0; i < callbackCount; ++i) {
         v8::FunctionCallback callback = callbacks[i].callback;
         if (isMainWorld && callbacks[i].callbackForMainWorld)

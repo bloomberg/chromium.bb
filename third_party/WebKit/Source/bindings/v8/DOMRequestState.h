@@ -65,7 +65,7 @@ public:
     v8::Local<v8::Context> context()
     {
         ASSERT(m_executionContext);
-        return toV8Context(m_executionContext, *m_world);
+        return toV8Context(m_executionContext, m_world.get());
     }
 
     v8::Isolate* isolate() const

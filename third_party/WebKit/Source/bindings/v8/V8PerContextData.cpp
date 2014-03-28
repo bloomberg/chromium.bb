@@ -68,7 +68,7 @@ public:
 
     V8PerContextData* perContextData() const { return m_perContextData; }
     void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
-    DOMWrapperWorld& world() const { return *m_world; }
+    DOMWrapperWorld* world() const { return m_world.get(); }
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
 
 private:
@@ -78,7 +78,6 @@ private:
         , m_perContextData(0)
         , m_world(world)
     {
-        ASSERT(m_world);
         m_context.setWeak(this, &V8PerContextDataHolder::weakCallback);
         context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
     }
@@ -131,9 +130,10 @@ V8PerContextData* V8PerContextData::from(v8::Handle<v8::Context> context)
     return V8PerContextDataHolder::from(context)->perContextData();
 }
 
-DOMWrapperWorld& V8PerContextData::world(v8::Handle<v8::Context> context)
+DOMWrapperWorld* V8PerContextData::world(v8::Handle<v8::Context> context)
 {
-    DOMWrapperWorld& world = V8PerContextDataHolder::from(context)->world();
+    DOMWrapperWorld* world = V8PerContextDataHolder::from(context)->world();
+    ASSERT(world);
     return world;
 }
 

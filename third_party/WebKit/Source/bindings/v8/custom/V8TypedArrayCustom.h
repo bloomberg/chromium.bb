@@ -91,7 +91,7 @@ public:
     template<typename CallbackInfo>
     static void v8SetReturnValueForMainWorld(const CallbackInfo& info, TypedArray* impl)
     {
-        ASSERT(DOMWrapperWorld::current(info.GetIsolate()).isMainWorld());
+        ASSERT(DOMWrapperWorld::current(info.GetIsolate())->isMainWorld());
         if (UNLIKELY(!impl)) {
             v8SetReturnValueNull(info);
             return;

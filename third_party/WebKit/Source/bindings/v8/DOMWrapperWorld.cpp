@@ -60,11 +60,11 @@ DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
 {
 }
 
-DOMWrapperWorld& DOMWrapperWorld::mainWorld()
+DOMWrapperWorld* DOMWrapperWorld::mainWorld()
 {
     ASSERT(isMainThread());
     DEFINE_STATIC_REF(DOMWrapperWorld, cachedMainWorld, (DOMWrapperWorld::create(MainWorldId, mainWorldExtensionGroup)));
-    return *cachedMainWorld;
+    return cachedMainWorld;
 }
 
 typedef HashMap<int, DOMWrapperWorld*> WorldMap;
@@ -78,7 +78,7 @@ static WorldMap& isolatedWorldMap()
 void DOMWrapperWorld::allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld> >& worlds)
 {
     ASSERT(isMainThread());
-    worlds.append(&mainWorld());
+    worlds.append(mainWorld());
     WorldMap& isolatedWorlds = isolatedWorldMap();
     for (WorldMap::iterator it = isolatedWorlds.begin(); it != isolatedWorlds.end(); ++it)
         worlds.append(it->value);

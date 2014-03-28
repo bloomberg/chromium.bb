@@ -662,7 +662,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
           thus passing it around would cause leakage.
        2) Errors cannot be cloned (or serialized):
        http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#safe-passing-of-structured-data #}
-    if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
+    if (DOMWrapperWorld::current(isolate)->isIsolatedWorld()) {
         {% for attribute in any_type_attributes %}
         if (!{{attribute.name}}.IsEmpty())
             event->setSerialized{{attribute.name | blink_capitalize}}(SerializedScriptValue::createAndSwallowExceptions({{attribute.name}}, isolate));
@@ -975,7 +975,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% filter conditional(method.conditional_string) %}
     {% if method.is_do_not_check_security %}
     {% if method.is_per_world_bindings %}
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
+    if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
         {{install_do_not_check_security_signature(method, 'ForMainWorld')}}
     } else {
         {{install_do_not_check_security_signature(method)}}
@@ -985,7 +985,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endif %}
     {% else %}{# is_do_not_check_security #}
     {% if method.is_per_world_bindings %}
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
+    if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
         {% filter runtime_enabled(method.runtime_enabled_function) %}
         {{install_custom_signature(method, 'ForMainWorld')}}
         {% endfilter %}
@@ -1203,7 +1203,7 @@ EventTarget* {{v8_class}}::toEventTarget(v8::Handle<v8::Object> object)
 {% if interface_name == 'Window' %}
 v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* isolate)
 {
-    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
+    if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
@@ -1244,8 +1244,8 @@ v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creation
     {% if is_document %}
     if (wrapper.IsEmpty())
         return wrapper;
-    DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
-    if (world.isMainWorld()) {
+    DOMWrapperWorld* world = DOMWrapperWorld::current(isolate);
+    if (world->isMainWorld()) {
         if (LocalFrame* frame = impl->frame())
             frame->script().windowShell(world)->updateDocumentWrapper(wrapper);
     }

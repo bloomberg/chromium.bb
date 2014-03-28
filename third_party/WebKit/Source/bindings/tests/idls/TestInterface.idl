@@ -1,71 +1,43 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
+ * 1.  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// Test for interface extended attributes and special operations.
-// Also used as a target by TestObject
-
+// This IDL file is for testing the bindings code generator and for tracking
+// changes in its ouput.
 [
     ActiveDOMObject,
-    Conditional=CONDITION,
-    Custom=LegacyCallAsFunction|ToV8,
-    DoNotCheckConstants,
-    ImplementedAs=TestInterfaceImplementation,
-    RuntimeEnabled=FeatureName,
-    SetWrapperReferenceTo(TestInterface referencedName),
-    StrictTypeChecking,
-] interface TestInterface : TestInterfaceEmpty {
-    // members needed to test [ImplementedAs], as this affect attribute
-    // configuration and method configuration, and [StrictTypeChecking]
-    // constants also needed for [DoNotCheckConstants]
-    const unsigned long UNSIGNED_LONG = 0;
-    [Reflect=CONST_CPP] const short CONST_JAVASCRIPT = 1;
-
-    attribute TestInterface testInterfaceAttribute; // Self-referential interface type with [ImplementedAs]
-    attribute TestImplementedAsConstructor testImplementedAsConstructorAttribute;
-    static attribute DOMString staticStringAttribute;
-
-    void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
-    [PerWorldBindings] attribute DOMString perWorldBindingsStringAttribute;
-    [PerWorldBindings] void voidMethod();
-
-    // Anonymous indexed property operations
-    getter DOMString (unsigned long index);
-    setter DOMString (unsigned long index, DOMString value);
-    deleter boolean (unsigned long index);
-
-    // Anonymous named property operations
-    getter DOMString (DOMString name);
-    setter DOMString (DOMString name, DOMString value);
-    deleter boolean (DOMString name);
+    Conditional=Condition1|Condition2,
+    ConstructorCallWith=ExecutionContext,
+    Constructor(DOMString str1, [Default=Undefined] optional DOMString str2),
+    RaisesException=Constructor,
+    SetWrapperReferenceTo(TestObject referencedName),
+] interface TestInterface {
+    [ImplementedAs=getItem] getter (Node or NodeList) namedItem(DOMString name);
+    [Custom] setter Node (DOMString name, Node value);
 };
 
 TestInterface implements TestImplements;
-TestInterface implements TestImplements2;
-TestInterface implements TestImplements3;

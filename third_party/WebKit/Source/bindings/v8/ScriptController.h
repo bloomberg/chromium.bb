@@ -77,8 +77,8 @@ public:
     ~ScriptController();
 
     bool initializeMainWorld();
-    V8WindowShell* windowShell(DOMWrapperWorld&);
-    V8WindowShell* existingWindowShell(DOMWrapperWorld&);
+    V8WindowShell* windowShell(DOMWrapperWorld*);
+    V8WindowShell* existingWindowShell(DOMWrapperWorld*);
 
     // Evaluate JavaScript in the main world.
     void executeScriptInMainWorld(const String&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);

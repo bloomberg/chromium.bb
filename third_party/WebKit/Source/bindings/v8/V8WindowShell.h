@@ -55,7 +55,7 @@ class SecurityOrigin;
 // persist between navigations.
 class V8WindowShell {
 public:
-    static PassOwnPtr<V8WindowShell> create(LocalFrame*, DOMWrapperWorld&, v8::Isolate*);
+    static PassOwnPtr<V8WindowShell> create(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
     v8::Local<v8::Context> context() const { return m_perContextData ? m_perContextData->context() : v8::Local<v8::Context>(); }
 
@@ -78,7 +78,7 @@ public:
     void clearForNavigation();
     void clearForClose();
 
-    DOMWrapperWorld& world() { return *m_world; }
+    DOMWrapperWorld* world() { return m_world.get(); }
 
 private:
     V8WindowShell(LocalFrame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);

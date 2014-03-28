@@ -67,7 +67,7 @@ public:
     }
 
     static V8PerContextData* from(v8::Handle<v8::Context>);
-    static DOMWrapperWorld& world(v8::Handle<v8::Context>);
+    static DOMWrapperWorld* world(v8::Handle<v8::Context>);
 
     ~V8PerContextData();
 

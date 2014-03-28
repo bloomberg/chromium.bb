@@ -51,7 +51,7 @@ DOMDataStore::~DOMDataStore()
 
 DOMDataStore& DOMDataStore::current(v8::Isolate* isolate)
 {
-    return DOMWrapperWorld::current(isolate).domDataStore();
+    return DOMWrapperWorld::world(isolate->GetCurrentContext())->domDataStore();
 }
 
 } // namespace WebCore

@@ -78,9 +78,9 @@ static void setInjectedScriptContextDebugId(v8::Handle<v8::Context> targetContex
     V8PerContextDebugData::setContextDebugData(targetContext, "injected", debugId);
 }
 
-PassOwnPtr<V8WindowShell> V8WindowShell::create(LocalFrame* frame, DOMWrapperWorld& world, v8::Isolate* isolate)
+PassOwnPtr<V8WindowShell> V8WindowShell::create(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)
 {
-    return adoptPtr(new V8WindowShell(frame, &world, isolate));
+    return adoptPtr(new V8WindowShell(frame, world, isolate));
 }
 
 V8WindowShell::V8WindowShell(LocalFrame* frame, PassRefPtr<DOMWrapperWorld> world, v8::Isolate* isolate)

@@ -47,7 +47,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), m_world.get());
     if (v8Context.IsEmpty())
         return true;
 

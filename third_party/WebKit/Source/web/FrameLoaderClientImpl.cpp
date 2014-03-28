@@ -110,10 +110,10 @@ FrameLoaderClientImpl::~FrameLoaderClientImpl()
 {
 }
 
-void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld& world)
+void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld* world)
 {
     if (m_webFrame->client()) {
-        m_webFrame->client()->didClearWindowObject(m_webFrame, world.worldId());
+        m_webFrame->client()->didClearWindowObject(m_webFrame, world->worldId());
         Document* document = m_webFrame->frame()->document();
         if (document) {
             WheelController::from(*document);

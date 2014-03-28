@@ -55,7 +55,7 @@ public:
     // Notifies the WebView delegate that the JS window object has been cleared,
     // giving it a chance to bind native objects to the window before script
     // parsing begins.
-    virtual void dispatchDidClearWindowObjectInWorld(WebCore::DOMWrapperWorld&) OVERRIDE;
+    virtual void dispatchDidClearWindowObjectInWorld(WebCore::DOMWrapperWorld*) OVERRIDE;
     virtual void documentElementAvailable() OVERRIDE;
 
     virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) OVERRIDE;

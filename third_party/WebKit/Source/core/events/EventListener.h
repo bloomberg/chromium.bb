@@ -44,6 +44,7 @@ namespace WebCore {
         virtual void handleEvent(ExecutionContext*, Event*) = 0;
         virtual bool wasCreatedFromMarkup() const { return false; }
         virtual bool belongsToTheCurrentWorld() const { return false; }
+        virtual DOMWrapperWorld* world() const { return 0; }
 
         bool isAttribute() const { return virtualisAttribute(); }
         Type type() const { return m_type; }

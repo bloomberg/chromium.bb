@@ -67,7 +67,7 @@ ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourc
     }
 
     m_world = DOMWrapperWorld::ensureIsolatedWorld(ScriptPreprocessorIsolatedWorldId, DOMWrapperWorld::mainWorldExtensionGroup);
-    v8::Local<v8::Context> context = toV8Context(m_isolate, frame, *m_world);
+    v8::Local<v8::Context> context = toV8Context(m_isolate, frame, m_world.get());
 
     m_context.set(m_isolate, context);
     m_preprocessorFunction.set(m_isolate, v8::Handle<v8::Function>::Cast(preprocessorFunction.v8Value()));

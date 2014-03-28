@@ -28,10 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This IDL file is for testing the front end, not code generator,
-// as typedefs are resolved during IR construction (after parsing,
-// before code generation), and thus the code generator never sees them.
-
 typedef float                      Float;
 typedef unsigned long long         ULongLong;
 typedef TestInterfaceEmpty         TestInterfaceEmptyType;
@@ -40,22 +36,31 @@ typedef DOMString                  String;
 typedef DOMString[]                ArrayOfStrings;
 typedef TestCallbackInterface      TestCallbackInterfaceType;
 typedef TestSubObjConstructor      T;
+typedef DOMException               E;
 typedef (Foo or Bar)               FooOrBar;
 
 [
-    Constructor(String stringArg),
+    Constructor(String hello),
 ] interface TestTypedefs {
-    attribute ULongLong uLongLongAttribute;
-    attribute T tAttribute;
+    attribute ULongLong unsignedLongLongAttr;
 
-    void voidMethodArrayOfLongsArg(optional ArrayOfLongs arrayOfLongsArg);
+    attribute T TestSubObj;
 
-    void voidMethodFloatArgStringArg(Float floatArg, String stringArg);
-    void voidMethodTestCallbackInterfaceTypeArg(TestCallbackInterfaceType testCallbackInterfaceTypeArg);
+    [StrictTypeChecking] void func(optional ArrayOfLongs x);
 
-    ULongLong uLongLongMethodTestInterfaceEmptyTypeSequenceArg(sequence<TestInterfaceEmptyType> testInterfaceEmptyTypeSequenceArg);
+    void setShadow(Float width, Float height, float blur, [StrictTypeChecking] optional String color, optional Float alpha);
+    void voidMethodTestCallbackInterfaceArgument(TestCallbackInterfaceType testCallbackInterface);
+
+    ULongLong methodWithSequenceArg(sequence<TestInterfaceEmptyType> sequenceArg);
     FooOrBar fooOrBarMethod();
 
-    ArrayOfStrings arrayOfStringsMethodArrayOfStringsArg(ArrayOfStrings arrayOfStringsArg);
-    String[] stringArrayMethodStringArrayArg(String[] stringArrayArg);
+    [RaisesException] ArrayOfStrings stringArrayFunction(ArrayOfStrings values);
+    [RaisesException] String[] stringArrayFunction2(String[] values);
+
+    // Exceptions
+    [RaisesException] void methodWithException();
+    [RaisesException=Getter] attribute long attrWithGetterException;
+    [RaisesException=Setter] attribute long attrWithSetterException;
+    [RaisesException=Getter] attribute DOMString stringAttrWithGetterException;
+    [RaisesException=Setter] attribute DOMString stringAttrWithSetterException;
 };

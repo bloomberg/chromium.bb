@@ -7,6 +7,7 @@
 #ifndef V8TestObject_h
 #define V8TestObject_h
 
+#include "V8EventTarget.h"
 #include "bindings/tests/idls/TestObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -27,34 +28,22 @@ public:
     static TestObject* toNativeWithTypeCheck(v8::Isolate*, v8::Handle<v8::Value>);
     static const WrapperTypeInfo wrapperTypeInfo;
     static void derefObject(void*);
-    static void customVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#if ENABLE(CONDITION)
-    static void conditionalConditionCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#endif // ENABLE(CONDITION)
-    static void customObjectAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-    static void customObjectAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-    static void customGetterLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-    static void customGetterReadonlyObjectAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-    static void customSetterLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-#if ENABLE(CONDITION)
-    static void customLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-#endif // ENABLE(CONDITION)
-#if ENABLE(CONDITION)
-    static void customLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-#endif // ENABLE(CONDITION)
-    static void customImplementedAsLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-    static void customImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-    static void customGetterImplementedAsLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-    static void customSetterImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
+    static EventTarget* toEventTarget(v8::Handle<v8::Object>);
+    static void customMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void customMethodWithArgsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void classMethod2MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void customAttrAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customAttrAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
+    static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
+    static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
     static inline void* toInternalPointer(TestObject* impl)
     {
-        return impl;
+        return V8EventTarget::toInternalPointer(impl);
     }
 
     static inline TestObject* fromInternalPointer(void* object)
     {
-        return static_cast<TestObject*>(object);
+        return static_cast<TestObject*>(V8EventTarget::fromInternalPointer(object));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestObject*, v8::Isolate*);
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
@@ -97,7 +86,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestObject* impl)
 template<typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestObject* impl)
 {
-    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate()).isMainWorld());
+    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate())->isMainWorld());
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
         return;

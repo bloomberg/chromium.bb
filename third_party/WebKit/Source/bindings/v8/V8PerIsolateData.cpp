@@ -95,7 +95,7 @@ void V8PerIsolateData::dispose(v8::Isolate* isolate)
 
 V8PerIsolateData::DOMTemplateMap& V8PerIsolateData::currentDOMTemplateMap()
 {
-    if (DOMWrapperWorld::current(m_isolate).isMainWorld())
+    if (DOMWrapperWorld::current(m_isolate)->isMainWorld())
         return m_domTemplateMapForMainWorld;
     return m_domTemplateMapForNonMainWorld;
 }
