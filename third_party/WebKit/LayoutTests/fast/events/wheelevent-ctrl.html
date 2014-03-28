@@ -12,13 +12,16 @@ var testDiv;
 function runTest() {
 
     testDiv = document.getElementById('target');
-    testDiv.addEventListener('wheel', wheelHandler);
+    document.addEventListener('wheel', wheelHandler);
     if (!window.eventSender) {
         debug("FAIL: This test requires window.eventSender.");
         return;
     }
 
-    // Verify that wheel with ctrl modifier is fired property but doesn't scroll.
+    debug('Test mousewheel events over scrollable div');
+
+    debug('With ctrl modifier set');
+    wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
     eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey");
     shouldBe("wheelEventCount", "1");
@@ -26,13 +29,36 @@ function runTest() {
     shouldBeTrue("ctrlKey");
     shouldBe("testDiv.scrollTop", "0");
 
-    // Verify that without the ctrl modifier we scroll as normal.
+    debug('Without ctrl');
+    wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
     eventSender.mouseScrollBy(0, scrollAmount, false, true);
-    shouldBe("wheelEventCount", "2");
+    shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeFalse("ctrlKey");
     shouldBe("testDiv.scrollTop", "deltaY");
+
+    debug('');
+    debug('Test mousewheel events over the document');
+    testDiv = document.getElementById('target2');
+
+    debug('With ctrl modifier set');
+    wheelEventCount = 0;
+    eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey");
+    shouldBe("wheelEventCount", "1");
+    shouldEvaluateTo("deltaY", expectedDeltaY);
+    shouldBeTrue("ctrlKey");
+    shouldBe("document.body.scrollTop", "0");
+    
+    debug('Now without ctrl');
+    wheelEventCount = 0;
+    eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
+    eventSender.mouseScrollBy(0, scrollAmount, false, true);
+    shouldBe("wheelEventCount", "1");
+    shouldEvaluateTo("deltaY", expectedDeltaY);
+    shouldBeFalse("ctrlKey");
+    shouldBe("window.scrollY", "deltaY");
 }
 
 var wheelEventCount = 0;
@@ -52,6 +78,10 @@ function wheelHandler(e) {
         Scroll mouse wheel over here<br/><br/><br/><br/>
         END
     </div>
+    <div id="target2" style="border:solid 1px blue;">
+       And scroll the document here
+    </div>
+    <div style="height: 2000px;"></div>
 </span>
 <div id="console"></div>
 <script>
