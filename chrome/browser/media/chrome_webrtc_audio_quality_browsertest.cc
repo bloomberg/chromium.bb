@@ -94,7 +94,7 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase,
  public:
   WebRtcAudioQualityBrowserTest() {}
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
+    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
@@ -137,10 +137,10 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase,
               ExecuteJavascript("negotiateCall()", from_tab));
 
     // Ensure the call gets up on both sides.
-    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
-                                 "active", from_tab));
-    EXPECT_TRUE(PollingWaitUntil("getPeerConnectionReadyState()",
-                                 "active", to_tab));
+    EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
+                                       "active", from_tab));
+    EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
+                                       "active", to_tab));
   }
 
   base::FilePath CreateTemporaryWaveFile() {
@@ -152,7 +152,7 @@ class WebRtcAudioQualityBrowserTest : public WebRtcTestBase,
     return wav_filename;
   }
 
-  PeerConnectionServerRunner peerconnection_server_;
+  test::PeerConnectionServerRunner peerconnection_server_;
 };
 
 class AudioRecorder {
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcAudioQualityBrowserTest,
   // because the ready state is ok on both sides. We sleep a bit between call
   // establishment and playing to avoid cutting of the beginning of the audio
   // file.
-  SleepInJavascript(left_tab, 2000);
+  test::SleepInJavascript(left_tab, 2000);
 
   base::FilePath recording = CreateTemporaryWaveFile();
 

@@ -15,7 +15,74 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "content/public/test/browser_test_utils.h"
 
+namespace test {
+
+const base::FilePath::CharType kReferenceVideosDirName[] =
+    FILE_PATH_LITERAL("webrtc.DEPS/webrtc_videos");
+const base::FilePath::CharType kReferenceFileName360p[] =
+    FILE_PATH_LITERAL("reference_video_640x360_30fps");
+const base::FilePath::CharType kYuvFileExtension[] = FILE_PATH_LITERAL("yuv");
+const base::FilePath::CharType kY4mFileExtension[] = FILE_PATH_LITERAL("y4m");
+
+// This message describes how to modify your .gclient to get the reference
+// video files downloaded for you.
+static const char kAdviseOnGclientSolution[] =
+    "You need to add this solution to your .gclient to run this test:\n"
+    "{\n"
+    "  \"name\"        : \"webrtc.DEPS\",\n"
+    "  \"url\"         : \"svn://svn.chromium.org/chrome/trunk/deps/"
+    "third_party/webrtc/webrtc.DEPS\",\n"
+    "}";
+
 const int kDefaultPollIntervalMsec = 250;
+
+base::FilePath GetReferenceVideosDir() {
+  // FilePath does not tolerate relative paths, and we want to hang the
+  // kReferenceVideosDirName at the same level as Chromium codebase, so we
+  // need to subtract the trailing .../src manually from the path.
+  const size_t src_token_length = 3u;
+  const base::FilePath::StringType src_token(FILE_PATH_LITERAL("src"));
+
+  base::FilePath source_dir;
+  PathService::Get(base::DIR_SOURCE_ROOT, &source_dir);
+
+  base::FilePath::StringType path = source_dir.value();
+  DCHECK_GT(path.size(), src_token_length);
+  std::size_t found = path.rfind(src_token);
+  if (found != std::string::npos)
+    path.erase(found, src_token_length);
+  return base::FilePath(path).Append(kReferenceVideosDirName);
+}
+
+bool HasReferenceFilesInCheckout() {
+  if (!base::PathExists(GetReferenceVideosDir())) {
+    LOG(ERROR)
+        << "Cannot find the working directory for the reference video "
+        << "files, expected at " << GetReferenceVideosDir().value() << ". " <<
+        kAdviseOnGclientSolution;
+    return false;
+  }
+  base::FilePath webrtc_reference_video_yuv = GetReferenceVideosDir()
+      .Append(kReferenceFileName360p).AddExtension(kYuvFileExtension);
+  if (!base::PathExists(webrtc_reference_video_yuv)) {
+    LOG(ERROR)
+        << "Missing YUV reference video to be used for quality"
+        << " comparison, expected at " << webrtc_reference_video_yuv.value()
+        << ". " << kAdviseOnGclientSolution;
+    return false;
+  }
+
+  base::FilePath webrtc_reference_video_y4m = GetReferenceVideosDir()
+      .Append(kReferenceFileName360p).AddExtension(kY4mFileExtension);
+  if (!base::PathExists(webrtc_reference_video_y4m)) {
+    LOG(ERROR)
+        << "Missing Y4M reference video to be used for quality"
+        << " comparison, expected at "<< webrtc_reference_video_y4m.value()
+        << ". " << kAdviseOnGclientSolution;
+    return false;
+  }
+  return true;
+}
 
 bool SleepInJavascript(content::WebContents* tab_contents, int timeout_msec) {
   const std::string javascript = base::StringPrintf(
@@ -62,9 +129,10 @@ bool PollingWaitUntil(const std::string& javascript,
       LOG(ERROR) << "Failed to sleep.";
     }
   }
-  LOG(ERROR) << "Timed out while waiting for " << javascript <<
-      " to evaluate to " << evaluates_to << "; last result was '" << result <<
-      "'";
+  LOG(ERROR)
+      << "Timed out while waiting for " << javascript
+      << " to evaluate to " << evaluates_to << "; last result was '" << result
+      << "'";
   return false;
 }
 
@@ -86,8 +154,9 @@ bool PeerConnectionServerRunner::Start() {
   peerconnection_server = peerconnection_server.Append(kServerExecutable);
 
   if (!base::PathExists(peerconnection_server)) {
-    LOG(ERROR) << "Missing " << kServerExecutable << ". You must build "
-        "it so it ends up next to the browser test binary.";
+    LOG(ERROR)
+        << "Missing " << kServerExecutable << ". You must build "
+        << "it so it ends up next to the browser test binary.";
     return false;
   }
 
@@ -103,7 +172,7 @@ bool PeerConnectionServerRunner::Stop() {
   return base::KillProcess(server_pid_, 0, false);
 }
 
-void PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem() {
+void PeerConnectionServerRunner::KillAllPeerConnectionServers() {
   if (!base::KillProcesses(kServerExecutable, -1, NULL)) {
     LOG(ERROR) << "Failed to kill instances of " << kServerExecutable << ".";
     return;
@@ -111,3 +180,5 @@ void PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem() {
   base::WaitForProcessesToExit(kServerExecutable,
                                base::TimeDelta::FromSeconds(5), NULL);
 }
+
+}  // namespace test
