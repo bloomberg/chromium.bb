@@ -1155,7 +1155,3 @@ crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.htm
 crbug.com/355489 media/activation-behavior.html [ Pass Failure Timeout ]
 
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
-
-crbug.com/357291 fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
-crbug.com/357291 fast/repaint/table-outer-border.html [ NeedsRebaseline ]
-crbug.com/357291 fast/repaint/table-row-bg-change.html [ NeedsRebaseline ]
