@@ -62,6 +62,7 @@ Gamepad status=stable
 HTMLImports status=test
 HighResolutionTimeInWorkers status=stable
 IMEAPI status=experimental
+ImageDataConstructor status=experimental
 IndexedDBExperimental status=experimental
 InputModeAttribute status=experimental
 LangAttributeAwareFormControlUI

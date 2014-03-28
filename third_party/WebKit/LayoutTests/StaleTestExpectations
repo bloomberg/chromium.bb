@@ -206,3 +206,7 @@ webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html [ WontFix ]
 
 # Don't want to just delete this test since the virtual/softwarecompositing version passes.
 crbug.com/245630 compositing/overflow/overflow-positioning.html [ WontFix ]
+
+# Out-of-date imported test; spec now supports ImageData constructors.
+crbug.com/338804 canvas/philip/tests/2d.imageData.object.ctor.html [ WontFix ]
+crbug.com/338804 virtual/gpu/canvas/philip/tests/2d.imageData.object.ctor.html [ WontFix ]

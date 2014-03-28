@@ -37,10 +37,14 @@
 
 namespace WebCore {
 
+class ExceptionState;
+
 class ImageData : public RefCounted<ImageData>, public ScriptWrappable {
 public:
     static PassRefPtr<ImageData> create(const IntSize&);
     static PassRefPtr<ImageData> create(const IntSize&, PassRefPtr<Uint8ClampedArray>);
+    static PassRefPtr<ImageData> create(unsigned width, unsigned height, ExceptionState&);
+    static PassRefPtr<ImageData> create(Uint8ClampedArray*, unsigned width, unsigned height, ExceptionState&);
 
     IntSize size() const { return m_size; }
     int width() const { return m_size.width(); }

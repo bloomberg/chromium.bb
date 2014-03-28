@@ -29,6 +29,10 @@
 #include "config.h"
 #include "core/html/ImageData.h"
 
+#include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
+
 namespace WebCore {
 
 PassRefPtr<ImageData> ImageData::create(const IntSize& size)
@@ -55,6 +59,69 @@ PassRefPtr<ImageData> ImageData::create(const IntSize& size, PassRefPtr<Uint8Cla
         return nullptr;
 
     return adoptRef(new ImageData(size, byteArray));
+}
+
+PassRefPtr<ImageData> ImageData::create(unsigned width, unsigned height, ExceptionState& exceptionState)
+{
+    if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
+        exceptionState.throwTypeError("Illegal constructor");
+        return nullptr;
+    }
+    if (!width || !height) {
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s is zero or not a number.", width ? "height" : "width"));
+        return nullptr;
+    }
+
+    Checked<unsigned, RecordOverflow> dataSize = 4;
+    dataSize *= width;
+    dataSize *= height;
+    if (dataSize.hasOverflowed()) {
+        exceptionState.throwDOMException(IndexSizeError, "The requested image size exceeds the supported range.");
+        return nullptr;
+    }
+
+    RefPtr<ImageData> imageData = adoptRef(new ImageData(IntSize(width, height)));
+    imageData->data()->zeroFill();
+    return imageData.release();
+}
+
+PassRefPtr<ImageData> ImageData::create(Uint8ClampedArray* data, unsigned width, unsigned height, ExceptionState& exceptionState)
+{
+    if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
+        exceptionState.throwTypeError("Illegal constructor");
+        return nullptr;
+    }
+    if (!data) {
+        exceptionState.throwTypeError("Expected a Uint8ClampedArray as first argument.");
+        return nullptr;
+    }
+    if (!width) {
+        exceptionState.throwDOMException(IndexSizeError, "The source width is zero or not a number.");
+        return nullptr;
+    }
+
+    unsigned length = data->length();
+    if (!length) {
+        exceptionState.throwDOMException(IndexSizeError, "The input data has a zero byte length.");
+        return nullptr;
+    }
+    if (length % 4) {
+        exceptionState.throwDOMException(IndexSizeError, "The input data byte length is not a multiple of 4.");
+        return nullptr;
+    }
+    length /= 4;
+    if (length % width) {
+        exceptionState.throwDOMException(IndexSizeError, "The input data byte length is not a multiple of (4 * width).");
+        return nullptr;
+    }
+    if (!height) {
+        height = length / width;
+    } else if (height != length / width) {
+        exceptionState.throwDOMException(IndexSizeError, "The input data byte length is not equal to (4 * width * height).");
+        return nullptr;
+    }
+
+    return adoptRef(new ImageData(IntSize(width, height), data));
 }
 
 ImageData::ImageData(const IntSize& size)
