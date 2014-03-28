@@ -31,7 +31,7 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
   virtual ~WebRtcDisableEncryptionFlagBrowserTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
+    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
@@ -44,7 +44,7 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
   }
 
  protected:
-  test::PeerConnectionServerRunner peerconnection_server_;
+  PeerConnectionServerRunner peerconnection_server_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRtcDisableEncryptionFlagBrowserTest);

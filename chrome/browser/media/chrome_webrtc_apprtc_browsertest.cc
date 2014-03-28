@@ -119,7 +119,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     // Apprtc will set remoteVideo.style.opacity to 1 when the call comes up.
     std::string javascript =
         "window.domAutomationController.send(remoteVideo.style.opacity)";
-    return test::PollingWaitUntil(javascript, "1", tab_contents);
+    return PollingWaitUntil(javascript, "1", tab_contents);
   }
 
   bool EvalInJavascriptFile(content::WebContents* tab_contents,

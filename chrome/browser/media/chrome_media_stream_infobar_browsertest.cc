@@ -119,9 +119,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamInfoBarTest,
 
   // Should fail with permission denied right away with no infobar popping up.
   GetUserMedia(tab_contents, kAudioVideoCallConstraints);
-  EXPECT_TRUE(test::PollingWaitUntil("obtainGetUserMediaResult()",
-                                     kFailedWithPermissionDeniedError,
-                                     tab_contents));
+  EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
+                               kFailedWithPermissionDeniedError,
+                               tab_contents));
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(tab_contents);
   EXPECT_EQ(0u, infobar_service->infobar_count());
