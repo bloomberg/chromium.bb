@@ -79,10 +79,16 @@ Frame::Frame(FrameHost* host, HTMLFrameOwnerElement* ownerElement)
 #ifndef NDEBUG
     frameCounter.increment();
 #endif
+
+    if (this->ownerElement()) {
+        page()->incrementSubframeCount();
+        this->ownerElement()->setContentFrame(*this);
+    }
 }
 
 Frame::~Frame()
 {
+    disconnectOwnerElement();
     setDOMWindow(nullptr);
 
     // FIXME: We should not be doing all this work inside the destructor
@@ -177,6 +183,20 @@ bool Frame::isMainFrame() const
 {
     Page* page = this->page();
     return page && this == page->mainFrame();
+}
+
+void Frame::disconnectOwnerElement()
+{
+    // FIXME: The semantics here are specific to LocalFrame and will need to change
+    // when RemoteFrames no longer have Documents.
+    if (ownerElement()) {
+        if (Document* doc = document())
+            doc->topDocument().clearAXObjectCache();
+        ownerElement()->clearContentFrame();
+        if (page())
+            page()->decrementSubframeCount();
+    }
+    m_ownerElement = 0;
 }
 
 } // namespace WebCore

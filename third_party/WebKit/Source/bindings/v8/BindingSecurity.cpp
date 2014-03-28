@@ -80,14 +80,18 @@ static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, Se
     return false;
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, LocalFrame* target, SecurityReportingOption reportingOption)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, SecurityReportingOption reportingOption)
 {
-    return target && canAccessDocument(isolate, target->document(), reportingOption);
+    if (!target || !target->isLocalFrame())
+        return false;
+    return canAccessDocument(isolate, toLocalFrame(target)->document(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, LocalFrame* target, ExceptionState& exceptionState)
+bool BindingSecurity::shouldAllowAccessToFrame(v8::Isolate* isolate, Frame* target, ExceptionState& exceptionState)
 {
-    return target && canAccessDocument(isolate, target->document(), exceptionState);
+    if (!target || !target->isLocalFrame())
+        return false;
+    return canAccessDocument(isolate, toLocalFrame(target)->document(), exceptionState);
 }
 
 bool BindingSecurity::shouldAllowAccessToNode(v8::Isolate* isolate, Node* target, ExceptionState& exceptionState)

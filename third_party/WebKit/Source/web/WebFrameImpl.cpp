@@ -728,7 +728,7 @@ WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
     Node* node = xpathResult->iterateNext(IGNORE_EXCEPTION);
     if (!node || !node->isFrameOwnerElement())
         return 0;
-    return fromFrame(toHTMLFrameOwnerElement(node)->contentFrame());
+    return fromFrame(toLocalFrame(toHTMLFrameOwnerElement(node)->contentFrame()));
 }
 
 WebDocument WebFrameImpl::document() const
@@ -1777,7 +1777,7 @@ WebFrameImpl* WebFrameImpl::fromFrameOwnerElement(Element* element)
     // FIXME: Why do we check specifically for <iframe> and <frame> here? Why can't we get the WebFrameImpl from an <object> element, for example.
     if (!isHTMLFrameElementBase(element))
         return 0;
-    return fromFrame(toHTMLFrameElementBase(element)->contentFrame());
+    return fromFrame(toLocalFrame(toHTMLFrameElementBase(element)->contentFrame()));
 }
 
 WebViewImpl* WebFrameImpl::viewImpl() const

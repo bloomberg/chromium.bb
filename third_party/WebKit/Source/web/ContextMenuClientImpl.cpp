@@ -195,17 +195,17 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
 
     // Compute edit flags.
     data.editFlags = WebContextMenuData::CanDoNone;
-    if (m_webView->focusedWebCoreFrame()->editor().canUndo())
+    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canUndo())
         data.editFlags |= WebContextMenuData::CanUndo;
-    if (m_webView->focusedWebCoreFrame()->editor().canRedo())
+    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canRedo())
         data.editFlags |= WebContextMenuData::CanRedo;
-    if (m_webView->focusedWebCoreFrame()->editor().canCut())
+    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canCut())
         data.editFlags |= WebContextMenuData::CanCut;
-    if (m_webView->focusedWebCoreFrame()->editor().canCopy())
+    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canCopy())
         data.editFlags |= WebContextMenuData::CanCopy;
-    if (m_webView->focusedWebCoreFrame()->editor().canPaste())
+    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canPaste())
         data.editFlags |= WebContextMenuData::CanPaste;
-    if (m_webView->focusedWebCoreFrame()->editor().canDelete())
+    if (toLocalFrame(m_webView->focusedWebCoreFrame())->editor().canDelete())
         data.editFlags |= WebContextMenuData::CanDelete;
     // We can always select all...
     data.editFlags |= WebContextMenuData::CanSelectAll;
@@ -322,9 +322,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
             }
         } else {
             data.isSpellCheckingEnabled =
-                m_webView->focusedWebCoreFrame()->spellChecker().isContinuousSpellCheckingEnabled();
+                toLocalFrame(m_webView->focusedWebCoreFrame())->spellChecker().isContinuousSpellCheckingEnabled();
             // Spellchecking might be enabled for the field, but could be disabled on the node.
-            if (m_webView->focusedWebCoreFrame()->spellChecker().isSpellCheckingEnabledInFocusedNode()) {
+            if (toLocalFrame(m_webView->focusedWebCoreFrame())->spellChecker().isSpellCheckingEnabledInFocusedNode()) {
                 data.misspelledWord = selectMisspelledWord(selectedFrame);
                 if (m_webView->spellCheckClient()) {
                     int misspelledOffset, misspelledLength;

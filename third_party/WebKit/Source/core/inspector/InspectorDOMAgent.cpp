@@ -1533,7 +1533,8 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
 
         if (node->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwner = toHTMLFrameOwnerElement(node);
-            if (LocalFrame* frame = frameOwner->contentFrame())
+            LocalFrame* frame = (frameOwner->contentFrame() && frameOwner->contentFrame()->isLocalFrame()) ? toLocalFrame(frameOwner->contentFrame()) : 0;
+            if (frame)
                 value->setFrameId(m_pageAgent->frameId(frame));
             if (Document* doc = frameOwner->contentDocument())
                 value->setContentDocument(buildObjectForNode(doc, 0, nodesMap));

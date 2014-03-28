@@ -103,10 +103,6 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, HTMLFr
     , m_orientation(0)
     , m_inViewSourceMode(false)
 {
-    if (this->ownerElement()) {
-        page()->incrementSubframeCount();
-        this->ownerElement()->setContentFrame(*this);
-    }
 }
 
 PassRefPtr<LocalFrame> LocalFrame::create(FrameLoaderClient* client, FrameHost* host, HTMLFrameOwnerElement* ownerElement)
@@ -123,8 +119,6 @@ LocalFrame::~LocalFrame()
     setView(nullptr);
     loader().clear();
     setDOMWindow(nullptr);
-
-    disconnectOwnerElement();
 }
 
 bool LocalFrame::inScope(TreeScope* scope) const
@@ -279,18 +273,6 @@ void LocalFrame::detachFromFrameHost()
     // We should never be detatching the page during a Layout.
     RELEASE_ASSERT(!m_view || !m_view->isInPerformLayout());
     Frame::detachFromFrameHost();
-}
-
-void LocalFrame::disconnectOwnerElement()
-{
-    if (ownerElement()) {
-        if (Document* doc = document())
-            doc->topDocument().clearAXObjectCache();
-        ownerElement()->clearContentFrame();
-        if (page())
-            page()->decrementSubframeCount();
-    }
-    m_ownerElement = 0;
 }
 
 String LocalFrame::documentTypeString() const

@@ -64,8 +64,7 @@
 
 namespace WebCore {
 class DataObject;
-class Color;
-class LocalFrame;
+class Frame;
 class GraphicsLayerFactory;
 class HistoryItem;
 class HitTestResult;
@@ -313,7 +312,7 @@ public:
         return m_lastMouseDownPoint;
     }
 
-    WebCore::LocalFrame* focusedWebCoreFrame() const;
+    WebCore::Frame* focusedWebCoreFrame() const;
 
     // Returns the currently focused Element or null if no element has focus.
     WebCore::Element* focusedElement() const;

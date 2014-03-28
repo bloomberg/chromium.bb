@@ -805,7 +805,7 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
             // Reveal the current selection
             if (LocalFrame* editedFrame = document->frame()) {
                 if (Page* page = editedFrame->page())
-                    page->focusController().focusedOrMainFrame()->selection().revealSelection(ScrollAlignment::alignCenterIfNeeded);
+                    toLocalFrame(page->focusController().focusedOrMainFrame())->selection().revealSelection(ScrollAlignment::alignCenterIfNeeded);
             }
         }
     }

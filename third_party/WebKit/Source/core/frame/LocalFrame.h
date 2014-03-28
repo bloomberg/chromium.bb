@@ -73,9 +73,6 @@ namespace WebCore {
 
         virtual void willDetachFrameHost() OVERRIDE;
         virtual void detachFromFrameHost() OVERRIDE;
-        void disconnectOwnerElement();
-
-        HTMLFrameOwnerElement* ownerElement() const;
 
         virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>) OVERRIDE;
         FrameView* view() const;
@@ -215,11 +212,6 @@ namespace WebCore {
         return *m_inputMethodController;
     }
 
-    inline HTMLFrameOwnerElement* LocalFrame::ownerElement() const
-    {
-        return m_ownerElement;
-    }
-
     inline bool LocalFrame::inViewSourceMode() const
     {
         return m_inViewSourceMode;
@@ -244,5 +236,10 @@ namespace WebCore {
     DEFINE_TYPE_CASTS(LocalFrame, Frame, localFrame, localFrame->isLocalFrame(), localFrame.isLocalFrame());
 
 } // namespace WebCore
+
+// During refactoring, there are some places where we need to do type conversions that
+// will not be needed once all instances of LocalFrame and RemoteFrame are sorted out.
+// At that time this #define will be removed and all the uses of it will need to be corrected.
+#define toLocalFrameTemporary toLocalFrame
 
 #endif // LocalFrame_h

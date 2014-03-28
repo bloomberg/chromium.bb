@@ -51,7 +51,7 @@ RenderPart* HTMLFrameOwnerElement::renderPart() const
     return toRenderPart(renderer());
 }
 
-void HTMLFrameOwnerElement::setContentFrame(LocalFrame& frame)
+void HTMLFrameOwnerElement::setContentFrame(Frame& frame)
 {
     // Make sure we will not end up with two frames referencing the same owner element.
     ASSERT(!m_contentFrame || m_contentFrame->ownerElement() != this);
@@ -80,9 +80,10 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
     // unload event in the subframe which could execute script that could then
     // reach up into this document and then attempt to look back down. We should
     // see if this behavior is really needed as Gecko does not allow this.
-    if (LocalFrame* frame = contentFrame()) {
-        RefPtr<LocalFrame> protect(frame);
-        frame->loader().frameDetached();
+    if (Frame* frame = contentFrame()) {
+        RefPtr<Frame> protect(frame);
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->loader().frameDetached();
         frame->disconnectOwnerElement();
     }
 }
@@ -124,8 +125,9 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionStat
 bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
 {
     RefPtr<LocalFrame> parentFrame = document().frame();
-    if (contentFrame()) {
-        contentFrame()->navigationScheduler().scheduleLocationChange(&document(), url.string(), Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
+    // FIXME(kenrb): The necessary semantics for RemoteFrames have not been worked out yet, but this will likely need some logic to handle them.
+    if (contentFrame() && contentFrame()->isLocalFrame()) {
+        toLocalFrame(contentFrame())->navigationScheduler().scheduleLocationChange(&document(), url.string(), Referrer(document().outgoingReferrer(), document().referrerPolicy()), lockBackForwardList);
         return true;
     }
 

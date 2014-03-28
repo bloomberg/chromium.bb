@@ -986,7 +986,8 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& ex
 
         if (source->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwnerElement = toHTMLFrameOwnerElement(source.get());
-            if (frame() && frame()->tree().isDescendantOf(frameOwnerElement->contentFrame())) {
+            // FIXME(kenrb): the downcast can be removed when the FrameTree supports RemoteFrames.
+            if (frame() && frame()->tree().isDescendantOf(toLocalFrameTemporary(frameOwnerElement->contentFrame()))) {
                 exceptionState.throwDOMException(HierarchyRequestError, "The node provided is a frame which contains this document.");
                 return nullptr;
             }
@@ -5443,9 +5444,9 @@ bool Document::hasFocus() const
     Page* page = this->page();
     if (!page)
         return false;
-    if (!page->focusController().isActive() || !page->focusController().isFocused())
+    if (!page->focusController().isActive() || !page->focusController().isFocused() || !page->focusController().focusedFrame()->isLocalFrame())
         return false;
-    if (LocalFrame* focusedFrame = page->focusController().focusedFrame()) {
+    if (LocalFrame* focusedFrame = toLocalFrame(page->focusController().focusedFrame())) {
         if (focusedFrame->tree().isDescendantOf(frame()))
             return true;
     }

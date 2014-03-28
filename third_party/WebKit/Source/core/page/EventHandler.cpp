@@ -1732,7 +1732,7 @@ bool EventHandler::handlePasteGlobalSelection(const PlatformMouseEvent& mouseEve
 
     if (!m_frame->page())
         return false;
-    LocalFrame* focusFrame = m_frame->page()->focusController().focusedOrMainFrame();
+    Frame* focusFrame = m_frame->page()->focusController().focusedOrMainFrame();
     // Do not paste here if the focus was moved somewhere else.
     if (m_frame == focusFrame && m_frame->editor().behavior().supportsGlobalSelection())
         return m_frame->editor().command("PasteGlobalSelection").execute();
@@ -1765,7 +1765,11 @@ static bool targetIsFrame(Node* target, LocalFrame*& frame)
     if (!isHTMLFrameElementBase(target))
         return false;
 
-    frame = toHTMLFrameElementBase(target)->contentFrame();
+    // Cross-process drag and drop is not yet supported.
+    if (toHTMLFrameElementBase(target)->contentFrame() && !toHTMLFrameElementBase(target)->contentFrame()->isLocalFrame())
+        return false;
+
+    frame = toLocalFrame(toHTMLFrameElementBase(target)->contentFrame());
     return true;
 }
 

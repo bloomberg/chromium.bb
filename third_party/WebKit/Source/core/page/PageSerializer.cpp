@@ -153,16 +153,17 @@ void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, con
         return;
 
     const HTMLFrameOwnerElement& frameOwner = toHTMLFrameOwnerElement(element);
-    LocalFrame* frame = frameOwner.contentFrame();
-    if (!frame)
+    Frame* frame = frameOwner.contentFrame();
+    // FIXME: RemoteFrames not currently supported here.
+    if (!frame || !frame->isLocalFrame())
         return;
 
-    KURL url = frame->document()->url();
+    KURL url = toLocalFrame(frame)->document()->url();
     if (url.isValid() && !url.isBlankURL())
         return;
 
     // We need to give a fake location to blank frames so they can be referenced by the serialized frame.
-    url = m_serializer->urlForBlankFrame(frame);
+    url = m_serializer->urlForBlankFrame(toLocalFrame(frame));
     appendAttribute(out, element, Attribute(frameOwnerURLAttributeName(frameOwner), AtomicString(url.string())), namespaces);
 }
 

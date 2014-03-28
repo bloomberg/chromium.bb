@@ -70,6 +70,10 @@ public:
 
     bool isMainFrame() const;
 
+    void disconnectOwnerElement();
+
+    HTMLFrameOwnerElement* ownerElement() const;
+
     // FIXME: DOMWindow and Document should both be moved to LocalFrame
     // after RemoteFrame is complete enough to exist without them.
     virtual void setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow>);
@@ -110,6 +114,12 @@ inline DOMWindow* Frame::domWindow() const
 {
     return m_domWindow.get();
 }
+
+inline HTMLFrameOwnerElement* Frame::ownerElement() const
+{
+    return m_ownerElement;
+}
+
 } // namespace WebCore
 
 #endif // Frame_h

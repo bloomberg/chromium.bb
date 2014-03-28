@@ -71,7 +71,7 @@ inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& orig
     const char scriptToSetUpPagePopupController[] = "<script>window.pagePopupController = parent.internals.pagePopupController;</script>";
     RefPtr<SharedBuffer> data = SharedBuffer::create(scriptToSetUpPagePopupController, sizeof(scriptToSetUpPagePopupController));
     m_popupClient->writeDocument(data.get());
-    m_iframe->contentFrame()->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
+    toLocalFrame(m_iframe->contentFrame())->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
 }
 
 PassRefPtr<MockPagePopup> MockPagePopup::create(PagePopupClient* client, const IntRect& originBoundsInRootView, LocalFrame* mainFrame)

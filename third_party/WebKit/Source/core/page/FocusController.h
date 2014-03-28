@@ -37,7 +37,7 @@ namespace WebCore {
 struct FocusCandidate;
 class Document;
 class Element;
-class LocalFrame;
+class Frame;
 class HTMLFrameOwnerElement;
 class HTMLShadowElement;
 class IntRect;
@@ -66,14 +66,14 @@ class FocusController {
 public:
     static PassOwnPtr<FocusController> create(Page*);
 
-    void setFocusedFrame(PassRefPtr<LocalFrame>);
-    LocalFrame* focusedFrame() const { return m_focusedFrame.get(); }
-    LocalFrame* focusedOrMainFrame() const;
+    void setFocusedFrame(PassRefPtr<Frame>);
+    Frame* focusedFrame() const { return m_focusedFrame.get(); }
+    Frame* focusedOrMainFrame() const;
 
     bool setInitialFocus(FocusType);
     bool advanceFocus(FocusType type) { return advanceFocus(type, false); }
 
-    bool setFocusedElement(Element*, PassRefPtr<LocalFrame>, FocusType = FocusTypeNone);
+    bool setFocusedElement(Element*, PassRefPtr<Frame>, FocusType = FocusTypeNone);
 
     void setActive(bool);
     bool isActive() const { return m_isActive; }
@@ -115,7 +115,7 @@ private:
     void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, FocusType, FocusCandidate& closest);
 
     Page* m_page;
-    RefPtr<LocalFrame> m_focusedFrame;
+    RefPtr<Frame> m_focusedFrame;
     bool m_isActive;
     bool m_isFocused;
     bool m_isChangingFocusedFrame;

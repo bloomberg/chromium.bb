@@ -345,8 +345,10 @@ Element* TreeScope::adjustedFocusedElement() const
 {
     Document& document = rootNode().document();
     Element* element = document.focusedElement();
+    // FIXME(kenrb): The toLocalFrame() cast should be removed when RemoteFrames can have FrameTrees.
+    // At that point, focusedFrameOwnerElement should take a Frame instead of a LocalFrame.
     if (!element && document.page())
-        element = focusedFrameOwnerElement(document.page()->focusController().focusedFrame(), document.frame());
+        element = focusedFrameOwnerElement(toLocalFrameTemporary(document.page()->focusController().focusedFrame()), document.frame());
     if (!element)
         return 0;
 

@@ -86,9 +86,10 @@ void retrieveResourcesForElement(Element* element,
     ASSERT(element);
     // If the node is a frame, we'll process it later in retrieveResourcesForFrame.
     if (isHTMLFrameElementBase(*element) || isHTMLObjectElement(*element) || isHTMLEmbedElement(*element)) {
-        if (LocalFrame* frame = toHTMLFrameOwnerElement(element)->contentFrame()) {
-            if (!visitedFrames->contains(frame))
-                framesToVisit->append(frame);
+        Frame* frame = toHTMLFrameOwnerElement(element)->contentFrame();
+        if (frame && frame->isLocalFrame()) {
+            if (!visitedFrames->contains(toLocalFrame(frame)))
+                framesToVisit->append(toLocalFrame(frame));
             return;
         }
     }

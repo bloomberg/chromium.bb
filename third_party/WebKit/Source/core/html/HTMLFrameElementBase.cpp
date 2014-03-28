@@ -91,9 +91,9 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
 
     if (!loadOrRedirectSubframe(url, m_frameName, lockBackForwardList))
         return;
-    if (!contentFrame() || scriptURL.isEmpty())
+    if (!contentFrame() || scriptURL.isEmpty() || !contentFrame()->isLocalFrame())
         return;
-    contentFrame()->script().executeScriptIfJavaScriptURL(scriptURL);
+    toLocalFrame(contentFrame())->script().executeScriptIfJavaScriptURL(scriptURL);
 }
 
 void HTMLFrameElementBase::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -159,8 +159,10 @@ void HTMLFrameElementBase::attach(const AttachContext& context)
     HTMLFrameOwnerElement::attach(context);
 
     if (RenderPart* part = renderPart()) {
-        if (LocalFrame* frame = contentFrame())
-            part->setWidget(frame->view());
+        if (Frame* frame = contentFrame()) {
+            if (frame->isLocalFrame())
+                part->setWidget(toLocalFrame(frame)->view());
+        }
     }
 }
 

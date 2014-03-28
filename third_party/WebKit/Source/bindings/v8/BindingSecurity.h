@@ -31,6 +31,8 @@
 #ifndef BindingSecurity_h
 #define BindingSecurity_h
 
+// FIXME: The LocalFrame include should not be necessary, clients should be including it where they use it.
+#include "core/frame/LocalFrame.h"
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
@@ -38,7 +40,6 @@ namespace WebCore {
 
 class DOMWindow;
 class ExceptionState;
-class LocalFrame;
 class Node;
 
 enum SecurityReportingOption {
@@ -49,8 +50,8 @@ enum SecurityReportingOption {
 class BindingSecurity {
 public:
     static bool shouldAllowAccessToNode(v8::Isolate*, Node*, ExceptionState&);
-    static bool shouldAllowAccessToFrame(v8::Isolate*, LocalFrame*, SecurityReportingOption = ReportSecurityError);
-    static bool shouldAllowAccessToFrame(v8::Isolate*, LocalFrame*, ExceptionState&);
+    static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, SecurityReportingOption = ReportSecurityError);
+    static bool shouldAllowAccessToFrame(v8::Isolate*, Frame*, ExceptionState&);
 };
 
 }
