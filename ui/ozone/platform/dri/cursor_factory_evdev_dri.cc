@@ -15,6 +15,11 @@ CursorFactoryEvdevDri::CursorFactoryEvdevDri(gfx::DriSurfaceFactory* dri)
   cursor_bounds_ = gfx::RectF(0, 0, 2560, 1700);  // TODO(spang): Argh!
   cursor_location_ =
       gfx::PointF(cursor_bounds_.width() / 2, cursor_bounds_.height() / 2);
+
+  // The DRI cursor is invisible unless explicitly set. Therefore, set the
+  // pointer cursor on initialization.
+  // TODO(spang): Move this to DRI window initialization.
+  SetCursor(dri->GetAcceleratedWidget(), GetDefaultCursor(kCursorPointer));
 }
 
 CursorFactoryEvdevDri::~CursorFactoryEvdevDri() {}

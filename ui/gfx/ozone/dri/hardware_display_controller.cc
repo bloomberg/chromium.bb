@@ -133,12 +133,14 @@ void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
   surface_->SwapBuffers();
 }
 
-bool HardwareDisplayController::SetCursor(const DriSurface& surface) {
+bool HardwareDisplayController::SetCursor(DriSurface* surface) {
   CHECK(state_ != UNASSOCIATED);
-  return drm_->SetCursor(crtc_id_,
-                         surface.GetHandle(),
-                         surface.size().width(),
-                         surface.size().height());
+  bool ret = drm_->SetCursor(crtc_id_,
+                         surface->GetHandle(),
+                         surface->size().width(),
+                         surface->size().height());
+  surface->SwapBuffers();
+  return ret;
 }
 
 bool HardwareDisplayController::UnsetCursor() {

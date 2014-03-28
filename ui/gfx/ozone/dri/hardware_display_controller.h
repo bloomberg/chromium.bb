@@ -147,7 +147,7 @@ class GFX_EXPORT HardwareDisplayController {
                        unsigned int useconds);
 
   // Set the hardware cursor to show the contents of |surface|.
-  bool SetCursor(const DriSurface& surface);
+  bool SetCursor(DriSurface* surface);
 
   bool UnsetCursor();
 

@@ -211,6 +211,9 @@ gfx::AcceleratedWidget DriSurfaceFactory::RealizeAcceleratedWidget(
     return gfx::kNullAcceleratedWidget;
   }
 
+  // Initial cursor set.
+  ResetCursor();
+
   return reinterpret_cast<gfx::AcceleratedWidget>(controller_->get_surface());
 }
 
@@ -273,17 +276,19 @@ scoped_ptr<gfx::VSyncProvider> DriSurfaceFactory::CreateVSyncProvider(
 void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget window,
                                           const SkBitmap& image,
                                           const gfx::Point& location) {
+  cursor_bitmap_ = image;
+  cursor_location_ = location;
+
   if (state_ != INITIALIZED)
     return;
 
-  UpdateCursorImage(cursor_surface_.get(), image);
-  controller_->MoveCursor(location);
-  controller_->SetCursor(*cursor_surface_.get());
-  cursor_surface_->SwapBuffers();
+  ResetCursor();
 }
 
 void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
                                            const gfx::Point& location) {
+  cursor_location_ = location;
+
   if (state_ != INITIALIZED)
     return;
 
@@ -291,10 +296,12 @@ void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
 }
 
 void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
+  cursor_bitmap_.reset();
+
   if (state_ != INITIALIZED)
     return;
 
-  controller_->UnsetCursor();
+  ResetCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -366,5 +373,20 @@ void DriSurfaceFactory::WaitForPageFlipEvent(int fd) {
   // Wait for the page-flip to complete.
   drmHandleEvent(fd, &drm_event);
 }
+
+void DriSurfaceFactory::ResetCursor() {
+  if (!cursor_bitmap_.empty()) {
+    // Draw new cursor into backbuffer.
+    UpdateCursorImage(cursor_surface_.get(), cursor_bitmap_);
+
+    // Reset location & buffer.
+    controller_->MoveCursor(cursor_location_);
+    controller_->SetCursor(cursor_surface_.get());
+  } else {
+    // No cursor set.
+    controller_->UnsetCursor();
+  }
+}
+
 
 }  // namespace gfx
