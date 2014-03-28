@@ -52,6 +52,7 @@ private:
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
+    virtual void didNotifySubtreeInsertionsToDocument() OVERRIDE;
 
     float parsePositiveNumber(const String& key, const String& value, bool* ok = 0);
 

@@ -438,9 +438,12 @@ void HTMLMetaElement::parseAttribute(const QualifiedName& name, const AtomicStri
 Node::InsertionNotificationRequest HTMLMetaElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    if (insertionPoint->inDocument())
-        process();
-    return InsertionDone;
+    return InsertionShouldCallDidNotifySubtreeInsertions;
+}
+
+void HTMLMetaElement::didNotifySubtreeInsertionsToDocument()
+{
+    process();
 }
 
 static bool inDocumentHead(HTMLMetaElement* element)
