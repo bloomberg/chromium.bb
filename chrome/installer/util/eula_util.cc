@@ -6,7 +6,6 @@
 
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
@@ -17,16 +16,6 @@
 namespace installer {
 
 namespace {
-
-bool IsChromeFirstRunPending(BrowserDistribution* dist) {
-  // Chrome creates the first run sentinel after the user has gone through the
-  // first-run flow. Assume Chrome has been run if the path to the sentinel
-  // cannot be determined.
-  base::FilePath first_run_sentinel;
-  return InstallUtil::GetSentinelFilePath(chrome::kFirstRunSentinel, dist,
-                                          &first_run_sentinel) &&
-      !base::PathExists(first_run_sentinel);
-}
 
 bool IsEULAAcceptanceFlagged(BrowserDistribution* dist) {
   // Chrome creates the EULA sentinel after the EULA has been accepted when
@@ -88,7 +77,7 @@ EULAAcceptanceResponse IsEULAAccepted(bool system_level) {
   if (prod_state.GetEulaAccepted(&eula_accepted) && !eula_accepted)
     return QUERY_EULA_NOT_ACCEPTED;
 
-  if (!IsChromeFirstRunPending(dist) || IsEULAAcceptanceFlagged(dist))
+  if (InstallUtil::IsFirstRunSentinelPresent() || IsEULAAcceptanceFlagged(dist))
     return QUERY_EULA_ACCEPTED;
 
   // EULA acceptance not flagged. Now see if it is required.

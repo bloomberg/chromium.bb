@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -448,30 +449,6 @@ void ProcessDefaultBrowserPolicy(bool make_chrome_default_for_user) {
   }
 }
 
-bool IsFirstRunSentinelPresent() {
-  base::FilePath first_run_sentinel;
-  // Treat sentinel as being present if the path can't be obtained.
-  if (!first_run::internal::GetFirstRunSentinelFilePath(&first_run_sentinel) ||
-      base::PathExists(first_run_sentinel)) {
-    return true;
-  }
-  // Sentinel is truly absent if there's no legacy path or legacy doesn't exist.
-  base::FilePath legacy_first_run_sentinel;
-  if (!first_run::internal::GetLegacyFirstRunSentinelFilePath(
-          &legacy_first_run_sentinel) ||
-      !base::PathExists(legacy_first_run_sentinel)) {
-    return false;
-  }
-  // Migrate the legacy sentinel to the new location if it was found. This does
-  // a copy instead of a move to avoid breaking the developer build case where
-  // the First Run sentinel is dropped beside chrome.exe by a build action
-  // (i.e., at the legacy path).
-  bool migrated = base::CopyFile(legacy_first_run_sentinel, first_run_sentinel);
-  DPCHECK(migrated);
-  // Sentinel is present regardless of whether or not it was migrated.
-  return true;
-}
-
 }  // namespace
 
 namespace first_run {
@@ -566,11 +543,18 @@ void SetupMasterPrefsFromInstallPrefs(
       &out_prefs->suppress_default_browser_prompt_for_version);
 }
 
+bool GetFirstRunSentinelFilePath(base::FilePath* path) {
+  base::FilePath user_data_dir;
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+    return false;
+  *path = user_data_dir.Append(chrome::kFirstRunSentinel);
+  return true;
+}
+
 bool CreateSentinel() {
   base::FilePath first_run_sentinel;
-  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
-    return false;
-  return base::WriteFile(first_run_sentinel, "", 0) != -1;
+  return GetFirstRunSentinelFilePath(&first_run_sentinel) &&
+      base::WriteFile(first_run_sentinel, "", 0) != -1;
 }
 
 // -- Platform-specific functions --
@@ -597,20 +581,15 @@ MasterPrefs::MasterPrefs()
 MasterPrefs::~MasterPrefs() {}
 
 bool IsChromeFirstRun() {
-  if (internal::first_run_ != internal::FIRST_RUN_UNKNOWN)
-    return internal::first_run_ == internal::FIRST_RUN_TRUE;
-
-  internal::first_run_ = internal::FIRST_RUN_FALSE;
-
-  base::FilePath first_run_sentinel;
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kForceFirstRun)) {
-    internal::first_run_ = internal::FIRST_RUN_TRUE;
-  } else if (!command_line->HasSwitch(switches::kNoFirstRun) &&
-             !IsFirstRunSentinelPresent()) {
-    internal::first_run_ = internal::FIRST_RUN_TRUE;
+  if (internal::first_run_ == internal::FIRST_RUN_UNKNOWN) {
+    internal::first_run_ = internal::FIRST_RUN_FALSE;
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kForceFirstRun) ||
+        (!command_line->HasSwitch(switches::kNoFirstRun) &&
+         !internal::IsFirstRunSentinelPresent())) {
+      internal::first_run_ = internal::FIRST_RUN_TRUE;
+    }
   }
-
   return internal::first_run_ == internal::FIRST_RUN_TRUE;
 }
 
@@ -638,9 +617,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 bool RemoveSentinel() {
   base::FilePath first_run_sentinel;
-  if (!internal::GetFirstRunSentinelFilePath(&first_run_sentinel))
-    return false;
-  return base::DeleteFile(first_run_sentinel, false);
+  return internal::GetFirstRunSentinelFilePath(&first_run_sentinel) &&
+      base::DeleteFile(first_run_sentinel, false);
 }
 
 bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {

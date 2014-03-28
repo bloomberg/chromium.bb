@@ -676,14 +676,11 @@ void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
   // present for this user (as some shortcuts used to be installed on first
   // run and this could otherwise re-install shortcuts for users that have
   // already deleted them in the past).
-  base::FilePath first_run_sentinel;
-  InstallUtil::GetSentinelFilePath(
-      chrome::kFirstRunSentinel, chrome.distribution(), &first_run_sentinel);
   // Decide whether to create the shortcuts or simply replace existing
   // shortcuts; if the decision is to create them, only shortcuts whose matching
   // all-users shortcut isn't present on the system will be created.
   InstallShortcutOperation install_operation =
-      (!force && base::PathExists(first_run_sentinel) ?
+      (!force && InstallUtil::IsFirstRunSentinelPresent() ?
            INSTALL_SHORTCUT_REPLACE_EXISTING :
            INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL);
 

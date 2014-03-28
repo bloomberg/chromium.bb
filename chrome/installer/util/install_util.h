@@ -106,6 +106,9 @@ class InstallUtil {
   // by either --chrome-sxs or the executable path).
   static bool IsChromeSxSProcess();
 
+  // Returns true if the sentinel file exists (or the path cannot be obtained).
+  static bool IsFirstRunSentinelPresent();
+
   // Populates |path| with the path to |file| in the sentinel directory for
   // |dist|. Returns false on error.
   static bool GetSentinelFilePath(const base::FilePath::CharType* file,

@@ -145,21 +145,28 @@ void DoPostImportPlatformSpecificTasks(Profile* /* profile */) {
   }
 }
 
-bool GetFirstRunSentinelFilePath(base::FilePath* path) {
-  return InstallUtil::GetSentinelFilePath(
-      chrome::kFirstRunSentinel, BrowserDistribution::GetDistribution(), path);
-}
+bool IsFirstRunSentinelPresent() {
+  base::FilePath sentinel;
+  if (!GetFirstRunSentinelFilePath(&sentinel) || base::PathExists(sentinel))
+    return true;
 
-bool GetLegacyFirstRunSentinelFilePath(base::FilePath* path) {
-  // The first run sentinel for user-level installs on Windows used to
-  // be in the application directory.
+  // Copy any legacy first run sentinel file for Windows user-level installs
+  // from the application directory to the user data directory.
   base::FilePath exe_path;
-  if (!PathService::Get(base::DIR_EXE, &exe_path) ||
-      !InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
-    return false;
+  if (PathService::Get(base::DIR_EXE, &exe_path) &&
+      InstallUtil::IsPerUserInstall(exe_path.value().c_str())) {
+    base::FilePath legacy_sentinel = exe_path.Append(chrome::kFirstRunSentinel);
+    if (base::PathExists(legacy_sentinel)) {
+      // Copy the file instead of moving it to avoid breaking developer builds
+      // where the sentinel is dropped beside chrome.exe by a build action.
+      bool migrated = base::CopyFile(legacy_sentinel, sentinel);
+      DPCHECK(migrated);
+      // The sentinel is present regardless of whether or not it was migrated.
+      return true;
+    }
   }
-  *path = exe_path.Append(chrome::kFirstRunSentinel);
-  return true;
+
+  return false;
 }
 
 bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {

@@ -28,6 +28,8 @@
 #include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
@@ -399,10 +401,19 @@ bool InstallUtil::IsChromeSxSProcess() {
   return sxs;
 }
 
-bool InstallUtil::GetSentinelFilePath(
-    const base::FilePath::CharType* file,
-    BrowserDistribution* dist,
-    base::FilePath* path) {
+// static
+bool InstallUtil::IsFirstRunSentinelPresent() {
+  // TODO(msw): Consolidate with first_run::internal::IsFirstRunSentinelPresent.
+  base::FilePath user_data_dir;
+  return !PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
+         base::PathExists(user_data_dir.Append(chrome::kFirstRunSentinel));
+}
+
+// static
+bool InstallUtil::GetSentinelFilePath(const base::FilePath::CharType* file,
+                                      BrowserDistribution* dist,
+                                      base::FilePath* path) {
+  // TODO(msw): Use PathService to obtain the correct DIR_USER_DATA.
   std::vector<base::FilePath> user_data_dir_paths;
   installer::GetChromeUserDataPaths(dist, &user_data_dir_paths);
 

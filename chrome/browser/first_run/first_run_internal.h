@@ -34,22 +34,19 @@ void SetupMasterPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,
     MasterPrefs* out_prefs);
 
-// Creates the sentinel file that signals that chrome has been configured.
+// Get the file path of the first run sentinel; returns false on failure.
+bool GetFirstRunSentinelFilePath(base::FilePath* path);
+
+// Create the first run sentinel file; returns false on failure.
 bool CreateSentinel();
 
 // -- Platform-specific functions --
 
 void DoPostImportPlatformSpecificTasks(Profile* profile);
 
-// Gives the full path to the sentinel file. The file might not exist.
-// This function has a common implementation on OS_POSIX and a windows specific
-// implementation.
-bool GetFirstRunSentinelFilePath(base::FilePath* path);
-
-// Populates |path| with the old path to first run sentinel for the current
-// configuration. Returns true if there is a legacy path for this configuration
-// and it could be obtained.
-bool GetLegacyFirstRunSentinelFilePath(base::FilePath* path);
+// Returns true if the sentinel file exists (or the path cannot be obtained).
+// Migrates Windows legacy sentinel files to the corrent location, if needed.
+bool IsFirstRunSentinelPresent();
 
 // This function has a common implementationin for all non-linux platforms, and
 // a linux specific implementation.

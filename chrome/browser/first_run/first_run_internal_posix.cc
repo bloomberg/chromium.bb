@@ -23,8 +23,6 @@ namespace internal {
 
 void DoPostImportPlatformSpecificTasks(Profile* profile) {
 #if !defined(OS_CHROMEOS)
-  // Aura needs a views implementation of the first run dialog for Linux.
-  // http://crbug.com/234637
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = base::PathExists(local_state_path);
@@ -45,19 +43,9 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
 #endif
 }
 
-bool GetFirstRunSentinelFilePath(base::FilePath* path) {
-  base::FilePath first_run_sentinel;
-
-  if (!PathService::Get(chrome::DIR_USER_DATA, &first_run_sentinel))
-    return false;
-
-  *path = first_run_sentinel.Append(chrome::kFirstRunSentinel);
-  return true;
-}
-
-bool GetLegacyFirstRunSentinelFilePath(base::FilePath* path) {
-  // There is no legacy first run sentinel path on Posix.
-  return false;
+bool IsFirstRunSentinelPresent() {
+  base::FilePath sentinel;
+  return !GetFirstRunSentinelFilePath(&sentinel) || base::PathExists(sentinel);
 }
 
 bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
