@@ -28,7 +28,7 @@
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_SPEECH_MIC_OFF" file="common/app_list_mic_off.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_SPEECH_MIC_RECORDING" file="common/app_list_mic_recording.png" />
         <if expr="is_win">
-          <structure type="chrome_scaled_image" name="IDR_APP_LIST_USER_INDICATOR" file="win/app_list_user_indicator.png" />
+          <structure type="chrome_scaled_image" name="IDR_APP_LIST_USER_INDICATOR" file="common/app_list_user_indicator.png" />
         </if>
       </if>
       <if expr="toolkit_views">
