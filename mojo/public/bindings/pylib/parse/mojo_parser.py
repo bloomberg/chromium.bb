@@ -188,7 +188,7 @@ class Parser(object):
     p[0] = p[1]
 
   def p_specializedhandle(self, p):
-    """specializedhandle : HANDLE LT specializedhandlename GT"""
+    """specializedhandle : HANDLE LANGLE specializedhandlename RANGLE"""
     p[0] = "handle<" + p[3] + ">"
 
   def p_specializedhandlename(self, p):
@@ -286,17 +286,9 @@ class Parser(object):
                        | MINUS
                        | RSHIFT
                        | LSHIFT
-                       | LT
-                       | LE
-                       | GE
-                       | GT
-                       | EQ
-                       | NE
                        | AND
                        | OR
-                       | XOR
-                       | LAND
-                       | LOR"""
+                       | XOR"""
     p[0] = p[1]
 
   def p_unary_expression(self, p):
@@ -307,8 +299,7 @@ class Parser(object):
   def p_unary_operator(self, p):
     """unary_operator : PLUS
                       | MINUS
-                      | NOT
-                      | LNOT"""
+                      | NOT"""
     p[0] = p[1]
 
   def p_primary_expression(self, p):

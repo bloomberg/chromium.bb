@@ -72,11 +72,18 @@ enum MyEnum {
   MY_ENUM_2 = 1 + 1,
   MY_ENUM_3 = 1 * 3,
   MY_ENUM_4 = 2 * (1 + 1),
-  MY_ENUM_5 = 1 + 2 * 2
+  MY_ENUM_5 = 1 + 2 * 2,
+  MY_ENUM_6 = -6 / -2,
+  MY_ENUM_7 = 3 | (1 << 2),
+  MY_ENUM_8 = 16 >> 1,
+  MY_ENUM_9 = 1 ^ 15 & 8,
+  MY_ENUM_10 = 110 % 100,
+  MY_ENUM_MINUS_1 = ~0
 };
 
 }  // my_module
 """
+    self.maxDiff = 2000
     expected = \
 [('MODULE',
   'my_module',
@@ -91,7 +98,23 @@ enum MyEnum {
        ['2', '*', '(', ('EXPRESSION', ['1', '+', '1']), ')'])),
      ('ENUM_FIELD',
       'MY_ENUM_5',
-      ('EXPRESSION', ['1', '+', '2', '*', '2']))])])]
+      ('EXPRESSION', ['1', '+', '2', '*', '2'])),
+     ('ENUM_FIELD',
+      'MY_ENUM_6',
+      ('EXPRESSION',
+       ['-', ('EXPRESSION', ['6', '/', '-', ('EXPRESSION', ['2'])])])),
+     ('ENUM_FIELD',
+      'MY_ENUM_7',
+      ('EXPRESSION',
+       ['3', '|', '(', ('EXPRESSION', ['1', '<<', '2']), ')'])),
+     ('ENUM_FIELD', 'MY_ENUM_8', ('EXPRESSION', ['16', '>>', '1'])),
+     ('ENUM_FIELD',
+      'MY_ENUM_9',
+      ('EXPRESSION', ['1', '^', '15', '&', '8'])),
+     ('ENUM_FIELD', 'MY_ENUM_10', ('EXPRESSION', ['110', '%', '100'])),
+     ('ENUM_FIELD',
+      'MY_ENUM_MINUS_1',
+      ('EXPRESSION', ['~', ('EXPRESSION', ['0'])]))])])]
     self.assertEquals(mojo_parser.Parse(source, "my_file.mojom"), expected)
 
   def testNoConditionals(self):

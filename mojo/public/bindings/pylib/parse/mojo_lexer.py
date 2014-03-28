@@ -86,8 +86,6 @@ class Lexer(object):
     # Operators
     'PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MOD',
     'OR', 'AND', 'NOT', 'XOR', 'LSHIFT', 'RSHIFT',
-    'LOR', 'LAND', 'LNOT',
-    'LT', 'LE', 'GT', 'GE', 'EQ', 'NE',
 
     # Assignment
     'EQUALS',
@@ -99,6 +97,7 @@ class Lexer(object):
     'LPAREN', 'RPAREN',         # ( )
     'LBRACKET', 'RBRACKET',     # [ ]
     'LBRACE', 'RBRACE',         # { }
+    'LANGLE', 'RANGLE',         # < >
     'SEMI',                     # ;
     'COMMA', 'DOT'              # , .
   )
@@ -184,15 +183,6 @@ class Lexer(object):
   t_XOR               = r'\^'
   t_LSHIFT            = r'<<'
   t_RSHIFT            = r'>>'
-  t_LOR               = r'\|\|'
-  t_LAND              = r'&&'
-  t_LNOT              = r'!'
-  t_LT                = r'<'
-  t_GT                = r'>'
-  t_LE                = r'<='
-  t_GE                = r'>='
-  t_EQ                = r'=='
-  t_NE                = r'!='
 
   # =
   t_EQUALS            = r'='
@@ -207,6 +197,8 @@ class Lexer(object):
   t_RBRACKET          = r'\]'
   t_LBRACE            = r'\{'
   t_RBRACE            = r'\}'
+  t_LANGLE            = r'<'
+  t_RANGLE            = r'>'
   t_COMMA             = r','
   t_DOT               = r'\.'
   t_SEMI              = r';'
