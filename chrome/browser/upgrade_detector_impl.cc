@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
+#include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -23,10 +24,12 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
+#include "base/win/win_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
@@ -53,17 +56,28 @@ const int kNotifyCycleTimeForTestingMs = 500;  // Half a second.
 // The number of days after which we identify a build/install as outdated.
 const uint64 kOutdatedBuildAgeInDays = 12 * 7;
 
+// Return the string that was passed as a value for the
+// kCheckForUpdateIntervalSec switch.
 std::string CmdLineInterval() {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   return cmd_line.GetSwitchValueASCII(switches::kCheckForUpdateIntervalSec);
 }
 
+// Check if one of the outdated simulation switches was present on the command
+// line.
+bool SimulatingOutdated() {
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+  return cmd_line.HasSwitch(switches::kSimulateOutdated) ||
+      cmd_line.HasSwitch(switches::kSimulateOutdatedNoAU);
+}
+
+// Check if any of the testing switches was present on the command line.
 bool IsTesting() {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   return cmd_line.HasSwitch(switches::kSimulateUpgrade) ||
       cmd_line.HasSwitch(switches::kCheckForUpdateIntervalSec) ||
       cmd_line.HasSwitch(switches::kSimulateCriticalUpdate) ||
-      cmd_line.HasSwitch(switches::kSimulateOutdated);
+      SimulatingOutdated();
 }
 
 // How often to check for an upgrade.
@@ -77,6 +91,7 @@ int GetCheckForUpgradeEveryMs() {
   return kCheckForUpgradeMs;
 }
 
+// Return true if the current build is one of the unstable channels.
 bool IsUnstableChannel() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
@@ -94,6 +109,7 @@ void CheckForUnstableChannel(const base::Closure& callback_task,
 }
 
 #if defined(OS_WIN)
+// Return true if the currently running Chrome is a system install.
 bool IsSystemInstall() {
   // Get the version of the currently *installed* instance of Chrome,
   // which might be newer than the *running* instance if we have been
@@ -107,16 +123,24 @@ bool IsSystemInstall() {
   return !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
 }
 
-// This task checks the update policy and calls back the task only if automatic
-// updates are allowed. It also identifies whether we are running an unstable
-// channel.
+// This task checks the update policy and calls back the task only if the
+// system is not enrolled in a domain (i.e., not in an enterprise environment).
+// It also identifies if autoupdate is enabled and whether we are running an
+// unstable channel. |is_auto_update_enabled| can be NULL.
 void DetectUpdatability(const base::Closure& callback_task,
-                        bool* is_unstable_channel) {
+                        bool* is_unstable_channel,
+                        bool* is_auto_update_enabled) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   base::string16 app_guid = installer::GetAppGuidForUpdates(IsSystemInstall());
   DCHECK(!app_guid.empty());
-  if (GoogleUpdateSettings::AreAutoupdatesEnabled(app_guid))
+  // Don't try to turn on autoupdate when we failed previously.
+  if (is_auto_update_enabled) {
+    *is_auto_update_enabled =
+        GoogleUpdateSettings::AreAutoupdatesEnabled(app_guid);
+  }
+  // Don't show the update bubbles to entreprise users (i.e., on a domain).
+  if (!base::win::IsEnrolledToDomain())
     CheckForUnstableChannel(callback_task, is_unstable_channel);
 }
 #endif  // defined(OS_WIN)
@@ -126,6 +150,7 @@ void DetectUpdatability(const base::Closure& callback_task,
 UpgradeDetectorImpl::UpgradeDetectorImpl()
     : weak_factory_(this),
       is_unstable_channel_(false),
+      is_auto_update_enabled_(true),
       build_date_(base::GetBuildTime()) {
   CommandLine command_line(*CommandLine::ForCurrentProcess());
   // The different command line switches that affect testing can't be used
@@ -135,7 +160,8 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
   //   switch from being taken into account.
   // - kSimulateUpgrade supersedes critical or outdated upgrade switches.
   // - kSimulateCriticalUpdate has precedence over kSimulateOutdated.
-  // - kSimulateOutdated can work on its own, or with a specified date.
+  // - kSimulateOutdatedNoAU has precedence over kSimulateOutdated.
+  // - kSimulateOutdated[NoAu] can work on its own, or with a specified date.
   if (command_line.HasSwitch(switches::kDisableBackgroundNetworking))
     return;
   if (command_line.HasSwitch(switches::kSimulateUpgrade)) {
@@ -146,7 +172,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
     UpgradeDetected(UPGRADE_AVAILABLE_CRITICAL);
     return;
   }
-  if (command_line.HasSwitch(switches::kSimulateOutdated)) {
+  if (SimulatingOutdated()) {
     // The outdated simulation can work without a value, which means outdated
     // now, or with a value that must be a well formed date/time string that
     // overrides the build date.
@@ -154,8 +180,14 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
     // tracking moves off of the VariationsService, the "variations-server-url"
     // command line switch must also be specified for the service to be
     // available on non GOOGLE_CHROME_BUILD.
-    std::string build_date = command_line.GetSwitchValueASCII(
-        switches::kSimulateOutdated);
+    std::string switch_name;
+    if (command_line.HasSwitch(switches::kSimulateOutdatedNoAU)) {
+      is_auto_update_enabled_ = false;
+      switch_name = switches::kSimulateOutdatedNoAU;
+    } else {
+      switch_name = switches::kSimulateOutdated;
+    }
+    std::string build_date = command_line.GetSwitchValueASCII(switch_name);
     base::Time maybe_build_time;
     bool result = base::Time::FromString(build_date.c_str(), &maybe_build_time);
     if (result && !maybe_build_time.is_null()) {
@@ -164,7 +196,9 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
       StartTimerForUpgradeCheck();
     } else {
       // Without a valid date, we simulate that we are already outdated...
-      UpgradeDetected(UPGRADE_NEEDED_OUTDATED_INSTALL);
+      UpgradeDetected(
+          is_auto_update_enabled_ ? UPGRADE_NEEDED_OUTDATED_INSTALL
+                                  : UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU);
     }
     return;
   }
@@ -177,18 +211,27 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
   // Only enable upgrade notifications for official builds.  Chromium has no
   // upgrade channel.
 #if defined(GOOGLE_CHROME_BUILD)
-  // On Windows, there might be a policy preventing updates, so validate
-  // updatability, and then call StartTimerForUpgradeCheck appropriately.
+  // On Windows, there might be a policy/enterprise environment preventing
+  // updates, so validate updatability, and then call StartTimerForUpgradeCheck
+  // appropriately. And don't check for autoupdate if we already attempted to
+  // enable it in the past.
+  bool attempted_enabling_autoupdate = g_browser_process->local_state() &&
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kAttemptedToEnableAutoupdate);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&DetectUpdatability,
                                      start_upgrade_check_timer_task,
-                                     &is_unstable_channel_));
+                                     &is_unstable_channel_,
+                                     attempted_enabling_autoupdate ?
+                                         NULL : &is_auto_update_enabled_));
 #endif
 #else
 #if defined(OS_MACOSX)
   // Only enable upgrade notifications if the updater (Keystone) is present.
-  if (!keystone_glue::KeystoneEnabled())
+  if (!keystone_glue::KeystoneEnabled()) {
+    is_auto_update_enabled_ = false;
     return;
+  }
 #elif defined(OS_POSIX)
   // Always enable upgrade notifications regardless of branding.
 #else
@@ -199,10 +242,9 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
                           base::Bind(&CheckForUnstableChannel,
                                      start_upgrade_check_timer_task,
                                      &is_unstable_channel_));
-
+#endif
   // Start tracking network time updates.
   network_time_tracker_.Start();
-#endif
 }
 
 UpgradeDetectorImpl::~UpgradeDetectorImpl() {
@@ -311,12 +353,10 @@ void UpgradeDetectorImpl::CheckForUpgrade() {
 }
 
 bool UpgradeDetectorImpl::DetectOutdatedInstall() {
-  // Only enable the outdated install check if we are running the trial for it,
-  // unless we are simulating an outdated isntall.
-  static bool simulate_outdated = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kSimulateOutdated);
+  // Don't show the bubble if we have a brand code that is NOT organic, unless
+  // an outdated build is being simulated by command line switches.
+  static bool simulate_outdated = SimulatingOutdated();
   if (!simulate_outdated) {
-    // Also don't show the bubble if we have a brand code that is NOT organic.
     std::string brand;
     if (google_util::GetBrand(&brand) && !google_util::IsOrganic(brand))
       return false;
@@ -327,7 +367,9 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   if (!network_time_tracker_.GetNetworkTime(base::TimeTicks::Now(),
                                             &network_time,
                                             &uncertainty)) {
-    return false;
+    // When network time has not been initialized yet, simply rely on the
+    // machine's current time.
+    network_time = base::Time::Now();
   }
 
   if (network_time.is_null() || build_date_.is_null() ||
@@ -338,7 +380,9 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 
   if (network_time - build_date_ >
       base::TimeDelta::FromDays(kOutdatedBuildAgeInDays)) {
-    UpgradeDetected(UPGRADE_NEEDED_OUTDATED_INSTALL);
+    UpgradeDetected(is_auto_update_enabled_ ?
+        UPGRADE_NEEDED_OUTDATED_INSTALL :
+        UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU);
     return true;
   }
   // If we simlated an outdated install with a date, we don't want to keep

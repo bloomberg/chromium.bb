@@ -35,6 +35,7 @@ bool UseTestingIntervals() {
 void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
   registry->RegisterBooleanPref(prefs::kWasRestarted, false);
+  registry->RegisterBooleanPref(prefs::kAttemptedToEnableAutoupdate, false);
 }
 
 int UpgradeDetector::GetIconResourceID(UpgradeNotificationIconType type) {
@@ -105,6 +106,13 @@ void UpgradeDetector::NotifyUpgradeRecommended() {
     case UPGRADE_NEEDED_OUTDATED_INSTALL: {
       content::NotificationService::current()->Notify(
           chrome::NOTIFICATION_OUTDATED_INSTALL,
+          content::Source<UpgradeDetector>(this),
+          content::NotificationService::NoDetails());
+      break;
+    }
+    case UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU: {
+      content::NotificationService::current()->Notify(
+          chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU,
           content::Source<UpgradeDetector>(this),
           content::NotificationService::NoDetails());
       break;

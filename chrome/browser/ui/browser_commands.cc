@@ -1061,6 +1061,11 @@ void OpenUpdateChromeDialog(Browser* browser) {
         chrome::NOTIFICATION_OUTDATED_INSTALL,
         content::NotificationService::AllSources(),
         content::NotificationService::NoDetails());
+  } else if (UpgradeDetector::GetInstance()->is_outdated_install_no_au()) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
   } else {
     content::RecordAction(UserMetricsAction("UpdateChrome"));
     browser->window()->ShowUpdateChromeDialog();

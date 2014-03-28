@@ -24,7 +24,8 @@ class OutdatedUpgradeBubbleView : public views::BubbleDelegateView,
                                   public views::ButtonListener {
  public:
   static void ShowBubble(views::View* anchor_view,
-                         content::PageNavigator* navigator);
+                         content::PageNavigator* navigator,
+                         bool auto_update_enabled);
 
   // Identifies if we are running a build that supports the
   // outdated upgrade bubble view.
@@ -38,7 +39,8 @@ class OutdatedUpgradeBubbleView : public views::BubbleDelegateView,
 
  private:
   OutdatedUpgradeBubbleView(views::View* anchor_view,
-                            content::PageNavigator* navigator);
+                            content::PageNavigator* navigator,
+                            bool auto_update_enabled);
   virtual ~OutdatedUpgradeBubbleView();
 
   static bool IsShowing() { return upgrade_bubble_ != NULL; }
@@ -60,11 +62,16 @@ class OutdatedUpgradeBubbleView : public views::BubbleDelegateView,
   // reinstall.
   static int num_ignored_bubbles_;
 
-  // Identifies if the reinstall button was hit before closing the bubble.
-  bool chose_to_reinstall_;
+  // Identifies if auto-update is enabled or not.
+  bool auto_update_enabled_;
 
-  // Button that takes the user to the Chrome download page.
-  views::LabelButton* reinstall_button_;
+  // Identifies if the accept button was hit before closing the bubble.
+  bool accepted_;
+
+  // Button that lets the user accept the proposal, which is to navigate to a
+  // Chrome download page when |auto_update_enabled_| is true, or attempt to
+  // re-enable auto-update otherwise.
+  views::LabelButton* accept_button_;
 
   // Button for the user to be reminded later about the outdated upgrade.
   views::LabelButton* later_button_;

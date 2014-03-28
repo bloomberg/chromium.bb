@@ -630,6 +630,10 @@ enum NotificationType {
   // Sent when the current install is outdated. No details are expected.
   NOTIFICATION_OUTDATED_INSTALL,
 
+  // Sent when the current install is outdated and auto-update (AU) is disabled.
+  // No details are expected.
+  NOTIFICATION_OUTDATED_INSTALL_NO_AU,
+
   // Software incompatibility notifications ----------------------------------
 
   // Sent when Chrome has finished compiling the list of loaded modules (and

@@ -799,6 +799,7 @@ extern const char kMessageCenterShowedFirstRunBalloon[];
 
 extern const char kRecoveryComponentVersion[];
 extern const char kComponentUpdaterState[];
+extern const char kAttemptedToEnableAutoupdate[];
 
 extern const char kMediaGalleriesUniqueId[];
 extern const char kMediaGalleriesRememberedGalleries[];

@@ -66,6 +66,9 @@ class UpgradeDetectorImpl : public UpgradeDetector {
   // True if this build is a dev or canary channel build.
   bool is_unstable_channel_;
 
+  // True if auto update is turned on.
+  bool is_auto_update_enabled_;
+
   // The date the binaries were built.
   base::Time build_date_;
 

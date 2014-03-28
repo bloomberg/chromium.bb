@@ -332,6 +332,7 @@ extern const char kSilentDumpOnDCHECK[];
 extern const char kSimulateUpgrade[];
 extern const char kSimulateCriticalUpdate[];
 extern const char kSimulateOutdated[];
+extern const char kSimulateOutdatedNoAU[];
 extern const char kSpdyProxyAuthFallback[];
 extern const char kSpdyProxyAuthOrigin[];
 extern const char kSpdyProxyAuthValue[];

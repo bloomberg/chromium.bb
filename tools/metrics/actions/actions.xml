@@ -8676,19 +8676,40 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="OutdatedUpgradeBubble.EnableAU">
+  <owner>mad@chromium.org</owner>
+  <description>
+    When the user clicks on the Enable updates button of the outdated upgrade
+    bubble.
+  </description>
+</action>
+
 <action name="OutdatedUpgradeBubble.Later">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mad@chromium.org</owner>
+  <description>
+    When the user clicks on the Later button of the outdated upgrade bubble.
+  </description>
 </action>
 
 <action name="OutdatedUpgradeBubble.Reinstall">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mad@chromium.org</owner>
+  <description>
+    When the user clicks on the Reinstall button of the outdated upgrade bubble.
+  </description>
 </action>
 
 <action name="OutdatedUpgradeBubble.Show">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>mad@chromium.org</owner>
+  <description>
+    When the outdated upgrade bubble is shown for a user with auto-update on.
+  </description>
+</action>
+
+<action name="OutdatedUpgradeBubble.ShowNoAU">
+  <owner>mad@chromium.org</owner>
+  <description>
+    When the outdated upgrade bubble is shown for a user with auto-update off.
+  </description>
 </action>
 
 <action name="Outdent">

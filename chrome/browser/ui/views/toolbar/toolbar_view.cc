@@ -168,6 +168,8 @@ ToolbarView::ToolbarView(Browser* browser)
   if (OutdatedUpgradeBubbleView::IsAvailable()) {
     registrar_.Add(this, chrome::NOTIFICATION_OUTDATED_INSTALL,
                    content::NotificationService::AllSources());
+    registrar_.Add(this, chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU,
+                   content::NotificationService::AllSources());
   }
 #if defined(OS_WIN)
   registrar_.Add(this, chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED,
@@ -518,7 +520,10 @@ void ToolbarView::Observe(int type,
       UpdateAppMenuState();
       break;
     case chrome::NOTIFICATION_OUTDATED_INSTALL:
-      ShowOutdatedInstallNotification();
+      ShowOutdatedInstallNotification(true);
+      break;
+    case chrome::NOTIFICATION_OUTDATED_INSTALL_NO_AU:
+      ShowOutdatedInstallNotification(false);
       break;
 #if defined(OS_WIN)
     case chrome::NOTIFICATION_CRITICAL_UPGRADE_INSTALLED:
@@ -817,9 +822,11 @@ void ToolbarView::ShowCriticalNotification() {
 #endif
 }
 
-void ToolbarView::ShowOutdatedInstallNotification() {
-  if (OutdatedUpgradeBubbleView::IsAvailable())
-    OutdatedUpgradeBubbleView::ShowBubble(app_menu_, browser_);
+void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
+  if (OutdatedUpgradeBubbleView::IsAvailable()) {
+    OutdatedUpgradeBubbleView::ShowBubble(
+        app_menu_, browser_, auto_update_enabled);
+  }
 }
 
 void ToolbarView::UpdateAppMenuState() {

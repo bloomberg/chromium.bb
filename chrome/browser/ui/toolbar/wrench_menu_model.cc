@@ -81,10 +81,9 @@ namespace {
 // Conditionally return the update app menu item title based on upgrade detector
 // state.
 base::string16 GetUpgradeDialogMenuItemName() {
-  if (UpgradeDetector::GetInstance()->is_outdated_install()) {
-    return l10n_util::GetStringFUTF16(
-        IDS_UPGRADE_BUBBLE_MENU_ITEM,
-        l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
+  if (UpgradeDetector::GetInstance()->is_outdated_install() ||
+      UpgradeDetector::GetInstance()->is_outdated_install_no_au()) {
+    return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_MENU_ITEM);
   } else {
     return l10n_util::GetStringUTF16(IDS_UPDATE_NOW);
   }

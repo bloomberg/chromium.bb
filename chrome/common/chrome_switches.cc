@@ -1223,6 +1223,9 @@ const char kSimulateCriticalUpdate[]        = "simulate-critical-update";
 // Simulates that current version is outdated.
 const char kSimulateOutdated[]               = "simulate-outdated";
 
+// Simulates that current version is outdated and auto-update is off.
+const char kSimulateOutdatedNoAU[]           = "simulate-outdated-no-au";
+
 // Replaces the buffered data source for <audio> and <video> with a simplified
 // resource loader that downloads the entire resource into memory.
 

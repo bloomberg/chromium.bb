@@ -212,7 +212,8 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowCriticalNotification();
 
   // Shows the outdated install notification bubble against the wrench menu.
-  void ShowOutdatedInstallNotification();
+  // |auto_update_enabled| is set to true when auto-upate is on.
+  void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
   // Updates the badge and the accessible name of the app menu (Wrench).
   void UpdateAppMenuState();

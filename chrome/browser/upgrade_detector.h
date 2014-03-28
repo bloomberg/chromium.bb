@@ -54,6 +54,12 @@ class UpgradeDetector {
     return upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL;
   }
 
+  // Whether the upgrade recommendation is due to Chrome being outdated AND
+  // auto-update is turned off.
+  bool is_outdated_install_no_au() const {
+    return upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU;
+  }
+
   // Notifify this object that the user has acknowledged the critical update
   // so we don't need to complain about it for now.
   void acknowledge_critical_update() {
@@ -105,6 +111,9 @@ class UpgradeDetector {
     // If no update to Chrome has been installed for more than the recommended
     // time.
     UPGRADE_NEEDED_OUTDATED_INSTALL,
+    // If no update to Chrome has been installed for more than the recommended
+    // time AND auto-update is turned off.
+    UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU,
   } upgrade_available_;
 
   // Whether the user has acknowledged the critical update.
