@@ -884,6 +884,9 @@ cr.define('print_preview', function() {
       var selectedDest = this.destinationStore_.selectedDestination;
       setIsVisible($('cloud-print-dialog-link'),
                    !cr.isChromeOS && !selectedDest.isLocal);
+      if (this.isInKioskAutoPrintMode_) {
+        this.onPrintButtonClick_();
+      }
     },
 
     /**
