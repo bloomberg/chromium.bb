@@ -295,11 +295,6 @@ public:
     // FIXME: Does this really belong in StringImpl?
     template <typename T> static void copyChars(T* destination, const T* source, unsigned numCharacters)
     {
-        if (numCharacters == 1) {
-            *destination = *source;
-            return;
-        }
-
         memcpy(destination, source, numCharacters * sizeof(T));
     }
 
