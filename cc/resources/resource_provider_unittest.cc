@@ -825,6 +825,56 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
   EXPECT_FALSE(returned_to_child[3].lost);
 }
 
+TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
+  if (GetParam() != ResourceProvider::GLTexture)
+    return;
+  gfx::Size size(1, 1);
+  ResourceFormat format = RGBA_8888;
+
+  ResourceProvider::ResourceId id1 = child_resource_provider_->CreateResource(
+      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
+  uint8_t data1[4] = {1, 2, 3, 4};
+  gfx::Rect rect(size);
+  child_resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
+
+  ReturnedResourceArray returned_to_child;
+  int child_id =
+      resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
+  {
+    // Transfer some resources to the parent.
+    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    resource_ids_to_transfer.push_back(id1);
+    TransferableResourceArray list;
+    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
+                                                  &list);
+    ASSERT_EQ(1u, list.size());
+    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
+
+    resource_provider_->ReceiveFromChild(child_id, list);
+
+    ResourceProvider::ScopedReadLockGL lock(resource_provider_.get(),
+                                            list[0].id);
+
+    resource_provider_->DeclareUsedResourcesFromChild(
+        child_id, ResourceProvider::ResourceIdArray());
+    EXPECT_EQ(0u, returned_to_child.size());
+  }
+
+  EXPECT_EQ(1u, returned_to_child.size());
+  child_resource_provider_->ReceiveReturnsFromParent(returned_to_child);
+
+  {
+    ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
+                                            id1);
+    child_resource_provider_->DeleteResource(id1);
+    EXPECT_EQ(1u, child_resource_provider_->num_resources());
+    EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
+  }
+
+  EXPECT_EQ(0u, child_resource_provider_->num_resources());
+  resource_provider_->DestroyChild(child_id);
+}
+
 TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   if (GetParam() != ResourceProvider::Bitmap)
     return;

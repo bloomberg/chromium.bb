@@ -799,12 +799,11 @@ void ResourceProvider::DeleteResource(ResourceId id) {
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
-  DCHECK(!resource->lock_for_read_count);
   DCHECK(!resource->marked_for_deletion);
   DCHECK_EQ(resource->imported_count, 0);
   DCHECK(resource->pending_set_pixels || !resource->locked_for_write);
 
-  if (resource->exported_count > 0) {
+  if (resource->exported_count > 0 || resource->lock_for_read_count > 0) {
     resource->marked_for_deletion = true;
     return;
   } else {
@@ -1087,10 +1086,25 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 }
 
 void ResourceProvider::UnlockForRead(ResourceId id) {
-  Resource* resource = GetResource(id);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  ResourceMap::iterator it = resources_.find(id);
+  CHECK(it != resources_.end());
+
+  Resource* resource = &it->second;
   DCHECK_GT(resource->lock_for_read_count, 0);
   DCHECK_EQ(resource->exported_count, 0);
   resource->lock_for_read_count--;
+  if (resource->marked_for_deletion && !resource->lock_for_read_count) {
+    if (!resource->child_id) {
+      // The resource belongs to this ResourceProvider, so it can be destroyed.
+      DeleteResourceInternal(it, Normal);
+    } else {
+      ChildMap::iterator child_it = children_.find(resource->child_id);
+      ResourceIdArray unused;
+      unused.push_back(id);
+      DeleteAndReturnUnusedResourcesToChild(child_it, Normal, unused);
+    }
+  }
 }
 
 const ResourceProvider::Resource* ResourceProvider::LockForWrite(
@@ -1647,7 +1661,6 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
     Resource& resource = it->second;
 
     DCHECK(!resource.locked_for_write);
-    DCHECK(!resource.lock_for_read_count);
     DCHECK_EQ(0u, child_info->in_use_resources.count(local_id));
     DCHECK(child_info->parent_to_child_map.count(local_id));
 
@@ -1656,9 +1669,10 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
     bool is_lost =
         resource.lost || (resource.type == GLTexture && lost_output_surface_);
-    if (resource.exported_count > 0) {
+    if (resource.exported_count > 0 || resource.lock_for_read_count > 0) {
       if (style != ForShutdown) {
-        // Defer this until we receive the resource back from the parent.
+        // Defer this until we receive the resource back from the parent or
+        // the read lock is released.
         resource.marked_for_deletion = true;
         continue;
       }

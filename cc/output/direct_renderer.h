@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/overlay_processor.h"
 #include "cc/output/renderer.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
@@ -57,6 +58,8 @@ class CC_EXPORT DirectRenderer : public Renderer {
     ContextProvider* offscreen_context_provider;
 
     bool disable_picture_quad_image_filtering;
+
+    OverlayCandidateList overlay_list;
   };
 
   void SetEnlargePassTextureAmountForTesting(const gfx::Vector2d& amount);
@@ -123,6 +126,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
   base::ScopedPtrHashMap<RenderPass::Id, ScopedResource> render_pass_textures_;
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
+  scoped_ptr<OverlayProcessor> overlay_processor_;
 
   // For use in coordinate conversion, this stores the output rect, viewport
   // rect (= unflipped version of glViewport rect), and the size of target

@@ -19,7 +19,9 @@ OverlayProcessor::OverlayProcessor(OutputSurface* surface,
 
 void OverlayProcessor::Initialize() {
   DCHECK(surface_);
-  DCHECK(resource_provider_);
+  if (!resource_provider_)
+    return;
+
   OverlayCandidateValidator* candidates =
       surface_->overlay_candidate_validator();
   if (candidates) {
@@ -31,10 +33,11 @@ void OverlayProcessor::Initialize() {
 OverlayProcessor::~OverlayProcessor() {}
 
 void OverlayProcessor::ProcessForOverlays(
-    RenderPassList* render_passes_in_draw_order) {
+    RenderPassList* render_passes_in_draw_order,
+    OverlayCandidateList* candidate_list) {
   for (StrategyList::iterator it = strategies_.begin(); it != strategies_.end();
        ++it) {
-    if ((*it)->Attempt(render_passes_in_draw_order))
+    if ((*it)->Attempt(render_passes_in_draw_order, candidate_list))
       return;
   }
 }

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/overlay_candidate.h"
 #include "cc/quads/render_pass.h"
 
 namespace cc {
@@ -23,7 +24,8 @@ class CC_EXPORT OverlayProcessor {
     // current set of render passes. Returns true if the strategy was successful
     // and adds any additional passes necessary to represent overlays to
     // |render_passes_in_draw_order|.
-    virtual bool Attempt(RenderPassList* render_passes_in_draw_order) = 0;
+    virtual bool Attempt(RenderPassList* render_passes_in_draw_order,
+                         OverlayCandidateList* candidates) = 0;
   };
   typedef ScopedPtrVector<Strategy> StrategyList;
 
@@ -32,7 +34,8 @@ class CC_EXPORT OverlayProcessor {
   // Virtual to allow testing different strategies.
   virtual void Initialize();
 
-  void ProcessForOverlays(RenderPassList* render_passes_in_draw_order);
+  void ProcessForOverlays(RenderPassList* render_passes_in_draw_order,
+                          OverlayCandidateList* candidate_list);
 
  protected:
   StrategyList strategies_;

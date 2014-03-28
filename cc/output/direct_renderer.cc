@@ -133,7 +133,11 @@ DirectRenderer::DirectRenderer(RendererClient* client,
                                ResourceProvider* resource_provider)
     : Renderer(client, settings),
       output_surface_(output_surface),
-      resource_provider_(resource_provider) {}
+      resource_provider_(resource_provider),
+      overlay_processor_(
+          new OverlayProcessor(output_surface, resource_provider)) {
+  overlay_processor_->Initialize();
+}
 
 DirectRenderer::~DirectRenderer() {}
 
@@ -217,6 +221,9 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.offscreen_context_provider = offscreen_context_provider;
   frame.disable_picture_quad_image_filtering =
       disable_picture_quad_image_filtering;
+
+  overlay_processor_->ProcessForOverlays(render_passes_in_draw_order,
+                                         &frame.overlay_list);
 
   EnsureBackbuffer();
 

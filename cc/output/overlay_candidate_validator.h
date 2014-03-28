@@ -19,8 +19,6 @@ namespace cc {
 // configurations for a particular output device.
 class CC_EXPORT OverlayCandidateValidator {
  public:
-  typedef std::vector<OverlayCandidate> OverlayCandidateList;
-
   // A list of possible overlay candidates is presented to this function.
   // The expected result is that those candidates that can be in a separate
   // plane are marked with |overlay_handled| set to true, otherwise they are

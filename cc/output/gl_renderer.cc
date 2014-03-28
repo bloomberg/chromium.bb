@@ -258,6 +258,8 @@ GLRenderer::~GLRenderer() {
     pending_async_read_pixels_.pop_back();
   }
 
+  in_use_overlay_resources_.clear();
+
   CleanupSharedObjects();
 }
 
@@ -2005,6 +2007,8 @@ void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
 
   GLC(gl_, gl_->Disable(GL_BLEND));
   blend_shadow_ = false;
+
+  ScheduleOverlays(frame);
 }
 
 void GLRenderer::FinishDrawingQuadList() { FlushTextureQuadCache(); }
@@ -2175,6 +2179,11 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
         gfx::Rect(output_surface_->SurfaceSize());
   }
   output_surface_->SwapBuffers(&compositor_frame);
+
+  // Release previously used overlay resources and hold onto the pending ones
+  // until the next swap buffers.
+  in_use_overlay_resources_.clear();
+  in_use_overlay_resources_.swap(pending_overlay_resources_);
 
   swap_buffer_rect_ = gfx::Rect();
 
@@ -3048,6 +3057,32 @@ void GLRenderer::ReinitializeGLState() {
 
 bool GLRenderer::IsContextLost() {
   return output_surface_->context_provider()->IsContextLost();
+}
+
+void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
+  if (!frame->overlay_list.size())
+    return;
+
+  ResourceProvider::ResourceIdArray resources;
+  OverlayCandidateList& overlays = frame->overlay_list;
+  OverlayCandidateList::iterator it;
+  for (it = overlays.begin(); it != overlays.end(); ++it) {
+    const OverlayCandidate& overlay = *it;
+    // Skip primary plane.
+    if (overlay.plane_z_order == 0)
+      continue;
+
+    pending_overlay_resources_.push_back(
+        make_scoped_ptr(new ResourceProvider::ScopedReadLockGL(
+            resource_provider(), overlay.resource_id)));
+
+    context_support_->ScheduleOverlayPlane(
+        overlay.plane_z_order,
+        overlay.transform,
+        pending_overlay_resources_.back()->texture_id(),
+        overlay.display_rect,
+        overlay.uv_rect);
+  }
 }
 
 }  // namespace cc

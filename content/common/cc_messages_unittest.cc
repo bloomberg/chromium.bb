@@ -439,8 +439,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                   arbitrary_rect1,
                   arbitrary_rectf1,
                   arbitrary_matrix,
-                  arbitrary_bool1,
-                  cc::RenderPass::NO_OVERLAY);
+                  arbitrary_bool1);
 
   pass_in->shared_quad_state_list.push_back(shared_state1_in.Pass());
   pass_in->quad_list.push_back(checkerboard_in.PassAs<DrawQuad>());
@@ -461,8 +460,7 @@ TEST_F(CCMessagesTest, AllQuads) {
                    arbitrary_rect1,
                    arbitrary_rectf1,
                    arbitrary_matrix,
-                   arbitrary_bool1,
-                   cc::RenderPass::NO_OVERLAY);
+                   arbitrary_bool1);
 
   pass_cmp->shared_quad_state_list.push_back(shared_state1_cmp.Pass());
   pass_cmp->quad_list.push_back(checkerboard_cmp.PassAs<DrawQuad>());
@@ -539,8 +537,7 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                   gfx::Rect(100, 100),
                   gfx::RectF(),
                   gfx::Transform(),
-                  false,
-                  cc::RenderPass::NO_OVERLAY);
+                  false);
 
   // The first SharedQuadState is used.
   scoped_ptr<SharedQuadState> shared_state1_in = SharedQuadState::Create();

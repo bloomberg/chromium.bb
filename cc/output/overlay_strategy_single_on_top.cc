@@ -19,7 +19,8 @@ OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
       resource_provider_(resource_provider) {}
 
 bool OverlayStrategySingleOnTop::Attempt(
-    RenderPassList* render_passes_in_draw_order) {
+    RenderPassList* render_passes_in_draw_order,
+    OverlayCandidateList* candidate_list) {
   // Only attempt to handle very simple case for now.
   if (!capability_checker_)
     return false;
@@ -37,14 +38,17 @@ bool OverlayStrategySingleOnTop::Attempt(
     return false;
 
   // Simple quads only.
-  if (!quad.quadTransform().IsIdentityOrTranslation() || quad.needs_blending ||
+  OverlayCandidate::OverlayTransform overlay_transform =
+      OverlayCandidate::GetOverlayTransform(quad.quadTransform(), quad.flipped);
+  if (overlay_transform == OverlayCandidate::INVALID ||
+      !quad.quadTransform().IsIdentityOrTranslation() || quad.needs_blending ||
       quad.shared_quad_state->opacity != 1.f ||
       quad.shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode ||
       quad.premultiplied_alpha || quad.background_color != SK_ColorTRANSPARENT)
     return false;
 
   // Add our primary surface.
-  OverlayCandidateValidator::OverlayCandidateList candidates;
+  OverlayCandidateList candidates;
   OverlayCandidate main_image;
   main_image.display_rect = root_render_pass->output_rect;
   main_image.format = RGBA_8888;
@@ -52,13 +56,13 @@ bool OverlayStrategySingleOnTop::Attempt(
 
   // Add the overlay.
   OverlayCandidate candidate;
-  gfx::RectF float_rect(quad.rect);
-  quad.quadTransform().TransformRect(&float_rect);
-  candidate.transform =
-      quad.flipped ? OverlayCandidate::FLIP_VERTICAL : OverlayCandidate::NONE;
-  candidate.display_rect = gfx::ToNearestRect(float_rect);
+  candidate.transform = overlay_transform;
+  candidate.display_rect =
+      OverlayCandidate::GetOverlayRect(quad.quadTransform(), quad.rect);
   candidate.uv_rect = BoundingRect(quad.uv_top_left, quad.uv_bottom_right);
   candidate.format = RGBA_8888;
+  candidate.resource_id = quad.resource_id;
+  candidate.plane_z_order = 1;
   candidates.push_back(candidate);
 
   // Check for support.
@@ -66,16 +70,12 @@ bool OverlayStrategySingleOnTop::Attempt(
 
   // If the candidate can be handled by an overlay, create a pass for it.
   if (candidates[1].overlay_handled) {
-    scoped_ptr<RenderPass> overlay_pass = RenderPass::Create();
-    overlay_pass->overlay_state = RenderPass::SIMPLE_OVERLAY;
-
     scoped_ptr<DrawQuad> overlay_quad = quad_list.take(quad_list.begin());
     quad_list.erase(quad_list.begin());
-    overlay_pass->quad_list.push_back(overlay_quad.Pass());
-    render_passes_in_draw_order->insert(render_passes_in_draw_order->begin(),
-                                        overlay_pass.Pass());
+    candidate_list->swap(candidates);
+    return true;
   }
-  return candidates[1].overlay_handled;
+  return false;
 }
 
 }  // namespace cc

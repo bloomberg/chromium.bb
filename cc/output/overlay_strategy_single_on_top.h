@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/output/overlay_candidate.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/quads/render_pass.h"
 
@@ -18,7 +19,8 @@ class CC_EXPORT OverlayStrategySingleOnTop : public OverlayProcessor::Strategy {
  public:
   OverlayStrategySingleOnTop(OverlayCandidateValidator* capability_checker,
                              ResourceProvider* resource_provider);
-  virtual bool Attempt(RenderPassList* render_passes_in_draw_order) OVERRIDE;
+  virtual bool Attempt(RenderPassList* render_passes_in_draw_order,
+                       OverlayCandidateList* candidate_list) OVERRIDE;
 
  private:
   OverlayCandidateValidator* capability_checker_;

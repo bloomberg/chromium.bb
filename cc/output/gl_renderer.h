@@ -220,6 +220,13 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void EnsureBackbuffer() OVERRIDE;
   void EnforceMemoryPolicy();
 
+  void ScheduleOverlays(DrawingFrame* frame);
+
+  typedef ScopedPtrVector<ResourceProvider::ScopedReadLockGL>
+      OverlayResourceLockList;
+  OverlayResourceLockList pending_overlay_resources_;
+  OverlayResourceLockList in_use_overlay_resources_;
+
   RendererCapabilitiesImpl capabilities_;
 
   unsigned offscreen_framebuffer_id_;
