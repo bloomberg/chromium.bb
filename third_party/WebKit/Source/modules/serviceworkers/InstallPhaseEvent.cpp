@@ -31,8 +31,8 @@
 #include "config.h"
 #include "InstallPhaseEvent.h"
 
+#include "bindings/v8/ScriptWrappable.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
-#include "platform/NotImplemented.h"
 
 namespace WebCore {
 
@@ -57,12 +57,19 @@ void InstallPhaseEvent::waitUntil(const ScriptValue& value)
 
 InstallPhaseEvent::InstallPhaseEvent()
 {
+    ScriptWrappable::init(this);
 }
 
 InstallPhaseEvent::InstallPhaseEvent(const AtomicString& type, const EventInit& initializer, PassRefPtr<WaitUntilObserver> observer)
     : Event(type, initializer)
     , m_observer(observer)
 {
+    ScriptWrappable::init(this);
+}
+
+const AtomicString& InstallPhaseEvent::interfaceName() const
+{
+    return EventNames::InstallPhaseEvent;
 }
 
 void InstallPhaseEvent::trace(Visitor* visitor)
