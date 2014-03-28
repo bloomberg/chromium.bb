@@ -43,13 +43,14 @@ class DatabaseThread;
 class ExecutionContext;
 class SecurityOrigin;
 
-class DatabaseContext FINAL : public ThreadSafeRefCounted<DatabaseContext>, public ActiveDOMObject {
+class DatabaseContext FINAL : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseContext>, public ActiveDOMObject {
 public:
     friend class DatabaseManager;
 
-    static PassRefPtr<DatabaseContext> create(ExecutionContext*);
+    static PassRefPtrWillBeRawPtr<DatabaseContext> create(ExecutionContext*);
 
     virtual ~DatabaseContext();
+    void trace(Visitor*);
 
     // For life-cycle management (inherited from ActiveDOMObject):
     virtual void contextDestroyed() OVERRIDE;
@@ -75,7 +76,7 @@ private:
 
     void stopSyncDatabases();
 
-    RefPtrWillBePersistent<DatabaseThread> m_databaseThread;
+    RefPtrWillBeMember<DatabaseThread> m_databaseThread;
 #if ENABLE(OILPAN)
     class DatabaseCloser {
     public:
@@ -85,7 +86,7 @@ private:
     private:
         DatabaseBackendBase& m_database;
     };
-    PersistentHeapHashMap<WeakMember<DatabaseBackendBase>, OwnPtr<DatabaseCloser> > m_openSyncDatabases;
+    HeapHashMap<WeakMember<DatabaseBackendBase>, OwnPtr<DatabaseCloser> > m_openSyncDatabases;
 #else
     // The contents of m_openSyncDatabases are raw pointers. It's safe because
     // DatabaseBackendSync is always closed before destruction.

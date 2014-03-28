@@ -99,7 +99,12 @@ private:
     AbstractDatabaseServer* m_server;
 
     // Access to the following fields require locking m_contextMapLock:
+#if ENABLE(OILPAN)
+    // We can't use PersistentHeapHashMap because multiple threads update the map.
+    typedef HashMap<ExecutionContext*, OwnPtr<Persistent<DatabaseContext> > > ContextMap;
+#else
     typedef HashMap<ExecutionContext*, RefPtr<DatabaseContext> > ContextMap;
+#endif
     ContextMap m_contextMap;
 #if !ASSERT_DISABLED
     int m_databaseContextRegisteredCount;

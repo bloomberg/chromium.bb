@@ -102,8 +102,12 @@ DatabaseContext* DatabaseManager::existingDatabaseContextFor(ExecutionContext* c
     ASSERT(m_databaseContextRegisteredCount >= 0);
     ASSERT(m_databaseContextInstanceCount >= 0);
     ASSERT(m_databaseContextRegisteredCount <= m_databaseContextInstanceCount);
-
+#if ENABLE(OILPAN)
+    const Persistent<DatabaseContext>* databaseContext = m_contextMap.get(context);
+    return databaseContext ? databaseContext->get() : 0;
+#else
     return m_contextMap.get(context);
+#endif
 }
 
 DatabaseContext* DatabaseManager::databaseContextFor(ExecutionContext* context)
@@ -120,7 +124,11 @@ void DatabaseManager::registerDatabaseContext(DatabaseContext* databaseContext)
 {
     MutexLocker locker(m_contextMapLock);
     ExecutionContext* context = databaseContext->executionContext();
+#if ENABLE(OILPAN)
+    m_contextMap.set(context, adoptPtr(new Persistent<DatabaseContext>(databaseContext)));
+#else
     m_contextMap.set(context, databaseContext);
+#endif
 #if !ASSERT_DISABLED
     m_databaseContextRegisteredCount++;
 #endif

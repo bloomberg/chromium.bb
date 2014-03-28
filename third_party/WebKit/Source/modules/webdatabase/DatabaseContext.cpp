@@ -87,9 +87,9 @@ namespace WebCore {
 // The RefPtrs in the Databases and ExecutionContext will ensure that the
 // DatabaseContext will outlive both regardless of which of the 2 destructs first.
 
-PassRefPtr<DatabaseContext> DatabaseContext::create(ExecutionContext* context)
+PassRefPtrWillBeRawPtr<DatabaseContext> DatabaseContext::create(ExecutionContext* context)
 {
-    RefPtr<DatabaseContext> self = adoptRef(new DatabaseContext(context));
+    RefPtrWillBeRawPtr<DatabaseContext> self = adoptRefWillBeNoop(new DatabaseContext(context));
     DatabaseManager::manager().registerDatabaseContext(self.get());
     return self.release();
 }
@@ -109,11 +109,15 @@ DatabaseContext::DatabaseContext(ExecutionContext* context)
 
 DatabaseContext::~DatabaseContext()
 {
-    ASSERT(!m_databaseThread || m_databaseThread->terminationRequested());
-
     // For debug accounting only. We must call this last. The assertions assume
     // this.
     DatabaseManager::manager().didDestructDatabaseContext();
+}
+
+void DatabaseContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_databaseThread);
+    visitor->trace(m_openSyncDatabases);
 }
 
 // This is called if the associated ExecutionContext is destructing while
@@ -123,7 +127,7 @@ DatabaseContext::~DatabaseContext()
 // It is not safe to just delete the context here.
 void DatabaseContext::contextDestroyed()
 {
-    RefPtr<DatabaseContext> protector(this);
+    RefPtrWillBeRawPtr<DatabaseContext> protector(this);
     stopDatabases();
     DatabaseManager::manager().unregisterDatabaseContext(this);
     ActiveDOMObject::contextDestroyed();

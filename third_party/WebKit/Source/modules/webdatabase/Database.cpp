@@ -85,6 +85,7 @@ Database::~Database()
 
 void Database::trace(Visitor* visitor)
 {
+    visitor->trace(m_databaseContext);
     DatabaseBackend::trace(visitor);
 }
 
