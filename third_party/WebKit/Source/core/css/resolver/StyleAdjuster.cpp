@@ -169,7 +169,6 @@ static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style, El
         case CSSPropertyWebkitTransform:
         case CSSPropertyTransformStyle:
         case CSSPropertyWebkitTransformStyle:
-        case CSSPropertyPerspective:
         case CSSPropertyWebkitPerspective:
         case CSSPropertyWebkitMask:
         case CSSPropertyWebkitMaskBoxImage:

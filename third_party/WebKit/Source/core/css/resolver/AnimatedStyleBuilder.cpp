@@ -553,7 +553,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitMaskSize:
         setOnFillLayers<CSSPropertyWebkitMaskSize>(style->accessMaskLayers(), value, state);
         return;
-    case CSSPropertyPerspective:
+    case CSSPropertyWebkitPerspective:
         style->setPerspective(clampTo<float>(toAnimatableDouble(value)->toDouble()));
         return;
     case CSSPropertyWebkitPerspectiveOriginX:
