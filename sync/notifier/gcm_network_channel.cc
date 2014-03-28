@@ -155,11 +155,13 @@ GCMNetworkChannel::GCMNetworkChannel(
       register_backoff_entry_(new net::BackoffEntry(&kRegisterBackoffPolicy)),
       diagnostic_info_(this),
       weak_factory_(this) {
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   delegate_->Initialize();
   Register();
 }
 
 GCMNetworkChannel::~GCMNetworkChannel() {
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void GCMNetworkChannel::UpdateCredentials(
@@ -261,6 +263,10 @@ void GCMNetworkChannel::OnGetTokenComplete(
     // sending message and at that time we'll retry requesting access token.
     DVLOG(1) << "RequestAccessToken failed: " << error.ToString();
     RecordOutgoingMessageStatus(ACCESS_TOKEN_FAILURE);
+    // Message won't get sent because of connection failure. Let's retry once
+    // connection is restored.
+    if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED)
+      NotifyStateChange(TRANSIENT_INVALIDATION_ERROR);
     cached_message_.clear();
     return;
   }
@@ -337,11 +343,21 @@ void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {
        fetcher->GetResponseCode() != net::HTTP_NO_CONTENT)) {
     DVLOG(1) << "URLFetcher failure";
     RecordOutgoingMessageStatus(POST_FAILURE);
+    NotifyStateChange(TRANSIENT_INVALIDATION_ERROR);
     return;
   }
 
   RecordOutgoingMessageStatus(OUTGOING_MESSAGE_SUCCESS);
+  NotifyStateChange(INVALIDATIONS_ENABLED);
   DVLOG(2) << "URLFetcher success";
+}
+
+void GCMNetworkChannel::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType connection_type) {
+  // Network connection is restored. Let's notify cacheinvalidations so it has
+  // chance to retry.
+  if (connection_type != net::NetworkChangeNotifier::CONNECTION_NONE)
+    NotifyStateChange(INVALIDATIONS_ENABLED);
 }
 
 GURL GCMNetworkChannel::BuildUrl(const std::string& registration_id) {

@@ -118,8 +118,8 @@ class GCMNetworkChannelTest
  public:
   GCMNetworkChannelTest()
       : delegate_(NULL),
-        url_fetchers_created_count_(0) {
-  }
+        url_fetchers_created_count_(0),
+        last_invalidator_state_(TRANSIENT_INVALIDATION_ERROR) {}
 
   virtual ~GCMNetworkChannelTest() {
   }
@@ -164,6 +164,7 @@ class GCMNetworkChannelTest
 
   virtual void OnNetworkChannelStateChanged(
       InvalidatorState invalidator_state) OVERRIDE {
+    last_invalidator_state_ = invalidator_state;
   }
 
   void OnIncomingMessage(std::string incoming_message) {
@@ -204,6 +205,10 @@ class GCMNetworkChannelTest
     return last_echo_token_;
   }
 
+  InvalidatorState get_last_invalidator_state() {
+    return last_invalidator_state_;
+  }
+
   void RunLoopUntilIdle() {
     base::RunLoop run_loop;
     run_loop.RunUntilIdle();
@@ -217,6 +222,7 @@ class GCMNetworkChannelTest
   scoped_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
   int url_fetchers_created_count_;
   std::string last_echo_token_;
+  InvalidatorState last_invalidator_state_;
 };
 
 void TestNetworkChannelURLFetcher::AddExtraRequestHeader(
@@ -233,10 +239,11 @@ void TestNetworkChannelURLFetcher::AddExtraRequestHeader(
 }
 
 TEST_F(GCMNetworkChannelTest, HappyCase) {
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
   EXPECT_FALSE(delegate()->message_callback.is_null());
   url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
                                          std::string(),
-                                         net::HTTP_OK,
+                                         net::HTTP_NO_CONTENT,
                                          net::URLRequestStatus::SUCCESS);
 
   // After construction GCMNetworkChannel should have called Register.
@@ -261,6 +268,7 @@ TEST_F(GCMNetworkChannelTest, HappyCase) {
       GoogleServiceAuthError::AuthErrorNone(), "access.token2");
   RunLoopUntilIdle();
   EXPECT_EQ(url_fetchers_created_count(), 1);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 }
 
 TEST_F(GCMNetworkChannelTest, FailedRegister) {
@@ -287,7 +295,7 @@ TEST_F(GCMNetworkChannelTest, FailedRegister) {
 TEST_F(GCMNetworkChannelTest, RegisterFinishesAfterSendMessage) {
   url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
                                          "",
-                                         net::HTTP_OK,
+                                         net::HTTP_NO_CONTENT,
                                          net::URLRequestStatus::SUCCESS);
 
   // After construction GCMNetworkChannel should have called Register.
@@ -409,6 +417,37 @@ TEST_F(GCMNetworkChannelTest, Base64EncodeDecode) {
   EXPECT_EQ("-_8", base64);
   EXPECT_TRUE(Base64DecodeURLSafe(base64, &plain));
   EXPECT_EQ(input, plain);
+}
+
+TEST_F(GCMNetworkChannelTest, TransientError) {
+  EXPECT_FALSE(delegate()->message_callback.is_null());
+  // POST will fail.
+  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
+                                         std::string(),
+                                         net::HTTP_SERVICE_UNAVAILABLE,
+                                         net::URLRequestStatus::SUCCESS);
+
+  delegate()->register_callback.Run("registration.id", gcm::GCMClient::SUCCESS);
+
+  network_channel()->SendMessage("abra.cadabra");
+  EXPECT_FALSE(delegate()->request_token_callback.is_null());
+  delegate()->request_token_callback.Run(
+      GoogleServiceAuthError::AuthErrorNone(), "access.token");
+  RunLoopUntilIdle();
+  EXPECT_EQ(url_fetchers_created_count(), 1);
+  // Failing HTTP POST should cause TRANSIENT_INVALIDATION_ERROR.
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
+  // Network change to CONNECTION_NONE shouldn't affect invalidator state.
+  network_channel()->OnNetworkChanged(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
+  // Network change to something else should trigger retry.
+  network_channel()->OnNetworkChanged(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
+  network_channel()->OnNetworkChanged(
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 }
 
 #if !defined(ANDROID)

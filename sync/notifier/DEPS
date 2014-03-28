@@ -3,6 +3,7 @@ include_rules = [
   "+jingle/notifier",
   "+net/base/backoff_entry.h",
   "+net/base/mock_host_resolver.h",
+  "+net/base/network_change_notifier.h",
   "+net/http/http_status_code.h",
   "+net/url_request",
 

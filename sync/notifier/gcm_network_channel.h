@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "net/base/backoff_entry.h"
+#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "sync/base/sync_export.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
@@ -48,6 +49,7 @@ struct GCMNetworkChannelDiagnostic {
 class SYNC_EXPORT_PRIVATE GCMNetworkChannel
     : public SyncNetworkChannel,
       public net::URLFetcherDelegate,
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
       public base::NonThreadSafe {
  public:
   GCMNetworkChannel(
@@ -69,6 +71,10 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
 
   // URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // NetworkChangeObserver implementation.
+  virtual void OnNetworkChanged(
+      net::NetworkChangeNotifier::ConnectionType connection_type) OVERRIDE;
 
  protected:
   void ResetRegisterBackoffEntryForTest(
