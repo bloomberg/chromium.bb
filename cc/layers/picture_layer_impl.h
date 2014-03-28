@@ -123,7 +123,9 @@ class CC_EXPORT PictureLayerImpl
   void RemoveAllTilings();
   void SyncFromActiveLayer(const PictureLayerImpl* other);
   void ManageTilings(bool animating_transform_to_screen);
-  bool ShouldHaveLowResTiling() const { return should_use_low_res_tiling_; }
+  bool ShouldHaveLowResTiling() const {
+    return should_use_low_res_tiling_ && !ShouldUseGpuRasterization();
+  }
   virtual bool ShouldAdjustRasterScale(
       bool animating_transform_to_screen) const;
   virtual void RecalculateRasterScales(

@@ -445,7 +445,7 @@ void RenderThreadImpl::Init() {
     }
   }
 
-  is_low_res_tiling_enabled_ = !is_gpu_rasterization_enabled_;
+  is_low_res_tiling_enabled_ = true;
   if (command_line.HasSwitch(switches::kDisableLowResTiling) &&
       !command_line.HasSwitch(switches::kEnableLowResTiling)) {
     is_low_res_tiling_enabled_ = false;

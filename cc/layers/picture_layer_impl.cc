@@ -482,8 +482,6 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
 void PictureLayerImpl::SetHasGpuRasterizationHint(bool has_hint) {
   bool old_should_use_gpu_rasterization = ShouldUseGpuRasterization();
   has_gpu_rasterization_hint_ = has_hint;
-  if (has_gpu_rasterization_hint_)
-    should_use_low_res_tiling_ = false;
   if (ShouldUseGpuRasterization() != old_should_use_gpu_rasterization)
     RemoveAllTilings();
 }
