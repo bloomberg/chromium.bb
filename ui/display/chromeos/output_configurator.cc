@@ -12,8 +12,15 @@
 #include "base/time/time.h"
 #include "ui/display/chromeos/display_mode.h"
 #include "ui/display/chromeos/display_snapshot.h"
+#include "ui/display/chromeos/native_display_delegate.h"
+
+#if defined(USE_OZONE)
+#include "ui/display/chromeos/ozone/native_display_delegate_ozone.h"
+#include "ui/display/chromeos/ozone/touchscreen_delegate_ozone.h"
+#elif defined(USE_X11)
 #include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 #include "ui/display/chromeos/x11/touchscreen_delegate_x11.h"
+#endif
 
 namespace ui {
 
@@ -189,12 +196,25 @@ void OutputConfigurator::Init(bool is_panel_fitting_enabled) {
     return;
 
   if (!native_display_delegate_) {
+#if defined(USE_OZONE)
+    native_display_delegate_.reset(new NativeDisplayDelegateOzone());
+#elif defined(USE_X11)
     native_display_delegate_.reset(new NativeDisplayDelegateX11());
+#else
+    NOTREACHED();
+#endif
     native_display_delegate_->AddObserver(this);
   }
 
-  if (!touchscreen_delegate_)
+  if (!touchscreen_delegate_) {
+#if defined(USE_OZONE)
+    touchscreen_delegate_.reset(new TouchscreenDelegateOzone());
+#elif defined(USE_X11)
     touchscreen_delegate_.reset(new TouchscreenDelegateX11());
+#else
+    NOTREACHED();
+#endif
+  }
 }
 
 void OutputConfigurator::ForceInitialConfigure(uint32_t background_color_argb) {
