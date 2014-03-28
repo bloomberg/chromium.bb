@@ -398,6 +398,7 @@
       </if>
       <if expr="chromeos">
         <include name="IDR_SOUND_STARTUP_WAV" file="resources\chromeos\sounds\startup.wav" type="BINDATA" />
+        <include name="IDR_SOUND_STARTUP2_WAV" file="resources\chromeos\sounds\startup2.wav" type="BINDATA" />
         <include name="IDR_SOUND_LOCK_WAV" file="resources\chromeos\sounds\lock.wav" type="BINDATA" />
         <include name="IDR_SOUND_UNLOCK_WAV" file="resources\chromeos\sounds\unlock.wav" type="BINDATA" />
         <include name="IDR_SOUND_SHUTDOWN_WAV" file="resources\chromeos\sounds\shutdown.wav" type="BINDATA" />
