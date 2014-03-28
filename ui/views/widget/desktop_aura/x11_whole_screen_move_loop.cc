@@ -8,6 +8,7 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/run_loop.h"
@@ -57,13 +58,24 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
     : delegate_(delegate),
       in_move_loop_(false),
       should_reset_mouse_flags_(false),
-      grab_input_window_(None) {
+      grab_input_window_(None),
+      weak_factory_(this) {
+  last_xmotion_.type = LASTEvent;
 }
 
 X11WholeScreenMoveLoop::~X11WholeScreenMoveLoop() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostLinux, MessagePumpDispatcher implementation:
+
+void X11WholeScreenMoveLoop::DispatchMouseMovement() {
+  if (!weak_factory_.HasWeakPtrs())
+    return;
+  weak_factory_.InvalidateWeakPtrs();
+  DCHECK_EQ(MotionNotify, last_xmotion_.type);
+  delegate_->OnMouseMovement(&last_xmotion_);
+  last_xmotion_.type = LASTEvent;
+}
 
 uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
   XEvent* xev = event;
@@ -79,13 +91,23 @@ uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
         drag_widget_->SetBounds(gfx::Rect(location, drag_image_.size()));
         drag_widget_->StackAtTop();
       }
-      delegate_->OnMouseMovement(&xev->xmotion);
+      last_xmotion_ = xev->xmotion;
+      if (!weak_factory_.HasWeakPtrs()) {
+        // Post a task to dispatch mouse movement event when control returns to
+        // the message loop. This allows smoother dragging since the events are
+        // dispatched without waiting for the drag widget updates.
+        base::MessageLoopForUI::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&X11WholeScreenMoveLoop::DispatchMouseMovement,
+                       weak_factory_.GetWeakPtr()));
+      }
       break;
     }
     case ButtonRelease: {
       if (xev->xbutton.button == Button1) {
         // Assume that drags are being done with the left mouse button. Only
         // break the drag if the left mouse button was released.
+        DispatchMouseMovement();
         delegate_->OnMouseReleased();
       }
       break;
@@ -162,6 +184,10 @@ void X11WholeScreenMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
 void X11WholeScreenMoveLoop::EndMoveLoop() {
   if (!in_move_loop_)
     return;
+
+  // Prevent DispatchMouseMovement from dispatching any posted motion event.
+  weak_factory_.InvalidateWeakPtrs();
+  last_xmotion_.type = LASTEvent;
 
   // We undo our emulated mouse click from RunMoveLoop();
   if (should_reset_mouse_flags_) {

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
@@ -62,6 +63,9 @@ class X11WholeScreenMoveLoop : public base::MessagePumpDispatcher {
   // (defined as having a pixel with alpha > 32). If so, return true.
   bool CheckIfIconValid();
 
+  // Dispatch mouse movement event to |delegate_| in a posted task.
+  void DispatchMouseMovement();
+
   X11WholeScreenMoveLoopDelegate* delegate_;
 
   // Are we running a nested message loop from RunMoveLoop()?
@@ -81,6 +85,8 @@ class X11WholeScreenMoveLoop : public base::MessagePumpDispatcher {
   scoped_ptr<Widget> drag_widget_;
   gfx::ImageSkia drag_image_;
   gfx::Vector2dF drag_offset_;
+  XMotionEvent last_xmotion_;
+  base::WeakPtrFactory<X11WholeScreenMoveLoop> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WholeScreenMoveLoop);
 };
