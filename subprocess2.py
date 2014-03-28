@@ -247,9 +247,9 @@ class Popen(subprocess.Popen):
             'http://code.google.com/p/chromium/wiki/CygwinDllRemappingFailure '
             'to learn how to fix this error; you need to rebase your cygwin '
             'dlls')
-      # Popen() can throw OSError when cwd or args[0] doesn't exist. Let it go
-      # through
-      raise
+      # Popen() can throw OSError when cwd or args[0] doesn't exist.
+      raise OSError('%s or %s probably doesn\'t exist' %
+                    (kwargs.get('cwd'), args[0]))
 
   def _tee_threads(self, input):  # pylint: disable=W0622
     """Does I/O for a process's pipes using threads.
