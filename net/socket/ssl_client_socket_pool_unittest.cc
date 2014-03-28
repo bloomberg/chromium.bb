@@ -159,7 +159,7 @@ class SSLClientSocketPoolTest
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : NULL,
         HostPortPair("host", 443),
         ssl_config_,
-        PRIVACY_MODE_DISABLED,
+        kPrivacyModeDisabled,
         0,
         false,
         want_spdy_over_npn));
@@ -830,7 +830,7 @@ TEST_P(SSLClientSocketPoolTest, IPPooling) {
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
-        PRIVACY_MODE_DISABLED);
+        kPrivacyModeDisabled);
   }
 
   MockRead reads[] = {
@@ -891,7 +891,7 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
-        PRIVACY_MODE_DISABLED);
+        kPrivacyModeDisabled);
   }
 
   MockRead reads[] = {

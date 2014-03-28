@@ -206,7 +206,7 @@ int HttpProxyConnectJob::DoSSLConnect() {
   if (params_->tunnel()) {
     SpdySessionKey key(params_->destination().host_port_pair(),
                        ProxyServer::Direct(),
-                       PRIVACY_MODE_DISABLED);
+                       kPrivacyModeDisabled);
     if (params_->spdy_session_pool()->FindAvailableSession(key, net_log())) {
       using_spdy_ = true;
       next_state_ = STATE_SPDY_PROXY_CREATE_STREAM;
@@ -302,7 +302,7 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   DCHECK(params_->tunnel());
   SpdySessionKey key(params_->destination().host_port_pair(),
                      ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED);
+                     kPrivacyModeDisabled);
   SpdySessionPool* spdy_pool = params_->spdy_session_pool();
   base::WeakPtr<SpdySession> spdy_session =
       spdy_pool->FindAvailableSession(key, net_log());

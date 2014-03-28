@@ -146,7 +146,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   client_crypto_config.SetDefaults();
 
   QuicSessionKey server_key(kServerHostname, kServerPort, false,
-                            PRIVACY_MODE_DISABLED);
+                            kPrivacyModeDisabled);
   scoped_ptr<QuicCryptoClientStream> client(new QuicCryptoClientStream(
       server_key, client_session.get(), NULL, &client_crypto_config));
   client_session->SetCryptoStream(client.get());

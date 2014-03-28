@@ -158,7 +158,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       proxy_(ProxyServer::SCHEME_HTTPS, proxy_host_port_),
       endpoint_spdy_session_key_(endpoint_host_port_pair_,
                                  proxy_,
-                                 PRIVACY_MODE_DISABLED) {
+                                 kPrivacyModeDisabled) {
   session_deps_.net_log = net_log_.bound().net_log();
 }
 

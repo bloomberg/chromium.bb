@@ -124,7 +124,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                context.server_bound_cert_service,
                context.transport_security_state,
                context.cert_transparency_verifier,
-               (params->privacy_mode() == PRIVACY_MODE_ENABLED
+               (params->privacy_mode() == kPrivacyModeEnabled
                     ? "pm/" + context.ssl_session_cache_shard
                     : context.ssl_session_cache_shard)),
       callback_(base::Bind(&SSLConnectJob::OnIOComplete,

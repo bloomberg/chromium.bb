@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
   net::tools::QuicClient client(
       net::IPEndPoint(addr, FLAGS_port),
       net::QuicSessionKey(FLAGS_hostname, FLAGS_port, FLAGS_secure,
-                          net::PRIVACY_MODE_DISABLED),
+                          net::kPrivacyModeDisabled),
       net::QuicSupportedVersions(), true);
 
   client.Initialize();

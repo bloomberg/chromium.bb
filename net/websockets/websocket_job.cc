@@ -388,7 +388,7 @@ void WebSocketJob::AddCookieHeaderAndSend() {
 void WebSocketJob::LoadCookieCallback(const std::string& cookie) {
   if (!cookie.empty())
     // TODO(tyoshino): Sending cookie means that connection doesn't need
-    // PRIVACY_MODE_ENABLED as cookies may be server-bound and channel id
+    // kPrivacyModeEnabled as cookies may be server-bound and channel id
     // wouldn't negatively affect privacy anyway. Need to restart connection
     // or refactor to determine cookie status prior to connecting.
     handshake_request_->AppendHeaderIfMissing("Cookie", cookie);

@@ -100,7 +100,7 @@ SocketStream::SocketStream(const GURL& url, Delegate* delegate,
       proxy_url_(url),
       pac_request_(NULL),
       connection_(new ClientSocketHandle),
-      privacy_mode_(PRIVACY_MODE_DISABLED),
+      privacy_mode_(kPrivacyModeDisabled),
       // Unretained() is required; without it, Bind() creates a circular
       // dependency and the SocketStream object will not be freed.
       io_callback_(base::Bind(&SocketStream::OnIOCompleted,
@@ -166,7 +166,7 @@ void SocketStream::CheckPrivacyMode() {
   if (context_ && context_->network_delegate()) {
     bool enable = context_->network_delegate()->CanEnablePrivacyMode(url_,
                                                                      url_);
-    privacy_mode_ = enable ? PRIVACY_MODE_ENABLED : PRIVACY_MODE_DISABLED;
+    privacy_mode_ = enable ? kPrivacyModeEnabled : kPrivacyModeDisabled;
     // Disable Channel ID if privacy mode is enabled.
     if (enable)
       server_ssl_config_.channel_id_enabled = false;

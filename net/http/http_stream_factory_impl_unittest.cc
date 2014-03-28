@@ -550,7 +550,7 @@ TEST_P(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
     // Put a SpdySession in the pool.
     HostPortPair host_port_pair("www.google.com", 443);
     SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                       PRIVACY_MODE_DISABLED);
+                       kPrivacyModeDisabled);
     ignore_result(CreateFakeSpdySession(session->spdy_session_pool(), key));
 
     CapturePreconnectsTransportSocketPool* transport_conn_pool =
@@ -661,13 +661,13 @@ TEST_P(HttpStreamFactoryTest, PrivacyModeDisablesChannelId) {
   // Set an existing SpdySession in the pool.
   HostPortPair host_port_pair("www.google.com", 443);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_ENABLED);
+                     kPrivacyModeEnabled);
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
   request_info.load_flags = 0;
-  request_info.privacy_mode = PRIVACY_MODE_DISABLED;
+  request_info.privacy_mode = kPrivacyModeDisabled;
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
@@ -720,7 +720,7 @@ TEST_P(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
   request_info.load_flags = 0;
-  request_info.privacy_mode = PRIVACY_MODE_DISABLED;
+  request_info.privacy_mode = kPrivacyModeDisabled;
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
@@ -741,7 +741,7 @@ TEST_P(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
 
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
 
-  request_info.privacy_mode = PRIVACY_MODE_ENABLED;
+  request_info.privacy_mode = kPrivacyModeEnabled;
   scoped_ptr<HttpStreamRequest> request3(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config,

@@ -209,7 +209,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                               &crypto_client_stream_factory_,
                               make_scoped_ptr((QuicServerInfo*)NULL),
                               QuicSessionKey(kServerHostname, kServerPort,
-                                             false, PRIVACY_MODE_DISABLED),
+                                             false, kPrivacyModeDisabled),
                               DefaultQuicConfig(), &crypto_config_, NULL));
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());

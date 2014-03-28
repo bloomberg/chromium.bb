@@ -180,7 +180,7 @@ int CryptoTestUtils::HandshakeWithFakeClient(
     crypto_config.SetChannelIDSigner(ChannelIDSignerForTesting());
   }
   QuicSessionKey server_key(kServerHostname, kServerPort, false,
-                            PRIVACY_MODE_DISABLED);
+                            kPrivacyModeDisabled);
   QuicCryptoClientStream client(server_key, &client_session, NULL,
                                 &crypto_config);
   client_session.SetCryptoStream(&client);

@@ -135,7 +135,7 @@ class HttpProxyClientSocketPoolTest
         NULL,
         HostPortPair(kHttpsProxyHost, 443),
         SSLConfig(),
-        PRIVACY_MODE_DISABLED,
+        kPrivacyModeDisabled,
         0,
         false,
         false);

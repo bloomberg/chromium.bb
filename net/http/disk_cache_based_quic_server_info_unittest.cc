@@ -58,7 +58,7 @@ TEST(DiskCacheBasedQuicServerInfo, DeleteInCallback) {
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   MockHttpCache cache(factory);
   QuicSessionKey server_key("www.verisign.com", 443, true,
-                            PRIVACY_MODE_DISABLED);
+                            kPrivacyModeDisabled);
   scoped_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   quic_server_info->Start();
@@ -76,7 +76,7 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   AddMockTransaction(&kHostInfoTransaction1);
   TestCompletionCallback callback;
 
-  QuicSessionKey server_key("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  QuicSessionKey server_key("www.google.com", 443, true, kPrivacyModeDisabled);
   scoped_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   quic_server_info->Start();
@@ -143,8 +143,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   TestCompletionCallback callback;
 
   // Persist data for port 443.
-  QuicSessionKey server_key1("www.google.com", 443, true,
-                             PRIVACY_MODE_DISABLED);
+  QuicSessionKey server_key1("www.google.com", 443, true, kPrivacyModeDisabled);
   scoped_ptr<QuicServerInfo> quic_server_info1(
       new DiskCacheBasedQuicServerInfo(server_key1, cache.http_cache()));
   quic_server_info1->Start();
@@ -168,8 +167,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Persist data for port 80.
-  QuicSessionKey server_key2("www.google.com", 80, false,
-                             PRIVACY_MODE_DISABLED);
+  QuicSessionKey server_key2("www.google.com", 80, false, kPrivacyModeDisabled);
   scoped_ptr<QuicServerInfo> quic_server_info2(
       new DiskCacheBasedQuicServerInfo(server_key2, cache.http_cache()));
   quic_server_info2->Start();
@@ -232,7 +230,7 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   AddMockTransaction(&kHostInfoTransaction1);
   TestCompletionCallback callback;
 
-  QuicSessionKey server_key("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  QuicSessionKey server_key("www.google.com", 443, true, kPrivacyModeDisabled);
   scoped_ptr<QuicServerInfo> quic_server_info(
       new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());

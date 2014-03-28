@@ -56,7 +56,7 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicCryptoClientConfig config;
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
-  QuicSessionKey server_key("www.google.com", 80, false, PRIVACY_MODE_DISABLED);
+  QuicSessionKey server_key("www.google.com", 80, false, kPrivacyModeDisabled);
   config.FillInchoateClientHello(server_key, QuicVersionMax(), &state,
                                  &params, &msg);
 
@@ -131,14 +131,14 @@ TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
 TEST(QuicCryptoClientConfigTest, InitializeFrom) {
   QuicCryptoClientConfig config;
   QuicSessionKey canonical_key1("www.google.com", 80, false,
-                                PRIVACY_MODE_DISABLED);
+                                kPrivacyModeDisabled);
   QuicCryptoClientConfig::CachedState* state =
       config.LookupOrCreate(canonical_key1);
   // TODO(rch): Populate other fields of |state|.
   state->set_source_address_token("TOKEN");
   state->SetProofValid();
 
-  QuicSessionKey other_key("mail.google.com", 80, false, PRIVACY_MODE_DISABLED);
+  QuicSessionKey other_key("mail.google.com", 80, false, kPrivacyModeDisabled);
   config.InitializeFrom(other_key, canonical_key1, &config);
   QuicCryptoClientConfig::CachedState* other = config.LookupOrCreate(other_key);
 
