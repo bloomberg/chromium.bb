@@ -7,8 +7,7 @@
 #include <functional>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/fake_auth_status_provider.h"
-#include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/fake_auth_status_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const char kTestAccountId[] = "testuser@test.com";

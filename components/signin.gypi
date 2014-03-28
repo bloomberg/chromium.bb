@@ -53,15 +53,29 @@
         'signin/core/browser/webdata/token_web_data.cc',
         'signin/core/browser/webdata/token_web_data.h',
       ],
-    },
-  ],
-  'conditions': [
-    ['OS=="android"', {
-      'sources!': [
-        # Not used on Android.
-        'signin/core/browser/mutable_profile_oauth2_token_service.cc',
-        'signin/core/browser/mutable_profile_oauth2_token_service.h',
+      'conditions': [
+        ['OS=="android"', {
+          'sources!': [
+            # Not used on Android.
+            'signin/core/browser/mutable_profile_oauth2_token_service.cc',
+            'signin/core/browser/mutable_profile_oauth2_token_service.h',
+          ],
+        }],
       ],
-    }],
+    },
+    {
+      'target_name': 'signin_core_browser_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'signin_core_browser',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'signin/core/browser/fake_auth_status_provider.cc',
+        'signin/core/browser/fake_auth_status_provider.h',
+      ],
+    },
   ],
 }

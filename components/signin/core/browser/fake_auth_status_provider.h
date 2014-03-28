@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_FAKE_AUTH_STATUS_PROVIDER_H_
-#define CHROME_BROWSER_SIGNIN_FAKE_AUTH_STATUS_PROVIDER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_AUTH_STATUS_PROVIDER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_AUTH_STATUS_PROVIDER_H_
 
 #include "components/signin/core/browser/signin_error_controller.h"
 
@@ -35,4 +35,4 @@ class FakeAuthStatusProvider
   GoogleServiceAuthError auth_error_;
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_FAKE_AUTH_STATUS_PROVIDER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_FAKE_AUTH_STATUS_PROVIDER_H_

@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/fake_auth_status_provider.h"
+#include "components/signin/core/browser/fake_auth_status_provider.h"
 
 FakeAuthStatusProvider::FakeAuthStatusProvider(SigninErrorController* error)
   : error_provider_(error),
