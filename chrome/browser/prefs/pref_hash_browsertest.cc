@@ -148,8 +148,19 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
   }
 };
 
+#if defined(OS_CHROMEOS)
+// PrefHash service has been disabled on ChromeOS: crbug.com/343261
+#define MAYBE_PRE_PRE_InitializeUnloadedProfiles DISABLED_PRE_PRE_InitializeUnloadedProfiles
+#define MAYBE_PRE_InitializeUnloadedProfiles DISABLED_PRE_InitializeUnloadedProfiles
+#define MAYBE_InitializeUnloadedProfiles DISABLED_InitializeUnloadedProfiles
+#else
+#define MAYBE_PRE_PRE_InitializeUnloadedProfiles PRE_PRE_InitializeUnloadedProfiles
+#define MAYBE_PRE_InitializeUnloadedProfiles PRE_InitializeUnloadedProfiles
+#define MAYBE_InitializeUnloadedProfiles InitializeUnloadedProfiles
+#endif
+
 IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
-                       PRE_PRE_InitializeUnloadedProfiles) {
+                       MAYBE_PRE_PRE_InitializeUnloadedProfiles) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -179,7 +190,7 @@ IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
-                       PRE_InitializeUnloadedProfiles) {
+                       MAYBE_PRE_InitializeUnloadedProfiles) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
@@ -216,7 +227,7 @@ IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
-                       InitializeUnloadedProfiles) {
+                       MAYBE_InitializeUnloadedProfiles) {
   if (!profiles::IsMultipleProfilesEnabled())
     return;
 
