@@ -64,15 +64,15 @@ DO_SIZE=true
 
 readonly SCONS_OUT="${NACL_ROOT}/scons-out"
 readonly TC_ROOT="${NACL_ROOT}/toolchain"
+readonly TC_BASE="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_${BUILD_ARCH_SHORT}"
 
-readonly ARM_TRUSTED_TC="${TC_ROOT}/linux_arm-trusted"
+readonly ARM_TRUSTED_TC="${TC_BASE}/arm_trusted"
 readonly QEMU_TOOL="${ARM_TRUSTED_TC}/run_under_qemu_arm"
 
-readonly PNACL_TC=\
-"${TC_ROOT}/pnacl_${BUILD_PLATFORM}_${BUILD_ARCH}/${PNACL_LIBMODE}"
-readonly ARM_LLC_NEXE=${TC_ROOT}/pnacl_translator/armv7/bin/pnacl-llc.nexe
+readonly PNACL_TC="${TC_BASE}/pnacl_newlib/${PNACL_LIBMODE}"
+readonly ARM_LLC_NEXE="${TC_BASE}/pnacl_translator/armv7/bin/pnacl-llc.nexe"
 
-readonly NNACL_TC="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
+readonly NNACL_TC="${TC_BASE}/nacl_${BUILD_ARCH_SHORT}_glibc"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/x86_64-nacl/lib32/runnable-ld.so"
 readonly RUNNABLE_LD_X8664="${NNACL_TC}/x86_64-nacl/lib/runnable-ld.so"
 
@@ -350,7 +350,7 @@ SetupPnaclTranslatorFastX8664Opt() {
 
 
 SetupPnaclTranslatorJITX8632Common() {
- SetupSelLdr x86-32 "" "-S" "${RUNNABLE_LD_X8632} -- --library-path ${NNACL_TC}/x86_64-nacl/lib32 ${NACL_ROOT}/toolchain/pnacl_linux_x86/glibc/tools-sb/x8632/nonsrpc/bin/lli.x8632.nexe -asm-verbose=false -march=x86 -mcpu=pentium4 -mtriple=i686-none-nacl-gnu -jit-emit-debug=false -disable-lazy-compilation"
+ SetupSelLdr x86-32 "" "-S" "${RUNNABLE_LD_X8632} -- --library-path ${NNACL_TC}/x86_64-nacl/lib32 ${TC_BASE}/pnacl_newlib/glibc/tools-sb/x8632/nonsrpc/bin/lli.x8632.nexe -asm-verbose=false -march=x86 -mcpu=pentium4 -mtriple=i686-none-nacl-gnu -jit-emit-debug=false -disable-lazy-compilation"
   DO_SIZE=false
   DASHDASH=""
 }
@@ -710,6 +710,7 @@ BuildBenchmarks() {
          BUILD_PLATFORM=${BUILD_PLATFORM} \
          SCONS_BUILD_PLATFORM=${SCONS_BUILD_PLATFORM} \
          BUILD_ARCH=${BUILD_ARCH} \
+         BUILD_ARCH_SHORT=${BUILD_ARCH_SHORT} \
          PNACL_LIBMODE=${PNACL_LIBMODE} \
          ${i#*.}.${SUFFIX}
     cd ..

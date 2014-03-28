@@ -30,8 +30,8 @@ def CanRunHost():
 def _SetupLinuxHostDir(env, nacl_dir):
   # Use the 32-bit path by default, but fall back to 64-bit if the 32-bit does
   # not exist.
-  dir_template = os.path.join(nacl_dir, 'toolchain', 'pnacl_linux_x86',
-                              'host_%s')
+  dir_template = os.path.join(nacl_dir, 'toolchain', 'linux_x86',
+                              'pnacl_newlib', 'host_%s')
   dir_32 = dir_template % 'x86_32'
   dir_64 = dir_template % 'x86_64'
   driver_tools.AddHostBinarySearchPath(
@@ -45,7 +45,10 @@ def SetupNaClDir(env):
 def SetupToolchainDir(env):
   test_dir = os.path.abspath(dirname(__file__))
   nacl_dir = dirname(dirname(dirname(test_dir)))
-  toolchain_dir = os.path.join(nacl_dir, 'toolchain')
+  os_name = driver_tools.GetOSName()
+
+  toolchain_dir = os.path.join(nacl_dir, 'toolchain', '%s_x86' % os_name,
+                               'pnacl_newlib')
   env.set('BASE_TOOLCHAIN', toolchain_dir)
 
 def SetupHostDir(env):
@@ -55,16 +58,17 @@ def SetupHostDir(env):
   test_dir = os.path.abspath(dirname(__file__))
   nacl_dir = dirname(dirname(dirname(test_dir)))
   if sys.platform == 'darwin':
-    os_shortname = 'mac'
     host_arch = 'x86_64'
   elif sys.platform.startswith('linux'):
     _SetupLinuxHostDir(env, nacl_dir)
     return
   elif sys.platform in ('cygwin', 'win32'):
-    os_shortname = 'win'
-    host_arch= 'x86_32'
+    host_arch = 'x86_32'
+
+  os_shortname = driver_tools.GetOSName()
   host_dir = os.path.join(nacl_dir, 'toolchain',
-                          'pnacl_%s_x86' % os_shortname,
+                          '%s_x86' % os_shortname,
+                          'pnacl_newlib',
                           'host_%s' % host_arch)
   driver_tools.AddHostBinarySearchPath(host_dir)
 

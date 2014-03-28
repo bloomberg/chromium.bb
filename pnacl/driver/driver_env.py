@@ -26,7 +26,7 @@ INITIAL_ENV = {
   'DRIVER_REV_FILE' : '${DRIVER_BIN}/REV',
 
   'BASE_NACL'       : '${@FindBaseNaCl}',      # Absolute path of native_client/
-  'BASE_TOOLCHAIN'  : '${@FindBaseToolchain}', # Absolute path to toolchain/
+  'BASE_TOOLCHAIN'  : '${@FindBaseToolchain}', # Absolute path to toolchain/OS_ARCH/
   'BASE'            : '${@FindBasePNaCl}',     # Absolute path to PNaCl
   'BUILD_OS'        : '${@GetBuildOS}',        # "linux", "darwin" or "windows"
   'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
@@ -128,9 +128,9 @@ INITIAL_ENV = {
   'EMULATOR_X8664'      : '',
   # NOTE: this is currently the only dependency on the arm trusted TC
   'EMULATOR_ARM'        :
-      '${BASE_NACL}/toolchain/linux_arm-trusted/run_under_qemu_arm',
+      '${BASE_NACL}/toolchain/linux_x86/arm_trusted/run_under_qemu_arm',
   'EMULATOR_MIPS32'     :
-      '${BASE_NACL}/toolchain/linux_mips-trusted/run_under_qemu_mips32',
+      '${BASE_NACL}/toolchain/linux_x86/mips_trusted/run_under_qemu_mips32',
 
   'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
   'BOOTSTRAP_LDR' : '${SCONS_STAGING}/nacl_helper_bootstrap${EXEC_EXT}',

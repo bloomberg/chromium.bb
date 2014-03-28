@@ -30,7 +30,7 @@ readonly NAME_ARM_TRY_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_TRY_DOWNLOAD)
 readonly NAME_ARM_UPLOAD=$(${BUILDBOT_PNACL} NAME_ARM_UPLOAD)
 readonly NAME_ARM_DOWNLOAD=$(${BUILDBOT_PNACL} NAME_ARM_DOWNLOAD)
 
-readonly QEMU_TOOL="$(pwd)/toolchain/linux_arm-trusted/run_under_qemu_arm"
+readonly QEMU_TOOL="$(pwd)/toolchain/linux_x86/arm_trusted/run_under_qemu_arm"
 
 # Note: the tool for updating the canned nexes lives at:
 #        tools/canned_nexe_tool.sh

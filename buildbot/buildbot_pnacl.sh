@@ -52,15 +52,16 @@ setup-goma() {
 }
 
 tc-clobber() {
-  local label=$1
-  local clobber_translators=$2
+  local toolchain_dir=$1
+  local toolchain_name=$2
+  local clobber_translators=$3
 
   echo @@@BUILD_STEP tc_clobber@@@
-  rm -rf toolchain/${label}
-  rm -rf toolchain/test-log
+  rm -rf ${toolchain_dir}/${toolchain_name}
+  rm -rf ${toolchain_dir}/test-log
   rm -rf pnacl*.tgz pnacl/pnacl*.tgz
   if ${clobber_translators} ; then
-      rm -rf toolchain/pnacl_translator
+      rm -rf ${toolchain_dir}/pnacl_translator
   fi
 }
 
@@ -102,15 +103,14 @@ tc-compile-toolchain() {
 }
 
 tc-untar-toolchain() {
-  local label=$1
+  local toolchain_dir=$1
+  local toolchain_name=$2
   echo @@@BUILD_STEP untar_toolchain@@@
   # Untar to ensure we can and to place the toolchain where the main build
   # expects it to be.
-  rm -rf toolchain/${label}
-  mkdir -p toolchain/${label}
-  pushd toolchain/${label}
-  tar xfz ../../pnacl-toolchain.tgz
-  popd
+  rm -rf ${toolchain_dir}/${toolchain_name}
+  mkdir -p ${toolchain_dir}/${toolchain_name}
+  tar xfz pnacl-toolchain.tgz -C "${toolchain_dir}/${toolchain_name}"
 }
 
 tc-build-translator() {
@@ -148,9 +148,11 @@ tc-archive-translator() {
 }
 
 tc-build-all() {
-  local label=$1
-  local is_try=$2
-  local build_translator=$3
+  local toolchain_dir=$1
+  local toolchain_name=$2
+  local label=$3
+  local is_try=$4
+  local build_translator=$5
 
   # Tell build.sh and test.sh that we're a bot.
   export PNACL_BUILDBOT=true
@@ -158,7 +160,7 @@ tc-build-all() {
   export PNACL_PRUNE=true
 
   clobber
-  tc-clobber ${label} ${build_translator}
+  tc-clobber ${toolchain_dir} ${toolchain_name} ${build_translator}
 
   # Run checkdeps so that the PNaCl toolchain trybots catch mistakes
   # that would cause the normal NaCl bots to fail.
@@ -169,7 +171,7 @@ tc-build-all() {
   # For now only linux64 (which also builds the translator) builds a fat
   # toolchain, so just use build_translator to control fat toolchain build
   tc-compile-toolchain ${build_translator}
-  tc-untar-toolchain ${label}
+  tc-untar-toolchain ${toolchain_dir} ${toolchain_name}
   if ! ${is_try} ; then
     tc-archive ${label}
   fi
@@ -298,7 +300,7 @@ gyp-arm-build() {
   if [ "${BUILD_MODE_HOST}" = "DEBUG" ] ; then
       gypmode="Debug"
   fi
-  local toolchain_dir=native_client/toolchain/linux_arm-trusted
+  local toolchain_dir=native_client/toolchain/linux_x86/arm_trusted
   local extra="-isystem ${toolchain_dir}/usr/include \
                -Wl,-rpath-link=${toolchain_dir}/lib/arm-linux-gnueabi \
                -L${toolchain_dir}/lib \
@@ -499,7 +501,7 @@ mode-buildbot-arm-hw-try() {
 tc-tests-all() {
   local is_try=$1
 
-  local label="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_LABEL}"
+  local label="pnaclsdk_mode=custom:toolchain/${PNACL_TOOLCHAIN_DIR}"
   local scons_flags="-k skip_trusted_tests=1 -j8 ${label}"
 
   llvm-regression
@@ -561,8 +563,10 @@ mode-buildbot-tc-x8664-linux() {
   setup-goma
   local is_try=$1
   FAIL_FAST=false
+  export PNACL_TOOLCHAIN_DIR=linux_x86/pnacl_newlib
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} true
+  tc-build-all toolchain/linux_x86 pnacl_newlib \
+      ${PNACL_TOOLCHAIN_LABEL} ${is_try} true
   HOST_ARCH=x86_64 tc-tests-all ${is_try}
 }
 
@@ -587,9 +591,11 @@ mode-buildbot-tc-x8632-linux() {
   setup-goma
   local is_try=$1
   FAIL_FAST=false
+  export PNACL_TOOLCHAIN_DIR=linux_x86/pnacl_newlib
   export PNACL_TOOLCHAIN_LABEL=pnacl_linux_x86
   # For now, just use this bot to test a pure 32 bit build but don't upload
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} true false
+  tc-build-all toolchain/linux_x86 pnacl_newlib \
+      ${PNACL_TOOLCHAIN_LABEL} true false
   HOST_ARCH=x86_32 tc-tests-fast "x86-32"
 
   echo "@@@BUILD_STEP test unsandboxed mode@@@"
@@ -612,10 +618,12 @@ mode-buildbot-tc-x8632-linux() {
 mode-buildbot-tc-x8632-mac() {
   local is_try=$1
   FAIL_FAST=false
+  export PNACL_TOOLCHAIN_DIR=mac_x86/pnacl_newlib
   export PNACL_TOOLCHAIN_LABEL=pnacl_mac_x86
   # We can't test ARM because we do not have QEMU for Mac.
   # We can't test X86-64 because NaCl X86-64 Mac support is not in good shape.
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
+  tc-build-all toolchain/mac_x86 pnacl_newlib \
+      ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
   HOST_ARCH=x86_32 tc-tests-fast "x86-32"
 }
 
@@ -623,8 +631,10 @@ mode-buildbot-tc-x8664-win() {
   local is_try=$1
   FAIL_FAST=false
   # NOTE: this is a 64bit bot but the TC generated is 32bit
+  export PNACL_TOOLCHAIN_DIR=win_x86_pnacl/pnacl_newlib
   export PNACL_TOOLCHAIN_LABEL=pnacl_win_x86
-  tc-build-all ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
+  tc-build-all toolchain/win_x86_pnacl pnacl_newlib \
+      ${PNACL_TOOLCHAIN_LABEL} ${is_try} false
 
   # We can't test ARM because we do not have QEMU for Win.
   HOST_ARCH=x86_32 tc-tests-fast "x86-64"

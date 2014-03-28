@@ -27,7 +27,7 @@ class TestFixPrivateLibs(driver_test_utils.DriverTesterCommon):
     Test that the flags and normal files aren't disturbed.
     """
     input_libs = ['--undefined=main',
-                  'toolchain/pnacl_linux_x86/lib/crti.bc',
+                  'toolchain/linux_x86/pnacl_newlib/lib/crti.bc',
                   'foo.bc',
                   '--start-group',
                   '-lnacl',

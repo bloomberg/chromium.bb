@@ -25,22 +25,21 @@ def SetupEnvironment():
   # native_client/ directory
   env.nacl_root = FindBaseDir()
 
-  # Path to Native NaCl toolchain (glibc)
-  env.nnacl_root = os.path.join(env.nacl_root,
+  toolchain_base = os.path.join(env.nacl_root,
                                 'toolchain',
-                                pynacl.platform.GetOS() + '_x86')
+                                '%s_x86' % pynacl.platform.GetOS())
+
+  # Path to Native NaCl toolchain (glibc)
+  env.nnacl_root = os.path.join(toolchain_base, 'nacl_x86_glibc')
 
   # Path to PNaCl toolchain
-  pnacl_label = 'pnacl_%s_x86' % pynacl.platform.GetOS()
-  env.pnacl_base = os.path.join(env.nacl_root, 'toolchain', pnacl_label)
+  env.pnacl_base = os.path.join(toolchain_base, 'pnacl_newlib')
 
   # QEMU
-  env.arm_root = os.path.join(env.nacl_root,
-                              'toolchain', 'linux_arm-trusted')
+  env.arm_root = os.path.join(toolchain_base, 'arm_trusted')
   env.qemu_arm = os.path.join(env.arm_root, 'run_under_qemu_arm')
 
-  env.mips32_root = os.path.join(env.nacl_root,
-                                 'toolchain', 'linux_mips-trusted')
+  env.mips32_root = os.path.join(toolchain_base, 'mips_trusted')
   env.qemu_mips32 = os.path.join(env.mips32_root, 'run_under_qemu_mips32')
 
   # Path to 'readelf'

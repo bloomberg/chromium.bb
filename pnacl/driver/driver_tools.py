@@ -86,6 +86,31 @@ def ParseTriple(triple):
   Log.Fatal('machine/os ' + '-'.join(tokens[1:]) + ' not supported.')
 
 
+def GetOSName():
+  if sys.platform == 'darwin':
+    os_name = 'mac'
+  elif sys.platform.startswith('linux'):
+    os_name = 'linux'
+  elif sys.platform in ('cygwin', 'win32'):
+    os_name = 'win'
+  else:
+    Log.Fatal('Machine: %s not supported.' % sys.platform)
+
+  return os_name
+
+def GetArchNameShort():
+  machine = platform.machine().lower()
+  if machine.startswith('arm'):
+    return 'arm'
+  elif machine.startswith('mips'):
+    return 'mips'
+  elif (machine.startswith('x86')
+        or machine in ('amd32', 'i386', 'i686', 'ia32', '32', 'amd64', '64')):
+    return 'x86'
+
+  Log.Fatal('Architecture: %s not supported.' % machine)
+  return 'unknown'
+
 def RunDriver(invocation, args, suppress_inherited_arch_args=False):
   """
   RunDriver() is used to invoke "driver" tools, e.g.
@@ -177,11 +202,15 @@ def FindBaseNaCl():
 @env.register
 @memoize
 def FindBaseToolchain():
-  """ Find toolchain/ directory """
-  dir = FindBaseDir(lambda cur: pathtools.basename(cur) == 'toolchain')
-  if dir is None:
+  """ Find toolchain/OS_ARCH directory """
+  base_dir = FindBaseDir(lambda cur: pathtools.basename(cur) == 'toolchain')
+  if base_dir is None:
     Log.Fatal("Unable to find 'toolchain' directory")
-  return shell.escape(dir)
+  toolchain_dir = os.path.join(
+      base_dir,
+      '%s_%s' % (GetOSName(), GetArchNameShort())
+  )
+  return shell.escape(toolchain_dir)
 
 @env.register
 @memoize

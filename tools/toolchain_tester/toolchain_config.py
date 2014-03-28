@@ -205,14 +205,10 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
 ######################################################################
 
 # Locate the pnacl toolchain.  Path can be overridden externally.
-PNACL_TOOLCHAIN_LABEL = ''
-if not 'PNACL_TOOLCHAIN_LABEL' in os.environ:
-  env_map = { 'linux2': 'linux', 'darwin': 'mac' }
-  PNACL_TOOLCHAIN_LABEL = 'pnacl_' + env_map[sys.platform] + '_x86'
-else:
-  PNACL_TOOLCHAIN_LABEL = os.environ['PNACL_TOOLCHAIN_LABEL']
-
-PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_LABEL)
+os_name = pynacl.platform.GetOS()
+PNACL_TOOLCHAIN_DIR = os.getenv('PNACL_TOOLCHAIN_DIR',
+                                '%s_x86/pnacl_newlib' % os_name)
+PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_DIR)
 PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang++'
 PNACL_FINALIZE = PNACL_ROOT + '/bin/pnacl-finalize'
 

@@ -12,9 +12,9 @@
 ######################################################################
 #
 # All directories are relative to BASE which is
-# On Linux: native_client/toolchain/pnacl_linux_x86/
-# On Mac: native_client/toolchain/pnacl_mac_x86/
-# On Windows: native_client/toolchain/pnacl_win_x86/
+# On Linux: native_client/toolchain/linux_x86/pnacl_newlib/
+# On Mac: native_client/toolchain/mac_x86/pnacl_newlib/
+# On Windows: native_client/toolchain/win_x86/pnacl_newlib/
 #
 ######################################################################
 
@@ -75,10 +75,10 @@ readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp
 
 readonly TOOLCHAIN_ROOT="${NACL_ROOT}/toolchain"
+readonly TOOLCHAIN_BASE="${TOOLCHAIN_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
 
-readonly NNACL_BASE="${TOOLCHAIN_ROOT}/${SCONS_BUILD_PLATFORM}_x86"
-readonly NNACL_NEWLIB_ROOT="${NNACL_BASE}_newlib"
-readonly NNACL_ARM_NEWLIB_ROOT="${TOOLCHAIN_ROOT}/linux_arm_newlib"
+readonly NNACL_NEWLIB_ROOT="${TOOLCHAIN_BASE}/nacl_x86_newlib"
+readonly NNACL_ARM_NEWLIB_ROOT="${TOOLCHAIN_BASE}/nacl_arm_newlib"
 
 readonly PNACL_MAKE_OPTS="${PNACL_MAKE_OPTS:-}"
 readonly MAKE_OPTS="-j${PNACL_CONCURRENCY} VERBOSE=1 ${PNACL_MAKE_OPTS}"
@@ -124,8 +124,7 @@ readonly NACL_HEADERS_TS="${TC_BUILD}/nacl.sys.timestamp"
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
 # PNaCl toolchain installation directories (absolute paths)
-readonly TOOLCHAIN_LABEL="${TOOLCHAIN_LABEL:-pnacl_${BUILD_PLATFORM}_x86}"
-readonly INSTALL_ROOT="${TOOLCHAIN_ROOT}/${TOOLCHAIN_LABEL}"
+readonly INSTALL_ROOT="${TOOLCHAIN_BASE}/pnacl_newlib"
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 
 # Bitcode lib directories (including static bitcode libs)
@@ -140,7 +139,7 @@ readonly INSTALL_LIB_X8664="${INSTALL_LIB_NATIVE}x86-64"
 readonly INSTALL_LIB_MIPS32="${INSTALL_LIB_NATIVE}mips32"
 
 # PNaCl client-translators (sandboxed) binary locations
-readonly INSTALL_TRANSLATOR="${TOOLCHAIN_ROOT}/pnacl_translator"
+readonly INSTALL_TRANSLATOR="${TOOLCHAIN_BASE}/pnacl_translator"
 
 
 # The INSTALL_HOST directory has host binaries and libs which
@@ -1563,8 +1562,8 @@ binutils-configure() {
   # c.f.:  http://sourceware.org/ml/binutils/2009-05/msg00252.html
   # all we try to do here is to add "$ORIGIN/../lib to "rpath".
   # If you ever touch this please make sure that rpath is correct via:
-  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/le32-nacl-ld.gold
-  # objdump -p toolchain/${TOOLCHAIN_LABEL}/host/bin/le32-nacl-objdump
+  # objdump -p ${TOOLCHAIN_BASE}/pnacl_newlib/host/bin/le32-nacl-ld.gold
+  # objdump -p ${TOOLCHAIN_BASE}/pnacl_newlib/host/bin/le32-nacl-objdump
   if ${BUILD_PLATFORM_LINUX} ; then
       local flags='-Xlinker -rpath -Xlinker '"'"'$\\$$\$$\\$$\$$ORIGIN/../lib'"'"
       local shared='yes'
@@ -3111,7 +3110,7 @@ verify-archive-x86-64() {
 }
 
 #@-------------------------------------------------------------------------
-#+ verify                - Verifies that toolchain/pnacl-untrusted ELF files
+#+ verify                - Verifies that the pnacl-untrusted ELF files
 #+                         are of the correct architecture.
 verify() {
   StepBanner "VERIFY"
@@ -3210,7 +3209,7 @@ help-full() {
 }
 
 has-trusted-toolchain() {
-  if [ -f ${TOOLCHAIN_ROOT}/linux_arm-trusted/ld_script_arm_trusted ]; then
+  if [ -f ${TOOLCHAIN_BASE}/arm_trusted/ld_script_arm_trusted ]; then
     return 0
   else
     return 1

@@ -236,13 +236,13 @@ def SetupEnvironment(options):
   # built into a different directory,
   # Overriding the default here will Not affect the sel_ldr
   # and IRT used to run the tests (they are controlled by run.py)
-  env['PNACL_TOOLCHAIN_LABEL'] = (
-    os.environ.get('PNACL_TOOLCHAIN_LABEL',
-                   'pnacl_{BUILD_PLATFORM}_x86'.format(**env)))
+  env['PNACL_TOOLCHAIN_DIR'] = (
+    os.environ.get('PNACL_TOOLCHAIN_DIR',
+                   '{BUILD_PLATFORM}_x86/pnacl_newlib'.format(**env)))
   env['PNACL_BIN'] = (
-    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_LABEL}/bin'.format(**env))
+    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_DIR}/bin'.format(**env))
   env['PNACL_SDK_DIR'] = (
-    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_LABEL}/sdk/lib'
+    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_DIR}/sdk/lib'
     .format(**env))
   env['PNACL_SCRIPTS'] = '{NACL_ROOT}/pnacl/scripts'.format(**env)
   env['LLVM_REGRESSION_KNOWN_FAILURES'] = (

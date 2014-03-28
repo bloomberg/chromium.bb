@@ -166,10 +166,13 @@ def BuildLibgccEhCmd(sourcefile, output, arch):
     flags_naclcc = ['-arch', arch, '--pnacl-bias=' + arch,
                     '--pnacl-allow-translate', '--pnacl-allow-native']
   else:
-    platform_dir = '%s_%s_newlib' % (pynacl.platform.GetOS(),
-                                     pynacl.platform.GetArch())
+    os_name = pynacl.platform.GetOS()
+    arch_name = pynacl.platform.GetArch()
+    platform_dir = '%s_%s' % (os_name, arch_name)
+    newlib_dir = 'nacl_x86_newlib'
 
-    nnacl_dir = os.path.join(NACL_DIR, 'toolchain', platform_dir, 'bin')
+    nnacl_dir = os.path.join(NACL_DIR, 'toolchain', platform_dir,
+                             newlib_dir, 'bin')
     gcc_binaries = {
         'x86-32': 'i686-nacl-gcc',
         'x86-64': 'x86_64-nacl-gcc',

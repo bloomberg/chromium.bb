@@ -77,6 +77,7 @@ readonly SCONS_BUILD_PLATFORM
 readonly SO_EXT
 readonly SO_DIR
 
+BUILD_ARCH_SHORT=${BUILD_ARCH}
 BUILD_ARCH_X8632=false
 BUILD_ARCH_X8664=false
 BUILD_ARCH_ARM=false
@@ -86,18 +87,23 @@ if [ "${BUILD_ARCH}" == "x86_32" ] ||
    [ "${BUILD_ARCH}" == "i686" ] ; then
   BUILD_ARCH=x86_32
   BUILD_ARCH_X8632=true
+  BUILD_ARCH_SHORT=x86
 elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
   BUILD_ARCH_X8664=true
+  BUILD_ARCH_SHORT=x86
 elif [ "${BUILD_ARCH}" == "armv7l" ] ; then
   BUILD_ARCH_ARM=true
+  BUILD_ARCH_SHORT=arm
 elif [ "${BUILD_ARCH}" == "mips32" ] ||
      [ "${BUILD_ARCH}" == "mips" ] ; then
   BUILD_ARCH_MIPS=true
+  BUILD_ARCH_SHORT=mips
 else
   echo "Unknown build arch '${BUILD_ARCH}'"
   exit -1
 fi
 readonly BUILD_ARCH
+readonly BUILD_ARCH_SHORT
 readonly BUILD_ARCH_X8632
 readonly BUILD_ARCH_X8664
 readonly BUILD_ARCH_ARM
