@@ -27,17 +27,15 @@
       'conditions': [
         ['OS=="mac"', {
           'xcode_settings': {
-            # Make it a loader-path dependent library.
-            'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+            # Make it a run-path dependent library.
+            'DYLIB_INSTALL_NAME_BASE': '@rpath',
           },
-          'conditions': [
-            ['mac_breakpad==1', {
-              'variables': {
-                # A real .dSYM is needed for dump_syms to operate on.
-                'mac_real_dsym': 1,
-              },
-            }],
-          ],
+          'direct_dependent_settings': {
+            'xcode_settings': {
+              # Look for run-path dependent libraries in the loader's directory.
+              'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
+            },
+          },
         }],
       ],
     },
@@ -71,8 +69,14 @@
       'conditions': [
         ['OS=="mac"', {
           'xcode_settings': {
-            # Make it a loader-path dependent library.
-            'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+            # Make it a run-path dependent library.
+            'DYLIB_INSTALL_NAME_BASE': '@rpath',
+          },
+          'direct_dependent_settings': {
+            'xcode_settings': {
+              # Look for run-path dependent libraries in the loader's directory.
+              'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
+            },
           },
         }],
       ],
@@ -100,8 +104,14 @@
       'conditions': [
         ['OS=="mac"', {
           'xcode_settings': {
-            # Make it a loader-path dependent library.
-            'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+            # Make it a run-path dependent library.
+            'DYLIB_INSTALL_NAME_BASE': '@rpath',
+          },
+          'direct_dependent_settings': {
+            'xcode_settings': {
+              # Look for run-path dependent libraries in the loader's directory.
+              'LD_RUNPATH_SEARCH_PATHS': [ '@loader_path/.', ],
+            },
           },
         }],
       ],
