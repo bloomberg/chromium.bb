@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-  /** @const */ var OptionsPage = options.OptionsPage;
+  /** @const */ var SettingsDialog = options.SettingsDialog;
 
   /**
    * A dialog that will pop up when the user attempts to set the value of the
@@ -22,13 +22,11 @@ cr.define('options', function() {
    *     confirmed the dialog before. This ensures that the user is presented
    *     with the dialog only once. If left |undefined| or |null|, the dialog
    *     will pop up every time the user attempts to set |pref| to |true|.
-   * @extends {OptionsPage}
+   * @extends {SettingsDialog}
    */
   function ConfirmDialog(name, title, pageDivName, okButton, cancelButton, pref,
                          metric, confirmed_pref) {
-    OptionsPage.call(this, name, title, pageDivName);
-    this.okButton = okButton;
-    this.cancelButton = cancelButton;
+    SettingsDialog.call(this, name, title, pageDivName, okButton, cancelButton);
     this.pref = pref;
     this.metric = metric;
     this.confirmed_pref = confirmed_pref;
@@ -37,7 +35,7 @@ cr.define('options', function() {
 
   ConfirmDialog.prototype = {
     // Set up the prototype chain
-    __proto__: OptionsPage.prototype,
+    __proto__: SettingsDialog.prototype,
 
     /**
      * Handle changes to |pref|. Only uncommitted changes are relevant as these
@@ -68,6 +66,8 @@ cr.define('options', function() {
 
     /** @override */
     initializePage: function() {
+      SettingsDialog.prototype.initializePage.call(this);
+
       this.okButton.onclick = this.handleConfirm.bind(this);
       this.cancelButton.onclick = this.handleCancel.bind(this);
       Preferences.getInstance().addEventListener(
@@ -82,9 +82,10 @@ cr.define('options', function() {
      * Handle the confirm button by committing the |pref| change. If
      * |confirmed_pref| has been specified, also remember that the dialog has
      * been confirmed to avoid bringing it up in the future.
+     * @override
      */
     handleConfirm: function() {
-      OptionsPage.closeOverlay();
+      SettingsDialog.prototype.handleConfirm.call(this);
 
       Preferences.getInstance().commitPref(this.pref, this.metric);
       if (this.confirmed_pref)
@@ -94,10 +95,10 @@ cr.define('options', function() {
     /**
      * Handle the cancel button by rolling back the |pref| change without it
      * ever taking effect.
+     * @override
      */
     handleCancel: function() {
-      OptionsPage.closeOverlay();
-
+      SettingsDialog.prototype.handleCancel.call(this);
       Preferences.getInstance().rollbackPref(this.pref);
     },
 

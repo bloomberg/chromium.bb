@@ -160,6 +160,9 @@ cr.define('options', function() {
     decorate: function() {
       PrefInputElement.prototype.decorate.call(this);
       this.type = 'checkbox';
+
+      if (this.dialogPref)
+        this.updatePrefFromState_();
     },
 
     /**
