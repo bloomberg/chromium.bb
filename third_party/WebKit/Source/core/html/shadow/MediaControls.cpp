@@ -29,7 +29,6 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/MouseEvent.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaController.h"
 #include "core/rendering/RenderTheme.h"
@@ -193,7 +192,7 @@ void MediaControls::reset()
 
     refreshClosedCaptionsButtonVisibility();
 
-    if (mediaElement().hasVideo() && document().settings() && document().settings()->fullScreenEnabled())
+    if (mediaElement().hasVideo())
         m_fullScreenButton->show();
     else
         m_fullScreenButton->hide();

@@ -1,10 +1,7 @@
 "use strict";
 
-function fullscreen_test(controller, fullScreenEnabled)
+function fullscreen_test(controller)
 {
-    if (window.internals)
-        window.internals.settings.setFullScreenEnabled(fullScreenEnabled);
-
     async_test(function(t)
     {
         var v1 = document.createElement("video");
@@ -27,18 +24,12 @@ function fullscreen_test(controller, fullScreenEnabled)
             // no fullscreen button for a video element with no video track
             assert_button_hidden(v2);
 
-            if (fullScreenEnabled) {
-                // click the fullscreen button
-                var coords = mediaControlsButtonCoordinates(v1, "fullscreen-button");
-                eventSender.mouseMoveTo(coords[0], coords[1]);
-                eventSender.mouseDown();
-                eventSender.mouseUp();
-                // wait for the fullscreenchange event
-            } else {
-                // no fullscreen button when fullscreen is disabled
-                assert_button_hidden(v1);
-                t.done();
-            }
+            // click the fullscreen button
+            var coords = mediaControlsButtonCoordinates(v1, "fullscreen-button");
+            eventSender.mouseMoveTo(coords[0], coords[1]);
+            eventSender.mouseDown();
+            eventSender.mouseUp();
+            // wait for the fullscreenchange event
         }));
 
         v1.addEventListener("webkitfullscreenchange", t.step_func(function()

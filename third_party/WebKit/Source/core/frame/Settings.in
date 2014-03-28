@@ -131,7 +131,6 @@ accelerated2dCanvasMSAASampleCount type=int, initial=0
 # WebAudio support.
 webAudioEnabled initial=false
 
-fullScreenEnabled initial=false
 asynchronousSpellCheckingEnabled initial=false
 preciseMemoryInfoEnabled initial=false
 

@@ -5341,7 +5341,6 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     int viewportWidth = 640;
     int viewportHeight = 480;
     WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_div.html", true, 0, &client, &configueCompositingWebView);
-    webViewImpl->settings()->setFullScreenEnabled(true);
     webViewImpl->resize(WebSize(viewportWidth, viewportHeight));
     webViewImpl->layout();
 

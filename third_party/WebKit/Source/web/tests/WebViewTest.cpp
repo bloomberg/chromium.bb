@@ -814,7 +814,6 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     EnterFullscreenWebViewClient client;
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("hello_world.html"));
     WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "hello_world.html", true, 0, &client);
-    webViewImpl->settings()->setFullScreenEnabled(true);
     webViewImpl->resize(WebSize(640, 480));
     webViewImpl->layout();
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);

@@ -115,7 +115,6 @@ public:
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setForceCompositingMode(bool) = 0;
-    virtual void setFullScreenEnabled(bool) = 0;
     virtual void setGestureTapHighlightEnabled(bool) = 0;
     virtual void setHyperlinkAuditingEnabled(bool) = 0;
     virtual void setIgnoreMainFrameOverflowHiddenQuirk(bool) = 0;
@@ -202,6 +201,7 @@ public:
 
     // FIXME: Remove these unused settings.
     virtual void setFixedPositionCreatesStackingContext(bool) { }
+    virtual void setFullScreenEnabled(bool) { }
 
 protected:
     ~WebSettings() { }

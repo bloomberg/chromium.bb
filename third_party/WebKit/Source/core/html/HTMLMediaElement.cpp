@@ -3186,16 +3186,14 @@ void HTMLMediaElement::enterFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::enterFullscreen");
 
-    if (document().settings() && document().settings()->fullScreenEnabled())
-        FullscreenElementStack::from(document()).requestFullScreenForElement(this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+    FullscreenElementStack::from(document()).requestFullScreenForElement(this, 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
 }
 
 void HTMLMediaElement::exitFullscreen()
 {
     WTF_LOG(Media, "HTMLMediaElement::exitFullscreen");
 
-    if (document().settings() && document().settings()->fullScreenEnabled() && isFullscreen())
-        FullscreenElementStack::from(document()).webkitCancelFullScreen();
+    FullscreenElementStack::from(document()).webkitCancelFullScreen();
 }
 
 void HTMLMediaElement::didBecomeFullscreenElement()

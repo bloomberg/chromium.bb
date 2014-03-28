@@ -583,11 +583,6 @@ void WebSettingsImpl::setValidationMessageTimerMagnification(int newValue)
     m_settings->setValidationMessageTimerMagnification(newValue);
 }
 
-void WebSettingsImpl::setFullScreenEnabled(bool enabled)
-{
-    m_settings->setFullScreenEnabled(enabled);
-}
-
 void WebSettingsImpl::setAllowDisplayOfInsecureContent(bool enabled)
 {
     m_settings->setAllowDisplayOfInsecureContent(enabled);
