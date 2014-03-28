@@ -297,9 +297,6 @@ class GpuSandboxedProcessLauncherDelegate
 
 // static
 bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
-  if (!host)
-    return false;
-
   // The Gpu process is invalid if it's not using SwiftShader, the card is
   // blacklisted, and we can kill it and start over.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
