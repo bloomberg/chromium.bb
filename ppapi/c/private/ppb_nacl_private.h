@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Mar 27 10:43:40 2014. */
+/* From private/ppb_nacl_private.idl modified Thu Mar 27 14:44:04 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -299,10 +299,10 @@ struct PPB_NaCl_Private_1_0 {
   void (*InstanceCreated)(PP_Instance instance);
   /* Performs internal cleanup when an instance is destroyed. */
   void (*InstanceDestroyed)(PP_Instance instance);
-  /* Return true if the NaCl debug stub is enabled and the loaded app
-   * will be attached to a debugger.
+  /* Return true if the NaCl debug stub is enabled and the app loaded from
+   * alleged_nmf_url will be attached to a debugger.
    */
-  PP_Bool (*NaClDebugStubEnabled)(void);
+  PP_Bool (*NaClDebugEnabledForURL)(const char* alleged_nmf_url);
   /* Returns the kind of SFI sandbox implemented by NaCl on this
    * platform.
    */

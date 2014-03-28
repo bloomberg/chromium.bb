@@ -57,6 +57,8 @@ bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message,
                                     OnOpenNaClExecutable)
     IPC_MESSAGE_HANDLER(NaClHostMsg_NaClGetNumProcessors,
                         OnNaClGetNumProcessors)
+    IPC_MESSAGE_HANDLER(NaClHostMsg_NaClDebugEnabledForURL,
+                        OnNaClDebugEnabledForURL)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -179,6 +181,12 @@ void NaClHostMessageFilter::OnOpenNaClExecutable(int render_view_id,
                                                  IPC::Message* reply_msg) {
   nacl_file_host::OpenNaClExecutable(this, render_view_id, file_url,
                                      reply_msg);
+}
+
+void NaClHostMessageFilter::OnNaClDebugEnabledForURL(const GURL& nmf_url,
+                                                     bool* should_debug) {
+  *should_debug =
+      nacl::NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(nmf_url);
 }
 
 }  // namespace nacl

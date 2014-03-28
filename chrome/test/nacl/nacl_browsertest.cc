@@ -14,9 +14,13 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/path_service.h"
+#include "base/process/kill.h"
+#include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
 
@@ -201,7 +205,8 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, RelativeManifest) {
   RunLoadTest(FILE_PATH_LITERAL("manifest/relative_manifest.html"));
 }
 
-class NaClBrowserTestPnaclDebugURL : public NaClBrowserTestPnacl {
+// Test with the NaCl debug flag turned on.
+class NaClBrowserTestPnaclDebug : public NaClBrowserTestPnacl {
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     NaClBrowserTestPnacl::SetUpCommandLine(command_line);
@@ -212,45 +217,104 @@ class NaClBrowserTestPnaclDebugURL : public NaClBrowserTestPnacl {
 #if defined(OS_WIN)
     command_line->AppendSwitch(switches::kNoSandbox);
 #endif
-    // Don't actually debug the app though.
+  }
+
+  // On some platforms this test does not work.
+  bool TestIsBroken() {
+    // TODO(jvoung): Make this test work on Windows 32-bit. When --no-sandbox
+    // is used, the required 1GB sandbox address space is not reserved.
+    // (see note in chrome/browser/nacl_host/test/nacl_gdb_browsertest.cc)
+#if defined(OS_WIN)
+    if (base::win::OSInfo::GetInstance()->wow64_status() ==
+        base::win::OSInfo::WOW64_DISABLED &&
+        base::win::OSInfo::GetInstance()->architecture() ==
+        base::win::OSInfo::X86_ARCHITECTURE) {
+      return true;
+    }
+#endif
+    return false;
+  }
+
+  void StartTestScript(base::ProcessHandle* test_process,
+                       int debug_stub_port) {
+    // We call a python script that speaks to the debug stub, and
+    // lets the app continue, so that the load progress event completes.
+    CommandLine cmd(base::FilePath(FILE_PATH_LITERAL("python")));
+    base::FilePath script;
+    PathService::Get(base::DIR_SOURCE_ROOT, &script);
+    script = script.AppendASCII(
+        "chrome/browser/nacl_host/test/debug_stub_browser_tests.py");
+    cmd.AppendArgPath(script);
+    cmd.AppendArg(base::IntToString(debug_stub_port));
+    cmd.AppendArg("continue");
+    LOG(INFO) << cmd.GetCommandLineString();
+    base::LaunchProcess(cmd, base::LaunchOptions(), test_process);
+  }
+
+  void RunWithTestDebugger(const base::FilePath::StringType& test_url) {
+    base::ProcessHandle test_script;
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    nacl::NaClBrowser::GetInstance()->SetGdbDebugStubPortListener(
+        base::Bind(&NaClBrowserTestPnaclDebug::StartTestScript,
+                   base::Unretained(this), &test_script));
+    // Turn on debug stub logging.
+    env->SetVar("NACLVERBOSITY", "1");
+    RunLoadTest(test_url);
+    env->UnSetVar("NACLVERBOSITY");
+    nacl::NaClBrowser::GetInstance()->ClearGdbDebugStubPortListener();
+    int exit_code;
+    LOG(INFO) << "Waiting for script to exit (which waits for embed to die).";
+    base::WaitForExitCode(test_script, &exit_code);
+    EXPECT_EQ(0, exit_code);
+  }
+};
+
+// Test with the NaCl debug flag turned on, but mask off every URL
+// so that nothing is actually debugged.
+class NaClBrowserTestPnaclDebugMasked : public NaClBrowserTestPnaclDebug {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    NaClBrowserTestPnaclDebug::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kNaClDebugMask,
                                     "!<all_urls>");
   }
 };
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugURL,
-                       MAYBE_PNACL(PnaclDebugURLFlagAndURL)) {
-  // TODO(jvoung): Make this test work on Windows 32-bit. When --no-sandbox
-  // is used, the required 1GB sandbox address space is not reserved.
-  // (see note in chrome/browser/nacl_host/test/nacl_gdb_browsertest.cc)
+// The tests which actually start a debug session must use the debug stub
+// to continue the app startup. However, NaCl on windows can't open the
+// debug stub socket in the browser process as needed by the test.
+// See http://crbug.com/157312.
 #if defined(OS_WIN)
-  if (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_DISABLED &&
-      base::win::OSInfo::GetInstance()->architecture() ==
-      base::win::OSInfo::X86_ARCHITECTURE) {
-    return;
-  }
+#define MAYBE_PnaclDebugURLFlagAndURL DISABLED_PnaclDebugURLFlagAndURL
+#define MAYBE_PnaclDebugURLFlagNoURL DISABLED_PnaclDebugURLFlagNoURL
+#else
+#define MAYBE_PnaclDebugURLFlagAndURL PnaclDebugURLFlagAndURL
+#define MAYBE_PnaclDebugURLFlagNoURL PnaclDebugURLFlagNoURL
 #endif
-  RunLoadTest(FILE_PATH_LITERAL(
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebug,
+                       MAYBE_PnaclDebugURLFlagAndURL) {
+  RunWithTestDebugger(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_has_debug.nmf"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugURL,
-                       MAYBE_PNACL(PnaclDebugURLFlagNoURL)) {
-#if defined(OS_WIN)
-  if (base::win::OSInfo::GetInstance()->wow64_status() ==
-      base::win::OSInfo::WOW64_DISABLED &&
-      base::win::OSInfo::GetInstance()->architecture() ==
-      base::win::OSInfo::X86_ARCHITECTURE) {
-    return;
-  }
-#endif
-  RunLoadTest(FILE_PATH_LITERAL(
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebug,
+                       MAYBE_PnaclDebugURLFlagNoURL) {
+  RunWithTestDebugger(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_no_debug.nmf"));
 }
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        MAYBE_PNACL(PnaclDebugURLFlagOff)) {
+  RunLoadTest(FILE_PATH_LITERAL(
+      "pnacl_debug_url.html?nmf_file=pnacl_has_debug_flag_off.nmf"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugMasked,
+                       MAYBE_PNACL(PnaclDebugURLFlagMaskedOff)) {
+  if (TestIsBroken()) {
+    return;
+  }
+  // If the mask excludes debugging, it's as if the flag was off.
   RunLoadTest(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_has_debug_flag_off.nmf"));
 }

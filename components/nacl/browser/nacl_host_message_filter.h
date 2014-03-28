@@ -67,6 +67,8 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
   void AsyncReturnTemporaryFile(int pp_instance,
                                 base::PlatformFile fd,
                                 bool is_hit);
+  void OnNaClDebugEnabledForURL(const GURL& nmf_url, bool* should_debug);
+
   int render_process_id_;
 
   // off_the_record_ is copied from the profile partly so that it can be

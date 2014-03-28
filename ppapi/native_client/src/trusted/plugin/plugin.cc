@@ -1160,7 +1160,8 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
   bool is_pnacl = (mime_type() == kPnaclMIMEType);
   bool nonsfi_mode_enabled =
       PP_ToBool(nacl_interface_->IsNonSFIModeEnabled());
-  bool pnacl_debug = GetNaClInterface()->NaClDebugStubEnabled();
+  bool pnacl_debug = GetNaClInterface()->NaClDebugEnabledForURL(
+      manifest_base_url().c_str());
   const char* sandbox_isa = nacl_interface_->GetSandboxArch();
   nacl::scoped_ptr<JsonManifest> json_manifest(
       new JsonManifest(url_util_,

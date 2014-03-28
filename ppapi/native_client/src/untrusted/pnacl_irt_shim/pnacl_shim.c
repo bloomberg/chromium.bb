@@ -3176,9 +3176,9 @@ static void Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed(PP_Instance instance) {
   iface->InstanceDestroyed(instance);
 }
 
-static PP_Bool Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled(void) {
+static PP_Bool Pnacl_M25_PPB_NaCl_Private_NaClDebugEnabledForURL(const char* alleged_nmf_url) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  return iface->NaClDebugStubEnabled();
+  return iface->NaClDebugEnabledForURL(alleged_nmf_url);
 }
 
 static const char* Pnacl_M25_PPB_NaCl_Private_GetSandboxArch(void) {
@@ -5121,7 +5121,7 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
     .InstanceCreated = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceCreated,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
-    .NaClDebugStubEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled,
+    .NaClDebugEnabledForURL = (PP_Bool (*)(const char* alleged_nmf_url))&Pnacl_M25_PPB_NaCl_Private_NaClDebugEnabledForURL,
     .GetSandboxArch = (const char* (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetSandboxArch,
     .GetUrlScheme = (PP_UrlSchemeType (*)(struct PP_Var url))&Pnacl_M25_PPB_NaCl_Private_GetUrlScheme,
     .LogToConsole = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_LogToConsole,

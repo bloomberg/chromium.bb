@@ -104,5 +104,14 @@ IPC_SYNC_MESSAGE_CONTROL2_3(NaClHostMsg_OpenNaClExecutable,
                             uint64 /* file_token_lo */,
                             uint64 /* file_token_hi */)
 
+// A renderer sends this to the browser process to determine how many
+// processors are online.
 IPC_SYNC_MESSAGE_CONTROL0_1(NaClHostMsg_NaClGetNumProcessors,
                             int /* Number of processors */)
+
+// A renderer sends this to the browser process to determine if the
+// NaCl application started from the given NMF URL will be debugged.
+// If not (filtered out by commandline flags), it sets should_debug to false.
+IPC_SYNC_MESSAGE_CONTROL1_1(NaClHostMsg_NaClDebugEnabledForURL,
+                            GURL /* alleged URL of NMF file */,
+                            bool /* should debug */)

@@ -467,9 +467,18 @@ void InstanceDestroyed(PP_Instance instance) {
   map.erase(instance);
 }
 
-PP_Bool NaClDebugStubEnabled() {
-  return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kEnableNaClDebug));
+PP_Bool NaClDebugEnabledForURL(const char* alleged_nmf_url) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaClDebug))
+    return PP_FALSE;
+  bool should_debug;
+  IPC::Sender* sender = content::RenderThread::Get();
+  DCHECK(sender);
+  if(!sender->Send(new NaClHostMsg_NaClDebugEnabledForURL(
+         GURL(alleged_nmf_url),
+         &should_debug))) {
+    return PP_FALSE;
+  }
+  return PP_FromBool(should_debug);
 }
 
 const char* GetSandboxArch() {
@@ -560,7 +569,7 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportLoadError,
   &InstanceCreated,
   &InstanceDestroyed,
-  &NaClDebugStubEnabled,
+  &NaClDebugEnabledForURL,
   &GetSandboxArch,
   &GetUrlScheme,
   &LogToConsole,
