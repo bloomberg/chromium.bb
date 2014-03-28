@@ -33,8 +33,7 @@ const char kUnregisteredAppID[] = "app_id unregistered";
 
 }  // namespace
 
-class ListChangesTaskTest : public testing::Test,
-                            public SyncEngineContext {
+class ListChangesTaskTest : public testing::Test {
  public:
   ListChangesTaskTest() {}
   virtual ~ListChangesTaskTest() {}
@@ -43,23 +42,28 @@ class ListChangesTaskTest : public testing::Test,
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    fake_drive_service_.reset(new drive::FakeDriveService);
-    ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
+    scoped_ptr<drive::FakeDriveService>
+        fake_drive_service(new drive::FakeDriveService);
+    ASSERT_TRUE(fake_drive_service->LoadAccountMetadataForWapi(
         "sync_file_system/account_metadata.json"));
-    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
+    ASSERT_TRUE(fake_drive_service->LoadResourceListForWapi(
         "gdata/empty_feed.json"));
 
-    drive_uploader_.reset(new drive::DriveUploader(
-        fake_drive_service_.get(), base::MessageLoopProxy::current()));
+    scoped_ptr<drive::DriveUploaderInterface>
+        drive_uploader(new drive::DriveUploader(
+            fake_drive_service.get(), base::MessageLoopProxy::current()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_.get(), drive_uploader_.get(),
-        kSyncRootFolderTitle));
+        fake_drive_service.get(), drive_uploader.get(), kSyncRootFolderTitle));
 
     sync_task_manager_.reset(new SyncTaskManager(
         base::WeakPtr<SyncTaskManager::Client>(),
         10 /* maximum_background_task */));
     sync_task_manager_->Initialize(SYNC_STATUS_OK);
+
+    context_.reset(new SyncEngineContext(
+        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+        drive_uploader.Pass(), base::MessageLoopProxy::current()));
 
     SetUpRemoteFolders();
 
@@ -69,28 +73,8 @@ class ListChangesTaskTest : public testing::Test,
 
   virtual void TearDown() OVERRIDE {
     sync_task_manager_.reset();
-    metadata_database_.reset();
+    context_.reset();
     base::RunLoop().RunUntilIdle();
-  }
-
-  virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE {
-    return fake_drive_service_.get();
-  }
-
-  virtual drive::DriveUploader* GetDriveUploader() OVERRIDE {
-    return NULL;
-  }
-
-  virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE {
-    return metadata_database_.get();
-  }
-
-  virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE {
-    return NULL;
-  }
-
-  virtual base::SequencedTaskRunner* GetBlockingTaskRunner() OVERRIDE {
-    return base::MessageLoopProxy::current();
   }
 
  protected:
@@ -105,7 +89,7 @@ class ListChangesTaskTest : public testing::Test,
   }
 
   size_t CountDirtyTracker() {
-    return metadata_database_->CountDirtyTracker();
+    return context_->GetMetadataDatabase()->CountDirtyTracker();
   }
 
   FakeDriveServiceHelper* fake_drive_service_helper() {
@@ -148,7 +132,7 @@ class ListChangesTaskTest : public testing::Test,
   }
 
   std::string root_resource_id() {
-    return fake_drive_service_->GetRootResourceId();
+    return context_->GetDriveService()->GetRootResourceId();
   }
 
   std::string app_root_folder_id() {
@@ -157,6 +141,10 @@ class ListChangesTaskTest : public testing::Test,
 
   std::string unregistered_app_root_folder_id() {
     return unregistered_app_root_folder_id_;
+  }
+
+  SyncEngineContext* GetSyncEngineContext() {
+    return context_.get();
   }
 
  private:
@@ -177,9 +165,9 @@ class ListChangesTaskTest : public testing::Test,
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     SyncEngineInitializer* initializer =
         new SyncEngineInitializer(
-            this,
+            context_.get(),
             base::MessageLoopProxy::current(),
-            fake_drive_service_.get(),
+            context_->GetDriveService(),
             database_dir_.path(),
             in_memory_env_.get());
 
@@ -197,13 +185,13 @@ class ListChangesTaskTest : public testing::Test,
   void DidInitializeMetadataDatabase(SyncEngineInitializer* initializer,
                                      SyncStatusCode* status_out,
                                      SyncStatusCode status) {
-    metadata_database_ = initializer->PassMetadataDatabase();
+    context_->SetMetadataDatabase(initializer->PassMetadataDatabase());
     *status_out = status;
   }
 
   void RegisterApp(const std::string& app_id) {
     EXPECT_EQ(SYNC_STATUS_OK, RunTask(scoped_ptr<SyncTask>(
-        new RegisterAppTask(this, app_id))));
+        new RegisterAppTask(context_.get(), app_id))));
   }
 
   scoped_ptr<leveldb::Env> in_memory_env_;
@@ -215,11 +203,8 @@ class ListChangesTaskTest : public testing::Test,
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir database_dir_;
 
-  scoped_ptr<drive::FakeDriveService> fake_drive_service_;
-  scoped_ptr<drive::DriveUploader> drive_uploader_;
+  scoped_ptr<SyncEngineContext> context_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
-
-  scoped_ptr<MetadataDatabase> metadata_database_;
 
   scoped_ptr<SyncTaskManager> sync_task_manager_;
 
@@ -230,7 +215,7 @@ TEST_F(ListChangesTaskTest, NoChange) {
   size_t num_dirty_trackers = CountDirtyTracker();
 
   EXPECT_EQ(SYNC_STATUS_NO_CHANGE_TO_SYNC, RunTask(
-      scoped_ptr<SyncTask>(new ListChangesTask(this))));
+      scoped_ptr<SyncTask>(new ListChangesTask(GetSyncEngineContext()))));
 
   EXPECT_EQ(num_dirty_trackers, CountDirtyTracker());
 }
@@ -242,7 +227,7 @@ TEST_F(ListChangesTaskTest, UnrelatedChange) {
   SetUpChangesInFolder(unregistered_app_root_folder_id());
 
   EXPECT_EQ(SYNC_STATUS_OK, RunTask(
-      scoped_ptr<SyncTask>(new ListChangesTask(this))));
+      scoped_ptr<SyncTask>(new ListChangesTask(GetSyncEngineContext()))));
 
   EXPECT_EQ(num_dirty_trackers, CountDirtyTracker());
 }
@@ -253,7 +238,7 @@ TEST_F(ListChangesTaskTest, UnderTrackedFolder) {
   SetUpChangesInFolder(app_root_folder_id());
 
   EXPECT_EQ(SYNC_STATUS_OK, RunTask(
-      scoped_ptr<SyncTask>(new ListChangesTask(this))));
+      scoped_ptr<SyncTask>(new ListChangesTask(GetSyncEngineContext()))));
 
   EXPECT_EQ(num_dirty_trackers + 4, CountDirtyTracker());
 }

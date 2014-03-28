@@ -26,6 +26,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/uninstall_app_task.h"
@@ -44,6 +45,9 @@
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace sync_file_system {
+
+class RemoteChangeProcessor;
+
 namespace drive_backend {
 
 namespace {
@@ -121,7 +125,7 @@ void SyncEngine::AppendDependsOnFactories(
 
 SyncEngine::~SyncEngine() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  drive_service_->RemoveObserver(this);
+  context_->GetDriveService()->RemoveObserver(this);
   if (notification_manager_)
     notification_manager_->RemoveObserver(this);
 }
@@ -137,7 +141,7 @@ void SyncEngine::Initialize() {
 
   if (notification_manager_)
     notification_manager_->AddObserver(this);
-  drive_service_->AddObserver(this);
+  context_->GetDriveService()->AddObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 
   net::NetworkChangeNotifier::ConnectionType type =
@@ -157,10 +161,12 @@ void SyncEngine::AddFileStatusObserver(FileStatusObserver* observer) {
 void SyncEngine::RegisterOrigin(
     const GURL& origin,
     const SyncStatusCallback& callback) {
-  if (!metadata_database_ && drive_service_->HasRefreshToken())
+  if (!context_->GetMetadataDatabase() &&
+      context_->GetDriveService()->HasRefreshToken())
     PostInitializeTask();
 
-  scoped_ptr<RegisterAppTask> task(new RegisterAppTask(this, origin.host()));
+  scoped_ptr<RegisterAppTask> task(
+      new RegisterAppTask(context_.get(), origin.host()));
   if (task->CanFinishImmediately()) {
     callback.Run(SYNC_STATUS_OK);
     return;
@@ -203,14 +209,15 @@ void SyncEngine::UninstallOrigin(
     const SyncStatusCallback& callback) {
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
-      scoped_ptr<SyncTask>(new UninstallAppTask(this, origin.host(), flag)),
+      scoped_ptr<SyncTask>(
+          new UninstallAppTask(context_.get(), origin.host(), flag)),
       SyncTaskManager::PRIORITY_HIGH,
       callback);
 }
 
 void SyncEngine::ProcessRemoteChange(
     const SyncFileCallback& callback) {
-  RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(this);
+  RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(context_.get());
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(syncer),
@@ -222,7 +229,7 @@ void SyncEngine::ProcessRemoteChange(
 
 void SyncEngine::SetRemoteChangeProcessor(
     RemoteChangeProcessor* processor) {
-  remote_change_processor_ = processor;
+  context_->SetRemoteChangeProcessor(processor);
 }
 
 LocalChangeProcessor* SyncEngine::GetLocalChangeProcessor() {
@@ -242,11 +249,11 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
 
 void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
   DCHECK(status_map);
-  if (!extension_service_ || !metadata_database_)
+  if (!extension_service_ || !context_->GetMetadataDatabase())
     return;
 
   std::vector<std::string> app_ids;
-  metadata_database_->GetRegisteredAppIDs(&app_ids);
+  context_->GetMetadataDatabase()->GetRegisteredAppIDs(&app_ids);
 
   for (std::vector<std::string>::const_iterator itr = app_ids.begin();
        itr != app_ids.end(); ++itr) {
@@ -254,20 +261,21 @@ void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
     GURL origin =
         extensions::Extension::GetBaseURLFromExtensionId(app_id);
     (*status_map)[origin] =
-        metadata_database_->IsAppEnabled(app_id) ? "Enabled" : "Disabled";
+        context_->GetMetadataDatabase()->IsAppEnabled(app_id) ?
+        "Enabled" : "Disabled";
   }
 }
 
 scoped_ptr<base::ListValue> SyncEngine::DumpFiles(const GURL& origin) {
-  if (!metadata_database_)
+  if (!context_->GetMetadataDatabase())
     return scoped_ptr<base::ListValue>();
-  return metadata_database_->DumpFiles(origin.host());
+  return context_->GetMetadataDatabase()->DumpFiles(origin.host());
 }
 
 scoped_ptr<base::ListValue> SyncEngine::DumpDatabase() {
-  if (!metadata_database_)
+  if (!context_->GetMetadataDatabase())
     return scoped_ptr<base::ListValue>();
-  return metadata_database_->DumpDatabase();
+  return context_->GetMetadataDatabase()->DumpDatabase();
 }
 
 void SyncEngine::SetSyncEnabled(bool enabled) {
@@ -326,13 +334,14 @@ void SyncEngine::DownloadRemoteVersion(
 }
 
 void SyncEngine::PromoteDemotedChanges() {
-  if (metadata_database_ && metadata_database_->HasLowPriorityDirtyTracker()) {
-    metadata_database_->PromoteLowerPriorityTrackersToNormal();
+  if (context_->GetMetadataDatabase() &&
+      context_->GetMetadataDatabase()->HasLowPriorityDirtyTracker()) {
+    context_->GetMetadataDatabase()->PromoteLowerPriorityTrackersToNormal();
     FOR_EACH_OBSERVER(
         Observer,
         service_observers_,
         OnRemoteChangeQueueUpdated(
-            metadata_database_->CountDirtyTracker()));
+            context_->GetMetadataDatabase()->CountDirtyTracker()));
   }
 }
 
@@ -343,7 +352,7 @@ void SyncEngine::ApplyLocalChange(
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
-      this, local_metadata, local_change, local_path, url);
+      context_.get(), local_metadata, local_change, local_path, url);
   task_manager_->ScheduleSyncTask(
       FROM_HERE,
       scoped_ptr<SyncTask>(syncer),
@@ -368,12 +377,12 @@ void SyncEngine::NotifyLastOperationStatus(
     SyncStatusCode sync_status,
     bool used_network) {
   UpdateServiceStateFromSyncStatusCode(sync_status, used_network);
-  if (metadata_database_) {
+  if (context_->GetMetadataDatabase()) {
     FOR_EACH_OBSERVER(
         Observer,
         service_observers_,
         OnRemoteChangeQueueUpdated(
-            metadata_database_->CountDirtyTracker()));
+            context_->GetMetadataDatabase()->CountDirtyTracker()));
   }
 }
 
@@ -392,8 +401,9 @@ void SyncEngine::OnReadyToSendRequests() {
     return;
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
 
-  if (!metadata_database_ && signin_manager_) {
-    drive_service_->Initialize(signin_manager_->GetAuthenticatedAccountId());
+  if (!context_->GetMetadataDatabase() && signin_manager_) {
+    context_->GetDriveService()->Initialize(
+        signin_manager_->GetAuthenticatedAccountId());
     PostInitializeTask();
     return;
   }
@@ -424,23 +434,23 @@ void SyncEngine::OnNetworkChanged(
 }
 
 drive::DriveServiceInterface* SyncEngine::GetDriveService() {
-  return drive_service_.get();
+  return context_->GetDriveService();
 }
 
 drive::DriveUploaderInterface* SyncEngine::GetDriveUploader() {
-  return drive_uploader_.get();
+  return context_->GetDriveUploader();
 }
 
 MetadataDatabase* SyncEngine::GetMetadataDatabase() {
-  return metadata_database_.get();
+  return context_->GetMetadataDatabase();
 }
 
 RemoteChangeProcessor* SyncEngine::GetRemoteChangeProcessor() {
-  return remote_change_processor_;
+  return context_->GetRemoteChangeProcessor();
 }
 
 base::SequencedTaskRunner* SyncEngine::GetBlockingTaskRunner() {
-  return task_runner_.get();
+  return context_->GetBlockingTaskRunner();
 }
 
 SyncEngine::SyncEngine(const base::FilePath& base_dir,
@@ -452,14 +462,10 @@ SyncEngine::SyncEngine(const base::FilePath& base_dir,
                        SigninManagerBase* signin_manager,
                        leveldb::Env* env_override)
     : base_dir_(base_dir),
-      task_runner_(task_runner),
       env_override_(env_override),
-      drive_service_(drive_service.Pass()),
-      drive_uploader_(drive_uploader.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
       signin_manager_(signin_manager),
-      remote_change_processor_(NULL),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       should_check_conflict_(true),
       should_check_remote_change_(true),
@@ -468,33 +474,37 @@ SyncEngine::SyncEngine(const base::FilePath& base_dir,
       default_conflict_resolution_policy_(
           CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
       network_available_(false),
-      weak_ptr_factory_(this) {}
+      context_(new SyncEngineContext(drive_service.Pass(),
+                                     drive_uploader.Pass(),
+                                     task_runner)),
+      weak_ptr_factory_(this) {
+}
 
 void SyncEngine::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {
-  if (metadata_database_)
-    metadata_database_->DisableApp(app_id, callback);
+  if (context_->GetMetadataDatabase())
+    context_->GetMetadataDatabase()->DisableApp(app_id, callback);
   else
     callback.Run(SYNC_STATUS_OK);
 }
 
 void SyncEngine::DoEnableApp(const std::string& app_id,
                              const SyncStatusCallback& callback) {
-  if (metadata_database_)
-    metadata_database_->EnableApp(app_id, callback);
+  if (context_->GetMetadataDatabase())
+    context_->GetMetadataDatabase()->EnableApp(app_id, callback);
   else
     callback.Run(SYNC_STATUS_OK);
 }
 
 void SyncEngine::PostInitializeTask() {
-  DCHECK(!metadata_database_);
+  DCHECK(!context_->GetMetadataDatabase());
 
-  // This initializer task may not run if metadata_database_ is already
-  // initialized when it runs.
+  // This initializer task may not run if MetadataDatabase in context_ is
+  // already initialized when it runs.
   SyncEngineInitializer* initializer =
-      new SyncEngineInitializer(this,
-                                task_runner_.get(),
-                                drive_service_.get(),
+      new SyncEngineInitializer(context_.get(),
+                                context_->GetBlockingTaskRunner(),
+                                context_->GetDriveService(),
                                 base_dir_.Append(kDatabaseName),
                                 env_override_);
   task_manager_->ScheduleSyncTask(
@@ -508,7 +518,7 @@ void SyncEngine::PostInitializeTask() {
 void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
                                SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {
-    if (drive_service_->HasRefreshToken()) {
+    if (context_->GetDriveService()->HasRefreshToken()) {
       UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
                          "Could not initialize remote service");
     } else {
@@ -521,9 +531,8 @@ void SyncEngine::DidInitialize(SyncEngineInitializer* initializer,
   scoped_ptr<MetadataDatabase> metadata_database =
       initializer->PassMetadataDatabase();
   if (metadata_database)
-    metadata_database_ = metadata_database.Pass();
+    context_->SetMetadataDatabase(metadata_database.Pass());
 
-  DCHECK(metadata_database_);
   UpdateRegisteredApps();
 }
 
@@ -531,7 +540,7 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                                         const SyncFileCallback& callback,
                                         SyncStatusCode status) {
   if (syncer->is_sync_root_deletion()) {
-    MetadataDatabase::ClearDatabase(metadata_database_.Pass());
+    MetadataDatabase::ClearDatabase(context_->PassMetadataDatabase());
     PostInitializeTask();
     callback.Run(status, syncer->url());
     return;
@@ -586,7 +595,7 @@ void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
       !listing_remote_changes_) {
     task_manager_->ScheduleSyncTask(
         FROM_HERE,
-        scoped_ptr<SyncTask>(new ListChangesTask(this)),
+        scoped_ptr<SyncTask>(new ListChangesTask(context_.get())),
         SyncTaskManager::PRIORITY_HIGH,
         base::Bind(&SyncEngine::DidFetchChanges,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -613,7 +622,7 @@ void SyncEngine::MaybeStartFetchChanges() {
   if (GetCurrentState() == REMOTE_SERVICE_DISABLED)
     return;
 
-  if (!metadata_database_)
+  if (!context_->GetMetadataDatabase())
     return;
 
   if (listing_remote_changes_)
@@ -621,11 +630,12 @@ void SyncEngine::MaybeStartFetchChanges() {
 
   base::TimeTicks now = base::TimeTicks::Now();
   if (!should_check_remote_change_ && now < time_to_check_changes_) {
-    if (!metadata_database_->HasDirtyTracker() && should_check_conflict_) {
+    if (!context_->GetMetadataDatabase()->HasDirtyTracker() &&
+        should_check_conflict_) {
       should_check_conflict_ = false;
       task_manager_->ScheduleSyncTaskIfIdle(
           FROM_HERE,
-          scoped_ptr<SyncTask>(new ConflictResolver(this)),
+          scoped_ptr<SyncTask>(new ConflictResolver(context_.get())),
           base::Bind(&SyncEngine::DidResolveConflict,
                      weak_ptr_factory_.GetWeakPtr()));
     }
@@ -634,7 +644,7 @@ void SyncEngine::MaybeStartFetchChanges() {
 
   if (task_manager_->ScheduleSyncTaskIfIdle(
           FROM_HERE,
-          scoped_ptr<SyncTask>(new ListChangesTask(this)),
+          scoped_ptr<SyncTask>(new ListChangesTask(context_.get())),
           base::Bind(&SyncEngine::DidFetchChanges,
                      weak_ptr_factory_.GetWeakPtr()))) {
     should_check_remote_change_ = false;
@@ -681,7 +691,7 @@ void SyncEngine::UpdateServiceStateFromSyncStatusCode(
     case SYNC_STATUS_NETWORK_ERROR:
     case SYNC_STATUS_ABORT:
     case SYNC_STATUS_FAILED:
-      if (drive_service_->HasRefreshToken()) {
+      if (context_->GetDriveService()->HasRefreshToken()) {
         UpdateServiceState(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE,
                            "Network or temporary service error.");
       } else {
@@ -724,9 +734,9 @@ void SyncEngine::UpdateRegisteredApps() {
   if (!extension_service_)
     return;
 
-  DCHECK(metadata_database_);
+  DCHECK(context_->GetMetadataDatabase());
   std::vector<std::string> app_ids;
-  metadata_database_->GetRegisteredAppIDs(&app_ids);
+  context_->GetMetadataDatabase()->GetRegisteredAppIDs(&app_ids);
 
   // Update the status of every origin using status from ExtensionService.
   for (std::vector<std::string>::const_iterator itr = app_ids.begin();
@@ -744,7 +754,8 @@ void SyncEngine::UpdateRegisteredApps() {
       continue;
     }
     FileTracker tracker;
-    if (!metadata_database_->FindAppRootTracker(app_id, &tracker)) {
+    if (!context_->GetMetadataDatabase()->FindAppRootTracker(app_id,
+                                                             &tracker)) {
       // App will register itself on first run.
       continue;
     }

@@ -35,8 +35,7 @@ namespace {
 const int64 kSyncRootTrackerID = 100;
 }  // namespace
 
-class RegisterAppTaskTest : public testing::Test,
-                            public SyncEngineContext {
+class RegisterAppTaskTest : public testing::Test {
  public:
   RegisterAppTaskTest()
       : next_file_id_(1000),
@@ -47,18 +46,24 @@ class RegisterAppTaskTest : public testing::Test,
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    fake_drive_service_.reset(new drive::FakeDriveService);
-    ASSERT_TRUE(fake_drive_service_->LoadAccountMetadataForWapi(
+    scoped_ptr<drive::FakeDriveService>
+        fake_drive_service(new drive::FakeDriveService);
+    ASSERT_TRUE(fake_drive_service->LoadAccountMetadataForWapi(
         "sync_file_system/account_metadata.json"));
-    ASSERT_TRUE(fake_drive_service_->LoadResourceListForWapi(
+    ASSERT_TRUE(fake_drive_service->LoadResourceListForWapi(
         "gdata/empty_feed.json"));
 
-    drive_uploader_.reset(new drive::DriveUploader(
-        fake_drive_service_.get(), base::MessageLoopProxy::current()));
+    scoped_ptr<drive::DriveUploaderInterface>
+        drive_uploader(new drive::DriveUploader(
+            fake_drive_service.get(), base::MessageLoopProxy::current()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_.get(), drive_uploader_.get(),
+        fake_drive_service.get(), drive_uploader.get(),
         kSyncRootFolderTitle));
+
+    context_.reset(new SyncEngineContext(
+        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+        drive_uploader.Pass(), base::MessageLoopProxy::current()));
 
     ASSERT_EQ(google_apis::HTTP_CREATED,
               fake_drive_service_helper_->AddOrphanedFolder(
@@ -66,28 +71,8 @@ class RegisterAppTaskTest : public testing::Test,
   }
 
   virtual void TearDown() OVERRIDE {
-    metadata_database_.reset();
+    context_.reset();
     base::RunLoop().RunUntilIdle();
-  }
-
-  virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE {
-    return fake_drive_service_.get();
-  }
-
-  virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE {
-    return NULL;
-  }
-
-  virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE {
-    return metadata_database_.get();
-  }
-
-  virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE {
-    return NULL;
-  }
-
-  virtual base::SequencedTaskRunner* GetBlockingTaskRunner() OVERRIDE {
-    return base::MessageLoopProxy::current();
   }
 
  protected:
@@ -136,14 +121,16 @@ class RegisterAppTaskTest : public testing::Test,
 
   void CreateMetadataDatabase(scoped_ptr<leveldb::DB> db) {
     ASSERT_TRUE(db);
-    ASSERT_FALSE(metadata_database_);
+    ASSERT_FALSE(context_->GetMetadataDatabase());
+    scoped_ptr<MetadataDatabase> metadata_db;
     ASSERT_EQ(SYNC_STATUS_OK,
               MetadataDatabase::CreateForTesting(
-                  db.Pass(), &metadata_database_));
+                  db.Pass(), &metadata_db));
+    context_->SetMetadataDatabase(metadata_db.Pass());
   }
 
   SyncStatusCode RunRegisterAppTask(const std::string& app_id) {
-    RegisterAppTask task(this, app_id);
+    RegisterAppTask task(context_.get(), app_id);
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     task.RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
@@ -204,13 +191,13 @@ class RegisterAppTaskTest : public testing::Test,
 
   size_t CountRegisteredAppRoot() {
     std::vector<std::string> app_ids;
-    metadata_database_->GetRegisteredAppIDs(&app_ids);
+    context_->GetMetadataDatabase()->GetRegisteredAppIDs(&app_ids);
     return app_ids.size();
   }
 
   bool IsAppRegistered(const std::string& app_id) {
     TrackerIDSet trackers;
-    if (!metadata_database_->FindTrackersByParentAndTitle(
+    if (!context_->GetMetadataDatabase()->FindTrackersByParentAndTitle(
             kSyncRootTrackerID, app_id, &trackers))
       return false;
     return trackers.has_active();
@@ -226,13 +213,13 @@ class RegisterAppTaskTest : public testing::Test,
 
   bool HasRemoteAppRoot(const std::string& app_id) {
     TrackerIDSet files;
-    if (!metadata_database_->FindTrackersByParentAndTitle(
+    if (!context_->GetMetadataDatabase()->FindTrackersByParentAndTitle(
             kSyncRootTrackerID, app_id, &files) ||
         !files.has_active())
       return false;
 
     FileTracker app_root_tracker;
-    EXPECT_TRUE(metadata_database_->FindTrackerByTrackerID(
+    EXPECT_TRUE(context_->GetMetadataDatabase()->FindTrackerByTrackerID(
         files.active_tracker(), &app_root_tracker));
     std::string app_root_folder_id = app_root_tracker.file_id();
     scoped_ptr<google_apis::ResourceEntry> entry;
@@ -259,11 +246,8 @@ class RegisterAppTaskTest : public testing::Test,
   content::TestBrowserThreadBundle browser_threads_;
   base::ScopedTempDir database_dir_;
 
-  scoped_ptr<drive::FakeDriveService> fake_drive_service_;
-  scoped_ptr<drive::DriveUploader> drive_uploader_;
+  scoped_ptr<SyncEngineContext> context_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
-
-  scoped_ptr<MetadataDatabase> metadata_database_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterAppTaskTest);
 };

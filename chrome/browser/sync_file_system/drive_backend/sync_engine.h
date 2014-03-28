@@ -48,8 +48,7 @@ class SyncEngine : public RemoteFileSyncService,
                    public SyncTaskManager::Client,
                    public drive::DriveNotificationObserver,
                    public drive::DriveServiceObserver,
-                   public net::NetworkChangeNotifier::NetworkChangeObserver,
-                   public SyncEngineContext {
+                   public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   typedef Observer SyncServiceObserver;
 
@@ -131,12 +130,11 @@ class SyncEngine : public RemoteFileSyncService,
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
-  // SyncEngineContext overrides.
-  virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE;
-  virtual drive::DriveUploaderInterface* GetDriveUploader() OVERRIDE;
-  virtual MetadataDatabase* GetMetadataDatabase() OVERRIDE;
-  virtual RemoteChangeProcessor* GetRemoteChangeProcessor() OVERRIDE;
-  virtual base::SequencedTaskRunner* GetBlockingTaskRunner() OVERRIDE;
+  drive::DriveServiceInterface* GetDriveService();
+  drive::DriveUploaderInterface* GetDriveUploader();
+  MetadataDatabase* GetMetadataDatabase();
+  RemoteChangeProcessor* GetRemoteChangeProcessor();
+  base::SequencedTaskRunner* GetBlockingTaskRunner();
 
  private:
   friend class DriveBackendSyncTest;
@@ -179,12 +177,7 @@ class SyncEngine : public RemoteFileSyncService,
   base::FilePath base_dir_;
   base::FilePath temporary_file_dir_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   leveldb::Env* env_override_;
-
-  scoped_ptr<drive::DriveServiceInterface> drive_service_;
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
-  scoped_ptr<MetadataDatabase> metadata_database_;
 
   // These external services are not owned by SyncEngine.
   // The owner of the SyncEngine is responsible for their lifetime.
@@ -196,7 +189,6 @@ class SyncEngine : public RemoteFileSyncService,
 
   ObserverList<SyncServiceObserver> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;
-  RemoteChangeProcessor* remote_change_processor_;
 
   RemoteServiceState service_state_;
 
@@ -211,6 +203,7 @@ class SyncEngine : public RemoteFileSyncService,
 
   scoped_ptr<SyncTaskManager> task_manager_;
 
+  scoped_ptr<SyncEngineContext> context_;
   base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);

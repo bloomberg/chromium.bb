@@ -23,11 +23,9 @@ namespace drive_backend {
 
 ConflictResolver::ConflictResolver(SyncEngineContext* sync_context)
     : sync_context_(sync_context),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
-ConflictResolver::~ConflictResolver() {
-}
+ConflictResolver::~ConflictResolver() {}
 
 void ConflictResolver::RunSequential(const SyncStatusCallback& callback) {
   if (!IsContextReady()) {
