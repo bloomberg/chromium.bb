@@ -139,6 +139,8 @@ private:
 
     // Mapping from a cluster hash to the corresponding cluster infos which have not been autosized yet.
     HashMap<unsigned, OwnPtr<Vector<TextAutosizingClusterInfo> > > m_nonAutosizedClusters;
+
+    bool m_previouslyAutosized;
 };
 
 } // namespace WebCore

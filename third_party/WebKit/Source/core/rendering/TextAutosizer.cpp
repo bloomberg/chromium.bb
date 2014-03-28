@@ -148,6 +148,7 @@ static unsigned computeLocalHash(const RenderObject* renderer)
 
 TextAutosizer::TextAutosizer(Document* document)
     : m_document(document)
+    , m_previouslyAutosized(false)
 {
 }
 
@@ -180,7 +181,7 @@ bool TextAutosizer::isApplicable() const
 
 void TextAutosizer::recalculateMultipliers()
 {
-    if (!isApplicable())
+    if (!isApplicable() && !m_previouslyAutosized)
         return;
 
     RenderObject* renderer = m_document->renderer();
@@ -189,6 +190,7 @@ void TextAutosizer::recalculateMultipliers()
             setMultiplier(renderer, 1);
         renderer = renderer->nextInPreOrder();
     }
+    m_previouslyAutosized = false;
 }
 
 bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
@@ -244,6 +246,7 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     m_nonAutosizedClusters.clear();
 #endif
     InspectorInstrumentation::didAutosizeText(layoutRoot);
+    m_previouslyAutosized = true;
     return true;
 }
 
