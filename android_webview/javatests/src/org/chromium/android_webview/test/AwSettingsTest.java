@@ -57,15 +57,17 @@ public class AwSettingsTest extends AwTestBase {
      */
     abstract class AwSettingsTestHelper<T> {
         protected final AwContents mAwContents;
+        protected final Context mContext;
         protected final TestAwContentsClient mContentViewClient;
         protected final AwSettings mAwSettings;
 
-        AwSettingsTestHelper(AwContents awContents,
+        AwSettingsTestHelper(AwTestContainerView containerView,
                              TestAwContentsClient contentViewClient,
                              boolean requiresJsEnabled) throws Throwable {
-            mAwContents = awContents;
+            mAwContents = containerView.getAwContents();
+            mContext = containerView.getContext();
             mContentViewClient = contentViewClient;
-            mAwSettings = AwSettingsTest.this.getAwSettingsOnUiThread(awContents);
+            mAwSettings = AwSettingsTest.this.getAwSettingsOnUiThread(mAwContents);
             if (requiresJsEnabled) {
                 mAwSettings.setJavaScriptEnabled(true);
             }
@@ -140,9 +142,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String JS_ENABLED_STRING = "JS Enabled";
         private static final String JS_DISABLED_STRING = "JS Disabled";
 
-        AwSettingsJavaScriptTestHelper(AwContents awContents,
+        AwSettingsJavaScriptTestHelper(AwTestContainerView containerView,
                                        TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, false);
+            super(containerView, contentViewClient, false);
         }
 
         @Override
@@ -184,9 +186,9 @@ public class AwSettingsTest extends AwTestBase {
     // JavaScript state.
     class AwSettingsJavaScriptDynamicTestHelper extends AwSettingsJavaScriptTestHelper {
         AwSettingsJavaScriptDynamicTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient);
+            super(containerView, contentViewClient);
             // Load the page.
             super.doEnsureSettingHasValue(getInitialValue());
         }
@@ -208,9 +210,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String PLUGINS_ENABLED_STRING = "Embed";
         private static final String PLUGINS_DISABLED_STRING = "NoEmbed";
 
-        AwSettingsPluginsTestHelper(AwContents awContents,
+        AwSettingsPluginsTestHelper(AwTestContainerView containerView,
                                     TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
         }
 
         @Override
@@ -249,9 +251,9 @@ public class AwSettingsTest extends AwTestBase {
 
     class AwSettingsStandardFontFamilyTestHelper extends AwSettingsTestHelper<String> {
         AwSettingsStandardFontFamilyTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
         }
 
         @Override
@@ -289,9 +291,9 @@ public class AwSettingsTest extends AwTestBase {
 
     class AwSettingsDefaultFontSizeTestHelper extends AwSettingsTestHelper<Integer> {
         AwSettingsDefaultFontSizeTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
         }
 
         @Override
@@ -331,10 +333,10 @@ public class AwSettingsTest extends AwTestBase {
         private ImagePageGenerator mGenerator;
 
         AwSettingsLoadImagesAutomaticallyTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 ImagePageGenerator generator) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mGenerator = generator;
         }
 
@@ -372,11 +374,11 @@ public class AwSettingsTest extends AwTestBase {
     class AwSettingsImagesEnabledHelper extends AwSettingsTestHelper<Boolean> {
 
         AwSettingsImagesEnabledHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 TestWebServer webServer,
                 ImagePageGenerator generator) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mWebServer = webServer;
             mGenerator = generator;
         }
@@ -420,9 +422,9 @@ public class AwSettingsTest extends AwTestBase {
 
     class AwSettingsDefaultTextEncodingTestHelper extends AwSettingsTestHelper<String> {
         AwSettingsDefaultTextEncodingTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
         }
 
         @Override
@@ -462,9 +464,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String CUSTOM_UA = "ChromeViewTest";
 
         AwSettingsUserAgentStringTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mDefaultUa = mAwSettings.getUserAgentString();
         }
 
@@ -513,9 +515,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String HAS_LOCAL_STORAGE = "Has localStorage";
 
         AwSettingsDomStorageEnabledTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             AwSettingsTest.assertFileIsReadable(UrlUtils.getTestFilePath(TEST_FILE));
         }
 
@@ -556,9 +558,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String HAS_DATABASE = "Has database";
 
         AwSettingsDatabaseTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             AwSettingsTest.assertFileIsReadable(UrlUtils.getTestFilePath(TEST_FILE));
         }
 
@@ -600,9 +602,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String ACCESS_DENIED_TITLE = "Exception";
 
         AwSettingsUniversalAccessFromFilesTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             AwSettingsTest.assertFileIsReadable(UrlUtils.getTestFilePath(TEST_CONTAINER_FILE));
             AwSettingsTest.assertFileIsReadable(UrlUtils.getTestFilePath(TEST_FILE));
             mIframeContainerUrl = UrlUtils.getTestFileUrl(TEST_CONTAINER_FILE);
@@ -653,9 +655,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String ACCESS_DENIED_TITLE = "Exception";
 
         AwSettingsFileAccessFromFilesIframeTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             AwSettingsTest.assertFileIsReadable(UrlUtils.getTestFilePath(TEST_CONTAINER_FILE));
             AwSettingsTest.assertFileIsReadable(UrlUtils.getTestFilePath(TEST_FILE));
             mIframeContainerUrl = UrlUtils.getTestFileUrl(TEST_CONTAINER_FILE);
@@ -703,9 +705,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String ACCESS_DENIED_TITLE = "Exception";
 
         AwSettingsFileAccessFromFilesXhrTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             assertFileIsReadable(UrlUtils.getTestFilePath(TEST_FILE));
             mXhrContainerUrl = UrlUtils.getTestFileUrl(TEST_FILE);
             mAwSettings.setAllowUniversalAccessFromFileURLs(false);
@@ -749,10 +751,10 @@ public class AwSettingsTest extends AwTestBase {
         private static final String ACCESS_GRANTED_TITLE = "Hello, World!";
 
         AwSettingsFileUrlAccessTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 int startIndex) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mIndex = startIndex;
             AwSettingsTest.assertFileIsReadable(UrlUtils.getTestFilePath(TEST_FILE));
         }
@@ -796,10 +798,10 @@ public class AwSettingsTest extends AwTestBase {
     class AwSettingsContentUrlAccessTestHelper extends AwSettingsTestHelper<Boolean> {
 
         AwSettingsContentUrlAccessTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 int index) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mTarget = "content_access_" + index;
         }
 
@@ -841,10 +843,10 @@ public class AwSettingsTest extends AwTestBase {
         private static final String TARGET = "content_from_file";
 
         AwSettingsContentUrlAccessFromFileTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 int index) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mIndex = index;
             mTempDir = getInstrumentation().getTargetContext().getCacheDir().getPath();
         }
@@ -903,9 +905,9 @@ public class AwSettingsTest extends AwTestBase {
         protected static final float PARAGRAPH_FONT_SIZE = 14.0f;
 
         AwSettingsTextAutosizingTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mNeedToWaitForFontSizeChange = false;
             loadDataSync(getData());
         }
@@ -938,8 +940,7 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         protected String getData() {
-            DeviceDisplayInfo deviceInfo =
-                    DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
+            DeviceDisplayInfo deviceInfo = DeviceDisplayInfo.create(mContext);
             int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
             int layoutWidth = (int) (displayWidth * 2.5f); // Use 2.5 as autosizing layout tests do.
             StringBuilder sb = new StringBuilder();
@@ -975,9 +976,9 @@ public class AwSettingsTest extends AwTestBase {
                                               AwSettingsTextAutosizingTestHelper<LayoutAlgorithm> {
 
         AwSettingsLayoutAlgorithmTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient);
+            super(containerView, contentViewClient);
             // Font autosizing doesn't step in for narrow layout widths.
             mAwSettings.setUseWideViewPort(true);
         }
@@ -1021,9 +1022,9 @@ public class AwSettingsTest extends AwTestBase {
         private final float mInitialActualFontSize;
 
         AwSettingsTextZoomTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient);
+            super(containerView, contentViewClient);
             mInitialActualFontSize = getActualFontSize();
         }
 
@@ -1069,9 +1070,9 @@ public class AwSettingsTest extends AwTestBase {
         private final float mInitialActualFontSize;
 
         AwSettingsTextZoomAutosizingTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient);
+            super(containerView, contentViewClient);
             mAwSettings.setLayoutAlgorithm(LayoutAlgorithm.TEXT_AUTOSIZING);
             // The initial font size can be adjusted by font autosizer depending on the page's
             // viewport width.
@@ -1119,9 +1120,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String POPUP_BLOCKED = "Popup blocked";
 
         AwSettingsJavaScriptPopupsTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
         }
 
         @Override
@@ -1176,11 +1177,11 @@ public class AwSettingsTest extends AwTestBase {
     class AwSettingsCacheModeTestHelper extends AwSettingsTestHelper<Integer> {
 
         AwSettingsCacheModeTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 int index,
                 TestWebServer webServer) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mIndex = index;
             mWebServer = webServer;
         }
@@ -1234,9 +1235,9 @@ public class AwSettingsTest extends AwTestBase {
         private static final String VIEWPORT_TAG_LAYOUT_WIDTH = "3000";
 
         AwSettingsUseWideViewportTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
         }
 
         @Override
@@ -1282,10 +1283,10 @@ public class AwSettingsTest extends AwTestBase {
         private static final float DEFAULT_PAGE_SCALE = 1.0f;
 
         AwSettingsLoadWithOverviewModeTestHelper(
-                AwContents awContents,
+                AwTestContainerView containerView,
                 TestAwContentsClient contentViewClient,
                 boolean withViewPortTag) throws Throwable {
-            super(awContents, contentViewClient, true);
+            super(containerView, contentViewClient, true);
             mWithViewPortTag = withViewPortTag;
             mAwSettings.setUseWideViewPort(true);
         }
@@ -1377,8 +1378,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testJavaScriptEnabledWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsJavaScriptTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsJavaScriptTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsJavaScriptTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsJavaScriptTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -1386,8 +1387,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testJavaScriptEnabledDynamicWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsJavaScriptDynamicTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsJavaScriptDynamicTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsJavaScriptDynamicTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsJavaScriptDynamicTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -1395,8 +1396,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testPluginsEnabledWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsPluginsTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsPluginsTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsPluginsTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsPluginsTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -1404,8 +1405,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testStandardFontFamilyWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsStandardFontFamilyTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsStandardFontFamilyTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsStandardFontFamilyTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsStandardFontFamilyTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -1413,8 +1414,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testDefaultFontSizeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsDefaultFontSizeTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsDefaultFontSizeTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsDefaultFontSizeTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsDefaultFontSizeTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     // The test verifies that after changing the LoadsImagesAutomatically
@@ -1455,9 +1456,9 @@ public class AwSettingsTest extends AwTestBase {
         ViewPair views = createViews();
         runPerViewSettingsTest(
             new AwSettingsLoadImagesAutomaticallyTestHelper(
-                views.getContents0(), views.getClient0(), new ImagePageGenerator(0, true)),
+                views.getContainer0(), views.getClient0(), new ImagePageGenerator(0, true)),
             new AwSettingsLoadImagesAutomaticallyTestHelper(
-                views.getContents1(), views.getClient1(), new ImagePageGenerator(1, true)));
+                views.getContainer1(), views.getClient1(), new ImagePageGenerator(1, true)));
     }
 
     @SmallTest
@@ -1465,8 +1466,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testDefaultTextEncodingWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsDefaultTextEncodingTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsDefaultTextEncodingTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsDefaultTextEncodingTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsDefaultTextEncodingTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     // The test verifies that the default user agent string follows the format
@@ -1581,8 +1582,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testUserAgentStringWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsUserAgentStringTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsUserAgentStringTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsUserAgentStringTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsUserAgentStringTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -1625,8 +1626,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testDomStorageEnabledWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsDomStorageEnabledTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsDomStorageEnabledTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsDomStorageEnabledTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsDomStorageEnabledTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     // Ideally, these three tests below should be combined into one, or tested using
@@ -1638,8 +1639,8 @@ public class AwSettingsTest extends AwTestBase {
         TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = testContainerView.getAwContents();
-        AwSettingsDatabaseTestHelper helper = new AwSettingsDatabaseTestHelper(awContents, client);
+        AwSettingsDatabaseTestHelper helper =
+                new AwSettingsDatabaseTestHelper(testContainerView, client);
         helper.ensureSettingHasInitialValue();
     }
 
@@ -1649,8 +1650,8 @@ public class AwSettingsTest extends AwTestBase {
         TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = testContainerView.getAwContents();
-        AwSettingsDatabaseTestHelper helper = new AwSettingsDatabaseTestHelper(awContents, client);
+        AwSettingsDatabaseTestHelper helper =
+                new AwSettingsDatabaseTestHelper(testContainerView, client);
         helper.setAlteredSettingValue();
         helper.ensureSettingHasAlteredValue();
     }
@@ -1661,8 +1662,8 @@ public class AwSettingsTest extends AwTestBase {
         TestAwContentsClient client = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(client);
-        final AwContents awContents = testContainerView.getAwContents();
-        AwSettingsDatabaseTestHelper helper = new AwSettingsDatabaseTestHelper(awContents, client);
+        AwSettingsDatabaseTestHelper helper =
+                new AwSettingsDatabaseTestHelper(testContainerView, client);
         helper.setInitialSettingValue();
         helper.ensureSettingHasInitialValue();
     }
@@ -1672,9 +1673,9 @@ public class AwSettingsTest extends AwTestBase {
     public void testUniversalAccessFromFilesWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsUniversalAccessFromFilesTestHelper(views.getContents0(),
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getContainer0(),
                 views.getClient0()),
-            new AwSettingsUniversalAccessFromFilesTestHelper(views.getContents1(),
+            new AwSettingsUniversalAccessFromFilesTestHelper(views.getContainer1(),
                 views.getClient1()));
     }
 
@@ -1705,9 +1706,9 @@ public class AwSettingsTest extends AwTestBase {
         ViewPair views = createViews();
         runPerViewSettingsTest(
             new AwSettingsFileAccessFromFilesIframeTestHelper(
-                views.getContents0(), views.getClient0()),
+                views.getContainer0(), views.getClient0()),
             new AwSettingsFileAccessFromFilesIframeTestHelper(
-                views.getContents1(), views.getClient1()));
+                views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -1715,9 +1716,9 @@ public class AwSettingsTest extends AwTestBase {
     public void testFileAccessFromFilesXhrWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getContents0(),
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getContainer0(),
                 views.getClient0()),
-            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getContents1(),
+            new AwSettingsFileAccessFromFilesXhrTestHelper(views.getContainer1(),
                 views.getClient1()));
     }
 
@@ -1726,8 +1727,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testFileUrlAccessWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsFileUrlAccessTestHelper(views.getContents0(), views.getClient0(), 0),
-            new AwSettingsFileUrlAccessTestHelper(views.getContents1(), views.getClient1(), 1));
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsFileUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
     @SmallTest
@@ -1735,8 +1736,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testContentUrlAccessWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsContentUrlAccessTestHelper(views.getContents0(), views.getClient0(), 0),
-            new AwSettingsContentUrlAccessTestHelper(views.getContents1(), views.getClient1(), 1));
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer0(), views.getClient0(), 0),
+            new AwSettingsContentUrlAccessTestHelper(views.getContainer1(), views.getClient1(), 1));
     }
 
     @SmallTest
@@ -1767,9 +1768,9 @@ public class AwSettingsTest extends AwTestBase {
         ViewPair views = createViews();
         runPerViewSettingsTest(
             new AwSettingsContentUrlAccessFromFileTestHelper(
-                    views.getContents0(), views.getClient0(), 0),
+                    views.getContainer0(), views.getClient0(), 0),
             new AwSettingsContentUrlAccessFromFileTestHelper(
-                    views.getContents1(), views.getClient1(), 1));
+                    views.getContainer1(), views.getClient1(), 1));
     }
 
     @SmallTest
@@ -1835,12 +1836,12 @@ public class AwSettingsTest extends AwTestBase {
             webServer = new TestWebServer(false);
             runPerViewSettingsTest(
                     new AwSettingsImagesEnabledHelper(
-                            views.getContents0(),
+                            views.getContainer0(),
                             views.getClient0(),
                             webServer,
                             new ImagePageGenerator(0, true)),
                     new AwSettingsImagesEnabledHelper(
-                            views.getContents1(),
+                            views.getContainer1(),
                             views.getClient1(),
                             webServer,
                             new ImagePageGenerator(1, true)));
@@ -2044,8 +2045,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testLayoutAlgorithmWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsLayoutAlgorithmTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsLayoutAlgorithmTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsLayoutAlgorithmTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -2053,8 +2054,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testTextZoomWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsTextZoomTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsTextZoomTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsTextZoomTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsTextZoomTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -2062,8 +2063,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testTextZoomAutosizingWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsTextZoomAutosizingTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsTextZoomAutosizingTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsTextZoomAutosizingTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsTextZoomAutosizingTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -2071,8 +2072,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testJavaScriptPopupsWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsJavaScriptPopupsTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsJavaScriptPopupsTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -2181,9 +2182,9 @@ public class AwSettingsTest extends AwTestBase {
             webServer = new TestWebServer(false);
             runPerViewSettingsTest(
                     new AwSettingsCacheModeTestHelper(
-                            views.getContents0(), views.getClient0(), 0, webServer),
+                            views.getContainer0(), views.getClient0(), 0, webServer),
                     new AwSettingsCacheModeTestHelper(
-                            views.getContents1(), views.getClient1(), 1, webServer));
+                            views.getContainer1(), views.getClient1(), 1, webServer));
         } finally {
             if (webServer != null) webServer.shutdown();
         }
@@ -2340,8 +2341,8 @@ public class AwSettingsTest extends AwTestBase {
     public void testUseWideViewportWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
-            new AwSettingsUseWideViewportTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsUseWideViewportTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsUseWideViewportTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsUseWideViewportTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     @SmallTest
@@ -2349,12 +2350,14 @@ public class AwSettingsTest extends AwTestBase {
     public void testUseWideViewportWithTwoViewsNoQuirks() throws Throwable {
         ViewPair views = createViews(false);
         runPerViewSettingsTest(
-            new AwSettingsUseWideViewportTestHelper(views.getContents0(), views.getClient0()),
-            new AwSettingsUseWideViewportTestHelper(views.getContents1(), views.getClient1()));
+            new AwSettingsUseWideViewportTestHelper(views.getContainer0(), views.getClient0()),
+            new AwSettingsUseWideViewportTestHelper(views.getContainer1(), views.getClient1()));
     }
 
     private void useWideViewportLayoutWidthTest(
-            final AwContents awContents, CallbackHelper onPageFinishedHelper) throws Throwable {
+            AwTestContainerView testContainer, CallbackHelper onPageFinishedHelper)
+            throws Throwable {
+        final AwContents awContents = testContainer.getAwContents();
         AwSettings settings = getAwSettingsOnUiThread(awContents);
 
         final String pageTemplate = "<html><head>%s</head>" +
@@ -2368,8 +2371,7 @@ public class AwSettingsTest extends AwTestBase {
                 pageTemplate,
                 "<meta name='viewport' content='width=" + viewportTagSpecifiedWidth + "' />");
 
-        DeviceDisplayInfo deviceInfo =
-                DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
+        DeviceDisplayInfo deviceInfo = DeviceDisplayInfo.create(testContainer.getContext());
         int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
 
         settings.setJavaScriptEnabled(true);
@@ -2414,8 +2416,7 @@ public class AwSettingsTest extends AwTestBase {
         TestAwContentsClient contentClient = new TestAwContentsClient();
         AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
-        useWideViewportLayoutWidthTest(testContainerView.getAwContents(),
-                contentClient.getOnPageFinishedHelper());
+        useWideViewportLayoutWidthTest(testContainerView, contentClient.getOnPageFinishedHelper());
     }
 
     @SmallTest
@@ -2424,8 +2425,7 @@ public class AwSettingsTest extends AwTestBase {
         TestAwContentsClient contentClient = new TestAwContentsClient();
         AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient, false);
-        useWideViewportLayoutWidthTest(testContainerView.getAwContents(),
-                contentClient.getOnPageFinishedHelper());
+        useWideViewportLayoutWidthTest(testContainerView, contentClient.getOnPageFinishedHelper());
     }
 
     @MediumTest
@@ -2473,9 +2473,9 @@ public class AwSettingsTest extends AwTestBase {
         ViewPair views = createViews();
         runPerViewSettingsTest(
                 new AwSettingsLoadWithOverviewModeTestHelper(
-                        views.getContents0(), views.getClient0(), false),
+                        views.getContainer0(), views.getClient0(), false),
                 new AwSettingsLoadWithOverviewModeTestHelper(
-                        views.getContents1(), views.getClient1(), false));
+                        views.getContainer1(), views.getClient1(), false));
     }
 
     @SmallTest
@@ -2484,9 +2484,9 @@ public class AwSettingsTest extends AwTestBase {
         ViewPair views = createViews();
         runPerViewSettingsTest(
                 new AwSettingsLoadWithOverviewModeTestHelper(
-                        views.getContents0(), views.getClient0(), true),
+                        views.getContainer0(), views.getClient0(), true),
                 new AwSettingsLoadWithOverviewModeTestHelper(
-                        views.getContents1(), views.getClient1(), true));
+                        views.getContainer1(), views.getClient1(), true));
     }
 
     @SmallTest
@@ -2634,33 +2634,41 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     static class ViewPair {
-        private final AwContents contents0;
-        private final TestAwContentsClient client0;
-        private final AwContents contents1;
-        private final TestAwContentsClient client1;
+        private final AwTestContainerView mContainer0;
+        private final TestAwContentsClient mClient0;
+        private final AwTestContainerView mContainer1;
+        private final TestAwContentsClient mClient1;
 
-        ViewPair(AwContents contents0, TestAwContentsClient client0,
-                 AwContents contents1, TestAwContentsClient client1) {
-            this.contents0 = contents0;
-            this.client0 = client0;
-            this.contents1 = contents1;
-            this.client1 = client1;
+        ViewPair(AwTestContainerView container0, TestAwContentsClient client0,
+                 AwTestContainerView container1, TestAwContentsClient client1) {
+            this.mContainer0 = container0;
+            this.mClient0 = client0;
+            this.mContainer1 = container1;
+            this.mClient1 = client1;
+        }
+
+        AwTestContainerView getContainer0() {
+            return mContainer0;
         }
 
         AwContents getContents0() {
-            return contents0;
+            return mContainer0.getAwContents();
         }
 
         TestAwContentsClient getClient0() {
-            return client0;
+            return mClient0;
+        }
+
+        AwTestContainerView getContainer1() {
+            return mContainer1;
         }
 
         AwContents getContents1() {
-            return contents1;
+            return mContainer1.getAwContents();
         }
 
         TestAwContentsClient getClient1() {
-            return client1;
+            return mClient1;
         }
     }
 
@@ -2721,9 +2729,9 @@ public class AwSettingsTest extends AwTestBase {
         TestAwContentsClient client0 = new TestAwContentsClient();
         TestAwContentsClient client1 = new TestAwContentsClient();
         return new ViewPair(
-            createAwTestContainerViewOnMainSync(client0, supportsLegacyQuirks).getAwContents(),
+            createAwTestContainerViewOnMainSync(client0, supportsLegacyQuirks),
             client0,
-            createAwTestContainerViewOnMainSync(client1, supportsLegacyQuirks).getAwContents(),
+            createAwTestContainerViewOnMainSync(client1, supportsLegacyQuirks),
             client1);
     }
 
