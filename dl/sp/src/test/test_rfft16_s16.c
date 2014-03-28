@@ -27,7 +27,7 @@ int verbose = 0;
 int signal_value = 32767;
 int scale_factor = 0;
 
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   struct Options options;
   struct TestInfo info;
 
@@ -65,6 +65,8 @@ void main(int argc, char* argv[]) {
                &info,
                "16-bit Real FFT using 16-bit complex FFT");
   }
+
+  return 0;
 }
 
 void GenerateSignal(struct ComplexFloat* fft,

@@ -26,7 +26,7 @@
 int verbose;
 int signal_value;
 
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   struct Options options;
   struct TestInfo info;
 
@@ -67,6 +67,8 @@ void main(int argc, char* argv[]) {
                &info,
                "32-bit FFT");
   }
+
+  return 0;
 }
 
 void GenerateSignal(OMX_SC32* x, OMX_SC32* fft, int size, int signal_type) {

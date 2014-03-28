@@ -19,6 +19,7 @@
 #include "dl/sp/api/omxSP.h"
 #include "dl/sp/src/test/aligned_ptr.h"
 #include "dl/sp/src/test/gensig.h"
+#include "dl/sp/src/test/test_util.h"
 
 #define MAX_FFT_ORDER TWIDDLE_TABLE_ORDER
 #define MAX_FFT_ORDER_FIXED_POINT 12
@@ -83,7 +84,7 @@ static int do_inverse_test = 1;
 static int min_fft_order = 2;
 static int max_fft_order = MAX_FFT_ORDER;
 
-void TimeFFTUsage(const char* prog) {
+void TimeFFTUsage(char* prog) {
   fprintf(stderr, 
       "%s: [-hTFICA] [-f fft] [-c count] [-n logsize] [-s scale]\n"
       "    [-g signal-type] [-S signal value]\n"
@@ -140,7 +141,7 @@ void TimeFFTUsage(const char* prog) {
 }
 
 /* TODO(kma/ajm/rtoy): use strings instead of numbers for fft_type. */
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   int fft_log_size = 4;
   float signal_value = 32767;
   int signal_type = 0;
@@ -256,6 +257,8 @@ void main(int argc, char* argv[]) {
         break;
     }
   }
+
+  return 0;
 }
 
 void GetUserTime(struct timeval* time) {
@@ -365,7 +368,7 @@ void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
   if (do_forward_test) {
     GetUserTime(&start_time);
     for (n = 0; n < count; ++n) {
-      FORWARD_FLOAT_FFT(x, y, fft_fwd_spec);
+      FORWARD_FLOAT_FFT((OMX_FC32*) x, (OMX_FC32*) y, fft_fwd_spec);
     }
     GetUserTime(&end_time);
 
@@ -377,7 +380,7 @@ void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
   if (do_inverse_test) {
     GetUserTime(&start_time);
     for (n = 0; n < count; ++n) {
-      INVERSE_FLOAT_FFT(y, z, fft_inv_spec);
+      INVERSE_FLOAT_FFT((OMX_FC32*) y, z, fft_inv_spec);
     }
     GetUserTime(&end_time);
 

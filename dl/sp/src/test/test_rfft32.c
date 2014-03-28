@@ -26,7 +26,7 @@ int signal_value;
 
 #define MAX_FFT_ORDER   12
 
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   struct Options options;
   struct TestInfo info;
 
@@ -65,6 +65,8 @@ void main(int argc, char* argv[]) {
                &info,
                "32-bit Real FFT");
   }
+
+  return 0;
 }
 
 void GenerateSignal(OMX_S32* x, OMX_SC32* fft, int size, int signal_type) {

@@ -14,7 +14,7 @@
 #include "android/log.h"
 #include "dl/sp/api/omxSP.h"
 
-int HasArmNeon() {
+int omxSP_HasArmNeon() {
   return (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
 }
 
@@ -23,7 +23,7 @@ static void SetFFTRoutines() {
    * Choose the correct (NEON or non-NEON) routines for both the
    * forward and inverse FFTs
    */
-  if (HasArmNeon()) {
+  if (omxSP_HasArmNeon()) {
     __android_log_print(ANDROID_LOG_INFO, "OpenMAX DL FFT",
                         "Using NEON FFT");
     omxSP_FFTFwd_RToCCS_F32 = omxSP_FFTFwd_RToCCS_F32_Sfs;

@@ -87,6 +87,30 @@ extern void x86SP_FFT_CToC_FC32_Inv_Radix4_ls_sse(
     const OMX_F32 *twiddle,
     OMX_INT n);
 
+extern void x86SP_FFT_CToC_FC32_Fwd_Radix2_ls(
+    const OMX_F32 *in,
+    OMX_F32 *out,
+    const OMX_F32 *twiddle,
+    OMX_INT n);
+
+extern void x86SP_FFT_CToC_FC32_Inv_Radix2_ls(
+    const OMX_F32 *in,
+    OMX_F32 *out,
+    const OMX_F32 *twiddle,
+    OMX_INT n);
+
+extern void x86SP_FFT_CToC_FC32_Fwd_Radix2_ls_sse(
+    const OMX_F32 *in,
+    OMX_F32 *out,
+    const OMX_F32 *twiddle,
+    OMX_INT n);
+
+extern void x86SP_FFT_CToC_FC32_Inv_Radix2_ls_sse(
+    const OMX_F32 *in,
+    OMX_F32 *out,
+    const OMX_F32 *twiddle,
+    OMX_INT n);
+
 OMX_F32* x86SP_F32_radix4_kernel_OutOfPlace(
     const OMX_F32 *src,
     OMX_F32 *buf1,

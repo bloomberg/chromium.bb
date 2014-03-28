@@ -16,6 +16,8 @@
 static const char* message =
     "Test forward and inverse real floating-point FFT (Autodetect NEON)\n";
 
+extern int omxSP_HasArmNeon();
+
 const char* UsageMessage() {
   return message;
 }
@@ -26,8 +28,6 @@ void FinishedMessage() {
 }
 
 void SetThresholds(struct TestInfo* info) {
-  extern int HasArmNeon();
-
   if (HasArmNeon()) {
     info->forward_threshold_ = FLOAT_RFFT_FORWARD_THRESHOLD_NEON;
     info->inverse_threshold_ = FLOAT_RFFT_INVERSE_THRESHOLD_NEON;

@@ -2203,6 +2203,59 @@ OMXResult omxSP_FFTFwd_RToCCS_S32_Sfs (
 );
 
 /**
+ * Function:  omxSP_FFTFwd_CToC_FC32_Sfs   (2.2.4.2.2)
+ *
+ * Description:
+ * Compute an FFT for a complex signal of length of 2^order, 
+ * where 0 <= order <= 15. 
+ * Transform length is determined by the specification structure, which 
+ * must be initialized prior to calling the FFT function using the appropriate 
+ * helper, i.e., <FFTInit_C_sc32> or <FFTInit_C_SC16>. The relationship 
+ * between the input and output sequences can be expressed in terms of the 
+ * DFT, i.e., 
+ *
+ *      X[k] = SUM[n=0...N-1]x[n].e^(-jnk.2.pi/N)
+ *      k = 0,1,2,..., N-1
+ *      N = 2^order
+ *
+ * Input Arguments:
+ *   pSrc - pointer to the input signal, a complex-valued vector of length
+ *            2^order; must be aligned on a 32 byte boundary. 
+ *   pFFTSpec - pointer to the preallocated and initialized specification 
+ *            structure 
+ *
+ * Output Arguments:
+ *   pDst - pointer to the complex-valued output vector, of length 2^order;
+ *            must be aligned on an 32-byte boundary. 
+ *
+ * Return Value:
+ *    
+ *    OMX_Sts_NoErr - no error 
+ *    OMX_Sts_BadArgErr - returned if one or more of the following conditions 
+ *              is true: 
+ *    -   one or more of the following pointers is NULL: pSrc, pDst, or 
+ *              pFFTSpec. 
+ *    -    pSrc or pDst is not 32-byte aligned 
+ *    -    scaleFactor<0 or scaleFactor >32 
+ *
+ */
+OMXResult omxSP_FFTFwd_CToC_FC32_Sfs (
+    const OMX_FC32 *pSrc,
+    OMX_FC32 *pDst,
+    const OMXFFTSpec_C_FC32 *pFFTSpec
+);
+#ifdef __arm__
+/*
+ * Non-NEON version
+ */    
+OMXResult omxSP_FFTFwd_CToC_FC32_Sfs_vfp (
+    const OMX_FC32 *pSrc,
+    OMX_FC32 *pDst,
+    const OMXFFTSpec_C_FC32 *pFFTSpec
+);
+#endif
+
+/**
  * Function:  omxSP_FFTFwd_RToCCS_F32_Sfs
  *
  * Description:
@@ -2419,6 +2472,59 @@ OMXResult omxSP_FFTInv_CCSToR_S32_Sfs (
     const OMXFFTSpec_R_S32 *pFFTSpec,
     OMX_INT scaleFactor
 );
+
+/**
+ * Function:  omxSP_FFTInv_CToC_FC32_Sfs   (2.2.4.2.4)
+ *
+ * Description:
+ * These functions compute an inverse FFT for a complex signal of
+ * length of 2^order, where 0 <= order <= 15. Transform length is
+ * determined by the specification structure, which must be
+ * initialized prior to calling the FFT function using the appropriate
+ * helper, i.e., <FFTInit_C_FC32>. The relationship between the input
+ * and output sequences can be expressed in terms of the IDFT, i.e.:
+ *
+ *     x[n] = SUM[k=0,...,N-1] X[k].e^(jnk.2.pi/N)
+ *     n=0,1,2,...N-1
+ *     N=2^order.
+ *
+ * Input Arguments:
+ *   pSrc - pointer to the complex-valued input signal, of length 2^order ; 
+ *          must be aligned on a 32-byte boundary. 
+ *   pFFTSpec - pointer to the preallocated and initialized specification 
+ *            structure 
+ *
+ * Output Arguments:
+ *   order 
+ *   pDst - pointer to the complex-valued output signal, of length 2^order; 
+ *          must be aligned on a 32-byte boundary. 
+ *
+ * Return Value:
+ *    
+ *    OMX_Sts_NoErr - no error 
+ *    OMX_Sts_BadArgErr - returned if one or more of the following conditions 
+ *              is true: 
+ *    -   one or more of the following pointers is NULL: pSrc, pDst, or 
+ *              pFFTSpec. 
+ *    -   pSrc or pDst is not 32-byte aligned 
+ *    -   scaleFactor<0 or scaleFactor>32
+ *
+ */
+OMXResult omxSP_FFTInv_CToC_FC32_Sfs (
+    const OMX_FC32 *pSrc,
+    OMX_FC32 *pDst,
+    const OMXFFTSpec_C_FC32 *pFFTSpec
+);
+#ifdef __arm__
+/*
+ * Non-NEON version
+ */    
+OMXResult omxSP_FFTInv_CToC_FC32_Sfs_vfp (
+    const OMX_FC32 *pSrc,
+    OMX_FC32 *pDst,
+    const OMXFFTSpec_C_FC32 *pFFTSpec
+);
+#endif
 
 /**
  * Function:  omxSP_FFTInv_CCSToR_F32_Sfs

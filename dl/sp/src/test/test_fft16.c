@@ -48,7 +48,7 @@ struct KnownTestFailures known_failures[] = {
     {-1, 0, 0}
 };
 
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
   struct Options options;
   struct TestInfo info;
 
@@ -89,6 +89,8 @@ void main(int argc, char* argv[]) {
                &info,
                "16-bit FFT");
   }
+
+  return 0;
 }
 
 void GenerateSignal(OMX_SC16* x, struct ComplexFloat* fft,
