@@ -18,7 +18,7 @@ const char kAshWebUIInit[]                  = "ash-webui-init";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
-// Time before a machine at OOBE is considered derelict
+// Time before a machine at OOBE is considered derelict.
 const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 
 // Time before a derelict machines starts demo mode.

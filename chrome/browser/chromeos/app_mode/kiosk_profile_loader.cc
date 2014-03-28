@@ -117,10 +117,10 @@ class KioskProfileLoader::CryptohomedChecker
 // KioskProfileLoader
 
 KioskProfileLoader::KioskProfileLoader(const std::string& app_user_id,
-                                       bool force_ephemeral,
+                                       bool use_guest_mount,
                                        Delegate* delegate)
     : user_id_(app_user_id),
-      force_ephemeral_(force_ephemeral),
+      use_guest_mount_(use_guest_mount),
       delegate_(delegate) {}
 
 KioskProfileLoader::~KioskProfileLoader() {}
@@ -134,7 +134,7 @@ void KioskProfileLoader::Start() {
 
 void KioskProfileLoader::LoginAsKioskAccount() {
   login_performer_.reset(new LoginPerformer(this));
-  login_performer_->LoginAsKioskAccount(user_id_, force_ephemeral_);
+  login_performer_->LoginAsKioskAccount(user_id_, use_guest_mount_);
 }
 
 void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {

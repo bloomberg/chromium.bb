@@ -61,8 +61,8 @@ void MockAuthenticator::LoginAsPublicAccount(const std::string& username) {
                                         expected_username_));
 }
 
-void MockAuthenticator::LoginAsKioskAccount(
-    const std::string& app_user_id, bool force_ephemeral) {
+void MockAuthenticator::LoginAsKioskAccount(const std::string& app_user_id,
+                                            bool use_guest_mount) {
   consumer_->OnLoginSuccess(UserContext(expected_username_,
                                         std::string(),
                                         std::string(),

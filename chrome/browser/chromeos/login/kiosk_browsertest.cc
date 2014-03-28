@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/app_window_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -227,48 +228,6 @@ class JsConditionWaiter {
 
 }  // namespace
 
-// Helper class that monitors app windows to wait for a window to appear.
-class AppWindowObserver : public apps::AppWindowRegistry::Observer {
- public:
-  AppWindowObserver(apps::AppWindowRegistry* registry,
-                    const std::string& app_id)
-      : registry_(registry), app_id_(app_id), window_(NULL), running_(false) {
-    registry_->AddObserver(this);
-  }
-  virtual ~AppWindowObserver() { registry_->RemoveObserver(this); }
-
-  apps::AppWindow* Wait() {
-    running_ = true;
-    message_loop_runner_ = new content::MessageLoopRunner;
-    message_loop_runner_->Run();
-    EXPECT_TRUE(window_);
-    return window_;
-  }
-
-  // AppWindowRegistry::Observer
-  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE {
-    if (!running_)
-      return;
-
-    if (app_window->extension_id() == app_id_) {
-      window_ = app_window;
-      message_loop_runner_->Quit();
-      running_ = false;
-    }
-  }
-  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE {}
-  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE {}
-
- private:
-  apps::AppWindowRegistry* registry_;
-  std::string app_id_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-  apps::AppWindow* window_;
-  bool running_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppWindowObserver);
-};
-
 class KioskTest : public OobeBaseTest {
  public:
   KioskTest() {
@@ -415,7 +374,7 @@ class KioskTest : public OobeBaseTest {
     apps::AppWindowRegistry* app_window_registry =
         apps::AppWindowRegistry::Get(app_profile);
     apps::AppWindow* window =
-        AppWindowObserver(app_window_registry, test_app_id_).Wait();
+        AppWindowWaiter(app_window_registry, test_app_id_).Wait();
     EXPECT_TRUE(window);
 
     // Login screen should be gone or fading out.
@@ -1224,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
 
   // Wait for the window to appear.
   apps::AppWindow* window =
-      AppWindowObserver(
+      AppWindowWaiter(
           apps::AppWindowRegistry::Get(ProfileManager::GetPrimaryUserProfile()),
           kTestEnterpriseKioskApp).Wait();
   ASSERT_TRUE(window);

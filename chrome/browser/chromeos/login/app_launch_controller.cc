@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
@@ -142,8 +143,8 @@ void AppLaunchController::StartAppLaunch() {
   app_launch_splash_screen_actor_->Show(app_id_);
 
   KioskAppManager::App app;
-  CHECK(KioskAppManager::Get() &&
-        KioskAppManager::Get()->GetApp(app_id_, &app));
+  CHECK(KioskAppManager::Get());
+  CHECK(KioskAppManager::Get()->GetApp(app_id_, &app));
   kiosk_profile_loader_.reset(
       new KioskProfileLoader(app.user_id, false, this));
   kiosk_profile_loader_->Start();

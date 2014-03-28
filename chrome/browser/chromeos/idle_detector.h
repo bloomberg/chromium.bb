@@ -7,7 +7,9 @@
 
 #include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 
 namespace chromeos {

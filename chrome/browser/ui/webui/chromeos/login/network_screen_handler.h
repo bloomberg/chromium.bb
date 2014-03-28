@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
@@ -117,13 +118,13 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   scoped_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 
-  scoped_ptr<IdleDetector> detector_;
+  scoped_ptr<IdleDetector> idle_detector_;
 
   base::RepeatingTimer<NetworkScreenHandler> oobe_timer_;
 
   // Timeout to detect if the machine is in a derelict state.
   base::TimeDelta derelict_detection_timeout_;
-  // Timeout before showing our demo up if the machine is in a derelict state.
+  // Timeout before showing our demo app if the machine is in a derelict state.
   base::TimeDelta derelict_idle_timeout_;
   // Time between updating our total time on oobe.
   base::TimeDelta oobe_timer_update_interval_;

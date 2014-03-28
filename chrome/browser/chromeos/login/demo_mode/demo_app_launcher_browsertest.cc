@@ -1,0 +1,91 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "apps/app_window_registry.h"
+#include "base/basictypes.h"
+#include "base/command_line.h"
+#include "base/compiler_specific.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
+#include "chrome/browser/chromeos/login/test/app_window_waiter.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_switches.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
+#include "content/public/test/test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace chromeos {
+
+namespace {
+
+char kDemoAppId[] = "klimoghijjogocdbaikffefjfcfheiel";
+
+base::FilePath GetTestDemoAppPath() {
+  base::FilePath test_data_dir;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  return test_data_dir.Append(FILE_PATH_LITERAL("chromeos/demo_app"));
+}
+
+Profile* WaitForProfile() {
+  chromeos::UserManager* user_manager = chromeos::UserManager::Get();
+  if (!user_manager || !user_manager->IsUserLoggedIn()) {
+    content::WindowedNotificationObserver(
+        chrome::NOTIFICATION_SESSION_STARTED,
+        content::NotificationService::AllSources()).Wait();
+  }
+
+  return ProfileManager::GetActiveUserProfile();
+}
+
+bool VerifyDemoAppLaunch() {
+  Profile* profile = WaitForProfile();
+  return AppWindowWaiter(apps::AppWindowRegistry::Get(profile),
+                         kDemoAppId).Wait() != NULL;
+}
+
+}  // namespace
+
+class DemoAppLauncherTest : public ExtensionBrowserTest {
+ public:
+  DemoAppLauncherTest() {
+    set_exit_when_last_browser_closes(false);
+  }
+
+  virtual ~DemoAppLauncherTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kLoginManager);
+    command_line->AppendSwitch(switches::kForceLoginManagerInTests);
+    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
+
+    command_line->AppendSwitchASCII(switches::kDerelictIdleTimeout, "0");
+    command_line->AppendSwitchASCII(switches::kOobeTimerInterval, "0");
+    command_line->AppendSwitchASCII(switches::kDerelictDetectionTimeout, "0");
+  }
+
+  virtual void SetUp() OVERRIDE {
+    chromeos::DemoAppLauncher::SetDemoAppPathForTesting(GetTestDemoAppPath());
+    ExtensionBrowserTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DemoAppLauncherTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoAppLauncherTest, Basic) {
+  // This test is fairly unique in the sense that the test actually starts as
+  // soon as Chrome launches, so there isn't any typical "launch this test"
+  // steps that we need to take. All we can do is verify that our demo app
+  // did launch.
+  EXPECT_TRUE(VerifyDemoAppLaunch());
+}
+
+}  // namespace chromeos

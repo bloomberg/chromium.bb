@@ -302,13 +302,13 @@ void LoginPerformer::LoginAsPublicAccount(const std::string& username) {
                  username));
 }
 
-void LoginPerformer::LoginAsKioskAccount(
-    const std::string& app_user_id, bool force_ephemeral) {
+void LoginPerformer::LoginAsKioskAccount(const std::string& app_user_id,
+                                         bool use_guest_mount) {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::LoginAsKioskAccount, authenticator_.get(),
-                 app_user_id, force_ephemeral));
+                 app_user_id, use_guest_mount));
 }
 
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {

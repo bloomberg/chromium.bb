@@ -110,6 +110,24 @@ void MountGuest(AuthAttemptState* attempt,
                  resolver));
 }
 
+// Calls cryptohome's mount method for guest and also get the user hash from
+// cryptohome.
+void MountGuestAndGetHash(AuthAttemptState* attempt,
+                          scoped_refptr<ParallelAuthenticator> resolver) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  attempt->UsernameHashRequested();
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountGuest(
+      base::Bind(&TriggerResolveWithLoginTimeMarker,
+                 "CryptohomeMount-End",
+                 attempt,
+                 resolver));
+  cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
+      attempt->user_context.username,
+      base::Bind(&TriggerResolveHash,
+                 attempt,
+                 resolver));
+}
+
 // Calls cryptohome's MountPublic method
 void MountPublic(AuthAttemptState* attempt,
                  scoped_refptr<ParallelAuthenticator> resolver,
@@ -346,11 +364,12 @@ void ParallelAuthenticator::LoginAsPublicAccount(const std::string& username) {
 }
 
 void ParallelAuthenticator::LoginAsKioskAccount(
-    const std::string& app_user_id, bool force_ephemeral) {
+    const std::string& app_user_id,
+    bool use_guest_mount) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::string user_id =
-      force_ephemeral ? UserManager::kGuestUserName : app_user_id;
+  const std::string user_id =
+      use_guest_mount ? UserManager::kGuestUserName : app_user_id;
   current_state_.reset(new AuthAttemptState(
       UserContext(user_id,
                   std::string(),  // password
@@ -361,14 +380,14 @@ void ParallelAuthenticator::LoginAsKioskAccount(
       false));
 
   remove_user_data_on_failure_ = true;
-  if (!force_ephemeral) {
+  if (!use_guest_mount) {
     MountPublic(current_state_.get(),
           scoped_refptr<ParallelAuthenticator>(this),
           cryptohome::CREATE_IF_MISSING);
   } else {
     ephemeral_mount_attempted_ = true;
-    MountGuest(current_state_.get(),
-               scoped_refptr<ParallelAuthenticator>(this));
+    MountGuestAndGetHash(current_state_.get(),
+                         scoped_refptr<ParallelAuthenticator>(this));
   }
 }
 

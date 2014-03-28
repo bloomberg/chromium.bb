@@ -35,11 +35,10 @@ void IdleDetector::Start(const base::TimeDelta& timeout) {
 }
 
 void IdleDetector::ResetTimer() {
-  if (timer_.IsRunning()) {
+  if (timer_.IsRunning())
     timer_.Reset();
-  } else {
+  else
     timer_.Start(FROM_HERE, timeout_, idle_callback_);
-  }
 }
 
 }  // namespace chromeos

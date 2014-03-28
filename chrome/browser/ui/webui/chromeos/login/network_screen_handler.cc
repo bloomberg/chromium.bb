@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -18,11 +19,11 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/idle_detector.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/input_events_blocker.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
@@ -52,9 +53,9 @@ const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
 
 const char kUSLayout[] = "xkb:us::eng";
 
-const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60; // 8 hours.
-const int kDerelectIdleTimeoutSeconds = 5 * 60; // 5 minutes.
-const int kOobeTimerUpdateIntervalSeconds = 5 * 60; // 5 minutes.
+const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60;  // 8 hours.
+const int kDerelectIdleTimeoutSeconds = 5 * 60;  // 5 minutes.
+const int kOobeTimerUpdateIntervalSeconds = 5 * 60;  // 5 minutes.
 
 // Returns true if element was inserted.
 bool InsertString(const std::string& str, std::set<std::string>& to) {
@@ -220,7 +221,7 @@ void NetworkScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
 // NetworkScreenHandler, private: ----------------------------------------------
 
 void NetworkScreenHandler::HandleOnExit() {
-  detector_.reset();
+  idle_detector_.reset();
   ClearErrors();
   if (screen_)
     screen_->OnContinuePressed();
@@ -299,13 +300,13 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
 }
 
 void NetworkScreenHandler::StartIdleDetection() {
-  if (!detector_.get()) {
-    detector_.reset(
+  if (!idle_detector_.get()) {
+    idle_detector_.reset(
         new IdleDetector(base::Closure(),
                          base::Bind(&NetworkScreenHandler::OnIdle,
                                     weak_ptr_factory_.GetWeakPtr())));
   }
-  detector_->Start(derelict_idle_timeout_);
+  idle_detector_->Start(derelict_idle_timeout_);
 }
 
 void NetworkScreenHandler::StartOobeTimer() {

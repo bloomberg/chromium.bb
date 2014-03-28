@@ -5,10 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_APP_LAUNCHER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_APP_LAUNCHER_H_
 
+#include <string>
+
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 
-class Profile;
+namespace base {
+class FilePath;
+}
 
 namespace chromeos {
 
@@ -21,15 +27,20 @@ class DemoAppLauncher : public KioskProfileLoader::Delegate {
   void StartDemoAppLaunch();
 
   static bool IsDemoAppSession(const std::string& user_id);
+  static void SetDemoAppPathForTesting(const base::FilePath& path);
+
   static const char kDemoUserName[];
 
  private:
+  friend class DemoAppLauncherTest;
+
   // KioskProfileLoader::Delegate overrides:
   virtual void OnProfileLoaded(Profile* profile) OVERRIDE;
   virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) OVERRIDE;
 
-  Profile* profile_;
   scoped_ptr<KioskProfileLoader> kiosk_profile_loader_;
+
+  static base::FilePath* demo_app_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoAppLauncher);
 };

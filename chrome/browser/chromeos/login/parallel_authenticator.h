@@ -132,10 +132,12 @@ class ParallelAuthenticator : public Authenticator,
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
 
   // Initiates login into the kiosk mode account identified by |app_user_id|.
-  // Mounts an public but non-ephemeral cryptohome and notifies consumer on the
-  // success/failure.
-  virtual void LoginAsKioskAccount(
-      const std::string& app_user_id, bool force_ephemeral) OVERRIDE;
+  // Mounts an ephemeral guest cryptohome if |use_guest_mount| is |true|.
+  // Otherwise, mounts a public cryptohome, which will be ephemeral if the
+  // |DeviceEphemeralUsersEnabled| policy is enabled and non-ephemeral
+  // otherwise.
+  virtual void LoginAsKioskAccount(const std::string& app_user_id,
+                                   bool use_guest_mount) OVERRIDE;
 
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.

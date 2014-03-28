@@ -416,10 +416,9 @@ void LoginUtilsImpl::PrepareProfile(
   delegate_ = delegate;
   InitSessionRestoreStrategy();
 
-  base::FilePath profile_dir;
   if (DemoAppLauncher::IsDemoAppSession(user_context.username)) {
     g_browser_process->profile_manager()->CreateProfileAsync(
-        ProfileManager::GetGuestProfilePath(),
+        user_manager->GetUserProfileDir(user_context.username),
         base::Bind(&LoginUtilsImpl::OnOTRProfileCreated, AsWeakPtr(),
                    user_context.username),
         base::string16(), base::string16(), std::string());

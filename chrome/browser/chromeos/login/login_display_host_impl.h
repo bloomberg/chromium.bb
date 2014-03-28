@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/auth_prewarmer.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
@@ -35,6 +34,7 @@ class WebContents;
 
 namespace chromeos {
 
+class DemoAppLauncher;
 class FocusRingController;
 class KeyboardDrivenOobeKeyHandler;
 class OobeUI;
