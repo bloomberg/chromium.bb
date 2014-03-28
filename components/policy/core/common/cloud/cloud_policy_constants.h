@@ -95,6 +95,8 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_MISSING_LICENSES,
   // Service error: The administrator has deprovisioned this client.
   DM_STATUS_SERVICE_DEPROVISIONED,
+  // Service error: Device registration for the wrong domain.
+  DM_STATUS_SERVICE_DOMAIN_MISMATCH,
   // Service error: Policy not found. Error code defined by the DM folks.
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
 };

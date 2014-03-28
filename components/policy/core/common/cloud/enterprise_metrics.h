@@ -165,6 +165,8 @@ enum MetricEnrollment {
   kMetricEnrollmentRobotRefreshTokenStoreFailed,
   // Enrollment failed because the administrator has deprovisioned the device.
   kMetricEnrollmentDeprovisioned,
+  // Enrollment failed because the device doesn't belong to the domain.
+  kMetricEnrollmentDomainMismatch,
 
   kMetricEnrollmentSize  // Must be the last.
 };
