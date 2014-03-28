@@ -735,6 +735,133 @@ class IsolateLoad(IsolateBase):
         ],
         sorted(os.listdir(self.directory)))
 
+  def test_load_isolate_include_command(self):
+    # Ensure that using a .isolate that includes another one in a different
+    # directory will lead to the proper relative directory. See
+    # test_load_with_includes_with_commands in isolate_format_test.py as
+    # reference.
+
+    # Exactly the same thing as in isolate_format_test.py
+    isolate1 = {
+      'conditions': [
+        ['OS=="linux"', {
+          'variables': {
+            'command': [
+              'foo', 'bar',
+            ],
+            'isolate_dependency_tracked': [
+              'file_linux',
+            ],
+          },
+        }],
+        ['OS=="mac" or OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_non_linux',
+            ],
+          },
+        }],
+        ['OS=="win"', {
+          'variables': {
+            'command': [
+              'foo', 'bar',
+            ],
+          },
+        }],
+      ],
+    }
+
+    isolate2 = {
+      'conditions': [
+        ['OS=="linux" or OS=="mac"', {
+          'variables': {
+            'command': [
+              'zoo',
+            ],
+            'isolate_dependency_tracked': [
+              'other/file',
+            ],
+          },
+        }],
+      ],
+    }
+
+    isolate3 = {
+      'includes': [
+        '../1/isolate1.isolate',
+        '2/isolate2.isolate',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'variables': {
+            'command': [
+              'yo', 'dawg',
+            ],
+            'isolate_dependency_tracked': [
+              'file_mac',
+            ],
+          },
+        }],
+      ],
+    }
+
+    def test_with_os(config_os, expected_files):
+      """Creates a tree of files in a subdirectory for testing and test this
+      set of conditions.
+      """
+      directory = os.path.join(unicode(self.directory), config_os)
+      os.mkdir(directory)
+      isolate_dir = os.path.join(directory, u'isolate')
+      isolate_dir_1 = os.path.join(isolate_dir, u'1')
+      isolate_dir_3 = os.path.join(isolate_dir, u'3')
+      isolate_dir_3_2 = os.path.join(isolate_dir_3, u'2')
+      isolated_dir = os.path.join(directory, u'isolated')
+      os.mkdir(isolated_dir)
+      os.mkdir(isolate_dir)
+      os.mkdir(isolate_dir_1)
+      os.mkdir(isolate_dir_3)
+      os.mkdir(isolate_dir_3_2)
+      isolated = os.path.join(isolated_dir, u'foo.isolated')
+
+      # Make all the touched files.
+      open(os.path.join(isolate_dir_1, 'file_linux'), 'wb').close()
+      # TODO(maruel): Bug, it should be isolate_dir_1.
+      open(os.path.join(isolate_dir_3, 'file_non_linux'), 'wb').close()
+      # TODO(maruel): Bug, it should be isolate_dir_3_2.
+      os.mkdir(os.path.join(isolate_dir_3, 'other'))
+      open(os.path.join(isolate_dir_3, 'other', 'file'), 'wb').close()
+      open(os.path.join(isolate_dir_3, 'file_mac'), 'wb').close()
+
+      with open(os.path.join(isolate_dir_1, 'isolate1.isolate'), 'wb') as f:
+        isolate.isolate_format.pretty_print(isolate1, f)
+
+      with open(os.path.join(isolate_dir_3_2, 'isolate2.isolate'), 'wb') as f:
+        isolate.isolate_format.pretty_print(isolate2, f)
+
+      root_isolate = os.path.join(isolate_dir_3, 'isolate3.isolate')
+      with open(root_isolate, 'wb') as f:
+        isolate.isolate_format.pretty_print(isolate3, f)
+
+      c = isolate.CompleteState(isolated, isolate.SavedState(isolated_dir))
+      config = {
+        'OS': config_os,
+      }
+      c.load_isolate(unicode(self.cwd), root_isolate, {}, config, {}, False)
+      # Note that load_isolate() doesn't retrieve the meta data about each file.
+      expected = {
+        'algo': 'sha-1',
+        'command': ['yo', 'dawg'],
+        'files': {unicode(f):{} for f in expected_files},
+        'relative_cwd': '.',
+        'version': '1.4',
+      }
+      self.assertEqual(expected, c.saved_state.to_isolated())
+
+    # TODO(maruel): https://code.google.com/p/swarming/issues/detail?id=98
+    #test_with_os('linux', ())
+    test_with_os('mac', ('file_mac', 'file_non_linux', 'other/file'))
+    #test_with_os('win', ())
+
 
 class IsolateCommand(IsolateBase):
   def load_complete_state(self, *_):

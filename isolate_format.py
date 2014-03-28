@@ -153,7 +153,7 @@ def pretty_print(variables, stdout):
         stdout.write(
             '\'%s\',\n' % item.replace('\\', '\\\\').replace('\'', '\\\''))
       elif isinstance(item, (int, bool)) or item is None:
-        stdout.write('%s\n' % item)
+        stdout.write('%s,\n' % item)
       else:
         assert False, item
 
@@ -768,8 +768,9 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   """Loads the .isolate file and returns the information unprocessed but
   filtered for the specific OS.
 
-  Returns the command, dependencies and read_only flag. The dependencies are
-  fixed to use os.path.sep.
+  Returns:
+    tuple of command, dependencies, touched, read_only flag, isolate_dir.
+    The dependencies are fixed to use os.path.sep.
   """
   # Load the .isolate file, process its conditions, retrieve the command and
   # dependencies.
@@ -792,4 +793,6 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
     f.replace('/', os.path.sep) for f in config.tracked + config.untracked
   ]
   touched = [f.replace('/', os.path.sep) for f in config.touched]
-  return config.command, dependencies, touched, config.read_only
+  return (
+      config.command, dependencies, touched, config.read_only,
+      config.isolate_dir)

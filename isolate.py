@@ -686,7 +686,7 @@ class CompleteState(object):
     with open(isolate_file, 'r') as f:
       # At that point, variables are not replaced yet in command and infiles.
       # infiles may contain directory entries and is in posix style.
-      command, infiles, touched, read_only = (
+      command, infiles, touched, read_only, isolate_cmd_dir = (
           isolate_format.load_isolate_for_config(
               os.path.dirname(isolate_file), f.read(),
               self.saved_state.config_variables))
@@ -710,12 +710,12 @@ class CompleteState(object):
     # form '../../foo/bar'. Note that path variables must be taken in account
     # too, add them as if they were input files.
     root_dir = isolate_format.determine_root_dir(
-        relative_base_dir, infiles + touched +
+        isolate_cmd_dir, infiles + touched +
         self.saved_state.path_variables.values())
     # The relative directory is automatically determined by the relative path
     # between root_dir and the directory containing the .isolate file,
     # isolate_base_dir.
-    relative_cwd = os.path.relpath(relative_base_dir, root_dir)
+    relative_cwd = os.path.relpath(isolate_cmd_dir, root_dir)
     # Now that we know where the root is, check that the path_variables point
     # inside it.
     for k, v in self.saved_state.path_variables.iteritems():

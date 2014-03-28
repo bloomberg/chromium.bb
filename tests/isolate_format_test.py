@@ -15,7 +15,6 @@ sys.path.insert(0, ROOT_DIR)
 
 import isolate_format
 import run_isolated
-from utils import tools
 # Create shortcuts.
 from isolate_format import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
@@ -982,7 +981,7 @@ class IsolateFormatTest(unittest.TestCase):
         "          '-c',\n"
         "          'print \"H\\i\'\"',\n"
         "        ],\n"
-        "        'read_only': 2\n"
+        "        'read_only': 2,\n"
         "        'isolate_dependency_tracked': [\n"
         "          'file4',\n"
         "          'file3',\n"
@@ -1194,8 +1193,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
-    tools.write_json(
-        os.path.join(self.tempdir, 'included.isolate'), included_isolate, True)
+    with open(os.path.join(self.tempdir, 'included.isolate'), 'wb') as f:
+      isolate_format.pretty_print(included_isolate, f)
     values = {
       'includes': ['included.isolate'],
       'variables': {
@@ -1287,7 +1286,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
-    tools.write_json(os.path.join(dir_1, 'isolate1.isolate'), isolate1, True)
+    with open(os.path.join(dir_1, 'isolate1.isolate'), 'wb') as f:
+      isolate_format.pretty_print(isolate1, f)
 
     isolate2 = {
       'conditions': [
@@ -1303,7 +1303,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
-    tools.write_json(os.path.join(dir_3_2, 'isolate2.isolate'), isolate2, True)
+    with open(os.path.join(dir_3_2, 'isolate2.isolate'), 'wb') as f:
+      isolate_format.pretty_print(isolate2, f)
 
     isolate3 = {
       'includes': [
