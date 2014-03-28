@@ -661,6 +661,24 @@ String UseCounter::deprecationMessage(Feature feature)
     case CSSStyleSheetInsertRuleOptionalArg:
         return "Calling CSSStyleSheet.insertRule() with one argument is deprecated. Please pass the index argument as well: insertRule(x, 0).";
 
+    case PrefixedVideoSupportsFullscreen:
+        return "'HTMLVideoElement.webkitSupportsFullscreen' is deprecated. Its value is true if the video is loaded.";
+
+    case PrefixedVideoDisplayingFullscreen:
+        return "'HTMLVideoElement.webkitDisplayingFullscreen' is deprecated. Please use the 'fullscreenchange' and 'webkitfullscreenchange' events instead.";
+
+    case PrefixedVideoEnterFullscreen:
+        return "'HTMLVideoElement.webkitEnterFullscreen()' is deprecated. Please use 'Element.requestFullscreen()' and 'Element.webkitRequestFullscreen()' instead.";
+
+    case PrefixedVideoExitFullscreen:
+        return "'HTMLVideoElement.webkitExitFullscreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.";
+
+    case PrefixedVideoEnterFullScreen:
+        return "'HTMLVideoElement.webkitEnterFullScreen()' is deprecated. Please use 'Element.requestFullscreen()' and 'Element.webkitRequestFullscreen()' instead.";
+
+    case PrefixedVideoExitFullScreen:
+        return "'HTMLVideoElement.webkitExitFullScreen()' is deprecated. Please use 'Document.exitFullscreen()' and 'Document.webkitExitFullscreen()' instead.";
+
     case PrefixedMediaSourceOpen:
         return "'WebKitMediaSource' is deprecated. Please use 'MediaSource' instead.";
 

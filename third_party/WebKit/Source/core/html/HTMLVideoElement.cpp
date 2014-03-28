@@ -121,6 +121,17 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
         HTMLMediaElement::parseAttribute(name, value);
 }
 
+bool HTMLVideoElement::supportsFullscreen() const
+{
+    if (!document().page())
+        return false;
+
+    if (!player())
+        return false;
+
+    return true;
+}
+
 unsigned HTMLVideoElement::videoWidth() const
 {
     if (!player())
@@ -195,6 +206,35 @@ bool HTMLVideoElement::hasAvailableVideoFrame() const
         return false;
 
     return player()->hasVideo() && player()->readyState() >= MediaPlayer::HaveCurrentData;
+}
+
+void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
+{
+    if (isFullscreen())
+        return;
+
+    if (!supportsFullscreen()) {
+        exceptionState.throwDOMException(InvalidStateError, "This element does not support fullscreen mode.");
+        return;
+    }
+
+    enterFullscreen();
+}
+
+void HTMLVideoElement::webkitExitFullscreen()
+{
+    if (isFullscreen())
+        exitFullscreen();
+}
+
+bool HTMLVideoElement::webkitSupportsFullscreen()
+{
+    return supportsFullscreen();
+}
+
+bool HTMLVideoElement::webkitDisplayingFullscreen()
+{
+    return isFullscreen();
 }
 
 void HTMLVideoElement::didMoveToNewDocument(Document& oldDocument)

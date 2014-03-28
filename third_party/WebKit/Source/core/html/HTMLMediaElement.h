@@ -234,6 +234,7 @@ public:
 
     bool isFullscreen() const;
     void enterFullscreen();
+    void exitFullscreen();
 
     bool hasClosedCaptions() const;
     bool closedCaptionsVisible() const;

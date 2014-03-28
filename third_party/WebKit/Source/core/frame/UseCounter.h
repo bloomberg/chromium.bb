@@ -194,6 +194,12 @@ public:
         AttributeSpecified = 162, // Removed in DOM4.
         PrefixedAudioDecodedByteCount = 164,
         PrefixedVideoDecodedByteCount = 165,
+        PrefixedVideoSupportsFullscreen = 166,
+        PrefixedVideoDisplayingFullscreen = 167,
+        PrefixedVideoEnterFullscreen = 168,
+        PrefixedVideoExitFullscreen = 169,
+        PrefixedVideoEnterFullScreen = 170,
+        PrefixedVideoExitFullScreen = 171,
         PrefixedVideoDecodedFrameCount = 172,
         PrefixedVideoDroppedFrameCount = 173,
         PrefixedElementRequestFullscreen = 176,
