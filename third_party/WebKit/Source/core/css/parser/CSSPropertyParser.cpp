@@ -69,6 +69,7 @@
 #include "core/css/HashTools.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
+#include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -3080,7 +3081,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseAnimationProperty(Anima
     if (value->unit != CSSPrimitiveValue::CSS_IDENT)
         return nullptr;
     CSSPropertyID result = cssPropertyID(value->string);
-    if (result)
+    if (result && RuntimeCSSEnabled::isCSSPropertyEnabled(result))
         return cssValuePool().createIdentifierValue(result);
     if (equalIgnoringCase(value, "all")) {
         context.sawAnimationPropertyKeyword();
@@ -7021,7 +7022,8 @@ bool CSSPropertyParser::parseWillChange(bool important)
         if (currentValue->unit != CSSPrimitiveValue::CSS_IDENT)
             return false;
 
-        if (CSSPropertyID property = cssPropertyID(currentValue->string)) {
+        CSSPropertyID property = cssPropertyID(currentValue->string);
+        if (property && RuntimeCSSEnabled::isCSSPropertyEnabled(property)) {
             if (property == CSSPropertyWillChange)
                 return false;
             values->append(cssValuePool().createIdentifierValue(property));
