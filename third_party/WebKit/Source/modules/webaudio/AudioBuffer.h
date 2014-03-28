@@ -50,7 +50,7 @@ public:
 
     // Format
     size_t length() const { return m_length; }
-    double duration() const { return length() / sampleRate(); }
+    double duration() const { return length() / static_cast<double>(sampleRate()); }
     float sampleRate() const { return m_sampleRate; }
 
     // Channel data access

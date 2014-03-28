@@ -50,6 +50,13 @@ try {
     testPassed("Exception has been thrown correctly when index is not less than numberOfChannels.");
 }
 
+var buffer2 = context.createBuffer(1, 1000, 24576);
+var expectedDuration = 1000/24576;
+
+if (buffer2.duration == expectedDuration)
+    testPassed("duration has expected accuracy.");
+else
+    testFailed("duration is " + buffer2.duration + " sec instead of " + expectedDuration + " sec.");
 </script>
 
 </body>
