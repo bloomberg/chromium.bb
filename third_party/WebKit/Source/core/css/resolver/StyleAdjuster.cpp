@@ -231,8 +231,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         || style->position() == StickyPosition
         || style->position() == FixedPosition
         || isInTopLayer(e, style)
-        || hasWillChangeThatCreatesStackingContext(style, e)
-        ))
+        || hasWillChangeThatCreatesStackingContext(style, e)))
         style->setZIndex(0);
 
     // will-change:transform should result in the same rendering behavior as having a transform,
@@ -247,31 +246,8 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     else
         style->addToTextDecorationsInEffect(style->textDecoration());
 
-    // If either overflow value is not visible, change to auto.
-    if (style->overflowX() == OVISIBLE && style->overflowY() != OVISIBLE) {
-        // FIXME: Once we implement pagination controls, overflow-x should default to hidden
-        // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
-        // default to auto so we can at least scroll through the pages.
-        style->setOverflowX(OAUTO);
-    } else if (style->overflowY() == OVISIBLE && style->overflowX() != OVISIBLE) {
-        style->setOverflowY(OAUTO);
-    }
-
-    // Table rows, sections and the table itself will support overflow:hidden and will ignore scroll/auto.
-    // FIXME: Eventually table sections will support auto and scroll.
-    if (style->display() == TABLE || style->display() == INLINE_TABLE
-        || style->display() == TABLE_ROW_GROUP || style->display() == TABLE_ROW) {
-        if (style->overflowX() != OVISIBLE && style->overflowX() != OHIDDEN)
-            style->setOverflowX(OVISIBLE);
-        if (style->overflowY() != OVISIBLE && style->overflowY() != OHIDDEN)
-            style->setOverflowY(OVISIBLE);
-    }
-
-    // Menulists should have visible overflow
-    if (style->appearance() == MenulistPart) {
-        style->setOverflowX(OVISIBLE);
-        style->setOverflowY(OVISIBLE);
-    }
+    if (style->overflowX() != OVISIBLE || style->overflowY() != OVISIBLE)
+        adjustOverflow(style, e);
 
     // Cull out any useless layers and also repeat patterns into additional layers.
     style->adjustBackgroundLayers();
@@ -292,17 +268,6 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         style->setTransformStyle3D(TransformStyle3DFlat);
 
     if (e && e->isSVGElement()) {
-        // Spec: http://www.w3.org/TR/SVG/masking.html#OverflowProperty
-        if (style->overflowY() == OSCROLL)
-            style->setOverflowY(OHIDDEN);
-        else if (style->overflowY() == OAUTO)
-            style->setOverflowY(OVISIBLE);
-
-        if (style->overflowX() == OSCROLL)
-            style->setOverflowX(OHIDDEN);
-        else if (style->overflowX() == OAUTO)
-            style->setOverflowX(OVISIBLE);
-
         // Only the root <svg> element in an SVG document fragment tree honors css position
         if (!(isSVGSVGElement(*e) && e->parentNode() && !e->parentNode()->isSVGElement()))
             style->setPosition(RenderStyle::initialPosition());
@@ -400,6 +365,50 @@ void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* paren
         if (style->fontSize() >= 11 && (!isHTMLInputElement(element) || !toHTMLInputElement(element).isImageButton()))
             addIntrinsicMargins(style);
         return;
+    }
+}
+
+void StyleAdjuster::adjustOverflow(RenderStyle* style, Element* element)
+{
+    ASSERT(style->overflowX() != OVISIBLE || style->overflowY() != OVISIBLE);
+
+    // If either overflow value is not visible, change to auto.
+    if (style->overflowX() == OVISIBLE && style->overflowY() != OVISIBLE) {
+        // FIXME: Once we implement pagination controls, overflow-x should default to hidden
+        // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
+        // default to auto so we can at least scroll through the pages.
+        style->setOverflowX(OAUTO);
+    } else if (style->overflowY() == OVISIBLE && style->overflowX() != OVISIBLE) {
+        style->setOverflowY(OAUTO);
+    }
+
+    // Table rows, sections and the table itself will support overflow:hidden and will ignore scroll/auto.
+    // FIXME: Eventually table sections will support auto and scroll.
+    if (style->display() == TABLE || style->display() == INLINE_TABLE
+        || style->display() == TABLE_ROW_GROUP || style->display() == TABLE_ROW) {
+        if (style->overflowX() != OVISIBLE && style->overflowX() != OHIDDEN)
+            style->setOverflowX(OVISIBLE);
+        if (style->overflowY() != OVISIBLE && style->overflowY() != OHIDDEN)
+            style->setOverflowY(OVISIBLE);
+    }
+
+    // Menulists should have visible overflow
+    if (style->appearance() == MenulistPart) {
+        style->setOverflowX(OVISIBLE);
+        style->setOverflowY(OVISIBLE);
+    }
+
+    // Spec: http://www.w3.org/TR/SVG/masking.html#OverflowProperty
+    if (element && element->isSVGElement()) {
+        if (style->overflowY() == OSCROLL)
+            style->setOverflowY(OHIDDEN);
+        else if (style->overflowY() == OAUTO)
+            style->setOverflowY(OVISIBLE);
+
+        if (style->overflowX() == OSCROLL)
+            style->setOverflowX(OHIDDEN);
+        else if (style->overflowX() == OAUTO)
+            style->setOverflowX(OVISIBLE);
     }
 }
 

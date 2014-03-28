@@ -43,6 +43,7 @@ public:
 private:
     void adjustStyleForDisplay(RenderStyle* styleToAdjust, RenderStyle* parentStyle);
     void adjustStyleForTagName(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element&);
+    void adjustOverflow(RenderStyle* styleToAdjust, Element*);
 
     const CachedUAStyle& m_cachedUAStyle;
     bool m_useQuirksModeStyles;
