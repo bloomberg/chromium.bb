@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_BROWSERTEST_H_
 
 #include "base/command_line.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/chrome_signin_client.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -107,8 +107,8 @@ const bool kOneClickSigninEnabled = false;
 #define MAYBE_ProcessIsolation ProcessIsolation
 #endif
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(
-      browser()->profile());
+  ChromeSigninClient* signin =
+      ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), signin::GetPromoURL(
@@ -149,8 +149,8 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
 }
 
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, NotTrustedAfterRedirect) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(
-      browser()->profile());
+  ChromeSigninClient* signin =
+      ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
   GURL url = signin::GetPromoURL(signin::SOURCE_NTP_LINK, true);
@@ -206,8 +206,8 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   GURL start_url = signin::GetPromoURL(signin::SOURCE_START_PAGE, true);
   GURL skip_url = signin::GetLandingURL("ntp", 1);
 
-  SigninManager* signin = SigninManagerFactory::GetForProfile(
-      browser()->profile());
+  ChromeSigninClient* signin =
+      ChromeSigninClientFactory::GetForProfile(browser()->profile());
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), start_url);

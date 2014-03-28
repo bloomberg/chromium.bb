@@ -35,7 +35,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "content/public/browser/render_process_host_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/merge_session_helper.h"
 #include "net/cookies/canonical_cookie.h"
@@ -44,8 +43,7 @@ class PrefService;
 class SigninAccountIdHelper;
 class SigninClient;
 
-class SigninManager : public SigninManagerBase,
-                      public content::RenderProcessHostObserver {
+class SigninManager : public SigninManagerBase {
  public:
   // The callback invoked once the OAuth token has been fetched during signin,
   // but before the profile transitions to the "signed-in" state. This allows
@@ -121,10 +119,6 @@ class SigninManager : public SigninManagerBase,
   // ever show it again in this profile (even if the user tries a new account).
   static void DisableOneClickSignIn(Profile* profile);
 
-  // content::RenderProcessHostObserver
-  virtual void RenderProcessHostDestroyed(
-      content::RenderProcessHost* host) OVERRIDE;
-
   // Tells the SigninManager whether to prohibit signout for this profile.
   // If |prohibit_signout| is true, then signout will be prohibited.
   void ProhibitSignout(bool prohibit_signout);
@@ -132,18 +126,6 @@ class SigninManager : public SigninManagerBase,
   // If true, signout is prohibited for this profile (calls to SignOut() are
   // ignored).
   bool IsSignoutProhibited() const;
-
-  // Allows the SigninManager to track the privileged signin process
-  // identified by |host_id| so that we can later ask (via IsSigninProcess)
-  // if it is safe to sign the user in from the current context (see
-  // OneClickSigninHelper).  All of this tracking state is reset once the
-  // renderer process terminates.
-  //
-  // N.B. This is the id returned by RenderProcessHost::GetID().
-  void SetSigninProcess(int host_id);
-  void ClearSigninProcess();
-  bool IsSigninProcess(int host_id) const;
-  bool HasSigninProcess() const;
 
   // Add or remove observers for the merge session notification.
   void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
@@ -215,13 +197,6 @@ class SigninManager : public SigninManagerBase,
   std::string temp_refresh_token_;
 
   base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
-
-  // See SetSigninProcess.  Tracks the currently active signin process
-  // by ID, if there is one.
-  int signin_host_id_;
-
-  // The RenderProcessHosts being observed.
-  std::set<content::RenderProcessHost*> signin_hosts_observed_;
 
   // The SigninClient object associated with this object. Must outlive this
   // object.

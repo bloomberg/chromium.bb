@@ -11,8 +11,8 @@
 #include "extensions/common/manifest_constants.h"
 
 #if !defined(OS_CHROMEOS)
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/chrome_signin_client.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #endif
 
 namespace extensions {
@@ -48,9 +48,9 @@ bool BrowserPermissionsPolicyDelegate::CanExecuteScriptOnPage(
       g_browser_process->profile_manager()->GetLoadedProfiles();
   for (std::vector<Profile*>::iterator profile = profiles.begin();
        profile != profiles.end(); ++profile) {
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(*profile);
-    if (signin_manager && signin_manager->IsSigninProcess(process_id)) {
+    ChromeSigninClient* signin_client =
+        ChromeSigninClientFactory::GetForProfile(*profile);
+    if (signin_client && signin_client->IsSigninProcess(process_id)) {
       if (error)
         *error = errors::kCannotScriptSigninPage;
       return false;

@@ -199,6 +199,8 @@
 #endif
 
 #if !defined(OS_CHROMEOS)
+#include "chrome/browser/signin/chrome_signin_client.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #endif
@@ -1180,8 +1182,9 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   }
 
 #if !defined(OS_CHROMEOS)
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
-  if (signin_manager && signin_manager->IsSigninProcess(process_host->GetID()))
+  ChromeSigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(profile);
+  if (signin_client && signin_client->IsSigninProcess(process_host->GetID()))
     return SigninManager::IsWebBasedSigninFlowURL(site_url);
 #endif
 
@@ -1286,10 +1289,10 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
   // for signin URLs. The signin process will be cleared from SigninManager
   // when the renderer is destroyed.
   if (SigninManager::IsWebBasedSigninFlowURL(site_instance->GetSiteURL())) {
-    SigninManager* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    if (signin_manager)
-      signin_manager->SetSigninProcess(site_instance->GetProcess()->GetID());
+    ChromeSigninClient* signin_client =
+        ChromeSigninClientFactory::GetForProfile(profile);
+    if (signin_client)
+      signin_client->SetSigninProcess(site_instance->GetProcess()->GetID());
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -1541,9 +1544,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kInstantProcess);
 
 #if !defined(OS_CHROMEOS)
-      SigninManager* signin_manager =
-          SigninManagerFactory::GetForProfile(profile);
-      if (signin_manager && signin_manager->IsSigninProcess(process->GetID()))
+      ChromeSigninClient* signin_client =
+          ChromeSigninClientFactory::GetForProfile(profile);
+      if (signin_client && signin_client->IsSigninProcess(process->GetID()))
         command_line->AppendSwitch(switches::kSigninProcess);
 #endif
     }

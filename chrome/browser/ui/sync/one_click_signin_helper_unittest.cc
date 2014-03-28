@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/chrome_signin_client.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
@@ -259,11 +261,13 @@ void OneClickSigninHelperTest::SetTrustedSigninProcessID(int id) {
 }
 
 void OneClickSigninHelperTest::SetUpSigninManager(const std::string& username) {
+  ChromeSigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(profile());
+  if (signin_client)
+    signin_client->SetSigninProcess(trusted_signin_process_id_);
+
   signin_manager_ = static_cast<SigninManagerMock*>(
       SigninManagerFactory::GetForProfile(profile()));
-  if (signin_manager_)
-    signin_manager_->SetSigninProcess(trusted_signin_process_id_);
-
   if (!username.empty()) {
     ASSERT_TRUE(signin_manager_);
     signin_manager_->SetAuthenticatedUsername(username);

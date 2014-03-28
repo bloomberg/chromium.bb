@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/signin/chrome_signin_client.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -62,9 +64,10 @@ TEST_F(BrowserPermissionsPolicyDelegateTest, CanExecuteScriptOnPage) {
 
   content::MockRenderProcessHost signin_process(profile_);
   content::MockRenderProcessHost normal_process(profile_);
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  ASSERT_TRUE(signin_manager);
-  signin_manager->SetSigninProcess(signin_process.GetID());
+  ChromeSigninClient* signin_client =
+      ChromeSigninClientFactory::GetForProfile(profile_);
+  ASSERT_TRUE(signin_client);
+  signin_client->SetSigninProcess(signin_process.GetID());
 
   scoped_refptr<const Extension> extension(CreateTestExtension("a"));
   std::string error;

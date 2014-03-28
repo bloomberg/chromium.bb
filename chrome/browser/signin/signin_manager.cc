@@ -23,17 +23,12 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_cookie_helper.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/common/child_process_host.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 using namespace signin_internals_util;
-
-using content::ChildProcessHost;
-using content::RenderProcessHost;
 
 namespace {
 
@@ -72,33 +67,7 @@ SigninManager::SigninManager(SigninClient* client)
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
-      signin_host_id_(ChildProcessHost::kInvalidUniqueID),
       client_(client) {}
-
-void SigninManager::SetSigninProcess(int process_id) {
-  if (process_id == signin_host_id_)
-    return;
-  DLOG_IF(WARNING,
-          signin_host_id_ != ChildProcessHost::kInvalidUniqueID)
-      << "Replacing in-use signin process.";
-  signin_host_id_ = process_id;
-  RenderProcessHost* host = RenderProcessHost::FromID(process_id);
-  DCHECK(host);
-  host->AddObserver(this);
-  signin_hosts_observed_.insert(host);
-}
-
-void SigninManager::ClearSigninProcess() {
-  signin_host_id_ = ChildProcessHost::kInvalidUniqueID;
-}
-
-bool SigninManager::IsSigninProcess(int process_id) const {
-  return process_id == signin_host_id_;
-}
-
-bool SigninManager::HasSigninProcess() const {
-  return signin_host_id_ != ChildProcessHost::kInvalidUniqueID;
-}
 
 void SigninManager::AddMergeSessionObserver(
     MergeSessionHelper::Observer* observer) {
@@ -113,12 +82,6 @@ void SigninManager::RemoveMergeSessionObserver(
 }
 
 SigninManager::~SigninManager() {
-  std::set<RenderProcessHost*>::iterator i;
-  for (i = signin_hosts_observed_.begin();
-       i != signin_hosts_observed_.end();
-       ++i) {
-    (*i)->RemoveObserver(this);
-  }
 }
 
 void SigninManager::InitTokenService() {
@@ -443,16 +406,6 @@ void SigninManager::OnSignedIn(const std::string& username) {
 
   password_.clear();  // Don't need it anymore.
   DisableOneClickSignIn(profile_);  // Don't ever offer again.
-}
-
-void SigninManager::RenderProcessHostDestroyed(RenderProcessHost* host) {
-  // It's possible we're listening to a "stale" renderer because it was replaced
-  // with a new process by process-per-site. In either case, stop observing it,
-  // but only reset signin_host_id_ tracking if this was from the current signin
-  // process.
-  signin_hosts_observed_.erase(host);
-  if (signin_host_id_ == host->GetID())
-    signin_host_id_ = ChildProcessHost::kInvalidUniqueID;
 }
 
 void SigninManager::ProhibitSignout(bool prohibit_signout) {
