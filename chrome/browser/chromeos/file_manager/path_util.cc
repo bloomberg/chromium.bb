@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "net/base/escape.h"
@@ -25,8 +26,6 @@ const base::FilePath::CharType kOldDownloadsFolderPath[] =
     FILE_PATH_LITERAL("/home/chronos/user/Downloads");
 const base::FilePath::CharType kOldDriveFolderPath[] =
     FILE_PATH_LITERAL("/special/drive");
-const base::FilePath::CharType kNoHashDriveFolderPath[] =
-    FILE_PATH_LITERAL("/special/drive-");
 
 }  // namespace
 
@@ -60,19 +59,32 @@ bool MigratePathFromOldFormat(Profile* profile,
 
   const base::FilePath downloads = GetDownloadsFolderForProfile(profile);
   const base::FilePath drive = drive::util::GetDriveMountPointPath(profile);
-  const base::FilePath bases[][2] = {
-    {base::FilePath(kOldDownloadsFolderPath),      downloads},
-    {DownloadPrefs::GetDefaultDownloadDirectory(), downloads},
-    {base::FilePath(kOldDriveFolderPath),          drive},
-    // TODO(kinaba): http://crbug.com/341284 Remove after M34 branching.
-    // For a short period we incorrectly set "/special/drive-" as the Drive path
-    // that needs to be fixed.
-    {base::FilePath(kNoHashDriveFolderPath),       drive},
-  };
 
-  for (size_t i = 0; i < arraysize(bases); ++i) {
-    const base::FilePath& old_base = bases[i][0];
-    const base::FilePath& new_base = bases[i][1];
+  std::vector<std::pair<base::FilePath, base::FilePath> > bases;
+  bases.push_back(std::make_pair(base::FilePath(kOldDownloadsFolderPath),
+                                 downloads));
+  bases.push_back(std::make_pair(DownloadPrefs::GetDefaultDownloadDirectory(),
+                                 downloads));
+  bases.push_back(std::make_pair(base::FilePath(kOldDriveFolderPath), drive));
+
+  // Trying migrating u-<hash>/Downloads to the current download path. This is
+  // no-op when multi-profile is enabled. This is necessary for (1) back
+  // migration when multi-profile flag is enabled and then disabled, or (2) in
+  // some edge cases (crbug.com/356322) that u-<hash> path is temporarily used.
+  if (chromeos::UserManager::IsInitialized()) {
+    const chromeos::User* const user =
+        chromeos::UserManager::Get()->GetUserByProfile(profile);
+    if (user) {
+      const base::FilePath hashed_downloads =
+          chromeos::ProfileHelper::GetProfilePathByUserIdHash(
+              user->username_hash()).AppendASCII(kDownloadsFolderName);
+      bases.push_back(std::make_pair(hashed_downloads, downloads));
+    }
+  }
+
+  for (size_t i = 0; i < bases.size(); ++i) {
+    const base::FilePath& old_base = bases[i].first;
+    const base::FilePath& new_base = bases[i].second;
     base::FilePath relative;
     if (old_path == old_base ||
         old_base.AppendRelativePath(old_path, &relative)) {

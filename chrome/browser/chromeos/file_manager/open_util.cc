@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/mime_util.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -207,11 +208,18 @@ void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path) {
 void OpenItem(Profile* profile, const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  // The path may have been stored in preferences in old versions.
+  // We need migration here.
+  // TODO(kinaba): crbug.com/313539 remove it in the future.
+  base::FilePath path;
+  if (!util::MigratePathFromOldFormat(profile, file_path, &path))
+    path = file_path;
+
   GURL url;
   if (!ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, file_path, kFileManagerAppId, &url) ||
+          profile, path, kFileManagerAppId, &url) ||
       !GrantFileSystemAccessToFileBrowser(profile)) {
-    ShowWarningMessageBox(profile, file_path);
+    ShowWarningMessageBox(profile, path);
     return;
   }
 
@@ -220,12 +228,19 @@ void OpenItem(Profile* profile, const base::FilePath& file_path) {
           profile, kFileManagerAppId);
 
   CheckIfDirectoryExists(file_system_context, url,
-                         base::Bind(&ContinueOpenItem, profile, file_path));
+                         base::Bind(&ContinueOpenItem, profile, path));
 }
 
 void ShowItemInFolder(Profile* profile, const base::FilePath& file_path) {
+  // The path may have been stored in preferences in old versions.
+  // We need migration here.
+  // TODO(kinaba): crbug.com/313539 remove it in the future.
+  base::FilePath path;
+  if (!util::MigratePathFromOldFormat(profile, file_path, &path))
+    path = file_path;
+
   // This action changes the selection so we do not reuse existing tabs.
-  OpenFileManagerWithInternalActionId(profile, file_path, "select");
+  OpenFileManagerWithInternalActionId(profile, path, "select");
 }
 
 }  // namespace util

@@ -33,18 +33,20 @@ base::FilePath GetDownloadsFolderForProfile(Profile* profile);
 //
 // M34: crbug.com/313539
 //   The "Downloads" folder is changed from /home/chronos/user/Downloads to
-//   /home/chronos/u-<hash>/Downloads to support multi profiles.
+//   /home/chronos/u-<hash>/Downloads when multi-profile is enabled.
 //
 //   The path "/home/chronos/user" is a hard link to the u-<hash> directory of
 //   the primary profile of the current session. The two paths always meant the
 //   same directory before multi-profiles. However, for secondary profiles in
 //   a multi-profile session, the "user" path cannot be used to mean "its own"
 //   Download folder anymore. Thus we are switching to always use "u-<hash>"
-//   that consistently works whether or not multi-profile is enabled.
+//   that consistently works whether or not it is primary.
 //
-// M34: crbug.com/336123
-//   The "Google Drive" folder is changed from /special/drive to
-//   /special/drive-<profile-id> to support multi profiles.
+// M35: crbug.com/356322
+//   It turned out even if multi-profile is disabled, u-<hash> style profile
+//   can be used in some situations. To address the cases, we add a migration
+//   from /home/chronos/u-<hash>/Downloads to current Download path.
+//   This just results in no-op when multi-profile is enabled.
 bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_path,
                               base::FilePath* new_path);
