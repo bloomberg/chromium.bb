@@ -49,7 +49,11 @@ OptInManager.CommandFromPage = {
   // User has explicitly clicked 'no'.
   CLICKED_NO_OPTIN: 'hcno',
   // User has opted in.
-  CLICKED_OPTIN: 'hco'
+  CLICKED_OPTIN: 'hco',
+  // Audio logging is opted in.
+  AUDIO_LOGGING_ON: 'alon',
+  // Audio logging is opted out.
+  AUDIO_LOGGING_OFF: 'aloff',
 };
 
 
@@ -155,6 +159,25 @@ OptInManager.prototype.handleMessage_ = function(
     if (request.type === OptInManager.CommandFromPage.CLICKED_NO_OPTIN) {
       if (chrome.hotwordPrivate && chrome.hotwordPrivate.setEnabled) {
         chrome.hotwordPrivate.setEnabled(false);
+      }
+    }
+    // Information regarding the audio logging preference was sent.
+    if (request.type === OptInManager.CommandFromPage.AUDIO_LOGGING_ON) {
+      if (chrome.hotwordPrivate &&
+          chrome.hotwordPrivate.setAudioLoggingEnabled) {
+        chrome.hotwordPrivate.setAudioLoggingEnabled(true);
+        chrome.runtime.sendMessage(
+            OptInManager.HOTWORD_EXTENSION_ID_,
+            {'cmd': OptInManager.CommandFromHelper.AUDIO_LOGGING_ON});
+      }
+    }
+    if (request.type === OptInManager.CommandFromPage.AUDIO_LOGGING_OFF) {
+      if (chrome.hotwordPrivate &&
+          chrome.hotwordPrivate.setAudioLoggingEnabled) {
+        chrome.hotwordPrivate.setAudioLoggingEnabled(false);
+        chrome.runtime.sendMessage(
+            OptInManager.HOTWORD_EXTENSION_ID_,
+            {'cmd': OptInManager.CommandFromHelper.AUDIO_LOGGING_OFF});
       }
     }
   }
