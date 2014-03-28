@@ -63,6 +63,7 @@ public:
     bool usesMenuList() const;
 
     void add(HTMLElement*, HTMLElement* beforeElement, ExceptionState&);
+    void addBeforeOptionAtIndex(HTMLElement*, int beforeIndex, ExceptionState&);
 
     using Node::remove;
     void remove(int index);

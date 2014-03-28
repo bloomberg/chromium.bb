@@ -204,11 +204,17 @@ void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, Exception
     // Make sure the element is ref'd and deref'd so we don't leak it.
     RefPtr<HTMLElement> protectNewChild(element);
 
-    if (!element || !(isHTMLOptionElement(element) || isHTMLHRElement(element)))
+    if (!element || !(isHTMLOptionElement(element) || isHTMLOptGroupElement(element) || isHTMLHRElement(element)))
         return;
 
     insertBefore(element, before, exceptionState);
     setNeedsValidityCheck();
+}
+
+void HTMLSelectElement::addBeforeOptionAtIndex(HTMLElement* element, int beforeIndex, ExceptionState& exceptionState)
+{
+    HTMLElement* beforeElement = toHTMLElement(options()->item(beforeIndex));
+    add(element, beforeElement, exceptionState);
 }
 
 void HTMLSelectElement::remove(int optionIndex)

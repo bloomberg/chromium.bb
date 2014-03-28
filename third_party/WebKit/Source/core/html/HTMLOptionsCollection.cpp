@@ -93,7 +93,7 @@ void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index
     if (index == -1 || unsigned(index) >= length())
         select.add(newOption, 0, exceptionState);
     else
-        select.add(newOption, toHTMLOptionElement(item(index)), exceptionState);
+        select.addBeforeOptionAtIndex(newOption, index, exceptionState);
 
     ASSERT(!exceptionState.hadException());
 }
