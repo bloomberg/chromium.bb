@@ -72,10 +72,20 @@ function detectVideo(videoElementName, predicate, callback) {
         predicate(pixels, oldPixels)) {
       console.log('Done looking at video in element ' + videoElementName);
       clearInterval(waitVideo);
-      callback();
+      callback(videoElement.videoWidth, videoElement.videoHeight);
     }
     oldPixels = pixels;
   }, 200);
+}
+
+function waitForVideoWithResolution(element, expected_width, expected_height) {
+  addExpectedEvent();
+  detectVideoPlaying(element,
+      function (width, height) {
+        assertEquals(expected_width, width);
+        assertEquals(expected_height, height);
+        eventOccured();
+      });
 }
 
 function waitForVideo(videoElement) {

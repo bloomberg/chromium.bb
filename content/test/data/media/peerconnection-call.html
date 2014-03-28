@@ -63,6 +63,23 @@
     waitForVideo('remote-view-2');
   }
 
+  // Test that we can setup call with an audio and video track and check that 
+  // the video resolution is as expected.
+  function callAndExpectResolution(constraints,
+                                   expected_width,
+                                   expected_height) {
+    createConnections(null);
+    navigator.webkitGetUserMedia(constraints,
+      addStreamToBothConnectionsAndNegotiate, printGetUserMediaError);
+    waitForVideoWithResolution('remote-view-1',
+                               expected_width,
+                               expected_height);
+    waitForVideoWithResolution('remote-view-2',
+                               expected_width,
+                               expected_height);
+  }
+
+
   // First calls without streams on any connections, and then adds a stream
   // to peer connection 1 which gets sent to peer connection 2. We must wait
   // for the first negotiation to complete before starting the second one, which

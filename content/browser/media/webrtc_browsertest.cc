@@ -64,15 +64,23 @@ INSTANTIATE_TEST_CASE_P(WebRtcBrowserTests,
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_CanSetupVideoCall DISABLED_CanSetupVideoCall
+#define MAYBE_CanSetupDefaultVideoCall DISABLED_CanSetupDefaultVideoCall
 #else
-#define MAYBE_CanSetupVideoCall CanSetupVideoCall
+#define MAYBE_CanSetupDefaultVideoCall CanSetupDefaultVideoCall
 #endif
 
 // These tests will make a complete PeerConnection-based call and verify that
 // video is playing for the call.
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanSetupVideoCall) {
-  MakeTypicalPeerConnectionCall("call({video: true});");
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanSetupDefaultVideoCall) {
+  MakeTypicalPeerConnectionCall(
+      "callAndExpectResolution({video: true}, 640, 480);");
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CanSetupVideoCallWith1To1AspecRatio) {
+  const std::string javascript =
+      "callAndExpectResolution({video: {mandatory: {minWidth: 320,"
+      " maxWidth: 320, minHeight: 320, maxHeight: 320}}}, 320, 320);";
+  MakeTypicalPeerConnectionCall(javascript);
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
