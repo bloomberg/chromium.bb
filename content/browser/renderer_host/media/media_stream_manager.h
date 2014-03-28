@@ -31,6 +31,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
@@ -57,6 +58,7 @@ class VideoCaptureManager;
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
       public base::MessageLoop::DestructionObserver,
+      public base::PowerObserver,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
   // Callback to deliver the result of a media request.
@@ -192,6 +194,10 @@ class CONTENT_EXPORT MediaStreamManager
   // render processes hosts whose corresponding render processes are requesting
   // logging from webrtcLoggingPrivate API. Safe to call from any thread.
   static void SendMessageToNativeLog(const std::string& message);
+
+  // base::PowerObserver overrides.
+  virtual void OnSuspend() OVERRIDE;
+  virtual void OnResume() OVERRIDE;
 
  protected:
   // Used for testing.
