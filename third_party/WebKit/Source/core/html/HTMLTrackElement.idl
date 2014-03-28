@@ -40,4 +40,6 @@
     readonly attribute unsigned short readyState;
 
     readonly attribute TextTrack track;
+
+    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

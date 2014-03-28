@@ -28,4 +28,6 @@ interface HTMLScriptElement : HTMLElement {
     [Reflect] attribute DOMString type;
     [Reflect, ReflectOnly="anonymous"|"use-credentials", ReflectEmpty="anonymous", ReflectInvalid="anonymous"] attribute DOMString crossOrigin;
     [Reflect, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
+
+    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

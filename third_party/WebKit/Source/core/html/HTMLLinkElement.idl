@@ -36,4 +36,6 @@ interface HTMLLinkElement : HTMLElement {
     readonly attribute StyleSheet sheet;
 
     [RuntimeEnabled=HTMLImports] readonly attribute Document import;
+
+    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };

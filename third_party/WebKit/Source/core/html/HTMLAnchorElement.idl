@@ -32,6 +32,8 @@ interface HTMLAnchorElement : HTMLElement {
     [Reflect] attribute DOMString type;
 
     readonly attribute DOMString text;
+
+    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
 
 HTMLAnchorElement implements URLUtils;

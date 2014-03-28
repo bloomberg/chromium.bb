@@ -106,6 +106,7 @@ Srcset status=stable
 Stream status=experimental
 StyleScoped status=experimental
 SubpixelFontScaling status=experimental
+SubresourceIntegrity status=test
 SVGPaintOrder status=stable
 
 // Enable optimizations to recalculate style on the fewest possible number of

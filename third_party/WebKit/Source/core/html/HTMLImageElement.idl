@@ -45,4 +45,6 @@
     // Extensions
     readonly attribute long x;
     readonly attribute long y;
+
+    [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
