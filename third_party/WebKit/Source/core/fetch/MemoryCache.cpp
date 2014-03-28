@@ -233,11 +233,10 @@ void MemoryCache::pruneDeadResources()
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
-            if (current->m_resource->wasPurged() && current->m_resource->canDelete()) {
+            if (current->m_resource->wasPurged()) {
                 ASSERT(!current->m_resource->hasClients());
                 ASSERT(!current->m_resource->isPreloaded());
-                bool wasEvicted = evict(current);
-                ASSERT_UNUSED(wasEvicted, wasEvicted);
+                evict(current);
             }
             current = previous;
         }
@@ -276,10 +275,8 @@ void MemoryCache::pruneDeadResources()
         while (current) {
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
             ASSERT(!previous || contains(previous->m_resource.get()));
-            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded()
-                && !current->m_resource->isCacheValidator() && current->m_resource->canDelete()) {
-                bool wasEvicted = evict(current);
-                ASSERT_UNUSED(wasEvicted, wasEvicted);
+            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded() && !current->m_resource->isCacheValidator()) {
+                evict(current);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
             }

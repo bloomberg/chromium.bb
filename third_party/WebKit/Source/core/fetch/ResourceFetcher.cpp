@@ -1072,7 +1072,7 @@ void ResourceFetcher::garbageCollectDocumentResources()
     StringVector resourcesToDelete;
 
     for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != m_documentResources.end(); ++it) {
-        if (it->value->hasOneHandleApartFromCache())
+        if (it->value->hasOneHandle())
             resourcesToDelete.append(it->key);
     }
 

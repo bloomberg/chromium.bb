@@ -197,8 +197,8 @@ public:
     // Returns cached metadata of the given type associated with this resource.
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
 
-    bool canDelete() const;
-    bool hasOneHandleApartFromCache() const;
+    bool canDelete() const { return !hasClients() && !m_loader && !m_preloadCount && !m_handleCount && !m_protectorCount && !m_resourceToRevalidate && !m_proxyResource; }
+    bool hasOneHandle() const { return m_handleCount == 1; }
 
     // List of acceptable MIME types separated by ",".
     // A MIME type may contain a wildcard, e.g. "text/*".
@@ -341,8 +341,6 @@ private:
     void revalidationFailed();
 
     bool unlock();
-
-    bool hasRightHandleCountApartFromCache(unsigned targetCount) const;
 
     void failBeforeStarting();
 

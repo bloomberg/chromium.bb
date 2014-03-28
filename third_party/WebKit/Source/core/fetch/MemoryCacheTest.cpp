@@ -153,7 +153,7 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
     const unsigned maxDeadCapacity = 0;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
 
-    Resource* cachedResource =
+    ResourcePtr<Resource> cachedResource =
         new Resource(ResourceRequest(""), Resource::Raw);
     const char data[5] = "abcd";
     cachedResource->appendData(data, 3);
@@ -164,7 +164,7 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
     ASSERT_EQ(0u, memoryCache()->deadSize());
     ASSERT_EQ(0u, memoryCache()->liveSize());
 
-    memoryCache()->add(cachedResource);
+    memoryCache()->add(cachedResource.get());
     ASSERT_EQ(cachedResource->size(), memoryCache()->deadSize());
     ASSERT_EQ(0u, memoryCache()->liveSize());
 
@@ -183,8 +183,8 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
     const unsigned maxDeadCapacity = 0;
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
     const char data[6] = "abcde";
-    Resource* cachedDeadResource =
-        new Resource(ResourceRequest("hhtp://foo"), Resource::Raw);
+    ResourcePtr<Resource> cachedDeadResource =
+        new Resource(ResourceRequest("http://foo"), Resource::Raw);
     cachedDeadResource->appendData(data, 3);
     ResourcePtr<Resource> cachedLiveResource =
         new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
@@ -194,7 +194,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
 
     class Task1 : public blink::WebThread::Task {
     public:
-        Task1(const ResourcePtr<Resource>& live, Resource* dead)
+        Task1(const ResourcePtr<Resource>& live, const ResourcePtr<Resource>& dead)
             : m_live(live)
             , m_dead(dead)
         { }
@@ -209,7 +209,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
             ASSERT_EQ(0u, memoryCache()->deadSize());
             ASSERT_EQ(0u, memoryCache()->liveSize());
 
-            memoryCache()->add(m_dead);
+            memoryCache()->add(m_dead.get());
             memoryCache()->add(m_live.get());
             memoryCache()->insertInLiveDecodedResourcesList(m_live.get());
             ASSERT_EQ(m_dead->size(), memoryCache()->deadSize());
@@ -223,8 +223,7 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
         }
 
     private:
-        ResourcePtr<Resource> m_live;
-        Resource* m_dead;
+        ResourcePtr<Resource> m_live, m_dead;
     };
 
     class Task2 : public blink::WebThread::Task {
