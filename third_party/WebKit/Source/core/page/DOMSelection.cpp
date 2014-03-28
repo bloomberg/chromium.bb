@@ -481,7 +481,8 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
     TrackExceptionState exceptionState;
     bool nodeFullySelected = Range::compareBoundaryPoints(parentNode, nodeIndex, selectedRange->startContainer(), selectedRange->startOffset(), exceptionState) >= 0 && !exceptionState.hadException()
         && Range::compareBoundaryPoints(parentNode, nodeIndex + 1, selectedRange->endContainer(), selectedRange->endOffset(), exceptionState) <= 0 && !exceptionState.hadException();
-    ASSERT(!exceptionState.hadException());
+    if (exceptionState.hadException())
+        return false;
     if (nodeFullySelected)
         return true;
 
