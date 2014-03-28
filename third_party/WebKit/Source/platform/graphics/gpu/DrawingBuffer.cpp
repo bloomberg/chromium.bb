@@ -41,6 +41,7 @@
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 
 using namespace std;
 
@@ -411,9 +412,33 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         return;
     Platform3DObject tex = imageBuffer->getBackingTexture();
     if (tex) {
-        m_context->copyTextureCHROMIUM(GL_TEXTURE_2D, m_frontColorBuffer,
-            tex, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+        RefPtr<MailboxInfo> bufferMailbox = adoptRef(new MailboxInfo());
+        m_context->genMailboxCHROMIUM(bufferMailbox->mailbox.name);
+        m_context->bindTexture(GL_TEXTURE_2D, m_frontColorBuffer);
+        m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
         m_context->flush();
+
+        bufferMailbox->mailbox.syncPoint = m_context->insertSyncPoint();
+        OwnPtr<blink::WebGraphicsContext3DProvider> provider =
+            adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+        if (!provider)
+            return;
+        blink::WebGraphicsContext3D* context = provider->context3d();
+        if (!context || !context->makeContextCurrent())
+            return;
+
+        Platform3DObject sourceTexture = context->createTexture();
+        GLint boundTexture = 0;
+        context->getIntegerv(GL_TEXTURE_BINDING_2D, &boundTexture);
+        context->bindTexture(GL_TEXTURE_2D, sourceTexture);
+        context->waitSyncPoint(bufferMailbox->mailbox.syncPoint);
+        context->consumeTextureCHROMIUM(GL_TEXTURE_2D, bufferMailbox->mailbox.name);
+        context->copyTextureCHROMIUM(GL_TEXTURE_2D, sourceTexture,
+            tex, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+        context->bindTexture(GL_TEXTURE_2D, boundTexture);
+        context->deleteTexture(sourceTexture);
+        context->flush();
+        m_context->waitSyncPoint(context->insertSyncPoint());
         return;
     }
 
