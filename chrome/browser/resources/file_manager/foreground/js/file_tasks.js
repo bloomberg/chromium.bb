@@ -46,6 +46,14 @@ FileTasks.CHROME_WEB_STORE_URL = 'https://chrome.google.com/webstore';
 FileTasks.WEB_STORE_HANDLER_BASE_URL =
     'https://chrome.google.com/webstore/category/collection/file_handlers';
 
+
+/**
+ * The app ID of the video player app.
+ * @const
+ * @type {string}
+ */
+FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
+
 /**
  * Returns URL of the Chrome Web Store which show apps supporting the given
  * file-extension and mime-type.
@@ -189,7 +197,8 @@ FileTasks.isInternalTask_ = function(taskId) {
           taskType === 'file' &&
           (actionId === 'play' ||
            actionId === 'mount-archive' ||
-           actionId === 'gallery'));
+           actionId === 'gallery' ||
+           actionId === 'gallery-video'));
 };
 
 /**
@@ -231,7 +240,8 @@ FileTasks.prototype.processTasks_ = function(tasks) {
       } else if (taskParts[2] === 'mount-archive') {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
-      } else if (taskParts[2] === 'gallery') {
+      } else if (taskParts[2] === 'gallery' ||
+                 taskParts[2] === 'gallery-video') {
         task.iconType = 'image';
         task.title = loadTimeData.getString('ACTION_OPEN');
       } else if (taskParts[2] === 'open-hosted-generic') {
@@ -552,7 +562,7 @@ FileTasks.prototype.executeInternalTask_ = function(id, entries) {
     return;
   }
 
-  if (id === 'gallery') {
+  if (id === 'gallery' || id === 'gallery-video') {
     this.openGalleryInternal_(entries);
     return;
   }

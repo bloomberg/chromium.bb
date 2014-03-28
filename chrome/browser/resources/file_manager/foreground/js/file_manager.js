@@ -1582,7 +1582,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // Handle restoring after crash, or the gallery action.
       // TODO(mtomasz): Use the gallery action instead of just the gallery
       //     field.
-      if (this.params_.gallery || this.params_.action === 'gallery') {
+      if (this.params_.gallery ||
+          this.params_.action === 'gallery' ||
+          this.params_.action === 'gallery-video') {
         if (!opt_selectionEntry) {
           // Non-existent file or a directory.
           // Reloading while the Gallery is open with empty or multiple
