@@ -920,31 +920,6 @@ void ChromeLauncherController::ToggleShelfAutoHideBehavior(
   return;
 }
 
-void ChromeLauncherController::RemoveTabFromRunningApp(
-    WebContents* tab,
-    const std::string& app_id) {
-  web_contents_to_app_id_.erase(tab);
-  // BrowserShortcutLauncherItemController::UpdateBrowserItemState() will update
-  // the state when no application is associated with the tab.
-  if (app_id.empty())
-    return;
-
-  AppIDToWebContentsListMap::iterator i_app_id =
-      app_id_to_web_contents_list_.find(app_id);
-  if (i_app_id != app_id_to_web_contents_list_.end()) {
-    WebContentsList* tab_list = &i_app_id->second;
-    tab_list->remove(tab);
-    ash::ShelfItemStatus status = ash::STATUS_RUNNING;
-    if (tab_list->empty()) {
-      app_id_to_web_contents_list_.erase(i_app_id);
-      status = ash::STATUS_CLOSED;
-    }
-    ash::ShelfID id = GetShelfIDForAppID(app_id);
-    if (id)
-      SetItemStatus(id, status);
-  }
-}
-
 void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
                                               AppState app_state) {
   std::string app_id = app_tab_helper_->GetAppID(contents);
@@ -958,42 +933,27 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
   // remove it from the previous app.
   if (web_contents_to_app_id_.find(contents) != web_contents_to_app_id_.end()) {
     std::string last_app_id = web_contents_to_app_id_[contents];
-    if (last_app_id != app_id)
-      RemoveTabFromRunningApp(contents, last_app_id);
-  }
-
-  web_contents_to_app_id_[contents] = app_id;
-
-  if (app_state == APP_STATE_REMOVED) {
-    // The tab has gone away.
-    RemoveTabFromRunningApp(contents, app_id);
-  } else if (!app_id.empty()) {
-    WebContentsList& tab_list(app_id_to_web_contents_list_[app_id]);
-    WebContentsList::const_iterator i_tab =
-        std::find(tab_list.begin(), tab_list.end(), contents);
-
-    if (i_tab == tab_list.end())
-      tab_list.push_back(contents);
-
-    if (app_state == APP_STATE_INACTIVE || app_state == APP_STATE_ACTIVE) {
-      if (i_tab != tab_list.begin()) {
-        // Going to running state, but wasn't the front tab, indicating that a
-        // new tab has already become active.
-        return;
+    if (last_app_id != app_id) {
+      ash::ShelfID id = GetShelfIDForAppID(last_app_id);
+      if (id) {
+        // Since GetAppState() will use |web_contents_to_app_id_| we remove
+        // the connection before calling it.
+        web_contents_to_app_id_.erase(contents);
+        SetItemStatus(id, GetAppState(last_app_id));
       }
     }
+  }
 
-    if (app_state == APP_STATE_ACTIVE || app_state == APP_STATE_WINDOW_ACTIVE) {
-      tab_list.remove(contents);
-      tab_list.push_front(contents);
-    }
+  if (app_state == APP_STATE_REMOVED)
+    web_contents_to_app_id_.erase(contents);
+  else
+    web_contents_to_app_id_[contents] = app_id;
 
-    ash::ShelfID id = GetShelfIDForAppID(app_id);
-    if (id) {
-      // If the window is active, mark the app as active.
-      SetItemStatus(id, app_state == APP_STATE_WINDOW_ACTIVE ?
-          ash::STATUS_ACTIVE : ash::STATUS_RUNNING);
-    }
+  ash::ShelfID id = GetShelfIDForAppID(app_id);
+  if (id) {
+    SetItemStatus(id, (app_state == APP_STATE_WINDOW_ACTIVE ||
+                       app_state == APP_STATE_ACTIVE) ? ash::STATUS_ACTIVE :
+                                                        GetAppState(app_id));
   }
 }
 
@@ -1719,35 +1679,27 @@ void ChromeLauncherController::SetShelfBehaviorsFromPrefs() {
   SetShelfAlignmentFromPrefs();
 }
 
-WebContents* ChromeLauncherController::GetLastActiveWebContents(
-    const std::string& app_id) {
-  AppIDToWebContentsListMap::iterator i =
-      app_id_to_web_contents_list_.find(app_id);
-  if (i == app_id_to_web_contents_list_.end())
-    return NULL;
-
-  // There are many crash records (crbug.com/341250) which indicate that the
-  // app_id_to_web_contents_list_ contains deleted content entries - so there
-  // must be a way that the content does not get properly updated. To fix
-  // M33 and M34 we filter out the invalid items here, but this should be
-  // addressed by a later patch correctly. Looking at the code however, the
-  // real culprit is possibly BrowserStatusMonitor::UpdateAppItemState which
-  // does not call "UpdateAppState(.., APP_STATE_REMOVED)" because due to a
-  // Browser::SwapTabContent operation it isn't able to get the browser. I
-  // think that the real patch is to call anyway when APP_STATE_REMOVED is
-  // requested, but for a backport that seems risky.
-  WebContentsList* list = &i->second;
-  while (!list->empty()) {
-    WebContents* contents = *list->begin();
-    if (chrome::FindBrowserWithWebContents(contents))
-      return contents;
-    list->erase(list->begin());
-    // This might not be necessary, but since we do not know why the lists
-    // diverged we also erase it since it cannot be correct either.
-    web_contents_to_app_id_.erase(contents);
+ash::ShelfItemStatus ChromeLauncherController::GetAppState(
+    const::std::string& app_id) {
+  ash::ShelfItemStatus status = ash::STATUS_CLOSED;
+  for (WebContentsToAppIDMap::iterator it = web_contents_to_app_id_.begin();
+       it != web_contents_to_app_id_.end();
+       ++it) {
+    if (it->second == app_id) {
+      Browser* browser = chrome::FindBrowserWithWebContents(it->first);
+      // There should never be an item in our |web_contents_to_app_id_| list
+      // which got deleted already. If it is, it is likely that
+      // BrowserStatusMonitor forgot to inform us of that change.
+      DCHECK(browser);
+      if (browser->window()->IsActive()) {
+        return browser->tab_strip_model()->GetActiveWebContents() == it->first ?
+            ash::STATUS_ACTIVE : ash::STATUS_RUNNING;
+      } else {
+        status = ash::STATUS_RUNNING;
+      }
+    }
   }
-  app_id_to_web_contents_list_.erase(app_id);
-  return NULL;
+  return status;
 }
 
 ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
@@ -1766,15 +1718,10 @@ ash::ShelfID ChromeLauncherController::InsertAppLauncherItem(
   item.type = shelf_item_type;
   item.image = extensions::IconsInfo::GetDefaultAppIcon();
 
-  WebContents* active_tab = GetLastActiveWebContents(app_id);
-  if (active_tab) {
-    Browser* browser = chrome::FindBrowserWithWebContents(active_tab);
-    DCHECK(browser);
-    if (browser->window()->IsActive())
-      status = ash::STATUS_ACTIVE;
-    else
-      status = ash::STATUS_RUNNING;
-  }
+  ash::ShelfItemStatus new_state = GetAppState(app_id);
+  if (new_state != ash::STATUS_CLOSED)
+    status = new_state;
+
   item.status = status;
 
   model_->AddAt(index, item);
