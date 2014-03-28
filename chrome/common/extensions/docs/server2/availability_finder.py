@@ -11,6 +11,7 @@ from extensions_paths import API_PATHS, JSON_TEMPLATES
 from features_bundle import FeaturesBundle
 import features_utility
 from file_system import FileNotFoundError
+from third_party.json_schema_compiler.memoize import memoize
 from third_party.json_schema_compiler.model import UnixName
 
 
@@ -177,6 +178,7 @@ class AvailabilityFinder(object):
                                           channel_info.channel))
     return available_channel is not None and newest == channel_info.channel
 
+  @memoize
   def _CreateFeaturesBundle(self, file_system):
     return FeaturesBundle(file_system,
                           self._compiled_fs_factory,

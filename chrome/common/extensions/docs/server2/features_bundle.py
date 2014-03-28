@@ -4,7 +4,7 @@
 
 import posixpath
 
-from compiled_file_system import Unicode
+from compiled_file_system import SingleFile, Unicode
 from extensions_paths import (
     API_FEATURES, JSON_TEMPLATES, MANIFEST_FEATURES, PERMISSION_FEATURES)
 import features_utility
@@ -40,8 +40,11 @@ def _AddPlatformsFromDependencies(feature,
 
 class _FeaturesCache(object):
   def __init__(self, file_system, compiled_fs_factory, *json_paths):
-    self._cache = compiled_fs_factory.Create(
-        file_system, self._CreateCache, type(self))
+    populate = self._CreateCache
+    if len(json_paths) == 1:
+      populate = SingleFile(populate)
+
+    self._cache = compiled_fs_factory.Create(file_system, populate, type(self))
     self._text_cache = compiled_fs_factory.ForUnicode(file_system)
     self._json_path = json_paths[0]
     self._extra_paths = json_paths[1:]

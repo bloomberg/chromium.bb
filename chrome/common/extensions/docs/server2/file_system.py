@@ -171,6 +171,13 @@ class FileSystem(object):
     for walkinfo in walk(root):
       yield walkinfo
 
+  def __eq__(self, other):
+    return (isinstance(other, FileSystem) and
+            self.GetIdentity() == other.GetIdentity())
+
+  def __ne__(self, other):
+    return not (self == other)
+
   def __repr__(self):
     return '<%s>' % type(self).__name__
 
