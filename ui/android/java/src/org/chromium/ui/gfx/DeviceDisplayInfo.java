@@ -31,6 +31,7 @@ public class DeviceDisplayInfo {
     private final Context mAppContext;
     private final WindowManager mWinManager;
     private Point mTempPoint = new Point();
+    private DisplayMetrics mTempMetrics = new DisplayMetrics();
 
     private DeviceDisplayInfo(Context context) {
         mAppContext = context.getApplicationContext();
@@ -42,7 +43,8 @@ public class DeviceDisplayInfo {
      */
     @CalledByNative
     public int getDisplayHeight() {
-        return getMetrics().heightPixels;
+        getDisplay().getSize(mTempPoint);
+        return mTempPoint.y;
     }
 
     /**
@@ -50,7 +52,8 @@ public class DeviceDisplayInfo {
      */
     @CalledByNative
     public int getDisplayWidth() {
-        return getMetrics().widthPixels;
+        getDisplay().getSize(mTempPoint);
+        return mTempPoint.x;
     }
 
     /**
@@ -140,7 +143,8 @@ public class DeviceDisplayInfo {
      */
     @CalledByNative
     public double getDIPScale() {
-        return getMetrics().density;
+        getDisplay().getMetrics(mTempMetrics);
+        return mTempMetrics.density;
     }
 
     /**
@@ -176,10 +180,6 @@ public class DeviceDisplayInfo {
 
     private Display getDisplay() {
         return mWinManager.getDefaultDisplay();
-    }
-
-    private DisplayMetrics getMetrics() {
-        return mAppContext.getResources().getDisplayMetrics();
     }
 
     /**
