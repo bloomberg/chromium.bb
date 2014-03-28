@@ -12,6 +12,10 @@ _PHONY_SUFFIX = ': phony'
 _LINK_SUFFIX = ': link'
 
 
+DEFAULT = cr.Config.From(
+    GOMA_DIR=os.path.expanduser('~/goma'),
+)
+
 class NinjaBuilder(cr.Builder):
   """An implementation of Builder that uses ninja to do the actual build."""
 
@@ -21,7 +25,6 @@ class NinjaBuilder(cr.Builder):
       NINJA_JOBS=10,
       NINJA_PROCESSORS=4,
       NINJA_BUILD_FILE=os.path.join('{CR_BUILD_DIR}', 'build.ninja'),
-      GOMA_DIR=os.path.join('{GOOGLE_CODE}', 'goma'),
       # Don't rename to GOMA_* or Goma will complain: "unkown GOMA_ parameter".
       NINJA_GOMA_LINE='cc = {CR_GOMA_CC} $',
   )
@@ -107,8 +110,10 @@ class NinjaBuilder(cr.Builder):
       cls.DETECTED.Set(NINJA_BINARY=ninja_binaries[0])
 
     goma_binaries = cr.Host.SearchPath('gomacc', [
+      '{GOMA_DIR}',
       '/usr/local/google/code/goma',
-      os.path.expanduser('~/goma')])
+      os.path.expanduser('~/goma')
+    ])
     if goma_binaries:
       cls.DETECTED.Set(CR_GOMA_DIR=os.path.dirname(goma_binaries[0]))
       cls.DETECTED.AddChildren(cls.GOMA)
