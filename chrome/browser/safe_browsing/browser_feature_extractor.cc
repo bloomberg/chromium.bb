@@ -262,7 +262,6 @@ void BrowserFeatureExtractor::ExtractMalwareFeatures(
     ClientMalwareRequest* request,
     const MalwareDoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(0U, request->url().find("http:"));
   DCHECK(!callback.is_null());
 
   // Grab the IPs because they might go away before we're done

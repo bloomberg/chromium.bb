@@ -368,15 +368,6 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
     return;
   }
 
-  if (OverMalwareReportLimit()) {
-    UpdateEnumUMAHistogram(REPORT_HIT_LIMIT);
-    DVLOG(1) << "Too many malware report requests sent recently."
-             << "Skip sending malware report for " << GURL(request->url());
-    if (!callback.is_null())
-      callback.Run(GURL(request->url()), GURL(request->url()), false);
-    return;
-  }
-
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {
     UpdateEnumUMAHistogram(REPORT_FAILED_SERIALIZATION);

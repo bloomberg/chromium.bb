@@ -21859,35 +21859,62 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SBClientMalware.ClassificationStart" enum="BooleanHit">
+  <owner>noelutz@chromium.org</owner>
+  <summary>
+    The number of pages that we could have possibly classified (essentially the
+    number of top page navigations by users with SBClientMalware enabled). The
+    name is slightly misleading as it is recorded before
+    &quot;Preclassification&quot; happens.
+  </summary>
+</histogram>
+
 <histogram name="SBClientMalware.IPBlacklistRequestNetError"
     enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The net error code for all ClientMalwareRequest URLFetchers.
   </summary>
 </histogram>
 
 <histogram name="SBClientMalware.IPBlacklistRequestPayloadSize" units="bytes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     The size of the upload data for ClientMalwareRequest URLFetchers.
   </summary>
 </histogram>
 
 <histogram name="SBClientMalware.IPBlacklistRequestResponseCode">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     For ClientMalwareRequest URLFetchers with successful status, the HTTP
     response code that was received.
   </summary>
 </histogram>
 
+<histogram name="SBClientMalware.PreClassificationCheckFail"
+    enum="SBClientDetectionPreClassificationCheckFail">
+  <owner>noelutz@chromium.org</owner>
+  <summary>
+    Records the number of malware classifications that were skipped because a
+    pre-classification check failed.
+  </summary>
+</histogram>
+
 <histogram name="SBClientMalware.SentReports" enum="SBClientMalwareSentReports">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>noelutz@chromium.org</owner>
   <summary>
     Measures the success rate of sending malware reports.  Sending a report can
     fail due to a client reaching the limit on the number of reports it can send
     per day or due to the report failing to be serialized.
+  </summary>
+</histogram>
+
+<histogram name="SBClientMalware.UnexpectedPageId" enum="BooleanHit">
+  <owner>noelutz@chromium.org</owner>
+  <summary>
+    Counts the number of times the page ID that completed the page load does not
+    match the browse info page ID.  We expect that number to be zero.
   </summary>
 </histogram>
 
@@ -21908,7 +21935,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.ClassificationStart">
+<histogram name="SBClientPhishing.ClassificationStart" enum="BooleanHit">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of pages that we could have possibly classified (essentially the
@@ -22010,15 +22037,15 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="SBClientPhishing.PreClassificationCheckFail"
-    enum="SBClientPhishingPreClassificationCheckFail">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+    enum="SBClientDetectionPreClassificationCheckFail">
+  <owner>noelutz@chromium.org</owner>
   <summary>
     Records the number of phishing classifications that were skipped because a
     pre-classification check failed.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.ReportLimitSkipped">
+<histogram name="SBClientPhishing.ReportLimitSkipped" enum="BooleanHit">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of phishing classifications that were previously cached as being
@@ -22034,7 +22061,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="SBClientPhishing.RequestSatisfiedFromCache">
+<histogram name="SBClientPhishing.RequestSatisfiedFromCache" enum="BooleanHit">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The number of times that a cached phishing classification result was used,
@@ -38712,6 +38739,20 @@ other types of suffix sets.
   <int value="7" label="BACKUP_NETWORK_SUCCESS"/>
 </enum>
 
+<enum name="SBClientDetectionPreClassificationCheckFail" type="int">
+  <int value="0" label="PROXY_FETCH"/>
+  <int value="1" label="PRIVATE_IP"/>
+  <int value="2" label="OFF_THE_RECORD"/>
+  <int value="3" label="MATCH_CSD_WHITELIST"/>
+  <int value="4" label="TOO_MANY_REPORTS"/>
+  <int value="5" label="UNSUPPORTED_MIME_TYPE"/>
+  <int value="6" label="NO_DATABASE_MANAGER"/>
+  <int value="7" label="KILLSWITCH"/>
+  <int value="8" label="CANCEL"/>
+  <int value="9" label="RESULT_FROM_CACHE"/>
+  <int value="10" label="NOT_HTTP_URL"/>
+</enum>
+
 <enum name="SBClientDownloadCheckDownloadStats" type="int">
   <int value="0" label="INVALID_URL"/>
   <int value="1" label="SB_DISABLED"/>
@@ -38789,15 +38830,6 @@ other types of suffix sets.
   <int value="5" label="MODEL_PARSE_ERROR"/>
   <int value="6" label="MODEL_MISSING_FIELDS"/>
   <int value="7" label="MODEL_INVALID_VERSION_NUMBER"/>
-</enum>
-
-<enum name="SBClientPhishingPreClassificationCheckFail" type="int">
-  <int value="0" label="PROXY_FETCH"/>
-  <int value="1" label="PRIVATE_IP"/>
-  <int value="2" label="OFF_THE_RECORD"/>
-  <int value="3" label="MATCH_CSD_WHITELIST"/>
-  <int value="4" label="TOO_MANY_REPORTS"/>
-  <int value="5" label="UNSUPPORTED_MIME_TYPE"/>
 </enum>
 
 <enum name="SBClientPhishingScorerCreationStatus" type="int">

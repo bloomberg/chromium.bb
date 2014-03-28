@@ -472,25 +472,22 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportMalwareRequest) {
                                  net::URLRequestStatus::FAILED);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
-  // server blacklist decision is false, and response is succesful
+  // Server blacklist decision is false, and response is successful
   response.set_blacklist(false);
   SetClientReportMalwareResponse(response.SerializeAsString(), net::HTTP_OK,
                                  net::URLRequestStatus::SUCCESS);
   EXPECT_FALSE(SendClientReportMalwareRequest(url));
 
-  // Check that we have recorded all 4 requests within the correct time range.
+  // Check that we have recorded all 5 requests within the correct time range.
   base::Time after = base::Time::Now();
   std::queue<base::Time>& report_times = GetMalwareReportTimes();
-  EXPECT_EQ(4U, report_times.size());
+  EXPECT_EQ(5U, report_times.size());
 
-  // Another normal behavior will fail because of the limit is hit
-  response.set_blacklist(true);
-  SetClientReportMalwareResponse(response.SerializeAsString(), net::HTTP_OK,
-                                 net::URLRequestStatus::SUCCESS);
-  EXPECT_FALSE(SendClientReportMalwareRequest(url));
+  // Check that the malware report limit was reached.
+  EXPECT_TRUE(csd_service_->OverMalwareReportLimit());
 
   report_times = GetMalwareReportTimes();
-  EXPECT_EQ(4U, report_times.size());
+  EXPECT_EQ(5U, report_times.size());
   while (!report_times.empty()) {
     base::Time time = report_times.back();
     report_times.pop();

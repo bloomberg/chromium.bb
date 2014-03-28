@@ -58,6 +58,9 @@ struct IPUrlInfo {
 typedef std::map<std::string, std::vector<IPUrlInfo> > IPUrlMap;
 
 struct BrowseInfo {
+  // The URL we're currently browsing.
+  GURL url;
+
   // List of IPv4 and IPv6 addresses from which content was requested
   // together with the hosts on it, while browsing to the |url|.
   IPUrlMap ips;
@@ -77,6 +80,9 @@ struct BrowseInfo {
 
   // The HTTP status code from this navigation.
   int http_status_code;
+
+  // The page ID of the navigation.  This comes from FrameNavigateParams.
+  int32 page_id;
 
   BrowseInfo();
   ~BrowseInfo();
