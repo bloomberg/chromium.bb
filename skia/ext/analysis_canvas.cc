@@ -40,7 +40,7 @@ bool IsSolidColorPaint(const SkPaint& paint) {
 // Returns true if the specified drawn_rect will cover the entire canvas, and
 // that the canvas is not clipped (i.e. it covers ALL of the canvas).
 bool IsFullQuad(SkCanvas* canvas, const SkRect& drawn_rect) {
-  if (SkCanvas::kRect_ClipType != canvas->getClipType())
+  if (!canvas->isClipRect())
     return false;
 
   SkIRect clip_irect;
