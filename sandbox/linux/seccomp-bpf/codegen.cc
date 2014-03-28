@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "base/logging.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 
 namespace {
@@ -432,6 +433,10 @@ static int PointerCompare(const BasicBlock* block1,
   // We compare the sequence of instructions in both basic blocks.
   const Instructions& insns1 = block1->instructions;
   const Instructions& insns2 = block2->instructions;
+  // Basic blocks should never be empty.
+  CHECK(!insns1.empty());
+  CHECK(!insns2.empty());
+
   Instructions::const_iterator iter1 = insns1.begin();
   Instructions::const_iterator iter2 = insns2.begin();
   for (;; ++iter1, ++iter2) {
@@ -439,7 +444,26 @@ static int PointerCompare(const BasicBlock* block1,
     // both basic blocks, we know the relative ordering between the two blocks
     // and can return.
     if (iter1 == insns1.end()) {
-      return iter2 == insns2.end() ? 0 : -1;
+      if (iter2 == insns2.end()) {
+        // If the two blocks are the same length (and have elementwise-equal
+        // code and k fields, which is the only way we can reach this point),
+        // and the last instruction isn't a JMP or a RET, then we must compare
+        // their successors.
+        Instruction* const insns1_last = insns1.back();
+        Instruction* const insns2_last = insns2.back();
+        if (BPF_CLASS(insns1_last->code) != BPF_JMP &&
+            BPF_CLASS(insns1_last->code) != BPF_RET) {
+          // Non jumping instructions will always have a valid next instruction.
+          CHECK(insns1_last->next);
+          CHECK(insns2_last->next);
+          return PointerCompare(blocks.find(insns1_last->next)->second,
+                                blocks.find(insns2_last->next)->second,
+                                blocks);
+        } else {
+          return 0;
+        }
+      }
+      return -1;
     } else if (iter2 == insns2.end()) {
       return 1;
     }

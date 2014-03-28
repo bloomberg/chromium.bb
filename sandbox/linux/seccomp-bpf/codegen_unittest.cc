@@ -143,12 +143,108 @@ Instruction *SampleProgramComplex(CodeGen *codegen, int *flags) {
   return insn6;
 }
 
+Instruction* SampleProgramConfusingTails(CodeGen* codegen, int* flags) {
+  // This simple program demonstrates https://crbug.com/351103/
+  // The two "LOAD 0" instructions are blocks of their own. MergeTails() could
+  // be tempted to merge them since they are the same. However, they are
+  // not mergeable because they fall-through to non semantically equivalent
+  // blocks.
+  // Without the fix for this bug, this program should trigger the check in
+  // CompileAndCompare: the serialized graphs from the program and its compiled
+  // version will differ.
+  //
+  //  0) LOAD 1  // ???
+  //  1) if A == 0x1; then JMP 2 else JMP 3
+  //  2) LOAD 0  // System call number
+  //  3) if A == 0x2; then JMP 4 else JMP 5
+  //  4) LOAD 0  // System call number
+  //  5) if A == 0x1; then JMP 6 else JMP 7
+  //  6) RET 0x50000  // errno = 0
+  //  7) RET 0x50001  // errno = 1
+  *flags = NO_FLAGS;
+
+  Instruction* i7 = codegen->MakeInstruction(BPF_RET, ErrorCode(1));
+  Instruction* i6 = codegen->MakeInstruction(BPF_RET, ErrorCode(0));
+  Instruction* i5 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
+  Instruction* i4 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
+  Instruction* i3 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
+  Instruction* i2 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i3);
+  Instruction* i1 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
+  Instruction* i0 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
+
+  return i0;
+}
+
+Instruction* SampleProgramConfusingTailsBasic(CodeGen* codegen, int* flags) {
+  // Without the fix for https://crbug.com/351103/, (see
+  // SampleProgramConfusingTails()), this would generate a cyclic graph and
+  // crash as the two "LOAD 0" instructions would get merged.
+  //
+  // 0) LOAD 1  // ???
+  // 1) if A == 0x1; then JMP 2 else JMP 3
+  // 2) LOAD 0  // System call number
+  // 3) if A == 0x2; then JMP 4 else JMP 5
+  // 4) LOAD 0  // System call number
+  // 5) RET 0x50001  // errno = 1
+  *flags = NO_FLAGS;
+
+  Instruction* i5 = codegen->MakeInstruction(BPF_RET, ErrorCode(1));
+  Instruction* i4 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
+  Instruction* i3 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
+  Instruction* i2 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i3);
+  Instruction* i1 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
+  Instruction* i0 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
+
+  return i0;
+}
+
+Instruction* SampleProgramConfusingTailsMergeable(CodeGen* codegen,
+                                                  int* flags) {
+  // This is similar to SampleProgramConfusingTails(), except that
+  // instructions 2 and 4 are now RET instructions.
+  // In PointerCompare(), this exercises the path where two blocks are of the
+  // same length and identical and the last instruction is a JMP or RET, so the
+  // following blocks don't need to be looked at and the blocks are mergeable.
+  //
+  // 0) LOAD 1  // ???
+  // 1) if A == 0x1; then JMP 2 else JMP 3
+  // 2) RET 0x5002a  // errno = 42
+  // 3) if A == 0x2; then JMP 4 else JMP 5
+  // 4) RET 0x5002a  // errno = 42
+  // 5) if A == 0x1; then JMP 6 else JMP 7
+  // 6) RET 0x50000  // errno = 0
+  // 7) RET 0x50001  // errno = 1
+  *flags = HAS_MERGEABLE_TAILS;
+
+  Instruction* i7 = codegen->MakeInstruction(BPF_RET, ErrorCode(1));
+  Instruction* i6 = codegen->MakeInstruction(BPF_RET, ErrorCode(0));
+  Instruction* i5 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
+  Instruction* i4 = codegen->MakeInstruction(BPF_RET, ErrorCode(42));
+  Instruction* i3 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
+  Instruction* i2 = codegen->MakeInstruction(BPF_RET, ErrorCode(42));
+  Instruction* i1 =
+      codegen->MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
+  Instruction* i0 = codegen->MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
+
+  return i0;
+}
+
 void ForAllPrograms(void (*test)(CodeGenUnittestHelper *, Instruction *, int)){
   Instruction *(*function_table[])(CodeGen *codegen, int *flags) = {
     SampleProgramOneInstruction,
     SampleProgramSimpleBranch,
     SampleProgramAtypicalBranch,
     SampleProgramComplex,
+    SampleProgramConfusingTails,
+    SampleProgramConfusingTailsBasic,
+    SampleProgramConfusingTailsMergeable,
   };
 
   for (size_t i = 0; i < arraysize(function_table); ++i) {
