@@ -727,16 +727,20 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     OpenSpecialTypes,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
-                      TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive"),
                       TestParameter(IN_GUEST_MODE, "zipOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDownloads")));
 // http://crbug.com/348008
 // DISABLED           TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
+
+INSTANTIATE_TEST_CASE_P(
+    OpenAudioFiles,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive")));
 
 INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
