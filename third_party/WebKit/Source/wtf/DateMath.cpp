@@ -454,7 +454,7 @@ double calculateDSTOffset(double ms, double utcOffset)
 
 void initializeDates()
 {
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     static bool alreadyInitialized;
     ASSERT(!alreadyInitialized);
     alreadyInitialized = true;

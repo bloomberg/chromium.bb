@@ -39,7 +39,7 @@ protected:
         : m_refCount(1)
 #if SECURITY_ASSERT_ENABLED
         , m_deletionHasBegun(false)
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
         , m_inRemovedLastRefFunction(false)
         , m_adoptionIsRequired(true)
 #endif
@@ -93,7 +93,7 @@ private:
 #if SECURITY_ASSERT_ENABLED
 public:
     bool m_deletionHasBegun;
-#if !ASSERT_DISABLED
+#if ASSERT_ENABLED
     bool m_inRemovedLastRefFunction;
 
 private:
