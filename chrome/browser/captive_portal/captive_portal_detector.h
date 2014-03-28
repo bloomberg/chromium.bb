@@ -44,6 +44,7 @@ class CaptivePortalDetector : public net::URLFetcherDelegate,
     Result result;
     int response_code;
     base::TimeDelta retry_after_delta;
+    GURL landing_url;
   };
 
   typedef base::Callback<void(const Results& results)> DetectionCallback;

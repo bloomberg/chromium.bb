@@ -1796,6 +1796,11 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CaptivePortal.DetectResult" enum="CaptivePortalDetectResult">
+  <owner>meacer@chromium.org</owner>
+  <summary>Records the result of a captive portal probe.</summary>
+</histogram>
+
 <histogram name="CaptivePortal.Notification.Status"
     enum="CaptivePortalNotificationStatus">
   <owner>ygorshenin@chromium.org</owner>
@@ -30041,6 +30046,14 @@ other types of suffix sets.
   <int value="1" label="webkit-3d"/>
   <int value="2" label="experimental-webgl"/>
   <int value="3" label="webgl"/>
+</enum>
+
+<enum name="CaptivePortalDetectResult" type="int">
+  <int value="0" label="INTERNET_CONNECTED"/>
+  <int value="1" label="NO_RESPONSE"/>
+  <int value="2" label="BEHIND_CAPTIVE_PORTAL"/>
+  <int value="3" label="NO_RESPONSE_HTTPS_LANDING_URL"/>
+  <int value="4" label="BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL"/>
 </enum>
 
 <enum name="CaptivePortalNotificationStatus" type="int">

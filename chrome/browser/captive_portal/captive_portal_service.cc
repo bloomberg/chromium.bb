@@ -27,6 +27,22 @@ namespace captive_portal {
 
 namespace {
 
+// Make sure this enum is in sync with CaptivePortalDetectionResult enum
+// in histograms.xml. This enum is append-only, don't modify existing values.
+enum CaptivePortalDetectionResult {
+  // There's a confirmed connection to the Internet.
+  DETECTION_RESULT_INTERNET_CONNECTED,
+  // Received a network or HTTP error, or a non-HTTP response.
+  DETECTION_RESULT_NO_RESPONSE,
+  // Encountered a captive portal with a non-HTTPS landing URL.
+  DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL,
+  // Received a network or HTTP error with an HTTPS landing URL.
+  DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL,
+  // Encountered a captive portal with an HTTPS landing URL.
+  DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL,
+  DETECTION_RESULT_COUNT
+};
+
 // Records histograms relating to how often captive portal detection attempts
 // ended with |result| in a row, and for how long |result| was the last result
 // of a detection attempt.  Recorded both on quit and on a new Result.
@@ -67,6 +83,26 @@ void RecordRepeatHistograms(Result result,
           50,  // bucket_count
           base::Histogram::kUmaTargetedHistogramFlag);
   result_duration_histogram->AddTime(result_duration);
+}
+
+int GetHistogramEntryForDetectionResult(
+    const CaptivePortalDetector::Results& results) {
+  bool is_https = results.landing_url.SchemeIs("https");
+  switch (results.result) {
+    case RESULT_INTERNET_CONNECTED:
+      return DETECTION_RESULT_INTERNET_CONNECTED;
+    case RESULT_NO_RESPONSE:
+      return is_https ?
+          DETECTION_RESULT_NO_RESPONSE_HTTPS_LANDING_URL :
+          DETECTION_RESULT_NO_RESPONSE;
+    case RESULT_BEHIND_CAPTIVE_PORTAL:
+      return is_https ?
+          DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL_HTTPS_LANDING_URL :
+          DETECTION_RESULT_BEHIND_CAPTIVE_PORTAL;
+    default:
+      NOTREACHED();
+      return -1;
+  }
 }
 
 bool ShouldDeferToNativeCaptivePortalDetection() {
@@ -210,8 +246,8 @@ void CaptivePortalService::OnPortalDetectionCompleted(
 
   // Record histograms.
   UMA_HISTOGRAM_ENUMERATION("CaptivePortal.DetectResult",
-                            result,
-                            RESULT_COUNT);
+                            GetHistogramEntryForDetectionResult(results),
+                            DETECTION_RESULT_COUNT);
 
   // If this isn't the first captive portal result, record stats.
   if (!last_check_time_.is_null()) {
