@@ -79,14 +79,14 @@ public:
     v8::Local<v8::Object> createWrapperFromCache(const WrapperTypeInfo* type)
     {
         UnsafePersistent<v8::Object> boilerplate = m_wrapperBoilerplates.get(type);
-        return !boilerplate.isEmpty() ? boilerplate.newLocal(v8::Isolate::GetCurrent())->Clone() : createWrapperFromCacheSlowCase(type);
+        return !boilerplate.isEmpty() ? boilerplate.newLocal(m_isolate)->Clone() : createWrapperFromCacheSlowCase(type);
     }
 
     v8::Local<v8::Function> constructorForType(const WrapperTypeInfo* type)
     {
         UnsafePersistent<v8::Function> function = m_constructorMap.get(type);
         if (!function.isEmpty())
-            return function.newLocal(v8::Isolate::GetCurrent());
+            return function.newLocal(m_isolate);
         return constructorForTypeSlowCase(type);
     }
 
