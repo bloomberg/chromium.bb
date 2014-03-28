@@ -30,6 +30,7 @@ class DeployCommand(cros.CrosCommand):
   EPILOG = """
 To deploy packages:
   cros deploy device power_manager cherrypy
+  cros deploy device /path/to/package
 
 To uninstall packages:
   cros deploy --unmerge cherrypy
@@ -65,7 +66,8 @@ For more information of cros build usage:
     parser.add_argument(
         'device', help='IP[:port] address of the target device.')
     parser.add_argument(
-        'packages', help='Packages to install.', nargs='+')
+        'packages', help='Packages to install. You can specify the package '
+        'name or the path to the binary package.', nargs='+')
     parser.add_argument(
         '--board', default=None, help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
@@ -152,7 +154,11 @@ For more information of cros build usage:
       root: The installation root of |pkg|.
       extra_args: Extra arguments to pass to emerge.
     """
-    latest_pkg = self.GetLatestPackage(board, pkg)
+    if os.path.isfile(pkg):
+      latest_pkg = pkg
+    else:
+      latest_pkg = self.GetLatestPackage(board, pkg)
+
     if not latest_pkg:
       cros_build_lib.Die('Missing package %s.' % pkg)
 
@@ -171,6 +177,7 @@ For more information of cros build usage:
 
     logging.info('Installing %s...', latest_pkg)
     pkg_path = os.path.join(pkg_dir, pkg_name)
+
     # We set PORTAGE_CONFIGROOT to '/usr/local' because by default all
     # chromeos-base packages will be skipped due to the configuration
     # in /etc/protage/make.profile/package.provided. However, there is
