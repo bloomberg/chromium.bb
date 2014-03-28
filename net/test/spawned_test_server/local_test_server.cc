@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -126,6 +127,10 @@ bool LocalTestServer::Stop() {
 
 #if defined(OS_WIN)
   // This kills all the processes in the job object.
+  TerminateJobObject(job_handle_.Get(), 1);
+  // This is done asynchronously so wait a bit for the processes to be killed.
+  WaitForSingleObject(job_handle_.Get(),
+                      TestTimeouts::action_timeout().InMilliseconds());
   job_handle_.Close();
 #endif
 
