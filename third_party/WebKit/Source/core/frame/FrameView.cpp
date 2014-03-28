@@ -1649,11 +1649,8 @@ void FrameView::scrollPositionChanged()
     m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
 
     if (RenderView* renderView = document->renderView()) {
-        if (renderView->usesCompositing()) {
-            // https://code.google.com/p/chromium/issues/detail?id=343767
-            DisableCompositingQueryAsserts disabler;
+        if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidScroll();
-        }
     }
 
     if (m_didScrollTimer.isActive())
