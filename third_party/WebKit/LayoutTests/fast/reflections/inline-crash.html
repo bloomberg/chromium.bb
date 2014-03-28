@@ -1,20 +1,13 @@
+<script src="../../resources/run-after-display.js"></script>
 <script>
-    onload = function()
-    {
-        if (window.testRunner) {
-            testRunner.waitUntilDone();
-            testRunner.display();
-        }
-        setTimeout(changeColor, 0);
-    }
-
-    changeColor = function()
-    {
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    runAfterDisplay(function() {
         var span = document.getElementById("span");
         getSelection().setBaseAndExtent(span, 0, span, 1);
         if (window.testRunner)
             testRunner.notifyDone();
-    }
+    });
 </script>
 <p>
     Test for <i><a href="https://bugs.webkit.org/show_bug.cgi?id=19525">https://bugs.webkit.org/show_bug.cgi?id=19525</a>

@@ -17,22 +17,20 @@ body {
 }
 
 </style>
+<script src="../../resources/run-after-display.js"></script>
 <script>
 function test()
 {
     if (window.testRunner) {
         testRunner.waitUntilDone();
         testRunner.dumpAsTextWithPixelResults();
-        testRunner.display();
     }
-
-    window.setTimeout(function() {
+    runAfterDisplay(function() {
         document.body.scrollTop = 2000;
         if (window.testRunner) {
-            testRunner.display();
             testRunner.notifyDone();
         }
-    }, 0);
+    });
 }
 </script>
 </head>

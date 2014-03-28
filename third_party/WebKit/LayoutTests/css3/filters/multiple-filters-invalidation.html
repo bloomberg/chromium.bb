@@ -14,17 +14,19 @@ html {
 <body>
 <div id="rect"></div>
 </body>
+<script src="../../resources/run-after-display.js"></script>
 <script>
 function changeBackground() {
     document.getElementById("rect").style.background = "green";
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
 }
 
 if (window.testRunner) {
     testRunner.dumpAsTextWithPixelResults();
-    testRunner.display();
-    changeBackground();
-} else 
-    window.setTimeout(changeBackground, 250);
-
+    testRunner.waitUntilDone();
+}
+runAfterDisplay(changeBackground);
 </script>
 </html>

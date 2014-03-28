@@ -4,15 +4,13 @@
         <div id="inner" style="width: 100px; height: 100px; background-color: green;"></div>
     </div>
 </div>
+<script src="../../resources/run-after-display.js"></script>
 <script>
-    function test()
-    {
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    runAfterDisplay(function() {
         document.getElementById("inner").style.visibility = "visible";
-    }
-    if (window.testRunner) {
-        document.body.offsetTop;
-        testRunner.display();
-        test();
-    } else
-        setTimeout(test, 0);
+        if (window.testRunner)
+            testRunner.notifyDone();
+    });
 </script>
