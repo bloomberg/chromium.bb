@@ -332,6 +332,13 @@ public:
         PrefixedAllowFullscreenAttribute = 315,
         XHRProgressEventPosition = 316,
         XHRProgressEventTotalSize = 317,
+        PrefixedDocumentIsFullscreen = 318,
+        PrefixedDocumentFullScreenKeyboardInputAllowed = 319,
+        PrefixedDocumentCurrentFullScreenElement = 320,
+        PrefixedDocumentCancelFullScreen = 321,
+        PrefixedDocumentFullscreenEnabled = 322,
+        PrefixedDocumentFullscreenElement = 323,
+        PrefixedDocumentExitFullscreen = 324,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

@@ -21,13 +21,13 @@
 
 partial interface Document {
     // Mozilla version
-    readonly attribute boolean webkitIsFullScreen;
-    readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
-    readonly attribute Element webkitCurrentFullScreenElement;
-    void webkitCancelFullScreen();
+    [MeasureAs=PrefixedDocumentIsFullscreen] readonly attribute boolean webkitIsFullScreen;
+    [MeasureAs=PrefixedDocumentFullScreenKeyboardInputAllowed] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
+    [MeasureAs=PrefixedDocumentCurrentFullScreenElement] readonly attribute Element webkitCurrentFullScreenElement;
+    [MeasureAs=PrefixedDocumentCancelFullScreen] void webkitCancelFullScreen();
 
     // W3C version
-    readonly attribute boolean webkitFullscreenEnabled;
-    readonly attribute Element webkitFullscreenElement;
-    void webkitExitFullscreen();
+    [MeasureAs=PrefixedDocumentFullscreenEnabled] readonly attribute boolean webkitFullscreenEnabled;
+    [MeasureAs=PrefixedDocumentFullscreenElement] readonly attribute Element webkitFullscreenElement;
+    [MeasureAs=PrefixedDocumentExitFullscreen] void webkitExitFullscreen();
 };
