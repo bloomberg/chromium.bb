@@ -83,21 +83,21 @@ static bool MaybePrintResultsForVideoReceive(
                          "pixels", false);
   EXPECT_TRUE(pc_dict.GetString(
       Statistic("googCaptureJitterMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_capture_jitter_ms", value,
+  perf_test::PrintResult("video_recv", "", "goog_capture_jitter_ms", value,
                          "ms", false);
   EXPECT_TRUE(pc_dict.GetString(
       Statistic("googCaptureQueueDelayMsPerS", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_capture_queue_delay_ms_per_s",
+  perf_test::PrintResult("video_recv", "", "goog_capture_queue_delay_ms_per_s",
                          value, "ms/s", false);
   EXPECT_TRUE(pc_dict.GetString(
       Statistic("googEncodeUsagePercent", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_encode_usage_percent",
+  perf_test::PrintResult("video_recv", "", "goog_encode_usage_percent",
                          value, "%", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googAvgEncodeMs", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_avg_encode_ms", value, "ms",
+  perf_test::PrintResult("video_recv", "", "goog_avg_encode_ms", value, "ms",
                          false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
-  perf_test::PrintResult("video_send", "", "goog_rtt", value, "ms", false);
+  perf_test::PrintResult("video_recv", "", "goog_rtt", value, "ms", false);
   return true;
 }
 
