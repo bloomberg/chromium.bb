@@ -46,11 +46,8 @@ public:
         ForceUpdate,
     };
 
-    void updateRecursive(RenderLayer&, UpdateType);
-    void rebuildTree(RenderLayer&, UpdateType, GraphicsLayerVector& childLayersOfEnclosingLayer);
-
-private:
-    UpdateType update(RenderLayer&, UpdateType);
+    void update(RenderLayer&, UpdateType);
+    void rebuildTree(RenderLayer&, GraphicsLayerVector& childLayersOfEnclosingLayer);
 };
 
 } // namespace WebCore
