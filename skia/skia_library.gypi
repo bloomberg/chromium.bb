@@ -70,6 +70,7 @@
     '../third_party/skia/include/utils/mac/SkCGUtils.h',
     '../third_party/skia/include/utils/SkDeferredCanvas.h',
     '../third_party/skia/include/utils/SkMatrix44.h',
+    '../third_party/skia/include/utils/SkNoSaveLayerCanvas.h',
     '../third_party/skia/src/utils/debugger/SkDebugCanvas.cpp',
     '../third_party/skia/src/utils/debugger/SkDebugCanvas.h',
     '../third_party/skia/src/utils/debugger/SkDrawCommand.cpp',
