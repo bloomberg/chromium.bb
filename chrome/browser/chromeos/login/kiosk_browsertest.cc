@@ -589,7 +589,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, LaunchAppNetworkDown) {
 }
 
 // TODO(zelidrag): Figure out why this test is flaky on bbots.
-IN_PROC_BROWSER_TEST_F(KioskTest, FLAKY_LaunchAppWithNetworkConfigAccelerator) {
+IN_PROC_BROWSER_TEST_F(KioskTest,
+                       DISABLED_LaunchAppWithNetworkConfigAccelerator) {
   ScopedCanConfigureNetwork can_configure_network(true, false);
 
   // Start app launch and wait for network connectivity timeout.
