@@ -551,6 +551,7 @@ bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int valueID, const
         if ((valueID >= CSSValueCheckbox && valueID <= CSSValueTextarea) || valueID == CSSValueNone)
             return true;
         break;
+    case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
         if (valueID == CSSValueVisible || valueID == CSSValueHidden)
             return true;
@@ -784,6 +785,7 @@ bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyTouchActionDelay:
     case CSSPropertyVisibility:
     case CSSPropertyWebkitAppearance:
+    case CSSPropertyBackfaceVisibility:
     case CSSPropertyWebkitBackfaceVisibility:
     case CSSPropertyWebkitBorderAfterStyle:
     case CSSPropertyWebkitBorderBeforeStyle:
