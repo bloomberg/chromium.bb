@@ -61,9 +61,9 @@ public:
     virtual double currentTime() const OVERRIDE;
     virtual void setCurrentTime(double, ExceptionState&) OVERRIDE;
 
-    virtual bool paused() const OVERRIDE { return m_paused; }
-    virtual void play() OVERRIDE;
-    virtual void pause() OVERRIDE;
+    bool paused() const { return m_paused; }
+    void play();
+    void pause();
     void unpause();
 
     double defaultPlaybackRate() const { return m_defaultPlaybackRate; }
@@ -85,8 +85,6 @@ public:
     const AtomicString& playbackState() const;
 
     virtual bool hasAudio() const OVERRIDE;
-
-    virtual bool canPlay() const OVERRIDE;
 
     bool isRestrained() const;
     bool isBlocked() const;

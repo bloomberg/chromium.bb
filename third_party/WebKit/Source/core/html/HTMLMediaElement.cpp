@@ -2181,14 +2181,15 @@ void HTMLMediaElement::scheduleTimeupdateEvent(bool periodicEvent)
     }
 }
 
-bool HTMLMediaElement::canPlay() const
+bool HTMLMediaElement::togglePlayStateWillPlay() const
 {
-    return paused() || ended() || m_readyState < HAVE_METADATA;
+    if (m_mediaController)
+        return m_mediaController->paused() || m_mediaController->isRestrained();
+    return paused();
 }
 
 void HTMLMediaElement::togglePlayState()
 {
-    ASSERT(controls());
     // The activation behavior of a media element that is exposing a user interface to the user
     if (m_mediaController) {
         if (m_mediaController->isRestrained())

@@ -596,18 +596,6 @@ bool MediaController::hasAudio() const
     return false;
 }
 
-bool MediaController::canPlay() const
-{
-    if (m_paused)
-        return true;
-
-    for (size_t index = 0; index < m_mediaElements.size(); ++index) {
-        if (!m_mediaElements[index]->canPlay())
-            return false;
-    }
-    return true;
-}
-
 const AtomicString& MediaController::interfaceName() const
 {
     return EventTargetNames::MediaController;

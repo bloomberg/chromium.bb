@@ -126,7 +126,7 @@ public:
     virtual double currentTime() const OVERRIDE FINAL;
     virtual void setCurrentTime(double, ExceptionState&) OVERRIDE FINAL;
     virtual double duration() const OVERRIDE FINAL;
-    virtual bool paused() const OVERRIDE FINAL;
+    bool paused() const;
     double defaultPlaybackRate() const;
     void setDefaultPlaybackRate(double);
     double playbackRate() const;
@@ -138,8 +138,8 @@ public:
     bool autoplay() const;
     bool loop() const;
     void setLoop(bool b);
-    virtual void play() OVERRIDE FINAL;
-    virtual void pause() OVERRIDE FINAL;
+    void play();
+    void pause();
 
     // statistics
     unsigned webkitAudioDecodedByteCount() const;
@@ -157,8 +157,9 @@ public:
     virtual bool muted() const OVERRIDE FINAL;
     virtual void setMuted(bool) OVERRIDE FINAL;
 
-    virtual bool canPlay() const OVERRIDE FINAL;
-
+    // play/pause toggling that uses the media controller if present. togglePlayStateWillPlay() is
+    // true if togglePlayState() will call play() or unpause() on the media element or controller.
+    bool togglePlayStateWillPlay() const;
     void togglePlayState();
 
     PassRefPtr<TextTrack> addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState&);

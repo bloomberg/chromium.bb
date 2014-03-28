@@ -237,10 +237,7 @@ PassRefPtr<MediaControlPlayButtonElement> MediaControlPlayButtonElement::create(
 void MediaControlPlayButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        if (mediaControllerInterface().canPlay())
-            mediaControllerInterface().play();
-        else
-            mediaControllerInterface().pause();
+        mediaElement().togglePlayState();
         updateDisplayType();
         event->setDefaultHandled();
     }
@@ -249,7 +246,7 @@ void MediaControlPlayButtonElement::defaultEventHandler(Event* event)
 
 void MediaControlPlayButtonElement::updateDisplayType()
 {
-    setDisplayType(mediaControllerInterface().canPlay() ? MediaPlayButton : MediaPauseButton);
+    setDisplayType(mediaElement().togglePlayStateWillPlay() ? MediaPlayButton : MediaPauseButton);
 }
 
 const AtomicString& MediaControlPlayButtonElement::shadowPseudoId() const
@@ -275,8 +272,8 @@ PassRefPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlayPlayButtonEl
 
 void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
 {
-    if (event->type() == EventTypeNames::click && mediaControllerInterface().canPlay()) {
-        mediaControllerInterface().play();
+    if (event->type() == EventTypeNames::click && mediaElement().togglePlayStateWillPlay()) {
+        mediaElement().togglePlayState();
         updateDisplayType();
         event->setDefaultHandled();
     }
@@ -285,7 +282,7 @@ void MediaControlOverlayPlayButtonElement::defaultEventHandler(Event* event)
 
 void MediaControlOverlayPlayButtonElement::updateDisplayType()
 {
-    if (mediaControllerInterface().canPlay()) {
+    if (mediaElement().togglePlayStateWillPlay()) {
         show();
     } else
         hide();

@@ -273,9 +273,9 @@ void MediaControls::updatePlayState()
 
 void MediaControls::beginScrubbing()
 {
-    if (!mediaControllerInterface().paused()) {
+    if (!mediaElement().togglePlayStateWillPlay()) {
         m_isPausedForScrubbing = true;
-        mediaControllerInterface().pause();
+        mediaElement().togglePlayState();
     }
 }
 
@@ -283,8 +283,8 @@ void MediaControls::endScrubbing()
 {
     if (m_isPausedForScrubbing) {
         m_isPausedForScrubbing = false;
-        if (mediaControllerInterface().paused())
-            mediaControllerInterface().play();
+        if (mediaElement().togglePlayStateWillPlay())
+            mediaElement().togglePlayState();
     }
 }
 
@@ -360,7 +360,7 @@ void MediaControls::defaultEventHandler(Event* event)
     if (event->type() == EventTypeNames::mouseover) {
         if (!containsRelatedTarget(event)) {
             m_isMouseOverControls = true;
-            if (!mediaControllerInterface().canPlay()) {
+            if (!mediaElement().togglePlayStateWillPlay()) {
                 makeOpaque();
                 if (shouldHideFullscreenControls())
                     startHideFullscreenControlsTimer();
@@ -391,7 +391,7 @@ void MediaControls::defaultEventHandler(Event* event)
 
 void MediaControls::hideFullscreenControlsTimerFired(Timer<MediaControls>*)
 {
-    if (mediaControllerInterface().paused())
+    if (mediaElement().togglePlayStateWillPlay())
         return;
 
     if (!m_isFullscreen)
