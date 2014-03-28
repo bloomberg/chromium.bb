@@ -166,7 +166,7 @@ function WebViewInternal(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
   this.browserPluginNode = this.createBrowserPluginNode();
-  var shadowRoot = this.webviewNode.webkitCreateShadowRoot();
+  var shadowRoot = this.webviewNode.createShadowRoot();
   shadowRoot.appendChild(this.browserPluginNode);
 
   this.setupWebviewNodeAttributes();

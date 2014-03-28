@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 exports.didCreateDocumentElement = function() {
-  var root = document.documentElement.webkitCreateShadowRoot();
+  var root = document.documentElement.createShadowRoot();
   root.appendChild(document.createElement('style')).innerText =
       // TODO(jeremya): switch this to use automatic inlining once grit
       // supports inlining into JS. See http://crbug.com/146319.

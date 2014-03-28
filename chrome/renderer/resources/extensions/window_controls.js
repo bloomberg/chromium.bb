@@ -40,7 +40,7 @@ WindowControls.prototype.createShadowRoot_ = function(node) {
     template = WindowControls.prototype.template_element;
   }
   // Create shadow root element with template clone as first child.
-  var shadowRoot = node.webkitCreateShadowRoot();
+  var shadowRoot = node.createShadowRoot();
   shadowRoot.appendChild(template.content.cloneNode(true));
   return shadowRoot;
 }

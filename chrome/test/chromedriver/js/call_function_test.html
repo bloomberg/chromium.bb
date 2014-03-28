@@ -165,7 +165,7 @@ function testCallFunctionWithShadowHost() {
 
   // Set up something in the shadow DOM.
   var host = document.body.appendChild(document.createElement('div'));
-  var root = host.webkitCreateShadowRoot();
+  var root = host.createShadowRoot();
   var shadowDiv = root.appendChild(document.createElement('div'));
 
   function func(element) {
@@ -187,7 +187,7 @@ function testCallFunctionWithShadowRoot() {
 
   // Set up something in the shadow DOM.
   var host = document.body.appendChild(document.createElement('div'));
-  var root = host.webkitCreateShadowRoot();
+  var root = host.createShadowRoot();
   var shadowDiv = root.appendChild(document.createElement('div'));
 
   function func(element) {
@@ -215,7 +215,7 @@ function testCacheWithShadowDomAttached() {
   
   // Set up something in the shadow DOM.
   var host = document.body.appendChild(document.createElement('div'));
-  var root = host.webkitCreateShadowRoot();
+  var root = host.createShadowRoot();
   var shadowDiv = root.appendChild(document.createElement('div'));
   
   // Test with attached element in shadow DOM.
@@ -241,7 +241,7 @@ function testCacheWithShadowDomDetachedChild() {
 
   // Set up something in the shadow DOM.
   var host = document.body.appendChild(document.createElement('div'));
-  var root = host.webkitCreateShadowRoot();
+  var root = host.createShadowRoot();
   var shadowDiv = root.appendChild(document.createElement('div'));
 
   // Test with detached element in shadow DOM.

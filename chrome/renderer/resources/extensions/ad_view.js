@@ -101,7 +101,7 @@ function getAdNetworkInfo(name) {
 function AdView(adviewNode) {
   this.adviewNode_ = adviewNode;
   this.browserPluginNode_ = this.createBrowserPluginNode_();
-  var shadowRoot = this.adviewNode_.webkitCreateShadowRoot();
+  var shadowRoot = this.adviewNode_.createShadowRoot();
   shadowRoot.appendChild(this.browserPluginNode_);
 
   this.setupCustomAttributes_();
