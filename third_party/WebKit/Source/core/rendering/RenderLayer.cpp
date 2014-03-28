@@ -724,13 +724,7 @@ void RenderLayer::setHasVisibleContent()
     m_hasVisibleContent = true;
     m_visibleContentStatusDirty = false;
 
-    {
-        // FIXME: We can remove this code once we remove the recursive tree
-        // walk inside updateGraphicsLayerGeometry.
-        DisableCompositingQueryAsserts disabler;
-        if (RenderLayer* compositingLayer = enclosingCompositingLayer())
-            compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
-    }
+    setNeedsToUpdateAncestorDependentProperties();
 
     repainter().computeRepaintRects(renderer()->containerForRepaint());
     if (!m_stackingNode->isNormalFlowOnly()) {
@@ -867,7 +861,7 @@ void RenderLayer::updateDescendantDependentFlags()
     }
 
     if (m_visibleContentStatusDirty) {
-        bool previouslyHasVisibleCOntent = m_hasVisibleContent;
+        bool previouslyHasVisibleContent = m_hasVisibleContent;
         if (renderer()->style()->visibility() == VISIBLE)
             m_hasVisibleContent = true;
         else {
@@ -898,11 +892,8 @@ void RenderLayer::updateDescendantDependentFlags()
 
         // FIXME: We can remove this code once we remove the recursive tree
         // walk inside updateGraphicsLayerGeometry.
-        if (hasVisibleContent() != previouslyHasVisibleCOntent) {
-            DisableCompositingQueryAsserts disabler;
-            if (RenderLayer* compositingLayer = enclosingCompositingLayer())
-                compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
-        }
+        if (hasVisibleContent() != previouslyHasVisibleContent)
+            setNeedsToUpdateAncestorDependentProperties();
     }
 }
 
@@ -3984,10 +3975,6 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
     // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
     // https://code.google.com/p/chromium/issues/detail?id=343756
     DisableCompositingQueryAsserts disabler;
-
-    // FIXME: Move this work to CompositingPropertyUpdater::updateAncestorDependentProperties.
-    if (RenderLayer* compositingLayer = enclosingCompositingLayer())
-        compositingLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
 
     const RenderStyle* newStyle = renderer()->style();
 

@@ -485,7 +485,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
 
         {
             TRACE_EVENT0("blink_rendering", "CompositingPropertyUpdater::updateAncestorDependentProperties");
-            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, m_pendingPropertyUpdateType);
+            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, m_pendingPropertyUpdateType, 0);
             m_pendingPropertyUpdateType = CompositingPropertyUpdater::DoNotForceUpdate;
 #if !ASSERT_DISABLED
             CompositingPropertyUpdater::assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(updateRoot);
@@ -526,6 +526,10 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
     if (needGeometryUpdate || needHierarchyAndGeometryUpdate) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater().update(*updateRoot, updateType);
+#if !ASSERT_DISABLED
+        // FIXME: Move this check to the end of the compositing update.
+        GraphicsLayerUpdater::assertNeedsToUpdateGeometryBitsCleared(*updateRoot);
+#endif
     }
 
     if (needHierarchyAndGeometryUpdate) {

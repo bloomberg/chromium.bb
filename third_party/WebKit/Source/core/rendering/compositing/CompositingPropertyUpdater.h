@@ -21,7 +21,7 @@ public:
         ForceUpdate,
     };
 
-    void updateAncestorDependentProperties(RenderLayer*, UpdateType = DoNotForceUpdate);
+    void updateAncestorDependentProperties(RenderLayer*, UpdateType, RenderLayer* enclosingCompositedLayer);
 
 #if !ASSERT_DISABLED
     static void assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(RenderLayer*);

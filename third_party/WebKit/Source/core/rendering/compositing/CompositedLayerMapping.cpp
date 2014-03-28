@@ -661,7 +661,7 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
 
     if (!m_needToUpdateGeometry && updateType != GraphicsLayerUpdater::ForceUpdate)
         return updateType;
-    m_needToUpdateGeometry = false;
+
     if (m_needToUpdateGeometryOfAllDecendants)
         updateType = GraphicsLayerUpdater::ForceUpdate;
 
@@ -1839,13 +1839,10 @@ void CompositedLayerMapping::setNeedsGeometryUpdate()
     m_needToUpdateGeometryOfAllDecendants = true;
 
     for (RenderLayer* current = &m_owningLayer; current; current = current->ancestorCompositingLayer()) {
-        // FIXME: We should be able to return early from this function once we
-        // find a CompositedLayerMapping that has m_needToUpdateGeometry set.
-        // However, we can't do that until we remove the incremental compositing
-        // updates because they can clear m_needToUpdateGeometry without walking
-        // the whole tree.
         ASSERT(current->hasCompositedLayerMapping());
         CompositedLayerMappingPtr mapping = current->compositedLayerMapping();
+        if (mapping->m_needToUpdateGeometry)
+            return;
         mapping->m_needToUpdateGeometry = true;
     }
 }
@@ -1855,6 +1852,16 @@ void CompositedLayerMapping::clearNeedsGeometryUpdate()
     m_needToUpdateGeometry = false;
     m_needToUpdateGeometryOfAllDecendants = false;
 }
+
+#if !ASSERT_DISABLED
+
+void CompositedLayerMapping::assertNeedsToUpdateGeometryBitsCleared()
+{
+    ASSERT(!m_needToUpdateGeometry);
+    ASSERT(!m_needToUpdateGeometryOfAllDecendants);
+}
+
+#endif
 
 struct SetContentsNeedsDisplayFunctor {
     void operator() (GraphicsLayer* layer) const

@@ -151,4 +151,17 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType)
         update(*child, updateType);
 }
 
+#if !ASSERT_DISABLED
+
+void GraphicsLayerUpdater::assertNeedsToUpdateGeometryBitsCleared(RenderLayer& layer)
+{
+    if (layer.hasCompositedLayerMapping())
+        layer.compositedLayerMapping()->assertNeedsToUpdateGeometryBitsCleared();
+
+    for (RenderLayer* child = layer.firstChild(); child; child = child->nextSibling())
+        assertNeedsToUpdateGeometryBitsCleared(*child);
+}
+
+#endif
+
 } // namespace WebCore

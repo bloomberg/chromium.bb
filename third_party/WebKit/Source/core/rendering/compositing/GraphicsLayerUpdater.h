@@ -48,6 +48,10 @@ public:
 
     void update(RenderLayer&, UpdateType);
     void rebuildTree(RenderLayer&, GraphicsLayerVector& childLayersOfEnclosingLayer);
+
+#if !ASSERT_DISABLED
+    static void assertNeedsToUpdateGeometryBitsCleared(RenderLayer&);
+#endif
 };
 
 } // namespace WebCore

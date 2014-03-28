@@ -6,6 +6,7 @@
 #include "core/rendering/compositing/CompositingPropertyUpdater.h"
 
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/compositing/CompositedLayerMapping.h"
 
 namespace WebCore {
 
@@ -19,15 +20,21 @@ CompositingPropertyUpdater::~CompositingPropertyUpdater()
 {
 }
 
-void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* layer, UpdateType updateType)
+void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* layer, UpdateType updateType, RenderLayer* enclosingCompositedLayer)
 {
     if (!layer->childNeedsToUpdateAncestorDependantProperties() && updateType != ForceUpdate)
         return;
 
     m_geometryMap.pushMappingsToAncestor(layer, layer->parent());
 
-    if (layer->needsToUpdateAncestorDependentProperties())
+    if (layer->hasCompositedLayerMapping())
+        enclosingCompositedLayer = layer;
+
+    if (layer->needsToUpdateAncestorDependentProperties()) {
+        if (enclosingCompositedLayer)
+            enclosingCompositedLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
         updateType = ForceUpdate;
+    }
 
     if (updateType == ForceUpdate) {
         RenderLayer::AncestorDependentProperties properties;
@@ -48,7 +55,7 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
     }
 
     for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling())
-        updateAncestorDependentProperties(child, updateType);
+        updateAncestorDependentProperties(child, updateType, enclosingCompositedLayer);
 
     m_geometryMap.popMappingsToAncestor(layer->parent());
 

@@ -199,6 +199,9 @@ public:
 
     void setNeedsGeometryUpdate();
     void clearNeedsGeometryUpdate();
+#if !ASSERT_DISABLED
+    void assertNeedsToUpdateGeometryBitsCleared();
+#endif
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
