@@ -321,7 +321,7 @@
 										<key>GID</key>
 										<integer>0</integer>
 										<key>PATH</key>
-										<string>PreferencePanes/org.chromium.chromoting.prefPane</string>
+										<string>PreferencePanes/@@PREFPANE_BUNDLE_NAME@@</string>
 										<key>PATH_TYPE</key>
 										<integer>1</integer>
 										<key>PERMISSIONS</key>
@@ -404,7 +404,7 @@
 										<key>GID</key>
 										<integer>0</integer>
 										<key>PATH</key>
-										<string>PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app</string>
+										<string>PrivilegedHelperTools/@@HOST_BUNDLE_NAME@@</string>
 										<key>PATH_TYPE</key>
 										<integer>1</integer>
 										<key>PERMISSIONS</key>

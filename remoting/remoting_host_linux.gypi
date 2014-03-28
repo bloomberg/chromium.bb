@@ -13,7 +13,8 @@
           '<!(echo <(deb_filename) | sed -e "s/.deb$/.changes/")',
           '<(PRODUCT_DIR)/remoting_me2me_host.debug',
           '<(PRODUCT_DIR)/remoting_start_host.debug',
-          '<(PRODUCT_DIR)/remoting_native_messaging_host.debug',
+          '<(PRODUCT_DIR)/native_messaging_host.debug',
+          '<(PRODUCT_DIR)/remote_assistance_host.debug',
         ]
       },
       'targets': [

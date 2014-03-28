@@ -34,12 +34,12 @@ register_hosts() {
 
   install_manifest \
      "${SRC_DIR}/remoting/host/setup/${ME2ME_HOST_NAME}.json.jinja2" \
-     "${build_dir}/remoting_native_messaging_host" \
+     "${build_dir}/native_messaging_host" \
      ME2ME_HOST_PATH "${chrome_data_dir}"
 
   install_manifest \
      "${SRC_DIR}/remoting/host/it2me/${IT2ME_HOST_NAME}.json.jinja2" \
-     "${build_dir}/remoting_it2me_native_messaging_host" \
+     "${build_dir}/remote_assistance_host" \
      IT2ME_HOST_PATH "${chrome_data_dir}"
 }
 

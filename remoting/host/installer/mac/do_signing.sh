@@ -30,26 +30,36 @@ setup() {
 
   # Individually load the properties for this build. Don't 'source' the file
   # to guard against code accidentally being added to the props file.
-  HOST_UNINSTALLER_NAME=$(read_property "HOST_UNINSTALLER_NAME")
-  HOST_PKG=$(read_property "HOST_PKG")
   DMG_VOLUME_NAME=$(read_property "DMG_VOLUME_NAME")
   DMG_FILE_NAME=$(read_property "DMG_FILE_NAME")
+  HOST_BUNDLE_NAME=$(read_property "HOST_BUNDLE_NAME")
+  HOST_PKG=$(read_property "HOST_PKG")
+  HOST_UNINSTALLER_NAME=$(read_property "HOST_UNINSTALLER_NAME")
+  NATIVE_MESSAGING_HOST_BUNDLE_NAME=$(read_property\
+    "NATIVE_MESSAGING_HOST_BUNDLE_NAME")
+  PREFPANE_BUNDLE_NAME=$(read_property "PREFPANE_BUNDLE_NAME")
+  REMOTE_ASSISTANCE_HOST_BUNDLE_NAME=$(read_property\
+    "REMOTE_ASSISTANCE_HOST_BUNDLE_NAME")
 
   # Binaries to sign.
-  ME2ME_HOST='PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app'
-  ME2ME_NM_HOST="${ME2ME_HOST}/Contents/MacOS/native_messaging_host"
-  IT2ME_NM_HOST="${ME2ME_HOST}/Contents/MacOS/remote_assistance_host"
+  ME2ME_HOST="PrivilegedHelperTools/${HOST_BUNDLE_NAME}"
+  ME2ME_NM_HOST="PrivilegedHelperTools/${HOST_BUNDLE_NAME}/Contents/MacOS/"`
+                `"${NATIVE_MESSAGING_HOST_BUNDLE_NAME}/Contents/MacOS/"`
+                `"native_messaging_host"
+  IT2ME_NM_HOST="PrivilegedHelperTools/${HOST_BUNDLE_NAME}/Contents/MacOS/"`
+                `"${REMOTE_ASSISTANCE_HOST_BUNDLE_NAME}/Contents/MacOS/"`
+                `"remote_assistance_host"
   UNINSTALLER="Applications/${HOST_UNINSTALLER_NAME}.app"
-  PREFPANE='PreferencePanes/org.chromium.chromoting.prefPane'
+  PREFPANE="PreferencePanes/${PREFPANE_BUNDLE_NAME}"
 
   # The Chromoting Host installer is a meta-package that consists of 3
   # components:
   #  * Chromoting Host Service package
   #  * Chromoting Host Uninstaller package
   #  * Keystone package (GoogleSoftwareUpdate - for Official builds only)
-  PKGPROJ_HOST='ChromotingHost.pkgproj'
-  PKGPROJ_HOST_SERVICE='ChromotingHostService.pkgproj'
-  PKGPROJ_HOST_UNINSTALLER='ChromotingHostUninstaller.pkgproj'
+  PKGPROJ_HOST="ChromotingHost.pkgproj"
+  PKGPROJ_HOST_SERVICE="ChromotingHostService.pkgproj"
+  PKGPROJ_HOST_UNINSTALLER="ChromotingHostUninstaller.pkgproj"
 
   # Final (user-visible) pkg name.
   PKG_FINAL="${HOST_PKG}.pkg"
@@ -93,7 +103,7 @@ shell_safe_path() {
 read_property() {
   local property="${1}"
   local filename="${PROPS_FILENAME}"
-  echo `grep "${property}" "${filename}" | tail -n 1 | cut -d "=" -f2-`
+  echo `grep "\<${property}\>=" "${filename}" | tail -n 1 | cut -d "=" -f2-`
 }
 
 verify_clean_dir() {

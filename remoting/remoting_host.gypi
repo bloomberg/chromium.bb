@@ -576,10 +576,13 @@
             }],
             [ 'OS == "mac"', {
               'variables': {
+                'me2me_host_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_NAME@")',
+                'native_messaging_host_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_NATIVE_MESSAGING_HOST_BUNDLE_NAME@")',
+                'remote_assistance_host_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_REMOTE_ASSISTANCE_HOST_BUNDLE_NAME@")',
                 'me2me_host_path':
-                    '/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/native_messaging_host',
+                    '/Library/PrivilegedHelperTools/<(me2me_host_bundle_name)/Contents/MacOS/<(native_messaging_host_bundle_name)/Contents/MacOS/native_messaging_host',
                 'it2me_host_path':
-                    '/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me_host.app/Contents/MacOS/remote_assistance_host',
+                    '/Library/PrivilegedHelperTools/<(me2me_host_bundle_name)/Contents/MacOS/<(remote_assistance_host_bundle_name)/Contents/MacOS/remote_assistance_host',
               },
             }],
             [ 'OS != "mac" and OS != "win"', {
@@ -628,6 +631,8 @@
             'host/remoting_me2me_host-InfoPlist.strings.jinja2',
             'host/mac/me2me_preference_pane-InfoPlist.strings.jinja2',
             'host/installer/mac/uninstaller/remoting_uninstaller-InfoPlist.strings.jinja2',
+            'host/setup/native_messaging_host-InfoPlist.strings.jinja2',
+            'host/it2me/remote_assistance_host-InfoPlist.strings.jinja2',
           ],
           'rules': [{
             'rule_name': 'generate_strings',
@@ -751,13 +756,18 @@
         {
           'target_name': 'remoting_me2me_native_messaging_host',
           'type': 'executable',
-          'product_name': 'remoting_native_messaging_host',
+          'product_name': 'native_messaging_host',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
+            'remoting_breakpad',
             'remoting_host',
             'remoting_host_setup_base',
+            'remoting_infoplist_strings',
             'remoting_native_messaging_base',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
           ],
           'sources': [
             'host/setup/me2me_native_messaging_host.cc',
@@ -773,11 +783,68 @@
                 '../base/allocator/allocator.gyp:allocator',
               ],
             }],
+            ['OS=="mac"', {
+              'mac_bundle': 1,
+              'variables': {
+                 'host_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_NATIVE_MESSAGING_HOST_BUNDLE_ID@")',
+              },
+              'xcode_settings': {
+                'INFOPLIST_FILE': 'host/setup/native_messaging_host-Info.plist',
+                'INFOPLIST_PREPROCESS': 'YES',
+                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
+              },
+              'mac_bundle_resources': [
+                'host/setup/native_messaging_host-Info.plist',
+                '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
+
+                # Localized strings for 'Info.plist'
+                '<!@pymod_do_main(remoting_localize --locale_output '
+                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/native_messaging_host-InfoPlist.strings/@{json_suffix}.lproj/InfoPlist.strings" '
+                    '--print_only <(remoting_locales))',
+              ],
+              'mac_bundle_resources!': [
+                'host/setup/native_messaging_host-Info.plist',
+              ],
+              'conditions': [
+                ['mac_breakpad==1', {
+                  'variables': {
+                    # A real .dSYM is needed for dump_syms to operate on.
+                    'mac_real_dsym': 1,
+                  },
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                      'files': [
+                        '<(PRODUCT_DIR)/crash_inspector',
+                        '<(PRODUCT_DIR)/crash_report_sender.app'
+                      ],
+                    },
+                  ],
+                  'dependencies': [
+                    '../breakpad/breakpad.gyp:dump_syms',
+                  ],
+                  'postbuilds': [
+                    {
+                      'postbuild_name': 'Dump Symbols',
+                      'variables': {
+                        'dump_product_syms_path':
+                            'scripts/mac/dump_product_syms',
+                      },
+                      'action': [
+                        '<(dump_product_syms_path)',
+                        '<(version_full)',
+                      ],
+                    },  # end of postbuild 'dump_symbols'
+                  ],  # end of 'postbuilds'
+                }],  # mac_breakpad==1
+              ],  # conditions
+            }],  # OS=mac
           ],
         },  # end of target 'remoting_me2me_native_messaging_host'
         {
           'target_name': 'remoting_it2me_native_messaging_host',
           'type': 'executable',
+          'product_name': 'remote_assistance_host',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
@@ -787,6 +854,9 @@
             'remoting_it2me_host_static',
             'remoting_native_messaging_base',
             'remoting_protocol',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
           ],
           'sources': [
             'host/it2me/it2me_native_messaging_host_entry_point.cc',
@@ -806,6 +876,63 @@
                 '../base/allocator/allocator.gyp:allocator',
               ],
             }],
+            ['OS=="mac"', {
+              'mac_bundle': 1,
+              'variables': {
+                 'host_bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_REMOTE_ASSISTANCE_HOST_BUNDLE_ID@")',
+              },
+              'xcode_settings': {
+                'INFOPLIST_FILE': 'host/it2me/remote_assistance_host-Info.plist',
+                'INFOPLIST_PREPROCESS': 'YES',
+                'INFOPLIST_PREPROCESSOR_DEFINITIONS': 'VERSION_FULL="<(version_full)" VERSION_SHORT="<(version_short)" BUNDLE_ID="<(host_bundle_id)"',
+              },
+              'mac_bundle_resources': [
+                '<(PRODUCT_DIR)/icudtl.dat',
+                'host/it2me/remote_assistance_host-Info.plist',
+                '<!@pymod_do_main(remoting_copy_locales -o -p <(OS) -x <(PRODUCT_DIR) <(remoting_locales))',
+
+                # Localized strings for 'Info.plist'
+                '<!@pymod_do_main(remoting_localize --locale_output '
+                    '"<(SHARED_INTERMEDIATE_DIR)/remoting/remote_assistance_host-InfoPlist.strings/@{json_suffix}.lproj/InfoPlist.strings" '
+                    '--print_only <(remoting_locales))',
+              ],
+              'mac_bundle_resources!': [
+                'host/it2me/remote_assistance_host-Info.plist',
+              ],
+              'conditions': [
+                ['mac_breakpad==1', {
+                  'variables': {
+                    # A real .dSYM is needed for dump_syms to operate on.
+                    'mac_real_dsym': 1,
+                  },
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Resources',
+                      'files': [
+                        '<(PRODUCT_DIR)/crash_inspector',
+                        '<(PRODUCT_DIR)/crash_report_sender.app'
+                      ],
+                    },
+                  ],
+                  'dependencies': [
+                    '../breakpad/breakpad.gyp:dump_syms',
+                  ],
+                  'postbuilds': [
+                    {
+                      'postbuild_name': 'Dump Symbols',
+                      'variables': {
+                        'dump_product_syms_path':
+                            'scripts/mac/dump_product_syms',
+                      },
+                      'action': [
+                        '<(dump_product_syms_path)',
+                        '<(version_full)',
+                      ],
+                    },  # end of postbuild 'dump_symbols'
+                  ],  # end of 'postbuilds'
+                }],  # mac_breakpad==1
+              ],  # conditions
+            }],  # OS=mac
           ],
         },  # end of target 'remoting_it2me_native_messaging_host'
       ],  # end of 'targets'
