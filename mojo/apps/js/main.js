@@ -6,7 +6,7 @@ define([
     'console',
     'monotonic_clock',
     'timer',
-    'mojo/public/bindings/js/connection',
+    'mojo/public/bindings/js/connector',
     'mojo/bindings/js/core',
     'mojo/apps/js/bindings/gl',
     'mojo/apps/js/bindings/threading',
@@ -15,7 +15,7 @@ define([
 ], function(console,
             monotonicClock,
             timer,
-            connection,
+            connector,
             core,
             gljs,
             threading,
@@ -281,8 +281,8 @@ define([
 
     var pipe = new core.createMessagePipe();
     this.shell_.connect('mojo:mojo_native_viewport_service', pipe.handle1);
-    new connection.Connection(pipe.handle0, NativeViewportClientImpl,
-                              nativeViewport.NativeViewportProxy);
+    new connector.Connection(pipe.handle0, NativeViewportClientImpl,
+                             nativeViewport.NativeViewportProxy);
   }
   // TODO(aa): It is a bummer to need this stub object in JavaScript. We should
   // have a 'client' object that contains both the sending and receiving bits of
@@ -390,6 +390,6 @@ define([
 
 
   return function(handle) {
-    new connection.Connection(handle, SampleApp, shell.ShellProxy);
+    new connector.Connection(handle, SampleApp, shell.ShellProxy);
   };
 });

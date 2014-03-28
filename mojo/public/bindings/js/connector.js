@@ -10,12 +10,9 @@ define("mojo/public/bindings/js/connector", [
 
   function Connector(handle) {
     this.handle_ = handle;
-    this.dropWrites_ = false;
     this.error_ = false;
     this.incomingReceiver_ = null;
     this.readWaitCookie_ = null;
-
-    this.waitToReadMore_();
   }
 
   Connector.prototype.close = function() {
@@ -32,44 +29,28 @@ define("mojo/public/bindings/js/connector", [
   Connector.prototype.accept = function(message) {
     if (this.error_)
       return false;
-
-    if (this.dropWrites_)
-      return true;
-
-    var result = core.writeMessage(this.handle_,
-                                   message.memory,
-                                   message.handles,
-                                   core.WRITE_MESSAGE_FLAG_NONE);
-
-    switch (result) {
-      case core.RESULT_OK:
-        // The handles were successfully transferred, so we don't own them
-        // anymore.
-        message.handles = [];
-        break;
-      case core.RESULT_FAILED_PRECONDITION:
-        // There's no point in continuing to write to this pipe since the other
-        // end is gone. Avoid writing any future messages. Hide write failures
-        // from the caller since we'd like them to continue consuming any
-        // backlog of incoming messages before regarding the message pipe as
-        // closed.
-        this.dropWrites_ = true;
-        break;
-      default:
-        // This particular write was rejected, presumably because of bad input.
-        // The pipe is not necessarily in a bad state.
-        return false;
-    }
-    return true;
+    this.write_(message);
+    return !this.error_;
   };
 
   Connector.prototype.setIncomingReceiver = function(receiver) {
     this.incomingReceiver_ = receiver;
+    if (this.incomingReceiver_)
+      this.waitToReadMore_();
   };
 
-  Connector.prototype.encounteredError = function() {
-    return this.error_;
-  }
+  Connector.prototype.write_ = function(message) {
+    var result = core.writeMessage(this.handle_,
+                                   message.memory,
+                                   message.handles,
+                                   core.WRITE_MESSAGE_FLAG_NONE);
+    if (result != core.RESULT_OK) {
+      this.error_ = true
+      return;
+    }
+    // The handles were successfully transferred, so we don't own them anymore.
+    message.handles = [];
+  };
 
   Connector.prototype.waitToReadMore_ = function() {
     this.readWaitCookie_ = support.asyncWait(this.handle_,
@@ -92,12 +73,25 @@ define("mojo/public/bindings/js/connector", [
       // TODO(abarth): Should core.readMessage return a Uint8Array?
       var memory = new Uint8Array(read.buffer);
       var message = new codec.Message(memory, read.handles);
-      if (this.incomingReceiver_)
-        this.incomingReceiver_.accept(message);
+      this.incomingReceiver_.accept(message);
     }
   };
 
+  function Connection(handle, localFactory, remoteFactory) {
+    this.connector_ = new Connector(handle);
+    this.remote = new remoteFactory(this.connector_);
+    this.local = new localFactory(this.remote);
+    this.connector_.setIncomingReceiver(this.local);
+  }
+
+  Connection.prototype.close = function() {
+    this.connector_.close();
+    this.connector_ = null;
+    this.local = null;
+    this.remote = null;
+  };
+
   var exports = {};
-  exports.Connector = Connector;
+  exports.Connection = Connection;
   return exports;
 });
