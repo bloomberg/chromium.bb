@@ -47,10 +47,10 @@ namespace {
 
 const char kTestUser[] = "test_user@test.com";
 
+#if !defined(OS_CHROMEOS)
 // Utility function to test that GetStatusLabelsForSyncGlobalError returns
 // the correct results for the given states.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
-                                 const SigninManagerBase& signin,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
                                  bool is_error) {
@@ -62,11 +62,12 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
 
   base::string16 label1, label2, label3;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      service, signin, &label1, &label2, &label3);
+      service, &label1, &label2, &label3);
   EXPECT_EQ(label1.empty(), !is_error);
   EXPECT_EQ(label2.empty(), !is_error);
   EXPECT_EQ(label3.empty(), !is_error);
 }
+#endif
 
 } // namespace
 
@@ -76,13 +77,13 @@ class SyncUIUtilTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
+#if !defined(OS_CHROMEOS)
 // Test that GetStatusLabelsForSyncGlobalError returns an error if a
 // passphrase is required.
 TEST_F(SyncUIUtilTest, PassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  FakeSigninManagerBase signin(profile.get());
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
@@ -91,8 +92,10 @@ TEST_F(SyncUIUtilTest, PassphraseGlobalError) {
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
               .WillRepeatedly(Return(true));
 
-  VerifySyncGlobalErrorResult(
-      &service, signin, GoogleServiceAuthError::NONE, true, true);
+  VerifySyncGlobalErrorResult(&service,
+                              GoogleServiceAuthError::NONE,
+                              true /* signed in */,
+                              true /* error */);
 }
 
 // Test that GetStatusLabelsForSyncGlobalError returns an error if a
@@ -101,7 +104,6 @@ TEST_F(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  FakeSigninManagerBase signin(profile.get());
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
@@ -118,7 +120,7 @@ TEST_F(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
   EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
   base::string16 menu_label, label2, label3;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      &service, signin, &menu_label, &label2, &label3);
+      &service, &menu_label, &label2, &label3);
   // Make sure we are still displaying the passphrase error badge (don't show
   // auth errors through SyncUIUtil).
   EXPECT_EQ(menu_label, l10n_util::GetStringUTF16(
@@ -152,10 +154,17 @@ TEST_F(SyncUIUtilTest, AuthStateGlobalError) {
 
   FakeSigninManagerBase signin(profile.get());
   for (size_t i = 0; i < arraysize(table); ++i) {
-    VerifySyncGlobalErrorResult(&service, signin, table[i], true, false);
-    VerifySyncGlobalErrorResult(&service, signin, table[i], false, false);
+    VerifySyncGlobalErrorResult(&service,
+                                table[i],
+                                true /* signed in */,
+                                false /* no error */);
+    VerifySyncGlobalErrorResult(&service,
+                                table[i],
+                                false /* not signed in */,
+                                false /* no error */);
   }
 }
+#endif
 
 // TODO(tim): This shouldn't be required. r194857 removed the
 // AuthInProgress override from FakeSigninManager, which meant this test started

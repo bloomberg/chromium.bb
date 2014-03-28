@@ -111,11 +111,11 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   profile_manager->RegisterTestingProfile(profile, true, false);
-  browser_ = new Browser(Browser::CreateParams(
-      profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
   ProfileSyncServiceMock* service = static_cast<ProfileSyncServiceMock*>(
       ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
       profile, &ProfileSyncServiceMock::BuildMockProfileSyncService));
+  browser_ = new Browser(Browser::CreateParams(
+      profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSyncSessionsV2)) {

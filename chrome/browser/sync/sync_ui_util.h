@@ -48,12 +48,13 @@ MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
 
 // Gets various labels for the sync global error based on the sync error state.
 // |menu_item_label|, |bubble_message|, and |bubble_accept_label| must not be
-// NULL.
-void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
-                                       const SigninManagerBase& signin,
+// NULL. Note that we don't use SyncGlobalError on Chrome OS.
+#if !defined(OS_CHROMEOS)
+void GetStatusLabelsForSyncGlobalError(const ProfileSyncService* service,
                                        base::string16* menu_item_label,
                                        base::string16* bubble_message,
                                        base::string16* bubble_accept_label);
+#endif
 
 MessageType GetStatus(ProfileSyncService* service,
                       const SigninManagerBase& signin);

@@ -12306,11 +12306,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
         Sign-in Error
       </message>
-      <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view.">
+      <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view/notification.">
         Sync Error
       </message>
-      <message name="IDS_SIGNIN_ERROR_NOTIFICATION_TITLE_MULTIPROFILE" desc="Title in the sign-in error notification when multiple users are logged in.">
-        Sign-in Error: <ph name="USER_NAME">$1<ex>foo@example.com</ex></ph>
+      <message name="IDS_SYNC_NOTIFICATION_ACCEPT" desc="A button label shown in the sync error notification when the passphrase needs to be updated.">
+        Update sync passphrase
       </message>
 
       <if expr="not use_titlecase">
@@ -12324,7 +12324,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Sync Error: Update Sync passphrase...
         </message>
         <if expr="chromeos">
-          <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign out and sign in again to Chrome OS.">
+          <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view/notification when the user needs to sign out and sign in again to Chrome OS.">
             Sign out then sign in again...
           </message>
           <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign out and sign in again to Chrome OS.">

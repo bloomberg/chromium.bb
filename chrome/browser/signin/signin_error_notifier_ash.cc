@@ -16,6 +16,7 @@
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -163,17 +164,22 @@ void SigninErrorNotifier::OnErrorChanged() {
   SigninNotificationDelegate* delegate =
       new SigninNotificationDelegate(notification_id_, profile_);
 
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::SYSTEM_COMPONENT,
+      kProfileSigninNotificationId);
+
+  // Set |profile_id| for multi-user notification blocker.
+  notifier_id.profile_id = multi_user_util::GetUserIDFromProfile(profile_);
+
   Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       GURL(notification_id_),
-      GetMessageTitle(),
+      l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE),
       GetMessageBody(),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_ALERT),
       blink::WebTextDirectionDefault,
-      message_center::NotifierId(
-          message_center::NotifierId::SYSTEM_COMPONENT,
-          ash::system_notifier::kNotifierAuthError),
+      notifier_id,
       base::string16(),  // display_source
       base::ASCIIToUTF16(notification_id_),
       data,
@@ -184,19 +190,6 @@ void SigninErrorNotifier::OnErrorChanged() {
     notification_ui_manager->Update(notification, profile_);
   else
     notification_ui_manager->Add(notification, profile_);
-}
-
-base::string16 SigninErrorNotifier::GetMessageTitle() const {
-  if (ash::Shell::HasInstance() &&
-      ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
-    // Include the account id in the message text to differentiate between
-    // profiles.
-    return l10n_util::GetStringFUTF16(
-        IDS_SIGNIN_ERROR_NOTIFICATION_TITLE_MULTIPROFILE,
-        base::ASCIIToUTF16(error_controller_->error_account_id()));
-  }
-
-  return l10n_util::GetStringUTF16(IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE);
 }
 
 base::string16 SigninErrorNotifier::GetMessageBody() const {

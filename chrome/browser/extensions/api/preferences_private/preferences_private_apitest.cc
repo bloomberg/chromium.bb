@@ -122,12 +122,13 @@ class PreferencesPrivateApiTest : public ExtensionApiTest {
 
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     profile_manager->RegisterTestingProfile(profile, true, false);
-    browser_ = new Browser(Browser::CreateParams(
-        profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
 
     service_ = static_cast<FakeProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile, &FakeProfileSyncService::BuildFakeProfileSyncService));
+
+    browser_ = new Browser(Browser::CreateParams(
+        profile, chrome::HOST_DESKTOP_TYPE_NATIVE));
   }
 
   // Calls GetSyncCategoriesWithoutPassphraseFunction and verifies that the

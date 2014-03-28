@@ -22,7 +22,6 @@ const char* kAlwaysShownNotifierIds[] = {
 };
 
 const char* kAshSystemNotifiers[] = {
-  kNotifierAuthError,
   kNotifierDisplay,
   kNotifierDisplayResolutionChange,
   kNotifierDisplayError,
@@ -55,7 +54,6 @@ bool MatchSystemNotifierId(const message_center::NotifierId& notifier_id,
 
 }  // namespace
 
-const char kNotifierAuthError[] = "ash.auth.error";
 const char kNotifierBluetooth[] = "ash.bluetooth";
 const char kNotifierDisplay[] = "ash.display";
 const char kNotifierDisplayResolutionChange[] = "ash.display.resolution-change";

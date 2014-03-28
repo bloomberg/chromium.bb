@@ -6,7 +6,6 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -21,16 +20,26 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SyncGlobalError::SyncGlobalError(ProfileSyncService* service,
-                                 SigninManagerBase* signin)
-    : service_(service),
-      signin_(signin) {
+SyncGlobalError::SyncGlobalError(SyncErrorController* error_controller,
+                                 ProfileSyncService* profile_sync_service)
+    : error_controller_(error_controller),
+      service_(profile_sync_service) {
   DCHECK(service_);
-  DCHECK(signin_);
-  OnStateChanged();
+  error_controller_->AddObserver(this);
+  GlobalErrorServiceFactory::GetForProfile(service_->profile())->
+      AddGlobalError(this);
 }
 
 SyncGlobalError::~SyncGlobalError() {
+  DCHECK(!error_controller_)
+      << "SigninGlobalError::Shutdown() was not called";
+}
+
+void SyncGlobalError::Shutdown() {
+  GlobalErrorServiceFactory::GetForProfile(service_->profile())->
+      RemoveGlobalError(this);
+  error_controller_->RemoveObserver(this);
+  error_controller_ = NULL;
 }
 
 bool SyncGlobalError::HasMenuItem() {
@@ -87,12 +96,12 @@ void SyncGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
   NOTREACHED();
 }
 
-void SyncGlobalError::OnStateChanged() {
+void SyncGlobalError::OnErrorChanged() {
   base::string16 menu_label;
   base::string16 bubble_message;
   base::string16 bubble_accept_label;
   sync_ui_util::GetStatusLabelsForSyncGlobalError(
-      service_, *signin_, &menu_label, &bubble_message, &bubble_accept_label);
+      service_, &menu_label, &bubble_message, &bubble_accept_label);
 
   // All the labels should be empty or all of them non-empty.
   DCHECK((menu_label.empty() && bubble_message.empty() &&

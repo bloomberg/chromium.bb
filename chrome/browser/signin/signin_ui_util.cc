@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_global_error.h"
+#include "chrome/browser/sync/sync_global_error_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -39,9 +40,8 @@ GlobalError* GetSignedInServiceError(Profile* profile) {
 
 std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
   std::vector<GlobalError*> errors;
-
-  // On Chrome OS, we don't use SigninGlobalError. Other platforms use
-  // SigninGlobalError to show sign-in errors in the toolbar menu.
+  // Chrome OS doesn't use SigninGlobalError or SyncGlobalError. Other platforms
+  // may use these services to show auth and sync errors in the toolbar menu.
 #if !defined(OS_CHROMEOS)
   // Auth errors have the highest priority - after that, individual service
   // errors.
@@ -49,18 +49,16 @@ std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
       SigninGlobalErrorFactory::GetForProfile(profile);
   if (signin_error && signin_error->HasMenuItem())
     errors.push_back(signin_error);
-#endif
 
   // No auth error - now try other services. Currently the list is just hard-
   // coded but in the future if we add more we can create some kind of
   // registration framework.
   if (profile->IsSyncAccessible()) {
-    ProfileSyncService* service =
-        ProfileSyncServiceFactory::GetForProfile(profile);
-    SyncGlobalError* error = service->sync_global_error();
+    SyncGlobalError* error = SyncGlobalErrorFactory::GetForProfile(profile);
     if (error && error->HasMenuItem())
       errors.push_back(error);
   }
+#endif
 
   return errors;
 }

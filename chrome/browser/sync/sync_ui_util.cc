@@ -341,8 +341,8 @@ MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
       service, signin, status_label, link_label);
 }
 
-void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
-                                       const SigninManagerBase& signin,
+#if !defined(OS_CHROMEOS)
+void GetStatusLabelsForSyncGlobalError(const ProfileSyncService* service,
                                        base::string16* menu_label,
                                        base::string16* bubble_message,
                                        base::string16* bubble_accept_label) {
@@ -370,6 +370,7 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
     return;
   }
 }
+#endif
 
 MessageType GetStatus(
     ProfileSyncService* service, const SigninManagerBase& signin) {

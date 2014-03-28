@@ -29,7 +29,6 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   virtual void OnErrorChanged() OVERRIDE;
 
  private:
-  base::string16 GetMessageTitle() const;
   base::string16 GetMessageBody() const;
 
   // The error controller to query for error details.

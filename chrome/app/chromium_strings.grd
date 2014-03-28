@@ -950,7 +950,7 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
       <if expr="chromeos">
-        <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">
+        <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error notification when the user needs to update their sync passphrase.">
           Chromium OS could not sync your data. Please update your Sync passphrase.
         </message>
         <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error notification when the user's sign-in credentials are out of date.">

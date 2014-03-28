@@ -52,7 +52,7 @@ class ManagedUserSigninManagerWrapper;
 class Profile;
 class ProfileOAuth2TokenService;
 class ProfileSyncComponentsFactory;
-class SyncGlobalError;
+class SyncErrorController;
 
 namespace browser_sync {
 class BackendMigrator;
@@ -653,7 +653,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // the user about them any more.
   void AcknowledgeSyncedTypes();
 
-  SyncGlobalError* sync_global_error() { return sync_global_error_.get(); }
+  SyncErrorController* sync_error_controller() {
+    return sync_error_controller_.get();
+  }
 
   // TODO(sync): This is only used in tests.  Can we remove it?
   const browser_sync::FailedDataTypesHandler& failed_data_types_handler() const;
@@ -948,8 +950,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // an action set on it.
   syncer::SyncProtocolError last_actionable_error_;
 
-  // This is used to show sync errors in the wrench menu.
-  scoped_ptr<SyncGlobalError> sync_global_error_;
+  // Exposes sync errors to the UI.
+  scoped_ptr<SyncErrorController> sync_error_controller_;
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
