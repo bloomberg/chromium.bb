@@ -57,10 +57,6 @@ const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 const char kAshEnableAlternateFrameCaptionButtonStyle[] =
     "ash-enable-alternate-caption-button";
 
-// Always enable brightness control. Used by machines that don't report their
-// main monitor as internal.
-const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
-
 #if defined(OS_CHROMEOS)
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =

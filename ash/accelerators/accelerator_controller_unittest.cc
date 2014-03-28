@@ -754,18 +754,6 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   const ui::Accelerator brightness_down(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
   const ui::Accelerator brightness_up(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
   {
-    EXPECT_FALSE(ProcessWithContext(brightness_down));
-    EXPECT_FALSE(ProcessWithContext(brightness_up));
-    DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(true);
-    GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_FALSE(ProcessWithContext(brightness_down));
-    EXPECT_FALSE(ProcessWithContext(brightness_up));
-  }
-  // Enable internal display.
-  EnableInternalDisplay();
-  {
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate(false);
     GetController()->SetBrightnessControlDelegate(
@@ -1167,19 +1155,6 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   const ui::Accelerator brightness_down(ui::VKEY_BRIGHTNESS_DOWN, ui::EF_NONE);
   const ui::Accelerator brightness_up(ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE);
   {
-    EXPECT_FALSE(ProcessWithContext(brightness_down));
-    EXPECT_FALSE(ProcessWithContext(brightness_up));
-    DummyBrightnessControlDelegate* delegate =
-        new DummyBrightnessControlDelegate(true);
-    GetController()->SetBrightnessControlDelegate(
-        scoped_ptr<BrightnessControlDelegate>(delegate).Pass());
-    EXPECT_FALSE(ProcessWithContext(brightness_down));
-    EXPECT_FALSE(ProcessWithContext(brightness_up));
-  }
-  EnableInternalDisplay();
-  {
-    EXPECT_FALSE(ProcessWithContext(brightness_down));
-    EXPECT_FALSE(ProcessWithContext(brightness_up));
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate(false);
     GetController()->SetBrightnessControlDelegate(
