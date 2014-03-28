@@ -60,12 +60,12 @@ TEST(JSTest, MAYBE_sample_test) {
 
 // http://crbug.com/351214
 #if defined(OS_POSIX)
-#define MAYBE_connector DISABLED_connector
+#define MAYBE_connection DISABLED_connection
 #else
-#define MAYBE_connector connector
+#define MAYBE_connection connection
 #endif
-TEST(JSTest, MAYBE_connector) {
-  RunTest("connector_unittests.js", true);
+TEST(JSTest, MAYBE_connection) {
+  RunTest("connection_unittests.js", true);
 }
 
 TEST(JSTest, monotonic_clock) {
