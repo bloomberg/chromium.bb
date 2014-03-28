@@ -385,6 +385,11 @@ static int irt_unlink(const char *pathname) {
   return check_error(unlink(pathname));
 }
 
+static int irt_getpid(int *pid) {
+  *pid = getpid();
+  return 0;
+}
+
 static void irt_stub_func(const char *name) {
   fprintf(stderr, "Error: Unimplemented IRT function: %s\n", name);
   abort();
@@ -471,6 +476,10 @@ const static struct nacl_irt_dev_filename irt_dev_filename = {
   USE_STUB(irt_dev_filename, utimes),
 };
 
+const static struct nacl_irt_dev_getpid irt_dev_getpid = {
+  irt_getpid,
+};
+
 struct nacl_interface_table {
   const char *name;
   const void *table;
@@ -486,6 +495,7 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_FUTEX_v0_1, &irt_futex, sizeof(irt_futex) },
   { NACL_IRT_CLOCK_v0_1, &irt_clock, sizeof(irt_clock) },
   { NACL_IRT_DEV_FILENAME_v0_3, &irt_dev_filename, sizeof(irt_dev_filename) },
+  { NACL_IRT_DEV_GETPID_v0_1, &irt_dev_getpid, sizeof(irt_dev_getpid) },
 };
 
 static size_t irt_interface_query(const char *interface_ident,

@@ -610,7 +610,8 @@ mode-buildbot-tc-x8632-linux() {
     run_malloc_realloc_calloc_free_test_irt \
     run_dup_test_irt \
     run_cond_timedwait_test_irt \
-    run_syscall_test_irt
+    run_syscall_test_irt \
+    run_getpid_test_irt
 
   test-nonsfi-mode
 }
