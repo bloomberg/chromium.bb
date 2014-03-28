@@ -13,6 +13,7 @@
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_keybinding_registry_cocoa.h"
 #include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
+#import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -327,6 +328,7 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
                   backing:NSBackingStoreBuffered
                     defer:NO]);
   [window setTitle:base::SysUTF8ToNSString(extension()->name())];
+  [[window contentView] cr_setWantsLayer:YES];
 
   if (base::mac::IsOSSnowLeopard() &&
       [window respondsToSelector:@selector(setBottomCornerRounded:)])
