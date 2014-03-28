@@ -307,6 +307,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidStartLoading(RenderFrameHost* render_frame_host,
                                bool to_different_document) OVERRIDE;
   virtual void DidStopLoading(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void SwappedOut(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) OVERRIDE;
@@ -341,7 +342,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void UpdateTargetURL(int32 page_id, const GURL& url) OVERRIDE;
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
-  virtual void SwappedOut(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidCancelLoading() OVERRIDE;
   virtual void DidChangeLoadProgress(double progress) OVERRIDE;
   virtual void DidDisownOpener(RenderViewHost* rvh) OVERRIDE;

@@ -217,13 +217,9 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
       PageTransition page_transition,
       bool should_replace_current_entry);
 
-  // The RenderViewHost has been swapped out, so we should resume the pending
-  // network response and allow the pending RenderViewHost to commit.
-  void SwappedOut(RenderViewHost* render_view_host);
-
   // The RenderFrameHost has been swapped out, so we should resume the pending
   // network response and allow the pending RenderFrameHost to commit.
-  void SwappedOutFrame(RenderFrameHostImpl* render_frame_host);
+  void SwappedOut(RenderFrameHostImpl* render_frame_host);
 
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host);

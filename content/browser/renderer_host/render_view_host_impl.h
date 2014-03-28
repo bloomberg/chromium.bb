@@ -325,14 +325,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // longer on the stack when we attempt to swap it out.
   void SuppressDialogsUntilSwapOut();
 
-  // Tells the renderer that this RenderView is being swapped out for one in a
-  // different renderer process.  It should run its unload handler and move to
-  // a blank document.  The renderer should preserve the Frame object until it
-  // exits, in case we come back.  The renderer can exit if it has no other
-  // active RenderViews, but not until WasSwappedOut is called (when it is no
-  // longer visible).
-  void SwapOut();
-
   // Called when either the SwapOut request has been acknowledged or has timed
   // out.
   void OnSwappedOut(bool timed_out);
@@ -577,7 +569,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
   void OnClosePageACK();
-  void OnSwapOutACK();
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params);
   void OnAccessibilityLocationChanges(

@@ -522,22 +522,22 @@ TEST_F(RenderViewImplTest, SendSwapOutACK) {
   int initial_page_id = view()->GetPageId();
 
   // Respond to a swap out request.
-  view()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut();
 
   // Ensure the swap out commits synchronously.
   EXPECT_NE(initial_page_id, view()->GetPageId());
 
   // Check for a valid OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_SwapOut_ACK::ID);
+      FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg);
 
   // It is possible to get another swap out request.  Ensure that we send
   // an ACK, even if we don't have to do anything else.
   render_thread_->sink().ClearMessages();
-  view()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut();
   const IPC::Message* msg2 = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_SwapOut_ACK::ID);
+      FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg2);
 
   // If we navigate back to this RenderView, ensure we don't send a state
@@ -590,11 +590,11 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   ProcessPendingMessages();
 
   // Respond to a swap out request.
-  view()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut();
 
   // Check for a OnSwapOutACK.
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
-      ViewHostMsg_SwapOut_ACK::ID);
+      FrameHostMsg_SwapOut_ACK::ID);
   ASSERT_TRUE(msg);
   render_thread_->sink().ClearMessages();
 

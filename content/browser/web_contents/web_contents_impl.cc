@@ -3008,23 +3008,20 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
     delegate_->CloseContents(this);
 }
 
-void WebContentsImpl::SwappedOut(RenderViewHost* rvh) {
-  if (rvh == GetRenderViewHost()) {
+void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
+  // TODO(creis): Handle subframes that go fullscreen.
+  if (rfh->GetRenderViewHost() == GetRenderViewHost()) {
     // Exit fullscreen mode before the current RVH is swapped out.  For numerous
     // cases, there is no guarantee the renderer would/could initiate an exit.
     // Example: http://crbug.com/347232
     if (IsFullscreenForCurrentTab()) {
-      if (rvh)
-        rvh->ExitFullscreen();
+      rfh->GetRenderViewHost()->ExitFullscreen();
       DCHECK(!IsFullscreenForCurrentTab());
     }
 
     if (delegate_)
       delegate_->SwappedOut(this);
   }
-
-  // Allow the navigation to proceed.
-  GetRenderManager()->SwappedOut(rvh);
 }
 
 void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {

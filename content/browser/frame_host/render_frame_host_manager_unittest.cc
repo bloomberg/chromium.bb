@@ -890,7 +890,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   // The RVH is swapped out after receiving the unload ack.
   manager->SwapOutOldPage();
   EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
-      ViewMsg_SwapOut::ID));
+      FrameMsg_SwapOut::ID));
   test_host->OnSwappedOut(false);
 
   EXPECT_EQ(host, manager->current_frame_host());
@@ -933,7 +933,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   // will be no more SwapOut messages being sent.
   manager->SwapOutOldPage();
   EXPECT_FALSE(test_process_host->sink().GetUniqueMessageMatching(
-      ViewMsg_SwapOut::ID));
+      FrameMsg_SwapOut::ID));
   test_host->OnSwappedOut(false);
 
   // Commit.

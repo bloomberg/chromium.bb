@@ -25,7 +25,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_Focus::ID:
     // Handled by RenderViewHost.
     case ViewHostMsg_RenderProcessGone::ID:
-    case ViewHostMsg_SwapOut_ACK::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
     case ViewHostMsg_UpdateIsDelayed::ID:

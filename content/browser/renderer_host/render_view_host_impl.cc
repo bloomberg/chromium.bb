@@ -576,26 +576,6 @@ void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
   Send(new ViewMsg_SuppressDialogsUntilSwapOut(GetRoutingID()));
 }
 
-void RenderViewHostImpl::SwapOut() {
-  // If this RenderViewHost is not in the default state, it must have already
-  // gone through this, therefore just return.
-  if (rvh_state_ != STATE_DEFAULT)
-    return;
-
-  SetState(STATE_WAITING_FOR_UNLOAD_ACK);
-  unload_event_monitor_timeout_->Start(
-      base::TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
-
-  if (IsRenderViewLive()) {
-    Send(new ViewMsg_SwapOut(GetRoutingID()));
-  }
-  delegate_->SwappedOut(this);
-}
-
-void RenderViewHostImpl::OnSwapOutACK() {
-  OnSwappedOut(false);
-}
-
 void RenderViewHostImpl::OnSwappedOut(bool timed_out) {
   // Ignore spurious swap out ack.
   if (!IsWaitingForUnloadACK())
@@ -1149,7 +1129,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SwapOut_ACK, OnSwapOutACK)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionRootBoundsChanged,
                         OnSelectionRootBoundsChanged)

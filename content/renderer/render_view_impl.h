@@ -765,8 +765,6 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuRemoveTest, RemoveOnChange);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, NormalCase);
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuTest, ShowPopupThenNavigate);
-  FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
-                           AccessibilityMessagesQueueWhileSwappedOut);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, DecideNavigationPolicyForWebUI);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            DidFailProvisionalLoadWithErrorForError);
@@ -784,8 +782,6 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetAccessibilityMode);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnSetTextDirection);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, OnUpdateWebPreferences);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendSwapOutACK);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ReloadWhileSwappedOut);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            SetEditableSelectionAndComposition);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, StaleNavigationsIgnored);
@@ -946,7 +942,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnStop();
   void OnStopFinding(StopFindAction action);
   void OnSuppressDialogsUntilSwapOut();
-  void OnSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
@@ -1019,7 +1014,8 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderFrameObserver.
   void OnNavigate(const FrameMsg_Navigate_Params& params);
 
-  // Make this RenderView show an empty, unscriptable page.
+  // Make the given |frame| show an empty, unscriptable page.
+  // TODO(creis): Move this to RenderFrame.
   void NavigateToSwappedOutURL(blink::WebFrame* frame);
 
   // If we initiated a navigation, this function will populate |document_state|

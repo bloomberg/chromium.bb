@@ -350,10 +350,14 @@ class CONTENT_EXPORT RenderFrameImpl
 
  private:
   friend class RenderFrameObserver;
-  FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
+  FRIEND_TEST_ALL_PREFIXES(RendererAccessibilityTest,
+                           AccessibilityMessagesQueueWhileSwappedOut);
+    FRIEND_TEST_ALL_PREFIXES(RenderFrameImplTest,
                            ShouldUpdateSelectionTextFromContextMenuParams);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            OnExtendSelectionAndDelete);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ReloadWhileSwappedOut);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendSwapOutACK);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            SetEditableSelectionAndComposition);
 

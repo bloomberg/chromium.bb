@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/input/input_router.h"
+#include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -496,13 +497,29 @@ void RenderFrameHostImpl::OnCrossSiteResponse(
 }
 
 void RenderFrameHostImpl::SwapOut() {
-  if (render_view_host_->IsRenderViewLive()) {
-    Send(new FrameMsg_SwapOut(routing_id_));
-  } else {
-    // Our RenderViewHost doesn't have a live renderer, so just skip the unload
-    // event.
-    OnSwappedOut(true);
+  // TODO(creis): Move swapped out state to RFH.  Until then, only update it
+  // when swapping out the main frame.
+  if (!GetParent()) {
+    // If this RenderViewHost is not in the default state, it must have already
+    // gone through this, therefore just return.
+    if (render_view_host_->rvh_state_ != RenderViewHostImpl::STATE_DEFAULT)
+      return;
+
+    render_view_host_->SetState(
+        RenderViewHostImpl::STATE_WAITING_FOR_UNLOAD_ACK);
+    render_view_host_->unload_event_monitor_timeout_->Start(
+        base::TimeDelta::FromMilliseconds(
+            RenderViewHostImpl::kUnloadTimeoutMS));
   }
+
+  if (render_view_host_->IsRenderViewLive())
+    Send(new FrameMsg_SwapOut(routing_id_));
+
+  if (!GetParent())
+    delegate_->SwappedOut(this);
+
+  // Allow the navigation to proceed.
+  frame_tree_node_->render_manager()->SwappedOut(this);
 }
 
 void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
@@ -567,7 +584,12 @@ void RenderFrameHostImpl::OnSwapOutACK() {
 }
 
 void RenderFrameHostImpl::OnSwappedOut(bool timed_out) {
-  frame_tree_node_->render_manager()->SwappedOutFrame(this);
+  // For now, we only need to update the RVH state machine for top-level swaps.
+  // Subframe swaps (in --site-per-process) can just continue via RFHM.
+  if (!GetParent())
+    render_view_host_->OnSwappedOut(timed_out);
+  else
+    frame_tree_node_->render_manager()->SwappedOut(this);
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {

@@ -1111,7 +1111,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_SuppressDialogsUntilSwapOut,
                         OnSuppressDialogsUntilSwapOut)
-    IPC_MESSAGE_HANDLER(ViewMsg_SwapOut, OnSwapOut)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
@@ -3790,45 +3789,6 @@ void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
 void RenderViewImpl::OnSuppressDialogsUntilSwapOut() {
   // Don't show any more dialogs until we finish OnSwapOut.
   suppress_dialogs_until_swap_out_ = true;
-}
-
-void RenderViewImpl::OnSwapOut() {
-  // Only run unload if we're not swapped out yet, but send the ack either way.
-  if (!is_swapped_out_) {
-    // Swap this RenderView out so the tab can navigate to a page rendered by a
-    // different process.  This involves running the unload handler and clearing
-    // the page.  Once WasSwappedOut is called, we also allow this process to
-    // exit if there are no other active RenderViews in it.
-
-    // Send an UpdateState message before we get swapped out.
-    SyncNavigationState();
-
-    // Synchronously run the unload handler before sending the ACK.
-    webview()->dispatchUnloadEvent();
-
-    // Swap out and stop sending any IPC messages that are not ACKs.
-    SetSwappedOut(true);
-
-    // Now that we're swapped out and filtering IPC messages, stop loading to
-    // ensure that no other in-progress navigation continues.  We do this here
-    // to avoid sending a DidStopLoading message to the browser process.
-    OnStop();
-
-    // Replace the page with a blank dummy URL. The unload handler will not be
-    // run a second time, thanks to a check in FrameLoader::stopLoading.
-    // TODO(creis): Need to add a better way to do this that avoids running the
-    // beforeunload handler. For now, we just run it a second time silently.
-    NavigateToSwappedOutURL(webview()->mainFrame());
-
-    // Let WebKit know that this view is hidden so it can drop resources and
-    // stop compositing.
-    webview()->setVisibilityState(blink::WebPageVisibilityStateHidden, false);
-  }
-
-  // It is now safe to show modal dialogs again.
-  suppress_dialogs_until_swap_out_ = false;
-
-  Send(new ViewHostMsg_SwapOut_ACK(routing_id_));
 }
 
 void RenderViewImpl::NavigateToSwappedOutURL(blink::WebFrame* frame) {

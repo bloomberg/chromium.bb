@@ -133,9 +133,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The page is trying to close the RenderView's representation in the client.
   virtual void Close(RenderViewHost* render_view_host) {}
 
-  // The RenderViewHost has been swapped out.
-  virtual void SwappedOut(RenderViewHost* render_view_host) {}
-
   // The page is trying to move the RenderView's representation in the client.
   virtual void RequestMove(const gfx::Rect& new_bounds) {}
 

@@ -350,7 +350,7 @@ TEST_F(RendererAccessibilityTest,
   accessibility->HandleAXEvent(
       root_obj,
       ui::AX_EVENT_VALUE_CHANGED);
-  view()->OnSwapOut();
+  view()->main_render_frame()->OnSwapOut();
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_FALSE(sink_->GetUniqueMessageMatching(
       AccessibilityHostMsg_Events::ID));

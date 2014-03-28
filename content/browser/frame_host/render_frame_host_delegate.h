@@ -41,6 +41,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Blink's notion of the throbber stopping.
   virtual void DidStopLoading(RenderFrameHost* render_frame_host) {}
 
+  // The RenderFrameHost has been swapped out.
+  virtual void SwappedOut(RenderFrameHost* render_frame_host) {}
+
   // Notification that a worker process has crashed.
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) {}
 

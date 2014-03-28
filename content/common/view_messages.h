@@ -842,11 +842,6 @@ IPC_MESSAGE_ROUTED0(ViewMsg_CantFocus)
 // PageGroupLoadDeferrer is on the stack for SwapOut.
 IPC_MESSAGE_ROUTED0(ViewMsg_SuppressDialogsUntilSwapOut)
 
-// Instructs the renderer to swap out for a cross-site transition, including
-// running the unload event handler. Expects a SwapOut_ACK message when
-// finished.
-IPC_MESSAGE_ROUTED0(ViewMsg_SwapOut)
-
 // Instructs the renderer to close the current page, including running the
 // onunload event handler.
 //
@@ -1202,10 +1197,6 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
                     gfx::Rect /* selection_rect */,
                     int /* active_match_ordinal */,
                     bool /* final_update */)
-
-// Indicates that the current renderer has swapped out, after a SwapOut
-// message.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_SwapOut_ACK)
 
 // Indicates that the current page has been closed, after a ClosePage
 // message.

@@ -794,19 +794,24 @@ void RenderFrameImpl::OnBeforeUnload() {
 
 void RenderFrameImpl::OnSwapOut() {
   // Only run unload if we're not swapped out yet, but send the ack either way.
-  if (!is_swapped_out_) {
-    // Swap this RenderView out so the tab can navigate to a page rendered by a
-    // different process.  This involves running the unload handler and clearing
-    // the page.  Once WasSwappedOut is called, we also allow this process to
-    // exit if there are no other active RenderViews in it.
+  if (!is_swapped_out_ || !render_view_->is_swapped_out_) {
+    // Swap this RenderFrame out so the frame can navigate to a page rendered by
+    // a different process.  This involves running the unload handler and
+    // clearing the page.  Once WasSwappedOut is called, we also allow this
+    // process to exit if there are no other active RenderFrames in it.
 
     // Send an UpdateState message before we get swapped out.
     render_view_->SyncNavigationState();
 
     // Synchronously run the unload handler before sending the ACK.
-    // TODO(creis): Add a WebFrame::dispatchUnloadEvent and call it here.
+    // TODO(creis): Move WebView::dispatchUnloadEvent to WebFrame and call it
+    // here to support unload on subframes as well.
+    if (!frame_->parent())
+      render_view_->webview()->dispatchUnloadEvent();
 
     // Swap out and stop sending any IPC messages that are not ACKs.
+    if (!frame_->parent())
+      render_view_->SetSwappedOut(true);
     is_swapped_out_ = true;
 
     // Now that we're swapped out and filtering IPC messages, stop loading to
@@ -815,9 +820,15 @@ void RenderFrameImpl::OnSwapOut() {
     // TODO(creis): Should we be stopping all frames here and using
     // StopAltErrorPageFetcher with RenderView::OnStop, or just stopping this
     // frame?
-    frame_->stopLoading();
+    if (!frame_->parent())
+      render_view_->OnStop();
+    else
+      frame_->stopLoading();
 
-    frame_->setIsRemote(true);
+    // Let subframes know that the frame is now rendered remotely, for the
+    // purposes of compositing and input events.
+    if (frame_->parent())
+      frame_->setIsRemote(true);
 
     // Replace the page with a blank dummy URL. The unload handler will not be
     // run a second time, thanks to a check in FrameLoader::stopLoading.
@@ -825,8 +836,22 @@ void RenderFrameImpl::OnSwapOut() {
     // beforeunload handler. For now, we just run it a second time silently.
     render_view_->NavigateToSwappedOutURL(frame_);
 
-    render_view_->RegisterSwappedOutChildFrame(this);
+    if (frame_->parent())
+      render_view_->RegisterSwappedOutChildFrame(this);
+
+    // Let WebKit know that this view is hidden so it can drop resources and
+    // stop compositing.
+    // TODO(creis): Support this for subframes as well.
+    if (!frame_->parent()) {
+      render_view_->webview()->setVisibilityState(
+          blink::WebPageVisibilityStateHidden, false);
+    }
   }
+
+  // It is now safe to show modal dialogs again.
+  // TODO(creis): Deal with modal dialogs from subframes.
+  if (!frame_->parent())
+    render_view_->suppress_dialogs_until_swap_out_ = false;
 
   Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
 }
