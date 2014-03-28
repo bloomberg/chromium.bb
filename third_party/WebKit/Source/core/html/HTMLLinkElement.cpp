@@ -352,11 +352,6 @@ void HTMLLinkElement::dispatchPendingEvent(LinkEventSender* eventSender)
 {
     ASSERT_UNUSED(eventSender, eventSender == &linkLoadEventSender());
     ASSERT(m_link);
-    dispatchEventImmediately();
-}
-
-void HTMLLinkElement::dispatchEventImmediately()
-{
     if (m_link->hasLoaded())
         linkLoaded();
     else
