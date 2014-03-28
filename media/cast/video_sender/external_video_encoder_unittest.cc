@@ -109,8 +109,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            GetDefaultCastSenderLoggingConfig());
+                            task_runner_);
     scoped_ptr<VideoEncodeAccelerator> fake_vea(
         new test::FakeVideoEncodeAccelerator());
     video_encoder_.reset(

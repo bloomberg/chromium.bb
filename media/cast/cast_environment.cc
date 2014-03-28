@@ -25,13 +25,12 @@ CastEnvironment::CastEnvironment(
     scoped_ptr<base::TickClock> clock,
     scoped_refptr<SingleThreadTaskRunner> main_thread_proxy,
     scoped_refptr<SingleThreadTaskRunner> audio_thread_proxy,
-    scoped_refptr<SingleThreadTaskRunner> video_thread_proxy,
-    const CastLoggingConfig& logging_config)
+    scoped_refptr<SingleThreadTaskRunner> video_thread_proxy)
     : main_thread_proxy_(main_thread_proxy),
       audio_thread_proxy_(audio_thread_proxy),
       video_thread_proxy_(video_thread_proxy),
       clock_(clock.Pass()),
-      logging_(new LoggingImpl(logging_config)) {}
+      logging_(new LoggingImpl) {}
 
 CastEnvironment::~CastEnvironment() {
   // Logging must be deleted on the main thread.

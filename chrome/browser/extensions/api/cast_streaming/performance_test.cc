@@ -546,10 +546,8 @@ class CastV2PerformanceTest
 
     // Start the in-process receiver that examines audio/video for the expected
     // test patterns.
-    media::cast::CastLoggingConfig logging_config =
-        media::cast::GetDefaultCastReceiverLoggingConfig();
     scoped_refptr<media::cast::StandaloneCastEnvironment> cast_environment(
-        new media::cast::StandaloneCastEnvironment(logging_config));
+        new media::cast::StandaloneCastEnvironment);
     TestPatternReceiver* const receiver =
         new TestPatternReceiver(cast_environment, receiver_end_point);
     receiver->Start();

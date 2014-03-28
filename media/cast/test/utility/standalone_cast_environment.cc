@@ -9,14 +9,12 @@
 namespace media {
 namespace cast {
 
-StandaloneCastEnvironment::StandaloneCastEnvironment(
-    const CastLoggingConfig& logging_config)
+StandaloneCastEnvironment::StandaloneCastEnvironment()
     : CastEnvironment(
           make_scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
           NULL,
           NULL,
-          NULL,
-          logging_config),
+          NULL),
       main_thread_("StandaloneCastEnvironment Main"),
       audio_thread_("StandaloneCastEnvironment Audio"),
       video_thread_("StandaloneCastEnvironment Video") {

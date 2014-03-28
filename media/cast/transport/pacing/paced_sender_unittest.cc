@@ -51,7 +51,7 @@ class TestPacketSender : public PacketSender {
 
 class PacedSenderTest : public ::testing::Test {
  protected:
-  PacedSenderTest() : logging_(GetLoggingConfigWithRawEventsAndStatsEnabled()) {
+  PacedSenderTest() {
     logging_.AddRawEventSubscriber(&subscriber_);
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));

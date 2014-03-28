@@ -34,8 +34,7 @@ class AudioDecoderTest : public ::testing::Test {
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            GetDefaultCastReceiverLoggingConfig());
+                            task_runner_);
   }
   virtual ~AudioDecoderTest() {}
 

@@ -13,27 +13,6 @@
 namespace media {
 namespace cast {
 
-CastLoggingConfig::CastLoggingConfig()
-    : enable_raw_data_collection(false),
-      enable_stats_data_collection(false) {}
-
-CastLoggingConfig::~CastLoggingConfig() {}
-
-CastLoggingConfig GetDefaultCastSenderLoggingConfig() {
-  return CastLoggingConfig();
-}
-
-CastLoggingConfig GetDefaultCastReceiverLoggingConfig() {
-  return CastLoggingConfig();
-}
-
-CastLoggingConfig GetLoggingConfigWithRawEventsAndStatsEnabled() {
-  CastLoggingConfig config;
-  config.enable_raw_data_collection = true;
-  config.enable_stats_data_collection = true;
-  return config;
-}
-
 const char* CastLoggingToString(CastLoggingEvent event) {
   switch (event) {
     // Can happen if the sender and receiver of RTCP log messages are not

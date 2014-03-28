@@ -50,8 +50,7 @@ class VideoDecoderTest : public ::testing::Test {
             new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
                                 task_runner_,
                                 task_runner_,
-                                task_runner_,
-                                GetDefaultCastReceiverLoggingConfig())),
+                                task_runner_)),
         test_callback_(new DecodeTestFrameCallback()) {
     // Configure to vp8.
     config_.codec = transport::kVp8;

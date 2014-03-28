@@ -78,8 +78,7 @@ class EncodeDecodeTest : public ::testing::Test {
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
             NULL,
-            task_runner_,
-            GetDefaultCastReceiverLoggingConfig())),
+            task_runner_)),
         test_callback_(new EncodeDecodeTestFrameCallback()) {
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));

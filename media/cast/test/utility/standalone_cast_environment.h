@@ -17,7 +17,7 @@ namespace cast {
 class StandaloneCastEnvironment : public CastEnvironment,
                                   public base::ThreadChecker {
  public:
-  explicit StandaloneCastEnvironment(const CastLoggingConfig& logging_config);
+  explicit StandaloneCastEnvironment();
 
   // Stops all threads backing the task runners, blocking the caller until
   // complete.

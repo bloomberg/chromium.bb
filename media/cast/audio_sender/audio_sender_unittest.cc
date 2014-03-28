@@ -54,13 +54,11 @@ class AudioSenderTest : public ::testing::Test {
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
-    CastLoggingConfig logging_config = GetDefaultCastSenderLoggingConfig();
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            logging_config);
+                            task_runner_);
     audio_config_.codec = transport::kOpus;
     audio_config_.use_external_encoder = false;
     audio_config_.frequency = kDefaultAudioSamplingRate;
@@ -77,7 +75,6 @@ class AudioSenderTest : public ::testing::Test {
         NULL,
         testing_clock_,
         dummy_endpoint,
-        logging_config,
         base::Bind(&UpdateCastTransportStatus),
         transport::BulkRawEventsCallback(),
         base::TimeDelta(),

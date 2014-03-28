@@ -72,15 +72,11 @@ class AudioReceiverTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
 
-    CastLoggingConfig logging_config(GetDefaultCastReceiverLoggingConfig());
-    logging_config.enable_raw_data_collection = true;
-
     cast_environment_ = new CastEnvironment(
         scoped_ptr<base::TickClock>(testing_clock_).Pass(),
         task_runner_,
         task_runner_,
-        task_runner_,
-        logging_config);
+        task_runner_);
 
     test_audio_encoder_callback_ = new TestAudioEncoderCallback();
   }

@@ -32,6 +32,7 @@ namespace cast {
 class CastEnvironment;
 class EncodingEventSubscriber;
 class FrameInput;
+class StatsEventSubscriber;
 
 namespace transport {
 class CastTransportSender;
@@ -107,6 +108,9 @@ class CastSessionDelegate {
 
   scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber_;
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber_;
+
+  scoped_ptr<media::cast::StatsEventSubscriber> audio_stats_subscriber_;
+  scoped_ptr<media::cast::StatsEventSubscriber> video_stats_subscriber_;
 
   // Proxy to the IO message loop.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;

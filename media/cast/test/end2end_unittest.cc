@@ -404,19 +404,16 @@ class End2EndTest : public ::testing::Test {
         testing_clock_receiver_(new base::SimpleTestTickClock()),
         task_runner_(
             new test::FakeSingleThreadTaskRunner(testing_clock_sender_)),
-        logging_config_(GetLoggingConfigWithRawEventsAndStatsEnabled()),
         cast_environment_sender_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_sender_).Pass(),
             task_runner_,
             task_runner_,
-            task_runner_,
-            logging_config_)),
+            task_runner_)),
         cast_environment_receiver_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_receiver_).Pass(),
             task_runner_,
             task_runner_,
-            task_runner_,
-            logging_config_)),
+            task_runner_)),
         receiver_to_sender_(cast_environment_receiver_),
         sender_to_receiver_(cast_environment_sender_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
@@ -501,7 +498,6 @@ class End2EndTest : public ::testing::Test {
         NULL,
         testing_clock_sender_,
         dummy_endpoint,
-        logging_config_,
         base::Bind(&UpdateCastTransportStatus),
         base::Bind(&End2EndTest::LogRawEvents, base::Unretained(this)),
         base::TimeDelta::FromSeconds(1),
@@ -597,7 +593,6 @@ class End2EndTest : public ::testing::Test {
   base::SimpleTestTickClock* testing_clock_sender_;
   base::SimpleTestTickClock* testing_clock_receiver_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
-  CastLoggingConfig logging_config_;
   scoped_refptr<CastEnvironment> cast_environment_sender_;
   scoped_refptr<CastEnvironment> cast_environment_receiver_;
 

@@ -35,8 +35,7 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
       scoped_ptr<base::TickClock> clock,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_proxy,
       scoped_refptr<base::SingleThreadTaskRunner> audio_thread_proxy,
-      scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy,
-      const CastLoggingConfig& logging_config);
+      scoped_refptr<base::SingleThreadTaskRunner> video_thread_proxy);
 
   // These are the same methods in message_loop.h, but are guaranteed to either
   // get posted to the MessageLoop if it's still alive, or be deleted otherwise.

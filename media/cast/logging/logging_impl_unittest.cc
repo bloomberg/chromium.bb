@@ -26,22 +26,16 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 class LoggingImplTest : public ::testing::Test {
  protected:
   LoggingImplTest() {
-    // Enable all logging types.
-    config_.enable_raw_data_collection = true;
-    config_.enable_stats_data_collection = true;
-
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    logging_.reset(new LoggingImpl(config_));
-    logging_->AddRawEventSubscriber(&event_subscriber_);
+    logging_.AddRawEventSubscriber(&event_subscriber_);
   }
 
   virtual ~LoggingImplTest() {
-    logging_->RemoveRawEventSubscriber(&event_subscriber_);
+    logging_.RemoveRawEventSubscriber(&event_subscriber_);
   }
 
-  CastLoggingConfig config_;
-  scoped_ptr<LoggingImpl> logging_;
+  LoggingImpl logging_;
   base::SimpleTestTickClock testing_clock_;
   SimpleEventSubscriber event_subscriber_;
 
@@ -56,7 +50,7 @@ TEST_F(LoggingImplTest, BasicFrameLogging) {
   base::TimeTicks now;
   do {
     now = testing_clock_.NowTicks();
-    logging_->InsertFrameEvent(now, kAudioFrameCaptured, rtp_timestamp,
+    logging_.InsertFrameEvent(now, kAudioFrameCaptured, rtp_timestamp,
                                frame_id);
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
@@ -64,7 +58,6 @@ TEST_F(LoggingImplTest, BasicFrameLogging) {
     ++frame_id;
     time_interval = now - start_time;
   }  while (time_interval.InSeconds() < kIntervalTime1S);
-  base::TimeTicks end_time = now;
 
   // Get logging data.
   std::vector<FrameEvent> frame_events;
@@ -72,19 +65,6 @@ TEST_F(LoggingImplTest, BasicFrameLogging) {
   // Size of vector should be equal to the number of events logged,
   // which equals to number of frames in this case.
   EXPECT_EQ(frame_id, frame_events.size());
-  // Verify stats.
-  FrameStatsMap frame_stats = logging_->GetFrameStatsData(AUDIO_EVENT);
-  // Size of stats equals the number of events.
-  EXPECT_EQ(1u, frame_stats.size());
-  FrameStatsMap::const_iterator it = frame_stats.find(kAudioFrameCaptured);
-  EXPECT_TRUE(it != frame_stats.end());
-  EXPECT_EQ(0, it->second.max_delay.InMilliseconds());
-  EXPECT_EQ(0, it->second.min_delay.InMilliseconds());
-  EXPECT_EQ(start_time, it->second.first_event_time);
-  EXPECT_EQ(end_time, it->second.last_event_time);
-  EXPECT_EQ(0u, it->second.sum_size);
-  // Number of events is equal to the number of frames.
-  EXPECT_EQ(static_cast<int>(frame_id), it->second.event_counter);
 }
 
 TEST_F(LoggingImplTest, FrameLoggingWithSize) {
@@ -100,7 +80,7 @@ TEST_F(LoggingImplTest, FrameLoggingWithSize) {
     int size = kBaseFrameSizeBytes +
         base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
     sum_size += static_cast<size_t>(size);
-    logging_->InsertFrameEventWithSize(testing_clock_.NowTicks(),
+    logging_.InsertFrameEventWithSize(testing_clock_.NowTicks(),
                                        kAudioFrameCaptured, rtp_timestamp,
                                        frame_id, size);
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
@@ -114,16 +94,6 @@ TEST_F(LoggingImplTest, FrameLoggingWithSize) {
   // Size of vector should be equal to the number of events logged, which
   // equals to number of frames in this case.
   EXPECT_EQ(frame_id, frame_events.size());
-  // Verify stats.
-  FrameStatsMap frame_stats = logging_->GetFrameStatsData(AUDIO_EVENT);
-  // Size of stats equals the number of events.
-  EXPECT_EQ(1u, frame_stats.size());
-  FrameStatsMap::const_iterator it = frame_stats.find(kAudioFrameCaptured);
-  EXPECT_TRUE(it != frame_stats.end());
-  EXPECT_EQ(0, it->second.max_delay.InMilliseconds());
-  EXPECT_EQ(0, it->second.min_delay.InMilliseconds());
-  EXPECT_EQ(0, it->second.sum_delay.InMilliseconds());
-  EXPECT_EQ(sum_size, it->second.sum_size);
 }
 
 TEST_F(LoggingImplTest, FrameLoggingWithDelay) {
@@ -137,7 +107,7 @@ TEST_F(LoggingImplTest, FrameLoggingWithDelay) {
   do {
     int delay = kPlayoutDelayMs +
                 base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
-    logging_->InsertFrameEventWithDelay(
+    logging_.InsertFrameEventWithDelay(
         testing_clock_.NowTicks(), kAudioFrameCaptured, rtp_timestamp, frame_id,
         base::TimeDelta::FromMilliseconds(delay));
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
@@ -150,16 +120,6 @@ TEST_F(LoggingImplTest, FrameLoggingWithDelay) {
   event_subscriber_.GetFrameEventsAndReset(&frame_events);
   // Size of vector should be equal to the number of frames logged.
   EXPECT_EQ(frame_id, frame_events.size());
-  // Verify stats.
-  FrameStatsMap frame_stats = logging_->GetFrameStatsData(AUDIO_EVENT);
-  // Size of stats equals the number of events.
-  EXPECT_EQ(1u, frame_stats.size());
-  FrameStatsMap::const_iterator it = frame_stats.find(kAudioFrameCaptured);
-  EXPECT_TRUE(it != frame_stats.end());
-  EXPECT_GE(kPlayoutDelayMs + kRandomSizeInterval,
-      it->second.max_delay.InMilliseconds());
-  EXPECT_LE(kPlayoutDelayMs - kRandomSizeInterval,
-      it->second.min_delay.InMilliseconds());
 }
 
 TEST_F(LoggingImplTest, MultipleEventFrameLogging) {
@@ -169,18 +129,18 @@ TEST_F(LoggingImplTest, MultipleEventFrameLogging) {
   uint32 frame_id = 0u;
   uint32 num_events = 0u;
   do {
-    logging_->InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
+    logging_.InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
                                rtp_timestamp, frame_id);
     ++num_events;
     if (frame_id % 2) {
-      logging_->InsertFrameEventWithSize(testing_clock_.NowTicks(),
+      logging_.InsertFrameEventWithSize(testing_clock_.NowTicks(),
                                          kAudioFrameEncoded, rtp_timestamp,
                                          frame_id, 1500);
     } else if (frame_id % 3) {
-      logging_->InsertFrameEvent(testing_clock_.NowTicks(), kVideoFrameDecoded,
+      logging_.InsertFrameEvent(testing_clock_.NowTicks(), kVideoFrameDecoded,
                                  rtp_timestamp, frame_id);
     } else {
-      logging_->InsertFrameEventWithDelay(
+      logging_.InsertFrameEventWithDelay(
           testing_clock_.NowTicks(), kVideoRenderDelay, rtp_timestamp, frame_id,
           base::TimeDelta::FromMilliseconds(20));
     }
@@ -216,7 +176,7 @@ TEST_F(LoggingImplTest, PacketLogging) {
       sum_size += size;
       latest_time = testing_clock_.NowTicks();
       ++num_packets;
-      logging_->InsertPacketEvent(latest_time,
+      logging_.InsertPacketEvent(latest_time,
                                   kDuplicateVideoPacketReceived,
                                   rtp_timestamp,
                                   frame_id,
@@ -234,17 +194,6 @@ TEST_F(LoggingImplTest, PacketLogging) {
   event_subscriber_.GetPacketEventsAndReset(&packet_events);
   // Size of vector should be equal to the number of packets logged.
   EXPECT_EQ(num_packets, static_cast<int>(packet_events.size()));
-  // Verify stats.
-  PacketStatsMap stats_map = logging_->GetPacketStatsData(VIDEO_EVENT);
-  // Size of stats equals the number of event types.
-  EXPECT_EQ(1u, stats_map.size());
-  PacketStatsMap::const_iterator it =
-      stats_map.find(kDuplicateVideoPacketReceived);
-  ASSERT_NE(stats_map.end(), it);
-  EXPECT_EQ(start_time, it->second.first_event_time);
-  EXPECT_EQ(latest_time, it->second.last_event_time);
-  EXPECT_EQ(num_packets, it->second.event_counter);
-  EXPECT_EQ(sum_size, static_cast<int>(it->second.sum_size));
 }
 
 TEST_F(LoggingImplTest, GenericLogging) {
@@ -267,11 +216,11 @@ TEST_F(LoggingImplTest, GenericLogging) {
     int value = kBaseValue + base::RandInt(-5, 5);
     sum_value_rtt += value;
     sumsq_value_rtt += value * value;
-    logging_->InsertGenericEvent(testing_clock_.NowTicks(), kRttMs, value);
+    logging_.InsertGenericEvent(testing_clock_.NowTicks(), kRttMs, value);
     ++num_events;
     ++expected_rtt_count;
     if (i % 2) {
-      logging_->InsertGenericEvent(testing_clock_.NowTicks(), kPacketLoss,
+      logging_.InsertGenericEvent(testing_clock_.NowTicks(), kPacketLoss,
                                    value);
       ++num_events;
       ++expected_packet_loss_count;
@@ -279,7 +228,7 @@ TEST_F(LoggingImplTest, GenericLogging) {
       sumsq_value_pl += value * value;
     }
     if (!(i % 4)) {
-      logging_->InsertGenericEvent(testing_clock_.NowTicks(), kJitterMs, value);
+      logging_.InsertGenericEvent(testing_clock_.NowTicks(), kJitterMs, value);
       ++num_events;
       ++expected_jitter_count;
       sum_value_jitter += value;
@@ -314,34 +263,15 @@ TEST_F(LoggingImplTest, GenericLogging) {
       ++jitter_event_count;
     }
   }
-
-  // Size of generic stats map = number of different events.
-  // Stats - one value per all events.
-  GenericStatsMap stats_map = logging_->GetGenericStatsData();
-  EXPECT_EQ(3u, stats_map.size());
-  GenericStatsMap::const_iterator sit = stats_map.find(kRttMs);
-  EXPECT_EQ(sum_value_rtt, sit->second.sum);
-  EXPECT_EQ(sumsq_value_rtt, sit->second.sum_squared);
-  EXPECT_LE(min_value, sit->second.min);
-  EXPECT_GE(max_value, sit->second.max);
-  sit = stats_map.find(kPacketLoss);
-  EXPECT_EQ(sum_value_pl, sit->second.sum);
-  EXPECT_EQ(sumsq_value_pl, sit->second.sum_squared);
-  EXPECT_LE(min_value, sit->second.min);
-  EXPECT_GE(max_value, sit->second.max);
-  sit = stats_map.find(kJitterMs);
-  EXPECT_EQ(sumsq_value_jitter, sit->second.sum_squared);
-  EXPECT_LE(min_value, sit->second.min);
-  EXPECT_GE(max_value, sit->second.max);
 }
 
 TEST_F(LoggingImplTest, MultipleRawEventSubscribers) {
   SimpleEventSubscriber event_subscriber_2;
 
   // Now logging_ has two subscribers.
-  logging_->AddRawEventSubscriber(&event_subscriber_2);
+  logging_.AddRawEventSubscriber(&event_subscriber_2);
 
-  logging_->InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
+  logging_.InsertFrameEvent(testing_clock_.NowTicks(), kAudioFrameCaptured,
                              /*rtp_timestamp*/ 0u,
                              /*frame_id*/ 0u);
 
@@ -352,7 +282,7 @@ TEST_F(LoggingImplTest, MultipleRawEventSubscribers) {
   event_subscriber_2.GetFrameEventsAndReset(&frame_events);
   EXPECT_EQ(1u, frame_events.size());
 
-  logging_->RemoveRawEventSubscriber(&event_subscriber_2);
+  logging_.RemoveRawEventSubscriber(&event_subscriber_2);
 }
 
 }  // namespace cast

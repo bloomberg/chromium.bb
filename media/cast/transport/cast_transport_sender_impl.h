@@ -38,7 +38,6 @@ class CastTransportSenderImpl : public CastTransportSender {
       net::NetLog* net_log,
       base::TickClock* clock,
       const net::IPEndPoint& remote_end_point,
-      const CastLoggingConfig& logging_config,
       const CastTransportStatusCallback& status_callback,
       const BulkRawEventsCallback& raw_events_callback,
       base::TimeDelta raw_events_callback_interval,
@@ -81,9 +80,8 @@ class CastTransportSenderImpl : public CastTransportSender {
       const CastTransportRtpStatistics& callback) OVERRIDE;
 
  private:
-  // If raw events logging is enabled, this is called periodically.
-  // Calls |raw_events_callback_| with events collected by |event_subscriber_|
-  // since last call.
+  // If |raw_events_callback_| is non-null, calls it with events collected
+  // by |event_subscriber_| since last call.
   void SendRawEvents();
 
   base::TickClock* clock_;  // Not owned by this class.
@@ -97,7 +95,7 @@ class CastTransportSenderImpl : public CastTransportSender {
   scoped_ptr<TransportAudioSender> audio_sender_;
   scoped_ptr<TransportVideoSender> video_sender_;
 
-  // This is non-null iff raw events logging is enabled.
+  // This is non-null iff |raw_events_callback_| is non-null.
   scoped_ptr<SimpleEventSubscriber> event_subscriber_;
   base::RepeatingTimer<CastTransportSenderImpl> raw_events_timer_;
 

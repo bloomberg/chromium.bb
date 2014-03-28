@@ -16,7 +16,6 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
     net::NetLog* net_log,
     base::TickClock* clock,
     const net::IPEndPoint& remote_end_point,
-    const CastLoggingConfig& logging_config,
     const CastTransportStatusCallback& status_callback,
     const BulkRawEventsCallback& raw_events_callback,
     base::TimeDelta raw_events_callback_interval,
@@ -25,7 +24,6 @@ scoped_ptr<CastTransportSender> CastTransportSender::Create(
       new CastTransportSenderImpl(net_log,
                                   clock,
                                   remote_end_point,
-                                  logging_config,
                                   status_callback,
                                   raw_events_callback,
                                   raw_events_callback_interval,
@@ -37,7 +35,6 @@ CastTransportSenderImpl::CastTransportSenderImpl(
     net::NetLog* net_log,
     base::TickClock* clock,
     const net::IPEndPoint& remote_end_point,
-    const CastLoggingConfig& logging_config,
     const CastTransportStatusCallback& status_callback,
     const BulkRawEventsCallback& raw_events_callback,
     base::TimeDelta raw_events_callback_interval,
@@ -52,7 +49,7 @@ CastTransportSenderImpl::CastTransportSenderImpl(
                                                        net::IPEndPoint(),
                                                        remote_end_point,
                                                        status_callback)),
-      logging_(logging_config),
+      logging_(),
       pacer_(clock,
              &logging_,
              external_transport ? external_transport : transport_.get(),
@@ -60,7 +57,6 @@ CastTransportSenderImpl::CastTransportSenderImpl(
       rtcp_builder_(&pacer_),
       raw_events_callback_(raw_events_callback) {
   if (!raw_events_callback_.is_null()) {
-    DCHECK(logging_config.enable_raw_data_collection);
     DCHECK(raw_events_callback_interval > base::TimeDelta());
     event_subscriber_.reset(new SimpleEventSubscriber);
     logging_.AddRawEventSubscriber(event_subscriber_.get());

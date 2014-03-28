@@ -18,22 +18,6 @@ static const uint32 kFrameIdUnknown = 0xFFFFFFFF;
 
 typedef uint32 RtpTimestamp;
 
-struct CastLoggingConfig {
-  // Constructs default config - all logging is disabled.
-  CastLoggingConfig();
-  ~CastLoggingConfig();
-
-  bool enable_raw_data_collection;
-  bool enable_stats_data_collection;
-};
-
-// Currently these are the same as the default config.
-CastLoggingConfig GetDefaultCastSenderLoggingConfig();
-CastLoggingConfig GetDefaultCastReceiverLoggingConfig();
-
-// Enable raw and stats data collection. Disable tracing.
-CastLoggingConfig GetLoggingConfigWithRawEventsAndStatsEnabled();
-
 enum CastLoggingEvent {
   // Generic events.
   kUnknown,

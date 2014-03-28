@@ -14,15 +14,13 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/logging_raw.h"
-#include "media/cast/logging/logging_stats.h"
 
 namespace media {
 namespace cast {
 
 class LoggingImpl {
  public:
-  explicit LoggingImpl(const CastLoggingConfig& config);
-
+  LoggingImpl();
   ~LoggingImpl();
 
   // Note: All methods below should be called from the same thread.
@@ -61,19 +59,9 @@ class LoggingImpl {
   // Delegates to |LoggingRaw::RemoveRawEventSubscriber()|.
   void RemoveRawEventSubscriber(RawEventSubscriber* subscriber);
 
-  // Get stats only.
-  FrameStatsMap GetFrameStatsData(EventMediaType media_type) const;
-  PacketStatsMap GetPacketStatsData(EventMediaType media_type) const;
-  GenericStatsMap GetGenericStatsData() const;
-
-  // Reset stats logging data.
-  void ResetStats();
-
  private:
   base::ThreadChecker thread_checker_;
-  const CastLoggingConfig config_;
   LoggingRaw raw_;
-  LoggingStats stats_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingImpl);
 };

@@ -21,7 +21,6 @@ class CastTransportSenderIPC
   CastTransportSenderIPC(
       const net::IPEndPoint& remote_end_point,
       const media::cast::transport::CastTransportStatusCallback& status_cb,
-      const media::cast::CastLoggingConfig& logging_config,
       const media::cast::transport::BulkRawEventsCallback& raw_events_cb);
 
   virtual ~CastTransportSenderIPC();

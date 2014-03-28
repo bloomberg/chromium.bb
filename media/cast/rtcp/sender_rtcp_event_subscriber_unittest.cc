@@ -30,8 +30,7 @@ class SenderRtcpEventSubscriberTest : public ::testing::Test {
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
             task_runner_,
-            task_runner_,
-            GetLoggingConfigWithRawEventsAndStatsEnabled())),
+            task_runner_)),
         event_subscriber_(kMaxEventEntries) {
     cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   }

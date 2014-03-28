@@ -37,8 +37,7 @@ class EncodingEventSubscriberTest : public ::testing::Test {
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
             task_runner_,
-            task_runner_,
-            GetLoggingConfigWithRawEventsAndStatsEnabled())),
+            task_runner_)),
         first_rtp_timestamp_(0) {}
 
   void Init(EventMediaType event_media_type) {

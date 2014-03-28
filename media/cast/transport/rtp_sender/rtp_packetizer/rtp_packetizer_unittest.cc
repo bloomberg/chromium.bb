@@ -100,8 +100,7 @@ class RtpPacketizerTest : public ::testing::Test {
   RtpPacketizerTest()
       : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
         video_frame_(),
-        packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs),
-        logging_(GetLoggingConfigWithRawEventsAndStatsEnabled()) {
+        packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
     logging_.AddRawEventSubscriber(&subscriber_);
     config_.sequence_number = kSeqNum;
     config_.ssrc = kSsrc;

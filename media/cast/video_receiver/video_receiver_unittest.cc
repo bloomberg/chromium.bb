@@ -68,8 +68,7 @@ class VideoReceiverTest : public ::testing::Test {
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
                             task_runner_,
                             task_runner_,
-                            task_runner_,
-                            GetLoggingConfigWithRawEventsAndStatsEnabled());
+                            task_runner_);
     receiver_.reset(new VideoReceiver(
         cast_environment_, config_, &mock_transport_, target_delay_cb_));
     testing_clock_->Advance(

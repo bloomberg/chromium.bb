@@ -16,9 +16,7 @@ class CastTransportHostFilterTest : public testing::Test {
  public:
   CastTransportHostFilterTest()
       : browser_thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP),
-        logging_config_(
-            media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled()) {
+            content::TestBrowserThreadBundle::IO_MAINLOOP) {
     filter_ = new cast::CastTransportHostFilter();
     // 127.0.0.1:7 is the local echo service port, which
     // is probably not going to respond, but that's ok.
@@ -41,12 +39,11 @@ class CastTransportHostFilterTest : public testing::Test {
   scoped_refptr<content::BrowserMessageFilter> filter_;
   net::IPAddressNumber receiver_address_;
   net::IPEndPoint receive_endpoint_;
-  media::cast::CastLoggingConfig logging_config_;
 };
 
 TEST_F(CastTransportHostFilterTest, NewDelete) {
   const int kChannelId = 17;
-  CastHostMsg_New new_msg(kChannelId, receive_endpoint_, logging_config_);
+  CastHostMsg_New new_msg(kChannelId, receive_endpoint_);
   CastHostMsg_Delete delete_msg(kChannelId);
 
   // New, then delete, as expected.
@@ -69,7 +66,7 @@ TEST_F(CastTransportHostFilterTest, NewDelete) {
 
 TEST_F(CastTransportHostFilterTest, NewMany) {
   for (int i = 0; i < 100; i++) {
-    CastHostMsg_New new_msg(i, receive_endpoint_, logging_config_);
+    CastHostMsg_New new_msg(i, receive_endpoint_);
     FakeSend(new_msg);
   }
 
@@ -84,7 +81,7 @@ TEST_F(CastTransportHostFilterTest, NewMany) {
 TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   // Create a cast transport sender.
   const int32 kChannelId = 42;
-  CastHostMsg_New new_msg(kChannelId, receive_endpoint_, logging_config_);
+  CastHostMsg_New new_msg(kChannelId, receive_endpoint_);
   FakeSend(new_msg);
 
   media::cast::transport::CastTransportAudioConfig audio_config;

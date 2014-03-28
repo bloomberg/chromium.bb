@@ -453,11 +453,7 @@ int main(int argc, char** argv) {
   media::cast::VideoSenderConfig video_config =
       media::cast::GetVideoSenderConfig();
 
-  // Enable main and send side threads only. Enable raw event logging.
   // Running transport on the main thread.
-  media::cast::CastLoggingConfig logging_config;
-  logging_config.enable_raw_data_collection = true;
-
   // Setting up transport config.
   media::cast::transport::CastTransportAudioConfig transport_audio_config;
   media::cast::transport::CastTransportVideoConfig transport_video_config;
@@ -475,15 +471,13 @@ int main(int argc, char** argv) {
           make_scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
           io_message_loop.message_loop_proxy(),
           audio_thread.message_loop_proxy(),
-          video_thread.message_loop_proxy(),
-          media::cast::GetLoggingConfigWithRawEventsAndStatsEnabled()));
+          video_thread.message_loop_proxy()));
 
   scoped_ptr<media::cast::transport::CastTransportSender> transport_sender =
       media::cast::transport::CastTransportSender::Create(
           NULL,  // net log.
           cast_environment->Clock(),
           remote_endpoint,
-          logging_config,
           base::Bind(&UpdateCastTransportStatus),
           base::Bind(&LogRawEvents, cast_environment),
           base::TimeDelta::FromSeconds(1),

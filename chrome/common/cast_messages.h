@@ -103,11 +103,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::PacketEvent)
   IPC_STRUCT_TRAITS_MEMBER(type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::CastLoggingConfig)
-  IPC_STRUCT_TRAITS_MEMBER(enable_raw_data_collection)
-  IPC_STRUCT_TRAITS_MEMBER(enable_stats_data_collection)
-IPC_STRUCT_TRAITS_END()
-
 // Cast messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL2(CastMsg_ReceivedPacket,
@@ -169,11 +164,10 @@ IPC_MESSAGE_CONTROL3(
     bool /* is_audio */,
     media::cast::MissingFramesAndPacketsMap /* missing_packets */)
 
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL2(
     CastHostMsg_New,
     int32 /* channel_id */,
-    net::IPEndPoint /*remote_end_point*/,
-    media::cast::CastLoggingConfig /* logging_config */);
+    net::IPEndPoint /*remote_end_point*/);
 
 IPC_MESSAGE_CONTROL1(
     CastHostMsg_Delete,

@@ -143,13 +143,11 @@ class RtcpTest : public ::testing::Test {
   RtcpTest()
       : testing_clock_(new base::SimpleTestTickClock()),
         task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
-        logging_config_(GetDefaultCastSenderLoggingConfig()),
         cast_environment_(new CastEnvironment(
             scoped_ptr<base::TickClock>(testing_clock_).Pass(),
             task_runner_,
             task_runner_,
-            task_runner_,
-            logging_config_)),
+            task_runner_)),
         sender_to_receiver_(testing_clock_),
         receiver_to_sender_(cast_environment_, testing_clock_),
         rtp_sender_stats_(kVideoFrequency) {
@@ -160,7 +158,6 @@ class RtcpTest : public ::testing::Test {
         NULL,
         testing_clock_,
         dummy_endpoint,
-        logging_config_,
         base::Bind(&UpdateCastTransportStatus),
         transport::BulkRawEventsCallback(),
         base::TimeDelta(),
@@ -187,7 +184,6 @@ class RtcpTest : public ::testing::Test {
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
-  CastLoggingConfig logging_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
   RtcpTestPacketSender sender_to_receiver_;
   scoped_ptr<transport::CastTransportSenderImpl> transport_sender_;

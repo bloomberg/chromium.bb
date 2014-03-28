@@ -190,12 +190,8 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
-  // Enable raw event logging only.
-  media::cast::CastLoggingConfig logging_config;
-  logging_config.enable_raw_data_collection = true;
-
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
-      new media::cast::StandaloneCastEnvironment(logging_config));
+      new media::cast::StandaloneCastEnvironment);
 
   media::cast::AudioReceiverConfig audio_config =
       media::cast::GetAudioReceiverConfig();

@@ -74,8 +74,7 @@ void CastTransportHostFilter::RawEvents(
 
 void CastTransportHostFilter::OnNew(
     int32 channel_id,
-    const net::IPEndPoint& remote_end_point,
-    const media::cast::CastLoggingConfig& logging_config) {
+    const net::IPEndPoint& remote_end_point) {
   if (id_map_.Lookup(channel_id)) {
     id_map_.Remove(channel_id);
   }
@@ -85,7 +84,6 @@ void CastTransportHostFilter::OnNew(
           g_browser_process->net_log(),
           &clock_,
           remote_end_point,
-          logging_config,
           base::Bind(&CastTransportHostFilter::NotifyStatusChange,
                      base::Unretained(this),
                      channel_id),

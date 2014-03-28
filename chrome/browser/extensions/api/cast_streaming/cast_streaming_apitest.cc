@@ -304,8 +304,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
   // Start the in-process receiver that examines audio/video for the expected
   // test patterns.
   const scoped_refptr<media::cast::StandaloneCastEnvironment> cast_environment(
-      new media::cast::StandaloneCastEnvironment(
-          media::cast::CastLoggingConfig()));
+      new media::cast::StandaloneCastEnvironment());
   TestPatternReceiver* const receiver =
       new TestPatternReceiver(cast_environment, receiver_end_point);
   receiver->Start();

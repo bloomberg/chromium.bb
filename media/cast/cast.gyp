@@ -49,6 +49,7 @@
             'logging/logging_impl_unittest.cc',
             'logging/logging_raw_unittest.cc',
             'logging/simple_event_subscriber_unittest.cc',
+            'logging/stats_event_subscriber_unittest.cc',
             'rtcp/mock_rtcp_receiver_feedback.cc',
             'rtcp/mock_rtcp_receiver_feedback.h',
             'rtcp/mock_rtcp_sender_feedback.cc',
