@@ -36,6 +36,18 @@ void ErasePath(TaskDependencyManager* manager,
   return manager->Erase(blocker);
 }
 
+bool InsertExclusiveTask(TaskDependencyManager* manager) {
+  BlockingFactor blocker;
+  blocker.exclusive = true;
+  return manager->Insert(blocker);
+}
+
+void EraseExclusiveTask(TaskDependencyManager* manager) {
+  BlockingFactor blocker;
+  blocker.exclusive = true;
+  manager->Erase(blocker);
+}
+
 }  // namespace
 
 TEST(TaskDependencyManagerTest, BasicTest) {
@@ -77,6 +89,21 @@ TEST(TaskDependencyManagerTest, BlocksAncestorAndDescendant) {
   ErasePath(&manager, "app_id", FPL("/file"));
 
   ErasePath(&manager, "app_id", FPL("/ancestor/parent/self/child/descendant"));
+}
+
+TEST(TaskDependencyManagerTest, ExclusiveTask) {
+  TaskDependencyManager manager;
+
+  EXPECT_TRUE(InsertPath(&manager, "app_id", FPL("/foo/bar")));
+  EXPECT_FALSE(InsertExclusiveTask(&manager));
+  ErasePath(&manager, "app_id", FPL("/foo/bar"));
+
+  EXPECT_TRUE(InsertExclusiveTask(&manager));
+  EXPECT_FALSE(InsertPath(&manager, "app_id", FPL("/foo/bar")));
+  EraseExclusiveTask(&manager);
+
+  EXPECT_TRUE(InsertPath(&manager, "app_id", FPL("/foo/bar")));
+  ErasePath(&manager, "app_id", FPL("/foo/bar"));
 }
 
 }  // namespace drive_backend

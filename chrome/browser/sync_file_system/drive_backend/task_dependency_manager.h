@@ -18,6 +18,7 @@ namespace sync_file_system {
 namespace drive_backend {
 
 struct BlockingFactor {
+  bool exclusive;
   std::string app_id;
   std::vector<base::FilePath> paths;
   std::vector<std::string> file_ids;
@@ -48,6 +49,7 @@ class TaskDependencyManager {
  private:
   friend class TaskDependencyManagerTest;
 
+  bool running_exclusive_task_;
   std::map<std::string, SubtreeSet> paths_by_app_id_;
   std::set<std::string> file_ids_;
   std::set<int64> tracker_ids_;

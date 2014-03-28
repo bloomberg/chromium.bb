@@ -59,10 +59,11 @@ bool InsertPaths(std::vector<base::FilePath> paths_to_insert,
 
 }  // namespace
 
-BlockingFactor::BlockingFactor() {}
+BlockingFactor::BlockingFactor() : exclusive(false) {}
 BlockingFactor::~BlockingFactor() {}
 
-TaskDependencyManager::TaskDependencyManager() {}
+TaskDependencyManager::TaskDependencyManager()
+    : running_exclusive_task_(false) {}
 
 TaskDependencyManager::~TaskDependencyManager() {
   DCHECK(paths_by_app_id_.empty());
@@ -71,6 +72,18 @@ TaskDependencyManager::~TaskDependencyManager() {
 }
 
 bool TaskDependencyManager::Insert(const BlockingFactor& blocking_factor) {
+  if (running_exclusive_task_)
+    return false;
+
+  if (blocking_factor.exclusive) {
+    if (!tracker_ids_.empty() ||
+        !file_ids_.empty() ||
+        !paths_by_app_id_.empty())
+      return false;
+    running_exclusive_task_ = true;
+    return true;
+  }
+
   if (!InsertAllOrNone(blocking_factor.tracker_ids, &tracker_ids_))
     goto fail_on_tracker_id_insertion;
 
@@ -97,6 +110,16 @@ bool TaskDependencyManager::Insert(const BlockingFactor& blocking_factor) {
 }
 
 void TaskDependencyManager::Erase(const BlockingFactor& blocking_factor) {
+  if (blocking_factor.exclusive) {
+    DCHECK(running_exclusive_task_);
+    DCHECK(paths_by_app_id_.empty());
+    DCHECK(file_ids_.empty());
+    DCHECK(tracker_ids_.empty());
+
+    running_exclusive_task_ = false;
+    return;
+  }
+
   if (!blocking_factor.app_id.empty()) {
     EraseContainer(blocking_factor.paths,
                    &paths_by_app_id_[blocking_factor.app_id]);
