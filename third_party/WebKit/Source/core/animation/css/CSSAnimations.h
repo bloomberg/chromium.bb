@@ -54,20 +54,19 @@ class StyleRuleKeyframes;
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
 class CSSAnimationUpdate FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
 public:
-    void startAnimation(AtomicString& animationName, const HashSet<RefPtr<InertAnimation> >& animations)
+    void startAnimation(AtomicString& animationName, PassRefPtr<InertAnimation> animation)
     {
         NewAnimation newAnimation;
         newAnimation.name = animationName;
-        newAnimation.animations = animations;
+        newAnimation.animation = animation;
         m_newAnimations.append(newAnimation);
     }
     // Returns whether player has been cancelled and should be filtered during style application.
-    bool isCancelledAnimation(const AnimationPlayer* player) const { return m_cancelledAnimationAnimationPlayers.contains(player); }
-    void cancelAnimation(const AtomicString& name, const HashSet<RefPtr<AnimationPlayer> >& players)
+    bool isCancelledAnimation(const AnimationPlayer* player) const { return m_cancelledAnimationPlayers.contains(player); }
+    void cancelAnimation(const AtomicString& name, AnimationPlayer& player)
     {
         m_cancelledAnimationNames.append(name);
-        for (HashSet<RefPtr<AnimationPlayer> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
-            m_cancelledAnimationAnimationPlayers.add(iter->get());
+        m_cancelledAnimationPlayers.add(&player);
     }
     void toggleAnimationPaused(const AtomicString& name)
     {
@@ -88,11 +87,11 @@ public:
 
     struct NewAnimation {
         AtomicString name;
-        HashSet<RefPtr<InertAnimation> > animations;
+        RefPtr<InertAnimation> animation;
     };
     const Vector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
-    const HashSet<const AnimationPlayer*>& cancelledAnimationAnimationPlayers() const { return m_cancelledAnimationAnimationPlayers; }
+    const HashSet<const AnimationPlayer*>& cancelledAnimationAnimationPlayers() const { return m_cancelledAnimationPlayers; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
 
     struct NewTransition {
@@ -123,7 +122,7 @@ public:
     {
         return m_newAnimations.isEmpty()
             && m_cancelledAnimationNames.isEmpty()
-            && m_cancelledAnimationAnimationPlayers.isEmpty()
+            && m_cancelledAnimationPlayers.isEmpty()
             && m_animationsWithPauseToggled.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty()
@@ -140,7 +139,7 @@ private:
     // incomplete keyframes.
     Vector<NewAnimation> m_newAnimations;
     Vector<AtomicString> m_cancelledAnimationNames;
-    HashSet<const AnimationPlayer*> m_cancelledAnimationAnimationPlayers;
+    HashSet<const AnimationPlayer*> m_cancelledAnimationPlayers;
     Vector<AtomicString> m_animationsWithPauseToggled;
 
     NewTransitionMap m_newTransitions;
@@ -171,11 +170,6 @@ public:
     void trace(Visitor*);
 
 private:
-    // Note that a single animation name may map to multiple players due to
-    // the way in which we split up animations with incomplete keyframes.
-    // FIXME: Once the Web Animations model supports groups, we could use a
-    // ParGroup to drive multiple animations from a single AnimationPlayer.
-    typedef HashMap<AtomicString, HashSet<RefPtr<AnimationPlayer> > > AnimationMap;
     struct RunningTransition {
         ALLOW_ONLY_INLINE_ALLOCATION();
     public:
@@ -189,9 +183,13 @@ private:
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
     };
-    typedef WillBeHeapHashMap<CSSPropertyID, RunningTransition> TransitionMap;
+
+    typedef HashMap<AtomicString, RefPtr<AnimationPlayer> > AnimationMap;
     AnimationMap m_animations;
+
+    typedef WillBeHeapHashMap<CSSPropertyID, RunningTransition> TransitionMap;
     TransitionMap m_transitions;
+
     OwnPtrWillBeMember<CSSAnimationUpdate> m_pendingUpdate;
 
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > m_previousActiveInterpolationsForAnimations;
