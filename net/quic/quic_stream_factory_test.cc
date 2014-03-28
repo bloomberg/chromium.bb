@@ -48,7 +48,7 @@ class QuicStreamFactoryPeer {
   static bool HasActiveSession(QuicStreamFactory* factory,
                                const HostPortPair& host_port_pair,
                                bool is_https) {
-    QuicSessionKey server_key(host_port_pair, is_https, kPrivacyModeDisabled);
+    QuicSessionKey server_key(host_port_pair, is_https, PRIVACY_MODE_DISABLED);
     return factory->HasActiveSession(server_key);
   }
 
@@ -56,7 +56,7 @@ class QuicStreamFactoryPeer {
       QuicStreamFactory* factory,
       const HostPortPair& host_port_pair,
       bool is_https) {
-    QuicSessionKey server_key(host_port_pair, is_https, kPrivacyModeDisabled);
+    QuicSessionKey server_key(host_port_pair, is_https, PRIVACY_MODE_DISABLED);
     DCHECK(factory->HasActiveSession(server_key));
     return factory->active_sessions_[server_key];
   }
@@ -66,7 +66,7 @@ class QuicStreamFactoryPeer {
       const HostPortPair& host_port_pair,
       bool is_https,
       const BoundNetLog& net_log) {
-    QuicSessionKey server_key(host_port_pair, is_https, kPrivacyModeDisabled);
+    QuicSessionKey server_key(host_port_pair, is_https, PRIVACY_MODE_DISABLED);
     return factory->CreateIfSessionExists(server_key, net_log);
   }
 
@@ -97,7 +97,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
                  SupportedVersions(GetParam()), true, true),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         is_https_(false),
-        privacy_mode_(kPrivacyModeDisabled) {
+        privacy_mode_(PRIVACY_MODE_DISABLED) {
     factory_.set_require_confirmation(false);
   }
 

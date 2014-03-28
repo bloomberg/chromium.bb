@@ -71,7 +71,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
         session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL, NULL,
                  make_scoped_ptr((QuicServerInfo*)NULL),
                  QuicSessionKey(kServerHostname, kServerPort, false,
-                                kPrivacyModeDisabled),
+                                PRIVACY_MODE_DISABLED),
                  DefaultQuicConfig(), &crypto_config_, &net_log_) {
     session_.config()->SetDefaults();
     crypto_config_.SetDefaults();

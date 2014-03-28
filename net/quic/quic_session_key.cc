@@ -45,7 +45,7 @@ bool QuicSessionKey::operator==(const QuicSessionKey& other) const {
 
 string QuicSessionKey::ToString() const {
   return (is_https_ ? "https://" : "http://") + host_port_pair_.ToString() +
-      (privacy_mode_ == kPrivacyModeEnabled ? "/private" : "");
+      (privacy_mode_ == PRIVACY_MODE_ENABLED ? "/private" : "");
 }
 
 }  // namespace net

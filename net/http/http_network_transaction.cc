@@ -196,7 +196,7 @@ int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
   // Channel ID is enabled unless --disable-tls-channel-id flag is set,
   // or if privacy mode is enabled.
   bool channel_id_enabled = server_ssl_config_.channel_id_enabled &&
-      (request_->privacy_mode == kPrivacyModeDisabled);
+      (request_->privacy_mode == PRIVACY_MODE_DISABLED);
   server_ssl_config_.channel_id_enabled = channel_id_enabled;
 
   next_state_ = STATE_NOTIFY_BEFORE_CREATE_STREAM;

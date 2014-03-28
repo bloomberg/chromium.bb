@@ -53,7 +53,7 @@ class SpdyStreamTest : public ::testing::Test,
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair("www.google.com", 80),
                        ProxyServer::Direct(),
-                       kPrivacyModeDisabled);
+                       PRIVACY_MODE_DISABLED);
     return CreateInsecureSpdySession(session_, key, BoundNetLog());
   }
 

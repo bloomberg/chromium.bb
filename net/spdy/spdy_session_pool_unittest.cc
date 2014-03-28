@@ -96,7 +96,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentSessions) {
   SpdySessionKey test_key =
       SpdySessionKey(
           test_host_port_pair, ProxyServer::Direct(),
-          kPrivacyModeDisabled);
+          PRIVACY_MODE_DISABLED);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
@@ -157,7 +157,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   const std::string kTestHost1("http://www.a.com");
   HostPortPair test_host_port_pair1(kTestHost1, 80);
   SpdySessionKey key1(test_host_port_pair1, ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
+                      PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> session1 =
       CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
   GURL url1(kTestHost1);
@@ -171,7 +171,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   const std::string kTestHost2("http://www.b.com");
   HostPortPair test_host_port_pair2(kTestHost2, 80);
   SpdySessionKey key2(test_host_port_pair2, ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
+                      PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> session2 =
       CreateInsecureSpdySession(http_session_, key2, BoundNetLog());
   GURL url2(kTestHost2);
@@ -185,7 +185,7 @@ TEST_P(SpdySessionPoolTest, CloseCurrentIdleSessions) {
   const std::string kTestHost3("http://www.c.com");
   HostPortPair test_host_port_pair3(kTestHost3, 80);
   SpdySessionKey key3(test_host_port_pair3, ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
+                      PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> session3 =
       CreateInsecureSpdySession(http_session_, key3, BoundNetLog());
   GURL url3(kTestHost3);
@@ -259,7 +259,7 @@ TEST_P(SpdySessionPoolTest, CloseAllSessions) {
   SpdySessionKey test_key =
       SpdySessionKey(
           test_host_port_pair, ProxyServer::Direct(),
-          kPrivacyModeDisabled);
+          PRIVACY_MODE_DISABLED);
 
   MockConnect connect_data(SYNCHRONOUS, OK);
   MockRead reads[] = {
@@ -348,7 +348,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(
         HostPortPair(test_hosts[i].name, kTestPort), ProxyServer::Direct(),
-        kPrivacyModeDisabled);
+        PRIVACY_MODE_DISABLED);
   }
 
   MockConnect connect_data(SYNCHRONOUS, OK);
@@ -382,7 +382,7 @@ void SpdySessionPoolTest::RunIPPoolingTest(
   // Verify that the second host, through a proxy, won't share the IP.
   SpdySessionKey proxy_key(test_hosts[1].key.host_port_pair(),
       ProxyServer::FromPacString("HTTP http://proxy.foo.com/"),
-      kPrivacyModeDisabled);
+      PRIVACY_MODE_DISABLED);
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, proxy_key));
 
   // Overlap between 2 and 3 does is not transitive to 1.

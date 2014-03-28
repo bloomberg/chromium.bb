@@ -1092,7 +1092,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     // We never use privacy mode for connection to proxy server.
     spdy_session_key = SpdySessionKey(proxy_server.host_port_pair(),
                                       ProxyServer::Direct(),
-                                      kPrivacyModeDisabled);
+                                      PRIVACY_MODE_DISABLED);
     direct = false;
   }
 
@@ -1278,7 +1278,7 @@ void HttpStreamFactoryImpl::Job::InitSSLConfig(
     ssl_config->verify_ev_cert = true;
 
   // Disable Channel ID if privacy mode is enabled.
-  if (request_info_.privacy_mode == kPrivacyModeEnabled)
+  if (request_info_.privacy_mode == PRIVACY_MODE_ENABLED)
     ssl_config->channel_id_enabled = false;
 }
 
