@@ -30,6 +30,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverParentScope.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
@@ -140,8 +141,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     // ShadowRoot doesn't support custom callbacks.
     ASSERT(!hasCustomStyleCallbacks());
 
-    StyleResolver& styleResolver = document().ensureStyleResolver();
-    styleResolver.pushParentShadowRoot(*this);
+    StyleResolverParentScope parentScope(*this);
 
     if (styleChangeType() >= SubtreeStyleChange)
         change = Force;
@@ -165,8 +165,6 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
                 lastTextNode = 0;
         }
     }
-
-    styleResolver.popParentShadowRoot(*this);
 
     clearChildNeedsStyleRecalc();
 }
@@ -197,10 +195,8 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
 
 void ShadowRoot::attach(const AttachContext& context)
 {
-    StyleResolver& styleResolver = document().ensureStyleResolver();
-    styleResolver.pushParentShadowRoot(*this);
+    StyleResolverParentScope parentScope(*this);
     DocumentFragment::attach(context);
-    styleResolver.popParentShadowRoot(*this);
 }
 
 Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* insertionPoint)
