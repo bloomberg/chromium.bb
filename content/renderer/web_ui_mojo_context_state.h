@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "gin/modules/module_registry_observer.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #include "v8/include/v8.h"
 
 namespace blink {

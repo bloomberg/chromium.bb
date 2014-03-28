@@ -11,7 +11,7 @@
 #include "base/message_loop/message_pump.h"
 #include "base/time/time.h"
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace common {

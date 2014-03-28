@@ -6,7 +6,7 @@
 #define MOJO_BINDINGS_JS_HANDLE_H_
 
 #include "gin/converter.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace gin {
 

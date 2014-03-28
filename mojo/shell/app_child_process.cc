@@ -21,7 +21,7 @@
 #include "mojo/common/message_pump_mojo.h"
 #include "mojo/embedder/embedder.h"
 #include "mojo/public/bindings/remote_ptr.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/app_child_process.mojom.h"
 
 namespace mojo {

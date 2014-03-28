@@ -7,9 +7,9 @@
 
 #include <map>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/public/shell/shell.mojom.h"
-#include "mojo/public/system/core_cpp.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/shell/dynamic_service_runner.h"
 #include "mojo/shell/keep_alive.h"

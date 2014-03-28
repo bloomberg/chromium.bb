@@ -24,7 +24,7 @@
 #include "ui/surface/transport_dib.h"
 
 #if defined(USE_MOJO)
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #endif
 
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;

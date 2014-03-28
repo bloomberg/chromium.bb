@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/embedder/embedder.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/task_runners.h"
 

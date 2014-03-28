@@ -6,7 +6,7 @@
 #define MOJO_PUBLIC_BINDINGS_PASSABLE_H_
 
 #include "mojo/public/bindings/lib/bindings_internal.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 

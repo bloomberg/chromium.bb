@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace base {
 class Thread;

@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/public/tests/test_utils.h"
 #include "mojo/public/utility/run_loop_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"

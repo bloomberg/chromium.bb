@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_UTILITY_RUN_LOOP_HANDLER_H_
 #define MOJO_PUBLIC_UTILITY_RUN_LOOP_HANDLER_H_
 
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 

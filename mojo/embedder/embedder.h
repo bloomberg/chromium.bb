@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "mojo/embedder/scoped_platform_handle.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {

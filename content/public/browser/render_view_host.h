@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 
 #if defined(USE_MOJO)
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #endif
 
 class GURL;

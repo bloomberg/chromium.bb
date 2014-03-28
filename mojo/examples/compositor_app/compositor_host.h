@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "cc/trees/layer_tree_host_client.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #include "ui/gfx/size.h"
 
 namespace cc {

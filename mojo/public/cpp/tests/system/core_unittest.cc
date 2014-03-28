@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/system/core_cpp.h"
+// This file tests the C++ Mojo system core wrappers.
+// TODO(vtl): Maybe rename "CoreCppTest" -> "CoreTest" if/when this gets
+// compiled into a different binary from the C API tests.
+
+#include "mojo/public/cpp/system/core.h"
 
 #include <map>
 

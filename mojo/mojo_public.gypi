@@ -19,7 +19,7 @@
         'public/c/system/core.h',
         'public/c/system/macros.h',
         'public/c/system/system_export.h',
-        'public/system/core_cpp.h',
+        'public/cpp/system/core.h',
         'public/system/core_private.cc',
         'public/system/core_private.h',
       ],
@@ -129,6 +129,7 @@
         'public/tests/test_utils.h',
       ],
     },
+    # TODO(vtl): Reorganize the mojo_public_*_unittests.
     {
       'target_name': 'mojo_public_bindings_unittests',
       'type': 'executable',
@@ -190,9 +191,9 @@
         'mojo_system',
       ],
       'sources': [
-        'public/tests/system/core_cpp_unittest.cc',
-        'public/tests/system/core_unittest.cc',
-        'public/tests/system/core_unittest_pure_c.c',
+        'public/c/tests/system/core_unittest.cc',
+        'public/c/tests/system/core_unittest_pure_c.c',
+        'public/cpp/tests/system/core_unittest.cc',
         'public/tests/system/macros_unittest.cc',
       ],
     },
@@ -235,7 +236,7 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/tests/system/core_perftest.cc',
+        'public/c/tests/system/core_perftest.cc',
       ],
     },
     {

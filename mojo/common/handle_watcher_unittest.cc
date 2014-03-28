@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "mojo/common/time_helper.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/public/tests/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

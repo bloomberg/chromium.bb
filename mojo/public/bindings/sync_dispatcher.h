@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_BINDINGS_SYNC_DISPATCHER_H_
 #define MOJO_PUBLIC_BINDINGS_SYNC_DISPATCHER_H_
 
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 

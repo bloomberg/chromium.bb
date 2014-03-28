@@ -8,7 +8,7 @@
 #include <assert.h>
 
 #include "mojo/public/bindings/message.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 

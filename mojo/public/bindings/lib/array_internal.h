@@ -11,7 +11,7 @@
 #include "mojo/public/bindings/lib/bindings_internal.h"
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/passable.h"
-#include "mojo/public/system/core_cpp.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 template <typename T> class Array;

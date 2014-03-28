@@ -7,8 +7,8 @@
 
 #include "mojo/public/bindings/lib/message_queue.h"
 #include "mojo/public/bindings/message.h"
+#include "mojo/public/cpp/system/core.h"
 #include "mojo/public/environment/default_async_waiter.h"
-#include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
 class ErrorHandler;
