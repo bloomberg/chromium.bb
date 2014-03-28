@@ -36,52 +36,52 @@
 
 namespace WebCore {
 
-String ExceptionMessages::failedToConstruct(const String& type, const String& detail)
+String ExceptionMessages::failedToConstruct(const char* type, const String& detail)
 {
-    return "Failed to construct '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
+    return "Failed to construct '" + String(type) + (!detail.isEmpty() ? String("': " + detail) : String("'"));
 }
 
-String ExceptionMessages::failedToEnumerate(const String& type, const String& detail)
+String ExceptionMessages::failedToEnumerate(const char* type, const String& detail)
 {
-    return "Failed to enumerate the properties of '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
+    return "Failed to enumerate the properties of '" + String(type) + (!detail.isEmpty() ? String("': " + detail) : String("'"));
 }
 
-String ExceptionMessages::failedToExecute(const String& method, const String& type, const String& detail)
+String ExceptionMessages::failedToExecute(const char* method, const char* type, const String& detail)
 {
-    return "Failed to execute '" + method + "' on '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
+    return "Failed to execute '" + String(method) + "' on '" + String(type) + (!detail.isEmpty() ? String("': " + detail) : String("'"));
 }
 
-String ExceptionMessages::failedToGet(const String& property, const String& type, const String& detail)
+String ExceptionMessages::failedToGet(const char* property, const char* type, const String& detail)
 {
-    return "Failed to read the '" + property + "' property from '" + type + "': " + detail;
+    return "Failed to read the '" + String(property) + "' property from '" + String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToSet(const String& property, const String& type, const String& detail)
+String ExceptionMessages::failedToSet(const char* property, const char* type, const String& detail)
 {
-    return "Failed to set the '" + property + "' property on '" + type + "': " + detail;
+    return "Failed to set the '" + String(property) + "' property on '" + String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToDelete(const String& property, const String& type, const String& detail)
+String ExceptionMessages::failedToDelete(const char* property, const char* type, const String& detail)
 {
-    return "Failed to delete the '" + property + "' property from '" + type + "': " + detail;
+    return "Failed to delete the '" + String(property) + "' property from '" + String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToGetIndexed(const String& type, const String& detail)
+String ExceptionMessages::failedToGetIndexed(const char* type, const String& detail)
 {
-    return "Failed to read an indexed property from '" + type + "': " + detail;
+    return "Failed to read an indexed property from '" + String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToSetIndexed(const String& type, const String& detail)
+String ExceptionMessages::failedToSetIndexed(const char* type, const String& detail)
 {
-    return "Failed to set an indexed property on '" + type + "': " + detail;
+    return "Failed to set an indexed property on '" + String(type) + "': " + detail;
 }
 
-String ExceptionMessages::failedToDeleteIndexed(const String& type, const String& detail)
+String ExceptionMessages::failedToDeleteIndexed(const char* type, const String& detail)
 {
-    return "Failed to delete an indexed property from '" + type + "': " + detail;
+    return "Failed to delete an indexed property from '" + String(type) + "': " + detail;
 }
 
-String ExceptionMessages::constructorNotCallableAsFunction(const String& type)
+String ExceptionMessages::constructorNotCallableAsFunction(const char* type)
 {
     return failedToConstruct(type, "Please use the 'new' operator, this DOM object constructor cannot be called as a function.");
 }

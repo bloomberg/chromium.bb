@@ -47,17 +47,17 @@ public:
     };
 
     static String argumentNullOrIncorrectType(int argumentIndex, const String& expectedType);
-    static String constructorNotCallableAsFunction(const String& type);
+    static String constructorNotCallableAsFunction(const char* type);
 
-    static String failedToConstruct(const String& type, const String& detail);
-    static String failedToEnumerate(const String& type, const String& detail);
-    static String failedToExecute(const String& method, const String& type, const String& detail);
-    static String failedToGet(const String& property, const String& type, const String& detail);
-    static String failedToSet(const String& property, const String& type, const String& detail);
-    static String failedToDelete(const String& property, const String& type, const String& detail);
-    static String failedToGetIndexed(const String& type, const String& detail);
-    static String failedToSetIndexed(const String& type, const String& detail);
-    static String failedToDeleteIndexed(const String& type, const String& detail);
+    static String failedToConstruct(const char* type, const String& detail);
+    static String failedToEnumerate(const char* type, const String& detail);
+    static String failedToExecute(const char* method, const char* type, const String& detail);
+    static String failedToGet(const char* property, const char* type, const String& detail);
+    static String failedToSet(const char* property, const char* type, const String& detail);
+    static String failedToDelete(const char* property, const char* type, const String& detail);
+    static String failedToGetIndexed(const char* type, const String& detail);
+    static String failedToSetIndexed(const char* type, const String& detail);
+    static String failedToDeleteIndexed(const char* type, const String& detail);
 
     template <typename NumType>
     static String formatNumber(NumType number)
