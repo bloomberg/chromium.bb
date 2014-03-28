@@ -7,7 +7,7 @@
 #include "cc/output/software_frame_data.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmapDevice.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
@@ -38,23 +38,19 @@ class MockSurfaceFactoryOzone : public gfx::SurfaceFactoryOzone {
   }
   virtual bool AttemptToResizeAcceleratedWidget(
       gfx::AcceleratedWidget w, const gfx::Rect& bounds) OVERRIDE {
-    device_ = skia::AdoptRef(new SkBitmapDevice(SkBitmap::kARGB_8888_Config,
-                                                bounds.width(),
-                                                bounds.height(),
-                                                true));
-    canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
+    surface_ = skia::AdoptRef(SkSurface::NewRaster(
+        SkImageInfo::MakeN32Premul(bounds.width(), bounds.height())));
     return true;
   }
   virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w) OVERRIDE {
-    return canvas_.get();
+    return surface_->getCanvas();
   }
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
       gfx::AcceleratedWidget w) OVERRIDE {
     return scoped_ptr<gfx::VSyncProvider>();
   }
  private:
-  skia::RefPtr<SkBitmapDevice> device_;
-  skia::RefPtr<SkCanvas> canvas_;
+  skia::RefPtr<SkSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSurfaceFactoryOzone);
 };
