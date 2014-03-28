@@ -315,6 +315,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitTextStrokeWidth,
     CSSPropertyWebkitTransform,
     CSSPropertyWebkitTransformOrigin,
+    CSSPropertyTransformStyle,
     CSSPropertyWebkitTransformStyle,
     CSSPropertyWebkitTransitionDelay,
     CSSPropertyWebkitTransitionDuration,
@@ -2568,6 +2569,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             }
             return list.release();
         }
+        case CSSPropertyTransformStyle:
         case CSSPropertyWebkitTransformStyle:
             return cssValuePool().createIdentifierValue((style->transformStyle3D() == TransformStyle3DPreserve3D) ? CSSValuePreserve3d : CSSValueFlat);
         case CSSPropertyTransitionDelay:
@@ -2765,7 +2767,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyPerspectiveOrigin:
         case CSSPropertyTransform:
         case CSSPropertyTransformOrigin:
-        case CSSPropertyTransformStyle:
             break;
 
         /* Unimplemented @font-face properties */
