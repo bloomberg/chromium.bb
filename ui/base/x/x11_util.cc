@@ -35,7 +35,6 @@
 #include "base/threading/thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPostConfig.h"
-#include "ui/base/x/x11_menu_list.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -1084,18 +1083,6 @@ bool EnumerateChildren(EnumerateWindowsDelegate* delegate, XID window,
   if (depth > max_depth)
     return false;
 
-  std::vector<XID> windows;
-  std::vector<XID>::iterator iter;
-  if (depth == 0) {
-    XMenuList::GetInstance()->InsertMenuWindowXIDs(&windows);
-    // Enumerate the menus first.
-    for (iter = windows.begin(); iter != windows.end(); iter++) {
-      if (delegate->ShouldStopIterating(*iter))
-        return true;
-    }
-    windows.clear();
-  }
-
   XID root, parent, *children;
   unsigned int num_children;
   int status = XQueryTree(gfx::GetXDisplay(), window, &root, &parent, &children,
@@ -1103,6 +1090,7 @@ bool EnumerateChildren(EnumerateWindowsDelegate* delegate, XID window,
   if (status == 0)
     return false;
 
+  std::vector<XID> windows;
   for (int i = static_cast<int>(num_children) - 1; i >= 0; i--)
     windows.push_back(children[i]);
 
@@ -1110,6 +1098,7 @@ bool EnumerateChildren(EnumerateWindowsDelegate* delegate, XID window,
 
   // XQueryTree returns the children of |window| in bottom-to-top order, so
   // reverse-iterate the list to check the windows from top-to-bottom.
+  std::vector<XID>::iterator iter;
   for (iter = windows.begin(); iter != windows.end(); iter++) {
     if (IsWindowNamed(*iter) && delegate->ShouldStopIterating(*iter))
       return true;
@@ -1145,7 +1134,6 @@ void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
     ui::EnumerateAllWindows(delegate, kMaxSearchDepth);
     return;
   }
-  XMenuList::GetInstance()->InsertMenuWindowXIDs(&stack);
 
   std::vector<XID>::iterator iter;
   for (iter = stack.begin(); iter != stack.end(); iter++) {
