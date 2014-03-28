@@ -490,7 +490,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
 }
 
 // Test that a JavaScript onchange event is fired after auto-filling a form.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnChangeAfterAutofill) {
+// Temporarily disabled for crbug.com/353691.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+                       DISABLED_OnChangeAfterAutofill) {
   CreateTestProfile();
 
   const char* kOnChangeScript =
