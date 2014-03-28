@@ -220,6 +220,10 @@ class SingleTestRunner(object):
                 _log.debug("%s %s crashed, (stderr lines):" % (self._worker_name, testname))
             else:
                 _log.debug("%s %s crashed, (no stderr)" % (self._worker_name, testname))
+        elif driver_output.leak:
+            failures.append(test_failures.FailureLeak(bool(reference_filename),
+                                                      driver_output.leak_log))
+            _log.debug("%s %s leaked" % (self._worker_name, testname))
         elif driver_output.error:
             _log.debug("%s %s output stderr lines:" % (self._worker_name, testname))
         for line in driver_output.error.splitlines():

@@ -65,6 +65,8 @@ def write_test_result(filesystem, port, results_directory, test_name, driver_out
         elif isinstance(failure, test_failures.FailureCrash):
             crashed_driver_output = expected_driver_output if failure.is_reftest else driver_output
             writer.write_crash_log(crashed_driver_output.crash_log)
+        elif isinstance(failure, test_failures.FailureLeak):
+            writer.write_leak_log(driver_output.leak_log)
         elif isinstance(failure, test_failures.FailureReftestMismatch):
             writer.write_image_files(driver_output.image, expected_driver_output.image)
             # FIXME: This work should be done earlier in the pipeline (e.g., when we compare images for non-ref tests).
@@ -100,6 +102,7 @@ class TestResultWriter(object):
     FILENAME_SUFFIX_STDERR = "-stderr"
     FILENAME_SUFFIX_CRASH_LOG = "-crash-log"
     FILENAME_SUFFIX_SAMPLE = "-sample"
+    FILENAME_SUFFIX_LEAK_LOG = "-leak-log"
     FILENAME_SUFFIX_WDIFF = "-wdiff.html"
     FILENAME_SUFFIX_PRETTY_PATCH = "-pretty-diff.html"
     FILENAME_SUFFIX_IMAGE_DIFF = "-diff.png"
@@ -168,6 +171,10 @@ class TestResultWriter(object):
     def write_crash_log(self, crash_log):
         filename = self.output_filename(self.FILENAME_SUFFIX_CRASH_LOG + ".txt")
         self._write_file(filename, crash_log.encode('utf8', 'replace'))
+
+    def write_leak_log(self, leak_log):
+        filename = self.output_filename(self.FILENAME_SUFFIX_LEAK_LOG + ".txt")
+        self._write_file(filename, leak_log)
 
     def copy_sample_file(self, sample_file):
         filename = self.output_filename(self.FILENAME_SUFFIX_SAMPLE + ".txt")

@@ -42,8 +42,8 @@ _log = logging.getLogger(__name__)
 #
 # FIXME: range() starts with 0 which makes if expectation checks harder
 # as PASS is 0.
-(PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, TIMEOUT, CRASH, SKIP, WONTFIX,
- SLOW, REBASELINE, NEEDS_REBASELINE, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(18)
+(PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, TIMEOUT, CRASH, LEAK, SKIP, WONTFIX,
+ SLOW, REBASELINE, NEEDS_REBASELINE, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(19)
 
 # FIXME: Perhas these two routines should be part of the Port instead?
 BASELINE_SUFFIX_LIST = ('png', 'wav', 'txt')
@@ -222,6 +222,7 @@ class TestExpectationParser(object):
     # FIXME: Update the original specifiers list and remove this once the old syntax is gone.
     _expectation_tokens = {
         'Crash': 'CRASH',
+        'Leak': 'LEAK',
         'Failure': 'FAIL',
         'ImageOnlyFailure': 'IMAGE',
         MISSING_KEYWORD: 'MISSING',
@@ -806,6 +807,7 @@ class TestExpectations(object):
                     'text': TEXT,
                     'timeout': TIMEOUT,
                     'crash': CRASH,
+                    'leak': LEAK,
                     'missing': MISSING,
                     TestExpectationParser.SKIP_MODIFIER: SKIP,
                     TestExpectationParser.NEEDS_REBASELINE_MODIFIER: NEEDS_REBASELINE,
@@ -826,6 +828,7 @@ class TestExpectations(object):
                                 IMAGE_PLUS_TEXT: 'image and text failures',
                                 AUDIO: 'audio failures',
                                 CRASH: 'crashes',
+                                LEAK: 'leaks',
                                 TIMEOUT: 'timeouts',
                                 MISSING: 'missing results'}
 

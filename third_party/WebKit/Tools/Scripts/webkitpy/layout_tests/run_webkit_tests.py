@@ -257,6 +257,8 @@ def parse_args(args):
             help="Use Apache instead of LigHTTPd (default is port-specific)."),
         optparse.make_option("--no-use-apache", action="store_false", dest="use_apache",
             help="Use LigHTTPd instead of Apache (default is port-specific)."),
+        optparse.make_option("--enable-leak-detection", action="store_true",
+            help="Enable the leak detection of DOM objects."),
     ]))
 
     option_group_definitions.append(("Miscellaneous Options", [

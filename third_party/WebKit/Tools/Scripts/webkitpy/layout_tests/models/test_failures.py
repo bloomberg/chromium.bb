@@ -51,6 +51,8 @@ def determine_result_type(failure_list):
     failure_types = [type(f) for f in failure_list]
     if FailureCrash in failure_types:
         return test_expectations.CRASH
+    elif FailureLeak in failure_types:
+        return test_expectations.LEAK
     elif FailureTimeout in failure_types:
         return test_expectations.TIMEOUT
     elif FailureEarlyExit in failure_types:
@@ -135,6 +137,16 @@ class FailureCrash(TestFailure):
 
     def driver_needs_restart(self):
         return True
+
+
+class FailureLeak(TestFailure):
+    def __init__(self, is_reftest=False, log=''):
+        super(FailureLeak, self).__init__()
+        self.is_reftest = is_reftest
+        self.log = log
+
+    def message(self):
+        return "leak detected: %s" % (self.log)
 
 
 class FailureMissingResult(TestFailure):

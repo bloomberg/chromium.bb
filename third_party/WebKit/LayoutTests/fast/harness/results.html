@@ -206,6 +206,7 @@ function globalState()
     if (!g_state) {
         g_state = {
             crashTests: [],
+            leakTests: [],
             flakyPassTests: [],
             hasHttpTests: false,
             hasImageFailures: false,
@@ -491,6 +492,11 @@ function processGlobalStateFor(testObject)
         return;
     }
 
+    if (actual == 'LEAK') {
+        globalState().leakTests.push(testObject);
+        return;
+    }
+
     if (actual == 'TIMEOUT') {
         globalState().timeoutTests.push(testObject);
         return;
@@ -681,7 +687,9 @@ function testList(tests, header, tableId)
         else if (tableId == 'crash-tests-table') {
             html += resultLink(stripExtension(test), '-crash-log.txt', 'crash log');
             html += resultLink(stripExtension(test), '-sample.txt', 'sample');
-        } else if (tableId == 'timeout-tests-table') {
+        } else if (tableId == 'leak-tests-table')
+            html += resultLink(stripExtension(test), '-leak-log.txt', 'leak log');
+        else if (tableId == 'timeout-tests-table') {
             // FIXME: only include timeout actual/diff results here if we actually spit out results for timeout tests.
             html += textResultLinks(stripExtension(test));
         }
@@ -1329,6 +1337,9 @@ function generatePage()
 
     if (globalState().crashTests.length)
         html += testList(globalState().crashTests, 'Tests that crashed', 'crash-tests-table');
+
+    if (globalState().leakTests.length)
+        html += testList(globalState().leakTests, 'Tests that leaked', 'leak-tests-table');
 
     html += failingTestsTable(globalState().failingTests,
         'Tests that failed text/pixel/audio diff', 'results-table');
