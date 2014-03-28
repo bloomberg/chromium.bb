@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Loading a large texture using texImage2D</title>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/webgl-test.js"></script>
+</head>
+
+<body>
+<canvas id="canvas" width="64" height="64"></canvas>
+<div id="description"></div>
+<div id="console"></div>
+
+<script>
+var successfullyParsed = false;
+
+function init()
+{
+    if (window.initNonKhronosFramework)
+        window.initNonKhronosFramework(true);
+
+    if (window.internals)
+        window.internals.settings.setWebGLErrorsToConsoleEnabled(false);
+
+    description('Test loading a large texture using texImage2D');
+
+    runTest();
+}
+
+function generateImageData(width, height)
+{
+  var srcCanvas = document.createElement('canvas');
+  srcCanvas.width = width;
+  srcCanvas.height = height;
+  var ctx = srcCanvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
+  return srcCanvas.toDataURL('image/jpeg');
+}
+
+function runTest() {
+  var canvas = document.getElementById('canvas');
+  var gl = canvas.getContext('webgl');
+
+  var texture = gl.createTexture();
+  var image = new Image();
+  image.onerror = function (e) {
+    testFailed('Image failed to load');
+  }
+  image.onload = function () {
+    var width = image.width;
+    var height = image.height;
+    debug('Image width and height: ' + width + ', ' + height);
+    var pixels = new Uint8Array(width * height * 4);
+
+    if (width > gl.getParameter(gl.MAX_TEXTURE_SIZE) ||
+        width > gl.getParameter(gl.MAX_RENDERBUFFER_SIZE)) {
+      // The image is allowed to be too big to be used as a texture.
+      finishJSTest();
+      return;
+    }
+
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+    if (gl.getError() != gl.NO_ERROR) {
+      // Loading the texture is allowed to fail due to resource constraints.
+      finishJSTest();
+      return;
+    }
+    var fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+
+    for (var i = 0; i < pixels.length; ++i) {
+      // The image is filled with white, 254 to account for decoding rounding differences.
+      if (pixels[i] < 254) {
+        testFailed('Texture was not loaded correctly.');
+        return;
+      }
+    }
+    finishJSTest();
+  }
+  image.src = generateImageData(3900, 3900);
+}
+
+init();
+</script>
+</body>
+</html>

@@ -3301,7 +3301,7 @@ void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenu
 
     if (m_unpackAlignment != 1)
         m_context->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    texImage2DBase(target, level, internalformat, image->width(), image->height(), 0, format, type, needConversion ? data.data() : imagePixelData, exceptionState);
+    texImage2DBase(target, level, internalformat, imageExtractor.imageWidth(), imageExtractor.imageHeight(), 0, format, type, needConversion ? data.data() : imagePixelData, exceptionState);
     if (m_unpackAlignment != 1)
         m_context->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }
@@ -3597,7 +3597,7 @@ void WebGLRenderingContextBase::texSubImage2DImpl(GLenum target, GLint level, GL
 
     if (m_unpackAlignment != 1)
         m_context->pixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    texSubImage2DBase(target, level, xoffset, yoffset, image->width(), image->height(), format, type,  needConversion ? data.data() : imagePixelData, exceptionState);
+    texSubImage2DBase(target, level, xoffset, yoffset, imageExtractor.imageWidth(), imageExtractor.imageHeight(), format, type,  needConversion ? data.data() : imagePixelData, exceptionState);
     if (m_unpackAlignment != 1)
         m_context->pixelStorei(GL_UNPACK_ALIGNMENT, m_unpackAlignment);
 }

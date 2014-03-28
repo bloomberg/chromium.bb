@@ -1586,6 +1586,9 @@ bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     m_imageHeight = m_skiaImage->bitmap().height();
     if (!m_imageWidth || !m_imageHeight)
         return false;
+    // Fail if the image was downsampled because of memory limits.
+    if (m_imageWidth != (unsigned)m_image->size().width() || m_imageHeight != (unsigned)m_image->size().height())
+        return false;
     m_imageSourceUnpackAlignment = 0;
     m_skiaImage->bitmap().lockPixels();
     m_imagePixelData = m_skiaImage->bitmap().getPixels();
