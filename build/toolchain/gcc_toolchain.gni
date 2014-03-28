@@ -16,6 +16,23 @@
 #                   toolchain.)
 template("gcc_toolchain") {
   toolchain(target_name) {
+    assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
+    assert(defined(invoker.cxx), "gcc_toolchain() must specify a \"cxx\" value")
+    assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ar\" value")
+    assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.toolchain_cpu_arch),
+                   "gcc_toolchain() must specify a \"toolchain_cpu_arch\"")
+    assert(defined(invoker.toolchain_os),
+                   "gcc_toolchain() must specify a \"toolchain_os\"")
+
+    # We can't do string interpolation ($ in strings) on things with dots in
+    # them. To allow us to use $cc below, for example, we create copies of
+    # these values in our scope.
+    cc = invoker.cc
+    cxx = invoker.cxx
+    ar = invoker.ar
+    ld = invoker.ld
+
     # Make these apply to all tools below.
     lib_prefix = "-l"
     lib_dir_prefix="-L"
@@ -61,8 +78,8 @@ template("gcc_toolchain") {
     # When invoking this toolchain not as the default one, these args will be
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
-      cpu_arch = toolchain_cpu_arch
-      os = toolchain_os
+      cpu_arch = invoker.toolchain_cpu_arch
+      os = invoker.toolchain_os
     }
   }
 }

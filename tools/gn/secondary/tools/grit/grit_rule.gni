@@ -13,9 +13,9 @@
 #     # files.
 #   }
 template("grit") {
-  assert(defined(source),
+  assert(defined(invoker.source),
          "\"source\" must be defined for the grit template $target_name")
-  assert(!defined(sources) && !defined(outputs),
+  assert(!defined(invoker.sources) && !defined(invoker.outputs),
          "Neither \"sources\" nor \"outputs\" can be defined for the grit " +
          "template $target_name")
 
@@ -26,9 +26,11 @@ template("grit") {
   resource_ids =
     rebase_path("//tools/gritsettings/resource_ids", root_build_dir)
   output_dir = rebase_path(target_gen_dir, root_build_dir)
-  source_path = rebase_path(source, root_build_dir)
+  source_path = rebase_path(invoker.source, root_build_dir)
 
-  if (!defined(grit_flags)) {
+  if (defined(invoker.grit_flags)) {
+    grit_flags = invoker.grit_flags
+  } else {
     grit_flags = []  # These are optional so default to empty list.
   }
 

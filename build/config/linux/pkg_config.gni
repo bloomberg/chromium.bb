@@ -19,14 +19,14 @@ import("//build/config/sysroot.gni")
 #   }
 
 template("pkg_config") {
-  assert(defined(packages),
+  assert(defined(invoker.packages),
         "Variable |packages| must be defined to be a list in pkg_config.")
   config(target_name) {
     if (sysroot != "") {
       # Pass the sysroot if we're using one (it requires the CPU arch also).
-      args = ["-s", sysroot, "-a", cpu_arch] + packages
+      args = ["-s", sysroot, "-a", cpu_arch] + invoker.packages
     } else {
-      args = packages
+      args = invoker.packages
     }
     pkgresult = exec_script("//build/config/linux/pkg-config.py",
                             args, "value")
@@ -35,5 +35,9 @@ template("pkg_config") {
     libs = pkgresult[2]
     lib_dirs = pkgresult[3]
     ldflags = pkgresult[4]
+
+    if (defined(invoker.defines)) {
+      defines = invoker.defines
+    }
   }
 }
