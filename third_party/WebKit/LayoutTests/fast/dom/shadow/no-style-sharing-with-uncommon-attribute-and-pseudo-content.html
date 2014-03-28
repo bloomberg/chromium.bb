@@ -7,11 +7,9 @@ if (window.testRunner)
 
 function runTest() {
     var shadow = host.createShadowRoot();
-    shadow.applyAuthorStyles = false;
     shadow.innerHTML = "<div id='hostInShadow'><div class='parent'><p ishidden='false'>NotHidden</p><p ishidden='true' id='target'>Hidden</p></div></div>";
 
     var innerShadow = shadow.getElementById('hostInShadow').createShadowRoot();
-    innerShadow.applyAuthorStyles = false;
     innerShadow.innerHTML = "<style>content::content .parent [ishidden=true] { display: none; }</style><content>";
 
     window.setTimeout(function() {

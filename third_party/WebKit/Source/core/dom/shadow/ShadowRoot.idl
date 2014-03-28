@@ -28,7 +28,7 @@
     NoInterfaceObject
 ] interface ShadowRoot : DocumentFragment {
     readonly attribute Element activeElement;
-    [DeprecateAs=ShadowRootApplyAuthorStyles] attribute boolean applyAuthorStyles;
+
     [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot olderShadowRoot;
 
     [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter] attribute DOMString innerHTML;

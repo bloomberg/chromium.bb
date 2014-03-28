@@ -17,7 +17,6 @@ window.addEventListener('load', function() {
     }
     tree.parentElement.removeChild(tree);
     var shadowRoot = host.createShadowRoot();
-    shadowRoot.applyAuthorStyles = true;
     shadowRoot.appendChild(tree);
   }
 });
