@@ -67,6 +67,8 @@ class ASH_EXPORT StickyKeysController : public ui::EventHandler {
   // Activate sticky keys to intercept and modify incoming events.
   void Enable(bool enabled);
 
+  void SetModifiersEnabled(bool mod3_enabled, bool altgr_enabled);
+
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
@@ -91,6 +93,12 @@ class ASH_EXPORT StickyKeysController : public ui::EventHandler {
 
   // Whether sticky keys is activated and modifying events.
   bool enabled_;
+
+  // Whether the current layout has a mod3 key.
+  bool mod3_enabled_;
+
+  // Whether the current layout has an altgr key.
+  bool altgr_enabled_;
 
   // Sticky key handlers.
   scoped_ptr<StickyKeysHandler> shift_sticky_key_;

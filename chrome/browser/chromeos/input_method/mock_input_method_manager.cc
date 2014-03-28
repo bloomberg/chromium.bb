@@ -10,7 +10,8 @@ namespace input_method {
 MockInputMethodManager::MockInputMethodManager()
     : add_observer_count_(0),
       remove_observer_count_(0),
-      util_(&delegate_, whitelist_.GetSupportedInputMethods()) {
+      util_(&delegate_, whitelist_.GetSupportedInputMethods()),
+      mod3_used_(false) {
   active_input_method_ids_.push_back("xkb:us::eng");
 }
 
@@ -142,6 +143,14 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
                                  GURL());  // input view page url.
   }
   return descriptor;
+}
+
+bool MockInputMethodManager::IsISOLevel5ShiftUsedByCurrentInputMethod() const {
+  return mod3_used_;
+}
+
+bool MockInputMethodManager::IsAltGrUsedByCurrentInputMethod() const {
+  return false;
 }
 
 XKeyboard* MockInputMethodManager::GetXKeyboard() {

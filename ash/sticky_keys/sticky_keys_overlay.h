@@ -36,6 +36,8 @@ class ASH_EXPORT StickyKeysOverlay : public ui::LayerAnimationObserver {
   // Shows or hides the overlay.
   void Show(bool visible);
 
+  void SetModifierVisible(ui::EventFlags modifier, bool visible);
+
   // Updates the overlay with the current state of a sticky key modifier.
   void SetModifierKeyState(ui::EventFlags modifier,
                            StickyKeyState state);

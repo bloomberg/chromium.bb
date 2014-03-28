@@ -157,6 +157,10 @@ class CHROMEOS_EXPORT InputMethodManager {
   // Gets the descriptor of the input method which is currently selected.
   virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;
 
+  virtual bool IsISOLevel5ShiftUsedByCurrentInputMethod() const = 0;
+
+  virtual bool IsAltGrUsedByCurrentInputMethod() const = 0;
+
   // Returns an X keyboard object which could be used to change the current XKB
   // layout, change the caps lock status, and set the auto repeat rate/interval.
   virtual XKeyboard* GetXKeyboard() = 0;

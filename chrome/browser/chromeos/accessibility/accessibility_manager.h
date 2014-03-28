@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
+#include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
@@ -71,6 +72,7 @@ typedef AccessibilityStatusCallbackList::Subscription
 class AccessibilityManager
     : public content::NotificationObserver,
       public extensions::api::braille_display_private::BrailleObserver,
+      public input_method::InputMethodManager::Observer,
       public ash::SessionStateObserver {
  public:
   // Creates an instance of AccessibilityManager, this should be called once,
@@ -96,6 +98,8 @@ class AccessibilityManager
 
    private:
     const char* pref_path_;
+
+    DISALLOW_COPY_AND_ASSIGN(PrefHandler);
   };
 
   // Returns true when the accessibility menu should be shown.
@@ -214,7 +218,7 @@ class AccessibilityManager
 
   void UpdateChromeOSAccessibilityHistograms();
 
-  // content::NotificationObserver implementation:
+  // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
@@ -224,6 +228,11 @@ class AccessibilityManager
   virtual void OnDisplayStateChanged(
       const extensions::api::braille_display_private::DisplayState&
           display_state) OVERRIDE;
+
+  // InputMethodManager::Observer
+  virtual void InputMethodChanged(input_method::InputMethodManager* manager,
+                                  bool show_message) OVERRIDE;
+
 
   // Profile which has the current a11y context.
   Profile* profile_;

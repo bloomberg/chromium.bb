@@ -38,6 +38,14 @@ bool FakeXKeyboard::CapsLockIsEnabled() {
   return caps_lock_is_enabled_;
 }
 
+bool FakeXKeyboard::IsISOLevel5ShiftAvailable() const {
+  return false;
+}
+
+bool FakeXKeyboard::IsAltGrAvailable() const {
+  return false;
+}
+
 bool FakeXKeyboard::SetAutoRepeatEnabled(bool enabled) {
   auto_repeat_is_enabled_ = enabled;
   return true;

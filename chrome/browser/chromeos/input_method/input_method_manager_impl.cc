@@ -715,6 +715,14 @@ InputMethodDescriptor InputMethodManagerImpl::GetCurrentInputMethod() const {
   return current_input_method_;
 }
 
+bool InputMethodManagerImpl::IsISOLevel5ShiftUsedByCurrentInputMethod() const {
+  return xkeyboard_->IsISOLevel5ShiftAvailable();
+}
+
+bool InputMethodManagerImpl::IsAltGrUsedByCurrentInputMethod() const {
+  return xkeyboard_->IsAltGrAvailable();
+}
+
 XKeyboard* InputMethodManagerImpl::GetXKeyboard() {
   return xkeyboard_.get();
 }

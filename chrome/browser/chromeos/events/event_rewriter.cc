@@ -40,9 +40,6 @@ namespace {
 
 const int kBadDeviceId = -1;
 
-const char kNeo2LayoutId[] = "xkb:de:neo:ger";
-const char kCaMultixLayoutId[] = "xkb:ca:multix:fra";
-
 // A key code and a flag we should use when a key is remapped to |remap_to|.
 const struct ModifierRemapping {
   int remap_to;
@@ -119,15 +116,14 @@ bool HasDiamondKey() {
       chromeos::switches::kHasChromeOSDiamondKey);
 }
 
-bool IsMod3UsedByCurrentInputMethod() {
+bool IsISOLevel5ShiftUsedByCurrentInputMethod() {
   // Since both German Neo2 XKB layout and Caps Lock depend on Mod3Mask,
   // it's not possible to make both features work. For now, we don't remap
   // Mod3Mask when Neo2 is in use.
   // TODO(yusukes): Remove the restriction.
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return manager->GetCurrentInputMethod().id() == kNeo2LayoutId ||
-      manager->GetCurrentInputMethod().id() == kCaMultixLayoutId;
+  return manager->IsISOLevel5ShiftUsedByCurrentInputMethod();
 }
 
 }  // namespace
@@ -396,7 +392,7 @@ void EventRewriter::GetRemappedModifierMasks(
   const bool skip_mod2 = !HasDiamondKey();
   // If Mod3 is used by the current input method, don't allow the CapsLock
   // pref to remap it, or the keyboard behavior will be broken.
-  const bool skip_mod3 = IsMod3UsedByCurrentInputMethod();
+  const bool skip_mod3 = IsISOLevel5ShiftUsedByCurrentInputMethod();
 
   for (size_t i = 0; i < arraysize(kModifierFlagToPrefName); ++i) {
     if ((skip_mod2 && kModifierFlagToPrefName[i].native_modifier == Mod2Mask) ||
@@ -473,9 +469,9 @@ bool EventRewriter::RewriteModifiers(XEvent* event) {
         remapped_key = kModifierRemappingCtrl;
       break;
     // On Chrome OS, XF86XK_Launch7 (F16) with Mod3Mask is sent when Caps Lock
-    // is pressed (with one exception: when IsMod3UsedByCurrentInputMethod() is
-    // true, the key generates XK_ISO_Level3_Shift with Mod3Mask, not
-    // XF86XK_Launch7).
+    // is pressed (with one exception: when
+    // IsISOLevel5ShiftUsedByCurrentInputMethod() is true, the key generates
+    // XK_ISO_Level3_Shift with Mod3Mask, not XF86XK_Launch7).
     case XF86XK_Launch7:
       remapped_key =
           GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, *pref_service);

@@ -1860,7 +1860,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
 
   EventRewriter rewriter;
   rewriter.set_pref_service_for_testing(&prefs);
-  input_method_manager_mock_->SetCurrentInputMethodId("xkb:de:neo:ger");
+  input_method_manager_mock_->set_mod3_used(true);
 
   // Press CapsLock+a. Confirm that Mod3Mask is NOT rewritten to ControlMask
   // when Mod3Mask is already in use by the current XKB layout.
@@ -1877,7 +1877,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockMod3InUse) {
                                       keycode_a_,
                                       Mod3Mask));
 
-  input_method_manager_mock_->SetCurrentInputMethodId("xkb:us::eng");
+  input_method_manager_mock_->set_mod3_used(false);
 }
 
 TEST_F(EventRewriterTest, TestRewriteExtendedKeys) {

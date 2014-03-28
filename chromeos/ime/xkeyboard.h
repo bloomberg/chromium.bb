@@ -70,6 +70,12 @@ class CHROMEOS_EXPORT XKeyboard {
   // threads.
   virtual bool CapsLockIsEnabled() = 0;
 
+  // Returns true if the current layout supports ISO Level 5 shift.
+  virtual bool IsISOLevel5ShiftAvailable() const = 0;
+
+  // Returns true if the current layout supports alt gr.
+  virtual bool IsAltGrAvailable() const = 0;
+
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.
   virtual bool SetAutoRepeatEnabled(bool enabled) = 0;

@@ -27,6 +27,8 @@ class CHROMEOS_EXPORT FakeXKeyboard : public XKeyboard {
   virtual void DisableNumLock() OVERRIDE;
   virtual void SetCapsLockEnabled(bool enable_caps_lock) OVERRIDE;
   virtual bool CapsLockIsEnabled() OVERRIDE;
+  virtual bool IsISOLevel5ShiftAvailable() const OVERRIDE;
+  virtual bool IsAltGrAvailable() const OVERRIDE;
   virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
 

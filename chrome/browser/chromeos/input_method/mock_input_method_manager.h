@@ -58,6 +58,8 @@ class MockInputMethodManager : public InputMethodManager {
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) OVERRIDE;
   virtual InputMethodDescriptor GetCurrentInputMethod() const OVERRIDE;
+  virtual bool IsISOLevel5ShiftUsedByCurrentInputMethod() const OVERRIDE;
+  virtual bool IsAltGrUsedByCurrentInputMethod() const OVERRIDE;
   virtual XKeyboard* GetXKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;
   virtual ComponentExtensionIMEManager*
@@ -74,6 +76,9 @@ class MockInputMethodManager : public InputMethodManager {
   // Set values that will be provided to the InputMethodUtil.
   void set_application_locale(const std::string& value);
 
+  // Set the value returned by IsISOLevel5ShiftUsedByCurrentInputMethod
+  void set_mod3_used(bool value) { mod3_used_ = value; }
+
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
   int add_observer_count_;
   int remove_observer_count_;
@@ -86,6 +91,7 @@ class MockInputMethodManager : public InputMethodManager {
   FakeInputMethodDelegate delegate_;  // used by util_
   InputMethodUtil util_;
   FakeXKeyboard xkeyboard_;
+  bool mod3_used_;
 
   // The active input method ids cache (actually default only)
   std::vector<std::string> active_input_method_ids_;

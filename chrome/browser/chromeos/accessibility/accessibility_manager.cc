@@ -324,6 +324,8 @@ AccessibilityManager::AccessibilityManager()
                               chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
                               content::NotificationService::AllSources());
 
+  input_method::InputMethodManager::Get()->AddObserver(this);
+
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
   manager->Initialize(SOUND_SHUTDOWN,
@@ -343,6 +345,7 @@ AccessibilityManager::~AccessibilityManager() {
       false,
       ash::A11Y_NOTIFICATION_NONE);
   NotifyAccessibilityStatusChanged(details);
+  input_method::InputMethodManager::Get()->RemoveObserver(this);
 }
 
 bool AccessibilityManager::ShouldShowAccessibilityMenu() {
@@ -761,6 +764,17 @@ void AccessibilityManager::ReceiveBrailleDisplayState(
   OnDisplayStateChanged(*state);
 }
 
+// Overridden from InputMethodManager::Observer.
+void AccessibilityManager::InputMethodChanged(
+    input_method::InputMethodManager* manager,
+    bool show_message) {
+#if defined(USE_ASH)
+  // Sticky keys is implemented only in ash.
+  ash::Shell::GetInstance()->sticky_keys_controller()->SetModifiersEnabled(
+      manager->IsISOLevel5ShiftUsedByCurrentInputMethod(),
+      manager->IsAltGrUsedByCurrentInputMethod());
+#endif
+}
 
 void AccessibilityManager::SetProfile(Profile* profile) {
   pref_change_registrar_.reset();

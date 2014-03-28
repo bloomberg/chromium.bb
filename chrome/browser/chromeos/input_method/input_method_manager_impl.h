@@ -81,6 +81,8 @@ class InputMethodManagerImpl : public InputMethodManager,
       const ui::Accelerator& accelerator) OVERRIDE;
   virtual bool SwitchInputMethod(const ui::Accelerator& accelerator) OVERRIDE;
   virtual InputMethodDescriptor GetCurrentInputMethod() const OVERRIDE;
+  virtual bool IsISOLevel5ShiftUsedByCurrentInputMethod() const OVERRIDE;
+  virtual bool IsAltGrUsedByCurrentInputMethod() const OVERRIDE;
 
   virtual XKeyboard* GetXKeyboard() OVERRIDE;
   virtual InputMethodUtil* GetInputMethodUtil() OVERRIDE;

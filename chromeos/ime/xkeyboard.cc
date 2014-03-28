@@ -45,6 +45,54 @@ const char kSetxkbmapCommand[] = "/usr/bin/setxkbmap";
 // A string for obtaining a mask value for Num Lock.
 const char kNumLockVirtualModifierString[] = "NumLock";
 
+const char *kISOLevel5ShiftLayoutIds[] = {
+  "ca(multix)",
+  "de(neo)",
+};
+
+const char *kAltGrLayoutIds[] = {
+  "be",
+  "be",
+  "be",
+  "bg",
+  "bg(phonetic)",
+  "br",
+  "ca",
+  "ca(eng)",
+  "ca(multix)",
+  "ch",
+  "ch(fr)",
+  "cz",
+  "de",
+  "de(neo)",
+  "dk",
+  "ee",
+  "es",
+  "es(cat)",
+  "fi",
+  "fr",
+  "gb(dvorak)",
+  "gb(extd)",
+  "gr",
+  "hr",
+  "il",
+  "it",
+  "latam",
+  "lt",
+  "no",
+  "pl",
+  "pt",
+  "ro",
+  "se",
+  "si",
+  "sk",
+  "tr",
+  "ua",
+  "us(altgr-intl)",
+  "us(intl)",
+};
+
+
 // Returns false if |layout_name| contains a bad character.
 bool CheckLayoutName(const std::string& layout_name) {
   static const char kValidLayoutNameCharacters[] =
@@ -77,6 +125,8 @@ class XKeyboardImpl : public XKeyboard {
   virtual void DisableNumLock() OVERRIDE;
   virtual void SetCapsLockEnabled(bool enable_caps_lock) OVERRIDE;
   virtual bool CapsLockIsEnabled() OVERRIDE;
+  virtual bool IsISOLevel5ShiftAvailable() const OVERRIDE;
+  virtual bool IsAltGrAvailable() const OVERRIDE;
   virtual bool SetAutoRepeatEnabled(bool enabled) OVERRIDE;
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) OVERRIDE;
 
@@ -287,6 +337,23 @@ bool XKeyboardImpl::CapsLockIsEnabled() {
   XkbGetState(GetXDisplay(), XkbUseCoreKbd, &status);
   return (status.locked_mods & LockMask);
 }
+
+bool XKeyboardImpl::IsISOLevel5ShiftAvailable() const {
+  for (size_t i = 0; i < arraysize(kISOLevel5ShiftLayoutIds); ++i) {
+    if (current_layout_name_ == kISOLevel5ShiftLayoutIds[i])
+      return true;
+  }
+  return false;
+}
+
+bool XKeyboardImpl::IsAltGrAvailable() const {
+  for (size_t i = 0; i < arraysize(kAltGrLayoutIds); ++i) {
+    if (current_layout_name_ == kAltGrLayoutIds[i])
+      return true;
+  }
+  return false;
+}
+
 
 bool XKeyboardImpl::SetAutoRepeatEnabled(bool enabled) {
   if (enabled)

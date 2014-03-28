@@ -97,7 +97,9 @@ void StickyKeysHandlerDelegateImpl::DispatchEvent(ui::Event* event,
 ///////////////////////////////////////////////////////////////////////////////
 //  StickyKeys
 StickyKeysController::StickyKeysController()
-    : enabled_(false) {
+    : enabled_(false),
+      mod3_enabled_(false),
+      altgr_enabled_(false) {
 }
 
 StickyKeysController::~StickyKeysController() {
@@ -124,10 +126,19 @@ void StickyKeysController::Enable(bool enabled) {
                                 new StickyKeysHandlerDelegateImpl()));
 
       overlay_.reset(new StickyKeysOverlay());
-    } else if (overlay_.get()) {
+      overlay_->SetModifierVisible(ui::EF_ALTGR_DOWN, altgr_enabled_);
+    } else if (overlay_) {
       overlay_->Show(false);
     }
   }
+}
+
+void StickyKeysController::SetModifiersEnabled(bool mod3_enabled,
+                                               bool altgr_enabled) {
+  mod3_enabled_ = mod3_enabled;
+  altgr_enabled_ = altgr_enabled;
+  if (overlay_)
+    overlay_->SetModifierVisible(ui::EF_ALTGR_DOWN, altgr_enabled_);
 }
 
 bool StickyKeysController::HandleKeyEvent(ui::KeyEvent* event) {
