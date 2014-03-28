@@ -1463,7 +1463,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
 #endif  // defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
 
 // Flaky test. crbug.com/356850
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, FLAKY_DoesNotUpdateAutocompleteOnBlur) {
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
+                       DISABLED_DoesNotUpdateAutocompleteOnBlur) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
