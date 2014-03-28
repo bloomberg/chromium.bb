@@ -336,21 +336,22 @@ String HTMLTextAreaElement::value() const
     return m_value;
 }
 
-void HTMLTextAreaElement::setValue(const String& value)
+void HTMLTextAreaElement::setValue(const String& value, TextFieldEventBehavior eventBehavior)
 {
-    setValueCommon(value);
+    RefPtr<HTMLTextAreaElement> protector(this);
+    setValueCommon(value, eventBehavior);
     m_isDirty = true;
     setNeedsValidityCheck();
 }
 
 void HTMLTextAreaElement::setNonDirtyValue(const String& value)
 {
-    setValueCommon(value);
+    setValueCommon(value, DispatchNoEvent);
     m_isDirty = false;
     setNeedsValidityCheck();
 }
 
-void HTMLTextAreaElement::setValueCommon(const String& newValue)
+void HTMLTextAreaElement::setValueCommon(const String& newValue, TextFieldEventBehavior eventBehavior)
 {
     // Code elsewhere normalizes line endings added by the user via the keyboard or pasting.
     // We normalize line endings coming from JavaScript here.
@@ -365,7 +366,8 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue)
 
     m_value = normalizedValue;
     setInnerTextValue(m_value);
-    setLastChangeWasNotUserEdit();
+    if (eventBehavior == DispatchNoEvent)
+        setLastChangeWasNotUserEdit();
     updatePlaceholderVisibility(false);
     setNeedsStyleRecalc(SubtreeStyleChange);
     setFormControlValueMatchesRenderer(true);
@@ -378,7 +380,13 @@ void HTMLTextAreaElement::setValueCommon(const String& newValue)
     }
 
     notifyFormStateChanged();
-    setTextAsOfLastFormControlChangeEvent(normalizedValue);
+    if (eventBehavior == DispatchNoEvent) {
+        setTextAsOfLastFormControlChangeEvent(normalizedValue);
+    } else {
+        if (eventBehavior == DispatchInputAndChangeEvent)
+            dispatchFormControlInputEvent();
+        dispatchFormControlChangeEvent();
+    }
 }
 
 String HTMLTextAreaElement::defaultValue() const

@@ -92,14 +92,14 @@ bool WebFormControlElement::autoComplete() const
     return false;
 }
 
-void WebFormControlElement::setValue(const WebString& value, bool sendChangeEvent)
+void WebFormControlElement::setValue(const WebString& value, bool sendEvents)
 {
     if (isHTMLInputElement(*m_private))
-        unwrap<HTMLInputElement>()->setValue(value, sendChangeEvent ? DispatchChangeEvent : DispatchNoEvent);
-    if (isHTMLTextAreaElement(*m_private))
-        unwrap<HTMLTextAreaElement>()->setValue(value);
-    if (isHTMLSelectElement(*m_private))
-        unwrap<HTMLSelectElement>()->setValue(value);
+        unwrap<HTMLInputElement>()->setValue(value, sendEvents ? DispatchInputAndChangeEvent : DispatchNoEvent);
+    else if (isHTMLTextAreaElement(*m_private))
+        unwrap<HTMLTextAreaElement>()->setValue(value, sendEvents ? DispatchInputAndChangeEvent : DispatchNoEvent);
+    else if (isHTMLSelectElement(*m_private))
+        unwrap<HTMLSelectElement>()->setValue(value, sendEvents);
 }
 
 WebString WebFormControlElement::value() const
@@ -117,9 +117,9 @@ void WebFormControlElement::setSuggestedValue(const WebString& value)
 {
     if (isHTMLInputElement(*m_private))
         unwrap<HTMLInputElement>()->setSuggestedValue(value);
-    if (isHTMLTextAreaElement(*m_private))
+    else if (isHTMLTextAreaElement(*m_private))
         unwrap<HTMLTextAreaElement>()->setSuggestedValue(value);
-    if (isHTMLSelectElement(*m_private))
+    else if (isHTMLSelectElement(*m_private))
         unwrap<HTMLSelectElement>()->setSuggestedValue(value);
 }
 
@@ -147,7 +147,7 @@ void WebFormControlElement::setSelectionRange(int start, int end)
 {
     if (isHTMLInputElement(*m_private))
         unwrap<HTMLInputElement>()->setSelectionRange(start, end);
-    if (isHTMLTextAreaElement(*m_private))
+    else if (isHTMLTextAreaElement(*m_private))
         unwrap<HTMLTextAreaElement>()->setSelectionRange(start, end);
 }
 

@@ -69,7 +69,7 @@ public:
     void remove(int index);
 
     String value() const;
-    void setValue(const String&);
+    void setValue(const String&, bool sendEvents = false);
     String suggestedValue() const;
     void setSuggestedValue(const String&);
 
@@ -145,7 +145,7 @@ private:
 
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
-    void dispatchInputAndChangeEventForMenuList();
+    void dispatchInputAndChangeEventForMenuList(bool requiresUserGesture = true);
 
     void recalcListItems(bool updateSelectedStates = true) const;
 

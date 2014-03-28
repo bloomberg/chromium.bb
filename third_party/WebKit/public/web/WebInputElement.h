@@ -73,7 +73,7 @@ namespace blink {
         BLINK_EXPORT bool isActivatedSubmit() const;
         BLINK_EXPORT void setActivatedSubmit(bool);
         BLINK_EXPORT int size() const;
-        BLINK_EXPORT void setChecked(bool, bool sendChangeEvent = false);
+        BLINK_EXPORT void setChecked(bool, bool sendEvents = false);
         // Sets the value inside the text field without being sanitized.
         // Can't be used if a renderer doesn't exist or on a non text field type.
         // Caret will be moved to the end.

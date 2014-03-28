@@ -59,6 +59,7 @@ public:
     BLINK_EXPORT WebString formControlName() const;
     BLINK_EXPORT WebString formControlType() const;
 
+    // FIXME: remove this method when no longer used.
     BLINK_EXPORT void dispatchFormControlChangeEvent();
 
     BLINK_EXPORT bool isAutofilled() const;
@@ -70,7 +71,7 @@ public:
     // Sets value for input element, textarea element and select element. For select
     // element it finds the option with value matches the given parameter and make the
     // option as the current selection.
-    BLINK_EXPORT void setValue(const WebString&, bool sendChangeEvent = false);
+    BLINK_EXPORT void setValue(const WebString&, bool sendEvents = false);
     // Returns value of element. For select element, it returns the value of
     // the selected option if present. If no selected option, an empty string
     // is returned. If element doesn't fall into input element, textarea element

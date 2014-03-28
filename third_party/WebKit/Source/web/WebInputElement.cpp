@@ -107,9 +107,9 @@ bool WebInputElement::isValidValue(const WebString& value) const
     return constUnwrap<HTMLInputElement>()->isValidValue(value);
 }
 
-void WebInputElement::setChecked(bool nowChecked, bool sendChangeEvent)
+void WebInputElement::setChecked(bool nowChecked, bool sendEvents)
 {
-    unwrap<HTMLInputElement>()->setChecked(nowChecked, sendChangeEvent ? DispatchChangeEvent : DispatchNoEvent);
+    unwrap<HTMLInputElement>()->setChecked(nowChecked, sendEvents ? DispatchInputAndChangeEvent : DispatchNoEvent);
 }
 
 bool WebInputElement::isChecked() const

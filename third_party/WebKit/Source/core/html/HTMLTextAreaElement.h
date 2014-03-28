@@ -42,7 +42,7 @@ public:
     bool shouldWrapText() const { return m_wrap != NoWrap; }
 
     virtual String value() const OVERRIDE;
-    void setValue(const String&);
+    void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent);
     String defaultValue() const;
     void setDefaultValue(const String&);
     int textLength() const { return value().length(); }
@@ -75,7 +75,7 @@ private:
     static String sanitizeUserInputValue(const String&, unsigned maxLength);
     void updateValue() const;
     void setNonDirtyValue(const String&);
-    void setValueCommon(const String&);
+    void setValueCommon(const String&, TextFieldEventBehavior);
 
     virtual bool supportsPlaceholder() const OVERRIDE { return true; }
     virtual void updatePlaceholderText() OVERRIDE;

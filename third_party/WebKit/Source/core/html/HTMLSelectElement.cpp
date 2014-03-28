@@ -236,28 +236,33 @@ String HTMLSelectElement::value() const
     return "";
 }
 
-void HTMLSelectElement::setValue(const String &value)
+void HTMLSelectElement::setValue(const String &value, bool sendEvents)
 {
     // We clear the previously selected option(s) when needed, to guarantee calling setSelectedIndex() only once.
-    if (value.isNull()) {
-        setSelectedIndex(-1);
-        return;
-    }
-
-    // Find the option with value() matching the given parameter and make it the current selection.
-    const Vector<HTMLElement*>& items = listItems();
     unsigned optionIndex = 0;
-    for (unsigned i = 0; i < items.size(); i++) {
-        if (isHTMLOptionElement(items[i])) {
-            if (toHTMLOptionElement(items[i])->value() == value) {
-                setSelectedIndex(optionIndex);
-                return;
+    if (value.isNull()) {
+        optionIndex = -1;
+    } else {
+        // Find the option with value() matching the given parameter and make it the current selection.
+        const Vector<HTMLElement*>& items = listItems();
+        for (unsigned i = 0; i < items.size(); i++) {
+            if (isHTMLOptionElement(items[i])) {
+                if (toHTMLOptionElement(items[i])->value() == value)
+                    break;
+                optionIndex++;
             }
-            optionIndex++;
         }
+        if (optionIndex >= items.size())
+            optionIndex = -1;
     }
+    setSelectedIndex(optionIndex);
 
-    setSelectedIndex(-1);
+    if (sendEvents) {
+        if (usesMenuList())
+            dispatchInputAndChangeEventForMenuList(false);
+        else
+            listBoxOnChange();
+    }
 }
 
 String HTMLSelectElement::suggestedValue() const
@@ -678,12 +683,12 @@ void HTMLSelectElement::listBoxOnChange()
     }
 }
 
-void HTMLSelectElement::dispatchInputAndChangeEventForMenuList()
+void HTMLSelectElement::dispatchInputAndChangeEventForMenuList(bool requiresUserGesture)
 {
     ASSERT(usesMenuList());
 
     int selected = selectedIndex();
-    if (m_lastOnChangeIndex != selected && m_isProcessingUserDrivenChange) {
+    if (m_lastOnChangeIndex != selected && (!requiresUserGesture || m_isProcessingUserDrivenChange)) {
         m_lastOnChangeIndex = selected;
         m_isProcessingUserDrivenChange = false;
         RefPtr<HTMLSelectElement> protector(this);
