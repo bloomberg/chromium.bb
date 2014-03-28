@@ -80,14 +80,12 @@ def ExtractBuild(options):
 
 
 def FindBugs(options):
+  _ = options # keeps the linter and findbugs happy, parameter is not used
   bb_annotations.PrintNamedStep('findbugs')
-  build_type = []
-  if options.target == 'Release':
-    build_type = ['--release-build']
-  RunCmd([SrcPath('build', 'android', 'findbugs_diff.py')] + build_type)
+  RunCmd([SrcPath('build', 'android', 'findbugs_diff.py')])
   RunCmd([SrcPath(
       'tools', 'android', 'findbugs_plugin', 'test',
-      'run_findbugs_plugin_tests.py')] + build_type)
+      'run_findbugs_plugin_tests.py')])
 
 
 def BisectPerfRegression(options):
@@ -134,6 +132,7 @@ def main(argv):
   setattr(options, 'target', options.factory_properties.get('target', 'Debug'))
   setattr(options, 'extra_src',
           options.factory_properties.get('extra_src', ''))
+  constants.SetBuildType(options.target)
 
   if options.steps:
     bb_utils.RunSteps(options.steps.split(','), GetHostStepCmds(), options)
