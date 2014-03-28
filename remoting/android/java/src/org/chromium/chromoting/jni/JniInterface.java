@@ -281,7 +281,7 @@ public class JniInterface {
      *                   is true.
      */
     private static native void nativeAuthenticationResponse(String pin, boolean createPair,
-                                                            String deviceName);
+            String deviceName);
 
     /** Saves newly-received pairing credentials to permanent storage. Called on the UI thread. */
     @CalledByNative
@@ -296,40 +296,53 @@ public class JniInterface {
      * Moves the mouse cursor, possibly while clicking the specified (nonnegative) button. Called
      * on the UI thread.
      */
-    public static void mouseAction(int x, int y, int whichButton, boolean buttonDown) {
+    public static void sendMouseEvent(int x, int y, int whichButton, boolean buttonDown) {
         if (!sConnected) {
             return;
         }
 
-        nativeMouseAction(x, y, whichButton, buttonDown);
+        nativeSendMouseEvent(x, y, whichButton, buttonDown);
     }
 
     /** Passes mouse information to the native handling code. */
-    private static native void nativeMouseAction(int x, int y, int whichButton, boolean buttonDown);
+    private static native void nativeSendMouseEvent(int x, int y, int whichButton,
+            boolean buttonDown);
 
     /** Injects a mouse-wheel event with delta values. Called on the UI thread. */
-    public static void mouseWheelDeltaAction(int deltaX, int deltaY) {
+    public static void sendMouseWheelEvent(int deltaX, int deltaY) {
         if (!sConnected) {
             return;
         }
 
-        nativeMouseWheelDeltaAction(deltaX, deltaY);
+        nativeSendMouseWheelEvent(deltaX, deltaY);
     }
 
     /** Passes mouse-wheel information to the native handling code. */
-    private static native void nativeMouseWheelDeltaAction(int deltaX, int deltaY);
+    private static native void nativeSendMouseWheelEvent(int deltaX, int deltaY);
 
-    /** Presses and releases the specified (nonnegative) key. Called on the UI thread. */
-    public static void keyboardAction(int keyCode, boolean keyDown) {
+    /** Presses or releases the specified (nonnegative) key. Called on the UI thread. */
+    public static void sendKeyEvent(int keyCode, boolean keyDown) {
         if (!sConnected) {
             return;
         }
 
-        nativeKeyboardAction(keyCode, keyDown);
+        nativeSendKeyEvent(keyCode, keyDown);
     }
 
     /** Passes key press information to the native handling code. */
-    private static native void nativeKeyboardAction(int keyCode, boolean keyDown);
+    private static native void nativeSendKeyEvent(int keyCode, boolean keyDown);
+
+    /** Sends TextEvent to the host. Called on the UI thread. */
+    public static void sendTextEvent(String text) {
+        if (!sConnected) {
+            return;
+        }
+
+        nativeSendTextEvent(text);
+    }
+
+    /** Passes text event information to the native handling code. */
+    private static native void nativeSendTextEvent(String text);
 
     /**
      * Sets the redraw callback to the provided functor. Provide a value of null whenever the

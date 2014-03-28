@@ -103,38 +103,42 @@ static void ScheduleRedraw(JNIEnv* env, jclass clazz) {
   remoting::ChromotingJniRuntime::GetInstance()->session()->RedrawDesktop();
 }
 
-static void MouseAction(JNIEnv* env,
-                        jclass clazz,
-                        jint x,
-                        jint y,
-                        jint whichButton,
-                        jboolean buttonDown) {
+static void SendMouseEvent(JNIEnv* env,
+                           jclass clazz,
+                           jint x,
+                           jint y,
+                           jint whichButton,
+                           jboolean buttonDown) {
   // Button must be within the bounds of the MouseEvent_MouseButton enum.
   DCHECK(whichButton >= 0 && whichButton < 5);
 
-  remoting::ChromotingJniRuntime::GetInstance()->session()->PerformMouseAction(
-      x,
-      y,
+  remoting::ChromotingJniRuntime::GetInstance()->session()->SendMouseEvent(
+      x, y,
       static_cast<remoting::protocol::MouseEvent_MouseButton>(whichButton),
       buttonDown);
 }
 
-static void MouseWheelDeltaAction(JNIEnv* env,
-                                  jclass clazz,
-                                  jint delta_x,
-                                  jint delta_y) {
-  remoting::ChromotingJniRuntime::GetInstance()
-      ->session()
-      ->PerformMouseWheelDeltaAction(delta_x, delta_y);
+static void SendMouseWheelEvent(JNIEnv* env,
+                                jclass clazz,
+                                jint delta_x,
+                                jint delta_y) {
+  remoting::ChromotingJniRuntime::GetInstance()->session()->SendMouseWheelEvent(
+      delta_x, delta_y);
 }
 
-static void KeyboardAction(JNIEnv* env,
-                           jclass clazz,
-                           jint keyCode,
-                           jboolean keyDown) {
-  remoting::ChromotingJniRuntime::GetInstance()
-      ->session()
-      ->PerformKeyboardAction(keyCode, keyDown);
+static void SendKeyEvent(JNIEnv* env,
+                         jclass clazz,
+                         jint keyCode,
+                         jboolean keyDown) {
+  remoting::ChromotingJniRuntime::GetInstance()->session()->SendKeyEvent(
+      keyCode, keyDown);
+}
+
+static void SendTextEvent(JNIEnv* env,
+                          jclass clazz,
+                          jstring text) {
+  remoting::ChromotingJniRuntime::GetInstance()->session()->SendTextEvent(
+      ConvertJavaStringToUTF8(env, text));
 }
 
 // ChromotingJniRuntime implementation.

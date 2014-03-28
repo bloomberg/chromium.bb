@@ -65,14 +65,15 @@ class ChromotingJniInstance
 
   // Moves the host's cursor to the specified coordinates, optionally with some
   // mouse button depressed. If |button| is BUTTON_UNDEFINED, no click is made.
-  void PerformMouseAction(int x, int y,
-                          protocol::MouseEvent_MouseButton button,
-                          bool button_down);
-
-  void PerformMouseWheelDeltaAction(int delta_x, int delta_y);
+  void SendMouseEvent(int x, int y,
+                      protocol::MouseEvent_MouseButton button,
+                      bool button_down);
+  void SendMouseWheelEvent(int delta_x, int delta_y);
 
   // Sends the provided keyboard scan code to the host.
-  void PerformKeyboardAction(int key_code, bool key_down);
+  void SendKeyEvent(int key_code, bool key_down);
+
+  void SendTextEvent(const std::string& text);
 
   // Records paint time for statistics logging, if enabled. May be called from
   // any thread.

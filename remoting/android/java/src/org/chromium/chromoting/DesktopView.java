@@ -344,7 +344,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             return;
         }
 
-        JniInterface.mouseAction(x, y, button, pressed);
+        JniInterface.sendMouseEvent(x, y, button, pressed);
         if (cursorMoved) {
             // TODO(lambroslambrou): Optimize this by only repainting the affected areas.
             requestRepaint();
@@ -353,7 +353,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
 
     @Override
     public void injectMouseWheelDeltaEvent(int deltaX, int deltaY) {
-        JniInterface.mouseWheelDeltaAction(deltaX, deltaY);
+        JniInterface.sendMouseWheelEvent(deltaX, deltaY);
     }
 
     @Override
