@@ -1305,11 +1305,6 @@ bool CanvasRenderingContext2D::shouldDrawShadows() const
     return alphaChannel(state().m_shadowColor) && (state().m_shadowBlur || !state().m_shadowOffset.isZero());
 }
 
-enum ImageSizeType {
-    ImageSizeAfterDevicePixelRatio,
-    ImageSizeBeforeDevicePixelRatio
-};
-
 static inline FloatRect normalizeRect(const FloatRect& rect)
 {
     return FloatRect(min(rect.x(), rect.maxX()),
@@ -1715,11 +1710,6 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(float sw, float 
         size.setHeight(1);
 
     return createEmptyImageData(size);
-}
-
-PassRefPtr<ImageData> CanvasRenderingContext2D::webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const
-{
-    return getImageData(sx, sy, sw, sh, exceptionState);
 }
 
 PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const

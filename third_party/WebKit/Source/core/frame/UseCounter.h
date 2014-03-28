@@ -283,8 +283,6 @@ public:
         DeprecatedWebKitRepeatingLinearGradient = 262,
         DeprecatedWebKitRadialGradient = 263,
         DeprecatedWebKitRepeatingRadialGradient = 264,
-        PrefixedGetImageDataHD = 265,
-        PrefixedPutImageDataHD = 266,
         PrefixedImageSmoothingEnabled = 267,
         UnprefixedImageSmoothingEnabled = 268,
         ShadowRootApplyAuthorStyles = 269,

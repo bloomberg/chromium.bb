@@ -199,12 +199,6 @@ public:
     void putImageData(ImageData*, float dx, float dy, ExceptionState&);
     void putImageData(ImageData*, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState&);
 
-    // Slated for deprecation:
-    void webkitPutImageDataHD(ImageData* image, float dx, float dy, ExceptionState& e) { putImageData(image, dx, dy, e); }
-    void webkitPutImageDataHD(ImageData* image, float dx, float dy, float dirtyX, float dirtyY, float dirtyWidth, float dirtyHeight, ExceptionState& e) { putImageData(image, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight, e); }
-    PassRefPtr<ImageData> webkitGetImageDataHD(float sx, float sy, float sw, float sh, ExceptionState&) const;
-    float webkitBackingStorePixelRatio() const { return 1; }
-
     void reset();
 
     String font() const;
