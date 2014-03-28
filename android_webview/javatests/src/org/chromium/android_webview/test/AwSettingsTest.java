@@ -938,9 +938,18 @@ public class AwSettingsTest extends AwTestBase {
         }
 
         protected String getData() {
+            DeviceDisplayInfo deviceInfo =
+                    DeviceDisplayInfo.create(getInstrumentation().getTargetContext());
+            int displayWidth = (int) (deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
+            int layoutWidth = (int) (displayWidth * 2.5f); // Use 2.5 as autosizing layout tests do.
             StringBuilder sb = new StringBuilder();
             sb.append("<html>" +
-                    "<head><script>" +
+                    "<head>" +
+                    "<meta name=\"viewport\" content=\"width=" + layoutWidth + "\">" +
+                    "<style>" +
+                    "body { width: " + layoutWidth + "px; margin: 0; overflow-y: hidden; }" +
+                    "</style>" +
+                    "<script>" +
                     "function setTitleToActualFontSize() {" +
                     // parseFloat is used to trim out the "px" suffix.
                     "  document.title = parseFloat(getComputedStyle(" +
@@ -951,7 +960,7 @@ public class AwSettingsTest extends AwTestBase {
             sb.append(PARAGRAPH_FONT_SIZE);
             sb.append("px;\">");
             // Make the paragraph wide enough for being processed by the font autosizer.
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 500; i++) {
                 sb.append("Hello, World! ");
             }
             sb.append("</p></body></html>");
