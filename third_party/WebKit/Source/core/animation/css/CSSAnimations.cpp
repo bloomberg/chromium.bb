@@ -323,9 +323,9 @@ PassOwnPtrWillBeRawPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Elemen
 {
     OwnPtrWillBeRawPtr<CSSAnimationUpdate> update = adoptPtrWillBeNoop(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), element, parentElement, style, parentStyle, resolver);
-    calculateAnimationActiveInterpolations(update.get(), element);
+    calculateAnimationActiveInterpolations(update.get(), element, parentElement.document().timeline().currentTime());
     calculateTransitionUpdate(update.get(), element, style);
-    calculateTransitionActiveInterpolations(update.get(), element);
+    calculateTransitionActiveInterpolations(update.get(), element, parentElement.document().transitionTimeline().currentTime());
     return update->isEmpty() ? nullptr : update.release();
 }
 
@@ -652,13 +652,13 @@ void CSSAnimations::cancel()
     m_pendingUpdate = nullptr;
 }
 
-void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* update, const Element* element)
+void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* update, const Element* element, double timelineCurrentTime)
 {
     ActiveAnimations* activeAnimations = element ? element->activeAnimations() : 0;
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
     if (update->newAnimations().isEmpty() && update->cancelledAnimationAnimationPlayers().isEmpty()) {
-        WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority));
+        WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority, timelineCurrentTime));
         update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
     }
@@ -669,18 +669,18 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
         for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
             newAnimations.append(animationsIter->get());
     }
-    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority));
+    WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority, timelineCurrentTime));
     update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 
-void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* update, const Element* element)
+void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* update, const Element* element, double timelineCurrentTime)
 {
     ActiveAnimations* activeAnimations = element ? element->activeAnimations() : 0;
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolationsForTransitions;
     if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
-        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::TransitionPriority);
+        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::TransitionPriority, timelineCurrentTime);
     } else {
         Vector<InertAnimation*> newTransitions;
         for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter)
@@ -696,7 +696,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
             }
         }
 
-        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, &newTransitions, &cancelledAnimationPlayers, Animation::TransitionPriority);
+        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, &newTransitions, &cancelledAnimationPlayers, Animation::TransitionPriority, timelineCurrentTime);
     }
 
     // Properties being animated by animations don't get values from transitions applied.

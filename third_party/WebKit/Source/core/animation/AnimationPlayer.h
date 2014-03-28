@@ -97,7 +97,25 @@ public:
     void cancelAnimationOnCompositor();
     bool hasActiveAnimationsOnCompositor();
 
-    static bool hasLowerPriority(AnimationPlayer*, AnimationPlayer*);
+    class SortInfo {
+    public:
+        friend class AnimationPlayer;
+        bool operator<(const SortInfo& other) const;
+    private:
+        SortInfo(unsigned sequenceNumber, double startTime)
+            : m_sequenceNumber(sequenceNumber)
+            , m_startTime(startTime)
+        { }
+        unsigned m_sequenceNumber;
+        double m_startTime;
+    };
+
+    const SortInfo& sortInfo() const { return m_sortInfo; }
+
+    static bool hasLowerPriority(AnimationPlayer* player1, AnimationPlayer* player2)
+    {
+        return player1->sortInfo() < player2->sortInfo();
+    }
 
 private:
     AnimationPlayer(DocumentTimeline&, TimedItem*);
@@ -113,6 +131,8 @@ private:
     double m_holdTime;
     double m_storedTimeLag;
 
+    SortInfo m_sortInfo;
+
     RefPtr<TimedItem> m_content;
     // FIXME: We should keep the timeline alive and have this as non-null
     // but this is tricky to do without Oilpan
@@ -125,8 +145,6 @@ private:
     // This indicates timing information relevant to the player has changed by
     // means other than the ordinary progression of time
     bool m_outdated;
-
-    unsigned m_sequenceNumber;
 };
 
 } // namespace

@@ -81,6 +81,7 @@ public:
     bool hasPendingUpdates() const { return !m_playersNeedingUpdate.isEmpty(); }
     double zeroTime() const { return m_zeroTime; }
     double currentTime();
+    double effectiveTime();
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;
 

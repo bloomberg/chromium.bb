@@ -200,8 +200,8 @@ private:
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);
     static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSAnimationData*, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
 
-    static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element*);
-    static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element*);
+    static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);
+    static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);
 
     class AnimationEventDelegate FINAL : public TimedItem::EventDelegate {
     public:

@@ -3268,6 +3268,7 @@
             'animation/AnimatableValueTestHelperTest.cpp',
             'animation/AnimationClockTest.cpp',
             'animation/AnimationHelpersTest.cpp',
+            'animation/AnimationStackTest.cpp',
             'animation/AnimationTest.cpp',
             'animation/AnimationTestHelper.cpp',
             'animation/AnimationTestHelper.h',

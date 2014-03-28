@@ -694,7 +694,8 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 
 TEST_F(AnimationAnimationPlayerTest, HasLowerPriority)
 {
-    // Note that start time defaults to null
+    // Sort time defaults to timeline current time
+    updateTimeline(15);
     RefPtr<AnimationPlayer> player1 = timeline->createAnimationPlayer(0);
     RefPtr<AnimationPlayer> player2 = timeline->createAnimationPlayer(0);
     player2->setStartTime(10);
@@ -706,11 +707,11 @@ TEST_F(AnimationAnimationPlayerTest, HasLowerPriority)
     RefPtr<AnimationPlayer> player6 = timeline->createAnimationPlayer(0);
     player6->setStartTime(-10);
     Vector<RefPtr<AnimationPlayer> > players;
-    players.append(player1);
-    players.append(player3);
     players.append(player6);
     players.append(player2);
     players.append(player5);
+    players.append(player1);
+    players.append(player3);
     players.append(player4);
     for (size_t i = 0; i < players.size(); i++) {
         for (size_t j = 0; j < players.size(); j++)

@@ -56,13 +56,13 @@ AnimationPlayer::AnimationPlayer(DocumentTimeline& timeline, TimedItem* content)
     , m_startTime(nullValue())
     , m_holdTime(nullValue())
     , m_storedTimeLag(0)
+    , m_sortInfo(nextSequenceNumber(), timeline.effectiveTime())
     , m_content(content)
     , m_timeline(&timeline)
     , m_paused(false)
     , m_held(false)
     , m_isPausedForTesting(false)
     , m_outdated(false)
-    , m_sequenceNumber(nextSequenceNumber())
 {
     if (m_content) {
         if (m_content->player())
@@ -93,10 +93,7 @@ double AnimationPlayer::currentTimeWithoutLag() const
 {
     if (isNull(m_startTime) || !m_timeline)
         return 0;
-    double timelineTime = m_timeline->currentTime();
-    if (isNull(timelineTime))
-        timelineTime = 0;
-    return (timelineTime - m_startTime) * m_playbackRate;
+    return (m_timeline->effectiveTime() - m_startTime) * m_playbackRate;
 }
 
 double AnimationPlayer::currentTimeWithLag() const
@@ -157,6 +154,7 @@ void AnimationPlayer::setStartTime(double newStartTime)
         return;
     updateCurrentTimingState(); // Update the value of held
     m_startTime = newStartTime;
+    m_sortInfo.m_startTime = newStartTime;
     if (m_held)
         return;
     updateCurrentTimingState();
@@ -314,15 +312,14 @@ void AnimationPlayer::cancel()
     m_content = nullptr;
 }
 
-bool AnimationPlayer::hasLowerPriority(AnimationPlayer* player1, AnimationPlayer* player2)
+bool AnimationPlayer::SortInfo::operator<(const SortInfo& other) const
 {
-    if (player1->m_startTime < player2->m_startTime)
+    ASSERT(!std::isnan(m_startTime) && !std::isnan(other.m_startTime));
+    if (m_startTime < other.m_startTime)
         return true;
-    if (player1->m_startTime > player2->m_startTime)
+    if (m_startTime > other.m_startTime)
         return false;
-    if (isNull(player1->m_startTime) != isNull(player2->m_startTime))
-        return isNull(player1->m_startTime);
-    return player1->m_sequenceNumber < player2->m_sequenceNumber;
+    return m_sequenceNumber < other.m_sequenceNumber;
 }
 
 void AnimationPlayer::pauseForTesting(double pauseTime)

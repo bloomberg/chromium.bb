@@ -80,7 +80,7 @@ AnimationPlayer* DocumentTimeline::createAnimationPlayer(TimedItem* child)
 AnimationPlayer* DocumentTimeline::play(TimedItem* child)
 {
     AnimationPlayer* player = createAnimationPlayer(child);
-    player->setStartTime(currentTime());
+    player->setStartTime(effectiveTime());
     return player;
 }
 
@@ -149,6 +149,12 @@ double DocumentTimeline::currentTime()
     if (!m_document)
         return std::numeric_limits<double>::quiet_NaN();
     return m_document->animationClock().currentTime() - m_zeroTime;
+}
+
+double DocumentTimeline::effectiveTime()
+{
+    double time = currentTime();
+    return std::isnan(time) ? 0 : time;
 }
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
