@@ -15,6 +15,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/utf_string_conversions.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/message_decoder.h"
@@ -28,6 +29,20 @@ namespace {
 
 void SetOrClearBit(uint64_t &value, uint64_t bit, bool set_bit) {
   value = set_bit ? (value | bit) : (value & ~bit);
+}
+
+void CreateAndPostKeyEvent(int keycode,
+                           bool pressed,
+                           int flags,
+                           const base::string16& unicode) {
+  base::ScopedCFTypeRef<CGEventRef> eventRef(
+      CGEventCreateKeyboardEvent(NULL, keycode, pressed));
+  if (eventRef) {
+    CGEventSetFlags(eventRef, flags);
+    if (!unicode.empty())
+      CGEventKeyboardSetUnicodeString(eventRef, unicode.size(), &(unicode[0]));
+    CGEventPost(kCGSessionEventTap, eventRef);
+  }
 }
 
 // This value is not defined. Give it the obvious name so that if it is ever
@@ -194,24 +209,23 @@ void InputInjectorMac::Core::InjectKeyEvent(const KeyEvent& event) {
     SetOrClearBit(right_modifiers_, kCGEventFlagMaskAlternate, event.pressed());
   }
 
-  base::ScopedCFTypeRef<CGEventRef> eventRef(
-      CGEventCreateKeyboardEvent(NULL, keycode, event.pressed()));
+  // In addition to the modifier keys pressed right now, we also need to set
+  // AlphaShift if caps lock was active at the client (Mac ignores NumLock).
+  uint64_t flags = left_modifiers_ | right_modifiers_;
+  if (event.lock_states() & protocol::KeyEvent::LOCK_STATES_CAPSLOCK)
+    flags |= kCGEventFlagMaskAlphaShift;
 
-  if (eventRef) {
-    // In addition to the modifier keys pressed right now, we also need to set
-    // AlphaShift if caps lock was active at the client (Mac ignores NumLock).
-    uint64_t flags = left_modifiers_ | right_modifiers_;
-    if (event.lock_states() & protocol::KeyEvent::LOCK_STATES_CAPSLOCK)
-      flags |= kCGEventFlagMaskAlphaShift;
-    CGEventSetFlags(eventRef, flags);
-
-    // Post the event to the current session.
-    CGEventPost(kCGSessionEventTap, eventRef);
-  }
+  CreateAndPostKeyEvent(keycode, event.pressed(), flags, base::string16());
 }
 
 void InputInjectorMac::Core::InjectTextEvent(const TextEvent& event) {
-  NOTIMPLEMENTED();
+  DCHECK(event.has_text());
+  base::string16 text = base::UTF8ToUTF16(event.text());
+
+  // Applications that ignore UnicodeString field will see the text event as
+  // Space key.
+  CreateAndPostKeyEvent(kVK_Space, true, 0, text);
+  CreateAndPostKeyEvent(kVK_Space, false, 0, text);
 }
 
 void InputInjectorMac::Core::InjectMouseEvent(const MouseEvent& event) {
