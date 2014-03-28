@@ -1583,7 +1583,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitTextCombine:
     case CSSPropertyWebkitTextEmphasisPosition:
     case CSSPropertyWebkitTextSecurity:
-    case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
     case CSSPropertyWebkitUserDrag:
     case CSSPropertyWebkitUserModify:
@@ -1614,6 +1613,7 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransform:
     case CSSPropertyTransformOrigin:
+    case CSSPropertyTransformStyle:
         return false;
     default:
         return parseSVGValue(propId, important);
