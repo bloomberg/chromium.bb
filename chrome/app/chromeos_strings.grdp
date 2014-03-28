@@ -4887,10 +4887,10 @@ All users must sign out to continue.
     Howdy.
   </message>
   <message name="IDS_FIRST_RUN_GREETING_STEP_TEXT_1" desc="First part of message shown on the first dialog of firsr-run tutorial.">
-    Welcome to the Chromebook family. This is no ordinary computer.
+    Welcome to the <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> family. This is no ordinary computer.
   </message>
   <message name="IDS_FIRST_RUN_GREETING_STEP_TEXT_2" desc="Second part of message shown on the first dialog of firsr-run tutorial.">
-    This Chromebook was designed to deliver the best experience of the web to you.
+    This <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device was designed to deliver the best experience of the web to you.
   </message>
   <message name="IDS_FIRST_RUN_GREETING_STEP_BUTTON" desc="Text on the button located on the first dialog of first-run tutorial.">
     Take a tour
@@ -4914,7 +4914,7 @@ All users must sign out to continue.
     Have fun! We're here for you.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_1" desc="First part of text shown on the first-run tutorial bubble pointing to help button in system tray.">
-    Enjoy your Chromebook. Questions? You can always get help by clicking the "?" in the status tray.
+    Enjoy your <ph name="SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device. Questions? You can always get help by clicking the "?" in the status tray.
   </message>
   <message name="IDS_FIRST_RUN_HELP_STEP_TEXT_2" desc="Second part of text shown on the first-run tutorial bubble pointing to help button in system tray.">
     Want to discover more awesome features?

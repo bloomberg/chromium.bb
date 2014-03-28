@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -28,12 +29,16 @@ bool FirstRunPrivateGetLocalizedStringsFunction::RunImpl() {
         "greetingHeader",
         l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_HEADER_GENERAL));
   }
+  base::string16 product_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   localized_strings->SetString(
       "greetingText1",
-      l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_TEXT_1));
+      l10n_util::GetStringFUTF16(IDS_FIRST_RUN_GREETING_STEP_TEXT_1,
+                                 product_name));
   localized_strings->SetString(
       "greetingText2",
-      l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_TEXT_2));
+      l10n_util::GetStringFUTF16(IDS_FIRST_RUN_GREETING_STEP_TEXT_2,
+                                 product_name));
   localized_strings->SetString(
       "greetingButton",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_BUTTON));

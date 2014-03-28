@@ -14,6 +14,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -41,8 +42,11 @@ void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
       "trayText", l10n_util::GetStringUTF16(IDS_FIRST_RUN_TRAY_STEP_TEXT));
   localized_strings->SetString(
       "helpHeader", l10n_util::GetStringUTF16(IDS_FIRST_RUN_HELP_STEP_HEADER));
+  base::string16 product_name =
+      l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME);
   localized_strings->SetString(
-      "helpText1", l10n_util::GetStringUTF16(IDS_FIRST_RUN_HELP_STEP_TEXT_1));
+      "helpText1", l10n_util::GetStringFUTF16(IDS_FIRST_RUN_HELP_STEP_TEXT_1,
+                                              product_name));
   localized_strings->SetString(
       "helpText2", l10n_util::GetStringUTF16(IDS_FIRST_RUN_HELP_STEP_TEXT_2));
   localized_strings->SetString(
