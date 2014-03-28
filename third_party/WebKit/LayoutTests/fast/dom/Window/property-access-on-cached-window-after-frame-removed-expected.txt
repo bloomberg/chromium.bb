@@ -40,7 +40,7 @@ PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
 FAIL childWindow.navigator.battery.charging should be false. Was true.
-FAIL childWindow.navigator.battery.chargingTime should be 0. Was Infinity.
+PASS childWindow.navigator.battery.chargingTime is 0
 FAIL childWindow.navigator.battery.dischargingTime should be 0. Was Infinity.
 FAIL childWindow.navigator.battery.level should be 0. Was 1.
 PASS childWindow.navigator.battery.onchargingchange is null

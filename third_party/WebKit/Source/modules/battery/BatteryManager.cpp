@@ -34,8 +34,15 @@ bool BatteryManager::charging()
 
 double BatteryManager::chargingTime()
 {
-    if (!m_batteryStatus || !m_batteryStatus->charging())
+    if (!m_batteryStatus)
+        return 0;
+
+    if (!m_batteryStatus->charging())
         return std::numeric_limits<double>::infinity();
+
+    // The spec requires that if level == 1.0, chargingTime == 0 but this has to
+    // be implement by the backend. Adding this assert will help enforcing it.
+    ASSERT(level() != 1.0 && m_batteryStatus->chargingTime() == 0.0);
 
     return m_batteryStatus->chargingTime();
 }

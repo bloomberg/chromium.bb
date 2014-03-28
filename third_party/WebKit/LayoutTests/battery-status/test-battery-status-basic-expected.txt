@@ -2,7 +2,7 @@ This test prints the default battery status values.
 
 Charging Status: Charging
 
-Charging Time: Infinity
+Charging Time: 0
 
 Discharging Time: Infinity
 
