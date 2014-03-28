@@ -35,9 +35,14 @@ const wchar_t kNwCategoryWizardSavedRegValue[] = L"ShowSaved";
 const wchar_t kNwCategoryWizardDeleteRegValue[] = L"ShowDelete";
 const wchar_t kWlanApiDll[] = L"wlanapi.dll";
 
+// Created Profile Dictionary keys
+const char kProfileXmlKey[] = "xml";
+const char kProfileSharedKey[] = "shared";
+
 // WlanApi function names
 const char kWlanConnect[] = "WlanConnect";
 const char kWlanCloseHandle[] = "WlanCloseHandle";
+const char kWlanDeleteProfile[] = "WlanDeleteProfile";
 const char kWlanDisconnect[] = "WlanDisconnect";
 const char kWlanEnumInterfaces[] = "WlanEnumInterfaces";
 const char kWlanFreeMemory[] = "WlanFreeMemory";
@@ -60,6 +65,12 @@ typedef DWORD (WINAPI* WlanConnectFunction)(
 
 typedef DWORD (WINAPI* WlanCloseHandleFunction)(
     HANDLE hClientHandle,
+    PVOID pReserved);
+
+typedef DWORD (WINAPI* WlanDeleteProfileFunction)(
+    HANDLE hClientHandle,
+    const GUID *pInterfaceGuid,
+    LPCWSTR strProfileName,
     PVOID pReserved);
 
 typedef DWORD (WINAPI* WlanDisconnectFunction)(
@@ -222,6 +233,13 @@ class WiFiServiceImpl : public WiFiService {
   virtual void RequestConnectedNetworkUpdate() OVERRIDE {}
 
  private:
+  typedef int32 EncryptionType;
+  enum EncryptionTypeEnum {
+    kEncryptionTypeAny = 0,
+    kEncryptionTypeAES = 1,
+    kEncryptionTypeTKIP = 2
+  };
+
   // Static callback for Windows WLAN_NOTIFICATION. Calls OnWlanNotification
   // on WiFiServiceImpl passed back as |context|.
   static void __stdcall OnWlanNotificationCallback(
@@ -313,8 +331,13 @@ class WiFiServiceImpl : public WiFiService {
   // Deduce |onc::wifi| security from |alg|.
   std::string SecurityFromDot11AuthAlg(DOT11_AUTH_ALGORITHM alg) const;
 
+  // Convert |EncryptionType| into WPA(2) encryption type string.
+  std::string WpaEncryptionFromEncryptionType(
+      EncryptionType encryption_type) const;
+
   // Deduce WLANProfile |authEncryption| values from |onc::wifi| security.
   bool AuthEncryptionFromSecurity(const std::string& security,
+                                  EncryptionType encryption_type,
                                   std::string* authentication,
                                   std::string* encryption,
                                   std::string* key_type) const;
@@ -358,8 +381,11 @@ class WiFiServiceImpl : public WiFiService {
   // Normalizes |frequency_in_mhz| into one of |Frequency| values.
   Frequency GetNormalizedFrequency(int frequency_in_mhz) const;
 
-  // Create |profile_xml| based on |network_properties|.
+  // Create |profile_xml| based on |network_properties|. If |encryption_type|
+  // is |kEncryptionTypeAny| applies the type most suitable for parameters in
+  // |network_properties|.
   bool CreateProfile(const NetworkProperties& network_properties,
+                     EncryptionType encryption_type,
                      std::string* profile_xml);
 
   // Save temporary wireless profile for |network_guid|.
@@ -372,8 +398,15 @@ class WiFiServiceImpl : public WiFiService {
                    bool get_plaintext_key,
                    std::string* profile_xml);
 
+  // Set |profile_xml| to current user or all users depending on |shared| flag.
+  // If |overwrite| is false, then returns an error if profile exists.
+  DWORD SetProfile(bool shared, const std::string& profile_xml, bool overwrite);
+
   // Return true if there is previously stored profile xml for |network_guid|.
   bool HaveProfile(const std::string& network_guid);
+
+  // Delete profile that was created, but failed to connect.
+  DWORD DeleteCreatedProfile(const std::string& network_guid);
 
   // Notify |network_list_changed_observer_| that list of visible networks has
   // changed to |networks|.
@@ -390,6 +423,7 @@ class WiFiServiceImpl : public WiFiService {
   // WlanApi function pointers
   WlanConnectFunction WlanConnect_function_;
   WlanCloseHandleFunction WlanCloseHandle_function_;
+  WlanDeleteProfileFunction WlanDeleteProfile_function_;
   WlanDisconnectFunction WlanDisconnect_function_;
   WlanEnumInterfacesFunction WlanEnumInterfaces_function_;
   WlanFreeMemoryFunction WlanFreeMemory_function_;
@@ -415,6 +449,11 @@ class WiFiServiceImpl : public WiFiService {
   base::DictionaryValue connect_properties_;
   // Preserved WLAN profile xml.
   std::map<std::string, std::string> saved_profiles_xml_;
+  // Created WLAN Profiles, indexed by |network_guid|. Contains xml with TKIP
+  // encryption type saved by |CreateNetwork| if applicable. Profile has to be
+  // deleted if connection fails. Implicitly created profiles have to be deleted
+  // if connection succeeds. Persist only in memory.
+  base::DictionaryValue created_profiles_;
   // Observer to get notified when network(s) have changed (e.g. connect).
   NetworkGuidListCallback networks_changed_observer_;
   // Observer to get notified when network list has changed (scan complete).
@@ -438,6 +477,7 @@ WiFiServiceImpl::WiFiServiceImpl()
     : wlan_api_library_(NULL),
       WlanConnect_function_(NULL),
       WlanCloseHandle_function_(NULL),
+      WlanDeleteProfile_function_(NULL),
       WlanDisconnect_function_(NULL),
       WlanEnumInterfaces_function_(NULL),
       WlanFreeMemory_function_(NULL),
@@ -536,26 +576,34 @@ void WiFiServiceImpl::CreateNetwork(
 
   network_properties.guid = network_properties.ssid;
   std::string profile_xml;
-  if (!CreateProfile(network_properties, &profile_xml)) {
+  if (!CreateProfile(network_properties, kEncryptionTypeAny, &profile_xml)) {
     CheckError(ERROR_INVALID_DATA, kWiFiServiceError, error);
     return;
   }
 
-  base::string16 profile_xml16(base::UTF8ToUTF16(profile_xml));
-  DWORD reason_code = 0u;
-
-  error_code = WlanSetProfile_function_(client_,
-                                        &interface_guid_,
-                                        shared ? 0 : WLAN_PROFILE_USER,
-                                        profile_xml16.c_str(),
-                                        NULL,
-                                        FALSE,
-                                        NULL,
-                                        &reason_code);
+  error_code = SetProfile(shared, profile_xml, false);
   if (CheckError(error_code, kWiFiServiceError, error)) {
     DVLOG(0) << profile_xml;
-    DVLOG(0) << "SetProfile Reason Code:" << reason_code;
     return;
+  }
+
+  // WAP and WAP2 networks could use either AES or TKIP encryption type.
+  // Preserve alternative profile to use in case if connection with default
+  // encryption type fails.
+  std::string tkip_profile_xml;
+  if (!CreateProfile(network_properties,
+                     kEncryptionTypeTKIP,
+                     &tkip_profile_xml)) {
+    CheckError(ERROR_INVALID_DATA, kWiFiServiceError, error);
+    return;
+  }
+
+  if (tkip_profile_xml != profile_xml) {
+    scoped_ptr<base::DictionaryValue> tkip_profile(new base::DictionaryValue());
+    tkip_profile->SetString(kProfileXmlKey, tkip_profile_xml);
+    tkip_profile->SetBoolean(kProfileSharedKey, shared);
+    created_profiles_.SetWithoutPathExpansion(network_properties.guid,
+                                              tkip_profile.release());
   }
 
   *network_guid = network_properties.guid;
@@ -779,11 +827,49 @@ void WiFiServiceImpl::OnNetworkScanCompleteOnMainThread() {
 
 void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
                                             int attempt) {
-  // If network didn't get connected in |kMaxAttempts|, then restore automatic
-  // network change notifications and stop waiting.
+  // If network didn't get connected in |kMaxAttempts|, then try to connect
+  // using different profile if it was created recently.
   if (attempt > kMaxAttempts) {
-    DLOG(ERROR) << kMaxAttempts << " attempts exceeded waiting for connect to "
-                << network_guid;
+    LOG(ERROR) << kMaxAttempts << " attempts exceeded waiting for connect to "
+               << network_guid;
+
+    base::DictionaryValue* created_profile = NULL;
+    // Check, whether this connection is using newly created profile.
+    if (created_profiles_.GetDictionaryWithoutPathExpansion(
+        network_guid, &created_profile)) {
+      std::string tkip_profile_xml;
+      bool shared = false;
+      // Check, if this connection there is alternative TKIP profile xml that
+      // should be tried. If there is, then set it up and try to connect again.
+      if (created_profile->GetString(kProfileXmlKey, &tkip_profile_xml) &&
+          created_profile->GetBoolean(kProfileSharedKey, &shared)) {
+        // Remove TKIP profile xml, so it will not be tried again.
+        created_profile->Remove(kProfileXmlKey, NULL);
+        created_profile->Remove(kProfileSharedKey, NULL);
+        DWORD error_code = SetProfile(shared, tkip_profile_xml, true);
+        if (error_code == ERROR_SUCCESS) {
+          // Try to connect with new profile.
+          error_code = Connect(network_guid,
+                               GetFrequencyToConnect(network_guid));
+          if (error_code == ERROR_SUCCESS) {
+            // Start waiting again.
+            WaitForNetworkConnect(network_guid, 0);
+            return;
+          } else {
+            LOG(ERROR) << "Failed to set created profile for " << network_guid
+                       << " error=" << error_code;
+          }
+        }
+      } else {
+        // Connection has failed, so delete bad created profile.
+        DWORD error_code = DeleteCreatedProfile(network_guid);
+        if (error_code != ERROR_SUCCESS) {
+          LOG(ERROR) << "Failed to delete created profile for " << network_guid
+                     << " error=" << error_code;
+        }
+      }
+    }
+    // Restore automatic network change notifications and stop waiting.
     enable_notify_network_changed_ = true;
     RestoreNwCategoryWizard();
     return;
@@ -796,6 +882,8 @@ void WiFiServiceImpl::WaitForNetworkConnect(const std::string& network_guid,
     // e.g. after Chromecast device reset. Reset DHCP on wireless network to
     // work around this issue.
     error = ResetDHCP();
+    // There is no need to keep created profile as network is connected.
+    created_profiles_.RemoveWithoutPathExpansion(network_guid, NULL);
     // Restore previously suppressed notifications.
     enable_notify_network_changed_ = true;
     RestoreNwCategoryWizard();
@@ -877,6 +965,9 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
   WlanCloseHandle_function_ =
       reinterpret_cast<WlanCloseHandleFunction>(
           ::GetProcAddress(wlan_api_library_, kWlanCloseHandle));
+  WlanDeleteProfile_function_ =
+      reinterpret_cast<WlanDeleteProfileFunction>(
+          ::GetProcAddress(wlan_api_library_, kWlanDeleteProfile));
   WlanDisconnect_function_ =
       reinterpret_cast<WlanDisconnectFunction>(
           ::GetProcAddress(wlan_api_library_, kWlanDisconnect));
@@ -916,6 +1007,7 @@ DWORD WiFiServiceImpl::LoadWlanLibrary() {
 
   if (!WlanConnect_function_ ||
       !WlanCloseHandle_function_ ||
+      !WlanDeleteProfile_function_ ||
       !WlanDisconnect_function_ ||
       !WlanEnumInterfaces_function_ ||
       !WlanFreeMemory_function_ ||
@@ -1088,6 +1180,7 @@ DWORD WiFiServiceImpl::CloseClientHandle() {
   if (wlan_api_library_ != NULL) {
     WlanConnect_function_ = NULL;
     WlanCloseHandle_function_ = NULL;
+    WlanDeleteProfile_function_ = NULL;
     WlanDisconnect_function_ = NULL;
     WlanEnumInterfaces_function_ = NULL;
     WlanFreeMemory_function_ = NULL;
@@ -1467,9 +1560,6 @@ DWORD WiFiServiceImpl::Connect(const std::string& network_guid,
       error = WlanConnect_function_(
           client_, &interface_guid_, &wlan_params, NULL);
     } else {
-      // TODO(mef): wlan_connection_mode_discovery_unsecure is not available on
-      // XP. If XP support is needed, then temporary profile will have to be
-      // created.
       WLAN_CONNECTION_PARAMETERS wlan_params = {
           wlan_connection_mode_discovery_unsecure,
           NULL,
@@ -1552,14 +1642,59 @@ DWORD WiFiServiceImpl::GetProfile(const std::string& network_guid,
   return error;
 }
 
+DWORD WiFiServiceImpl::SetProfile(bool shared,
+                                  const std::string& profile_xml,
+                                  bool overwrite) {
+  DWORD error_code = ERROR_SUCCESS;
+
+  base::string16 profile_xml16(base::UTF8ToUTF16(profile_xml));
+  DWORD reason_code = 0u;
+
+  error_code = WlanSetProfile_function_(client_,
+                                        &interface_guid_,
+                                        shared ? 0 : WLAN_PROFILE_USER,
+                                        profile_xml16.c_str(),
+                                        NULL,
+                                        overwrite,
+                                        NULL,
+                                        &reason_code);
+  return error_code;
+}
+
 bool WiFiServiceImpl::HaveProfile(const std::string& network_guid) {
   DWORD error = ERROR_SUCCESS;
   std::string profile_xml;
   return GetProfile(network_guid, false, &profile_xml) == ERROR_SUCCESS;
 }
 
+
+DWORD WiFiServiceImpl::DeleteCreatedProfile(const std::string& network_guid) {
+  base::DictionaryValue* created_profile = NULL;
+  DWORD error_code = ERROR_SUCCESS;
+  // Check, whether this connection is using new created profile, and remove it.
+  if (created_profiles_.GetDictionaryWithoutPathExpansion(
+      network_guid, &created_profile)) {
+    // Connection has failed, so delete it.
+    base::string16 profile_name = ProfileNameFromGUID(network_guid);
+    error_code = WlanDeleteProfile_function_(client_,
+                                              &interface_guid_,
+                                              profile_name.c_str(),
+                                              NULL);
+    created_profiles_.RemoveWithoutPathExpansion(network_guid, NULL);
+  }
+  return error_code;
+}
+
+std::string WiFiServiceImpl::WpaEncryptionFromEncryptionType(
+    EncryptionType encryption_type) const {
+  if (encryption_type == kEncryptionTypeTKIP)
+    return kEncryptionTKIP;
+  return kEncryptionAES;
+}
+
 bool WiFiServiceImpl::AuthEncryptionFromSecurity(
     const std::string& security,
+    EncryptionType encryption_type,
     std::string* authentication,
     std::string* encryption,
     std::string* key_type) const {
@@ -1572,15 +1707,11 @@ bool WiFiServiceImpl::AuthEncryptionFromSecurity(
     *key_type = kKeyTypeNetwork;
   } else if (security == onc::wifi::kWPA_PSK) {
     *authentication = kAuthenticationWpaPsk;
-    // TODO(mef): WAP |encryption| could be either |AES| or |TKIP|. It has to be
-    // determined and adjusted properly during |Connect|.
-    *encryption = kEncryptionAES;
+    *encryption = WpaEncryptionFromEncryptionType(encryption_type);
     *key_type = kKeyTypePassphrase;
   } else if (security == onc::wifi::kWPA2_PSK) {
     *authentication = kAuthenticationWpa2Psk;
-    // TODO(mef): WAP |encryption| could be either |AES| or |TKIP|. It has to be
-    // determined and adjusted properly during |Connect|.
-    *encryption = kEncryptionAES;
+    *encryption = WpaEncryptionFromEncryptionType(encryption_type);
     *key_type = kKeyTypePassphrase;
   } else {
     return false;
@@ -1590,12 +1721,14 @@ bool WiFiServiceImpl::AuthEncryptionFromSecurity(
 
 bool WiFiServiceImpl::CreateProfile(
     const NetworkProperties& network_properties,
+    EncryptionType encryption_type,
     std::string* profile_xml) {
   // Get authentication and encryption values from security.
   std::string authentication;
   std::string encryption;
   std::string key_type;
   bool valid = AuthEncryptionFromSecurity(network_properties.security,
+                                          encryption_type,
                                           &authentication,
                                           &encryption,
                                           &key_type);
