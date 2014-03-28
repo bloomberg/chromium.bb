@@ -1429,6 +1429,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         state.style()->setTransform(operations);
         return;
     }
+    case CSSPropertyPerspective:
     case CSSPropertyWebkitPerspective: {
         HANDLE_INHERIT_AND_INITIAL(perspective, Perspective)
 
@@ -1443,8 +1444,8 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         float perspectiveValue;
         if (primitiveValue->isLength()) {
             perspectiveValue = primitiveValue->computeLength<float>(state.cssToLengthConversionData());
-        } else if (primitiveValue->isNumber()) {
-            // For backward compatibility, treat valueless numbers as px.
+        } else if (id == CSSPropertyWebkitPerspective && primitiveValue->isNumber()) {
+            // Prefixed version treats unitless numbers as px.
             perspectiveValue = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX)->computeLength<float>(state.cssToLengthConversionData());
         } else {
             return;
@@ -1741,7 +1742,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     }
 
     // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-    case CSSPropertyPerspective:
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransform:
     case CSSPropertyTransformOrigin:
