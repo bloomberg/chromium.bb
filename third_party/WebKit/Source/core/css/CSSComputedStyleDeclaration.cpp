@@ -268,6 +268,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyGridAutoRows,
     CSSPropertyGridColumnEnd,
     CSSPropertyGridColumnStart,
+    CSSPropertyGridTemplateAreas,
     CSSPropertyGridTemplateColumns,
     CSSPropertyGridTemplateRows,
     CSSPropertyGridRowEnd,
