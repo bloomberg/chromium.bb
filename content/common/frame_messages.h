@@ -385,7 +385,10 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_DidFailLoadWithError,
 // Sent when the renderer starts loading the page. This corresponds to
 // Blink's notion of the throbber starting. Note that sometimes you may get
 // duplicates of these during a single load.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStartLoading)
+// |to_different_document| will be true unless the load is a fragment
+// navigation, or triggered by history.pushState/replaceState.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidStartLoading,
+                    bool /* to_different_document */)
 
 // Sent when the renderer is done loading a page. This corresponds to Blink's
 // notion of the throbber stopping.

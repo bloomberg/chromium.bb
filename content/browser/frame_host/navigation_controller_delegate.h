@@ -71,6 +71,7 @@ class NavigationControllerDelegate {
   virtual void DetachInterstitialPage() = 0;
   virtual void SetIsLoading(RenderViewHost* render_view_host,
                             bool is_loading,
+                            bool to_different_document,
                             LoadNotificationDetails* details) = 0;
 };
 

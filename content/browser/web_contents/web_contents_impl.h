@@ -304,7 +304,8 @@ class CONTENT_EXPORT WebContentsImpl
                                  const IPC::Message& message) OVERRIDE;
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
-  virtual void DidStartLoading(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void DidStartLoading(RenderFrameHost* render_frame_host,
+                               bool to_different_document) OVERRIDE;
   virtual void DidStopLoading(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void WorkerCrashed(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
@@ -589,6 +590,7 @@ class CONTENT_EXPORT WebContentsImpl
   // (but can be null if not applicable).
   virtual void SetIsLoading(RenderViewHost* render_view_host,
                             bool is_loading,
+                            bool to_different_document,
                             LoadNotificationDetails* details) OVERRIDE;
 
   typedef base::Callback<void(WebContents*)> CreatedCallback;

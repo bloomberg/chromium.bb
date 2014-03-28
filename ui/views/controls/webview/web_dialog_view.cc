@@ -324,7 +324,8 @@ void WebDialogView::AddNewContents(content::WebContents* source,
       was_blocked);
 }
 
-void WebDialogView::LoadingStateChanged(content::WebContents* source) {
+void WebDialogView::LoadingStateChanged(content::WebContents* source,
+    bool to_different_document) {
   if (delegate_)
     delegate_->OnLoadingStateChanged(source);
 }

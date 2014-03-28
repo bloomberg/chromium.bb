@@ -62,7 +62,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                                       unsigned changed_flags) OVERRIDE;
   virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
   virtual void DeactivateContents(content::WebContents* contents) OVERRIDE;
-  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
+  virtual void LoadingStateChanged(content::WebContents* source,
+                                   bool to_different_document) OVERRIDE;
   virtual void LoadProgressChanged(content::WebContents* source,
                                    double load_progress) OVERRIDE;
   virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;

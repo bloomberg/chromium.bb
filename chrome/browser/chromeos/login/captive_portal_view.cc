@@ -84,14 +84,14 @@ void CaptivePortalView::NavigationStateChanged(
   // Note, |url| will be empty for "client3.google.com/generate_204" page.
   if (!redirected_  && url != GURL::EmptyGURL() &&
       url != GURL(CaptivePortalStartURL())) {
-    DLOG(INFO) << CaptivePortalStartURL() << " vs " << url.spec();
     redirected_ = true;
     proxy_->OnRedirected();
   }
 }
 
-void CaptivePortalView::LoadingStateChanged(content::WebContents* source) {
-  SimpleWebViewDialog::LoadingStateChanged(source);
+void CaptivePortalView::LoadingStateChanged(content::WebContents* source,
+    bool to_different_document) {
+  SimpleWebViewDialog::LoadingStateChanged(source, to_different_document);
   // TODO(nkostylev): Fix case of no connectivity, check HTTP code returned.
   // Disable this heuristic as it has false positives.
   // Relying on just shill portal check to close dialog is fine.

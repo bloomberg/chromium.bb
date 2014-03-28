@@ -77,7 +77,7 @@ Browser* BrowserTabStripModelDelegate::CreateNewStripWithContents(
     // won't start if the page is loading.
     // TODO(beng): find a better way of doing this.
     static_cast<content::WebContentsDelegate*>(browser)->
-        LoadingStateChanged(item.web_contents);
+        LoadingStateChanged(item.web_contents, true);
   }
 
   return browser;

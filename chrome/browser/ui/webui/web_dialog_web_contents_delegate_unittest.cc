@@ -69,7 +69,7 @@ TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
           content::PAGE_TRANSITION_TYPED, history::SOURCE_SYNCED, false);
   test_web_contents_delegate_->NavigationStateChanged(NULL, 0);
   test_web_contents_delegate_->ActivateContents(NULL);
-  test_web_contents_delegate_->LoadingStateChanged(NULL);
+  test_web_contents_delegate_->LoadingStateChanged(NULL, true);
   test_web_contents_delegate_->CloseContents(NULL);
   test_web_contents_delegate_->UpdateTargetURL(NULL, 0, GURL());
   test_web_contents_delegate_->MoveContents(NULL, gfx::Rect());

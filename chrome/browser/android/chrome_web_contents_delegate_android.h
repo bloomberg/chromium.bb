@@ -37,7 +37,8 @@ class ChromeWebContentsDelegateAndroid
   ChromeWebContentsDelegateAndroid(JNIEnv* env, jobject obj);
   virtual ~ChromeWebContentsDelegateAndroid();
 
-  virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
+  virtual void LoadingStateChanged(content::WebContents* source,
+                                   bool to_different_document) OVERRIDE;
   virtual void RunFileChooser(content::WebContents* web_contents,
                               const content::FileChooserParams& params)
                               OVERRIDE;

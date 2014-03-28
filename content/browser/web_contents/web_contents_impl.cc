@@ -2614,6 +2614,7 @@ void WebContentsImpl::ActivateAndShowRepostFormWarningDialog() {
 // loading, or done loading.
 void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
                                    bool is_loading,
+                                   bool to_different_document,
                                    LoadNotificationDetails* details) {
   if (is_loading == is_loading_)
     return;
@@ -2632,7 +2633,7 @@ void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
   waiting_for_response_ = is_loading;
 
   if (delegate_)
-    delegate_->LoadingStateChanged(this);
+    delegate_->LoadingStateChanged(this, to_different_document);
   NotifyNavigationStateChanged(INVALIDATE_TYPE_LOAD);
 
   std::string url = (details ? details->url.possibly_invalid_spec() : "NULL");
@@ -2902,7 +2903,7 @@ void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
     dialog_manager_->CancelActiveAndPendingDialogs(this);
 
   ClearPowerSaveBlockers(rvh);
-  SetIsLoading(rvh, false, NULL);
+  SetIsLoading(rvh, false, true, NULL);
   NotifyDisconnected();
   SetIsCrashed(status, error_code);
   GetView()->OnTabCrashed(GetCrashedStatus(), crashed_error_code_);
@@ -3031,8 +3032,10 @@ void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {
     delegate_->MoveContents(this, new_bounds);
 }
 
-void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host) {
-  SetIsLoading(render_frame_host->GetRenderViewHost(), true, NULL);
+void WebContentsImpl::DidStartLoading(RenderFrameHost* render_frame_host,
+                                      bool to_different_document) {
+  SetIsLoading(render_frame_host->GetRenderViewHost(), true,
+               to_different_document, NULL);
 }
 
 void WebContentsImpl::DidStopLoading(RenderFrameHost* render_frame_host) {
@@ -3057,7 +3060,8 @@ void WebContentsImpl::DidStopLoading(RenderFrameHost* render_frame_host) {
         controller_.GetCurrentEntryIndex()));
   }
 
-  SetIsLoading(render_frame_host->GetRenderViewHost(), false, details.get());
+  SetIsLoading(render_frame_host->GetRenderViewHost(), false, true,
+               details.get());
 }
 
 void WebContentsImpl::DidCancelLoading() {

@@ -112,7 +112,10 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Notifies the delegate that this contents is starting or is done loading
   // some resource. The delegate should use this notification to represent
   // loading feedback. See WebContents::IsLoading()
-  virtual void LoadingStateChanged(WebContents* source) {}
+  // |to_different_document| will be true unless the load is a fragment
+  // navigation, or triggered by history.pushState/replaceState.
+  virtual void LoadingStateChanged(WebContents* source,
+                                   bool to_different_document) {}
 
   // Notifies the delegate that the page has made some progress loading.
   // |progress| is a value between 0.0 (nothing loaded) to 1.0 (page fully

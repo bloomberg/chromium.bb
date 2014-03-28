@@ -140,7 +140,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // TODO(nasko): This method is public so RenderViewHostImpl::Navigate can
   // call it directly. It should be made private once Navigate moves here.
-  void OnDidStartLoading();
+  // |to_different_document| will be true unless the load is a fragment
+  // navigation, or triggered by history.pushState/replaceState.
+  void OnDidStartLoading(bool to_different_document);
 
   // Sends the given navigation message. Use this rather than sending it
   // yourself since this does the internal bookkeeping described below. This

@@ -101,6 +101,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(nasko): Those are page-level methods at this time and come from
   // WebViewClient. We should move them to be WebFrameClient calls and put
   // logic in the browser side to balance starts/stops.
+  // |to_different_document| will be true unless the load is a fragment
+  // navigation, or triggered by history.pushState/replaceState.
   virtual void didStartLoading(bool to_different_document);
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(double load_progress);

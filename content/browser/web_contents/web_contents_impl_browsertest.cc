@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -147,6 +148,31 @@ class RenderViewSizeObserver : public WebContentsObserver {
   Shell* shell_;  // Weak ptr.
   gfx::Size wcv_new_size_;
   gfx::Size rwhv_create_size_;
+};
+
+class LoadingStateChangedDelegate : public WebContentsDelegate {
+ public:
+  LoadingStateChangedDelegate()
+      : loadingStateChangedCount_(0)
+      , loadingStateToDifferentDocumentCount_(0) {
+  }
+
+  // WebContentsDelgate:
+  virtual void LoadingStateChanged(WebContents* contents,
+                                   bool to_different_document) OVERRIDE {
+      loadingStateChangedCount_++;
+      if (to_different_document)
+        loadingStateToDifferentDocumentCount_++;
+  }
+
+  int loadingStateChangedCount() const { return loadingStateChangedCount_; }
+  int loadingStateToDifferentDocumentCount() const {
+    return loadingStateToDifferentDocumentCount_;
+  }
+
+ private:
+  int loadingStateChangedCount_;
+  int loadingStateToDifferentDocumentCount_;
 };
 
 // See: http://crbug.com/298193
@@ -385,6 +411,31 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   // and not the old one.
   EXPECT_NE(observer.last_rfh(), orig_rfh);
   EXPECT_EQ(observer.last_rfh(), shell()->web_contents()->GetMainFrame());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       LoadingStateChangedForSameDocumentNavigation) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  scoped_ptr<LoadingStateChangedDelegate> delegate(
+      new LoadingStateChangedDelegate());
+  shell()->web_contents()->SetDelegate(delegate.get());
+
+  LoadStopNotificationObserver load_observer(
+      &shell()->web_contents()->GetController());
+  TitleWatcher title_watcher(shell()->web_contents(),
+                             base::ASCIIToUTF16("pushState"));
+  NavigateToURL(shell(), embedded_test_server()->GetURL("/push_state.html"));
+  load_observer.Wait();
+  base::string16 title = title_watcher.WaitAndGetTitle();
+  ASSERT_EQ(title, base::ASCIIToUTF16("pushState"));
+
+  // LoadingStateChanged should be called 4 times: start and stop for the
+  // initial load of push_state.html, and start and stop for the "navigation"
+  // triggered by history.pushState(). However, the start notification for the
+  // history.pushState() navigation should set to_different_document to false.
+  EXPECT_EQ("pushState", shell()->web_contents()->GetURL().ref());
+  EXPECT_EQ(4, delegate->loadingStateChangedCount());
+  EXPECT_EQ(3, delegate->loadingStateToDifferentDocumentCount());
 }
 
 }  // namespace content

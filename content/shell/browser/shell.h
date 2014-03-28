@@ -65,7 +65,7 @@ class Shell : public WebContentsDelegate,
   void GoBackOrForward(int offset);
   void Reload();
   void Stop();
-  void UpdateNavigationControls();
+  void UpdateNavigationControls(bool to_different_document);
   void Close();
   void ShowDevTools();
   void ShowDevToolsForElementAt(int x, int y);
@@ -119,7 +119,8 @@ class Shell : public WebContentsDelegate,
                               const gfx::Rect& initial_pos,
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
-  virtual void LoadingStateChanged(WebContents* source) OVERRIDE;
+  virtual void LoadingStateChanged(WebContents* source,
+                                   bool to_different_document) OVERRIDE;
 #if defined(OS_ANDROID)
   virtual void LoadProgressChanged(WebContents* source,
                                    double progress) OVERRIDE;

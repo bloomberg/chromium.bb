@@ -129,7 +129,7 @@ void TestWebContents::NavigateAndCommit(const GURL& url) {
 }
 
 void TestWebContents::TestSetIsLoading(bool value) {
-  SetIsLoading(GetRenderViewHost(), value, NULL);
+  SetIsLoading(GetRenderViewHost(), value, true, NULL);
 }
 
 void TestWebContents::CommitPendingNavigation() {

@@ -505,8 +505,8 @@ void RenderFrameHostImpl::SwapOut() {
   }
 }
 
-void RenderFrameHostImpl::OnDidStartLoading() {
-  delegate_->DidStartLoading(this);
+void RenderFrameHostImpl::OnDidStartLoading(bool to_different_document) {
+  delegate_->DidStartLoading(this, to_different_document);
 }
 
 void RenderFrameHostImpl::OnDidStopLoading() {
@@ -664,7 +664,7 @@ void RenderFrameHostImpl::Navigate(const FrameMsg_Navigate_Params& params) {
   // Blink doesn't send throb notifications for JavaScript URLs, so we
   // don't want to either.
   if (!params.url.SchemeIs(kJavaScriptScheme))
-    delegate_->DidStartLoading(this);
+    delegate_->DidStartLoading(this, true);
 }
 
 void RenderFrameHostImpl::NavigateToURL(const GURL& url) {
