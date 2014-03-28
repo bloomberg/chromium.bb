@@ -101,6 +101,7 @@ TEST_F(DesktopCaptureControllerTest, ResetMouseHandlers) {
   EXPECT_TRUE(w1_dispatcher->mouse_pressed_handler() == NULL);
   EXPECT_TRUE(w1_dispatcher->mouse_moved_handler() == NULL);
   w2->ReleaseCapture();
+  RunPendingMessages();
 }
 
 // Tests aura::Window capture and whether gesture events are sent to the window
