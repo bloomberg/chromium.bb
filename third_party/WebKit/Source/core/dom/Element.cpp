@@ -3363,11 +3363,6 @@ bool Element::supportsStyleSharing() const
         || isHTMLAppletElement(*this)
         || isHTMLCanvasElement(*this))
         return false;
-    // FIXME: We should share style for option and optgroup whenever possible.
-    // Before doing so, we need to resolve issues in HTMLSelectElement::recalcListItems
-    // and RenderMenuList::setText. See also https://bugs.webkit.org/show_bug.cgi?id=88405
-    if (isHTMLOptionElement(*this) || isHTMLOptGroupElement(*this))
-        return false;
     if (FullscreenElementStack::isActiveFullScreenElement(this))
         return false;
     return true;

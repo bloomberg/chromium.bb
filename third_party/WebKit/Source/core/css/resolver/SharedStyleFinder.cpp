@@ -46,6 +46,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptGroupElement.h"
+#include "core/html/HTMLOptionElement.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGElement.h"
 #include "wtf/HashSet.h"
@@ -122,7 +123,7 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(Ele
     if (element().fastGetAttribute(langAttr) != candidate.fastGetAttribute(langAttr))
         return false;
 
-    // These two checks must be here since RuleSet has a specail case to allow style sharing between elements
+    // These two checks must be here since RuleSet has a special case to allow style sharing between elements
     // with type and readonly attributes whereas other attribute selectors prevent sharing.
     if (typeAttributeValue(element()) != typeAttributeValue(candidate))
         return false;
@@ -152,6 +153,13 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(Ele
     // for them.
     if (isHTMLProgressElement(element())) {
         if (element().shouldAppearIndeterminate() != candidate.shouldAppearIndeterminate())
+            return false;
+    }
+
+    if (isHTMLOptGroupElement(element()) || isHTMLOptionElement(element())) {
+        if (element().isDisabledFormControl() != candidate.isDisabledFormControl())
+            return false;
+        if (isHTMLOptionElement(element()) && toHTMLOptionElement(element()).selected() != toHTMLOptionElement(candidate).selected())
             return false;
     }
 
