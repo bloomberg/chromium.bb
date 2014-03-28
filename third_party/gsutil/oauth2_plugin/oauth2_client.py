@@ -65,9 +65,6 @@ LOG = logging.getLogger('oauth2_client')
 # operation doesn't attempt concurrent refreshes.
 token_exchange_lock = threading.Lock()
 
-# SHA1 sum of the CA certificates file imported from boto.
-CACERTS_FILE_SHA1SUM = 'ed024a78d9327f8669b3b117d9eac9e3c9460e9b'
-
 class Error(Exception):
   """Base exception for the OAuth2 module."""
   pass
@@ -298,15 +295,6 @@ class OAuth2Client(object):
         os.path.dirname(os.path.abspath(cacerts.__file__)), 'cacerts.txt')
 
     if url_opener is None:
-      # Check that the cert file distributed with boto has not been tampered
-      # with.
-      h = sha1()
-      h.update(file(self.ca_certs_file).read())
-      actual_sha1 = h.hexdigest()
-      if actual_sha1 != CACERTS_FILE_SHA1SUM:
-        raise Error(
-            'CA certificates file does not have expected SHA1 sum; '
-            'expected: %s, actual: %s' % (CACERTS_FILE_SHA1SUM, actual_sha1))
       # TODO(Google): set user agent?
       url_opener = urllib2.build_opener(
           fancy_urllib.FancyProxyHandler(),

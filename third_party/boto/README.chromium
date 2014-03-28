@@ -36,6 +36,8 @@ Modifications:
 * Removed boto/.travis.yml
 * Removed boto/Changelog.rst
 * Removed boto/MANIFEST.in
+* Replaced boto/cacerts/cacerts.txt by file from
+   https://pki.google.com/roots.pem
 * Moved boto down to be a first level directory
 
 Full license is in the LICENSE file.
