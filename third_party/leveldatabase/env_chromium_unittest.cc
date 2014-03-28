@@ -113,7 +113,7 @@ TYPED_TEST(ChromiumEnvMultiPlatformTests, DirectorySyncing) {
   MyEnv<TypeParam> env;
 
   base::ScopedTempDir dir;
-  dir.CreateUniqueTempDir();
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
   base::FilePath dir_path = dir.path();
   std::string some_data = "some data";
   Slice data = some_data;
@@ -176,7 +176,7 @@ TEST(ChromiumEnv, BackupTables) {
   options.env = IDBEnv();
 
   base::ScopedTempDir scoped_temp_dir;
-  scoped_temp_dir.CreateUniqueTempDir();
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   base::FilePath dir = scoped_temp_dir.path();
 
   DB* db;
@@ -221,7 +221,7 @@ TEST(ChromiumEnv, BackupTables) {
 
 TEST(ChromiumEnv, GetChildrenEmptyDir) {
   base::ScopedTempDir scoped_temp_dir;
-  scoped_temp_dir.CreateUniqueTempDir();
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   base::FilePath dir = scoped_temp_dir.path();
 
   Env* env = IDBEnv();
@@ -233,7 +233,7 @@ TEST(ChromiumEnv, GetChildrenEmptyDir) {
 
 TEST(ChromiumEnv, GetChildrenPriorResults) {
   base::ScopedTempDir scoped_temp_dir;
-  scoped_temp_dir.CreateUniqueTempDir();
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
   base::FilePath dir = scoped_temp_dir.path();
 
   base::FilePath new_file_dir = dir.Append(FPL("tmp_file"));

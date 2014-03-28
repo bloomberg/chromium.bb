@@ -24,3 +24,4 @@ Local Additions:
   HANDLE_EINTR macro that retries the call.
 * TRACE macros/thread name for chrome://tracing diagnostics
 * Handle in-process exclusive file locks, based on src/util/env_posix.cc
+* Unit tests for the Chromium environment.

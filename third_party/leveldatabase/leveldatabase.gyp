@@ -14,6 +14,22 @@
         'use_snappy': 0,
       },
     }],
+    ['OS=="android" and gtest_target_type == "shared_library"', {
+      # Wrap env_chromium_unittests into an android apk for execution.
+      'targets': [{
+        'target_name': 'env_chromium_unittests_apk',
+        'type': 'none',
+        'dependencies': [
+          '<(DEPTH)/base/base.gyp:base_java',
+          'env_chromium_unittests',
+        ],
+        'variables': {
+          'test_suite_name': 'env_chromium_unittests',
+          'input_shlib_path': '<(SHARED_LIB_DIR)/<(SHARED_LIB_PREFIX)env_chromium_unittests<(SHARED_LIB_SUFFIX)',
+        },
+        'includes': [ '../../build/apk_test.gypi' ],
+      }],
+    }],
   ],
   'target_defaults': {
     'defines': [
@@ -179,6 +195,15 @@
       ],
       'sources': [
         'env_chromium_unittest.cc',
+      ],
+      'conditions': [
+        ['OS=="android" and gtest_target_type == "shared_library"', {
+          'type': 'shared_library',
+          'dependencies': [
+            '../../testing/android/native_test.gyp:native_test_native_code',
+            '../../tools/android/forwarder2/forwarder.gyp:forwarder2',
+          ],
+        }],
       ],
     },
     {
