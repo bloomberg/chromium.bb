@@ -115,6 +115,8 @@ _OS_NEGATIVE_FILTER['mac'] = [
     'AlertsTest.testShouldAllowUsersToAcceptAnAlertInAFrame',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=375
     'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
+    # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=416
+    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
 ]
 _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ChromeOptionsFunctionalTest.canStartChromeWithCustomOptions',
