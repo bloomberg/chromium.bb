@@ -50,14 +50,14 @@ function FullWindowVideoControls(
   VideoControls.call(this,
       controlsContainer,
       onPlaybackError,
-      loadTimeData.getString.wrap(loadTimeData),
-      this.toggleFullScreen_.wrap(this),
+      loadTimeData.getString.bind(loadTimeData),
+      this.toggleFullScreen_.bind(this),
       videoContainer);
 
   this.playerContainer_ = playerContainer;
 
   this.updateStyle();
-  window.addEventListener('resize', this.updateStyle.wrap(this));
+  window.addEventListener('resize', this.updateStyle.bind(this));
 
   document.addEventListener('keydown', function(e) {
     if (e.keyIdentifier == 'U+0020') {  // Space
@@ -70,7 +70,7 @@ function FullWindowVideoControls(
           false);  // Leave the full screen mode.
       e.preventDefault();
     }
-  }.wrap(this));
+  }.bind(this));
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
   videoContainer.addEventListener('click', function(e) {
@@ -81,7 +81,7 @@ function FullWindowVideoControls(
     } else {
       this.togglePlayStateWithFeedback();
     }
-  }.wrap(this));
+  }.bind(this));
 
   this.inactivityWatcher_ = new MouseInactivityWatcher(playerContainer);
   this.__defineGetter__('inactivityWatcher', function() {

@@ -736,13 +736,6 @@ INSTANTIATE_TEST_CASE_P(
 // DISABLED           TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
 
 INSTANTIATE_TEST_CASE_P(
-    OpenVideoFiles,
-    FileManagerBrowserTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "videoOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive")));
-
-INSTANTIATE_TEST_CASE_P(
     OpenAudioFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
