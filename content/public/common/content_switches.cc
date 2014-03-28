@@ -197,10 +197,6 @@ const char kDisableGpuCompositing[]         = "disable-gpu-compositing";
 extern const char kDisableGpuProcessCrashLimit[] =
     "disable-gpu-process-crash-limit";
 
-// Do not launch the GPU process shortly after browser process launch. Instead
-// launch it when it is first needed.
-const char kDisableGpuProcessPrelaunch[]    = "disable-gpu-process-prelaunch";
-
 // Disable GPU rasterization, i.e. rasterize on the CPU only.
 // Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
 const char kDisableGpuRasterization[]       = "disable-gpu-rasterization";

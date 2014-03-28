@@ -959,7 +959,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   bool established_gpu_channel = false;
 #if defined(USE_AURA) || defined(OS_ANDROID)
   established_gpu_channel =
-      !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) ||
       parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
       parsed_command_line_.HasSwitch(switches::kInProcessGPU);
 #if defined(USE_AURA)
@@ -1032,7 +1031,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL) &&
       !established_gpu_channel &&
       always_uses_gpu &&
-      !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
       !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
       !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
