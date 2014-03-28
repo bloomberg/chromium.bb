@@ -429,6 +429,80 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_UploadNewFile) {
   EXPECT_FALSE(resource_entry->is_folder());
 }
 
+TEST_F(EntryUpdatePerformerTest, UpdateEntry_NewFileOpendForWrite) {
+  // Create a new file locally.
+  const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/root/New File.txt"));
+
+  ResourceEntry parent;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath.DirName(), &parent));
+
+  ResourceEntry entry;
+  entry.set_parent_local_id(parent.local_id());
+  entry.set_title(kFilePath.BaseName().AsUTF8Unsafe());
+  entry.mutable_file_specific_info()->set_content_mime_type("text/plain");
+  entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+
+  FileError error = FILE_ERROR_FAILED;
+  std::string local_id;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&internal::ResourceMetadata::AddEntry,
+                 base::Unretained(metadata()),
+                 entry,
+                 &local_id),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  const std::string kTestFileContent = "This is a new file.";
+  EXPECT_EQ(FILE_ERROR_OK, StoreAndMarkDirty(local_id, kTestFileContent));
+
+  // Emulate a situation where someone is writing to the file.
+  scoped_ptr<base::ScopedClosureRunner> file_closer;
+  error = FILE_ERROR_FAILED;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner(),
+      FROM_HERE,
+      base::Bind(&FileCache::OpenForWrite,
+                 base::Unretained(cache()),
+                 local_id,
+                 &file_closer),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Update, but no update is performed because the file is opened.
+  error = FILE_ERROR_FAILED;
+  performer_->UpdateEntry(
+      local_id,
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // The entry hasn't got a resource ID yet.
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_TRUE(entry.resource_id().empty());
+
+  // Close the file.
+  file_closer.reset();
+
+  // Update. This should result in creating a new file on the server.
+  error = FILE_ERROR_FAILED;
+  performer_->UpdateEntry(
+      local_id,
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // The entry got a resource ID.
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_FALSE(entry.resource_id().empty());
+  EXPECT_EQ(ResourceEntry::CLEAN, entry.metadata_edit_state());
+}
+
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_CreateDirectory) {
   // Create a new directory locally.
   const base::FilePath kPath(FILE_PATH_LITERAL("drive/root/New Directory"));

@@ -323,12 +323,11 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   }
 
   // No need to perform update.
-  if (local_state->entry.metadata_edit_state() == ResourceEntry::CLEAN) {
+  if (local_state->entry.metadata_edit_state() == ResourceEntry::CLEAN ||
+      local_state->entry.resource_id().empty()) {
     callback.Run(FILE_ERROR_OK);
     return;
   }
-
-  DCHECK(!local_state->entry.resource_id().empty());
 
   // Perform metadata update.
   scheduler_->UpdateResource(
