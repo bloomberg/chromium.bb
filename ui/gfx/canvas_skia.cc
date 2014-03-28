@@ -230,7 +230,7 @@ void Canvas::DrawStringRectWithShadows(const base::string16& text,
   Rect clip_rect(text_bounds);
   clip_rect.Inset(ShadowValue::GetMargin(shadows));
 
-  canvas_->save(SkCanvas::kClip_SaveFlag);
+  canvas_->save();
   ClipRect(clip_rect);
 
   Rect rect(text_bounds);
@@ -424,7 +424,7 @@ void Canvas::DrawFadeTruncatingStringRectWithFlags(
   rect.set_height(line_height);
   render_text->SetDisplayRect(rect);
 
-  canvas_->save(SkCanvas::kClip_SaveFlag);
+  canvas_->save();
   ClipRect(display_rect);
   render_text->Draw(this);
   canvas_->restore();

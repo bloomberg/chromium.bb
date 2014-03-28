@@ -1194,7 +1194,7 @@ void HWNDMessageHandler::RedrawLayeredWindowContents() {
     return;
 
   // We need to clip to the dirty rect ourselves.
-  layered_window_contents_->sk_canvas()->save(SkCanvas::kClip_SaveFlag);
+  layered_window_contents_->sk_canvas()->save();
   double scale = gfx::win::GetDeviceScaleFactor();
   layered_window_contents_->sk_canvas()->scale(
       SkScalar(scale),SkScalar(scale));

@@ -235,7 +235,7 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
   paint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
 
   // This should force non-transparency
-  canvas.saveLayer(&bounds, &paint, SkCanvas::kMatrix_SaveFlag);
+  canvas.saveLayer(&bounds, &paint);
   EXPECT_TRUE(canvas.GetColorIfSolid(&outputColor));
   EXPECT_NE(static_cast<SkColor>(SK_ColorTRANSPARENT), outputColor);
 
@@ -249,7 +249,7 @@ TEST(AnalysisCanvasTest, SaveLayerRestore) {
   paint.setXfermodeMode(SkXfermode::kDst_Mode);
 
   // This should force non-solid color
-  canvas.saveLayer(&bounds, &paint, SkCanvas::kMatrix_SaveFlag);
+  canvas.saveLayer(&bounds, &paint);
   EXPECT_FALSE(canvas.GetColorIfSolid(&outputColor));
 
   TransparentFill(canvas);
