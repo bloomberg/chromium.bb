@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 
@@ -51,8 +52,8 @@ class ImageWriter : public base::SupportsWeakPtr<ImageWriter> {
   base::FilePath image_path_;
   base::FilePath device_path_;
 
-  base::PlatformFile image_file_;
-  base::PlatformFile device_file_;
+  base::File image_file_;
+  base::File device_file_;
   int64 bytes_processed_;
 
   ImageWriterHandler* handler_;
