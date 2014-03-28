@@ -64,6 +64,7 @@ const char* kAtomsToCache[] = {
   "XdndStatus",
   "XdndTypeList",
   ui::Clipboard::kMimeTypeText,
+  "_NET_WM_WINDOW_TYPE_MENU",
   NULL
 };
 
@@ -80,9 +81,11 @@ static base::LazyInstance<
 class DragTargetWindowFinder : public ui::EnumerateWindowsDelegate {
  public:
   DragTargetWindowFinder(XID ignored_icon_window,
+                         Atom menu_type_atom,
                          gfx::Point screen_loc)
       : ignored_icon_window_(ignored_icon_window),
         output_window_(None),
+        menu_type_atom_(menu_type_atom),
         screen_loc_(screen_loc) {
     ui::EnumerateTopLevelWindows(this);
   }
@@ -102,7 +105,10 @@ class DragTargetWindowFinder : public ui::EnumerateWindowsDelegate {
     if (!ui::WindowContainsPoint(window, screen_loc_))
       return false;
 
-    if (ui::PropertyExists(window, "WM_STATE")) {
+    int value = 0;
+    if (ui::PropertyExists(window, "WM_STATE") ||
+        (ui::GetIntProperty(window, "_NET_WM_WINDOW_TYPE", &value) &&
+         static_cast<Atom>(value) == menu_type_atom_)) {
       output_window_ = window;
       return true;
     }
@@ -113,6 +119,7 @@ class DragTargetWindowFinder : public ui::EnumerateWindowsDelegate {
  private:
   XID ignored_icon_window_;
   XID output_window_;
+  const Atom menu_type_atom_;
   gfx::Point screen_loc_;
 
   DISALLOW_COPY_AND_ASSIGN(DragTargetWindowFinder);
@@ -123,8 +130,9 @@ class DragTargetWindowFinder : public ui::EnumerateWindowsDelegate {
 // |mouse_window|. If there's a Xdnd aware window, it will be returned in
 // |dest_window|.
 void FindWindowFor(const gfx::Point& screen_point,
-                   ::Window* mouse_window, ::Window* dest_window) {
-  DragTargetWindowFinder finder(None, screen_point);
+                   ::Window* mouse_window, ::Window* dest_window,
+                   Atom menu_type_atom) {
+  DragTargetWindowFinder finder(None, menu_type_atom, screen_point);
   *mouse_window = finder.window();
   *dest_window = None;
 
@@ -434,6 +442,10 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
 
 DesktopDragDropClientAuraX11::~DesktopDragDropClientAuraX11() {
   g_live_client_map.Get().erase(xwindow_);
+  // Make sure that all observers are unregistered from source and target
+  // windows. This may be necessary when the parent native widget gets destroyed
+  // while a drag operation is in progress.
+  NotifyDragLeave();
 }
 
 // static
@@ -696,7 +708,8 @@ void DesktopDragDropClientAuraX11::OnMouseMovement(XMotionEvent* event) {
   // Find the current window the cursor is over.
   ::Window mouse_window = None;
   ::Window dest_window = None;
-  FindWindowFor(screen_point, &mouse_window, &dest_window);
+  FindWindowFor(screen_point, &mouse_window, &dest_window,
+                atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_MENU"));
 
   if (source_current_window_ != dest_window) {
     if (source_current_window_ != None)

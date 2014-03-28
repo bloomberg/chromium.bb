@@ -328,6 +328,8 @@
         'x/selection_utils.h',
         'x/work_area_watcher_x.cc',
         'x/work_area_watcher_x.h',
+        'x/x11_menu_list.cc',
+        'x/x11_menu_list.h',
         'x/x11_util.cc',
         'x/x11_util.h',
         'x/x11_util_internal.h',
