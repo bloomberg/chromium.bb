@@ -113,7 +113,7 @@ void WebUIMojoContextState::OnFetchModuleComplete(
   DCHECK_EQ(kModulePrefix,
       response.url().string().utf8().substr(0, arraysize(kModulePrefix) - 1));
   const std::string module =
-      response.url().string().utf8().substr(arraysize(kModulePrefix));
+      response.url().string().utf8().substr(arraysize(kModulePrefix) - 1);
   // We can't delete fetch right now as the arguments to this function come from
   // it and are used below. Instead use a scope_ptr to cleanup.
   scoped_ptr<ResourceFetcher> deleter(fetcher);

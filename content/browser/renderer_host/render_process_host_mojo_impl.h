@@ -15,7 +15,6 @@ namespace content {
 class MojoChannelInit;
 class RenderProcessHost;
 
-
 // RenderProcessHostMojoImpl is responsible for initiating and maintaining the
 // connection with the content side of RenderProcessHostMojo.
 class RenderProcessHostMojoImpl : public RenderProcessHostMojo {

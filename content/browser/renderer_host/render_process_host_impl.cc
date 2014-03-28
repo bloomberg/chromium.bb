@@ -2157,8 +2157,8 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
 
 #if defined(USE_MOJO)
 void RenderProcessHostImpl::SetWebUIHandle(
-int32 view_routing_id,
-mojo::ScopedMessagePipeHandle handle) {
+    int32 view_routing_id,
+    mojo::ScopedMessagePipeHandle handle) {
   if (!render_process_host_mojo_)
     render_process_host_mojo_.reset(new RenderProcessHostMojoImpl(this));
   render_process_host_mojo_->SetWebUIHandle(view_routing_id, handle.Pass());

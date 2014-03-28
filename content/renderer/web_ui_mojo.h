@@ -42,6 +42,7 @@ class WebUIMojo
     // RenderFrameObserver overrides:
     virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
                                           int world_id) OVERRIDE;
+    virtual void DidFinishDocumentLoad() OVERRIDE;
 
    private:
     WebUIMojo* web_ui_mojo_;
@@ -54,6 +55,13 @@ class WebUIMojo
   void CreateContextState();
   void DestroyContextState(v8::Handle<v8::Context> context);
 
+  // Invoked when the frame finishes loading. Invokes SetHandleOnContextState()
+  // if necessary.
+  void OnDidFinishDocumentLoad();
+
+  // Invokes SetHandle() on the WebUIMojoContextState (if there is one).
+  void SetHandleOnContextState(mojo::ScopedMessagePipeHandle handle);
+
   WebUIMojoContextState* GetContextState();
 
   // RenderViewObserver overrides:
@@ -61,6 +69,16 @@ class WebUIMojo
                                     int world_id) OVERRIDE;
 
   MainFrameObserver main_frame_observer_;
+
+  // Set to true in DidFinishDocumentLoad(). 'main' is only executed once this
+  // happens.
+  bool did_finish_document_load_;
+
+  // If SetBrowserHandle() is invoked before the document finishes loading the
+  // MessagePipeHandle is stored here. When the document finishes loading
+  // SetHandleOnContextState() is invoked to send the handle to the
+  // WebUIMojoContextState and ultimately the page.
+  mojo::ScopedMessagePipeHandle pending_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIMojo);
 };
