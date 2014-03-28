@@ -133,11 +133,14 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
 void Canvas2DLayerBridge::beginDestruction()
 {
     ASSERT(!m_destructionInProgress);
-    m_destructionInProgress = true;
+    setRateLimitingEnabled(false);
+    m_canvas->silentFlush();
     freeTransientResources();
     setIsHidden(true);
+    m_destructionInProgress = true;
     GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     m_canvas->setNotificationClient(0);
+    m_canvas.clear();
     m_layer->clearTexture();
     // Orphaning the layer is required to trigger the recration of a new layer
     // in the case where destruction is caused by a canvas resize. Test:
@@ -146,13 +149,11 @@ void Canvas2DLayerBridge::beginDestruction()
     // To anyone who ever hits this assert: Please update crbug.com/344666
     // with repro steps.
     ASSERT(!m_bytesAllocated);
-    // The following line of code is a safety net and should be removed once
-    // crbug.com/344666 is fixed.
-    storageAllocatedForRecordingChanged(0);
 }
 
 void Canvas2DLayerBridge::setIsHidden(bool hidden)
 {
+    ASSERT(!m_destructionInProgress);
     bool newHiddenValue = hidden || m_destructionInProgress;
     if (m_isHidden == newHiddenValue)
         return;
@@ -165,6 +166,7 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
 
 void Canvas2DLayerBridge::freeTransientResources()
 {
+    ASSERT(!m_destructionInProgress);
     freeReleasedMailbox();
     flush();
     freeMemoryIfPossible(bytesAllocated());
@@ -173,7 +175,7 @@ void Canvas2DLayerBridge::freeTransientResources()
 
 bool Canvas2DLayerBridge::hasTransientResources() const
 {
-    return hasReleasedMailbox() || bytesAllocated();
+    return !m_destructionInProgress && (hasReleasedMailbox() || bytesAllocated());
 }
 
 void Canvas2DLayerBridge::limitPendingFrames()
@@ -203,6 +205,7 @@ void Canvas2DLayerBridge::limitPendingFrames()
 
 void Canvas2DLayerBridge::prepareForDraw()
 {
+    ASSERT(!m_destructionInProgress);
     ASSERT(m_layer);
     if (!surfaceIsValid() && !recoverSurface()) {
         if (m_canvas) {
@@ -216,6 +219,7 @@ void Canvas2DLayerBridge::prepareForDraw()
 
 void Canvas2DLayerBridge::storageAllocatedForRecordingChanged(size_t bytesAllocated)
 {
+    ASSERT(!m_destructionInProgress);
     intptr_t delta = (intptr_t)bytesAllocated - (intptr_t)m_bytesAllocated;
     m_bytesAllocated = bytesAllocated;
     Canvas2DLayerManager::get().layerTransientResourceAllocationChanged(this, delta);
@@ -228,12 +232,14 @@ size_t Canvas2DLayerBridge::storageAllocatedForRecording()
 
 void Canvas2DLayerBridge::flushedDrawCommands()
 {
+    ASSERT(!m_destructionInProgress);
     storageAllocatedForRecordingChanged(storageAllocatedForRecording());
     m_framesPending = 0;
 }
 
 void Canvas2DLayerBridge::skippedPendingDrawCommands()
 {
+    ASSERT(!m_destructionInProgress);
     // Stop triggering the rate limiter if SkDeferredCanvas is detecting
     // and optimizing overdraw.
     setRateLimitingEnabled(false);
@@ -242,7 +248,7 @@ void Canvas2DLayerBridge::skippedPendingDrawCommands()
 
 void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
 {
-    ASSERT(!m_destructionInProgress || !enabled);
+    ASSERT(!m_destructionInProgress);
     if (m_rateLimitingEnabled != enabled) {
         m_rateLimitingEnabled = enabled;
         m_layer->setRateLimitContext(m_rateLimitingEnabled);
@@ -251,6 +257,7 @@ void Canvas2DLayerBridge::setRateLimitingEnabled(bool enabled)
 
 size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
 {
+    ASSERT(!m_destructionInProgress);
     size_t bytesFreed = m_canvas->freeMemoryIfPossible(bytesToFree);
     m_bytesAllocated -= bytesFreed;
     if (bytesFreed)
@@ -260,6 +267,7 @@ size_t Canvas2DLayerBridge::freeMemoryIfPossible(size_t bytesToFree)
 
 void Canvas2DLayerBridge::flush()
 {
+    ASSERT(!m_destructionInProgress);
     if (m_canvas->hasPendingCommands()) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
         freeReleasedMailbox(); // To avoid unnecessary triple-buffering
@@ -314,7 +322,7 @@ blink::WebGraphicsContext3D* Canvas2DLayerBridge::context()
 {
     // Check on m_layer is necessary because context() may be called during
     // the destruction of m_layer
-    if (m_layer && !surfaceIsValid()) {
+    if (m_layer && !m_destructionInProgress && !surfaceIsValid()) {
         recoverSurface(); // To ensure rate limiter is disabled if context is lost.
     }
     return m_contextProvider->context3d();
@@ -322,11 +330,13 @@ blink::WebGraphicsContext3D* Canvas2DLayerBridge::context()
 
 bool Canvas2DLayerBridge::surfaceIsValid()
 {
+    ASSERT(!m_destructionInProgress);
     return !m_destructionInProgress && !m_contextProvider->context3d()->isContextLost() && m_surfaceIsValid;
 }
 
 bool Canvas2DLayerBridge::recoverSurface()
 {
+    ASSERT(!m_destructionInProgress);
     ASSERT(m_layer && !surfaceIsValid());
     if (m_destructionInProgress)
         return false;
@@ -364,6 +374,7 @@ bool Canvas2DLayerBridge::recoverSurface()
 
 bool Canvas2DLayerBridge::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox, blink::WebExternalBitmap* bitmap)
 {
+    ASSERT(!m_destructionInProgress);
     if (bitmap) {
         // Using accelerated 2d canvas with software renderer, which
         // should only happen in tests that use fake graphics contexts
@@ -484,6 +495,7 @@ void Canvas2DLayerBridge::mailboxReleased(const blink::WebExternalTextureMailbox
 
 blink::WebLayer* Canvas2DLayerBridge::layer() const
 {
+    ASSERT(!m_destructionInProgress);
     ASSERT(m_layer);
     return m_layer->layer();
 }
