@@ -9,17 +9,20 @@
             height: 500px;
         }
     </style>
-    <script src="../../fast/repaint/resources/repaint.js"></script>
+    <script src="../../resources/run-after-display.js"></script>
     <script>
-        if (window.testRunner)
+        if (window.testRunner) {
             testRunner.dumpAsTextWithPixelResults();
+            testRunner.waitUntilDone();
+        }
         function repaintTest()
         {
             document.getElementById("ruler").style.height = "450px";
+            testRunner.notifyDone();
         }
     </script>
 </head>
-<body onload="runRepaintTest()">
+<body onload="runAfterDisplay(repaintTest);">
     <div id="ruler">
 </body>
 </html>

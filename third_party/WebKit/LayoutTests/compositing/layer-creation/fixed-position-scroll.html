@@ -31,25 +31,22 @@
         -webkit-transform: translateZ(0);
       }
     </style>
-    <script src="../../fast/repaint/resources/repaint.js"></script>
+    <script src="../../resources/run-after-display.js"></script>
     <script type="text/javascript" charset="utf-8">
       if (window.testRunner) {
         testRunner.dumpAsTextWithPixelResults();
         testRunner.waitUntilDone();
       }
 
-      function repaintTest()
-      {
-        window.scrollBy(0,-96);
-        if (window.testRunner)
-          testRunner.notifyDone();
-      }
-
       function doTest()
       {
         window.scrollBy(0,-2048);
         window.scrollBy(0,160);
-        runRepaintTest();
+        runAfterDisplay(function() {
+          window.scrollBy(0,-96);
+          if (window.testRunner)
+            testRunner.notifyDone();
+        });
       }
       window.addEventListener('load', doTest, false);
     </script>

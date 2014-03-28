@@ -10,11 +10,12 @@
       border: 20px solid black;
     }
   </style>
-  <script src="resources/repaint.js"></script>
+  <script src="../../resources/run-after-display.js"></script>
   <script type="text/javascript" charset="utf-8">
 
     if (window.testRunner) {
       testRunner.dumpAsTextWithPixelResults();
+      testRunner.waitUntilDone();
     }
 
     function repaintTest()
@@ -23,18 +24,19 @@
       var ctx = canvas.getContext('2d');
 
       ctx.fillStyle = 'green';
-      
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 50, 200);
       // Test the the transform applies the matrix in the correct order.
       ctx.transform(1, 0, 0, -1, 0, 0);
       ctx.fillRect(0, 100, 200, 80);
       ctx.restore();
+      if (window.testRunner) {
+          testRunner.notifyDone();
+      }
     }
-    
   </script>
 </head>
-<body onload="runRepaintTest()">
+<body onload="runAfterDisplay(repaintTest)">
   <canvas id="canvas1"></canvas>
 </body>
 </html>

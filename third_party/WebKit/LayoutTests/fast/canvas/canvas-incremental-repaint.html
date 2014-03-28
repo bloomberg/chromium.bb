@@ -10,15 +10,16 @@
       border: 20px solid black;
     }
   </style>
-  <script src="resources/repaint.js"></script>
+  <script src="../../resources/run-after-display.js"></script>
   <script type="text/javascript" charset="utf-8">
 
     if (window.testRunner) {
       testRunner.dumpAsTextWithPixelResults();
+      testRunner.waitUntilDone();
     }
 
     var appleImage;
-    
+
     function initializeCanvas()
     {
       var canvas = document.getElementById('canvas1');
@@ -41,7 +42,7 @@
       ctx.fillStyle = 'black'; 
       ctx.strokeStyle = 'green'; 
       ctx.lineWidth = 12; 
-      
+
       ctx.save();
       ctx.scale(1.5, 0.8);
       ctx.fillRect(30, 40, 70, 80);
@@ -62,7 +63,7 @@
       // Test with stroke
       canvas = document.getElementById('canvas3');
       ctx = canvas.getContext('2d');
-      
+
       ctx.beginPath();
       ctx.moveTo(100, 20);
       ctx.bezierCurveTo(150, 20, 150, 120, 100, 120);
@@ -115,7 +116,7 @@
       ctx.shadowColor = 'blue';
       ctx.translate(60, 0);
       ctx.drawImage(appleImage, 10, 10, 100, 100);
-      
+
       // clip test
       canvas = document.getElementById('canvas8');
       ctx = canvas.getContext('2d');
@@ -123,20 +124,20 @@
       ctx.shadowOffsetY = 20;
       ctx.shadowBlur = 40;
       ctx.shadowColor = 'blue';
-      
+
       ctx.beginPath();
       ctx.rect(50, 30, 80, 80);
       ctx.closePath();
       ctx.clip();
-      
+
       ctx.translate(40, 0);
       ctx.drawImage(appleImage, 10, 10, 100, 100);
-      
+
       // ImageData test
       canvas = document.getElementById('canvas9');
       ctx = canvas.getContext('2d');
       ctx.drawImage(appleImage, 10, 10, 100, 100);
-      
+
       var imageData = ctx.getImageData(15, 15, 90, 90);
 
       // putImageData ignores shadow, transform and clip, but set the to test
@@ -150,15 +151,18 @@
       ctx.clip();
 
       ctx.putImageData(imageData, 150, 20);
+
+      if (window.testRunner)
+        testRunner.notifyDone();
     }
-    
+
     function pageLoaded()
     {
       initializeCanvas();
 
       appleImage = new Image();
       appleImage.onload = function() {
-        runRepaintTest();
+        runAfterDisplay(repaintTest);
       }
       appleImage.src = "resources/apple.gif";
     }

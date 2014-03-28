@@ -1,13 +1,15 @@
 <!doctype html>
-<script src="resources/repaint.js"></script>
-<body onload="runRepaintTest();">
+<script src="../../resources/run-after-display.js"></script>
+<body onload="runAfterDisplay(repaintTest);">
   <canvas id="canvas-source-in" width="100" height="100"></canvas>
   <canvas id="canvas-copy" width="100" height="100"></canvas>
   <script>
   var compositeTypes = ['source-in','copy'];
 
-  if (window.testRunner)
+  if (window.testRunner) {
     testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
+  }
 
   for (i = 0; i < compositeTypes.length; i++) {
     var canvas = document.getElementById('canvas-' + compositeTypes[i]);
@@ -25,7 +27,8 @@
       ctx.fillStyle = '#00f';
       ctx.fillRect(40, 40, 20, 20);
     }
+    if (window.testRunner)
+      testRunner.notifyDone();
   }
-
   </script>
 </body>
