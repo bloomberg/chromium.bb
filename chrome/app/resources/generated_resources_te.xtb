@@ -307,6 +307,7 @@
 <translation id="7607274158153386860">టాబ్లెట్ సైట్‌ను అభ్యర్థించు</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> మీరు క్రింద ఉన్న దశలను పాటించడం ద్వారా సమస్యను కనుగొనడానికి ప్రయత్నించవచ్చు: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">QTKitకి బదులుగా, Mac OS X AVఫౌండేషన్ APIల వినియోగాన్ని ప్రారంభించండి.</translation>
 <translation id="6317369057005134371">అనువర్తన విండో కోసం వేచి ఉంది...</translation>
 <translation id="6391832066170725637">ఫైల్ లేదా డైరెక్టరీ కనుగొనబడలేదు.</translation>
 <translation id="7393381084163773901">వీధి చిరునామా</translation>
@@ -1302,6 +1303,7 @@
 <translation id="8442065444327205563">మీ పత్రం వీక్షించడానికి సిద్ధంగా ఉంది.</translation>
 <translation id="236141728043665931">ఎల్లప్పుడూ మైక్రోఫోన్ ప్రాప్యతను బ్లాక్ చేయి</translation>
 <translation id="2307462900900812319">నెట్‌వర్క్‌ని కాన్ఫిగర్ చేయి</translation>
+<translation id="1704385717926547822">ప్రయోగాత్మక Chromecast మద్దతుని ప్రారంభించండి</translation>
 <translation id="5911798608827489036">స్థానిక నెట్‌వర్క్ లేదా ఇంటర్నెట్‌లో ఏదైనా కంప్యూటర్‌తో డేటాను పరస్పరం మార్చుకోండి</translation>
 <translation id="220858061631308971">దయచేసి ఈ PIN కోడ్‌ని &quot;<ph name="DEVICE_NAME"/>&quot;లో నమోదు చేయండి:</translation>
 <translation id="6263082573641595914">Microsoft CA సంస్కరణ</translation>
@@ -2912,6 +2914,7 @@
 <translation id="8670869118777164560">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME"/>) నెట్‌వర్క్ అభ్యర్థనను <ph name="ACTUAL_REDIRECT_DESTINATION"/>కు దారి మళ్లించినందున ఈ పొడిగింపు దీన్ని <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>కు దారి మళ్లించడంలో విఫలమైంది.</translation>
 <translation id="3654092442379740616">సమకాలీకరణ లోపం:  <ph name="PRODUCT_NAME"/> గడువు ముగిసింది మరియు నవీకరించాల్సి ఉంది.</translation>
 <translation id="790040513076446191">గోప్యత సంబంధ సెట్టింగ్‌లను మ్యానిపులేట్ చేయండి</translation>
+<translation id="7260002739296185724">OS X &gt;= 10.7లో వీడియో క్యాప్చర్ మరియు వీడియో పరికర పర్యవేక్షణ కోసం AVఫౌండేషన్ వినియోగాన్ని ప్రారంభించండి. లేకపోతే QTKit ఉపయోగించబడుతుంది.</translation>
 <translation id="3116361045094675131">UK కీబోర్డ్</translation>
 <translation id="1463985642028688653">బ్లాక్ చేయి</translation>
 <translation id="1715941336038158809">చెల్లని వినియోగదారు పేరు లేదా పాస్‌వర్డ్.</translation>
@@ -3769,6 +3772,7 @@
 <translation id="6658571109205370715">ప్రమాణపత్ర పారదర్శకత</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">బుక్‌మార్క్‌ను తొలగించు</translation>
+<translation id="7166627725100067582">Chromecast పరికరాల్లో వెబ్ నుండి వీడియోలను ప్లే చేయడానికి మరియు నియంత్రించడానికి అనుమతించే ప్రయోగాత్మక Chromecast మద్దతుని ప్రారంభించండి.</translation>
 <translation id="3031557471081358569">దిగుమతి చెయ్యడానికి ఐటమ్‌లను ఎంచుకోండి:</translation>
 <translation id="1368832886055348810">ఎడమ నుండి కుడికి</translation>
 <translation id="834106456999819211">మీ ఆర్డర్ ప్రాసెస్ చేయబడుతోంది</translation>

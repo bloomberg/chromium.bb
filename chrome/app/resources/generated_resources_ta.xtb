@@ -308,6 +308,7 @@
 <translation id="7607274158153386860">டேப்லெட் தளத்தைக் கோரு</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> நீங்கள் பின்வரும் செயல்பாடுகளைச் செய்வதன் மூலம், சிக்கலைக் கண்டறிய முயலலாம்: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">QTKit க்குப் பதிலாக, Mac OS X AVFoundation APIகள் பயன்பாட்டை இயக்கு.</translation>
 <translation id="6317369057005134371">பயன்பாட்டு சாளரத்திற்காகக் காத்திருக்கிறது...</translation>
 <translation id="6391832066170725637">கோப்பு அல்லது கோப்பகத்தைக் கண்டறிய முடியவில்லை.</translation>
 <translation id="7393381084163773901">வீதியின் முகவரி</translation>
@@ -1304,6 +1305,7 @@
 <translation id="8442065444327205563">உங்கள் ஆவணம் பார்ப்பதற்குத் தயாராக உள்ளது.</translation>
 <translation id="236141728043665931">மைக்ரோஃபோன் அணுகலை எப்போதும் தடு</translation>
 <translation id="2307462900900812319">பிணையத்தை உள்ளமை</translation>
+<translation id="1704385717926547822">சோதனை Chromecast ஆதரவை இயக்கு</translation>
 <translation id="5911798608827489036">அகப் பிணையம் அல்லது இணையத்தில் உள்ள எந்த கணினியுடனும் தரவைப் பரிமாறவும்</translation>
 <translation id="220858061631308971">&quot;<ph name="DEVICE_NAME"/>&quot; இல் இந்த PIN குறியீட்டை உள்ளிடுக:</translation>
 <translation id="6263082573641595914">Microsoft CA பதிப்பு</translation>
@@ -2899,6 +2901,7 @@
 <translation id="8670869118777164560">(<ph name="EXTENSION_NAME"/>) என்ற வேறொரு நீட்டிப்பு <ph name="ACTUAL_REDIRECT_DESTINATION"/> க்குத் திசைத்திருப்பப்பட்டதால் பிணைய கோரிக்கையை <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> க்கு திசைத்திருப்புவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>
 <translation id="3654092442379740616">ஒத்திசைவுப் பிழை:  <ph name="PRODUCT_NAME"/> காலாவதியானதால், அதைப் புதுப்பிக்க வேண்டும்.</translation>
 <translation id="790040513076446191">தனியுரிமைத் தொடர்பான அமைப்புகளை கையாளலாம்</translation>
+<translation id="7260002739296185724">OS X &gt;= 10.7 இல் வீடியோ எடுக்க, வீடியோ சாதனத்தைக் கண்காணிப்பதற்கான AV Foundation பயன்பாட்டை இயக்கவும். மற்ற நிலைகளில், QTKit பயன்படுத்தப்படும்.</translation>
 <translation id="3116361045094675131">யுகே விசைப்பலகை</translation>
 <translation id="1463985642028688653">தடு</translation>
 <translation id="1715941336038158809">செல்லாத பயனர் பெயர் அல்லது கடவுச்சொல்.</translation>
@@ -3750,6 +3753,7 @@
 <translation id="6658571109205370715">சான்றிதழ் வெளிப்படைத்தன்மை</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">புக்மார்க்கை நீக்கு</translation>
+<translation id="7166627725100067582">Chromecast சாதனங்களில் இணையத்திலிருந்து பெறப்படும் வீடியோக்களை இயக்க, கட்டுப்படுத்த அனுமதிக்கும் சோதனை Chromecast ஆதரவை இயக்கவும்.</translation>
 <translation id="3031557471081358569">இறக்குமதிக்கு உருப்படிகளைத் தேர்ந்தெடு</translation>
 <translation id="1368832886055348810">இடமிருந்து வலம்</translation>
 <translation id="834106456999819211">உங்கள் ஆர்டர் செயல்படுத்தப்படுகிறது</translation>

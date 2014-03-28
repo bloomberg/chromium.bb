@@ -303,6 +303,7 @@
           您可以尝试按以下步骤诊断该问题：
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">启用Mac OS X AVFoundation API（而不是QTKit）。</translation>
 <translation id="6317369057005134371">等待应用窗口…</translation>
 <translation id="6391832066170725637">无法找到该文件或目录。</translation>
 <translation id="7393381084163773901">街道地址</translation>
@@ -414,7 +415,7 @@
 <translation id="8589311641140863898">实验性扩展程序 API</translation>
 <translation id="8945311516363276943">启用概览模式。</translation>
 <translation id="6990295747880223380">内嵌 HistoryQuickProvider 建议</translation>
-<translation id="631155299877799862">一旦启用，则只要按F4键进入全屏模式，所有非浏览器窗口（例如：应用和任务管理器）均使用扩窗全屏模式。</translation>
+<translation id="631155299877799862">一旦启用，则只要按F4键进入全屏模式，所有非浏览器窗口（例如：应用和任务管理器）均使用沉浸全屏模式。</translation>
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8336153091935557858">昨天<ph name="YESTERDAY_DAYTIME"/></translation>
 <translation id="8642171459927087831">访问令牌</translation>
@@ -778,7 +779,7 @@
 <translation id="3298461240075561421">即使您之前从该网站下载过文件，但该网站可能当时已遭到黑客入侵。您可以日后再尝试下载，而不是恢复此文件。</translation>
 <translation id="9208886416788010685">Adobe Reader 已过期</translation>
 <translation id="1274997165432133392">Cookie及其他网站数据</translation>
-<translation id="5967061606189338140">为非浏览器窗口启用扩窗全屏模式。</translation>
+<translation id="5967061606189338140">为非浏览器窗口启用沉浸全屏模式。</translation>
 <translation id="2945028952025978099">停用 2D 画布渲染的延迟，从而立即完成绘图操作，然后再运行下一个 JavaScript 命令。</translation>
 <translation id="375841316537350618">正在下载代理脚本...</translation>
 <translation id="45400070127195133">启用此选项后，网络应用即可访问仍处于草稿阶段的 WebGL 扩展程序。</translation>
@@ -1280,6 +1281,7 @@
 <translation id="8442065444327205563">您可以查看文档了。</translation>
 <translation id="236141728043665931">始终禁止使用麦克风</translation>
 <translation id="2307462900900812319">配置网络</translation>
+<translation id="1704385717926547822">启用实验性Chromecast支持功能</translation>
 <translation id="5911798608827489036">与本地网络或互联网上的任何计算机交换数据</translation>
 <translation id="220858061631308971">请在“<ph name="DEVICE_NAME"/>”上输入此 PIN 码：</translation>
 <translation id="6263082573641595914">Microsoft CA 版本</translation>
@@ -2878,6 +2880,7 @@
 <translation id="8670869118777164560">此扩展程序无法将该网络请求重新定向到 <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>，因为其他扩展程序（<ph name="EXTENSION_NAME"/>）已将其重新定向到 <ph name="ACTUAL_REDIRECT_DESTINATION"/>。</translation>
 <translation id="3654092442379740616">发生同步错误：<ph name="PRODUCT_NAME"/>已过期，需要更新。</translation>
 <translation id="790040513076446191">管理隐私相关设置</translation>
+<translation id="7260002739296185724">启用后，将使用AVFoundation在OS X 10.7及更高版本的系统上进行视频捕获和视频设备监控，否则将使用QTKit。</translation>
 <translation id="3116361045094675131">英语（英国）键盘</translation>
 <translation id="1463985642028688653">阻止</translation>
 <translation id="1715941336038158809">用户名或密码无效。</translation>
@@ -3732,6 +3735,7 @@
 <translation id="6658571109205370715">证书透明度</translation>
 <translation id="8050038245906040378">Microsoft 商业代码签名</translation>
 <translation id="7299721129597238157">删除书签</translation>
+<translation id="7166627725100067582">启用实验性Chromecast支持功能。此功能可用来在Chromecast设备上播放和控制网络视频。</translation>
 <translation id="3031557471081358569">选择要导入的内容：</translation>
 <translation id="1368832886055348810">从左向右</translation>
 <translation id="834106456999819211">系统正在处理您的订单</translation>
@@ -5178,7 +5182,7 @@
 <translation id="4034042927394659004">降低键盘亮度</translation>
 <translation id="5898154795085152510">该服务器返回了一个无效的客户端证书。错误编号：<ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>)。</translation>
 <translation id="2704184184447774363">Microsoft 文档签名</translation>
-<translation id="5677928146339483299">已拦截</translation>
+<translation id="5677928146339483299">已屏蔽</translation>
 <translation id="4645676300727003670">保留(&amp;K)</translation>
 <translation id="1646136617204068573">匈牙利语键盘</translation>
 <translation id="3225579507836276307">某个第三方扩展程序已阻止对此网页的访问。</translation>

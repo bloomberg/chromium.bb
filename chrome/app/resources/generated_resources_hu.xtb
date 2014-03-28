@@ -304,6 +304,7 @@
 <translation id="7607274158153386860">Táblagépre optimalizált webhely kérése</translation>
 <translation id="8028060951694135607">Microsoft kulcshelyreállító</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/><ph name="LINE_BREAK"/> Megpróbálhatja diagnosztizálni a problémát a következő lépések követésével: <ph name="LINE_BREAK"/><ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">A Mac OS X AVFoundation API-k használatának engedélyezése a QTKit helyett.</translation>
 <translation id="6317369057005134371">Várakozás az alkalmazás ablakára...</translation>
 <translation id="6391832066170725637">A fájlt vagy könyvtárat nem sikerült megtalálni.</translation>
 <translation id="7393381084163773901">Cím</translation>
@@ -1290,6 +1291,7 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY"/>) hasznos lehet a következő 
 <translation id="8442065444327205563">A dokumentum készen áll a megtekintésre.</translation>
 <translation id="236141728043665931">Mikrofon elérésének állandó tiltása</translation>
 <translation id="2307462900900812319">Hálózat beállítása</translation>
+<translation id="1704385717926547822">Kísérleti Chromecast-támogatás engedélyezése</translation>
 <translation id="5911798608827489036">Adatok cseréje bármilyen számítógéppel a helyi hálózaton vagy az interneten</translation>
 <translation id="220858061631308971">Kérjük, adja meg a PIN kódot a(z) &quot;<ph name="DEVICE_NAME"/>&quot; eszközhöz:</translation>
 <translation id="6263082573641595914">Microsoft CA verzió</translation>
@@ -2890,6 +2892,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="8670869118777164560">A bővítmény nem tudta átirányítani a hálózati kérést <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> felé, mivel egy másik bővítmény (<ph name="EXTENSION_NAME"/>) átirányította azt a következőre: <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Szinkronizálási hiba: A <ph name="PRODUCT_NAME"/> elavult, így frissítése szükséges.</translation>
 <translation id="790040513076446191">Adatvédelemmel kapcsolatos beállítások módosítása</translation>
+<translation id="7260002739296185724">Az AVFoundation használatának engedélyezése a videorögzítéshez és a videoeszköz felügyeletéhez a legalább 10.7-es verziószámú OS X esetében. Egyéb esetben a rendszer a QTKitet használja.</translation>
 <translation id="3116361045094675131">Brit billentyűzet</translation>
 <translation id="1463985642028688653">letiltás</translation>
 <translation id="1715941336038158809">Érvénytelen felhasználónév vagy jelszó.</translation>
@@ -3745,6 +3748,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6658571109205370715">Tanúsítvány átláthatósága</translation>
 <translation id="8050038245906040378">Microsoft kereskedelmi kódaláírás</translation>
 <translation id="7299721129597238157">Könyvjelző törlése</translation>
+<translation id="7166627725100067582">Az internetes videók Chromecast-eszközökön való lejátszását és lejátszásának szabályozását lehetővé tevő kísérleti Chromecast-támogatás engedélyezése.</translation>
 <translation id="3031557471081358569">Válassza ki az importálandó elemeket:</translation>
 <translation id="1368832886055348810">Balról jobbra</translation>
 <translation id="834106456999819211">Megrendelésének feldolgozása folyamatban van</translation>

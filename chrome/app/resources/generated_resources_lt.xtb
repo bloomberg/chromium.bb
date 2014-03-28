@@ -307,6 +307,7 @@
           Galite pabandyti nustatyti problemą atlikę šiuos veiksmus:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Įgalinti „Mac OS X AVFoundation“ API naudojimą vietoje „QTKit“.</translation>
 <translation id="6317369057005134371">Laukiama programos lango...</translation>
 <translation id="6391832066170725637">Nepavyko rasti failo ar aplanko.</translation>
 <translation id="7393381084163773901">Adresas</translation>
@@ -1305,6 +1306,7 @@ likęs akumuliatoriaus laikas</translation>
 <translation id="8442065444327205563">Dokumentas parengtas peržiūr.</translation>
 <translation id="236141728043665931">Visada blokuoti prieigą prie mikrofono</translation>
 <translation id="2307462900900812319">Konfigūruoti tinklą</translation>
+<translation id="1704385717926547822">Įgalinti eksperimentinį „Chromecast“ palaikymą</translation>
 <translation id="5911798608827489036">Keistis duomenimis su bet kuriuo kompiuteriu vietiniame tinkle ar internete</translation>
 <translation id="220858061631308971">Įveskite šį PIN kodą „<ph name="DEVICE_NAME"/>“:</translation>
 <translation id="6263082573641595914">„Microsoft“ CA versija</translation>
@@ -2927,6 +2929,7 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite tvarkyti jo nus
 <translation id="8670869118777164560">Šiam plėtiniui peradresuojant tinklo užklausą <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME"/>“) peradresavo ją <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Sinchronizavimo klaida: „<ph name="PRODUCT_NAME"/>“ yra pasenusi ir turi būti atnaujinta.</translation>
 <translation id="790040513076446191">Keisti privatumo nustatymus</translation>
+<translation id="7260002739296185724">Įgalinti „AVFoundation“ naudojimą vaizdo įrašams fiksuoti ir vaizdo įrenginiui stebėti naudojant 10.7 ar naujesnės versijos „OS X“. Kitu atveju bus naudojama „QTKit“.</translation>
 <translation id="3116361045094675131">JK klaviatūra</translation>
 <translation id="1463985642028688653">blokuoti</translation>
 <translation id="1715941336038158809">Neteisingas naudotojo vardas ar slaptažodis.</translation>
@@ -3497,7 +3500,7 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite tvarkyti jo nus
 <translation id="3578594933904494462">Šio skirtuko lapo turinys bendrinamas.</translation>
 <translation id="295942452804818007">Rodyti būsenos meniu</translation>
 <translation id="8051961636969466900">Galite padėti užtikrinti „Chrome“ saugą ir lengvesnį naudojimą siųsdami įtartinus atsisiųstus failus „Google“.</translation>
-<translation id="3831099738707437457">&amp;Slėpti rašybos tikrinimo skydą</translation>
+<translation id="3831099738707437457">&amp;Slėpti rašybos tikrinimo skydelį</translation>
 <translation id="4243835228168841140"><ph name="FULLSCREEN_ORIGIN"/> norima neleisti pelės žymeklio.</translation>
 <translation id="8662911384982557515">Pakeisti pagrindinį puslapį į: <ph name="HOME_PAGE"/></translation>
 <translation id="1040471547130882189">Papildinys neatsako</translation>
@@ -3789,6 +3792,7 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite tvarkyti jo nus
 <translation id="6658571109205370715">Sertifikato skaidrumas</translation>
 <translation id="8050038245906040378">„Microsoft“ komercinio kodo pasirašymas</translation>
 <translation id="7299721129597238157">Ištrinti žymę</translation>
+<translation id="7166627725100067582">Įgalinti eksperimentinį „Chromecast“ palaikymą, kurį naudojant galima paleisti ir valdyti vaizdo įrašus prisijungus prie žiniatinklio „Chromecast“ įrenginiais.</translation>
 <translation id="3031557471081358569">Pasirinkite elementus importavimui:</translation>
 <translation id="1368832886055348810">Iš kairės į dešinę</translation>
 <translation id="834106456999819211">Užsakymas apdorojamas</translation>
@@ -4896,7 +4900,7 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="8091486941471012404">Įgalinti Programų paleidimo priemonės aplankus.</translation>
 <translation id="8675377193764357545">Sinchronizuota kaip <ph name="USER_EMAIL_ADDRESS"/></translation>
 <translation id="466816546394172504">Neleisti atidėtų 2D matomųjų tinklalapių sričių</translation>
-<translation id="5398353896536222911">&amp;Rodyti rašybos tikrinimo skydą</translation>
+<translation id="5398353896536222911">&amp;Rodyti rašybos tikrinimo skydelį</translation>
 <translation id="8018604194395563792">„<ph name="PRODUCT_NAME"/>“ užblokavo prieigą prie šio puslapio <ph name="HOST_NAME"/>.</translation>
 <translation id="3494769164076977169">Paklausti, kai svetainė bando atsisiųsti failus automatiškai po pirmo failo (rekomenduojama)</translation>
 <translation id="7549053541268690807">Ieškoti žodyne</translation>

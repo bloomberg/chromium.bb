@@ -308,6 +308,7 @@
           Можете да покушате да утврдите проблем ако пратите следеће кораке:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Омогући коришћење Mac OS X AVFoundation API-ја, уместо QTKit-а.</translation>
 <translation id="6317369057005134371">Чека се прозор апликације...</translation>
 <translation id="6391832066170725637">Није могуће пронаћи датотеку или директоријум.</translation>
 <translation id="7393381084163773901">Адреса</translation>
@@ -1304,6 +1305,7 @@
 <translation id="8442065444327205563">Документ је спреман за приказ.</translation>
 <translation id="236141728043665931">Увек блокирај приступ микрофону</translation>
 <translation id="2307462900900812319">Конфигуриши мрежу</translation>
+<translation id="1704385717926547822">Омогући експерименталну подршку за Chromecast</translation>
 <translation id="5911798608827489036">Размена података са било којим рачунаром на локалној мрежи или интернету</translation>
 <translation id="220858061631308971">Унесите овај PIN кôд на уређају „<ph name="DEVICE_NAME"/>“:</translation>
 <translation id="6263082573641595914">Верзија Microsoft CA</translation>
@@ -2918,6 +2920,7 @@
 <translation id="8670869118777164560">Овај додатак није успео да преусмери захтев мреже на <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> пошто га је други додатак (<ph name="EXTENSION_NAME"/>) преусмерио на <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Грешка при синхронизацији: Производ <ph name="PRODUCT_NAME"/> је застарео и потребно је да га ажурирате.</translation>
 <translation id="790040513076446191">Управљање подешавањима у вези са приватношћу</translation>
+<translation id="7260002739296185724">Омогућите коришћење AVFoundation-а за снимање видео снимака и надгледање видео уређаја на OS X &gt;= 10.7. У супротном користиће се QTKit.</translation>
 <translation id="3116361045094675131">Језик тастатуре: енглески (УК)</translation>
 <translation id="1463985642028688653">блокирај</translation>
 <translation id="1715941336038158809">Неважеће корисничко име или лозинка.</translation>
@@ -3776,6 +3779,7 @@
 <translation id="6658571109205370715">Транспарентност сертификата</translation>
 <translation id="8050038245906040378">Microsoft потписивање комерцијалних кодова</translation>
 <translation id="7299721129597238157">Брисање обележивача</translation>
+<translation id="7166627725100067582">Омогућите експерименталну подршку за Chromecast која омогућава пуштање и контролу видео снимака са веба на Chromecast уређајима.</translation>
 <translation id="3031557471081358569">Изаберите ставке за увоз:</translation>
 <translation id="1368832886055348810">Слева надесно</translation>
 <translation id="834106456999819211">Обрађујемо поруџбину</translation>

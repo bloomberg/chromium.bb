@@ -304,6 +304,7 @@
           Problém můžete zkusit diagnostikovat pomocí následujících kroků:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Povolit použití rozhraní Mac OS X AVFoundation API namísto rozhraní QTKit</translation>
 <translation id="6317369057005134371">Čekání na okno aplikace...</translation>
 <translation id="6391832066170725637">Soubor nebo adresář se nepodařilo nalézt.</translation>
 <translation id="7393381084163773901">Ulice a číslo popisné</translation>
@@ -1291,6 +1292,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME"/>
 <translation id="8442065444327205563">Dokument připraven k zobrazení</translation>
 <translation id="236141728043665931">Vždy blokovat přístup k mikrofonu</translation>
 <translation id="2307462900900812319">Konfigurovat síť</translation>
+<translation id="1704385717926547822">Povolit experimentální podporu Chromecastu</translation>
 <translation id="5911798608827489036">Výměna dat s libovolným počítačem v lokální síti nebo internetu</translation>
 <translation id="220858061631308971">Zadejte prosím v zařízení <ph name="DEVICE_NAME"/> tento kód PIN:</translation>
 <translation id="6263082573641595914">Verze CA Microsoft</translation>
@@ -2898,6 +2900,7 @@ Dejte pozor, abyste mu nezpřístupnili žádné citlivé informace.</translatio
 <translation id="8670869118777164560">Tomuto rozšíření se nepodařilo přesměrovat požadavek sítě do umístění <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, protože jej jiné rozšíření (<ph name="EXTENSION_NAME"/>) přesměrovalo do umístění <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Chyba synchronizace: Prohlížeč <ph name="PRODUCT_NAME"/> je zastaralý a potřebuje aktualizovat.</translation>
 <translation id="790040513076446191">Manipulovat s nastavením týkajícím se ochrany soukromí</translation>
+<translation id="7260002739296185724">Povolí v systému OS X 10.7 a novějších verzích použití rozhraní AV Foundation pro záznam videa a sledování videozařízení. V jiných případech bude použito rozhraní QTKit.</translation>
 <translation id="3116361045094675131">Britská klávesnice</translation>
 <translation id="1463985642028688653">blokovat</translation>
 <translation id="1715941336038158809">Neplatné uživatelské jméno nebo heslo.</translation>
@@ -3759,6 +3762,7 @@ Dejte pozor, abyste mu nezpřístupnili žádné citlivé informace.</translatio
 <translation id="6658571109205370715">Transparentnost certifikátu</translation>
 <translation id="8050038245906040378">Komerční podepisování kódu Microsoft</translation>
 <translation id="7299721129597238157">Smazat záložku</translation>
+<translation id="7166627725100067582">Povolí experimentální podporu Chromecastu, která umožňuje přehrávat a ovládat videa z webu v zařízeních Chromecast.</translation>
 <translation id="3031557471081358569">Vyberte položky k importu:</translation>
 <translation id="1368832886055348810">Zleva doprava</translation>
 <translation id="834106456999819211">Vaše objednávka se zpracovává</translation>

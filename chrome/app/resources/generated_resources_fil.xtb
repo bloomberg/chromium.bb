@@ -308,6 +308,7 @@
           Maaari mong subukang i-diagnose ang problema sa pamamagitan ng pagsasagawa ng sumusunod na mga hakbang:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">I-enable ang paggamit ng mga Mac OS X AVFoundation API, sa halip ng QTKit.</translation>
 <translation id="6317369057005134371">Hinihintay ang application window...</translation>
 <translation id="6391832066170725637">Ang file o direktoryo ay hindi mahanap.</translation>
 <translation id="7393381084163773901">Address ng kalye</translation>
@@ -1305,6 +1306,7 @@ Kinakalkula ang natitirang oras</translation>
 <translation id="8442065444327205563">Handa tingnan dokumento mo.</translation>
 <translation id="236141728043665931">Palaging i-block ang pag-access sa mikropono</translation>
 <translation id="2307462900900812319">I-configure ang network</translation>
+<translation id="1704385717926547822">I-enable ang pang-eksperimentong suporta sa Chromecast</translation>
 <translation id="5911798608827489036">Makipagpalitan ng data sa anumang computer sa lokal na network o internet</translation>
 <translation id="220858061631308971">Pakilagay ang PIN code na ito sa &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
@@ -2921,6 +2923,7 @@ Tiyaking hindi ka maglalantad ng anumang sensitibong impormasyon.</translation>
 <translation id="8670869118777164560">Nabigo ang extension na ito na mag-redirect ng kahilingan sa network sa <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> dahil may isa pang extension (<ph name="EXTENSION_NAME"/>) na nag-redirect nito sa <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Error sa Pag-sync:  Ang <ph name="PRODUCT_NAME"/> ay hindi na napapanahon at kinakailangang ma-update.</translation>
 <translation id="790040513076446191">Manipulahin ang mga setting kaugnay ng privacy</translation>
+<translation id="7260002739296185724">I-enable ang paggamit ng AV Foundation para sa pag-capture ng video at pagsubaybay sa video device sa OS X &gt;= 10.7. Sa halip ay gagamitin ang QTKit.</translation>
 <translation id="3116361045094675131">UK keyboard</translation>
 <translation id="1463985642028688653">i-block</translation>
 <translation id="1715941336038158809">Hindi wastong user name o password.</translation>
@@ -3782,6 +3785,7 @@ Tiyaking hindi ka maglalantad ng anumang sensitibong impormasyon.</translation>
 <translation id="6658571109205370715">Certificate ng transparency</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">Tanggalin ang bookmark</translation>
+<translation id="7166627725100067582">I-enable ang pang-eksperimentong suporta sa Chromecast na pumapayag na i-play at kontrolin ang mga video mula sa Web sa mga Chromecast device.</translation>
 <translation id="3031557471081358569">Pumili ng mga item upang ma-import:</translation>
 <translation id="1368832886055348810">Kaliwa papuntang Kanan</translation>
 <translation id="834106456999819211">Pinoproseso ang iyong order</translation>

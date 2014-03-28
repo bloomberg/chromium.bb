@@ -308,6 +308,7 @@
           Bạn có thể cố gắng chẩn đoán sự cố bằng cách thực hiện theo các bước sau:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Cho phép sử dụng Mac OS X API AVFoundation, thay vì QTKit.</translation>
 <translation id="6317369057005134371">Đang đợi cửa sổ ứng dụng...</translation>
 <translation id="6391832066170725637">Không thể tìm thấy tệp hay thư mục.</translation>
 <translation id="7393381084163773901">Địa chỉ đường phố</translation>
@@ -1308,6 +1309,7 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY"/> có thể hữu ích v�
 <translation id="8442065444327205563">Tài liệu đã sẵn sàng để xem.</translation>
 <translation id="236141728043665931">Luôn chặn quyền truy cập micrô</translation>
 <translation id="2307462900900812319">Định cấu hình mạng</translation>
+<translation id="1704385717926547822">Bật hỗ trợ Chromecast thử nghiệm</translation>
 <translation id="5911798608827489036">Trao đổi dữ liệu với bất kỳ máy tính nào trên mạng cục bộ hoặc internet</translation>
 <translation id="220858061631308971">Vui lòng nhập mã PIN này trên &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Phiên bản CA của Microsoft</translation>
@@ -2924,6 +2926,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="8670869118777164560">Tiện ích mở rộng này không thể chuyển hướng yêu cầu mạng đến <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> do tiện ích mở rộng khác (<ph name="EXTENSION_NAME"/>) đã chuyển hướng yêu cầu mạng này đến <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Lỗi đồng bộ hóa:  <ph name="PRODUCT_NAME"/> đã cũ và cần được cập nhật.</translation>
 <translation id="790040513076446191">Thực hiện cài đặt liên quan đến bảo mật</translation>
+<translation id="7260002739296185724">Bật sử dụng AV Foundation để quay video và giám sát thiết bị video trên OS X &gt;= 10.7. Thay vào đó, QTKit sẽ được sử dụng.</translation>
 <translation id="3116361045094675131">Bàn phím Vương quốc Anh</translation>
 <translation id="1463985642028688653">chặn</translation>
 <translation id="1715941336038158809">Tên người dùng hoặc mật khẩu không hợp lệ.</translation>
@@ -3785,6 +3788,7 @@ Hãy đảm bảo bạn không hiển thị bất kỳ thông tin nhạy cảm n
 <translation id="6658571109205370715">Tính rõ ràng của chứng chỉ</translation>
 <translation id="8050038245906040378">Ký Mã Thương mại của Microsoft</translation>
 <translation id="7299721129597238157">Xóa dấu trang</translation>
+<translation id="7166627725100067582">Bật hỗ trợ Chromecast thử nghiệm cho phép phát và điều khiển video từ Web trên thiết bị Chromecast.</translation>
 <translation id="3031557471081358569">Chọn các mục cần nhập:</translation>
 <translation id="1368832886055348810">Trái sang Phải</translation>
 <translation id="834106456999819211">Đơn đặt hàng của bạn đang được xử lý</translation>

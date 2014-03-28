@@ -305,6 +305,7 @@
 <translation id="8028060951694135607">Microsofti võtme taastamine</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Võite proovida probleemi diagnoosida järgmiste sammude abil:
 <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Luba QTKiti asemel kasutada Mac OS X AVFoundationi API-sid.</translation>
 <translation id="6317369057005134371">Rakenduse akna ootamine ...</translation>
 <translation id="6391832066170725637">Faili või kataloogi ei leitud.</translation>
 <translation id="7393381084163773901">Aadress</translation>
@@ -1304,6 +1305,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY"/> võib järgmisel korral kasulikuks o
 <translation id="8442065444327205563">Dokument on kuvamiseks valmis.</translation>
 <translation id="236141728043665931">Blokeeri alati juurdepääs mikrofonile</translation>
 <translation id="2307462900900812319">Seadista võrk</translation>
+<translation id="1704385717926547822">Luba katseline Chromecasti tugi</translation>
 <translation id="5911798608827489036">Vaheta andmeid mis tahes arvutiga kohalikus võrgus või Internetis</translation>
 <translation id="220858061631308971">Sisestage seadmes „<ph name="DEVICE_NAME"/>” see PIN-kood:</translation>
 <translation id="6263082573641595914">Microsofti CA versioon</translation>
@@ -2907,6 +2909,7 @@ Veenduge, et te ei avalikustaks tundlikke andmeid.</translation>
 <translation id="8670869118777164560">Laiendusel ei õnnestunud võrgutaotlust ümber suunata asukohta <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, kuna teine laiendus (<ph name="EXTENSION_NAME"/>) suunas selle asukohta <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Sünkroonimisviga: <ph name="PRODUCT_NAME"/> on aegunud ja vajab värskendamist.</translation>
 <translation id="790040513076446191">Privaatsusega seotud seadete muutmine</translation>
+<translation id="7260002739296185724">Lubab AVFoundationi kasutamise videohõiveks ja videoseadme jälgimiseks operatsioonisüsteemi OS X versiooni 10.7 või vanemate versioonide puhul. Muidu kasutatakse QTKit-i.</translation>
 <translation id="3116361045094675131">Ühendkuningriigi klaviatuur</translation>
 <translation id="1463985642028688653">blokeeri</translation>
 <translation id="1715941336038158809">Kehtetu kasutaja nimi või parool.</translation>
@@ -3767,6 +3770,7 @@ Veenduge, et te ei avalikustaks tundlikke andmeid.</translation>
 <translation id="6658571109205370715">Sertifikaadi läbipaistvus</translation>
 <translation id="8050038245906040378">Microsofti äriline koodsigneerimine</translation>
 <translation id="7299721129597238157">Kustuta järjehoidja</translation>
+<translation id="7166627725100067582">Lubab katselise Chromecasti toe, mis lubab esitada ja juhtida veebivideoid Chromecasti seadmetes.</translation>
 <translation id="3031557471081358569">Vali importimiseks üksused:</translation>
 <translation id="1368832886055348810">Left to Right (Vasakult paremale)</translation>
 <translation id="834106456999819211">Teie tellimust töödeldakse</translation>

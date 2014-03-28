@@ -312,6 +312,7 @@
           તમે નીચેનાં પગલાંઓ લઇને સમસ્યાનું નિદાન કરવાનો પ્રયત્ન કરી શકો છો:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">QTKit ને બદલે Mac OS X AVFoundation API ના ઉપયોગને સક્ષમ કરો.</translation>
 <translation id="6317369057005134371">એપ્લિકેશન વિન્ડો માટે રાહ જોઇ રહ્યાં છે...</translation>
 <translation id="6391832066170725637">ફાઇલ અથવા ડાયરેક્ટરી શોધી શકાઈ નથી.</translation>
 <translation id="7393381084163773901">શેરીનું સરનામું</translation>
@@ -1312,6 +1313,7 @@
 <translation id="8442065444327205563">આપનો દસ્તાવેજ જોવા માટે તૈયાર છે.</translation>
 <translation id="236141728043665931">માઇક્રોફોનની ઍક્સેસને હંમેશા અવરોધિત કરો</translation>
 <translation id="2307462900900812319">નેટવર્ક ગોઠવો</translation>
+<translation id="1704385717926547822">પ્રાયોગિક Chromecast સમર્થનને સક્ષમ કરો</translation>
 <translation id="5911798608827489036">સ્થાનિક નેટવર્ક અથવા ઇન્ટરનેટ પર કોઈપણ કમ્પ્યુટર સાથે ડેટા વિનિમય કરો</translation>
 <translation id="220858061631308971">કૃપા કરીને &quot;<ph name="DEVICE_NAME"/>&quot; પર આ પિન કોડ દાખલ કરો:</translation>
 <translation id="6263082573641595914">Microsoft CA સંસ્કરણ</translation>
@@ -2925,6 +2927,7 @@
 <translation id="8670869118777164560">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> પર રીડાયરેક્ટ કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME"/>) એ તેને <ph name="ACTUAL_REDIRECT_DESTINATION"/> પર રીડાયરેક્ટ કર્યું છે.</translation>
 <translation id="3654092442379740616">સમન્વયન ભૂલ: <ph name="PRODUCT_NAME"/> જૂનું છે અને તેને અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="790040513076446191">ગોપનીયતા સંબંધિત સેટિંગ્સનો કૂશળતાપૂર્વક ઉપયોગ કરે છે.</translation>
+<translation id="7260002739296185724">OS X &gt;= 10.7 પર વિડિઓ કેપ્ચર અને વિડિઓ ઉપકરણ નિરીક્ષણ માટે AVFoundation ઉપયોગને સક્ષમ કરો. અન્યથા QTKit નો ઉપયોગ કરવામાં આવશે.</translation>
 <translation id="3116361045094675131">યુકે કીબોર્ડ</translation>
 <translation id="1463985642028688653">અવરોધિત કરો</translation>
 <translation id="1715941336038158809">અમાન્ય લૉગિન નામ અથવા પાસવર્ડ.</translation>
@@ -3779,6 +3782,7 @@
 <translation id="6658571109205370715">પ્રમાણપત્ર પારદર્શિતા</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">બુકમાર્ક કાઢી નાખો</translation>
+<translation id="7166627725100067582">Chromecast ઉપકરણો પર વેબથી વિડિઓઝને ચલાવવા અને નિયંત્રિત કરવા માટે મંજૂરી આપવાના પ્રાયોગિક Chromecast સમર્થનને સક્ષમ કરો.</translation>
 <translation id="3031557471081358569">આયાત કરવા માટે આઇટમ્સ પસંદ કરો:</translation>
 <translation id="1368832886055348810">ડાબેથી જમણે</translation>
 <translation id="834106456999819211">તમારા ઓર્ડર પર પ્રક્રિયા કરવામાં આવી રહી છે</translation>

@@ -308,6 +308,7 @@
           다음 단계에 따라 문제를 진단할 수 있습니다.
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Mac OS X AVFoundation API 사용 설정(QTKit 대신)</translation>
 <translation id="6317369057005134371">애플리케이션 창을 기다리는 중...</translation>
 <translation id="6391832066170725637">파일이나 디렉토리를 찾지 못했습니다.</translation>
 <translation id="7393381084163773901">상세 주소</translation>
@@ -1308,6 +1309,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="8442065444327205563">문서를 볼 준비가 되었습니다.</translation>
 <translation id="236141728043665931">마이크 액세스 항상 차단</translation>
 <translation id="2307462900900812319">네트워크 설정</translation>
+<translation id="1704385717926547822">실험용 Chromecast 지원 사용 설정</translation>
 <translation id="5911798608827489036">로컬 네트워크 또는 인터넷의 모든 컴퓨터와 데이터 교환</translation>
 <translation id="220858061631308971">'<ph name="DEVICE_NAME"/>'의 PIN 코드를 입력하세요:</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
@@ -2918,6 +2920,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="8670869118777164560">이 확장 프로그램에서 네트워크 요청을 <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>(으)로 리디렉션하는 데 실패했습니다. 다른 확장 프로그램(<ph name="EXTENSION_NAME"/>)이 해당 요청을 <ph name="ACTUAL_REDIRECT_DESTINATION"/>(으)로 리디렉션했습니다.</translation>
 <translation id="3654092442379740616">동기화 오류: <ph name="PRODUCT_NAME"/>이(가) 오래되어 업데이트해야 합니다.</translation>
 <translation id="790040513076446191">개인정보 보호 관련 설정 조정</translation>
+<translation id="7260002739296185724">OS X 10.7 이상에서 동영상 캡처 및 동영상 기기 모니터링에 AVFoundation을 사용하도록 설정합니다. 설정하지 않을 경우 QTKit이 사용됩니다.</translation>
 <translation id="3116361045094675131">영어(영국식) 키보드</translation>
 <translation id="1463985642028688653">차단</translation>
 <translation id="1715941336038158809">사용자 이름 또는 비밀번호가 잘못되었습니다.</translation>
@@ -3777,6 +3780,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6658571109205370715">인증서 확인</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">북마크 삭제</translation>
+<translation id="7166627725100067582">Chromecast 기기에서 웹의 동영상을 재생하고 제어할 수 있는 실험용 Chromecast 지원을 사용하도록 설정합니다.</translation>
 <translation id="3031557471081358569">가져올 항목 선택:</translation>
 <translation id="1368832886055348810">왼쪽에서 오른쪽으로</translation>
 <translation id="834106456999819211">신청 내용을 처리하는 중입니다.</translation>
@@ -4549,7 +4553,7 @@ http://support.google.com/chromebook/?p=tpm</translation>
 <translation id="6947969589393588905"><ph name="IDS_SHORT_PRODUCT_NAME"/>이(가) 이전 버전입니다.</translation>
 <translation id="4784330909746505604">PowerPoint 프레젠테이션</translation>
 <translation id="4345587454538109430">설정...</translation>
-<translation id="3255228561559750854">검색하거나 'Ok, Google'이라고 말하세요.</translation>
+<translation id="3255228561559750854">검색하거나 'OK Google'이라고 말하세요.</translation>
 <translation id="8148264977957212129">병음 입력 방법</translation>
 <translation id="2288278176040912387">레코드 플레이어</translation>
 <translation id="7772032839648071052">암호 확인</translation>

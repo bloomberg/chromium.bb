@@ -307,6 +307,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9"/></translation>
           Problém môžete skúsiť diagnostikovať pomocou nasledujúcich krokov:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Povolenie použitia rozhraní AV Foundation API systému Mac OS X (namiesto rozhrania QTKit).</translation>
 <translation id="6317369057005134371">Čaká sa na okno aplikácie...</translation>
 <translation id="6391832066170725637">Súbor alebo adresár sa nenašiel.</translation>
 <translation id="7393381084163773901">Adresa</translation>
@@ -1302,6 +1303,7 @@ Nabudúce by sa vám mohol hodiť režim inkognito (<ph name="SHORTCUT_KEY"/>).<
 <translation id="8442065444327205563">Dokument je pripr. na zobraz.</translation>
 <translation id="236141728043665931">Vždy blokovať prístup k mikrofónu</translation>
 <translation id="2307462900900812319">Konfigurovať sieť</translation>
+<translation id="1704385717926547822">Povolenie experimentálnej podpory zariadenia Chromecast</translation>
 <translation id="5911798608827489036">Výmena údajov s ktorýmkoľvek počítačom v miestnej sieti alebo na internete</translation>
 <translation id="220858061631308971">Zadajte tento kód PIN v zariadení „<ph name="DEVICE_NAME"/>“:</translation>
 <translation id="6263082573641595914">Certifikačná autorita spoločnosti Microsoft – verzia</translation>
@@ -2909,6 +2911,7 @@ Uistite sa, že neodhaľujete žiadne citlivé informácie.</translation>
 <translation id="8670869118777164560">Tomuto rozšíreniu sa nepodarilo presmerovať žiadosť o siete na stránky <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, pretože ju iné rozšírenie (<ph name="EXTENSION_NAME"/>) presmerovalo na stránky <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Chyba synchronizácie: Prehliadač <ph name="PRODUCT_NAME"/> je zastaraný a treba ho aktualizovať.</translation>
 <translation id="790040513076446191">Manipulovať s nastaveniami týkajúcimi sa ochrany osobných údajov</translation>
+<translation id="7260002739296185724">Povoľte použitie rozhraní AV Foundation na zaznamenávanie videa a sledovanie zariadenia prehrávajúceho video v systéme OS X verzie 10.7 alebo novšej. Inak sa použije rozhranie QTKit.</translation>
 <translation id="3116361045094675131">britská klávesnica</translation>
 <translation id="1463985642028688653">blokovať</translation>
 <translation id="1715941336038158809">Neplatné meno používateľa alebo heslo.</translation>
@@ -3770,6 +3773,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="6658571109205370715">Transparentnosť certifikátu</translation>
 <translation id="8050038245906040378">Komerčné podpisovanie kódu Microsoft</translation>
 <translation id="7299721129597238157">Odstrániť záložku</translation>
+<translation id="7166627725100067582">Povolí experimentálnu podporu zariadenia Chromecast, ktorá umožňuje prehrávať a ovládať videá z webu na zariadeniach Chromecast.</translation>
 <translation id="3031557471081358569">Vyberte položky na import:</translation>
 <translation id="1368832886055348810">Zľava doprava</translation>
 <translation id="834106456999819211">Vaša objednávka sa spracováva</translation>
@@ -4541,7 +4545,7 @@ Do úplného nabitia zostáva: <ph name="HOUR"/>:<ph name="MINUTE"/></translatio
 <translation id="6947969589393588905">Aplikácia <ph name="IDS_SHORT_PRODUCT_NAME"/> je zastaraná</translation>
 <translation id="4784330909746505604">Prezentácia aplikácie PowerPoint</translation>
 <translation id="4345587454538109430">Konfigurovať...</translation>
-<translation id="3255228561559750854">Vyhľadávajte alebo vyslovte kľúčové slovo Ok, Google</translation>
+<translation id="3255228561559750854">Vyhľadávajte alebo vyslovte „Ok, Google“</translation>
 <translation id="8148264977957212129">Metóda vstupu Pinyin</translation>
 <translation id="2288278176040912387">Gramofón</translation>
 <translation id="7772032839648071052">Potvrďte prístupovú frázu</translation>

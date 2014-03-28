@@ -308,6 +308,7 @@
           ಈ ಮಂದಿನ ಹಂತಗಳನ್ನು ಅನುಸರಿಸುವ  ಮೂಲಕ ನೀವು ಸಮಸ್ಯೆಯನ್ನು ಪರಿಹರಿಸಲು ಪ್ರಯತ್ನಿಸಬಹುದು:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">QTKit ಬದಲಾಗಿ, Mac OS X AVFoundation API ಗಳ ಬಳಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ.</translation>
 <translation id="6317369057005134371">ಅಪ್ಲಿಕೇಶನ್ ವಿಂಡೋಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="6391832066170725637">ಫೈಲ್ ಅಥವಾ ಡೈರೆಕ್ಟರಿ ಪತ್ತೆಯಾಗಿಲ್ಲ.</translation>
 <translation id="7393381084163773901">ಗಲ್ಲಿಯ ವಿಳಾಸ</translation>
@@ -1302,6 +1303,7 @@
 <translation id="8442065444327205563">ನಿಮ್ಮ ಡಾಕ್ಯುಮೆಂಟ್ ವೀಕ್ಷಿಸಲು ಸಿದ್ಧವಿದೆ.</translation>
 <translation id="236141728043665931">ಯಾವಾಗಲೂ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶವನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="2307462900900812319">ನೆಟ್‌ವರ್ಕ್ ಕಾನ್ಫಿಗರ್ ಮಾಡು</translation>
+<translation id="1704385717926547822">ಪ್ರಯೋಗಾತ್ಮಕ Chromecast ಬೆಂಬಲವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5911798608827489036">ಸ್ಥಳೀಯ ನೆಟ್‌ವರ್ಕ್ ಅಥವಾ ಇಂಟರ್ನೆಟ್‌ನಲ್ಲಿ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನೊಂದಿಗೆ ಡೇಟಾ ವಿನಿಮಯ ಮಾಡಿ</translation>
 <translation id="220858061631308971">ದಯವಿಟ್ಟು &quot;<ph name="DEVICE_NAME"/>&quot; ಇದರಲ್ಲಿ ಈ ಪಿನ್ ಕೋಡ್ ಅನ್ನು ನಮೂದಿಸಿ :</translation>
 <translation id="6263082573641595914">Microsoft CA ಆವೃತ್ತಿ</translation>
@@ -2902,6 +2904,7 @@
 <translation id="8670869118777164560">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME"/>) ಇದನ್ನು <ph name="ACTUAL_REDIRECT_DESTINATION"/> ಗೆ ಮರುನಿರ್ದೇಶಿಸಿರುವ ಕಾರಣ ಈ ವಿಸ್ತರಣೆಯು ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಯನ್ನು <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> ಗೆ ಮರುನಿರ್ದೇಶಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="3654092442379740616">ಸಿಂಕ್ ದೋಷ: <ph name="PRODUCT_NAME"/> ಅವಧಿ ಮುಕ್ತಾಯಗೊಂಡಿದೆ ಮತ್ತು ನವೀಕರಿಸುವ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="790040513076446191">ಗೌಪ್ಯತೆಗೆ- ಸಂಬಂಧಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸ್ವಾಧೀನಪಡಿಸಿಕೊಳ್ಳಿ</translation>
+<translation id="7260002739296185724">OS X &gt;= 10.7 ನಲ್ಲಿ ವೀಡಿಯೊ ಸೆರೆಹಿಡಿಯಲು ಮತ್ತು ವೀಡಿಯೊ ಸಾಧನದ ಪರಿವೀಕ್ಷಣೆಯ ಬಳಕೆಗಾಗಿ AVFoundation ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ. ಇಲ್ಲವಾದಲ್ಲಿ QTKit ಅನ್ನು ಬಳಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="3116361045094675131">ಯುಕೆ ಕೀಬೋರ್ಡ್</translation>
 <translation id="1463985642028688653">ಮುಚ್ಚು</translation>
 <translation id="1715941336038158809">ಅಮಾನ್ಯ ಬಳಕೆದಾರ ಹೆಸರು ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್.</translation>
@@ -3759,6 +3762,7 @@
 <translation id="6658571109205370715">ಪಾರದರ್ಶಕತೆ ಪ್ರಮಾಣಪತ್ರ</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">ಬುಕ್‌ಮಾರ್ಕ್ ಅಳಿಸು</translation>
+<translation id="7166627725100067582">ಪ್ರಾಯೋಗಿಕ Chromecast ಬೆಂಬಲವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ ಈ ಮೂಲಕ Chromecast ಸಾಧನಗಳಲ್ಲಿನ ವೆಬ್‍‍ನಿಂದ ವೀಡಿಯೊಗಳನ್ನು ಪ್ಲೇ ಮಾಡಲು ಮತ್ತು ನಿಯಂತ್ರಿಸಲು ಅನುಮತಿಸಿ.</translation>
 <translation id="3031557471081358569">ಆಮದು ಮಾಡಲು ಐಟಂಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ:</translation>
 <translation id="1368832886055348810">ಎಡದಿಂದ ಬಲಕ್ಕೆ</translation>
 <translation id="834106456999819211">ನಿಮ್ಮ ಆದೇಶವನ್ನು ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>

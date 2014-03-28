@@ -309,6 +309,7 @@
           問題を診断するには次の手順に従ってください:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Mac OS X AVFoundation API を使用できるようにする（QTKit の代わりに使用）</translation>
 <translation id="6317369057005134371">アプリケーション ウィンドウを待機しています...</translation>
 <translation id="6391832066170725637">指定したファイルまたはディレクトリは見つかりませんでした。</translation>
 <translation id="7393381084163773901">町村、番地</translation>
@@ -1297,6 +1298,7 @@
 <translation id="8442065444327205563">ドキュメントを表示できます。</translation>
 <translation id="236141728043665931">マイクのアクセスを常にブロックする</translation>
 <translation id="2307462900900812319">ネットワークを設定</translation>
+<translation id="1704385717926547822">試験運用版の Chromecast サポートを有効にする</translation>
 <translation id="5911798608827489036">ローカル ネットワークまたはインターネット上のパソコンとのデータ交換</translation>
 <translation id="220858061631308971">「<ph name="DEVICE_NAME"/>」の PIN コードを入力してください:</translation>
 <translation id="6263082573641595914">Microsoft CA バージョン</translation>
@@ -2911,6 +2913,7 @@
 <translation id="8670869118777164560">別の拡張機能（<ph name="EXTENSION_NAME"/>）がネットワーク リクエストを <ph name="ACTUAL_REDIRECT_DESTINATION"/> にリダイレクトしたため、この拡張機能はリクエストを <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> にリダイレクトできませんでした。</translation>
 <translation id="3654092442379740616">同期エラー: <ph name="PRODUCT_NAME"/> が最新ではないため、更新する必要があります。</translation>
 <translation id="790040513076446191">プライバシー関連設定を操作する</translation>
+<translation id="7260002739296185724">OS X 10.7 以上で、動画キャプチャと動画デバイスの監視に AVFoundation を使用できるようにします。AVFoundation を使用しない場合、QTKit が代わりに使用されます。</translation>
 <translation id="3116361045094675131">英語（英国）のキーボード</translation>
 <translation id="1463985642028688653">ブロック</translation>
 <translation id="1715941336038158809">ユーザー名またはパスワードが無効です。</translation>
@@ -3772,6 +3775,7 @@
 <translation id="6658571109205370715">証明書の透明性</translation>
 <translation id="8050038245906040378">Microsoft 商用コード署名</translation>
 <translation id="7299721129597238157">ブックマークを削除</translation>
+<translation id="7166627725100067582">Chromecast デバイス上でウェブ動画の再生と操作を行うための、試験運用版の Chromecast サポートを有効にします。</translation>
 <translation id="3031557471081358569">インポートするデータを選択:</translation>
 <translation id="1368832886055348810">左から右</translation>
 <translation id="834106456999819211">お申し込みを処理しています</translation>

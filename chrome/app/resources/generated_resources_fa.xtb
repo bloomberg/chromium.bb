@@ -304,6 +304,7 @@
 <translation id="7607274158153386860">درخواست سایت رایانه لوحی</translation>
 <translation id="8028060951694135607">‏بازیابی کلید Microsot</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> با انجام مراحل زیر می‌توانید سعی کنید مشکل را تشخیص دهید: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">‏استفاده از APIهای Mac OS X AVFoundation را به جای QTKit فعال کنید.</translation>
 <translation id="6317369057005134371">در انتظار پنجره برنامه ...</translation>
 <translation id="6391832066170725637">فایل یا دایرکتوری یافت نشد.</translation>
 <translation id="7393381084163773901">آدرس خیابان</translation>
@@ -1290,6 +1291,7 @@
 <translation id="8442065444327205563">سند شما آماده مشاهده است.</translation>
 <translation id="236141728043665931">دسترسی به میکروفون همیشه مسدود شود</translation>
 <translation id="2307462900900812319">پیکربندی شبکه</translation>
+<translation id="1704385717926547822">‏فعال کردن پشتیبانی آزمایشی Chromecast</translation>
 <translation id="5911798608827489036">تبادل اطلاعات با هر رایانه‌ای بر روی شبکه محلی یا اینترنت</translation>
 <translation id="220858061631308971">لطفاً این کد پین را در &quot;<ph name="DEVICE_NAME"/>&quot; وارد کنید:</translation>
 <translation id="6263082573641595914">‏نسخه CA Microsoft</translation>
@@ -2895,6 +2897,7 @@
 <translation id="8670869118777164560">این فایل افزودنی نتوانست درخواست شبکه را به <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> مجدداً هدایت کند چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME"/>) آن را به <ph name="ACTUAL_REDIRECT_DESTINATION"/> مجدداً هدایت کرد.</translation>
 <translation id="3654092442379740616">خطای همگام‌سازی: <ph name="PRODUCT_NAME"/> به‌روز نیست و باید به‌روز شود.</translation>
 <translation id="790040513076446191">دستکاری تنظیمات مربوط به حریم خصوصی</translation>
+<translation id="7260002739296185724">‏استفاده از AVFoundation را برای ضبط ویدیو فعال کنید تا کنترل دستگاه ویدیو در OS X &gt;= 10.7. در غیر این صورت QTKit استفاده شود.</translation>
 <translation id="3116361045094675131">صفحه‌کلید انگلیسی</translation>
 <translation id="1463985642028688653">مسدود کردن</translation>
 <translation id="1715941336038158809">نام کاربری یا رمز ورود نامعتبر است.</translation>
@@ -3750,6 +3753,7 @@
 <translation id="6658571109205370715">شفافیت گواهینامه</translation>
 <translation id="8050038245906040378">‏امضای کد تجاری Microsoft</translation>
 <translation id="7299721129597238157">حذف نشانک</translation>
+<translation id="7166627725100067582">‏پشتیبانی آزمایشی Chromecast را فعال کنید که امکان پخش و کنترل ویدیوهای وب را در دستگاه‌های Chromecast فراهم می‌کند.</translation>
 <translation id="3031557471081358569">آیتم هایی را برای وارد کردن انتخاب کنید:</translation>
 <translation id="1368832886055348810">چپ به راست</translation>
 <translation id="834106456999819211">سفارش شما درحال پردازش است</translation>

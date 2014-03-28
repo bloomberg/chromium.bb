@@ -311,6 +311,7 @@
           የሚከተሉትን ደረጃዎች በመከተል ችግሩን ለመመርመር መሞከር ይችላሉ፦
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">ከQTKit ይልቅ የMac OS X AVFoundation ኤፒአይዎችን መጠቀምን አንቃ።</translation>
 <translation id="6317369057005134371">የመተግበሪያ መስኮትን በመጠበቅ ላይ...</translation>
 <translation id="6391832066170725637">ፋይሉ ወይም ማውጫው ሊገኘም አልቻለም።</translation>
 <translation id="7393381084163773901">የጎዳና አድራሻ</translation>
@@ -421,7 +422,7 @@
 <translation id="5516565854418269276">&amp;ሁልጊዜ የዕልባቶች አሞሌን አሳይ</translation>
 <translation id="6426222199977479699">SSL ስህተት</translation>
 <translation id="2688196195245426394">መሣሪያውን በዚህ አገልጋይ ላይ በመመዝገብ ላይ ሳለ ስህተት፦ <ph name="CLIENT_ERROR"/>።</translation>
-<translation id="667115622929458276">ማንነትን የማያሳውቁ ውርዶች በአሁኑ ጊዜ በሂደት ላይ ናቸው። ማንነትን ከማያሳውቅ ሁነታ ወጥተው ውርዶቹን መሰረዝ ይፈልጋሉ?</translation>
+<translation id="667115622929458276">ማንነትን የማያሳውቁ ውርዶች በአሁኑ ጊዜ በሂደት ላይ ናቸው። ማንነትን ከማያሳውቅ ሁነታ ወጥተው ውርዶቹን ይቅር ማለት ይፈልጋሉ?</translation>
 <translation id="1528372117901087631">የበይነመረብ ግንኙነት</translation>
 <translation id="1788636309517085411">ነባሪን ይጠቀሙ</translation>
 <translation id="4159435316791146348">ከCPSC እና ከሌሎች ተቆጣጣሪ ኤጀንሲዎች በተሰጠ መመሪያ እና ማረጋገጫ መሰረት፣ Google እና HP የHP Chromebook 11 ኦሪጂናል ኃይል መሙያ መልሰው እየጠሩ ነው።</translation>
@@ -762,7 +763,7 @@
 <translation id="3280237271814976245">አስቀምጥ &amp;እንደ…</translation>
 <translation id="7221155467930685510">$1 ጊባ</translation>
 <translation id="2624142942574147739">ይህ ገጽ ካሜራዎን እና ማይክሮፎንዎን እየደረሰባቸው ነው።</translation>
-<translation id="7658239707568436148">ሰርዝ</translation>
+<translation id="7658239707568436148">ይቅር</translation>
 <translation id="557722062034137776">የእርስዎን መሣሪያ ዳግም ማስጀመር በእርስዎ Google መለያዎች ወይም ከእነዚህ መለያዎች ጋር በተመሳሰሉ ማንኛውም ውሂብ ላይ ምንም ተጽዕኖ አይኖረውም። ይሁንና በመሣሪያዎ ላይ የተቀመጡ ፋይሎች ሁሉ ይሰረዛሉ።</translation>
 <translation id="2223809180207557256">የይለፍ ቃላትን ዓረፋ ያንቁ</translation>
 <translation id="8695825812785969222">&amp;ቦታ ክፈት…</translation>
@@ -1073,7 +1074,7 @@ nil</translation>
 <translation id="7787129790495067395">በአሁኑ ጊዜ የይለፍ ሐረግ እየተጠቀሙ ነዎት።  የይለፍ ሐረግዎን ከረሱት Google ዳሽቦርድን ተጠቅመው ውሂብዎን ከGoogle አገልጋዮች ለማጽዳት ማመሳሰልን ዳግም ሊያስጀምሩ ይችላሉ።</translation>
 <translation id="2098305189700762159">አልተገኘም</translation>
 <translation id="2521119273159503752">የምዝግብ ማስታወሻ መታወቂያ</translation>
-<translation id="1273135602584709125">የድርጅት ምዝገባ ይሰርዙ</translation>
+<translation id="1273135602584709125">የድርጅት ምዝገባ ይቅር</translation>
 <translation id="2686759344028411998">ማንኛውም የተጫኑ ሞዱሎችን ማግኘት አልተቻለም።</translation>
 <translation id="1286637972568390913">የWebRTC ሃርድዌር ቪዲዮ ኮድ መፍታት አሰናክል።</translation>
 <translation id="572525680133754531">የንብብር ጥንክር ለማረም እና ለማጥናት እንዲያግዝ የተጠናከሩ ዝግጁ ንብርብሮች ዙሪያ ላይ ድንበር ያዘጋጃል።</translation>
@@ -1316,6 +1317,7 @@ nil</translation>
 <translation id="8442065444327205563">ሰነድዎ ለመታየት ዝግጁ ነው።</translation>
 <translation id="236141728043665931">ሁልጊዜ የማይክሮፎን መዳረሻ አግድ</translation>
 <translation id="2307462900900812319">አውታረ መረብ አዋቅር</translation>
+<translation id="1704385717926547822">የሙከራ የChromecast ድጋፍን አንቃ</translation>
 <translation id="5911798608827489036">በአካባቢያዊው አውታረ መረብ ወይም በይነመረቡ ላይ ካለ ማንኛውም ኮምፒውተር ጋር ውሂብ ይለዋወጡ</translation>
 <translation id="220858061631308971">እባክዎ ይህን የፒን ኮድ በ«<ph name="DEVICE_NAME"/>» ላይ ያስገቡት፦</translation>
 <translation id="6263082573641595914">Microsoft CA ቅጂ</translation>
@@ -1975,7 +1977,7 @@ nil</translation>
 <translation id="2969972665754920929">መተግበሪያዎች እና ቅጥያዎች ክትትል በሚደረግባቸው ተጠቃሚዎች ሊቀየሩ አይችሉም። የመተግበሪያዎች ገንቢ መሣሪያዎች ይዘጋሉ።</translation>
 <translation id="149347756975725155">የቅጥያ አዶ «<ph name="ICON"/>»ን መጫን አልተቻለም።</translation>
 <translation id="3011362742078013760">&amp;ሁሉንም እልባቶች በስውር መስኮት ውስጥ ክፈት</translation>
-<translation id="3009300415590184725">እርግጠኛ ነዎት የተንቀሳቃሽ ስልክ ውሂብ አገልግሎት የማዋቀር ሂደቱን መሰረዝ ይፈልጋሉ?</translation>
+<translation id="3009300415590184725">እርግጠኛ ነዎት የተንቀሳቃሽ ስልክ ውሂብ አገልግሎት የማዋቀር ሂደቱን ይቅር ማለት ይፈልጋሉ?</translation>
 <translation id="7851457902707056880">በመለያ መግባት ለመለያው ባለቤት ብቻ ተገድቧል። እባክዎ ዳግም ያስነሱና በባለቤቱ መለያ ይግቡ። ማሽኑ በ30 ሰከንዶች ውስጥ ዳግም ይነሳል።</translation>
 <translation id="2148756636027685713">ቅርጸት መስራት ተጠናቅቋል</translation>
 <translation id="5451285724299252438">የገጽ ክልል ጽሑፍ ሳጥን</translation>
@@ -2306,7 +2308,7 @@ nil</translation>
 <translation id="9111102763498581341">ክፈት</translation>
 <translation id="5975792506968920132">የባትሪ መሞላት መቶኛ ደረጃ</translation>
 <translation id="289695669188700754">ቁልፍ መታወቂያ፦ <ph name="KEY_ID"/></translation>
-<translation id="8183644773978894558">ማንነትን የማያሳውቅ ውርድ አሁን በሂደት ላይ ነው። ከማንነትን የማያሳውቅ ሁነታ ወጥተው ውርዱን መሰረዝ ይፈልጋሉ?</translation>
+<translation id="8183644773978894558">ማንነትን የማያሳውቅ ውርድ አሁን በሂደት ላይ ነው። ከማንነትን የማያሳውቅ ሁነታ ወጥተው ውርዱን ይቅር ማለት ይፈልጋሉ?</translation>
 <translation id="8767072502252310690">ተጠቃሚዎች</translation>
 <translation id="683526731807555621">አዲስ የፍለጋ ፕሮግራም አክል</translation>
 <translation id="6871644448911473373">OCSP ምላሽ ሰጪ፦ <ph name="LOCATION"/></translation>
@@ -2542,7 +2544,7 @@ nil</translation>
 <translation id="6800914069727136216">በይዘት ጥቅል ውስጥ</translation>
 <translation id="8661104342181683507">ዘላቂ የሆነ የ<ph name="NUMBER_OF_FILES"/> ፋይል መዳረሻ አለው።</translation>
 <translation id="860043288473659153">የካርድ ያዢ ስም</translation>
-<translation id="3866249974567520381">ገለጻ</translation>
+<translation id="3866249974567520381">ማብራሪያ</translation>
 <translation id="2900139581179749587">ንግግር አልታወቀም።</translation>
 <translation id="2294358108254308676"><ph name="PRODUCT_NAME"/>ን መጫን ይፈልጋሉ?</translation>
 <translation id="6549689063733911810">የቅርብ ጊዜ</translation>
@@ -2940,6 +2942,7 @@ nil</translation>
 <translation id="8670869118777164560">ይህ ቅጥያ አንድ የአውታረ መረብ ጥያቄ ወደ <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> ማዞር አልተሳካለትም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME"/>) ወደ <ph name="ACTUAL_REDIRECT_DESTINATION"/> አዙሮታል።</translation>
 <translation id="3654092442379740616">የማመሳሰል ስህተት፦  <ph name="PRODUCT_NAME"/> ጊዜው ያለፈበትና መዘመን የሚያስፈልገው ነው።</translation>
 <translation id="790040513076446191">ከግላዊነት ጋር የተገናኙ ቅንብሮችን ይቆጣጠሩ</translation>
+<translation id="7260002739296185724">በOS X &gt;= 10.7 ላይ ቪዲዮን ለመቅረጽ እና የቪዲዮ መሣሪያ መከታተልን ለማንቃት የAVFoundation መጠቀምን ያንቁ። አለበለዚያ QTKit ስራ ላይ ይውላል።</translation>
 <translation id="3116361045094675131">የዩናይትድ ኪንግደም ቁልፍ ሰሌዳ</translation>
 <translation id="1463985642028688653">አግድ</translation>
 <translation id="1715941336038158809">የተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል።</translation>
@@ -3055,7 +3058,7 @@ nil</translation>
 <translation id="7248671827512403053">መተግበሪያ</translation>
 <translation id="450070808725753129">አውታረ መረቡ እንዲደርስ የተፈቀደ መሣሪያ ነው ተብሎ አስቀድሞ ከተዘረዘረ ከዝርዝሩ
         አስወግደው እንደገና ማከል ይሞክሩ።</translation>
-<translation id="778627899913883287">እነዚህ ልዩ ፈቃዶች ቅጥያው ማድረግ አለበት ብለው ለሚያስቡት ነገር ትርጉም የሚሰጡ መሆናቸውን እርግጠኛ ይሁኑ። ትርጉም የማይሰጡ ከሆነ ተወው የሚለውን ጠቅ ያድርጉ።</translation>
+<translation id="778627899913883287">እነዚህ ልዩ ፈቃዶች ቅጥያው ማድረግ አለበት ብለው ለሚያስቡት ነገር ትርጉም የሚሰጡ መሆናቸውን እርግጠኛ ይሁኑ። ትርጉም የማይሰጡ ከሆነ ይቅር የሚለውን ጠቅ ያድርጉ።</translation>
 <translation id="4742746985488890273">መደርደሪያ ላይ ሰካ</translation>
 <translation id="1113869188872983271">&amp;እንደገና ደርድርን ቀልብስ</translation>
 <translation id="16620462294541761">ይቅርታ፣ የይለፍ ቃልዎ ሊረጋገጥ አልቻለም። እባክዎ እንደገና ይሞክሩ።</translation>
@@ -3613,7 +3616,7 @@ nil</translation>
 
         ለተጨማሪ መረጃ የስርዓት አስተዳዳሪዎን ያነጋግሩ።
 
-        ይህ መሣሪያ የድርጅትዎ ካልሆነ እና የግል መሣሪያዎ ከሆነ የመሣሪያው ምዝገባ ሂደትን ለመሰረዝና ወደ በመለያ መግቢያ ማያ ገጹ ለመግባት Ctrl+Alt+E መጫን ይችላሉ።</translation>
+        ይህ መሣሪያ የድርጅትዎ ካልሆነ እና የግል መሣሪያዎ ከሆነ የመሣሪያው ምዝገባ ሂደትን ይቅር ለማለት እና ወደ በመለያ መግቢያ ማያ ገጹ ለመግባት Ctrl+Alt+E መጫን ይችላሉ።</translation>
 <translation id="479536056609751218">ድረ-ገጽ፣ ኤች ቲ ኤም ኤል ብቻ</translation>
 <translation id="8822808012507380471">ከ<ph name="SHORT_PRODUCT_NAME"/> ጋር የሚዛመዱ የሁሉም ሂደቶች የግል ማህደረ ትውስታ አጠቃላይ አጠቃቀም</translation>
 <translation id="534916491091036097">ግራ ቅንፍ</translation>
@@ -3800,6 +3803,7 @@ nil</translation>
 <translation id="6658571109205370715">የምስክር ወረቀት ግልጽነት</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">ዕልባት ሰርዝ</translation>
+<translation id="7166627725100067582">የድር ቪዲዮዎችን በChromecast መሣሪያዎች ላይ እንዲያጫውቱ እና እንዲቆጣጠሩ የሚያስችል የሙከራ Chromecast ድጋፍን ያንቁ።</translation>
 <translation id="3031557471081358569">ከውጪ ለማስመጣት ንጥሎችን ምረጥ፦</translation>
 <translation id="1368832886055348810">ከግራ ወደ ቀኝ</translation>
 <translation id="834106456999819211">ትእዛዝዎ እየተሰስተናገደ ነው</translation>
@@ -4115,7 +4119,7 @@ nil</translation>
 <translation id="1479356886123917758">ከኮምፒውተርዎ ላይ ፎቶዎች፣ ሙዚቃ እና ሌላ ማህደረ መረጃ ይድረሱና ይለውጡ።</translation>
 <translation id="5295309862264981122">ዳሰሳን አረጋግጥ</translation>
 <translation id="718827667662449283">ዩናይትድ ኪንግደም</translation>
-<translation id="2908999529399859069">አይ፣ ተወው</translation>
+<translation id="2908999529399859069">አይ፣ ይቅር</translation>
 <translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="901834265349196618">ኢሜይል</translation>
 <translation id="8382207127145268451">የውሂብ ጨመቃ ተኪን አንቃ</translation>

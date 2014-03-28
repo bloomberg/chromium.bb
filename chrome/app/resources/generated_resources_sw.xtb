@@ -310,6 +310,7 @@ Maelezo yako ya kuingia katika akaunti yamepitwa na wakati.</translation>
           Unaweza kujaribu kuchunguza tatizo kwa kuchukua hatua zifuatazo:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Washa matumizi ya API za Mac OS X AV Foundation, badala ya QTKit.</translation>
 <translation id="6317369057005134371">Inasubiri dirisha la kutuma maombi...</translation>
 <translation id="6391832066170725637">Faili au saraka haikupatikana.</translation>
 <translation id="7393381084163773901">Anwani ya mtaa</translation>
@@ -1300,6 +1301,7 @@ uvinjari wako kutoka kwa mwajiri wako, mtoa huduma wako wa intaneti, au tovuti u
 <translation id="8442065444327205563">Sasa unaweza kuitazama hati yako.</translation>
 <translation id="236141728043665931">Zuia ufikiaji wa maikrofoni kila wakati</translation>
 <translation id="2307462900900812319">Sanidi mtandao</translation>
+<translation id="1704385717926547822">Washa uwezo wa majaribio wa kutumia Chromecast</translation>
 <translation id="5911798608827489036">Badilisha data kwa kompyuta yoyote kwenye mtandao au intaneti ya karibu</translation>
 <translation id="220858061631308971">Tafadhali ingiza msimbo huu wa PIN kwenye &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Toleo la Mamlaka ya Cheti la Microsoft</translation>
@@ -2912,6 +2914,7 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="8670869118777164560">Kiendelezi kimeshindwa kuelekeza upya ombi la mtandao kwenye <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME"/>) kimeelekeza upya kwenye <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Hitilafu ya Kusawazisha: Muda wa <ph name="PRODUCT_NAME"/> umeisha na inahitaji kusasishwa.</translation>
 <translation id="790040513076446191">Weka utakavyo mipangilio husika ya faragha</translation>
+<translation id="7260002739296185724">Washa matumizi ya AVFoundation kwa ajili ya kuchukua picha za video na ufuatiliaji wa kifaa cha video kwenye OS X&gt; = 10.7. QTKit itatumika badala yake.</translation>
 <translation id="3116361045094675131">Kibodi ya Uingereza</translation>
 <translation id="1463985642028688653">zuia</translation>
 <translation id="1715941336038158809">Jina la mtumiaji au nenosiri ni batili.</translation>
@@ -3766,6 +3769,7 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kusimamia mipangilio yake w
 <translation id="6658571109205370715">Uwazi wa cheti</translation>
 <translation id="8050038245906040378">Uwekaji Sahihi kwa Misimbo kwa Biashara kutoka Microsoft</translation>
 <translation id="7299721129597238157">Futa alamisho</translation>
+<translation id="7166627725100067582">Washa uwezo wa majaribio wa kutumia Chromecast unaoruhusu kucheza na kudhibiti video kutoka Wavuti kwenye vifaa vya Chromecast.</translation>
 <translation id="3031557471081358569">Chagua vitu vya kuingiza:</translation>
 <translation id="1368832886055348810">Kushoto hadi Kulia</translation>
 <translation id="834106456999819211">Agizo lako linashughulikiwa</translation>

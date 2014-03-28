@@ -308,6 +308,7 @@
           Anda boleh cuba untuk mendiagnosis masalah dengan mengambil langkah berikut:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Membolehkan penggunaan Mac OS X AVFoundation API, bukannya QTKit.</translation>
 <translation id="6317369057005134371">Menunggu tetingkap aplikasi...</translation>
 <translation id="6391832066170725637">Fail atau direktori tidak dapat dijumpai.</translation>
 <translation id="7393381084163773901">Alamat jalan</translation>
@@ -1306,6 +1307,7 @@ Psst! <ph name="SHORTCUT_KEY"/> mod Inkognito mungkin akan berguna pada masa aka
 <translation id="8442065444327205563">Dokumen anda telah sedia untuk dilihat.</translation>
 <translation id="236141728043665931">Sentiasa sekat akses mikrofon</translation>
 <translation id="2307462900900812319">Konfigurasikan rangkaian</translation>
+<translation id="1704385717926547822">Dayakan sokongan Chromecast percubaan</translation>
 <translation id="5911798608827489036">Bertukar data dengan mana-mana komputer pada rangkaian tempatan atau internet</translation>
 <translation id="220858061631308971">Sila masukkan kod PIN ini pada &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Versi Microsoft CA</translation>
@@ -2933,6 +2935,7 @@ Pastikan anda tidak mendedahkan sebarang maklumat sensitif.</translation>
 <translation id="8670869118777164560">Pelanjutan ini gagal mengubah hala permintaan rangkaian ke <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> kerana pelanjutan lain (<ph name="EXTENSION_NAME"/>) mengubah halanya ke <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Ralat Segerak:  <ph name="PRODUCT_NAME"/> sudah lapuk dan perlu dikemas kini.</translation>
 <translation id="790040513076446191">Manipulasi tetapan yang berkaitan privasi</translation>
+<translation id="7260002739296185724">Membolehkan penggunaan AVFoundation untuk merakam video dan pemantauan peranti video pada OS X &gt;= 10.7. QTKit akan digunakan sebaliknya.</translation>
 <translation id="3116361045094675131">Papan kekunci UK</translation>
 <translation id="1463985642028688653">sekat</translation>
 <translation id="1715941336038158809">Nama pengguna atau kata laluan tidak sah.</translation>
@@ -3794,6 +3797,7 @@ menutup <ph name="BEGIN_BOLD"/>semua<ph name="END_BOLD"/> tab penyamaran anda. S
 <translation id="6658571109205370715">Ketelusan sijil</translation>
 <translation id="8050038245906040378">Menandatangani Kod Komersial Microsoft</translation>
 <translation id="7299721129597238157">Padamkan penanda halaman</translation>
+<translation id="7166627725100067582">Dayakan sokongan Chromecast percubaan yang membolehkan video dimainkan dan dikawal dari Web pada peranti Chromecast.</translation>
 <translation id="3031557471081358569">Pilih item untuk mengimport:</translation>
 <translation id="1368832886055348810">Kiri ke Kanan</translation>
 <translation id="834106456999819211">Pesanan anda sedang diproses</translation>

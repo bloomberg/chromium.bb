@@ -299,6 +299,7 @@
 <translation id="7607274158153386860">בקש אתר טאבלט</translation>
 <translation id="8028060951694135607">‏שחזור מפתח של Microsoft</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/><ph name="LINE_BREAK"/> תוכל לנסות לאבחן את הבעיה באמצעות השלבים הבאים:<ph name="LINE_BREAK"/><ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">‏הפעל את השימוש בממשקי API של Mac OS X AVFoundation, במקום ב-QTKit.</translation>
 <translation id="6317369057005134371">ממתין לחלון היישום...</translation>
 <translation id="6391832066170725637">הקובץ או הספרייה לא נמצאו.</translation>
 <translation id="7393381084163773901">כתובת</translation>
@@ -1294,6 +1295,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="8442065444327205563">המסמך מוכן להצגה.</translation>
 <translation id="236141728043665931">חסום תמיד גישה למיקרופון</translation>
 <translation id="2307462900900812319">הגדר את הרשת</translation>
+<translation id="1704385717926547822">‏הפעל תמיכה ניסיונית ב-Chromecast</translation>
 <translation id="5911798608827489036">החלפת נתונים עם כל מחשב ברשת המקומית או באינטרנט</translation>
 <translation id="220858061631308971">‏הזן את קוד PIN זה ב-&quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">‏גרסת רשות אישורים של Microsoft</translation>
@@ -2886,6 +2888,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="8670869118777164560">תוסף זה נכשל בניתוב בקשת רשת אל <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> מכיוון שתוסף אחר (<ph name="EXTENSION_NAME"/>) ניתב אותו אל <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">שגיאת סנכרון:  <ph name="PRODUCT_NAME"/> אינו מעודכן ויש לעדכן אותו.</translation>
 <translation id="790040513076446191">לשנות הגדרות הקשורות לפרטיות</translation>
+<translation id="7260002739296185724">‏הפעל שימוש ב-AVFoundation לצילום וידאו ולמעקב אחר מכשירי וידאו בגרסת OS X‏ 10.7 ואילך. אחרת, ייעשה שימוש ב-QTKit.</translation>
 <translation id="3116361045094675131">מקלדת אנגלית (בריטניה)</translation>
 <translation id="1463985642028688653">חסום</translation>
 <translation id="1715941336038158809">שם משתמש או סיסמה לא חוקיים.</translation>
@@ -3738,6 +3741,7 @@ JavaScript ויישומי פלאגין.</translation>
 <translation id="6658571109205370715">שקיפות אישור</translation>
 <translation id="8050038245906040378">‏חתימת קוד מסחרי של Microsoft</translation>
 <translation id="7299721129597238157">מחק סימניה</translation>
+<translation id="7166627725100067582">‏הפעל תמיכה ניסיונית ב-Chromecast כדי לאפשר הפעלה של סרטונים ושליטה בהם מהאינטרנט במכשירי Chromecast.</translation>
 <translation id="3031557471081358569">בחר פריטים לייבוא:</translation>
 <translation id="1368832886055348810">משמאל לימין</translation>
 <translation id="834106456999819211">ההזמנה שלך בטיפול</translation>

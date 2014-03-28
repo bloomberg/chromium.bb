@@ -303,6 +303,7 @@
           Du kan prøve å feilsøke problemet ved hjelp av følgende fremgangsmåte:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Aktiver bruk av Mac OS X AVFoundation API-er i stedet for QTKit.</translation>
 <translation id="6317369057005134371">Venter på appvinduet …</translation>
 <translation id="6391832066170725637">Filen eller katalogen ble ikke funnet.</translation>
 <translation id="7393381084163773901">Gateadresse</translation>
@@ -1295,6 +1296,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY"/>) kan være kjekt neste gang
 <translation id="8442065444327205563">Dokumentet ditt er klart for visning.</translation>
 <translation id="236141728043665931">Blokkér alltid bruk av mikrofonen</translation>
 <translation id="2307462900900812319">Konfigurer nettverket</translation>
+<translation id="1704385717926547822">Aktiver eksperimentell Chromecast-støtte</translation>
 <translation id="5911798608827489036">utveksle data med en hvilken som helst datamaskin på det lokale nettverket eller Internett</translation>
 <translation id="220858061631308971">Skriv inn denne PIN-koden på «<ph name="DEVICE_NAME"/>»:</translation>
 <translation id="6263082573641595914">Microsoft sertifiseringsinstansversjon</translation>
@@ -2902,6 +2904,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="8670869118777164560">Denne utvidelsen kunne ikke viderekoble en nettverksforespørsel til <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> fordi en annen utvidelse (<ph name="EXTENSION_NAME"/>) viderekoblet den til <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Synkroniseringsfeil: <ph name="PRODUCT_NAME"/> er foreldet og må oppdateres.</translation>
 <translation id="790040513076446191">manipulere personvernrelaterte innstillinger</translation>
+<translation id="7260002739296185724">Aktiver AV Foundation-bruk for videoopptak og videoenhetsovervåking på OS X &gt;= 10.7. QTKit brukes i andre tilfeller.</translation>
 <translation id="3116361045094675131">Britisk tastatur</translation>
 <translation id="1463985642028688653">blokkér</translation>
 <translation id="1715941336038158809">Ugyldig brukernavn og passord.</translation>
@@ -3758,6 +3761,7 @@ Pass på at du ikke deler privat informasjon.</translation>
 <translation id="6658571109205370715">Sertifikatåpenhet</translation>
 <translation id="8050038245906040378">Microsoft-signering med kommersiell kode</translation>
 <translation id="7299721129597238157">Slett bokmerket</translation>
+<translation id="7166627725100067582">Aktiver eksperimentell Chromecast-støtte som gir mulighet for avspilling og kontroll av videoer fra nettet på Chromecast-enheter.</translation>
 <translation id="3031557471081358569">Velg elementer som skal importeres:</translation>
 <translation id="1368832886055348810">Venstre til høyre</translation>
 <translation id="834106456999819211">Bestillingen din behandles</translation>

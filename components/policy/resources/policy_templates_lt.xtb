@@ -644,7 +644,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="6417861582779909667">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama nustatyti slapukų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis slapukų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
-<translation id="5457296720557564923">Leidžiama puslapiams pasiekti „JavaScript“ atminties naudojimo statistiką. Dėl šio nustatymo tinklalapis gali pasiekti kūrėjo įrankių profilių skydo atminties statistiką.</translation>
+<translation id="5457296720557564923">Leidžiama puslapiams pasiekti „JavaScript“ atminties naudojimo statistiką. Dėl šio nustatymo tinklalapis gali pasiekti kūrėjo įrankių profilių skydelio atminties statistiką.</translation>
 <translation id="5776485039795852974">Paklausti kaskart, kai svetainėje norima rodyti darbalaukio pranešimus</translation>
 <translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.

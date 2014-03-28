@@ -35,7 +35,7 @@
 <translation id="4121993058175073134">如要傳送淨匯出資料，請在「設定」應用程式中設定您的電子郵件帳戶。</translation>
 <translation id="8099771777867258638">將焦點移至啟動器</translation>
 <translation id="6865313869410766144">自動填入表單資料</translation>
-<translation id="3581034179710640788">此網站的安全性憑證已過期!</translation>
+<translation id="3581034179710640788">這個網站的安全性憑證已過期!</translation>
 <translation id="2825758591930162672">主體的公開金鑰</translation>
 <translation id="8275038454117074363">匯入</translation>
 <translation id="8418445294933751433">顯示為分頁(&amp;S)</translation>
@@ -304,6 +304,7 @@
           您可以執行下列步驟，嘗試診斷問題：
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">使用 Mac OS X AVFoundation API 取代 QTKit。</translation>
 <translation id="6317369057005134371">正在等待應用程式視窗...</translation>
 <translation id="6391832066170725637">找不到檔案或目錄。</translation>
 <translation id="7393381084163773901">街道地址</translation>
@@ -425,7 +426,7 @@
 <translation id="6464076120278668805">停止忽略 autocomplete='off'</translation>
 <translation id="4449935293120761385">關於自動填入</translation>
 <translation id="4624372983866754392">啟用近期的專屬圖示集同步功能。</translation>
-<translation id="4194570336751258953">啟用輕觸點選功能</translation>
+<translation id="4194570336751258953">啟用點按功能</translation>
 <translation id="8489339890656090972">全域加速溢位捲動</translation>
 <translation id="6066742401428748382">存取網頁遭到拒絕</translation>
 <translation id="5111692334209731439">書籤管理員(&amp;B)</translation>
@@ -505,7 +506,7 @@
 <translation id="5453029940327926427">關閉分頁</translation>
 <translation id="949088605431823851">您在哪裡購買這部 HP Chromebook 11？</translation>
 <translation id="9087353528325876418">Web Proxy Auto Discovery 網址</translation>
-<translation id="4801956050125744859">同時保留兩個版本</translation>
+<translation id="4801956050125744859">兩個版本都保留</translation>
 <translation id="3878840326289104869">正在建立受監管的使用者</translation>
 <translation id="406070391919917862">背景應用程式</translation>
 <translation id="7000777920654628318">啟用這項功能時，光柵執行緒會直接寫入 GPU 記憶體。</translation>
@@ -1285,6 +1286,7 @@
 <translation id="8442065444327205563">現在可以瀏覽您的文件了。</translation>
 <translation id="236141728043665931">一律封鎖存取麥克風</translation>
 <translation id="2307462900900812319">設定網路</translation>
+<translation id="1704385717926547822">啟用實驗性 Chromecast 支援</translation>
 <translation id="5911798608827489036">與區域網路或網際網路中的任何電腦交換資料</translation>
 <translation id="220858061631308971">請在「<ph name="DEVICE_NAME"/>」上輸入以下 PIN 碼：</translation>
 <translation id="6263082573641595914">Microsoft CA 版本</translation>
@@ -1602,7 +1604,7 @@
 <translation id="3009779501245596802">索引資料庫</translation>
 <translation id="1404301347395550388">啟用 Encrypted Media Extensions。</translation>
 <translation id="3041612393474885105">憑證資訊</translation>
-<translation id="5023943178135355362">澳洲式捲動方式 - <ph name="BEGIN_LINK"/>瞭解詳情<ph name="END_LINK"/></translation>
+<translation id="5023943178135355362">澳洲式捲動 - <ph name="BEGIN_LINK"/>瞭解詳情<ph name="END_LINK"/></translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="6426039856985689743">停用行動數據</translation>
 <translation id="539643935609409426">如要隱藏這個程式的存取權，您必須使用 [控制台] 中的 [<ph name="CONTROL_PANEL_APPLET_NAME"/>] 以解除安裝此程式。是否要開啟 [<ph name="CONTROL_PANEL_APPLET_NAME"/>]?</translation>
@@ -1979,7 +1981,7 @@
 <translation id="1084538181352409184">檢查您的 Proxy 設定，或是與您的網路管理員聯絡
           確認您的 Proxy 伺服器運作正常。
           <ph name="PLATFORM_TEXT"/></translation>
-<translation id="374530189620960299">網站的安全性憑證不可靠！</translation>
+<translation id="374530189620960299">這個網站的安全性憑證不可靠！</translation>
 <translation id="2560069378501715434">啟用 WebAudio</translation>
 <translation id="4924638091161556692">已修正</translation>
 <translation id="8893928184421379330">很抱歉，系統無法識別 <ph name="DEVICE_LABEL"/> 裝置。</translation>
@@ -2731,7 +2733,7 @@
 <translation id="1361655923249334273">未使用</translation>
 <translation id="4326192123064055915">咖啡</translation>
 <translation id="5434065355175441495">PKCS #1 RSA 加密</translation>
-<translation id="7073704676847768330">這可能不是您在找的網站!</translation>
+<translation id="7073704676847768330">這可能不是您要找的網站!</translation>
 <translation id="8477384620836102176">一般(&amp;G)</translation>
 <translation id="7785791760347294399">應用程式資訊...</translation>
 <translation id="8059417245945632445">檢查裝置 (&amp;I)</translation>
@@ -2889,6 +2891,7 @@
 <translation id="8670869118777164560">這個擴充功能無法將網路要求重新導向至 <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>，因為其他擴充功能 (<ph name="EXTENSION_NAME"/>) 已將要求重新導向至 <ph name="ACTUAL_REDIRECT_DESTINATION"/>。</translation>
 <translation id="3654092442379740616">同步功能發生錯誤：<ph name="PRODUCT_NAME"/> 版本過舊，必須更新。</translation>
 <translation id="790040513076446191">操控隱私權相關設定</translation>
+<translation id="7260002739296185724">在 OS X 10.7 以上版本的作業系統中，使用 AVFoundation 執行視訊擷取和視訊裝置監控；如果不使用 AVFoundation，系統將採用 QTKit 執行這些作業。</translation>
 <translation id="3116361045094675131">英式鍵盤</translation>
 <translation id="1463985642028688653">封鎖</translation>
 <translation id="1715941336038158809">使用者名稱或密碼無效。</translation>
@@ -3748,6 +3751,7 @@
 <translation id="6658571109205370715">Certificate Transparency</translation>
 <translation id="8050038245906040378">Microsoft 商用程式碼簽署</translation>
 <translation id="7299721129597238157">刪除書籤</translation>
+<translation id="7166627725100067582">啟用實驗性 Chromecast 支援，讓您透過 Chromecast 裝置播放及控制線上影片。</translation>
 <translation id="3031557471081358569">選取要匯入的項目：</translation>
 <translation id="1368832886055348810">由左至右</translation>
 <translation id="834106456999819211">系統正在處理您的訂單</translation>
@@ -3857,7 +3861,7 @@
 <translation id="5951823343679007761">未安裝電池</translation>
 <translation id="479555359673800162">停用密碼管理員重新驗證功能</translation>
 <translation id="8569682776816196752">找不到目的地</translation>
-<translation id="1618661679583408047">此伺服器的安全性憑證尚未生效!</translation>
+<translation id="1618661679583408047">這個伺服器的安全憑證尚未生效!</translation>
 <translation id="7039912931802252762">Microsoft 智慧卡登入</translation>
 <translation id="3915280005470252504">語音搜尋</translation>
 <translation id="3752582316358263300">確定...</translation>

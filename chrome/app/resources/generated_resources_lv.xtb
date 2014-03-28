@@ -304,6 +304,7 @@ Jūsu konta pierakstīšanās informācija ir novecojusi.</translation>
 <translation id="7607274158153386860">Pieprasīt planšetdatoram paredzētu vietnes versiju</translation>
 <translation id="8028060951694135607">Microsoft atslēgas atkopšana</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/><ph name="LINE_BREAK"/> Varat mēģināt noteikt problēmu, izpildot šādas darbības: <ph name="LINE_BREAK"/><ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Iespējot Mac OS X AV Foundation API izmantošanu (QTKit vietā)</translation>
 <translation id="6317369057005134371">Notiek lietojumprogrammas loga gaidīšana...</translation>
 <translation id="6391832066170725637">Failu vai direktoriju nevar atrast.</translation>
 <translation id="7393381084163773901">Adrese</translation>
@@ -1300,6 +1301,7 @@ Tiek rēķināts atlikušais laiks</translation>
 <translation id="8442065444327205563">Varat skatīt savu dokumentu.</translation>
 <translation id="236141728043665931">Vienmēr bloķēt piekļuvi mikrofonam</translation>
 <translation id="2307462900900812319">Konfigurēt tīklu</translation>
+<translation id="1704385717926547822">Iespējot eksperimentālo Chromecast atbalstu</translation>
 <translation id="5911798608827489036">Apmainīties datiem ar jebkuru datoru lokālajā tīklā vai internetā</translation>
 <translation id="220858061631308971">Ievadiet šo PIN kodu ierīcē <ph name="DEVICE_NAME"/>:</translation>
 <translation id="6263082573641595914">Microsoft CA versija</translation>
@@ -2907,6 +2909,7 @@ Pārbaudiet, vai nepadarīsiet redzamu sensitīvu informāciju.</translation>
 <translation id="8670869118777164560">Šis paplašinājums nevarēja novirzīt tīkla pieprasījumu uz galamērķi <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, jo cits paplašinājums (<ph name="EXTENSION_NAME"/>) to novirzīja uz šādu galamērķi: <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Sinhronizācijas kļūda: <ph name="PRODUCT_NAME"/> ir novecojis un ir jāatjaunina.</translation>
 <translation id="790040513076446191">Manipulēt ar konfidencialitāti saistītus iestatījumus</translation>
+<translation id="7260002739296185724">Iespējojiet platformas AV Foundation izmantošanu video tveršanai un video ierīces pārraudzībai operētājsistēmā OS X 10.7 vai jaunākā versijā. Pretējā gadījumā tiks izmantots QTKit.</translation>
 <translation id="3116361045094675131">AK tastatūra</translation>
 <translation id="1463985642028688653">bloķēt</translation>
 <translation id="1715941336038158809">Nederīgs lietotājvārds vai parole.</translation>
@@ -3766,6 +3769,7 @@ Vēl jālādē: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
 <translation id="6658571109205370715">Sertifikātu pārskatāmība</translation>
 <translation id="8050038245906040378">Microsoft tirdzniecības koda parakstīšana</translation>
 <translation id="7299721129597238157">Dzēst grāmatzīmi</translation>
+<translation id="7166627725100067582">Iespējojiet eksperimentālo Chromecast atbalstu, lai atļautu atskaņot un pārvaldīt videoklipus tīmeklī, izmantojot Chromecast ierīces.</translation>
 <translation id="3031557471081358569">Izvēlēties vienumu, ko importēt:</translation>
 <translation id="1368832886055348810">No kreisās uz labo pusi</translation>
 <translation id="834106456999819211">Jūsu pasūtījums tiek apstrādāts</translation>

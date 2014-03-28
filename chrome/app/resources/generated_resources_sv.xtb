@@ -312,6 +312,7 @@ Dina inloggningsuppgifter för kontot är inaktuella.</translation>
           Du kan försöka diagnostisera problemet så här:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Aktivera användning av AV Foundation-API:er för Mac OS X i stället för QTKit.</translation>
 <translation id="6317369057005134371">Väntar på appfönstret ...</translation>
 <translation id="6391832066170725637">Det gick inte att hitta filen eller katalogen.</translation>
 <translation id="7393381084163773901">Gatuadress</translation>
@@ -1308,6 +1309,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY"/> kan vara nå
 <translation id="8442065444327205563">Dokumentet är klart att visas.</translation>
 <translation id="236141728043665931">Blockera alltid mikrofonåtkomsten</translation>
 <translation id="2307462900900812319">Konfigurera nätverk</translation>
+<translation id="1704385717926547822">Aktivera experimentellt stöd för Chromecast</translation>
 <translation id="5911798608827489036">Utväxla data med en dator i det lokala nätverket eller via internet</translation>
 <translation id="220858061631308971">Ange den här PIN-koden på <ph name="DEVICE_NAME"/>:</translation>
 <translation id="6263082573641595914">Microsofts version av certifikatutfärdare</translation>
@@ -2916,6 +2918,7 @@ Lämna inte ut känsliga uppgifter.</translation>
 <translation id="8670869118777164560">Det gick inte att omdirigera nätverksbegäran till <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> eftersom ett annat tillägg (<ph name="EXTENSION_NAME"/>) omdirigerade det till <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Synkroniseringsfel. <ph name="PRODUCT_NAME"/> är inaktuellt och behöver uppdateras.</translation>
 <translation id="790040513076446191">Ändra sekretessrelaterade inställningar</translation>
+<translation id="7260002739296185724">Aktivera användning av AV Foundation för videofilmning och övervakning av videoenhet på OS X &gt;= 10.7. QTKit används annars.</translation>
 <translation id="3116361045094675131">Brittiskt tangentbord</translation>
 <translation id="1463985642028688653">blockera</translation>
 <translation id="1715941336038158809">Ogiltigt användarnamn eller lösenord.</translation>
@@ -3777,6 +3780,7 @@ Lämna inte ut känsliga uppgifter.</translation>
 <translation id="6658571109205370715">Certifikattransparens</translation>
 <translation id="8050038245906040378">Microsofts kommersiella kodsignering</translation>
 <translation id="7299721129597238157">Ta bort bokmärke</translation>
+<translation id="7166627725100067582">Aktivera experimentellt stöd för Chromecast så att du kan spela upp och styra videor från webben på Chromecast-enheter.</translation>
 <translation id="3031557471081358569">Välj objekt att importera:</translation>
 <translation id="1368832886055348810">Vänster till höger</translation>
 <translation id="834106456999819211">Din beställning bearbetas</translation>

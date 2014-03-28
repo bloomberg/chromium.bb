@@ -304,6 +304,7 @@
 <translation id="7607274158153386860">Tablet-Website anfordern</translation>
 <translation id="8028060951694135607">Microsoft-Schlüsselwiederherstellung</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/><ph name="LINE_BREAK"/> Sie können versuchen, das Problem folgendermaßen zu diagnostizieren:<ph name="LINE_BREAK"/><ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">AVFoundation APIs für Mac OS X aktivieren (statt Verwendung von QTKit)</translation>
 <translation id="6317369057005134371">Warten auf Anwendungsfenster...</translation>
 <translation id="6391832066170725637">Die Datei oder das Verzeichnis konnte nicht gefunden werden.</translation>
 <translation id="7393381084163773901">Postadresse</translation>
@@ -1293,6 +1294,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="8442065444327205563">Ihr Dokument ist bereit.</translation>
 <translation id="236141728043665931">Zugriff auf das Mikrofon immer blockieren</translation>
 <translation id="2307462900900812319">Netzwerk konfigurieren</translation>
+<translation id="1704385717926547822">Experimentelle Chromecast-Unterstützung aktivieren</translation>
 <translation id="5911798608827489036">Daten mit einem beliebigen Computer im lokalen Netz oder Internet austauschen</translation>
 <translation id="220858061631308971">Geben Sie diesen PIN-Code bitte auf &quot;<ph name="DEVICE_NAME"/> &quot; ein:</translation>
 <translation id="6263082573641595914">Microsoft - Version der Zertifizierungsstelle</translation>
@@ -1813,7 +1815,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="39964277676607559">JavaScript-Datei &quot;<ph name="RELATIVE_PATH"/>&quot; konnte nicht für das Content-Skript geladen werden.</translation>
 <translation id="979598830323579437">Vergrößerungsfaktor der Lupe erhöhen</translation>
 <translation id="4284105660453474798">Möchten Sie &quot;$1&quot; wirklich löschen?</translation>
-<translation id="1600857548979126453">Auf das Backend für Seiten-Debugger zugreifen</translation>
+<translation id="1600857548979126453">Auf das Back-End für Seiten-Debugger zugreifen</translation>
 <translation id="3516765099410062445">Der Verlauf für alle Geräte, auf denen Sie angemeldet sind, wird angezeigt. <ph name="BEGIN_LINK"/>Weitere Informationen<ph name="END_LINK"/></translation>
 <translation id="4378551569595875038">Verbindung...</translation>
 <translation id="7029809446516969842">Passwörter</translation>
@@ -1868,7 +1870,7 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie dessen Einstellung
 <translation id="3081104028562135154">Erhöhen</translation>
 <translation id="3734816294831429815"><ph name="PRODUCT_NAME"/> wird in <ph name="SECONDS"/> Sekunden neu gestartet.</translation>
 <translation id="2728624657977418581">Vornamen hinzufügen</translation>
-<translation id="8732030010853991079">Klicken Sie auf dieses Symbol, um diese Erweiterung zu verwenden.</translation>
+<translation id="8732030010853991079">Klicken Sie auf dieses Symbol, um die Erweiterung zu verwenden.</translation>
 <translation id="32330993344203779">Ihr Gerät wurde erfolgreich für die Verwaltung für Unternehmen angemeldet.</translation>
 <translation id="158917669717260118">Die Webseite konnte nicht geladen werden, da sich Ihr Computer im Ruhemodus befindet. Dabei werden alle Netzwerkverbindungen unterbrochen und neue Netzwerkanfragen schlagen fehl. Das Problem lässt sich normalerweise beheben, indem die Seite neu geladen wird.</translation>
 <translation id="6316671927443834085">Die Verbindung mit &quot;<ph name="DEVICE_NAME"/>&quot; konnte nicht getrennt werden.</translation>
@@ -2661,7 +2663,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="3714633008798122362">Web-Kalender</translation>
 <translation id="3251759466064201842">&lt;Gehört nicht zum Zertifikat&gt;</translation>
 <translation id="6186096729871643580">Antialiasing für LCD-Text</translation>
-<translation id="7303492016543161086">Optionen für Bedienungshilfen im Taskleistenmenü anzeigen</translation>
+<translation id="7303492016543161086">Optionen für Bedienungshilfen im Systemmenü anzeigen</translation>
 <translation id="6410257289063177456">Bilddateien</translation>
 <translation id="6419902127459849040">Mitteleuropäisch</translation>
 <translation id="6707389671160270963">SSL-Client-Zertifikat</translation>
@@ -2682,7 +2684,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="5702389759209837579">Greifen Sie auf Ihre offenen Tabs auf all Ihren Geräten zu.</translation>
 <translation id="8381055888183086563">Aktiviert Kontextmenü-Optionen für das Debugging, wie z. B. &quot;Element prüfen&quot; für gepackte Apps</translation>
 <translation id="1675020493753693718">Interaktive Autovervollständigung aktivieren</translation>
-<translation id="1189418886587279221">Aktivieren Sie Zugänglichkeitsfunktionen, damit Ihr Gerät noch leichter zu verwenden ist.</translation>
+<translation id="1189418886587279221">Aktivieren Sie die Bedienungshilfe-Funktionen, damit Ihr Gerät leichter zu verwenden ist.</translation>
 <translation id="8263744495942430914"><ph name="FULLSCREEN_ORIGIN"/> hat Ihren Mauszeiger deaktiviert.</translation>
 <translation id="6404451368029478467"><ph name="PRODUCT_NAME"/> wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen. Nach Abschluss des Downloads wird <ph name="PRODUCT_NAME"/> neu gestartet und Sie können fortfahren.</translation>
 <translation id="3367237600478196733">Seitenladevorgänge</translation>
@@ -2880,6 +2882,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="8670869118777164560">Die Erweiterung konnte die Netzwerkanfrage nicht an <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> weiterleiten, da eine andere Erweiterung (<ph name="EXTENSION_NAME"/>) sie an <ph name="ACTUAL_REDIRECT_DESTINATION"/> weitergeleitet hat.</translation>
 <translation id="3654092442379740616">Synchronisierungsfehler: <ph name="PRODUCT_NAME"/> ist veraltet und muss aktualisiert werden.</translation>
 <translation id="790040513076446191">Datenschutzeinstellungen bearbeiten</translation>
+<translation id="7260002739296185724">Aktiviert AVFoundation für Videoaufnahmen und Videoüberwachung auf Geräten mit OS X 10.7 oder höher. Andernfalls wird QTKit verwendet.</translation>
 <translation id="3116361045094675131">UK-Englische Tastatur </translation>
 <translation id="1463985642028688653">blockieren</translation>
 <translation id="1715941336038158809">Ungültiger Nutzername oder ungültiges Passwort</translation>
@@ -3731,6 +3734,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="6658571109205370715">Zertifikatstransparenz</translation>
 <translation id="8050038245906040378">Kommerzielle Microsoft-Codesignatur</translation>
 <translation id="7299721129597238157">Lesezeichen löschen</translation>
+<translation id="7166627725100067582">Aktiviert die experimentelle Chromecast-Unterstützung, die das Abspielen und Steuern von Webvideos auf Chromecast-Geräten ermöglicht.</translation>
 <translation id="3031557471081358569">Zu importierende Daten wählen:</translation>
 <translation id="1368832886055348810">Rechtsläufig</translation>
 <translation id="834106456999819211">Ihre Bestellung wird bearbeitet.</translation>
@@ -4983,7 +4987,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4258348331913189841">Dateisysteme</translation>
 <translation id="3817519158465675771">Netzwerkoptionen...</translation>
 <translation id="4618990963915449444">Alle Dateien auf <ph name="DEVICE_NAME"/> werden gelöscht.</translation>
-<translation id="5011739343823725107">Fehler beim Starten des Synchronisierungs-Backends</translation>
+<translation id="5011739343823725107">Fehler beim Starten des Synchronisierungs-Back-Ends</translation>
 <translation id="8726206820263995930">Fehler beim Übertragen von Richtlinieneinstellungen vom Server: <ph name="CLIENT_ERROR"/>.</translation>
 <translation id="614998064310228828">Gerätemodell:</translation>
 <translation id="8708671767545720562">&amp;Weitere Informationen</translation>

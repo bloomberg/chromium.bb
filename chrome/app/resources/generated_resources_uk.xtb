@@ -303,6 +303,7 @@
 <translation id="7607274158153386860">Запитувати сайт планшетного ПК</translation>
 <translation id="8028060951694135607">Відновлення ключів Microsoft</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Спробуйте діагностувати проблему, виконавши вказані нижче дії. <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Увімкнути використання API ОС Mac X AVFoundation замість QTKit.</translation>
 <translation id="6317369057005134371">Очікування вікна програми…</translation>
 <translation id="6391832066170725637">Не вдалося знайти файл або каталог.</translation>
 <translation id="7393381084163773901">Адреса</translation>
@@ -1284,6 +1285,7 @@
 <translation id="8442065444327205563">Документ готовий для перегляду</translation>
 <translation id="236141728043665931">Завжди блокувати доступ до мікрофона</translation>
 <translation id="2307462900900812319">Установити параметри мережі</translation>
+<translation id="1704385717926547822">Увімкнути експериментальну підтримку Chromecast</translation>
 <translation id="5911798608827489036">Обмінюватися даними з будь-яким комп’ютером у локальній мережі чи Інтернеті</translation>
 <translation id="220858061631308971">Введіть цей PIN-код на пристрої &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Версія ЦС Microsoft</translation>
@@ -2868,6 +2870,7 @@
 <translation id="8670869118777164560">Це розширення не переспрямувало запит мережі на сторінку <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, оскільки інше розширення (<ph name="EXTENSION_NAME"/>) переспрямувало його на сторінку <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Помилка синхронізації. Версія <ph name="PRODUCT_NAME"/> застаріла та потребує оновлення.</translation>
 <translation id="790040513076446191">Керувати налаштуваннями, пов’язаними з конфіденційністю</translation>
+<translation id="7260002739296185724">Увімкнути використання AVFoundation для запису відео та відстеження відеопристрою в OС X &gt;= 10.7. В інших випадках використовувати QTKit.</translation>
 <translation id="3116361045094675131">Британська розкладка</translation>
 <translation id="1463985642028688653">заблокувати</translation>
 <translation id="1715941336038158809">Недійсне ім'я користувача чи пароль.</translation>
@@ -3720,6 +3723,7 @@
 <translation id="6658571109205370715">Прозорість сертифіката</translation>
 <translation id="8050038245906040378">Підписування комерційного коду Microsoft</translation>
 <translation id="7299721129597238157">Видалити закладку</translation>
+<translation id="7166627725100067582">Увімкнути експериментальну підтримку Chromecast, яка дає змогу переглядати відео з Інтернету та керувати ними на пристроях Chromecast.</translation>
 <translation id="3031557471081358569">Виберіть елементи для імпорту:</translation>
 <translation id="1368832886055348810">Зліва направо</translation>
 <translation id="834106456999819211">Ваше замовлення обробляється.</translation>

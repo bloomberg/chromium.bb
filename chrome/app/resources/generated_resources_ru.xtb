@@ -303,6 +303,7 @@
 <translation id="7607274158153386860">Запросить версию сайта для планшетных ПК</translation>
 <translation id="8028060951694135607">Восстановление ключей Microsoft</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/>Вы можете попытаться определить причины проблемы, воспользовавшись приведенными ниже инструкциями.<ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Использовать AV Foundation API в среде Mac OS X вместо QTKit</translation>
 <translation id="6317369057005134371">Запуск приложения…</translation>
 <translation id="6391832066170725637">Не удалось найти файл или каталог.</translation>
 <translation id="7393381084163773901">Почтовый адрес</translation>
@@ -1292,6 +1293,7 @@
 <translation id="8442065444327205563">Документ готов к просмотру.</translation>
 <translation id="236141728043665931">Всегда блокировать доступ к микрофону</translation>
 <translation id="2307462900900812319">Настройка сети</translation>
+<translation id="1704385717926547822">Включить экспериментальную поддержку Chromecast</translation>
 <translation id="5911798608827489036">Обмен данными с любыми компьютерами в локальной сети или в Интернете</translation>
 <translation id="220858061631308971">Введите PIN-код для устройства &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Версия ЦС Microsoft</translation>
@@ -2893,6 +2895,7 @@
 <translation id="8670869118777164560">Расширение не может перенаправить сетевой запрос на <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, поскольку другое расширение (<ph name="EXTENSION_NAME"/>) перенаправило его на <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Ошибка синхронизации. Программа <ph name="PRODUCT_NAME"/> устарела, обновите ее.</translation>
 <translation id="790040513076446191">Управление настройками конфиденциальности</translation>
+<translation id="7260002739296185724">Использовать AV Foundation для видеосъемки и мониторинга видеоустройств в Mac OS X 10.7 и более поздних версий (в противном случае будет использоваться QTKit)</translation>
 <translation id="3116361045094675131">Английская раскладка</translation>
 <translation id="1463985642028688653">блокировать</translation>
 <translation id="1715941336038158809">Недействительное имя пользователя или пароль.</translation>
@@ -3750,6 +3753,7 @@
 <translation id="6658571109205370715">Временные метки сертификатов</translation>
 <translation id="8050038245906040378">Подписывание коммерческого кода Microsoft</translation>
 <translation id="7299721129597238157">Удалить закладку</translation>
+<translation id="7166627725100067582">Включить экспериментальную поддержку Chromecast, которая позволяет передавать видео из Интернета на устройства Chromecast</translation>
 <translation id="3031557471081358569">Выберите элементы для импорта:</translation>
 <translation id="1368832886055348810">Слева направо</translation>
 <translation id="834106456999819211">Ваш запрос обрабатывается</translation>

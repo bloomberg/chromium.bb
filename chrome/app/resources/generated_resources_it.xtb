@@ -307,6 +307,7 @@
           Puoi provare a diagnosticare il problema procedendo nel seguente modo:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Attiva l'utilizzo delle API Mac OS X AVFoundation anziché di QTKit.</translation>
 <translation id="6317369057005134371">In attesa della finestra dell'applicazione...</translation>
 <translation id="6391832066170725637">Impossibile trovare il file o la directory.</translation>
 <translation id="7393381084163773901">Indirizzo</translation>
@@ -1284,6 +1285,7 @@ La pagina potrà essere caricata dopo che ti sei connesso a una rete.</translati
 <translation id="8442065444327205563">Il documento può essere visualizzato.</translation>
 <translation id="236141728043665931">Impedisci sempre l'accesso al microfono</translation>
 <translation id="2307462900900812319">Configura rete</translation>
+<translation id="1704385717926547822">Attiva supporto sperimentale Chromecast</translation>
 <translation id="5911798608827489036">Scambio di dati con qualsiasi computer sulla rete locale o su Internet</translation>
 <translation id="220858061631308971">Inserisci questo codice PIN su &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Versione CA Microsoft</translation>
@@ -2876,6 +2878,7 @@ Assicurati di non mostrare informazioni riservate.</translation>
 <translation id="8670869118777164560">Questa estensione non è riuscita a reindirizzare una richiesta di rete a <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> perché un'altra estensione (<ph name="EXTENSION_NAME"/>) l'ha reindirizzata a <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Errore di sincronizzazione. <ph name="PRODUCT_NAME"/> è obsoleto e deve essere aggiornato.</translation>
 <translation id="790040513076446191">Modifica delle impostazioni relative alla privacy</translation>
+<translation id="7260002739296185724">Consente di attivare l'utilizzo di AVFoundation per l'acquisizione di video e il monitoraggio di dispositivi video su OS X &gt;= 10.7. In caso contrario verrà utilizzato QTKit.</translation>
 <translation id="3116361045094675131">Tastiera britannica</translation>
 <translation id="1463985642028688653">blocca</translation>
 <translation id="1715941336038158809">Password o nome utente non valido.</translation>
@@ -3727,6 +3730,7 @@ L'accesso automatico è sempre disattivato se il profilo non è collegato a un a
 <translation id="6658571109205370715">Certificate transparency</translation>
 <translation id="8050038245906040378">Firma codice commerciale Microsoft</translation>
 <translation id="7299721129597238157">Elimina preferito</translation>
+<translation id="7166627725100067582">Consente di attivare il supporto sperimentale Chromecast che consente la riproduzione e il controllo dei video dal Web sui dispositivi Chromecast.</translation>
 <translation id="3031557471081358569">Seleziona elementi da importare:</translation>
 <translation id="1368832886055348810">Da sinistra a destra</translation>
 <translation id="834106456999819211">Il tuo ordine è in fase di evasione</translation>

@@ -301,6 +301,7 @@
 <translation id="7607274158153386860">ขอไซต์แท็บเล็ต</translation>
 <translation id="8028060951694135607">การกู้คืนคีย์ของ Microsoft</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/><ph name="LINE_BREAK"/> คุณอาจพยายามวิเคราะห์ปัญหาได้โดยปฏิบัติตามขั้นตอนต่อไปนี้: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">เปิดการใช้ API ของ Mac OS X AVFoundation แทน QTKit</translation>
 <translation id="6317369057005134371">กำลังรอหน้าต่างแอปพลิเคชัน...</translation>
 <translation id="6391832066170725637">ไม่พบไฟล์หรือไดเรกทอรี</translation>
 <translation id="7393381084163773901">ที่อยู่</translation>
@@ -1283,6 +1284,7 @@
 <translation id="8442065444327205563">เอกสารของคุณพร้อมดูแล้ว</translation>
 <translation id="236141728043665931">บล็อกการเข้าถึงไมโครโฟนเสมอ</translation>
 <translation id="2307462900900812319">กำหนดค่าเครือข่าย</translation>
+<translation id="1704385717926547822">เปิดใช้การสนับสนุน Chromecast รุ่นทดลอง</translation>
 <translation id="5911798608827489036">แลกเปลี่ยนข้อมูลกับคอมพิวเตอร์ใดๆ ที่อยู่ในเครือข่ายในท้องถิ่นหรืออินเทอร์เน็ต</translation>
 <translation id="220858061631308971">โปรดป้อนรหัส PIN นี้บน &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">รุ่นของผู้มีสิทธิ์ออกใบรับรองของ Microsoft</translation>
@@ -2871,6 +2873,7 @@
 <translation id="8670869118777164560">ส่วนขยายนี้ไม่สามารถเปลี่ยนเส้นทางคำขอเครือข่ายไปยัง <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME"/>) ได้เปลี่ยนเส้นทางคำขอไปยัง <ph name="ACTUAL_REDIRECT_DESTINATION"/></translation>
 <translation id="3654092442379740616">การซิงค์มีข้อผิดพลาด: <ph name="PRODUCT_NAME"/> เก่าเกินไปและต้องมีการอัปเดต</translation>
 <translation id="790040513076446191">จัดการการตั้งค่าที่เกี่ยวข้องกับความเป็นส่วนตัว</translation>
+<translation id="7260002739296185724">เปิดการใช้ AVFoundation สำหรับการจับภาพวิดีโอและการตรวจสอบอุปกรณ์วิดีโอใน OS X เวอร์ชัน 10.7 หรือสูงกว่า หรือใช้ QTKit แทน</translation>
 <translation id="3116361045094675131">แป้นพิมพ์ภาษาอังกฤษสหราชอาณาจักร</translation>
 <translation id="1463985642028688653">บล็อก</translation>
 <translation id="1715941336038158809">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</translation>
@@ -3730,6 +3733,7 @@
 <translation id="6658571109205370715">ความโปร่งใสของใบรับรอง</translation>
 <translation id="8050038245906040378">การรับรองรหัสเชิงพาณิชย์ของ Microsoft</translation>
 <translation id="7299721129597238157">ลบบุ๊กมาร์ก</translation>
+<translation id="7166627725100067582">เปิดใช้การสนับสนุน Chromecast รุ่นทดลองที่อนุญาตให้เล่นและควบคุมวิดีโอจากเว็บบนอุปกรณ์ของ Chromecast</translation>
 <translation id="3031557471081358569">เลือกรายการที่จะนำเข้าต่อไปนี้:</translation>
 <translation id="1368832886055348810">ซ้ายไปขวา</translation>
 <translation id="834106456999819211">การสั่งซื้อของคุณอยู่ระหว่างดำเนินการ</translation>
@@ -5064,7 +5068,7 @@
 <translation id="475088594373173692">ผู้ใช้แรก</translation>
 <translation id="1731911755844941020">กำลังส่งคำขอ...</translation>
 <translation id="7885283703487484916">สั้นมาก</translation>
-<translation id="8371695176452482769">พูดเดี๋ยวนี้</translation>
+<translation id="8371695176452482769">เชิญพูดเลย</translation>
 <translation id="7622116780510618781">แท็บที่เรียงซ้อน</translation>
 <translation id="4361745360460842907">เปิดเป็นแท็บ</translation>
 <translation id="5238278114306905396">แอปพลิเคชัน &quot;<ph name="EXTENSION_NAME"/>&quot; ถูกนำออกโดยอัตโนมัติ</translation>

@@ -304,6 +304,7 @@
 <translation id="7607274158153386860">Żądaj strony w wersji dla tabletów</translation>
 <translation id="8028060951694135607">Odzyskiwanie kluczy firmy Microsoft</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Możesz spróbować zdiagnozować problem, wykonując następujące czynności: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Włącz użycie interfejsów API AVFoundation zamiast QTKit w systemie Mac OS X.</translation>
 <translation id="6317369057005134371">Czekam na okno aplikacji...</translation>
 <translation id="6391832066170725637">Nie można znaleźć pliku lub katalogu.</translation>
 <translation id="7393381084163773901">Adres</translation>
@@ -1292,6 +1293,7 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY"/>.
 <translation id="8442065444327205563">Dokument gotowy do pokazania.</translation>
 <translation id="236141728043665931">Zawsze blokuj dostęp do mikrofonu</translation>
 <translation id="2307462900900812319">Skonfiguruj sieć</translation>
+<translation id="1704385717926547822">Włącz eksperymentalną obsługę Chromecasta</translation>
 <translation id="5911798608827489036">Wymiana danych z dowolnym komputerem w sieci lokalnej lub internecie</translation>
 <translation id="220858061631308971">Wpisz ten kod PIN na urządzeniu „<ph name="DEVICE_NAME"/>”:</translation>
 <translation id="6263082573641595914">Wersja urzędu certyfikacji firmy Microsoft</translation>
@@ -2889,6 +2891,7 @@ Upewnij się, że nie ujawniasz żadnych poufnych informacji.</translation>
 <translation id="8670869118777164560">Rozszerzenie nie przekierowało żądania sieciowego do <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, bo inne rozszerzenie (<ph name="EXTENSION_NAME"/>) przekierowało je do <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Błąd synchronizacji: aplikacja <ph name="PRODUCT_NAME"/> jest nieaktualna i musi zostać zaktualizowana.</translation>
 <translation id="790040513076446191">Manipulować ustawieniami ochrony prywatności</translation>
+<translation id="7260002739296185724">Włącz użycie AVFoundation do przechwytywania obrazu wideo i monitorowania urządzeń wideo w systemie Mac OS X 10.7 lub nowszym. W przeciwnym razie zostanie użyty moduł QTKit.</translation>
 <translation id="3116361045094675131">Klawiatura brytyjska</translation>
 <translation id="1463985642028688653">blokuj</translation>
 <translation id="1715941336038158809">Nieprawidłowa nazwa użytkownika lub hasło.</translation>
@@ -3747,6 +3750,7 @@ Niezależnie od ustawienia tej flagi automatyczne logowanie jest zawsze wyłącz
 <translation id="6658571109205370715">Przejrzystość certyfikatu</translation>
 <translation id="8050038245906040378">Podpisywanie kodu handlowego firmy Microsoft</translation>
 <translation id="7299721129597238157">Usuń zakładkę</translation>
+<translation id="7166627725100067582">Włącz eksperymentalną obsługę Chromecasta, która pozwala na odtwarzanie filmów z internetu i sterowanie nimi na urządzeniach Chromecast.</translation>
 <translation id="3031557471081358569">Wybierz elementy do zaimportowania:</translation>
 <translation id="1368832886055348810">Od lewej do prawej</translation>
 <translation id="834106456999819211">Właśnie realizujemy Twoje zamówienie</translation>

@@ -304,6 +304,7 @@
 <translation id="7607274158153386860">Minta situs tablet</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Anda dapat mencoba  mendiagnosis masalah dengan mengambil langkah-langkah berikut: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Aktifkan penggunaan API AVFoundation Mac OS X, sebagai ganti QTKit.</translation>
 <translation id="6317369057005134371">Menunggu jendela aplikasi...</translation>
 <translation id="6391832066170725637">File atau direktori tak ditemukan.</translation>
 <translation id="7393381084163773901">Alamat</translation>
@@ -1292,6 +1293,7 @@ Ssst! <ph name="SHORTCUT_KEY"/> mode penyamaran mungkin berguna suatu saat nanti
 <translation id="8442065444327205563">Dokumen Anda siap dilihat.</translation>
 <translation id="236141728043665931">Selalu blokir akses mikrofon</translation>
 <translation id="2307462900900812319">Konfigurasi jaringan</translation>
+<translation id="1704385717926547822">Aktifkan dukungan Chromecast eksperimental</translation>
 <translation id="5911798608827489036">Tukar data dengan komputer mana saja di jaringan lokal atau internet</translation>
 <translation id="220858061631308971">Masukkan kode PIN ini ke &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
@@ -2810,7 +2812,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="8266502311388875829">Hapus dari folder</translation>
 <translation id="427243282273028705">Debug hanya jika URL manifes mengakhiri dengan debug.nmf</translation>
 <translation id="2471964272749426546">Metode masukan Tamil (Tamil99)</translation>
-<translation id="9088917181875854783">Konfirmasi bahwa kode sandi ini ditampilkan di &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
+<translation id="9088917181875854783">Konfirmasikan bahwa kunci sandi ini ditampilkan di &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="5236831943526452400">Hapus cookie dan data situs lain saat Anda menutup browser</translation>
 <translation id="1558834950088298812">Kekerapan saat ekstensi diperbarui</translation>
@@ -2895,6 +2897,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="8670869118777164560">Ekstensi ini gagal mengalihkan permintaan jaringan ke <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> karena ekstensi lain (<ph name="EXTENSION_NAME"/>) mengalihkannya ke <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Kesalahan Sinkronisasi: <ph name="PRODUCT_NAME"/> sudah usang dan perlu diperbarui.</translation>
 <translation id="790040513076446191">Memanipulasi setelan yang terkait privasi</translation>
+<translation id="7260002739296185724">Aktifkan penggunaan AVFoundation untuk perekaman video dan pemantauan perangkat video di OS X &gt;= 10.7. QTKit akan digunakan sebagai gantinya.</translation>
 <translation id="3116361045094675131">Keyboard Inggris</translation>
 <translation id="1463985642028688653">cekal</translation>
 <translation id="1715941336038158809">Nama pengguna atau sandi tidak valid.</translation>
@@ -3754,6 +3757,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="6658571109205370715">Transparansi sertifikat</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">Hapus bookmark</translation>
+<translation id="7166627725100067582">Aktifkan dukungan Chromecast eksperimental yang memungkinkan pemutaran dan pengontrolan video dari Web di perangkat Chromecast.</translation>
 <translation id="3031557471081358569">Pilih item yang akan diimpor:</translation>
 <translation id="1368832886055348810">Kiri ke Kanan</translation>
 <translation id="834106456999819211">Pesanan Anda sedang diproses</translation>
@@ -4536,7 +4540,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="6929555043669117778">Lanjutkan mencekal munculan</translation>
 <translation id="3508920295779105875">Pilih Folder Lain...</translation>
 <translation id="2159915644201199628">Tidak dapat mendekode gambar: '<ph name="IMAGE_NAME"/>'</translation>
-<translation id="904451693890288097">Masukkan kode sandi untuk &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
+<translation id="904451693890288097">Masukkan kunci sandi untuk &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="2604467856256242911">Aktifkan dukungan untuk profil pengguna yang dikelola oleh pengguna lain dan dapat memiliki batasan yang diterapkan.</translation>
 <translation id="2987775926667433828">Cina Tradisional</translation>
 <translation id="5210496856287228091">Nonaktifkan animasi boot.</translation>
@@ -4672,7 +4676,7 @@ Pastikan Anda tidak mengekspos informasi penting apa pun.</translation>
 <translation id="5925147183566400388">Pengarah Pernyataan Praktik Sertifikasi</translation>
 <translation id="8119381715954636144">Identitas tidak terverifikasi</translation>
 <translation id="1497270430858433901">Anda menerima gratis <ph name="DATA_AMOUNT"/> pada <ph name="DATE"/></translation>
-<translation id="1779652936965200207">Masukkan kode sandi ini di &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
+<translation id="1779652936965200207">Masukkan kunci sandi ini di &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="8307376264102990850">Mengisi - Menghitung waktu sampai penuh</translation>
 <translation id="636850387210749493">Pendaftaran perusahaan</translation>
 <translation id="4602466770786743961">Selelu izinkan <ph name="HOST"/> mengakses kamera dan mikrofon Anda</translation>

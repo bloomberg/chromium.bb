@@ -308,6 +308,7 @@
           ഇനിപ്പറയുന്ന ഘട്ടങ്ങൾ പാലിച്ച് നിങ്ങൾക്ക് പ്രശ്‌നം പരിഹരിക്കാൻ ശ്രമിക്കാവുന്നതാണ്:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">QTKit-ന് പകരം Mac OS X AVFoundation API-കളുടെ ഉപയോഗം പ്രവർത്തനക്ഷമമാക്കുക.</translation>
 <translation id="6317369057005134371">അപ്ലിക്കേഷൻ വിൻഡോയ്‌ക്കായി കാത്തിരിക്കുന്നു...</translation>
 <translation id="6391832066170725637">ഫയല്‍ അല്ലെങ്കില്‍ ഡയറക്ടറി കണ്ടെത്താന്‍ കഴിഞ്ഞില്ല.</translation>
 <translation id="7393381084163773901">സ്‌ട്രീറ്റ് വിലാസം</translation>
@@ -1316,6 +1317,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8442065444327205563">നിങ്ങളുടെ പ്രമാണം കാണുന്നതിന് തയ്യാറാണ്.</translation>
 <translation id="236141728043665931">എല്ലായ്‌പ്പോഴും മൈക്രോഫോൺ ആക്‌സസ്സ് തടയുക</translation>
 <translation id="2307462900900812319">നെറ്റ്‌വർക്ക് കോൺഫിഗർ ചെയ്യുക</translation>
+<translation id="1704385717926547822">പരീക്ഷണാത്മക Chromecast പിന്തുണ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5911798608827489036">ഏതു കമ്പ്യൂട്ടർ ഉപയോഗിച്ചും പ്രാദേശിക നെറ്റ്‌വർക്കിലോ ഇന്റർനെറ്റിലോ ഡാറ്റ എക്‌സ്‌ചേഞ്ച് ചെയ്യുക</translation>
 <translation id="220858061631308971">&quot;<ph name="DEVICE_NAME"/>&quot; എന്നതിൽ PIN കോഡ് നൽകുക:</translation>
 <translation id="6263082573641595914">Microsoft CA പതിപ്പ്</translation>
@@ -2925,6 +2927,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8670869118777164560">മറ്റൊരു വിപുലീകരണം (<ph name="EXTENSION_NAME"/>), <ph name="ACTUAL_REDIRECT_DESTINATION"/>-ലേക്ക് ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയെ റീഡയറക്റ്റുചെയ്‌തതിനാൽ അതിനെ <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>-ലേക്ക് റീഡയറക്റ്റുചെയ്യുന്നതിന് ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>
 <translation id="3654092442379740616">സമന്വയിപ്പിക്കൽ പിശക്:  <ph name="PRODUCT_NAME"/> എന്നത് കാലഹരണപ്പെട്ടതിനാൽ അപ്‌ഡേറ്റ് ചെയ്യേണ്ടത് ആവശ്യമാണ്.</translation>
 <translation id="790040513076446191">സ്വകാര്യത സംബന്ധിയായ ക്രമീകരണങ്ങൾ കൈകാര്യം ചെയ്യുക</translation>
+<translation id="7260002739296185724">OS X &gt;= 10.7-ൽ വീഡിയോ എടുക്കുന്നതിനും വീഡിയോ ഉപകരണം നിരീക്ഷിക്കുന്നതിനുമായി AVFoundation ഉപയോഗം പ്രവർത്തനക്ഷമമാക്കുക. അല്ലെങ്കിൽ QTKit ഉപയോഗിക്കും.</translation>
 <translation id="3116361045094675131">യുകെ കീബോര്‍ഡ്</translation>
 <translation id="1463985642028688653">തടയുക</translation>
 <translation id="1715941336038158809">ഉപയോക്തൃ നാമം അല്ലെങ്കില്‍ പാസ്‌വേഡ് അസാധുവാണ്.</translation>
@@ -3783,6 +3786,7 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6658571109205370715">സർട്ടിഫിക്കറ്റ് സുതാര്യത</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">ബുക്ക്‌മാര്‍‌ക്ക് ഇല്ലാതാക്കുക</translation>
+<translation id="7166627725100067582">Chromecast ഉപകരണങ്ങളിലെ വെബിൽ നിന്ന് വീഡിയോകൾ പ്ലേ ചെയ്യാനും നിയന്ത്രിക്കാനും അനുവദിക്കുന്ന പരീക്ഷണാത്മക Chromecast പിന്തുണ പ്രവർത്തനക്ഷമമാക്കുക.</translation>
 <translation id="3031557471081358569">ഇറക്കുമതി ചെയ്യുന്നതിനായി ഇനങ്ങള്‍ തിരഞ്ഞെടുക്കുക:</translation>
 <translation id="1368832886055348810">ഇടതുനിന്ന് വലത്തേക്ക്</translation>
 <translation id="834106456999819211">നിങ്ങളുടെ ഓർഡർ പ്രോസസ്സുചെയ്യുന്നു</translation>

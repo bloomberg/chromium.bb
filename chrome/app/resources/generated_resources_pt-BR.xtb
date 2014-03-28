@@ -304,6 +304,7 @@
 <translation id="7607274158153386860">Solicitar site para tablet</translation>
 <translation id="8028060951694135607">Recuperação de chave da Microsoft</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Você pode tentar diagnosticar o problema realizando as seguintes etapas: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Ativar o uso das APIs do Mac OS X AVFoundations em vez do QTKit.</translation>
 <translation id="6317369057005134371">Aguardando janela do aplicativo...</translation>
 <translation id="6391832066170725637">Não foi possível encontrar o arquivo ou diretório.</translation>
 <translation id="7393381084163773901">Endereço de correspondência</translation>
@@ -1291,6 +1292,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY"/> pode ser útil da
 <translation id="8442065444327205563">O documento está pronto para visualização.</translation>
 <translation id="236141728043665931">Sempre bloquear o acesso ao microfone</translation>
 <translation id="2307462900900812319">Configurar rede</translation>
+<translation id="1704385717926547822">Ativar suporte experimental para Chromecast</translation>
 <translation id="5911798608827489036">Trocar dados com qualquer computador da rede local ou Internet</translation>
 <translation id="220858061631308971">Digite este código PIN em &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Versão da autoridade de certificação da Microsoft</translation>
@@ -2895,6 +2897,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="8670869118777164560">Esta extensão falhou ao redirecionar uma solicitação da rede para <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> porque outra extensão (<ph name="EXTENSION_NAME"/>) redirecionou a solicitação para <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Erro de sincronização: <ph name="PRODUCT_NAME"/> está desatualizado e precisa ser atualizado.</translation>
 <translation id="790040513076446191">Manipular as configurações relacionadas à privacidade</translation>
+<translation id="7260002739296185724">Ativar o uso do AVFoundation para captura de vídeo e monitoramento de dispositivos de vídeo no OS X&gt;= 10.7. Se esse uso não for ativado, será usado o QTKit.</translation>
 <translation id="3116361045094675131">Teclado do Reino Unido</translation>
 <translation id="1463985642028688653">bloquear</translation>
 <translation id="1715941336038158809">Nome de usuário ou senha inválida.</translation>
@@ -3756,6 +3759,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6658571109205370715">Transparência do certificado</translation>
 <translation id="8050038245906040378">Assinatura do código comercial da Microsoft</translation>
 <translation id="7299721129597238157">Excluir favorito</translation>
+<translation id="7166627725100067582">Ativar o suporte experimental do Chromecast, que permite reproduzir e controlar vídeos da Web em dispositivos Chromecast.</translation>
 <translation id="3031557471081358569">Selecione os itens que serão importados:</translation>
 <translation id="1368832886055348810">Da esquerda para a direita</translation>
 <translation id="834106456999819211">Seu pedido está sendo processado</translation>

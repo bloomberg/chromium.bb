@@ -307,6 +307,7 @@
           Puteți încerca să diagnosticați problema efectuând următorii pași:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Activați folosirea API-urilor AV Foundation în Mac OS X, în locul platformei QTKit.</translation>
 <translation id="6317369057005134371">Se așteaptă fereastra aplicației...</translation>
 <translation id="6391832066170725637">Fișierul sau directorul nu a putut fi găsit.</translation>
 <translation id="7393381084163773901">Adresă fizică</translation>
@@ -1303,6 +1304,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY"/> pentru a 
 <translation id="8442065444327205563">Documentul este gata de afișare.</translation>
 <translation id="236141728043665931">Blocați întotdeauna accesul la microfon</translation>
 <translation id="2307462900900812319">Configurați rețeaua</translation>
+<translation id="1704385717926547822">Activați compatibilitatea experimentală pentru Chromecast</translation>
 <translation id="5911798608827489036">Faceți schimb de date cu orice computer din rețeaua locală sau de pe internet</translation>
 <translation id="220858061631308971">Introduceți acest cod PIN pe „<ph name="DEVICE_NAME"/>”:</translation>
 <translation id="6263082573641595914">Versiune CA Microsoft</translation>
@@ -2920,6 +2922,7 @@ Asigurați-vă că nu expuneți informații confidențiale.</translation>
 <translation id="8670869118777164560">Această extensie nu a putut redirecționa o solicitare din rețea către <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, deoarece o altă extensie (<ph name="EXTENSION_NAME"/>) a redirecționat-o către <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Eroare de sincronizare: <ph name="PRODUCT_NAME"/> este învechit și trebuie să fie actualizat.</translation>
 <translation id="790040513076446191">Manipulează setările privind confidențialitatea</translation>
+<translation id="7260002739296185724">Activează folosirea platformei AV Foundation pentru înregistrarea video și monitorizarea dispozitivului video în OS X 10.7 și versiunile ulterioare. În celelalte cazuri, se va folosi QTKit.</translation>
 <translation id="3116361045094675131">Tastatură UK</translation>
 <translation id="1463985642028688653">blocați</translation>
 <translation id="1715941336038158809">Nume de utilizator sau parolă nevalidă.</translation>
@@ -3779,6 +3782,7 @@ Asigurați-vă că nu expuneți informații confidențiale.</translation>
 <translation id="6658571109205370715">Certificate Transparency</translation>
 <translation id="8050038245906040378">Semnare comercială a codului Microsoft</translation>
 <translation id="7299721129597238157">Ștergeți marcajul</translation>
+<translation id="7166627725100067582">Activează compatibilitatea experimentală pentru Chromecast și vă permite să redați și să controlați videoclipurile de pe web pe dispozitivele Chromecast.</translation>
 <translation id="3031557471081358569">Selectați elementele de importat:</translation>
 <translation id="1368832886055348810">De la stânga la dreapta</translation>
 <translation id="834106456999819211">Comanda se procesează</translation>

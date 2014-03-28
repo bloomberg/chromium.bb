@@ -309,6 +309,7 @@
 <translation id="7607274158153386860">टॅब्लेट साइटची विनंती करा</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/><ph name="LINE_BREAK"/> आपण समस्‍येचे निदान करण्‍याचा प्रयत्‍न खालील चरणांचे अनुसरण करून करू शकता: <ph name="LINE_BREAK"/><ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">QTKit च्याऐवजी Mac OS X AVFoundation APIs चा वापर सक्षम करा.</translation>
 <translation id="6317369057005134371">अनुप्रयोग विंडोसाठी प्रतीक्षा करत आहे...</translation>
 <translation id="6391832066170725637">फाइल किंवा निर्देशिका आढळणे शक्य नाही.</translation>
 <translation id="7393381084163773901">मार्ग पत्ता</translation>
@@ -1306,6 +1307,7 @@
 <translation id="8442065444327205563">पहाण्यासाठी आपला दस्तऐवज तयार आहे.</translation>
 <translation id="236141728043665931">मायक्रोफोन प्रवेश नेहमी अवरोधित करा</translation>
 <translation id="2307462900900812319">नेटवर्क कॉन्फिगर करा</translation>
+<translation id="1704385717926547822">प्रायोगिक Chromecast समर्थन सक्षम करा</translation>
 <translation id="5911798608827489036">स्थानिक नेटवर्क किंवा इंटरनेटवरील कोणत्याही संगणकासह डेटा अदलाबदल करा</translation>
 <translation id="220858061631308971">कृपया यावर हा पिन कोड प्रविष्‍ट करा &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Microsoft CA आवृत्ती</translation>
@@ -2923,6 +2925,7 @@
 <translation id="8670869118777164560">हा विस्तार <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> वर एक नेटवर्क विनंती पुनर्निर्देशित करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME"/>) विस्ताराने तो <ph name="ACTUAL_REDIRECT_DESTINATION"/> वर पुनर्निर्देशित केला.</translation>
 <translation id="3654092442379740616">समक्रमण त्रुटी: <ph name="PRODUCT_NAME"/> कालबाह्य नाही आणि अद्यतनित केले जाणे आवश्यक आहे.</translation>
 <translation id="790040513076446191">गोपनीयतेशी-संबद्ध सेटिंग्ज कुशलतेने हाताळा</translation>
+<translation id="7260002739296185724">OS X &gt;= 10.7 वर व्हिडिओ कॅप्चर आणि व्हिडिओ डिव्हाइस परीक्षणासाठी AVFoundation वापर सक्षम करा. अन्यथा QTKit वापरले जाईल.</translation>
 <translation id="3116361045094675131">यूके कीबोर्ड</translation>
 <translation id="1463985642028688653">अवरोधित करा</translation>
 <translation id="1715941336038158809">अवैध वापरकर्ता नाव किंवा संकेतशब्द.</translation>
@@ -3781,6 +3784,7 @@
 <translation id="6658571109205370715">प्रमाणपत्र पारदर्शकता</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">बुकमार्क हटवा</translation>
+<translation id="7166627725100067582">Chromecast डिव्हाइसेसवर वेबवरील व्हिडिओ प्ले करण्यास आणि नियंत्रित करण्यास अनुमती देणारे प्रायोगिक Chromecast समर्थन सक्षम करा.</translation>
 <translation id="3031557471081358569">आयात करण्यासाठी आयटम निवडा:</translation>
 <translation id="1368832886055348810">डावीकडून उजवीकडे</translation>
 <translation id="834106456999819211">आपल्‍या ऑर्डरवर प्रक्रिया केली जात आहे</translation>

@@ -312,6 +312,7 @@
           Je kunt als volgt proberen vast te stellen wat het probleem is:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Gebruik van Mac OS X AVFoundation API's in plaats van QTKit inschakelen.</translation>
 <translation id="6317369057005134371">Wachten op appvenster...</translation>
 <translation id="6391832066170725637">Kan bestand of directory niet vinden.</translation>
 <translation id="7393381084163773901">Adres</translation>
@@ -1311,6 +1312,7 @@ Resterende tijd berekenen</translation>
 <translation id="8442065444327205563">Document gereed voor weergave.</translation>
 <translation id="236141728043665931">Microfoontoegang altijd blokkeren</translation>
 <translation id="2307462900900812319">Netwerk configureren</translation>
+<translation id="1704385717926547822">Experimentele Chromecast-ondersteuning inschakelen</translation>
 <translation id="5911798608827489036">Gegevens uitwisselen met elke computer op het lokale netwerk of internet</translation>
 <translation id="220858061631308971">Voer deze pincode in op '<ph name="DEVICE_NAME"/>':</translation>
 <translation id="6263082573641595914">CA-versie van Microsoft</translation>
@@ -2928,6 +2930,7 @@ Zorg ervoor dat je geen gevoelige informatie weergeeft.</translation>
 <translation id="8670869118777164560">Deze extensie heeft een netwerkverzoek niet kunnen omleiden naar <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> omdat een andere extensie (<ph name="EXTENSION_NAME"/>) het verzoek heeft omgeleid naar <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Synchronisatiefout: <ph name="PRODUCT_NAME"/> is verouderd en moet worden bijgewerkt.</translation>
 <translation id="790040513076446191">Privacygerelateerde instellingen manipuleren</translation>
+<translation id="7260002739296185724">Het gebruik van AVFoundation voor video-opname en videoapparaatcontrole inschakelen voor OS X &gt;= 10.7. Anders wordt QTKit gebruikt.</translation>
 <translation id="3116361045094675131">Brits toetsenbord</translation>
 <translation id="1463985642028688653">blokkeren</translation>
 <translation id="1715941336038158809">De gebruikersnaam of het wachtwoord is ongeldig.</translation>
@@ -3787,6 +3790,7 @@ Zorg ervoor dat je geen gevoelige informatie weergeeft.</translation>
 <translation id="6658571109205370715">Certificaattransparantie</translation>
 <translation id="8050038245906040378">Commerciële handtekening bij programmacode van Microsoft</translation>
 <translation id="7299721129597238157">Bladwijzer verwijderen</translation>
+<translation id="7166627725100067582">Experimentele Chromecast-ondersteuning inschakelen waardoor video's op internet kunnen worden afgespeeld en bediend op Chromecast-apparaten.</translation>
 <translation id="3031557471081358569">Selecteer items die je wilt importeren:</translation>
 <translation id="1368832886055348810">Links naar rechts</translation>
 <translation id="834106456999819211">Je bestelling wordt verwerkt</translation>

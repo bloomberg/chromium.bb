@@ -305,6 +305,7 @@
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> يمكنك محاولة تشخيص المشكلة باتباع الخطوات التالية:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">‏تمكين استخدام Mac OS X AVFoundation APIs، بدلاً من QTKit.</translation>
 <translation id="6317369057005134371">جارٍ انتظار نافذة التطبيق...</translation>
 <translation id="6391832066170725637">تعذّر العثور على الملفّ أو الدليل.</translation>
 <translation id="7393381084163773901">عنوان الشارع</translation>
@@ -1289,6 +1290,7 @@
 <translation id="8442065444327205563">المستند جاهز للعرض.</translation>
 <translation id="236141728043665931">حظر الدخول إلى الميكروفون دومًا</translation>
 <translation id="2307462900900812319">تهيئة الشبكة</translation>
+<translation id="1704385717926547822">‏تمكين دعم Chromecast التجريبي</translation>
 <translation id="5911798608827489036">تبادل البيانات مع أي جهاز كمبيوتر متصل بالشبكة المحلية أو الإنترنت</translation>
 <translation id="220858061631308971">الرجاء إدخال رمز رقم التعريف الشخصي هذا على &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">‏إصدار المرجع المصدق (CA) لـ Microsoft</translation>
@@ -2886,6 +2888,7 @@
 <translation id="8670869118777164560">أخفقت الإضافة في إعادة توجيه طلب الشبكة إلى <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> نظرًا لإعادة توجيهها بواسطة إضافة أخرى (<ph name="EXTENSION_NAME"/>) إلى <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">خطأ في المزامنة: <ph name="PRODUCT_NAME"/> قديم ويجب تحديثه.</translation>
 <translation id="790040513076446191">معالجة الإعدادات المتعلقة بالخصوصية</translation>
+<translation id="7260002739296185724">‏يمكنك تمكين استخدام AVFoundation لالتقاط الفيديو ومراقبة جهاز الفيديو على نظام التشغيل OS X &gt;= 10.7. سيتم استخدام QTKit بخلاف ذلك.</translation>
 <translation id="3116361045094675131">لوحة المفاتيح البريطانية</translation>
 <translation id="1463985642028688653">حظر</translation>
 <translation id="1715941336038158809">اسم المستخدم أو كلمة المرور غير صالحة.</translation>
@@ -3745,6 +3748,7 @@
 <translation id="6658571109205370715">شفافية الشهادة</translation>
 <translation id="8050038245906040378">‏التوقيع بالرمز التجاري لـ Microsoft</translation>
 <translation id="7299721129597238157">حذف الإشارة المرجعية</translation>
+<translation id="7166627725100067582">‏يمكنك تمكين دعم Chromecast التجريبي للسماح بتشغيل مقاطع الفيديو والتحكم فيها من الويب على أجهزة Chromecast.</translation>
 <translation id="3031557471081358569">اختيار العناصر المراد استيرادها:</translation>
 <translation id="1368832886055348810">من اليسار لليمين</translation>
 <translation id="834106456999819211">طلبك قيد المعالجة</translation>

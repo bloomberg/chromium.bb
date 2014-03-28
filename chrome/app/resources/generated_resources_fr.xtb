@@ -308,6 +308,7 @@
           Pour tenter de diagnostiquer le problème, procédez de la manière suivante :
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Activer l'utilisation des API Mac OS X AVFoundation, au lieu du framework QTKit</translation>
 <translation id="6317369057005134371">Création de la fenêtre de l'application en cours…</translation>
 <translation id="6391832066170725637">Fichier ou répertoire introuvable</translation>
 <translation id="7393381084163773901">Adresse postale</translation>
@@ -1302,6 +1303,7 @@ Calcul de la durée restante</translation>
 <translation id="8442065444327205563">Votre document est disponible.</translation>
 <translation id="236141728043665931">Toujours bloquer l'accès au micro</translation>
 <translation id="2307462900900812319">Configurer le réseau</translation>
+<translation id="1704385717926547822">Activer la compatibilité expérimentale de Chromecast</translation>
 <translation id="5911798608827489036">Échanger des données avec tout ordinateur sur le réseau local ou sur Internet</translation>
 <translation id="220858061631308971">Veuillez saisir le code d'accès de &quot;<ph name="DEVICE_NAME"/>&quot; :</translation>
 <translation id="6263082573641595914">Version de l'autorité de certification Microsoft</translation>
@@ -2921,6 +2923,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="8670869118777164560">Une requête réseau n'a pas pu être redirigée vers <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> par cette extension, car elle a été redirigée vers <ph name="ACTUAL_REDIRECT_DESTINATION"/> par une autre extension (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="3654092442379740616">Erreur de synchronisation. <ph name="PRODUCT_NAME"/> est obsolète et doit être mis à jour.</translation>
 <translation id="790040513076446191">Modifier les paramètres de confidentialité</translation>
+<translation id="7260002739296185724">Activez l'utilisation d'AVFoundation pour la capture vidéo et le contrôle d'appareil vidéo sur OS X 10.7 ou version ultérieure. Dans les autres cas, le framework QTKit sera utilisé.</translation>
 <translation id="3116361045094675131">Clavier britannique</translation>
 <translation id="1463985642028688653">bloquer</translation>
 <translation id="1715941336038158809">Nom d'utilisateur ou mot de passe incorrect</translation>
@@ -3781,6 +3784,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6658571109205370715">Transparence du certificat</translation>
 <translation id="8050038245906040378">Signature du code commercial Microsoft</translation>
 <translation id="7299721129597238157">Supprimer le favori</translation>
+<translation id="7166627725100067582">Activez la compatibilité expérimentale de Chromecast permettant de lire et de contrôler des vidéos du Web sur des appareils Chromecast.</translation>
 <translation id="3031557471081358569">Sélectionnez les éléments à importer :</translation>
 <translation id="1368832886055348810">De gauche à droite</translation>
 <translation id="834106456999819211">Commande en cours de traitement</translation>

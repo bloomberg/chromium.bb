@@ -311,6 +311,7 @@
           Aşağıdaki adımları uygulayarak sorunu teşhis etmeyi deneyebilirsiniz:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">QTKit yerine Mac OS X AVFoundation API'larını kullanmayı etkinleştir</translation>
 <translation id="6317369057005134371">Uygulama penceresi bekleniyor...</translation>
 <translation id="6391832066170725637">Dosya veya dizin bulunamadı.</translation>
 <translation id="7393381084163773901">Adres</translation>
@@ -1306,6 +1307,7 @@ Kalan süre hesaplanıyor</translation>
 <translation id="8442065444327205563">Dokümanınız görüntülenmeye hazır.</translation>
 <translation id="236141728043665931">Mikrofon erişimini her zaman engelle</translation>
 <translation id="2307462900900812319">Ağı yapılandır</translation>
+<translation id="1704385717926547822">Deneysel Chromecast desteğini etkinleştir</translation>
 <translation id="5911798608827489036">Yerel ağ veya İnternet üzerindeki herhangi bir bilgisayarla veri değişimi</translation>
 <translation id="220858061631308971">Lütfen &quot;<ph name="DEVICE_NAME"/>&quot; cihazında bu PIN kodunu girin:</translation>
 <translation id="6263082573641595914">Microsoft CA Sürümü</translation>
@@ -2917,6 +2919,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="8670869118777164560">Bu uzantı bir ağ isteğini <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> hedefine yönlendiremedi, çünkü başka bir uzantı (<ph name="EXTENSION_NAME"/>) o isteği <ph name="ACTUAL_REDIRECT_DESTINATION"/> hedefine yönlendirmişti.</translation>
 <translation id="3654092442379740616">Senkronizasyon Hatası: <ph name="PRODUCT_NAME"/> eski ve güncellenmesi gerekiyor.</translation>
 <translation id="790040513076446191">Gizlilikle ilgili ayarları değiştirme</translation>
+<translation id="7260002739296185724">OS X 10.7 veya sonraki sürüm cihazlarda video yakalama ve video cihazı izleme için AVFoundation kullanımını etkinleştirir. Aksi takdirde QTKit kullanılacaktır.</translation>
 <translation id="3116361045094675131">İngilizce klavye</translation>
 <translation id="1463985642028688653">engelle</translation>
 <translation id="1715941336038158809">Geçersiz kullanıcı adı veya şifre.</translation>
@@ -3778,6 +3781,7 @@ Dolması için gereken süre: <ph name="HOUR"/>:<ph name="MINUTE"/></translation
 <translation id="6658571109205370715">Sertifika şeffaflığı</translation>
 <translation id="8050038245906040378">Microsoft Ticari Kod İmzalama</translation>
 <translation id="7299721129597238157">Yer işaretini sil</translation>
+<translation id="7166627725100067582">Chromecast cihazlarda web üzerinden video oynatma ve kontrol etme olanağı sağlayan deneysel Chromecast desteğini etkinleştirir.</translation>
 <translation id="3031557471081358569">Alınacak öğeleri seçin:</translation>
 <translation id="1368832886055348810">Soldan Sağa</translation>
 <translation id="834106456999819211">Siparişiniz işleniyor</translation>

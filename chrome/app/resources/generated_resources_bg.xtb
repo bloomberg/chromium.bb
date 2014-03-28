@@ -303,6 +303,7 @@
 <translation id="7607274158153386860">Заявка за сайта за таблети</translation>
 <translation id="8028060951694135607">Възстановяване на ключ от Microsoft</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Можете да опитате да диагностицирате проблема, като предприемете следните стъпки: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Активиране на употребата на приложните програмни интерфейси (API) на AVFoundation под Mac OS X вместо на QTKit.</translation>
 <translation id="6317369057005134371">Прозорецът на приложението се изчаква...</translation>
 <translation id="6391832066170725637">Файлът или директорията не можаха да бъдат намерени.</translation>
 <translation id="7393381084163773901">Пощенски адрес</translation>
@@ -1292,6 +1293,7 @@
 <translation id="8442065444327205563">Документът е готов за преглед.</translation>
 <translation id="236141728043665931">Достъпът до микрофона да се блокира винаги</translation>
 <translation id="2307462900900812319">Конфигуриране на мрежата</translation>
+<translation id="1704385717926547822">Активиране на експерименталната поддръжка на Chromecast</translation>
 <translation id="5911798608827489036">Обмен на данни с всеки компютър в локалната мрежа или интернет</translation>
 <translation id="220858061631308971">Моля, въведете този ПИН код на „<ph name="DEVICE_NAME"/>“:</translation>
 <translation id="6263082573641595914">Версия на сертифициращ орган от Microsoft</translation>
@@ -2889,6 +2891,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="8670869118777164560">Това разширение не успя да пренасочи заявка от мрежата към <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, защото друго разширение (<ph name="EXTENSION_NAME"/>) я пренасочи към <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Грешка при синхронизирането:  <ph name="PRODUCT_NAME"/> е стара версия и трябва да се актуализира.</translation>
 <translation id="790040513076446191">Манипулиране на свързаните с поверителността настройки</translation>
+<translation id="7260002739296185724">Активирайте употребата на AVFoundation за запис на видео и наблюдение на видеоустройства под OS X &gt;= 10.7. В противен случай ще се ползва QTKit.</translation>
 <translation id="3116361045094675131">Британска клавиатура</translation>
 <translation id="1463985642028688653">блокиране</translation>
 <translation id="1715941336038158809">Невалидно потребителско име или парола.</translation>
@@ -3737,6 +3740,7 @@ PDF файл или в Google Диск.</translation>
 <translation id="6658571109205370715">Прозрачност на сертификатите</translation>
 <translation id="8050038245906040378">Подписване от Microsoft на код за търговски цели</translation>
 <translation id="7299721129597238157">Изтриване на отметката</translation>
+<translation id="7166627725100067582">Активирайте експерименталната поддръжка, позволяваща използване на устройства Chromecast за възпроизвеждане и контролиране на видеоклипове от мрежата.</translation>
 <translation id="3031557471081358569">Изберете елементи за импортиране:</translation>
 <translation id="1368832886055348810">Отляво надясно</translation>
 <translation id="834106456999819211">Поръчката ви се обработва</translation>

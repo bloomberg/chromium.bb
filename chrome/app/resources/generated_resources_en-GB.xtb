@@ -308,6 +308,7 @@
           You can try to diagnose the problem by taking the following steps:
           <ph name="LINE_BREAK"/>
           <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Enable use of Mac OS X AVFoundation APIs, instead of QTKit.</translation>
 <translation id="6317369057005134371">Waiting for application window...</translation>
 <translation id="6391832066170725637">The file or directory could not be found.</translation>
 <translation id="7393381084163773901">Street address</translation>
@@ -1305,6 +1306,7 @@ Calculating remaining time</translation>
 <translation id="8442065444327205563">Your document is ready to view.</translation>
 <translation id="236141728043665931">Always block microphone access</translation>
 <translation id="2307462900900812319">Configure network</translation>
+<translation id="1704385717926547822">Enable experimental Chromecast support</translation>
 <translation id="5911798608827489036">Exchange data with any computer on the local network or internet</translation>
 <translation id="220858061631308971">Please enter this PIN code on &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Microsoft CA Version</translation>
@@ -2913,6 +2915,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="8670869118777164560">This extension failed to redirect a network request to <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> because another extension (<ph name="EXTENSION_NAME"/>) redirected it to <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Sync Error:  <ph name="PRODUCT_NAME"/> is out of date and needs to be updated.</translation>
 <translation id="790040513076446191">Manipulate privacy-related settings</translation>
+<translation id="7260002739296185724">Enable AVFoundation use for video capture and video device monitoring on OS X &gt;= 10.7. QTKit will be used otherwise.</translation>
 <translation id="3116361045094675131">UK keyboard</translation>
 <translation id="1463985642028688653">block</translation>
 <translation id="1715941336038158809">Invalid user name or password.</translation>
@@ -3774,6 +3777,7 @@ Make sure that you do not expose any sensitive information.</translation>
 <translation id="6658571109205370715">Certificate transparency</translation>
 <translation id="8050038245906040378">Microsoft Commercial Code Signing</translation>
 <translation id="7299721129597238157">Delete bookmark</translation>
+<translation id="7166627725100067582">Enable experimental Chromecast support allowing for play and control of videos from the Web on Chromecast devices.</translation>
 <translation id="3031557471081358569">Select items to be imported:</translation>
 <translation id="1368832886055348810">Left to Right</translation>
 <translation id="834106456999819211">Your order is being processed</translation>

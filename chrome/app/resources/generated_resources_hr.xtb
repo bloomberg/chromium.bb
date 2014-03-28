@@ -303,6 +303,7 @@
 <translation id="7607274158153386860">Zahtjev za web-lokaciju tabletnog računala</translation>
 <translation id="8028060951694135607">Oporavak Microsoftovog ključa</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Možete pokušati dijagnosticirati problem na sljedeći način: <ph name="LINE_BREAK"/> <ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Omogući upotrebu Mac OS X AVFoundation API-ja umjesto QTKita.</translation>
 <translation id="6317369057005134371">Čeka se prozor aplikacije...</translation>
 <translation id="6391832066170725637">Datoteku ili direktorij nije bilo moguće naći.</translation>
 <translation id="7393381084163773901">Ulica i kućni broj</translation>
@@ -1285,6 +1286,7 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8442065444327205563">Dokument je spreman za prikaz.</translation>
 <translation id="236141728043665931">Uvijek blokiraj pristup mikrofonu</translation>
 <translation id="2307462900900812319">Konfiguriraj mrežu</translation>
+<translation id="1704385717926547822">Omogući eksperimentalnu podršku za Chromecast</translation>
 <translation id="5911798608827489036">Razmjena podataka s bilo kojim računalom na lokalnoj mreži ili internetu</translation>
 <translation id="220858061631308971">Unesite ovaj PIN kôd na uređaj &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="6263082573641595914">Microsoft CA verzija</translation>
@@ -2884,6 +2886,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="8670869118777164560">Ovo proširenje nije uspjelo preusmjeriti mrežni zahtjev na odredište <ph name="ATTEMPTED_REDIRECT_DESTINATION"/> jer ga je drugo proširenje (<ph name="EXTENSION_NAME"/>) preusmjerilo na odredište <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Pogreška u sinkronizaciji: proizvod <ph name="PRODUCT_NAME"/> zastario je i treba ga ažurirati.</translation>
 <translation id="790040513076446191">rukovati postavkama koje se odnose na privatnost</translation>
+<translation id="7260002739296185724">Omogući upotrebu AVFoundationa za snimanje videozapisa i nadzor videouređaja na OS-u X 10.7 i novijim verzijama. U suprotnom će se upotrebljavati QTKit.</translation>
 <translation id="3116361045094675131">UK tipkovnica</translation>
 <translation id="1463985642028688653">blokiraj</translation>
 <translation id="1715941336038158809">Nevažeće korisničko ime ili zaporka.</translation>
@@ -3740,6 +3743,7 @@ Ne otkrivajte nikakve osjetljive podatke.</translation>
 <translation id="6658571109205370715">Transparentnost certifikata</translation>
 <translation id="8050038245906040378">Microsoftovo komercijalno kodno potpisivanje</translation>
 <translation id="7299721129597238157">Izbriši oznaku</translation>
+<translation id="7166627725100067582">Omogući eksperimentalnu podršku za Chromecast koja omogućuje reprodukciju i kontrolu videozapisa s weba na uređajima Chromecast.</translation>
 <translation id="3031557471081358569">Odaberi stavke za uvoz:</translation>
 <translation id="1368832886055348810">Slijeva udesno</translation>
 <translation id="834106456999819211">Vaša se narudžba obrađuje</translation>

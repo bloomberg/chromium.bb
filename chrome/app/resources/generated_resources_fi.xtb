@@ -303,6 +303,7 @@
 <translation id="7607274158153386860">Pyydä tablet-laitteelle sopiva sivusto</translation>
 <translation id="8028060951694135607">Microsoftin avaimen palautus</translation>
 <translation id="323962671734198379"><ph name="ERROR_DESCRIPTION_TEXT"/> <ph name="LINE_BREAK"/> Voit yrittää diagnosoida ongelman toimimalla seuraavasti: <ph name="LINE_BREAK"/><ph name="PLATFORM_TEXT"/></translation>
+<translation id="4119224432853805992">Käytä Mac OS X:n AVFoundation-sovellusliittymiä QTKitin sijaan.</translation>
 <translation id="6317369057005134371">Odotetaan sovellusikkunaa…</translation>
 <translation id="6391832066170725637">Tiedostoa tai hakemistoa ei löytynyt.</translation>
 <translation id="7393381084163773901">Katuosoite</translation>
@@ -1290,6 +1291,7 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8442065444327205563">Asiakirja on valmis tarkast.</translation>
 <translation id="236141728043665931">Estä aina mikrofonin käyttö</translation>
 <translation id="2307462900900812319">Määritä verkko</translation>
+<translation id="1704385717926547822">Ota kokeellinen Chromecast-tuki käyttöön</translation>
 <translation id="5911798608827489036">Vaihda tietoja minkä tahansa paikallisverkossa tai internetissä olevan tietokoneen kanssa</translation>
 <translation id="220858061631308971">Syötä tämä PIN-koodi laitteella <ph name="DEVICE_NAME"/>:</translation>
 <translation id="6263082573641595914">Microsoftin varmenteen myöntäjän versio</translation>
@@ -2875,6 +2877,7 @@ Varmista, että et paljasta arkaluonteisia tietoja.</translation>
 <translation id="8670869118777164560">Tämä laajennus ei uudelleenohjannut verkkopyyntöä kohteeseen <ph name="ATTEMPTED_REDIRECT_DESTINATION"/>, koska toinen laajennus (<ph name="EXTENSION_NAME"/>) uudelleenohjasi sen kohteeseen <ph name="ACTUAL_REDIRECT_DESTINATION"/>.</translation>
 <translation id="3654092442379740616">Synkronointivirhe: <ph name="PRODUCT_NAME"/> on vanhentunut ja tulee päivittää.</translation>
 <translation id="790040513076446191">Muokata tietosuojaan liittyviä asetuksia</translation>
+<translation id="7260002739296185724">Käytä AVFoundationia videon kaappaukseen ja videolaitteiden hallintaan OS X -versiota 10.7 uudemmissa käyttöjärjestelmissä. QTKit-sovelluskehystä käytetään muissa tapauksissa.</translation>
 <translation id="3116361045094675131">Näppäimistö: UK</translation>
 <translation id="1463985642028688653">estä</translation>
 <translation id="1715941336038158809">Virheellinen käyttäjänimi tai salasana.</translation>
@@ -3731,6 +3734,7 @@ ei saa yhteyttä sivustoon. Syynä on yleensä verkon ongelma, mutta ongelma saa
 <translation id="6658571109205370715">Varmenteen avoimuus</translation>
 <translation id="8050038245906040378">Microsoftin kaupallinen koodin allekirjoitus</translation>
 <translation id="7299721129597238157">Poista kirjanmerkki</translation>
+<translation id="7166627725100067582">Ota käyttöön kokeellinen Chromecast-tuki, joka mahdollistaa verkkovideoiden toistamisen ja hallinnan Chromecast-laitteilla.</translation>
 <translation id="3031557471081358569">Valitse tuotavat kohteet:</translation>
 <translation id="1368832886055348810">Vasemmalta oikealle</translation>
 <translation id="834106456999819211">Tilaustasi käsitellään</translation>
