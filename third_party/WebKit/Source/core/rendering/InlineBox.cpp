@@ -110,7 +110,10 @@ void InlineBox::showBox(int printedCharacters) const
     printedCharacters += fprintf(stderr, "%s\t%p", boxName(), this);
     for (; printedCharacters < showTreeCharacterOffset; printedCharacters++)
         fputc(' ', stderr);
-    fprintf(stderr, "\t%s %p\n", renderer().renderName(), &renderer());
+    fprintf(stderr, "\t%s %p {pos=%g,%g size=%g,%g} baseline=%i/%i\n",
+        renderer().renderName(), &renderer(), x(), y(), width(), height(),
+        baselinePosition(AlphabeticBaseline),
+        baselinePosition(IdeographicBaseline));
 }
 #endif
 
