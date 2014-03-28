@@ -19,7 +19,7 @@ namespace plugin {
 PnaclTranslateThread::PnaclTranslateThread() : llc_subprocess_active_(false),
                                                ld_subprocess_active_(false),
                                                done_(false),
-                                               time_stats_(),
+                                               compile_time_(0),
                                                manifest_(NULL),
                                                obj_files_(NULL),
                                                nexe_file_(NULL),
@@ -149,6 +149,7 @@ void PnaclTranslateThread::DoTranslate() {
     llc_out_files.push_back(invalid_desc_wrapper_);
   }
 
+  pp::Core* core = pp::Module::Get()->core();
   {
     nacl::MutexLocker ml(&subprocess_mu_);
     int64_t llc_start_time = NaClGetTimeOfDayMicroseconds();
@@ -161,8 +162,11 @@ void PnaclTranslateThread::DoTranslate() {
       return;
     }
     llc_subprocess_active_ = true;
-    time_stats_.pnacl_llc_load_time =
-        (NaClGetTimeOfDayMicroseconds() - llc_start_time);
+    core->CallOnMainThread(0,
+                           coordinator_->GetUMATimeCallback(
+                               "NaCl.Perf.PNaClLoadTime.LoadCompiler",
+                               NaClGetTimeOfDayMicroseconds() - llc_start_time),
+                           PP_OK);
     // Run LLC.
     PluginReverseInterface* llc_reverse =
         llc_subprocess_->service_runtime()->rev_interface();
@@ -221,9 +225,7 @@ void PnaclTranslateThread::DoTranslate() {
     }
     return;
   }
-
   PLUGIN_PRINTF(("PnaclCoordinator: StreamInit successful\n"));
-  pp::Core* core = pp::Module::Get()->core();
 
   // llc process is started.
   while(!done_ || data_buffers_.size() > 0) {
@@ -283,8 +285,12 @@ void PnaclTranslateThread::DoTranslate() {
     }
     return;
   }
-  time_stats_.pnacl_compile_time =
-      (NaClGetTimeOfDayMicroseconds() - compile_start_time);
+  compile_time_ = NaClGetTimeOfDayMicroseconds() - compile_start_time;
+  core->CallOnMainThread(0,
+                         coordinator_->GetUMATimeCallback(
+                             "NaCl.Perf.PNaClLoadTime.CompileTime",
+                             compile_time_),
+                         PP_OK);
 
   // Shut down the llc subprocess.
   NaClXMutexLock(&subprocess_mu_);
@@ -318,7 +324,7 @@ bool PnaclTranslateThread::RunLdSubprocess() {
   }
 
   nacl::DescWrapper* ld_out_file = nexe_file_->write_wrapper();
-
+  pp::Core* core = pp::Module::Get()->core();
   {
     // Create LD process
     nacl::MutexLocker ml(&subprocess_mu_);
@@ -332,8 +338,11 @@ bool PnaclTranslateThread::RunLdSubprocess() {
       return false;
     }
     ld_subprocess_active_ = true;
-    time_stats_.pnacl_ld_load_time =
-        (NaClGetTimeOfDayMicroseconds() - ld_start_time);
+    core->CallOnMainThread(0,
+                           coordinator_->GetUMATimeCallback(
+                               "NaCl.Perf.PNaClLoadTime.LoadLinker",
+                               NaClGetTimeOfDayMicroseconds() - ld_start_time),
+                           PP_OK);
     PluginReverseInterface* ld_reverse =
         ld_subprocess_->service_runtime()->rev_interface();
     ld_reverse->AddTempQuotaManagedFile(nexe_file_->identifier());
@@ -368,8 +377,11 @@ bool PnaclTranslateThread::RunLdSubprocess() {
                     "link failed.");
     return false;
   }
-  time_stats_.pnacl_link_time =
-      NaClGetTimeOfDayMicroseconds() - link_start_time;
+  core->CallOnMainThread(0,
+                         coordinator_->GetUMATimeCallback(
+                             "NaCl.Perf.PNaClLoadTime.LinkTime",
+                             NaClGetTimeOfDayMicroseconds() - link_start_time),
+                         PP_OK);
   PLUGIN_PRINTF(("PnaclCoordinator: link (translator=%p) succeeded\n",
                  this));
   // Shut down the ld subprocess.

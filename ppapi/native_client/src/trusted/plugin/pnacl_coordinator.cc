@@ -128,7 +128,7 @@ const int32_t kKBPSMax = 30*1000;          // max of 30 MB / sec.
 const uint32_t kKBPSBuckets = 100;
 
 void HistogramTime(pp::UMAPrivate& uma,
-                   const std::string& name, int64_t ms) {
+                   const nacl::string& name, int64_t ms) {
   if (ms < 0) return;
   uma.HistogramCustomTimes(name,
                            ms,
@@ -137,7 +137,7 @@ void HistogramTime(pp::UMAPrivate& uma,
 }
 
 void HistogramSizeKB(pp::UMAPrivate& uma,
-                     const std::string& name, int32_t kb) {
+                     const nacl::string& name, int32_t kb) {
   if (kb < 0) return;
   uma.HistogramCustomCounts(name,
                             kb,
@@ -146,7 +146,7 @@ void HistogramSizeKB(pp::UMAPrivate& uma,
 }
 
 void HistogramRatio(pp::UMAPrivate& uma,
-                    const std::string& name, int64_t a, int64_t b) {
+                    const nacl::string& name, int64_t a, int64_t b) {
   if (a < 0 || b <= 0) return;
   uma.HistogramCustomCounts(name,
                             100 * a / b,
@@ -155,7 +155,7 @@ void HistogramRatio(pp::UMAPrivate& uma,
 }
 
 void HistogramKBPerSec(pp::UMAPrivate& uma,
-                       const std::string& name, double kb, double s) {
+                       const nacl::string& name, double kb, double s) {
   if (kb < 0.0 || s <= 0.0) return;
   uma.HistogramCustomCounts(name,
                             static_cast<int64_t>(kb / s),
@@ -339,20 +339,10 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
 
   // If there are no errors, report stats from this thread (the main thread).
   HistogramOptLevel(plugin_->uma_interface(), pnacl_options_.opt_level());
-  const plugin::PnaclTimeStats& time_stats = translate_thread_->GetTimeStats();
-  HistogramTime(plugin_->uma_interface(),
-                "NaCl.Perf.PNaClLoadTime.LoadCompiler",
-                time_stats.pnacl_llc_load_time / NACL_MICROS_PER_MILLI);
-  HistogramTime(plugin_->uma_interface(), "NaCl.Perf.PNaClLoadTime.CompileTime",
-                time_stats.pnacl_compile_time / NACL_MICROS_PER_MILLI);
   HistogramKBPerSec(plugin_->uma_interface(),
                     "NaCl.Perf.PNaClLoadTime.CompileKBPerSec",
                     pexe_size_ / 1024.0,
-                    time_stats.pnacl_compile_time / 1000000.0);
-  HistogramTime(plugin_->uma_interface(), "NaCl.Perf.PNaClLoadTime.LoadLinker",
-                time_stats.pnacl_ld_load_time / NACL_MICROS_PER_MILLI);
-  HistogramTime(plugin_->uma_interface(), "NaCl.Perf.PNaClLoadTime.LinkTime",
-                time_stats.pnacl_link_time / NACL_MICROS_PER_MILLI);
+                    translate_thread_->GetCompileTime() / 1000000.0);
   HistogramSizeKB(plugin_->uma_interface(), "NaCl.Perf.Size.Pexe",
                   static_cast<int64_t>(pexe_size_ / 1024));
 
@@ -621,6 +611,7 @@ StreamCallback PnaclCoordinator::GetCallback() {
 
 void PnaclCoordinator::BitcodeGotCompiled(int32_t pp_error,
                                           int64_t bytes_compiled) {
+  DCHECK(pp_error == PP_OK);
   pexe_bytes_compiled_ += bytes_compiled;
   // If we don't know the expected total yet, ask.
   if (!ExpectedProgressKnown()) {
@@ -652,6 +643,21 @@ pp::CompletionCallback PnaclCoordinator::GetCompileProgressCallback(
     int64_t bytes_compiled) {
   return callback_factory_.NewCallback(&PnaclCoordinator::BitcodeGotCompiled,
                                        bytes_compiled);
+}
+
+void PnaclCoordinator::DoUMATimeMeasure(int32_t pp_error,
+                                        const nacl::string& event_name,
+                                        int64_t microsecs) {
+  DCHECK(pp_error == PP_OK);
+  HistogramTime(
+      plugin_->uma_interface(), event_name, microsecs / NACL_MICROS_PER_MILLI);
+}
+
+pp::CompletionCallback PnaclCoordinator::GetUMATimeCallback(
+    const nacl::string& event_name, int64_t microsecs) {
+  return callback_factory_.NewCallback(&PnaclCoordinator::DoUMATimeMeasure,
+                                       event_name,
+                                       microsecs);
 }
 
 void PnaclCoordinator::GetCurrentProgress(int64_t* bytes_loaded,
