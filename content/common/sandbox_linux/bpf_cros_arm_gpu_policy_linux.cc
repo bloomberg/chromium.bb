@@ -73,39 +73,6 @@ void AddArmMaliGpuWhitelist(std::vector<std::string>* read_whitelist,
   write_whitelist->push_back(kDevMfcEncPath);
 }
 
-void AddArmTegraGpuWhitelist(std::vector<std::string>* read_whitelist,
-                             std::vector<std::string>* write_whitelist) {
-  // Device files needed by the Tegra GPU userspace.
-  static const char kDevNvhostCtrlPath[] = "/dev/nvhost-ctrl";
-  static const char kDevNvhostIspPath[] = "/dev/nvhost-isp";
-  static const char kDevNvhostViPath[] = "/dev/nvhost-vi";
-  static const char kDevNvmapPath[] = "/dev/nvmap";
-  static const char kDevNvhostGpuPath[] = "/dev/nvhost-gpu";
-  static const char kDevNvhostAsGpuPath[] = "/dev/nvhost-as-gpu";
-  static const char kDevNvhostCtrlGpuPath[] = "/dev/nvhost-ctrl-gpu";
-  static const char kSysDevicesSocIDPath[] = "/sys/devices/soc0/soc_id";
-  static const char kSysDevicesSocRevPath[] = "/sys/devices/soc0/revision";
-  // TODO(davidung): remove these device nodes before nyan launch.
-
-  read_whitelist->push_back(kDevNvhostCtrlPath);
-  read_whitelist->push_back(kDevNvhostIspPath);
-  read_whitelist->push_back(kDevNvhostViPath);
-  read_whitelist->push_back(kDevNvmapPath);
-  read_whitelist->push_back(kDevNvhostGpuPath);
-  read_whitelist->push_back(kDevNvhostAsGpuPath);
-  read_whitelist->push_back(kDevNvhostCtrlGpuPath);
-  read_whitelist->push_back(kSysDevicesSocIDPath);
-  read_whitelist->push_back(kSysDevicesSocRevPath);
-
-  write_whitelist->push_back(kDevNvhostCtrlPath);
-  write_whitelist->push_back(kDevNvhostIspPath);
-  write_whitelist->push_back(kDevNvhostViPath);
-  write_whitelist->push_back(kDevNvmapPath);
-  write_whitelist->push_back(kDevNvhostGpuPath);
-  write_whitelist->push_back(kDevNvhostAsGpuPath);
-  write_whitelist->push_back(kDevNvhostCtrlGpuPath);
-}
-
 void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
                         std::vector<std::string>* write_whitelist) {
   // On ARM we're enabling the sandbox before the X connection is made,
@@ -123,7 +90,6 @@ void AddArmGpuWhitelist(std::vector<std::string>* read_whitelist,
   read_whitelist->push_back(kLibEglPath);
 
   AddArmMaliGpuWhitelist(read_whitelist, write_whitelist);
-  AddArmTegraGpuWhitelist(read_whitelist, write_whitelist);
 }
 
 class CrosArmGpuBrokerProcessPolicy : public CrosArmGpuProcessPolicy {
@@ -214,14 +180,6 @@ bool CrosArmGpuProcessPolicy::PreSandboxHook() {
 
   // Preload the Mali library.
   dlopen("/usr/lib/libmali.so", dlopen_flag);
-
-  // Preload the Tegra libraries.
-  dlopen("/usr/lib/libnvrm.so", dlopen_flag);
-  dlopen("/usr/lib/libnvrm_graphics.so", dlopen_flag);
-  dlopen("/usr/lib/libnvidia-glsi.so", dlopen_flag);
-  dlopen("/usr/lib/libnvidia-rmapi-tegra.so", dlopen_flag);
-  dlopen("/usr/lib/libnvidia-eglcore.so", dlopen_flag);
-  // TODO(davidung): remove these libraries before nyan launch.
 
   return true;
 }

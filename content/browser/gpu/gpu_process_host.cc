@@ -1109,6 +1109,7 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     switches::kGpuStartupDialog,
     switches::kGpuSandboxAllowSysVShm,
     switches::kGpuSandboxFailuresFatal,
+    switches::kGpuSandboxStartAfterInitialization,
     switches::kLoggingLevel,
     switches::kNoSandbox,
     switches::kTestGLLib,
