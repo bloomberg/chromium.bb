@@ -1341,22 +1341,16 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
     RenderLayerModelObject* repaintContainer = 0;
 
     if (v->usesCompositing()) {
-        if (RenderLayer* parentLayer = enclosingLayer()) {
-            // FIXME: CompositingState is not necessarily up to date for many callers of this function.
-            DisableCompositingQueryAsserts disabler;
+        // FIXME: CompositingState is not necessarily up to date for many callers of this function.
+        DisableCompositingQueryAsserts disabler;
 
-            RenderLayer* compLayer = parentLayer->enclosingCompositingLayerForRepaint();
-            if (compLayer)
-                repaintContainer = compLayer->renderer();
-        }
+        if (RenderLayer* compositingLayer = enclosingLayer()->enclosingCompositingLayerForRepaint())
+            repaintContainer = compositingLayer->renderer();
     }
 
     if (document().view()->hasSoftwareFilters()) {
-        if (RenderLayer* parentLayer = enclosingLayer()) {
-            RenderLayer* enclosingFilterLayer = parentLayer->enclosingFilterLayer();
-            if (enclosingFilterLayer)
-                return enclosingFilterLayer->renderer();
-        }
+        if (RenderLayer* enclosingFilterLayer = enclosingLayer()->enclosingFilterLayer())
+            return enclosingFilterLayer->renderer();
     }
 
     // If we have a flow thread, then we need to do individual repaints within the RenderRegions instead.
@@ -1990,11 +1984,12 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
 
             // Keep layer hierarchy visibility bits up to date if visibility changes.
             if (m_style->visibility() != newStyle->visibility()) {
-                if (RenderLayer* l = enclosingLayer()) {
-                    if (newStyle->visibility() == VISIBLE)
-                        l->setHasVisibleContent();
-                    else if (l->hasVisibleContent() && (this == l->renderer() || l->renderer()->style()->visibility() != VISIBLE)) {
-                        l->dirtyVisibleContentStatus();
+                // We might not have an enclosing layer yet because we might not be in the tree.
+                if (RenderLayer* layer = enclosingLayer()) {
+                    if (newStyle->visibility() == VISIBLE) {
+                        layer->setHasVisibleContent();
+                    } else if (layer->hasVisibleContent() && (this == layer->renderer() || layer->renderer()->style()->visibility() != VISIBLE)) {
+                        layer->dirtyVisibleContentStatus();
                         if (diff > StyleDifferenceRepaintLayer)
                             repaint();
                     }
@@ -2376,21 +2371,15 @@ void RenderObject::computeLayerHitTestRects(LayerHitTestRects& layerRects) const
 
     if (!hasLayer()) {
         RenderObject* container = this->container();
-        if (container) {
-            currentLayer = container->enclosingLayer();
-            if (currentLayer && currentLayer->renderer() != container) {
-                layerOffset.move(container->offsetFromAncestorContainer(currentLayer->renderer()));
-                // If the layer itself is scrolled, we have to undo the subtraction of its scroll
-                // offset since we want the offset relative to the scrolling content, not the
-                // element itself.
-                if (currentLayer->renderer()->hasOverflowClip())
-                    layerOffset.move(currentLayer->renderBox()->scrolledContentOffset());
-            }
-        } else {
-            currentLayer = enclosingLayer();
+        currentLayer = container->enclosingLayer();
+        if (container && currentLayer->renderer() != container) {
+            layerOffset.move(container->offsetFromAncestorContainer(currentLayer->renderer()));
+            // If the layer itself is scrolled, we have to undo the subtraction of its scroll
+            // offset since we want the offset relative to the scrolling content, not the
+            // element itself.
+            if (currentLayer->renderer()->hasOverflowClip())
+                layerOffset.move(currentLayer->renderBox()->scrolledContentOffset());
         }
-        if (!currentLayer)
-            return;
     }
 
     this->addLayerHitTestRects(layerRects, currentLayer, layerOffset, LayoutRect());
@@ -2643,8 +2632,8 @@ void RenderObject::willBeRemovedFromTree()
     // If we remove a visible child from an invisible parent, we don't know the layer visibility any more.
     RenderLayer* layer = 0;
     if (parent()->style()->visibility() != VISIBLE && style()->visibility() == VISIBLE && !hasLayer()) {
-        if ((layer = parent()->enclosingLayer()))
-            layer->dirtyVisibleContentStatus();
+        layer = parent()->enclosingLayer();
+        layer->dirtyVisibleContentStatus();
     }
 
     // Keep our layer hierarchy updated.

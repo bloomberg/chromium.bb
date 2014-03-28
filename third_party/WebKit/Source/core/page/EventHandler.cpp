@@ -1266,11 +1266,9 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
 
     bool inResizer = false;
     RenderObject* renderer = node ? node->renderer() : 0;
-    if (renderer) {
-        if (RenderLayer* layer = renderer->enclosingLayer()) {
-            if (m_frame->view())
-                inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
-        }
+    if (renderer && m_frame->view()) {
+        RenderLayer* layer = renderer->enclosingLayer();
+        inResizer = layer->scrollableArea() && layer->scrollableArea()->isPointInResizeControl(result.roundedPointInMainFrame(), ResizerForPointer);
     }
 
     // During selection, use an I-beam no matter what we're over.

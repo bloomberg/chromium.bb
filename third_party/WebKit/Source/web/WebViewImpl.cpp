@@ -1183,7 +1183,7 @@ void WebViewImpl::enableTapHighlights(Vector<Node*>& highlightNodes)
     for (size_t i = 0; i < highlightNodes.size(); ++i) {
         Node* node = highlightNodes[i];
 
-        if (!node || !node->renderer() || !node->renderer()->enclosingLayer())
+        if (!node || !node->renderer())
             continue;
 
         Color highlightColor = node->renderer()->style()->tapHighlightColor();

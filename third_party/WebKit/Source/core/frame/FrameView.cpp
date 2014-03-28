@@ -1067,15 +1067,14 @@ void FrameView::repaintTree(RenderObject* root)
             renderer->repaintOverflowIfNeeded();
 
         // Repaint any scrollbars if there is a scrollable area for this renderer.
-        if (renderer->enclosingLayer()) {
-            if (RenderLayerScrollableArea* area = renderer->enclosingLayer()->scrollableArea()) {
-                if (area->hasVerticalBarDamage())
-                    renderer->repaintRectangle(area->verticalBarDamage());
-                if (area->hasHorizontalBarDamage())
-                    renderer->repaintRectangle(area->horizontalBarDamage());
-                area->resetScrollbarDamage();
-            }
+        if (RenderLayerScrollableArea* area = renderer->enclosingLayer()->scrollableArea()) {
+            if (area->hasVerticalBarDamage())
+                renderer->repaintRectangle(area->verticalBarDamage());
+            if (area->hasHorizontalBarDamage())
+                renderer->repaintRectangle(area->horizontalBarDamage());
+            area->resetScrollbarDamage();
         }
+
         // The list box has a verticalScrollbar we may need to repaint.
         if (renderer->isListBox()) {
             RenderListBox* listBox = static_cast<RenderListBox*>(renderer);

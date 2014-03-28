@@ -160,11 +160,9 @@ void MouseRelatedEvent::computeRelativePosition()
     while (n && !n->renderer())
         n = n->parentNode();
 
-    RenderLayer* layer;
-    if (n && (layer = n->renderer()->enclosingLayer())) {
-        for (; layer; layer = layer->parent()) {
+    if (n) {
+        for (RenderLayer* layer = n->renderer()->enclosingLayer(); layer; layer = layer->parent())
             m_layerLocation -= toLayoutSize(layer->location());
-        }
     }
 
     m_hasCachedRelativePosition = true;
