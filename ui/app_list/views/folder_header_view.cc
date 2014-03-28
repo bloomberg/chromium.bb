@@ -47,6 +47,12 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   virtual ~FolderNameView() {
   }
 
+  void Update() {
+    SetBackgroundColor(text().size() <= kMaxFolderNameChars
+                           ? kContentsBackgroundColor
+                           : SK_ColorRED);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FolderNameView);
 };
@@ -91,8 +97,9 @@ void FolderHeaderView::SetFolderItem(AppListFolderItem* folder_item) {
     return;
   folder_item_->AddObserver(this);
 
-  folder_name_view_->SetEnabled(folder_item->folder_type() !=
+  folder_name_view_->SetEnabled(folder_item_->folder_type() !=
                                 AppListFolderItem::FOLDER_TYPE_OEM);
+
   Update();
 }
 
@@ -111,8 +118,10 @@ void FolderHeaderView::Update() {
     return;
 
   folder_name_view_->SetVisible(folder_name_visible_);
-  if (folder_name_visible_)
+  if (folder_name_visible_) {
     folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->name()));
+    folder_name_view_->Update();
+  }
 
   Layout();
 }
@@ -172,9 +181,13 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
   if (!folder_item_)
     return;
 
+  folder_name_view_->Update();
   folder_item_->RemoveObserver(this);
-  std::string name = base::UTF16ToUTF8(folder_name_view_->text());
-  delegate_->SetItemName(folder_item_, name);
+  // Enforce the maximum folder name length in UI.
+  std::string name = base::UTF16ToUTF8(
+      folder_name_view_->text().substr(0, kMaxFolderNameChars));
+  if (name != folder_item_->name())
+    delegate_->SetItemName(folder_item_, name);
   folder_item_->AddObserver(this);
 
   Layout();

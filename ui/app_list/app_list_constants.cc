@@ -74,6 +74,9 @@ size_t kMaxFolderItems = 16;
 // and animated when opening and closing a folder.
 const size_t kNumFolderTopItems = 4;
 
+// Maximum length of the folder name in chars.
+const size_t kMaxFolderNameChars = 40;
+
 // Font style for app item labels.
 const ui::ResourceBundle::FontStyle kItemTextFontStyle =
     ui::ResourceBundle::SmallBoldFont;
