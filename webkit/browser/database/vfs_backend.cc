@@ -55,67 +55,60 @@ bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
 }
 
 // static
-void VfsBackend::OpenFile(const base::FilePath& file_path,
-                          int desired_flags,
-                          base::PlatformFile* file_handle) {
+base::File VfsBackend::OpenFile(const base::FilePath& file_path,
+                                int desired_flags) {
   DCHECK(!file_path.empty());
 
   // Verify the flags for consistency and create the database
   // directory if it doesn't exist.
   if (!OpenFileFlagsAreConsistent(desired_flags) ||
-      !base::CreateDirectory(file_path.DirName()))
-    return;
+      !base::CreateDirectory(file_path.DirName())) {
+    return base::File();
+  }
 
   int flags = 0;
-  flags |= base::PLATFORM_FILE_READ;
+  flags |= base::File::FLAG_READ;
   if (desired_flags & SQLITE_OPEN_READWRITE)
-    flags |= base::PLATFORM_FILE_WRITE;
+    flags |= base::File::FLAG_WRITE;
 
-  if (!(desired_flags & SQLITE_OPEN_MAIN_DB)) {
-    flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
-             base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-  }
+  if (!(desired_flags & SQLITE_OPEN_MAIN_DB))
+    flags |= base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_EXCLUSIVE_WRITE;
 
   flags |= ((desired_flags & SQLITE_OPEN_CREATE) ?
-      base::PLATFORM_FILE_OPEN_ALWAYS : base::PLATFORM_FILE_OPEN);
+           base::File::FLAG_OPEN_ALWAYS : base::File::FLAG_OPEN);
 
-  if (desired_flags & SQLITE_OPEN_EXCLUSIVE) {
-    flags |= base::PLATFORM_FILE_EXCLUSIVE_READ |
-             base::PLATFORM_FILE_EXCLUSIVE_WRITE;
-  }
+  if (desired_flags & SQLITE_OPEN_EXCLUSIVE)
+    flags |= base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_EXCLUSIVE_WRITE;
 
   if (desired_flags & SQLITE_OPEN_DELETEONCLOSE) {
-    flags |= base::PLATFORM_FILE_TEMPORARY | base::PLATFORM_FILE_HIDDEN |
-             base::PLATFORM_FILE_DELETE_ON_CLOSE;
+    flags |= base::File::FLAG_TEMPORARY | base::File::FLAG_HIDDEN |
+             base::File::FLAG_DELETE_ON_CLOSE;
   }
 
   // This flag will allow us to delete the file later on from the browser
   // process.
-  flags |= base::PLATFORM_FILE_SHARE_DELETE;
+  flags |= base::File::FLAG_SHARE_DELETE;
 
   // Try to open/create the DB file.
-  *file_handle =
-      base::CreatePlatformFile(file_path, flags, NULL, NULL);
+  return base::File(file_path, flags);
 }
 
 // static
-void VfsBackend::OpenTempFileInDirectory(
-    const base::FilePath& dir_path,
-    int desired_flags,
-    base::PlatformFile* file_handle) {
+base::File VfsBackend::OpenTempFileInDirectory(const base::FilePath& dir_path,
+                                               int desired_flags) {
   // We should be able to delete temp files when they're closed
   // and create them as needed
   if (!(desired_flags & SQLITE_OPEN_DELETEONCLOSE) ||
       !(desired_flags & SQLITE_OPEN_CREATE)) {
-    return;
+    return base::File();
   }
 
   // Get a unique temp file name in the database directory.
   base::FilePath temp_file_path;
   if (!base::CreateTemporaryFileInDir(dir_path, &temp_file_path))
-    return;
+    return base::File();
 
-  OpenFile(temp_file_path, desired_flags, file_handle);
+  return OpenFile(temp_file_path, desired_flags);
 }
 
 // static
@@ -128,14 +121,12 @@ int VfsBackend::DeleteFile(const base::FilePath& file_path, bool sync_dir) {
   int error_code = SQLITE_OK;
 #if defined(OS_POSIX)
   if (sync_dir) {
-    base::PlatformFile dir_fd = base::CreatePlatformFile(
-        file_path.DirName(), base::PLATFORM_FILE_READ, NULL, NULL);
-    if (dir_fd == base::kInvalidPlatformFileValue) {
-      error_code = SQLITE_CANTOPEN;
-    } else {
-      if (fsync(dir_fd))
+    base::File dir(file_path.DirName(), base::File::FLAG_READ);
+    if (dir.IsValid()) {
+      if (!dir.Flush())
         error_code = SQLITE_IOERR_DIR_FSYNC;
-      base::ClosePlatformFile(dir_fd);
+    } else {
+      error_code = SQLITE_CANTOPEN;
     }
   }
 #endif

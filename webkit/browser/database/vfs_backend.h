@@ -5,7 +5,7 @@
 #ifndef WEBKIT_BROWSER_DATABASE_VFS_BACKEND_H_
 #define WEBKIT_BROWSER_DATABASE_VFS_BACKEND_H_
 
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -18,13 +18,11 @@ namespace webkit_database {
 
 class WEBKIT_STORAGE_BROWSER_EXPORT VfsBackend {
  public:
-  static void OpenFile(const base::FilePath& file_path,
-                       int desired_flags,
-                       base::PlatformFile* file_handle);
+   static base::File OpenFile(const base::FilePath& file_path,
+                              int desired_flags);
 
-  static void OpenTempFileInDirectory(const base::FilePath& dir_path,
-                                      int desired_flags,
-                                      base::PlatformFile* file_handle);
+  static base::File OpenTempFileInDirectory(const base::FilePath& dir_path,
+                                            int desired_flags);
 
   static int DeleteFile(const base::FilePath& file_path, bool sync_dir);
 
