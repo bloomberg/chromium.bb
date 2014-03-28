@@ -33577,6 +33577,7 @@ other types of suffix sets.
   <int value="1" label="Close command"/>
   <int value="2" label="Heartbeat failure"/>
   <int value="3" label="Socket failure"/>
+  <int value="4" label="Network change"/>
 </enum>
 
 <enum name="GCMEndpoints" type="int">

@@ -402,6 +402,9 @@ void ConnectionHandlerImpl::CloseConnection() {
   if (socket_)
     socket_->Disconnect();
   socket_ = NULL;
+  handshake_complete_ = false;
+  message_tag_ = 0;
+  message_size_ = 0;
   input_stream_.reset();
   output_stream_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();

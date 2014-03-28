@@ -75,6 +75,14 @@ class GCM_EXPORT ConnectionFactoryImpl :
   virtual scoped_ptr<net::BackoffEntry> CreateBackoffEntry(
       const net::BackoffEntry::Policy* const policy);
 
+  // Helper method for creating the connection handler.
+  // Virtual for testing.
+  virtual scoped_ptr<ConnectionHandler> CreateConnectionHandler(
+      base::TimeDelta read_timeout,
+      const ConnectionHandler::ProtoReceivedCallback& read_callback,
+      const ConnectionHandler::ProtoSentCallback& write_callback,
+      const ConnectionHandler::ConnectionChangedCallback& connection_callback);
+
   // Returns the current time in Ticks.
   // Virtual for testing.
   virtual base::TimeTicks NowTicks();
@@ -86,6 +94,10 @@ class GCM_EXPORT ConnectionFactoryImpl :
   void ConnectionHandlerCallback(int result);
 
  private:
+  // Helper method for checking backoff and triggering a connection as
+  // necessary.
+  void ConnectWithBackoff();
+
   // Proxy resolution and connection functions.
   void OnProxyResolveDone(int status);
   void OnProxyConnectDone(int status);
@@ -121,10 +133,13 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // completion.
   scoped_ptr<net::BackoffEntry> previous_backoff_;
 
-  // Whether a connection attempt is currently in progress or we're in backoff
-  // waiting until the next connection attempt. |!connecting_| denotes
-  // steady state with an active connection.
+  // Whether a connection attempt is currently actively in progress.
   bool connecting_;
+
+  // Whether the client is waiting for backoff to finish before attempting to
+  // connect. Canary jobs are able to preempt connections pending backoff
+  // expiration.
+  bool waiting_for_backoff_;
 
   // Whether login successfully completed after the connection was established.
   // If a connection reset happens while attempting to log in, the current
@@ -136,7 +151,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
   base::TimeTicks last_login_time_;
 
   // The current connection handler, if one exists.
-  scoped_ptr<ConnectionHandlerImpl> connection_handler_;
+  scoped_ptr<ConnectionHandler> connection_handler_;
 
   // Builder for generating new login requests.
   BuildLoginRequestCallback request_builder_;

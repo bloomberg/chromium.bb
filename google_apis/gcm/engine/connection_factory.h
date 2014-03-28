@@ -30,6 +30,7 @@ class GCM_EXPORT ConnectionFactory {
     CLOSE_COMMAND,      // Received a close command.
     HEARTBEAT_FAILURE,  // Heartbeat was not acknowledged in time.
     SOCKET_FAILURE,     // net::Socket error.
+    NETWORK_CHANGE,     // NetworkChangeNotifier notified of a network change.
     // Count of total number of connection reset reasons. All new reset reasons
     // should be added above this line.
     CONNECTION_RESET_COUNT,
