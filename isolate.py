@@ -968,7 +968,7 @@ def merge(complete_state, trace_blacklist):
       isolate_format.eval_content(prev_content),
       isolate_format.extract_comment(prev_content))
   new_config = isolate_format.load_isolate_as_config(isolate_dir, value, '')
-  config = isolate_format.union(prev_config, new_config)
+  config = prev_config.union(new_config)
   data = config.make_isolate_file()
   print('Updating %s' % complete_state.saved_state.isolate_file)
   with open(complete_state.saved_state.isolate_filepath, 'wb') as f:

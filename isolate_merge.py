@@ -14,8 +14,7 @@ import logging
 import os
 import sys
 
-from isolate_format import eval_content, extract_comment
-from isolate_format import load_isolate_as_config, print_all, union
+import isolate_format
 
 from utils import tools
 
@@ -31,7 +30,7 @@ def load_isolates(items):
     oses:  set(all the OSes referenced)
   """
   # pylint: disable=W0212
-  configs = None
+  configs = isolate_format.Configs(None, ())
   for item in items:
     item = os.path.abspath(item)
     logging.debug('loading %s' % item)
@@ -40,12 +39,12 @@ def load_isolates(items):
     else:
       with open(item, 'r') as f:
         content = f.read()
-    new_config = load_isolate_as_config(
+    new_config = isolate_format.load_isolate_as_config(
         os.path.dirname(item),
-        eval_content(content),
-        extract_comment(content))
+        isolate_format.eval_content(content),
+        isolate_format.extract_comment(content))
     logging.debug('has configs: ' + ','.join(map(repr, new_config._by_config)))
-    configs = union(configs, new_config)
+    configs = configs.union(new_config)
   logging.debug('Total configs: ' + ','.join(map(repr, configs._by_config)))
   return configs
 
@@ -63,9 +62,9 @@ def main(args=None):
   data = configs.make_isolate_file()
   if options.output:
     with open(options.output, 'wb') as f:
-      print_all(configs.file_comment, data, f)
+      isolate_format.print_all(configs.file_comment, data, f)
   else:
-    print_all(configs.file_comment, data, sys.stdout)
+    isolate_format.print_all(configs.file_comment, data, sys.stdout)
   return 0
 
 

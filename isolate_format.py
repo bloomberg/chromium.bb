@@ -13,7 +13,6 @@ See more information at
 """
 
 import ast
-import copy
 import itertools
 import logging
 import os
@@ -169,25 +168,6 @@ def print_all(comment, data, stream):
   if comment:
     stream.write(comment)
   pretty_print(data, stream)
-
-
-def union(lhs, rhs):
-  """Merges two compatible datastructures composed of dict/list/set."""
-  assert lhs is not None or rhs is not None
-  if lhs is None:
-    return copy.deepcopy(rhs)
-  if rhs is None:
-    return copy.deepcopy(lhs)
-  assert type(lhs) == type(rhs), (lhs, rhs)
-  if hasattr(lhs, 'union'):
-    # Includes set, ConfigSettings and Configs.
-    return lhs.union(rhs)
-  if isinstance(lhs, dict):
-    return dict((k, union(lhs.get(k), rhs.get(k))) for k in set(lhs).union(rhs))
-  elif isinstance(lhs, list):
-    # Do not go inside the list.
-    return lhs + rhs
-  assert False, type(lhs)
 
 
 def extract_comment(content):
@@ -665,7 +645,9 @@ class Configs(object):
         (_map_keys(mapping_rhs, k), v) for k, v in rhs._by_config.iteritems())
 
     for key in set(lhs_config) | set(rhs_config):
-      out.set_config(key, union(lhs_config.get(key), rhs_config.get(key)))
+      l = lhs_config.get(key)
+      r = rhs_config.get(key)
+      out.set_config(key, l.union(r) if (l and r) else (l or r))
     return out
 
   def flatten(self):
@@ -759,7 +741,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
           os.path.dirname(included_isolate),
           eval_content(f.read()),
           None)
-    isolate = union(isolate, included_isolate)
+    isolate = isolate.union(included_isolate)
 
   return isolate
 

@@ -43,25 +43,6 @@ class IsolateFormatTest(unittest.TestCase):
     except AssertionError:
       pass
 
-  def test_union(self):
-    value1 = {
-      'a': set(['A']),
-      'b': ['B', 'C'],
-      'c': 'C',
-    }
-    value2 = {
-      'a': set(['B', 'C']),
-      'b': [],
-      'd': set(),
-    }
-    expected = {
-      'a': set(['A', 'B', 'C']),
-      'b': ['B', 'C'],
-      'c': 'C',
-      'd': set(),
-    }
-    self.assertEqual(expected, isolate_format.union(value1, value2))
-
   def test_eval_content(self):
     try:
       # Intrinsics are not available.
@@ -486,11 +467,9 @@ class IsolateFormatTest(unittest.TestCase):
   def test_merge_two_empty(self):
     # Flat stay flat. Pylint is confused about union() return type.
     # pylint: disable=E1103
-    actual = isolate_format.union(
-        isolate_format.union(
-          isolate_format.Configs(None, ()),
-          isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)),
-        isolate_format.load_isolate_as_config(FAKE_DIR, {}, None))
+    actual = isolate_format.Configs(None, ()).union(
+        isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)).union(
+            isolate_format.load_isolate_as_config(FAKE_DIR, {}, None))
     expected = {
       (): {
         'isolate_dir': FAKE_DIR,
@@ -544,11 +523,10 @@ class IsolateFormatTest(unittest.TestCase):
     }
     # Pylint is confused about union() return type.
     # pylint: disable=E1103
-    configs = isolate_format.union(
-        isolate_format.union(
-          isolate_format.Configs(None, ()),
-          isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)),
-        isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)).flatten()
+    configs = isolate_format.Configs(None, ()).union(
+        isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)).union(
+            isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)
+        ).flatten()
     self.assertEqual(expected, configs)
 
   def test_load_three_conditions(self):
@@ -607,13 +585,10 @@ class IsolateFormatTest(unittest.TestCase):
     }
     # Pylint is confused about union() return type.
     # pylint: disable=E1103
-    configs = isolate_format.union(
-        isolate_format.union(
-          isolate_format.union(
-            isolate_format.Configs(None, ()),
-            isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)),
-          isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)),
-        isolate_format.load_isolate_as_config(FAKE_DIR, win, None))
+    configs = isolate_format.Configs(None, ()).union(
+        isolate_format.load_isolate_as_config(FAKE_DIR, linux, None)).union(
+            isolate_format.load_isolate_as_config(FAKE_DIR, mac, None)).union(
+                isolate_format.load_isolate_as_config(FAKE_DIR, win, None))
     self.assertEqual(expected, configs.flatten())
 
   def test_safe_index(self):
@@ -904,22 +879,21 @@ class IsolateFormatTest(unittest.TestCase):
   def test_configs_comment(self):
     # Pylint is confused with isolate_format.union() return type.
     # pylint: disable=E1103
-    configs = isolate_format.union(
-        isolate_format.load_isolate_as_config(
-            FAKE_DIR, {}, '# Yo dawg!\n# Chill out.\n'),
+    configs = isolate_format.load_isolate_as_config(
+            FAKE_DIR, {}, '# Yo dawg!\n# Chill out.\n').union(
         isolate_format.load_isolate_as_config(FAKE_DIR, {}, None))
     self.assertEqual('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
-    configs = isolate_format.union(
-        isolate_format.load_isolate_as_config(FAKE_DIR, {}, None),
+    configs = isolate_format.load_isolate_as_config(FAKE_DIR, {}, None).union(
         isolate_format.load_isolate_as_config(
             FAKE_DIR, {}, '# Yo dawg!\n# Chill out.\n'))
     self.assertEqual('# Yo dawg!\n# Chill out.\n', configs.file_comment)
 
     # Only keep the first one.
-    configs = isolate_format.union(
-        isolate_format.load_isolate_as_config(FAKE_DIR, {}, '# Yo dawg!\n'),
-        isolate_format.load_isolate_as_config(FAKE_DIR, {}, '# Chill out.\n'))
+    configs = isolate_format.load_isolate_as_config(
+        FAKE_DIR, {}, '# Yo dawg!\n').union(
+            isolate_format.load_isolate_as_config(
+                FAKE_DIR, {}, '# Chill out.\n'))
     self.assertEqual('# Yo dawg!\n', configs.file_comment)
 
   def test_extract_comment(self):
