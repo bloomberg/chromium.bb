@@ -1,4 +1,0 @@
-The support of event filtering for plugins.
-
-Success.
-

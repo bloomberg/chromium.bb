@@ -93,7 +93,7 @@ private:
     // Node functions:
     virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
     virtual bool willRespondToMouseClickEvents() OVERRIDE FINAL;
-    virtual void handleLocalEvents(Event*) OVERRIDE FINAL;
+    virtual void defaultEventHandler(Event*) OVERRIDE FINAL;
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE FINAL;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE FINAL;
     virtual void finishParsingChildren() OVERRIDE FINAL;

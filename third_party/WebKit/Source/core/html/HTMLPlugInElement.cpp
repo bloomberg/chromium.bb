@@ -257,16 +257,18 @@ void HTMLPlugInElement::collectStyleForPresentationAttribute(const QualifiedName
     }
 }
 
-void HTMLPlugInElement::handleLocalEvents(Event* event)
+void HTMLPlugInElement::defaultEventHandler(Event* event)
 {
-    HTMLFrameOwnerElement::handleLocalEvents(event);
-
     // Firefox seems to use a fake event listener to dispatch events to plug-in
     // (tested with mouse events only). This is observable via different order
     // of events - in Firefox, event listeners specified in HTML attributes
     // fires first, then an event gets dispatched to plug-in, and only then
     // other event listeners fire. Hopefully, this difference does not matter in
     // practice.
+
+    // FIXME: Mouse down and scroll events are passed down to plug-in via custom
+    // code in EventHandler; these code paths should be united.
+
     RenderObject* r = renderer();
     if (!r || !r->isWidget())
         return;
@@ -280,6 +282,9 @@ void HTMLPlugInElement::handleLocalEvents(Event* event)
     if (!widget)
         return;
     widget->handleEvent(event);
+    if (event->defaultHandled())
+        return;
+    HTMLFrameOwnerElement::defaultEventHandler(event);
 }
 
 RenderWidget* HTMLPlugInElement::renderWidgetForJSBindings() const
