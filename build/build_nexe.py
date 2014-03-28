@@ -149,6 +149,9 @@ class Builder(object):
     if len(build_type) > 2 and build_type[2] == 'pnacl':
       self.is_pnacl_toolchain = True
 
+    if arch.endswith('-nonsfi'):
+      arch = arch[:-len('-nonsfi')]
+
     if arch in ['x86-32', 'x86-64']:
       mainarch = 'x86'
       self.subarch = arch.split('-')[1]

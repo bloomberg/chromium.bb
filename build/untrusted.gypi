@@ -62,6 +62,7 @@
           'enable_x86_64': 1,
           'enable_arm': 0,
           'enable_mips': 0,
+          'enable_x86_32_nonsfi': 0,
           'nacl_glibc_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc',
           'nacl_newlib_tc_root': '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib',
           'tc_lib_dir_newlib32': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32',
@@ -119,6 +120,7 @@
           'enable_x86_64': 0,
           'enable_arm': 1,
           'enable_mips': 0,
+          'enable_x86_32_nonsfi': 0,
           'extra_deps': [],
           'extra_deps_newlib_arm': [],
           'extra_deps_bionic_arm': [],
@@ -171,6 +173,7 @@
           'enable_x86_64': 0,
           'enable_arm': 0,
           'enable_mips': 1,
+          'enable_x86_32_nonsfi': 0,
           'extra_deps': [],
           'extra_deps_newlib_mips': [],
           'native_sources': [],
@@ -1305,6 +1308,7 @@
            'out_pnacl_newlib_x86_64_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x64.nexe',
            'out_pnacl_newlib_arm_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_arm.nexe',
            'out_pnacl_newlib_mips_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_mips.nexe',
+           'out_pnacl_newlib_x86_32_nonsfi_nexe%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_newlib_x32_nonsfi.nexe',
            'tool_name': 'pnacl_newlib',
            'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_pnacl_newlib',
            'out_pnacl_newlib%': '<(PRODUCT_DIR)/>(nexe_target)_newlib.pexe',
@@ -1371,6 +1375,31 @@
                  '--root', '<(DEPTH)',
                  '--name', '>(out_pnacl_newlib_x86_32_nexe)',
                  '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32',
+                 '>(out_pnacl_newlib)',
+               ],
+             }],
+           }],
+           [ 'enable_x86_32_nonsfi!=0', {
+             'actions': [{
+               'action_name': 'translate newlib pexe to x86-32-nonsfi nexe',
+               'msvs_cygwin_shell': 0,
+               'description': 'translating >(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+               'inputs': [
+                 # Having this in the input somehow causes devenv warnings
+                 # when building pnacl browser tests.
+                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 '>(out_pnacl_newlib)',
+               ],
+               'outputs': [ '>(out_pnacl_newlib_x86_32_nonsfi_nexe)' ],
+               'action' : [
+                 'python',
+                 '<(DEPTH)/native_client/build/build_nexe.py',
+                 '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                 '--arch', 'x86-32-nonsfi',
+                 '--build', 'newlib_translate',
+                 '--root', '<(DEPTH)',
+                 '--name', '>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+                 '--link_flags=^(translate_flags) >(translate_flags) -Wl,-L>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi',
                  '>(out_pnacl_newlib)',
                ],
              }],
@@ -1641,6 +1670,55 @@
                },
              ],
            }], # end ia32
+          # Non-SFI mode for ia32.
+          ['enable_x86_32_nonsfi!=0 and disable_pnacl==0 and '
+           'pnacl_native_biased==1 and nlib_target!="" and '
+           'build_pnacl_newlib!=0', {
+             'variables': {
+               'tool_name': 'pnacl_newlib_x86_32',
+               # TODO(hidehiko): replace with (tc_lib_dir_pnacl_translate)/
+               # lib-x86-32-nonsfi/>(nlib_target) to be more consistent with
+               # similar configs.
+               'out_pnacl_newlib_x86_32_nonsfi%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/lib-x86-32-nonsfi/>(nlib_target)',
+               'objdir_pnacl_newlib_x86_32_nonsfi%': '>(INTERMEDIATE_DIR)/<(tool_name)-nonsfi/>(_target_name)',
+             },
+             'actions': [
+               {
+                 'action_name': 'build newlib x86-32-nonsfi nlib (via pnacl)',
+                 'variables': {
+                   'source_list_pnacl_newlib_x86_32_nonsfi%': '^|(<(tool_name).>(_target_name).source_list.gypcmd ^(_sources) ^(sources))',
+                 },
+                 'msvs_cygwin_shell': 0,
+                 'description': 'building >(out_pnacl_newlib_x86_32_nonsfi)',
+                 'inputs': [
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps)',
+                   '>@(extra_deps_pnacl_newlib)',
+                   '^(source_list_pnacl_newlib_x86_32_nonsfi)',
+                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
+                 ],
+                 'outputs': ['>(out_pnacl_newlib_x86_32_nonsfi)'],
+                 'action': [
+                   'python',
+                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/',
+                   '>@(extra_args)',
+                   '--arch', 'x86-32-nonsfi',
+                   '--build', 'newlib_nlib_pnacl',
+                   '--root', '<(DEPTH)',
+                   '--name', '>(out_pnacl_newlib_x86_32_nonsfi)',
+                   '--objdir', '>(objdir_pnacl_newlib_x86_32_nonsfi)',
+                   '--include-dirs=>(tc_include_dir_pnacl_newlib) ^(include_dirs) >(_include_dirs)',
+                   '--compile_flags=--target=i686-unknown-nacl --pnacl-allow-native --pnacl-allow-translate -arch x86-32-nonsfi ^(compile_flags) >(_compile_flags) ^(pnacl_compile_flags) >(_pnacl_compile_flags)',
+                   '--gomadir', '<(gomadir)',
+                   '--defines=^(defines) >(_defines)',
+                   '--link_flags=-B>(tc_lib_dir_pnacl_newlib) ^(link_flags) >(_link_flags)',
+                   '--source-list=^(source_list_pnacl_newlib_x86_32_nonsfi)',
+                 ],
+               },
+             ],
+           }], # end ia32 Non-SFI mode.
         ], # end ia32 or x64
       }],
       # MIPS
