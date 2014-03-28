@@ -33,16 +33,18 @@
 #include "platform/fonts/harfbuzz/HarfBuzzShaper.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "hb-icu.h"
+#include "hb.h"
 #include "platform/fonts/Character.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
 #include "platform/text/SurrogatePairAwareTextIterator.h"
 #include "platform/text/TextBreakIterator.h"
+#include "wtf/Compiler.h"
 #include "wtf/MathExtras.h"
 #include "wtf/unicode/Unicode.h"
 #include <unicode/normlzr.h>
 #include <unicode/uchar.h>
+#include <unicode/uscript.h>
 
 #include <list>
 #include <map>
@@ -755,6 +757,17 @@ bool HarfBuzzShaper::createHarfBuzzRuns()
     return !m_harfBuzzRuns.isEmpty();
 }
 
+// A port of hb_icu_script_to_script because harfbuzz on CrOS is built
+// without hb-icu. See http://crbug.com/356929
+static inline hb_script_t ICUScriptToHBScript(UScriptCode script)
+{
+    if (UNLIKELY(script == USCRIPT_INVALID_CODE))
+        return HB_SCRIPT_INVALID;
+
+    return hb_script_from_string(uscript_getShortName(script), -1);
+}
+
+
 void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
     unsigned endCharacter, const SimpleFontData* fontData,
     UScriptCode script)
@@ -763,7 +776,7 @@ void HarfBuzzShaper::addHarfBuzzRun(unsigned startCharacter,
     ASSERT(script != USCRIPT_INVALID_CODE);
     return m_harfBuzzRuns.append(HarfBuzzRun::create(fontData,
         startCharacter, endCharacter - startCharacter,
-        m_run.direction(), hb_icu_script_to_script(script)));
+        m_run.direction(), ICUScriptToHBScript(script)));
 }
 
 static const uint16_t* toUint16(const UChar* src)
