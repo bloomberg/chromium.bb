@@ -55,9 +55,14 @@ var DumpCreator = (function() {
   }
 
   DumpCreator.prototype = {
-    /** Mark the AEC recording checkbox checked.*/
+    // Mark the AEC recording checkbox checked.
     enableAecRecording: function() {
       this.root_.getElementsByTagName('input')[0].checked = true;
+    },
+
+    // Mark the AEC recording checkbox unchecked.
+    disableAecRecording: function() {
+      this.root_.getElementsByTagName('input')[0].checked = false;
     },
 
     /**

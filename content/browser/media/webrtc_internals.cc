@@ -289,6 +289,12 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
 #endif
 }
 
+void WebRTCInternals::FileSelectionCanceled(void* params) {
+#if defined(ENABLE_WEBRTC)
+  SendUpdate("aecRecordingFileSelectionCancelled", NULL);
+#endif
+}
+
 void WebRTCInternals::OnRendererExit(int render_process_id) {
   // Iterates from the end of the list to remove the PeerConnections created
   // by the exitting renderer.

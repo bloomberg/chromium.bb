@@ -102,6 +102,8 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest, CallWithAecDump);
   FRIEND_TEST_ALL_PREFIXES(WebRtcBrowserTest,
                            CallWithAecDumpEnabledThenDisabled);
+  FRIEND_TEST_ALL_PREFIXES(WebRTCInternalsTest,
+                           AecRecordingFileSelectionCanceled);
 
   WebRTCInternals();
   virtual ~WebRTCInternals();
@@ -117,6 +119,7 @@ class CONTENT_EXPORT WebRTCInternals : public NotificationObserver,
   virtual void FileSelected(const base::FilePath& path,
                             int index,
                             void* unused_params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   // Called when a renderer exits (including crashes).
   void OnRendererExit(int render_process_id);

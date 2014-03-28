@@ -276,6 +276,16 @@ function removeGetUserMediaForRenderer(data) {
   }
 }
 
+
+/**
+ * Notification that the AEC recording file selection dialog was cancelled,
+ * i.e. AEC has not been enabled.
+ */
+function aecRecordingFileSelectionCancelled() {
+  dumpCreator.disableAecRecording();
+}
+
+
 /**
  * Set
  */

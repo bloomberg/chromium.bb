@@ -23,7 +23,8 @@ class MockWebRTCInternalsProxy : public WebRTCInternalsUIObserver {
   virtual void OnUpdate(const std::string& command,
                         const base::Value* value) OVERRIDE {
     command_ = command;
-    value_.reset(value->DeepCopy());
+    if (value)
+      value_.reset(value->DeepCopy());
   }
 
   std::string command() {
@@ -268,6 +269,14 @@ TEST_F(WebRTCInternalsTest, OnAddStats) {
   VerifyInt(dict, "pid", pid);
   VerifyInt(dict, "lid", lid);
   VerifyList(dict, "reports", list);
+}
+
+TEST_F(WebRTCInternalsTest, AecRecordingFileSelectionCanceled) {
+  scoped_ptr<MockWebRTCInternalsProxy> observer(new MockWebRTCInternalsProxy());
+  WebRTCInternals::GetInstance()->AddObserver(observer.get());
+  WebRTCInternals::GetInstance()->FileSelectionCanceled(NULL);
+  EXPECT_EQ("aecRecordingFileSelectionCancelled", observer->command());
+  EXPECT_EQ(NULL, observer->value());
 }
 
 }  // namespace content

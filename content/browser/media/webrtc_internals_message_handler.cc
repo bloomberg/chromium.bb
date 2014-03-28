@@ -75,7 +75,8 @@ void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
                                              const base::Value* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<const base::Value*> args_vector;
-  args_vector.push_back(args);
+  if (args)
+    args_vector.push_back(args);
   base::string16 update = WebUI::GetJavascriptCall(command, args_vector);
 
   RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
