@@ -1333,12 +1333,12 @@ void RenderObject::paint(PaintInfo&, const LayoutPoint&)
 
 RenderLayerModelObject* RenderObject::containerForRepaint() const
 {
-    RenderView* v = view();
-    if (!v)
+    if (!isRooted())
         return 0;
 
     RenderLayerModelObject* repaintContainer = 0;
 
+    RenderView* v = view();
     if (v->usesCompositing()) {
         // FIXME: CompositingState is not necessarily up to date for many callers of this function.
         DisableCompositingQueryAsserts disabler;
