@@ -220,6 +220,7 @@ void Page::setMainFrame(PassRefPtr<LocalFrame> mainFrame)
 
 void Page::documentDetached(Document* document)
 {
+    m_multisamplingChangedObservers.clear();
     m_pointerLockController->documentDetached(document);
     m_contextMenuController->documentDetached(document);
     if (m_validationMessageClient)
