@@ -53,9 +53,9 @@ private:
     ResolveType m_resolveType;
 };
 
-PassRefPtr<WaitUntilObserver> WaitUntilObserver::create(ExecutionContext* context, int eventID)
+PassRefPtr<WaitUntilObserver> WaitUntilObserver::create(ExecutionContext* context, EventType type, int eventID)
 {
-    return adoptRef(new WaitUntilObserver(context, eventID));
+    return adoptRef(new WaitUntilObserver(context, type, eventID));
 }
 
 WaitUntilObserver::~WaitUntilObserver()
@@ -81,8 +81,9 @@ void WaitUntilObserver::waitUntil(const ScriptValue& value)
         ThenFunction::create(this, ThenFunction::Rejected));
 }
 
-WaitUntilObserver::WaitUntilObserver(ExecutionContext* context, int eventID)
+WaitUntilObserver::WaitUntilObserver(ExecutionContext* context, EventType type, int eventID)
     : ContextLifecycleObserver(context)
+    , m_type(type)
     , m_eventID(eventID)
     , m_pendingActivity(0)
     , m_hasError(false)
@@ -108,8 +109,16 @@ void WaitUntilObserver::decrementPendingActivity()
     if (--m_pendingActivity || !executionContext())
         return;
 
+    ServiceWorkerGlobalScopeClient* client = ServiceWorkerGlobalScopeClient::from(executionContext());
     blink::WebServiceWorkerEventResult result = m_hasError ? blink::WebServiceWorkerEventResultRejected : blink::WebServiceWorkerEventResultCompleted;
-    ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleInstallEvent(m_eventID, result);
+    switch (m_type) {
+    case Activate:
+        client->didHandleActivateEvent(m_eventID, result);
+        break;
+    case Install:
+        client->didHandleInstallEvent(m_eventID, result);
+        break;
+    }
     observeContext(0);
 }
 

@@ -48,6 +48,11 @@ ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl()
 {
 }
 
+void ServiceWorkerGlobalScopeClientImpl::didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result)
+{
+    m_client->didHandleActivateEvent(eventID, result);
+}
+
 void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result)
 {
     m_client->didHandleInstallEvent(installEventID, result);
@@ -73,6 +78,7 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID)
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(PassOwnPtr<WebServiceWorkerContextClient> client)
     : m_client(client)
 {
+    ASSERT(m_client);
 }
 
 } // namespace blink

@@ -47,6 +47,7 @@ class ServiceWorkerGlobalScopeClient : public Supplement<WorkerClients> {
 public:
     virtual ~ServiceWorkerGlobalScopeClient() { }
 
+    virtual void didHandleActivateEvent(int eventID, blink::WebServiceWorkerEventResult) = 0;
     virtual void didHandleInstallEvent(int installEventID, blink::WebServiceWorkerEventResult) = 0;
     // A null response means no valid response was provided by the service worker, so fallback to native.
     virtual void didHandleFetchEvent(int fetchEventID, PassRefPtr<Response> = nullptr) = 0;

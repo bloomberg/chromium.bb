@@ -78,6 +78,9 @@ public:
     virtual void dispatchDevToolsMessage(const WebString&) { }
     virtual void saveDevToolsAgentState(const WebString&) { }
 
+    // ServiceWorker specific method.
+    virtual void didHandleActivateEvent(int eventID, blink::WebServiceWorkerEventResult result) { }
+
     // ServiceWorker specific method. Called after InstallEvent (dispatched
     // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's
     // script context.

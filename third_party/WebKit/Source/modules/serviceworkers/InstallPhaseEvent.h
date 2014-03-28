@@ -41,6 +41,7 @@ class WaitUntilObserver;
 class InstallPhaseEvent : public Event {
 public:
     static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create();
+    static PassRefPtrWillBeRawPtr<InstallPhaseEvent> create(const AtomicString& type, const EventInit&, PassRefPtr<WaitUntilObserver>);
 
     virtual ~InstallPhaseEvent();
 

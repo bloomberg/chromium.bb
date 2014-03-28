@@ -66,6 +66,7 @@ public:
     virtual ~ServiceWorkerGlobalScopeProxy();
 
     // WebServiceWorkerContextProxy overrides:
+    virtual void dispatchActivateEvent(int) OVERRIDE;
     virtual void dispatchInstallEvent(int) OVERRIDE;
     virtual void dispatchFetchEvent(int) OVERRIDE;
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) OVERRIDE;

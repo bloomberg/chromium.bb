@@ -20,7 +20,12 @@ class WaitUntilObserver FINAL :
     public ContextLifecycleObserver,
     public RefCounted<WaitUntilObserver> {
 public:
-    static PassRefPtr<WaitUntilObserver> create(ExecutionContext*, int eventID);
+    enum EventType {
+        Activate,
+        Install
+    };
+
+    static PassRefPtr<WaitUntilObserver> create(ExecutionContext*, EventType, int eventID);
 
     ~WaitUntilObserver();
 
@@ -28,20 +33,21 @@ public:
     void willDispatchEvent();
     void didDispatchEvent();
 
-    // Observes the promise and delays calling didHandleInstallEvent() until
+    // Observes the promise and delays calling the continuation until
     // the given promise is resolved or rejected.
     void waitUntil(const ScriptValue&);
 
 private:
     class ThenFunction;
 
-    WaitUntilObserver(ExecutionContext*, int eventID);
+    WaitUntilObserver(ExecutionContext*, EventType, int eventID);
 
     void reportError(const ScriptValue&);
 
     void incrementPendingActivity();
     void decrementPendingActivity();
 
+    EventType m_type;
     int m_eventID;
     int m_pendingActivity;
     bool m_hasError;
