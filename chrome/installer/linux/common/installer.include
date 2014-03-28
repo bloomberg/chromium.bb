@@ -222,6 +222,10 @@ stage_install_common() {
   process_template "${BUILDDIR}/installer/common/wrapper" \
     "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}"
   chmod 755 "${STAGEDIR}/${INSTALLDIR}/${PACKAGE}"
+  if [ ! -f "${STAGEDIR}/${INSTALLDIR}/google-chrome" ]; then
+    ln -sn "${INSTALLDIR}/${PACKAGE}" \
+      "${STAGEDIR}/${INSTALLDIR}/google-chrome"
+  fi
   ln -snf "${INSTALLDIR}/${PACKAGE}" \
     "${STAGEDIR}/usr/bin/${USR_BIN_SYMLINK_NAME}"
 
