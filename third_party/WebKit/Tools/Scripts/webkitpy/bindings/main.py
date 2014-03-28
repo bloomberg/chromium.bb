@@ -22,6 +22,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import filecmp
 import fnmatch
 import os
 import shutil
@@ -30,7 +31,6 @@ import tempfile
 
 from webkitpy.common.checkout.scm.detection import detect_scm_system
 from webkitpy.common.system import executive
-from webkitpy.common.system.executive import ScriptError
 
 # Add Source path to PYTHONPATH to support function calls to bindings/scripts
 # for compute_interfaces_info and idl_compiler
@@ -71,86 +71,51 @@ test_input_directory = os.path.join('bindings', 'tests', 'idls')
 reference_directory = os.path.join('bindings', 'tests', 'results')
 
 
-class ScopedTempFileProvider(object):
+class ScopedTempDir(object):
+    """Wrapper for tempfile.mkdtemp() so it's usable with 'with' statement."""
     def __init__(self):
-        self.file_handles = []
-        self.file_paths = []
-        self.dir_paths = []
+        self.dir_path = tempfile.mkdtemp()
 
     def __enter__(self):
-        return self
+        return self.dir_path
 
     def __exit__(self, exc_type, exc_value, traceback):
-        for file_handle in self.file_handles:
-            os.close(file_handle)
-        for file_path in self.file_paths:
-            os.remove(file_path)
-        for dir_path in self.dir_paths:
-            # Temporary directories are used as output directories, so they
-            # contains unknown files (they aren't empty), hence use rmtree
-            shutil.rmtree(dir_path)
+        # The temporary directory is used as an output directory, so it
+        # contains unknown files (it isn't empty), hence use rmtree
+        shutil.rmtree(self.dir_path)
 
-    def new_temp_file(self):
-        file_handle, file_path = tempfile.mkstemp()
-        self.file_handles.append(file_handle)
-        self.file_paths.append(file_path)
-        return file_handle, file_path
-
-    def new_temp_dir(self):
-        dir_path = tempfile.mkdtemp()
-        self.dir_paths.append(dir_path)
-        return dir_path
 
 
 class BindingsTests(object):
-    def __init__(self, reset_results, verbose, provider):
-        self.reset_results = reset_results
+    def __init__(self, output_directory, verbose):
         self.verbose = verbose
         self.executive = executive.Executive()
-        self.provider = provider
         self.idl_compiler = None
-        # Generate output into the reference directory if resetting results, or
-        # a temp directory if not.
-        if reset_results:
-            self.output_directory = reference_directory
-        else:
-            self.output_directory = provider.new_temp_dir()
+        self.output_directory = output_directory
 
-    def run_command(self, cmd):
-        output = self.executive.run_command(cmd)
-        if output:
-            print output
+    def diff(self, filename1, filename2):
+        # Python's difflib module is too slow, especially on long output, so
+        # run external diff(1) command
+        cmd = ['diff',
+               '-u',
+               '-N',
+               filename1,
+               filename2]
+        # Return output and don't raise exception, even though diff(1) has
+        # non-zero exit if files differ.
+        return self.executive.run_command(cmd, error_handler=lambda x: None)
 
     def generate_from_idl(self, idl_file):
         idl_file_fullpath = os.path.realpath(idl_file)
-        try:
-            self.idl_compiler.compile_file(idl_file_fullpath)
-        except Exception as err:
-            print 'ERROR: idl_compiler.py: ' + os.path.basename(idl_file)
-            print err
-            return 1
-
-        return 0
+        self.idl_compiler.compile_file(idl_file_fullpath)
 
     def generate_interface_dependencies(self):
-        def idl_paths(directory):
-            return [os.path.join(directory, input_file)
-                    for input_file in os.listdir(directory)
-                    if input_file.endswith('.idl')]
-
         def idl_paths_recursive(directory):
             idl_paths = []
             for dirpath, _, files in os.walk(directory):
                 idl_paths.extend(os.path.join(dirpath, filename)
                                  for filename in fnmatch.filter(files, '*.idl'))
             return idl_paths
-
-        def write_list_file(idl_paths):
-            list_file, list_filename = self.provider.new_temp_file()
-            list_contents = ''.join(idl_path + '\n'
-                                    for idl_path in idl_paths)
-            os.write(list_file, list_contents)
-            return list_filename
 
         # We compute interfaces info for *all* IDL files, not just test IDL
         # files, as code generator output depends on inheritance (both ancestor
@@ -162,14 +127,7 @@ class BindingsTests(object):
         # since this is also special-cased and Node inherits from EventTarget,
         # but this inheritance information requires computing dependencies for
         # the real Node.idl file.
-        try:
-            compute_interfaces_info(idl_paths_recursive(all_input_directory))
-        except Exception as err:
-            print 'ERROR: compute_interfaces_info.py'
-            print err
-            return 1
-
-        return 0
+        compute_interfaces_info(idl_paths_recursive(all_input_directory))
 
     def delete_cache_files(self):
         # FIXME: Instead of deleting cache files, don't generate them.
@@ -184,17 +142,10 @@ class BindingsTests(object):
 
     def identical_file(self, reference_filename, output_filename):
         reference_basename = os.path.basename(reference_filename)
-        cmd = ['diff',
-               '-u',
-               '-N',
-               reference_filename,
-               output_filename]
-        try:
-            self.run_command(cmd)
-        except ScriptError as err:
-            # run_command throws an exception on diff (b/c non-zero exit code)
+
+        if not filecmp.cmp(reference_filename, output_filename):
             print 'FAIL: %s' % reference_basename
-            print err.output
+            print self.diff(reference_filename, output_filename)
             return False
 
         if self.verbose:
@@ -222,10 +173,7 @@ class BindingsTests(object):
         return True
 
     def run_tests(self):
-        # Generate output, immediately dying on failure
-        if self.generate_interface_dependencies():
-            return False
-
+        self.generate_interface_dependencies()
         self.idl_compiler = IdlCompilerV8(self.output_directory,
                                           EXTENDED_ATTRIBUTES_FILE,
                                           interfaces_info=interfaces_info,
@@ -241,10 +189,9 @@ class BindingsTests(object):
                 continue
 
             idl_path = os.path.join(test_input_directory, input_filename)
-            if self.generate_from_idl(idl_path):
-                return False
-            if self.reset_results and self.verbose:
-                print 'Reset results: %s' % input_filename
+            self.generate_from_idl(idl_path)
+            if self.verbose:
+                print 'Compiled: %s' % input_filename
 
         self.delete_cache_files()
 
@@ -269,5 +216,10 @@ class BindingsTests(object):
 
 
 def run_bindings_tests(reset_results, verbose):
-    with ScopedTempFileProvider() as provider:
-        return BindingsTests(reset_results, verbose, provider).main()
+    # Generate output into the reference directory if resetting results, or
+    # a temp directory if not.
+    if reset_results:
+        print 'Resetting results'
+        return BindingsTests(reference_directory, verbose).main()
+    with ScopedTempDir() as temp_dir:
+        return BindingsTests(temp_dir, verbose).main()
