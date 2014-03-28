@@ -36,6 +36,22 @@ typedef std::vector<RenderViewDevToolsAgentHost*> Instances;
 namespace {
 base::LazyInstance<Instances>::Leaky g_instances = LAZY_INSTANCE_INITIALIZER;
 
+//Returns RenderViewDevToolsAgentHost attached to any of RenderViewHost
+//instances associated with |web_contents|
+static RenderViewDevToolsAgentHost* FindAgentHost(WebContents* web_contents) {
+  if (g_instances == NULL)
+    return NULL;
+  RenderViewHostDelegate* delegate =
+      static_cast<WebContentsImpl*>(web_contents);
+  for (Instances::iterator it = g_instances.Get().begin();
+       it != g_instances.Get().end(); ++it) {
+    RenderViewHost* rvh = (*it)->render_view_host();
+    if (rvh && rvh->GetDelegate() == delegate)
+      return *it;
+  }
+  return NULL;
+}
+
 static RenderViewDevToolsAgentHost* FindAgentHost(RenderViewHost* rvh) {
   if (g_instances == NULL)
     return NULL;
@@ -48,6 +64,14 @@ static RenderViewDevToolsAgentHost* FindAgentHost(RenderViewHost* rvh) {
 }
 
 }  // namespace
+
+scoped_refptr<DevToolsAgentHost>
+DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
+  RenderViewDevToolsAgentHost* result = FindAgentHost(web_contents);
+  if (!result)
+    result = new RenderViewDevToolsAgentHost(web_contents->GetRenderViewHost());
+  return result;
+}
 
 // static
 scoped_refptr<DevToolsAgentHost>

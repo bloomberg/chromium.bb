@@ -166,5 +166,32 @@ chrome.test.runTests([
       });
     };
     workerPort.start();
+  },
+
+  function sendCommandDuringNavigation() {
+    chrome.tabs.create({url:"inspected.html"}, function(tab) {
+      var debuggee = {tabId: tab.id};
+
+      function checkError() {
+        if (chrome.runtime.lastError) {
+          chrome.test.fail(chrome.runtime.lastError.message);
+        } else {
+          chrome.tabs.remove(tab.id);
+          chrome.test.succeed();
+        }
+      }
+
+      function onNavigateDone() {
+        chrome.debugger.sendCommand(debuggee, "Page.disable", null, checkError);
+      }
+
+      function onAttach() {
+        chrome.debugger.sendCommand(debuggee, "Page.enable");
+        chrome.debugger.sendCommand(
+            debuggee, "Page.navigate", {url:"about:blank"}, onNavigateDone);
+      }
+
+      chrome.debugger.attach(debuggee, protocolVersion, onAttach);
+    });
   }
 ]);

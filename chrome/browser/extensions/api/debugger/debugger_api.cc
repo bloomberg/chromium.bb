@@ -494,8 +494,7 @@ bool DebuggerFunction::InitAgentHost() {
             web_contents->GetURL().scheme());
         return false;
       }
-      agent_host_ = DevToolsAgentHost::GetOrCreateFor(
-          web_contents->GetRenderViewHost());
+      agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
     }
   } else if (debuggee_.extension_id) {
     extensions::ExtensionHost* extension_host =

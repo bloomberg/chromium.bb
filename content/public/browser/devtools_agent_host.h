@@ -24,6 +24,11 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns DevToolsAgentHost with a given |id| or NULL of it does not exist.
   static scoped_refptr<DevToolsAgentHost> GetForId(const std::string& id);
 
+  // Returns DevToolsAgentHost that can be used for inspecting |web_contents|.
+  // New DevToolsAgentHost will be created if it does not exist.
+  static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(
+      WebContents* web_contents);
+
   // Returns DevToolsAgentHost that can be used for inspecting |rvh|.
   // New DevToolsAgentHost will be created if it does not exist.
   static scoped_refptr<DevToolsAgentHost> GetOrCreateFor(RenderViewHost* rvh);
