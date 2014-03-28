@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_frame.h"
@@ -152,6 +153,9 @@ class RTCVideoEncoder::Impl
   // encoder.
   int output_buffers_free_count_;
 
+  // 15 bits running index of the VP8 frames. See VP8 RTP spec for details.
+  uint16 picture_id_;
+
   DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
@@ -167,6 +171,8 @@ RTCVideoEncoder::Impl::Impl(
       input_next_frame_keyframe_(false),
       output_buffers_free_count_(0) {
   thread_checker_.DetachFromThread();
+  // Picture ID should start on a random number.
+  picture_id_ = static_cast<uint16_t>(base::RandInt(0, 0x7FFF));
 }
 
 void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
@@ -378,7 +384,10 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32 bitstream_buffer_id,
       base::Bind(&RTCVideoEncoder::ReturnEncodedImage,
                  weak_encoder_,
                  base::Passed(&image),
-                 bitstream_buffer_id));
+                 bitstream_buffer_id,
+                 picture_id_));
+  // Picture ID must wrap after reaching the maximum.
+  picture_id_ = (picture_id_ + 1) & 0x7FFF;
 }
 
 void RTCVideoEncoder::Impl::NotifyError(
@@ -637,10 +646,12 @@ int32_t RTCVideoEncoder::SetRates(uint32_t new_bit_rate, uint32_t frame_rate) {
 }
 
 void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
-                                         int32 bitstream_buffer_id) {
+                                         int32 bitstream_buffer_id,
+                                         uint16 picture_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "ReturnEncodedImage(): "
-              "bitstream_buffer_id=" << bitstream_buffer_id;
+           << "bitstream_buffer_id=" << bitstream_buffer_id
+           << ", picture_id=" << picture_id;
 
   if (!encoded_image_callback_)
     return;
@@ -649,7 +660,7 @@ void RTCVideoEncoder::ReturnEncodedImage(scoped_ptr<webrtc::EncodedImage> image,
   memset(&info, 0, sizeof(info));
   info.codecType = video_codec_type_;
   if (video_codec_type_ == webrtc::kVideoCodecVP8) {
-    info.codecSpecific.VP8.pictureId = -1;
+    info.codecSpecific.VP8.pictureId = picture_id;
     info.codecSpecific.VP8.tl0PicIdx = -1;
     info.codecSpecific.VP8.keyIdx = -1;
   }
