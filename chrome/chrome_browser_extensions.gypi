@@ -677,8 +677,6 @@
         'browser/extensions/extension_error_ui.h',
         'browser/extensions/extension_error_ui_default.cc',
         'browser/extensions/extension_error_ui_default.h',
-        'browser/extensions/extension_garbage_collector.cc',
-        'browser/extensions/extension_garbage_collector.h',
         'browser/extensions/extension_gcm_app_handler.cc',
         'browser/extensions/extension_gcm_app_handler.h',
         'browser/extensions/extension_icon_image.cc',

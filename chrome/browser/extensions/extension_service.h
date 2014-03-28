@@ -51,7 +51,6 @@ class BrowserEventRouter;
 class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
-class ExtensionGarbageCollector;
 class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionToolbarModel;
@@ -272,6 +271,9 @@ class ExtensionService
   // Reloads all extensions. Does not notify that extensions are ready.
   void ReloadExtensionsForTest();
 
+  // Scan the extension directory and clean up the cruft.
+  void GarbageCollectExtensions();
+
   // Returns true if |url| should get extension api bindings and be permitted
   // to make api calls. Note that this is independent of what extension
   // permissions the given extension has been granted.
@@ -484,14 +486,6 @@ class ExtensionService
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Postpone installations so that we don't have to worry about race
-  // conditions.
-  void OnGarbageCollectIsolatedStorageStart();
-
-  // Restart any extension installs which were delayed for isolated storage
-  // garbage collection.
-  void OnGarbageCollectIsolatedStorageFinished();
-
   // Record a histogram using the PermissionMessage enum values for each
   // permission in |e|.
   // NOTE: If this is ever called with high frequency, the implementation may
@@ -510,10 +504,6 @@ class ExtensionService
 #endif
 
   base::WeakPtr<ExtensionService> AsWeakPtr() { return base::AsWeakPtr(this); }
-
-  extensions::ExtensionGarbageCollector* garbage_collector() {
-    return garbage_collector_.get();
-  }
 
   bool browser_terminating() const { return browser_terminating_; }
 
@@ -539,6 +529,15 @@ class ExtensionService
   // Adds/Removes update observers.
   void AddUpdateObserver(extensions::UpdateObserver* observer);
   void RemoveUpdateObserver(extensions::UpdateObserver* observer);
+
+#if defined(OS_CHROMEOS)
+  void disable_garbage_collection() {
+    disable_garbage_collection_ = true;
+  }
+  void enable_garbage_collection() {
+    disable_garbage_collection_ = false;
+  }
+#endif
 
  private:
   // Populates greylist_.
@@ -601,6 +600,11 @@ class ExtensionService
   bool ShouldDelayExtensionUpdate(const std::string& extension_id,
                                   bool wait_for_idle) const;
 
+  // Helper to search storage directories for extensions with isolated storage
+  // that have been orphaned by an uninstall.
+  void GarbageCollectIsolatedStorage();
+  void OnGarbageCollectIsolatedStorageFinished();
+
   // extensions::Blacklist::Observer implementation.
   virtual void OnBlacklistUpdated() OVERRIDE;
 
@@ -618,6 +622,13 @@ class ExtensionService
       const ExtensionIdSet& greylist,
       const ExtensionIdSet& unchanged,
       const extensions::Blacklist::BlacklistStateMap& state_map);
+
+  // Controls if installs are delayed. See comment for
+  // |installs_delayed_for_gc_|.
+  void set_installs_delayed_for_gc(bool value) {
+    installs_delayed_for_gc_ = value;
+  }
+  bool installs_delayed_for_gc() const { return installs_delayed_for_gc_; }
 
   // Used only by test code.
   void UnloadAllExtensionsInternal();
@@ -748,11 +759,15 @@ class ExtensionService
   scoped_ptr<extensions::ManagementPolicy::Provider>
       shared_module_policy_provider_;
 
-  // The ExtensionGarbageCollector to clean up all the garbage that leaks into
-  // the extensions directory.
-  scoped_ptr<extensions::ExtensionGarbageCollector> garbage_collector_;
-
   ObserverList<extensions::UpdateObserver, true> update_observers_;
+
+#if defined(OS_CHROMEOS)
+  // TODO(rkc): HACK alert - this is only in place to allow the
+  // kiosk_mode_screensaver to prevent its extension from getting garbage
+  // collected. Remove this once KioskModeScreensaver is removed.
+  // See crbug.com/280363
+  bool disable_garbage_collection_;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionServiceTest,
                            InstallAppsWithUnlimtedStorage);

@@ -83,9 +83,21 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
                 .value());
   ASSERT_TRUE(base::DirectoryExists(version_3));
 
+  // Collect garbage. Should remove first one.
+  std::multimap<std::string, base::FilePath> extension_paths;
+  extension_paths.insert(std::make_pair(extension_id,
+      base::FilePath().AppendASCII(extension_id).Append(version_2.BaseName())));
+  extension_paths.insert(std::make_pair(extension_id,
+      base::FilePath().AppendASCII(extension_id).Append(version_3.BaseName())));
+  extension_file_util::GarbageCollectExtensions(all_extensions,
+                                                extension_paths,
+                                                true);
+  ASSERT_FALSE(base::DirectoryExists(version_1));
+  ASSERT_TRUE(base::DirectoryExists(version_2));
+  ASSERT_TRUE(base::DirectoryExists(version_3));
+
   // Uninstall. Should remove entire extension subtree.
   extension_file_util::UninstallExtension(all_extensions, extension_id);
-  ASSERT_FALSE(base::DirectoryExists(version_1.DirName()));
   ASSERT_FALSE(base::DirectoryExists(version_2.DirName()));
   ASSERT_FALSE(base::DirectoryExists(version_3.DirName()));
   ASSERT_TRUE(base::DirectoryExists(all_extensions));

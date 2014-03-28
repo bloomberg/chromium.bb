@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_garbage_collector.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -110,7 +109,7 @@ void ScreensaverUnpackerClient::LoadScreensaverExtension(
   // TODO(rkc): This is a HACK, please remove this method from extension
   // service once this code is deprecated. See crbug.com/280363
   if (service)
-    service->garbage_collector()->disable_garbage_collection();
+    service->disable_garbage_collection();
 
   std::string error;
   scoped_refptr<Extension> screensaver_extension =
@@ -178,7 +177,7 @@ KioskModeScreensaver::~KioskModeScreensaver() {
     // TODO(rkc): This is a HACK, please remove this method from extension
     // service once this code is deprecated. See crbug.com/280363
     if (service)
-      service->garbage_collector()->enable_garbage_collection();
+      service->enable_garbage_collection();
 
     // Delete it.
     content::BrowserThread::PostTask(
