@@ -1895,7 +1895,7 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
       CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
                                modulus_length,
                                public_exponent);
-  bool extractable = false;
+  bool extractable = true;
   const blink::WebCryptoKeyUsageMask usage_mask = 0;
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
   blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
@@ -1909,6 +1909,36 @@ TEST_F(SharedCryptoTest, MAYBE(GenerateKeyPairRsa)) {
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
+
+  // Try exporting the generated key pair, and then re-importing to verify that
+  // the exported data was valid.
+  blink::WebArrayBuffer public_key_spki;
+  EXPECT_STATUS_SUCCESS(
+      ExportKey(blink::WebCryptoKeyFormatSpki, public_key, &public_key_spki));
+  public_key = blink::WebCryptoKey::createNull();
+  EXPECT_STATUS_SUCCESS(
+      ImportKey(blink::WebCryptoKeyFormatSpki,
+                CryptoData(public_key_spki),
+                CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
+                true,
+                usage_mask,
+                &public_key));
+  EXPECT_EQ(modulus_length,
+            public_key.algorithm().rsaParams()->modulusLengthBits());
+
+  blink::WebArrayBuffer private_key_pkcs8;
+  EXPECT_STATUS_SUCCESS(ExportKey(
+      blink::WebCryptoKeyFormatPkcs8, private_key, &private_key_pkcs8));
+  private_key = blink::WebCryptoKey::createNull();
+  EXPECT_STATUS_SUCCESS(
+      ImportKey(blink::WebCryptoKeyFormatPkcs8,
+                CryptoData(private_key_pkcs8),
+                CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
+                true,
+                usage_mask,
+                &private_key));
+  EXPECT_EQ(modulus_length,
+            private_key.algorithm().rsaParams()->modulusLengthBits());
 
   // Fail with bad modulus.
   algorithm = CreateRsaKeyGenAlgorithm(

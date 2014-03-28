@@ -1164,7 +1164,11 @@ Status GenerateRsaKeyPair(const blink::WebCryptoAlgorithm& algorithm,
   }
   const CK_FLAGS operation_flags_mask =
       CKF_ENCRYPT | CKF_DECRYPT | CKF_SIGN | CKF_VERIFY | CKF_WRAP | CKF_UNWRAP;
-  const PK11AttrFlags attribute_flags = 0;  // Default all PK11_ATTR_ flags.
+
+  // The private key must be marked as insensitive and extractable, otherwise it
+  // cannot later be exported in unencrypted form or structured-cloned.
+  const PK11AttrFlags attribute_flags =
+      PK11_ATTR_INSENSITIVE | PK11_ATTR_EXTRACTABLE;
 
   // Note: NSS does not generate an sec_public_key if the call below fails,
   // so there is no danger of a leaked sec_public_key.
