@@ -51,15 +51,15 @@ namespace WebCore {
     ASSERT(thisHandle->IsObject());
     {% endif %}
     {% for argument in method.arguments %}
-    {{argument.cpp_to_v8_conversion | indent}}
-    if ({{argument.name}}Handle.IsEmpty()) {
+    v8::Handle<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
+    if ({{argument.handle}}.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         {{return_default}};
     }
     {% endfor %}
     {% if method.arguments %}
-    v8::Handle<v8::Value> argv[] = { {{method.handles | join(', ')}} };
+    v8::Handle<v8::Value> argv[] = { {{method.arguments | join(', ', attribute='handle')}} };
     {% else %}
     v8::Handle<v8::Value> *argv = 0;
     {% endif %}

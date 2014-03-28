@@ -53,16 +53,6 @@ CALLBACK_INTERFACE_CPP_INCLUDES = frozenset([
 ])
 
 
-def cpp_to_v8_conversion(idl_type, name):
-    # FIXME: setting creation_context=v8::Handle<v8::Object>() is wrong,
-    # as toV8 then implicitly uses the current context, which causes leaks
-    # between isolate worlds if a different context should be used.
-    cpp_value_to_v8_value = idl_type.cpp_value_to_v8_value(name,
-        isolate='m_isolate', creation_context='v8::Handle<v8::Object>()')
-    return 'v8::Handle<v8::Value> {name}Handle = {cpp_to_v8};'.format(
-        name=name, cpp_to_v8=cpp_value_to_v8_value)
-
-
 def cpp_type(idl_type):
     # FIXME: remove this function by making callback types consistent
     # (always use usual v8_types.cpp_type)
@@ -83,18 +73,14 @@ IdlType.callback_cpp_type = property(cpp_type)
 def generate_callback_interface(callback_interface):
     includes.clear()
     includes.update(CALLBACK_INTERFACE_CPP_INCLUDES)
-    name = callback_interface.name
-
-    methods = [generate_method(operation)
-               for operation in callback_interface.operations]
-    template_contents = {
+    return {
         'conditional_string': v8_utilities.conditional_string(callback_interface),
-        'cpp_class': name,
+        'cpp_class': callback_interface.name,
         'v8_class': v8_utilities.v8_class_name(callback_interface),
         'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),
-        'methods': methods,
+        'methods': [generate_method(operation)
+                    for operation in callback_interface.operations],
     }
-    return template_contents
 
 
 def add_includes_for_operation(operation):
@@ -128,17 +114,21 @@ def generate_method(operation):
 def generate_arguments_contents(arguments, call_with_this_handle):
     def generate_argument(argument):
         return {
-            'name': argument.name,
-            'cpp_to_v8_conversion': cpp_to_v8_conversion(argument.idl_type, argument.name),
+            'handle': '%sHandle' % argument.name,
+            # FIXME: setting creation_context=v8::Handle<v8::Object>() is
+            # wrong, as toV8 then implicitly uses the current context, which
+            # causes leaks between isolated worlds if a different context is
+            # used.
+            'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
+                argument.name, isolate='m_isolate',
+                creation_context='v8::Handle<v8::Object>()'),
         }
 
-    argument_declarations = [
-            '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
-            for argument in arguments]
-    if call_with_this_handle:
-        argument_declarations.insert(0, 'ScriptValue thisValue')
+    argument_declarations = ['ScriptValue thisValue'] if call_with_this_handle else []
+    argument_declarations.extend(
+        '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
+        for argument in arguments)
     return  {
         'argument_declarations': argument_declarations,
         'arguments': [generate_argument(argument) for argument in arguments],
-        'handles': ['%sHandle' % argument.name for argument in arguments],
     }
