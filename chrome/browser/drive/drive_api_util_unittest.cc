@@ -202,13 +202,11 @@ TEST(FileSystemUtilTest, ConvertFileResourceToResource_Parents) {
   expected_links.push_back(GURL("http://server/id2"));
   expected_links.push_back(GURL("http://server/id3"));
 
-  ScopedVector<google_apis::ParentReference> parents;
   for (size_t i = 0; i < expected_links.size(); ++i) {
-    google_apis::ParentReference* parent = new google_apis::ParentReference;
-    parent->set_parent_link(expected_links[i]);
-    parents.push_back(parent);
+    google_apis::ParentReference parent;
+    parent.set_parent_link(expected_links[i]);
+    file_resource.mutable_parents()->push_back(parent);
   }
-  file_resource.set_parents(parents.Pass());
 
   scoped_ptr<google_apis::ResourceEntry> entry(
       ConvertFileResourceToResourceEntry(file_resource));

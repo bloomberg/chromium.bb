@@ -724,12 +724,8 @@ CancelCallback FakeDriveService::CopyResource(
     scoped_ptr<EntryInfo> copied_entry(new EntryInfo);
     copied_entry->content_data = entry->content_data;
     copied_entry->share_url = entry->share_url;
-
-    // TODO(hashimoto): Implement a proper way to copy FileResource.
-    scoped_ptr<ResourceEntry> copied_resource_entry =
-        util::ConvertChangeResourceToResourceEntry(entry->change_resource);
     copied_entry->change_resource.set_file(
-        util::ConvertResourceEntryToFileResource(*copied_resource_entry));
+        make_scoped_ptr(new FileResource(*entry->change_resource.file())));
 
     ChangeResource* new_change = &copied_entry->change_resource;
     FileResource* new_file = new_change->mutable_file();
@@ -738,13 +734,13 @@ CancelCallback FakeDriveService::CopyResource(
     new_file->set_file_id(new_resource_id);
     new_file->set_title(new_title);
 
-    scoped_ptr<ParentReference> parent(new ParentReference);
-    parent->set_file_id(parent_resource_id);
-    parent->set_parent_link(GetFakeLinkUrl(parent_resource_id));
-    parent->set_is_root(parent_resource_id == GetRootResourceId());
-    ScopedVector<ParentReference> parents;
-    parents.push_back(parent.release());
-    new_file->set_parents(parents.Pass());
+    ParentReference parent;
+    parent.set_file_id(parent_resource_id);
+    parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
+    parent.set_is_root(parent_resource_id == GetRootResourceId());
+    std::vector<ParentReference> parents;
+    parents.push_back(parent);
+    *new_file->mutable_parents() = parents;
 
     if (!last_modified.is_null())
       new_file->set_modified_date(last_modified);
@@ -797,14 +793,14 @@ CancelCallback FakeDriveService::UpdateResource(
 
     // Set parent if necessary.
     if (!parent_resource_id.empty()) {
-      scoped_ptr<ParentReference> parent(new ParentReference);
-      parent->set_file_id(parent_resource_id);
-      parent->set_parent_link(GetFakeLinkUrl(parent_resource_id));
-      parent->set_is_root(parent_resource_id == GetRootResourceId());
+      ParentReference parent;
+      parent.set_file_id(parent_resource_id);
+      parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
+      parent.set_is_root(parent_resource_id == GetRootResourceId());
 
-      ScopedVector<ParentReference> parents;
-      parents.push_back(parent.release());
-      file->set_parents(parents.Pass());
+      std::vector<ParentReference> parents;
+      parents.push_back(parent);
+      *file->mutable_parents() = parents;
     }
 
     if (!last_modified.is_null())
@@ -863,11 +859,11 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
     // structure. That is, each resource can have multiple parent.
     // We mimic the behavior here; AddResourceToDirectoy just adds
     // one more parent, not overwriting old ones.
-    scoped_ptr<ParentReference> parent(new ParentReference);
-    parent->set_file_id(parent_resource_id);
-    parent->set_parent_link(GetFakeLinkUrl(parent_resource_id));
-    parent->set_is_root(parent_resource_id == GetRootResourceId());
-    change->mutable_file()->mutable_parents()->push_back(parent.release());
+    ParentReference parent;
+    parent.set_file_id(parent_resource_id);
+    parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
+    parent.set_is_root(parent_resource_id == GetRootResourceId());
+    change->mutable_file()->mutable_parents()->push_back(parent);
 
     AddNewChangestamp(change);
     base::MessageLoop::current()->PostTask(
@@ -897,9 +893,9 @@ CancelCallback FakeDriveService::RemoveResourceFromDirectory(
   if (entry) {
     ChangeResource* change = &entry->change_resource;
     FileResource* file = change->mutable_file();
-    ScopedVector<ParentReference>* parents = file->mutable_parents();
+    std::vector<ParentReference>* parents = file->mutable_parents();
     for (size_t i = 0; i < parents->size(); ++i) {
-      if ((*parents)[i]->file_id() == parent_resource_id) {
+      if ((*parents)[i].file_id() == parent_resource_id) {
         parents->erase(parents->begin() + i);
         AddNewChangestamp(change);
         base::MessageLoop::current()->PostTask(
@@ -1422,16 +1418,16 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   new_file->set_mime_type(content_type);
 
   // Set parents.
-  scoped_ptr<ParentReference> parent(new ParentReference);
+  ParentReference parent;
   if (parent_resource_id.empty())
-    parent->set_file_id(GetRootResourceId());
+    parent.set_file_id(GetRootResourceId());
   else
-    parent->set_file_id(parent_resource_id);
-  parent->set_parent_link(GetFakeLinkUrl(parent->file_id()));
-  parent->set_is_root(parent->file_id() == GetRootResourceId());
-  ScopedVector<ParentReference> parents;
-  parents.push_back(parent.release());
-  new_file->set_parents(parents.Pass());
+    parent.set_file_id(parent_resource_id);
+  parent.set_parent_link(GetFakeLinkUrl(parent.file_id()));
+  parent.set_is_root(parent.file_id() == GetRootResourceId());
+  std::vector<ParentReference> parents;
+  parents.push_back(parent);
+  *new_file->mutable_parents() = parents;
 
   new_entry->share_url = net::AppendOrReplaceQueryParameter(
       share_url_base_, "name", title);

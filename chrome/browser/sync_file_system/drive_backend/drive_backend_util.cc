@@ -68,11 +68,11 @@ void PopulateFileDetailsByFileResource(
     const google_apis::FileResource& file_resource,
     FileDetails* details) {
   details->clear_parent_folder_ids();
-  for (ScopedVector<google_apis::ParentReference>::const_iterator itr =
+  for (std::vector<google_apis::ParentReference>::const_iterator itr =
            file_resource.parents().begin();
        itr != file_resource.parents().end();
        ++itr) {
-    details->add_parent_folder_ids((*itr)->file_id());
+    details->add_parent_folder_ids(itr->file_id());
   }
   details->set_title(file_resource.title());
 

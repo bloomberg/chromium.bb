@@ -343,21 +343,20 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
   image_media_metadata->set_height(entry.image_height());
   image_media_metadata->set_rotation(entry.image_rotation());
 
-  ScopedVector<google_apis::ParentReference> parents;
+  std::vector<google_apis::ParentReference>* parents = file->mutable_parents();
   for (size_t i = 0; i < entry.links().size(); ++i) {
     using google_apis::Link;
     const Link& link = *entry.links()[i];
     switch (link.type()) {
       case Link::LINK_PARENT: {
-        scoped_ptr<google_apis::ParentReference> parent(
-            new google_apis::ParentReference);
-        parent->set_parent_link(link.href());
+        google_apis::ParentReference parent;
+        parent.set_parent_link(link.href());
 
         std::string file_id =
             drive::util::ExtractResourceIdFromUrl(link.href());
-        parent->set_file_id(file_id);
-        parent->set_is_root(file_id == kWapiRootDirectoryResourceId);
-        parents.push_back(parent.release());
+        parent.set_file_id(file_id);
+        parent.set_is_root(file_id == kWapiRootDirectoryResourceId);
+        parents->push_back(parent);
         break;
       }
       case Link::LINK_ALTERNATE:
@@ -367,7 +366,6 @@ scoped_ptr<google_apis::FileResource> ConvertResourceEntryToFileResource(
         break;
     }
   }
-  file->set_parents(parents.Pass());
 
   file->set_modified_date(entry.updated_time());
   file->set_last_viewed_by_me_date(entry.last_viewed_time());
@@ -449,7 +447,7 @@ ConvertFileResourceToResourceEntry(
   for (size_t i = 0; i < file_resource.parents().size(); ++i) {
     google_apis::Link* link = new google_apis::Link;
     link->set_type(google_apis::Link::LINK_PARENT);
-    link->set_href(file_resource.parents()[i]->parent_link());
+    link->set_href(file_resource.parents()[i].parent_link());
     links.push_back(link);
   }
   if (!file_resource.alternate_link().is_empty()) {

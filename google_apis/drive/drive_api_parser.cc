@@ -38,6 +38,28 @@ bool GetGURLFromString(const base::StringPiece& url_string, GURL* result) {
   return true;
 }
 
+// Converts |value| to |result|.
+bool GetParentsFromValue(const base::Value* value,
+                         std::vector<ParentReference>* result) {
+  DCHECK(value);
+  DCHECK(result);
+
+  const base::ListValue* list_value = NULL;
+  if (!value->GetAsList(&list_value))
+    return false;
+
+  base::JSONValueConverter<ParentReference> converter;
+  result->resize(list_value->GetSize());
+  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+    const base::Value* parent_value = NULL;
+    if (!list_value->Get(i, &parent_value) ||
+        !converter.Convert(*parent_value, &(*result)[i]))
+      return false;
+  }
+
+  return true;
+}
+
 // Converts |value| to |result|. The key of |value| is app_id, and its value
 // is URL to open the resource on the web app.
 bool GetOpenWithLinksFromDictionaryValue(
@@ -469,8 +491,10 @@ void FileResource::RegisterJSONConverter(
   converter->RegisterCustomField<GURL>(kAlternateLink,
                                        &FileResource::alternate_link_,
                                        GetGURLFromString);
-  converter->RegisterRepeatedMessage<ParentReference>(kParents,
-                                                      &FileResource::parents_);
+  converter->RegisterCustomValueField<std::vector<ParentReference> >(
+      kParents,
+      &FileResource::parents_,
+      GetParentsFromValue);
   converter->RegisterCustomValueField<std::vector<OpenWithLink> >(
       kOpenWithLinks,
       &FileResource::open_with_links_,

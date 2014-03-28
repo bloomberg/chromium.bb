@@ -376,16 +376,13 @@ class MetadataDatabaseTest : public testing::Test {
       const FileMetadata& file) {
     scoped_ptr<google_apis::FileResource> file_resource(
         new google_apis::FileResource);
-    ScopedVector<google_apis::ParentReference> parents;
     for (int i = 0; i < file.details().parent_folder_ids_size(); ++i) {
-      scoped_ptr<google_apis::ParentReference> parent(
-          new google_apis::ParentReference);
-      parent->set_file_id(file.details().parent_folder_ids(i));
-      parents.push_back(parent.release());
+      google_apis::ParentReference parent;
+      parent.set_file_id(file.details().parent_folder_ids(i));
+      file_resource->mutable_parents()->push_back(parent);
     }
 
     file_resource->set_file_id(file.file_id());
-    file_resource->set_parents(parents.Pass());
     file_resource->set_title(file.details().title());
     if (file.details().file_kind() == FILE_KIND_FOLDER)
       file_resource->set_mime_type("application/vnd.google-apps.folder");

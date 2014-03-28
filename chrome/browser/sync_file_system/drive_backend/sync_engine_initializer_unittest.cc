@@ -135,7 +135,7 @@ class SyncEngineInitializerTest : public testing::Test {
     for (size_t i = 0; i < sync_root->parents().size(); ++i) {
       google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
       fake_drive_service_.RemoveResourceFromDirectory(
-          sync_root->parents()[i]->file_id(),
+          sync_root->parents()[i].file_id(),
           sync_root->file_id(),
           CreateResultReceiver(&error));
       base::RunLoop().RunUntilIdle();

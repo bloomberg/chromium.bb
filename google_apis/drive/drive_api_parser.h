@@ -365,8 +365,6 @@ class ParentReference {
   void set_is_root(bool is_root) { is_root_ = is_root; }
 
  private:
-  friend class base::internal::RepeatedMessageConverter<ParentReference>;
-
   // Parses and initializes data members from content of |value|.
   // Return false if parsing fails.
   bool Parse(const base::Value& value);
@@ -374,8 +372,6 @@ class ParentReference {
   std::string file_id_;
   GURL parent_link_;
   bool is_root_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParentReference);
 };
 
 // FileLabels represents labels for file or folder.
@@ -422,8 +418,6 @@ class FileLabels {
   bool trashed_;
   bool restricted_;
   bool viewed_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileLabels);
 };
 
 // ImageMediaMetadata represents image metadata for a file.
@@ -462,8 +456,6 @@ class ImageMediaMetadata {
   int width_;
   int height_;
   int rotation_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImageMediaMetadata);
 };
 
 
@@ -549,8 +541,7 @@ class FileResource {
   const GURL& alternate_link() const { return alternate_link_; }
 
   // Returns parent references (directories) of this file.
-  const ScopedVector<ParentReference>& parents() const { return parents_; }
-  ScopedVector<ParentReference>* mutable_parents() { return &parents_; }
+  const std::vector<ParentReference>& parents() const { return parents_; }
 
   // Returns the list of links to open the resource with a web app.
   const std::vector<OpenWithLink>& open_with_links() const {
@@ -605,8 +596,9 @@ class FileResource {
   void set_alternate_link(const GURL& alternate_link) {
     alternate_link_ = alternate_link;
   }
-  void set_parents(ScopedVector<ParentReference> parents) {
-    parents_ = parents.Pass();
+  std::vector<ParentReference>* mutable_parents() { return &parents_; }
+  std::vector<OpenWithLink>* mutable_open_with_links() {
+    return &open_with_links_;
   }
 
  private:
@@ -634,10 +626,8 @@ class FileResource {
   std::string md5_checksum_;
   int64 file_size_;
   GURL alternate_link_;
-  ScopedVector<ParentReference> parents_;
+  std::vector<ParentReference> parents_;
   std::vector<OpenWithLink> open_with_links_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileResource);
 };
 
 // FileList represents a collection of files and folders.

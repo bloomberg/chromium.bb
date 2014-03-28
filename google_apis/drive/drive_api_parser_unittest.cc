@@ -169,11 +169,11 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_EQ(modified_time, file1.modified_by_me_date());
 
   ASSERT_EQ(1U, file1.parents().size());
-  EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", file1.parents()[0]->file_id());
+  EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", file1.parents()[0].file_id());
   EXPECT_EQ(GURL("https://www.googleapis.com/drive/v2/files/"
                  "0B4v7G8yEYAWHYW1OcExsUVZLABC"),
-            file1.parents()[0]->parent_link());
-  EXPECT_FALSE(file1.parents()[0]->is_root());
+            file1.parents()[0].parent_link());
+  EXPECT_FALSE(file1.parents()[0].is_root());
 
   EXPECT_EQ("ext", file1.file_extension());
   EXPECT_EQ("d41d8cd98f00b204e9800998ecf8427e", file1.md5_checksum());
@@ -223,8 +223,8 @@ TEST(DriveAPIParserTest, FileListParser) {
   EXPECT_FALSE(file3.shared());
 
   ASSERT_EQ(1U, file3.parents().size());
-  EXPECT_EQ("0AIv7G8yEYAWHUk9ABC", file3.parents()[0]->file_id());
-  EXPECT_TRUE(file3.parents()[0]->is_root());
+  EXPECT_EQ("0AIv7G8yEYAWHUk9ABC", file3.parents()[0].file_id());
+  EXPECT_TRUE(file3.parents()[0].is_root());
   EXPECT_EQ(0U, file3.open_with_links().size());
 }
 
