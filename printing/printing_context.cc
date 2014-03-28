@@ -85,7 +85,6 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
           kCloudPrintMarginInch * settings_.device_units_per_inch(),
           kCloudPrintMarginInch * settings_.device_units_per_inch());
     }
-    DCHECK_EQ(settings_.device_units_per_inch(), kDefaultPdfDpi);
     settings_.SetPrinterPrintableArea(paper_size, paper_rect, true);
     return OK;
   }
