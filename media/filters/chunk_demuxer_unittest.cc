@@ -542,14 +542,14 @@ class ChunkDemuxerTest : public testing::Test {
   // bear-640x360.webm VideoDecoderConfig returns 640x360 for its natural_size()
   // The resulting video stream returns data from each file for the following
   // time ranges.
-  // bear-320x240.webm : [0-501)       [801-2737)
+  // bear-320x240.webm : [0-501)       [801-2736)
   // bear-640x360.webm :       [527-793)
   //
   // bear-320x240.webm AudioDecoderConfig returns 3863 for its extra_data_size()
   // bear-640x360.webm AudioDecoderConfig returns 3935 for its extra_data_size()
   // The resulting audio stream returns data from each file for the following
   // time ranges.
-  // bear-320x240.webm : [0-524)       [779-2737)
+  // bear-320x240.webm : [0-524)       [779-2736)
   // bear-640x360.webm :       [527-759)
   bool InitDemuxerWithConfigChangeData() {
     scoped_refptr<DecoderBuffer> bear1 = ReadTestDataFile("bear-320x240.webm");
@@ -565,7 +565,11 @@ class ChunkDemuxerTest : public testing::Test {
 
     // Append the whole bear1 file.
     AppendData(bear1->data(), bear1->data_size());
-    CheckExpectedRanges(kSourceId, "{ [0,2737) }");
+    // Last audio frame has timestamp 2721 and duration 24 (estimated from max
+    // seen so far for audio track).
+    // Last video frame has timestamp 2703 and duration 33 (from TrackEntry
+    // DefaultDuration for video track).
+    CheckExpectedRanges(kSourceId, "{ [0,2736) }");
 
     // Append initialization segment for bear2.
     // Note: Offsets here and below are derived from
@@ -577,13 +581,13 @@ class ChunkDemuxerTest : public testing::Test {
 
     // Append a media segment that goes from [0.527000, 1.014000).
     AppendData(bear2->data() + 55290, 18785);
-    CheckExpectedRanges(kSourceId, "{ [0,1028) [1201,2737) }");
+    CheckExpectedRanges(kSourceId, "{ [0,1027) [1201,2736) }");
 
     // Append initialization segment for bear1 & fill gap with [779-1197)
     // segment.
     AppendData(bear1->data(), 4370);
     AppendData(bear1->data() + 72737, 28183);
-    CheckExpectedRanges(kSourceId, "{ [0,2737) }");
+    CheckExpectedRanges(kSourceId, "{ [0,2736) }");
 
     MarkEndOfStream(PIPELINE_OK);
     return true;

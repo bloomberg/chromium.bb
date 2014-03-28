@@ -59,8 +59,8 @@ const int kAppendWholeFile = -1;
 // Constants for the Media Source config change tests.
 const int kAppendTimeSec = 1;
 const int kAppendTimeMs = kAppendTimeSec * 1000;
-const int k320WebMFileDurationMs = 2737;
-const int k640WebMFileDurationMs = 2763;
+const int k320WebMFileDurationMs = 2736;
+const int k640WebMFileDurationMs = 2762;
 const int kOpusEndTrimmingWebMFileDurationMs = 2771;
 const int kVP9WebMFileDurationMs = 2703;
 const int kVP8AWebMFileDurationMs = 2700;
@@ -655,7 +655,10 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_Encrypted_WebM) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
+  // The "+ 1" is due to estimated audio and video frame durations on the last
+  // frames appended. The unencrypted file has a TrackEntry DefaultDuration
+  // field for the video track, but the encrypted file does not.
+  EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs + 1,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
@@ -715,7 +718,10 @@ TEST_F(PipelineIntegrationTest,
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   // The second video was not added, so its time has not been added.
-  EXPECT_EQ(k320WebMFileDurationMs,
+  // The "+ 1" is due to estimated audio and video frame durations on the last
+  // frames appended. The unencrypted file has a TrackEntry DefaultDuration
+  // field for the video track, but the encrypted file does not.
+  EXPECT_EQ(k320WebMFileDurationMs + 1,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
@@ -1126,7 +1132,7 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_AudioOnly) {
 TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
   ASSERT_TRUE(TestSeekDuringRead("bear-320x240-video-only.webm", kVideoOnlyWebM,
                                  32768,
-                                 base::TimeDelta::FromMilliseconds(200),
+                                 base::TimeDelta::FromMilliseconds(167),
                                  base::TimeDelta::FromMilliseconds(1668),
                                  0x1C896, 65536));
 }

@@ -28,7 +28,7 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   // Helper class that manages per-track state.
   class Track {
    public:
-    Track(int track_num, bool is_video);
+    Track(int track_num, bool is_video, base::TimeDelta default_duration);
     ~Track();
 
     int track_num() const { return track_num_; }
@@ -36,9 +36,27 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
       return buffers_;
     }
 
+    // If |last_added_buffer_missing_duration_| is set, updates its duration
+    // relative to |buffer|'s timestamp, and adds it to |buffers_| and unsets
+    // |last_added_buffer_missing_duration_|. Then, if |buffer| is missing
+    // duration, saves |buffer| into |last_added_buffer_missing_duration_|, or
+    // otherwise adds |buffer| to |buffers_|.
     bool AddBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
 
-    // Clears all buffer state.
+    // If |last_added_buffer_missing_duration_| is set, updates its duration
+    // to be the first non-kNoTimestamp() value of |default_duration_|,
+    // |estimated_next_frame_duration_|, or an arbitrary default, then adds it
+    // to |buffers_| and unsets |last_added_buffer_missing_duration_|. (This
+    // method helps stream parser emit all buffers in a media segment before
+    // signaling end of segment.)
+    void ApplyDurationDefaultOrEstimateIfNeeded();
+
+    // Clears all buffer state, except a possibly held-aside buffer that is
+    // missing duration.
+    void ClearBuffersButKeepLastIfMissingDuration();
+
+    // Clears all buffer state, including any possibly held-aside buffer that
+    // was missing duration.
     void Reset();
 
     // Helper function used to inspect block data to determine if the
@@ -48,9 +66,27 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
     bool IsKeyframe(const uint8* data, int size) const;
 
    private:
+    // Helper that sanity-checks |buffer| duration, updates
+    // |estimated_next_frame_duration_|, and adds |buffer| to |buffers_|.
+    // Returns false if |buffer| failed sanity check and therefore was not added
+    // to |buffers_|. Returns true otherwise.
+    bool QueueBuffer(const scoped_refptr<StreamParserBuffer>& buffer);
+
+    // Helper that calculates the buffer duration to use in
+    // ApplyDurationDefaultOrEstimateIfNeeded().
+    base::TimeDelta GetDurationDefaultOrEstimate();
+
     int track_num_;
     std::deque<scoped_refptr<StreamParserBuffer> > buffers_;
     bool is_video_;
+    scoped_refptr<StreamParserBuffer> last_added_buffer_missing_duration_;
+
+    // If kNoTimestamp(), then |estimated_next_frame_duration_| will be used.
+    base::TimeDelta default_duration_;
+    // If kNoTimestamp(), then a default value will be used. This estimate is
+    // the maximum duration seen or derived so far for this track, and is valid
+    // only if |default_duration_| is kNoTimestamp().
+    base::TimeDelta estimated_next_frame_duration_;
   };
 
   typedef std::map<int, Track> TextTrackMap;
@@ -61,7 +97,9 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
 
   WebMClusterParser(int64 timecode_scale,
                     int audio_track_num,
+                    base::TimeDelta audio_default_duration,
                     int video_track_num,
+                    base::TimeDelta video_default_duration,
                     const WebMTracksParser::TextTracks& text_tracks,
                     const std::set<int64>& ignored_tracks,
                     const std::string& audio_encryption_key_id,
@@ -80,8 +118,13 @@ class MEDIA_EXPORT WebMClusterParser : public WebMParserClient {
   int Parse(const uint8* buf, int size);
 
   base::TimeDelta cluster_start_time() const { return cluster_start_time_; }
-  const BufferQueue& audio_buffers() const { return audio_.buffers(); }
-  const BufferQueue& video_buffers() const { return video_.buffers(); }
+
+  // Get the buffers resulting from Parse().
+  // If the parse reached the end of cluster and the last buffer was held aside
+  // due to missing duration, the buffer is given an estimated duration and
+  // included in the result.
+  const BufferQueue& GetAudioBuffers();
+  const BufferQueue& GetVideoBuffers();
 
   // Constructs and returns a subset of |text_track_map_| containing only
   // tracks with non-empty buffer queues produced by the last Parse().

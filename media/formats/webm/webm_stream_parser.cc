@@ -180,11 +180,11 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
 
   bytes_parsed += result;
 
+  double timecode_scale_in_us = info_parser.timecode_scale() / 1000.0;
   base::TimeDelta duration = kInfiniteDuration();
 
   if (info_parser.duration() > 0) {
-    double mult = info_parser.timecode_scale() / 1000.0;
-    int64 duration_in_us = info_parser.duration() * mult;
+    int64 duration_in_us = info_parser.duration() * timecode_scale_in_us;
     duration = base::TimeDelta::FromMicroseconds(duration_in_us);
   }
 
@@ -203,10 +203,13 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
     return -1;
   }
 
+
   cluster_parser_.reset(new WebMClusterParser(
       info_parser.timecode_scale(),
       tracks_parser.audio_track_num(),
+      tracks_parser.GetAudioDefaultDuration(timecode_scale_in_us),
       tracks_parser.video_track_num(),
+      tracks_parser.GetVideoDefaultDuration(timecode_scale_in_us),
       tracks_parser.text_tracks(),
       tracks_parser.ignored_tracks(),
       tracks_parser.audio_encryption_key_id(),
@@ -263,9 +266,10 @@ int WebMStreamParser::ParseCluster(const uint8* data, int size) {
     new_segment_cb_.Run();
   }
 
-  const BufferQueue& audio_buffers = cluster_parser_->audio_buffers();
-  const BufferQueue& video_buffers = cluster_parser_->video_buffers();
+  const BufferQueue& audio_buffers = cluster_parser_->GetAudioBuffers();
+  const BufferQueue& video_buffers = cluster_parser_->GetVideoBuffers();
   const TextBufferQueueMap& text_map = cluster_parser_->GetTextBuffers();
+
   bool cluster_ended = cluster_parser_->cluster_ended();
 
   if ((!audio_buffers.empty() || !video_buffers.empty() || !text_map.empty()) &&

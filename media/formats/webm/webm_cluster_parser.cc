@@ -15,10 +15,21 @@
 #include "media/formats/webm/webm_crypto_helpers.h"
 #include "media/formats/webm/webm_webvtt_parser.h"
 
+// Arbitrarily-chosen numbers to estimate the duration of a buffer if none is
+// set and there is not enough information to get a better estimate.
+// TODO(wolenetz/acolwell): Parse audio codebook to determine missing audio
+// frame durations. See http://crbug.com/351166.
+static int kDefaultAudioBufferDurationInMs = 23;  // Common 1k samples @44.1kHz
+static int kDefaultVideoBufferDurationInMs = 42;  // Low 24fps to reduce stalls
+
 namespace media {
 
 WebMClusterParser::WebMClusterParser(
-    int64 timecode_scale, int audio_track_num, int video_track_num,
+    int64 timecode_scale,
+    int audio_track_num,
+    base::TimeDelta audio_default_duration,
+    int video_track_num,
+    base::TimeDelta video_default_duration,
     const WebMTracksParser::TextTracks& text_tracks,
     const std::set<int64>& ignored_tracks,
     const std::string& audio_encryption_key_id,
@@ -38,13 +49,14 @@ WebMClusterParser::WebMClusterParser(
       cluster_timecode_(-1),
       cluster_start_time_(kNoTimestamp()),
       cluster_ended_(false),
-      audio_(audio_track_num, false),
-      video_(video_track_num, true),
+      audio_(audio_track_num, false, audio_default_duration),
+      video_(video_track_num, true, video_default_duration),
       log_cb_(log_cb) {
   for (WebMTracksParser::TextTracks::const_iterator it = text_tracks.begin();
        it != text_tracks.end();
        ++it) {
-    text_track_map_.insert(std::make_pair(it->first, Track(it->first, false)));
+    text_track_map_.insert(std::make_pair(
+        it->first, Track(it->first, false, kNoTimestamp())));
   }
 }
 
@@ -62,8 +74,8 @@ void WebMClusterParser::Reset() {
 }
 
 int WebMClusterParser::Parse(const uint8* buf, int size) {
-  audio_.Reset();
-  video_.Reset();
+  audio_.ClearBuffersButKeepLastIfMissingDuration();
+  video_.ClearBuffersButKeepLastIfMissingDuration();
   ResetTextTracks();
 
   int result = parser_.Parse(buf, size);
@@ -99,6 +111,18 @@ int WebMClusterParser::Parse(const uint8* buf, int size) {
   return result;
 }
 
+const WebMClusterParser::BufferQueue& WebMClusterParser::GetAudioBuffers() {
+  if (cluster_ended_)
+    audio_.ApplyDurationDefaultOrEstimateIfNeeded();
+  return audio_.buffers();
+}
+
+const WebMClusterParser::BufferQueue& WebMClusterParser::GetVideoBuffers() {
+  if (cluster_ended_)
+    video_.ApplyDurationDefaultOrEstimateIfNeeded();
+  return video_.buffers();
+}
+
 const WebMClusterParser::TextBufferQueueMap&
 WebMClusterParser::GetTextBuffers() {
   // Translate our |text_track_map_| into |text_buffers_map_|, inserting rows in
@@ -107,6 +131,9 @@ WebMClusterParser::GetTextBuffers() {
   for (TextTrackMap::const_iterator itr = text_track_map_.begin();
        itr != text_track_map_.end();
        ++itr) {
+    // Per OnBlock(), all text buffers should already have valid durations, so
+    // there is no need to call
+    // itr->second.ApplyDurationDefaultOrEstimateIfNeeded() here.
     const BufferQueue& text_buffers = itr->second.buffers();
     if (!text_buffers.empty())
       text_buffers_map_.insert(std::make_pair(itr->first, text_buffers));
@@ -390,9 +417,14 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
   return track->AddBuffer(buffer);
 }
 
-WebMClusterParser::Track::Track(int track_num, bool is_video)
+WebMClusterParser::Track::Track(int track_num, bool is_video,
+                                base::TimeDelta default_duration)
     : track_num_(track_num),
-      is_video_(is_video) {
+      is_video_(is_video),
+      default_duration_(default_duration),
+      estimated_next_frame_duration_(kNoTimestamp()) {
+  DCHECK(default_duration_ == kNoTimestamp() ||
+         default_duration_ > base::TimeDelta());
 }
 
 WebMClusterParser::Track::~Track() {}
@@ -405,12 +437,64 @@ bool WebMClusterParser::Track::AddBuffer(
            << " kf " << buffer->IsKeyframe()
            << " size " << buffer->data_size();
 
-  buffers_.push_back(buffer);
-  return true;
+  if (last_added_buffer_missing_duration_) {
+    base::TimeDelta derived_duration =
+        buffer->timestamp() - last_added_buffer_missing_duration_->timestamp();
+    last_added_buffer_missing_duration_->set_duration(derived_duration);
+
+    DVLOG(2) << "AddBuffer() : applied derived duration to held-back buffer : "
+             << " ts "
+             << last_added_buffer_missing_duration_->timestamp().InSecondsF()
+             << " dur "
+             << last_added_buffer_missing_duration_->duration().InSecondsF()
+             << " kf " << last_added_buffer_missing_duration_->IsKeyframe()
+             << " size " << last_added_buffer_missing_duration_->data_size();
+    scoped_refptr<StreamParserBuffer> updated_buffer =
+        last_added_buffer_missing_duration_;
+    last_added_buffer_missing_duration_ = NULL;
+    if (!QueueBuffer(updated_buffer))
+      return false;
+  }
+
+  if (buffer->duration() == kNoTimestamp()) {
+    last_added_buffer_missing_duration_ = buffer;
+    DVLOG(2) << "AddBuffer() : holding back buffer that is missing duration";
+    return true;
+  }
+
+  return QueueBuffer(buffer);
+}
+
+void WebMClusterParser::Track::ApplyDurationDefaultOrEstimateIfNeeded() {
+  if (!last_added_buffer_missing_duration_)
+    return;
+
+  last_added_buffer_missing_duration_->set_duration(
+      GetDurationDefaultOrEstimate());
+
+  DVLOG(2) << "ApplyDurationDefaultOrEstimateIfNeeded() : new dur : "
+           << " ts "
+           << last_added_buffer_missing_duration_->timestamp().InSecondsF()
+           << " dur "
+           << last_added_buffer_missing_duration_->duration().InSecondsF()
+           << " kf " << last_added_buffer_missing_duration_->IsKeyframe()
+           << " size " << last_added_buffer_missing_duration_->data_size();
+
+  // Don't use the applied duration as a future estimation (don't use
+  // QueueBuffer() here.)
+  buffers_.push_back(last_added_buffer_missing_duration_);
+  last_added_buffer_missing_duration_ = NULL;
+}
+
+void WebMClusterParser::Track::ClearBuffersButKeepLastIfMissingDuration() {
+  // Note that |estimated_next_frame_duration_| is not reset, so it can be
+  // reused on subsequent buffers added to this instance.
+  buffers_.clear();
 }
 
 void WebMClusterParser::Track::Reset() {
-  buffers_.clear();
+  ClearBuffersButKeepLastIfMissingDuration();
+  last_added_buffer_missing_duration_ = NULL;
 }
 
 bool WebMClusterParser::Track::IsKeyframe(const uint8* data, int size) const {
@@ -434,6 +518,45 @@ bool WebMClusterParser::Track::IsKeyframe(const uint8* data, int size) const {
     return false;
 
   return true;
+}
+
+bool WebMClusterParser::Track::QueueBuffer(
+    const scoped_refptr<StreamParserBuffer>& buffer) {
+  DCHECK(!last_added_buffer_missing_duration_);
+  base::TimeDelta duration = buffer->duration();
+  if (duration < base::TimeDelta() || duration == kNoTimestamp()) {
+    DVLOG(2) << "QueueBuffer() : Invalid buffer duration: "
+             << duration.InSecondsF();
+    return false;
+  }
+
+  estimated_next_frame_duration_ = std::max(duration,
+                                            estimated_next_frame_duration_);
+  buffers_.push_back(buffer);
+  return true;
+}
+
+base::TimeDelta WebMClusterParser::Track::GetDurationDefaultOrEstimate() {
+  base::TimeDelta duration = default_duration_;
+  if (duration != kNoTimestamp()) {
+    DVLOG(3) << __FUNCTION__ << " : using TrackEntry DefaultDuration";
+  } else if (estimated_next_frame_duration_ != kNoTimestamp()) {
+    DVLOG(3) << __FUNCTION__ << " : using estimated duration";
+    duration = estimated_next_frame_duration_;
+  } else {
+    DVLOG(3) << __FUNCTION__ << " : using hardcoded default duration";
+    if (is_video_) {
+      duration = base::TimeDelta::FromMilliseconds(
+          kDefaultVideoBufferDurationInMs);
+    } else {
+      duration = base::TimeDelta::FromMilliseconds(
+          kDefaultAudioBufferDurationInMs);
+    }
+  }
+
+  DCHECK(duration > base::TimeDelta());
+  DCHECK(duration != kNoTimestamp());
+  return duration;
 }
 
 void WebMClusterParser::ResetTextTracks() {
