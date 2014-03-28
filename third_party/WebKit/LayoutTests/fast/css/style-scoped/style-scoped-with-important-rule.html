@@ -39,7 +39,6 @@ div#id2 { border-color: yellow; }
     </style>
     <div id="id4"></div>
   </div>
-  <div id="host1">Shadow Host</div>
 </div>
 <div>
   <style scoped>
@@ -52,12 +51,6 @@ div#id2 { border-color: yellow; }
       span { border-color: blue !important; }
   </style>
   <span id="id6"></span>
-</div>
-<div>
-  <style scoped>
-      div { border-color: red;}
-  </style>
-  <div id="host2">Shadow Host</div>
 </div>
 </body>
 <script>
@@ -86,31 +79,5 @@ shouldBe('getComputedStyle(target5).borderColor', '"rgb(0, 255, 0)"');
 debug("Case6: The target element has matched important rules. One is declared in an author stylesheet (not scoped) and the other is declared in a scoped stylesheet.");
 var target6 = document.getElementById("id6");
 shouldBe('getComputedStyle(target6).borderColor', '"rgb(0, 0, 255)"');
-
-debug("Case7: The target element has any matched important rule declared in an outer scoped stylesheet. The element is in a shadow dom tree whose shadow root has apply-author-styles true. The shadow dom tree has any other normal rules which match the element.");
-var host1 = document.getElementById("host1");
-var shadowRoot1 = host1.createShadowRoot();
-shadowRoot1.applyAuthorStyles = true;
-shadowRoot1.innerHTML = '<style>div#shadow1 { color: blue; }</style><div id="shadow1"></div>';
-var target7 = shadowRoot1.getElementById("shadow1");
-shouldBe('getComputedStyle(target7).borderColor', '"rgb(0, 128, 0)"');
-
-debug("Case8: The target element in a shadow dom tree has any matched important rule declared in an outer scoped stylesheet in an enclosing shadow dom tree. The target element's shadow root has apply-author-styles true.");
-var host2 = document.getElementById("host2");
-var shadowRoot2 = host2.createShadowRoot();
-shadowRoot2.applyAuthorStyles = false;
-shadowRoot2.innerHTML = '<style>div { border-color: green !important; }</style><div id="shadow2"></div>';
-
-var hostInShadowTree2 = shadowRoot2.getElementById("shadow2");
-var shadowRoot3 = hostInShadowTree2.createShadowRoot();
-shadowRoot3.applyAuthorStyles = true;
-shadowRoot3.innerHTML = '<style>div#shadow3 { border-color: blue; }</style><div id="shadow3"></div>';
-var target8 = shadowRoot3.getElementById("shadow3");
-shouldBe('getComputedStyle(target8).borderColor', '"rgb(0, 128, 0)"');
-
-debug("Case8': The target element is in a shadow dom tree. An enclosing shadow dom tree has some stylesheet which declares an important rule. The target element's shadow root has apply-author-styles false.");
-shadowRoot3.applyAuthorStyles = false;
-shouldBe('getComputedStyle(target8).borderColor', '"rgb(0, 0, 255)"');
-
 </script>
 </html>

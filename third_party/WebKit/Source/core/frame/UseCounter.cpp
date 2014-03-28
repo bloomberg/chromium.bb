@@ -691,9 +691,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case HTMLSourceElementMedia:
         return "'HTMLSourceElement.media' is deprecated. This attribute doesn't do anything.";
 
-    case ShadowRootApplyAuthorStyles:
-        return "'ShadowRoot.applyAuthorStyles' is deprecated.";
-
     case PrefixedSpeechAttribute:
         return "The 'x-webkit-speech' input field attribute is deprecated. Please use the JavaScript API instead.";
 

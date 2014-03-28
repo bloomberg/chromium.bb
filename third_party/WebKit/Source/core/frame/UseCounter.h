@@ -285,7 +285,6 @@ public:
         DeprecatedWebKitRepeatingRadialGradient = 264,
         PrefixedImageSmoothingEnabled = 267,
         UnprefixedImageSmoothingEnabled = 268,
-        ShadowRootApplyAuthorStyles = 269,
         PromiseConstructor = 270,
         PromiseCast = 271,
         PromiseReject = 272,

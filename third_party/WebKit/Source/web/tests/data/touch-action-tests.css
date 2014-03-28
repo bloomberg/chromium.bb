@@ -2,7 +2,7 @@
    Use a class to apply touch-action so that we can easily manually check
    the tests for consistent behavior on IE10 as well.
 */
-.ta-none {
+* /deep/ .ta-none {
   -ms-touch-action: none;
   touch-action: none;
 }
