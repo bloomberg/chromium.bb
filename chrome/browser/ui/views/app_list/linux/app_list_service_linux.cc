@@ -100,8 +100,6 @@ void AppListServiceLinux::ShowForProfile(Profile* requested_profile) {
 
   ScopedKeepAlive show_app_list_keepalive;
 
-  // TODO(mgiuca): Call SetDidRunForNDayActiveStats.
-
   InvalidatePendingProfileLoads();
   SetProfilePath(requested_profile->GetPath());
   shower_->ShowForProfile(requested_profile);
