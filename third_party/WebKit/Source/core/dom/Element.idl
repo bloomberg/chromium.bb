@@ -115,10 +115,6 @@
     [PerWorldBindings] readonly attribute ShadowRoot shadowRoot;
     [PerWorldBindings] NodeList getDestinationInsertionPoints();
 
-    // To-be-deprecated prefixed Shadow DOM API
-    [ImplementedAs=createShadowRoot, RaisesException, MeasureAs=ShadowDOMPrefixedCreateShadowRoot] ShadowRoot webkitCreateShadowRoot();
-    [ImplementedAs=shadowRoot, PerWorldBindings, MeasureAs=ShadowDOMPrefixedShadowRoot] readonly attribute ShadowRoot webkitShadowRoot;
-
     // CSSOM View Module API
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
