@@ -1082,9 +1082,6 @@ crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure ]
 
 crbug.com/357727 fast/css/font-face-woff2.html [ Pass Failure ]
 
-Bug(ojan) virtual/softwarecompositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
-Bug(ojan) compositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
-
 crbug.com/353179 http/tests/inspector/elements/styles/selector-line-sourcemap-header-deprecated.html [ Pass Failure ]
 crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash Timeout ]
