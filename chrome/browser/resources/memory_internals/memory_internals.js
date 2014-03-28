@@ -30,8 +30,8 @@ var MainView = (function() {
 
       $('os-value').textContent = browser['os'] + ' (' +
           browser['os_version'] + ')';
-      $('uptime-value').textContent = Math.floor(browser['uptime'] / 1000) +
-          ' sec';
+      $('uptime-value').textContent =
+          secondsToHMS(Math.floor(browser['uptime'] / 1000));
 
       this.updateSnapshot(browser['processes']);
       this.updateExtensions(browser['extensions']);
@@ -136,7 +136,7 @@ var MainView = (function() {
       var history = tab['history'][l];
       var title = (history['title'] == '') ? history['url'] : history['title'];
       var url = '<a href="' + history['url'] + '">' + HTMLEscape(title) +
-          '</a> (' + history['time'] + ' sec. ago)';
+          '</a> (' + secondsToHMS(history['time']) + ' ago)';
       if (l == tab['index']) {
         url = '<strong>' + url + '</strong>';
       }
@@ -144,6 +144,22 @@ var MainView = (function() {
     }
     return line;
   };
+
+  /**
+   * Produces a readable string int the format '<HH> hours <MM> min. <SS> sec.'
+   * representing the amount of time provided as the number of seconds.
+   * @param {number} totalSeconds The total amount of seconds.
+   * @return {string} The formatted HH hours/hours MM min. SS sec. string
+   */
+  function secondsToHMS(totalSeconds) {
+    totalSeconds = Number(totalSeconds);
+    var hour = Math.floor(totalSeconds / 3600);
+    var min = Math.floor(totalSeconds % 3600 / 60);
+    var sec = Math.floor(totalSeconds % 60);
+    return (hour > 0 ? (hour + (hour > 1 ? ' hours ' : ' hour ')) : '') +
+           (min > 0 ? (min + ' min. ') : '') +
+           (sec + ' sec. ');
+  }
 
   return MainView;
 })();
