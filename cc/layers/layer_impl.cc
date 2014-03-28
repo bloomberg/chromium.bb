@@ -1156,7 +1156,7 @@ gfx::Vector2d LayerImpl::MaxScrollOffset() const {
   DCHECK(this != layer_tree_impl()->InnerViewportScrollLayer() ||
          IsContainerForFixedPositionLayers());
 
-  gfx::Size scaled_scroll_bounds(bounds());
+  gfx::SizeF scaled_scroll_bounds(bounds());
 
   float scale_factor = 1.f;
   for (LayerImpl const* current_layer = this;
