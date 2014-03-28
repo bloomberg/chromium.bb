@@ -15,6 +15,7 @@
 #include <string>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
+#include "base/bind.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
 #include "gpu/command_buffer/client/program_info_manager.h"
@@ -106,6 +107,10 @@ GLES2Implementation::GLES2Implementation(
       bound_array_buffer_id_(0),
       bound_pixel_pack_transfer_buffer_id_(0),
       bound_pixel_unpack_transfer_buffer_id_(0),
+      async_upload_token_(0),
+      async_upload_sync_(NULL),
+      async_upload_sync_shm_id_(0),
+      async_upload_sync_shm_offset_(0),
       error_bits_(0),
       debug_(false),
       use_count_(0),
@@ -151,7 +156,15 @@ bool GLES2Implementation::Initialize(
     return false;
   }
 
-  mapped_memory_.reset(new MappedMemoryManager(helper_, mapped_memory_limit));
+  mapped_memory_.reset(
+      new MappedMemoryManager(
+          helper_,
+          base::Bind(&GLES2Implementation::PollAsyncUploads,
+                     // The mapped memory manager is owned by |this| here, and
+                     // since its destroyed before before we destroy ourselves
+                     // we don't need extra safety measures for this closure.
+                     base::Unretained(this)),
+          mapped_memory_limit));
 
   unsigned chunk_size = 2 * 1024 * 1024;
   if (mapped_memory_limit != kNoLimit) {
@@ -278,6 +291,13 @@ GLES2Implementation::~GLES2Implementation() {
 
   buffer_tracker_.reset();
 
+  FreeAllAsyncUploadBuffers();
+
+  if (async_upload_sync_) {
+    mapped_memory_->Free(async_upload_sync_);
+    async_upload_sync_ = NULL;
+  }
+
   // Make sure the commands make it the service.
   WaitForCmd();
 }
@@ -307,6 +327,7 @@ void GLES2Implementation::FreeUnusedSharedMemory() {
 }
 
 void GLES2Implementation::FreeEverything() {
+  FreeAllAsyncUploadBuffers();
   WaitForCmd();
   query_tracker_->Shrink();
   FreeUnusedSharedMemory();
@@ -1364,13 +1385,8 @@ void GLES2Implementation::BufferDataHelper(
     }
 
     BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffer_id);
-    if (buffer) {
-      // Free buffer memory, pending the passage of a token.
-      buffer_tracker_->FreePendingToken(buffer, helper_->InsertToken());
-
-      // Remove old buffer.
-      buffer_tracker_->RemoveBuffer(buffer_id);
-    }
+    if (buffer)
+      RemoveTransferBuffer(buffer);
 
     // Create new buffer.
     buffer = buffer_tracker_->CreateBuffer(buffer_id, size);
@@ -1498,6 +1514,30 @@ void GLES2Implementation::BufferSubData(
   CheckGLError();
 }
 
+void GLES2Implementation::RemoveTransferBuffer(BufferTracker::Buffer* buffer) {
+  int32 token = buffer->last_usage_token();
+  uint32 async_token = buffer->last_async_upload_token();
+
+  if (async_token) {
+    if (HasAsyncUploadTokenPassed(async_token)) {
+      buffer_tracker_->Free(buffer);
+    } else {
+      detached_async_upload_memory_.push_back(
+          std::make_pair(buffer->address(), async_token));
+      buffer_tracker_->Unmanage(buffer);
+    }
+  } else if (token) {
+    if (helper_->HasTokenPassed(token))
+      buffer_tracker_->Free(buffer);
+    else
+      buffer_tracker_->FreePendingToken(buffer, token);
+  } else {
+      buffer_tracker_->Free(buffer);
+  }
+
+  buffer_tracker_->RemoveBuffer(buffer->id());
+}
+
 bool GLES2Implementation::GetBoundPixelTransferBuffer(
     GLenum target,
     const char* function_name,
@@ -1573,7 +1613,7 @@ void GLES2Implementation::CompressedTexImage2D(
       helper_->CompressedTexImage2D(
           target, level, internalformat, width, height, border, image_size,
           buffer->shm_id(), buffer->shm_offset() + offset);
-      buffer->set_transfer_ready_token(helper_->InsertToken());
+      buffer->set_last_usage_token(helper_->InsertToken());
     }
     return;
   }
@@ -1614,7 +1654,7 @@ void GLES2Implementation::CompressedTexSubImage2D(
       helper_->CompressedTexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, image_size,
           buffer->shm_id(), buffer->shm_offset() + offset);
-      buffer->set_transfer_ready_token(helper_->InsertToken());
+      buffer->set_last_usage_token(helper_->InsertToken());
       CheckGLError();
     }
     return;
@@ -1701,7 +1741,7 @@ void GLES2Implementation::TexImage2D(
       helper_->TexImage2D(
           target, level, internalformat, width, height, border, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset);
-      buffer->set_transfer_ready_token(helper_->InsertToken());
+      buffer->set_last_usage_token(helper_->InsertToken());
       CheckGLError();
     }
     return;
@@ -1807,7 +1847,7 @@ void GLES2Implementation::TexSubImage2D(
       helper_->TexSubImage2D(
           target, level, xoffset, yoffset, width, height, format, type,
           buffer->shm_id(), buffer->shm_offset() + offset, false);
-      buffer->set_transfer_ready_token(helper_->InsertToken());
+      buffer->set_last_usage_token(helper_->InsertToken());
       CheckGLError();
     }
     return;
@@ -2390,24 +2430,24 @@ void GLES2Implementation::GenQueriesEXTHelper(
 // deleted the resource.
 
 bool GLES2Implementation::BindBufferHelper(
-    GLenum target, GLuint buffer) {
+    GLenum target, GLuint buffer_id) {
   // TODO(gman): See note #1 above.
   bool changed = false;
   switch (target) {
     case GL_ARRAY_BUFFER:
-      if (bound_array_buffer_id_ != buffer) {
-        bound_array_buffer_id_ = buffer;
+      if (bound_array_buffer_id_ != buffer_id) {
+        bound_array_buffer_id_ = buffer_id;
         changed = true;
       }
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
-      changed = vertex_array_object_manager_->BindElementArray(buffer);
+      changed = vertex_array_object_manager_->BindElementArray(buffer_id);
       break;
     case GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM:
-      bound_pixel_pack_transfer_buffer_id_ = buffer;
+      bound_pixel_pack_transfer_buffer_id_ = buffer_id;
       break;
     case GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM:
-      bound_pixel_unpack_transfer_buffer_id_ = buffer;
+      bound_pixel_unpack_transfer_buffer_id_ = buffer_id;
       break;
     default:
       changed = true;
@@ -2415,7 +2455,7 @@ bool GLES2Implementation::BindBufferHelper(
   }
   // TODO(gman): There's a bug here. If the target is invalid the ID will not be
   // used even though it's marked it as used here.
-  GetIdHandler(id_namespaces::kBuffers)->MarkAsUsedForBind(buffer);
+  GetIdHandler(id_namespaces::kBuffers)->MarkAsUsedForBind(buffer_id);
   return changed;
 }
 
@@ -2558,13 +2598,11 @@ void GLES2Implementation::DeleteBuffersHelper(
       bound_array_buffer_id_ = 0;
     }
     vertex_array_object_manager_->UnbindBuffer(buffers[ii]);
+
     BufferTracker::Buffer* buffer = buffer_tracker_->GetBuffer(buffers[ii]);
-    if (buffer) {
-      // Free buffer memory, pending the passage of a token.
-      buffer_tracker_->FreePendingToken(buffer, helper_->InsertToken());
-      // Remove buffer.
-      buffer_tracker_->RemoveBuffer(buffers[ii]);
-    }
+    if (buffer)
+      RemoveTransferBuffer(buffer);
+
     if (buffers[ii] == bound_pixel_unpack_transfer_buffer_id_) {
       bound_pixel_unpack_transfer_buffer_id_ = 0;
     }
@@ -3608,9 +3646,9 @@ void* GLES2Implementation::MapBufferCHROMIUM(GLuint target, GLenum access) {
   // with this method of synchronization. Until this is fixed,
   // MapBufferCHROMIUM will not block even if the transfer is not ready
   // for these calls.
-  if (buffer->transfer_ready_token()) {
-    helper_->WaitForToken(buffer->transfer_ready_token());
-    buffer->set_transfer_ready_token(0);
+  if (buffer->last_usage_token()) {
+    helper_->WaitForToken(buffer->last_usage_token());
+    buffer->set_last_usage_token(0);
   }
   buffer->set_mapped(true);
 
@@ -3644,6 +3682,71 @@ GLboolean GLES2Implementation::UnmapBufferCHROMIUM(GLuint target) {
   return true;
 }
 
+bool GLES2Implementation::EnsureAsyncUploadSync() {
+  if (async_upload_sync_)
+    return true;
+
+  int32 shm_id;
+  unsigned int shm_offset;
+  void* mem = mapped_memory_->Alloc(sizeof(AsyncUploadSync),
+                                    &shm_id,
+                                    &shm_offset);
+  if (!mem)
+    return false;
+
+  async_upload_sync_shm_id_ = shm_id;
+  async_upload_sync_shm_offset_ = shm_offset;
+  async_upload_sync_ = static_cast<AsyncUploadSync*>(mem);
+  async_upload_sync_->Reset();
+
+  return true;
+}
+
+uint32 GLES2Implementation::NextAsyncUploadToken() {
+  async_upload_token_++;
+  if (async_upload_token_ == 0)
+    async_upload_token_++;
+  return async_upload_token_;
+}
+
+void GLES2Implementation::PollAsyncUploads() {
+  if (!async_upload_sync_)
+    return;
+
+  if (helper_->IsContextLost()) {
+    DetachedAsyncUploadMemoryList::iterator it =
+        detached_async_upload_memory_.begin();
+    while (it != detached_async_upload_memory_.end()) {
+      mapped_memory_->Free(it->first);
+      it = detached_async_upload_memory_.erase(it);
+    }
+    return;
+  }
+
+  DetachedAsyncUploadMemoryList::iterator it =
+      detached_async_upload_memory_.begin();
+  while (it != detached_async_upload_memory_.end()) {
+    if (HasAsyncUploadTokenPassed(it->second)) {
+      mapped_memory_->Free(it->first);
+      it = detached_async_upload_memory_.erase(it);
+    } else {
+      break;
+    }
+  }
+}
+
+void GLES2Implementation::FreeAllAsyncUploadBuffers() {
+  // Free all completed unmanaged async uploads buffers.
+  PollAsyncUploads();
+
+  // Synchronously free rest of the unmanaged async upload buffers.
+  if (!detached_async_upload_memory_.empty()) {
+    WaitAllAsyncTexImage2DCHROMIUM();
+    WaitForCmd();
+    PollAsyncUploads();
+  }
+}
+
 void GLES2Implementation::AsyncTexImage2DCHROMIUM(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
@@ -3675,7 +3778,12 @@ void GLES2Implementation::AsyncTexImage2DCHROMIUM(
   if (!pixels && !bound_pixel_unpack_transfer_buffer_id_) {
     helper_->AsyncTexImage2DCHROMIUM(
        target, level, internalformat, width, height, border, format, type,
-       0, 0);
+       0, 0, 0, 0, 0);
+    return;
+  }
+
+  if (!EnsureAsyncUploadSync()) {
+    SetGLError(GL_OUT_OF_MEMORY, "glTexImage2D", "out of memory");
     return;
   }
 
@@ -3688,9 +3796,13 @@ void GLES2Implementation::AsyncTexImage2DCHROMIUM(
       bound_pixel_unpack_transfer_buffer_id_,
       "glAsyncTexImage2DCHROMIUM", offset, size);
   if (buffer && buffer->shm_id() != -1) {
+    uint32 async_token = NextAsyncUploadToken();
+    buffer->set_last_async_upload_token(async_token);
     helper_->AsyncTexImage2DCHROMIUM(
         target, level, internalformat, width, height, border, format, type,
-        buffer->shm_id(), buffer->shm_offset() + offset);
+        buffer->shm_id(), buffer->shm_offset() + offset,
+        async_token,
+        async_upload_sync_shm_id_, async_upload_sync_shm_offset_);
   }
 }
 
@@ -3723,6 +3835,11 @@ void GLES2Implementation::AsyncTexSubImage2DCHROMIUM(
     return;
   }
 
+  if (!EnsureAsyncUploadSync()) {
+    SetGLError(GL_OUT_OF_MEMORY, "glTexImage2D", "out of memory");
+    return;
+  }
+
   // Async uploads require a transfer buffer to be bound.
   // TODO(hubbe): Make MapBufferCHROMIUM block if someone tries to re-use
   // the buffer before the transfer is finished. (Currently such
@@ -3732,9 +3849,13 @@ void GLES2Implementation::AsyncTexSubImage2DCHROMIUM(
       bound_pixel_unpack_transfer_buffer_id_,
       "glAsyncTexSubImage2DCHROMIUM", offset, size);
   if (buffer && buffer->shm_id() != -1) {
+    uint32 async_token = NextAsyncUploadToken();
+    buffer->set_last_async_upload_token(async_token);
     helper_->AsyncTexSubImage2DCHROMIUM(
         target, level, xoffset, yoffset, width, height, format, type,
-        buffer->shm_id(), buffer->shm_offset() + offset);
+        buffer->shm_id(), buffer->shm_offset() + offset,
+        async_token,
+        async_upload_sync_shm_id_, async_upload_sync_shm_offset_);
   }
 }
 
@@ -3743,6 +3864,14 @@ void GLES2Implementation::WaitAsyncTexImage2DCHROMIUM(GLenum target) {
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glWaitAsyncTexImage2DCHROMIUM("
       << GLES2Util::GetStringTextureTarget(target) << ")");
   helper_->WaitAsyncTexImage2DCHROMIUM(target);
+  CheckGLError();
+}
+
+void GLES2Implementation::WaitAllAsyncTexImage2DCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+      << "] glWaitAllAsyncTexImage2DCHROMIUM()");
+  helper_->WaitAllAsyncTexImage2DCHROMIUM();
   CheckGLError();
 }
 

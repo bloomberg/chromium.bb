@@ -60,8 +60,30 @@ void BufferTracker::FreePendingToken(Buffer* buffer, int32 token) {
   buffer->shm_id_ = 0;
   buffer->shm_offset_ = 0;
   buffer->address_ = NULL;
+  buffer->last_usage_token_ = 0;
+  buffer->last_async_upload_token_ = 0;
 }
 
+void BufferTracker::Unmanage(Buffer* buffer) {
+  buffer->size_ = 0;
+  buffer->shm_id_ = 0;
+  buffer->shm_offset_ = 0;
+  buffer->address_ = NULL;
+  buffer->last_usage_token_ = 0;
+  buffer->last_async_upload_token_ = 0;
+}
+
+void BufferTracker::Free(Buffer* buffer) {
+  if (buffer->address_)
+    mapped_memory_->Free(buffer->address_);
+
+  buffer->size_ = 0;
+  buffer->shm_id_ = 0;
+  buffer->shm_offset_ = 0;
+  buffer->address_ = NULL;
+  buffer->last_usage_token_ = 0;
+  buffer->last_async_upload_token_ = 0;
+}
 
 }  // namespace gles2
 }  // namespace gpu

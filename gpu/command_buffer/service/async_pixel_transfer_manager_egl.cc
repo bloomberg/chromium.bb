@@ -729,6 +729,16 @@ bool AsyncPixelTransferManagerEGL::NeedsProcessMorePendingTransfers() {
   return false;
 }
 
+void AsyncPixelTransferManagerEGL::WaitAllAsyncTexImage2D() {
+  if (shared_state_.pending_allocations.empty())
+    return;
+
+  AsyncPixelTransferDelegateEGL* delegate =
+      shared_state_.pending_allocations.back().get();
+  if (delegate)
+    delegate->WaitForTransferCompletion();
+}
+
 AsyncPixelTransferDelegate*
 AsyncPixelTransferManagerEGL::CreatePixelTransferDelegateImpl(
     gles2::TextureRef* ref,

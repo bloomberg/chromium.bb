@@ -89,6 +89,7 @@ void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
 
   shared_state_->tasks.push_back(AsyncPixelTransferManagerIdle::Task(
       id_,
+      this,
       base::Bind(&AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D,
                  AsWeakPtr(),
                  tex_params,
@@ -106,6 +107,7 @@ void AsyncPixelTransferDelegateIdle::AsyncTexSubImage2D(
 
   shared_state_->tasks.push_back(AsyncPixelTransferManagerIdle::Task(
       id_,
+      this,
       base::Bind(&AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D,
                  AsWeakPtr(),
                  tex_params,
@@ -224,8 +226,11 @@ void AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D(
 }
 
 AsyncPixelTransferManagerIdle::Task::Task(
-    uint64 transfer_id, const base::Closure& task)
+    uint64 transfer_id,
+    AsyncPixelTransferDelegate* delegate,
+    const base::Closure& task)
     : transfer_id(transfer_id),
+      delegate(delegate),
       task(task) {
 }
 
@@ -267,6 +272,7 @@ void AsyncPixelTransferManagerIdle::AsyncNotifyCompletion(
 
   shared_state_.tasks.push_back(
       Task(0,  // 0 transfer_id for notification tasks.
+           NULL,
            base::Bind(
                &PerformNotifyCompletion,
                mem_params,
@@ -295,6 +301,15 @@ void AsyncPixelTransferManagerIdle::ProcessMorePendingTransfers() {
 
 bool AsyncPixelTransferManagerIdle::NeedsProcessMorePendingTransfers() {
   return !shared_state_.tasks.empty();
+}
+
+void AsyncPixelTransferManagerIdle::WaitAllAsyncTexImage2D() {
+  if (shared_state_.tasks.empty())
+    return;
+
+  const Task& task = shared_state_.tasks.back();
+  if (task.delegate)
+    task.delegate->WaitForTransferCompletion();
 }
 
 AsyncPixelTransferDelegate*
