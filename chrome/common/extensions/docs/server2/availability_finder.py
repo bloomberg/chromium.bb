@@ -7,7 +7,7 @@ import posixpath
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
-from extensions_paths import API, CHROME_API, JSON_TEMPLATES
+from extensions_paths import API_PATHS, JSON_TEMPLATES
 from features_bundle import FeaturesBundle
 import features_utility
 from file_system import FileNotFoundError
@@ -81,7 +81,7 @@ class AvailabilityFinder(object):
       api_name = UnixName(api_name)
 
     futures = [(path, file_system.ReadSingle(path))
-               for path in (CHROME_API, API)]
+               for path in API_PATHS]
     for path, future in futures:
       try:
         filenames = future.Get()

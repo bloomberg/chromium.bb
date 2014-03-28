@@ -8,7 +8,7 @@ import unittest
 
 from api_models import APIModels
 from compiled_file_system import CompiledFileSystem
-from extensions_paths import CHROME_API, CHROME_EXTENSIONS
+from extensions_paths import API_PATHS, CHROME_API, CHROME_EXTENSIONS
 from features_bundle import FeaturesBundle
 from file_system import FileNotFoundError
 from mock_file_system import MockFileSystem
@@ -128,11 +128,11 @@ class APIModelsTest(unittest.TestCase):
                                                 'storage.idl').Get)
 
   def testSingleFile(self):
-    # 4 stats (1 for JSON and 1 for IDL, in both possible API path),
+    # 2 stats (1 for JSON and 1 for IDL) for each available API path.
     # 1 read (for IDL file which existed).
     future = self._api_models.GetModel('alarms')
     self.assertTrue(*self._mock_file_system.CheckAndReset(
-        read_count=1, stat_count=4))
+        read_count=1, stat_count=len(API_PATHS)*2))
 
     # 1 read-resolve (for the IDL file).
     #
@@ -143,10 +143,11 @@ class APIModelsTest(unittest.TestCase):
     self.assertTrue(*self._mock_file_system.CheckAndReset(
         read_resolve_count=1))
 
-    # 4 stats (1 for JSON and 1 for IDL, in both possible API paths)
-    # no reads (still cached).
+    # 2 stats (1 for JSON and 1 for IDL) for each available API path.
+    # No reads (still cached).
     future = self._api_models.GetModel('alarms')
-    self.assertTrue(*self._mock_file_system.CheckAndReset(stat_count=4))
+    self.assertTrue(*self._mock_file_system.CheckAndReset(
+        stat_count=len(API_PATHS)*2))
     future.Get()
     self.assertTrue(*self._mock_file_system.CheckAndReset())
 

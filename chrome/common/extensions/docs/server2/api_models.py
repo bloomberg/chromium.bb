@@ -5,7 +5,7 @@
 import posixpath
 
 from compiled_file_system import SingleFile, Unicode
-from extensions_paths import API, CHROME_API
+from extensions_paths import API_PATHS
 from file_system import FileNotFoundError
 from future import Future
 from schema_util import ProcessSchema
@@ -44,7 +44,7 @@ class APIModels(object):
     # By default |api_name| is assumed to be given without a path or extension,
     # so combinations of known paths and extension types will be searched.
     api_extensions = ('.json', '.idl')
-    api_paths = (CHROME_API, API)
+    api_paths = API_PATHS
 
     # Callers sometimes include a file extension and/or prefix path with the
     # |api_name| argument. We believe them and narrow the search space
