@@ -109,11 +109,11 @@ namespace WebCore {
         }
 
         virtual bool belongsToTheCurrentWorld() const OVERRIDE FINAL;
-        virtual DOMWrapperWorld* world() const OVERRIDE FINAL { return m_world.get(); }
+        DOMWrapperWorld& world() const { return *m_world; }
         v8::Isolate* isolate() const { return m_isolate; }
 
     protected:
-        V8AbstractEventListener(bool isAttribute, DOMWrapperWorld*, v8::Isolate*);
+        V8AbstractEventListener(bool isAttribute, DOMWrapperWorld&, v8::Isolate*);
 
         virtual void prepareListenerObject(ExecutionContext*) { }
 

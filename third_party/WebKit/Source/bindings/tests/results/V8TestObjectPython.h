@@ -97,7 +97,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestObjectPython*
 template<typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestObjectPython* impl)
 {
-    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate())->isMainWorld());
+    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate()).isMainWorld());
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
         return;

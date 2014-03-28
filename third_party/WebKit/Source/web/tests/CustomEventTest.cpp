@@ -72,14 +72,14 @@ public:
         EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::NewFromUtf8(isolate, "detail")), v8::Boolean::New(isolate, true));
     }
 
-    static PassRefPtr<TestListener> create(v8::Isolate* isolate)
+    static PassRefPtr<TestListener> create(v8::Isolate* isolate, DOMWrapperWorld& world)
     {
-        return adoptRef(new TestListener(isolate));
+        return adoptRef(new TestListener(isolate, world));
     }
 
 private:
-    TestListener(v8::Isolate* isolate)
-        : V8AbstractEventListener(false, 0, isolate)
+    TestListener(v8::Isolate* isolate, DOMWrapperWorld& world)
+        : V8AbstractEventListener(false, world, isolate)
     {
     }
 
@@ -112,7 +112,8 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
     v8::Isolate* isolate = toIsolate(frame->frame());
     v8::HandleScope handleScope(isolate);
     customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(isolate, true)));
-    RefPtr<EventListener> listener = TestListener::create(isolate);
+    RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::create();
+    RefPtr<EventListener> listener = TestListener::create(isolate, *world);
     frame->frame()->document()->addEventListener("blah", listener, false);
     frame->frame()->document()->dispatchEvent(event);
 

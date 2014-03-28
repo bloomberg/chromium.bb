@@ -7946,7 +7946,7 @@ static void configureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate>
     prototypeTemplate->Set(v8AtomicString(isolate, "notEnumerableReadOnlyVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::notEnumerableReadOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum | v8::ReadOnly));
     if (RuntimeEnabledFeatures::featureNameEnabled())
         prototypeTemplate->Set(v8AtomicString(isolate, "runtimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::runtimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
-    if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
+    if (DOMWrapperWorld::current(isolate).isMainWorld()) {
         if (RuntimeEnabledFeatures::featureNameEnabled())
             prototypeTemplate->Set(v8AtomicString(isolate, "perWorldBindingsRuntimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, v8Undefined(), defaultSignature, 0));
     } else {
