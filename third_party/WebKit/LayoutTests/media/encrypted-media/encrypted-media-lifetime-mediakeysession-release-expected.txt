@@ -1,0 +1,6 @@
+EVENT(close)
+EVENT(close)
+This is a testharness.js-based test.
+PASS MediaKeySession lifetime after release() 
+Harness: the test ran to completion.
+
