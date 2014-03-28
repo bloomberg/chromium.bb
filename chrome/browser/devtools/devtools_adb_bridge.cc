@@ -1101,6 +1101,12 @@ DevToolsAdbBridge::DevToolsAdbBridge()
       has_message_loop_(adb_thread_->message_loop() != NULL) {
 }
 
+void DevToolsAdbBridge::set_device_provider_for_test(
+    scoped_refptr<AndroidDeviceProvider> device_provider) {
+  device_providers_for_test_.clear();
+  device_providers_for_test_.push_back(device_provider);
+}
+
 void DevToolsAdbBridge::AddListener(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (listeners_.empty())
@@ -1132,7 +1138,10 @@ void DevToolsAdbBridge::RequestRemoteDevices() {
     return;
 
   new AdbPagesCommand(
-      adb_thread_, device_providers_,
+      adb_thread_,
+      device_providers_for_test_.size() ?
+          device_providers_for_test_ :
+          device_providers_,
       base::Bind(&DevToolsAdbBridge::ReceivedRemoteDevices, this));
 }
 

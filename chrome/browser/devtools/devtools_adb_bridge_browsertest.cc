@@ -247,6 +247,12 @@ class MockDeviceProvider : public AndroidDeviceProvider {
   }
 };
 
+// static
+scoped_refptr<AndroidDeviceProvider>
+AndroidDeviceProvider::GetMockDeviceProviderForTest() {
+  return new MockDeviceProvider();
+}
+
 static scoped_refptr<DevToolsAdbBridge::RemoteBrowser>
 FindBrowserByDisplayName(DevToolsAdbBridge::RemoteBrowsers browsers,
                          const std::string& name) {
@@ -355,7 +361,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAdbBridgeTest, DiscoverAndroidBrowsers) {
       DevToolsAdbBridge::Factory::GetForProfile(browser()->profile());
 
   DevToolsAdbBridge::DeviceProviders providers;
-  providers.push_back(new MockDeviceProvider());
+  providers.push_back(AndroidDeviceProvider::GetMockDeviceProviderForTest());
 
   adb_bridge->set_device_providers(providers);
 

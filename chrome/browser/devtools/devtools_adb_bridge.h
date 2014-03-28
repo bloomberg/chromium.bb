@@ -180,6 +180,11 @@ class DevToolsAdbBridge
   void set_device_providers(DeviceProviders device_providers) {
     device_providers_ = device_providers;
   }
+
+  // If the test device provider is set all other providers are ignored.
+  void set_device_provider_for_test(
+      scoped_refptr<AndroidDeviceProvider> device_provider);
+
   static bool HasDevToolsWindow(const std::string& agent_id);
 
  private:
@@ -197,6 +202,7 @@ class DevToolsAdbBridge
   typedef std::vector<Listener*> Listeners;
   Listeners listeners_;
   DeviceProviders device_providers_;
+  DeviceProviders device_providers_for_test_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsAdbBridge);
 };
 

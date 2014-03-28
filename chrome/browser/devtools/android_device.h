@@ -80,6 +80,8 @@ class AndroidDeviceProvider
 #if defined(DEBUG_DEVTOOLS)
   static scoped_refptr<AndroidDeviceProvider> GetSelfAsDeviceProvider();
 #endif
+  // Implemented in browser_tests.
+  static scoped_refptr<AndroidDeviceProvider> GetMockDeviceProviderForTest();
 
  protected:
   friend struct
