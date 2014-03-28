@@ -561,21 +561,13 @@
             {
               'action_name': 'repack_components_pack',
               'variables': {
-                'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/components/component_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/components/strings/component_strings_en-US.pak',
                 ],
+                'pak_output': '<(PRODUCT_DIR)/components_resources.pak',
               },
-              'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/components_resources.pak',
-              ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)',
-                         '<@(pak_inputs)'],
+              'includes': [ '../build/repack_action.gypi' ],
             },
           ],
           'conditions': [

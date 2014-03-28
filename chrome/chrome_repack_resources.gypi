@@ -19,6 +19,7 @@
       '<(grit_out_dir)/sync_internals_resources.pak',
       '<(grit_out_dir)/translate_internals_resources.pak',
     ],
+    'pak_output': '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
     'conditions': [
       ['OS != "ios"', {
         'pak_inputs': [
@@ -44,12 +45,5 @@
       }],
     ],
   },
-  'inputs': [
-    '<(repack_path)',
-    '<@(pak_inputs)',
-  ],
-  'outputs': [
-    '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
-  ],
-  'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
+  'includes': [ '../build/repack_action.gypi' ],
 }

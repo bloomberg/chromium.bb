@@ -117,9 +117,6 @@
             '../ui/base/strings/ui_strings.gyp:ui_strings',
             '../ui/resources/ui_resources.gyp:ui_resources',
           ],
-          'variables': {
-            'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
-          },
           'actions': [
             {
               'action_name': 'repack_app_shell_pack',
@@ -139,16 +136,9 @@
                   '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
                 ],
+                'pak_output': '<(PRODUCT_DIR)/app_shell.pak',
               },
-              'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/app_shell.pak',
-              ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)',
-                         '<@(pak_inputs)'],
+             'includes': [ '../build/repack_action.gypi' ],
             },
           ],
         },

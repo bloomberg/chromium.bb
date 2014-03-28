@@ -6,7 +6,6 @@
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'about_credits_file': '<(SHARED_INTERMEDIATE_DIR)/about_credits.html',
     'additional_modules_list_file': '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/internal/additional_modules_list.txt',
-    'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
   },
   'targets': [
     {
@@ -320,9 +319,6 @@
     {
       'target_name': 'packed_extra_resources',
       'type': 'none',
-      'variables': {
-        'repack_path': '../tools/grit/grit/format/repack.py',
-      },
       'dependencies': [
         'chrome_extra_resources',
         'packed_resources',
@@ -350,9 +346,6 @@
     {
       'target_name': 'packed_resources',
       'type': 'none',
-      'variables': {
-        'repack_path': '../tools/grit/grit/format/repack.py',
-      },
       'dependencies': [
         # MSVS needs the dependencies explictly named, Make is able to
         # derive the dependencies from the output files.
@@ -367,10 +360,18 @@
       ],
       'actions': [
         {
+          'action_name': 'repack_locales_pack',
+          'variables': {
+            'pak_locales': '<(locales)',
+          },
           'includes': ['chrome_repack_locales.gypi']
         },
         {
-          'includes': ['chrome_repack_pseudo_locales.gypi']
+          'action_name': 'repack_pseudo_locales_pack',
+          'variables': {
+            'pak_locales': '<(pseudo_locales)',
+          },
+          'includes': ['chrome_repack_locales.gypi']
         },
         {
           'includes': ['chrome_repack_chrome_100_percent.gypi']

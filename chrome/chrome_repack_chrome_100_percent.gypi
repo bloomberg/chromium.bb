@@ -10,6 +10,7 @@
       '<(grit_out_dir)/renderer_resources_100_percent.pak',
       '<(grit_out_dir)/theme_resources_100_percent.pak',
     ],
+    'pak_output': '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
     'conditions': [
       ['OS != "ios"', {
         'pak_inputs': [
@@ -23,12 +24,5 @@
       }],
     ],
   },
-  'inputs': [
-    '<(repack_path)',
-    '<@(pak_inputs)',
-  ],
-  'outputs': [
-    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
-  ],
-  'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
+  'includes': [ '../build/repack_action.gypi' ],
 }

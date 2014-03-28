@@ -473,9 +473,6 @@
           ],
         }],
       ],
-      'variables': {
-        'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
-      },
       'actions': [
         {
           'action_name': 'repack_content_shell_pack',
@@ -493,29 +490,20 @@
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
             ],
+            'conditions': [
+              ['OS!="android"', {
+                'variables': {
+                  'pak_inputs': [
+                    '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+                  ],
+                },
+                'pak_output': '<(PRODUCT_DIR)/content_shell.pak',
+              }, {
+                'pak_output': '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
+              }],
+            ],
           },
-          'inputs': [
-            '<(repack_path)',
-            '<@(pak_inputs)',
-          ],
-          'action': ['python', '<(repack_path)', '<@(_outputs)',
-                     '<@(pak_inputs)'],
-          'conditions': [
-            ['OS!="android"', {
-              'variables': {
-                'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
-                ],
-              },
-              'outputs': [
-                '<(PRODUCT_DIR)/content_shell.pak',
-              ],
-            }, {
-              'outputs': [
-                '<(PRODUCT_DIR)/content_shell/assets/content_shell.pak',
-              ],
-            }],
-          ],
+          'includes': [ '../build/repack_action.gypi' ],
         },
       ],
     },

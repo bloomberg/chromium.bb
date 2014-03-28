@@ -1,9 +1,12 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# To use this the following variables need to be defined:
+#   pak_locales: string: the list of all the locales that need repacking
 {
-  'action_name': 'repack_locales',
   'variables': {
+    'repack_locales_path': 'tools/build/repack_locales.py',
     'conditions': [
       ['branding=="Chrome"', {
         'branding_flag': ['-b', 'google_chrome',],
@@ -11,25 +14,23 @@
         'branding_flag': ['-b', 'chromium',],
       }],
     ],
-    'repack_extra_flags%': [],
-    'repack_output_dir%': '<(SHARED_INTERMEDIATE_DIR)',
   },
   'inputs': [
-    'tools/build/repack_locales.py',
-    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(repack_output_dir) --use-ash <(use_ash) <(repack_extra_flags) <(locales))'
+    '<(repack_locales_path)',
+    '<!@pymod_do_main(repack_locales -i -p <(OS) <(branding_flag) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) --use-ash <(use_ash) <(pak_locales))'
   ],
   'outputs': [
-    '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(repack_output_dir) <(locales))'
+    '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(pak_locales))'
   ],
   'action': [
-    '<@(repack_locales_cmd)',
+    'python',
+    '<(repack_locales_path)',
     '<@(branding_flag)',
     '-p', '<(OS)',
     '-g', '<(grit_out_dir)',
     '-s', '<(SHARED_INTERMEDIATE_DIR)',
-    '-x', '<(repack_output_dir)/.',
+    '-x', '<(SHARED_INTERMEDIATE_DIR)/.',
     '--use-ash', '<(use_ash)',
-    '<@(repack_extra_flags)',
-    '<@(locales)',
+    '<@(pak_locales)',
   ],
 }

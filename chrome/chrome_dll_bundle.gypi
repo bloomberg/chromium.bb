@@ -108,7 +108,6 @@
       }],
     ],
     'libpeer_target_type%': 'static_library',
-    'repack_path': '../tools/grit/grit/format/repack.py',
   },
   'postbuilds': [
     {

@@ -44,9 +44,6 @@
         '../base/strings/ui_strings.gyp:ui_strings',
         'ui_resources',
       ],
-      'variables': {
-        'repack_path': '../../tools/grit/grit/format/repack.py',
-      },
       'actions': [
         {
           'action_name': 'repack_ui_test_pack',
@@ -57,20 +54,9 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
             ],
+            'pak_output': '<(PRODUCT_DIR)/ui_test.pak',
           },
-          'inputs': [
-            '<(repack_path)',
-            '<@(pak_inputs)',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/ui_test.pak',
-          ],
-          'action': [
-            'python',
-            '<(repack_path)',
-            '<@(_outputs)',
-            '<@(pak_inputs)'
-          ],
+          'includes': [ '../../build/repack_action.gypi' ],
         },
       ],
       'conditions': [
