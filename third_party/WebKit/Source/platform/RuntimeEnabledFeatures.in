@@ -45,7 +45,6 @@ Database status=stable
 DeviceMotion status=stable
 DeviceOrientation status=stable
 DialogElement status=experimental
-DirectWrite
 EncodingAPI status=experimental
 EncryptedMedia status=test
 EncryptedMediaAnyVersion status=stable

@@ -56,8 +56,6 @@ public:
 
     BLINK_EXPORT static void enableBleedingEdgeFastPaths(bool);
 
-    BLINK_EXPORT static void enableDirectWrite(bool);
-
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
 
     BLINK_EXPORT static void enableFastTextAutosizing(bool);

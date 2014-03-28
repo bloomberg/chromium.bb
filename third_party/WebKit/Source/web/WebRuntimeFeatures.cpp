@@ -100,12 +100,6 @@ bool WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled()
     return RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled();
 }
 
-void WebRuntimeFeatures::enableDirectWrite(bool enable)
-{
-    RuntimeEnabledFeatures::setDirectWriteEnabled(enable);
-    RuntimeEnabledFeatures::setSubpixelFontScalingEnabled(enable || RuntimeEnabledFeatures::subpixelFontScalingEnabled());
-}
-
 void WebRuntimeFeatures::enableExperimentalCanvasFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(enable);
