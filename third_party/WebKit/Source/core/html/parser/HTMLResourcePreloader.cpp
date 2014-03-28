@@ -29,8 +29,6 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/css/MediaList.h"
-#include "core/css/MediaQueryEvaluator.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/rendering/RenderObject.h"
 #include "public/platform/Platform.h"
@@ -42,7 +40,6 @@ bool PreloadRequest::isSafeToSendToAnotherThread() const
     return m_initiatorName.isSafeToSendToAnotherThread()
         && m_charset.isSafeToSendToAnotherThread()
         && m_resourceURL.isSafeToSendToAnotherThread()
-        && m_mediaAttribute.isSafeToSendToAnotherThread()
         && m_baseURL.isSafeToSendToAnotherThread();
 }
 
@@ -73,28 +70,11 @@ void HTMLResourcePreloader::takeAndPreload(PreloadRequestStream& r)
         preload(it->release());
 }
 
-static bool mediaAttributeMatches(LocalFrame* frame, RenderStyle* renderStyle, const String& attributeValue)
-{
-    RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(attributeValue);
-    MediaQueryEvaluator mediaQueryEvaluator("screen", frame, renderStyle);
-    return mediaQueryEvaluator.eval(mediaQueries.get());
-}
-
 void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload)
 {
-    Document* executingDocument = m_document->import() ? m_document->import()->master() : m_document;
-    Document* loadingDocument = m_document;
-
-    ASSERT(executingDocument->frame());
-    ASSERT(executingDocument->renderer());
-    ASSERT(executingDocument->renderer()->style());
-    if (!preload->media().isEmpty() && !mediaAttributeMatches(executingDocument->frame(), executingDocument->renderer()->style(), preload->media()))
-        return;
-
     FetchRequest request = preload->resourceRequest(m_document);
     blink::Platform::current()->histogramCustomCounts("WebCore.PreloadDelayMs", static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime())), 0, 2000, 20);
-    loadingDocument->fetcher()->preload(preload->resourceType(), request, preload->charset());
+    m_document->fetcher()->preload(preload->resourceType(), request, preload->charset());
 }
-
 
 }

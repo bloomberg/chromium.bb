@@ -35,14 +35,9 @@ namespace WebCore {
 
 class PreloadRequest {
 public:
-    static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const String& mediaAttribute)
-    {
-        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, mediaAttribute));
-    }
-
     static PassOwnPtr<PreloadRequest> create(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType)
     {
-        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType, ""));
+        return adoptPtr(new PreloadRequest(initiatorName, initiatorPosition, resourceURL, baseURL, resourceType));
     }
 
     bool isSafeToSendToAnotherThread() const;
@@ -50,7 +45,6 @@ public:
     FetchRequest resourceRequest(Document*);
 
     const String& charset() const { return m_charset; }
-    const String& media() const { return m_mediaAttribute; }
     double discoveryTime() const { return m_discoveryTime; }
     void setCharset(const String& charset) { m_charset = charset.isolatedCopy(); }
     void setCrossOriginEnabled(StoredCredentials allowCredentials)
@@ -62,13 +56,12 @@ public:
     Resource::Type resourceType() const { return m_resourceType; }
 
 private:
-    PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const String& mediaAttribute)
+    PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType)
         : m_initiatorName(initiatorName)
         , m_initiatorPosition(initiatorPosition)
         , m_resourceURL(resourceURL.isolatedCopy())
         , m_baseURL(baseURL.copy())
         , m_resourceType(resourceType)
-        , m_mediaAttribute(mediaAttribute.isolatedCopy())
         , m_isCORSEnabled(false)
         , m_allowCredentials(DoNotAllowStoredCredentials)
         , m_discoveryTime(monotonicallyIncreasingTime())
@@ -83,7 +76,6 @@ private:
     KURL m_baseURL;
     String m_charset;
     Resource::Type m_resourceType;
-    String m_mediaAttribute;
     bool m_isCORSEnabled;
     StoredCredentials m_allowCredentials;
     double m_discoveryTime;

@@ -31,6 +31,9 @@
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "core/css/MediaList.h"
+#include "core/css/MediaQueryEvaluator.h"
+#include "core/css/MediaValues.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
@@ -90,16 +93,24 @@ static String initiatorFor(const StringImpl* tagImpl)
     return emptyString();
 }
 
+static bool mediaAttributeMatches(const MediaValues& mediaValues, const String& attributeValue)
+{
+    RefPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(attributeValue);
+    MediaQueryEvaluator mediaQueryEvaluator("screen", mediaValues);
+    return mediaQueryEvaluator.eval(mediaQueries.get());
+}
+
 class TokenPreloadScanner::StartTagScanner {
 public:
-    StartTagScanner(const StringImpl* tagImpl, float deviceScaleFactor)
+    StartTagScanner(const StringImpl* tagImpl, PassRefPtr<MediaValues> mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
+        , m_matchedMediaAttribute(true)
         , m_inputIsImage(false)
-        , m_deviceScaleFactor(deviceScaleFactor)
         , m_encounteredImgSrc(false)
         , m_isCORSEnabled(false)
         , m_allowCredentials(DoNotAllowStoredCredentials)
+        , m_mediaValues(mediaValues)
     {
         if (!match(m_tagImpl, imgTag)
             && !match(m_tagImpl, inputTag)
@@ -135,12 +146,12 @@ public:
 
     PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source)
     {
-        if (!shouldPreload())
+        if (!shouldPreload() || !m_matchedMediaAttribute)
             return nullptr;
 
         TRACE_EVENT_INSTANT1("net", "PreloadRequest", "url", m_urlToLoad.ascii());
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), m_mediaAttribute);
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType());
         if (isCORSEnabled())
             request->setCrossOriginEnabled(allowStoredCredentials());
         request->setCharset(charset());
@@ -162,14 +173,14 @@ private:
         } else if (match(m_tagImpl, imgTag)) {
             if (match(attributeName, srcAttr) && !m_encounteredImgSrc) {
                 m_encounteredImgSrc = true;
-                setUrlToLoad(bestFitSourceForImageAttributes(m_deviceScaleFactor, attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
+                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), attributeValue, m_srcsetImageCandidate), AllowURLReplacement);
             } else if (match(attributeName, crossoriginAttr)) {
                 setCrossOriginAllowed(attributeValue);
             } else if (RuntimeEnabledFeatures::srcsetEnabled()
                 && match(attributeName, srcsetAttr)
                 && m_srcsetImageCandidate.isEmpty()) {
-                m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_deviceScaleFactor, attributeValue);
-                setUrlToLoad(bestFitSourceForImageAttributes(m_deviceScaleFactor, m_urlToLoad, m_srcsetImageCandidate), AllowURLReplacement);
+                m_srcsetImageCandidate = bestFitSourceForSrcsetAttribute(m_mediaValues->devicePixelRatio(), attributeValue);
+                setUrlToLoad(bestFitSourceForImageAttributes(m_mediaValues->devicePixelRatio(), m_urlToLoad, m_srcsetImageCandidate), AllowURLReplacement);
             }
         } else if (match(m_tagImpl, linkTag)) {
             if (match(attributeName, hrefAttr))
@@ -177,7 +188,7 @@ private:
             else if (match(attributeName, relAttr))
                 m_linkIsStyleSheet = relAttributeIsStyleSheet(attributeValue);
             else if (match(attributeName, mediaAttr))
-                m_mediaAttribute = attributeValue;
+                m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
             else if (match(attributeName, crossoriginAttr))
                 setCrossOriginAllowed(attributeValue);
         } else if (match(m_tagImpl, inputTag)) {
@@ -261,19 +272,19 @@ private:
     ImageCandidate m_srcsetImageCandidate;
     String m_charset;
     bool m_linkIsStyleSheet;
-    String m_mediaAttribute;
+    bool m_matchedMediaAttribute;
     bool m_inputIsImage;
-    float m_deviceScaleFactor;
     bool m_encounteredImgSrc;
     bool m_isCORSEnabled;
     StoredCredentials m_allowCredentials;
+    RefPtr<MediaValues> m_mediaValues;
 };
 
-TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, float deviceScaleFactor)
+TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassRefPtr<MediaValues> mediaValues)
     : m_documentURL(documentURL)
     , m_inStyle(false)
-    , m_deviceScaleFactor(deviceScaleFactor)
     , m_templateCount(0)
+    , m_mediaValues(mediaValues)
 {
 }
 
@@ -353,7 +364,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, const SegmentedString& 
             return;
         }
 
-        StartTagScanner scanner(tagImpl, m_deviceScaleFactor);
+        StartTagScanner scanner(tagImpl, m_mediaValues);
         scanner.processAttributes(token.attributes());
         OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL, source);
         if (request)
@@ -374,8 +385,8 @@ void TokenPreloadScanner::updatePredictedBaseURL(const Token& token)
         m_predictedBaseElementURL = KURL(m_documentURL, stripLeadingAndTrailingHTMLSpaces(hrefAttribute->value)).copy();
 }
 
-HTMLPreloadScanner::HTMLPreloadScanner(const HTMLParserOptions& options, const KURL& documentURL, float deviceScaleFactor)
-    : m_scanner(documentURL, deviceScaleFactor)
+HTMLPreloadScanner::HTMLPreloadScanner(const HTMLParserOptions& options, const KURL& documentURL, PassRefPtr<MediaValues> mediaValues)
+    : m_scanner(documentURL, mediaValues)
     , m_tokenizer(HTMLTokenizer::create(options))
 {
 }
