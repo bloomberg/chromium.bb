@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests generateKey() with bad AES-CBC parameters.");
+jsTestIsAsync = true;
+
+extractable = true;
+keyUsages = ['encrypt', 'decrypt'];
+
+// Invalid keyUsages
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, -1)");
+shouldThrow("crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, null)");
+
+Promise.resolve(null).then(function() {
+    // Bad key usage "boo".
+    return crypto.subtle.generateKey({ name: 'aes-cbc', length: 1024 }, extractable, ['boo']);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.generateKey({ name: 'aes-cbc' }, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.generateKey({ name: 'aes-cbc', length: 70000 }, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.generateKey({ name: 'aes-cbc', length: -3 }, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+
+    return crypto.subtle.generateKey({ name: 'aes-cbc', length: -Infinity }, extractable, keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    error = result;
+    shouldBeNull("error");
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>
