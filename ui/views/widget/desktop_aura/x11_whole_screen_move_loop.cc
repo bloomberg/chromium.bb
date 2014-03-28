@@ -31,6 +31,7 @@ namespace {
 // The minimum alpha before we declare a pixel transparent when searching in
 // our source image.
 const uint32 kMinAlpha = 32;
+const unsigned char kDragWidgetOpacity = 0xc0;
 
 class ScopedCapturer {
  public:
@@ -76,6 +77,7 @@ uint32_t X11WholeScreenMoveLoop::Dispatch(const base::NativeEvent& event) {
         gfx::Point location = gfx::ToFlooredPoint(
             screen->GetCursorScreenPoint() - drag_offset_);
         drag_widget_->SetBounds(gfx::Rect(location, drag_image_.size()));
+        drag_widget_->StackAtTop();
       }
       delegate_->OnMouseMovement(&xev->xmotion);
       break;
@@ -267,6 +269,7 @@ void X11WholeScreenMoveLoop::CreateDragImageWindow() {
   widget->set_focus_on_creation(false);
   widget->set_frame_type(Widget::FRAME_TYPE_FORCE_NATIVE);
   widget->Init(params);
+  widget->SetOpacity(kDragWidgetOpacity);
   widget->GetNativeWindow()->SetName("DragWindow");
 
   ImageView* image = new ImageView();
