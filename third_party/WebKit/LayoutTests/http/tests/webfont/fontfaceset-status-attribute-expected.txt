@@ -8,6 +8,7 @@ PASS document.fonts.status is "loaded"
 PASS document.fonts.status is "loading"
 PASS document.fonts.check('10px TestFont') is true
 PASS document.fonts.status is "loaded"
+PASS document.fonts.status is "loaded"
 PASS successfullyParsed is true
 
 TEST COMPLETE

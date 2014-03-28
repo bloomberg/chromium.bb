@@ -29,7 +29,6 @@
 #include "core/workers/WorkerThread.h"
 
 #include "bindings/v8/ScriptSourceCode.h"
-#include "core/dom/Microtask.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"
@@ -114,8 +113,6 @@ void WorkerThread::workerThread()
         ThreadState::attach();
         m_workerGlobalScope = createWorkerGlobalScope(m_startupData.release());
         m_runLoop.setWorkerGlobalScope(workerGlobalScope());
-        // Call performCheckpoint now to call ensureDomInJSContext.
-        Microtask::performCheckpoint();
 
         if (m_runLoop.terminated()) {
             // The worker was terminated before the thread had a chance to run. Since the context didn't exist yet,

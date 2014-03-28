@@ -74,10 +74,10 @@ function callback(name) {
             imageBitmaps.image = imageBitmap;
             image.onload = function() {
                 ctx.drawImage(imageBitmaps.image, 0, 0);
-                createImageBitmap(imageBitmaps.image).then(callback('ImageBitmapImage'));
                 checkIfDone();
             };
             image.src = bCanvas.toDataURL();
+            createImageBitmap(imageBitmaps.image).then(callback('ImageBitmapImage'));
             break;
         case 'Data':
             imageBitmaps.data = imageBitmap;

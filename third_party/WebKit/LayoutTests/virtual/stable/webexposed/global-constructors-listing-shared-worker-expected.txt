@@ -52,8 +52,6 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] Uint32Array
 [Worker] Uint8Array
 [Worker] Uint8ClampedArray
-[Worker] WeakMap
-[Worker] WeakSet
 [Worker] WebSocket
 [Worker] WorkerGlobalScope
 [Worker] WorkerLocation

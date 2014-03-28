@@ -21,6 +21,7 @@ function runTests() {
 
 function onsuccess() {
     shouldBeTrue("document.fonts.check('10px TestFont')");
+    shouldBeEqualToString("document.fonts.status", "loaded");
     document.fonts.ready().then(onFontsReady);
 }
 

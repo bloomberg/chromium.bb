@@ -426,8 +426,6 @@ Uint8ClampedArray
 VTTCue
 ValidityState
 WaveShaperNode
-WeakMap
-WeakSet
 WebGLActiveInfo
 WebGLBuffer
 WebGLContextEvent

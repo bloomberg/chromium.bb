@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/workers/WorkerRunLoop.h"
 
-#include "bindings/v8/V8RecursionScope.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
@@ -56,10 +55,8 @@ public:
     virtual void run() OVERRIDE
     {
         WorkerGlobalScope* workerGlobalScope = m_runLoop.context();
-        if ((!workerGlobalScope->isClosing() && !m_runLoop.terminated()) || m_task->isCleanupTask()) {
-            V8RecursionScope recursionScope(workerGlobalScope);
+        if ((!workerGlobalScope->isClosing() && !m_runLoop.terminated()) || m_task->isCleanupTask())
             m_task->performTask(workerGlobalScope);
-        }
     }
 
 private:

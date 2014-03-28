@@ -31,10 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8RecursionScope.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/Microtask.h"
-#include "core/workers/WorkerGlobalScope.h"
-#include "core/workers/WorkerThread.h"
 #include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
 namespace WebCore {
@@ -47,22 +44,8 @@ void V8RecursionScope::didLeaveScriptContext()
     // set to true, but the flag becomes false when control returns to the event loop.
     IDBPendingTransactionMonitor::deactivateNewTransactions();
 
-    if (!isStopped())
+    if (m_isDocumentContext)
         Microtask::performCheckpoint();
-}
-
-bool V8RecursionScope::isStopped()
-{
-    if (!m_context || m_context->activeDOMObjectsAreStopped())
-        return true;
-    if (m_context->isDocument())
-        return false;
-    if (m_context->isWorkerGlobalScope()) {
-        WorkerGlobalScope* workerContext = toWorkerGlobalScope(m_context);
-        WorkerThread* thread = workerContext->thread();
-        return workerContext->isClosing() || !thread || thread->runLoop().terminated();
-    }
-    return true;
 }
 
 } // namespace WebCore

@@ -126,11 +126,11 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
     currentDOMTemplateMap().add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(m_isolate, v8::Local<v8::FunctionTemplate>(templ)));
 }
 
-v8::Local<v8::Context> V8PerIsolateData::ensureDomInJSContext()
+v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 {
-    if (!m_domInJSPerContextData)
-        m_domInJSPerContextData = V8PerContextData::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
-    return m_domInJSPerContextData->context();
+    if (!m_perContextDataForRegex)
+        m_perContextDataForRegex = V8PerContextData::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
+    return m_perContextDataForRegex->context();
 }
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)

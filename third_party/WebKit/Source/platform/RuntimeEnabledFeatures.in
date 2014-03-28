@@ -122,7 +122,7 @@ Touch status=stable
 
 TouchIconLoading
 UserSelectAll status=experimental
-ScriptPromiseOnV8Promise status=stable
+ScriptPromiseOnV8Promise
 VideoTrack depends_on=Media, status=stable
 WebAnimationsSVG
 WebAnimationsAPI status=experimental

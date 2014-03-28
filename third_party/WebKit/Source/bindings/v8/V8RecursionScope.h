@@ -32,11 +32,10 @@
 #define V8RecursionScope_h
 
 #include "bindings/v8/V8PerIsolateData.h"
+#include "core/dom/ExecutionContext.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
-
-class ExecutionContext;
 
 // C++ calls into script contexts which are "owned" by WebKit (created in a
 // process where WebKit.cpp initializes v8) must declare their type:
@@ -59,7 +58,7 @@ class V8RecursionScope {
     WTF_MAKE_NONCOPYABLE(V8RecursionScope);
 public:
     explicit V8RecursionScope(ExecutionContext* context)
-        : m_context(context)
+        : m_isDocumentContext(context && context->isDocument())
     {
         V8PerIsolateData::current()->incrementRecursionLevel();
     }
@@ -101,9 +100,8 @@ public:
 
 private:
     void didLeaveScriptContext();
-    bool isStopped();
 
-    ExecutionContext* m_context;
+    bool m_isDocumentContext;
 };
 
 } // namespace WebCore

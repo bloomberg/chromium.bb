@@ -448,8 +448,6 @@ VTTRegionList
 ValidityState
 VideoPlaybackQuality
 WaveShaperNode
-WeakMap
-WeakSet
 WebGLActiveInfo
 WebGLBuffer
 WebGLContextEvent

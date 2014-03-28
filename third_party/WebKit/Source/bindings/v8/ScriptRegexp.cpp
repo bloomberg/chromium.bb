@@ -39,7 +39,7 @@ ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensit
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Context::Scope contextScope(V8PerIsolateData::from(isolate)->ensureDomInJSContext());
+    v8::Context::Scope contextScope(V8PerIsolateData::from(isolate)->ensureRegexContext());
     v8::TryCatch tryCatch;
 
     unsigned flags = v8::RegExp::kNone;
@@ -69,7 +69,7 @@ int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) c
 
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope handleScope(isolate);
-    v8::Context::Scope contextScope(V8PerIsolateData::from(isolate)->ensureDomInJSContext());
+    v8::Context::Scope contextScope(V8PerIsolateData::from(isolate)->ensureRegexContext());
     v8::TryCatch tryCatch;
 
     v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);

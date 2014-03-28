@@ -5,7 +5,6 @@ Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
     0) mutationCallback (async-callstack-mutation-observer.html:21)
-    1) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) timeout1 (async-callstack-mutation-observer.html:44)
@@ -14,7 +13,6 @@ Call stack:
 
 Call stack:
     0) mutationCallback (async-callstack-mutation-observer.html:21)
-    1) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations2 (async-callstack-mutation-observer.html:64)
     1) timeout2 (async-callstack-mutation-observer.html:57)
@@ -25,11 +23,9 @@ Call stack:
 
 Call stack:
     0) nestedMutationCallback (async-callstack-mutation-observer.html:28)
-    1) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) mutationCallback (async-callstack-mutation-observer.html:20)
-    2) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) timeout1 (async-callstack-mutation-observer.html:44)
@@ -38,17 +34,14 @@ Call stack:
 
 Call stack:
     0) nestedMutationCallback (async-callstack-mutation-observer.html:28)
-    1) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations2 (async-callstack-mutation-observer.html:64)
     1) timeoutFromNestedMutation (async-callstack-mutation-observer.html:76)
     [setTimeout]
     0) nestedMutationCallback (async-callstack-mutation-observer.html:30)
-    1) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) mutationCallback (async-callstack-mutation-observer.html:20)
-    2) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) timeout1 (async-callstack-mutation-observer.html:44)
@@ -57,7 +50,6 @@ Call stack:
     0) timeoutFromMutation (async-callstack-mutation-observer.html:70)
     [setTimeout]
     0) mutationCallback (async-callstack-mutation-observer.html:23)
-    1) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) timeout1 (async-callstack-mutation-observer.html:44)
@@ -68,11 +60,9 @@ Call stack:
     0) timeoutFromNestedMutation (async-callstack-mutation-observer.html:75)
     [setTimeout]
     0) nestedMutationCallback (async-callstack-mutation-observer.html:30)
-    1) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) mutationCallback (async-callstack-mutation-observer.html:20)
-    2) RunMicrotasks ((internal script):(line number))
     [Mutation]
     0) doMutations1 (async-callstack-mutation-observer.html:50)
     1) timeout1 (async-callstack-mutation-observer.html:44)
