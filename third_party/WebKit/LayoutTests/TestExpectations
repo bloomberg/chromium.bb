@@ -149,7 +149,7 @@ crbug.com/251183 w3c/web-platform-tests/html-templates/additions-to-parsing-xhtm
 
 crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents-owner-document-type.html [ Pass Failure ]
 crbug.com/330086 w3c/web-platform-tests/html-templates/definitions/template-contents.html [ Pass Failure ]
-crbug.com/330086 w3c/web-platform-tests/html-templates/parsing-html-templates/creating-an-element-for-the-token/template-owner-document.html [ Pass Failure ]
+crbug.com/330086 w3c/web-platform-tests/html-templates/parsing-html-templates/creating-an-element-for-the-token/template-owner-document.html [ Pass Timeout ]
 
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/csshostrule-interface/csshostrule-attributes/test-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/csshostrule-interface/csshostrule-attributes/test-002.html [ Failure ]
@@ -625,7 +625,7 @@ crbug.com/298188 [ Win ] virtual/implsidepainting/inspector/timeline [ Skip ]
 crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass Slow ]
 # Test results depends on image caching behavior in Blink/Skia. This is being
 # worked on actively. Rebaseline after impl-side painting becomes stable.
-crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Failure Pass Slow ]
+crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass Slow ]
 crbug.com/298188 [ Linux Debug ] virtual/implsidepainting/inspector/timeline/timeline-dom-content-loaded-event.html [ Pass Crash ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
@@ -725,7 +725,7 @@ crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.h
 # Macs do not support keyboard events to show a context menu.
 crbug.com/345913 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ Failure ]
 
-crbug.com/316349 [ Mac Debug ] inspector-protocol/page/enable-disable.html [ Failure Pass ]
+crbug.com/316349 inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
 crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ Failure Pass ]
 
@@ -985,6 +985,14 @@ crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pas
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357438 [ Win ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357439 svg/custom/js-late-pattern-and-object-creation.svg [ ImageOnlyFailure Pass ]
+crbug.com/357459 [ Linux Win ] virtual/threaded/animations/3d/matrix-transform-type-animation.html [ Pass Timeout ]
+crbug.com/357460 [ Debug ] fast/events/touch/gesture/touch-gesture-scroll-div-removed.html [ Crash Pass ]
+crbug.com/357461 [ Debug ] fast/mediastream/RTCPeerConnection-AddRemoveStream.html [ Crash Pass ]
+crbug.com/357462 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-none-block.html [ Failure Pass ]
+crbug.com/357464 [ Linux ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
+crbug.com/357464 [ Win Debug ] virtual/softwarecompositing/visibility/visibility-composited-incremental-update.html [ Pass Timeout ]
+crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
+crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-005.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
@@ -1009,7 +1017,7 @@ crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.
 
 crbug.com/355459 [ Release ] inspector/elements/edit-dom-actions-shadow.html [ Pass Timeout ]
 
-crbug.com/355463 [ Win Debug ] css3/flexbox/repaint.html [ Pass Failure ]
+crbug.com/355463 [ Linux Win ] css3/flexbox/repaint.html [ Pass Failure ]
 crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
 crbug.com/355489 media/activation-behavior.html [ Pass Failure Timeout ]
 
