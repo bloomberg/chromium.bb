@@ -91,13 +91,15 @@ def split_touched(files):
 
 
 def pretty_print(variables, stdout):
-  """Outputs a gyp compatible list from the decoded variables.
+  """Outputs a .isolate file from the decoded variables.
+
+  The .isolate format is GYP compatible.
 
   Similar to pprint.print() but with NIH syndrome.
   """
   # Order the dictionary keys by these keys in priority.
   ORDER = (
-      'variables', 'condition', 'command', 'relative_cwd', 'read_only',
+      'variables', 'condition', 'command', 'read_only',
       KEY_TRACKED, KEY_UNTRACKED)
 
   def sorting_key(x):
@@ -324,6 +326,7 @@ def verify_condition(condition, variables_and_values):
 
 def verify_root(value, variables_and_values):
   """Verifies that |value| is the parsed form of a valid .isolate file.
+
   See verify_ast() for the meaning of |variables_and_values|.
   """
   VALID_ROOTS = ['includes', 'conditions', 'variables']
@@ -504,20 +507,31 @@ def convert_map_to_isolate_dict(values, config_variables):
 
 class ConfigSettings(object):
   """Represents the dependency variables for a single build configuration.
+
   The structure is immutable.
+
+  .touch, .tracked and .untracked are the list of dependencies. The items in
+      these lists use '/' as a path separator.
+  .command and .isolate_dir describe how to run the command. .isolate_dir uses
+      the OS' native path separator. It must be an absolute path, it's the path
+      where to start the command from.
+  .read_only describe how to map the files.
   """
-  def __init__(self, values):
+  def __init__(self, values, isolate_dir):
     verify_variables(values)
+    assert isolate_dir is None or os.path.isabs(isolate_dir), isolate_dir
     self.touched = sorted(values.get(KEY_TOUCHED, []))
     self.tracked = sorted(values.get(KEY_TRACKED, []))
     self.untracked = sorted(values.get(KEY_UNTRACKED, []))
     self.command = values.get('command', [])[:]
+    self.isolate_dir = isolate_dir
     self.read_only = values.get('read_only')
 
   def union(self, rhs):
-    """Merges two config settings together.
+    """Merges two config settings together into a new instance.
 
-    self has priority over rhs for 'command' variable.
+    self has priority over rhs for .command. Use the same
+    .isolate_dir as the one having a .command. Preferring self over rhs.
     """
     var = {
       KEY_TOUCHED: sorted(self.touched + rhs.touched),
@@ -526,9 +540,11 @@ class ConfigSettings(object):
       'command': self.command or rhs.command,
       'read_only': rhs.read_only if self.read_only is None else self.read_only,
     }
-    return ConfigSettings(var)
+    isolate_dir = self.isolate_dir if self.command else rhs.isolate_dir
+    return ConfigSettings(var, isolate_dir)
 
   def flatten(self):
+    """Converts the object into a dict."""
     out = {}
     if self.command:
       out['command'] = self.command
@@ -540,6 +556,9 @@ class ConfigSettings(object):
       out[KEY_UNTRACKED] = self.untracked
     if self.read_only is not None:
       out['read_only'] = self.read_only
+    # TODO(maruel): Probably better to not output it if command is None?
+    if self.isolate_dir is not None:
+      out['isolate_dir'] = self.isolate_dir
     return out
 
 
@@ -575,6 +594,10 @@ class Configs(object):
 
   At this point, we don't know all the possibilities. So mount a partial view
   that we have.
+
+  This class doesn't hold isolate_dir, since it is dependent on the final
+  configuration selected. It is implicitly dependent on which .isolate defines
+  the 'command' that will take effect.
   """
   def __init__(self, file_comment, config_variables):
     self.file_comment = file_comment
@@ -602,7 +625,7 @@ class Configs(object):
     # TODO(maruel): Fix ordering based on the bounded values. The keys are not
     # necessarily sorted in the way that makes sense, they are alphabetically
     # sorted. It is important because the left-most takes predescence.
-    out = ConfigSettings({})
+    out = ConfigSettings({}, None)
     for k, v in sorted(self._by_config.iteritems()):
       if all(i == j or j is None for i, j in zip(config, k)):
         out = out.union(v)
@@ -696,6 +719,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     },
   }
   """
+  assert os.path.isabs(isolate_dir), isolate_dir
   if any(len(cond) == 3 for cond in value.get('conditions', [])):
     raise isolateserver.ConfigError('Using \'else\' is not supported anymore.')
   variables_and_values = {}
@@ -713,14 +737,14 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
   # Add global variables. The global variables are on the empty tuple key.
   isolate.set_config(
       (None,) * len(config_variables),
-      ConfigSettings(value.get('variables', {})))
+      ConfigSettings(value.get('variables', {}), isolate_dir))
 
   # Add configuration-specific variables.
   for expr, then in value.get('conditions', []):
     configs = match_configs(expr, config_variables, all_configs)
     new = Configs(None, config_variables)
     for config in configs:
-      new.set_config(config, ConfigSettings(then['variables']))
+      new.set_config(config, ConfigSettings(then['variables'], isolate_dir))
     isolate = isolate.union(new)
 
   # Load the includes. Process them in reverse so the last one take precedence.

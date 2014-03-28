@@ -13,8 +13,6 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-FAKE_DIR = u'/path/to/non_existing'
-
 import isolate_format
 import run_isolated
 from utils import tools
@@ -24,6 +22,11 @@ from isolate_format import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
 # Access to a protected member XXX of a client class
 # pylint: disable=W0212
+
+
+FAKE_DIR = (
+    u'z:\\path\\to\\non_existing'
+    if sys.platform == 'win32' else u'/path/to/non_existing')
 
 
 class IsolateFormatTest(unittest.TestCase):
@@ -69,8 +72,13 @@ class IsolateFormatTest(unittest.TestCase):
       pass
 
   def test_load_isolate_as_config_empty(self):
+    expected = {
+      (): {
+        'isolate_dir': FAKE_DIR,
+      },
+    }
     self.assertEqual(
-        {(): {}},
+        expected,
         isolate_format.load_isolate_as_config(FAKE_DIR, {}, None).flatten())
 
   def test_load_isolate_as_config(self):
@@ -114,32 +122,38 @@ class IsolateFormatTest(unittest.TestCase):
       ],
     }
     expected = {
-      (None,): {},
+      (None,): {
+        'isolate_dir': FAKE_DIR,
+      },
       ('amiga',): {
-        'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'g', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
+        'command': ['echo', 'You should get an Atari'],
+        'isolate_dir': FAKE_DIR,
         'read_only': 1,
       },
       ('atari',): {
-        'command': ['echo', 'Hello World'],
         KEY_TOUCHED: ['touched', 'touched_a'],
         KEY_TRACKED: ['a', 'c', 'x'],
         KEY_UNTRACKED: ['b', 'd', 'h'],
+        'command': ['echo', 'Hello World'],
+        'isolate_dir': FAKE_DIR,
         'read_only': 2,
       },
       ('coleco',): {
-        'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f'],
+        'command': ['echo', 'You should get an Atari'],
+        'isolate_dir': FAKE_DIR,
       },
       ('dendy',): {
-        'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
         KEY_TRACKED: ['a', 'e', 'x'],
         KEY_UNTRACKED: ['b', 'f', 'h'],
+        'command': ['echo', 'You should get an Atari'],
+        'isolate_dir': FAKE_DIR,
       },
     }
     self.assertEqual(
@@ -178,10 +192,11 @@ class IsolateFormatTest(unittest.TestCase):
     # The key is the empty tuple, since there is no variable to bind to.
     expected = {
       (): {
-        'command': ['echo', 'You should get an Atari'],
         KEY_TRACKED: ['a'],
         KEY_UNTRACKED: ['b'],
         KEY_TOUCHED: ['touched'],
+        'command': ['echo', 'You should get an Atari'],
+        'isolate_dir': FAKE_DIR,
         'read_only': 1,
       },
     }
@@ -477,7 +492,12 @@ class IsolateFormatTest(unittest.TestCase):
           isolate_format.Configs(None, ()),
           isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)),
         isolate_format.load_isolate_as_config(FAKE_DIR, {}, None))
-    self.assertEqual({(): {}}, actual.flatten())
+    expected = {
+      (): {
+        'isolate_dir': FAKE_DIR,
+      },
+    }
+    self.assertEqual(expected, actual.flatten())
 
   def test_merge_empty(self):
     actual = isolate_format.convert_map_to_isolate_dict(
@@ -511,12 +531,16 @@ class IsolateFormatTest(unittest.TestCase):
       ],
     }
     expected = {
-      (None,): {},
+      (None,): {
+        'isolate_dir': FAKE_DIR,
+      },
       ('linux',): {
         'isolate_dependency_tracked': ['file_common', 'file_linux'],
+        'isolate_dir': FAKE_DIR,
       },
       ('mac',): {
         'isolate_dependency_tracked': ['file_common', 'file_mac'],
+        'isolate_dir': FAKE_DIR,
       },
     }
     # Pylint is confused about union() return type.
@@ -566,15 +590,20 @@ class IsolateFormatTest(unittest.TestCase):
       ],
     }
     expected = {
-      (None, None): {},
+      (None, None): {
+        'isolate_dir': FAKE_DIR,
+      },
       ('linux', 1): {
         'isolate_dependency_tracked': ['file_common', 'file_linux'],
+        'isolate_dir': FAKE_DIR,
       },
       ('mac', 0): {
         'isolate_dependency_tracked': ['file_common', 'file_mac'],
+        'isolate_dir': FAKE_DIR,
       },
       ('win', 0): {
         'isolate_dependency_tracked': ['file_common', 'file_win'],
+        'isolate_dir': FAKE_DIR,
       },
     }
     # Pylint is confused about union() return type.
@@ -621,11 +650,22 @@ class IsolateFormatTest(unittest.TestCase):
     self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
     flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
     expected = {
-      (None, None): {},
-      (None, 'abc'): {'command': ['bar']},
-      ('1', None): {'command': ['foo']},
+      (None, None): {
+        'isolate_dir': FAKE_DIR,
+      },
+      (None, 'abc'): {
+        'command': ['bar'],
+        'isolate_dir': FAKE_DIR,
+      },
+      ('1', None): {
+        'command': ['foo'],
+        'isolate_dir': FAKE_DIR,
+      },
       # TODO(maruel): It is a conflict.
-      ('1', 'abc'): {'command': ['bar']},
+      ('1', 'abc'): {
+        'command': ['bar'],
+        'isolate_dir': FAKE_DIR,
+      },
     }
     self.assertEqual(expected, flatten)
 
@@ -654,18 +694,26 @@ class IsolateFormatTest(unittest.TestCase):
     self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
     flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
     expected = {
-      (None, None): {},
-      (None, 'abc'): {'command': ['bar']},
-      ('1', None): {'command': ['foo']},
+      (None, None): {
+        'isolate_dir': FAKE_DIR,
+      },
+      (None, 'abc'): {
+        'command': ['bar'],
+        'isolate_dir': FAKE_DIR,
+      },
+      ('1', None): {
+        'command': ['foo'],
+        'isolate_dir': FAKE_DIR,
+      },
     }
     self.assertEqual(expected, flatten)
 
   def test_make_isolate_multi_variables(self):
     config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
     config._by_config[(('0', 'linux'))] = isolate_format.ConfigSettings(
-        {'command': ['bar']})
+        {'command': ['bar']}, None)
     config._by_config[(('1', 'linux'))] = isolate_format.ConfigSettings(
-        {'command': ['foo']})
+        {'command': ['foo']}, None)
     expected = {
       'conditions': [
         ['CHROMEOS=="0" and OS=="linux"', {
@@ -685,9 +733,9 @@ class IsolateFormatTest(unittest.TestCase):
   def test_make_isolate_multi_variables_missing(self):
     config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
     config._by_config[((None, 'abc'))] = isolate_format.ConfigSettings(
-        {'command': ['bar']})
+        {'command': ['bar']}, None)
     config._by_config[(('1', None))] = isolate_format.ConfigSettings(
-        {'command': ['foo']})
+        {'command': ['foo']}, None)
     expected = {
       'conditions': [
         ['CHROMEOS=="1"', {
@@ -709,13 +757,13 @@ class IsolateFormatTest(unittest.TestCase):
     config = isolate_format.Configs(None, ('BRAND', 'CHROMEOS', 'LIB', 'OS'))
     config._by_config = {
         (None, 0, 's', 'linux'): isolate_format.ConfigSettings(
-            {'command': ['bar']}),
+            {'command': ['bar']}, None),
         (None, None, 's', 'mac'): isolate_format.ConfigSettings(
-            {'command': ['foo']}),
+            {'command': ['foo']}, None),
         (None, None, 's', 'win'): isolate_format.ConfigSettings(
-            {'command': ['ziz']}),
+            {'command': ['ziz']}, None),
         ('Chrome', 0, 's', 'win'): isolate_format.ConfigSettings(
-            {'command': ['baz']}),
+            {'command': ['baz']}, None),
     }
     expected = {
       'conditions': [
@@ -891,13 +939,13 @@ class IsolateFormatTest(unittest.TestCase):
   def test_pretty_print_mid_size(self):
     value = {
       'variables': {
-        'bar': [
+        KEY_TOUCHED: [
           'file1',
           'file2',
         ],
       },
       'conditions': [
-        ['OS=\"foo\"', {
+        ['OS==\"foo\"', {
           'variables': {
             KEY_UNTRACKED: [
               'dir1',
@@ -909,31 +957,31 @@ class IsolateFormatTest(unittest.TestCase):
             ],
             'command': ['python', '-c', 'print "H\\i\'"'],
             'read_only': 2,
-            'relative_cwd': 'isol\'at\\e',
           },
         }],
-        ['OS=\"bar\"', {
+        ['OS==\"bar\"', {
           'variables': {},
         }],
       ],
     }
+    isolate_format.verify_root(value, {})
+    # This is an .isolate format.
     expected = (
         "{\n"
         "  'variables': {\n"
-        "    'bar': [\n"
+        "    'isolate_dependency_touched': [\n"
         "      'file1',\n"
         "      'file2',\n"
         "    ],\n"
         "  },\n"
         "  'conditions': [\n"
-        "    ['OS=\"foo\"', {\n"
+        "    ['OS==\"foo\"', {\n"
         "      'variables': {\n"
         "        'command': [\n"
         "          'python',\n"
         "          '-c',\n"
         "          'print \"H\\i\'\"',\n"
         "        ],\n"
-        "        'relative_cwd': 'isol\\'at\\\\e',\n"
         "        'read_only': 2\n"
         "        'isolate_dependency_tracked': [\n"
         "          'file4',\n"
@@ -945,7 +993,7 @@ class IsolateFormatTest(unittest.TestCase):
         "        ],\n"
         "      },\n"
         "    }],\n"
-        "    ['OS=\"bar\"', {\n"
+        "    ['OS==\"bar\"', {\n"
         "      'variables': {\n"
         "      },\n"
         "    }],\n"
@@ -965,7 +1013,7 @@ class IsolateFormatTest(unittest.TestCase):
     }
     with self.assertRaises(isolate_format.isolateserver.ConfigError):
       isolate_format.load_isolate_as_config(
-          '.', isolate_with_else_clauses, None)
+          FAKE_DIR, isolate_with_else_clauses, None)
 
   def test_match_configs(self):
     expectations = [
@@ -1039,39 +1087,46 @@ class IsolateFormatTest(unittest.TestCase):
         'isolate_dependency_tracked': [
           'file_common',
         ],
+        'isolate_dir': FAKE_DIR,
       },
       ('linux',): {
         'isolate_dependency_tracked': [
           'file_linux',
         ],
+        'isolate_dir': FAKE_DIR,
         'read_only': 1,
       },
       ('mac',): {
         'isolate_dependency_tracked': [
           'file_non_linux',
         ],
+        'isolate_dir': FAKE_DIR,
         'read_only': 0,
       },
       ('win',): {
         'isolate_dependency_tracked': [
           'file_non_linux',
         ],
+        'isolate_dir': FAKE_DIR,
         'read_only': 0,
       },
     }
-    actual = isolate_format.load_isolate_as_config('.', values, None)
+    actual = isolate_format.load_isolate_as_config(FAKE_DIR, values, None)
     self.assertEqual(expected, actual.flatten())
 
   def test_configs_with_globals(self):
     c = isolate_format.Configs(None, ('x', 'y'))
-    c.set_config((1, 1), isolate_format.ConfigSettings({KEY_TRACKED: ['1,1']}))
-    c.set_config((2, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['2,2']}))
     c.set_config(
-        (1, None), isolate_format.ConfigSettings({KEY_TRACKED: ['1,y']}))
+        (1, 1), isolate_format.ConfigSettings({KEY_TRACKED: ['1,1']}, None))
     c.set_config(
-        (None, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['x,2']}))
+        (2, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['2,2']}, None))
     c.set_config(
-        (None, None), isolate_format.ConfigSettings({KEY_TRACKED: ['x,y']}))
+        (1, None), isolate_format.ConfigSettings({KEY_TRACKED: ['1,y']}, None))
+    c.set_config(
+        (None, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['x,2']}, None))
+    c.set_config(
+        (None, None),
+        isolate_format.ConfigSettings({KEY_TRACKED: ['x,y']}, None))
     expected = {
       (None, None): {KEY_TRACKED: ['x,y']},
       (None, 2): {KEY_TRACKED: ['x,2']},
@@ -1167,11 +1222,13 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
           'file_common',
           'file_less_common',
         ],
+        'isolate_dir': self.tempdir,
       },
       ('linux',): {
         'isolate_dependency_tracked': [
           'file_linux',
         ],
+        'isolate_dir': self.tempdir,
         'read_only': 1,
       },
       ('mac',): {
@@ -1179,19 +1236,29 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
           'file_mac',
           'file_non_linux',
         ],
+        'isolate_dir': self.tempdir,
         'read_only': 2,
       },
       ('win',): {
         'isolate_dependency_tracked': [
           'file_non_linux',
         ],
+        'isolate_dir': self.tempdir,
         'read_only': 0,
       },
     }
     self.assertEqual(expected, actual.flatten())
 
   def test_load_with_includes_with_commands(self):
-    # This one is messy.
+    # This one is messy. Check that isolate_dir is the expected value. To
+    # achieve this, put the .isolate files into subdirectories.
+    dir_1 = os.path.join(self.tempdir, '1')
+    dir_3 = os.path.join(self.tempdir, '3')
+    dir_3_2 = os.path.join(self.tempdir, '3', '2')
+    os.mkdir(dir_1)
+    os.mkdir(dir_3)
+    os.mkdir(dir_3_2)
+
     isolate1 = {
       'conditions': [
         ['OS=="linux"', {
@@ -1220,8 +1287,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
-    tools.write_json(
-        os.path.join(self.tempdir, 'isolate1.isolate'), isolate1, True)
+    tools.write_json(os.path.join(dir_1, 'isolate1.isolate'), isolate1, True)
+
     isolate2 = {
       'conditions': [
         ['OS=="linux" or OS=="mac"', {
@@ -1236,10 +1303,13 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
-    tools.write_json(
-        os.path.join(self.tempdir, 'isolate2.isolate'), isolate2, True)
+    tools.write_json(os.path.join(dir_3_2, 'isolate2.isolate'), isolate2, True)
+
     isolate3 = {
-      'includes': ['isolate1.isolate', 'isolate2.isolate'],
+      'includes': [
+        '../1/isolate1.isolate',
+        '2/isolate2.isolate',
+      ],
       'conditions': [
         ['OS=="mac"', {
           'variables': {
@@ -1254,26 +1324,37 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       ],
     }
 
-    actual = isolate_format.load_isolate_as_config(self.tempdir, isolate3, None)
+    # The 'isolate_dir' are important, they are what will be used when
+    # definining the final isolate_dir to use to run the command in the
+    # .isolated file.
+    actual = isolate_format.load_isolate_as_config(dir_3, isolate3, None)
     expected = {
-      (None,): {},
+      (None,): {
+        # TODO(maruel): See TODO in ConfigSettings.flatten().
+        # TODO(maruel): If kept, in this case dir_3 should be selected.
+        'isolate_dir': dir_1,
+      },
       ('linux',): {
-        # Last included takes precedence.
+        # Last included takes precedence. command comes from isolate2.
         'command': ['zoo'],
         'isolate_dependency_tracked': ['file_linux', 'other/file'],
+        'isolate_dir': dir_3_2,
       },
       ('mac',): {
-        # Command in isolate3 takes precedence.
+        # command in isolate3 takes precedence over the ones included.
         'command': ['yo', 'dawg'],
         'isolate_dependency_tracked': [
           'file_mac',
           'file_non_linux',
           'other/file',
         ],
+        'isolate_dir': dir_3,
       },
       ('win',): {
+        # command comes from isolate1.
         'command': ['foo', 'bar'],
         'isolate_dependency_tracked': ['file_non_linux'],
+        'isolate_dir': dir_1,
       },
     }
     self.assertEqual(expected, actual.flatten())
