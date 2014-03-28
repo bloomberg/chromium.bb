@@ -290,7 +290,10 @@ class OptionParser(optparse.OptionParser):
       global_cache_dir = subprocess.check_output(
           [GIT_EXECUTABLE, 'config', '--global', 'cache.cachepath']).strip()
       if options.cache_dir:
-        logging.warn('Overriding globally-configured cache directory.')
+        if global_cache_dir and (
+            os.path.abspath(options.cache_dir) !=
+            os.path.abspath(global_cache_dir)):
+          logging.warn('Overriding globally-configured cache directory.')
       else:
         options.cache_dir = global_cache_dir
     except subprocess.CalledProcessError:
