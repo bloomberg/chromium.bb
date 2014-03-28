@@ -116,16 +116,14 @@ private:
     virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const OVERRIDE FINAL;
     explicit InterpolableList(size_t size)
         : m_size(size)
+        , m_values(m_size)
     {
-        m_values.reserveCapacity(m_size);
-        m_values.resize(m_size);
     }
 
     InterpolableList(const InterpolableList& other)
         : m_size(other.m_size)
+        , m_values(m_size)
     {
-        m_values.reserveCapacity(m_size);
-        m_values.resize(m_size);
         for (size_t i = 0; i < m_size; i++)
             set(i, other.m_values[i]->clone());
     }
