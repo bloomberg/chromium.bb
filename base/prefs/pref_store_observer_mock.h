@@ -5,18 +5,28 @@
 #ifndef BASE_PREFS_PREF_STORE_OBSERVER_MOCK_H_
 #define BASE_PREFS_PREF_STORE_OBSERVER_MOCK_H_
 
-#include "base/basictypes.h"
-#include "base/prefs/pref_store.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include <string>
+#include <vector>
 
-// A gmock-ified implementation of PrefStore::Observer.
+#include "base/compiler_specific.h"
+#include "base/macros.h"
+#include "base/prefs/pref_store.h"
+
+// A mock implementation of PrefStore::Observer.
 class PrefStoreObserverMock : public PrefStore::Observer {
  public:
   PrefStoreObserverMock();
   virtual ~PrefStoreObserverMock();
 
-  MOCK_METHOD1(OnPrefValueChanged, void(const std::string&));
-  MOCK_METHOD1(OnInitializationCompleted, void(bool));
+  void VerifyAndResetChangedKey(const std::string& expected);
+
+  // PrefStore::Observer implementation
+  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
+  virtual void OnInitializationCompleted(bool success) OVERRIDE;
+
+  std::vector<std::string> changed_keys;
+  bool initialized;
+  bool initialization_success;  // Only valid if |initialized|.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrefStoreObserverMock);

@@ -9,8 +9,12 @@
 
 TestingPrefStore::TestingPrefStore()
     : read_only_(true),
-      init_complete_(false) {
-}
+      read_success_(true),
+      read_error_(PersistentPrefStore::PREF_READ_ERROR_NONE),
+      block_async_read_(false),
+      pending_async_read_(false),
+      init_complete_(false),
+      committed_(true) {}
 
 bool TestingPrefStore::GetValue(const std::string& key,
                                 const base::Value** value) const {
@@ -39,18 +43,23 @@ bool TestingPrefStore::IsInitializationComplete() const {
 }
 
 void TestingPrefStore::SetValue(const std::string& key, base::Value* value) {
-  if (prefs_.SetValue(key, value))
+  if (prefs_.SetValue(key, value)) {
+    committed_ = false;
     NotifyPrefValueChanged(key);
+  }
 }
 
 void TestingPrefStore::SetValueSilently(const std::string& key,
                                         base::Value* value) {
-  prefs_.SetValue(key, value);
+  if (prefs_.SetValue(key, value))
+    committed_ = false;
 }
 
 void TestingPrefStore::RemoveValue(const std::string& key) {
-  if (prefs_.RemoveValue(key))
+  if (prefs_.RemoveValue(key)) {
+    committed_ = false;
     NotifyPrefValueChanged(key);
+  }
 }
 
 bool TestingPrefStore::ReadOnly() const {
@@ -58,21 +67,26 @@ bool TestingPrefStore::ReadOnly() const {
 }
 
 PersistentPrefStore::PrefReadError TestingPrefStore::GetReadError() const {
-  return PersistentPrefStore::PREF_READ_ERROR_NONE;
+  return read_error_;
 }
 
 PersistentPrefStore::PrefReadError TestingPrefStore::ReadPrefs() {
   NotifyInitializationCompleted();
-  return PersistentPrefStore::PREF_READ_ERROR_NONE;
+  return read_error_;
 }
 
-void TestingPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate_raw) {
-  scoped_ptr<ReadErrorDelegate> error_delegate(error_delegate_raw);
-  NotifyInitializationCompleted();
+void TestingPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
+  DCHECK(!pending_async_read_);
+  error_delegate_.reset(error_delegate);
+  if (block_async_read_)
+    pending_async_read_ = true;
+  else
+    NotifyInitializationCompleted();
 }
+
+void TestingPrefStore::CommitPendingWrite() { committed_ = true; }
 
 void TestingPrefStore::SetInitializationCompleted() {
-  init_complete_ = true;
   NotifyInitializationCompleted();
 }
 
@@ -81,7 +95,12 @@ void TestingPrefStore::NotifyPrefValueChanged(const std::string& key) {
 }
 
 void TestingPrefStore::NotifyInitializationCompleted() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted(true));
+  DCHECK(!init_complete_);
+  init_complete_ = true;
+  if (read_success_ && read_error_ != PREF_READ_ERROR_NONE && error_delegate_)
+    error_delegate_->OnError(read_error_);
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnInitializationCompleted(read_success_));
 }
 
 void TestingPrefStore::ReportValueChanged(const std::string& key) {
@@ -126,8 +145,26 @@ bool TestingPrefStore::GetBoolean(const std::string& key, bool* value) const {
   return stored_value->GetAsBoolean(value);
 }
 
+void TestingPrefStore::SetBlockAsyncRead(bool block_async_read) {
+  DCHECK(!init_complete_);
+  block_async_read_ = block_async_read;
+  if (pending_async_read_ && !block_async_read_)
+    NotifyInitializationCompleted();
+}
+
 void TestingPrefStore::set_read_only(bool read_only) {
   read_only_ = read_only;
+}
+
+void TestingPrefStore::set_read_success(bool read_success) {
+  DCHECK(!init_complete_);
+  read_success_ = read_success;
+}
+
+void TestingPrefStore::set_read_error(
+    PersistentPrefStore::PrefReadError read_error) {
+  DCHECK(!init_complete_);
+  read_error_ = read_error;
 }
 
 TestingPrefStore::~TestingPrefStore() {}

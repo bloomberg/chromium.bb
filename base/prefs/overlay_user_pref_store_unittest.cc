@@ -48,47 +48,39 @@ TEST_F(OverlayUserPrefStoreTest, Observer) {
   overlay_->AddObserver(&obs);
 
   // Check that underlay first value is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(1);
   underlay_->SetValue(overlay_key, new FundamentalValue(42));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check that underlay overwriting is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(1);
   underlay_->SetValue(overlay_key, new FundamentalValue(43));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check that overwriting change in overlay is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(1);
   overlay_->SetValue(overlay_key, new FundamentalValue(44));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check that hidden underlay change is not reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(0);
   underlay_->SetValue(overlay_key, new FundamentalValue(45));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 
   // Check that overlay remove is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(1);
   overlay_->RemoveValue(overlay_key);
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check that underlay remove is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(1);
   underlay_->RemoveValue(overlay_key);
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(overlay_key);
 
   // Check respecting of silence.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(0);
   overlay_->SetValueSilently(overlay_key, new FundamentalValue(46));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 
   overlay_->RemoveObserver(&obs);
 
   // Check successful unsubscription.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(overlay_key))).Times(0);
   underlay_->SetValue(overlay_key, new FundamentalValue(47));
   overlay_->SetValue(overlay_key, new FundamentalValue(48));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 }
 
 TEST_F(OverlayUserPrefStoreTest, GetAndSet) {
@@ -154,23 +146,20 @@ TEST_F(OverlayUserPrefStoreTest, GlobalPref) {
   const Value* value = NULL;
 
   // Check that underlay first value is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(regular_key))).Times(1);
   underlay_->SetValue(regular_key, new FundamentalValue(42));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(regular_key);
 
   // Check that underlay overwriting is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(regular_key))).Times(1);
   underlay_->SetValue(regular_key, new FundamentalValue(43));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(regular_key);
 
   // Check that we get this value from the overlay
   EXPECT_TRUE(overlay_->GetValue(regular_key, &value));
   EXPECT_TRUE(base::FundamentalValue(43).Equals(value));
 
   // Check that overwriting change in overlay is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(regular_key))).Times(1);
   overlay_->SetValue(regular_key, new FundamentalValue(44));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(regular_key);
 
   // Check that we get this value from the overlay and the underlay.
   EXPECT_TRUE(overlay_->GetValue(regular_key, &value));
@@ -179,26 +168,23 @@ TEST_F(OverlayUserPrefStoreTest, GlobalPref) {
   EXPECT_TRUE(base::FundamentalValue(44).Equals(value));
 
   // Check that overlay remove is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(regular_key))).Times(1);
   overlay_->RemoveValue(regular_key);
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(regular_key);
 
   // Check that value was removed from overlay and underlay
   EXPECT_FALSE(overlay_->GetValue(regular_key, &value));
   EXPECT_FALSE(underlay_->GetValue(regular_key, &value));
 
   // Check respecting of silence.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(regular_key))).Times(0);
   overlay_->SetValueSilently(regular_key, new FundamentalValue(46));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 
   overlay_->RemoveObserver(&obs);
 
   // Check successful unsubscription.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(regular_key))).Times(0);
   underlay_->SetValue(regular_key, new FundamentalValue(47));
   overlay_->SetValue(regular_key, new FundamentalValue(48));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 }
 
 // Check that names mapping works correctly.
@@ -210,14 +196,12 @@ TEST_F(OverlayUserPrefStoreTest, NamesMapping) {
 
   // Check that if there is no override in the overlay, changing underlay value
   // is reported as changing an overlay value.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(1);
   underlay_->SetValue(mapped_underlay_key, new FundamentalValue(42));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(mapped_overlay_key);
 
   // Check that underlay overwriting is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(1);
   underlay_->SetValue(mapped_underlay_key, new FundamentalValue(43));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(mapped_overlay_key);
 
   // Check that we get this value from the overlay with both keys
   EXPECT_TRUE(overlay_->GetValue(mapped_overlay_key, &value));
@@ -227,9 +211,8 @@ TEST_F(OverlayUserPrefStoreTest, NamesMapping) {
   EXPECT_TRUE(base::FundamentalValue(43).Equals(value));
 
   // Check that overwriting change in overlay is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(1);
   overlay_->SetValue(mapped_overlay_key, new FundamentalValue(44));
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(mapped_overlay_key);
 
   // Check that we get an overriden value from overlay, while reading the
   // value from underlay still holds an old value.
@@ -241,38 +224,31 @@ TEST_F(OverlayUserPrefStoreTest, NamesMapping) {
   EXPECT_TRUE(base::FundamentalValue(43).Equals(value));
 
   // Check that hidden underlay change is not reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(0);
   underlay_->SetValue(mapped_underlay_key, new FundamentalValue(45));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 
   // Check that overlay remove is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(1);
   overlay_->RemoveValue(mapped_overlay_key);
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(mapped_overlay_key);
 
   // Check that underlay remove is reported.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(1);
   underlay_->RemoveValue(mapped_underlay_key);
-  Mock::VerifyAndClearExpectations(&obs);
+  obs.VerifyAndResetChangedKey(mapped_overlay_key);
 
   // Check that value was removed.
   EXPECT_FALSE(overlay_->GetValue(mapped_overlay_key, &value));
   EXPECT_FALSE(overlay_->GetValue(mapped_underlay_key, &value));
 
   // Check respecting of silence.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(0);
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_underlay_key))).Times(0);
   overlay_->SetValueSilently(mapped_overlay_key, new FundamentalValue(46));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 
   overlay_->RemoveObserver(&obs);
 
   // Check successful unsubscription.
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_overlay_key))).Times(0);
-  EXPECT_CALL(obs, OnPrefValueChanged(StrEq(mapped_underlay_key))).Times(0);
   underlay_->SetValue(mapped_underlay_key, new FundamentalValue(47));
   overlay_->SetValue(mapped_overlay_key, new FundamentalValue(48));
-  Mock::VerifyAndClearExpectations(&obs);
+  EXPECT_TRUE(obs.changed_keys.empty());
 }
 
 }  // namespace base

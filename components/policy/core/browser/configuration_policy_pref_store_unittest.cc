@@ -176,7 +176,6 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   const base::Value* value = NULL;
   EXPECT_FALSE(store_->GetValue(kTestPolicy, NULL));
 
-  EXPECT_CALL(observer_, OnPrefValueChanged(kTestPref)).Times(1);
   PolicyMap policy;
   policy.Set(kTestPolicy,
              POLICY_LEVEL_MANDATORY,
@@ -184,18 +183,16 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
              base::Value::CreateStringValue("http://www.chromium.org"),
              NULL);
   UpdateProviderPolicy(policy);
-  Mock::VerifyAndClearExpectations(&observer_);
+  observer_.VerifyAndResetChangedKey(kTestPref);
   EXPECT_TRUE(store_->GetValue(kTestPref, &value));
   EXPECT_TRUE(base::StringValue("http://www.chromium.org").Equals(value));
 
-  EXPECT_CALL(observer_, OnPrefValueChanged(_)).Times(0);
   UpdateProviderPolicy(policy);
-  Mock::VerifyAndClearExpectations(&observer_);
+  EXPECT_TRUE(observer_.changed_keys.empty());
 
-  EXPECT_CALL(observer_, OnPrefValueChanged(kTestPref)).Times(1);
   policy.Erase(kTestPolicy);
   UpdateProviderPolicy(policy);
-  Mock::VerifyAndClearExpectations(&observer_);
+  observer_.VerifyAndResetChangedKey(kTestPref);
   EXPECT_FALSE(store_->GetValue(kTestPref, NULL));
 }
 
@@ -203,9 +200,10 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   EXPECT_FALSE(store_->IsInitializationComplete());
   EXPECT_CALL(provider_, IsInitializationComplete(POLICY_DOMAIN_CHROME))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(observer_, OnInitializationCompleted(true)).Times(1);
   PolicyMap policy;
   UpdateProviderPolicy(policy);
+  EXPECT_TRUE(observer_.initialized);
+  EXPECT_TRUE(observer_.initialization_success);
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(store_->IsInitializationComplete());
 }

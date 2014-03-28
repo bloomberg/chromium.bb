@@ -40,7 +40,7 @@ class TestingPrefStore : public PersistentPrefStore {
   virtual PrefReadError GetReadError() const OVERRIDE;
   virtual PersistentPrefStore::PrefReadError ReadPrefs() OVERRIDE;
   virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) OVERRIDE;
-  virtual void CommitPendingWrite() OVERRIDE {}
+  virtual void CommitPendingWrite() OVERRIDE;
 
   // Marks the store as having completed initialization.
   void SetInitializationCompleted();
@@ -58,9 +58,18 @@ class TestingPrefStore : public PersistentPrefStore {
   bool GetInteger(const std::string& key, int* value) const;
   bool GetBoolean(const std::string& key, bool* value) const;
 
+  // Determines whether ReadPrefsAsync completes immediately. Defaults to false
+  // (non-blocking). To block, invoke this with true (blocking) before the call
+  // to ReadPrefsAsync. To unblock, invoke again with false (non-blocking) after
+  // the call to ReadPrefsAsync.
+  void SetBlockAsyncRead(bool block_async_read);
+
   // Getter and Setter methods for setting and getting the state of the
   // |TestingPrefStore|.
   virtual void set_read_only(bool read_only);
+  void set_read_success(bool read_success);
+  void set_read_error(PersistentPrefStore::PrefReadError read_error);
+  bool committed() { return committed_; }
 
  protected:
   virtual ~TestingPrefStore();
@@ -72,9 +81,26 @@ class TestingPrefStore : public PersistentPrefStore {
   // Flag that indicates if the PrefStore is read-only
   bool read_only_;
 
+  // The result to pass to PrefStore::Observer::OnInitializationCompleted
+  bool read_success_;
+
+  // The result to return from ReadPrefs or ReadPrefsAsync.
+  PersistentPrefStore::PrefReadError read_error_;
+
+  // Whether a call to ReadPrefsAsync should block.
+  bool block_async_read_;
+
+  // Whether there is a pending call to ReadPrefsAsync.
+  bool pending_async_read_;
+
   // Whether initialization has been completed.
   bool init_complete_;
 
+  // Whether the store contents have been committed to disk since the last
+  // mutation.
+  bool committed_;
+
+  scoped_ptr<ReadErrorDelegate> error_delegate_;
   ObserverList<PrefStore::Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingPrefStore);
