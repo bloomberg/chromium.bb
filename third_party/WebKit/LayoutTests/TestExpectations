@@ -810,14 +810,6 @@ crbug.com/345648 fast/repaint/selection-gap-overflow-scroll.html [ Pass Failure 
 crbug.com/345646 fast/repaint/selection-after-remove.html [ Pass Failure ]
 
 crbug.com/345767 fast/repaint/selection-gap-overflow-scroll-2.html [ Pass Failure ]
-crbug.com/345027 fast/canvas/canvas-as-image-incremental-repaint.html [ NeedsRebaseline ]
-crbug.com/345027 virtual/gpu/fast/canvas/canvas-as-image-incremental-repaint.html [ NeedsRebaseline ]
-crbug.com/345027 fast/repaint/4774354.html [ NeedsRebaseline ]
-crbug.com/345027 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-style.html [ NeedsRebaseline ]
-crbug.com/345027 fast/sub-pixel/selection/selection-rect-in-sub-pixel-table.html [ NeedsRebaseline ]
-crbug.com/345027 fast/sub-pixel/sub-pixel-iframe-copy-on-scroll.html [ NeedsRebaseline ]
-crbug.com/345027 fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ NeedsRebaseline ]
-crbug.com/345027 fast/table/simple_paint.html [ NeedsRebaseline ]
 
 crbug.com/334152 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-001.html [ Failure ]
 
