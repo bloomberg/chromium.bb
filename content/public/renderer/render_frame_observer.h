@@ -43,6 +43,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidStartProvisionalLoad() {}
   virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
   virtual void DidFinishLoad() {}
+  virtual void DidFinishDocumentLoad() {}
   virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
                                         int world_id) {}
   virtual void DidClearWindowObject(int world_id) {}

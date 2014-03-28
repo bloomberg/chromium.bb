@@ -1776,6 +1776,8 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebFrame* frame) {
   // TODO(nasko): Remove once we have RenderFrameObserver for this method.
   render_view_->didFinishDocumentLoad(frame);
 
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishDocumentLoad());
+
   // Check whether we have new encoding name.
   render_view_->UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
