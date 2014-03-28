@@ -108,19 +108,6 @@ class PreferenceAPI : public PreferenceAPIBase,
   // EventRouter::Observer implementation.
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
-  // Loads the preferences controlled by the specified extension from their
-  // dictionary and sets them in the |value_map|.
-  static void LoadExtensionControlledPrefs(ExtensionPrefs* prefs,
-                                           ExtensionPrefValueMap* value_map,
-                                           const std::string& extension_id,
-                                           ExtensionPrefsScope scope);
-
-  // Store extension controlled preference values in the |value_map|,
-  // which then informs the subscribers (ExtensionPrefStores) about the winning
-  // values.
-  static void InitExtensionControlledPrefs(ExtensionPrefs* prefs,
-                                           ExtensionPrefValueMap* value_map);
-
  private:
   friend class BrowserContextKeyedAPIFactory<PreferenceAPI>;
 

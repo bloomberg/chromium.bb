@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
-#include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "extensions/browser/admin_policy.h"
 #include "extensions/browser/app_sorting.h"
@@ -235,6 +234,75 @@ bool IsBlacklistBitSet(const base::DictionaryValue* ext) {
 bool IsEvictedEphemeralApp(const base::DictionaryValue* ext) {
   bool bool_value;
   return ext->GetBoolean(kPrefEvictedEphemeralApp, &bool_value) && bool_value;
+}
+
+void LoadExtensionControlledPrefs(ExtensionPrefs* prefs,
+                                  ExtensionPrefValueMap* value_map,
+                                  const std::string& extension_id,
+                                  ExtensionPrefsScope scope) {
+  std::string scope_string;
+  if (!pref_names::ScopeToPrefName(scope, &scope_string))
+    return;
+  std::string key = extension_id + "." + scope_string;
+
+  const base::DictionaryValue* source_dict =
+      prefs->pref_service()->GetDictionary(pref_names::kExtensions);
+  const base::DictionaryValue* preferences = NULL;
+  if (!source_dict->GetDictionary(key, &preferences))
+    return;
+
+  for (base::DictionaryValue::Iterator iter(*preferences); !iter.IsAtEnd();
+       iter.Advance()) {
+    value_map->SetExtensionPref(
+        extension_id, iter.key(), scope, iter.value().DeepCopy());
+  }
+}
+
+void InitExtensionControlledPrefs(ExtensionPrefs* prefs,
+                                  ExtensionPrefValueMap* value_map) {
+  ExtensionIdList extension_ids;
+  prefs->GetExtensions(&extension_ids);
+
+  for (ExtensionIdList::iterator extension_id = extension_ids.begin();
+       extension_id != extension_ids.end();
+       ++extension_id) {
+    base::Time install_time = prefs->GetInstallTime(*extension_id);
+    bool is_enabled = !prefs->IsExtensionDisabled(*extension_id);
+    bool is_incognito_enabled = prefs->IsIncognitoEnabled(*extension_id);
+    value_map->RegisterExtension(
+        *extension_id, install_time, is_enabled, is_incognito_enabled);
+    prefs->content_settings_store()->RegisterExtension(
+        *extension_id, install_time, is_enabled);
+
+    // Set regular extension controlled prefs.
+    LoadExtensionControlledPrefs(
+        prefs, value_map, *extension_id, kExtensionPrefsScopeRegular);
+    // Set incognito extension controlled prefs.
+    LoadExtensionControlledPrefs(prefs,
+                                 value_map,
+                                 *extension_id,
+                                 kExtensionPrefsScopeIncognitoPersistent);
+    // Set regular-only extension controlled prefs.
+    LoadExtensionControlledPrefs(
+        prefs, value_map, *extension_id, kExtensionPrefsScopeRegularOnly);
+
+    // Set content settings.
+    const base::ListValue* content_settings = NULL;
+    if (prefs->ReadPrefAsList(*extension_id,
+                              pref_names::kPrefContentSettings,
+                              &content_settings)) {
+      prefs->content_settings_store()->SetExtensionContentSettingFromList(
+          *extension_id, content_settings, kExtensionPrefsScopeRegular);
+    }
+    if (prefs->ReadPrefAsList(*extension_id,
+                              pref_names::kPrefIncognitoContentSettings,
+                              &content_settings)) {
+      prefs->content_settings_store()->SetExtensionContentSettingFromList(
+          *extension_id,
+          content_settings,
+          kExtensionPrefsScopeIncognitoPersistent);
+    }
+  }
 }
 
 }  // namespace
@@ -1758,7 +1826,7 @@ void ExtensionPrefs::InitPrefStore() {
   MigrateDisableReasons(extension_ids);
   app_sorting_->Initialize(extension_ids);
 
-  PreferenceAPI::InitExtensionControlledPrefs(this, extension_pref_value_map_);
+  InitExtensionControlledPrefs(this, extension_pref_value_map_);
 
   extension_pref_value_map_->NotifyInitializationCompleted();
 }

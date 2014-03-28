@@ -14,7 +14,6 @@ include_rules = [
   # TODO(jamescook): Remove these. http://crbug.com/162530
   "+chrome/browser/chrome_notification_types.h",
   "+chrome/browser/extensions/api/content_settings/content_settings_store.h",
-  "+chrome/browser/extensions/api/preference/preference_api.h",
   "+chrome/browser/extensions/api/runtime/runtime_api.h",
   "+chrome/browser/renderer_host/chrome_render_message_filter.h",
   "+chrome/common/extensions/api/sockets/sockets_manifest_data.h",
