@@ -9,8 +9,9 @@
 
 namespace WebCore {
 
-CompositingPropertyUpdater::CompositingPropertyUpdater()
+CompositingPropertyUpdater::CompositingPropertyUpdater(RenderLayer* rootRenderLayer)
     : m_geometryMap(UseTransforms)
+    , m_rootRenderLayer(rootRenderLayer)
 {
 }
 
@@ -31,8 +32,17 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
     if (updateType == ForceUpdate) {
         RenderLayer::AncestorDependentProperties properties;
 
-        if (!layer->isRootLayer())
-            properties.absoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->overlapBounds()));
+        if (!layer->isRootLayer()) {
+            properties.clippedAbsoluteBoundingBox = enclosingIntRect(m_geometryMap.absoluteRect(layer->overlapBounds()));
+            // FIXME: Setting the absBounds to 1x1 instead of 0x0 makes very little sense,
+            // but removing this code will make JSGameBench sad.
+            // See https://codereview.chromium.org/13912020/
+            if (properties.clippedAbsoluteBoundingBox.isEmpty())
+                properties.clippedAbsoluteBoundingBox.setSize(IntSize(1, 1));
+
+            IntRect clipRect = pixelSnappedIntRect(layer->clipper().backgroundClipRect(ClipRectsContext(m_rootRenderLayer, AbsoluteClipRects)).rect());
+            properties.clippedAbsoluteBoundingBox.intersect(clipRect);
+        }
 
         layer->updateAncestorDependentProperties(properties);
     }

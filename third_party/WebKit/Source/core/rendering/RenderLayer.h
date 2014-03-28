@@ -482,7 +482,7 @@ public:
 
     class AncestorDependentProperties {
     public:
-        IntRect absoluteBoundingBox;
+        IntRect clippedAbsoluteBoundingBox;
     };
 
     void setNeedsToUpdateAncestorDependentProperties();

@@ -265,8 +265,6 @@ private:
 
     void recursiveRepaintLayer(RenderLayer*);
 
-    void addToOverlapMap(OverlapMap&, RenderLayer*, const IntRect& layerBounds);
-
     // Forces an update for all frames of frame tree recursively. Used only when the mainFrame compositor is ready to
     // finish all deferred work.
     static void finishCompositingUpdateForFrameTree(LocalFrame*);

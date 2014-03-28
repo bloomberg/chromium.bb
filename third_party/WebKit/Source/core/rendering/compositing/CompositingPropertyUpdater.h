@@ -13,7 +13,7 @@ class RenderLayer;
 
 class CompositingPropertyUpdater {
 public:
-    CompositingPropertyUpdater();
+    explicit CompositingPropertyUpdater(RenderLayer* rootRenderLayer);
     ~CompositingPropertyUpdater();
 
     enum UpdateType {
@@ -29,6 +29,7 @@ public:
 
 private:
     RenderGeometryMap m_geometryMap;
+    RenderLayer* m_rootRenderLayer;
 };
 
 } // namespace WebCore

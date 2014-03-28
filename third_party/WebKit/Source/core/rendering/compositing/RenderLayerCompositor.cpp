@@ -118,8 +118,11 @@ public:
         beginNewOverlapTestingContext();
     }
 
-    void add(const IntRect& bounds)
+    void add(RenderLayer* layer, const IntRect& bounds)
     {
+        if (layer->isRootLayer() || bounds.isEmpty())
+            return;
+
         // Layers do not contribute to overlap immediately--instead, they will
         // contribute to overlap as soon as they have been recursively processed
         // and popped off the stack.
@@ -482,7 +485,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
 
         {
             TRACE_EVENT0("blink_rendering", "CompositingPropertyUpdater::updateAncestorDependentProperties");
-            CompositingPropertyUpdater().updateAncestorDependentProperties(updateRoot, m_pendingPropertyUpdateType);
+            CompositingPropertyUpdater(updateRoot).updateAncestorDependentProperties(updateRoot, m_pendingPropertyUpdateType);
             m_pendingPropertyUpdateType = CompositingPropertyUpdater::DoNotForceUpdate;
 #if !ASSERT_DISABLED
             CompositingPropertyUpdater::assertNeedsToUpdateAncestorDependantPropertiesBitsCleared(updateRoot);
@@ -905,16 +908,6 @@ void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer*
     setCompositingLayersNeedRebuild();
 }
 
-void RenderLayerCompositor::addToOverlapMap(OverlapMap& overlapMap, RenderLayer* layer, const IntRect& layerBounds)
-{
-    if (layer->isRootLayer())
-        return;
-
-    IntRect clipRect = pixelSnappedIntRect(layer->clipper().backgroundClipRect(ClipRectsContext(rootRenderLayer(), AbsoluteClipRects)).rect());
-    clipRect.intersect(layerBounds);
-    overlapMap.add(clipRect);
-}
-
 //  Recurse through the layers in z-index and overflow order (which is equivalent to painting order)
 //  For the z-order children of a compositing layer:
 //      If a child layers has a compositing layer, then all subsequent layers must
@@ -978,16 +971,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
             unclippedDescendants.append(layer);
     }
 
-    IntRect absBounds;
-    if (!layer->isRootLayer()) {
-        absBounds = layer->ancestorDependentProperties().absoluteBoundingBox;
-        // Setting the absBounds to 1x1 instead of 0x0 makes very little sense,
-        // but removing this code will make JSGameBench sad.
-        // See https://codereview.chromium.org/13912020/
-        if (absBounds.isEmpty())
-            absBounds.setSize(IntSize(1, 1));
-    }
-
+    const IntRect& absBounds = layer->ancestorDependentProperties().clippedAbsoluteBoundingBox;
     absoluteDecendantBoundingBox = absBounds;
 
     if (currentRecursionData.m_testingOverlap && !requiresCompositingOrSquashing(directReasons))
@@ -1047,7 +1031,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
                     //        re-compute the absBounds for the child so that we can add the
                     //        negative z-index child's bounds to the new overlap context.
                     overlapMap.beginNewOverlapTestingContext();
-                    addToOverlapMap(overlapMap, curNode->layer(), curNode->layer()->ancestorDependentProperties().absoluteBoundingBox);
+                    overlapMap.add(curNode->layer(), curNode->layer()->ancestorDependentProperties().clippedAbsoluteBoundingBox);
                     overlapMap.finishCurrentOverlapTestingContext();
                 }
             }
@@ -1093,7 +1077,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // the overlap map. Layers that are not separately composited will paint into their
     // compositing ancestor's backing, and so are still considered for overlap.
     if (childRecursionData.m_compositingAncestor && !childRecursionData.m_compositingAncestor->isRootLayer())
-        addToOverlapMap(overlapMap, layer, absBounds);
+        overlapMap.add(layer, absBounds);
 
     if (layer->stackingNode()->isStackingContext()) {
         layer->setShouldIsolateCompositedDescendants(childRecursionData.m_hasUnisolatedCompositedBlendingDescendant);
@@ -1111,7 +1095,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         // now, because the code is designed to push overlap information to the
         // second-from-top context of the stack.
         overlapMap.beginNewOverlapTestingContext();
-        addToOverlapMap(overlapMap, layer, absoluteDecendantBoundingBox);
+        overlapMap.add(layer, absoluteDecendantBoundingBox);
         willBeCompositedOrSquashed = true;
     }
 
