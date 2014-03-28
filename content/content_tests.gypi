@@ -731,6 +731,7 @@
             'renderer/media/webrtc_identity_service_unittest.cc',
             'renderer/media/webrtc_local_audio_source_provider_unittest.cc',
             'renderer/media/webrtc_local_audio_track_unittest.cc',
+            'renderer/media/webrtc_uma_histograms_unittest.cc',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',

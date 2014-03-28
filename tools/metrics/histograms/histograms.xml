@@ -29148,6 +29148,27 @@ other types of suffix sets.
   <summary>Counts number of calls to WebRTC APIs from JavaScript.</summary>
 </histogram>
 
+<histogram name="WebRTC.webkitApiCountPerSession" enum="JavaScriptAPIName">
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    Counts number of calls to WebRTC APIs from JavaScript, once   per
+    &quot;session&quot; which is demarcated by the total number of MediaStreams
+    within a renderer process that are being sent over a PeerConnection
+    transitioning from or to 0.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.webkitApiCountUniqueByOrigin" enum="JavaScriptAPIName">
+  <obsolete>
+    Deprecated as of r253828 (27 Feb 2014).
+  </obsolete>
+  <owner>tommi@chromium.org</owner>
+  <summary>
+    Counts number of calls to WebRTC APIs from JavaScript, once per origin per
+    renderer process.
+  </summary>
+</histogram>
+
 <histogram name="Webstore.ExtensionInstallResult" enum="BooleanSuccess">
   <owner>jackhou@chromium.org</owner>
   <summary>

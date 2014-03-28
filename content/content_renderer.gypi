@@ -735,6 +735,8 @@
         'renderer/media/webrtc_local_audio_track.h',
         'renderer/media/webrtc_logging.cc',
         'renderer/media/webrtc_logging.h',
+        'renderer/media/webrtc_uma_histograms.cc',
+        'renderer/media/webrtc_uma_histograms.h',
         'renderer/p2p/host_address_request.cc',
         'renderer/p2p/host_address_request.h',
         'renderer/p2p/ipc_network_manager.cc',
