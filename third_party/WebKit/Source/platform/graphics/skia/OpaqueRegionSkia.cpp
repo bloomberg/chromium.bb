@@ -150,7 +150,7 @@ static inline bool paintIsOpaque(const SkPaint& paint, OpaqueRegionSkia::DrawTyp
 static inline bool getDeviceClipAsRect(const GraphicsContext* context, SkRect& deviceClipRect)
 {
     // Get the current clip in device coordinate space.
-    if (context->canvas()->getClipType() != SkCanvas::kRect_ClipType)
+    if (!context->canvas()->isClipRect())
         return false;
 
     SkIRect deviceClipIRect;
