@@ -95,6 +95,12 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnGetPrinterSemanticCapsAndDefaults(const std::string& printer_name);
+  void OnPatchFileBsdiff(const base::FilePath& input_file,
+                         const base::FilePath& patch_file,
+                         const base::FilePath& output_file);
+  void OnPatchFileCourgette(const base::FilePath& input_file,
+                            const base::FilePath& patch_file,
+                            const base::FilePath& output_file);
   void OnStartupPing();
   void OnAnalyzeZipFileForDownloadProtection(
       const IPC::PlatformFileForTransit& zip_file);

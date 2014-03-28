@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 
 namespace component_updater {
@@ -63,7 +63,7 @@ scoped_ptr<base::DictionaryValue> ReadManifest(
 //
 // In both cases, if there is an error at any point, the remaining steps will
 // be skipped and Finish will be called.
-class ComponentUnpacker {
+class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
  public:
   // Possible error conditions.
   // Add only to the bottom of this enum; the order must be kept stable.
@@ -88,24 +88,27 @@ class ComponentUnpacker {
     kFingerprintWriteFailed,
   };
 
+  typedef base::Callback<void(Error, int)> Callback;
+
   // Constructs an unpacker for a specific component unpacking operation.
   // |pk_hash| is the expected/ public key SHA256 hash. |path| is the current
   // location of the CRX.
   ComponentUnpacker(const std::vector<uint8>& pk_hash,
                     const base::FilePath& path,
                     const std::string& fingerprint,
-                    ComponentPatcher* patcher,
                     ComponentInstaller* installer,
+                    bool in_process,
                     scoped_refptr<base::SequencedTaskRunner> task_runner);
-
-  virtual ~ComponentUnpacker();
 
   // Begins the actual unpacking of the files. May invoke a patcher if the
   // package is a differential update. Calls |callback| with the result.
-  void Unpack(
-      const base::Callback<void(Error, int)>& callback);
+  void Unpack(const Callback& callback);
 
  private:
+  friend class base::RefCountedThreadSafe<ComponentUnpacker>;
+
+  virtual ~ComponentUnpacker();
+
   bool UnpackInternal();
 
   // The first step of unpacking is to verify the file. Returns false if an
@@ -135,21 +138,18 @@ class ComponentUnpacker {
   // Finish is responsible for calling the callback provided in Start().
   void Finish();
 
-  // Returns a weak pointer to this object.
-  base::WeakPtr<ComponentUnpacker> GetWeakPtr();
-
   std::vector<uint8> pk_hash_;
   base::FilePath path_;
   base::FilePath unpack_path_;
   base::FilePath unpack_diff_path_;
   bool is_delta_;
   std::string fingerprint_;
-  ComponentPatcher* patcher_;
+  scoped_refptr<ComponentPatcher> patcher_;
   ComponentInstaller* installer_;
-  base::Callback<void(Error, int)> callback_;
+  Callback callback_;
+  const bool in_process_;
   Error error_;
   int extended_error_;
-  base::WeakPtrFactory<ComponentUnpacker> ptr_factory_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentUnpacker);

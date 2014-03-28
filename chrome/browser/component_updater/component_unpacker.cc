@@ -98,18 +98,17 @@ ComponentUnpacker::ComponentUnpacker(
     const std::vector<uint8>& pk_hash,
     const base::FilePath& path,
     const std::string& fingerprint,
-    ComponentPatcher* patcher,
     ComponentInstaller* installer,
+    bool in_process,
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : pk_hash_(pk_hash),
       path_(path),
       is_delta_(false),
       fingerprint_(fingerprint),
-      patcher_(patcher),
       installer_(installer),
+      in_process_(in_process),
       error_(kNone),
       extended_error_(0),
-      ptr_factory_(this),
       task_runner_(task_runner) {
 }
 
@@ -137,8 +136,7 @@ bool ComponentUnpacker::UnpackInternal() {
   return Verify() && Unzip() && BeginPatching();
 }
 
-void ComponentUnpacker::Unpack(
-    const base::Callback<void(Error, int)>& callback) {
+void ComponentUnpacker::Unpack(const Callback& callback) {
   callback_ = callback;
   if (!UnpackInternal())
     Finish();
@@ -202,20 +200,23 @@ bool ComponentUnpacker::BeginPatching() {
       error_ = kUnzipPathError;
       return false;
     }
+    patcher_ = new ComponentPatcher(unpack_diff_path_,
+                                    unpack_path_,
+                                    installer_,
+                                    in_process_,
+                                    task_runner_);
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DifferentialUpdatePatch,
-                              unpack_diff_path_,
-                              unpack_path_,
-                              patcher_,
-                              installer_,
-                              base::Bind(&ComponentUnpacker::EndPatching,
-                                         GetWeakPtr())));
+        FROM_HERE,
+        base::Bind(&ComponentPatcher::Start,
+                   patcher_,
+                   base::Bind(&ComponentUnpacker::EndPatching,
+                              scoped_refptr<ComponentUnpacker>(this))));
   } else {
-    task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ComponentUnpacker::EndPatching,
-                              GetWeakPtr(),
-                              kNone,
-                              0));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&ComponentUnpacker::EndPatching,
+                                      scoped_refptr<ComponentUnpacker>(this),
+                                      kNone,
+                                      0));
   }
   return true;
 }
@@ -223,6 +224,7 @@ bool ComponentUnpacker::BeginPatching() {
 void ComponentUnpacker::EndPatching(Error error, int extended_error) {
   error_ = error;
   extended_error_ = extended_error;
+  patcher_ = NULL;
   if (error_ != kNone) {
     Finish();
     return;
@@ -265,10 +267,6 @@ void ComponentUnpacker::Finish() {
   if (!unpack_path_.empty())
     base::DeleteFile(unpack_path_, true);
   callback_.Run(error_, extended_error_);
-}
-
-base::WeakPtr<ComponentUnpacker> ComponentUnpacker::GetWeakPtr() {
-  return ptr_factory_.GetWeakPtr();
 }
 
 ComponentUnpacker::~ComponentUnpacker() {

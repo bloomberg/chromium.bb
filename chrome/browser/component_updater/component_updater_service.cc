@@ -21,7 +21,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/component_updater/component_patcher.h"
 #include "chrome/browser/component_updater/component_unpacker.h"
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
@@ -252,13 +251,11 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_ptr<ComponentUpdateService::Configurator> config_;
 
-  scoped_ptr<ComponentPatcher> component_patcher_;
-
   scoped_ptr<UpdateChecker> update_checker_;
 
   scoped_ptr<PingManager> ping_manager_;
 
-  scoped_ptr<ComponentUnpacker> unpacker_;
+  scoped_refptr<ComponentUnpacker> unpacker_;
 
   scoped_ptr<CrxDownloader> crx_downloader_;
 
@@ -281,7 +278,6 @@ class CrxUpdateService : public ComponentUpdateService {
 
 CrxUpdateService::CrxUpdateService(ComponentUpdateService::Configurator* config)
     : config_(config),
-      component_patcher_(config->CreateComponentPatcher()),
       ping_manager_(new PingManager(config->PingUrl(),
                                     config->RequestContext())),
       blocking_task_runner_(BrowserThread::GetBlockingPool()->
@@ -856,12 +852,12 @@ void CrxUpdateService::DownloadComplete(
 void CrxUpdateService::Install(scoped_ptr<CRXContext> context,
                                const base::FilePath& crx_path) {
   // This function owns the file at |crx_path| and the |context| object.
-  unpacker_.reset(new ComponentUnpacker(context->pk_hash,
-                                        crx_path,
-                                        context->fingerprint,
-                                        component_patcher_.get(),
-                                        context->installer,
-                                        blocking_task_runner_));
+  unpacker_ = new ComponentUnpacker(context->pk_hash,
+                                    crx_path,
+                                    context->fingerprint,
+                                    context->installer,
+                                    config_->InProcess(),
+                                    blocking_task_runner_);
   unpacker_->Unpack(base::Bind(&CrxUpdateService::EndUnpacking,
                                base::Unretained(this),
                                context->id,
@@ -880,6 +876,8 @@ void CrxUpdateService::EndUnpacking(const std::string& component_id,
       base::Bind(&CrxUpdateService::DoneInstalling, base::Unretained(this),
                  component_id, error, extended_error),
       base::TimeDelta::FromMilliseconds(config_->StepDelay()));
+  // Reset the unpacker last, otherwise we free our own arguments.
+  unpacker_ = NULL;
 }
 
 // Installation has been completed. Adjust the component status and
