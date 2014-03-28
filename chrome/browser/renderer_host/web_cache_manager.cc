@@ -328,7 +328,8 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
       size_t max_dead_capacity = capacity / 2;
 #if defined(OS_ANDROID)
       if (base::android::SysUtils::IsLowEndDevice())
-        max_dead_capacity = std::min(512 * 1024U, max_dead_capacity);
+        max_dead_capacity = std::min(static_cast<size_t>(512 * 1024),
+                                     max_dead_capacity);
 #endif
 
       host->Send(new ChromeViewMsg_SetCacheCapacities(min_dead_capacity,

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_iterator.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
@@ -130,7 +131,7 @@ void MemoryDetails::CollectProcessData(
   GetProcessDataMemoryInformation(current_browser_processes, &current_browser);
   current_browser.name = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   current_browser.process_name =
-      reinterpret_cast<unsigned int>(chrome::kBrowserProcessExecutableName);
+      base::ASCIIToUTF16(chrome::kBrowserProcessExecutableName);
   process_data_.push_back(current_browser);
 
   // Finally return to the browser thread.

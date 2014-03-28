@@ -103,7 +103,7 @@ void poll_content(const Context& context) {
   socket_info.sin_port = htons(0);
   if (bind(sockfd, (struct sockaddr*)&socket_info, sizeof(socket_info)) < 0)
     PLOG(FATAL);
-  int size = sizeof(socket_info);
+  socklen_t size = sizeof(socket_info);
   getsockname(sockfd, (struct sockaddr*)&socket_info, &size);
   printf("%d\n", ntohs(socket_info.sin_port));
   // Using a pipe to ensure child is diconnected from the terminal before
