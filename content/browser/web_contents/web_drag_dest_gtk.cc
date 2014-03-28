@@ -209,8 +209,7 @@ void WebDragDestGtk::OnDragDataReceived(
           if (url.SchemeIs(kFileScheme) &&
               net::FileURLToFilePath(url, &file_path)) {
             drop_data_->filenames.push_back(
-                DropData::FileInfo(base::UTF8ToUTF16(file_path.value()),
-                                   base::string16()));
+                ui::FileInfo(file_path, base::FilePath()));
             // This is a hack. Some file managers also populate text/plain with
             // a file URL when dragging files, so we clear it to avoid exposing
             // it to the web content.

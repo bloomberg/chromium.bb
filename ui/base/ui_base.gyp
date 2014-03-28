@@ -160,6 +160,8 @@
         'dragdrop/drop_target_event.h',
         'dragdrop/drop_target_win.cc',
         'dragdrop/drop_target_win.h',
+        'dragdrop/file_info.cc',
+        'dragdrop/file_info.h',
         'dragdrop/gtk_dnd_util.cc',
         'dragdrop/gtk_dnd_util.h',
         'dragdrop/os_exchange_data.cc',

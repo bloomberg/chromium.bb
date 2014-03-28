@@ -291,9 +291,9 @@ int GetModifierFlags() {
         BOOL exists = [[NSFileManager defaultManager]
                            fileExistsAtPath:filename];
         if (exists) {
-          data->filenames.push_back(
-              DropData::FileInfo(
-                  base::SysNSStringToUTF16(filename), base::string16()));
+          data->filenames.push_back(ui::FileInfo(
+              base::FilePath::FromUTF8Unsafe(base::SysNSStringToUTF8(filename)),
+              base::FilePath()));
         }
       }
     }

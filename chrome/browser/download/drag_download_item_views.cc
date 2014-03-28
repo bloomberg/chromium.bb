@@ -12,6 +12,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_utils.h"
+#include "ui/base/dragdrop/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -54,9 +55,9 @@ void DragDownloadItem(const content::DownloadItem* download,
       drive_download_handler->IsDriveDownload(download))
     full_path = drive_download_handler->GetCacheFilePath(download);
 #endif
-  std::vector<ui::OSExchangeData::FileInfo> file_infos;
-  file_infos.push_back(ui::OSExchangeData::FileInfo(
-      full_path, download->GetFileNameToReportUser()));
+  std::vector<ui::FileInfo> file_infos;
+  file_infos.push_back(
+      ui::FileInfo(full_path, download->GetFileNameToReportUser()));
   data.SetFilenames(file_infos);
 
   // Add URL so that we can load supported files when dragged to WebContents.

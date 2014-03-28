@@ -350,19 +350,8 @@ void PrepareDragData(const DropData& drop_data,
     provider->SetURL(drop_data.url, drop_data.url_title);
   if (!drop_data.html.string().empty())
     provider->SetHtml(drop_data.html.string(), drop_data.html_base_url);
-  if (!drop_data.filenames.empty()) {
-    std::vector<ui::OSExchangeData::FileInfo> filenames;
-    for (std::vector<DropData::FileInfo>::const_iterator it =
-             drop_data.filenames.begin();
-         it != drop_data.filenames.end(); ++it) {
-      filenames.push_back(
-          ui::OSExchangeData::FileInfo(
-              base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(it->path)),
-              base::FilePath::FromUTF8Unsafe(
-                  base::UTF16ToUTF8(it->display_name))));
-    }
-    provider->SetFilenames(filenames);
-  }
+  if (!drop_data.filenames.empty())
+    provider->SetFilenames(drop_data.filenames);
   if (!drop_data.custom_data.empty()) {
     Pickle pickle;
     ui::WriteCustomDataToPickle(drop_data.custom_data, &pickle);
@@ -397,16 +386,7 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
   if (html_base_url.is_valid())
     drop_data->html_base_url = html_base_url;
 
-  std::vector<ui::OSExchangeData::FileInfo> files;
-  if (data.GetFilenames(&files) && !files.empty()) {
-    for (std::vector<ui::OSExchangeData::FileInfo>::const_iterator
-             it = files.begin(); it != files.end(); ++it) {
-      drop_data->filenames.push_back(
-          DropData::FileInfo(
-              base::UTF8ToUTF16(it->path.AsUTF8Unsafe()),
-              base::UTF8ToUTF16(it->display_name.AsUTF8Unsafe())));
-    }
-  }
+  data.GetFilenames(&drop_data->filenames);
 
   Pickle pickle;
   if (data.GetPickledData(ui::Clipboard::GetWebCustomDataFormatType(), &pickle))

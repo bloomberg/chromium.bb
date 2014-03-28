@@ -18,15 +18,6 @@ OSExchangeData::DownloadFileInfo::DownloadFileInfo(
 
 OSExchangeData::DownloadFileInfo::~DownloadFileInfo() {}
 
-OSExchangeData::FileInfo::FileInfo(
-    const base::FilePath& path,
-    const base::FilePath& display_name)
-    : path(path),
-      display_name(display_name) {
-}
-
-OSExchangeData::FileInfo::~FileInfo() {}
-
 OSExchangeData::OSExchangeData() : provider_(CreateProvider()) {
 }
 

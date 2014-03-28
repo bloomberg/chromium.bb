@@ -9,6 +9,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/dragdrop/file_info.h"
 
 namespace ui {
 
@@ -58,12 +59,12 @@ void OSExchangeDataProviderAura::SetURL(const GURL& url,
 
 void OSExchangeDataProviderAura::SetFilename(const base::FilePath& path) {
   filenames_.clear();
-  filenames_.push_back(OSExchangeData::FileInfo(path, base::FilePath()));
+  filenames_.push_back(FileInfo(path, base::FilePath()));
   formats_ |= OSExchangeData::FILE_NAME;
 }
 
 void OSExchangeDataProviderAura::SetFilenames(
-    const std::vector<OSExchangeData::FileInfo>& filenames) {
+    const std::vector<FileInfo>& filenames) {
   filenames_ = filenames;
   formats_ |= OSExchangeData::FILE_NAME;
 }
@@ -109,7 +110,7 @@ bool OSExchangeDataProviderAura::GetFilename(base::FilePath* path) const {
 }
 
 bool OSExchangeDataProviderAura::GetFilenames(
-    std::vector<OSExchangeData::FileInfo>* filenames) const {
+    std::vector<FileInfo>* filenames) const {
   if ((formats_ & OSExchangeData::FILE_NAME) == 0)
     return false;
   *filenames = filenames_;

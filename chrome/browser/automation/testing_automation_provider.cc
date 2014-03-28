@@ -915,7 +915,7 @@ void TestingAutomationProvider::DragAndDropFilePaths(
     }
 
     drop_data.filenames.push_back(
-        content::DropData::FileInfo(path, base::string16()));
+        ui::FileInfo(base::FilePath::FromUTF16Unsafe(path), base::FilePath()));
   }
 
   const gfx::Point client(x, y);

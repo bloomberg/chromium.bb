@@ -18,6 +18,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
+#include "ui/base/dragdrop/file_info.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -352,7 +353,7 @@ void OSExchangeDataProviderWin::SetFilename(const base::FilePath& path) {
 }
 
 void OSExchangeDataProviderWin::SetFilenames(
-    const std::vector<OSExchangeData::FileInfo>& filenames) {
+    const std::vector<FileInfo>& filenames) {
   for (size_t i = 0; i < filenames.size(); ++i) {
     STGMEDIUM* storage = GetStorageForFileName(filenames[i].path);
     DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
@@ -439,14 +440,13 @@ bool OSExchangeDataProviderWin::GetFilename(base::FilePath* path) const {
 }
 
 bool OSExchangeDataProviderWin::GetFilenames(
-    std::vector<OSExchangeData::FileInfo>* filenames) const {
+    std::vector<FileInfo>* filenames) const {
   std::vector<base::string16> filenames_local;
   bool success = ClipboardUtil::GetFilenames(source_object_, &filenames_local);
   if (success) {
     for (size_t i = 0; i < filenames_local.size(); ++i)
       filenames->push_back(
-          OSExchangeData::FileInfo(base::FilePath(filenames_local[i]),
-                                   base::FilePath()));
+          FileInfo(base::FilePath(filenames_local[i]), base::FilePath()));
   }
   return success;
 }

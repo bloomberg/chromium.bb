@@ -15,7 +15,7 @@ IPC_ENUM_TRAITS(blink::WebDragOperation)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(ui::DragDropTypes::DragEventSource,
                           ui::DragDropTypes::DRAG_EVENT_SOURCE_LAST)
 
-IPC_STRUCT_TRAITS_BEGIN(content::DropData::FileInfo)
+IPC_STRUCT_TRAITS_BEGIN(ui::FileInfo)
   IPC_STRUCT_TRAITS_MEMBER(path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
 IPC_STRUCT_TRAITS_END()

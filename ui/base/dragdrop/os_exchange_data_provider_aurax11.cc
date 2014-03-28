@@ -12,6 +12,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/dragdrop/file_info.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 
@@ -170,16 +171,17 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
 }
 
 void OSExchangeDataProviderAuraX11::SetFilename(const base::FilePath& path) {
-  std::vector<OSExchangeData::FileInfo> data;
-  data.push_back(OSExchangeData::FileInfo(path, base::FilePath()));
+  std::vector<FileInfo> data;
+  data.push_back(FileInfo(path, base::FilePath()));
   SetFilenames(data);
 }
 
 void OSExchangeDataProviderAuraX11::SetFilenames(
-    const std::vector<OSExchangeData::FileInfo>& filenames) {
+    const std::vector<FileInfo>& filenames) {
   std::vector<std::string> paths;
-  for (std::vector<OSExchangeData::FileInfo>::const_iterator it =
-           filenames.begin(); it != filenames.end(); ++it) {
+  for (std::vector<FileInfo>::const_iterator it = filenames.begin();
+       it != filenames.end();
+       ++it) {
     std::string url_spec = net::FilePathToFileURL(it->path).spec();
     if (!url_spec.empty())
       paths.push_back(url_spec);
@@ -277,7 +279,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
 }
 
 bool OSExchangeDataProviderAuraX11::GetFilename(base::FilePath* path) const {
-  std::vector<OSExchangeData::FileInfo> filenames;
+  std::vector<FileInfo> filenames;
   if (GetFilenames(&filenames)) {
     *path = filenames.front().path;
     return true;
@@ -287,7 +289,7 @@ bool OSExchangeDataProviderAuraX11::GetFilename(base::FilePath* path) const {
 }
 
 bool OSExchangeDataProviderAuraX11::GetFilenames(
-    std::vector<OSExchangeData::FileInfo>* filenames) const {
+    std::vector<FileInfo>* filenames) const {
   std::vector< ::Atom> url_atoms = ui::GetURIListAtomsFrom(&atom_cache_);
   std::vector< ::Atom> requested_types;
   ui::GetAtomIntersection(url_atoms, GetTargets(), &requested_types);
@@ -301,8 +303,7 @@ bool OSExchangeDataProviderAuraX11::GetFilenames(
       GURL url(*it);
       base::FilePath file_path;
       if (url.SchemeIsFile() && net::FileURLToFilePath(url, &file_path)) {
-        filenames->push_back(OSExchangeData::FileInfo(file_path,
-                                                      base::FilePath()));
+        filenames->push_back(FileInfo(file_path, base::FilePath()));
       }
     }
   }

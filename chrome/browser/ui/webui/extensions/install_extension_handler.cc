@@ -74,13 +74,15 @@ void InstallExtensionHandler::HandleStartDragMessage(
     return;
   }
 
-  const content::DropData::FileInfo& file_info = drop_data->filenames.front();
+  const ui::FileInfo& file_info = drop_data->filenames.front();
 
-  file_to_install_ = base::FilePath::FromUTF16Unsafe(file_info.path);
+  file_to_install_ = file_info.path;
   // Use the display name if provided, for checking file names
   // (.path is likely a random hash value in that case).
-  file_display_name_ =
-      file_info.display_name.empty() ? file_info.path : file_info.display_name;
+  // TODO(dcheng): It would be nice to make this a FilePath too.
+  file_display_name_ = file_info.display_name.empty()
+                           ? file_info.path.AsUTF16Unsafe()
+                           : file_info.display_name.AsUTF16Unsafe();
 }
 
 void InstallExtensionHandler::HandleStopDragMessage(

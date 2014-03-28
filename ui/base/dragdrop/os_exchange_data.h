@@ -33,6 +33,8 @@ class Vector2d;
 
 namespace ui {
 
+struct FileInfo;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // OSExchangeData
@@ -80,17 +82,6 @@ class UI_BASE_EXPORT OSExchangeData {
 
     base::FilePath filename;
     scoped_refptr<DownloadFileProvider> downloader;
-  };
-
-  // Encapsulates the info about a file.
-  struct UI_BASE_EXPORT FileInfo {
-    FileInfo(const base::FilePath& path, const base::FilePath& display_name);
-    ~FileInfo();
-
-    // The path of the file.
-    base::FilePath path;
-    // The display name of the file. This field is optional.
-    base::FilePath display_name;
   };
 
   // Provider defines the platform specific part of OSExchangeData that

@@ -154,8 +154,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
   virtual void SetString(const base::string16& data);
   virtual void SetURL(const GURL& url, const base::string16& title);
   virtual void SetFilename(const base::FilePath& path);
-  virtual void SetFilenames(
-      const std::vector<OSExchangeData::FileInfo>& filenames);
+  virtual void SetFilenames(const std::vector<FileInfo>& filenames);
   virtual void SetPickledData(const OSExchangeData::CustomFormat& format,
                               const Pickle& data);
   virtual void SetFileContents(const base::FilePath& filename,
@@ -167,8 +166,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderWin
                               GURL* url,
                               base::string16* title) const;
   virtual bool GetFilename(base::FilePath* path) const;
-  virtual bool GetFilenames(
-      std::vector<OSExchangeData::FileInfo>* filenames) const;
+  virtual bool GetFilenames(std::vector<FileInfo>* filenames) const;
   virtual bool GetPickledData(const OSExchangeData::CustomFormat& format,
                               Pickle* data) const;
   virtual bool GetFileContents(base::FilePath* filename,

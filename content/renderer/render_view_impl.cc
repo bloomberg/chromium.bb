@@ -608,14 +608,14 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item_list.push_back(item);
   }
 
-  for (std::vector<DropData::FileInfo>::const_iterator it =
+  for (std::vector<ui::FileInfo>::const_iterator it =
            drop_data.filenames.begin();
        it != drop_data.filenames.end();
        ++it) {
     WebDragData::Item item;
     item.storageType = WebDragData::Item::StorageTypeFilename;
-    item.filenameData = it->path;
-    item.displayNameData = it->display_name;
+    item.filenameData = it->path.AsUTF16Unsafe();
+    item.displayNameData = it->display_name.AsUTF16Unsafe();
     item_list.push_back(item);
   }
 

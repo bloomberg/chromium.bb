@@ -16,22 +16,12 @@
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
+#include "ui/base/dragdrop/file_info.h"
 #include "url/gurl.h"
 
 namespace content {
 
 struct CONTENT_EXPORT DropData {
-  // The struct is used to represent a file in the drop data.
-  struct CONTENT_EXPORT FileInfo {
-    FileInfo();
-    FileInfo(const base::string16& path, const base::string16& display_name);
-
-    // The path of the file.
-    base::string16 path;
-    // The display name of the file. This field is optional.
-    base::string16 display_name;
-  };
-
   DropData();
   ~DropData();
 
@@ -52,7 +42,7 @@ struct CONTENT_EXPORT DropData {
   // User is dropping one or more files on the webview. This field is only
   // populated if the drag is not renderer tainted, as this allows File access
   // from web content.
-  std::vector<FileInfo> filenames;
+  std::vector<ui::FileInfo> filenames;
 
   // Isolated filesystem ID for the files being dragged on the webview.
   base::string16 filesystem_id;

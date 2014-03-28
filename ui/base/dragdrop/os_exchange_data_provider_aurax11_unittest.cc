@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/dragdrop/file_info.h"
 #include "url/gurl.h"
 
 const char kFileURL[] = "file:///home/user/file.txt";
@@ -88,7 +89,7 @@ TEST_F(OSExchangeDataProviderAuraX11Test, URIListWithBoth) {
   EXPECT_TRUE(provider.HasURL(ui::OSExchangeData::DO_NOT_CONVERT_FILENAMES));
 
   // We should only receive the file from GetFilenames().
-  std::vector<OSExchangeData::FileInfo> filenames;
+  std::vector<FileInfo> filenames;
   EXPECT_TRUE(provider.GetFilenames(&filenames));
   ASSERT_EQ(1u, filenames.size());
   EXPECT_EQ(kFileName, filenames[0].path.value());

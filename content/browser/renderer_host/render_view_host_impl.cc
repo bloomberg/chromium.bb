@@ -761,28 +761,27 @@ void RenderViewHostImpl::DragTargetDragEnter(
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
   fileapi::IsolatedContext::FileInfoSet files;
-  for (std::vector<DropData::FileInfo>::iterator iter(
+  for (std::vector<ui::FileInfo>::iterator iter(
            filtered_data.filenames.begin());
-       iter != filtered_data.filenames.end(); ++iter) {
+       iter != filtered_data.filenames.end();
+       ++iter) {
     // A dragged file may wind up as the value of an input element, or it
     // may be used as the target of a navigation instead.  We don't know
     // which will happen at this point, so generously grant both access
     // and request permissions to the specific file to cover both cases.
     // We do not give it the permission to request all file:// URLs.
-    base::FilePath path =
-        base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(iter->path));
 
     // Make sure we have the same display_name as the one we register.
     if (iter->display_name.empty()) {
       std::string name;
-      files.AddPath(path, &name);
-      iter->display_name = base::UTF8ToUTF16(name);
+      files.AddPath(iter->path, &name);
+      iter->display_name = base::FilePath::FromUTF8Unsafe(name);
     } else {
-      files.AddPathWithName(path, base::UTF16ToUTF8(iter->display_name));
+      files.AddPathWithName(iter->path, iter->display_name.AsUTF8Unsafe());
     }
 
     policy->GrantRequestSpecificFileURL(renderer_id,
-                                        net::FilePathToFileURL(path));
+                                        net::FilePathToFileURL(iter->path));
 
     // If the renderer already has permission to read these paths, we don't need
     // to re-grant them. This prevents problems with DnD for files in the CrOS
@@ -790,8 +789,8 @@ void RenderViewHostImpl::DragTargetDragEnter(
     // directories, but dragging a file would cause the read/write access to be
     // overwritten with read-only access, making them impossible to delete or
     // rename until the renderer was killed.
-    if (!policy->CanReadFile(renderer_id, path))
-      policy->GrantReadFile(renderer_id, path);
+    if (!policy->CanReadFile(renderer_id, iter->path))
+      policy->GrantReadFile(renderer_id, iter->path);
   }
 
   fileapi::IsolatedContext* isolated_context =
@@ -1470,12 +1469,11 @@ void RenderViewHostImpl::OnStartDragging(
   //    still fire though, which causes read permissions to be granted to the
   //    renderer for any file paths in the drop.
   filtered_data.filenames.clear();
-  for (std::vector<DropData::FileInfo>::const_iterator it =
+  for (std::vector<ui::FileInfo>::const_iterator it =
            drop_data.filenames.begin();
-       it != drop_data.filenames.end(); ++it) {
-    base::FilePath path(
-        base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(it->path)));
-    if (policy->CanReadFile(GetProcess()->GetID(), path))
+       it != drop_data.filenames.end();
+       ++it) {
+    if (policy->CanReadFile(GetProcess()->GetID(), it->path))
       filtered_data.filenames.push_back(*it);
   }
   float scale = ui::GetImageScale(GetScaleFactorForView(GetView()));
