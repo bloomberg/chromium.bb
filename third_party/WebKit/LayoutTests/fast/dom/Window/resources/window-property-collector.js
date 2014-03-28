@@ -20,10 +20,15 @@ function emitExpectedResult(path, expected)
     if (path[0] == 'internals'
         || path[0] == 'propertiesToVerify' // Skip the list we're building...
         || path[0] == 'clientInformation' // Just an alias for navigator.
-        // Skip testRunner since they are only for testing.
-        || path[0] == 'testRunner'
-        || path[0] == 'eventSender' // Skip eventSender since they are only for testing.
-        || path[0] == 'layoutTestController') { // Just an alias for testRunner.
+        || path[0] == 'testRunner' // Skip testRunner since they are only for testing.
+        || path[0] == 'layoutTestController' // Just an alias for testRunner.
+        || path[0] == 'eventSender') { // Skip eventSender since they are only for testing.
+        return;
+    }
+
+    // Skip the properties which are hard to expect a stable result.
+    if (path[0] == 'accessibilityController' // we can hardly estimate the states of the cached WebAXObjects.
+        || path[0] == 'localStorage') { // local storage is not reliably cleared between tests.
         return;
     }
 
@@ -75,16 +80,6 @@ function collectPropertiesHelper(object, path)
         throw 'Error: probably looping';
 
     for (var property in object) {
-        // Skip the properties which are hard to expect a stable result.
-        // As for 'accessibilityController', we can hardly estimate the states
-        // of the cached WebAXObjects.
-        // FIXME: We can't access accessibilityController's properties here
-        // because some property accesses might crash (crbug/351195).
-        if (property == 'accessibilityController')
-            continue;
-        // As for 'localStorage', local storage is not reliably cleared between tests.
-        if (property == 'localStorage')
-            continue;
         path.push(property);
         var type = typeof(object[property]);
         if (type == "object") {

@@ -797,7 +797,8 @@ String AXRenderObject::text() const
 
 int AXRenderObject::textLength() const
 {
-    ASSERT(isTextControl());
+    if (!isTextControl())
+        return -1;
 
     if (isPasswordField())
         return -1; // need to return something distinct from 0
@@ -1568,7 +1569,8 @@ Widget* AXRenderObject::widgetForAttachmentView() const
 
 AXObject::PlainTextRange AXRenderObject::selectedTextRange() const
 {
-    ASSERT(isTextControl());
+    if (!isTextControl())
+        return PlainTextRange();
 
     if (isPasswordField())
         return PlainTextRange();
