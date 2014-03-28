@@ -35,9 +35,6 @@
 
 namespace {
 
-// Forward declare LogToConsole() we can use it in other functions here.
-void LogToConsole(PP_Instance instance, const char* message);
-
 base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
     g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
 
@@ -449,8 +446,7 @@ void ReportLoadError(PP_Instance instance,
                      const char* console_message) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
-    load_manager->ReportLoadError(error, error_message);
-  LogToConsole(instance, console_message);
+    load_manager->ReportLoadError(error, error_message, console_message);
 }
 
 void InstanceCreated(PP_Instance instance) {
@@ -499,11 +495,10 @@ PP_UrlSchemeType GetUrlScheme(PP_Var url) {
 }
 
 void LogToConsole(PP_Instance instance, const char* message) {
-  std::string source("NativeClient");
-  ppapi::PpapiGlobals::Get()->LogWithSource(instance,
-                                            PP_LOGLEVEL_LOG,
-                                            source,
-                                            std::string(message));
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    load_manager->LogToConsole(std::string(message));
 }
 
 PP_Bool GetNexeErrorReported(PP_Instance instance) {

@@ -28,7 +28,9 @@ class NexeLoadManager {
   explicit NexeLoadManager(PP_Instance instance);
   ~NexeLoadManager();
 
-  void ReportLoadError(PP_NaClError error, const std::string& error_message);
+  void ReportLoadError(PP_NaClError error,
+                       const std::string& error_message,
+                       const std::string& console_message);
 
   // TODO(dmichael): Everything below this comment should eventually be made
   // private, when ppb_nacl_private_impl.cc is no longer using them directly.
@@ -59,6 +61,7 @@ class NexeLoadManager {
   void set_nacl_ready_state(PP_NaClReadyState ready_state);
 
   void SetReadOnlyProperty(PP_Var key, PP_Var value);
+  void LogToConsole(const std::string& message);
 
   bool is_installed() { return is_installed_; }
   void set_is_installed(bool installed) { is_installed_ = installed; }

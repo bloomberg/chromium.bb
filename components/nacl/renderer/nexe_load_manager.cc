@@ -97,7 +97,8 @@ NexeLoadManager::~NexeLoadManager() {
 }
 
 void NexeLoadManager::ReportLoadError(PP_NaClError error,
-                                      const std::string& error_message) {
+                                      const std::string& error_message,
+                                      const std::string& console_message) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
 
@@ -108,9 +109,6 @@ void NexeLoadManager::ReportLoadError(PP_NaClError error,
     sender->Send(
         new NaClHostMsg_MissingArchError(GetRoutingID(pp_instance_)));
   }
-  // TODO(dmichael): Move the following actions here:
-  // - Print error message to JavaScript console.
-
   set_nacl_ready_state(PP_NACL_READY_STATE_DONE);
   nexe_error_reported_ = true;
 
@@ -141,6 +139,8 @@ void NexeLoadManager::ReportLoadError(PP_NaClError error,
                          "NaCl.LoadStatus.Plugin.InstalledApp" :
                          "NaCl.LoadStatus.Plugin.NotInstalledApp";
   HistogramEnumerate(uma_name, error, PP_NACL_ERROR_MAX);
+
+  LogToConsole(console_message);
 }
 
 void NexeLoadManager::DispatchEvent(const ProgressEvent &event) {
@@ -205,6 +205,11 @@ void NexeLoadManager::set_nacl_ready_state(PP_NaClReadyState ready_state) {
 
 void NexeLoadManager::SetReadOnlyProperty(PP_Var key, PP_Var value) {
   plugin_instance_->SetEmbedProperty(key, value);
+}
+
+void NexeLoadManager::LogToConsole(const std::string& message) {
+  ppapi::PpapiGlobals::Get()->LogWithSource(
+      pp_instance_, PP_LOGLEVEL_LOG, std::string("NativeClient"), message);
 }
 
 }  // namespace nacl
