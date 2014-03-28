@@ -16023,6 +16023,23 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.UserTextCleared" enum="OmniboxUserTextCleared">
+  <owner>mpearson@chromium.org</owner>
+  <summary>
+    Counts the number of times that the user text is cleared.  IME users are
+    sometimes in the situation that IME was unintentionally turned on and failed
+    to input latin alphabets (ASCII characters) or the opposite case.  In that
+    case, users may delete all the text and the user text gets cleared.  This
+    histogram helps us estimate how often this scenario happens.
+
+    Note that since we don't currently correlate &quot;text cleared&quot; events
+    with IME usage, this also captures many other cases where users clear the
+    text; though it explicitly doesn't log deleting all the permanent text as
+    the first action of an editing sequence (see comments in
+    OnAfterPossibleChange()).
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.ZeroSuggest.MostVisitedResultsCounterfactual">
   <owner>hfung@chromium.org</owner>
   <summary>
@@ -36659,6 +36676,11 @@ other types of suffix sets.
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>
+</enum>
+
+<enum name="OmniboxUserTextCleared" type="int">
+  <int value="0" label="cleared by editing"/>
+  <int value="1" label="cleared with escape"/>
 </enum>
 
 <enum name="OmniboxZeroSuggestRequests" type="int">
