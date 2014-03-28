@@ -141,7 +141,8 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
     retrieve_device_state = true;
-    device_id = policy::DeviceCloudPolicyManagerChromeOS::GetDeviceStateKey();
+    device_id =
+        policy::DeviceCloudPolicyManagerChromeOS::GetCurrentDeviceStateKey();
   } else {
     device_id = policy::DeviceCloudPolicyManagerChromeOS::GetMachineID();
   }

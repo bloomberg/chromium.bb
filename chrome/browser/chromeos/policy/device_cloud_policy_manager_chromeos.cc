@@ -7,8 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/port.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -44,13 +47,10 @@ const char kNoRequisition[] = "none";
 // Overridden no requisition value.
 const char kRemoraRequisition[] = "remora";
 
-// MachineInfo key names.
-const char kMachineInfoSystemHwqual[] = "hardware_class";
-
 // These are the machine serial number keys that we check in order until we
 // find a non-empty serial number. The VPD spec says the serial number should be
 // in the "serial_number" key for v2+ VPDs. However, legacy devices used a
-// different keys to report their serial number, which we fall back to if
+// different key to report their serial number, which we fall back to if
 // "serial_number" is not present.
 //
 // Product_S/N is still special-cased due to inconsistencies with serial
@@ -95,6 +95,12 @@ bool GetMachineFlag(const std::string& key, bool default_value) {
 }
 
 }  // namespace
+
+const int
+DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyTimeQuantumPower;
+
+const int
+DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta;
 
 DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
     scoped_ptr<DeviceCloudPolicyStoreChromeOS> store,
@@ -145,7 +151,8 @@ void DeviceCloudPolicyManagerChromeOS::StartEnrollment(
           device_store_.get(), install_attributes_, CreateClient(),
           background_task_runner_, auth_token,
           install_attributes_->GetDeviceId(), is_auto_enrollment,
-          GetDeviceRequisition(), GetDeviceStateKey(), allowed_device_modes,
+          GetDeviceRequisition(), GetCurrentDeviceStateKey(),
+          allowed_device_modes,
           base::Bind(&DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted,
                      base::Unretained(this), callback)));
   enrollment_handler_->StartEnrollment();
@@ -268,16 +275,19 @@ std::string DeviceCloudPolicyManagerChromeOS::GetMachineID() {
 
 // static
 std::string DeviceCloudPolicyManagerChromeOS::GetMachineModel() {
-  return GetMachineStatistic(kMachineInfoSystemHwqual);
+  return GetMachineStatistic(chromeos::system::kHardwareClassKey);
 }
 
 // static
-std::string DeviceCloudPolicyManagerChromeOS::GetDeviceStateKey() {
-  // TODO(mnissler): Figure out which stable device identifiers should be used
-  // here and update the code. See http://crbug.com/352599.
-  std::string group_code_key =
-      GetMachineStatistic(chromeos::system::kOffersGroupCodeKey);
-  return crypto::SHA256HashString(group_code_key + GetMachineID());
+std::string DeviceCloudPolicyManagerChromeOS::GetCurrentDeviceStateKey() {
+  std::vector<std::string> state_keys;
+  if (GetDeviceStateKeys(base::Time::Now(), &state_keys) &&
+      !state_keys.empty()) {
+    // The key for the current time is always the first one.
+    return state_keys[0];
+  }
+
+  return std::string();
 }
 
 scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
@@ -298,8 +308,8 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
     std::vector<std::string> state_keys;
-    state_keys.push_back(GetDeviceStateKey());
-    client->SetStateKeysToUpload(state_keys);
+    if (GetDeviceStateKeys(base::Time::Now(), &state_keys))
+      client->SetStateKeysToUpload(state_keys);
   }
 
   return client.Pass();
@@ -375,6 +385,43 @@ std::string DeviceCloudPolicyManagerChromeOS::GetRestoreMode() const {
   std::string restore_mode;
   device_state_dict->GetString(kDeviceStateRestoreMode, &restore_mode);
   return restore_mode;
+}
+
+// static
+bool DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
+    const base::Time& timestamp,
+    std::vector<std::string>* state_keys) {
+  state_keys->clear();
+
+  std::string disk_serial_number =
+      GetMachineStatistic(chromeos::system::kDiskSerialNumber);
+  if (disk_serial_number.empty()) {
+    LOG(ERROR) << "Missing disk serial number";
+    return false;
+  }
+
+  std::string machine_id = GetMachineID();
+  if (machine_id.empty())
+    return false;
+
+  // Tolerate missing group code keys, some old devices may not have it.
+  std::string group_code_key =
+      GetMachineStatistic(chromeos::system::kOffersGroupCodeKey);
+
+  // Get the current time in quantized form.
+  int64 quantum_size = GG_INT64_C(1) << kDeviceStateKeyTimeQuantumPower;
+  int64 quantized_time =
+      (timestamp - base::Time::UnixEpoch()).InSeconds() & ~(quantum_size - 1);
+  for (int i = 0; i < kDeviceStateKeyFutureQuanta; ++i) {
+    state_keys->push_back(crypto::SHA256HashString(
+        crypto::SHA256HashString(group_code_key) +
+        crypto::SHA256HashString(disk_serial_number) +
+        crypto::SHA256HashString(machine_id) +
+        crypto::SHA256HashString(base::Int64ToString(quantized_time))));
+    quantized_time += quantum_size;
+  }
+
+  return true;
 }
 
 }  // namespace policy

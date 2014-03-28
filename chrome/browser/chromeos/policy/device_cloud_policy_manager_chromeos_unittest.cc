@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 
+#include <algorithm>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -259,6 +261,70 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConsumerDevice) {
 
   manager_->Shutdown();
   EXPECT_TRUE(manager_->policies().Equals(bundle));
+}
+
+class DeviceCloudPolicyManagerChromeOSStateKeyTest : public testing::Test {
+ protected:
+  DeviceCloudPolicyManagerChromeOSStateKeyTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    chromeos::system::StatisticsProvider::SetTestProvider(
+        &statistics_provider_);
+    EXPECT_CALL(statistics_provider_, GetMachineStatistic(_, _))
+        .WillRepeatedly(Invoke(this,
+                               &DeviceCloudPolicyManagerChromeOSStateKeyTest::
+                                   GetMachineStatistic));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    chromeos::system::StatisticsProvider::SetTestProvider(NULL);
+  }
+
+  bool GetMachineStatistic(const std::string& name, std::string* result) {
+    *result = "fake-" + name;
+    return true;
+  }
+
+ private:
+  chromeos::system::MockStatisticsProvider statistics_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOSStateKeyTest);
+};
+
+TEST_F(DeviceCloudPolicyManagerChromeOSStateKeyTest, GetDeviceStateKeys) {
+  base::Time current = base::Time::UnixEpoch() + base::TimeDelta::FromDays(100);
+
+  // The correct number of state keys gets returned.
+  std::vector<std::string> state_keys;
+  EXPECT_TRUE(DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
+      current, &state_keys));
+  EXPECT_EQ(DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta,
+            static_cast<int>(state_keys.size()));
+
+  // All state keys are different.
+  std::set<std::string> state_key_set(state_keys.begin(), state_keys.end());
+  EXPECT_EQ(DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta,
+            static_cast<int>(state_key_set.size()));
+
+  // Moving forward just a little yields the same keys.
+  std::vector<std::string> new_state_keys;
+  current += base::TimeDelta::FromDays(1);
+  EXPECT_TRUE(DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
+      current, &new_state_keys));
+  EXPECT_EQ(state_keys, new_state_keys);
+
+  // Jumping to a future quantum results in the state keys rolling forward.
+  int64 step =
+      GG_INT64_C(1)
+      << DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyTimeQuantumPower;
+  current += 2 * base::TimeDelta::FromSeconds(step);
+
+  EXPECT_TRUE(DeviceCloudPolicyManagerChromeOS::GetDeviceStateKeys(
+      current, &new_state_keys));
+  ASSERT_EQ(DeviceCloudPolicyManagerChromeOS::kDeviceStateKeyFutureQuanta,
+            static_cast<int>(new_state_keys.size()));
+  EXPECT_TRUE(std::equal(state_keys.begin() + 2, state_keys.end(),
+                         new_state_keys.begin()));
 }
 
 class DeviceCloudPolicyManagerChromeOSEnrollmentTest

@@ -7,6 +7,7 @@
 
 #include <bitset>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -44,6 +45,22 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
  public:
   typedef std::bitset<32> AllowedDeviceModes;
   typedef base::Callback<void(EnrollmentStatus)> EnrollmentCallback;
+
+  // The power of two determining the size of the time quanta for device state
+  // keys, i.e. the quanta will be of size 2^kDeviceStateKeyTimeQuantumPower
+  // seconds. 2^23 seconds corresponds to 97.09 days.
+  static const int kDeviceStateKeyTimeQuantumPower = 23;
+
+  // The number of future time quanta to generate device state identifiers for.
+  // This determines the interval after which a device will no longer receive
+  // server-backed state information and thus corresponds to the delay until a
+  // device becomes anonymous to the server again.
+  //
+  // The goal here is to guarantee state key validity for 1 year into the
+  // future. 4 quanta are needed to cover a year, but the current quantum is
+  // clipped short in the general case. Hence, one buffer quantum is needed to
+  // make up for the clipping, yielding a total of 5 quanta.
+  static const int kDeviceStateKeyFutureQuanta = 5;
 
   // |task_runner| is the runner for policy refresh tasks.
   // |background_task_runner| is used to execute long-running background tasks
@@ -101,8 +118,14 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Returns the machine model, or an empty string if not available.
   static std::string GetMachineModel();
 
-  // Returns the stable device state key.
-  static std::string GetDeviceStateKey();
+  // Gets the device state keys for |timestamp|. These will cover a time frame
+  // including |timestamp| and extending into the future as configured by the
+  // constants declared above.
+  static bool GetDeviceStateKeys(const base::Time& timestamp,
+                                 std::vector<std::string>* state_keys);
+
+  // Returns the currently valid device state key.
+  static std::string GetCurrentDeviceStateKey();
 
   // Returns the robot 'email address' associated with the device robot
   // account (sometimes called a service account) associated with this device
