@@ -62,7 +62,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE {
     gfx::GpuMemoryBufferHandle handle;
-    handle.type = gfx::EGL_CLIENT_BUFFER;
+    handle.type = gfx::ANDROID_NATIVE_BUFFER;
     handle.native_buffer = g_gl_draw_functions->get_native_buffer(buffer_id_);
     return handle;
   }

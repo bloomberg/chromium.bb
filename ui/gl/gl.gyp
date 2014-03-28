@@ -177,6 +177,8 @@
             'egl_util.h',
             'gl_context_egl.cc',
             'gl_context_egl.h',
+            'gl_image_egl.cc',
+            'gl_image_egl.h',
             'gl_surface_egl.cc',
             'gl_surface_egl.h',
             'gl_egl_api_implementation.cc',
@@ -275,8 +277,8 @@
             'gl_jni_headers',
           ],
           'sources': [
-            'gl_image_egl.cc',
-            'gl_image_egl.h',
+            'gl_image_android_native_buffer.cc',
+            'gl_image_android_native_buffer.h',
           ],
           'link_settings': {
             'libraries': [

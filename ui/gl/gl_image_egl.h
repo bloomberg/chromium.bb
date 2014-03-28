@@ -5,7 +5,7 @@
 #ifndef UI_GL_GL_IMAGE_EGL_H_
 #define UI_GL_GL_IMAGE_EGL_H_
 
-#include "ui/gl/gl_bindings.h"  // for EGLImageKHR
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
 namespace gfx {
@@ -14,31 +14,25 @@ class GL_EXPORT GLImageEGL : public GLImage {
  public:
   explicit GLImageEGL(gfx::Size size);
 
-  bool Initialize(gfx::GpuMemoryBufferHandle buffer);
+  bool Initialize(EGLenum target, EGLClientBuffer buffer, const EGLint* attrs);
 
   // Overridden from GLImage:
   virtual void Destroy() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool BindTexImage(unsigned target) OVERRIDE;
-  virtual void ReleaseTexImage(unsigned target) OVERRIDE;
-  virtual void WillUseTexImage() OVERRIDE;
-  virtual void DidUseTexImage() OVERRIDE;
+  virtual void ReleaseTexImage(unsigned target) OVERRIDE {}
+  virtual void WillUseTexImage() OVERRIDE {}
+  virtual void DidUseTexImage() OVERRIDE {}
   virtual void WillModifyTexImage() OVERRIDE {}
   virtual void DidModifyTexImage() OVERRIDE {}
-  virtual void SetReleaseAfterUse() OVERRIDE;
 
  protected:
   virtual ~GLImageEGL();
 
- private:
   EGLImageKHR egl_image_;
   gfx::Size size_;
-  bool release_after_use_;
-  bool in_use_;
-  unsigned target_;
-  EGLImageKHR egl_image_for_unbind_;
-  GLuint texture_id_for_unbind_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GLImageEGL);
 };
 

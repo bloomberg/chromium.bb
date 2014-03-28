@@ -162,8 +162,7 @@ bool GLImageShm::BindTexImage(unsigned target) {
                    shared_memory_->memory());
     }
 
-    EGLint attrs[] = {EGL_GL_TEXTURE_LEVEL_KHR, 0, EGL_IMAGE_PRESERVED_KHR,
-                      EGL_TRUE, EGL_NONE};
+    EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
     // Need to pass current EGL rendering context to eglCreateImageKHR for
     // target type EGL_GL_TEXTURE_2D_KHR.
     egl_image_ =
