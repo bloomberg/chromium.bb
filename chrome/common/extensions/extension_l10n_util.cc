@@ -240,12 +240,13 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
 
   // Initialize search_provider fields.
   base::DictionaryValue* search_provider = NULL;
-  if (manifest->GetDictionary(keys::kSearchProvider, &search_provider)) {
+  if (manifest->GetDictionary(keys::kOverrideSearchProvider,
+                              &search_provider)) {
     for (base::DictionaryValue::Iterator iter(*search_provider);
          !iter.IsAtEnd();
          iter.Advance()) {
-      key.assign(base::StringPrintf("%s.%s", keys::kSearchProvider,
-                                    iter.key().c_str()));
+      key.assign(base::StringPrintf(
+          "%s.%s", keys::kOverrideSearchProvider, iter.key().c_str()));
       bool success = (key == keys::kSettingsOverrideAlternateUrls) ?
           LocalizeManifestListValue(key, messages, manifest, error) :
           LocalizeManifestValue(key, messages, manifest, error);
@@ -253,6 +254,16 @@ bool LocalizeManifest(const extensions::MessageBundle& messages,
         return false;
     }
   }
+
+  // Initialize chrome_settings_overrides.homepage.
+  if (!LocalizeManifestValue(
+          keys::kOverrideHomepage, messages, manifest, error))
+    return false;
+
+  // Initialize chrome_settings_overrides.startup_pages.
+  if (!LocalizeManifestListValue(
+          keys::kOverrideStartupPage, messages, manifest, error))
+    return false;
 
   // Add current locale key to the manifest, so we can overwrite prefs
   // with new manifest when chrome locale changes.

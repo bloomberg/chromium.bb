@@ -575,7 +575,13 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithSearchProviderMsgs) {
   search_provider->SetString("search_url", "http://www.foo.__MSG_country__");
   search_provider->SetString("favicon_url", "http://www.foo.__MSG_country__");
   search_provider->SetString("suggest_url", "http://www.foo.__MSG_country__");
-  manifest.Set(keys::kSearchProvider, search_provider);
+  manifest.Set(keys::kOverrideSearchProvider, search_provider);
+
+  manifest.SetString(keys::kOverrideHomepage, "http://www.foo.__MSG_country__");
+
+  base::ListValue* startup_pages = new base::ListValue;
+  startup_pages->AppendString("http://www.foo.__MSG_country__");
+  manifest.Set(keys::kOverrideStartupPage, startup_pages);
 
   std::string error;
   scoped_ptr<MessageBundle> messages(CreateManifestBundle());
@@ -590,7 +596,7 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithSearchProviderMsgs) {
   ASSERT_TRUE(manifest.GetString(keys::kDescription, &result));
   EXPECT_EQ("description", result);
 
-  std::string key_prefix(keys::kSearchProvider);
+  std::string key_prefix(keys::kOverrideSearchProvider);
   key_prefix += '.';
   ASSERT_TRUE(manifest.GetString(key_prefix + "name", &result));
   EXPECT_EQ("de", result);
@@ -605,6 +611,13 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithSearchProviderMsgs) {
   EXPECT_EQ("http://www.foo.de", result);
 
   ASSERT_TRUE(manifest.GetString(key_prefix + "suggest_url", &result));
+  EXPECT_EQ("http://www.foo.de", result);
+
+  ASSERT_TRUE(manifest.GetString(keys::kOverrideHomepage, &result));
+  EXPECT_EQ("http://www.foo.de", result);
+
+  ASSERT_TRUE(manifest.GetList(keys::kOverrideStartupPage, &startup_pages));
+  ASSERT_TRUE(startup_pages->GetString(0, &result));
   EXPECT_EQ("http://www.foo.de", result);
 
   EXPECT_TRUE(error.empty());

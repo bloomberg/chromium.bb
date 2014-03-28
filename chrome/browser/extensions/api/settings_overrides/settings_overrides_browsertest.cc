@@ -73,12 +73,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideSettings) {
       kFlagEnableFileAccess,
       "10");
   ASSERT_TRUE(extension);
-  EXPECT_EQ("http://www.homepage.com/?param=10",
+  EXPECT_EQ("http://www.homepage.de/?param=10",
             prefs->GetString(prefs::kHomePage));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kHomePageIsNewTabPage));
   startup_pref = SessionStartupPref::GetStartupPref(prefs);
   EXPECT_EQ(SessionStartupPref::URLS, startup_pref.type);
-  EXPECT_EQ(std::vector<GURL>(1, GURL("http://www.startup.com/?param=10")),
+  EXPECT_EQ(std::vector<GURL>(1, GURL("http://www.startup.de/?param=10")),
             startup_pref.urls);
   TemplateURL* extension_provider = url_service->GetDefaultSearchProvider();
   EXPECT_EQ(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION,

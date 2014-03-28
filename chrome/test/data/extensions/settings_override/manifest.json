@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "description": "end-to-end browser test for chrome.settings_override API",
   "chrome_settings_overrides": {
-    "homepage": "http://www.homepage.com/?param=__PARAM__",
+    "homepage": "http://www.homepage.__MSG_url_domain__/?param=__PARAM__",
     "search_provider": {
         "name": "name.__MSG_url_domain__",
         "keyword": "keyword.__MSG_url_domain__",
@@ -24,7 +24,7 @@
         "encoding": "UTF-8",
         "is_default": true
     },
-    "startup_pages": ["http://www.startup.com/?param=__PARAM__"]
+    "startup_pages": ["http://www.startup.__MSG_url_domain__/?param=__PARAM__"]
    },
    "default_locale": "de"
 }
