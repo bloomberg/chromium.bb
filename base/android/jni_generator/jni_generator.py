@@ -206,6 +206,7 @@ class JniParams(object):
     if '/' in param:
       # Coming from javap, use the fully qualified param directly.
       return prefix + 'L' + JniParams.RemapClassName(param) + ';'
+
     for qualified_name in (object_param_list +
                            [JniParams._fully_qualified_class] +
                            JniParams._inner_classes):
@@ -238,6 +239,12 @@ class JniParams(object):
         if qualified_name.endswith('/' + outer):
           return (prefix + JniParams.RemapClassName(qualified_name) +
                   '$' + inner + ';')
+      raise SyntaxError('Inner class (%s) can not be '
+                        'used directly by JNI. Please import the outer '
+                        'class, probably:\n'
+                        'import %s.%s;' %
+                        (param, JniParams._package.replace('/', '.'),
+                         outer.replace('/', '.')))
 
     # Type not found, falling back to same package as this class.
     return (prefix + 'L' +

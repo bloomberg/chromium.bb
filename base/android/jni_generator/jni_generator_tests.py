@@ -994,5 +994,22 @@ class Foo {
         test_data, 'org/chromium/example/jni_generator/Test', options)
     self.assertGoldenTextEquals(jni_from_java.GetContent())
 
+  def testOuterInnerRaises(self):
+    test_data = """
+    package org.chromium.media;
+
+    @CalledByNative
+    static int getCaptureFormatWidth(VideoCapture.CaptureFormat format) {
+        return format.getWidth();
+    }
+    """
+    def willRaise():
+      jni_generator.JNIFromJavaSource(
+          test_data,
+          'org/chromium/media/VideoCaptureFactory',
+          TestOptions())
+    self.assertRaises(SyntaxError, willRaise)
+
+
 if __name__ == '__main__':
   unittest.main()
