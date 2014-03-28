@@ -33,9 +33,9 @@ namespace {
 const int kMinimumWidth = 460;
 const int kMaximumWidth = 1000;
 const int kHorizontalMargin = 10;
-const int kPadding = 5;
-const int kPaddingLeft = 10;
 const float kWindowAlphaValue = 0.85f;
+const int kPaddingVertical = 5;
+const int kPaddingHorizontal = 10;
 
 namespace {
 
@@ -156,6 +156,7 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
   hide_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
   hide_link_->set_listener(this);
+  hide_link_->SetUnderline(false);
   AddChildView(hide_link_);
 }
 
@@ -280,7 +281,10 @@ views::NonClientFrameView*
 ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
     views::Widget* widget) {
   views::BubbleFrameView* frame = new views::BubbleFrameView(
-      gfx::Insets(kPadding, kPaddingLeft, kPadding, kPadding));
+      gfx::Insets(kPaddingVertical,
+                  kPaddingHorizontal,
+                  kPaddingVertical,
+                  kPaddingHorizontal));
   SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(

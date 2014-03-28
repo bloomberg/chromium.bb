@@ -29,8 +29,8 @@
 const CGFloat kMinimumWidth = 460;
 const CGFloat kMaximumWidth = 1000;
 const CGFloat kHorizontalMargin = 10;
-const CGFloat kPadding = 5;
-const CGFloat kPaddingLeft = 10;
+const CGFloat kPaddingVertical = 5;
+const CGFloat kPaddingHorizontal = 10;
 const CGFloat kWindowCornerRadius = 2;
 const CGFloat kWindowAlphaValue = 0.85;
 
@@ -140,9 +140,14 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   [stopButton_ sizeToFit];
   [content addSubview:stopButton_];
 
-  minimizeButton_.reset(
-      [[HyperlinkButtonCell buttonWithString:l10n_util::GetNSString(
-          IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON)] retain]);
+  base::scoped_nsobject<HyperlinkButtonCell> cell(
+      [[HyperlinkButtonCell alloc]
+       initTextCell:l10n_util::GetNSString(
+                        IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON)]);
+  [cell setShouldUnderline:NO];
+
+  minimizeButton_.reset([[NSButton alloc] initWithFrame:NSZeroRect]);
+  [minimizeButton_ setCell:cell.get()];
   [minimizeButton_ sizeToFit];
   [minimizeButton_ setTarget:self];
   [minimizeButton_ setAction:@selector(minimize:)];
@@ -150,20 +155,21 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
 
   CGFloat buttonsWidth = NSWidth([stopButton_ frame]) + kHorizontalMargin +
       NSWidth([minimizeButton_ frame]);
-  CGFloat totalHeight = kPadding + NSHeight([stopButton_ frame]) + kPadding;
+  CGFloat totalHeight =
+      kPaddingVertical + NSHeight([stopButton_ frame]) + kPaddingVertical;
 
   // Create grip icon.
   base::scoped_nsobject<WindowGripView> gripView([[WindowGripView alloc] init]);
   [content addSubview:gripView];
   CGFloat gripWidth = NSWidth([gripView frame]);
   CGFloat gripHeight = NSHeight([gripView frame]);
-  [gripView
-      setFrameOrigin:NSMakePoint(kPaddingLeft, (totalHeight - gripHeight) / 2)];
+  [gripView setFrameOrigin:NSMakePoint(kPaddingHorizontal,
+                                       (totalHeight - gripHeight) / 2)];
 
   // Create text label.
   int maximumWidth =
       std::min(kMaximumWidth, NSWidth([[NSScreen mainScreen] visibleFrame]));
-  int maxLabelWidth = maximumWidth - kPaddingLeft - kPadding -
+  int maxLabelWidth = maximumWidth - kPaddingHorizontal * 2 -
                       kHorizontalMargin * 2 - gripWidth - buttonsWidth;
   gfx::FontList font_list;
   base::string16 elidedText =
@@ -179,26 +185,26 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   [statusTextField setFont:font_list.GetPrimaryFont().GetNativeFont()];
   [statusTextField sizeToFit];
   [statusTextField setFrameOrigin:NSMakePoint(
-                       kPaddingLeft + kHorizontalMargin + gripWidth,
+                       kPaddingHorizontal + kHorizontalMargin + gripWidth,
                        (totalHeight - NSHeight([statusTextField frame])) / 2)];
   [content addSubview:statusTextField];
 
   // Resize content view to fit controls.
-  CGFloat minimumLableWidth = kMinimumWidth - kPaddingLeft - kPadding -
+  CGFloat minimumLableWidth = kMinimumWidth - kPaddingHorizontal * 2 -
                               kHorizontalMargin * 2 - gripWidth - buttonsWidth;
   CGFloat lableWidth =
       std::max(NSWidth([statusTextField frame]), minimumLableWidth);
-  CGFloat totalWidth = kPaddingLeft + kPadding + kHorizontalMargin * 2 +
+  CGFloat totalWidth = kPaddingHorizontal * 2 + kHorizontalMargin * 2 +
                        gripWidth + lableWidth + buttonsWidth;
   [content setFrame:NSMakeRect(0, 0, totalWidth, totalHeight)];
 
   // Move the buttons to the right place.
-  NSPoint buttonOrigin =
-      NSMakePoint(totalWidth - kPadding - buttonsWidth, kPadding);
+  NSPoint buttonOrigin = NSMakePoint(
+      totalWidth - kPaddingHorizontal - buttonsWidth, kPaddingVertical);
   [stopButton_ setFrameOrigin:buttonOrigin];
 
   [minimizeButton_ setFrameOrigin:NSMakePoint(
-      totalWidth - kPadding - NSWidth([minimizeButton_ frame]),
+      totalWidth - kPaddingHorizontal - NSWidth([minimizeButton_ frame]),
       (totalHeight - NSHeight([minimizeButton_ frame])) / 2)];
 
   if (base::i18n::IsRTL()) {
