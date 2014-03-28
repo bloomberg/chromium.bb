@@ -529,10 +529,9 @@ RenderLayer* RenderObject::enclosingLayer() const
         if (current->hasLayer())
             return toRenderLayerModelObject(current)->layer();
     }
-    // This line of code should be unreachable. However, if |this| is zero, we
-    // can reach this line. Of course, it's undefined behavior to call a member
-    // function on a zero pointer, but that doesn't stop
-    // FrameView::paintContents. :)
+    // FIXME: We should remove the one caller that triggers this case and make
+    // this function return a reference.
+    ASSERT(!m_parent && !isRenderView());
     return 0;
 }
 
