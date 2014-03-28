@@ -32,6 +32,7 @@ const CGFloat kHorizontalMargin = 10;
 const CGFloat kPadding = 5;
 const CGFloat kPaddingLeft = 10;
 const CGFloat kWindowCornerRadius = 2;
+const CGFloat kWindowAlphaValue = 0.85;
 
 @interface ScreenCaptureNotificationController()
 - (void)hide;
@@ -80,6 +81,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
                                     backing:NSBackingStoreBuffered
                                       defer:NO]);
   [window setReleasedWhenClosed:NO];
+  [window setAlphaValue:kWindowAlphaValue];
   [window setBackgroundColor:[NSColor clearColor]];
   [window setOpaque:NO];
   [window setHasShadow:YES];

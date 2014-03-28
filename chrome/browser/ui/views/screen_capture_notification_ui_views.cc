@@ -35,6 +35,7 @@ const int kMaximumWidth = 1000;
 const int kHorizontalMargin = 10;
 const int kPadding = 5;
 const int kPaddingLeft = 10;
+const float kWindowAlphaValue = 0.85f;
 
 namespace {
 
@@ -207,7 +208,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
       work_area.y() + work_area.height() - size.height(),
       size.width(), size.height());
   widget->SetBounds(bounds);
-
+  widget->SetOpacity(0xFF * kWindowAlphaValue);
   widget->Show();
 
 #if defined(OS_WIN)
