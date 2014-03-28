@@ -239,17 +239,14 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED:
       // Some special cases for generating a nicer message that's more helpful.
       switch (status.client_status()) {
-        case policy::DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
-          ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR, true);
-          break;
         case policy::DM_STATUS_SERVICE_MISSING_LICENSES:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_MISSING_LICENSES_ERROR, true);
           break;
         case policy::DM_STATUS_SERVICE_DEPROVISIONED:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_DEPROVISIONED_ERROR, true);
           break;
-        case policy::DM_STATUS_SERVICE_DOMAIN_MISMATCH:
-          ShowError(IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR, true);
+        case policy::DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
+          ShowError(IDS_ENTERPRISE_ENROLLMENT_ACCOUNT_ERROR, true);
           break;
         default:
           ShowErrorMessage(

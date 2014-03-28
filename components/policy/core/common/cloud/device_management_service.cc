@@ -41,7 +41,6 @@ const int kMissingLicenses = 402;
 const int kDeviceManagementNotAllowed = 403;
 const int kInvalidURL = 404;  // This error is not coming from the GFE.
 const int kInvalidSerialNumber = 405;
-const int kDomainMismatch = 406;
 const int kDeviceIdConflict = 409;
 const int kDeviceNotFound = 410;
 const int kPendingApproval = 412;
@@ -259,9 +258,6 @@ void DeviceManagementRequestJobImpl::HandleResponse(
       return;
     case kInvalidSerialNumber:
       ReportError(DM_STATUS_SERVICE_INVALID_SERIAL_NUMBER);
-      return;
-    case kDomainMismatch:
-      ReportError(DM_STATUS_SERVICE_DOMAIN_MISMATCH);
       return;
     case kDeprovisioned:
       ReportError(DM_STATUS_SERVICE_DEPROVISIONED);

@@ -31137,9 +31137,6 @@ other types of suffix sets.
   <int value="22" label="Deprovisioned device">
     Enrollment failed because the administrator has deprovisioned the device.
   </int>
-  <int value="23" label="Domain mismatch">
-    Enrollment failed because the device belongs to a different domain.
-  </int>
 </enum>
 
 <enum name="EnterprisePolicies" type="int">

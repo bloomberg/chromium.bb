@@ -255,9 +255,6 @@ void EnrollmentScreen::ReportEnrollmentStatus(
         case policy::DM_STATUS_SERVICE_DEPROVISIONED:
           UMAFailure(policy::kMetricEnrollmentDeprovisioned);
           return;
-        case policy::DM_STATUS_SERVICE_DOMAIN_MISMATCH:
-          UMAFailure(policy::kMetricEnrollmentDomainMismatch);
-          return;
       }
       break;
     case policy::EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE:
