@@ -28,6 +28,7 @@
   <script src="/js/profiler.js"></script>
   <script src="/js/rootUi.js"></script>
   <script src="/js/settings.js"></script>
+  <script src="/js/storage.js"></script>
   <script src="/js/timers.js"></script>
   <script src="/js/webservice.js"></script>
 </head>
@@ -68,10 +69,26 @@
           <div id="ps-toolbar" class="ui-widget-header ui-corner-all">
             <button id="ps-quick_snapshot">Quick snapshot</button>
             <button id="ps-dump_mmaps">Dump mmaps</button>
+            <button id="ps-full_profile">Full profile</button>
             <input type="checkbox" id="ps-show_all">
             <label for="ps-show_all">Show all processes</label>
           </div>
           <div id="ps-table"></div>
+        </div>
+
+        <div id="ps-tracer-dialog" title="Trace process">
+          <div>
+            <label for="ps-tracer-process">Process</label>
+            <input type="text" id="ps-tracer-process" readonly class="text ui-widget-content">
+          </div>
+          <div>
+            <label for="ps-tracer-period">Period [s.]</label>
+            <input type="text" id="ps-tracer-period" value="20">
+          </div>
+          <div>
+            <label for="ps-tracer-snapshots">Num snapshots</label>
+            <input type="text" id="ps-tracer-snapshots" value="1">
+          </div>
         </div>
       </div>
 
@@ -143,6 +160,13 @@
       </div>
 
       <div id="tabs-storage">
+        <div id="storage-toolbar" class="ui-widget-header ui-corner-all">
+          <label>Group:</label>
+          <button id="storage-profile-mmaps">Profile memory maps</button>
+          <label>Single snapshot:</label>
+          <button id="storage-dump-mmaps">Show memory maps</button>
+        </div>
+        <div id="storage-table"></div>
       </div>
 
       <div id="tabs-settings">

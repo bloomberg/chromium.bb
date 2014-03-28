@@ -10,3 +10,9 @@
   display: inline-block;
   height: 20em;
 }
+
+#ps-tracer-dialog > div {
+  clear: both;
+  font-size: 0.9em;
+  margin-bottom: 1em;
+}

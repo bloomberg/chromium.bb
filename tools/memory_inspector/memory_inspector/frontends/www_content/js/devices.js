@@ -18,6 +18,12 @@ this.getSelectedURI = function() {
   return this.selDeviceUri_;
 };
 
+this.getSelectedDevice = function() {
+  if (!this.selDeviceUri_)
+    return null;
+  return this.devices_[this.selDeviceUri_];
+};
+
 this.getAllBackends = function() {
   // Returns a list of the registered backends, e.g., ['Android', 'Linux'].
   return this.backends_;
@@ -69,9 +75,12 @@ this.onDeviceSelectionChange_ = function() {
   if (!this.selDeviceUri_)
     return;
 
-  // Initialize device and start processes / OS stats.
-  webservice.ajaxRequest('/initialize/' + this.selDeviceUri_,
-                         this.onDeviceInitializationComplete_.bind(this));
+  // Initialize device and start processes / OS stats (it is a POST request).
+  webservice.ajaxRequest(
+      '/initialize/' + this.selDeviceUri_,
+      this.onDeviceInitializationComplete_.bind(this),
+      null,  // default error handler.
+      {});
 };
 
 this.onDeviceInitializationComplete_ = function() {

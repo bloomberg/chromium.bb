@@ -20,6 +20,7 @@ The following HTTP status code are returned by the server:
 
 import collections
 import datetime
+import dateutil.parser
 import os
 import memory_inspector
 import mimetypes
@@ -30,9 +31,11 @@ import uuid
 import wsgiref.simple_server
 
 from memory_inspector.core import backends
+from memory_inspector.core import memory_map
 from memory_inspector.classification import mmap_classifier
 from memory_inspector.data import serialization
 from memory_inspector.data import file_storage
+from memory_inspector.frontends import background_tasks
 
 
 _HTTP_OK = '200 - OK'
@@ -138,41 +141,14 @@ def _DumpMmapsForProcess(args, req_vars):  # pylint: disable=W0613
   if not process:
     return _HTTP_GONE, [], 'Device not found or process died'
   mmap = process.DumpMemoryMaps()
-  table = {
-      'cols': [
-          {'label': 'Start', 'type':'string'},
-          {'label': 'End', 'type':'string'},
-          {'label': 'Length Kb', 'type':'number'},
-          {'label': 'Prot', 'type':'string'},
-          {'label': 'Priv. Dirty Kb', 'type':'number'},
-          {'label': 'Priv. Clean Kb', 'type':'number'},
-          {'label': 'Shared Dirty Kb', 'type':'number'},
-          {'label': 'Shared Clean Kb', 'type':'number'},
-          {'label': 'File', 'type':'string'},
-          {'label': 'Offset', 'type':'number'},
-          {'label': 'Resident Pages', 'type':'string'},
-        ],
-      'rows': []}
-  for entry in mmap.entries:
-    table['rows'] += [{'c': [
-        {'v': '%08x' % entry.start, 'f': None},
-        {'v': '%08x' % entry.end, 'f': None},
-        {'v': entry.len / 1024, 'f': None},
-        {'v': entry.prot_flags, 'f': None},
-        {'v': entry.priv_dirty_bytes / 1024, 'f': None},
-        {'v': entry.priv_clean_bytes / 1024, 'f': None},
-        {'v': entry.shared_dirty_bytes / 1024, 'f': None},
-        {'v': entry.shared_clean_bytes / 1024, 'f': None},
-        {'v': entry.mapped_file, 'f': None},
-        {'v': entry.mapped_offset, 'f': None},
-        {'v': '[%s]' % (','.join(map(str, entry.resident_pages))), 'f': None},
-    ]}]
+  table = _ConvertMmapToGTable(mmap)
+
   # Store the dump in the cache. The client might need it later for profiling.
   cache_id = _CacheObject(mmap)
   return _HTTP_OK, [], {'table': table, 'id': cache_id}
 
 
-@AjaxHandler('/ajax/initialize/(\w+)/(\w+)$')  # /ajax/initialize/Android/a0b1c2
+@AjaxHandler('/ajax/initialize/(\w+)/(\w+)$', 'POST')
 def _InitializeDevice(args, req_vars):  # pylint: disable=W0613
   device = _GetDevice(args)
   if not device:
@@ -191,7 +167,7 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
   """
   classifier = None  # A classifier module (/classification/*_classifier.py).
   dumps = {}  # dump-time -> obj. to classify (e.g., |memory_map.Map|).
-  for arg in 'type', 'source', 'ruleset', 'id':
+  for arg in 'type', 'source', 'ruleset':
     assert(arg in req_vars), 'Expecting %s argument in POST data' % arg
 
   # Step 1: collect the memory dumps, according to what the client specified in
@@ -203,7 +179,18 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
     # Case 1a: Use a cached mmap dumps.
     if req_vars['source'] == 'cache':
       dumps[0] = _GetCacheObject(req_vars['id'])
-    # TODO(primiano): add support for loading archived dumps from file_storage.
+    # Case 1b: Load mem dumps from an archive.
+    elif req_vars['source'] == 'archive':
+      archive = _persistent_storage.OpenArchive(req_vars['archive'])
+      if not archive:
+        return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
+      first_timestamp = None
+      for timestamp_str in req_vars['snapshots']:
+        timestamp = dateutil.parser.parse(timestamp_str)
+        first_timestamp = timestamp if not first_timestamp else first_timestamp
+        time_delta = int((timestamp - first_timestamp).total_seconds())
+        dumps[time_delta] = archive.LoadMemMaps(timestamp)
+
   # TODO(primiano): Add support for native_heap types.
 
   # Step 2: Load the rule-set specified by the client in the 'ruleset' POST arg.
@@ -227,8 +214,8 @@ def _CreateProfile(args, req_vars):  # pylint: disable=W0613
 
   # Converts the {time: dump_obj} dict into a {time: |AggregatedResult|} dict.
   # using the classifier.
-  snapshots = collections.OrderedDict(
-    (time, classifier.Classify(d, rules)) for time, d in dumps.iteritems())
+  snapshots = collections.OrderedDict((time, classifier.Classify(dump, rules))
+     for time, dump in sorted(dumps.iteritems()))
 
   # Add the profile to the cache (and eventually discard old items).
   # |profile_id| is the key that the client will use in subsequent requests
@@ -506,6 +493,69 @@ def _SetDeviceOrBackendSettings(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], ''
 
 
+@AjaxHandler(r'/ajax/storage/list')
+def _ListStorage(args, req_vars):  # pylint: disable=W0613
+  resp = {
+      'cols': [
+          {'label': 'Archive', 'type':'string'},
+          {'label': 'Snapshot', 'type':'string'},
+          {'label': 'Mem maps', 'type':'boolean'},
+          {'label': 'N. Heap', 'type':'boolean'},
+        ],
+      'rows': []}
+  for archive_name in _persistent_storage.ListArchives():
+    archive = _persistent_storage.OpenArchive(archive_name)
+    first_timestamp = None
+    for timestamp in archive.ListSnapshots():
+      first_timestamp = timestamp if not first_timestamp else first_timestamp
+      time_delta = '%d s.' % (timestamp - first_timestamp).total_seconds()
+      resp['rows'] += [{'c': [
+          {'v': archive_name, 'f': None},
+          {'v': timestamp.isoformat(), 'f': time_delta},
+          {'v': archive.HasMemMaps(timestamp), 'f': None},
+          {'v': archive.HasNativeHeap(timestamp), 'f': None},
+      ]}]
+  return _HTTP_OK, [], resp
+
+
+@AjaxHandler(r'/ajax/storage/(.+)/(.+)/mmaps')
+def _LoadMmapsFromStorage(args, req_vars):  # pylint: disable=W0613
+  archive = _persistent_storage.OpenArchive(args[0])
+  if not archive:
+    return _HTTP_GONE, [], 'Cannot open archive %s' % req_vars['archive']
+
+  timestamp = dateutil.parser.parse(args[1])
+  if not archive.HasMemMaps(timestamp):
+    return _HTTP_GONE, [], 'No mmaps for snapshot %s' % timestamp
+  mmap = archive.LoadMemMaps(timestamp)
+  return _HTTP_OK, [], {'table': _ConvertMmapToGTable(mmap)}
+
+
+# /ajax/tracer/start/Android/device-id/pid
+@AjaxHandler(r'/ajax/tracer/start/(\w+)/(\w+)/(\d+)', 'POST')
+def _StartTracer(args, req_vars):
+  for arg in 'interval', 'count', 'traceNativeHeap':
+    assert(arg in req_vars), 'Expecting %s argument in POST data' % arg
+  process = _GetProcess(args)
+  if not process:
+    return _HTTP_GONE, [], 'Device not found or process died'
+  task_id = background_tasks.StartTracer(
+      storage_path=_PERSISTENT_STORAGE_PATH,
+      process=process,
+      interval=int(req_vars['interval']),
+      count=int(req_vars['count']),
+      trace_native_heap=req_vars['traceNativeHeap'])
+  return _HTTP_OK, [], task_id
+
+
+@AjaxHandler(r'/ajax/tracer/status/(\d+)')  # /ajax/tracer/status/{task_id}
+def _GetTracerStatus(args, req_vars):  # pylint: disable=W0613
+  task = background_tasks.Get(int(args[0]))
+  if not task:
+    return _HTTP_GONE, [], 'Task not found'
+  return _HTTP_OK, [], task.GetProgress()
+
+
 @UriHandler(r'^(?!/ajax)/(.*)$')
 def _StaticContent(args, req_vars):  # pylint: disable=W0613
   # Give the browser a 1-day TTL cache to minimize the start-up time.
@@ -539,6 +589,39 @@ def _GetProcess(args):
     return None
   return device.GetProcess(int(args[2]))
 
+def _ConvertMmapToGTable(mmap):
+  """Returns a Google Charts DataTable dictionary for the given mmap."""
+  assert(isinstance(mmap, memory_map.Map))
+  table = {
+      'cols': [
+          {'label': 'Start', 'type':'string'},
+          {'label': 'End', 'type':'string'},
+          {'label': 'Length Kb', 'type':'number'},
+          {'label': 'Prot', 'type':'string'},
+          {'label': 'Priv. Dirty Kb', 'type':'number'},
+          {'label': 'Priv. Clean Kb', 'type':'number'},
+          {'label': 'Shared Dirty Kb', 'type':'number'},
+          {'label': 'Shared Clean Kb', 'type':'number'},
+          {'label': 'File', 'type':'string'},
+          {'label': 'Offset', 'type':'number'},
+          {'label': 'Resident Pages', 'type':'string'},
+        ],
+      'rows': []}
+  for entry in mmap.entries:
+    table['rows'] += [{'c': [
+        {'v': '%08x' % entry.start, 'f': None},
+        {'v': '%08x' % entry.end, 'f': None},
+        {'v': entry.len / 1024, 'f': None},
+        {'v': entry.prot_flags, 'f': None},
+        {'v': entry.priv_dirty_bytes / 1024, 'f': None},
+        {'v': entry.priv_clean_bytes / 1024, 'f': None},
+        {'v': entry.shared_dirty_bytes / 1024, 'f': None},
+        {'v': entry.shared_clean_bytes / 1024, 'f': None},
+        {'v': entry.mapped_file, 'f': None},
+        {'v': entry.mapped_offset, 'f': None},
+        {'v': '[%s]' % (','.join(map(str, entry.resident_pages))), 'f': None},
+    ]}]
+  return table
 
 def _CacheObject(obj_to_store):
   """Stores an object in the server-side cache and returns its unique id."""
@@ -589,4 +672,8 @@ def Start(http_port):
       backend.settings[k] = v
 
   httpd = wsgiref.simple_server.make_server('', http_port, _HttpRequestHandler)
-  httpd.serve_forever()
+  try:
+    httpd.serve_forever()
+  except KeyboardInterrupt:
+    pass  # Don't print useless stack traces when the user hits CTRL-C.
+  background_tasks.TerminateAll()

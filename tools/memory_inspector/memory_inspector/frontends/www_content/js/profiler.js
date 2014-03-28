@@ -55,12 +55,24 @@ this.profileCachedMmapDump = function(mmapDumpId) {
   // Creates a profile using the data grabbed during a recent mmap dump.
   // This is used to get a quick overview (only one snapshot), of the memory
   // without doing a full periodic trace first.
-  webservice.ajaxRequest('/profile/create',  // Note: this is POST request.
+  webservice.ajaxRequest('/profile/create',  // This is a POST request.
                          this.onProfileAjaxResponse_.bind(this),
                          null,  // use the default error handler.
                          {type: 'mmap',
                           source: 'cache',
                           id: mmapDumpId,
+                          ruleset: $('#prof-ruleset').val()});
+};
+
+this.profileArchivedMmaps = function(archiveName, snapshots) {
+  // Creates a profile using the data from the storage.
+  webservice.ajaxRequest('/profile/create',  // This is a POST request.
+                         this.onProfileAjaxResponse_.bind(this),
+                         null,  // use the default error handler.
+                         {type: 'mmap',
+                          source: 'archive',
+                          archive: archiveName,
+                          snapshots: snapshots,
                           ruleset: $('#prof-ruleset').val()});
 };
 

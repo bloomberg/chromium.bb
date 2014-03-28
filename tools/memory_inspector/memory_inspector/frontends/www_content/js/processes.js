@@ -7,6 +7,7 @@ processes = new (function() {
 this.PS_INTERVAL_SEC_ = 2;
 this.DEV_STATS_INTERVAL_SEC_ = 2;
 this.PROC_STATS_INTERVAL_SEC_ = 1;
+this.TRACER_POLL_INTERVAL_SEC_ = 2;
 
 this.selProcUri_ = null;
 this.selProcName_ = null;
@@ -20,6 +21,7 @@ this.procCpuChart_ = null;
 this.procCpuChartData_ = null;
 this.procMemChart_ = null;
 this.procMemChartData_ = null;
+this.tracerTaskId_ = null;
 
 this.onDomReady_ = function() {
   $('#device_tabs').tabs();
@@ -31,6 +33,14 @@ this.onDomReady_ = function() {
       .click(this.snapshotSelectedProcess_.bind(this));
   $('#ps-dump_mmaps').button({icons:{primary: 'ui-icon-calculator'}})
       .click(this.dumpSelectedProcessMmaps_.bind(this));
+  $('#ps-full_profile').button({icons:{primary: 'ui-icon-clock'}})
+      .click(this.showTracingDialog_.bind(this));
+
+  // Set-up the tracer dialog.
+  $('#ps-tracer-dialog').dialog({autoOpen: false, modal: true, width: 400,
+      buttons: {'Start': this.startTracingSelectedProcess_.bind(this)}});
+  $('#ps-tracer-period').spinner({min: 0, step: 20});
+  $('#ps-tracer-snapshots').spinner({min: 1, max: 100});
 
   // Create the process table.
   this.psTable_ = new google.visualization.Table($('#ps-table')[0]);
@@ -65,6 +75,61 @@ this.dumpSelectedProcessMmaps_ = function() {
     return alert('Must select a process!');
   mmap.dumpMmaps(this.selProcUri_, false);
   rootUi.showTab('mm');
+};
+
+this.showTracingDialog_ = function() {
+  if (!this.selProcUri_)
+    return alert('Must select a process!');
+  $('#ps-tracer-process').val(this.selProcName_);
+  $('#ps-tracer-dialog').dialog('open');
+};
+
+this.startTracingSelectedProcess_ = function() {
+  if (!this.selProcUri_)
+    return alert('The process ' + this.selProcUri_ + ' died.');
+
+  $('#ps-tracer-dialog').dialog('close');
+
+  var postArgs = {interval: $('#ps-tracer-period').val(),
+                  count: $('#ps-tracer-snapshots').val(),
+                  traceNativeHeap: false};
+
+  webservice.ajaxRequest('/tracer/start/' + this.selProcUri_,
+                         this.onStartTracerAjaxResponse_.bind(this),
+                         null,  // Use default error handler
+                         postArgs);
+};
+
+this.onStartTracerAjaxResponse_ = function(data) {
+  this.tracerTaskId_ = data;
+  timers.start('tracer',
+               this.pollTracerStatus_.bind(this),
+               this.TRACER_POLL_INTERVAL_SEC_);
+};
+
+this.pollTracerStatus_ = function() {
+  if (!this.tracerTaskId_) {
+    timers.stop('tracer');
+    return;
+  }
+  webservice.ajaxRequest('/tracer/status/' + this.tracerTaskId_,
+                         this.onTracerStatusAjaxResponse_.bind(this));
+};
+
+this.onTracerStatusAjaxResponse_ = function(data) {
+  var logMessages = '';
+  var completionRate = 0;
+  data.forEach(function(progress) {
+    completionRate = progress[0];
+    logMessages += '\n' + progress[1];
+  }, this);
+  rootUi.setProgress(completionRate);
+  rootUi.setStatusMessage(logMessages);
+
+  if (completionRate >= 100) {
+    tracerTaskId_ = null;
+    timers.stop('tracer');
+  }
 };
 
 this.refreshPsTable = function() {

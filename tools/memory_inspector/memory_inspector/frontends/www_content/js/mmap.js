@@ -44,6 +44,12 @@ this.dumpMmaps = function(targetProcUri, updateProfile) {
   rootUi.showDialog('Dumping memory maps for ' + targetProcUri + '...');
 };
 
+this.dumpMmapsFromStorage = function(archiveName, snapshot) {
+  webservice.ajaxRequest('/storage/' + archiveName + '/' + snapshot + '/mmaps',
+                         this.onDumpAjaxResponse_.bind(this));
+  rootUi.showDialog('Loading memory maps from archive ...');
+};
+
 this.onDumpAjaxResponse_ = function(data) {
   $('#mm-filter-file').val('');
   $('#mm-filter-prot').val('');
@@ -54,6 +60,7 @@ this.onDumpAjaxResponse_ = function(data) {
   rootUi.hideDialog();
   if (this.shouldUpdateProfileAfterDump_)
     profiler.profileCachedMmapDump(data.id);
+  shouldUpdateProfileAfterDump_ = false;
 };
 
 this.applyMapsTableFilters_ = function() {
