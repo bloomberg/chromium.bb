@@ -64,8 +64,6 @@ public:
     void applyOverhang(RenderRubyRun*, RenderObject* startRenderer, RenderObject* endRenderer);
     void fitBelowFloats(bool isFirstLine = false);
 
-    void updateCurrentShapeSegment();
-
     bool shouldIndentText() const { return m_shouldIndentText == IndentText; }
 
 private:
@@ -80,7 +78,6 @@ private:
     float m_left;
     float m_right;
     float m_availableWidth;
-    const LineSegment* m_segment;
     bool m_isFirstLine;
     IndentTextOrNot m_shouldIndentText;
 };

@@ -36,7 +36,6 @@
 #include "core/rendering/line/LineInfo.h"
 #include "core/rendering/line/LineWidth.h"
 #include "core/rendering/line/TrailingObjects.h"
-#include "core/rendering/shapes/ShapeInsideInfo.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
 namespace WebCore {
@@ -507,51 +506,6 @@ inline float firstPositiveWidth(const WordMeasurements& wordMeasurements)
     return 0;
 }
 
-inline void updateSegmentsForShapes(RenderBlockFlow* block, const FloatingObject* lastFloatFromPreviousLine, const WordMeasurements& wordMeasurements, LineWidth& width, bool isFirstLine)
-{
-    ASSERT(lastFloatFromPreviousLine);
-
-    ShapeInsideInfo* shapeInsideInfo = block->layoutShapeInsideInfo();
-    if (!lastFloatFromPreviousLine->isPlaced() || !shapeInsideInfo)
-        return;
-
-    bool isHorizontalWritingMode = block->isHorizontalWritingMode();
-    LayoutUnit logicalOffsetFromShapeContainer = block->logicalOffsetFromShapeAncestorContainer(&shapeInsideInfo->owner()).height();
-
-    LayoutUnit lineLogicalTop = block->logicalHeight() + logicalOffsetFromShapeContainer;
-    LayoutUnit lineLogicalHeight = block->lineHeight(isFirstLine, isHorizontalWritingMode ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
-    LayoutUnit lineLogicalBottom = lineLogicalTop + lineLogicalHeight;
-
-    LayoutUnit floatLogicalTop = block->logicalTopForFloat(lastFloatFromPreviousLine);
-    LayoutUnit floatLogicalBottom = block->logicalBottomForFloat(lastFloatFromPreviousLine);
-
-    bool lineOverlapsWithFloat = (floatLogicalTop < lineLogicalBottom) && (lineLogicalTop < floatLogicalBottom);
-    if (!lineOverlapsWithFloat)
-        return;
-
-    // FIXME: We need to remove this once we support multiple-segment polygons
-    if (shapeInsideInfo->segments().size() > 1)
-        return;
-
-    float minSegmentWidth = firstPositiveWidth(wordMeasurements);
-
-    LayoutUnit floatLogicalWidth = block->logicalWidthForFloat(lastFloatFromPreviousLine);
-    LayoutUnit availableLogicalWidth = block->logicalWidth() - block->logicalRightForFloat(lastFloatFromPreviousLine);
-    if (availableLogicalWidth < minSegmentWidth)
-        block->setLogicalHeight(floatLogicalBottom);
-
-    if (block->logicalHeight() < floatLogicalTop) {
-        shapeInsideInfo->adjustLogicalLineTop(minSegmentWidth + floatLogicalWidth);
-        block->setLogicalHeight(shapeInsideInfo->logicalLineTop() - logicalOffsetFromShapeContainer);
-    }
-
-    lineLogicalTop = block->logicalHeight() + logicalOffsetFromShapeContainer;
-
-    shapeInsideInfo->updateSegmentsForLine(lineLogicalTop, lineLogicalHeight);
-    width.updateCurrentShapeSegment();
-    width.updateAvailableWidth();
-}
-
 inline float measureHyphenWidth(RenderText* renderer, const Font& font, TextDirection textDirection)
 {
     RenderStyle* style = renderer->style();
@@ -718,9 +672,6 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
                 m_width.addUncommittedWidth(inlineLogicalWidth(m_current.object(), true, false).toFloat());
                 m_appliedStartWidth = true;
             }
-
-            if (m_lastFloatFromPreviousLine)
-                updateSegmentsForShapes(m_block, m_lastFloatFromPreviousLine, wordMeasurements, m_width, m_lineInfo.isFirstLine());
 
             applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
 

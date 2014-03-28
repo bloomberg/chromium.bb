@@ -28,10 +28,7 @@ namespace WebCore {
 
 InlineIterator BreakingContext::handleEndOfLine()
 {
-    ShapeInsideInfo* shapeInfo = m_block->layoutShapeInsideInfo();
-    bool segmentAllowsOverflow = !shapeInfo || !shapeInfo->hasSegments();
-
-    if (m_lineBreak == m_resolver.position() && (!m_lineBreak.object() || !m_lineBreak.object()->isBR()) && segmentAllowsOverflow) {
+    if (m_lineBreak == m_resolver.position() && (!m_lineBreak.object() || !m_lineBreak.object()->isBR())) {
         // we just add as much as possible
         if (m_blockStyle->whiteSpace() == PRE && !m_current.offset()) {
             m_lineBreak.moveTo(m_lastObject, m_lastObject->isText() ? m_lastObject->length() : 0);
@@ -45,8 +42,7 @@ InlineIterator BreakingContext::handleEndOfLine()
 
     // FIXME Bug 100049: We do not need to consume input in a multi-segment line
     // unless no segment will.
-    // make sure we consume at least one char/object.
-    if (m_lineBreak == m_resolver.position() && segmentAllowsOverflow)
+    if (m_lineBreak == m_resolver.position())
         m_lineBreak.increment();
 
     // Sanity check our midpoints.

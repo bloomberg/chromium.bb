@@ -1478,7 +1478,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return true;
         }
         break;
-    case CSSPropertyShapeInside:
     case CSSPropertyShapeOutside:
         parsedValue = parseShapeProperty(propId);
         break;
@@ -4212,8 +4211,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseShapeProperty(CSSProper
     CSSParserValue* value = m_valueList->current();
     CSSValueID valueId = value->id;
 
-    if (valueId == CSSValueNone
-        || (valueId == CSSValueOutsideShape && propId == CSSPropertyShapeInside)) {
+    if (valueId == CSSValueNone) {
         RefPtrWillBeRawPtr<CSSPrimitiveValue> keywordValue = parseValidPrimitive(valueId, value);
         m_valueList->next();
         return keywordValue.release();

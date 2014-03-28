@@ -463,8 +463,6 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromLength(style.perspectiveOriginX(), style);
     case CSSPropertyWebkitPerspectiveOriginY:
         return createFromLength(style.perspectiveOriginY(), style);
-    case CSSPropertyShapeInside:
-        return createFromShapeValue(style.shapeInside());
     case CSSPropertyShapeOutside:
         return createFromShapeValue(style.shapeOutside());
     case CSSPropertyShapeMargin:

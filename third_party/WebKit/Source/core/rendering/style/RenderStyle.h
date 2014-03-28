@@ -1426,21 +1426,6 @@ public:
     PassRefPtr<SVGLength> kerning() const { return svgStyle()->kerning(); }
     void setKerning(PassRefPtr<SVGLength> k) { accessSVGStyle()->setKerning(k); }
 
-    void setShapeInside(PassRefPtr<ShapeValue> value)
-    {
-        if (rareNonInheritedData->m_shapeInside == value)
-            return;
-        rareNonInheritedData.access()->m_shapeInside = value;
-    }
-    ShapeValue* shapeInside() const { return rareNonInheritedData->m_shapeInside.get(); }
-    ShapeValue* resolvedShapeInside() const
-    {
-        ShapeValue* shapeInside = this->shapeInside();
-        if (shapeInside && shapeInside->type() == ShapeValue::Outside)
-            return shapeOutside();
-        return shapeInside;
-    }
-
     void setShapeOutside(PassRefPtr<ShapeValue> value)
     {
         if (rareNonInheritedData->m_shapeOutside == value)
@@ -1449,7 +1434,6 @@ public:
     }
     ShapeValue* shapeOutside() const { return rareNonInheritedData->m_shapeOutside.get(); }
 
-    static ShapeValue* initialShapeInside() { return 0; }
     static ShapeValue* initialShapeOutside() { return 0; }
 
     void setClipPath(PassRefPtr<ClipPathOperation> operation)

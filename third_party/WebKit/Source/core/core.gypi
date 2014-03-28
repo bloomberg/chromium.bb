@@ -1633,8 +1633,6 @@
             'rendering/shapes/Shape.h',
             'rendering/shapes/ShapeInfo.cpp',
             'rendering/shapes/ShapeInfo.h',
-            'rendering/shapes/ShapeInsideInfo.cpp',
-            'rendering/shapes/ShapeInsideInfo.h',
             'rendering/shapes/ShapeInterval.h',
             'rendering/shapes/ShapeOutsideInfo.cpp',
             'rendering/shapes/ShapeOutsideInfo.h',

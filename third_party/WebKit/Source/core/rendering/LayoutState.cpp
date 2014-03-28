@@ -36,7 +36,6 @@ namespace WebCore {
 LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSize& offset, LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, ColumnInfo* columnInfo)
     : m_columnInfo(columnInfo)
     , m_next(prev)
-    , m_shapeInsideInfo(0)
 #ifndef NDEBUG
     , m_renderer(&renderer)
 #endif
@@ -104,13 +103,6 @@ LayoutState::LayoutState(LayoutState* prev, RenderBox& renderer, const LayoutSiz
     if (!m_columnInfo)
         m_columnInfo = m_next->m_columnInfo;
 
-    if (renderer.isRenderBlock()) {
-        const RenderBlock& renderBlock = toRenderBlock(renderer);
-        m_shapeInsideInfo = renderBlock.shapeInsideInfo();
-        if (!m_shapeInsideInfo && m_next->m_shapeInsideInfo && renderBlock.allowsShapeInsideInfoSharing(&m_next->m_shapeInsideInfo->owner()))
-            m_shapeInsideInfo = m_next->m_shapeInsideInfo;
-    }
-
     if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
         m_layoutDelta = m_next->m_layoutDelta;
 #if !ASSERT_DISABLED
@@ -134,7 +126,6 @@ LayoutState::LayoutState(RenderObject& root)
 #endif
     , m_columnInfo(0)
     , m_next(0)
-    , m_shapeInsideInfo(0)
     , m_pageLogicalHeight(0)
 #ifndef NDEBUG
     , m_renderer(&root)

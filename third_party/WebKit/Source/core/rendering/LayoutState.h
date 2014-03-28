@@ -37,7 +37,6 @@ class RenderBlockFlow;
 class RenderBox;
 class RenderObject;
 class RenderFlowThread;
-class ShapeInsideInfo;
 
 class LayoutState {
     WTF_MAKE_NONCOPYABLE(LayoutState);
@@ -53,7 +52,6 @@ public:
 #endif
         , m_columnInfo(0)
         , m_next(0)
-        , m_shapeInsideInfo(0)
         , m_pageLogicalHeight(pageLogicalHeight)
 #ifndef NDEBUG
         , m_renderer(0)
@@ -100,7 +98,6 @@ public:
 
     bool needsBlockDirectionLocationSetBeforeLayout() const { return m_isPaginated && m_pageLogicalHeight; }
 
-    ShapeInsideInfo* shapeInsideInfo() const { return m_shapeInsideInfo; }
     ColumnInfo* columnInfo() const { return m_columnInfo; }
 
     const LayoutRect& clipRect() const { return m_clipRect; }
@@ -127,7 +124,6 @@ private:
     // If the enclosing pagination model is a column model, then this will store column information for easy retrieval/manipulation.
     ColumnInfo* m_columnInfo;
     LayoutState* m_next;
-    ShapeInsideInfo* m_shapeInsideInfo;
 
     // FIXME: Distinguish between the layout clip rect and the paint clip rect which may be larger,
     // e.g., because of composited scrolling.

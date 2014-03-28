@@ -54,7 +54,6 @@ static void setPropertySwitchesFromRuntimeFeatures()
         CSSPropertyShapeMargin,
         CSSPropertyShapePadding,
         CSSPropertyShapeImageThreshold,
-        CSSPropertyShapeInside,
         CSSPropertyShapeOutside,
     };
     setCSSPropertiesEnabled(shapeProperties, WTF_ARRAY_LENGTH(shapeProperties), RuntimeEnabledFeatures::cssShapesEnabled());

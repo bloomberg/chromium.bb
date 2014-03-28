@@ -860,7 +860,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyWebkitPerspective:
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyShapeInside:
     case CSSPropertyShapeOutside:
     case CSSPropertyShapeMargin:
     case CSSPropertyShapeImageThreshold:

@@ -403,12 +403,10 @@ order
 -webkit-user-drag
 -webkit-user-modify
 -webkit-user-select
--webkit-shape-inside alias_for=shape-inside
 -webkit-shape-outside alias_for=shape-outside
 -webkit-shape-margin alias_for=shape-margin
 -webkit-shape-padding alias_for=shape-padding
 -webkit-shape-image-threshold alias_for=shape-image-threshold
-shape-inside
 shape-outside
 shape-margin
 shape-padding

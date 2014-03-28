@@ -268,10 +268,6 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
     LayoutStateMaintainer statePusher(*this, locationOffset());
 
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
-    if (updateRegionsAndShapesLogicalSize(flowThread))
-        relayoutChildren = true;
-
     LayoutSize previousSize = size();
 
     setLogicalHeight(0);
@@ -287,7 +283,7 @@ void RenderGrid::layoutBlock(bool relayoutChildren)
 
     layoutPositionedObjects(relayoutChildren || isRoot());
 
-    computeRegionRangeForBlock(flowThread);
+    computeRegionRangeForBlock(flowThreadContainingBlock());
 
     computeOverflow(oldClientAfterEdge);
 

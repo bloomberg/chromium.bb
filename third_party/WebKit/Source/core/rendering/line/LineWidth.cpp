@@ -43,11 +43,9 @@ LineWidth::LineWidth(RenderBlockFlow& block, bool isFirstLine, IndentTextOrNot s
     , m_left(0)
     , m_right(0)
     , m_availableWidth(0)
-    , m_segment(0)
     , m_isFirstLine(isFirstLine)
     , m_shouldIndentText(shouldIndentText)
 {
-    updateCurrentShapeSegment();
     updateAvailableWidth();
 }
 
@@ -57,11 +55,6 @@ void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
     LayoutUnit logicalHeight = m_block.minLineHeightForReplacedRenderer(m_isFirstLine, replacedHeight);
     m_left = m_block.logicalLeftOffsetForLine(height, shouldIndentText(), logicalHeight).toFloat();
     m_right = m_block.logicalRightOffsetForLine(height, shouldIndentText(), logicalHeight).toFloat();
-
-    if (m_segment) {
-        m_left = std::max<float>(m_segment->logicalLeft, m_left);
-        m_right = std::min<float>(m_segment->logicalRight, m_right);
-    }
 
     computeAvailableWidthFromLeftAndRight();
 }
@@ -206,28 +199,10 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
         newLineWidth = availableWidthAtOffset(m_block, floatLogicalBottom, shouldIndentText(), newLineLeft, newLineRight);
         lastFloatLogicalBottom = floatLogicalBottom;
 
-        if (newLineWidth >= m_uncommittedWidth) {
-            ShapeInsideInfo* shapeInsideInfo = m_block.layoutShapeInsideInfo();
-            if (shapeInsideInfo) {
-                // To safely update our shape segments, the current segment must be the first in this line, so committedWidth has to be 0
-                ASSERT(!m_committedWidth);
-
-                LayoutUnit logicalOffsetFromShapeContainer = m_block.logicalOffsetFromShapeAncestorContainer(&shapeInsideInfo->owner()).height();
-                LayoutUnit lineHeight = m_block.lineHeight(false, m_block.isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
-                shapeInsideInfo->updateSegmentsForLine(lastFloatLogicalBottom + logicalOffsetFromShapeContainer, lineHeight);
-                updateCurrentShapeSegment();
-                updateAvailableWidth();
-            }
+        if (newLineWidth >= m_uncommittedWidth)
             break;
-        }
     }
     updateLineDimension(lastFloatLogicalBottom, newLineWidth, newLineLeft, newLineRight);
-}
-
-void LineWidth::updateCurrentShapeSegment()
-{
-    if (ShapeInsideInfo* shapeInsideInfo = m_block.layoutShapeInsideInfo())
-        m_segment = shapeInsideInfo->currentSegment();
 }
 
 void LineWidth::computeAvailableWidthFromLeftAndRight()

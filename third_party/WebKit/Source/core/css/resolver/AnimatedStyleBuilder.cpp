@@ -562,9 +562,6 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyWebkitPerspectiveOriginY:
         style->setPerspectiveOriginY(animatableValueToLength(value, state));
         return;
-    case CSSPropertyShapeInside:
-        style->setShapeInside(toAnimatableShapeValue(value)->shapeValue());
-        return;
     case CSSPropertyShapeOutside:
         style->setShapeOutside(toAnimatableShapeValue(value)->shapeValue());
         return;

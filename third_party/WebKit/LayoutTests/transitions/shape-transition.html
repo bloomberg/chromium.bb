@@ -7,15 +7,13 @@
       height: 100px;
       width: 100px;
       background-color: blue;
-      shape-inside: polygon(nonzero, 30px 30px);
       shape-outside: polygon(nonzero, 30px 30px);
-      transition-property: shape-inside, shape-outside;
+      transition-property: shape-outside;
       transition-duration: 1s;
       transition-timing-function: linear;
     }
 
     #box.changed {
-      shape-inside: polygon(nonzero, 50px 50px);
       shape-outside: polygon(nonzero, 50px 50px);
     }
   </style>
@@ -25,7 +23,6 @@
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       [0.5, 'box', 'shape-outside', 'polygon(40px 40px)', 1],
-      [0.5, 'box', 'shape-inside', 'polygon(40px 40px)', 1],
     ];
 
     function setupTest()

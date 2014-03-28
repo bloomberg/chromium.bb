@@ -342,11 +342,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 
     LayoutStateMaintainer statePusher(*this, locationOffset(), pageLogicalHeight, pageLogicalHeightChanged, columnInfo());
 
-    // Regions changing widths can force us to relayout our children.
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
-    if (updateRegionsAndShapesLogicalSize(flowThread))
-        relayoutChildren = true;
-
     // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg, to track
     // our current maximal positive and negative margins. These values are used when we
     // are collapsed with adjacent blocks, so for example, if you have block A and B
@@ -441,7 +436,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 
     layoutPositionedObjects(relayoutChildren || isRoot(), oldLeft != logicalLeft() ? ForcedLayoutAfterContainingBlockMoved : DefaultLayout);
 
-    updateRegionsAndShapesAfterChildLayout(flowThread, heightChanged);
+    computeRegionRangeForBlock(flowThreadContainingBlock());
 
     // Add overflow from children (unless we're multi-column, since in that case all our child overflow is clipped anyway).
     computeOverflow(oldClientAfterEdge);
@@ -612,7 +607,6 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     determineLogicalLeftPositionForChild(child, ApplyLayoutDelta);
 
     LayoutSize childOffset = child->location() - oldRect.location();
-    relayoutShapeDescendantIfMoved(childRenderBlock, childOffset);
 
     // Update our height now that the child has been placed in the correct position.
     setLogicalHeight(logicalHeight() + logicalHeightForChild(child));
@@ -2138,29 +2132,7 @@ LayoutPoint RenderBlockFlow::computeLogicalLocationForFloat(const FloatingObject
     RenderBox* childBox = floatingObject->renderer();
     LayoutUnit logicalLeftOffset = logicalLeftOffsetForContent(); // Constant part of left offset.
     LayoutUnit logicalRightOffset; // Constant part of right offset.
-    // FIXME Bug 102948: This only works for shape outside directly set on this block.
-    ShapeInsideInfo* shapeInsideInfo = this->layoutShapeInsideInfo();
-    // FIXME: Implement behavior for right floats.
-    if (shapeInsideInfo) {
-        LayoutSize floatLogicalSize = logicalSizeForFloat(floatingObject);
-        // floatingObject's logicalSize doesn't contain the actual height at this point, so we need to calculate it
-        floatLogicalSize.setHeight(logicalHeightForChild(childBox) + marginBeforeForChild(childBox) + marginAfterForChild(childBox));
-
-        // FIXME: If the float doesn't fit in the shape we should push it under the content box
-        logicalTopOffset = shapeInsideInfo->computeFirstFitPositionForFloat(floatLogicalSize);
-        if (logicalHeight() > logicalTopOffset)
-            logicalTopOffset = logicalHeight();
-
-        SegmentList segments = shapeInsideInfo->computeSegmentsForLine(logicalTopOffset, floatLogicalSize.height());
-        // FIXME: Add support for shapes with multiple segments.
-        if (segments.size() >= 1) {
-            // The segment offsets are relative to the content box.
-            logicalRightOffset = logicalLeftOffset + segments[0].logicalRight;
-            logicalLeftOffset += segments[0].logicalLeft;
-        }
-    } else {
-        logicalRightOffset = logicalRightOffsetForContent();
-    }
+    logicalRightOffset = logicalRightOffsetForContent();
 
     LayoutUnit floatLogicalWidth = min(logicalWidthForFloat(floatingObject), logicalRightOffset - logicalLeftOffset); // The width we look for.
 

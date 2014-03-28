@@ -298,7 +298,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
     CSSPropertyWebkitRtlOrdering,
-    CSSPropertyShapeInside,
     CSSPropertyShapeOutside,
     CSSPropertyShapePadding,
     CSSPropertyShapeImageThreshold,
@@ -2640,8 +2639,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return cssValuePool().createValue(style->shapePadding());
         case CSSPropertyShapeImageThreshold:
             return cssValuePool().createValue(style->shapeImageThreshold(), CSSPrimitiveValue::CSS_NUMBER);
-        case CSSPropertyShapeInside:
-            return valueForShape(*style, style->shapeInside());
         case CSSPropertyShapeOutside:
             return valueForShape(*style, style->shapeOutside());
         case CSSPropertyWebkitWrapThrough:

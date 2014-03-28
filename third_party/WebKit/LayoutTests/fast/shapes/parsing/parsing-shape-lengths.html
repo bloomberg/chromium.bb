@@ -22,12 +22,12 @@ function getStyleValue(property, value) {
 
 function testStyleValue(value, expected) {
     if (expected === null)
-        shouldBeNull('getStyleValue("shape-inside", "' + value + '")');
+        shouldBeNull('getStyleValue("shape-outside", "' + value + '")');
     else
-        shouldBeEqualToString('getStyleValue("shape-inside", "' + value + '")', expected);
+        shouldBeEqualToString('getStyleValue("shape-outside", "' + value + '")', expected);
 }
 function testComputedStyleValue(value, expected) {
-    testShapeComputedProperty("shape-inside", value, expected);
+    testShapeComputedProperty("shape-outside", value, expected);
 }
 
 function testInvalidValue(property, value) {

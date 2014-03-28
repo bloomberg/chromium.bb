@@ -1,2 +1,0 @@
-X
-This test should not crash.

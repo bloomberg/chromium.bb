@@ -1924,7 +1924,6 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     updateImage(oldStyle ? oldStyle->borderImage().image() : 0, m_style ? m_style->borderImage().image() : 0);
     updateImage(oldStyle ? oldStyle->maskBoxImage().image() : 0, m_style ? m_style->maskBoxImage().image() : 0);
 
-    updateShapeImage(oldStyle ? oldStyle->shapeInside() : 0, m_style ? m_style->shapeInside() : 0);
     updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style ? m_style->shapeOutside() : 0);
 
     bool doesNotNeedLayout = !m_parent || isText();
@@ -2735,7 +2734,6 @@ void RenderObject::postDestroy()
         if (StyleImage* maskBoxImage = m_style->maskBoxImage().image())
             maskBoxImage->removeClient(this);
 
-        removeShapeImageClient(m_style->shapeInside());
         removeShapeImageClient(m_style->shapeOutside());
     }
 

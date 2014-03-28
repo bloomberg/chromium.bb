@@ -29,7 +29,6 @@
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderLineBoxList.h"
 #include "core/rendering/RootInlineBox.h"
-#include "core/rendering/shapes/ShapeInsideInfo.h"
 #include "core/rendering/style/ShapeValue.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRun.h"
@@ -144,7 +143,6 @@ public:
     bool hasMarginBeforeQuirk(const RenderBox* child) const;
     bool hasMarginAfterQuirk(const RenderBox* child) const;
 
-    void markShapeInsideDescendantsForLayout();
     void markPositionedObjectsForLayout();
     // FIXME: Do we really need this to be virtual? It's just so we can call this on
     // RenderBoxes without needed to check whether they're RenderBlocks first.
@@ -263,26 +261,7 @@ public:
     void showLineTreeAndMark(const InlineBox* = 0, const char* = 0, const InlineBox* = 0, const char* = 0, const RenderObject* = 0) const;
 #endif
 
-    ShapeInsideInfo& ensureShapeInsideInfo()
-    {
-        if (!m_rareData || !m_rareData->m_shapeInsideInfo)
-            setShapeInsideInfo(ShapeInsideInfo::createInfo(*this));
-        return *m_rareData->m_shapeInsideInfo;
-    }
-    ShapeInsideInfo* shapeInsideInfo() const
-    {
-        return m_rareData && m_rareData->m_shapeInsideInfo && ShapeInsideInfo::isEnabledFor(*this) ? m_rareData->m_shapeInsideInfo.get() : 0;
-    }
-    void setShapeInsideInfo(PassOwnPtr<ShapeInsideInfo> value)
-    {
-        if (!m_rareData)
-            m_rareData = adoptPtr(new RenderBlockRareData());
-        m_rareData->m_shapeInsideInfo = value;
-    }
-    ShapeInsideInfo* layoutShapeInsideInfo() const;
-    bool allowsShapeInsideInfoSharing(const RenderBlock* other) const;
     LayoutSize logicalOffsetFromShapeAncestorContainer(const RenderBlock* container) const;
-    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 
     // inline-block elements paint all phases atomically. This function ensures that. Certain other elements
     // (grid items, flex items) require this behavior as well, and this function exists as a helper for them.
@@ -361,7 +340,6 @@ protected:
 
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const OVERRIDE;
 
-    bool updateRegionsAndShapesLogicalSize(RenderFlowThread*);
     void computeRegionRangeForBlock(RenderFlowThread*);
 
     void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox*);
@@ -369,11 +347,6 @@ protected:
     virtual bool isInlineBlockOrInlineTable() const OVERRIDE FINAL { return isInline() && isReplaced(); }
 
 private:
-    void computeShapeSize();
-    void updateRegionsAndShapesAfterChildLayout(RenderFlowThread*, bool);
-    void updateShapeInsideInfoAfterStyleChange(const ShapeValue*, const ShapeValue* oldShape);
-    void relayoutShapeDescendantIfMoved(RenderBlock* child, LayoutSize offset);
-
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
     virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
 
@@ -548,7 +521,6 @@ public:
         LayoutUnit m_paginationStrut;
         LayoutUnit m_pageLogicalOffset;
 
-        OwnPtr<ShapeInsideInfo> m_shapeInsideInfo;
         int m_lineBreakToAvoidWidow : 31;
         unsigned m_didBreakAtLineToAvoidWidow : 1;
      };
@@ -577,20 +549,6 @@ protected:
     // member variables out of RenderBlock and into RenderBlockFlow.
     friend class RenderBlockFlow;
 };
-
-
-inline bool RenderBlock::allowsShapeInsideInfoSharing(const RenderBlock* other) const
-{
-    if (!other)
-        return false;
-    for (const RenderBlock* current = this; current && current != other && !current->isRenderFlowThread(); current = current->containingBlock()) {
-        if (current->isInline() || current->isFloating())
-            return false;
-        if (current->parent() != current->containingBlock())
-            return false;
-    }
-    return true;
-}
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBlock, isRenderBlock());
 

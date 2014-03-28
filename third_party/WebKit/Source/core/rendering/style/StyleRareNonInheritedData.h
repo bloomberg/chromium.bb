@@ -129,7 +129,6 @@ public:
 
     LengthSize m_pageSize;
 
-    RefPtr<ShapeValue> m_shapeInside;
     RefPtr<ShapeValue> m_shapeOutside;
     Length m_shapeMargin;
     Length m_shapePadding;

@@ -191,7 +191,6 @@ resize
 right
 scrollBehavior
 shapeImageThreshold
-shapeInside
 shapeMargin
 shapeOutside
 shapePadding

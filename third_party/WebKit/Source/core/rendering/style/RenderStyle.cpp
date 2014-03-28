@@ -430,7 +430,6 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle* other, un
             || rareNonInheritedData->m_justifyContent != other->rareNonInheritedData->m_justifyContent
             || rareNonInheritedData->m_grid.get() != other->rareNonInheritedData->m_grid.get()
             || rareNonInheritedData->m_gridItem.get() != other->rareNonInheritedData->m_gridItem.get()
-            || rareNonInheritedData->m_shapeInside != other->rareNonInheritedData->m_shapeInside
             || rareNonInheritedData->m_textCombine != other->rareNonInheritedData->m_textCombine
             || rareNonInheritedData->hasFilters() != other->rareNonInheritedData->hasFilters())
             return StyleDifferenceLayout;

@@ -87,7 +87,6 @@ struct SameSizeAsRenderBlock : public RenderBox {
 struct SameSizeAsRenderBlockRareData {
     int paginationStrut;
     int pageLogicalOffset;
-    void* pointers[1];
     uint32_t bitfields;
 };
 
@@ -327,8 +326,6 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     RenderBox::styleDidChange(diff, oldStyle);
 
     RenderStyle* newStyle = style();
-
-    updateShapeInsideInfoAfterStyleChange(newStyle->resolvedShapeInside(), oldStyle ? oldStyle->resolvedShapeInside() : RenderStyle::initialShapeInside());
 
     if (!isAnonymousBlock()) {
         // Ensure that all of our continuation blocks pick up the new style.
@@ -1333,36 +1330,6 @@ bool RenderBlock::updateImageLoadingPriorities()
     return true;
 }
 
-void RenderBlock::relayoutShapeDescendantIfMoved(RenderBlock* child, LayoutSize offset)
-{
-    LayoutUnit left = isHorizontalWritingMode() ? offset.width() : offset.height();
-    if (!left || !child || child->shapeInsideInfo() || !layoutShapeInsideInfo())
-        return;
-    // Propagate layout markers only up to the child, as we are still in the middle
-    // of a layout pass
-    child->setNormalChildNeedsLayout(true);
-    child->markShapeInsideDescendantsForLayout();
-    child->layoutIfNeeded();
-}
-
-ShapeInsideInfo* RenderBlock::layoutShapeInsideInfo() const
-{
-    if (ShapeInsideInfo* shapeInsideInfo = view()->layoutState()->shapeInsideInfo())
-        return shapeInsideInfo;
-
-    RenderFlowThread* flowThread = flowThreadContainingBlock();
-    if (allowsShapeInsideInfoSharing(flowThread)) {
-        LayoutUnit lineHeight = this->lineHeight(false, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes);
-        // regionAtBlockOffset returns regions like an array first={0,N-1}, second={N,M-1}, ...
-        LayoutUnit offset = logicalHeight() + lineHeight - LayoutUnit(1);
-        RenderRegion* region = regionAtBlockOffset(offset);
-        if (region && region->logicalHeight())
-            return region->shapeInsideInfo();
-    }
-
-    return 0;
-}
-
 LayoutSize RenderBlock::logicalOffsetFromShapeAncestorContainer(const RenderBlock* container) const
 {
     const RenderBlock* currentBlock = this;
@@ -1393,91 +1360,6 @@ LayoutSize RenderBlock::logicalOffsetFromShapeAncestorContainer(const RenderBloc
 
     LayoutSize result = isHorizontalWritingMode() ? LayoutSize(blockRect.x(), blockRect.y()) : LayoutSize(blockRect.y(), blockRect.x());
     return result;
-}
-
-void RenderBlock::imageChanged(WrappedImagePtr image, const IntRect*)
-{
-    RenderBox::imageChanged(image);
-
-    if (!parent() || !everHadLayout())
-        return;
-
-    ShapeValue* shapeValue = style()->shapeInside();
-    if (shapeValue && shapeValue->image() && shapeValue->image()->data() == image) {
-        ShapeInsideInfo& shapeInsideInfo = ensureShapeInsideInfo();
-        shapeInsideInfo.markShapeAsDirty();
-        markShapeInsideDescendantsForLayout();
-    }
-}
-
-void RenderBlock::updateShapeInsideInfoAfterStyleChange(const ShapeValue* shapeInside, const ShapeValue* oldShapeInside)
-{
-    // FIXME: A future optimization would do a deep comparison for equality.
-    if (shapeInside == oldShapeInside)
-        return;
-
-    if (shapeInside) {
-        ShapeInsideInfo& shapeInsideInfo = ensureShapeInsideInfo();
-        shapeInsideInfo.markShapeAsDirty();
-    } else {
-        setShapeInsideInfo(nullptr);
-        markShapeInsideDescendantsForLayout();
-    }
-}
-
-static inline bool shapeInfoRequiresRelayout(const RenderBlock* block)
-{
-    ShapeInsideInfo* info = block->shapeInsideInfo();
-    if (info)
-        info->setNeedsLayout(info->isShapeDirty());
-    else
-        info = block->layoutShapeInsideInfo();
-    return info && info->needsLayout();
-}
-
-bool RenderBlock::updateRegionsAndShapesLogicalSize(RenderFlowThread* flowThread)
-{
-    if (!flowThread && !shapeInsideInfo())
-        return shapeInfoRequiresRelayout(this);
-
-    LayoutUnit oldHeight = logicalHeight();
-    LayoutUnit oldTop = logicalTop();
-
-    // Compute the maximum logical height content may cause this block to expand to
-    // FIXME: These should eventually use the const computeLogicalHeight rather than updateLogicalHeight
-    setLogicalHeight(RenderFlowThread::maxLogicalHeight());
-    updateLogicalHeight();
-
-    computeShapeSize();
-
-    // Set our start and end regions. No regions above or below us will be considered by our children. They are
-    // effectively clamped to our region range.
-    computeRegionRangeForBlock(flowThread);
-
-    setLogicalHeight(oldHeight);
-    setLogicalTop(oldTop);
-
-    return shapeInfoRequiresRelayout(this);
-}
-
-void RenderBlock::computeShapeSize()
-{
-    ShapeInsideInfo* shapeInsideInfo = this->shapeInsideInfo();
-    if (!shapeInsideInfo)
-        return;
-
-    bool percentageLogicalHeightResolvable = percentageLogicalHeightIsResolvableFromBlock(this, false);
-    shapeInsideInfo->setReferenceBoxLogicalSize(LayoutSize(logicalWidth(), percentageLogicalHeightResolvable ? logicalHeight() : LayoutUnit()));
-}
-
-void RenderBlock::updateRegionsAndShapesAfterChildLayout(RenderFlowThread* flowThread, bool heightChanged)
-{
-    // A previous sibling has changed dimension, so we need to relayout the shape with the content
-    ShapeInsideInfo* shapeInsideInfo = layoutShapeInsideInfo();
-    if (heightChanged && shapeInsideInfo)
-        shapeInsideInfo->markShapeAsDirty();
-
-    computeRegionRangeForBlock(flowThread);
 }
 
 void RenderBlock::computeRegionRangeForBlock(RenderFlowThread* flowThread)
@@ -2839,22 +2721,6 @@ bool RenderBlock::avoidsFloats() const
 {
     // Floats can't intrude into our box if we have a non-auto column count or width.
     return RenderBox::avoidsFloats() || !style()->hasAutoColumnCount() || !style()->hasAutoColumnWidth();
-}
-
-void RenderBlock::markShapeInsideDescendantsForLayout()
-{
-    if (!everHadLayout())
-        return;
-    if (childrenInline()) {
-        setNeedsLayout();
-        return;
-    }
-    for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
-        if (!child->isRenderBlock())
-            continue;
-        RenderBlock* childBlock = toRenderBlock(child);
-        childBlock->markShapeInsideDescendantsForLayout();
-    }
 }
 
 bool RenderBlock::isPointInOverflowControl(HitTestResult& result, const LayoutPoint& locationInContainer, const LayoutPoint& accumulatedOffset)

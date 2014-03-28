@@ -201,8 +201,6 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return a.right() == b.right();
     case CSSPropertyShapeImageThreshold:
         return a.shapeImageThreshold() == b.shapeImageThreshold();
-    case CSSPropertyShapeInside:
-        return ptrsOrValuesEqual<ShapeValue*>(a.shapeInside(), b.shapeInside());
     case CSSPropertyShapeMargin:
         return a.shapeMargin() == b.shapeMargin();
     case CSSPropertyShapeOutside:

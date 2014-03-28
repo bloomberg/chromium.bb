@@ -263,10 +263,6 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
         // LayoutStateMaintainer needs this deliberate scope to pop before repaint
         LayoutStateMaintainer statePusher(*this, locationOffset());
 
-        RenderFlowThread* flowThread = flowThreadContainingBlock();
-        if (updateRegionsAndShapesLogicalSize(flowThread))
-            relayoutChildren = true;
-
         LayoutSize previousSize = size();
 
         updateLogicalWidth();
@@ -294,7 +290,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren)
 
         layoutPositionedObjects(relayoutChildren || isRoot());
 
-        computeRegionRangeForBlock(flowThread);
+        computeRegionRangeForBlock(flowThreadContainingBlock());
 
         computeOverflow(oldClientAfterEdge);
     }

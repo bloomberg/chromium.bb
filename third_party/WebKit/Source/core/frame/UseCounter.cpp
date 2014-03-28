@@ -392,7 +392,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     // case CSSPropertyWebkitRegionBreakAfter: return 343;
     // case CSSPropertyWebkitRegionBreakBefore: return 344;
     // case CSSPropertyWebkitRegionBreakInside: return 345;
-    case CSSPropertyShapeInside: return 346;
+    // case CSSPropertyShapeInside: return 346;
     case CSSPropertyShapeOutside: return 347;
     case CSSPropertyShapeMargin: return 348;
     case CSSPropertyShapePadding: return 349;

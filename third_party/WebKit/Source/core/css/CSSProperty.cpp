@@ -658,7 +658,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyShapeMargin:
     case CSSPropertyShapeImageThreshold:
     case CSSPropertyShapePadding:
-    case CSSPropertyShapeInside:
     case CSSPropertyShapeOutside:
     case CSSPropertyWebkitWrapThrough:
     case CSSPropertyWebkitAppRegion:

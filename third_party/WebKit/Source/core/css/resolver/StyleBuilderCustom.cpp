@@ -1974,7 +1974,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyShapePadding:
     case CSSPropertyShapeImageThreshold:
     case CSSPropertyWebkitWrapThrough:
-    case CSSPropertyShapeInside:
     case CSSPropertyShapeOutside:
     case CSSPropertyWhiteSpace:
     case CSSPropertyWidows:

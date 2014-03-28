@@ -189,9 +189,6 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, ElementStyleReso
             }
             break;
         }
-        case CSSPropertyShapeInside:
-            loadPendingShapeImage(style, style->shapeInside(), elementStyleResources.deviceScaleFactor());
-            break;
         case CSSPropertyShapeOutside:
             loadPendingShapeImage(style, style->shapeOutside(), elementStyleResources.deviceScaleFactor());
             break;
