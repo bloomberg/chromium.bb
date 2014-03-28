@@ -2237,34 +2237,6 @@ bool WebViewImpl::isSelectionAnchorFirst() const
     return false;
 }
 
-bool WebViewImpl::setEditableSelectionOffsets(int start, int end)
-{
-    const LocalFrame* focused = focusedWebCoreFrame();
-    if (!focused)
-        return false;
-    return focused->inputMethodController().setEditableSelectionOffsets(PlainTextRange(start, end));
-}
-
-bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compositionEnd, const WebVector<WebCompositionUnderline>& underlines)
-{
-    const LocalFrame* focused = focusedWebCoreFrame();
-    if (!focused)
-        return false;
-
-    if (!focused->editor().canEdit())
-        return false;
-
-    InputMethodController& inputMethodController = focused->inputMethodController();
-    inputMethodController.cancelComposition();
-
-    if (compositionStart == compositionEnd)
-        return true;
-
-    inputMethodController.setCompositionFromExistingText(CompositionUnderlineVectorBuilder(underlines), compositionStart, compositionEnd);
-
-    return true;
-}
-
 WebVector<WebCompositionUnderline> WebViewImpl::compositionUnderlines() const
 {
     const LocalFrame* focused = focusedWebCoreFrame();
@@ -2277,18 +2249,6 @@ WebVector<WebCompositionUnderline> WebViewImpl::compositionUnderlines() const
         results[index] = WebCompositionUnderline(underline.startOffset, underline.endOffset, static_cast<WebColor>(underline.color.rgb()), underline.thick);
     }
     return results;
-}
-
-void WebViewImpl::extendSelectionAndDelete(int before, int after)
-{
-    LocalFrame* focused = focusedWebCoreFrame();
-    if (!focused)
-        return;
-    if (WebPlugin* plugin = focusedPluginIfInputMethodSupported(focused)) {
-        plugin->extendSelectionAndDelete(before, after);
-        return;
-    }
-    focused->inputMethodController().extendSelectionAndDelete(before, after);
 }
 
 WebColor WebViewImpl::backgroundColor() const
