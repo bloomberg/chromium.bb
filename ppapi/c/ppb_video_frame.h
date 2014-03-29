@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_video_frame.idl modified Tue Feb 11 14:41:52 2014. */
+/* From ppb_video_frame.idl modified Tue Mar 25 18:28:57 2014. */
 
 #ifndef PPAPI_C_PPB_VIDEO_FRAME_H_
 #define PPAPI_C_PPB_VIDEO_FRAME_H_
@@ -15,7 +15,9 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_time.h"
 
-#define PPB_VIDEOFRAME_INTERFACE_0_1 "PPB_VideoFrame;0.1" /* dev */
+#define PPB_VIDEOFRAME_INTERFACE_0_1 "PPB_VideoFrame;0.1"
+#define PPB_VIDEOFRAME_INTERFACE PPB_VIDEOFRAME_INTERFACE_0_1
+
 /**
  * @file
  * Defines the <code>PPB_VideoFrame</code> interface.
@@ -56,7 +58,7 @@ typedef enum {
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_VideoFrame_0_1 { /* dev */
+struct PPB_VideoFrame_0_1 {
   /**
    * Determines if a resource is a VideoFrame resource.
    *
@@ -127,6 +129,8 @@ struct PPB_VideoFrame_0_1 { /* dev */
    */
   uint32_t (*GetDataBufferSize)(PP_Resource frame);
 };
+
+typedef struct PPB_VideoFrame_0_1 PPB_VideoFrame;
 /**
  * @}
  */

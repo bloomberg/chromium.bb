@@ -6,13 +6,13 @@
 /**
  * Defines the <code>PPB_MediaStreamVideoTrack</code> interface. Used for
  * receiving video frames from a MediaStream video track in the browser.
- * This interface is still in development (Dev API status) and may change.
  */
 
 [generate_thunk]
 
 label Chrome {
-  [channel=dev] M34 = 0.1
+  [channel=dev] M34 = 0.1,
+  M35 = 0.1
 };
 
 /**
@@ -71,6 +71,7 @@ enum PP_MediaStreamVideoTrack_Attrib {
   PP_MEDIASTREAMVIDEOTRACK_ATTRIB_FORMAT = 4
 };
 
+[version=0.1]
 interface PPB_MediaStreamVideoTrack {
   /**
    * Determines if a resource is a MediaStream video track resource.

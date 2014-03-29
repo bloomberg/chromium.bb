@@ -30,7 +30,7 @@ PROXIED_API(PPB_Instance)
 
 // Interfaces
 // ----------
-// Enumerates interfaces as (api_name, interface_name, interface_struct).
+// Enumerates interfaces as (interface_name, interface_struct).
 //
 // The api_name corresponds to the class in the list above for the object
 // that implements the API. Some things may be special and aren't implemented
@@ -46,6 +46,7 @@ PROXIED_API(PPB_Instance)
 // Note: Core is special and is registered manually.
 PROXIED_IFACE(PPB_AUDIO_INTERFACE_1_0, PPB_Audio_1_0)
 PROXIED_IFACE(PPB_AUDIO_INTERFACE_1_1, PPB_Audio_1_1)
+PROXIED_IFACE(PPB_AUDIOBUFFER_INTERFACE_0_1, PPB_AudioBuffer_0_1)
 PROXIED_IFACE(PPB_FILEREF_INTERFACE_1_0, PPB_FileRef_1_0)
 PROXIED_IFACE(PPB_FILEREF_INTERFACE_1_1, PPB_FileRef_1_1)
 PROXIED_IFACE(PPB_FILEREF_INTERFACE_1_2, PPB_FileRef_1_2)
@@ -71,6 +72,10 @@ PROXIED_IFACE(PPB_MOUSE_INPUT_EVENT_INTERFACE_1_1, PPB_MouseInputEvent_1_1)
 PROXIED_IFACE(PPB_WHEEL_INPUT_EVENT_INTERFACE_1_0, PPB_WheelInputEvent_1_0)
 PROXIED_IFACE(PPB_TOUCH_INPUT_EVENT_INTERFACE_1_0, PPB_TouchInputEvent_1_0)
 PROXIED_IFACE(PPB_FULLSCREEN_INTERFACE_1_0, PPB_Fullscreen_1_0)
+PROXIED_IFACE(PPB_MEDIASTREAMAUDIOTRACK_INTERFACE_0_1,
+              PPB_MediaStreamAudioTrack_0_1)
+PROXIED_IFACE(PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_0_1,
+              PPB_MediaStreamVideoTrack_0_1)
 PROXIED_IFACE(PPB_MESSAGING_INTERFACE_1_0, PPB_Messaging_1_0)
 PROXIED_IFACE(PPB_MOUSECURSOR_INTERFACE_1_0, PPB_MouseCursor_1_0)
 PROXIED_IFACE(PPB_MOUSELOCK_INTERFACE_1_0, PPB_MouseLock_1_0)
@@ -88,6 +93,7 @@ PROXIED_IFACE(PPB_URLREQUESTINFO_INTERFACE_1_0, PPB_URLRequestInfo_1_0)
 PROXIED_IFACE(PPB_URLRESPONSEINFO_INTERFACE_1_0, PPB_URLResponseInfo_1_0)
 PROXIED_IFACE(PPB_VAR_ARRAY_INTERFACE_1_0, PPB_VarArray_1_0)
 PROXIED_IFACE(PPB_VAR_DICTIONARY_INTERFACE_1_0, PPB_VarDictionary_1_0)
+PROXIED_IFACE(PPB_VIDEOFRAME_INTERFACE_0_1, PPB_VideoFrame_0_1)
 PROXIED_IFACE(PPB_WEBSOCKET_INTERFACE_1_0, PPB_WebSocket_1_0)
 
 // Note: PPB_Var and PPB_VarArrayBuffer are special and registered manually.

@@ -6,13 +6,13 @@
 /**
  * Defines the <code>PPB_MediaStreamAudioTrack</code> interface. Used for
  * receiving audio samples from a MediaStream audio track in the browser.
- * This interface is still in development (Dev API status) and may change.
  */
 
 [generate_thunk]
 
 label Chrome {
-  [channel=dev] M34 = 0.1
+  [channel=dev] M34 = 0.1,
+  M35 = 0.1
 };
 
 /**
@@ -62,6 +62,7 @@ enum PP_MediaStreamAudioTrack_Attrib {
   PP_MEDIASTREAMAUDIOTRACK_ATTRIB_DURATION = 5
 };
 
+[version=0.1]
 interface PPB_MediaStreamAudioTrack {
   /**
    * Determines if a resource is a MediaStream audio track resource.

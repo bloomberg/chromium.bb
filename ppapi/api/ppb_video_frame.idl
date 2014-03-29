@@ -10,7 +10,8 @@
 [generate_thunk]
 
 label Chrome {
-  [channel=dev] M34 = 0.1
+  [channel=dev] M34 = 0.1,
+  M35 = 0.1
 };
 
 enum PP_VideoFrame_Format {
@@ -40,6 +41,7 @@ enum PP_VideoFrame_Format {
   PP_VIDEOFRAME_FORMAT_LAST = PP_VIDEOFRAME_FORMAT_BGRA
 };
 
+[version=0.1]
 interface PPB_VideoFrame {
   /**
    * Determines if a resource is a VideoFrame resource.

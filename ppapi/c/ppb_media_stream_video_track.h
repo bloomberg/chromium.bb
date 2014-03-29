@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_media_stream_video_track.idl modified Wed Feb 19 11:06:48 2014. */
+/* From ppb_media_stream_video_track.idl modified Fri Mar 28 10:13:52 2014. */
 
 #ifndef PPAPI_C_PPB_MEDIA_STREAM_VIDEO_TRACK_H_
 #define PPAPI_C_PPB_MEDIA_STREAM_VIDEO_TRACK_H_
@@ -15,13 +15,14 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_0_1 \
-    "PPB_MediaStreamVideoTrack;0.1" /* dev */
+#define PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_0_1 "PPB_MediaStreamVideoTrack;0.1"
+#define PPB_MEDIASTREAMVIDEOTRACK_INTERFACE \
+    PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_0_1
+
 /**
  * @file
  * Defines the <code>PPB_MediaStreamVideoTrack</code> interface. Used for
  * receiving video frames from a MediaStream video track in the browser.
- * This interface is still in development (Dev API status) and may change.
  */
 
 
@@ -88,7 +89,7 @@ typedef enum {
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_MediaStreamVideoTrack_0_1 { /* dev */
+struct PPB_MediaStreamVideoTrack_0_1 {
   /**
    * Determines if a resource is a MediaStream video track resource.
    *
@@ -219,6 +220,8 @@ struct PPB_MediaStreamVideoTrack_0_1 { /* dev */
    */
   void (*Close)(PP_Resource video_track);
 };
+
+typedef struct PPB_MediaStreamVideoTrack_0_1 PPB_MediaStreamVideoTrack;
 /**
  * @}
  */

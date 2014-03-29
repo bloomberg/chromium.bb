@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From ppb_media_stream_audio_track.idl modified Fri Feb  7 14:38:28 2014. */
+/* From ppb_media_stream_audio_track.idl modified Fri Mar 28 10:13:34 2014. */
 
 #ifndef PPAPI_C_PPB_MEDIA_STREAM_AUDIO_TRACK_H_
 #define PPAPI_C_PPB_MEDIA_STREAM_AUDIO_TRACK_H_
@@ -15,13 +15,14 @@
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/pp_var.h"
 
-#define PPB_MEDIASTREAMAUDIOTRACK_INTERFACE_0_1 \
-    "PPB_MediaStreamAudioTrack;0.1" /* dev */
+#define PPB_MEDIASTREAMAUDIOTRACK_INTERFACE_0_1 "PPB_MediaStreamAudioTrack;0.1"
+#define PPB_MEDIASTREAMAUDIOTRACK_INTERFACE \
+    PPB_MEDIASTREAMAUDIOTRACK_INTERFACE_0_1
+
 /**
  * @file
  * Defines the <code>PPB_MediaStreamAudioTrack</code> interface. Used for
  * receiving audio samples from a MediaStream audio track in the browser.
- * This interface is still in development (Dev API status) and may change.
  */
 
 
@@ -78,7 +79,7 @@ typedef enum {
  * @addtogroup Interfaces
  * @{
  */
-struct PPB_MediaStreamAudioTrack_0_1 { /* dev */
+struct PPB_MediaStreamAudioTrack_0_1 {
   /**
    * Determines if a resource is a MediaStream audio track resource.
    *
@@ -203,6 +204,8 @@ struct PPB_MediaStreamAudioTrack_0_1 { /* dev */
    */
   void (*Close)(PP_Resource audio_track);
 };
+
+typedef struct PPB_MediaStreamAudioTrack_0_1 PPB_MediaStreamAudioTrack;
 /**
  * @}
  */
