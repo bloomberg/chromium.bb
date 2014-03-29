@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
@@ -32,10 +33,12 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "chrome/installer/util/google_update_util.h"
 #include "chrome/installer/util/install_util.h"
 #include "ui/gfx/icon_util.h"
 #endif
 
+using content::BrowserThread;
 using views::GridLayout;
 
 namespace {
@@ -64,11 +67,6 @@ void AddElevationIconIfNeeded(views::LabelButton* button) {
 #if defined(OS_WIN)
   if ((base::win::GetVersion() >= base::win::VERSION_VISTA) &&
       base::win::UserAccountControlIsEnabled()) {
-    base::FilePath exe_path;
-    PathService::Get(base::FILE_EXE, &exe_path);
-    if (InstallUtil::IsPerUserInstall(exe_path.value().c_str()))
-      return;
-
     // This code was lifted from chrome/browser/ui/views/infobars/infobar_view.
     // TODO(mad): Investigate the possibility of moving it to a common place.
     SHSTOCKICONINFO icon_info = { sizeof(SHSTOCKICONINFO) };
@@ -255,6 +253,7 @@ void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
                                                  NEW_FOREGROUND_TAB,
                                                  content::PAGE_TRANSITION_LINK,
                                                  false));
+#if defined(OS_WIN)
     } else {
       DCHECK(UpgradeDetector::GetInstance()->is_outdated_install_no_au());
       UMA_HISTOGRAM_CUSTOM_COUNTS(
@@ -262,12 +261,16 @@ void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
           0, kMaxIgnored, kNumIgnoredBuckets);
       content::RecordAction(
           base::UserMetricsAction("OutdatedUpgradeBubble.EnableAU"));
-      // TODO(robertshield): Make a call to GoogleUpdateSettings to enable
-      // auto-update.
+      // Record that the autoupdate flavour of the dialog has been shown.
       if (g_browser_process->local_state()) {
         g_browser_process->local_state()->SetBoolean(
             prefs::kAttemptedToEnableAutoupdate, true);
       }
+
+      // Re-enable updates by shelling out to setup.exe in the blocking pool.
+      BrowserThread::PostBlockingPoolTask(FROM_HERE,
+          base::Bind(&google_update::ElevateIfNeededToReenableUpdates));
+#endif  // defined(OS_WIN)
     }
   } else {
     DCHECK_EQ(later_button_, sender);

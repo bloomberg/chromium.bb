@@ -11,9 +11,11 @@
 
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string16.h"
@@ -21,9 +23,15 @@
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/installation_state.h"
+#include "chrome/installer/util/product.h"
 
 using base::win::RegKey;
 
@@ -215,6 +223,47 @@ bool UninstallGoogleUpdate(bool system_install) {
         base::TimeDelta::FromMilliseconds(kGoogleUpdateTimeoutMs));
   }
   return success;
+}
+
+void ElevateIfNeededToReenableUpdates() {
+  base::FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
+    NOTREACHED();
+    return;
+  }
+  installer::ProductState product_state;
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  const bool system_install = !InstallUtil::IsPerUserInstall(
+      chrome_exe.value().c_str());
+  if (!product_state.Initialize(system_install, dist))
+    return;
+  base::FilePath exe_path(product_state.GetSetupPath());
+  if (exe_path.empty() || !base::PathExists(exe_path)) {
+    LOG(ERROR) << "Could not find setup.exe to reenable updates.";
+    return;
+  }
+
+  CommandLine cmd(exe_path);
+  cmd.AppendSwitch(installer::switches::kReenableAutoupdates);
+  installer::Product product(dist);
+  product.InitializeFromUninstallCommand(product_state.uninstall_command());
+  product.AppendProductFlags(&cmd);
+  if (system_install)
+    cmd.AppendSwitch(installer::switches::kSystemLevel);
+  if (product_state.uninstall_command().HasSwitch(
+          installer::switches::kVerboseLogging)) {
+    cmd.AppendSwitch(installer::switches::kVerboseLogging);
+  }
+
+  base::LaunchOptions launch_options;
+  launch_options.force_breakaway_from_job_ = true;
+
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA &&
+      base::win::UserAccountControlIsEnabled()) {
+    base::LaunchElevatedProcess(cmd, launch_options, NULL);
+  } else {
+    base::LaunchProcess(cmd, launch_options, NULL);
+  }
 }
 
 std::string GetUntrustedDataValue(const std::string& key) {

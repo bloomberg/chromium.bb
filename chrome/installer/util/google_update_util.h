@@ -22,6 +22,11 @@ bool EnsureUserLevelGoogleUpdatePresent();
 // Returns false if Google Update could not be executed, or times out.
 bool UninstallGoogleUpdate(bool system_install);
 
+// Run setup.exe to attempt to reenable updates for for Chrome while elevating
+// if needed. Setup.exe will call into
+// GoogleUpdateSettings::ReenableAutoupdatesForApp() to do the work.
+void ElevateIfNeededToReenableUpdates();
+
 // Returns the value corresponding to |key| in untrusted data passed from
 // Google Update.  Returns an empty string if |key| is absent or if its value
 // contains non-printable characters.

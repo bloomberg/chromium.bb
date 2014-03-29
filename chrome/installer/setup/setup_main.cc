@@ -1199,6 +1199,20 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     } else {
       *exit_code = installer::PATCH_INVALID_ARGUMENTS;
     }
+  } else if (cmd_line.HasSwitch(installer::switches::kReenableAutoupdates)) {
+    // setup.exe has been asked to attempt to reenable updates for Chrome.
+    // Figure out whether we should do so for the multi binaries or the main
+    // Chrome product.
+    BrowserDistribution::Type dist_type = BrowserDistribution::CHROME_BROWSER;
+    if (installer_state->is_multi_install())
+      dist_type = BrowserDistribution::CHROME_BINARIES;
+
+    BrowserDistribution* dist =
+        BrowserDistribution::GetSpecificDistribution(dist_type);
+    bool updates_enabled =
+        GoogleUpdateSettings::ReenableAutoupdatesForApp(dist->GetAppGuid());
+    *exit_code = updates_enabled ? installer::REENABLE_UPDATES_SUCCEEDED :
+                                   installer::REENABLE_UPDATES_FAILED;
   } else {
     handled = false;
   }

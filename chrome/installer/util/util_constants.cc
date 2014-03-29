@@ -112,7 +112,10 @@ const char kOnOsUpgrade[] = "on-os-upgrade";
 // exit code: 0 if EULA not accepted, 1 if EULA accepted, and E_FAIL on error.
 const char kQueryEULAAcceptance[] = "query-eula-acceptance";
 
-// Register Chrome as a valid browser on the current sytem. This option
+// Requests that setup attempt to reenable autoupdates for Chrome.
+const char kReenableAutoupdates[] = "reenable-autoupdates";
+
+// Register Chrome as a valid browser on the current system. This option
 // requires that setup.exe is running as admin. If this option is specified,
 // options kInstallArchive and kUninstall are ignored.
 const char kRegisterChromeBrowser[] = "register-chrome-browser";
