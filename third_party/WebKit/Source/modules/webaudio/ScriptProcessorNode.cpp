@@ -93,7 +93,6 @@ ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate
     , m_doubleBufferIndexForEvent(0)
     , m_bufferSize(bufferSize)
     , m_bufferReadWriteIndex(0)
-    , m_isRequestOutstanding(false)
     , m_numberOfInputChannels(numberOfInputChannels)
     , m_numberOfOutputChannels(numberOfOutputChannels)
     , m_internalInputBus(AudioBus::create(numberOfInputChannels, AudioNode::ProcessingSizeInFrames, false))
@@ -214,7 +213,9 @@ void ScriptProcessorNode::process(size_t framesToProcess)
     if (!m_bufferReadWriteIndex) {
         // Avoid building up requests on the main thread to fire process events when they're not being handled.
         // This could be a problem if the main thread is very busy doing other things and is being held up handling previous requests.
-        if (m_isRequestOutstanding) {
+        // The audio thread can't block on this lock, so we call tryLock() instead.
+        MutexTryLocker tryLocker(m_processEventLock);
+        if (!tryLocker.locked()) {
             // We're late in handling the previous request. The main thread must be very busy.
             // The best we can do is clear out the buffer ourself here.
             outputBuffer->zero();
@@ -224,7 +225,6 @@ void ScriptProcessorNode::process(size_t framesToProcess)
 
             // Fire the event on the main thread, not this one (which is the realtime audio thread).
             m_doubleBufferIndexForEvent = m_doubleBufferIndex;
-            m_isRequestOutstanding = true;
             callOnMainThread(fireProcessEventDispatch, this);
         }
 
@@ -247,7 +247,7 @@ void ScriptProcessorNode::fireProcessEventDispatch(void* userData)
 
 void ScriptProcessorNode::fireProcessEvent()
 {
-    ASSERT(isMainThread() && m_isRequestOutstanding);
+    ASSERT(isMainThread());
 
     bool isIndexGood = m_doubleBufferIndexForEvent < 2;
     ASSERT(isIndexGood);
@@ -262,8 +262,8 @@ void ScriptProcessorNode::fireProcessEvent()
 
     // Avoid firing the event if the document has already gone away.
     if (context()->executionContext()) {
-        // Let the audio thread know we've gotten to the point where it's OK for it to make another request.
-        m_isRequestOutstanding = false;
+        // This synchronizes with process().
+        MutexLocker processLocker(m_processEventLock);
 
         // Call the JavaScript event handler which will do the audio processing.
         dispatchEvent(AudioProcessingEvent::create(inputBuffer, outputBuffer));

@@ -83,12 +83,14 @@ private:
 
     size_t m_bufferSize;
     unsigned m_bufferReadWriteIndex;
-    volatile bool m_isRequestOutstanding;
 
     unsigned m_numberOfInputChannels;
     unsigned m_numberOfOutputChannels;
 
     RefPtr<AudioBus> m_internalInputBus;
+
+    // Synchronize process() with fireProcessEvent().
+    mutable Mutex m_processEventLock;
 };
 
 } // namespace WebCore
