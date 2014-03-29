@@ -1269,8 +1269,11 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (!SuddenTerminationAllowed())
     return false;
 
-  if (worker_ref_count_ != 0)
+  if (worker_ref_count_ != 0) {
+    if (survive_for_worker_start_time_.is_null())
+      survive_for_worker_start_time_ = base::TimeTicks::Now();
     return false;
+  }
 
   // Set this before ProcessDied() so observers can tell if the render process
   // died due to fast shutdown versus another cause.
@@ -1495,8 +1498,19 @@ void RenderProcessHostImpl::Cleanup() {
   }
   delayed_cleanup_needed_ = false;
 
+  // Records the time when the process starts surviving for workers for UMA.
+  if (listeners_.IsEmpty() && worker_ref_count_ > 0 &&
+      survive_for_worker_start_time_.is_null()) {
+    survive_for_worker_start_time_ = base::TimeTicks::Now();
+  }
+
   // When there are no other owners of this object, we can delete ourselves.
   if (listeners_.IsEmpty() && worker_ref_count_ == 0) {
+    if (!survive_for_worker_start_time_.is_null()) {
+      UMA_HISTOGRAM_LONG_TIMES(
+          "SharedWorker.RendererSurviveForWorkerTime",
+          base::TimeTicks::Now() - survive_for_worker_start_time_);
+    }
     // We cannot clean up twice; if this fails, there is an issue with our
     // control flow.
     DCHECK(!deleting_soon_);

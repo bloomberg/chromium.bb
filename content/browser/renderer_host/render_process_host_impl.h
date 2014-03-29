@@ -435,6 +435,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   int worker_ref_count_;
 
+  // Records the time when the process starts surviving for workers for UMA.
+  base::TimeTicks survive_for_worker_start_time_;
+
 #if defined(USE_MOJO)
   scoped_ptr<RenderProcessHostMojoImpl> render_process_host_mojo_;
 #endif
