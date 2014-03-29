@@ -878,11 +878,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
         }
     }
 
-    {
-        IntPoint squashingDelta(delta);
-        squashingDelta.moveBy(-graphicsLayerParentLocation);
-        updateSquashingLayerGeometry(squashingDelta);
-    }
+    updateSquashingLayerGeometry(delta);
 
     if (m_owningLayer.scrollableArea() && m_owningLayer.scrollableArea()->scrollsOverflow())
         m_owningLayer.scrollableArea()->positionOverflowControls();
@@ -972,16 +968,16 @@ void CompositedLayerMapping::updateInternalHierarchy()
     // The squashing containment layer, if it exists, becomes a no-op parent.
     if (m_squashingLayer) {
         ASSERT(compositor()->layerSquashingEnabled());
-        ASSERT((m_ancestorClippingLayer && !m_squashingContainmentLayer) || (!m_ancestorClippingLayer && m_squashingContainmentLayer));
+        ASSERT(m_squashingContainmentLayer);
 
-        if (m_squashingContainmentLayer) {
-            m_squashingContainmentLayer->removeAllChildren();
+        m_squashingContainmentLayer->removeAllChildren();
+
+        if (m_ancestorClippingLayer)
+            m_squashingContainmentLayer->addChild(m_ancestorClippingLayer.get());
+        else
             m_squashingContainmentLayer->addChild(m_graphicsLayer.get());
-            m_squashingContainmentLayer->addChild(m_squashingLayer.get());
-        } else {
-            // The ancestor clipping layer is already set up and has m_graphicsLayer under it.
-            m_ancestorClippingLayer->addChild(m_squashingLayer.get());
-        }
+
+        m_squashingContainmentLayer->addChild(m_squashingLayer.get());
     }
 }
 
@@ -1461,23 +1457,23 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
             m_squashingLayer->setDrawsContent(true);
 
             // FIXME: containment layer needs a new CompositingReason, CompositingReasonOverlap is not appropriate.
-            if (!m_ancestorClippingLayer)
-                m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContainer);
+            m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonLayerForSquashingContainer);
             layersChanged = true;
         }
 
-        ASSERT(m_squashingLayer);
+        ASSERT(m_squashingLayer && m_squashingContainmentLayer);
     } else {
         if (m_squashingLayer) {
             m_squashingLayer->removeFromParent();
             m_squashingLayer = nullptr;
-            layersChanged = true;
-        }
-        if (m_squashingContainmentLayer) {
+            // FIXME: do we need to invalidate something here?
+
+            ASSERT(m_squashingContainmentLayer);
             m_squashingContainmentLayer->removeFromParent();
             m_squashingContainmentLayer = nullptr;
             layersChanged = true;
         }
+
         ASSERT(!m_squashingLayer && !m_squashingContainmentLayer);
     }
 
