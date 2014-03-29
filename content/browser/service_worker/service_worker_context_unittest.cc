@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_context.h"
+#include "content/public/browser/service_worker_context.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"

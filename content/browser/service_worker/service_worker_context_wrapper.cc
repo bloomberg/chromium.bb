@@ -45,8 +45,76 @@ void ServiceWorkerContextWrapper::Shutdown() {
 }
 
 ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return context_core_.get();
+}
+
+static void FinishRegistrationOnIO(
+    const ServiceWorkerContext::ResultCallback& continuation,
+    ServiceWorkerStatusCode status,
+    int64 registration_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(continuation, status == SERVICE_WORKER_OK));
+}
+
+void ServiceWorkerContextWrapper::RegisterServiceWorker(
+    const GURL& pattern,
+    const GURL& script_url,
+    int source_process_id,
+    const ResultCallback& continuation) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::RegisterServiceWorker,
+                   this,
+                   pattern,
+                   script_url,
+                   source_process_id,
+                   continuation));
+    return;
+  }
+
+  context()->RegisterServiceWorker(
+      pattern,
+      script_url,
+      source_process_id,
+      base::Bind(&FinishRegistrationOnIO, continuation));
+}
+
+static void FinishUnregistrationOnIO(
+    const ServiceWorkerContext::ResultCallback& continuation,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(continuation, status == SERVICE_WORKER_OK));
+}
+
+void ServiceWorkerContextWrapper::UnregisterServiceWorker(
+    const GURL& pattern,
+    int source_process_id,
+    const ResultCallback& continuation) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::UnregisterServiceWorker,
+                   this,
+                   pattern,
+                   source_process_id,
+                   continuation));
+    return;
+  }
+
+  context()->UnregisterServiceWorker(
+      pattern,
+      source_process_id,
+      base::Bind(&FinishUnregistrationOnIO, continuation));
 }
 
 }  // namespace content

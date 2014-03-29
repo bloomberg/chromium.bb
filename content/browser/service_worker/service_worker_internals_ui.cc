@@ -124,7 +124,8 @@ void ServiceWorkerInternalsUI::GetAllRegistrations(const ListValue* args) {
 void ServiceWorkerInternalsUI::AddContextFromStoragePartition(
     StoragePartition* partition) {
   scoped_refptr<ServiceWorkerContextWrapper> context =
-      partition->GetServiceWorkerContext();
+      static_cast<ServiceWorkerContextWrapper*>(
+          partition->GetServiceWorkerContext());
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -142,7 +143,8 @@ void FindContext(const base::FilePath& partition_path,
                  StoragePartition* storage_partition) {
   if (storage_partition->GetPath() == partition_path) {
     *result_partition = storage_partition;
-    *result_context = storage_partition->GetServiceWorkerContext();
+    *result_context = static_cast<ServiceWorkerContextWrapper*>(
+        storage_partition->GetServiceWorkerContext());
   }
 }
 }  // namespace

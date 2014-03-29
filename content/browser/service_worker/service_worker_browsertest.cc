@@ -53,6 +53,20 @@ void RunOnIOThread(const base::Closure& closure) {
   run_loop.Run();
 }
 
+void RunOnIOThread(
+    const base::Callback<void(const base::Closure& continuation)>& closure) {
+  base::RunLoop run_loop;
+  base::Closure quit_on_original_thread =
+      base::Bind(base::IgnoreResult(&base::MessageLoopProxy::PostTask),
+                 base::MessageLoopProxy::current().get(),
+                 FROM_HERE,
+                 run_loop.QuitClosure());
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(closure, quit_on_original_thread));
+  run_loop.Run();
+}
+
 // Contrary to the style guide, the output parameter of this function comes
 // before input parameters so Bind can be used on it to create a FetchCallback
 // to pass to DispatchFetchEvent.
@@ -90,7 +104,8 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
         shell()->web_contents()->GetBrowserContext());
-    wrapper_ = partition->GetServiceWorkerContext();
+    wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
+        partition->GetServiceWorkerContext());
 
     // Navigate to the page to set up a renderer page (where we can embed
     // a worker).
@@ -110,6 +125,7 @@ class ServiceWorkerBrowserTest : public ContentBrowserTest {
   virtual void TearDownOnIOThread() {}
 
   ServiceWorkerContextWrapper* wrapper() { return wrapper_.get(); }
+  ServiceWorkerContext* public_context() { return wrapper(); }
 
   void AssociateRendererProcessToWorker(EmbeddedWorkerInstance* worker) {
     worker->AddProcessReference(
@@ -414,6 +430,98 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Rejected) {
   ServiceWorkerResponse response;
   FetchTestHelper("/service_worker/fetch_event_error.js", &result, &response);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, result);
+}
+
+class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
+ public:
+  typedef ServiceWorkerBlackBoxBrowserTest self;
+
+  static void ExpectResultAndRun(bool expected,
+                                 const base::Closure& continuation,
+                                 bool actual) {
+    EXPECT_EQ(expected, actual);
+    continuation.Run();
+  }
+
+  int RenderProcessID() {
+    return shell()->web_contents()->GetRenderProcessHost()->GetID();
+  }
+
+  void FindRegistrationOnIO(const GURL& document_url,
+                            ServiceWorkerStatusCode* status,
+                            GURL* script_url,
+                            const base::Closure& continuation) {
+    wrapper()->context()->storage()->FindRegistrationForDocument(
+        document_url,
+        base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO2,
+                   this,
+                   status,
+                   script_url,
+                   continuation));
+  }
+
+  void FindRegistrationOnIO2(
+      ServiceWorkerStatusCode* out_status,
+      GURL* script_url,
+      const base::Closure& continuation,
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration) {
+    *out_status = status;
+    if (registration) {
+      *script_url = registration->script_url();
+    } else {
+      EXPECT_NE(SERVICE_WORKER_OK, status);
+    }
+    continuation.Run();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
+  const std::string kWorkerUrl = "/service_worker/fetch_event.js";
+  {
+    base::RunLoop run_loop;
+    public_context()->RegisterServiceWorker(
+        embedded_test_server()->GetURL("/*"),
+        embedded_test_server()->GetURL(kWorkerUrl),
+        RenderProcessID(),
+        base::Bind(&ServiceWorkerBlackBoxBrowserTest::ExpectResultAndRun,
+                   true,
+                   run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+  {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    GURL script_url;
+    RunOnIOThread(
+        base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO,
+                   this,
+                   embedded_test_server()->GetURL("/service_worker/empty.html"),
+                   &status,
+                   &script_url));
+    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_EQ(embedded_test_server()->GetURL(kWorkerUrl), script_url);
+  }
+  {
+    base::RunLoop run_loop;
+    public_context()->UnregisterServiceWorker(
+        embedded_test_server()->GetURL("/*"),
+        RenderProcessID(),
+        base::Bind(&ServiceWorkerBlackBoxBrowserTest::ExpectResultAndRun,
+                   true,
+                   run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+  {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    GURL script_url;
+    RunOnIOThread(
+        base::Bind(&ServiceWorkerBlackBoxBrowserTest::FindRegistrationOnIO,
+                   this,
+                   embedded_test_server()->GetURL("/service_worker/empty.html"),
+                   &status,
+                   &script_url));
+    EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND, status);
+  }
 }
 
 }  // namespace content
