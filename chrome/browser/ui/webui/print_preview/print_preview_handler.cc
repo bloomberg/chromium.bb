@@ -62,6 +62,7 @@
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "printing/backend/print_backend.h"
+#include "printing/backend/print_backend_consts.h"
 #include "printing/metafile.h"
 #include "printing/metafile_impl.h"
 #include "printing/pdf_render_settings.h"
@@ -286,19 +287,36 @@ void EnumeratePrintersOnFileThread(
   for (printing::PrinterList::iterator it = printer_list.begin();
        it != printer_list.end(); ++it) {
     base::DictionaryValue* printer_info = new base::DictionaryValue;
+    printers->Append(printer_info);
     std::string printer_name;
+    std::string printer_description;
 #if defined(OS_MACOSX)
     // On Mac, |it->printer_description| specifies the printer name and
     // |it->printer_name| specifies the device name / printer queue name.
     printer_name = it->printer_description;
+    if (!it->options[kDriverNameTagName].empty())
+      printer_description = it->options[kDriverNameTagName];
 #else
     printer_name = it->printer_name;
+    printer_description = it->printer_description;
 #endif
-    printer_info->SetString(printing::kSettingPrinterName, printer_name);
     printer_info->SetString(printing::kSettingDeviceName, it->printer_name);
+    printer_info->SetString(printing::kSettingPrinterDescription,
+                            printer_description);
+    printer_info->SetString(printing::kSettingPrinterName, printer_name);
     VLOG(1) << "Found printer " << printer_name
             << " with device name " << it->printer_name;
-    printers->Append(printer_info);
+
+    base::DictionaryValue* options = new base::DictionaryValue;
+    printer_info->Set(printing::kSettingPrinterOptions, options);
+    for (std::map<std::string, std::string>::iterator opt = it->options.begin();
+         opt != it->options.end();
+         ++opt) {
+      options->SetString(opt->first, opt->second);
+    }
+
+    VLOG(1) << "Found printer " << printer_name << " with device name "
+            << it->printer_name;
   }
   VLOG(1) << "Enumerate printers finished, found " << printers->GetSize()
           << " printers";

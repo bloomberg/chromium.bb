@@ -123,6 +123,12 @@ const char kSettingPrintableAreaHeight[] = "printableAreaHeight";
 // Printer name.
 const char kSettingPrinterName[] = "printerName";
 
+// Printer description.
+const char kSettingPrinterDescription[] = "printerDescription";
+
+// Additional printer options.
+const char kSettingPrinterOptions[] = "printerOptions";
+
 // Print to PDF option: true if selected, false if not.
 const char kSettingPrintToPDF[] = "printToPDF";
 

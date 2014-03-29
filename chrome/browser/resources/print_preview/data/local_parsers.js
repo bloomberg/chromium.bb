@@ -15,13 +15,21 @@ cr.define('print_preview', function() {
    * @return {!print_preview.Destination} Parsed local print destination.
    */
   LocalDestinationParser.parse = function(destinationInfo) {
+    var options = {'description': destinationInfo.printerDescription};
+    if (destinationInfo.printerOptions) {
+      // Convert options into cloud print tags format.
+      options.tags = Object.keys(destinationInfo.printerOptions).map(
+          function(key) {return '__cp__' + key + '=' + this[key];},
+          destinationInfo.printerOptions);
+    }
     return new print_preview.Destination(
         destinationInfo.deviceName,
         print_preview.Destination.Type.LOCAL,
         print_preview.Destination.Origin.LOCAL,
         destinationInfo.printerName,
         false /*isRecent*/,
-        print_preview.Destination.ConnectionStatus.ONLINE);
+        print_preview.Destination.ConnectionStatus.ONLINE,
+        options);
   };
 
   /** Namespace that contains a method to parse local print capabilities. */
@@ -37,7 +45,7 @@ cr.define('print_preview', function() {
     var cdd = {
       version: '1.0',
       printer: {
-        collate: {default: true}
+        collate: {'default': true}
       }
     };
 
@@ -53,11 +61,11 @@ cr.define('print_preview', function() {
             is_default: !settingsInfo['setColorAsDefault']
           }
         ]
-      }
+      };
     }
 
     if (!settingsInfo['disableCopiesOption']) {
-      cdd.printer.copies = {default: 1};
+      cdd.printer.copies = {'default': 1};
     }
 
     if (settingsInfo['printerDefaultDuplexValue'] !=
@@ -105,7 +113,7 @@ cr.define('print_preview', function() {
 
     if (destinationInfo.isUnregistered) {
       returnedPrinters.push(new print_preview.Destination(
-        destinationInfo.serviceName,
+          destinationInfo.serviceName,
           print_preview.Destination.Type.GOOGLE,
           print_preview.Destination.Origin.PRIVET,
           destinationInfo.name,
