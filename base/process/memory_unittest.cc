@@ -152,13 +152,9 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 // Android doesn't implement set_new_handler, so we can't use the
 // OutOfMemoryTest cases.
 // OpenBSD does not support these tests either.
-// AddressSanitizer and ThreadSanitizer define the malloc()/free()/etc.
-// functions so that they don't crash if the program is out of memory, so the
-// OOM tests aren't supposed to work.
 // TODO(vandebo) make this work on Windows too.
 #if !defined(OS_ANDROID) && !defined(OS_OPENBSD) && \
-    !defined(OS_WIN) && \
-    !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
+    !defined(OS_WIN)
 
 #if defined(USE_TCMALLOC)
 extern "C" {
@@ -397,7 +393,9 @@ class OutOfMemoryHandledTest : public OutOfMemoryTest {
 
 // TODO(b.kelemen): make UncheckedMalloc and UncheckedCalloc work
 // on Windows as well.
-
+// UncheckedMalloc() and UncheckedCalloc() work as regular malloc()/calloc()
+// under sanitizer tools.
+#if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 TEST_F(OutOfMemoryHandledTest, UncheckedMalloc) {
   EXPECT_TRUE(base::UncheckedMalloc(kSafeMallocSize, &value_));
   EXPECT_TRUE(value_ != NULL);
@@ -426,6 +424,5 @@ TEST_F(OutOfMemoryHandledTest, UncheckedCalloc) {
   EXPECT_FALSE(base::UncheckedCalloc(1, test_size_, &value_));
   EXPECT_TRUE(value_ == NULL);
 }
-
-#endif  // !defined(OS_ANDROID) && !defined(OS_OPENBSD) &&
-        // !defined(OS_WIN) && !defined(ADDRESS_SANITIZER)
+#endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
+#endif  // !defined(OS_ANDROID) && !defined(OS_OPENBSD) && !defined(OS_WIN)
