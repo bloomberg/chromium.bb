@@ -33,10 +33,8 @@
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderFullScreen.h"
@@ -195,8 +193,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         //   An algorithm is allowed to show a pop-up if, in the task in which the algorithm is running, either:
         //   - an activation behavior is currently being processed whose click event was trusted, or
         //   - the event listener for a trusted click event is being handled.
-        // FIXME: Does this need to null-check settings()?
-        if (!UserGestureIndicator::processingUserGesture() && (!isHTMLMediaElement(*element) || document()->settings()->mediaFullscreenRequiresUserGesture()))
+        if (!UserGestureIndicator::processingUserGesture())
             break;
 
         // There is a previously-established user preference, security risk, or platform limitation.

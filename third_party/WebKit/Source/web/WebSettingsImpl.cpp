@@ -663,11 +663,6 @@ void WebSettingsImpl::setMediaPlaybackRequiresUserGesture(bool required)
     m_settings->setMediaPlaybackRequiresUserGesture(required);
 }
 
-void WebSettingsImpl::setMediaFullscreenRequiresUserGesture(bool required)
-{
-    m_settings->setMediaFullscreenRequiresUserGesture(required);
-}
-
 void WebSettingsImpl::setViewportEnabled(bool enabled)
 {
     m_settings->setViewportEnabled(enabled);
