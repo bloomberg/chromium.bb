@@ -430,28 +430,46 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  if (is_remote_ || !texture_id_)
+  // Don't allow clients to copy an encrypted video frame.
+  if (needs_external_surface_)
     return false;
+
+  scoped_refptr<VideoFrame> video_frame;
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    video_frame = current_frame_;
+  }
+
+  if (!video_frame ||
+      video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
+    return false;
+  DCHECK((!is_remote_ && texture_id_) ||
+         (is_remote_ && remote_playback_texture_id_));
+  gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
+  DCHECK((texture_id_ &&
+          mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES) ||
+         (remote_playback_texture_id_ &&
+          mailbox_holder->texture_target == GL_TEXTURE_2D));
 
   // For hidden video element (with style "display:none"), ensure the texture
   // size is set.
-  if (cached_stream_texture_size_.width != natural_size_.width ||
-      cached_stream_texture_size_.height != natural_size_.height) {
+  if (!is_remote_ &&
+      (cached_stream_texture_size_.width != natural_size_.width ||
+       cached_stream_texture_size_.height != natural_size_.height)) {
     stream_texture_factory_->SetStreamTextureSize(
         stream_id_, gfx::Size(natural_size_.width, natural_size_.height));
     cached_stream_texture_size_ = natural_size_;
   }
 
   uint32 source_texture = web_graphics_context->createTexture();
-  // This is strictly not necessary, because we flush when we create the
-  // one and only stream texture.
-  web_graphics_context->waitSyncPoint(texture_mailbox_sync_point_);
+  web_graphics_context->waitSyncPoint(mailbox_holder->sync_point);
 
   // Ensure the target of texture is set before copyTextureCHROMIUM, otherwise
   // an invalid texture target may be used for copy texture.
-  web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, source_texture);
-  web_graphics_context->consumeTextureCHROMIUM(GL_TEXTURE_EXTERNAL_OES,
-                                               texture_mailbox_.name);
+  web_graphics_context->bindTexture(mailbox_holder->texture_target,
+                                    source_texture);
+  web_graphics_context->consumeTextureCHROMIUM(mailbox_holder->texture_target,
+                                               mailbox_holder->mailbox.name);
 
   // The video is stored in an unmultiplied format, so premultiply if
   // necessary.
@@ -470,7 +488,10 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   web_graphics_context->pixelStorei(GL_UNPACK_PREMULTIPLY_ALPHA_CHROMIUM,
                                     false);
 
-  web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+  if (mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES)
+    web_graphics_context->bindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+  else
+    web_graphics_context->bindTexture(GL_TEXTURE_2D, texture);
   web_graphics_context->deleteTexture(source_texture);
   web_graphics_context->flush();
   return true;
