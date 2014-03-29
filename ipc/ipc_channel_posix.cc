@@ -527,7 +527,6 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
 }
 
 bool Channel::ChannelImpl::Send(Message* message) {
-  CHECK(message) << "crbug.com/357915";  // TODO(vtl): Remove once bug resolved.
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type()
            << " (" << output_queue_.size() << " in queue)";
