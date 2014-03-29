@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/utility/run_loop.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 
 #include <assert.h>
 
 #include <algorithm>
 #include <vector>
 
-#include "mojo/public/utility/lib/thread_local.h"
-#include "mojo/public/utility/run_loop_handler.h"
+#include "mojo/public/cpp/utility/lib/thread_local.h"
+#include "mojo/public/cpp/utility/run_loop_handler.h"
 
 namespace mojo {
 namespace {

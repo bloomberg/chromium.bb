@@ -4,8 +4,8 @@
 
 #include "mojo/public/environment/environment.h"
 
+#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/environment/lib/buffer_tls_setup.h"
-#include "mojo/public/utility/run_loop.h"
 
 namespace mojo {
 

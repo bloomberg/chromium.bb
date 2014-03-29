@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/utility/mutex.h"
+#include "mojo/public/cpp/utility/mutex.h"
 
 #include <stdlib.h>  // For |rand()|.
 #include <time.h>  // For |nanosleep()| (defined by POSIX).
@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/utility/thread.h"
+#include "mojo/public/cpp/utility/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

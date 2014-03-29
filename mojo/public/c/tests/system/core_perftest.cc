@@ -19,7 +19,7 @@
 // TODO(vtl): (here and below) crbug.com/342893
 #if !defined(WIN32)
 #include <time.h>
-#include "mojo/public/utility/thread.h"
+#include "mojo/public/cpp/utility/thread.h"
 #endif  // !defined(WIN32)
 
 namespace {

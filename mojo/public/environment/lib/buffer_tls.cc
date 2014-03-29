@@ -6,8 +6,8 @@
 
 #include <assert.h>
 
+#include "mojo/public/cpp/utility/lib/thread_local.h"
 #include "mojo/public/environment/lib/buffer_tls_setup.h"
-#include "mojo/public/utility/lib/thread_local.h"
 
 namespace mojo {
 namespace internal {

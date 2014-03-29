@@ -212,16 +212,16 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/utility/tests/mutex_unittest.cc',
-        'public/utility/tests/run_loop_unittest.cc',
-        'public/utility/tests/thread_unittest.cc',
+        'public/cpp/tests/utility/mutex_unittest.cc',
+        'public/cpp/tests/utility/run_loop_unittest.cc',
+        'public/cpp/tests/utility/thread_unittest.cc',
       ],
       'conditions': [
         # See crbug.com/342893:
         ['OS=="win"', {
           'sources!': [
-            'public/utility/tests/mutex_unittest.cc',
-            'public/utility/tests/thread_unittest.cc',
+            'public/cpp/tests/utility/mutex_unittest.cc',
+            'public/cpp/tests/utility/thread_unittest.cc',
           ],
         }],
       ],
@@ -330,25 +330,25 @@
       'target_name': 'mojo_utility',
       'type': 'static_library',
       'sources': [
-        'public/utility/mutex.h',
-        'public/utility/run_loop.h',
-        'public/utility/run_loop_handler.h',
-        'public/utility/thread.h',
-        'public/utility/lib/mutex.cc',
-        'public/utility/lib/run_loop.cc',
-        'public/utility/lib/thread.cc',
-        'public/utility/lib/thread_local.h',
-        'public/utility/lib/thread_local_posix.cc',
-        'public/utility/lib/thread_local_win.cc',
+        'public/cpp/utility/mutex.h',
+        'public/cpp/utility/run_loop.h',
+        'public/cpp/utility/run_loop_handler.h',
+        'public/cpp/utility/thread.h',
+        'public/cpp/utility/lib/mutex.cc',
+        'public/cpp/utility/lib/run_loop.cc',
+        'public/cpp/utility/lib/thread.cc',
+        'public/cpp/utility/lib/thread_local.h',
+        'public/cpp/utility/lib/thread_local_posix.cc',
+        'public/cpp/utility/lib/thread_local_win.cc',
       ],
       'conditions': [
         # See crbug.com/342893:
         ['OS=="win"', {
           'sources!': [
-            'public/utility/mutex.h',
-            'public/utility/thread.h',
-            'public/utility/lib/mutex.cc',
-            'public/utility/lib/thread.cc',
+            'public/cpp/utility/mutex.h',
+            'public/cpp/utility/thread.h',
+            'public/cpp/utility/lib/mutex.cc',
+            'public/cpp/utility/lib/thread.cc',
           ],
         }],
       ],

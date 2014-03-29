@@ -9,8 +9,8 @@
 #include "mojo/public/bindings/lib/message_queue.h"
 #include "mojo/public/bindings/lib/router.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/environment/environment.h"
-#include "mojo/public/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

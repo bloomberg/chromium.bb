@@ -6,8 +6,8 @@
 
 #include <assert.h>
 
-#include "mojo/public/utility/run_loop.h"
-#include "mojo/public/utility/run_loop_handler.h"
+#include "mojo/public/cpp/utility/run_loop.h"
+#include "mojo/public/cpp/utility/run_loop_handler.h"
 
 namespace mojo {
 namespace {
