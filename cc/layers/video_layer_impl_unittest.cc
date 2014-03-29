@@ -4,6 +4,7 @@
 
 #include "cc/layers/video_layer_impl.h"
 
+#include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/test/fake_video_frame_provider.h"
@@ -74,6 +75,23 @@ TEST(VideoLayerImplTest, Occlusion) {
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
   }
+}
+
+TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
+  LayerTestCommon::LayerImplTest impl;
+  DebugScopedSetImplThreadAndMainThreadBlocked thread(impl.proxy());
+
+  FakeVideoFrameProvider provider;
+  VideoLayerImpl* video_layer_impl =
+      impl.AddChildToRoot<VideoLayerImpl>(&provider);
+
+  VideoFrameProviderClientImpl* client =
+      static_cast<VideoFrameProviderClientImpl*>(provider.client());
+  ASSERT_TRUE(client);
+  EXPECT_FALSE(client->active_video_layer());
+
+  video_layer_impl->DidBecomeActive();
+  EXPECT_EQ(video_layer_impl, client->active_video_layer());
 }
 
 }  // namespace

@@ -22,6 +22,7 @@ class VideoFrameProviderClientImpl
   static scoped_refptr<VideoFrameProviderClientImpl> Create(
       VideoFrameProvider* provider);
 
+  VideoLayerImpl* active_video_layer() { return active_video_layer_; }
   void set_active_video_layer(VideoLayerImpl* video_layer) {
     active_video_layer_ = video_layer;
   }
