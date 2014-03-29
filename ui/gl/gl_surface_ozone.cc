@@ -29,10 +29,14 @@ bool GLSurface::InitializeOneOffInternal() {
         LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }
+
+      return true;
+    case kGLImplementationOSMesaGL:
+    case kGLImplementationMockGL:
+      return true;
     default:
-      break;
+      return false;
   }
-  return true;
 }
 
 // static
