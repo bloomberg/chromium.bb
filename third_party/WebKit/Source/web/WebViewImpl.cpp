@@ -562,7 +562,7 @@ bool WebViewImpl::handleMouseWheel(LocalFrame& mainFrame, const WebMouseWheelEve
     return PageWidgetEventHandler::handleMouseWheel(mainFrame, event);
 }
 
-void WebViewImpl::scrollBy(const WebFloatSize& delta)
+bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& velocity)
 {
     if (m_flingSourceDevice == WebGestureEvent::Touchpad) {
         WebMouseWheelEvent syntheticWheel;
@@ -580,7 +580,7 @@ void WebViewImpl::scrollBy(const WebFloatSize& delta)
         syntheticWheel.modifiers = m_flingModifier;
 
         if (m_page && m_page->mainFrame() && m_page->mainFrame()->view())
-            handleMouseWheel(*m_page->mainFrame(), syntheticWheel);
+            return handleMouseWheel(*m_page->mainFrame(), syntheticWheel);
     } else {
         WebGestureEvent syntheticGestureEvent;
 
@@ -595,8 +595,14 @@ void WebViewImpl::scrollBy(const WebFloatSize& delta)
         syntheticGestureEvent.sourceDevice = WebGestureEvent::Touchscreen;
 
         if (m_page && m_page->mainFrame() && m_page->mainFrame()->view())
-            handleGestureEvent(syntheticGestureEvent);
+            return handleGestureEvent(syntheticGestureEvent);
     }
+    return false;
+}
+
+void WebViewImpl::scrollBy(const WebFloatSize& delta)
+{
+    scrollBy(delta, WebFloatSize());
 }
 
 bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)

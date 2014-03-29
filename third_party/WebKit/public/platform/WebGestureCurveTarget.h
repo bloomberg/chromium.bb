@@ -32,9 +32,14 @@ namespace blink {
 
 class WebGestureCurveTarget {
 public:
-    virtual void scrollBy(const WebFloatSize& delta) = 0;
+    // TODO(jdduke): Make pure virtual when crrev.com/136173004 lands.
+    virtual bool scrollBy(const WebFloatSize& delta, const WebFloatSize& velocity) { return false; }
 
-    virtual void notifyCurrentFlingVelocity(const WebFloatSize&) { }
+    // TODO(jdduke): Remove when crrev.com/136173004 lands.
+    virtual void scrollBy(const WebFloatSize& delta) { }
+
+    // TODO(jdduke): Remove when crrev.com/136173004 lands.
+    virtual void notifyCurrentFlingVelocity(const WebFloatSize& velocity) { }
 
 protected:
     virtual ~WebGestureCurveTarget() { }
