@@ -172,8 +172,8 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer& layer)
     , m_requiresOwnBackingStoreForAncestorReasons(true)
     , m_canCompositeFilters(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
-    , m_needToUpdateGeometry(false)
-    , m_needToUpdateGeometryOfAllDecendants(false)
+    , m_needToUpdateGraphicsLayer(false)
+    , m_needToUpdateGraphicsLayerOfAllDecendants(false)
 {
     if (layer.isRootLayer() && renderer()->frame()->isMainFrame())
         m_isMainFrameRenderViewLayer = true;
@@ -363,7 +363,7 @@ bool CompositedLayerMapping::shouldClipCompositedBounds() const
 
 void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::UpdateType updateType)
 {
-    if (!m_needToUpdateGeometry && updateType != GraphicsLayerUpdater::ForceUpdate)
+    if (!shouldUpdateGraphicsLayer(updateType))
         return;
 
     // We need to know if we draw content in order to update our bounds (this has an effect
@@ -455,8 +455,11 @@ void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
         setContentsNeedDisplay();
 }
 
-bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
+bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType updateType)
 {
+    if (!shouldUpdateGraphicsLayer(updateType))
+        return false;
+
     RenderLayerCompositor* compositor = this->compositor();
     RenderObject* renderer = this->renderer();
 
@@ -653,17 +656,14 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
     }
 }
 
-GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType)
+void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType)
 {
     // If we haven't built z-order lists yet, wait until later.
     if (m_owningLayer.stackingNode()->isStackingContainer() && m_owningLayer.stackingNode()->zOrderListsDirty())
-        return updateType;
+        return;
 
-    if (!m_needToUpdateGeometry && updateType != GraphicsLayerUpdater::ForceUpdate)
-        return updateType;
-
-    if (m_needToUpdateGeometryOfAllDecendants)
-        updateType = GraphicsLayerUpdater::ForceUpdate;
+    if (!shouldUpdateGraphicsLayer(updateType))
+        return;
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
@@ -909,8 +909,6 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
     registerScrollingLayers();
 
     updateCompositingReasons();
-
-    return updateType;
 }
 
 void CompositedLayerMapping::registerScrollingLayers()
@@ -1834,31 +1832,38 @@ void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
     }
 }
 
-void CompositedLayerMapping::setNeedsGeometryUpdate()
+void CompositedLayerMapping::setNeedsGraphicsLayerUpdate()
 {
-    m_needToUpdateGeometryOfAllDecendants = true;
+    m_needToUpdateGraphicsLayerOfAllDecendants = true;
 
     for (RenderLayer* current = &m_owningLayer; current; current = current->ancestorCompositingLayer()) {
         ASSERT(current->hasCompositedLayerMapping());
         CompositedLayerMappingPtr mapping = current->compositedLayerMapping();
-        if (mapping->m_needToUpdateGeometry)
+        if (mapping->m_needToUpdateGraphicsLayer)
             return;
-        mapping->m_needToUpdateGeometry = true;
+        mapping->m_needToUpdateGraphicsLayer = true;
     }
 }
 
-void CompositedLayerMapping::clearNeedsGeometryUpdate()
+GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateTypeForChildren(GraphicsLayerUpdater::UpdateType updateType) const
 {
-    m_needToUpdateGeometry = false;
-    m_needToUpdateGeometryOfAllDecendants = false;
+    if (m_needToUpdateGraphicsLayerOfAllDecendants)
+        return GraphicsLayerUpdater::ForceUpdate;
+    return updateType;
+}
+
+void CompositedLayerMapping::clearNeedsGraphicsLayerUpdate()
+{
+    m_needToUpdateGraphicsLayer = false;
+    m_needToUpdateGraphicsLayerOfAllDecendants = false;
 }
 
 #if !ASSERT_DISABLED
 
-void CompositedLayerMapping::assertNeedsToUpdateGeometryBitsCleared()
+void CompositedLayerMapping::assertNeedsToUpdateGraphicsLayerBitsCleared()
 {
-    ASSERT(!m_needToUpdateGeometry);
-    ASSERT(!m_needToUpdateGeometryOfAllDecendants);
+    ASSERT(!m_needToUpdateGraphicsLayer);
+    ASSERT(!m_needToUpdateGraphicsLayerOfAllDecendants);
 }
 
 #endif

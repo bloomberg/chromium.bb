@@ -136,9 +136,11 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType)
                 reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds(ForceUpdate);
         }
 
-        mapping->updateGraphicsLayerConfiguration();
-        updateType = mapping->updateGraphicsLayerGeometry(updateType);
-        mapping->clearNeedsGeometryUpdate();
+        mapping->updateGraphicsLayerConfiguration(updateType);
+        mapping->updateGraphicsLayerGeometry(updateType);
+
+        updateType = mapping->updateTypeForChildren(updateType);
+        mapping->clearNeedsGraphicsLayerUpdate();
 
         if (!layer.parent())
             layer.compositor()->updateRootLayerPosition();
@@ -153,13 +155,13 @@ void GraphicsLayerUpdater::update(RenderLayer& layer, UpdateType updateType)
 
 #if !ASSERT_DISABLED
 
-void GraphicsLayerUpdater::assertNeedsToUpdateGeometryBitsCleared(RenderLayer& layer)
+void GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer& layer)
 {
     if (layer.hasCompositedLayerMapping())
-        layer.compositedLayerMapping()->assertNeedsToUpdateGeometryBitsCleared();
+        layer.compositedLayerMapping()->assertNeedsToUpdateGraphicsLayerBitsCleared();
 
     for (RenderLayer* child = layer.firstChild(); child; child = child->nextSibling())
-        assertNeedsToUpdateGeometryBitsCleared(*child);
+        assertNeedsToUpdateGraphicsLayerBitsCleared(*child);
 }
 
 #endif

@@ -528,7 +528,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         GraphicsLayerUpdater().update(*updateRoot, updateType);
 #if !ASSERT_DISABLED
         // FIXME: Move this check to the end of the compositing update.
-        GraphicsLayerUpdater::assertNeedsToUpdateGeometryBitsCleared(*updateRoot);
+        GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(*updateRoot);
 #endif
     }
 
@@ -817,7 +817,7 @@ void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(Rend
 {
     // See if we need content or clipping layers. Methods called here should assume
     // that the compositing state of descendant layers has not been updated yet.
-    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration()) {
+    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate)) {
         setCompositingLayersNeedRebuild();
     } else if (compositedLayerUpdate == NoCompositingStateChange) {
         if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor)
@@ -1186,7 +1186,7 @@ void RenderLayerCompositor::assignLayersToBackingsForReflectionLayer(RenderLayer
     }
     updateDirectCompositingReasons(reflectionLayer);
     if (reflectionLayer->hasCompositedLayerMapping())
-        reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration();
+        reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate);
 }
 
 void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, bool& layersChanged, RenderLayer* clippingAncestor)

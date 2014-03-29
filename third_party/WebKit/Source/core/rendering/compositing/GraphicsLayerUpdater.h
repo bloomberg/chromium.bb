@@ -50,7 +50,7 @@ public:
     void rebuildTree(RenderLayer&, GraphicsLayerVector& childLayersOfEnclosingLayer);
 
 #if !ASSERT_DISABLED
-    static void assertNeedsToUpdateGeometryBitsCleared(RenderLayer&);
+    static void assertNeedsToUpdateGraphicsLayerBitsCleared(RenderLayer&);
 #endif
 };
 

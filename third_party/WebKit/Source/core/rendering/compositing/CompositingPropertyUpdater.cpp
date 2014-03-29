@@ -32,7 +32,7 @@ void CompositingPropertyUpdater::updateAncestorDependentProperties(RenderLayer* 
 
     if (layer->needsToUpdateAncestorDependentProperties()) {
         if (enclosingCompositedLayer)
-            enclosingCompositedLayer->compositedLayerMapping()->setNeedsGeometryUpdate();
+            enclosingCompositedLayer->compositedLayerMapping()->setNeedsGraphicsLayerUpdate();
         updateType = ForceUpdate;
     }
 
