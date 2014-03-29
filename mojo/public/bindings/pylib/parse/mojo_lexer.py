@@ -161,6 +161,13 @@ class Lexer(object):
       '('+hex_prefix+'('+hex_digits+'|'+hex_fractional_constant+')'+ \
       binary_exponent_part+'[FfLl]?)'
 
+  # Ordinals
+  ordinal = r'@[0-9]+'
+  missing_ordinal_value = r'@'
+  # Don't allow ordinal values in octal (even invalid octal, like 09) or
+  # hexadecimal.
+  octal_or_hex_ordinal_disallowed = r'@((0[0-9]+)|('+hex_prefix+hex_digits+'))'
+
   ##
   ## Rules for the normal state
   ##
@@ -204,7 +211,6 @@ class Lexer(object):
   t_SEMI              = r';'
 
   t_STRING_LITERAL    = string_literal
-  t_ORDINAL           = r'@[0-9]*'
 
   # The following floating and integer constants are defined as
   # functions to impose a strict order (otherwise, decimal
@@ -258,6 +264,21 @@ class Lexer(object):
   @TOKEN(bad_string_literal)
   def t_BAD_STRING_LITERAL(self, t):
     msg = "String contains invalid escape code"
+    self._error(msg, t)
+
+  # Handle ordinal-related tokens in the right order:
+  @TOKEN(octal_or_hex_ordinal_disallowed)
+  def t_OCTAL_OR_HEX_ORDINAL_DISALLOWED(self, t):
+    msg = "Octal and hexadecimal ordinal values not allowed"
+    self._error(msg, t)
+
+  @TOKEN(ordinal)
+  def t_ORDINAL(self, t):
+    return t
+
+  @TOKEN(missing_ordinal_value)
+  def t_BAD_ORDINAL(self, t):
+    msg = "Missing ordinal value"
     self._error(msg, t)
 
   @TOKEN(identifier)
