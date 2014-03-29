@@ -86,11 +86,6 @@ IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_AddMessageToConsole,
                     content::ConsoleMessageLevel /* level */,
                     std::string /* message */)
 
-// Notifies worker devtools agent that it should pause worker context
-// when it starts and wait until either DevTools client is attached or
-// explicit resume notification is received.
-IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_PauseWorkerContextOnStart)
-
 // Worker DevTools agent should resume worker execution.
 IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_ResumeWorkerContext)
 

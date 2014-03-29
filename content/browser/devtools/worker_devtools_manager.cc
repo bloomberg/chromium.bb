@@ -228,7 +228,7 @@ WorkerDevToolsManager::WorkerDevToolsManager() {
 WorkerDevToolsManager::~WorkerDevToolsManager() {
 }
 
-void WorkerDevToolsManager::WorkerCreated(
+bool WorkerDevToolsManager::WorkerCreated(
     WorkerProcessHost* worker,
     const WorkerProcessHost::WorkerInstance& instance) {
   for (TerminatedInspectedWorkers::iterator it = terminated_workers_.begin();
@@ -236,14 +236,13 @@ void WorkerDevToolsManager::WorkerCreated(
     if (instance.Matches(it->worker_url, it->worker_name,
                          instance.partition(),
                          instance.resource_context())) {
-      worker->Send(new DevToolsAgentMsg_PauseWorkerContextOnStart(
-          instance.worker_route_id()));
       WorkerId new_worker_id(worker->GetData().id, instance.worker_route_id());
       paused_workers_[new_worker_id] = it->old_worker_id;
       terminated_workers_.erase(it);
-      return;
+      return true;
     }
   }
+  return false;
 }
 
 void WorkerDevToolsManager::WorkerDestroyed(

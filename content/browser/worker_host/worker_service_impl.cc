@@ -409,12 +409,13 @@ bool WorkerServiceImpl::CreateWorkerFromInstance(
     return false;
   }
 
-  worker->CreateWorker(instance);
+  worker->CreateWorker(
+      instance,
+      WorkerDevToolsManager::GetInstance()->WorkerCreated(worker, instance));
   FOR_EACH_OBSERVER(
       WorkerServiceObserver, observers_,
       WorkerCreated(instance.url(), instance.name(), worker->GetData().id,
                     instance.worker_route_id()));
-  WorkerDevToolsManager::GetInstance()->WorkerCreated(worker, instance);
   return true;
 }
 

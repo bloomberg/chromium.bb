@@ -23,6 +23,7 @@ WebSharedWorkerStub::WebSharedWorkerStub(
     const base::string16& name,
     const base::string16& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
+    bool pause_on_start,
     int route_id)
     : route_id_(route_id),
       client_(route_id, this),
@@ -37,6 +38,11 @@ WebSharedWorkerStub::WebSharedWorkerStub(
 
   // TODO(atwilson): Add support for NaCl when they support MessagePorts.
   impl_ = blink::WebSharedWorker::create(client());
+  if (pause_on_start) {
+    // Pause worker context when it starts and wait until either DevTools client
+    // is attached or explicit resume notification is received.
+    impl_->pauseWorkerContextOnStart();
+  }
   worker_devtools_agent_.reset(new SharedWorkerDevToolsAgent(route_id, impl_));
   client()->set_devtools_agent(worker_devtools_agent_.get());
   impl_->startWorkerContext(url_, name,

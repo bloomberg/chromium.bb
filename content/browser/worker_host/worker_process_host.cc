@@ -323,7 +323,8 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       new IndexedDBDispatcherHost(partition_.indexed_db_context()));
 }
 
-void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
+void WorkerProcessHost::CreateWorker(const WorkerInstance& instance,
+                                     bool pause_on_start) {
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
       process_->GetData().id, instance.url());
 
@@ -334,6 +335,7 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   params.name = instance.name();
   params.content_security_policy = instance.content_security_policy();
   params.security_policy_type = instance.security_policy_type();
+  params.pause_on_start = pause_on_start;
   params.route_id = instance.worker_route_id();
   Send(new WorkerProcessMsg_CreateWorker(params));
 

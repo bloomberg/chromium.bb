@@ -40,7 +40,8 @@ class WorkerDevToolsManager {
                              const std::string& state);
 
   // Called on the IO thread.
-  void WorkerCreated(
+  // Returns true when the worker must be paused on start.
+  bool WorkerCreated(
       WorkerProcessHost* process,
       const WorkerProcessHost::WorkerInstance& instance);
   void WorkerDestroyed(WorkerProcessHost* process, int worker_route_id);

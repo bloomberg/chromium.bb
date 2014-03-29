@@ -35,7 +35,6 @@ class SharedWorkerDevToolsAgent {
   void OnReattach(const std::string&);
   void OnDetach();
   void OnDispatchOnInspectorBackend(const std::string& message);
-  void OnPauseWorkerContextOnStart();
   void OnResumeWorkerContext();
 
   bool Send(IPC::Message* message);
