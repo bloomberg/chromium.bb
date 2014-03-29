@@ -5,13 +5,21 @@
 <script src="media-file.js"></script>
 <div id="log"></div>
 <script>
+var uniqueSrcCounter = 0;
+
 function activation_behavior_test(tagName, src)
 {
+    // FIXME: hack used to investigate http://crbug.com/355489
+    function uniqueSrc()
+    {
+        return src + '?activation-behavior-' + ++uniqueSrcCounter;
+    }
+
     async_test(function(t)
     {
         var e = document.createElement(tagName);
         e.controls = true;
-        e.src = src;
+        e.src = uniqueSrc();
         e.preload = 'auto';
         e.oncanplay = t.step_func(function()
         {
@@ -30,7 +38,7 @@ function activation_behavior_test(tagName, src)
     {
         var e = document.createElement(tagName);
         e.controls = true;
-        e.src = src;
+        e.src = uniqueSrc();
         e.preload = 'auto';
         e.oncanplay = t.step_func(function()
         {
@@ -51,7 +59,8 @@ function activation_behavior_test(tagName, src)
         var e1 = document.createElement(tagName);
         var e2 = document.createElement(tagName);
         e1.controls = true;
-        e1.src = e2.src = src;
+        e1.src = uniqueSrc();
+        e2.src = uniqueSrc();
         e1.preload = e2.preload = 'auto';
         var canplaycount = 0;
         e1.oncanplay = e2.oncanplay = t.step_func(function()
@@ -92,7 +101,7 @@ function activation_behavior_test(tagName, src)
     {
         var e = document.createElement(tagName);
         e.controls = true;
-        e.src = src;
+        e.src = uniqueSrc();
         e.preload = 'auto';
         e.oncanplay = t.step_func(function()
         {
@@ -125,7 +134,7 @@ function activation_behavior_test(tagName, src)
     {
         var e = document.createElement(tagName);
         e.controls = true;
-        e.src = src;
+        e.src = uniqueSrc();
         e.preload = 'auto';
         e.oncanplay = t.step_func(function()
         {
@@ -146,7 +155,7 @@ function activation_behavior_test(tagName, src)
         var e1 = document.createElement(tagName);
         var e2 = document.createElement(tagName);
         e1.controls = true;
-        e1.src = src;
+        e1.src = uniqueSrc();
         e1.preload = 'auto';
         e1.oncanplay = t.step_func(function()
         {
