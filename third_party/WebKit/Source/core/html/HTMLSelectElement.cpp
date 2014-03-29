@@ -239,7 +239,7 @@ String HTMLSelectElement::value() const
 void HTMLSelectElement::setValue(const String &value, bool sendEvents)
 {
     // We clear the previously selected option(s) when needed, to guarantee calling setSelectedIndex() only once.
-    unsigned optionIndex = 0;
+    int optionIndex = 0;
     if (value.isNull()) {
         optionIndex = -1;
     } else {
@@ -252,12 +252,14 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
                 optionIndex++;
             }
         }
-        if (optionIndex >= items.size())
+        if (optionIndex >= static_cast<int>(items.size()))
             optionIndex = -1;
     }
+
+    int previousSelectedIndex = selectedIndex();
     setSelectedIndex(optionIndex);
 
-    if (sendEvents) {
+    if (sendEvents && previousSelectedIndex != selectedIndex()) {
         if (usesMenuList())
             dispatchInputAndChangeEventForMenuList(false);
         else
