@@ -81,6 +81,7 @@ void Channel::ChannelImpl::Close() {
 }
 
 bool Channel::ChannelImpl::Send(Message* message) {
+  CHECK(message) << "crbug.com/357915";  // TODO(vtl): Remove once bug resolved.
   DCHECK(thread_check_->CalledOnValidThread());
   DVLOG(2) << "sending message @" << message << " on channel @" << this
            << " with type " << message->type()
