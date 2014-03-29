@@ -379,19 +379,6 @@ TEST_F(GCMNetworkChannelTest, RequestTokenNeverCompletes) {
   EXPECT_FALSE(delegate()->request_token_callback.is_null());
 }
 
-#if !defined(ANDROID)
-TEST_F(GCMNetworkChannelTest, BuildUrl) {
-  GURL url = BuildUrl("registration.id");
-  EXPECT_TRUE(url.SchemeIsHTTPOrHTTPS());
-  EXPECT_FALSE(url.host().empty());
-  EXPECT_FALSE(url.path().empty());
-  std::vector<std::string> parts;
-  Tokenize(url.path(), "/", &parts);
-  std::string buffer;
-  EXPECT_TRUE(Base64DecodeURLSafe(parts[parts.size() - 1], &buffer));
-}
-#endif
-
 TEST_F(GCMNetworkChannelTest, Base64EncodeDecode) {
   std::string input;
   std::string plain;
@@ -450,7 +437,18 @@ TEST_F(GCMNetworkChannelTest, TransientError) {
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 }
 
-#if !defined(ANDROID)
+#if !defined(OS_ANDROID)
+TEST_F(GCMNetworkChannelTest, BuildUrl) {
+  GURL url = BuildUrl("registration.id");
+  EXPECT_TRUE(url.SchemeIsHTTPOrHTTPS());
+  EXPECT_FALSE(url.host().empty());
+  EXPECT_FALSE(url.path().empty());
+  std::vector<std::string> parts;
+  Tokenize(url.path(), "/", &parts);
+  std::string buffer;
+  EXPECT_TRUE(Base64DecodeURLSafe(parts[parts.size() - 1], &buffer));
+}
+
 TEST_F(GCMNetworkChannelTest, EchoToken) {
   url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
                                          std::string(),
