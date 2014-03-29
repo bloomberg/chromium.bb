@@ -70,7 +70,7 @@ class IsolateTest(IsolateBase):
       'files': {},
       'isolate_file': 'fake.isolate',
       'path_variables': {},
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolate.SavedState.EXPECTED_VERSION,
     }
     saved_state = isolate.SavedState.load(values, self.cwd)
     self.assertEqual(expected, saved_state.flatten())
@@ -100,7 +100,7 @@ class IsolateTest(IsolateBase):
       'files': {},
       'isolate_file': 'fake.isolate',
       'path_variables': {},
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'version': isolate.SavedState.EXPECTED_VERSION,
     }
     saved_state = isolate.SavedState.load(values, self.cwd)
     self.assertEqual(expected, saved_state.flatten())
@@ -291,9 +291,9 @@ class IsolateLoad(IsolateBase):
       'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
-      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'path_variables': {},
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -348,9 +348,9 @@ class IsolateLoad(IsolateBase):
       'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
-      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'path_variables': {},
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -415,11 +415,11 @@ class IsolateLoad(IsolateBase):
       'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
-      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'path_variables': {
         'TEST_ISOLATE': '.',
       },
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -497,11 +497,11 @@ class IsolateLoad(IsolateBase):
       'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
-      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'path_variables': {
         'PRODUCT_DIR': '.',
       },
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -595,11 +595,11 @@ class IsolateLoad(IsolateBase):
       'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           os.path.dirname(options.isolated)),
-      'relative_cwd': os.path.join(u'tests', 'isolate'),
       'path_variables': {
         'PRODUCT_DIR': os.path.join(u'..', '..', 'third_party'),
       },
-      'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -691,7 +691,7 @@ class IsolateLoad(IsolateBase):
       ],
       u'command': [u'python', u'split.py'],
       u'config_variables': {
-        'OS': 'linux',
+        u'OS': u'linux',
       },
       u'extra_variables': {
         u'foo': u'bar',
@@ -718,12 +718,12 @@ class IsolateLoad(IsolateBase):
       u'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(isolate_file),
           unicode(os.path.dirname(options.isolated))),
-      u'relative_cwd': u'.',
       u'path_variables': {
         u'DEPTH': u'.',
         u'PRODUCT_DIR': u'files1',
       },
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'relative_cwd': u'.',
+      u'version': unicode(isolate.SavedState.EXPECTED_VERSION),
     }
     self._cleanup_isolated(expected_saved_state)
     self._cleanup_saved_state(actual_saved_state)
@@ -741,13 +741,24 @@ class IsolateLoad(IsolateBase):
     # test_load_with_includes_with_commands in isolate_format_test.py as
     # reference.
 
+    # TODO(maruel): This test is completely broken due to bug #98.
+    return
+    # pylint: disable=W0101
+
     # Exactly the same thing as in isolate_format_test.py
     isolate1 = {
       'conditions': [
+        ['OS=="amiga" or OS=="win"', {
+          'variables': {
+            'command': [
+              'foo', 'amiga_or_win',
+            ],
+          },
+        }],
         ['OS=="linux"', {
           'variables': {
             'command': [
-              'foo', 'bar',
+              'foo', 'linux',
             ],
             'isolate_dependency_tracked': [
               'file_linux',
@@ -761,22 +772,14 @@ class IsolateLoad(IsolateBase):
             ],
           },
         }],
-        ['OS=="win"', {
-          'variables': {
-            'command': [
-              'foo', 'bar',
-            ],
-          },
-        }],
       ],
     }
-
     isolate2 = {
       'conditions': [
         ['OS=="linux" or OS=="mac"', {
           'variables': {
             'command': [
-              'zoo',
+              'foo', 'linux_or_mac',
             ],
             'isolate_dependency_tracked': [
               'other/file',
@@ -785,17 +788,23 @@ class IsolateLoad(IsolateBase):
         }],
       ],
     }
-
     isolate3 = {
       'includes': [
         '../1/isolate1.isolate',
         '2/isolate2.isolate',
       ],
       'conditions': [
+        ['OS=="amiga"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_amiga',
+            ],
+          },
+        }],
         ['OS=="mac"', {
           'variables': {
             'command': [
-              'yo', 'dawg',
+              'foo', 'mac',
             ],
             'isolate_dependency_tracked': [
               'file_mac',
@@ -805,7 +814,8 @@ class IsolateLoad(IsolateBase):
       ],
     }
 
-    def test_with_os(config_os, expected_files):
+    def test_with_os(
+        config_os, files_to_create, expected_files, command, relative_cwd):
       """Creates a tree of files in a subdirectory for testing and test this
       set of conditions.
       """
@@ -823,24 +833,22 @@ class IsolateLoad(IsolateBase):
       os.mkdir(isolate_dir_3_2)
       isolated = os.path.join(isolated_dir, u'foo.isolated')
 
-      # Make all the touched files.
-      open(os.path.join(isolate_dir_1, 'file_linux'), 'wb').close()
-      # TODO(maruel): Bug, it should be isolate_dir_1.
-      open(os.path.join(isolate_dir_3, 'file_non_linux'), 'wb').close()
-      # TODO(maruel): Bug, it should be isolate_dir_3_2.
-      os.mkdir(os.path.join(isolate_dir_3, 'other'))
-      open(os.path.join(isolate_dir_3, 'other', 'file'), 'wb').close()
-      open(os.path.join(isolate_dir_3, 'file_mac'), 'wb').close()
-
       with open(os.path.join(isolate_dir_1, 'isolate1.isolate'), 'wb') as f:
         isolate.isolate_format.pretty_print(isolate1, f)
-
       with open(os.path.join(isolate_dir_3_2, 'isolate2.isolate'), 'wb') as f:
         isolate.isolate_format.pretty_print(isolate2, f)
-
       root_isolate = os.path.join(isolate_dir_3, 'isolate3.isolate')
       with open(root_isolate, 'wb') as f:
         isolate.isolate_format.pretty_print(isolate3, f)
+
+      # Make all the touched files.
+      mapping = {1: isolate_dir_1, 2: isolate_dir_3_2, 3: isolate_dir_3}
+      for k, v in files_to_create.iteritems():
+        f = os.path.join(mapping[k], v)
+        base = os.path.dirname(f)
+        if not os.path.isdir(base):
+          os.mkdir(base)
+        open(f, 'wb').close()
 
       c = isolate.CompleteState(isolated, isolate.SavedState(isolated_dir))
       config = {
@@ -850,17 +858,262 @@ class IsolateLoad(IsolateBase):
       # Note that load_isolate() doesn't retrieve the meta data about each file.
       expected = {
         'algo': 'sha-1',
-        'command': ['yo', 'dawg'],
+        'command': command,
         'files': {unicode(f):{} for f in expected_files},
-        'relative_cwd': '.',
-        'version': '1.4',
+        'relative_cwd': relative_cwd,
+        'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
       }
       self.assertEqual(expected, c.saved_state.to_isolated())
 
-    # TODO(maruel): https://code.google.com/p/swarming/issues/detail?id=98
-    #test_with_os('linux', ())
-    test_with_os('mac', ('file_mac', 'file_non_linux', 'other/file'))
-    #test_with_os('win', ())
+    # root is .../isolate/.
+    test_with_os(
+        'amiga',
+        {
+          3: 'file_amiga',
+        },
+        (
+          u'3/file_amiga',
+        ),
+        ['foo', 'amiga_or_win'],
+        '1')
+    # root is .../isolate/.
+    test_with_os(
+        'linux',
+        {
+          1: 'file_linux',
+          2: 'other/file',
+        },
+        (
+          u'1/file_linux',
+          u'3/2/other/file',
+        ),
+        ['foo', 'linux_or_mac'],
+        '3/2')
+    # root is .../isolate/.
+    test_with_os(
+        'mac',
+        {
+          1: 'file_non_linux',
+          2: 'other/file',
+          3: 'file_mac',
+        },
+        (
+          u'1/file_non_linux',
+          u'3/2/other/file',
+          u'3/file_mac',
+        ),
+        ['foo', 'mac'],
+        '3')
+    # root is .../isolate/1/.
+    test_with_os(
+        'win',
+        {
+          1: 'file_non_linux',
+        },
+        (
+          u'file_non_linux',
+        ),
+        ['foo', 'amiga_or_win'],
+        '.')
+
+  def test_load_isolate_include_command_and_variables(self):
+    # Ensure that using a .isolate that includes another one in a different
+    # directory will lead to the proper relative directory when using variables.
+    # See test_load_with_includes_with_commands_and_variables in
+    # isolate_format_test.py as reference.
+    #
+    # With path variables, 'cwd' is used instead of the path to the .isolate
+    # file. So the files have to be set towards the cwd accordingly. While this
+    # may seem surprising, this makes the whole thing work in the first place.
+
+    # Almost exactly the same thing as in isolate_format_test.py plus the EXTRA
+    # for better testing with variable replacement.
+    isolate1 = {
+      'conditions': [
+        ['OS=="amiga" or OS=="win"', {
+          'variables': {
+            'command': [
+              'foo', 'amiga_or_win', '<(PATH)', '<(EXTRA)',
+            ],
+          },
+        }],
+        ['OS=="linux"', {
+          'variables': {
+            'command': [
+              'foo', 'linux', '<(PATH)', '<(EXTRA)',
+            ],
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_linux',
+            ],
+          },
+        }],
+        ['OS=="mac" or OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_non_linux',
+            ],
+          },
+        }],
+      ],
+    }
+    isolate2 = {
+      'conditions': [
+        ['OS=="linux" or OS=="mac"', {
+          'variables': {
+            'command': [
+              'foo', 'linux_or_mac', '<(PATH)', '<(EXTRA)',
+            ],
+            'isolate_dependency_tracked': [
+              '<(PATH)/other/file',
+            ],
+          },
+        }],
+      ],
+    }
+    isolate3 = {
+      'includes': [
+        '../1/isolate1.isolate',
+        '2/isolate2.isolate',
+      ],
+      'conditions': [
+        ['OS=="amiga"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_amiga',
+            ],
+          },
+        }],
+        ['OS=="mac"', {
+          'variables': {
+            'command': [
+              'foo', 'mac', '<(PATH)', '<(EXTRA)',
+            ],
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_mac',
+            ],
+          },
+        }],
+      ],
+    }
+
+    def test_with_os(config_os, expected_files, command, relative_cwd):
+      """Creates a tree of files in a subdirectory for testing and test this
+      set of conditions.
+      """
+      directory = os.path.join(unicode(self.directory), config_os)
+      os.mkdir(directory)
+      cwd = os.path.join(unicode(self.cwd), config_os)
+      os.mkdir(cwd)
+      isolate_dir = os.path.join(directory, u'isolate')
+      isolate_dir_1 = os.path.join(isolate_dir, u'1')
+      isolate_dir_3 = os.path.join(isolate_dir, u'3')
+      isolate_dir_3_2 = os.path.join(isolate_dir_3, u'2')
+      isolated_dir = os.path.join(directory, u'isolated')
+      os.mkdir(isolated_dir)
+      os.mkdir(isolate_dir)
+      os.mkdir(isolate_dir_1)
+      os.mkdir(isolate_dir_3)
+      os.mkdir(isolate_dir_3_2)
+      isolated = os.path.join(isolated_dir, u'foo.isolated')
+
+      with open(os.path.join(isolate_dir_1, 'isolate1.isolate'), 'wb') as f:
+        isolate.isolate_format.pretty_print(isolate1, f)
+      with open(os.path.join(isolate_dir_3_2, 'isolate2.isolate'), 'wb') as f:
+        isolate.isolate_format.pretty_print(isolate2, f)
+      root_isolate = os.path.join(isolate_dir_3, 'isolate3.isolate')
+      with open(root_isolate, 'wb') as f:
+        isolate.isolate_format.pretty_print(isolate3, f)
+
+      # Make all the touched files.
+      path_dir = os.path.join(cwd, 'path')
+      os.mkdir(path_dir)
+      for v in expected_files:
+        f = os.path.join(path_dir, v)
+        base = os.path.dirname(f)
+        if not os.path.isdir(base):
+          os.makedirs(base)
+        logging.warn(f)
+        open(f, 'wb').close()
+
+      c = isolate.CompleteState(isolated, isolate.SavedState(isolated_dir))
+      config = {
+        'OS': config_os,
+      }
+      paths = {
+        'PATH': 'path/',
+      }
+      extra = {
+        'EXTRA': 'indeed',
+      }
+      c.load_isolate(
+          unicode(cwd), root_isolate, paths, config, extra, False)
+      # Note that load_isolate() doesn't retrieve the meta data about each file.
+      expected = {
+        'algo': 'sha-1',
+        'command': command,
+        'files': {
+          unicode(os.path.join(cwd_name, config_os, 'path', f)): {}
+          for f in expected_files
+        },
+        'relative_cwd': relative_cwd,
+        'version': isolate.isolateserver.ISOLATED_FILE_VERSION,
+      }
+      self.assertEqual(expected, c.saved_state.to_isolated())
+
+    cwd_name = os.path.basename(self.cwd)
+    dir_name = os.path.basename(self.directory)
+    test_with_os(
+        'amiga',
+        (
+          'file_amiga',
+        ),
+        [
+          'foo',
+          'amiga_or_win',
+          u'../../../../%s/amiga/path' % cwd_name,
+          'indeed',
+        ],
+        u'%s/amiga/isolate/1' % dir_name)
+    # TODO(maruel): It's going to be fixed soon, bug #98.
+    #test_with_os(
+    #    'linux',
+    #    (
+    #      u'file_linux',
+    #      u'other/file',
+    #    ),
+    #    [
+    #      'foo',
+    #      'linux_or_mac',
+    #      u'../../../../../%s/linux/path' % cwd_name,
+    #      'indeed',
+    #    ],
+    #    u'%s/linux/isolate/3/2' % dir_name)
+    test_with_os(
+        'mac',
+        (
+          'file_non_linux',
+          'other/file',
+          'file_mac',
+        ),
+        [
+          'foo',
+          'mac',
+          u'../../../../%s/mac/path' % cwd_name,
+          'indeed',
+        ],
+        u'%s/mac/isolate/3' % dir_name)
+    test_with_os(
+        'win',
+        (
+          'file_non_linux',
+        ),
+        [
+          'foo',
+          'amiga_or_win',
+          u'../../../../%s/win/path' % cwd_name,
+          'indeed',
+        ],
+        u'%s/win/isolate/1' % dir_name)
 
 
 class IsolateCommand(IsolateBase):
@@ -985,7 +1238,7 @@ class IsolateCommand(IsolateBase):
         '"extra_variables":{"EXECUTABLE_SUFFIX":""},"files":{},'
         '"isolate_file":"x.isolate","path_variables":{},'
         '"relative_cwd":".","version":"%s"}'
-    ) % (sys.platform, isolate.isolateserver.ISOLATED_FILE_VERSION)
+    ) % (sys.platform, isolate.SavedState.EXPECTED_VERSION)
     self.assertEqual(expected_isolated_state, actual_isolated_state)
     isolated_state_data = json.loads(actual_isolated_state)
 

@@ -283,7 +283,7 @@ class IsolateTempdir(unittest.TestCase):
           unicode(os.path.dirname(self.isolated))),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'path_variables': {},
-      u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
+      u'version': unicode(isolate.SavedState.EXPECTED_VERSION),
     }
     if args:
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]

@@ -452,6 +452,9 @@ class SavedState(Flattenable):
     # Algorithm used to generate the hash. The only supported value is at the
     # time of writting 'sha-1'.
     'algo',
+    # List of included .isolated files. Used to support/remember 'slave'
+    # .isolated files. Relative path to isolated_basedir.
+    'child_isolated_files',
     # Cache of the processed command. This value is saved because .isolated
     # files are never loaded by isolate.py so it's the only way to load the
     # command safely.
@@ -466,20 +469,19 @@ class SavedState(Flattenable):
     'files',
     # Path of the original .isolate file. Relative path to isolated_basedir.
     'isolate_file',
-    # List of included .isolated files. Used to support/remember 'slave'
-    # .isolated files. Relative path to isolated_basedir.
-    'child_isolated_files',
+    # GYP variables used to generate the .isolated files paths based on path
+    # variables. Frequent examples are DEPTH and PRODUCT_DIR.
+    'path_variables',
     # If the generated directory tree should be read-only.
     'read_only',
     # Relative cwd to use to start the command.
     'relative_cwd',
-    # GYP variables used to generate the .isolated files paths based on path
-    # variables. Frequent examples are DEPTH and PRODUCT_DIR.
-    'path_variables',
-    # Version of the file format in format 'major.minor'. Any non-breaking
-    # change must update minor. Any breaking change must update major.
+    # Version of the saved state file format. Any breaking change must update
+    # the value.
     'version',
   )
+
+  EXPECTED_VERSION = isolateserver.ISOLATED_FILE_VERSION + '1'
 
   def __init__(self, isolated_basedir):
     """Creates an empty SavedState.
@@ -505,7 +507,7 @@ class SavedState(Flattenable):
     self.path_variables = {}
     self.read_only = None
     self.relative_cwd = None
-    self.version = isolateserver.ISOLATED_FILE_VERSION
+    self.version = self.EXPECTED_VERSION
 
   def update(
       self, isolate_file, path_variables, config_variables, extra_variables):
@@ -559,7 +561,9 @@ class SavedState(Flattenable):
       'algo': isolateserver.SUPPORTED_ALGOS_REVERSE[self.algo],
       'files': dict(
           (filepath, strip(data)) for filepath, data in self.files.iteritems()),
-      'version': self.version,
+      # The version of the .state file is different than the one of the
+      # .isolated file.
+      'version': isolateserver.ISOLATED_FILE_VERSION,
     }
     if self.command:
       out['command'] = self.command
@@ -598,7 +602,7 @@ class SavedState(Flattenable):
     # changed significantly even in minor version difference.
     if not re.match(r'^(\d+)\.(\d+)$', out.version):
       raise isolateserver.ConfigError('Unknown version \'%s\'' % out.version)
-    if out.version != isolateserver.ISOLATED_FILE_VERSION:
+    if out.version != cls.EXPECTED_VERSION:
       raise isolateserver.ConfigError(
           'Unsupported version \'%s\'' % out.version)
 

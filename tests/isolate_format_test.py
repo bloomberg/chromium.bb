@@ -685,9 +685,9 @@ class IsolateFormatTest(unittest.TestCase):
   def test_make_isolate_multi_variables(self):
     config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
     config._by_config[(('0', 'linux'))] = isolate_format.ConfigSettings(
-        {'command': ['bar']}, None)
+        {'command': ['bar']}, FAKE_DIR)
     config._by_config[(('1', 'linux'))] = isolate_format.ConfigSettings(
-        {'command': ['foo']}, None)
+        {'command': ['foo']}, FAKE_DIR)
     expected = {
       'conditions': [
         ['CHROMEOS=="0" and OS=="linux"', {
@@ -707,9 +707,9 @@ class IsolateFormatTest(unittest.TestCase):
   def test_make_isolate_multi_variables_missing(self):
     config = isolate_format.Configs(None, ('CHROMEOS', 'OS'))
     config._by_config[((None, 'abc'))] = isolate_format.ConfigSettings(
-        {'command': ['bar']}, None)
+        {'command': ['bar']}, FAKE_DIR)
     config._by_config[(('1', None))] = isolate_format.ConfigSettings(
-        {'command': ['foo']}, None)
+        {'command': ['foo']}, FAKE_DIR)
     expected = {
       'conditions': [
         ['CHROMEOS=="1"', {
@@ -731,13 +731,13 @@ class IsolateFormatTest(unittest.TestCase):
     config = isolate_format.Configs(None, ('BRAND', 'CHROMEOS', 'LIB', 'OS'))
     config._by_config = {
         (None, 0, 's', 'linux'): isolate_format.ConfigSettings(
-            {'command': ['bar']}, None),
+            {'command': ['bar']}, FAKE_DIR),
         (None, None, 's', 'mac'): isolate_format.ConfigSettings(
-            {'command': ['foo']}, None),
+            {'command': ['foo']}, FAKE_DIR),
         (None, None, 's', 'win'): isolate_format.ConfigSettings(
-            {'command': ['ziz']}, None),
+            {'command': ['ziz']}, FAKE_DIR),
         ('Chrome', 0, 's', 'win'): isolate_format.ConfigSettings(
-            {'command': ['baz']}, None),
+            {'command': ['baz']}, FAKE_DIR),
     }
     expected = {
       'conditions': [
@@ -1090,33 +1090,62 @@ class IsolateFormatTest(unittest.TestCase):
   def test_configs_with_globals(self):
     c = isolate_format.Configs(None, ('x', 'y'))
     c.set_config(
-        (1, 1), isolate_format.ConfigSettings({KEY_TRACKED: ['1,1']}, None))
+        (1, 1), isolate_format.ConfigSettings({KEY_TRACKED: ['1,1']}, FAKE_DIR))
     c.set_config(
-        (2, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['2,2']}, None))
+        (2, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['2,2']}, FAKE_DIR))
     c.set_config(
-        (1, None), isolate_format.ConfigSettings({KEY_TRACKED: ['1,y']}, None))
+        (1, None),
+        isolate_format.ConfigSettings({KEY_TRACKED: ['1,y']}, FAKE_DIR))
     c.set_config(
-        (None, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['x,2']}, None))
+        (None, 2),
+        isolate_format.ConfigSettings({KEY_TRACKED: ['x,2']}, FAKE_DIR))
     c.set_config(
         (None, None),
-        isolate_format.ConfigSettings({KEY_TRACKED: ['x,y']}, None))
+        isolate_format.ConfigSettings({KEY_TRACKED: ['x,y']}, FAKE_DIR))
     expected = {
-      (None, None): {KEY_TRACKED: ['x,y']},
-      (None, 2): {KEY_TRACKED: ['x,2']},
-      (1, None): {KEY_TRACKED: ['1,y']},
-      (1, 1): {KEY_TRACKED: ['1,1']},
-      (2, 2): {KEY_TRACKED: ['2,2']},
+      (None, None): {
+        KEY_TRACKED: ['x,y'],
+        'isolate_dir': FAKE_DIR,
+      },
+      (None, 2): {
+        KEY_TRACKED: ['x,2'],
+        'isolate_dir': FAKE_DIR,
+      },
+      (1, None): {
+        KEY_TRACKED: ['1,y'],
+        'isolate_dir': FAKE_DIR,
+      },
+      (1, 1): {
+        KEY_TRACKED: ['1,1'],
+        'isolate_dir': FAKE_DIR,
+      },
+      (2, 2): {
+        KEY_TRACKED: ['2,2'],
+        'isolate_dir': FAKE_DIR,
+      },
     }
     self.assertEqual(expected, c.flatten())
 
     s = c.get_config((1, 1))
-    self.assertEqual({KEY_TRACKED: ['1,1', '1,y', 'x,y']}, s.flatten())
+    expected = {
+      KEY_TRACKED: ['1,1', '1,y', 'x,y'],
+      'isolate_dir': FAKE_DIR,
+    }
+    self.assertEqual(expected, s.flatten())
 
     s = c.get_config((1, None))
-    self.assertEqual({KEY_TRACKED: ['1,y', 'x,y']}, s.flatten())
+    expected = {
+      KEY_TRACKED: ['1,y', 'x,y'],
+      'isolate_dir': FAKE_DIR,
+    }
+    self.assertEqual(expected, s.flatten())
 
     s = c.get_config((None, None))
-    self.assertEqual({KEY_TRACKED: ['x,y']}, s.flatten())
+    expected = {
+      KEY_TRACKED: ['x,y'],
+      'isolate_dir': FAKE_DIR,
+    }
+    self.assertEqual(expected, s.flatten())
 
     expected = {
       'conditions': [
@@ -1234,10 +1263,17 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
 
     isolate1 = {
       'conditions': [
+        ['OS=="amiga" or OS=="win"', {
+          'variables': {
+            'command': [
+              'foo', 'amiga_or_win',
+            ],
+          },
+        }],
         ['OS=="linux"', {
           'variables': {
             'command': [
-              'foo', 'bar',
+              'foo', 'linux',
             ],
             'isolate_dependency_tracked': [
               'file_linux',
@@ -1251,24 +1287,14 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             ],
           },
         }],
-        ['OS=="win"', {
-          'variables': {
-            'command': [
-              'foo', 'bar',
-            ],
-          },
-        }],
       ],
     }
-    with open(os.path.join(dir_1, 'isolate1.isolate'), 'wb') as f:
-      isolate_format.pretty_print(isolate1, f)
-
     isolate2 = {
       'conditions': [
         ['OS=="linux" or OS=="mac"', {
           'variables': {
             'command': [
-              'zoo',
+              'foo', 'linux_or_mac',
             ],
             'isolate_dependency_tracked': [
               'other/file',
@@ -1277,19 +1303,23 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
-    with open(os.path.join(dir_3_2, 'isolate2.isolate'), 'wb') as f:
-      isolate_format.pretty_print(isolate2, f)
-
     isolate3 = {
       'includes': [
         '../1/isolate1.isolate',
         '2/isolate2.isolate',
       ],
       'conditions': [
+        ['OS=="amiga"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_amiga',
+            ],
+          },
+        }],
         ['OS=="mac"', {
           'variables': {
             'command': [
-              'yo', 'dawg',
+              'foo', 'mac',
             ],
             'isolate_dependency_tracked': [
               'file_mac',
@@ -1298,6 +1328,11 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         }],
       ],
     }
+    # No need to write isolate3.
+    with open(os.path.join(dir_1, 'isolate1.isolate'), 'wb') as f:
+      isolate_format.pretty_print(isolate1, f)
+    with open(os.path.join(dir_3_2, 'isolate2.isolate'), 'wb') as f:
+      isolate_format.pretty_print(isolate2, f)
 
     # The 'isolate_dir' are important, they are what will be used when
     # definining the final isolate_dir to use to run the command in the
@@ -1309,15 +1344,25 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         # TODO(maruel): If kept, in this case dir_3 should be selected.
         'isolate_dir': dir_1,
       },
+      ('amiga',): {
+        'command': ['foo', 'amiga_or_win'],
+        'isolate_dependency_tracked': [
+          'file_amiga',
+        ],
+        'isolate_dir': dir_1,
+      },
       ('linux',): {
-        # Last included takes precedence. command comes from isolate2.
-        'command': ['zoo'],
-        'isolate_dependency_tracked': ['file_linux', 'other/file'],
+        # Last included takes precedence.
+        'command': ['foo', 'linux_or_mac'],
+        'isolate_dependency_tracked': [
+          'file_linux',
+          'other/file',
+        ],
         'isolate_dir': dir_3_2,
       },
       ('mac',): {
         # command in isolate3 takes precedence over the ones included.
-        'command': ['yo', 'dawg'],
+        'command': ['foo', 'mac'],
         'isolate_dependency_tracked': [
           'file_mac',
           'file_non_linux',
@@ -1327,8 +1372,141 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       },
       ('win',): {
         # command comes from isolate1.
-        'command': ['foo', 'bar'],
-        'isolate_dependency_tracked': ['file_non_linux'],
+        'command': ['foo', 'amiga_or_win'],
+        'isolate_dependency_tracked': [
+          # While this may be surprising, this is because the command was
+          # defined in isolate1, not isolate3.
+          'file_non_linux',
+        ],
+        'isolate_dir': dir_1,
+      },
+    }
+    self.assertEqual(expected, actual.flatten())
+
+  def test_load_with_includes_with_commands_and_variables(self):
+    # This one is the pinacle of fun. Check that isolate_dir is the expected
+    # value. To achieve this, put the .isolate files into subdirectories.
+    dir_1 = os.path.join(self.tempdir, '1')
+    dir_3 = os.path.join(self.tempdir, '3')
+    dir_3_2 = os.path.join(self.tempdir, '3', '2')
+    os.mkdir(dir_1)
+    os.mkdir(dir_3)
+    os.mkdir(dir_3_2)
+
+    isolate1 = {
+      'conditions': [
+        ['OS=="amiga" or OS=="win"', {
+          'variables': {
+            'command': [
+              'foo', 'amiga_or_win', '<(PATH)',
+            ],
+          },
+        }],
+        ['OS=="linux"', {
+          'variables': {
+            'command': [
+              'foo', 'linux', '<(PATH)',
+            ],
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_linux',
+            ],
+          },
+        }],
+        ['OS=="mac" or OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_non_linux',
+            ],
+          },
+        }],
+      ],
+    }
+    isolate2 = {
+      'conditions': [
+        ['OS=="linux" or OS=="mac"', {
+          'variables': {
+            'command': [
+              'foo', 'linux_or_mac', '<(PATH)',
+            ],
+            'isolate_dependency_tracked': [
+              '<(PATH)/other/file',
+            ],
+          },
+        }],
+      ],
+    }
+    isolate3 = {
+      'includes': [
+        '../1/isolate1.isolate',
+        '2/isolate2.isolate',
+      ],
+      'conditions': [
+        ['OS=="amiga"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_amiga',
+            ],
+          },
+        }],
+        ['OS=="mac"', {
+          'variables': {
+            'command': [
+              'foo', 'mac', '<(PATH)',
+            ],
+            'isolate_dependency_tracked': [
+              '<(PATH)/file_mac',
+            ],
+          },
+        }],
+      ],
+    }
+    # No need to write isolate3.
+    with open(os.path.join(dir_1, 'isolate1.isolate'), 'wb') as f:
+      isolate_format.pretty_print(isolate1, f)
+    with open(os.path.join(dir_3_2, 'isolate2.isolate'), 'wb') as f:
+      isolate_format.pretty_print(isolate2, f)
+
+    # The 'isolate_dir' are important, they are what will be used when
+    # definining the final isolate_dir to use to run the command in the
+    # .isolated file.
+    actual = isolate_format.load_isolate_as_config(dir_3, isolate3, None)
+    expected = {
+      (None,): {
+        'isolate_dir': dir_1,
+      },
+      ('amiga',): {
+        'command': ['foo', 'amiga_or_win', '<(PATH)'],
+        'isolate_dependency_tracked': [
+          '<(PATH)/file_amiga',
+        ],
+        'isolate_dir': dir_1,
+      },
+      ('linux',): {
+        # Last included takes precedence. *command comes from isolate2*, so
+        # it becomes the canonical root, so reference to file from isolate1 is
+        # via '../../1'.
+        'command': ['foo', 'linux_or_mac', '<(PATH)'],
+        'isolate_dependency_tracked': [
+          '<(PATH)/file_linux',
+          '<(PATH)/other/file',
+        ],
+        'isolate_dir': dir_3_2,
+      },
+      ('mac',): {
+        'command': ['foo', 'mac', '<(PATH)'],
+        'isolate_dependency_tracked': [
+          '<(PATH)/file_mac',
+          '<(PATH)/file_non_linux',
+          '<(PATH)/other/file',
+        ],
+        'isolate_dir': dir_3,
+      },
+      ('win',): {
+        # command comes from isolate1.
+        'command': ['foo', 'amiga_or_win', '<(PATH)'],
+        'isolate_dependency_tracked': [
+          '<(PATH)/file_non_linux',
+        ],
         'isolate_dir': dir_1,
       },
     }

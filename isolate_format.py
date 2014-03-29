@@ -17,6 +17,7 @@ import itertools
 import logging
 import os
 import re
+import sys
 
 import isolateserver
 
@@ -499,7 +500,12 @@ class ConfigSettings(object):
   """
   def __init__(self, values, isolate_dir):
     verify_variables(values)
-    assert isolate_dir is None or os.path.isabs(isolate_dir), isolate_dir
+    if isolate_dir is None:
+      # It must be an empty object if isolate_dir is None.
+      assert values == {}, values
+    else:
+      # Otherwise, the path must be absolute.
+      assert os.path.isabs(isolate_dir), isolate_dir
     self.touched = sorted(values.get(KEY_TOUCHED, []))
     self.tracked = sorted(values.get(KEY_TRACKED, []))
     self.untracked = sorted(values.get(KEY_UNTRACKED, []))
@@ -601,6 +607,8 @@ class Configs(object):
 
   def get_config(self, config):
     """Returns all configs that matches this config as a single ConfigSettings.
+
+    Returns an empty ConfigSettings if none apply.
     """
     # TODO(maruel): Fix ordering based on the bounded values. The keys are not
     # necessarily sorted in the way that makes sense, they are alphabetically
@@ -736,6 +744,10 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
           'Failed to load configuration; absolute include path \'%s\'' %
           include)
     included_isolate = os.path.normpath(os.path.join(isolate_dir, include))
+    if sys.platform == 'win32':
+      if included_isolate[0].lower() != isolate_dir[0].lower():
+        raise isolateserver.ConfigError(
+            'Can\'t reference a .isolate file from another drive')
     with open(included_isolate, 'r') as f:
       included_isolate = load_isolate_as_config(
           os.path.dirname(included_isolate),
@@ -771,10 +783,10 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   config = isolate.get_config(config_name)
   # Merge tracked and untracked variables, isolate.py doesn't care about the
   # trackability of the variables, only the build tool does.
-  dependencies = [
+  dependencies = sorted(
     f.replace('/', os.path.sep) for f in config.tracked + config.untracked
-  ]
-  touched = [f.replace('/', os.path.sep) for f in config.touched]
+  )
+  touched = sorted(f.replace('/', os.path.sep) for f in config.touched)
   return (
       config.command, dependencies, touched, config.read_only,
       config.isolate_dir)
