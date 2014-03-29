@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_item_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -22,11 +23,15 @@ class AppListFolderItem;
 class AppListFolderView;
 class FolderHeaderViewDelegate;
 
+namespace test {
+class FolderHeaderViewTest;
+}
+
 // FolderHeaderView contains a back button and an editable folder name field.
-class FolderHeaderView : public views::View,
-                         public views::TextfieldController,
-                         public views::ButtonListener,
-                         public AppListItemObserver {
+class APP_LIST_EXPORT FolderHeaderView : public views::View,
+                                         public views::TextfieldController,
+                                         public views::ButtonListener,
+                                         public AppListItemObserver {
  public:
   explicit FolderHeaderView(FolderHeaderViewDelegate* delegate);
   virtual ~FolderHeaderView();
@@ -40,9 +45,17 @@ class FolderHeaderView : public views::View,
 
  private:
   class FolderNameView;
+  friend class test::FolderHeaderViewTest;
 
   // Updates UI.
   void Update();
+
+  // Gets and sets the folder name for test.
+  const base::string16& GetFolderNameForTest();
+  void SetFolderNameForTest(const base::string16& name);
+
+  // Returns true if folder name is enabled, only for testing use.
+  bool IsFolderNameEnabledForTest() const;
 
   // views::View overrides:
   virtual void Layout() OVERRIDE;

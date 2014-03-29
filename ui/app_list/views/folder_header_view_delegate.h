@@ -25,7 +25,6 @@ class FolderHeaderViewDelegate {
   virtual void SetItemName(AppListFolderItem* item,
                            const std::string& name) = 0;
 
- protected:
   virtual ~FolderHeaderViewDelegate() {}
 };
 

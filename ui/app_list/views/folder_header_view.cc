@@ -126,6 +126,18 @@ void FolderHeaderView::Update() {
   Layout();
 }
 
+const base::string16& FolderHeaderView::GetFolderNameForTest() {
+  return folder_name_view_->text();
+}
+
+void FolderHeaderView::SetFolderNameForTest(const base::string16& name) {
+  folder_name_view_->SetText(name);
+}
+
+bool FolderHeaderView::IsFolderNameEnabledForTest() const {
+  return folder_name_view_->enabled();
+}
+
 gfx::Size FolderHeaderView::GetPreferredSize() {
   return gfx::Size(kPreferredWidth, kPreferredHeight);
 }
