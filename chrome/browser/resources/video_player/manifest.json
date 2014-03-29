@@ -47,6 +47,8 @@
   "app": {
     "background": {
       "scripts": [
+        "js/error_util.js",
+        "js/test_util.js",
         "js/background.js"
       ]
     },
