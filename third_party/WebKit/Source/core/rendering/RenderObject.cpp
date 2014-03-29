@@ -1376,6 +1376,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
     DisableCompositingQueryAsserts disabler;
     if (repaintContainer->compositingState() == PaintsIntoGroupedBacking) {
         ASSERT(repaintContainer->groupedMapping());
+        ASSERT(repaintContainer->layer());
 
         // Not clean, but if squashing layer does not yet exist here (e.g. repaint invalidation coming from within recomputing compositing requirements)
         // then it's ok to just exit here, since the squashing layer will get repainted when it is newly created.
@@ -1395,7 +1396,7 @@ void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintCo
         // directly to the next chunk of code.
 
         // Then, convert the repaint rect from repaintConainer space into the squashing GraphicsLayer's coordinates.
-        if (repaintContainer->hasTransform())
+        if (repaintContainer->hasTransform() && repaintContainer->layer()->transform())
             offsetRect = repaintContainer->layer()->transform()->mapRect(r);
         offsetRect.move(-repaintContainer->layer()->offsetFromSquashingLayerOrigin());
         repaintContainer->groupedMapping()->squashingLayer()->setNeedsDisplayInRect(offsetRect);
