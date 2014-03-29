@@ -26,7 +26,7 @@ base::LazyInstance<WidgetHelperMap> g_widget_helpers =
 
 void AddWidgetHelper(int render_process_id,
                      const scoped_refptr<RenderWidgetHelper>& widget_helper) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // We don't care if RenderWidgetHelpers overwrite an existing process_id. Just
   // want this to be up to date.
   g_widget_helpers.Get()[render_process_id] = widget_helper.get();
@@ -85,7 +85,7 @@ RenderWidgetHelper::RenderWidgetHelper()
 }
 
 RenderWidgetHelper::~RenderWidgetHelper() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Delete this RWH from the map if it is found.
   WidgetHelperMap& widget_map = g_widget_helpers.Get();
@@ -121,7 +121,7 @@ int RenderWidgetHelper::GetNextRoutingID() {
 // static
 RenderWidgetHelper* RenderWidgetHelper::FromProcessHostID(
     int render_process_host_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   WidgetHelperMap::const_iterator ci = g_widget_helpers.Get().find(
       render_process_host_id);
   return (ci == g_widget_helpers.Get().end())? NULL : ci->second;

@@ -47,7 +47,7 @@ void MidiDispatcherHost::OnRequestSysExPermission(int render_view_id,
                                                   int bridge_id,
                                                   const GURL& origin,
                                                   bool user_gesture) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   browser_context_->RequestMidiSysExPermission(
       render_process_id_,
@@ -65,7 +65,7 @@ void MidiDispatcherHost::OnCancelSysExPermissionRequest(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << __FUNCTION__ << " " << render_process_id_ << ":" << render_view_id
            << ":" << bridge_id;
   browser_context_->CancelMidiSysExPermissionRequest(

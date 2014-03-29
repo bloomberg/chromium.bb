@@ -263,7 +263,7 @@ void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env, jobject) {
 }
 
 RenderWidgetHostImpl* ImeAdapterAndroid::GetRenderWidgetHostImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(rwhva_);
   RenderWidgetHost* rwh = rwhva_->GetRenderWidgetHost();
   if (!rwh)

@@ -67,7 +67,7 @@ PepperNetworkProxyHost::UIThreadData
 PepperNetworkProxyHost::GetUIThreadDataOnUIThread(int render_process_id,
                                                   int render_frame_id,
                                                   bool is_external_plugin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PepperNetworkProxyHost::UIThreadData result;
   RenderProcessHost* render_process_host =
       RenderProcessHost::FromID(render_process_id);

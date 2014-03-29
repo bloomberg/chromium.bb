@@ -13,7 +13,7 @@ namespace content {
 namespace {
 
 void EnsureMonitorCaptureDevices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&MediaStreamManager::EnsureDeviceMonitorStarted,
@@ -33,7 +33,7 @@ MediaCaptureDevicesImpl* MediaCaptureDevicesImpl::GetInstance() {
 
 const MediaStreamDevices&
 MediaCaptureDevicesImpl::GetAudioCaptureDevices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!devices_enumerated_) {
     EnsureMonitorCaptureDevices();
     devices_enumerated_ = true;
@@ -43,7 +43,7 @@ MediaCaptureDevicesImpl::GetAudioCaptureDevices() {
 
 const MediaStreamDevices&
 MediaCaptureDevicesImpl::GetVideoCaptureDevices() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!devices_enumerated_) {
     EnsureMonitorCaptureDevices();
     devices_enumerated_ = true;
@@ -84,14 +84,14 @@ MediaCaptureDevicesImpl::~MediaCaptureDevicesImpl() {
 
 void MediaCaptureDevicesImpl::UpdateAudioDevicesOnUIThread(
     const MediaStreamDevices& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   devices_enumerated_ = true;
   audio_devices_ = devices;
 }
 
 void MediaCaptureDevicesImpl::UpdateVideoDevicesOnUIThread(
     const MediaStreamDevices& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   devices_enumerated_ = true;
   video_devices_ = devices;
 }

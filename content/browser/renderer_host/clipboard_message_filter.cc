@@ -142,7 +142,7 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
 // ui::Clipboard::WriteObjects().
 void ClipboardMessageFilter::WriteObjectsOnUIThread(
     const ui::Clipboard::ObjectMap* objects) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, *objects);
 }

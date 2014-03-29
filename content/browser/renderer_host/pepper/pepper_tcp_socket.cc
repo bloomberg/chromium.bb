@@ -78,7 +78,7 @@ PepperTCPSocket::~PepperTCPSocket() {
 }
 
 void PepperTCPSocket::Connect(const std::string& host, uint16_t port) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (connection_state_ != BEFORE_CONNECT) {
     SendConnectACKError(PP_ERROR_FAILED);
@@ -101,7 +101,7 @@ void PepperTCPSocket::Connect(const std::string& host, uint16_t port) {
 
 void PepperTCPSocket::ConnectWithNetAddress(
     const PP_NetAddress_Private& net_addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (connection_state_ != BEFORE_CONNECT) {
     SendConnectACKError(PP_ERROR_FAILED);
@@ -128,7 +128,7 @@ void PepperTCPSocket::SSLHandshake(
     uint16_t server_port,
     const std::vector<std::vector<char> >& trusted_certs,
     const std::vector<std::vector<char> >& untrusted_certs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Allow to do SSL handshake only if currently the socket has been connected
   // and there isn't pending read or write.
@@ -167,7 +167,7 @@ void PepperTCPSocket::SSLHandshake(
 }
 
 void PepperTCPSocket::Read(int32 bytes_to_read) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!IsConnected() || end_of_file_reached_) {
     SendReadACKError(PP_ERROR_FAILED);
@@ -195,7 +195,7 @@ void PepperTCPSocket::Read(int32 bytes_to_read) {
 }
 
 void PepperTCPSocket::Write(const std::string& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!IsConnected()) {
     SendWriteACKError(PP_ERROR_FAILED);
@@ -223,7 +223,7 @@ void PepperTCPSocket::Write(const std::string& data) {
 
 void PepperTCPSocket::SetOption(PP_TCPSocket_Option name,
                                 const ppapi::SocketOptionData& value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!IsConnected() || IsSsl()) {
     SendSetOptionACK(PP_ERROR_FAILED);

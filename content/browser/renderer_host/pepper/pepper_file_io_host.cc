@@ -44,7 +44,7 @@ namespace {
 PepperFileIOHost::UIThreadStuff
 GetUIThreadStuffForInternalFileSystems(int render_process_id) {
   PepperFileIOHost::UIThreadStuff stuff;
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
   if (host) {
     stuff.resolved_render_process_id = base::GetProcId(host->GetHandle());
@@ -56,7 +56,7 @@ GetUIThreadStuffForInternalFileSystems(int render_process_id) {
 }
 
 base::ProcessId GetResolvedRenderProcessId(int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
   if (!host)
     return base::kNullProcessId;
@@ -65,7 +65,7 @@ base::ProcessId GetResolvedRenderProcessId(int render_process_id) {
 
 bool GetPluginAllowedToCallRequestOSFileHandle(int render_process_id,
                                                const GURL& document_url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ContentBrowserClient* client = GetContentClient()->browser();
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
   if (!host)
@@ -199,7 +199,7 @@ void PepperFileIOHost::GotUIThreadStuffForInternalFileSystems(
     ppapi::host::ReplyMessageContext reply_context,
     int platform_file_flags,
     UIThreadStuff ui_thread_stuff) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   file_system_context_ = ui_thread_stuff.file_system_context;
   resolved_render_process_id_ = ui_thread_stuff.resolved_render_process_id;
   if (resolved_render_process_id_ == base::kNullProcessId ||
@@ -255,7 +255,7 @@ void PepperFileIOHost::GotResolvedRenderProcessId(
     base::FilePath path,
     int platform_file_flags,
     base::ProcessId resolved_render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   resolved_render_process_id_ = resolved_render_process_id;
   base::FileUtilProxy::CreateOrOpen(
       file_message_loop_,
@@ -394,7 +394,7 @@ int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
 void PepperFileIOHost::GotPluginAllowedToCallRequestOSFileHandle(
     ppapi::host::ReplyMessageContext reply_context,
     bool plugin_allowed) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!browser_ppapi_host_->external_plugin() ||
       host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE) ||
       plugin_allowed) {

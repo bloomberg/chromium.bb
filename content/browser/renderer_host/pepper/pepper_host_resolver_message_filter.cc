@@ -122,7 +122,7 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
     const ppapi::host::HostMessageContext* context,
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Check plugin permissions.
   SocketPermissionRequest request(
@@ -158,7 +158,7 @@ void PepperHostResolverMessageFilter::DoResolve(
     const ppapi::HostPortPair& host_port,
     const PP_HostResolver_Private_Hint& hint,
     ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::HostResolver* host_resolver = resource_context->GetHostResolver();
   if (!host_resolver) {

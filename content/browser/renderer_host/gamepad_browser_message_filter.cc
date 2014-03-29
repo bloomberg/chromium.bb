@@ -15,7 +15,7 @@ GamepadBrowserMessageFilter::GamepadBrowserMessageFilter()
 }
 
 GamepadBrowserMessageFilter::~GamepadBrowserMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (is_started_)
     GamepadService::GetInstance()->RemoveConsumer();
 }

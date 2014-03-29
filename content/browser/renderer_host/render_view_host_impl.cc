@@ -1357,7 +1357,7 @@ void RenderViewHostImpl::OnDocumentOnLoadCompletedInMainFrame(
 }
 
 void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delegate_->ToggleFullscreenMode(enter_fullscreen);
   // We need to notify the contents that its fullscreen state has changed. This
   // is done as part of the resize message.

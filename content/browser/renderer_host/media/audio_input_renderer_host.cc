@@ -118,7 +118,7 @@ void AudioInputRendererHost::OnData(media::AudioInputController* controller,
 
 void AudioInputRendererHost::DoCompleteCreation(
     media::AudioInputController* controller) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupByController(controller);
   if (!entry)
@@ -172,7 +172,7 @@ void AudioInputRendererHost::DoCompleteCreation(
 
 void AudioInputRendererHost::DoSendRecordingMessage(
     media::AudioInputController* controller) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(henrika): See crbug.com/115262 for details on why this method
   // should be implemented.
 }
@@ -180,7 +180,7 @@ void AudioInputRendererHost::DoSendRecordingMessage(
 void AudioInputRendererHost::DoHandleError(
     media::AudioInputController* controller,
     media::AudioInputController::ErrorCode error_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaStreamManager::SendMessageToNativeLog(
       base::StringPrintf("AudioInputController error: %d", error_code));
 
@@ -211,7 +211,7 @@ void AudioInputRendererHost::OnCreateStream(
     int render_view_id,
     int session_id,
     const AudioInputHostMsg_CreateStream_Config& config) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DVLOG(1) << "AudioInputRendererHost@" << this
            << "::OnCreateStream(stream_id=" << stream_id
@@ -323,7 +323,7 @@ void AudioInputRendererHost::OnCreateStream(
 }
 
 void AudioInputRendererHost::OnRecordStream(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
@@ -336,7 +336,7 @@ void AudioInputRendererHost::OnRecordStream(int stream_id) {
 }
 
 void AudioInputRendererHost::OnCloseStream(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupById(stream_id);
 
@@ -345,7 +345,7 @@ void AudioInputRendererHost::OnCloseStream(int stream_id) {
 }
 
 void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
@@ -366,7 +366,7 @@ void AudioInputRendererHost::SendErrorMessage(
 }
 
 void AudioInputRendererHost::DeleteEntries() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   for (AudioEntryMap::iterator i = audio_entries_.begin();
        i != audio_entries_.end(); ++i) {
@@ -375,7 +375,7 @@ void AudioInputRendererHost::DeleteEntries() {
 }
 
 void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!entry->pending_close) {
     entry->controller->Close(base::Bind(&AudioInputRendererHost::DeleteEntry,
@@ -386,7 +386,7 @@ void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
 }
 
 void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Delete the entry when this method goes out of scope.
   scoped_ptr<AudioEntry> entry_deleter(entry);
@@ -397,7 +397,7 @@ void AudioInputRendererHost::DeleteEntry(AudioEntry* entry) {
 
 void AudioInputRendererHost::DeleteEntryOnError(AudioEntry* entry,
     ErrorCode error_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Sends the error message first before we close the stream because
   // |entry| is destroyed in DeleteEntry().
@@ -407,7 +407,7 @@ void AudioInputRendererHost::DeleteEntryOnError(AudioEntry* entry,
 
 AudioInputRendererHost::AudioEntry* AudioInputRendererHost::LookupById(
     int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntryMap::iterator i = audio_entries_.find(stream_id);
   if (i != audio_entries_.end())
@@ -417,7 +417,7 @@ AudioInputRendererHost::AudioEntry* AudioInputRendererHost::LookupById(
 
 AudioInputRendererHost::AudioEntry* AudioInputRendererHost::LookupByController(
     media::AudioInputController* controller) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Iterate the map of entries.
   // TODO(hclam): Implement a faster look up method.

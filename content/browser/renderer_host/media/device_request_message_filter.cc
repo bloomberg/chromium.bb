@@ -66,7 +66,7 @@ void DeviceRequestMessageFilter::DevicesEnumerated(
     int page_request_id,
     const std::string& label,
     const StreamDeviceInfoArray& new_devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Look up the DeviceRequest by id.
   DeviceRequestList::iterator request_it = requests_.begin();

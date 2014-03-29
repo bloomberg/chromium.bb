@@ -36,7 +36,7 @@ const int64_t kMinimumQuotaReservationSize = 1024 * 1024;  // 1 MB
 
 scoped_refptr<fileapi::FileSystemContext>
 GetFileSystemContextFromRenderId(int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
   if (!host)
     return NULL;

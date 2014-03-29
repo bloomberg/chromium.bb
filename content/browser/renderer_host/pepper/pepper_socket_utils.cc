@@ -41,7 +41,7 @@ bool CanUseSocketAPIs(bool external_plugin,
                       const SocketPermissionRequest* params,
                       int render_process_id,
                       int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!external_plugin) {
     // Always allow socket APIs for out-process plugins (other than external
     // plugins instantiated by the embeeder through

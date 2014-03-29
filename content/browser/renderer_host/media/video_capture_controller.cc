@@ -178,7 +178,7 @@ void VideoCaptureController::AddClient(
     base::ProcessHandle render_process,
     media::VideoCaptureSessionId session_id,
     const media::VideoCaptureParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureController::AddClient, id " << id.device_id
            << ", " << params.requested_format.frame_size.ToString()
            << ", " << params.requested_format.frame_rate
@@ -212,7 +212,7 @@ void VideoCaptureController::AddClient(
 int VideoCaptureController::RemoveClient(
     const VideoCaptureControllerID& id,
     VideoCaptureControllerEventHandler* event_handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureController::RemoveClient, id " << id.device_id;
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
@@ -236,7 +236,7 @@ int VideoCaptureController::RemoveClient(
 }
 
 void VideoCaptureController::StopSession(int session_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureController::StopSession, id " << session_id;
 
   ControllerClient* client = FindClient(session_id, controller_clients_);
@@ -252,7 +252,7 @@ void VideoCaptureController::ReturnBuffer(
     VideoCaptureControllerEventHandler* event_handler,
     int buffer_id,
     uint32 sync_point) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ControllerClient* client = FindClient(id, event_handler, controller_clients_);
 
@@ -275,7 +275,7 @@ void VideoCaptureController::ReturnBuffer(
 
 const media::VideoCaptureFormat&
 VideoCaptureController::GetVideoCaptureFormat() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return video_capture_format_;
 }
 
@@ -534,7 +534,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
     const media::VideoCaptureFormat& buffer_format,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks timestamp) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(buffer->id(), VideoCaptureBufferPool::kInvalidId);
 
   int count = 0;
@@ -578,7 +578,7 @@ void VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread(
 }
 
 void VideoCaptureController::DoErrorOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_ERROR;
 
   for (ControllerClients::iterator client_it = controller_clients_.begin();
@@ -593,7 +593,7 @@ void VideoCaptureController::DoErrorOnIOThread() {
 
 void VideoCaptureController::DoBufferDestroyedOnIOThread(
     int buffer_id_to_drop) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   for (ControllerClients::iterator client_it = controller_clients_.begin();
        client_it != controller_clients_.end(); ++client_it) {
@@ -637,7 +637,7 @@ VideoCaptureController::FindClient(
 }
 
 int VideoCaptureController::GetClientCount() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return controller_clients_.size();
 }
 

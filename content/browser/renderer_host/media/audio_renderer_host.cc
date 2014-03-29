@@ -204,7 +204,7 @@ void AudioRendererHost::AudioEntry::OnDeviceChange(int new_buffer_size,
 }
 
 void AudioRendererHost::DoCompleteCreation(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!PeerHandle()) {
     DLOG(WARNING) << "Renderer process handle is invalid.";
@@ -254,7 +254,7 @@ void AudioRendererHost::DoCompleteCreation(int stream_id) {
 
 void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
                                                    bool is_playing) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* const entry = LookupById(stream_id);
   if (!entry)
@@ -285,7 +285,7 @@ void AudioRendererHost::DoNotifyStreamStateChanged(int stream_id,
 
 RenderViewHost::AudioOutputControllerList
 AudioRendererHost::DoGetOutputControllers(int render_view_id) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   RenderViewHost::AudioOutputControllerList controllers;
   AudioEntryMap::const_iterator it = audio_entries_.begin();
@@ -318,7 +318,7 @@ bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
 void AudioRendererHost::OnCreateStream(
     int stream_id, int render_view_id, int render_frame_id, int session_id,
     const media::AudioParameters& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DVLOG(1) << "AudioRendererHost@" << this
            << "::OnCreateStream(stream_id=" << stream_id
@@ -382,7 +382,7 @@ void AudioRendererHost::OnCreateStream(
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
@@ -395,7 +395,7 @@ void AudioRendererHost::OnPlayStream(int stream_id) {
 }
 
 void AudioRendererHost::OnPauseStream(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
@@ -408,7 +408,7 @@ void AudioRendererHost::OnPauseStream(int stream_id) {
 }
 
 void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntry* entry = LookupById(stream_id);
   if (!entry) {
@@ -429,7 +429,7 @@ void AudioRendererHost::SendErrorMessage(int stream_id) {
 }
 
 void AudioRendererHost::OnCloseStream(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Prevent oustanding callbacks from attempting to close/delete the same
   // AudioEntry twice.
@@ -450,7 +450,7 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
 }
 
 void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // At this point, make the final "say" in audio playback state.
   MediaObserver* const media_observer =
@@ -463,7 +463,7 @@ void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
 }
 
 void AudioRendererHost::ReportErrorAndClose(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Make sure this isn't a stray callback executing after the stream has been
   // closed, so error notifications aren't sent after clients believe the stream
@@ -478,7 +478,7 @@ void AudioRendererHost::ReportErrorAndClose(int stream_id) {
 }
 
 AudioRendererHost::AudioEntry* AudioRendererHost::LookupById(int stream_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AudioEntryMap::const_iterator i = audio_entries_.find(stream_id);
   return i != audio_entries_.end() ? i->second : NULL;

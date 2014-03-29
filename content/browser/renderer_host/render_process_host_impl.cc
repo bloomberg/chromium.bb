@@ -210,7 +210,7 @@ void GetContexts(
 IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
     base::FilePath file_path,
     base::ProcessHandle process) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::PlatformFile aec_dump_file = base::CreatePlatformFile(
       file_path,
@@ -226,7 +226,7 @@ IPC::PlatformFileForTransit CreateAecDumpFileForProcess(
 
 // Does nothing. Just to avoid races between enable and disable.
 void DisableAecDumpOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 #endif
 
@@ -614,7 +614,7 @@ bool RenderProcessHostImpl::Init() {
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddFilter(new ResourceSchedulerFilter(GetID()));
   MediaInternals* media_internals = MediaInternals::GetInstance();
   media::AudioManager* audio_manager =
@@ -1563,7 +1563,7 @@ void RenderProcessHostImpl::FilterURL(bool empty_allowed, GURL* url) {
 
 #if defined(ENABLE_WEBRTC)
 void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&CreateAecDumpFileForProcess, file, GetHandle()),
@@ -1572,7 +1572,7 @@ void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
 }
 
 void RenderProcessHostImpl::DisableAecDump() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Posting on the FILE thread and then replying back on the UI thread is only
   // for avoiding races between enable and disable. Nothing is done on the FILE
   // thread.
@@ -1738,13 +1738,13 @@ void RenderProcessHost::SetRunRendererInProcess(bool value) {
 
 // static
 RenderProcessHost::iterator RenderProcessHost::AllHostsIterator() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return iterator(g_all_hosts.Pointer());
 }
 
 // static
 RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return g_all_hosts.Get().Lookup(render_process_id);
 }
 
@@ -1974,7 +1974,7 @@ void RenderProcessHostImpl::EndFrameSubscription(int route_id) {
 
 #if defined(ENABLE_WEBRTC)
 void RenderProcessHostImpl::WebRtcLogMessage(const std::string& message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!webrtc_log_message_callback_.is_null())
     webrtc_log_message_callback_.Run(message);
 }
@@ -2137,12 +2137,12 @@ void RenderProcessHostImpl::SendDisableAecDumpToRenderer() {
 #endif
 
 void RenderProcessHostImpl::IncrementWorkerRefCount() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ++worker_ref_count_;
 }
 
 void RenderProcessHostImpl::DecrementWorkerRefCount() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_GT(worker_ref_count_, 0);
   --worker_ref_count_;
   if (worker_ref_count_ == 0)

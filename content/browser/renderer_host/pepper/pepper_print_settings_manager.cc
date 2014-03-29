@@ -45,7 +45,7 @@ PP_Rect PrintAreaToPPPrintArea(const gfx::Rect& print_area,
 PepperPrintSettingsManager::Result ComputeDefaultPrintSettings() {
   // This function should run on the UI thread because |PrintingContext| methods
   // call into platform APIs.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<printing::PrintingContext> context(
   printing::PrintingContext::Create(std::string()));
   if (!context.get() ||

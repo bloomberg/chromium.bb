@@ -21,7 +21,7 @@ namespace {
 bool CanUseNetworkMonitor(bool external_plugin,
                           int render_process_id,
                           int render_frame_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   SocketPermissionRequest request = SocketPermissionRequest(
       SocketPermissionRequest::NETWORK_STATE, std::string(), 0);
@@ -79,7 +79,7 @@ void PepperNetworkMonitorHost::OnPermissionCheckResult(
 }
 
 void PepperNetworkMonitorHost::GetAndSendNetworkList() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Call GetNetworkList() on a thread that allows blocking IO.
   base::PostTaskAndReplyWithResult(
@@ -91,7 +91,7 @@ void PepperNetworkMonitorHost::GetAndSendNetworkList() {
 
 void PepperNetworkMonitorHost::SendNetworkList(
     scoped_ptr<net::NetworkInterfaceList> list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   scoped_ptr<ppapi::proxy::SerializedNetworkList> list_copy(
       new ppapi::proxy::SerializedNetworkList(list->size()));

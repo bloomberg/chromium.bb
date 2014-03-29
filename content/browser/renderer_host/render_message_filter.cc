@@ -351,7 +351,7 @@ RenderMessageFilter::RenderMessageFilter(
 
 RenderMessageFilter::~RenderMessageFilter() {
   // This function should be called on the IO thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(plugin_host_clients_.empty());
 }
 
@@ -564,7 +564,7 @@ void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
 
 void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,
                                                   size_t* shared_bytes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   using base::ProcessMetrics;
 #if !defined(OS_MACOSX) || defined(OS_IOS)
   scoped_ptr<ProcessMetrics> metrics(ProcessMetrics::CreateProcessMetrics(
@@ -955,7 +955,7 @@ void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {
 
 net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(
     const GURL& url) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::URLRequestContext* context =
       GetContentClient()->browser()->OverrideRequestContextForURL(
@@ -1133,7 +1133,7 @@ void RenderMessageFilter::SendGetRawCookiesResponse(
 
 void RenderMessageFilter::OnCompletedOpenChannelToNpapiPlugin(
     OpenChannelToNpapiPluginCallback* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(ContainsKey(plugin_host_clients_, client));
   plugin_host_clients_.erase(client);
 }

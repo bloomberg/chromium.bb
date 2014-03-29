@@ -46,12 +46,12 @@ MediaStreamUIProxy::Core::Core(const base::WeakPtr<MediaStreamUIProxy>& proxy,
 }
 
 MediaStreamUIProxy::Core::~Core() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void MediaStreamUIProxy::Core::RequestAccess(
     const MediaStreamRequest& request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderViewHostDelegate* render_delegate;
 
@@ -79,7 +79,7 @@ void MediaStreamUIProxy::Core::RequestAccess(
 }
 
 void MediaStreamUIProxy::Core::OnStarted(gfx::NativeViewId* window_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (ui_) {
     *window_id = ui_->OnStarted(
         base::Bind(&Core::ProcessStopRequestFromUI, base::Unretained(this)));
@@ -90,7 +90,7 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
     const MediaStreamDevices& devices,
     content::MediaStreamRequestResult result,
     scoped_ptr<MediaStreamUI> stream_ui) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ui_ = stream_ui.Pass();
   BrowserThread::PostTask(
@@ -100,7 +100,7 @@ void MediaStreamUIProxy::Core::ProcessAccessRequestResponse(
 }
 
 void MediaStreamUIProxy::Core::ProcessStopRequestFromUI() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -122,19 +122,19 @@ scoped_ptr<MediaStreamUIProxy> MediaStreamUIProxy::CreateForTests(
 MediaStreamUIProxy::MediaStreamUIProxy(
     RenderViewHostDelegate* test_render_delegate)
     : weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   core_.reset(new Core(weak_factory_.GetWeakPtr(), test_render_delegate));
 }
 
 MediaStreamUIProxy::~MediaStreamUIProxy() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, core_.release());
 }
 
 void MediaStreamUIProxy::RequestAccess(
     const MediaStreamRequest& request,
     const ResponseCallback& response_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   response_callback_ = response_callback;
   BrowserThread::PostTask(
@@ -144,7 +144,7 @@ void MediaStreamUIProxy::RequestAccess(
 
 void MediaStreamUIProxy::OnStarted(const base::Closure& stop_callback,
                                    const WindowIdCallback& window_id_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   stop_callback_ = stop_callback;
 
@@ -163,7 +163,7 @@ void MediaStreamUIProxy::OnStarted(const base::Closure& stop_callback,
 
 void MediaStreamUIProxy::OnWindowId(const WindowIdCallback& window_id_callback,
                                     gfx::NativeViewId* window_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!window_id_callback.is_null())
     window_id_callback.Run(*window_id);
 }
@@ -171,7 +171,7 @@ void MediaStreamUIProxy::OnWindowId(const WindowIdCallback& window_id_callback,
 void MediaStreamUIProxy::ProcessAccessRequestResponse(
     const MediaStreamDevices& devices,
     content::MediaStreamRequestResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!response_callback_.is_null());
 
   ResponseCallback cb = response_callback_;
@@ -180,7 +180,7 @@ void MediaStreamUIProxy::ProcessAccessRequestResponse(
 }
 
 void MediaStreamUIProxy::ProcessStopRequestFromUI() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!stop_callback_.is_null());
 
   base::Closure cb = stop_callback_;
@@ -202,7 +202,7 @@ void FakeMediaStreamUIProxy::SetAvailableDevices(
 void FakeMediaStreamUIProxy::RequestAccess(
     const MediaStreamRequest& request,
     const ResponseCallback& response_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   response_callback_ = response_callback;
 

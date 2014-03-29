@@ -107,7 +107,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
     const ppapi::host::HostMessageContext* context,
     PP_UDPSocket_Option name,
     const ppapi::SocketOptionData& value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (closed_)
     return PP_ERROR_FAILED;
@@ -166,7 +166,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSetOption(
 int32_t PepperUDPSocketMessageFilter::OnMsgBind(
     const ppapi::host::HostMessageContext* context,
     const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context);
 
   SocketPermissionRequest request =
@@ -189,7 +189,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgBind(
 int32_t PepperUDPSocketMessageFilter::OnMsgRecvFrom(
     const ppapi::host::HostMessageContext* context,
     int32_t num_bytes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context);
   DCHECK(socket_.get());
 
@@ -229,7 +229,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSendTo(
     const ppapi::host::HostMessageContext* context,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context);
 
   SocketPermissionRequest request =
@@ -250,7 +250,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgSendTo(
 
 int32_t PepperUDPSocketMessageFilter::OnMsgClose(
     const ppapi::host::HostMessageContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   Close();
   return PP_OK;
 }
@@ -258,7 +258,7 @@ int32_t PepperUDPSocketMessageFilter::OnMsgClose(
 void PepperUDPSocketMessageFilter::DoBind(
     const ppapi::host::ReplyMessageContext& context,
     const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (closed_ || socket_.get()) {
     SendBindError(context, PP_ERROR_FAILED);
@@ -313,7 +313,7 @@ void PepperUDPSocketMessageFilter::DoSendTo(
     const ppapi::host::ReplyMessageContext& context,
     const std::string& data,
     const PP_NetAddress_Private& addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(socket_.get());
 
   if (closed_ || !socket_.get()) {
@@ -360,7 +360,7 @@ void PepperUDPSocketMessageFilter::DoSendTo(
 }
 
 void PepperUDPSocketMessageFilter::Close() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (socket_.get() && !closed_)
     socket_->Close();
   closed_ = true;
@@ -369,7 +369,7 @@ void PepperUDPSocketMessageFilter::Close() {
 void PepperUDPSocketMessageFilter::OnRecvFromCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(recvfrom_buffer_.get());
 
   int32_t pp_result = NetErrorToPepperError(net_result);
@@ -396,7 +396,7 @@ void PepperUDPSocketMessageFilter::OnRecvFromCompleted(
 void PepperUDPSocketMessageFilter::OnSendToCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(sendto_buffer_.get());
 
   int32_t pp_result = NetErrorToPepperError(net_result);

@@ -60,7 +60,7 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
       share_contexts_(false),
       render_widget_helper_(render_widget_helper),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
   // We use the GPU process for UI on Aura, and we need to share renderer GL
@@ -78,7 +78,7 @@ GpuMessageFilter::GpuMessageFilter(int render_process_id,
 }
 
 GpuMessageFilter::~GpuMessageFilter() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   EndAllFrameSubscriptions();
 }
 
@@ -99,14 +99,14 @@ bool GpuMessageFilter::OnMessageReceived(
 void GpuMessageFilter::BeginFrameSubscription(
     int route_id,
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   linked_ptr<FrameSubscription> subscription(
       new FrameSubscription(route_id, subscriber.Pass()));
   BeginFrameSubscriptionInternal(subscription);
 }
 
 void GpuMessageFilter::EndFrameSubscription(int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   FrameSubscriptionList frame_subscription_list;
   frame_subscription_list.swap(frame_subscription_list_);
   for (FrameSubscriptionList::iterator it = frame_subscription_list.begin();
@@ -121,7 +121,7 @@ void GpuMessageFilter::EndFrameSubscription(int route_id) {
 void GpuMessageFilter::OnEstablishGpuChannel(
     CauseForGpuLaunch cause_for_gpu_launch,
     IPC::Message* reply_ptr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<IPC::Message> reply(reply_ptr);
 
   // TODO(apatrick): Eventually, this will return the route ID of a
@@ -159,7 +159,7 @@ void GpuMessageFilter::OnCreateViewCommandBuffer(
     int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
     IPC::Message* reply_ptr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<IPC::Message> reply(reply_ptr);
 
   GpuSurfaceTracker* surface_tracker = GpuSurfaceTracker::Get();
@@ -206,7 +206,7 @@ void GpuMessageFilter::EstablishChannelCallback(
     scoped_ptr<IPC::Message> reply,
     const IPC::ChannelHandle& channel,
     const gpu::GPUInfo& gpu_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   GpuHostMsg_EstablishGpuChannel::WriteReplyParams(
       reply.get(), render_process_id_, channel, gpu_info);
@@ -215,7 +215,7 @@ void GpuMessageFilter::EstablishChannelCallback(
 
 void GpuMessageFilter::CreateCommandBufferCallback(
     scoped_ptr<IPC::Message> reply, int32 route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GpuHostMsg_CreateViewCommandBuffer::WriteReplyParams(reply.get(), route_id);
   Send(reply.release());
 }

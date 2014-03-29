@@ -114,7 +114,7 @@ void JavaBridgeDispatcherHostManager::RenderFrameDeleted(
 }
 
 void JavaBridgeDispatcherHostManager::DocumentAvailableInMainFrame() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Called when the window object has been cleared in the main frame.
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> retained_object_set =
@@ -134,7 +134,7 @@ void JavaBridgeDispatcherHostManager::DocumentAvailableInMainFrame() {
 
 void JavaBridgeDispatcherHostManager::JavaBoundObjectCreated(
     const base::android::JavaRef<jobject>& object) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> retained_object_set =
@@ -146,7 +146,7 @@ void JavaBridgeDispatcherHostManager::JavaBoundObjectCreated(
 
 void JavaBridgeDispatcherHostManager::JavaBoundObjectDestroyed(
     const base::android::JavaRef<jobject>& object) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> retained_object_set =

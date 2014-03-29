@@ -100,7 +100,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
     const ppapi::host::HostMessageContext* context,
     const PP_NetAddress_Private& addr,
     int32_t backlog) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context);
 
   SocketPermissionRequest request =
@@ -123,7 +123,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgListen(
 
 int32_t PepperTCPServerSocketMessageFilter::OnMsgAccept(
     const ppapi::host::HostMessageContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context);
 
   if (state_ != STATE_LISTENING)
@@ -144,7 +144,7 @@ int32_t PepperTCPServerSocketMessageFilter::OnMsgAccept(
 
 int32_t PepperTCPServerSocketMessageFilter::OnMsgStopListening(
     const ppapi::host::HostMessageContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context);
 
   state_ = STATE_CLOSED;
@@ -156,7 +156,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
     const ppapi::host::ReplyMessageContext& context,
     const PP_NetAddress_Private& addr,
     int32_t backlog) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::IPAddressNumber address;
   int port;

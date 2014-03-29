@@ -171,7 +171,7 @@ int32_t PepperTCPSocketMessageFilter::OnResourceMessageReceived(
 int32_t PepperTCPSocketMessageFilter::OnMsgBind(
     const ppapi::host::HostMessageContext* context,
     const PP_NetAddress_Private& net_addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This is only supported by PPB_TCPSocket v1.1 or above.
   if (version_ != ppapi::TCP_SOCKET_VERSION_1_1_OR_ABOVE) {
@@ -198,7 +198,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
     const ppapi::host::HostMessageContext* context,
     const std::string& host,
     uint16_t port) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This is only supported by PPB_TCPSocket_Private.
   if (!IsPrivateAPI()) {
@@ -234,7 +234,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
 int32_t PepperTCPSocketMessageFilter::OnMsgConnectWithNetAddress(
     const ppapi::host::HostMessageContext* context,
     const PP_NetAddress_Private& net_addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::SocketPermissionRequest request =
       pepper_socket_utils::CreateSocketPermissionRequest(
@@ -258,7 +258,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
     uint16_t server_port,
     const std::vector<std::vector<char> >& trusted_certs,
     const std::vector<std::vector<char> >& untrusted_certs) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Allow to do SSL handshake only if currently the socket has been connected
   // and there isn't pending read or write.
@@ -306,7 +306,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSSLHandshake(
 int32_t PepperTCPSocketMessageFilter::OnMsgRead(
     const ppapi::host::HostMessageContext* context,
     int32_t bytes_to_read) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!state_.IsConnected() || end_of_file_reached_)
     return PP_ERROR_FAILED;
   if (read_buffer_.get())
@@ -344,7 +344,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgRead(
 int32_t PepperTCPSocketMessageFilter::OnMsgWrite(
     const ppapi::host::HostMessageContext* context,
     const std::string& data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state_.IsConnected())
     return PP_ERROR_FAILED;
@@ -368,7 +368,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgWrite(
 int32_t PepperTCPSocketMessageFilter::OnMsgListen(
     const ppapi::host::HostMessageContext* context,
     int32_t backlog) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This is only supported by PPB_TCPSocket v1.1 or above.
   if (version_ != ppapi::TCP_SOCKET_VERSION_1_1_OR_ABOVE) {
@@ -394,7 +394,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgListen(
 
 int32_t PepperTCPSocketMessageFilter::OnMsgAccept(
     const ppapi::host::HostMessageContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (pending_accept_)
     return PP_ERROR_INPROGRESS;
@@ -416,7 +416,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgAccept(
 
 int32_t PepperTCPSocketMessageFilter::OnMsgClose(
     const ppapi::host::HostMessageContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (state_.state() == TCPSocketState::CLOSED)
     return PP_OK;
 
@@ -434,7 +434,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSetOption(
     const ppapi::host::HostMessageContext* context,
     PP_TCPSocket_Option name,
     const ppapi::SocketOptionData& value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   switch (name) {
     case PP_TCPSOCKET_OPTION_NO_DELAY: {
@@ -477,7 +477,7 @@ int32_t PepperTCPSocketMessageFilter::OnMsgSetOption(
 void PepperTCPSocketMessageFilter::DoBind(
     const ppapi::host::ReplyMessageContext& context,
     const PP_NetAddress_Private& net_addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (state_.IsPending(TCPSocketState::BIND)) {
     SendBindError(context, PP_ERROR_INPROGRESS);
@@ -543,7 +543,7 @@ void PepperTCPSocketMessageFilter::DoConnect(
     const std::string& host,
     uint16_t port,
     ResourceContext* resource_context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state_.IsValidTransition(TCPSocketState::CONNECT)) {
     SendConnectError(context, PP_ERROR_FAILED);
@@ -570,7 +570,7 @@ void PepperTCPSocketMessageFilter::DoConnect(
 void PepperTCPSocketMessageFilter::DoConnectWithNetAddress(
     const ppapi::host::ReplyMessageContext& context,
     const PP_NetAddress_Private& net_addr) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state_.IsValidTransition(TCPSocketState::CONNECT)) {
     SendConnectError(context, PP_ERROR_FAILED);
@@ -597,7 +597,7 @@ void PepperTCPSocketMessageFilter::DoConnectWithNetAddress(
 
 void PepperTCPSocketMessageFilter::DoWrite(
     const ppapi::host::ReplyMessageContext& context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(write_buffer_base_.get());
   DCHECK(write_buffer_.get());
   DCHECK_GT(write_buffer_->BytesRemaining(), 0);
@@ -626,7 +626,7 @@ void PepperTCPSocketMessageFilter::DoWrite(
 void PepperTCPSocketMessageFilter::DoListen(
     const ppapi::host::ReplyMessageContext& context,
     int32_t backlog) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (state_.IsPending(TCPSocketState::LISTEN)) {
     SendListenReply(context, PP_ERROR_INPROGRESS);
@@ -645,7 +645,7 @@ void PepperTCPSocketMessageFilter::DoListen(
 void PepperTCPSocketMessageFilter::OnResolveCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state_.IsPending(TCPSocketState::CONNECT)) {
     DCHECK(state_.state() == TCPSocketState::CLOSED);
@@ -664,7 +664,7 @@ void PepperTCPSocketMessageFilter::OnResolveCompleted(
 
 void PepperTCPSocketMessageFilter::StartConnect(
     const ppapi::host::ReplyMessageContext& context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(state_.IsPending(TCPSocketState::CONNECT));
   DCHECK_LT(address_index_, address_list_.size());
 
@@ -685,7 +685,7 @@ void PepperTCPSocketMessageFilter::StartConnect(
 void PepperTCPSocketMessageFilter::OnConnectCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state_.IsPending(TCPSocketState::CONNECT)) {
     DCHECK(state_.state() == TCPSocketState::CLOSED);
@@ -758,7 +758,7 @@ void PepperTCPSocketMessageFilter::OnConnectCompleted(
 void PepperTCPSocketMessageFilter::OnSSLHandshakeCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!state_.IsPending(TCPSocketState::SSL_CONNECT)) {
     DCHECK(state_.state() == TCPSocketState::CLOSED);
@@ -773,7 +773,7 @@ void PepperTCPSocketMessageFilter::OnSSLHandshakeCompleted(
 void PepperTCPSocketMessageFilter::OnReadCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(read_buffer_.get());
 
   if (net_result > 0) {
@@ -792,7 +792,7 @@ void PepperTCPSocketMessageFilter::OnReadCompleted(
 void PepperTCPSocketMessageFilter::OnWriteCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(write_buffer_base_.get());
   DCHECK(write_buffer_.get());
 
@@ -818,7 +818,7 @@ void PepperTCPSocketMessageFilter::OnWriteCompleted(
 void PepperTCPSocketMessageFilter::OnAcceptCompleted(
     const ppapi::host::ReplyMessageContext& context,
     int net_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(pending_accept_);
 
   pending_accept_ = false;

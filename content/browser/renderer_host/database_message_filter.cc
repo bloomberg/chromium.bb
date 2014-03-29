@@ -57,12 +57,12 @@ void DatabaseMessageFilter::OnChannelClosing() {
 }
 
 void DatabaseMessageFilter::AddObserver() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   db_tracker_->AddObserver(this);
 }
 
 void DatabaseMessageFilter::RemoveObserver() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   db_tracker_->RemoveObserver(this);
 
   // If the renderer process died without closing all databases,
@@ -118,7 +118,7 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(
     const base::string16& vfs_file_name,
     int desired_flags,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::File file;
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
   std::string origin_identifier;
@@ -183,7 +183,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(
     bool sync_dir,
     IPC::Message* reply_msg,
     int reschedule_count) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Return an error if the file name is invalid or if the file could not
   // be deleted after kNumDeleteRetries attempts.
@@ -228,7 +228,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(
 void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
     const base::string16& vfs_file_name,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   int32 attributes = -1;
   base::FilePath db_file =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
@@ -242,7 +242,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
 
 void DatabaseMessageFilter::OnDatabaseGetFileSize(
     const base::string16& vfs_file_name, IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   int64 size = 0;
   base::FilePath db_file =
       DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_.get(), vfs_file_name);
@@ -255,7 +255,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileSize(
 
 void DatabaseMessageFilter::OnDatabaseGetSpaceAvailable(
     const std::string& origin_identifier, IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(db_tracker_->quota_manager_proxy());
 
   QuotaManager* quota_manager =
@@ -292,7 +292,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(
     const base::string16& database_name,
     const base::string16& description,
     int64 estimated_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
@@ -311,7 +311,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(
 void DatabaseMessageFilter::OnDatabaseModified(
     const std::string& origin_identifier,
     const base::string16& database_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
@@ -325,7 +325,7 @@ void DatabaseMessageFilter::OnDatabaseModified(
 void DatabaseMessageFilter::OnDatabaseClosed(
     const std::string& origin_identifier,
     const base::string16& database_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
@@ -341,7 +341,7 @@ void DatabaseMessageFilter::OnHandleSqliteError(
     const std::string& origin_identifier,
     const base::string16& database_name,
     int error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
     RecordAction(base::UserMetricsAction("BadMessageTerminate_DBMF"));
     BadMessageReceived();
@@ -355,7 +355,7 @@ void DatabaseMessageFilter::OnDatabaseSizeChanged(
     const std::string& origin_identifier,
     const base::string16& database_name,
     int64 database_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (database_connections_.IsOriginUsed(origin_identifier)) {
     Send(new DatabaseMsg_UpdateSize(origin_identifier, database_name,
                                     database_size));
@@ -365,7 +365,7 @@ void DatabaseMessageFilter::OnDatabaseSizeChanged(
 void DatabaseMessageFilter::OnDatabaseScheduledForDeletion(
     const std::string& origin_identifier,
     const base::string16& database_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   Send(new DatabaseMsg_CloseImmediately(origin_identifier, database_name));
 }
 

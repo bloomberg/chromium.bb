@@ -29,7 +29,7 @@ void MediaStreamDispatcherHost::StreamGenerated(
     const std::string& label,
     const StreamDeviceInfoArray& audio_devices,
     const StreamDeviceInfoArray& video_devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "MediaStreamDispatcherHost::StreamGenerated("
            << ", {label = " << label <<  "})";
 
@@ -42,7 +42,7 @@ void MediaStreamDispatcherHost::StreamGenerationFailed(
     int render_view_id,
     int page_request_id,
     content::MediaStreamRequestResult result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "MediaStreamDispatcherHost::StreamGenerationFailed("
            << ", {page_request_id = " << page_request_id <<  "}"
            << ", { result= " << result << "})";
@@ -56,7 +56,7 @@ void MediaStreamDispatcherHost::StreamGenerationFailed(
 void MediaStreamDispatcherHost::DeviceStopped(int render_view_id,
                                               const std::string& label,
                                               const StreamDeviceInfo& device) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "MediaStreamDispatcherHost::DeviceStopped("
            << "{label = " << label << "}, "
            << "{type = " << device.device.type << "}, "
@@ -70,7 +70,7 @@ void MediaStreamDispatcherHost::DevicesEnumerated(
     int page_request_id,
     const std::string& label,
     const StreamDeviceInfoArray& devices) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "MediaStreamDispatcherHost::DevicesEnumerated("
            << ", {page_request_id = " << page_request_id <<  "})";
 
@@ -83,7 +83,7 @@ void MediaStreamDispatcherHost::DeviceOpened(
     int page_request_id,
     const std::string& label,
     const StreamDeviceInfo& video_device) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "MediaStreamDispatcherHost::DeviceOpened("
            << ", {page_request_id = " << page_request_id <<  "})";
 

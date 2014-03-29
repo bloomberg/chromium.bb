@@ -902,7 +902,7 @@ void RenderWidgetHostViewMac::MovePluginWindows(
   // Must be overridden, but unused on this platform. Core Animation
   // plugins are drawn by the GPU process (through the compositor),
   // and Core Graphics plugins are drawn by the renderer process.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void RenderWidgetHostViewMac::Focus() {
@@ -1729,7 +1729,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     int gpu_host_id) {
   TRACE_EVENT0("browser",
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   AddPendingSwapAck(params.route_id,
                     gpu_host_id,
@@ -1746,7 +1746,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
     int gpu_host_id) {
   TRACE_EVENT0("browser",
       "RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer");
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   AddPendingSwapAck(params.route_id,
                     gpu_host_id,

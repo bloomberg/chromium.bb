@@ -191,7 +191,7 @@ void SocketStreamDispatcherHost::ContinueSSLRequest(
 }
 
 SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   Shutdown();
 }
 
@@ -268,7 +268,7 @@ net::URLRequestContext* SocketStreamDispatcherHost::GetURLRequestContext() {
 }
 
 void SocketStreamDispatcherHost::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(ukai): Implement IDMap::RemoveAll().
   for (IDMap<SocketStreamHost>::const_iterator iter(&hosts_);
        !iter.IsAtEnd();
