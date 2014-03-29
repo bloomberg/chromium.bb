@@ -34,6 +34,7 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -126,11 +127,14 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
     currentDOMTemplateMap().add(domTemplateKey, v8::Eternal<v8::FunctionTemplate>(m_isolate, v8::Local<v8::FunctionTemplate>(templ)));
 }
 
-v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
+v8::Local<v8::Context> V8PerIsolateData::ensureDomInJSContext()
 {
-    if (!m_perContextDataForRegex)
-        m_perContextDataForRegex = V8PerContextData::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
-    return m_perContextDataForRegex->context();
+    if (!m_domInJSPerContextData) {
+        m_domInJSPerContextData = V8PerContextData::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
+        // The V8PerContextData is collected via a weak reference callback from the V8Context, which is expected to not always shutdown cleanly.
+        WTF_ANNOTATE_LEAKING_OBJECT_PTR(m_domInJSPerContextData.get());
+    }
+    return m_domInJSPerContextData->context();
 }
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)

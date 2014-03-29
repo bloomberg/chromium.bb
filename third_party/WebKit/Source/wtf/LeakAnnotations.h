@@ -73,10 +73,10 @@ public:
 };
 
 #define WTF_ANNOTATE_SCOPED_MEMORY_LEAK \
-    LeakSanitizerDisabler leakSanitizerDisabler; static_cast<void>(0)
+        WTF::LeakSanitizerDisabler leakSanitizerDisabler; static_cast<void>(0)
 
 #define WTF_ANNOTATE_LEAKING_OBJECT_PTR(X) \
-    __lsan_ignore_object(X)
+    WTF::__lsan_ignore_object(X)
 
 #else // USE(LEAK_SANITIZER)
 
