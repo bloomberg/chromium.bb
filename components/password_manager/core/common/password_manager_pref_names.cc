@@ -35,11 +35,6 @@ const char kPasswordManagerGroupsForDomains[] =
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // The local profile id for this profile.
 const char kLocalProfileId[] = "profile.local_profile_id";
-
-// Whether passwords in external services (e.g. GNOME Keyring) have been tagged
-// with the local profile id yet. (Used for migrating to tagged passwords.)
-const char kPasswordsUseLocalProfileId[] =
-    "profile.passwords_use_local_profile_id";
 #endif
 
 }  // namespace prefs

@@ -495,19 +495,9 @@ void GKRMethod::OnOperationGetList(GnomeKeyringResult result, GList* list,
 
 }  // namespace
 
-NativeBackendGnome::NativeBackendGnome(LocalProfileId id, PrefService* prefs)
-    : profile_id_(id), prefs_(prefs) {
-  // TODO(mdm): after a few more releases, remove the code which is now dead due
-  // to the true || here, and simplify this code. We don't do it yet to make it
-  // easier to revert if necessary.
-  if (true || PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
-    app_string_ = GetProfileSpecificAppString();
-    // We already did the migration previously. Don't try again.
-    migrate_tried_ = true;
-  } else {
-    app_string_ = kGnomeKeyringAppString;
-    migrate_tried_ = false;
-  }
+NativeBackendGnome::NativeBackendGnome(LocalProfileId id)
+    : profile_id_(id) {
+  app_string_ = GetProfileSpecificAppString();
 }
 
 NativeBackendGnome::~NativeBackendGnome() {
@@ -530,9 +520,6 @@ bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  // Successful write. Try migration if necessary.
-  if (!migrate_tried_)
-    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -562,11 +549,6 @@ bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
                    << " matching logins already! Will replace only the first.";
     }
 
-    // We try migration before updating the existing logins, since otherwise
-    // we'd do it after making some but not all of the changes below.
-    if (forms.size() > 0 && !migrate_tried_)
-      MigrateToProfileSpecificLogins();
-
     RemoveLogin(*forms[0]);
     for (size_t i = 0; i < forms.size(); ++i)
       delete forms[i];
@@ -594,11 +576,6 @@ bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {
                << gnome_keyring_result_to_message(result);
     return false;
   }
-
-  // We try migration before updating the existing logins, since otherwise
-  // we'd do it after making some but not all of the changes below.
-  if (forms.size() > 0 && !migrate_tried_)
-    MigrateToProfileSpecificLogins();
 
   bool ok = true;
   for (size_t i = 0; i < forms.size(); ++i) {
@@ -637,11 +614,6 @@ bool NativeBackendGnome::RemoveLogin(const PasswordForm& form) {
                  << gnome_keyring_result_to_message(result);
     return false;
   }
-  // Successful write. Try migration if necessary. Note that presumably if we've
-  // been asked to delete a login, it's because we returned it previously; thus,
-  // this will probably never happen since we'd have already tried migration.
-  if (!migrate_tried_)
-    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -655,7 +627,6 @@ bool NativeBackendGnome::RemoveLoginsCreatedBetween(
   PasswordFormList forms;
   if (!GetAllLogins(&forms))
     return false;
-  // No need to try migration here: GetAllLogins() does it.
 
   for (size_t i = 0; i < forms.size(); ++i) {
     if (delete_begin <= forms[i]->date_created &&
@@ -684,9 +655,6 @@ bool NativeBackendGnome::GetLogins(const PasswordForm& form,
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  // Successful read of actual data. Try migration if necessary.
-  if (!migrate_tried_)
-    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -699,7 +667,6 @@ bool NativeBackendGnome::GetLoginsCreatedBetween(const base::Time& get_begin,
   PasswordFormList all_forms;
   if (!GetAllLogins(&all_forms))
     return false;
-  // No need to try migration here: GetAllLogins() does it.
 
   forms->reserve(forms->size() + all_forms.size());
   for (size_t i = 0; i < all_forms.size(); ++i) {
@@ -741,9 +708,6 @@ bool NativeBackendGnome::GetLoginsList(PasswordFormList* forms,
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  // Successful read of actual data. Try migration if necessary.
-  if (!migrate_tried_)
-    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -761,9 +725,6 @@ bool NativeBackendGnome::GetAllLogins(PasswordFormList* forms) {
                << gnome_keyring_result_to_message(result);
     return false;
   }
-  // Successful read of actual data. Try migration if necessary.
-  if (!migrate_tried_)
-    MigrateToProfileSpecificLogins();
   return true;
 }
 
@@ -772,45 +733,4 @@ std::string NativeBackendGnome::GetProfileSpecificAppString() const {
   // so that we had *something* to search for since GNOME Keyring won't search
   // for nothing. Now we use it to distinguish passwords for different profiles.
   return base::StringPrintf("%s-%d", kGnomeKeyringAppString, profile_id_);
-}
-
-void NativeBackendGnome::MigrateToProfileSpecificLogins() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-
-  DCHECK(!migrate_tried_);
-  DCHECK_EQ(app_string_, kGnomeKeyringAppString);
-
-  // Record the fact that we've attempted migration already right away, so that
-  // we don't get recursive calls back to MigrateToProfileSpecificLogins().
-  migrate_tried_ = true;
-
-  // First get all the logins, using the old app string.
-  PasswordFormList forms;
-  if (!GetAllLogins(&forms))
-    return;
-
-  // Now switch to a profile-specific app string.
-  app_string_ = GetProfileSpecificAppString();
-
-  // Try to add all the logins with the new app string.
-  bool ok = true;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (!RawAddLogin(*forms[i]))
-      ok = false;
-    delete forms[i];
-  }
-
-  if (ok) {
-    // All good! Keep the new app string and set a persistent pref.
-    // NOTE: We explicitly don't delete the old passwords yet. They are
-    // potentially shared with other profiles and other user data dirs!
-    // Each other profile must be able to migrate the shared data as well,
-    // so we must leave it alone. After a few releases, we'll add code to
-    // delete them, and eventually remove this migration code.
-    // TODO(mdm): follow through with the plan above.
-    PasswordStoreX::SetPasswordsUseLocalProfileId(prefs_);
-  } else {
-    // We failed to migrate for some reason. Use the old app string.
-    app_string_ = kGnomeKeyringAppString;
-  }
 }

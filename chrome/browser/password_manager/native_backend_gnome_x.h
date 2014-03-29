@@ -15,8 +15,6 @@
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/browser/profiles/profile.h"
 
-class PrefService;
-
 namespace autofill {
 struct PasswordForm;
 }
@@ -76,7 +74,7 @@ class GnomeKeyringLoader {
 class NativeBackendGnome : public PasswordStoreX::NativeBackend,
                            public GnomeKeyringLoader {
  public:
-  NativeBackendGnome(LocalProfileId id, PrefService* prefs);
+  explicit NativeBackendGnome(LocalProfileId id);
 
   virtual ~NativeBackendGnome();
 
@@ -109,20 +107,11 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
   // Generates a profile-specific app string based on profile_id_.
   std::string GetProfileSpecificAppString() const;
 
-  // Migrates non-profile-specific logins to be profile-specific.
-  void MigrateToProfileSpecificLogins();
-
   // The local profile id, used to generate the app string.
   const LocalProfileId profile_id_;
 
-  // The pref service to use for persistent migration settings.
-  PrefService* prefs_;
-
   // The app string, possibly based on the local profile id.
   std::string app_string_;
-
-  // True once MigrateToProfileSpecificLogins() has been attempted.
-  bool migrate_tried_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeBackendGnome);
 };

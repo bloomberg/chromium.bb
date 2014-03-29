@@ -58,19 +58,6 @@ class PasswordStoreX : public PasswordStoreDefault {
                  LoginDatabase* login_db,
                  NativeBackend* backend);
 
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-  // Registers the pref setting used for the methods below.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Returns true if passwords have been tagged with the local profile id.
-  static bool PasswordsUseLocalProfileId(PrefService* prefs);
-
-  // Sets the persistent bit indicating that passwords have been tagged with the
-  // local profile id. This cannot be unset; passwords get migrated only once.
-  // The caller promises that |prefs| will not be deleted any time soon.
-  static void SetPasswordsUseLocalProfileId(PrefService* prefs);
-#endif  // !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
-
  private:
   friend class PasswordStoreXTest;
 

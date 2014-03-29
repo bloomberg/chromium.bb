@@ -102,23 +102,11 @@ void LogDeserializationWarning(int version,
 
 }  // namespace
 
-NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id,
-                                           PrefService* prefs)
+NativeBackendKWallet::NativeBackendKWallet(LocalProfileId id)
     : profile_id_(id),
-      prefs_(prefs),
       kwallet_proxy_(NULL),
       app_name_(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME)) {
-  // TODO(mdm): after a few more releases, remove the code which is now dead due
-  // to the true || here, and simplify this code. We don't do it yet to make it
-  // easier to revert if necessary.
-  if (true || PasswordStoreX::PasswordsUseLocalProfileId(prefs)) {
-    folder_name_ = GetProfileSpecificFolderName();
-    // We already did the migration previously. Don't try again.
-    migrate_tried_ = true;
-  } else {
-    folder_name_ = kKWalletFolder;
-    migrate_tried_ = false;
-  }
+  folder_name_ = GetProfileSpecificFolderName();
 }
 
 NativeBackendKWallet::~NativeBackendKWallet() {
@@ -926,10 +914,6 @@ int NativeBackendKWallet::WalletHandle() {
     }
   }
 
-  // Successful initialization. Try migration if necessary.
-  if (!migrate_tried_)
-    MigrateToProfileSpecificLogins();
-
   return handle;
 }
 
@@ -937,60 +921,4 @@ std::string NativeBackendKWallet::GetProfileSpecificFolderName() const {
   // Originally, the folder name was always just "Chrome Form Data".
   // Now we use it to distinguish passwords for different profiles.
   return base::StringPrintf("%s (%d)", kKWalletFolder, profile_id_);
-}
-
-void NativeBackendKWallet::MigrateToProfileSpecificLogins() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
-
-  DCHECK(!migrate_tried_);
-  DCHECK_EQ(folder_name_, kKWalletFolder);
-
-  // Record the fact that we've attempted migration already right away, so that
-  // we don't get recursive calls back to MigrateToProfileSpecificLogins().
-  migrate_tried_ = true;
-
-  // First get all the logins, using the old folder name.
-  int wallet_handle = WalletHandle();
-  if (wallet_handle == kInvalidKWalletHandle)
-    return;
-  PasswordFormList forms;
-  if (!GetAllLogins(&forms, wallet_handle))
-    return;
-
-  // Now switch to a profile-specific folder name.
-  folder_name_ = GetProfileSpecificFolderName();
-
-  // Try to add all the logins with the new folder name.
-  // This could be done more efficiently by grouping by signon realm and using
-  // SetLoginsList(), but we do this for simplicity since it is only done once.
-  // Note, however, that we do need another call to WalletHandle() to create
-  // this folder if necessary.
-  bool ok = true;
-  for (size_t i = 0; i < forms.size(); ++i) {
-    if (!AddLogin(*forms[i]))
-      ok = false;
-    delete forms[i];
-  }
-  if (forms.empty()) {
-    // If there were no logins to migrate, we do an extra call to WalletHandle()
-    // for its side effect of attempting to create the profile-specific folder.
-    // This is not strictly necessary, but it's safe and helps in testing.
-    wallet_handle = WalletHandle();
-    if (wallet_handle == kInvalidKWalletHandle)
-      ok = false;
-  }
-
-  if (ok) {
-    // All good! Keep the new app string and set a persistent pref.
-    // NOTE: We explicitly don't delete the old passwords yet. They are
-    // potentially shared with other profiles and other user data dirs!
-    // Each other profile must be able to migrate the shared data as well,
-    // so we must leave it alone. After a few releases, we'll add code to
-    // delete them, and eventually remove this migration code.
-    // TODO(mdm): follow through with the plan above.
-    PasswordStoreX::SetPasswordsUseLocalProfileId(prefs_);
-  } else {
-    // We failed to migrate for some reason. Use the old folder name.
-    folder_name_ = kKWalletFolder;
-  }
 }

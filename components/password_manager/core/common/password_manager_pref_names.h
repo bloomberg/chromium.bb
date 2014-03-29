@@ -21,7 +21,6 @@ extern const char kPasswordManagerGroupsForDomains[];
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 extern const char kLocalProfileId[];
-extern const char kPasswordsUseLocalProfileId[];
 #endif
 
 }  // namespace prefs

@@ -16,7 +16,6 @@
 
 class Pickle;
 class PickleIterator;
-class PrefService;
 
 namespace autofill {
 struct PasswordForm;
@@ -34,7 +33,7 @@ class ObjectProxy;
 // NativeBackend implementation using KWallet.
 class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
  public:
-  NativeBackendKWallet(LocalProfileId id, PrefService* prefs);
+  explicit NativeBackendKWallet(LocalProfileId id);
 
   virtual ~NativeBackendKWallet();
 
@@ -131,20 +130,11 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // Generates a profile-specific folder name based on profile_id_.
   std::string GetProfileSpecificFolderName() const;
 
-  // Migrates non-profile-specific logins to be profile-specific.
-  void MigrateToProfileSpecificLogins();
-
   // The local profile id, used to generate the folder name.
   const LocalProfileId profile_id_;
 
-  // The pref service to use for persistent migration settings.
-  PrefService* prefs_;
-
   // The KWallet folder name, possibly based on the local profile id.
   std::string folder_name_;
-
-  // True once MigrateToProfileSpecificLogins() has been attempted.
-  bool migrate_tried_;
 
   // DBus handle for communication with klauncher and kwalletd.
   scoped_refptr<dbus::Bus> session_bus_;

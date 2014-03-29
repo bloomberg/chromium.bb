@@ -187,7 +187,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   if (desktop_env == base::nix::DESKTOP_ENVIRONMENT_KDE4) {
     // KDE3 didn't use DBus, which our KWallet store uses.
     VLOG(1) << "Trying KWallet for password storage.";
-    backend.reset(new NativeBackendKWallet(id, prefs));
+    backend.reset(new NativeBackendKWallet(id));
     if (backend->Init())
       VLOG(1) << "Using KWallet for password storage.";
     else
@@ -197,7 +197,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
              desktop_env == base::nix::DESKTOP_ENVIRONMENT_XFCE) {
 #if defined(USE_GNOME_KEYRING)
     VLOG(1) << "Trying GNOME keyring for password storage.";
-    backend.reset(new NativeBackendGnome(id, prefs));
+    backend.reset(new NativeBackendGnome(id));
     if (backend->Init())
       VLOG(1) << "Using GNOME keyring for password storage.";
     else
@@ -233,14 +233,12 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 void PasswordStoreFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if !defined(OS_CHROMEOS) && defined(USE_X11)
+  // Notice that the preprocessor conditions above are exactly those that will
+  // result in using PasswordStoreX in BuildServiceInstanceFor().
   registry->RegisterIntegerPref(
       prefs::kLocalProfileId,
       kInvalidLocalProfileId,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  // Notice that the preprocessor conditions above are exactly those that will
-  // result in using PasswordStoreX in CreatePasswordStore() below.
-  PasswordStoreX::RegisterProfilePrefs(registry);
 #endif
 }
 
