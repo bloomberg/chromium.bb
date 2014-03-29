@@ -94,7 +94,14 @@ class DecryptingAudioDecoderTest : public testing::Test {
 
   void InitializeAndExpectStatus(const AudioDecoderConfig& config,
                                  PipelineStatus status) {
+    // Initialize data now that the config is known. Since the code uses
+    // invalid values (that CreateEmptyBuffer() doesn't support), tweak them
+    // just for CreateEmptyBuffer().
+    int channels = ChannelLayoutToChannelCount(config.channel_layout());
+    if (channels < 0)
+      channels = 0;
     decoded_frame_ = AudioBuffer::CreateEmptyBuffer(config.channel_layout(),
+                                                    channels,
                                                     kSampleRate,
                                                     kFakeAudioFrameSize,
                                                     kNoTimestamp(),
@@ -353,12 +360,14 @@ TEST_F(DecryptingAudioDecoderTest, DecryptAndDecode_MultipleFrames) {
 
   scoped_refptr<AudioBuffer> frame_a = AudioBuffer::CreateEmptyBuffer(
       config_.channel_layout(),
+      ChannelLayoutToChannelCount(config_.channel_layout()),
       kSampleRate,
       kFakeAudioFrameSize,
       kNoTimestamp(),
       kNoTimestamp());
   scoped_refptr<AudioBuffer> frame_b = AudioBuffer::CreateEmptyBuffer(
       config_.channel_layout(),
+      ChannelLayoutToChannelCount(config_.channel_layout()),
       kSampleRate,
       kFakeAudioFrameSize,
       kNoTimestamp(),

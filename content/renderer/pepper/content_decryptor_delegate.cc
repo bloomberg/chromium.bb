@@ -1024,6 +1024,7 @@ bool ContentDecryptorDelegate::DeserializeAudioFrames(
     scoped_refptr<media::AudioBuffer> frame = media::AudioBuffer::CopyFrom(
         sample_format,
         audio_channel_layout_,
+        audio_channel_count_,
         audio_samples_per_second_,
         frame_count,
         &channel_ptrs[0],

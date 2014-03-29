@@ -182,6 +182,7 @@ bool AudioStreamSanitizer::AddInput(const scoped_refptr<AudioBuffer>& input) {
     // add it to the output buffer.
     scoped_refptr<AudioBuffer> gap = AudioBuffer::CreateEmptyBuffer(
         input->channel_layout(),
+        input->channel_count(),
         input->sample_rate(),
         frames_to_fill,
         expected_timestamp,
@@ -433,6 +434,7 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
       // Allocate output buffer for crossfade.
       *crossfade_buffer = AudioBuffer::CreateBuffer(kSampleFormatPlanarF32,
                                                     preroll->channel_layout(),
+                                                    preroll->channel_count(),
                                                     preroll->sample_rate(),
                                                     frames_to_crossfade);
     }

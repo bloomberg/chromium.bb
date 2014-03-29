@@ -114,6 +114,7 @@ class TestVideoConfig {
 template <class T>
 scoped_refptr<AudioBuffer> MakeAudioBuffer(SampleFormat format,
                                            ChannelLayout channel_layout,
+                                           int channel_count,
                                            int sample_rate,
                                            T start,
                                            T increment,

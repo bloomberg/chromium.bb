@@ -38,6 +38,7 @@ class MEDIA_EXPORT AudioBuffer
   // TODO(jrummell): Compute duration rather than pass it in.
   static scoped_refptr<AudioBuffer> CopyFrom(SampleFormat sample_format,
                                              ChannelLayout channel_layout,
+                                             int channel_count,
                                              int sample_rate,
                                              int frame_count,
                                              const uint8* const* data,
@@ -48,12 +49,14 @@ class MEDIA_EXPORT AudioBuffer
   // not initialized. Timestamp and duration are set to kNoTimestamp().
   static scoped_refptr<AudioBuffer> CreateBuffer(SampleFormat sample_format,
                                                  ChannelLayout channel_layout,
+                                                 int channel_count,
                                                  int sample_rate,
                                                  int frame_count);
 
   // Create an empty AudioBuffer with |frame_count| frames.
   static scoped_refptr<AudioBuffer> CreateEmptyBuffer(
       ChannelLayout channel_layout,
+      int channel_count,
       int sample_rate,
       int frame_count,
       const base::TimeDelta timestamp,
@@ -123,6 +126,7 @@ class MEDIA_EXPORT AudioBuffer
   // copied to).
   AudioBuffer(SampleFormat sample_format,
               ChannelLayout channel_layout,
+              int channel_count,
               int sample_rate,
               int frame_count,
               bool create_buffer,

@@ -38,6 +38,7 @@ class AudioSplicerTest : public ::testing::Test {
     scoped_refptr<AudioBuffer> buffer = MakeAudioBuffer<float>(
         kSampleFormat,
         kChannelLayout,
+        kChannels,
         kDefaultSampleRate,
         value,
         0.0f,
@@ -130,6 +131,7 @@ class AudioSplicerTest : public ::testing::Test {
             ? AudioBuffer::CreateEOSBuffer()
             : AudioBuffer::CopyFrom(kSampleFormat,
                                     input->channel_layout(),
+                                    input->channel_count(),
                                     input->sample_rate(),
                                     input->frame_count(),
                                     &input->channel_data()[0],

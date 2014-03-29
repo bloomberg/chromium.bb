@@ -188,6 +188,7 @@ void AudioBufferConverter::ConvertIfPossible() {
   scoped_refptr<AudioBuffer> output_buffer =
       AudioBuffer::CreateBuffer(kSampleFormatPlanarF32,
                                 output_params_.channel_layout(),
+                                output_params_.channels(),
                                 output_params_.sample_rate(),
                                 request_frames);
   scoped_ptr<AudioBus> output_bus =
