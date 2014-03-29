@@ -177,8 +177,15 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // of profiles is still sorted.
   void UpdateSortForProfileIndex(size_t index);
 
-  void OnGAIAPictureLoaded(const base::FilePath& path,
-                           gfx::Image** image) const;
+  // Loads or uses an already loaded high resolution image of the
+  // generic profile avatar.
+  const gfx::Image* GetHighResAvatarOfProfileAtIndex(size_t index) const;
+
+  const gfx::Image* LoadAvatarPictureFromPath(
+      const std::string& key,
+      const base::FilePath& image_path) const;
+  void OnAvatarPictureLoaded(const std::string& key,
+                             gfx::Image** image) const;
   void OnGAIAPictureSaved(const base::FilePath& path, bool* success) const;
 
   PrefService* prefs_;
@@ -187,12 +194,12 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   ObserverList<ProfileInfoCacheObserver> observer_list_;
 
-  // A cache of gaia profile pictures. This cache is updated lazily so it needs
-  // to be mutable.
-  mutable std::map<std::string, gfx::Image*> gaia_pictures_;
-  // Marks a gaia profile picture as loading. This prevents a picture from
+  // A cache of gaia/high res avatar profile pictures. This cache is updated
+  // lazily so it needs to be mutable.
+  mutable std::map<std::string, gfx::Image*> cached_avatar_images_;
+  // Marks a profile picture as loading. This prevents a picture from
   // loading multiple times.
-  mutable std::map<std::string, bool> gaia_pictures_loading_;
+  mutable std::map<std::string, bool> cached_avatar_images_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

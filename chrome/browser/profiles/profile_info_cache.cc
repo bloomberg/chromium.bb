@@ -10,6 +10,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -22,6 +23,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,6 +60,7 @@ const char kActiveTimeKey[] = "active_time";
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
+const char kHighResAvatarFolderName[] = "Avatars";
 
 const int kDefaultAvatarIconResources[] = {
   IDR_PROFILE_AVATAR_0,
@@ -86,6 +89,37 @@ const int kDefaultAvatarIconResources[] = {
   IDR_PROFILE_AVATAR_23,
   IDR_PROFILE_AVATAR_24,
   IDR_PROFILE_AVATAR_25,
+};
+
+// File names for the high-res avatar icon resources. In the same order as
+// the avatars in kDefaultAvatarIconResources.
+const char* kDefaultAvatarIconResourceFileNames[] = {
+  "avatar_generic.png",
+  "avatar_generic_aqua.png",
+  "avatar_generic_blue.png",
+  "avatar_generic_green.png",
+  "avatar_generic_orange.png",
+  "avatar_generic_purple.png",
+  "avatar_generic_red.png",
+  "avatar_generic_yellow.png",
+  "avatar_secret_agent.png",
+  "avatar_superhero.png",
+  "avatar_volley_ball.png",
+  "avatar_businessman.png",
+  "avatar_ninja.png",
+  "avatar_alien.png",
+  "avatar_smiley.png",
+  "avatar_flower.png",
+  "avatar_pizza.png",
+  "avatar_soccer.png",
+  "avatar_burger.png",
+  "avatar_cat.png",
+  "avatar_cupcake.png",
+  "avatar_dog.png",
+  "avatar_horse.png",
+  "avatar_margarita.png",
+  "avatar_note.png",
+  "avatar_sun_cloud.png",
 };
 
 const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
@@ -149,6 +183,10 @@ void ReadBitmap(const base::FilePath& image_path,
                 gfx::Image** out_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   *out_image = NULL;
+
+  // If the path doesn't exist, don't even try reading it.
+  if (!base::PathExists(image_path))
+    return;
 
   std::string image_data;
   if (!base::ReadFileToString(image_path, &image_data)) {
@@ -223,7 +261,7 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 
 ProfileInfoCache::~ProfileInfoCache() {
   STLDeleteContainerPairSecondPointers(
-      gaia_pictures_.begin(), gaia_pictures_.end());
+      cached_avatar_images_.begin(), cached_avatar_images_.end());
 }
 
 void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
@@ -361,6 +399,13 @@ const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
       return *image;
   }
 
+  // Use the high resolution version of the avatar if it exists.
+  if (switches::IsNewProfileManagement()) {
+    const gfx::Image* image = GetHighResAvatarOfProfileAtIndex(index);
+    if (image)
+      return *image;
+  }
+
   int resource_id = GetDefaultAvatarIconResourceIDAtIndex(
       GetAvatarIconIndexOfProfileAtIndex(index));
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
@@ -402,30 +447,50 @@ const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
   base::FilePath path = GetPathOfProfileAtIndex(index);
   std::string key = CacheKeyFromProfilePath(path);
 
-  // If the picture is already loaded then use it.
-  if (gaia_pictures_.count(key)) {
-    if (gaia_pictures_[key]->IsEmpty())
-      return NULL;
-    return gaia_pictures_[key];
-  }
-
   std::string file_name;
   GetInfoForProfileAtIndex(index)->GetString(
       kGAIAPictureFileNameKey, &file_name);
 
-  // If the picture is not on disk or it is already being loaded then return
-  // NULL.
-  if (file_name.empty() || gaia_pictures_loading_[key])
+  // If the picture is not on disk then return NULL.
+  if (file_name.empty())
     return NULL;
 
-  gaia_pictures_loading_[key] = true;
   base::FilePath image_path = path.AppendASCII(file_name);
+  return LoadAvatarPictureFromPath(key, image_path);
+}
+
+const gfx::Image* ProfileInfoCache::GetHighResAvatarOfProfileAtIndex(
+    size_t index) const {
+  int avatar_index = GetAvatarIconIndexOfProfileAtIndex(index);
+  std::string key = kDefaultAvatarIconResourceFileNames[avatar_index];
+
+  base::FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  base::FilePath image_path =
+      user_data_dir.AppendASCII(kHighResAvatarFolderName).AppendASCII(key);
+  return LoadAvatarPictureFromPath(key, image_path);
+}
+
+const gfx::Image* ProfileInfoCache::LoadAvatarPictureFromPath(
+    const std::string& key,
+    const base::FilePath& image_path) const {
+  // If the picture is already loaded then use it.
+  if (cached_avatar_images_.count(key)) {
+    if (cached_avatar_images_[key]->IsEmpty())
+      return NULL;
+    return cached_avatar_images_[key];
+  }
+
+  // If the picture is already being loaded then don't try loading it again.
+  if (cached_avatar_images_loading_[key])
+    return NULL;
+  cached_avatar_images_loading_[key] = true;
+
   gfx::Image** image = new gfx::Image*;
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ReadBitmap, image_path, image),
-      base::Bind(&ProfileInfoCache::OnGAIAPictureLoaded,
-          const_cast<ProfileInfoCache*>(this)->AsWeakPtr(), path, image));
-
+      base::Bind(&ProfileInfoCache::OnAvatarPictureLoaded,
+          const_cast<ProfileInfoCache*>(this)->AsWeakPtr(), key, image));
   return NULL;
 }
 
@@ -465,19 +530,18 @@ bool ProfileInfoCache::ProfileIsUsingDefaultNameAtIndex(size_t index) const {
   return value;
 }
 
-void ProfileInfoCache::OnGAIAPictureLoaded(const base::FilePath& path,
-                                           gfx::Image** image) const {
+void ProfileInfoCache::OnAvatarPictureLoaded(const std::string& key,
+                                             gfx::Image** image) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  std::string key = CacheKeyFromProfilePath(path);
-  gaia_pictures_loading_[key] = false;
+  cached_avatar_images_loading_[key] = false;
 
+  delete cached_avatar_images_[key];
   if (*image) {
-    delete gaia_pictures_[key];
-    gaia_pictures_[key] = *image;
+    cached_avatar_images_[key] = *image;
   } else {
     // Place an empty image in the cache to avoid reloading it again.
-    gaia_pictures_[key] = new gfx::Image();
+    cached_avatar_images_[key] = new gfx::Image();
   }
   delete image;
 
@@ -674,10 +738,11 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
   std::string key = CacheKeyFromProfilePath(path);
 
   // Delete the old bitmap from cache.
-  std::map<std::string, gfx::Image*>::iterator it = gaia_pictures_.find(key);
-  if (it != gaia_pictures_.end()) {
+  std::map<std::string, gfx::Image*>::iterator it =
+      cached_avatar_images_.find(key);
+  if (it != cached_avatar_images_.end()) {
     delete it->second;
-    gaia_pictures_.erase(it);
+    cached_avatar_images_.erase(it);
   }
 
   std::string old_file_name;
@@ -694,7 +759,7 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
     }
   } else {
     // Save the new bitmap to disk.
-    gaia_pictures_[key] = new gfx::Image(*image);
+    cached_avatar_images_[key] = new gfx::Image(*image);
     scoped_ptr<ImageData> data(new ImageData);
     scoped_refptr<base::RefCountedMemory> png_data = image->As1xPNGBytes();
     data->assign(png_data->front(), png_data->front() + png_data->size());
