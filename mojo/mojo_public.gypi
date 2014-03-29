@@ -192,11 +192,11 @@
         'mojo_system',
       ],
       'sources': [
-        'public/c/tests/system/core_unittest.cc',
-        'public/c/tests/system/core_unittest_pure_c.c',
-        'public/c/tests/system/macros_unittest.cc',
-        'public/cpp/tests/system/core_unittest.cc',
-        'public/cpp/tests/system/macros_unittest.cc',
+        'public/c/system/tests/core_unittest.cc',
+        'public/c/system/tests/core_unittest_pure_c.c',
+        'public/c/system/tests/macros_unittest.cc',
+        'public/cpp/system/tests/core_unittest.cc',
+        'public/cpp/system/tests/macros_unittest.cc',
       ],
     },
     {
@@ -212,16 +212,16 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/cpp/tests/utility/mutex_unittest.cc',
-        'public/cpp/tests/utility/run_loop_unittest.cc',
-        'public/cpp/tests/utility/thread_unittest.cc',
+        'public/cpp/utility/tests/mutex_unittest.cc',
+        'public/cpp/utility/tests/run_loop_unittest.cc',
+        'public/cpp/utility/tests/thread_unittest.cc',
       ],
       'conditions': [
         # See crbug.com/342893:
         ['OS=="win"', {
           'sources!': [
-            'public/cpp/tests/utility/mutex_unittest.cc',
-            'public/cpp/tests/utility/thread_unittest.cc',
+            'public/cpp/utility/tests/mutex_unittest.cc',
+            'public/cpp/utility/tests/thread_unittest.cc',
           ],
         }],
       ],
@@ -238,7 +238,7 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/c/tests/system/core_perftest.cc',
+        'public/c/system/tests/core_perftest.cc',
       ],
     },
     {
