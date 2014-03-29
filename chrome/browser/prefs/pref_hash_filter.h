@@ -18,6 +18,7 @@
 #include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/prefs/tracked/tracked_preference.h"
 
+class PersistentPrefStore;
 class PrefService;
 class PrefStore;
 
@@ -82,6 +83,15 @@ class PrefHashFilter : public PrefFilter {
   // Initializes the PrefHashStore with hashes of the tracked preferences in
   // |pref_store|.
   void Initialize(const PrefStore& pref_store);
+
+  // Migrates protected values from |source| to |destination|. Values are
+  // migrated if they are protected according to this filter's configuration,
+  // the corresponding key has no value in |destination|, and the value in
+  // |source| is trusted according to this filter's PrefHashStore. Regardless of
+  // the state of |destination| or the trust status, the protected values will
+  // be removed from |source|.
+  void MigrateValues(PersistentPrefStore* source,
+                     PersistentPrefStore* destination);
 
   // PrefFilter implementation.
   virtual void FilterOnLoad(base::DictionaryValue* pref_store_contents)

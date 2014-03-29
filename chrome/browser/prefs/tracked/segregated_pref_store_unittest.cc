@@ -1,0 +1,255 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/prefs/tracked/segregated_pref_store.h"
+
+#include <set>
+#include <string>
+
+#include "base/bind.h"
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/prefs/persistent_pref_store.h"
+#include "base/prefs/pref_store_observer_mock.h"
+#include "base/prefs/testing_pref_store.h"
+#include "base/values.h"
+#include "chrome/browser/prefs/tracked/segregated_pref_store.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+const char kSelectedPref[] = "selected_pref";
+const char kUnselectedPref[] = "unselected_pref";
+
+const char kValue1[] = "value1";
+const char kValue2[] = "value2";
+
+class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
+ public:
+  struct Data {
+    Data(bool invoked_in, PersistentPrefStore::PrefReadError read_error_in)
+        : invoked(invoked_in), read_error(read_error_in) {}
+
+    bool invoked;
+    PersistentPrefStore::PrefReadError read_error;
+  };
+
+  explicit MockReadErrorDelegate(Data* data) : data_(data) {
+    DCHECK(data_);
+    EXPECT_FALSE(data_->invoked);
+  }
+
+  // PersistentPrefStore::ReadErrorDelegate implementation
+  virtual void OnError(PersistentPrefStore::PrefReadError read_error) OVERRIDE {
+    EXPECT_FALSE(data_->invoked);
+    data_->invoked = true;
+    data_->read_error = read_error;
+  }
+
+ private:
+  Data* data_;
+};
+
+}  // namespace
+
+class SegregatedPrefStoreTest : public testing::Test {
+ public:
+  SegregatedPrefStoreTest()
+      : initialization_callback_invoked_(false),
+        read_error_delegate_data_(false,
+                                  PersistentPrefStore::PREF_READ_ERROR_NONE),
+        read_error_delegate_(
+            new MockReadErrorDelegate(&read_error_delegate_data_)) {}
+
+  virtual void SetUp() OVERRIDE {
+    selected_store_ = new TestingPrefStore;
+    default_store_ = new TestingPrefStore;
+
+    std::set<std::string> selected_pref_names;
+    selected_pref_names.insert(kSelectedPref);
+
+    segregated_store_ = new SegregatedPrefStore(
+        default_store_,
+        selected_store_,
+        selected_pref_names,
+        base::Bind(&SegregatedPrefStoreTest::InitializationCallback,
+                   base::Unretained(this)));
+
+    segregated_store_->AddObserver(&observer_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    segregated_store_->RemoveObserver(&observer_);
+  }
+
+ protected:
+  scoped_ptr<PersistentPrefStore::ReadErrorDelegate> GetReadErrorDelegate() {
+    EXPECT_TRUE(read_error_delegate_);
+    return read_error_delegate_
+        .PassAs<PersistentPrefStore::ReadErrorDelegate>();
+  }
+
+  PrefStoreObserverMock observer_;
+  bool initialization_callback_invoked_;
+
+  scoped_refptr<TestingPrefStore> default_store_;
+  scoped_refptr<TestingPrefStore> selected_store_;
+  scoped_refptr<SegregatedPrefStore> segregated_store_;
+
+  MockReadErrorDelegate::Data read_error_delegate_data_;
+
+ private:
+  void InitializationCallback() {
+    EXPECT_FALSE(observer_.initialized);
+    EXPECT_FALSE(initialization_callback_invoked_);
+    initialization_callback_invoked_ = true;
+  }
+
+  scoped_ptr<MockReadErrorDelegate> read_error_delegate_;
+};
+
+TEST_F(SegregatedPrefStoreTest, StoreValues) {
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->ReadPrefs());
+
+  // Properly stores new values.
+  segregated_store_->SetValue(kSelectedPref, new base::StringValue(kValue1));
+  segregated_store_->SetValue(kUnselectedPref, new base::StringValue(kValue2));
+
+  ASSERT_TRUE(selected_store_->GetValue(kSelectedPref, NULL));
+  ASSERT_FALSE(selected_store_->GetValue(kUnselectedPref, NULL));
+  ASSERT_FALSE(default_store_->GetValue(kSelectedPref, NULL));
+  ASSERT_TRUE(default_store_->GetValue(kUnselectedPref, NULL));
+
+  ASSERT_TRUE(segregated_store_->GetValue(kSelectedPref, NULL));
+  ASSERT_TRUE(segregated_store_->GetValue(kUnselectedPref, NULL));
+
+  ASSERT_FALSE(selected_store_->committed());
+  ASSERT_FALSE(default_store_->committed());
+
+  segregated_store_->CommitPendingWrite();
+
+  ASSERT_TRUE(selected_store_->committed());
+  ASSERT_TRUE(default_store_->committed());
+}
+
+TEST_F(SegregatedPrefStoreTest, ReadValues) {
+  selected_store_->SetValue(kSelectedPref, new base::StringValue(kValue1));
+  default_store_->SetValue(kUnselectedPref,
+                               new base::StringValue(kValue2));
+
+  // Works properly with values that are already there.
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->ReadPrefs());
+  ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->GetReadError());
+
+  ASSERT_TRUE(selected_store_->GetValue(kSelectedPref, NULL));
+  ASSERT_FALSE(selected_store_->GetValue(kUnselectedPref, NULL));
+  ASSERT_FALSE(default_store_->GetValue(kSelectedPref, NULL));
+  ASSERT_TRUE(default_store_->GetValue(kUnselectedPref, NULL));
+
+  ASSERT_TRUE(segregated_store_->GetValue(kSelectedPref, NULL));
+  ASSERT_TRUE(segregated_store_->GetValue(kUnselectedPref, NULL));
+}
+
+TEST_F(SegregatedPrefStoreTest, PreviouslySelected) {
+  selected_store_->SetValue(kUnselectedPref, new base::StringValue(kValue1));
+  segregated_store_->ReadPrefs();
+  // It will read from the selected store.
+  ASSERT_TRUE(segregated_store_->GetValue(kUnselectedPref, NULL));
+  ASSERT_TRUE(selected_store_->GetValue(kUnselectedPref, NULL));
+  ASSERT_FALSE(default_store_->GetValue(kUnselectedPref, NULL));
+
+  // But when we update the value...
+  segregated_store_->SetValue(kUnselectedPref, new base::StringValue(kValue2));
+  // ...it will be migrated.
+  ASSERT_TRUE(segregated_store_->GetValue(kUnselectedPref, NULL));
+  ASSERT_FALSE(selected_store_->GetValue(kUnselectedPref, NULL));
+  ASSERT_TRUE(default_store_->GetValue(kUnselectedPref, NULL));
+}
+
+TEST_F(SegregatedPrefStoreTest, Observer) {
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->ReadPrefs());
+  EXPECT_TRUE(initialization_callback_invoked_);
+  EXPECT_TRUE(observer_.initialized);
+  EXPECT_TRUE(observer_.initialization_success);
+  EXPECT_TRUE(observer_.changed_keys.empty());
+  segregated_store_->SetValue(kSelectedPref, new base::StringValue(kValue1));
+  observer_.VerifyAndResetChangedKey(kSelectedPref);
+  segregated_store_->SetValue(kUnselectedPref, new base::StringValue(kValue2));
+  observer_.VerifyAndResetChangedKey(kUnselectedPref);
+}
+
+TEST_F(SegregatedPrefStoreTest, SelectedPrefReadError) {
+  selected_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->ReadPrefs());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->GetReadError());
+}
+
+TEST_F(SegregatedPrefStoreTest, UnselectedPrefReadError) {
+  default_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->ReadPrefs());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->GetReadError());
+}
+
+TEST_F(SegregatedPrefStoreTest, BothPrefReadError) {
+  default_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
+  selected_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->ReadPrefs());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->GetReadError());
+}
+
+TEST_F(SegregatedPrefStoreTest, BothPrefReadErrorAsync) {
+  default_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
+  selected_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED);
+
+  selected_store_->SetBlockAsyncRead(true);
+
+  EXPECT_FALSE(read_error_delegate_data_.invoked);
+
+  segregated_store_->ReadPrefsAsync(GetReadErrorDelegate().release());
+
+  EXPECT_FALSE(read_error_delegate_data_.invoked);
+
+  selected_store_->SetBlockAsyncRead(false);
+
+  EXPECT_TRUE(read_error_delegate_data_.invoked);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->GetReadError());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+            segregated_store_->GetReadError());
+}
+
+TEST_F(SegregatedPrefStoreTest, IsInitializationComplete) {
+  EXPECT_FALSE(segregated_store_->IsInitializationComplete());
+  segregated_store_->ReadPrefs();
+  EXPECT_TRUE(segregated_store_->IsInitializationComplete());
+}
+
+TEST_F(SegregatedPrefStoreTest, IsInitializationCompleteAsync) {
+  selected_store_->SetBlockAsyncRead(true);
+  default_store_->SetBlockAsyncRead(true);
+  EXPECT_FALSE(segregated_store_->IsInitializationComplete());
+  segregated_store_->ReadPrefsAsync(NULL);
+  EXPECT_FALSE(segregated_store_->IsInitializationComplete());
+  selected_store_->SetBlockAsyncRead(false);
+  EXPECT_FALSE(segregated_store_->IsInitializationComplete());
+  default_store_->SetBlockAsyncRead(false);
+  EXPECT_TRUE(segregated_store_->IsInitializationComplete());
+}

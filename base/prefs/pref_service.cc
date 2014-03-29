@@ -67,7 +67,9 @@ PrefService::~PrefService() {
 }
 
 void PrefService::InitFromStorage(bool async) {
-  if (!async) {
+  if (user_pref_store_->IsInitializationComplete()) {
+    read_error_callback_.Run(user_pref_store_->GetReadError());
+  } else if (!async) {
     read_error_callback_.Run(user_pref_store_->ReadPrefs());
   } else {
     // Guarantee that initialization happens after this function returned.

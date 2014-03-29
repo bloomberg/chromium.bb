@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/prefs/pref_hash_store_transaction.h"
@@ -68,12 +69,10 @@ class MockPrefHashStore : public PrefHashStore {
   typedef std::pair<const void*, PrefHashFilter::PrefTrackingStrategy>
       ValuePtrStrategyPair;
 
-  MockPrefHashStore() : transactions_expected_(1),
-                        transactions_performed_(0),
+  MockPrefHashStore() : transactions_performed_(0),
                         transaction_active_(false) {}
 
   virtual ~MockPrefHashStore() {
-    EXPECT_EQ(transactions_expected_, transactions_performed_);
     EXPECT_FALSE(transaction_active_);
   }
 
@@ -89,9 +88,8 @@ class MockPrefHashStore : public PrefHashStore {
       const std::string& path,
       const std::vector<std::string>& invalid_keys_result);
 
-  void set_transactions_expected(size_t transactions_expected) {
-    transactions_expected_ = transactions_expected;
-  }
+  // Returns the number of transactions that were performed.
+  size_t transactions_performed() { return transactions_performed_; }
 
   // Returns the number of paths checked.
   size_t checked_paths_count() const {
@@ -286,16 +284,8 @@ void MockPrefHashStore::MockPrefHashStoreTransaction::StoreSplitHash(
                           PrefHashFilter::TRACKING_STRATEGY_SPLIT);
 }
 
-// Creates a PrefHashFilter that uses a MockPrefHashStore. The
-// MockPrefHashStore (owned by the PrefHashFilter) is returned in
-// |mock_pref_hash_store|.
-scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
-    PrefHashFilter::EnforcementLevel max_enforcement_level,
-    MockPrefHashStore** mock_pref_hash_store) {
-  scoped_ptr<MockPrefHashStore> temp_mock_pref_hash_store(
-      new MockPrefHashStore);
-  if (mock_pref_hash_store)
-    *mock_pref_hash_store = temp_mock_pref_hash_store.get();
+std::vector<PrefHashFilter::TrackedPreferenceMetadata> GetConfiguration(
+    PrefHashFilter::EnforcementLevel max_enforcement_level) {
   std::vector<PrefHashFilter::TrackedPreferenceMetadata> configuration(
       kTestTrackedPrefs, kTestTrackedPrefs + arraysize(kTestTrackedPrefs));
   for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::iterator it =
@@ -305,10 +295,7 @@ scoped_ptr<PrefHashFilter> CreatePrefHashFilter(
     if (it->enforcement_level > max_enforcement_level)
       it->enforcement_level = max_enforcement_level;
   }
-  return scoped_ptr<PrefHashFilter>(
-      new PrefHashFilter(temp_mock_pref_hash_store.PassAs<PrefHashStore>(),
-                         configuration,
-                         arraysize(kTestTrackedPrefs)));
+  return configuration;
 }
 
 class PrefHashFilterTest
@@ -318,11 +305,24 @@ class PrefHashFilterTest
 
   virtual void SetUp() OVERRIDE {
     // Construct a PrefHashFilter and MockPrefHashStore for the test.
-    pref_hash_filter_ =
-        CreatePrefHashFilter(GetParam(), &mock_pref_hash_store_);
+    InitializePrefHashFilter(GetConfiguration(GetParam()));
   }
 
  protected:
+  // Creates a PrefHashFilter that uses a MockPrefHashStore. The
+  // MockPrefHashStore (owned by the PrefHashFilter) is returned in
+  // |mock_pref_hash_store|.
+  void InitializePrefHashFilter(const std::vector<
+      PrefHashFilter::TrackedPreferenceMetadata>& configuration) {
+    scoped_ptr<MockPrefHashStore> temp_mock_pref_hash_store(
+        new MockPrefHashStore);
+    mock_pref_hash_store_ = temp_mock_pref_hash_store.get();
+    pref_hash_filter_.reset(
+        new PrefHashFilter(temp_mock_pref_hash_store.PassAs<PrefHashStore>(),
+                           configuration,
+                           arraysize(kTestTrackedPrefs)));
+  }
+
   bool RecordedReset() {
     return pref_store_contents_.Get(prefs::kPreferenceResetTime, NULL);
   }
@@ -347,6 +347,7 @@ TEST_P(PrefHashFilterTest, EmptyAndUnchanged) {
     ASSERT_EQ(NULL, mock_pref_hash_store_->checked_value(
                         kTestTrackedPrefs[i].name).first);
   }
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   ASSERT_FALSE(RecordedReset());
 }
 
@@ -368,6 +369,7 @@ TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
   ASSERT_EQ(string_value, stored_value.first);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC, stored_value.second);
 
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   ASSERT_FALSE(RecordedReset());
 }
 
@@ -391,14 +393,11 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
   ASSERT_EQ(dict_value, stored_value.first);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_value.second);
 
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   ASSERT_FALSE(RecordedReset());
 }
 
 TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
-  // No transaction should even be started on FilterSerializeData() if there are
-  // no updates to perform.
-  mock_pref_hash_store_->set_transactions_expected(0);
-
   base::DictionaryValue root_dict;
   root_dict.Set("untracked", base::Value::CreateStringValue("some value"));
   pref_hash_filter_->FilterUpdate("untracked");
@@ -409,6 +408,10 @@ TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
   // Nor on FilterSerializeData.
   pref_hash_filter_->FilterSerializeData(&root_dict);
   ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+
+  // No transaction should even be started on FilterSerializeData() if there are
+  // no updates to perform.
+  ASSERT_EQ(0u, mock_pref_hash_store_->transactions_performed());
 }
 
 TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
@@ -446,6 +449,7 @@ TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   ASSERT_EQ(int_value1, stored_value_atomic1.first);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
             stored_value_atomic1.second);
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   MockPrefHashStore::ValuePtrStrategyPair stored_value_atomic3 =
       mock_pref_hash_store_->stored_value(kAtomicPref3);
@@ -471,6 +475,7 @@ TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
        mock_pref_hash_store_->stored_value(kAtomicPref);
@@ -506,6 +511,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
        mock_pref_hash_store_->stored_value(kAtomicPref);
@@ -563,6 +569,7 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   // Seeding is always allowed for trusted unknown values.
   const base::Value* atomic_value_in_store;
@@ -613,6 +620,7 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
        mock_pref_hash_store_->stored_value(kAtomicPref);
@@ -673,6 +681,7 @@ TEST_P(PrefHashFilterTest, EmptyCleared) {
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   // Regardless of the enforcement level, the only thing that should be done is
   // to restore the hash for NULL. The value itself should still be NULL.
@@ -707,6 +716,7 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(1u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
        mock_pref_hash_store_->stored_value(kAtomicPref);
@@ -751,6 +761,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
   pref_hash_filter_->FilterOnLoad(&pref_store_contents_);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   // Ensure that both the atomic and split hashes were restored.
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -810,6 +821,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(4u, mock_pref_hash_store_->stored_paths_count());
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   // No matter what the enforcement level is, the report only pref should never
   // be reset.
@@ -841,6 +853,80 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
               mock_pref_hash_store_->stored_value(kAtomicPref2).first);
 
     ASSERT_FALSE(RecordedReset());
+  }
+}
+
+TEST_P(PrefHashFilterTest, MigrateValuesTest) {
+  // Migration configuration should only contain the protected preferences.
+  std::vector<PrefHashFilter::TrackedPreferenceMetadata> configuration =
+      GetConfiguration(GetParam());
+  std::vector<PrefHashFilter::TrackedPreferenceMetadata>
+      migration_configuration;
+
+  for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::iterator it =
+           configuration.begin();
+       it != configuration.end();
+       ++it) {
+    if (it->enforcement_level >= PrefHashFilter::ENFORCE_ON_LOAD)
+      migration_configuration.push_back(*it);
+  }
+
+  // Discards the default created pref_hash_filter_.
+  InitializePrefHashFilter(migration_configuration);
+
+  scoped_refptr<TestingPrefStore> source(new TestingPrefStore);
+  scoped_refptr<TestingPrefStore> destination(new TestingPrefStore);
+
+  source->SetString(kAtomicPref, "foobar");
+  source->SetString(kAtomicPref2, "foobar2");
+  destination->SetString(kAtomicPref2, "foobar2 preexisting");
+  destination->SetString(kAtomicPref3, "foobar3");
+  source->SetString(kReportOnlyPref, "helloworld");
+
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref,
+                                        PrefHashStoreTransaction::UNCHANGED);
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref2,
+                                        PrefHashStoreTransaction::UNCHANGED);
+  mock_pref_hash_store_->SetCheckResult(kAtomicPref3,
+                                        PrefHashStoreTransaction::UNCHANGED);
+  mock_pref_hash_store_->SetCheckResult(kReportOnlyPref,
+                                        PrefHashStoreTransaction::UNCHANGED);
+
+  pref_hash_filter_->MigrateValues(source, destination);
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
+
+  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
+    std::string value;
+
+    ASSERT_FALSE(source->GetValue(kAtomicPref, NULL));
+    ASSERT_FALSE(source->GetValue(kAtomicPref2, NULL));
+    ASSERT_FALSE(source->GetValue(kAtomicPref3, NULL));
+    ASSERT_TRUE(source->GetString(kReportOnlyPref, &value));
+    ASSERT_EQ("helloworld", value);
+
+    ASSERT_TRUE(destination->GetString(kAtomicPref, &value));
+    ASSERT_EQ("foobar", value);
+    ASSERT_TRUE(destination->GetString(kAtomicPref2, &value));
+    ASSERT_EQ("foobar2 preexisting", value);
+    ASSERT_TRUE(destination->GetString(kAtomicPref3, &value));
+    ASSERT_EQ("foobar3", value);
+    ASSERT_FALSE(destination->GetValue(kReportOnlyPref, NULL));
+  } else {
+    std::string value;
+
+    ASSERT_TRUE(source->GetString(kAtomicPref, &value));
+    ASSERT_EQ("foobar", value);
+    ASSERT_TRUE(source->GetString(kAtomicPref2, &value));
+    ASSERT_EQ("foobar2", value);
+    ASSERT_FALSE(source->GetString(kAtomicPref3, &value));
+    ASSERT_TRUE(source->GetString(kReportOnlyPref, &value));
+    ASSERT_EQ("helloworld", value);
+
+    ASSERT_FALSE(destination->GetValue(kAtomicPref, NULL));
+    ASSERT_TRUE(destination->GetString(kAtomicPref2, &value));
+    ASSERT_EQ("foobar2 preexisting", value);
+    ASSERT_TRUE(destination->GetValue(kAtomicPref3, NULL));
+    ASSERT_FALSE(destination->GetValue(kReportOnlyPref, NULL));
   }
 }
 

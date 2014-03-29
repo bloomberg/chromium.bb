@@ -158,11 +158,24 @@ void ProfilePrefStoreManager::ResetAllPrefHashStores(PrefService* local_state) {
 
 //  static
 base::Time ProfilePrefStoreManager::GetResetTime(PrefService* pref_service) {
+  // It's a bit of a coincidence that this (and ClearResetTime) work(s). The
+  // PrefHashFilter attached to the protected pref store will store the reset
+  // time directly in the protected pref store without going through the
+  // SegregatedPrefStore.
+
+  // PrefHashFilter::GetResetTime will read the value through the pref service,
+  // and thus through the SegregatedPrefStore. Even though it's not listed as
+  // "protected" it will be read from the protected store prefentially to the
+  // (NULL) value in the unprotected pref store.
   return PrefHashFilter::GetResetTime(pref_service);
 }
 
 // static
 void ProfilePrefStoreManager::ClearResetTime(PrefService* pref_service) {
+  // PrefHashFilter::ClearResetTime will clear the value through the pref
+  // service, and thus through the SegregatedPrefStore. Since it's not listed as
+  // "protected" it will be migrated from the protected store to the unprotected
+  // pref store before being deleted from the latter.
   PrefHashFilter::ClearResetTime(pref_service);
 }
 

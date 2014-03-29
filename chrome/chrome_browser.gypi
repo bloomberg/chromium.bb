@@ -1678,6 +1678,8 @@
         'browser/prefs/tracked/pref_hash_calculator_helper_win.cc',
         'browser/prefs/tracked/pref_service_hash_store_contents.cc',
         'browser/prefs/tracked/pref_service_hash_store_contents.h',
+        'browser/prefs/tracked/segregated_pref_store.cc',
+        'browser/prefs/tracked/segregated_pref_store.h',
         'browser/prefs/tracked/tracked_atomic_preference.cc',
         'browser/prefs/tracked/tracked_atomic_preference.h',
         'browser/prefs/tracked/tracked_preference.h',
