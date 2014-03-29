@@ -60,10 +60,6 @@ void DragDownloadItem(const content::DownloadItem* download,
       ui::FileInfo(full_path, download->GetFileNameToReportUser()));
   data.SetFilenames(file_infos);
 
-  // Add URL so that we can load supported files when dragged to WebContents.
-  data.SetURL(net::FilePathToFileURL(full_path),
-              download->GetFileNameToReportUser().LossyDisplayName());
-
 #if !defined(TOOLKIT_GTK)
 #if defined(USE_AURA)
   aura::Window* root_window = view->GetRootWindow();
