@@ -368,6 +368,10 @@ class MetricsService
                   base::TimeDelta* incremental_uptime,
                   base::TimeDelta* uptime);
 
+  // Reset the client id and low entropy source if the kMetricsResetMetricIDs
+  // pref is true.
+  void ResetMetricsIDsIfNecessary();
+
   // Returns the low entropy source for this client. This is a random value
   // that is non-identifying amongst browser clients. This method will
   // generate the entropy source value if it has not been called before.
@@ -523,6 +527,10 @@ class MetricsService
 
   content::NotificationRegistrar registrar_;
 
+  // Set to true when |ResetMetricsIDsIfNecessary| is called for the first time.
+  // This prevents multiple resets within the same Chrome session.
+  bool metrics_ids_reset_check_performed_;
+
   // Indicate whether recording and reporting are currently happening.
   // These should not be set directly, but by calling SetRecording and
   // SetReporting.
@@ -639,6 +647,7 @@ class MetricsService
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
                            PermutedEntropyCacheClearedWhenLowEntropyReset);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ResetMetricsIDs);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceBrowserTest,
                            CheckLowEntropySourceUsed);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceReportingTest,

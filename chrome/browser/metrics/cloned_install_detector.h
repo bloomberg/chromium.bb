@@ -34,6 +34,7 @@ class ClonedInstallDetector {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClonedInstallDetectorTest, SaveId);
+  FRIEND_TEST_ALL_PREFIXES(ClonedInstallDetectorTest, DetectClone);
 
   // Converts raw_id into a 24-bit hash and stores the hash in |local_state|.
   // |raw_id| is not a const ref because it's passed from a cross-thread post

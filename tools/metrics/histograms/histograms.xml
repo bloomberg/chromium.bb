@@ -27796,12 +27796,21 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="UMA.MachineIdState" enum="UmaMachineIdState">
-  <sumary>
+  <owner>jwd@chromium.org</owner>
+  <summary>
     Tracks if the machine ID is generated successfully and if it changes from
     one run to the next. The machine ID is a 24-bit hash of machine
     characteristics. It is expected to change if an install of Chrome is copied
     to multiple machines. This check happens once per browser startup.
-  </sumary>
+  </summary>
+</histogram>
+
+<histogram name="UMA.MetricsIDsReset" enum="BooleanHit">
+  <owner>jwd@chromium.org</owner>
+  <summary>
+    A count of the number of times the metrics ids (client id and low entropy
+    source) have been reset due to a cloned install being detected.
+  </summary>
 </histogram>
 
 <histogram name="UMA.Perf.GetData" enum="GetPerfDataOutcome">
@@ -28137,7 +28146,7 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Variations.SeedDateChange" enum="VariationsSeedDateChange">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>jwd@chromium.org</owner>
   <summary>
     Counts if a response from the variations server is the first response of the
     day or not. This is counted when a new valid seed or a 304 is received. The

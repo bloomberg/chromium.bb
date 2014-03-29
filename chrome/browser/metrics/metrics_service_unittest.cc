@@ -374,3 +374,42 @@ TEST_F(MetricsServiceTest, CrashReportingEnabled) {
   EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
 #endif // defined(GOOGLE_CHROME_BUILD)
 }
+
+// Check that setting the kMetricsResetIds pref to true causes the client id to
+// be reset. We do not check that the low entropy source is reset because we
+// cannot ensure that metrics service won't generate the same id again.
+TEST_F(MetricsServiceTest, ResetMetricsIDs) {
+  // Set an initial client id in prefs. It should not be possible for the
+  // metrics service to generate this id randomly.
+  const std::string kInitialClientId = "initial client id";
+  GetLocalState()->SetString(prefs::kMetricsClientID, kInitialClientId);
+
+  // Make sure the initial client id isn't reset by the metrics service.
+  {
+    MetricsService service;
+    service.ForceClientIdCreation();
+    EXPECT_TRUE(service.metrics_ids_reset_check_performed_);
+    EXPECT_EQ(kInitialClientId, service.client_id_);
+  }
+
+
+  // Set the reset pref to cause the IDs to be reset.
+  GetLocalState()->SetBoolean(prefs::kMetricsResetIds, true);
+
+  // Cause the actual reset to happen.
+  {
+    MetricsService service;
+    service.ForceClientIdCreation();
+    EXPECT_TRUE(service.metrics_ids_reset_check_performed_);
+    EXPECT_NE(kInitialClientId, service.client_id_);
+
+    service.GetLowEntropySource();
+
+    EXPECT_FALSE(GetLocalState()->GetBoolean(prefs::kMetricsResetIds));
+  }
+
+  std::string new_client_id =
+      GetLocalState()->GetString(prefs::kMetricsClientID);
+
+  EXPECT_NE(kInitialClientId, new_client_id);
+}

@@ -1383,6 +1383,11 @@ const char kMetricsReportingEnabled[] =
 // stored locally and never transmitted in metrics reports.
 const char kMetricsMachineId[] = "user_experience_metrics.machine_id";
 
+// Boolean that indicates a cloned install has been detected and the metrics
+// client id and low entropy source should be reset.
+const char kMetricsResetIds[] =
+    "user_experience_metrics.reset_metrics_ids";
+
 // Boolean that specifies whether or not crash reports are sent
 // over the network for analysis.
 #if defined(OS_ANDROID)

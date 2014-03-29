@@ -438,6 +438,7 @@ extern const char kMetricsPermutedEntropyCache[];
 extern const char kMetricsClientIDTimestamp[];
 extern const char kMetricsReportingEnabled[];
 extern const char kMetricsMachineId[];
+extern const char kMetricsResetIds[];
 // Android has it's own metric / crash reporting implemented in Android
 // Java code so kMetricsReportingEnabled doesn't make sense. We use this
 // to inform crashes_ui that we have enabled crash reporting.
