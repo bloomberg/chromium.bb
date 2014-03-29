@@ -55,7 +55,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocument.h"
@@ -222,22 +221,6 @@ void LocalFrame::setDOMWindow(PassRefPtrWillBeRawPtr<DOMWindow> domWindow)
     if (domWindow)
         script().clearWindowShell();
     Frame::setDOMWindow(domWindow);
-}
-
-RenderPart* LocalFrame::ownerRenderer() const
-{
-    if (!ownerElement())
-        return 0;
-    RenderObject* object = ownerElement()->renderer();
-    if (!object)
-        return 0;
-    // FIXME: If <object> is ever fixed to disassociate itself from frames
-    // that it has started but canceled, then this can turn into an ASSERT
-    // since ownerElement() would be 0 when the load is canceled.
-    // https://bugs.webkit.org/show_bug.cgi?id=18585
-    if (!object->isRenderPart())
-        return 0;
-    return toRenderPart(object);
 }
 
 void LocalFrame::didChangeVisibilityState()

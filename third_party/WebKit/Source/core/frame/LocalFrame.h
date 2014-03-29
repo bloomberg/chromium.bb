@@ -50,7 +50,6 @@ namespace WebCore {
     class IntSize;
     class Node;
     class Range;
-    class RenderPart;
     class TreeScope;
     class ScriptController;
     class SpellChecker;
@@ -87,8 +86,6 @@ namespace WebCore {
         FetchContext& fetchContext() const { return loader().fetchContext(); }
         ScriptController& script();
         SpellChecker& spellChecker() const;
-
-        RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
         void didChangeVisibilityState();
 

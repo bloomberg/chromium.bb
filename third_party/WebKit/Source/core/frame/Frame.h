@@ -46,6 +46,7 @@ class FrameDestructionObserver;
 class FrameHost;
 class HTMLFrameOwnerElement;
 class Page;
+class RenderPart;
 class RenderView;
 class Settings;
 
@@ -83,6 +84,7 @@ public:
     ChromeClient& chromeClient() const;
 
     RenderView* contentRenderer() const; // Root of the render tree for the document contained in this frame.
+    RenderPart* ownerRenderer() const; // Renderer for the element that contains this frame.
 
     int64_t frameID() const { return m_frameID; }
 

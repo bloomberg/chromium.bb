@@ -45,6 +45,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"
 #include "public/platform/WebLayer.h"
 #include "wtf/PassOwnPtr.h"
@@ -160,6 +161,23 @@ RenderView* Frame::contentRenderer() const
 {
     return document() ? document()->renderView() : 0;
 }
+
+RenderPart* Frame::ownerRenderer() const
+{
+    if (!ownerElement())
+        return 0;
+    RenderObject* object = ownerElement()->renderer();
+    if (!object)
+        return 0;
+    // FIXME: If <object> is ever fixed to disassociate itself from frames
+    // that it has started but canceled, then this can turn into an ASSERT
+    // since ownerElement() would be 0 when the load is canceled.
+    // https://bugs.webkit.org/show_bug.cgi?id=18585
+    if (!object->isRenderPart())
+        return 0;
+    return toRenderPart(object);
+}
+
 
 void Frame::willDetachFrameHost()
 {

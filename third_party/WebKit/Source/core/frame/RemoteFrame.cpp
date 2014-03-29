@@ -5,6 +5,9 @@
 #include "config.h"
 #include "core/frame/RemoteFrame.h"
 
+#include "core/frame/RemoteFrameView.h"
+#include "core/rendering/RenderPart.h"
+
 namespace WebCore {
 
 inline RemoteFrame::RemoteFrame(FrameHost* host, HTMLFrameOwnerElement* ownerElement)
@@ -20,6 +23,21 @@ PassRefPtr<RemoteFrame> RemoteFrame::create(FrameHost* host, HTMLFrameOwnerEleme
 
 RemoteFrame::~RemoteFrame()
 {
+    setView(nullptr);
+}
+
+void RemoteFrame::setView(PassRefPtr<RemoteFrameView> view)
+{
+    m_view = view;
+}
+
+void RemoteFrame::createView()
+{
+    RefPtr<RemoteFrameView> view = RemoteFrameView::create(this);
+    setView(view);
+
+    if (ownerRenderer())
+        ownerRenderer()->setWidget(view);
 }
 
 } // namespace WebCore

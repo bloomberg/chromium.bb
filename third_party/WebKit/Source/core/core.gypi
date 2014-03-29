@@ -1112,6 +1112,8 @@
             'frame/PinchViewport.h',
             'frame/RemoteFrame.cpp',
             'frame/RemoteFrame.h',
+            'frame/RemoteFrameView.cpp',
+            'frame/RemoteFrameView.h',
             'frame/Screen.cpp',
             'frame/Screen.h',
             'frame/Settings.cpp',

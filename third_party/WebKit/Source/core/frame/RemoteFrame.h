@@ -9,6 +9,8 @@
 
 namespace WebCore {
 
+class RemoteFrameView;
+
 class RemoteFrame: public Frame {
 public:
     static PassRefPtr<RemoteFrame> create(FrameHost*, HTMLFrameOwnerElement*);
@@ -16,8 +18,13 @@ public:
 
     virtual ~RemoteFrame();
 
+    void setView(PassRefPtr<RemoteFrameView>);
+    void createView();
+
 private:
     RemoteFrame(FrameHost*, HTMLFrameOwnerElement*);
+
+    RefPtr<RemoteFrameView> m_view;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrame, Frame, remoteFrame, remoteFrame->isRemoteFrame(), remoteFrame.isRemoteFrame());
