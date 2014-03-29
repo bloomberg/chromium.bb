@@ -52,18 +52,18 @@ class CONTENT_EXPORT VideoFrameCompositor {
   void UpdateCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
 
   // Retrieves the last frame set via UpdateCurrentFrame() for non-compositing
-  // purposes (e.g., painting to a canvas). Frames retrieved in this manner will
-  // not be counted as being composited for frame drop counting.
+  // purposes (e.g., painting to a canvas).
   //
   // Note that the compositor retrieves frames via the cc::VideoFrameProvider
   // interface instead of using this method.
   scoped_refptr<media::VideoFrame> GetCurrentFrame();
 
-  // Returns the number of frames dropped before the compositor was notified as
-  // well as being able to composite the previous frame.
-  uint32 GetFramesDroppedBeforeComposite();
+  // Returns the number of frames dropped before the compositor was notified
+  // of a new frame.
+  uint32 GetFramesDroppedBeforeCompositorWasNotified();
 
-  void SetFramesDroppedBeforeCompositeForTesting(uint32 dropped_frames);
+  void SetFramesDroppedBeforeCompositorWasNotifiedForTesting(
+      uint32 dropped_frames);
 
  private:
   class Internal;

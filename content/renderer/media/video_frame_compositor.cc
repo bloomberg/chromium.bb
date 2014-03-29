@@ -21,9 +21,8 @@ class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
       : compositor_task_runner_(compositor_task_runner),
         natural_size_changed_cb_(natural_size_changed_cb),
         client_(NULL),
-        compositor_notify_finished_(true),
-        current_frame_composited_(false),
-        frames_dropped_before_composite_(0) {}
+        compositor_notification_pending_(false),
+        frames_dropped_before_compositor_was_notified_(0) {}
 
   virtual ~Internal() {
     if (client_)
@@ -37,55 +36,37 @@ class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
   void UpdateCurrentFrame(const scoped_refptr<media::VideoFrame>& frame) {
     base::AutoLock auto_lock(lock_);
 
-    // Count frames as dropped if and only if we updated the frame but didn't
-    // finish notifying the compositor nor managed to composite the current
-    // frame.
-    if (!current_frame_composited_ && !compositor_notify_finished_ &&
-        frames_dropped_before_composite_ < kuint32max) {
-      ++frames_dropped_before_composite_;
-    }
-
     if (current_frame_ &&
         current_frame_->natural_size() != frame->natural_size()) {
       natural_size_changed_cb_.Run(frame->natural_size());
     }
 
     current_frame_ = frame;
-    current_frame_composited_ = false;
 
-    compositor_notify_finished_ = false;
+    // Count frames as dropped if and only if we updated the frame but didn't
+    // finish notifying the compositor for the previous frame.
+    if (compositor_notification_pending_) {
+      if (frames_dropped_before_compositor_was_notified_ < kuint32max)
+        ++frames_dropped_before_compositor_was_notified_;
+      return;
+    }
+
+    compositor_notification_pending_ = true;
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Internal::NotifyCompositorOfNewFrame,
                    base::Unretained(this)));
   }
 
-  // If |frame_being_composited| is true the current frame will not be counted
-  // as being dropped the next time UpdateCurrentFrame() is called.
-  scoped_refptr<media::VideoFrame> GetCurrentFrame(
-      bool frame_being_composited) {
+  uint32 GetFramesDroppedBeforeCompositorWasNotified() {
     base::AutoLock auto_lock(lock_);
-    if (frame_being_composited)
-      current_frame_composited_ = false;
-    return current_frame_;
+    return frames_dropped_before_compositor_was_notified_;
   }
 
-  uint32 GetFramesDroppedBeforeComposite() {
+  void SetFramesDroppedBeforeCompositorWasNotifiedForTesting(
+      uint32 dropped_frames) {
     base::AutoLock auto_lock(lock_);
-    return frames_dropped_before_composite_;
-  }
-
-  void SetFramesDroppedBeforeCompositeForTesting(uint32 dropped_frames) {
-    base::AutoLock auto_lock(lock_);
-    frames_dropped_before_composite_ = dropped_frames;
-  }
-
- private:
-  void NotifyCompositorOfNewFrame() {
-    base::AutoLock auto_lock(lock_);
-    compositor_notify_finished_ = true;
-    if (client_)
-      client_->DidReceiveFrame();
+    frames_dropped_before_compositor_was_notified_ = dropped_frames;
   }
 
   // cc::VideoFrameProvider implementation.
@@ -97,11 +78,20 @@ class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
   }
 
   virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() OVERRIDE {
-    return GetCurrentFrame(true);
+    base::AutoLock auto_lock(lock_);
+    return current_frame_;
   }
 
   virtual void PutCurrentFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE {}
+
+ private:
+  void NotifyCompositorOfNewFrame() {
+    base::AutoLock auto_lock(lock_);
+    compositor_notification_pending_ = false;
+    if (client_)
+      client_->DidReceiveFrame();
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   base::Callback<void(gfx::Size)>natural_size_changed_cb_;
@@ -110,9 +100,8 @@ class VideoFrameCompositor::Internal : public cc::VideoFrameProvider {
 
   base::Lock lock_;
   scoped_refptr<media::VideoFrame> current_frame_;
-  bool compositor_notify_finished_;
-  bool current_frame_composited_;
-  uint32 frames_dropped_before_composite_;
+  bool compositor_notification_pending_;
+  uint32 frames_dropped_before_compositor_was_notified_;
 
   DISALLOW_COPY_AND_ASSIGN(Internal);
 };
@@ -137,16 +126,18 @@ void VideoFrameCompositor::UpdateCurrentFrame(
 }
 
 scoped_refptr<media::VideoFrame> VideoFrameCompositor::GetCurrentFrame() {
-  return internal_->GetCurrentFrame(false);
+  return internal_->GetCurrentFrame();
 }
 
-uint32 VideoFrameCompositor::GetFramesDroppedBeforeComposite() {
-  return internal_->GetFramesDroppedBeforeComposite();
+uint32 VideoFrameCompositor::GetFramesDroppedBeforeCompositorWasNotified() {
+  return internal_->GetFramesDroppedBeforeCompositorWasNotified();
 }
 
-void VideoFrameCompositor::SetFramesDroppedBeforeCompositeForTesting(
+void
+VideoFrameCompositor::SetFramesDroppedBeforeCompositorWasNotifiedForTesting(
     uint32 dropped_frames) {
-  internal_->SetFramesDroppedBeforeCompositeForTesting(dropped_frames);
+  internal_->SetFramesDroppedBeforeCompositorWasNotifiedForTesting(
+      dropped_frames);
 }
 
 }  // namespace content

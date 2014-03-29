@@ -66,7 +66,7 @@ class VideoFrameCompositorTest : public testing::Test,
 TEST_F(VideoFrameCompositorTest, InitialValues) {
   EXPECT_TRUE(compositor()->GetVideoFrameProvider());
   EXPECT_FALSE(compositor()->GetCurrentFrame());
-  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeComposite());
+  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
 }
 
 TEST_F(VideoFrameCompositorTest, UpdateCurrentFrame) {
@@ -125,50 +125,38 @@ TEST_F(VideoFrameCompositorTest, NaturalSizeChanged) {
   EXPECT_EQ(2, natural_size_changed_count());
 }
 
-TEST_F(VideoFrameCompositorTest, GetFramesDroppedBeforeComposite) {
+TEST_F(VideoFrameCompositorTest, GetFramesDroppedBeforeCompositorWasNotified) {
   scoped_refptr<VideoFrame> frame = VideoFrame::CreateEOSFrame();
 
   compositor()->UpdateCurrentFrame(frame);
   EXPECT_EQ(0, did_receive_frame_count());
-  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeComposite());
+  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
 
-  // Should not increment if we finished notifying the compositor but didn't
-  // composite the frame.
+  // Should not increment if we finished notifying the compositor.
   //
-  // This covers the scenario where the region we're rendering isn't
-  // visible so there wasn't a need to composite.
+  // This covers the normal scenario where the compositor is getting
+  // notifications in a timely manner.
   message_loop()->RunUntilIdle();
   compositor()->UpdateCurrentFrame(frame);
   EXPECT_EQ(1, did_receive_frame_count());
-  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeComposite());
+  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
 
-  // Should not increment if we didn't finish notifying the compositor but still
-  // managed to composite the frame.
+  // Should increment if we didn't notify the compositor.
   //
-  // This covers the scenario where something else may have notified the
-  // compositor and managed to composite the current frame.
+  // This covers the scenario where the compositor is falling behind.
+  // Consider it dropped.
   message_loop()->RunUntilIdle();
-  provider()->GetCurrentFrame();
-  provider()->PutCurrentFrame(NULL);
+  compositor()->UpdateCurrentFrame(frame);
   compositor()->UpdateCurrentFrame(frame);
   EXPECT_EQ(2, did_receive_frame_count());
-  EXPECT_EQ(0u, compositor()->GetFramesDroppedBeforeComposite());
-
-  // Should increment if we didn't notify the compositor and didn't composite
-  // the frame.
-  //
-  // This covers the scenario where we didn't even finish notifying nor
-  // compositing the current frame before updating. Consider it dropped.
-  message_loop()->RunUntilIdle();
-  compositor()->UpdateCurrentFrame(frame);
-  compositor()->UpdateCurrentFrame(frame);
-  EXPECT_EQ(3, did_receive_frame_count());
-  EXPECT_EQ(1u, compositor()->GetFramesDroppedBeforeComposite());
+  EXPECT_EQ(1u, compositor()->GetFramesDroppedBeforeCompositorWasNotified());
 
   // Shouldn't overflow.
-  compositor()->SetFramesDroppedBeforeCompositeForTesting(kuint32max);
+  compositor()->SetFramesDroppedBeforeCompositorWasNotifiedForTesting(
+      kuint32max);
   compositor()->UpdateCurrentFrame(frame);
-  EXPECT_EQ(kuint32max, compositor()->GetFramesDroppedBeforeComposite());
+  EXPECT_EQ(kuint32max,
+            compositor()->GetFramesDroppedBeforeCompositorWasNotified());
 }
 
 }  // namespace content
