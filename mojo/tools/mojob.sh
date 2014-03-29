@@ -50,15 +50,8 @@ do_build() {
 
 do_unittests() {
   echo "Running unit tests in out/$1 ..."
-  "out/$1/mojo_common_unittests" || exit 1
-  "out/$1/mojo_apps_js_unittests" || exit 1
-  "out/$1/mojo_js_unittests" || exit 1
-  "out/$1/mojo_public_bindings_unittests" || exit 1
-  "out/$1/mojo_public_environment_unittests" || exit 1
-  "out/$1/mojo_public_system_unittests" || exit 1
-  "out/$1/mojo_public_utility_unittests" || exit 1
-  "out/$1/mojo_service_manager_unittests" || exit 1
-  "out/$1/mojo_system_unittests" || exit 1
+  mojo/tools/test_runner.py mojo/tools/data/unittests "out/$1" \
+      mojob_test_successes || exit 1
 }
 
 do_perftests() {

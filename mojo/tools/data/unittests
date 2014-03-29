@@ -1,0 +1,16 @@
+# This file contains a list of Mojo gtest unit tests.
+
+# System tests:
+mojo_system_unittests
+
+# Public tests:
+mojo_public_bindings_unittests
+mojo_public_environment_unittests
+mojo_public_system_unittests
+mojo_public_utility_unittests
+
+# Non-system, non-public tests:
+mojo_apps_js_unittests
+mojo_common_unittests
+mojo_js_unittests
+mojo_service_manager_unittests
