@@ -11,7 +11,7 @@
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/output_configurator.h"
 #endif
 
@@ -28,10 +28,10 @@ namespace apps {
 
 // Handles desktop-related tasks for app_shell.
 class ShellDesktopController
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
     : public ui::OutputConfigurator::Observer
 #endif
-    {
+      {
  public:
   ShellDesktopController();
   virtual ~ShellDesktopController();
@@ -39,7 +39,7 @@ class ShellDesktopController
   // Returns the host for the Aura window tree.
   aura::WindowTreeHost* GetWindowTreeHost();
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   // ui::OutputConfigurator::Observer overrides.
   virtual void OnDisplayModeChanged(
       const std::vector<ui::OutputConfigurator::DisplayState>& outputs)
@@ -57,7 +57,7 @@ class ShellDesktopController
   // if the dimensions can't be determined or no display is connected.
   gfx::Size GetPrimaryDisplaySize();
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   scoped_ptr<ui::OutputConfigurator> output_configurator_;
 #endif
 

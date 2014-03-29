@@ -39,10 +39,10 @@
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/display/output_configurator_animation.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #if defined(USE_X11)
-#include "ash/display/output_configurator_animation.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -373,7 +373,7 @@ void DisplayController::ToggleMirrorMode() {
       return;
     limiter_->SetThrottleTimeout(kCycleDisplayThrottleTimeoutMs);
   }
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   Shell* shell = Shell::GetInstance();
   internal::OutputConfiguratorAnimation* animation =
       shell->output_configurator_animation();
@@ -392,7 +392,7 @@ void DisplayController::SwapPrimaryDisplay() {
   }
 
   if (Shell::GetScreen()->GetNumDisplays() > 1) {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
     internal::OutputConfiguratorAnimation* animation =
         Shell::GetInstance()->output_configurator_animation();
     if (animation) {
@@ -722,7 +722,7 @@ aura::WindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
 }
 
 void DisplayController::OnFadeOutForSwapDisplayFinished() {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   SetPrimaryDisplay(ScreenUtil::GetSecondaryDisplay());
   Shell::GetInstance()->output_configurator_animation()->StartFadeInAnimation();
 #endif

@@ -15,7 +15,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/test/wm_test_helper.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/display_mode.h"
 #include "ui/display/chromeos/display_snapshot.h"
 #endif
@@ -49,7 +49,7 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
 }  // namespace
 
 ShellDesktopController::ShellDesktopController() {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   output_configurator_.reset(new ui::OutputConfigurator);
   output_configurator_->Init(false);
   output_configurator_->ForceInitialConfigure(0);
@@ -73,7 +73,7 @@ aura::WindowTreeHost* ShellDesktopController::GetWindowTreeHost() {
   return wm_test_helper_->host();
 }
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 void ShellDesktopController::OnDisplayModeChanged(
     const std::vector<ui::OutputConfigurator::DisplayState>& outputs) {
   gfx::Size size = GetPrimaryDisplaySize();
@@ -106,7 +106,7 @@ void ShellDesktopController::DestroyRootWindow() {
 }
 
 gfx::Size ShellDesktopController::GetPrimaryDisplaySize() {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   const std::vector<ui::OutputConfigurator::DisplayState>& states =
       output_configurator_->cached_outputs();
   if (states.empty())

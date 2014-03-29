@@ -9,7 +9,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/basictypes.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/output_configurator.h"
 #endif
 
@@ -35,7 +35,7 @@ class LockStateController;
 class ASH_EXPORT PowerButtonController
 // TODO(derat): Remove these ifdefs after OutputConfigurator becomes
 // cross-platform.
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
     : public ui::OutputConfigurator::Observer
 #endif
       {
@@ -54,7 +54,7 @@ class ASH_EXPORT PowerButtonController
   void OnPowerButtonEvent(bool down, const base::TimeTicks& timestamp);
   void OnLockButtonEvent(bool down, const base::TimeTicks& timestamp);
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   // Overriden from ui::OutputConfigurator::Observer:
   virtual void OnDisplayModeChanged(
       const ui::OutputConfigurator::DisplayStateList& outputs) OVERRIDE;

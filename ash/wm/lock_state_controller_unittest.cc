@@ -25,7 +25,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 #include "ui/display/chromeos/output_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/display_constants.h"

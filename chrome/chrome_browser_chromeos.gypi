@@ -1008,7 +1008,6 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../build/linux/system.gyp:fontconfig',
-            '../build/linux/system.gyp:x11',
             '../ui/views/views.gyp:views',
           ],
           'include_dirs': [
@@ -1018,6 +1017,11 @@
           'sources/': [
             ['include', '^browser/chromeos/status/memory_menu_button.cc'],
             ['include', '^browser/chromeos/status/memory_menu_button.h'],
+          ],
+        }],
+        ['use_aura==1 and use_x11==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:x11',
           ],
         }],
         ['enable_printing != 0', {

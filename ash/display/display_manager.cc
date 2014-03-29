@@ -454,7 +454,7 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
     return;
   }
   display_modes_[display_id] = *iter;
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS())
     Shell::GetInstance()->output_configurator()->OnConfigurationChanged();
 #endif

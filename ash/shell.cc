@@ -113,16 +113,13 @@
 #if defined(USE_X11)
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
+#include "base/message_loop/message_pump_x11.h"
+#endif  // defined(USE_X11)
 #include "ash/ash_constants.h"
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
 #include "ash/display/projecting_observer_chromeos.h"
-#include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
-#include "base/message_loop/message_pump_x11.h"
-#include "base/sys_info.h"
-#include "ui/display/chromeos/output_configurator.h"
-#endif  // defined(USE_X11)
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/chromeos/bluetooth/bluetooth_notification_controller.h"
@@ -131,8 +128,11 @@
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/user_activity_notifier.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
+#include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 #include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "base/bind_helpers.h"
+#include "base/sys_info.h"
+#include "ui/display/chromeos/output_configurator.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -606,12 +606,12 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate),
       window_positioner_(new WindowPositioner),
       activation_client_(NULL),
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
       output_configurator_(new ui::OutputConfigurator()),
-#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+#endif  // defined(OS_CHROMEOS)
       native_cursor_manager_(new AshNativeCursorManager),
-      cursor_manager_(scoped_ptr< ::wm::NativeCursorManager>(
-          native_cursor_manager_)),
+      cursor_manager_(
+          scoped_ptr< ::wm::NativeCursorManager>(native_cursor_manager_)),
       simulate_modal_window_open_for_testing_(false),
       is_touch_hud_projection_enabled_(false) {
   DCHECK(delegate_.get());
@@ -762,7 +762,7 @@ Shell::~Shell() {
   new_window_delegate_.reset();
   media_delegate_.reset();
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   if (display_change_observer_)
     output_configurator_->RemoveObserver(display_change_observer_.get());
   if (output_configurator_animation_)
@@ -789,7 +789,7 @@ void Shell::Init() {
         internal::DisplayManager::VIRTUAL_KEYBOARD);
   }
   bool display_initialized = display_manager_->InitFromCommandLine();
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   output_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
   output_configurator_animation_.reset(
       new internal::OutputConfiguratorAnimation());
@@ -811,7 +811,7 @@ void Shell::Init() {
         delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;
   }
-#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+#endif  // defined(OS_CHROMEOS)
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();
 
@@ -912,7 +912,7 @@ void Shell::Init() {
   lock_state_controller_.reset(new LockStateController);
   power_button_controller_.reset(new PowerButtonController(
       lock_state_controller_.get()));
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   // Pass the initial display state to PowerButtonController.
   power_button_controller_->OnDisplayModeChanged(
       output_configurator_->cached_outputs());

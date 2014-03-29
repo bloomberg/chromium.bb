@@ -677,10 +677,6 @@
             ['exclude', 'accelerators/magnifier_key_scroller.h'],
             ['exclude', 'accelerators/spoken_feedback_toggler.cc'],
             ['exclude', 'accelerators/spoken_feedback_toggler.h'],
-            ['exclude', 'display/display_change_observer_chromeos.cc'],
-            ['exclude', 'display/display_change_observer_chromeos.h'],
-            ['exclude', 'display/display_error_observer_chromeos.cc'],
-            ['exclude', 'display/display_error_observer_chromeos.h'],
           ],
         }],
         ['chromeos==1', {
@@ -1031,8 +1027,6 @@
           'sources/': [
             ['exclude', 'accelerators/magnifier_key_scroller_unittest.cc'],
             ['exclude', 'accelerators/spoken_feedback_toggler_unittest.cc'],
-            ['exclude', 'display/display_change_observer_chromeos_unittest.cc'],
-            ['exclude', 'display/display_error_observer_chromeos_unittest.cc'],
           ],
         }],
         ['chromeos==1', {

@@ -27,13 +27,13 @@ PowerButtonController::PowerButtonController(
           CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kAuraLegacyPowerButton)),
       controller_(controller) {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   Shell::GetInstance()->output_configurator()->AddObserver(this);
 #endif
 }
 
 PowerButtonController::~PowerButtonController() {
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
   Shell::GetInstance()->output_configurator()->RemoveObserver(this);
 #endif
 }
@@ -116,7 +116,7 @@ void PowerButtonController::OnLockButtonEvent(
     controller_->CancelLockAnimation();
 }
 
-#if defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(OS_CHROMEOS)
 void PowerButtonController::OnDisplayModeChanged(
     const ui::OutputConfigurator::DisplayStateList& outputs) {
   bool internal_display_off = false;

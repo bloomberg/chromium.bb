@@ -501,7 +501,6 @@ class ASH_EXPORT Shell
   void DoInitialWorkspaceAnimation();
 
 #if defined(OS_CHROMEOS)
-#if defined(USE_X11)
   // TODO(oshima): Move these objects to DisplayController.
   ui::OutputConfigurator* output_configurator() {
     return output_configurator_.get();
@@ -512,7 +511,6 @@ class ASH_EXPORT Shell
   internal::DisplayErrorObserver* display_error_observer() {
     return display_error_observer_.get();
   }
-#endif  // defined(USE_X11)
 
   internal::ResolutionNotificationController*
       resolution_notification_controller() {
@@ -712,7 +710,6 @@ class ASH_EXPORT Shell
       logout_confirmation_controller_;
   scoped_ptr<internal::LastWindowClosedLogoutReminder>
       last_window_closed_logout_reminder_;
-#if defined(USE_X11)
   // Controls video output device state.
   scoped_ptr<ui::OutputConfigurator> output_configurator_;
   scoped_ptr<internal::OutputConfiguratorAnimation>
@@ -723,6 +720,7 @@ class ASH_EXPORT Shell
   // Listens for output changes and updates the display manager.
   scoped_ptr<internal::DisplayChangeObserver> display_change_observer_;
 
+#if defined(USE_X11)
   scoped_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   scoped_ptr<ui::EventHandler> speech_feedback_handler_;
 #endif  // defined(USE_X11)
