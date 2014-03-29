@@ -47,12 +47,86 @@ namespace {
 // Default placeholder text color.
 const SkColor kDefaultPlaceholderTextColor = SK_ColorLTGRAY;
 
+const int kNoCommand = 0;
+
 void ConvertRectToScreen(const View* src, gfx::Rect* r) {
   DCHECK(src);
 
   gfx::Point new_origin = r->origin();
   View::ConvertPointToScreen(src, &new_origin);
   r->set_origin(new_origin);
+}
+
+int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
+  if (event.type() != ui::ET_KEY_PRESSED || event.IsUnicodeKeyCode())
+    return kNoCommand;
+
+  const bool shift = event.IsShiftDown();
+  const bool control = event.IsControlDown();
+  const bool alt = event.IsAltDown() || event.IsAltGrDown();
+  switch (event.key_code()) {
+    case ui::VKEY_Z:
+      if (control && !shift && !alt)
+        return IDS_APP_UNDO;
+      return (control && shift && !alt) ? IDS_APP_REDO : kNoCommand;
+    case ui::VKEY_Y:
+      return (control && !alt) ? IDS_APP_REDO : kNoCommand;
+    case ui::VKEY_A:
+      return (control && !alt) ? IDS_APP_SELECT_ALL : kNoCommand;
+    case ui::VKEY_X:
+      return (control && !alt) ? IDS_APP_CUT : kNoCommand;
+    case ui::VKEY_C:
+      return (control && !alt) ? IDS_APP_COPY : kNoCommand;
+    case ui::VKEY_V:
+      return (control && !alt) ? IDS_APP_PASTE : kNoCommand;
+    case ui::VKEY_RIGHT:
+      // Ignore alt+right, which may be a browser navigation shortcut.
+      if (alt)
+        return kNoCommand;
+      if (!shift)
+        return control ? IDS_MOVE_WORD_RIGHT : IDS_MOVE_RIGHT;
+      return control ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
+                        IDS_MOVE_RIGHT_AND_MODIFY_SELECTION;
+    case ui::VKEY_LEFT:
+      // Ignore alt+left, which may be a browser navigation shortcut.
+      if (alt)
+        return kNoCommand;
+      if (!shift)
+        return control ? IDS_MOVE_WORD_LEFT : IDS_MOVE_LEFT;
+      return control ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
+                        IDS_MOVE_LEFT_AND_MODIFY_SELECTION;
+    case ui::VKEY_HOME:
+      return shift ? IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION :
+                      IDS_MOVE_TO_BEGINNING_OF_LINE;
+    case ui::VKEY_END:
+      return shift ? IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION :
+                      IDS_MOVE_TO_END_OF_LINE;
+    case ui::VKEY_BACK:
+      if (!control || has_selection)
+        return IDS_DELETE_BACKWARD;
+#if defined(OS_LINUX)
+      // Only erase by line break on Linux and ChromeOS.
+      if (shift)
+        return IDS_DELETE_TO_BEGINNING_OF_LINE;
+#endif
+      return IDS_DELETE_WORD_BACKWARD;
+    case ui::VKEY_DELETE:
+      if (!control || has_selection)
+        return (shift && has_selection) ? IDS_APP_CUT : IDS_DELETE_FORWARD;
+#if defined(OS_LINUX)
+      // Only erase by line break on Linux and ChromeOS.
+      if (shift)
+        return IDS_DELETE_TO_END_OF_LINE;
+#endif
+      return IDS_DELETE_WORD_FORWARD;
+    case ui::VKEY_INSERT:
+      if (control && !shift)
+        return IDS_APP_COPY;
+      return (shift && !control) ? IDS_APP_PASTE : kNoCommand;
+    default:
+      return kNoCommand;
+  }
+  return kNoCommand;
 }
 
 }  // namespace
@@ -419,129 +493,15 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
-  bool handled = controller_ && controller_->HandleKeyEvent(this, event);
+  const bool handled = controller_ && controller_->HandleKeyEvent(this, event);
   touch_selection_controller_.reset();
   if (handled)
     return true;
 
-  // TODO(oshima): Refactor and consolidate with ExecuteCommand.
-  if (event.type() == ui::ET_KEY_PRESSED) {
-    ui::KeyboardCode key_code = event.key_code();
-    if (key_code == ui::VKEY_TAB || event.IsUnicodeKeyCode())
-      return false;
-
-    gfx::RenderText* render_text = GetRenderText();
-    const bool editable = !read_only();
-    const bool readable = text_input_type_ != ui::TEXT_INPUT_TYPE_PASSWORD;
-    const bool shift = event.IsShiftDown();
-    const bool control = event.IsControlDown();
-    const bool alt = event.IsAltDown() || event.IsAltGrDown();
-    bool text_changed = false;
-    bool cursor_changed = false;
-
-    OnBeforeUserAction();
-    switch (key_code) {
-      case ui::VKEY_Z:
-        if (control && !shift && !alt && editable)
-          cursor_changed = text_changed = model_->Undo();
-        else if (control && shift && !alt && editable)
-          cursor_changed = text_changed = model_->Redo();
-        break;
-      case ui::VKEY_Y:
-        if (control && !alt && editable)
-          cursor_changed = text_changed = model_->Redo();
-        break;
-      case ui::VKEY_A:
-        if (control && !alt) {
-          model_->SelectAll(false);
-          UpdateSelectionClipboard();
-          cursor_changed = true;
-        }
-        break;
-      case ui::VKEY_X:
-        if (control && !alt && editable && readable)
-          cursor_changed = text_changed = Cut();
-        break;
-      case ui::VKEY_C:
-        if (control && !alt && readable)
-          Copy();
-        break;
-      case ui::VKEY_V:
-        if (control && !alt && editable)
-          cursor_changed = text_changed = Paste();
-        break;
-      case ui::VKEY_RIGHT:
-      case ui::VKEY_LEFT: {
-        // We should ignore the alt-left/right keys because alt key doesn't make
-        // any special effects for them and they can be shortcut keys such like
-        // forward/back of the browser history.
-        if (alt)
-          break;
-        const gfx::Range selection_range = render_text->selection();
-        model_->MoveCursor(
-            control ? gfx::WORD_BREAK : gfx::CHARACTER_BREAK,
-            (key_code == ui::VKEY_RIGHT) ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT,
-            shift);
-        UpdateSelectionClipboard();
-        cursor_changed = render_text->selection() != selection_range;
-        break;
-      }
-      case ui::VKEY_END:
-      case ui::VKEY_HOME:
-        if ((key_code == ui::VKEY_HOME) ==
-            (render_text->GetTextDirection() == base::i18n::RIGHT_TO_LEFT))
-          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, shift);
-        else
-          model_->MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, shift);
-        UpdateSelectionClipboard();
-        cursor_changed = true;
-        break;
-      case ui::VKEY_BACK:
-      case ui::VKEY_DELETE:
-        if (!editable)
-          break;
-        if (!model_->HasSelection()) {
-          gfx::VisualCursorDirection direction = (key_code == ui::VKEY_DELETE) ?
-              gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT;
-          if (shift && control) {
-            // If shift and control are pressed, erase up to the next line break
-            // on Linux and ChromeOS. Otherwise, do nothing.
-#if defined(OS_LINUX)
-            model_->MoveCursor(gfx::LINE_BREAK, direction, true);
-#else
-            break;
-#endif
-          } else if (control) {
-            // If only control is pressed, then erase the previous/next word.
-            model_->MoveCursor(gfx::WORD_BREAK, direction, true);
-          }
-        }
-        if (key_code == ui::VKEY_BACK)
-          model_->Backspace();
-        else if (shift && model_->HasSelection() && readable)
-          Cut();
-        else
-          model_->Delete();
-
-        // Consume backspace and delete keys even if the edit did nothing. This
-        // prevents potential unintended side-effects of further event handling.
-        text_changed = true;
-        break;
-      case ui::VKEY_INSERT:
-        if (control && !shift && readable)
-          Copy();
-        else if (shift && !control && editable)
-          cursor_changed = text_changed = Paste();
-        break;
-      default:
-        break;
-    }
-
-    // We must have input method in order to support text input.
-    DCHECK(GetInputMethod());
-    UpdateAfterChange(text_changed, cursor_changed);
-    OnAfterUserAction();
-    return (text_changed || cursor_changed);
+  const int command = GetCommandForKeyEvent(event, HasSelection());
+  if (IsCommandIdEnabled(command)) {
+    ExecuteCommand(command);
+    return true;
   }
   return false;
 }
@@ -960,6 +920,8 @@ bool Textfield::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case IDS_APP_UNDO:
       return editable && model_->CanUndo();
+    case IDS_APP_REDO:
+      return editable && model_->CanRedo();
     case IDS_APP_CUT:
       return editable && readable && model_->HasSelection();
     case IDS_APP_COPY:
@@ -972,6 +934,26 @@ bool Textfield::IsCommandIdEnabled(int command_id) const {
       return editable && model_->HasSelection();
     case IDS_APP_SELECT_ALL:
       return !text().empty();
+    case IDS_DELETE_FORWARD:
+    case IDS_DELETE_BACKWARD:
+    case IDS_DELETE_TO_BEGINNING_OF_LINE:
+    case IDS_DELETE_TO_END_OF_LINE:
+    case IDS_DELETE_WORD_BACKWARD:
+    case IDS_DELETE_WORD_FORWARD:
+      return editable;
+    case IDS_MOVE_LEFT:
+    case IDS_MOVE_LEFT_AND_MODIFY_SELECTION:
+    case IDS_MOVE_RIGHT:
+    case IDS_MOVE_RIGHT_AND_MODIFY_SELECTION:
+    case IDS_MOVE_WORD_LEFT:
+    case IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION:
+    case IDS_MOVE_WORD_RIGHT:
+    case IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION:
+    case IDS_MOVE_TO_BEGINNING_OF_LINE:
+    case IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
+    case IDS_MOVE_TO_END_OF_LINE:
+    case IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
+      return true;
     default:
       return false;
   }
@@ -988,31 +970,102 @@ void Textfield::ExecuteCommand(int command_id, int event_flags) {
     return;
 
   bool text_changed = false;
+  bool cursor_changed = false;
+  bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
+  gfx::VisualCursorDirection begin = rtl ? gfx::CURSOR_RIGHT : gfx::CURSOR_LEFT;
+  gfx::VisualCursorDirection end = rtl ? gfx::CURSOR_LEFT : gfx::CURSOR_RIGHT;
+  gfx::Range selection_range = GetSelectedRange();
+
   OnBeforeUserAction();
   switch (command_id) {
     case IDS_APP_UNDO:
-      text_changed = model_->Undo();
+      text_changed = cursor_changed = model_->Undo();
+      break;
+    case IDS_APP_REDO:
+      text_changed = cursor_changed = model_->Redo();
       break;
     case IDS_APP_CUT:
-      text_changed = Cut();
+      text_changed = cursor_changed = Cut();
       break;
     case IDS_APP_COPY:
       Copy();
       break;
     case IDS_APP_PASTE:
-      text_changed = Paste();
+      text_changed = cursor_changed = Paste();
       break;
     case IDS_APP_DELETE:
-      text_changed = model_->Delete();
+      text_changed = cursor_changed = model_->Delete();
       break;
     case IDS_APP_SELECT_ALL:
       SelectAll(false);
+      break;
+    case IDS_DELETE_BACKWARD:
+      text_changed = cursor_changed = model_->Backspace();
+      break;
+    case IDS_DELETE_FORWARD:
+      text_changed = cursor_changed = model_->Delete();
+      break;
+    case IDS_DELETE_TO_END_OF_LINE:
+      model_->MoveCursor(gfx::LINE_BREAK, end, true);
+      text_changed = cursor_changed = model_->Delete();
+      break;
+    case IDS_DELETE_TO_BEGINNING_OF_LINE:
+      model_->MoveCursor(gfx::LINE_BREAK, begin, true);
+      text_changed = cursor_changed = model_->Backspace();
+      break;
+    case IDS_DELETE_WORD_BACKWARD:
+      model_->MoveCursor(gfx::WORD_BREAK, begin, true);
+      text_changed = cursor_changed = model_->Backspace();
+      break;
+    case IDS_DELETE_WORD_FORWARD:
+      model_->MoveCursor(gfx::WORD_BREAK, end, true);
+      text_changed = cursor_changed = model_->Delete();
+      break;
+    case IDS_MOVE_LEFT:
+      model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, false);
+      break;
+    case IDS_MOVE_LEFT_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
+      break;
+    case IDS_MOVE_RIGHT:
+      model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
+      break;
+    case IDS_MOVE_RIGHT_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
+      break;
+    case IDS_MOVE_WORD_LEFT:
+      model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, false);
+      break;
+    case IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_LEFT, true);
+      break;
+    case IDS_MOVE_WORD_RIGHT:
+      model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, false);
+      break;
+    case IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, true);
+      break;
+    case IDS_MOVE_TO_BEGINNING_OF_LINE:
+      model_->MoveCursor(gfx::LINE_BREAK, begin, false);
+      break;
+    case IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::LINE_BREAK, begin, true);
+      break;
+    case IDS_MOVE_TO_END_OF_LINE:
+      model_->MoveCursor(gfx::LINE_BREAK, end, false);
+      break;
+    case IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION:
+      model_->MoveCursor(gfx::LINE_BREAK, end, true);
       break;
     default:
       NOTREACHED();
       break;
   }
-  UpdateAfterChange(text_changed, text_changed);
+
+  cursor_changed |= GetSelectedRange() != selection_range;
+  if (cursor_changed)
+    UpdateSelectionClipboard();
+  UpdateAfterChange(text_changed, cursor_changed);
   OnAfterUserAction();
 }
 

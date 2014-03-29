@@ -430,13 +430,13 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   SendKeyEvent(ui::VKEY_BACK, false, false, true, false);
   EXPECT_STR_EQ("one two three ", textfield_->text());
 
-  // Delete to a line break on Linux and ChromeOS, no-op on Windows.
+  // Delete to a line break on Linux and ChromeOS, to a word break on Windows.
   SendKeyEvent(ui::VKEY_LEFT, false, false, true, false);
   SendKeyEvent(ui::VKEY_BACK, false, true, true, false);
 #if defined(OS_LINUX)
   EXPECT_STR_EQ("three ", textfield_->text());
 #else
-  EXPECT_STR_EQ("one two three ", textfield_->text());
+  EXPECT_STR_EQ("one three ", textfield_->text());
 #endif
 
   // Delete the next word from cursor.
@@ -445,13 +445,13 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   SendKeyEvent(ui::VKEY_DELETE, false, false, true, false);
   EXPECT_STR_EQ(" two three four", textfield_->text());
 
-  // Delete to a line break on Linux and ChromeOS, no-op on Windows.
+  // Delete to a line break on Linux and ChromeOS, to a word break on Windows.
   SendKeyEvent(ui::VKEY_RIGHT, false, false, true, false);
   SendKeyEvent(ui::VKEY_DELETE, false, true, true, false);
 #if defined(OS_LINUX)
   EXPECT_STR_EQ(" two", textfield_->text());
 #else
-  EXPECT_STR_EQ(" two three four", textfield_->text());
+  EXPECT_STR_EQ(" two four", textfield_->text());
 #endif
 }
 
@@ -523,14 +523,29 @@ TEST_F(TextfieldTest, TextInputType) {
 TEST_F(TextfieldTest, OnKeyPressReturnValueTest) {
   InitTextfield();
 
-  // Character keys will be handled by input method.
+  // Character keys are handled by the input method.
   SendKeyEvent(ui::VKEY_A);
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_FALSE(textfield_->key_handled());
   textfield_->clear();
 
-  // Home will be handled.
+  // Arrow keys and home/end are handled by the textfield.
+  SendKeyEvent(ui::VKEY_LEFT);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_TRUE(textfield_->key_handled());
+  textfield_->clear();
+
+  SendKeyEvent(ui::VKEY_RIGHT);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_TRUE(textfield_->key_handled());
+  textfield_->clear();
+
   SendKeyEvent(ui::VKEY_HOME);
+  EXPECT_TRUE(textfield_->key_received());
+  EXPECT_TRUE(textfield_->key_handled());
+  textfield_->clear();
+
+  SendKeyEvent(ui::VKEY_END);
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_TRUE(textfield_->key_handled());
   textfield_->clear();
@@ -547,37 +562,6 @@ TEST_F(TextfieldTest, OnKeyPressReturnValueTest) {
   textfield_->clear();
 
   SendKeyEvent(ui::VKEY_DOWN);
-  EXPECT_TRUE(textfield_->key_received());
-  EXPECT_FALSE(textfield_->key_handled());
-  textfield_->clear();
-
-  // Empty Textfield does not handle left/right.
-  textfield_->SetText(base::string16());
-  SendKeyEvent(ui::VKEY_LEFT);
-  EXPECT_TRUE(textfield_->key_received());
-  EXPECT_FALSE(textfield_->key_handled());
-  textfield_->clear();
-
-  SendKeyEvent(ui::VKEY_RIGHT);
-  EXPECT_TRUE(textfield_->key_received());
-  EXPECT_FALSE(textfield_->key_handled());
-  textfield_->clear();
-
-  // Add a char. Right key should not be handled when cursor is at the end.
-  SendKeyEvent(ui::VKEY_B);
-  SendKeyEvent(ui::VKEY_RIGHT);
-  EXPECT_TRUE(textfield_->key_received());
-  EXPECT_FALSE(textfield_->key_handled());
-  textfield_->clear();
-
-  // First left key is handled to move cursor left to the beginning.
-  SendKeyEvent(ui::VKEY_LEFT);
-  EXPECT_TRUE(textfield_->key_received());
-  EXPECT_TRUE(textfield_->key_handled());
-  textfield_->clear();
-
-  // Now left key should not be handled.
-  SendKeyEvent(ui::VKEY_LEFT);
   EXPECT_TRUE(textfield_->key_received());
   EXPECT_FALSE(textfield_->key_handled());
   textfield_->clear();
@@ -1106,8 +1090,8 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   EXPECT_TRUE(client->GetCompositionTextRange(&range));
   EXPECT_STR_EQ("0321456789", textfield_->text());
   EXPECT_EQ(gfx::Range(1, 4), range);
-  EXPECT_EQ(2, on_before_user_action_);
-  EXPECT_EQ(2, on_after_user_action_);
+  EXPECT_EQ(1, on_before_user_action_);
+  EXPECT_EQ(1, on_after_user_action_);
 
   input_method_->SetResultTextForNextKey(UTF8ToUTF16("123"));
   on_before_user_action_ = on_after_user_action_ = 0;
@@ -1118,8 +1102,8 @@ TEST_F(TextfieldTest, TextInputClientTest) {
   EXPECT_FALSE(client->HasCompositionText());
   EXPECT_FALSE(input_method_->cancel_composition_called());
   EXPECT_STR_EQ("0123456789", textfield_->text());
-  EXPECT_EQ(2, on_before_user_action_);
-  EXPECT_EQ(2, on_after_user_action_);
+  EXPECT_EQ(1, on_before_user_action_);
+  EXPECT_EQ(1, on_after_user_action_);
 
   input_method_->Clear();
   input_method_->SetCompositionTextForNextKey(composition);
