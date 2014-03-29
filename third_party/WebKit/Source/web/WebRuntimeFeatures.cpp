@@ -281,4 +281,9 @@ void WebRuntimeFeatures::enableTargetedStyleRecalc(bool enable)
     RuntimeEnabledFeatures::setTargetedStyleRecalcEnabled(enable);
 }
 
+void WebRuntimeFeatures::enablePreciseMemoryInfo(bool enable)
+{
+    RuntimeEnabledFeatures::setPreciseMemoryInfoEnabled(enable);
+}
+
 } // namespace blink

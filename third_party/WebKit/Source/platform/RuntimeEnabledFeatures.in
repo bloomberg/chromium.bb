@@ -81,6 +81,7 @@ OverlayFullscreenVideo
 PagePopup status=stable
 PathOpsSVGClipping
 PeerConnection depends_on=MediaStream, status=stable
+PreciseMemoryInfo
 Quota status=stable
 QuotaPromise status=experimental
 OverlayScrollbars
