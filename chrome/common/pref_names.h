@@ -435,8 +435,10 @@ extern const char kMetricsClientID[];
 extern const char kMetricsSessionID[];
 extern const char kMetricsLowEntropySource[];
 extern const char kMetricsPermutedEntropyCache[];
-extern const char kMetricsClientIDTimestamp[];
+extern const char kMetricsOldClientID[];
+extern const char kMetricsOldLowEntropySource[];
 extern const char kMetricsReportingEnabled[];
+extern const char kMetricsReportingEnabledTimestamp[];
 extern const char kMetricsMachineId[];
 extern const char kMetricsResetIds[];
 // Android has it's own metric / crash reporting implemented in Android

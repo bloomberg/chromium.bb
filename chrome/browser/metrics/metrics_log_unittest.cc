@@ -160,8 +160,8 @@ class TestMetricsLog : public MetricsLog {
  private:
   void InitPrefs() {
     prefs_->SetInt64(prefs::kInstallDate, kInstallDate);
-    prefs_->SetString(prefs::kMetricsClientIDTimestamp,
-                     base::Int64ToString(kEnabledDate));
+    prefs_->SetString(prefs::kMetricsReportingEnabledTimestamp,
+                      base::Int64ToString(kEnabledDate));
 #if defined(OS_CHROMEOS)
     prefs_->SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
     prefs_->SetInteger(prefs::kStabilityOtherUserCrashCount, 11);

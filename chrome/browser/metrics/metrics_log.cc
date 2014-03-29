@@ -84,7 +84,7 @@ std::string GetMetricsEnabledDate(PrefService* pref) {
     return "0";
   }
 
-  return pref->GetString(prefs::kMetricsClientIDTimestamp);
+  return pref->GetString(prefs::kMetricsReportingEnabledTimestamp);
 }
 
 OmniboxEventProto::InputType AsOmniboxEventInputType(

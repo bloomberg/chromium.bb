@@ -27714,6 +27714,14 @@ other types of suffix sets.
   <summary>Whether the scroll is executed on main thread.</summary>
 </histogram>
 
+<histogram name="UMA.ClientIdMigrated" enum="BooleanMigrated">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Recorded when the one-time UMA client id reset was performed (and the client
+    id of this user was migrated).
+  </summary>
+</histogram>
+
 <histogram name="UMA.CollectExternalEventsTime" units="milliseconds">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -30019,6 +30027,11 @@ other types of suffix sets.
 <enum name="BooleanMatched" type="int">
   <int value="0" label="Not matched"/>
   <int value="1" label="Matched"/>
+</enum>
+
+<enum name="BooleanMigrated" type="int">
+  <int value="0" label="Not migrated"/>
+  <int value="1" label="Migrated"/>
 </enum>
 
 <enum name="BooleanOrphan" type="int">

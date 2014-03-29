@@ -437,9 +437,9 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   DCHECK(IsSingleThreaded());
   registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
   registry->RegisterStringPref(prefs::kMetricsClientID, std::string());
+  registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
   registry->RegisterIntegerPref(prefs::kMetricsLowEntropySource,
                                 kLowEntropySourceNotSet);
-  registry->RegisterInt64Pref(prefs::kMetricsClientIDTimestamp, 0);
   registry->RegisterInt64Pref(prefs::kStabilityLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kStabilityLastTimestampSec, 0);
   registry->RegisterStringPref(prefs::kStabilityStatsVersion, std::string());
@@ -483,6 +483,11 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallMetricsUptimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastLaunchTimeSec, 0);
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
+
+  // TODO(asvitkine): Remove these once a couple of releases have passed.
+  // http://crbug.com/357704
+  registry->RegisterStringPref(prefs::kMetricsOldClientID, std::string());
+  registry->RegisterIntegerPref(prefs::kMetricsOldLowEntropySource, 0);
 
 #if defined(OS_ANDROID)
   RegisterPrefsAndroid(registry);
@@ -646,9 +651,14 @@ void MetricsService::ForceClientIdCreation() {
   client_id_ = GenerateClientID();
   pref->SetString(prefs::kMetricsClientID, client_id_);
 
-  // Might as well make a note of how long this ID has existed
-  pref->SetString(prefs::kMetricsClientIDTimestamp,
-                  base::Int64ToString(Time::Now().ToTimeT()));
+  if (pref->GetString(prefs::kMetricsOldClientID).empty()) {
+    // Record the timestamp of when the user opted in to UMA.
+    pref->SetInt64(prefs::kMetricsReportingEnabledTimestamp,
+                   Time::Now().ToTimeT());
+  } else {
+    UMA_HISTOGRAM_BOOLEAN("UMA.ClientIdMigrated", true);
+  }
+  pref->ClearPref(prefs::kMetricsOldClientID);
 }
 
 void MetricsService::EnableRecording() {
@@ -1225,12 +1235,6 @@ int MetricsService::GetLowEntropySource() {
   // Otherwise, skip to generating a new value.
   if (!command_line->HasSwitch(switches::kResetVariationState)) {
     int value = local_state->GetInteger(prefs::kMetricsLowEntropySource);
-    // Old versions of the code would generate values in the range of [1, 8192],
-    // before the range was switched to [0, 8191] and then to [0, 7999]. Map
-    // 8192 to 0, so that the 0th bucket remains uniform, while re-generating
-    // the low entropy source for old values in the [8000, 8191] range.
-    if (value == 8192)
-      value = 0;
     // If the value is outside the [0, kMaxLowEntropySize) range, re-generate
     // it below.
     if (value >= 0 && value < kMaxLowEntropySize) {
@@ -1243,6 +1247,7 @@ int MetricsService::GetLowEntropySource() {
   UMA_HISTOGRAM_BOOLEAN("UMA.GeneratedLowEntropySource", true);
   low_entropy_source_ = GenerateLowEntropySource();
   local_state->SetInteger(prefs::kMetricsLowEntropySource, low_entropy_source_);
+  local_state->ClearPref(prefs::kMetricsOldLowEntropySource);
   metrics::CachingPermutedEntropyProvider::ClearCache(local_state);
 
   return low_entropy_source_;
