@@ -68,14 +68,12 @@ class _JSCModel(object):
   def __init__(self,
                api_name,
                api_models,
-               ref_resolver,
                disable_refs,
                availability_finder,
                json_cache,
                template_cache,
                features_bundle,
                event_byname_function):
-    self._ref_resolver = ref_resolver
     self._disable_refs = disable_refs
     self._availability_finder = availability_finder
     self._api_availabilities = json_cache.GetFromFile(
@@ -87,17 +85,9 @@ class _JSCModel(object):
     self._event_byname_function = event_byname_function
     self._namespace = api_models.GetModel(api_name).Get()
 
-  def _FormatDescription(self, description):
-    if self._disable_refs:
-      return description
-    return self._ref_resolver.ResolveAllLinks(description,
-                                              namespace=self._namespace.name)
-
   def _GetLink(self, link):
-    if self._disable_refs:
-      type_name = link.split('.', 1)[-1]
-      return { 'href': '#type-%s' % type_name, 'text': link, 'name': link }
-    return self._ref_resolver.SafeGetLink(link, namespace=self._namespace.name)
+    ref = link if '.' in link else (self._namespace.name + '.' + link)
+    return { 'ref': ref, 'text': link, 'name': link }
 
   def ToDict(self):
     if self._namespace is None:
@@ -145,7 +135,7 @@ class _JSCModel(object):
   def _GenerateType(self, type_):
     type_dict = {
       'name': type_.simple_name,
-      'description': self._FormatDescription(type_.description),
+      'description': type_.description,
       'properties': self._GenerateProperties(type_.properties),
       'functions': self._GenerateFunctions(type_.functions),
       'events': self._GenerateEvents(type_.events),
@@ -160,7 +150,7 @@ class _JSCModel(object):
   def _GenerateFunction(self, function):
     function_dict = {
       'name': function.simple_name,
-      'description': self._FormatDescription(function.description),
+      'description': function.description,
       'callback': self._GenerateCallback(function.callback),
       'parameters': [],
       'returns': None,
@@ -190,7 +180,7 @@ class _JSCModel(object):
   def _GenerateEvent(self, event):
     event_dict = {
       'name': event.simple_name,
-      'description': self._FormatDescription(event.description),
+      'description': event.description,
       'filters': [self._GenerateProperty(f) for f in event.filters],
       'conditions': [self._GetLink(condition)
                      for condition in event.conditions],
@@ -267,7 +257,7 @@ class _JSCModel(object):
     property_dict = {
       'name': property_.simple_name,
       'optional': property_.optional,
-      'description': self._FormatDescription(property_.description),
+      'description': property_.description,
       'properties': self._GenerateProperties(type_.properties),
       'functions': self._GenerateFunctions(type_.functions),
       'parameters': [],
@@ -297,7 +287,7 @@ class _JSCModel(object):
   def _GenerateCallbackProperty(self, callback):
     property_dict = {
       'name': callback.simple_name,
-      'description': self._FormatDescription(callback.description),
+      'description': callback.description,
       'optional': callback.optional,
       'is_callback': True,
       'id': _CreateId(callback, 'property'),
@@ -357,7 +347,7 @@ class _JSCModel(object):
     return {
       'title': 'Description',
       'content': [
-        { 'text': self._FormatDescription(self._namespace.description) }
+        { 'text': self._namespace.description }
       ]
     }
 
@@ -455,8 +445,7 @@ class _JSCModel(object):
 
   def _AddCommonProperties(self, target, src):
     if src.deprecated is not None:
-      target['deprecated'] = self._FormatDescription(
-          src.deprecated)
+      target['deprecated'] = src.deprecated
     if (src.parent is not None and
         not isinstance(src.parent, model.Namespace)):
       target['parentName'] = src.parent.simple_name
@@ -499,7 +488,6 @@ class APIDataSource(object):
           APIDataSource, 'model-cache-no-refs')
 
       # These must be set later via the SetFooDataSourceFactory methods.
-      self._ref_resolver_factory = None
       self._samples_data_source_factory = None
 
       # This caches the result of _LoadEventByName.
@@ -507,9 +495,6 @@ class APIDataSource(object):
 
     def SetSamplesDataSourceFactory(self, samples_data_source_factory):
       self._samples_data_source_factory = samples_data_source_factory
-
-    def SetReferenceResolverFactory(self, ref_resolver_factory):
-      self._ref_resolver_factory = ref_resolver_factory
 
     def Create(self, request):
       '''Creates an APIDataSource.
@@ -547,7 +532,6 @@ class APIDataSource(object):
       jsc_model = _JSCModel(
           api_name,
           self._api_models,
-          self._ref_resolver_factory.Create() if not disable_refs else None,
           disable_refs,
           self._availability_finder,
           self._json_cache,

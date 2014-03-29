@@ -60,21 +60,6 @@ class ReferenceResolver(object):
   # Matches after a $ref: that doesn't have []s.
   _bare_ref = re.compile('\w+(\.\w+)*')
 
-  class Factory(object):
-    def __init__(self,
-                 api_data_source_factory,
-                 api_models,
-                 object_store_creator):
-      self._api_data_source_factory = api_data_source_factory
-      self._api_models = api_models
-      self._object_store_creator = object_store_creator
-
-    def Create(self):
-      return ReferenceResolver(
-          self._api_data_source_factory.Create(None),
-          self._api_models,
-          self._object_store_creator.Create(ReferenceResolver))
-
   def __init__(self, api_data_source, api_models, object_store):
     self._api_data_source = api_data_source
     self._api_models = api_models

@@ -30,7 +30,7 @@ class DocumentRenderer(object):
     '''
     START_REF = '$(ref:'
     END_REF = ')'
-    MAX_REF_LENGTH = 100
+    MAX_REF_LENGTH = 256
 
     new_document = []
 

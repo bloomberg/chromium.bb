@@ -109,6 +109,12 @@ class CronServletTest(unittest.TestCase):
           'static.txt': 'static.txt contents'
         },
         'templates': {
+          'articles': {
+            'activeTab.html': 'activeTab.html contents'
+          },
+          'intros': {
+            'browserAction.html': 'activeTab.html contents'
+          },
           'private': {
             'table_of_contents.html': 'table_of_contents.html contents',
           },

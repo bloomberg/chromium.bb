@@ -27,11 +27,11 @@ class SamplesDataSource(object):
                  host_file_system,
                  app_samples_file_system,
                  compiled_fs_factory,
-                 ref_resolver_factory,
+                 ref_resolver,
                  base_path):
       self._host_file_system = host_file_system
       self._app_samples_file_system = app_samples_file_system
-      self._ref_resolver = ref_resolver_factory.Create()
+      self._ref_resolver = ref_resolver
       self._base_path = base_path
       self._extensions_cache = compiled_fs_factory.Create(
           host_file_system,

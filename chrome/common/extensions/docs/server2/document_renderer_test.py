@@ -116,14 +116,20 @@ class DocumentRendererUnittest(unittest.TestCase):
     self.assertEqual(['Expected a title'], warnings)
 
   def testInvalidRef(self):
-    # There needs to be more than 100 characters between the invalid ref
-    # and the next ref
-    document = ('An invalid $(ref:foo.foo_t3 a title with some long '
-                'text containing a valid reference pointing to '
+    # DocumentRenderer attempts to detect unclosed $(ref:...) tags by limiting
+    # how far it looks ahead. Lorem Ipsum should be long enough to trigger that.
+    _LOREM_IPSUM = (
+        'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do '
+        'eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim '
+        'ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut '
+        'aliquip ex ea commodo consequat. Duis aute irure dolor in '
+        'reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla '
+        'pariatur. Excepteur sint occaecat cupidatat non proident, sunt in '
+        'culpa qui officia deserunt mollit anim id est laborum.')
+    document = ('An invalid $(ref:foo.foo_t3 a title ' + _LOREM_IPSUM +
                 '$(ref:baz.baz_e1) here')
-    expected_document = ('An invalid $(ref:foo.foo_t3 a title with some long '
-                         'text containing a valid reference pointing to <a'
-                         ' href=#type-baz_e1>baz.baz_e1</a> here')
+    expected_document = ('An invalid $(ref:foo.foo_t3 a title ' + _LOREM_IPSUM +
+                         '<a href=#type-baz_e1>baz.baz_e1</a> here')
     path = 'some/path/to/document_api.html'
 
     text, warnings = self._renderer.Render(document, path)
