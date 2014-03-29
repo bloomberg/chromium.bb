@@ -87,14 +87,14 @@ bool EmbeddedWorkerTestHelper::OnSendMessageToWorker(
   return handled;
 }
 
-void EmbeddedWorkerTestHelper::OnInstallEvent(
-    int embedded_worker_id,
-    int request_id,
-    int active_version_embedded_worker_id) {
+void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
+                                              int request_id,
+                                              int active_version_id) {
   SimulateSendMessageToBrowser(
       embedded_worker_id,
       request_id,
-      ServiceWorkerHostMsg_InstallEventFinished());
+      ServiceWorkerHostMsg_InstallEventFinished(
+          blink::WebServiceWorkerEventResultCompleted));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(
@@ -179,15 +179,14 @@ void EmbeddedWorkerTestHelper::OnSendMessageToWorkerStub(
           message));
 }
 
-void EmbeddedWorkerTestHelper::OnInstallEventStub(
-    int active_version_embedded_worker_id) {
+void EmbeddedWorkerTestHelper::OnInstallEventStub(int active_version_id) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(&EmbeddedWorkerTestHelper::OnInstallEvent,
                  weak_factory_.GetWeakPtr(),
                  current_embedded_worker_id_,
                  current_request_id_,
-                 active_version_embedded_worker_id));
+                 active_version_id));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEventStub(

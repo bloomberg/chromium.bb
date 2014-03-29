@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_listener.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 #include "third_party/WebKit/public/web/WebServiceWorkerContextClient.h"
 #include "url/gurl.h"
 
@@ -55,7 +56,8 @@ class EmbeddedWorkerContextClient
   virtual void workerContextFailedToStart();
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void workerContextDestroyed();
-  virtual void didHandleInstallEvent(int request_id);
+  virtual void didHandleInstallEvent(int request_id,
+                                     blink::WebServiceWorkerEventResult result);
   virtual void didHandleFetchEvent(int request_id);
   virtual void didHandleFetchEvent(
       int request_id,

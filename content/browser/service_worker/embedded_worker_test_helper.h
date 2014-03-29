@@ -85,7 +85,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // SimulateSendMessageToBrowser.
   virtual void OnInstallEvent(int embedded_worker_id,
                               int request_id,
-                              int active_version_embedded_worker_id);
+                              int active_version_id);
   virtual void OnFetchEvent(int embedded_worker_id,
                             int request_id,
                             const ServiceWorkerFetchRequest& request);
@@ -107,7 +107,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  int embedded_worker_id,
                                  int request_id,
                                  const IPC::Message& message);
-  void OnInstallEventStub(int active_version_embedded_worker_id);
+  void OnInstallEventStub(int active_version_id);
   void OnFetchEventStub(const ServiceWorkerFetchRequest& request);
 
   EmbeddedWorkerRegistry* registry();

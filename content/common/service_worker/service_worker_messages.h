@@ -10,6 +10,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerEventResult.h"
 #include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -19,6 +20,9 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerError::ErrorType,
                           blink::WebServiceWorkerError::ErrorTypeLast)
+
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
+                          blink::WebServiceWorkerEventResultLast)
 
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(url)
@@ -77,8 +81,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                      base::string16 /* message */)
 
 // Sent via EmbeddedWorker to dispatch install event.
-IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent,
-                     int /* active_version_embedded_worker_id */)
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_InstallEvent, int /* active_version_id */)
 
 // Sent via EmbeddedWorker to dispatch fetch event.
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_FetchEvent,
@@ -110,12 +113,12 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_RemoveScriptClient,
                      int /* provider_id */)
 
 // Informs the browser that install event handling has finished.
-// Sent via EmbeddedWorker. If there was an exception during the
-// event handling it'll be reported back separately (to be propagated
-// to the documents).
-IPC_MESSAGE_CONTROL0(ServiceWorkerHostMsg_InstallEventFinished)
+// Sent via EmbeddedWorker.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_InstallEventFinished,
+                     blink::WebServiceWorkerEventResult)
 
 // Informs the browser that fetch event handling has finished.
+// Sent via EmbeddedWorker.
 IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
                      content::ServiceWorkerFetchEventResult,
                      content::ServiceWorkerResponse)

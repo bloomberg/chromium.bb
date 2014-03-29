@@ -19,6 +19,39 @@ typedef ServiceWorkerVersion::MessageCallback MessageCallback;
 
 namespace {
 
+typedef base::Callback<bool(const IPC::Message* message,
+                            Tuple1<blink::WebServiceWorkerEventResult>* result)>
+    InstallPhaseEventFinishedMessageReader;
+
+// Parameters for the HandleInstallPhaseEventFinished function, which cannot
+// accept them directly without exceeding the max arity supported by Bind().
+struct HandleInstallPhaseEventFinishedParameters {
+  HandleInstallPhaseEventFinishedParameters(
+      base::WeakPtr<ServiceWorkerVersion> version,
+      uint32 expected_message_type,
+      const InstallPhaseEventFinishedMessageReader& message_reader,
+      const StatusCallback& callback,
+      ServiceWorkerVersion::Status next_status_on_success,
+      ServiceWorkerVersion::Status next_status_on_error,
+      ServiceWorkerStatusCode next_status_code_on_event_rejection)
+      : version(version),
+        expected_message_type(expected_message_type),
+        message_reader(message_reader),
+        callback(callback),
+        next_status_on_success(next_status_on_success),
+        next_status_on_error(next_status_on_error),
+        next_status_code_on_event_rejection(
+            next_status_code_on_event_rejection) {}
+
+  base::WeakPtr<ServiceWorkerVersion> version;
+  uint32 expected_message_type;
+  InstallPhaseEventFinishedMessageReader message_reader;
+  StatusCallback callback;
+  ServiceWorkerVersion::Status next_status_on_success;
+  ServiceWorkerVersion::Status next_status_on_error;
+  ServiceWorkerStatusCode next_status_code_on_event_rejection;
+};
+
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
     base::MessageLoop::current()->PostTask(FROM_HERE, callback);
@@ -60,29 +93,34 @@ void RunEmptyMessageCallback(const MessageCallback& callback,
   callback.Run(status, IPC::Message());
 }
 
-void HandleEventFinished(base::WeakPtr<ServiceWorkerVersion> version,
-                         uint32 expected_message_type,
-                         const StatusCallback& callback,
-                         ServiceWorkerVersion::Status next_status_on_success,
-                         ServiceWorkerVersion::Status next_status_on_error,
-                         ServiceWorkerStatusCode status,
-                         const IPC::Message& message) {
-  if (!version)
+void HandleInstallPhaseEventFinished(
+    const HandleInstallPhaseEventFinishedParameters& params,
+    ServiceWorkerStatusCode status,
+    const IPC::Message& message) {
+  if (!params.version)
     return;
   if (status != SERVICE_WORKER_OK) {
-    version->SetStatus(next_status_on_error);
-    callback.Run(status);
+    params.version->SetStatus(params.next_status_on_error);
+    params.callback.Run(status);
     return;
   }
-  if (message.type() != expected_message_type) {
+  if (message.type() != params.expected_message_type) {
     NOTREACHED() << "Got unexpected response: " << message.type()
-                 << " expected:" << expected_message_type;
-    version->SetStatus(next_status_on_error);
-    callback.Run(SERVICE_WORKER_ERROR_FAILED);
+                 << " expected:" << params.expected_message_type;
+    params.version->SetStatus(params.next_status_on_error);
+    params.callback.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
-  version->SetStatus(next_status_on_success);
-  callback.Run(SERVICE_WORKER_OK);
+  params.version->SetStatus(params.next_status_on_success);
+
+  Tuple1<blink::WebServiceWorkerEventResult> result(
+      blink::WebServiceWorkerEventResultCompleted);
+  if (!params.message_reader.is_null()) {
+    params.message_reader.Run(&message, &result);
+    if (result.a == blink::WebServiceWorkerEventResultRejected)
+      status = params.next_status_code_on_event_rejection;
+  }
+  params.callback.Run(status);
 }
 
 void HandleFetchResponse(const ServiceWorkerVersion::FetchCallback& callback,
@@ -247,15 +285,21 @@ void ServiceWorkerVersion::SendMessageAndRegisterCallback(
 }
 
 void ServiceWorkerVersion::DispatchInstallEvent(
-    int active_version_embedded_worker_id,
+    int active_version_id,
     const StatusCallback& callback) {
   DCHECK_EQ(NEW, status()) << status();
   SetStatus(INSTALLING);
+  HandleInstallPhaseEventFinishedParameters params(
+      weak_factory_.GetWeakPtr(),
+      ServiceWorkerHostMsg_InstallEventFinished::ID,
+      base::Bind(&ServiceWorkerHostMsg_InstallEventFinished::Read),
+      callback,
+      INSTALLED,
+      NEW,
+      SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED);
   SendMessageAndRegisterCallback(
-      ServiceWorkerMsg_InstallEvent(active_version_embedded_worker_id),
-      base::Bind(&HandleEventFinished, weak_factory_.GetWeakPtr(),
-                 ServiceWorkerHostMsg_InstallEventFinished::ID,
-                 callback, INSTALLED, NEW));
+      ServiceWorkerMsg_InstallEvent(active_version_id),
+      base::Bind(&HandleInstallPhaseEventFinished, params));
 }
 
 void ServiceWorkerVersion::DispatchActivateEvent(
@@ -264,8 +308,16 @@ void ServiceWorkerVersion::DispatchActivateEvent(
   SetStatus(ACTIVATING);
   // TODO(kinuko): Implement.
   NOTIMPLEMENTED();
-  RunSoon(base::Bind(&HandleEventFinished, weak_factory_.GetWeakPtr(),
-                     -1 /* dummy message_id */, callback, ACTIVE, INSTALLED,
+  HandleInstallPhaseEventFinishedParameters params(
+      weak_factory_.GetWeakPtr(),
+      -1 /* dummy message_id */,
+      InstallPhaseEventFinishedMessageReader(),
+      callback,
+      ACTIVE,
+      INSTALLED,
+      SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
+  RunSoon(base::Bind(&HandleInstallPhaseEventFinished,
+                     params,
                      SERVICE_WORKER_OK,
                      IPC::Message(-1, -1, IPC::Message::PRIORITY_NORMAL)));
 }

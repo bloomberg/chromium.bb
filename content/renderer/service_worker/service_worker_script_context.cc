@@ -39,8 +39,10 @@ void ServiceWorkerScriptContext::OnMessageReceived(
   current_request_id_ = kInvalidServiceWorkerRequestId;
 }
 
-void ServiceWorkerScriptContext::DidHandleInstallEvent(int request_id) {
-  Send(request_id, ServiceWorkerHostMsg_InstallEventFinished());
+void ServiceWorkerScriptContext::DidHandleInstallEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
+  Send(request_id, ServiceWorkerHostMsg_InstallEventFinished(result));
 }
 
 void ServiceWorkerScriptContext::DidHandleFetchEvent(
@@ -55,8 +57,7 @@ void ServiceWorkerScriptContext::Send(int request_id,
   embedded_context_->SendMessageToBrowser(request_id, message);
 }
 
-void ServiceWorkerScriptContext::OnInstallEvent(
-    int active_version_embedded_worker_id) {
+void ServiceWorkerScriptContext::OnInstallEvent(int active_version_id) {
   proxy_->dispatchInstallEvent(current_request_id_);
 }
 
