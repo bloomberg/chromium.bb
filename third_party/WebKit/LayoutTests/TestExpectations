@@ -444,19 +444,6 @@ crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated
 crbug.com/245644 virtual/gpu/fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
 crbug.com/245644 fast/canvas/2d.text.draw.fill.maxWidth.gradient.html [ Failure Pass ]
 
-crbug.com/345027 svg/text/tspan-dynamic-positioning.svg [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/transforms/animated-path-inside-transformed-html.xhtml [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/page/absolute-sized-document-no-scrollbars.svg [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/page/relative-sized-document-scrollbars.svg [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/page/zoom-svg-through-object-with-text.xhtml-disabled [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/text/absolute-sized-document-no-scrollbars.svg [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/text/absolute-sized-document-scrollbars.svg [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/text/relative-sized-document-scrollbars.svg [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/text/zoom-coords-viewattr-01-b.svg [ Failure NeedsRebaseline ]
-crbug.com/345027 svg/zoom/text/zoom-foreignObject.svg [ Failure NeedsRebaseline ]
-crbug.com/345027  svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-1.html [ NeedsRebaseline ]
-crbug.com/345027  svg/as-object/deep-nested-embedded-svg-size-changes-no-layout-triggers-2.html [ NeedsRebaseline ]
-
 crbug.com/310866 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
 crbug.com/245630 virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
