@@ -665,19 +665,26 @@ crbug.com/284734 svg/custom/getsvgdocument.html [ Pass ImageOnlyFailure ]
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 
 # 351166 tracks changing Chromium implementation. These will Fail until Chromium-side (https://codereview.chromium.org/213253006/) lands.
-crbug.com/351166 http/tests/media/media-source/mediasource-buffered.html [ Failure Pass ]
+# 249422 tracks a subsequent changing Chromium implementation. These will Fail until Chromium-side (https://codereview.chromium.org/205703003/) lands.
+crbug.com/351166 crbug.com/249422 http/tests/media/media-source/mediasource-buffered.html [ Failure Pass ]
 crbug.com/351166 http/tests/media/media-source/webkitmediasource-append-in-ended-state.html [ Failure Pass ]
 crbug.com/351166 http/tests/media/media-source/webkitmediasource-zero-byte-append-in-ended-state.html [ Failure Pass ]
+crbug.com/249422 http/tests/media/media-source/mediasource-remove.html [ Failure Pass ]
+crbug.com/249422 http/tests/media/media-source/webkitmediasource-duration-changed.html [ Failure Pass ]
 
 # 309184 and 303419 track Android-specific failures
-crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
+# 249422 tracks a changing Chromium implementation that will cause failure until Chromium-side (https://codereview.chromium.org/205703003/) lands.
+crbug.com/309184 crbug.com/303419 crbug.com/284782 crbug.com/249422 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
 
 # 323284 tracks Android-specific flaky failure
 crbug.com/323284 crbug.com/324120 http/tests/media/media-source/webkitmediasource-removesourcebuffer-texttrack.html [ Pass Crash Failure ]
 
 crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Pass Crash ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
-crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
+
+# 302729 tracks Android-specific failure
+# 249422 tracks a changing Chromium implementation that will cause failure until Chromium-side (https://codereview.chromium.org/205703003/) lands.
+crbug.com/302729 crbug.com/249422 http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure Pass ]
 
 crbug.com/286287 [ Linux Mac Android ] http/tests/inspector/network/network-initiator.html [ Failure Pass ]
 crbug.com/306228 [ Win ] http/tests/inspector/network/network-initiator.html [ Pass Failure Timeout ]

@@ -11,7 +11,12 @@
         {
             url: '/media/resources/media-source/webm/test.webm',
             type: 'video/webm; codecs="vp8, vorbis"',
-            duration: 6.042,
+            // FIXME: Get the init segment duration fixed to match duration after append.
+            //        See http://crbug.com/354284.
+            durationInInitSegment: 6.042,
+            duration: 6.051,
+            // Supports jagged-ended stream end timestamps with some less than duration:
+            bufferedRangeEndBeforeEndOfStream: 6.042,
             init: { offset: 0, size: 4357 },
             media: [
                 {  offset: 4357, size: 11830, timecode: 0 },
@@ -35,7 +40,9 @@
         {
             url: '/media/resources/media-source/mp4/test.mp4',
             type: 'video/mp4; codecs="mp4a.40.2, avc1.4D401E"',
-            duration: 6.0368,
+            durationInInitSegment: 6.0368,
+            duration: 6.0424,
+            bufferedRangeEndBeforeEndOfStream: 6.0368,
             init: { offset: 0, size: 1178 },
             media: [
                 {  offset: 1246, size: 23828, timecode: 0 },

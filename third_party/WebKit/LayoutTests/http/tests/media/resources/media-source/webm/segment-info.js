@@ -3,7 +3,7 @@ var WebMSegmentInfo = {};
 WebMSegmentInfo.testWebM = {
     url: '/media/resources/media-source/webm/test.webm',
     type: 'video/webm; codecs="vp8, vorbis"',
-    duration: 6.042,
+    duration: 6.051,
     init: { offset: 0, size: 4357 },
     media: [
         {  offset: 4357, size: 11830, timecode: 0 },

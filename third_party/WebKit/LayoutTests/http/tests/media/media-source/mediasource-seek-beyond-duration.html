@@ -60,7 +60,7 @@
 
                 test.waitForExpectedEvents(function()
                 {
-                    assert_equals(mediaElement.duration, segmentInfo.duration);
+                    assert_equals(mediaElement.duration, segmentInfo.durationInInitSegment);
                     assert_greater_than_equal(mediaElement.duration, 2.0, 'Duration is >2.0s.');
                     test.waitForCurrentTimeChange(mediaElement, function()
                     {
