@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -33,6 +34,7 @@ import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.DeviceUtils;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.sync.signin.ChromeSigninController;
@@ -130,7 +132,25 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
         mWindow = sWindowAndroidFactory.getActivityWindowAndroid(this);
         mWindow.restoreInstanceState(savedInstanceState);
-        mTabManager.initialize(mWindow, new ActivityContentVideoViewClient(this));
+        mTabManager.initialize(mWindow, new ActivityContentVideoViewClient(this) {
+            @Override
+            public void onShowCustomView(View view) {
+                super.onShowCustomView(view);
+                if (!CommandLine.getInstance().hasSwitch(
+                        ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                    mTabManager.setOverlayVideoMode(true);
+                }
+            }
+
+            @Override
+            public void onDestroyContentVideoView() {
+                super.onDestroyContentVideoView();
+                if (!CommandLine.getInstance().hasSwitch(
+                        ContentSwitches.DISABLE_OVERLAY_FULLSCREEN_VIDEO_SUBTITLE)) {
+                    mTabManager.setOverlayVideoMode(false);
+                }
+            }
+        });
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {

@@ -79,6 +79,15 @@ public class TabManager extends LinearLayout {
     }
 
     /**
+     * Enter or leave overlay video mode.
+     * @param enabled Whether overlay mode is enabled.
+     */
+    public void setOverlayVideoMode(boolean enabled) {
+        if (mContentViewRenderView == null) return;
+        mContentViewRenderView.setOverlayVideoMode(enabled);
+    }
+
+    /**
      * @return The currently visible {@link ChromeShellTab}.
      */
     public ChromeShellTab getCurrentTab() {
