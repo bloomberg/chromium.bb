@@ -43,6 +43,8 @@ checkin_proto::ChromeBuildProto_Platform GetPlatform() {
   return checkin_proto::ChromeBuildProto_Platform_PLATFORM_WIN;
 #elif defined(OS_MACOSX)
   return checkin_proto::ChromeBuildProto_Platform_PLATFORM_MAC;
+#elif defined(OS_IOS)
+  return checkin_proto::ChromeBuildProto_Platform_PLATFORM_IOS;
 #elif defined(OS_CHROMEOS)
   return checkin_proto::ChromeBuildProto_Platform_PLATFORM_CROS;
 #elif defined(OS_LINUX)

@@ -108,19 +108,13 @@ class TiclInvalidationServiceChannelTest : public ::testing::Test {
 };
 
 TEST_F(TiclInvalidationServiceChannelTest, ChannelSelectionTest) {
-  TiclInvalidationService::InvalidationNetworkChannel expected_gcm_channel =
-      TiclInvalidationService::GCM_NETWORK_CHANNEL;
-#if defined(OS_IOS)
-  expected_gcm_channel = TiclInvalidationService::PUSH_CLIENT_CHANNEL;
-#endif
-
   EXPECT_EQ(TiclInvalidationService::PUSH_CLIENT_CHANNEL, GetNetworkChannel());
 
   // If stars allign use GCM channel.
   profile_->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
   profile_->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
                                    true);
-  EXPECT_EQ(expected_gcm_channel, GetNetworkChannel());
+  EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 
   // If Invalidation channel setting is not set or says false fall back to push
   // channel.
@@ -149,7 +143,7 @@ TEST_F(TiclInvalidationServiceChannelTest, ChannelSelectionTest) {
   profile_->GetPrefs()->SetBoolean(prefs::kInvalidationServiceUseGCMChannel,
                                    true);
   profile_->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
-  EXPECT_EQ(expected_gcm_channel, GetNetworkChannel());
+  EXPECT_EQ(TiclInvalidationService::GCM_NETWORK_CHANNEL, GetNetworkChannel());
 }
 
 }  // namespace invalidation

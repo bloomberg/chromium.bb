@@ -362,7 +362,7 @@
             'chromium_swarm_tests',
           ],
         }],
-        ['OS!="android" and OS!="ios"', {
+        ['OS!="android"', {
           'dependencies': [
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
           ],
