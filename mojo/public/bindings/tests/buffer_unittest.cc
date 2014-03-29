@@ -8,7 +8,7 @@
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/fixed_buffer.h"
 #include "mojo/public/bindings/lib/scratch_buffer.h"
-#include "mojo/public/environment/environment.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

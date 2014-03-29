@@ -5,7 +5,7 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/remote_ptr.h"
-#include "mojo/public/environment/environment.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/shell/application.h"
 #include "mojo/public/shell/shell.mojom.h"
 #include "mojo/service_manager/service_loader.h"

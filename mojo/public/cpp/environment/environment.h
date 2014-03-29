@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_ENVIRONMENT_ENVIRONMENT_H_
-#define MOJO_PUBLIC_ENVIRONMENT_ENVIRONMENT_H_
+#ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_ENVIRONMENT_H_
+#define MOJO_PUBLIC_CPP_ENVIRONMENT_ENVIRONMENT_H_
 
 #include "mojo/public/cpp/system/macros.h"
 
@@ -21,4 +21,4 @@ class Environment {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_ENVIRONMENT_ENVIRONMENT_H_
+#endif  // MOJO_PUBLIC_CPP_ENVIRONMENT_ENVIRONMENT_H_

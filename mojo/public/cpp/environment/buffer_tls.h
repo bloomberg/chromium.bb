@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_ENVIRONMENT_BUFFER_TLS_H_
-#define MOJO_PUBLIC_ENVIRONMENT_BUFFER_TLS_H_
+#ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_BUFFER_TLS_H_
+#define MOJO_PUBLIC_CPP_ENVIRONMENT_BUFFER_TLS_H_
 
 namespace mojo {
 class Buffer;
@@ -17,4 +17,4 @@ Buffer* SetCurrentBuffer(Buffer* buffer);
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_ENVIRONMENT_BUFFER_TLS_H_
+#endif  // MOJO_PUBLIC_CPP_ENVIRONMENT_BUFFER_TLS_H_

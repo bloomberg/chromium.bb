@@ -1,0 +1,6 @@
+include_rules = [
+  "+testing",
+  "+mojo/public/cpp/utility",
+  # TODO(vtl): Temporary until these are moved to mojo/public/cpp:
+  "+mojo/public/tests",
+]

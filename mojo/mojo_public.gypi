@@ -177,7 +177,7 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/environment/tests/async_waiter_unittest.cc',
+        'public/cpp/environment/tests/async_waiter_unittest.cc',
       ],
     },
     {
@@ -314,13 +314,13 @@
       'target_name': 'mojo_environment_standalone',
       'type': 'static_library',
       'sources': [
-        'public/environment/buffer_tls.h',
-        'public/environment/default_async_waiter.h',
-        'public/environment/environment.h',
-        'public/environment/lib/default_async_waiter.cc',
-        'public/environment/lib/buffer_tls.cc',
-        'public/environment/lib/buffer_tls_setup.h',
-        'public/environment/lib/environment.cc',
+        'public/cpp/environment/buffer_tls.h',
+        'public/cpp/environment/default_async_waiter.h',
+        'public/cpp/environment/environment.h',
+        'public/cpp/environment/lib/default_async_waiter.cc',
+        'public/cpp/environment/lib/buffer_tls.cc',
+        'public/cpp/environment/lib/buffer_tls_setup.h',
+        'public/cpp/environment/lib/environment.cc',
       ],
       'include_dirs': [
         '..',

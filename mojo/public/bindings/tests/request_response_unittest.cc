@@ -6,8 +6,8 @@
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/bindings/tests/sample_import.mojom.h"
 #include "mojo/public/bindings/tests/sample_interfaces.mojom.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/utility/run_loop.h"
-#include "mojo/public/environment/environment.h"
 #include "mojo/public/tests/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

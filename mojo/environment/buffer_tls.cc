@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/environment/buffer_tls.h"
+#include "mojo/public/cpp/environment/buffer_tls.h"
 
 #include "mojo/environment/buffer_tls_impl.h"
 

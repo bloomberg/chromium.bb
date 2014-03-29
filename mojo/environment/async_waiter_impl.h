@@ -5,8 +5,8 @@
 #ifndef MOJO_ENVIRONMENT_ASYNC_WAITER_IMPL_H_
 #define MOJO_ENVIRONMENT_ASYNC_WAITER_IMPL_H_
 
-#include "mojo/public/environment/async_waiter.h"
 #include "mojo/environment/mojo_environment_impl_export.h"
+#include "mojo/public/cpp/environment/async_waiter.h"
 
 namespace mojo {
 namespace internal {

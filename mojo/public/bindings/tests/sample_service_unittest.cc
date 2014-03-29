@@ -8,7 +8,7 @@
 
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/tests/sample_service.mojom.h"
-#include "mojo/public/environment/environment.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

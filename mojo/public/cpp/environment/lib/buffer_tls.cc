@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/environment/buffer_tls.h"
+#include "mojo/public/cpp/environment/buffer_tls.h"
 
 #include <assert.h>
 
+#include "mojo/public/cpp/environment/lib/buffer_tls_setup.h"
 #include "mojo/public/cpp/utility/lib/thread_local.h"
-#include "mojo/public/environment/lib/buffer_tls_setup.h"
 
 namespace mojo {
 namespace internal {

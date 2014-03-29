@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_ENVIRONMENT_STANDALONE_BUFFER_TLS_SETUP_H_
-#define MOJO_PUBLIC_ENVIRONMENT_STANDALONE_BUFFER_TLS_SETUP_H_
+#ifndef MOJO_PUBLIC_CPP_ENVIRONMENT_STANDALONE_BUFFER_TLS_SETUP_H_
+#define MOJO_PUBLIC_CPP_ENVIRONMENT_STANDALONE_BUFFER_TLS_SETUP_H_
 
 namespace mojo {
 namespace internal {
@@ -14,4 +14,4 @@ void TearDownCurrentBuffer();
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_ENVIRONMENT_STANDALONE_BUFFER_TLS_SETUP_H_
+#endif  // MOJO_PUBLIC_CPP_ENVIRONMENT_STANDALONE_BUFFER_TLS_SETUP_H_
