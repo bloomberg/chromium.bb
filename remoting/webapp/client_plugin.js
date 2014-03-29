@@ -169,8 +169,8 @@ remoting.ClientPlugin.prototype.handleMessageMethod_ = function(message) {
 
   if (message.method == 'hello') {
     // Reset the size in case we had to enlarge it to support click-to-play.
-    this.plugin.width = 0;
-    this.plugin.height = 0;
+    this.plugin.style.width = '0px';
+    this.plugin.style.height = '0px';
     this.pluginApiVersion_ = getNumberAttr(message.data, 'apiVersion');
     this.pluginApiMinVersion_ = getNumberAttr(message.data, 'apiMinVersion');
 
@@ -660,8 +660,8 @@ remoting.ClientPlugin.prototype.showPluginForClickToPlay_ = function() {
   if (!this.helloReceived_) {
     var width = 200;
     var height = 200;
-    this.plugin.width = width;
-    this.plugin.height = height;
+    this.plugin.style.width = width + 'px';
+    this.plugin.style.height = height + 'px';
     // Center the plugin just underneath the "Connnecting..." dialog.
     var parentNode = this.plugin.parentNode;
     var dialog = document.getElementById('client-dialog');
