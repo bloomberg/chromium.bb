@@ -2117,9 +2117,6 @@ void HTMLMediaElement::setMuted(bool muted)
 
     updateVolume();
 
-    if (hasMediaControls())
-        mediaControls()->changedMute();
-
     scheduleEvent(EventTypeNames::volumechange);
 }
 
@@ -2972,7 +2969,7 @@ void HTMLMediaElement::updateVolume()
         webMediaPlayer()->setVolume(playerVolume());
 
     if (hasMediaControls())
-        mediaControls()->changedVolume();
+        mediaControls()->updateVolume();
 }
 
 double HTMLMediaElement::playerVolume() const

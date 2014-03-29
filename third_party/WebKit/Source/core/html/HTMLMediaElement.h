@@ -85,7 +85,7 @@ public:
     blink::WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
 
     virtual bool hasVideo() const { return false; }
-    virtual bool hasAudio() const OVERRIDE FINAL;
+    bool hasAudio() const;
 
     bool supportsSave() const;
 
@@ -152,10 +152,10 @@ public:
     // controls
     bool controls() const;
     void setControls(bool);
-    virtual double volume() const OVERRIDE FINAL;
-    virtual void setVolume(double, ExceptionState&) OVERRIDE FINAL;
-    virtual bool muted() const OVERRIDE FINAL;
-    virtual void setMuted(bool) OVERRIDE FINAL;
+    double volume() const;
+    void setVolume(double, ExceptionState&);
+    bool muted() const;
+    void setMuted(bool);
 
     // play/pause toggling that uses the media controller if present. togglePlayStateWillPlay() is
     // true if togglePlayState() will call play() or unpause() on the media element or controller.

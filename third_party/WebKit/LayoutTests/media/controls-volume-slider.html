@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+    <head>
+        <title>media controls volume slider</title>
+        <script src="media-file.js"></script>
+        <script src="media-controls.js"></script>
+        <script src="video-test.js"></script>
+    </head>
+    <body>
+        <audio controls></audio>
+        <script>
+            findMediaElement();
+            audio.src = findMediaFile("audio", "content/test");
+            testExpected("audio.volume", 1);
+            waitForEvent("loadedmetadata", function()
+            {
+                // click the middle of the volume slider
+                var coords = mediaControlsButtonCoordinates(audio, "volume-slider");
+                eventSender.mouseMoveTo(coords[0], coords[1]);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+
+                testExpected("audio.volume", 0.4, '>');
+                testExpected("audio.volume", 0.6, '<');
+                waitForEventAndEnd("volumechange");
+            });
+        </script>
+    </body>
+</html>

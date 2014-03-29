@@ -201,7 +201,7 @@ PassRefPtr<MediaControlMuteButtonElement> MediaControlMuteButtonElement::create(
 void MediaControlMuteButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        mediaControllerInterface().setMuted(!mediaControllerInterface().muted());
+        mediaElement().setMuted(!mediaElement().muted());
         event->setDefaultHandled();
     }
 
@@ -210,7 +210,7 @@ void MediaControlMuteButtonElement::defaultEventHandler(Event* event)
 
 void MediaControlMuteButtonElement::updateDisplayType()
 {
-    setDisplayType(mediaControllerInterface().muted() ? MediaUnMuteButton : MediaMuteButton);
+    setDisplayType(mediaElement().muted() ? MediaUnMuteButton : MediaMuteButton);
 }
 
 const AtomicString& MediaControlMuteButtonElement::shadowPseudoId() const
@@ -433,8 +433,8 @@ void MediaControlVolumeSliderElement::defaultEventHandler(Event* event)
         return;
 
     double volume = value().toDouble();
-    mediaControllerInterface().setVolume(volume, ASSERT_NO_EXCEPTION);
-    mediaControllerInterface().setMuted(false);
+    mediaElement().setVolume(volume, ASSERT_NO_EXCEPTION);
+    mediaElement().setMuted(false);
 }
 
 bool MediaControlVolumeSliderElement::willRespondToMouseMoveEvents()

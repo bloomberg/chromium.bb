@@ -183,12 +183,11 @@ void MediaControls::reset()
     m_timeline->setDuration(mediaControllerInterface().duration());
     m_timeline->setPosition(mediaControllerInterface().currentTime());
 
-    if (!mediaControllerInterface().hasAudio()) {
+    if (!mediaElement().hasAudio())
         m_volumeSlider->hide();
-    } else {
+    else
         m_volumeSlider->show();
-        m_volumeSlider->setVolume(mediaControllerInterface().volume());
-    }
+    updateVolume();
 
     refreshClosedCaptionsButtonVisibility();
 
@@ -303,21 +302,16 @@ void MediaControls::updateCurrentTimeDisplay()
     m_currentTimeDisplay->setCurrentValue(now);
 }
 
-void MediaControls::changedMute()
+void MediaControls::updateVolume()
 {
     m_muteButton->updateDisplayType();
-
-    if (mediaControllerInterface().muted())
-        m_volumeSlider->setVolume(0);
-    else
-        m_volumeSlider->setVolume(mediaControllerInterface().volume());
-}
-
-void MediaControls::changedVolume()
-{
-    m_volumeSlider->setVolume(mediaControllerInterface().volume());
     if (m_muteButton->renderer())
         m_muteButton->renderer()->repaint();
+
+    if (mediaElement().muted())
+        m_volumeSlider->setVolume(0);
+    else
+        m_volumeSlider->setVolume(mediaElement().volume());
 }
 
 void MediaControls::changedClosedCaptionsVisibility()

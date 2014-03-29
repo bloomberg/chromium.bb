@@ -587,15 +587,6 @@ void MediaController::clearPositionTimerFired(Timer<MediaController>*)
     m_position = MediaPlayer::invalidTime();
 }
 
-bool MediaController::hasAudio() const
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index) {
-        if (m_mediaElements[index]->hasAudio())
-            return true;
-    }
-    return false;
-}
-
 const AtomicString& MediaController::interfaceName() const
 {
     return EventTargetNames::MediaController;

@@ -56,8 +56,7 @@ public:
 
     void updateCurrentTimeDisplay();
 
-    void changedMute();
-    void changedVolume();
+    void updateVolume();
 
     void changedClosedCaptionsVisibility();
     void refreshClosedCaptionsButtonVisibility();
