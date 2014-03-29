@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "net/base/completion_callback.h"
+#include "net/base/file_stream.h"
 
 namespace base {
 class FilePath;
@@ -18,7 +18,7 @@ class SequencedTaskRunner;
 
 namespace net {
 class IOBuffer;
-}  // namespace
+}  // namespace net
 
 namespace drive {
 namespace util {
@@ -49,18 +49,14 @@ class LocalFileReader {
             const net::CompletionCallback& callback);
 
  private:
-  // The thin wrapper for the platform file to handle closing correctly.
-  class ScopedPlatformFile;
+  void DidOpen(const net::CompletionCallback& callback,
+               int64 offset,
+               int error);
+  void DidSeek(const net::CompletionCallback& callback,
+               int64 offset,
+               int64 error);
 
-  // Part of Open(). Called after the open() operation task running
-  // on blocking pool.
-  void OpenAfterBlockingPoolTask(
-      const net::CompletionCallback& callback,
-      ScopedPlatformFile* result_platform_file,
-      int open_result);
-
-  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
-  base::PlatformFile platform_file_;
+  net::FileStream file_stream_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

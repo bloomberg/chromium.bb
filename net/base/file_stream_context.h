@@ -168,7 +168,6 @@ class FileStream::Context {
                        OpenResult open_result);
 
   void CloseAndDelete();
-  void OnCloseCompleted();
 
   Int64CompletionCallback IntToInt64(const CompletionCallback& callback);
 

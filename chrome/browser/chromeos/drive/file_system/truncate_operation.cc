@@ -6,11 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_platform_file_closer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -42,19 +41,12 @@ FileError TruncateOnBlockingPool(internal::ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  base::PlatformFileError result = base::PLATFORM_FILE_ERROR_FAILED;
-  base::PlatformFile file = base::CreatePlatformFile(
-      local_cache_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_WRITE,
-      NULL,
-      &result);
-  if (result != base::PLATFORM_FILE_OK)
+  base::File file(local_cache_path,
+                  base::File::FLAG_OPEN | base::File::FLAG_WRITE);
+  if (!file.IsValid())
     return FILE_ERROR_FAILED;
 
-  DCHECK_NE(base::kInvalidPlatformFileValue, file);
-  base::ScopedPlatformFileCloser platform_file_closer(&file);
-
-  if (!base::TruncatePlatformFile(file, length))
+  if (!file.SetLength(length))
     return FILE_ERROR_FAILED;
 
   return FILE_ERROR_OK;

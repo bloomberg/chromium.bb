@@ -113,6 +113,9 @@ int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
     buffer_length = static_cast<int>(remaining_length_);
   }
 
+  if (!buffer_length)
+    return 0;
+
   file_reader_->Read(buffer, buffer_length,
                      base::Bind(&LocalReaderProxy::OnReadCompleted,
                                 weak_ptr_factory_.GetWeakPtr(), callback));

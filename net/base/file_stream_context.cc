@@ -274,19 +274,14 @@ void FileStream::Context::CloseAndDelete() {
   DCHECK(!async_in_progress_);
 
   if (file_.IsValid()) {
-    bool posted = task_runner_.get()->PostTaskAndReply(
+    bool posted = task_runner_.get()->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&Context::CloseFileImpl),
-                   base::Unretained(this)),
-        base::Bind(&Context::OnCloseCompleted, base::Unretained(this)));
+                   base::Owned(this)));
     DCHECK(posted);
   } else {
     delete this;
   }
-}
-
-void FileStream::Context::OnCloseCompleted() {
-  delete this;
 }
 
 Int64CompletionCallback FileStream::Context::IntToInt64(
