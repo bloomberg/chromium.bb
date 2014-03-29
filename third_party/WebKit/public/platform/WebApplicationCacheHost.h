@@ -70,6 +70,17 @@ public:
         ObsoleteEvent
     };
 
+    enum ErrorReason {
+        ManifestError,
+        SignatureError,
+        ResourceError,
+        ChangedError,
+        AbortError,
+        QuotaError,
+        PolicyError,
+        UnknownError
+    };
+
     virtual ~WebApplicationCacheHost() { }
 
     // Called for every request made within the context.

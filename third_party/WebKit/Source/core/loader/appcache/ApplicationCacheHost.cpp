@@ -32,6 +32,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/events/ApplicationCacheErrorEvent.h"
 #include "core/events/ProgressEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -163,17 +164,17 @@ void ApplicationCacheHost::setApplicationCache(ApplicationCache* domApplicationC
     m_domApplicationCache = domApplicationCache;
 }
 
-void ApplicationCacheHost::notifyApplicationCache(EventID id, int total, int done)
+void ApplicationCacheHost::notifyApplicationCache(EventID id, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
 {
     if (id != PROGRESS_EVENT)
         InspectorInstrumentation::updateApplicationCacheStatus(m_documentLoader->frame());
 
     if (m_defersEvents) {
         // Event dispatching is deferred until document.onload has fired.
-        m_deferredEvents.append(DeferredEvent(id, total, done));
+        m_deferredEvents.append(DeferredEvent(id, progressTotal, progressDone, errorReason, errorURL, errorStatus, errorMessage));
         return;
     }
-    dispatchDOMEvent(id, total, done);
+    dispatchDOMEvent(id, progressTotal, progressDone, errorReason, errorURL, errorStatus, errorMessage);
 }
 
 ApplicationCacheHost::CacheInfo ApplicationCacheHost::applicationCacheInfo()
@@ -205,19 +206,21 @@ void ApplicationCacheHost::stopDeferringEvents()
     RefPtr<DocumentLoader> protect(documentLoader());
     for (unsigned i = 0; i < m_deferredEvents.size(); ++i) {
         const DeferredEvent& deferred = m_deferredEvents[i];
-        dispatchDOMEvent(deferred.eventID, deferred.progressTotal, deferred.progressDone);
+        dispatchDOMEvent(deferred.eventID, deferred.progressTotal, deferred.progressDone, deferred.errorReason, deferred.errorURL, deferred.errorStatus, deferred.errorMessage);
     }
     m_deferredEvents.clear();
     m_defersEvents = false;
 }
 
-void ApplicationCacheHost::dispatchDOMEvent(EventID id, int total, int done)
+void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
 {
     if (m_domApplicationCache) {
         const AtomicString& eventType = ApplicationCache::toEventType(id);
         RefPtr<Event> event;
         if (id == PROGRESS_EVENT)
-            event = ProgressEvent::create(eventType, true, done, total);
+            event = ProgressEvent::create(eventType, true, progressDone, progressTotal);
+        else if (id == ERROR_EVENT)
+            event = ApplicationCacheErrorEvent::create(errorReason, errorURL, errorStatus, errorMessage);
         else
             event = Event::create(eventType);
         m_domApplicationCache->dispatchEvent(event, ASSERT_NO_EXCEPTION);
@@ -261,12 +264,17 @@ void ApplicationCacheHost::didChangeCacheAssociation()
 
 void ApplicationCacheHost::notifyEventListener(blink::WebApplicationCacheHost::EventID eventID)
 {
-    notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0);
+    notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0, blink::WebApplicationCacheHost::UnknownError, String(), 0, String());
 }
 
 void ApplicationCacheHost::notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone)
 {
-    notifyApplicationCache(PROGRESS_EVENT, progressTotal, progressDone);
+    notifyApplicationCache(PROGRESS_EVENT, progressTotal, progressDone, blink::WebApplicationCacheHost::UnknownError, String(), 0, String());
+}
+
+void ApplicationCacheHost::notifyErrorEventListener(blink::WebApplicationCacheHost::ErrorReason reason, const blink::WebURL& url, int status, const blink::WebString& message)
+{
+    notifyApplicationCache(ERROR_EVENT, 0, 0, reason, url.string(), status, message);
 }
 
 } // namespace WebCore

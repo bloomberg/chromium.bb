@@ -9,6 +9,7 @@ Animation
 AnimationEvent
 AnimationPlayer
 ApplicationCache
+ApplicationCacheErrorEvent
 Array
 ArrayBuffer
 Attr

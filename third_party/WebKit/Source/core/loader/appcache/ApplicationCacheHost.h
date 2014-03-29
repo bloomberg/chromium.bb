@@ -125,7 +125,7 @@ namespace WebCore {
         void abort();
 
         void setApplicationCache(ApplicationCache*);
-        void notifyApplicationCache(EventID, int progressTotal, int progressDone);
+        void notifyApplicationCache(EventID, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
 
         void stopDeferringEvents(); // Also raises the events that have been queued up.
 
@@ -137,6 +137,7 @@ namespace WebCore {
         virtual void didChangeCacheAssociation() OVERRIDE FINAL;
         virtual void notifyEventListener(blink::WebApplicationCacheHost::EventID) OVERRIDE FINAL;
         virtual void notifyProgressEventListener(const blink::WebURL&, int progressTotal, int progressDone) OVERRIDE FINAL;
+        virtual void notifyErrorEventListener(blink::WebApplicationCacheHost::ErrorReason, const blink::WebURL&, int status, const blink::WebString& message) OVERRIDE FINAL;
 
         bool isApplicationCacheEnabled();
         DocumentLoader* documentLoader() const { return m_documentLoader; }
@@ -145,7 +146,20 @@ namespace WebCore {
             EventID eventID;
             int progressTotal;
             int progressDone;
-            DeferredEvent(EventID id, int total, int done) : eventID(id), progressTotal(total), progressDone(done) { }
+            blink::WebApplicationCacheHost::ErrorReason errorReason;
+            String errorURL;
+            int errorStatus;
+            String errorMessage;
+            DeferredEvent(EventID id, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason errorReason, const String& errorURL, int errorStatus, const String& errorMessage)
+                : eventID(id)
+                , progressTotal(progressTotal)
+                , progressDone(progressDone)
+                , errorReason(errorReason)
+                , errorURL(errorURL)
+                , errorStatus(errorStatus)
+                , errorMessage(errorMessage)
+            {
+            }
         };
 
         ApplicationCache* m_domApplicationCache;
@@ -153,7 +167,7 @@ namespace WebCore {
         bool m_defersEvents; // Events are deferred until after document onload.
         Vector<DeferredEvent> m_deferredEvents;
 
-        void dispatchDOMEvent(EventID, int progressTotal, int progressDone);
+        void dispatchDOMEvent(EventID, int progressTotal, int progressDone, blink::WebApplicationCacheHost::ErrorReason, const String& errorURL, int errorStatus, const String& errorMessage);
 
         OwnPtr<blink::WebApplicationCacheHost> m_host;
     };
