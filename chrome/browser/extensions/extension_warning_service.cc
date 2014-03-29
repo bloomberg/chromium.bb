@@ -93,7 +93,7 @@ void ExtensionWarningService::AddWarnings(
 void ExtensionWarningService::NotifyWarningsOnUI(
     void* profile_id,
     const ExtensionWarningSet& warnings) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!profile ||
       !g_browser_process->profile_manager() ||

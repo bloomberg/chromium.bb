@@ -46,7 +46,7 @@ bool DnsResolveFunction::RunImpl() {
 }
 
 void DnsResolveFunction::WorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   net::HostResolver* host_resolver =
       HostResolverWrapper::GetInstance()->GetHostResolver(
@@ -76,7 +76,7 @@ void DnsResolveFunction::WorkOnIOThread() {
 }
 
 void DnsResolveFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendResponse(response_);
 }
 

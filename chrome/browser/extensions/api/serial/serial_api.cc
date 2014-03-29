@@ -83,7 +83,7 @@ bool SerialGetDevicesFunction::Prepare() {
 }
 
 void SerialGetDevicesFunction::Work() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   device::SerialDeviceInfoList devices;
   scoped_ptr<device::SerialDeviceEnumerator> enumerator =
@@ -142,7 +142,7 @@ bool SerialConnectFunction::Prepare() {
 }
 
 void SerialConnectFunction::AsyncWorkStart() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   connection_ = CreateSerialConnection(params_->path, extension_->id());
   connection_->Open(base::Bind(&SerialConnectFunction::OnConnected, this));
 }
@@ -167,7 +167,7 @@ void SerialConnectFunction::OnConnected(bool success) {
 }
 
 void SerialConnectFunction::FinishConnect() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!connection_) {
     error_ = kErrorConnectFailed;
   } else {

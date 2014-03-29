@@ -42,7 +42,7 @@ class RulesCacheDelegate {
                       scoped_ptr<base::Value> value);
 
   base::WeakPtr<RulesCacheDelegate> GetWeakPtr() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return weak_ptr_factory_.GetWeakPtr();
   }
 

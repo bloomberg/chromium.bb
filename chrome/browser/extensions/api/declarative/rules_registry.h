@@ -196,7 +196,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   typedef std::map<ExtensionId, ProcessChangedRulesState> ProcessStateMap;
 
   base::WeakPtr<RulesRegistry> GetWeakPtr() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return weak_ptr_factory_.GetWeakPtr();
   }
 

@@ -92,7 +92,7 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
     base::File::Error error) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -101,7 +101,7 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
     error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
     SetResult(new base::FundamentalValue(false));
@@ -146,7 +146,7 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
     base::File::Error error) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         Bind(&SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem,
@@ -154,7 +154,7 @@ void SyncFileSystemRequestFileSystemFunction::DidOpenFileSystem(
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (error != base::File::FILE_OK) {
     error_ = ErrorToString(sync_file_system::FileErrorToSyncStatusCode(error));
     SendResponse(false);
@@ -188,7 +188,7 @@ bool SyncFileSystemGetFileStatusFunction::RunImpl() {
 void SyncFileSystemGetFileStatusFunction::DidGetFileStatus(
     const SyncStatusCode sync_status_code,
     const SyncFileStatus sync_file_status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (sync_status_code != sync_file_system::SYNC_STATUS_OK) {
     error_ = ErrorToString(sync_status_code);
     SendResponse(false);
@@ -243,7 +243,7 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
     const fileapi::FileSystemURL& file_system_url,
     SyncStatusCode sync_status_code,
     SyncFileStatus sync_file_status) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   num_results_received_++;
   DCHECK_LE(num_results_received_, num_expected_results_);
 
@@ -317,7 +317,7 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
       quota::QuotaStatusCode status, int64 usage, int64 quota) {
   // Repost to switch from IO thread to UI thread for SendResponse().
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -326,7 +326,7 @@ void SyncFileSystemGetUsageAndQuotaFunction::DidGetUsageAndQuota(
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status != quota::kQuotaStatusOk) {
     error_ = QuotaStatusCodeToString(status);
     SendResponse(false);

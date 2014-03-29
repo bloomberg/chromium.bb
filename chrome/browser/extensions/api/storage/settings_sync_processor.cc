@@ -22,17 +22,17 @@ SettingsSyncProcessor::SettingsSyncProcessor(
       type_(type),
       sync_processor_(sync_processor),
       initialized_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
   CHECK(sync_processor);
 }
 
 SettingsSyncProcessor::~SettingsSyncProcessor() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 
 void SettingsSyncProcessor::Init(const base::DictionaryValue& initial_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CHECK(!initialized_) << "Init called multiple times";
 
   for (base::DictionaryValue::Iterator i(initial_state); !i.IsAtEnd();
@@ -44,7 +44,7 @@ void SettingsSyncProcessor::Init(const base::DictionaryValue& initial_state) {
 
 syncer::SyncError SettingsSyncProcessor::SendChanges(
     const ValueStoreChangeList& changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CHECK(initialized_) << "Init not called";
 
   syncer::SyncChangeList sync_changes;
@@ -96,7 +96,7 @@ syncer::SyncError SettingsSyncProcessor::SendChanges(
 }
 
 void SettingsSyncProcessor::NotifyChanges(const ValueStoreChangeList& changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CHECK(initialized_) << "Init not called";
 
   for (ValueStoreChangeList::const_iterator i = changes.begin();

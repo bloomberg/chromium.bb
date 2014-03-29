@@ -90,7 +90,7 @@ void CredentialsGetterHostClient::StartProcessOnIOThread(
     const std::string& public_key,
     const extensions::NetworkingPrivateServiceClient::CryptoVerify::
         VerifyAndEncryptCredentialsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::vector<uint8> public_key_data(public_key.begin(), public_key.end());
   UtilityProcessHost* host =
       UtilityProcessHost::Create(this, base::MessageLoopProxy::current());

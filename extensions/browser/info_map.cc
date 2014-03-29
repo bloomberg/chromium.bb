@@ -16,9 +16,7 @@ namespace extensions {
 
 namespace {
 
-void CheckOnValidThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-}
+void CheckOnValidThread() { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
 
 }  // namespace
 

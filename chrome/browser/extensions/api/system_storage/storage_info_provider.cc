@@ -64,7 +64,7 @@ void StorageInfoProvider::PrepareQueryOnUIThread() {
 
 void StorageInfoProvider::InitializeProvider(
     const base::Closure& do_query_info_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Register the |do_query_info_callback| callback to StorageMonitor.
   // See the comments of StorageMonitor::EnsureInitialized about when the
   // callback gets run.
@@ -93,7 +93,7 @@ void StorageInfoProvider::GetAllStoragesIntoInfoList() {
 
 double StorageInfoProvider::GetStorageFreeSpaceFromTransientIdOnFileThread(
     const std::string& transient_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::vector<StorageInfo> storage_list =
       StorageMonitor::GetInstance()->GetAllAvailableStorages();
 

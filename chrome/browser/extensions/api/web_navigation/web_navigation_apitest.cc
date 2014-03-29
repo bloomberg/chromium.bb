@@ -92,7 +92,7 @@ class TestNavigationListener
   content::ResourceThrottle* CreateResourceThrottle(
       const GURL& url,
       ResourceType::Type resource_type) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (urls_to_delay_.find(url) == urls_to_delay_.end())
       return NULL;
 

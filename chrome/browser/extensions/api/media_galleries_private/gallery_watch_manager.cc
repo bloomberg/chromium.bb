@@ -38,7 +38,7 @@ void SendGalleryChangedEventOnUIThread(
     base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router,
     MediaGalleryPrefId gallery_id,
     const std::set<std::string>& extension_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (event_router.get())
     event_router->OnGalleryChanged(gallery_id, extension_ids);
 }
@@ -134,14 +134,14 @@ GalleryWatchManager::GalleryFilePathWatcher::GalleryFilePathWatcher(
       gallery_id_(gallery_id),
       on_destroyed_callback_(on_destroyed_callback),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   gallery_path_ = path;
   AddExtension(extension_id);
 }
 
 void GalleryWatchManager::GalleryFilePathWatcher::AddExtension(
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (ContainsKey(extension_watch_info_map_, extension_id))
     return;
   extension_watch_info_map_[extension_id] = base::Time();
@@ -150,19 +150,19 @@ void GalleryWatchManager::GalleryFilePathWatcher::AddExtension(
 
 void GalleryWatchManager::GalleryFilePathWatcher::RemoveExtension(
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (extension_watch_info_map_.erase(extension_id) == 1)
     Release();
 }
 
 void GalleryWatchManager::GalleryFilePathWatcher::OnExtensionUnloaded(
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   RemoveExtensionReferences(extension_id);
 }
 
 bool GalleryWatchManager::GalleryFilePathWatcher::SetupWatch() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return file_watcher_.Watch(
       gallery_path_, true,
       base::Bind(&GalleryFilePathWatcher::OnFilePathChanged,
@@ -170,7 +170,7 @@ bool GalleryWatchManager::GalleryFilePathWatcher::SetupWatch() {
 }
 
 void GalleryWatchManager::GalleryFilePathWatcher::RemoveAllWatchReferences() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::set<std::string> extension_ids;
   for (ExtensionWatchInfoMap::iterator iter = extension_watch_info_map_.begin();
        iter != extension_watch_info_map_.end(); ++iter)
@@ -182,14 +182,14 @@ void GalleryWatchManager::GalleryFilePathWatcher::RemoveAllWatchReferences() {
 }
 
 GalleryWatchManager::GalleryFilePathWatcher::~GalleryFilePathWatcher() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   on_destroyed_callback_.Run();
 }
 
 void GalleryWatchManager::GalleryFilePathWatcher::OnFilePathChanged(
     const base::FilePath& path,
     bool error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (error || (path != gallery_path_))
     return;
 
@@ -220,7 +220,7 @@ void GalleryWatchManager::GalleryFilePathWatcher::OnFilePathChanged(
 
 void GalleryWatchManager::GalleryFilePathWatcher::RemoveExtensionReferences(
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   ExtensionWatchInfoMap::iterator it =
       extension_watch_info_map_.find(extension_id);
   if (it == extension_watch_info_map_.end())
@@ -236,7 +236,7 @@ void GalleryWatchManager::GalleryFilePathWatcher::RemoveExtensionReferences(
 // static
 GalleryWatchManager* GalleryWatchManager::GetForProfile(
     void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(profile_id);
   bool has_watch_manager = (g_gallery_watch_managers &&
                             GalleryWatchManager::HasForProfile(profile_id));
@@ -249,7 +249,7 @@ GalleryWatchManager* GalleryWatchManager::GetForProfile(
 
 // static
 bool GalleryWatchManager::HasForProfile(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(profile_id);
   if (!g_gallery_watch_managers)
     return false;
@@ -260,7 +260,7 @@ bool GalleryWatchManager::HasForProfile(void* profile_id) {
 
 // static
 void GalleryWatchManager::OnProfileShutdown(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(profile_id);
   if (!g_gallery_watch_managers || g_gallery_watch_managers->empty())
     return;
@@ -280,7 +280,7 @@ bool GalleryWatchManager::SetupGalleryWatch(
     const base::FilePath& watch_path,
     const std::string& extension_id,
     base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return GalleryWatchManager::GetForProfile(profile_id)->StartGalleryWatch(
       gallery_id, watch_path, extension_id, event_router);
 }
@@ -289,7 +289,7 @@ bool GalleryWatchManager::SetupGalleryWatch(
 void GalleryWatchManager::RemoveGalleryWatch(void* profile_id,
                                              const base::FilePath& watch_path,
                                              const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!GalleryWatchManager::HasForProfile(profile_id))
     return;
   GalleryWatchManager::GetForProfile(profile_id)->StopGalleryWatch(
@@ -298,7 +298,7 @@ void GalleryWatchManager::RemoveGalleryWatch(void* profile_id,
 
 void GalleryWatchManager::OnExtensionUnloaded(void* profile_id,
                                               const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!GalleryWatchManager::HasForProfile(profile_id))
     return;
   GalleryWatchManager::GetForProfile(profile_id)->HandleExtensionUnloadedEvent(
@@ -306,11 +306,11 @@ void GalleryWatchManager::OnExtensionUnloaded(void* profile_id,
 }
 
 GalleryWatchManager::GalleryWatchManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 
 GalleryWatchManager::~GalleryWatchManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DeleteAllWatchers();
 }
 
@@ -319,7 +319,7 @@ bool GalleryWatchManager::StartGalleryWatch(
     const base::FilePath& watch_path,
     const std::string& extension_id,
     base::WeakPtr<MediaGalleriesPrivateEventRouter> event_router) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WatcherMap::const_iterator iter = gallery_watchers_.find(watch_path);
   if (iter != gallery_watchers_.end()) {
     // Already watched.
@@ -343,7 +343,7 @@ bool GalleryWatchManager::StartGalleryWatch(
 void GalleryWatchManager::StopGalleryWatch(
     const base::FilePath& watch_path,
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WatcherMap::iterator iter = gallery_watchers_.find(watch_path);
   if (iter == gallery_watchers_.end())
     return;
@@ -353,7 +353,7 @@ void GalleryWatchManager::StopGalleryWatch(
 
 void GalleryWatchManager::HandleExtensionUnloadedEvent(
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::list<base::FilePath> watchers_to_notify;
   for (WatcherMap::iterator iter = gallery_watchers_.begin();
        iter != gallery_watchers_.end(); ++iter)
@@ -370,7 +370,7 @@ void GalleryWatchManager::HandleExtensionUnloadedEvent(
 }
 
 void GalleryWatchManager::DeleteAllWatchers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (gallery_watchers_.empty())
     return;
 
@@ -386,7 +386,7 @@ void GalleryWatchManager::DeleteAllWatchers() {
 
 void GalleryWatchManager::RemoveGalleryFilePathWatcherEntry(
     const base::FilePath& watch_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   gallery_watchers_.erase(watch_path);
 }
 

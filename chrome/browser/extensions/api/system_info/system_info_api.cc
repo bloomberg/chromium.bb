@@ -114,7 +114,7 @@ SystemInfoEventRouter::~SystemInfoEventRouter() {
 }
 
 void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   watching_event_set_.insert(event_name);
   if (watching_event_set_.count(event_name) > 1)
@@ -136,7 +136,7 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
 }
 
 void SystemInfoEventRouter::RemoveEventListener(const std::string& event_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::multiset<std::string>::iterator it =
       watching_event_set_.find(event_name);

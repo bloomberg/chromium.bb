@@ -477,7 +477,7 @@ void CrxInstaller::OnUnpackSuccess(
 }
 
 void CrxInstaller::CheckImportsAndRequirements() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
@@ -506,7 +506,7 @@ void CrxInstaller::CheckImportsAndRequirements() {
 
 void CrxInstaller::OnRequirementsChecked(
     std::vector<std::string> requirement_errors) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_weak_)
     return;
 
@@ -526,7 +526,7 @@ void CrxInstaller::OnRequirementsChecked(
 
 void CrxInstaller::OnBlacklistChecked(
     extensions::BlacklistState blacklist_state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!service_weak_)
     return;
 
@@ -553,7 +553,7 @@ void CrxInstaller::OnBlacklistChecked(
 }
 
 void CrxInstaller::ConfirmInstall() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
@@ -618,7 +618,7 @@ void CrxInstaller::ConfirmInstall() {
 }
 
 void CrxInstaller::InstallUIProceed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
@@ -730,7 +730,7 @@ void CrxInstaller::ReportFailureFromFileThread(const CrxInstallerError& error) {
 }
 
 void CrxInstaller::ReportFailureFromUIThread(const CrxInstallerError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::NotificationService* service =
       content::NotificationService::current();
@@ -774,7 +774,7 @@ void CrxInstaller::ReportSuccessFromFileThread() {
 }
 
 void CrxInstaller::ReportSuccessFromUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!service_weak_.get() || service_weak_->browser_terminating())
     return;
@@ -840,7 +840,7 @@ void CrxInstaller::CleanupTempFiles() {
 }
 
 void CrxInstaller::CheckUpdateFromSettingsPage() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
@@ -861,7 +861,7 @@ void CrxInstaller::CheckUpdateFromSettingsPage() {
 }
 
 void CrxInstaller::ConfirmReEnable() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())

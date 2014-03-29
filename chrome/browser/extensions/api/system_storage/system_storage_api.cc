@@ -40,7 +40,7 @@ SystemStorageEjectDeviceFunction::~SystemStorageEjectDeviceFunction() {
 }
 
 bool SystemStorageEjectDeviceFunction::RunImpl() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<EjectDevice::Params> params(EjectDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -104,7 +104,7 @@ SystemStorageGetAvailableCapacityFunction::
 }
 
 bool SystemStorageGetAvailableCapacityFunction::RunImpl() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<GetAvailableCapacity::Params> params(
       GetAvailableCapacity::Params::Create(*args_));

@@ -17,7 +17,7 @@ AsyncApiFunction::AsyncApiFunction() : work_thread_id_(BrowserThread::IO) {}
 AsyncApiFunction::~AsyncApiFunction() {}
 
 bool AsyncApiFunction::RunImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!PrePrepare() || !Prepare()) {
     return false;
@@ -52,7 +52,7 @@ void AsyncApiFunction::AsyncWorkCompleted() {
 }
 
 void AsyncApiFunction::WorkOnWorkThread() {
-  DCHECK(BrowserThread::CurrentlyOn(work_thread_id_));
+  DCHECK_CURRENTLY_ON(work_thread_id_);
   DLOG_IF(ERROR, (work_thread_id_ == BrowserThread::UI))
       << "You have specified that AsyncApiFunction::Work() should happen on "
          "the UI thread. This nullifies the point of this class. Either "
@@ -61,7 +61,7 @@ void AsyncApiFunction::WorkOnWorkThread() {
 }
 
 void AsyncApiFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendResponse(Respond());
 }
 

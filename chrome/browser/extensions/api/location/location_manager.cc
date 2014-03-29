@@ -213,7 +213,7 @@ LocationRequest::LocationRequest(
       extension_id_(extension_id),
       location_manager_(location_manager) {
   // TODO(vadimt): use request_info.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (time_between_updates_ms) {
     update_policies_.push_back(
@@ -229,7 +229,7 @@ LocationRequest::LocationRequest(
 }
 
 void LocationRequest::Initialize() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback_ = base::Bind(&LocationRequest::OnLocationUpdate,
                          base::Unretained(this));
 
@@ -241,18 +241,18 @@ void LocationRequest::Initialize() {
 }
 
 void LocationRequest::GrantPermission() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
 }
 
 LocationRequest::~LocationRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   content::GeolocationProvider::GetInstance()->RemoveLocationUpdateCallback(
       callback_);
 }
 
 void LocationRequest::AddObserverOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(vadimt): This can get a location cached by GeolocationProvider,
   // contrary to the API definition which says that creating a location watch
@@ -262,7 +262,7 @@ void LocationRequest::AddObserverOnIOThread() {
 }
 
 void LocationRequest::OnLocationUpdate(const content::Geoposition& position) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (ShouldSendUpdate(position)) {
     OnPositionReported(position);
     BrowserThread::PostTask(
@@ -277,7 +277,7 @@ void LocationRequest::OnLocationUpdate(const content::Geoposition& position) {
 }
 
 bool LocationRequest::ShouldSendUpdate(const content::Geoposition& position) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (UpdatePolicyVector::iterator it = update_policies_.begin();
        it != update_policies_.end();
        ++it) {
@@ -289,7 +289,7 @@ bool LocationRequest::ShouldSendUpdate(const content::Geoposition& position) {
 }
 
 void LocationRequest::OnPositionReported(const content::Geoposition& position) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (UpdatePolicyVector::iterator it = update_policies_.begin();
        it != update_policies_.end();
        ++it) {
@@ -310,7 +310,7 @@ void LocationManager::AddLocationRequest(
     const std::string& request_name,
     const double* distance_update_threshold_meters,
     const double* time_between_updates_ms) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(vadimt): Consider resuming requests after restarting the browser.
 
   // Override any old request with the same name.
@@ -329,7 +329,7 @@ void LocationManager::AddLocationRequest(
 
 void LocationManager::RemoveLocationRequest(const std::string& extension_id,
                                             const std::string& name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::pair<LocationRequestMap::iterator, LocationRequestMap::iterator>
       extension_range = location_requests_.equal_range(extension_id);
@@ -369,7 +369,7 @@ void LocationManager::SendLocationUpdate(
     const std::string& extension_id,
     const std::string& request_name,
     const content::Geoposition& position) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   std::string event_name;
@@ -400,7 +400,7 @@ void LocationManager::SendLocationUpdate(
 void LocationManager::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {

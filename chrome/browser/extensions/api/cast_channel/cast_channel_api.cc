@@ -79,7 +79,7 @@ void CastChannelAPI::SetSocketForTest(scoped_ptr<CastSocket> socket_for_test) {
 
 void CastChannelAPI::OnError(const CastSocket* socket,
                              cast_channel::ChannelError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ChannelInfo channel_info;
   socket->FillChannelInfo(&channel_info);
   channel_info.error_state = error;
@@ -92,7 +92,7 @@ void CastChannelAPI::OnError(const CastSocket* socket,
 
 void CastChannelAPI::OnMessage(const CastSocket* socket,
                                const MessageInfo& message_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ChannelInfo channel_info;
   socket->FillChannelInfo(&channel_info);
   scoped_ptr<base::ListValue> results =
@@ -132,7 +132,7 @@ CastSocket* CastChannelAsyncApiFunction::GetSocketOrCompleteWithError(
 }
 
 int CastChannelAsyncApiFunction::AddSocket(CastSocket* socket) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(socket);
   DCHECK(manager_);
   const int id = manager_->Add(socket);
@@ -141,7 +141,7 @@ int CastChannelAsyncApiFunction::AddSocket(CastSocket* socket) {
 }
 
 void CastChannelAsyncApiFunction::RemoveSocket(int channel_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(manager_);
   manager_->Remove(extension_->id(), channel_id);
 }
@@ -166,14 +166,14 @@ void CastChannelAsyncApiFunction::SetResultFromError(ChannelError error) {
 }
 
 CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(manager_);
   return manager_->Get(extension_->id(), channel_id);
 }
 
 void CastChannelAsyncApiFunction::SetResultFromChannelInfo(
     const ChannelInfo& channel_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SetResult(channel_info.ToValue().release());
 }
 
@@ -203,7 +203,7 @@ void CastChannelOpenFunction::AsyncWorkStart() {
 }
 
 void CastChannelOpenFunction::OnOpen(int result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SetResultFromSocket(new_channel_id_);
   AsyncWorkCompleted();
 }
@@ -227,7 +227,7 @@ void CastChannelSendFunction::AsyncWorkStart() {
 }
 
 void CastChannelSendFunction::OnSend(int result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (result < 0) {
     SetResultFromError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);
   } else {
@@ -254,7 +254,7 @@ void CastChannelCloseFunction::AsyncWorkStart() {
 }
 
 void CastChannelCloseFunction::OnClose(int result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(1) << "CastChannelCloseFunction::OnClose result = " << result;
   if (result < 0) {
     SetResultFromError(cast_channel::CHANNEL_ERROR_SOCKET_ERROR);

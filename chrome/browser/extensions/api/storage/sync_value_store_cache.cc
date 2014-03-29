@@ -41,7 +41,7 @@ SyncValueStoreCache::SyncValueStoreCache(
     const scoped_refptr<SettingsObserverList>& observers,
     const base::FilePath& profile_path)
     : initialized_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This post is safe since the destructor can only be invoked from the
   // same message loop, and any potential post of a deletion task must come
@@ -54,12 +54,12 @@ SyncValueStoreCache::SyncValueStoreCache(
 }
 
 SyncValueStoreCache::~SyncValueStoreCache() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 
 syncer::SyncableService* SyncValueStoreCache::GetSyncableService(
     syncer::ModelType type) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(initialized_);
 
   switch (type) {
@@ -76,7 +76,7 @@ syncer::SyncableService* SyncValueStoreCache::GetSyncableService(
 void SyncValueStoreCache::RunWithValueStoreForExtension(
     const StorageCallback& callback,
     scoped_refptr<const Extension> extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(initialized_);
   SyncStorageBackend* backend =
       extension->is_app() ? app_backend_.get() : extension_backend_.get();
@@ -84,7 +84,7 @@ void SyncValueStoreCache::RunWithValueStoreForExtension(
 }
 
 void SyncValueStoreCache::DeleteStorageSoon(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   app_backend_->DeleteStorage(extension_id);
   extension_backend_->DeleteStorage(extension_id);
 }
@@ -93,7 +93,7 @@ void SyncValueStoreCache::InitOnFileThread(
     const scoped_refptr<SettingsStorageFactory>& factory,
     const scoped_refptr<SettingsObserverList>& observers,
     const base::FilePath& profile_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!initialized_);
   app_backend_.reset(new SyncStorageBackend(
       factory,

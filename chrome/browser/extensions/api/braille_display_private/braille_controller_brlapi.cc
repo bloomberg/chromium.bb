@@ -65,7 +65,7 @@ BrailleControllerImpl::~BrailleControllerImpl() {
 }
 
 void BrailleControllerImpl::TryLoadLibBrlApi() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (libbrlapi_loader_.loaded())
     return;
   // These versions of libbrlapi work the same for the functions we
@@ -82,7 +82,7 @@ void BrailleControllerImpl::TryLoadLibBrlApi() {
 }
 
 scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   StartConnecting();
   scoped_ptr<DisplayState> display_state(new DisplayState);
   if (connection_.get() && connection_->Connected()) {
@@ -98,7 +98,7 @@ scoped_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
 }
 
 void BrailleControllerImpl::WriteDots(const std::string& cells) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (connection_ && connection_->Connected()) {
     size_t size;
     if (!connection_->GetDisplaySize(&size)) {
@@ -114,7 +114,7 @@ void BrailleControllerImpl::WriteDots(const std::string& cells) {
 }
 
 void BrailleControllerImpl::AddObserver(BrailleObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                                base::Bind(
                                    &BrailleControllerImpl::StartConnecting,
@@ -125,7 +125,7 @@ void BrailleControllerImpl::AddObserver(BrailleObserver* observer) {
 }
 
 void BrailleControllerImpl::RemoveObserver(BrailleObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 
@@ -145,7 +145,7 @@ void BrailleControllerImpl::PokeSocketDirForTesting() {
 }
 
 void BrailleControllerImpl::StartConnecting() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (started_connecting_)
     return;
   started_connecting_ = true;
@@ -170,7 +170,7 @@ void BrailleControllerImpl::StartConnecting() {
 }
 
 void BrailleControllerImpl::StartWatchingSocketDirOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
   if (!file_path_watcher_.Watch(
           brlapi_dir, false, base::Bind(
@@ -182,7 +182,7 @@ void BrailleControllerImpl::StartWatchingSocketDirOnFileThread() {
 
 void BrailleControllerImpl::OnSocketDirChangedOnFileThread(
     const base::FilePath& path, bool error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (error) {
     LOG(ERROR) << "Error watching brlapi directory: " << path.value();
     return;
@@ -194,7 +194,7 @@ void BrailleControllerImpl::OnSocketDirChangedOnFileThread(
 }
 
 void BrailleControllerImpl::OnSocketDirChangedOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(1) << "BrlAPI directory changed";
   // Every directory change resets the max retry time to the appropriate delay
   // into the future.
@@ -204,7 +204,7 @@ void BrailleControllerImpl::OnSocketDirChangedOnIOThread() {
 }
 
 void BrailleControllerImpl::TryToConnect() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(libbrlapi_loader_.loaded());
   connect_scheduled_ = false;
   if (!connection_.get())
@@ -230,13 +230,13 @@ void BrailleControllerImpl::TryToConnect() {
 }
 
 void BrailleControllerImpl::ResetRetryConnectHorizon() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   retry_connect_horizon_ = Time::Now() + TimeDelta::FromMilliseconds(
       kConnectRetryTimeout);
 }
 
 void BrailleControllerImpl::ScheduleTryToConnect() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TimeDelta delay(TimeDelta::FromMilliseconds(kConnectionDelayMs));
   // Don't reschedule if there's already a connect scheduled or
   // the next attempt would fall outside of the retry limit.
@@ -256,7 +256,7 @@ void BrailleControllerImpl::ScheduleTryToConnect() {
 }
 
 void BrailleControllerImpl::Disconnect() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!connection_ || !connection_->Connected())
     return;
   connection_->Disconnect();

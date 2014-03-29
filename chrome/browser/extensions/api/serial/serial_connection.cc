@@ -40,7 +40,7 @@ SerialConnection::SerialConnection(const std::string& port,
       send_timeout_(0),
       paused_(false),
       io_handler_(SerialIoHandler::Create()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
 SerialConnection::~SerialConnection() {
@@ -72,7 +72,7 @@ void SerialConnection::set_paused(bool paused) {
 }
 
 void SerialConnection::Open(const OpenCompleteCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(open_complete_.is_null());
   open_complete_ = callback;
   BrowserThread::PostTask(
@@ -83,7 +83,7 @@ void SerialConnection::Open(const OpenCompleteCallback& callback) {
 
 void SerialConnection::Close() {
   DCHECK(open_complete_.is_null());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (file_.IsValid()) {
     BrowserThread::PostTask(
         BrowserThread::FILE,
@@ -93,7 +93,7 @@ void SerialConnection::Close() {
 }
 
 bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!receive_complete_.is_null())
     return false;
   receive_complete_ = callback;
@@ -109,7 +109,7 @@ bool SerialConnection::Receive(const ReceiveCompleteCallback& callback) {
 
 bool SerialConnection::Send(const std::string& data,
                             const SendCompleteCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!send_complete_.is_null())
     return false;
   send_complete_ = callback;
@@ -125,7 +125,7 @@ bool SerialConnection::Send(const std::string& data,
 
 bool SerialConnection::Configure(
     const api::serial::ConnectionOptions& options) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (options.persistent.get())
     set_persistent(*options.persistent);
   if (options.name.get())
@@ -147,7 +147,7 @@ void SerialConnection::SetIoHandlerForTest(
 }
 
 bool SerialConnection::GetInfo(api::serial::ConnectionInfo* info) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   info->paused = paused_;
   info->persistent = persistent_;
   info->name = name_;
@@ -159,7 +159,7 @@ bool SerialConnection::GetInfo(api::serial::ConnectionInfo* info) const {
 
 void SerialConnection::StartOpen() {
   DCHECK(!open_complete_.is_null());
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!file_.IsValid());
   // It's the responsibility of the API wrapper around SerialConnection to
   // validate the supplied path against the set of valid port names, and
@@ -180,7 +180,7 @@ void SerialConnection::StartOpen() {
 }
 
 void SerialConnection::FinishOpen(base::File file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!open_complete_.is_null());
   DCHECK(!file_.IsValid());
   OpenCompleteCallback callback = open_complete_;
@@ -209,23 +209,23 @@ void SerialConnection::FinishOpen(base::File file) {
 
 // static
 void SerialConnection::DoClose(base::File port) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // port closed by destructor.
 }
 
 void SerialConnection::OnReceiveTimeout() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   io_handler_->CancelRead(api::serial::RECEIVE_ERROR_TIMEOUT);
 }
 
 void SerialConnection::OnSendTimeout() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   io_handler_->CancelWrite(api::serial::SEND_ERROR_TIMEOUT);
 }
 
 void SerialConnection::OnAsyncReadComplete(const std::string& data,
                                            api::serial::ReceiveError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!receive_complete_.is_null());
   ReceiveCompleteCallback callback = receive_complete_;
   receive_complete_.Reset();
@@ -235,7 +235,7 @@ void SerialConnection::OnAsyncReadComplete(const std::string& data,
 
 void SerialConnection::OnAsyncWriteComplete(int bytes_sent,
                                             api::serial::SendError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!send_complete_.is_null());
   SendCompleteCallback callback = send_complete_;
   send_complete_.Reset();

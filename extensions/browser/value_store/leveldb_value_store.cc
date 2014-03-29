@@ -48,7 +48,7 @@ class ScopedSnapshot {
 
 LeveldbValueStore::LeveldbValueStore(const base::FilePath& db_path)
     : db_path_(db_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
   if (open_error)
@@ -56,7 +56,7 @@ LeveldbValueStore::LeveldbValueStore(const base::FilePath& db_path)
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Delete the database from disk if it's empty (but only if we managed to
   // open it!). This is safe on destruction, assuming that we have exclusive
@@ -85,7 +85,7 @@ size_t LeveldbValueStore::GetBytesInUse() {
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
   if (open_error)
@@ -104,7 +104,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
 
 ValueStore::ReadResult LeveldbValueStore::Get(
     const std::vector<std::string>& keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
   if (open_error)
@@ -131,7 +131,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
   if (open_error)
@@ -169,7 +169,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
 
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const std::string& key, const base::Value& value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
   if (open_error)
@@ -189,7 +189,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(
 
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options, const base::DictionaryValue& settings) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
   if (open_error)
@@ -212,13 +212,13 @@ ValueStore::WriteResult LeveldbValueStore::Set(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(const std::string& key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return Remove(std::vector<std::string>(1, key));
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(
     const std::vector<std::string>& keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
   if (open_error)
@@ -248,7 +248,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
@@ -270,7 +270,7 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
 }
 
 bool LeveldbValueStore::Restore() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   ReadResult result = Get();
   std::string previous_key;
@@ -297,7 +297,7 @@ bool LeveldbValueStore::Restore() {
 }
 
 bool LeveldbValueStore::RestoreKey(const std::string& key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   ReadResult result = Get(key);
   if (result->IsCorrupted()) {
@@ -319,7 +319,7 @@ bool LeveldbValueStore::WriteToDbForTest(leveldb::WriteBatch* batch) {
 }
 
 scoped_ptr<ValueStore::Error> LeveldbValueStore::EnsureDbIsOpen() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (db_)
     return util::NoError();
@@ -343,7 +343,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::ReadFromDb(
     leveldb::ReadOptions options,
     const std::string& key,
     scoped_ptr<base::Value>* setting) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(setting);
 
   std::string value_as_json;
@@ -405,7 +405,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::WriteToDb(
 }
 
 bool LeveldbValueStore::IsEmpty() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(leveldb::ReadOptions()));
 
   it->SeekToFirst();

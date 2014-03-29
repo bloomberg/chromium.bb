@@ -46,17 +46,17 @@ LocalValueStoreCache::LocalValueStoreCache(
           profile_path.AppendASCII(kLocalExtensionSettingsDirectoryName)),
       app_base_path_(profile_path.AppendASCII(kLocalAppSettingsDirectoryName)),
       quota_(GetLocalQuotaLimits()) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 LocalValueStoreCache::~LocalValueStoreCache() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 
 void LocalValueStoreCache::RunWithValueStoreForExtension(
     const StorageCallback& callback,
     scoped_refptr<const Extension> extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   ValueStore* storage = GetStorage(extension);
 
@@ -71,7 +71,7 @@ void LocalValueStoreCache::RunWithValueStoreForExtension(
 }
 
 void LocalValueStoreCache::DeleteStorageSoon(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   storage_map_.erase(extension_id);
   storage_factory_->DeleteDatabaseIfExists(app_base_path_, extension_id);
   storage_factory_->DeleteDatabaseIfExists(extension_base_path_, extension_id);

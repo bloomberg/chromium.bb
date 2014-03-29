@@ -777,7 +777,7 @@ class ExternallyConnectableMessagingWithTlsChannelIdTest :
       std::string* domain_bound_cert,
       net::ServerBoundCertService::RequestHandle* request_handle,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     net::ServerBoundCertService* server_bound_cert_service =
         request_context_getter->GetURLRequestContext()->
             server_bound_cert_service();

@@ -25,7 +25,7 @@ MockHostResolverCreator::~MockHostResolverCreator() {
 
 net::MockHostResolver* MockHostResolverCreator::CreateMockHostResolver() {
   DCHECK(!mock_host_resolver_);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   bool result = BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -47,7 +47,7 @@ void MockHostResolverCreator::CreateMockHostResolverOnIOThread() {
 }
 
 void MockHostResolverCreator::DeleteMockHostResolver() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!mock_host_resolver_)
     return;
   resolver_event_.Reset();

@@ -18,7 +18,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   Backend() : storage_(NULL) {}
 
   void Init(const base::FilePath& db_path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     DCHECK(!storage_);
     TRACE_EVENT0("ValueStoreFrontend::Backend", "Init");
     db_path_ = db_path;
@@ -27,14 +27,14 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
   // This variant is useful for testing (using a mock ValueStore).
   void InitWithStore(scoped_ptr<ValueStore> storage) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     DCHECK(!storage_);
     storage_ = storage.release();
   }
 
   void Get(const std::string& key,
            const ValueStoreFrontend::ReadCallback& callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     ValueStore::ReadResult result = storage_->Get(key);
 
     // Extract the value from the ReadResult and pass ownership of it to the
@@ -53,14 +53,14 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   }
 
   void Set(const std::string& key, scoped_ptr<base::Value> value) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     // We don't need the old value, so skip generating changes.
     storage_->Set(ValueStore::IGNORE_QUOTA | ValueStore::NO_GENERATE_CHANGES,
                   key, *value.get());
   }
 
   void Remove(const std::string& key) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     storage_->Remove(key);
   }
 
@@ -77,7 +77,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
   void RunCallback(const ValueStoreFrontend::ReadCallback& callback,
                    scoped_ptr<base::Value> value) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     callback.Run(value.Pass());
   }
 

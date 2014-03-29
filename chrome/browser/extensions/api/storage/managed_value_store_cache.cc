@@ -221,7 +221,7 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnBlockingPool(
 
 void ManagedValueStoreCache::ExtensionTracker::Register(
     const policy::ComponentMap* components) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   schema_registry_->RegisterComponents(policy::POLICY_DOMAIN_EXTENSIONS,
                                        *components);
 
@@ -245,7 +245,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
       observers_(observers),
       base_path_(profile_->GetPath().AppendASCII(
           extensions::kManagedSettingsDirectoryName)) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   policy_service_->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
@@ -258,13 +258,13 @@ ManagedValueStoreCache::ManagedValueStoreCache(
 }
 
 ManagedValueStoreCache::~ManagedValueStoreCache() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Delete the PolicyValueStores on FILE.
   store_map_.clear();
 }
 
 void ManagedValueStoreCache::ShutdownOnUI() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   policy_service_->RemoveObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
   extension_tracker_.reset();
 }
@@ -272,13 +272,13 @@ void ManagedValueStoreCache::ShutdownOnUI() {
 void ManagedValueStoreCache::RunWithValueStoreForExtension(
     const StorageCallback& callback,
     scoped_refptr<const Extension> extension) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   callback.Run(GetStoreFor(extension->id()));
 }
 
 void ManagedValueStoreCache::DeleteStorageSoon(
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // It's possible that the store exists, but hasn't been loaded yet
   // (because the extension is unloaded, for example). Open the database to
   // clear it if it exists.
@@ -290,7 +290,7 @@ void ManagedValueStoreCache::DeleteStorageSoon(
 
 void ManagedValueStoreCache::OnPolicyServiceInitialized(
     policy::PolicyDomain domain) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (domain != policy::POLICY_DOMAIN_EXTENSIONS)
     return;
@@ -318,7 +318,7 @@ void ManagedValueStoreCache::OnPolicyServiceInitialized(
 void ManagedValueStoreCache::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                              const policy::PolicyMap& previous,
                                              const policy::PolicyMap& current) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!policy_service_->IsInitializationComplete(
            policy::POLICY_DOMAIN_EXTENSIONS)) {
@@ -339,7 +339,7 @@ void ManagedValueStoreCache::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 void ManagedValueStoreCache::UpdatePolicyOnFILE(
     const std::string& extension_id,
     scoped_ptr<policy::PolicyMap> current_policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (!HasStore(extension_id) && current_policy->empty()) {
     // Don't create the store now if there are no policies configured for this
@@ -353,7 +353,7 @@ void ManagedValueStoreCache::UpdatePolicyOnFILE(
 
 PolicyValueStore* ManagedValueStoreCache::GetStoreFor(
     const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   PolicyValueStoreMap::iterator it = store_map_.find(extension_id);
   if (it != store_map_.end())

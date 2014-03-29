@@ -23,7 +23,7 @@ ExtensionMessageFilter::ExtensionMessageFilter(int render_process_id,
     : BrowserMessageFilter(ExtensionMsgStart),
       render_process_id_(render_process_id),
       browser_context_(context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 ExtensionMessageFilter::~ExtensionMessageFilter() {}

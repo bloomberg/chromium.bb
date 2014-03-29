@@ -39,7 +39,7 @@ PolicyValueStore::PolicyValueStore(
 PolicyValueStore::~PolicyValueStore() {}
 
 void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Convert |policy| to a dictionary value. Only include mandatory policies
   // for now.
   base::DictionaryValue current_policy;

@@ -24,11 +24,11 @@ SafeManifestParser::SafeManifestParser(const std::string& xml,
     : xml_(xml),
       fetch_data_(fetch_data),
       update_callback_(update_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void SafeManifestParser::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&SafeManifestParser::ParseInSandbox, this))) {
@@ -42,7 +42,7 @@ SafeManifestParser::~SafeManifestParser() {
 }
 
 void SafeManifestParser::ParseInSandbox() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
       this,
@@ -65,14 +65,14 @@ bool SafeManifestParser::OnMessageReceived(const IPC::Message& message) {
 void SafeManifestParser::OnParseUpdateManifestSucceeded(
     const UpdateManifest::Results& results) {
   VLOG(2) << "parsing manifest succeeded (" << fetch_data_->full_url() << ")";
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   update_callback_.Run(*fetch_data_, &results);
 }
 
 void SafeManifestParser::OnParseUpdateManifestFailed(
     const std::string& error_message) {
   VLOG(2) << "parsing manifest failed (" << fetch_data_->full_url() << ")";
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   LOG(WARNING) << "Error parsing update manifest:\n" << error_message;
   update_callback_.Run(*fetch_data_, NULL);
 }

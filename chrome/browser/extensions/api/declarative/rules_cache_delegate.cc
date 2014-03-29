@@ -60,7 +60,7 @@ std::string RulesCacheDelegate::GetRulesStoredKey(const std::string& event_name,
 // 2. does not create scoped_refptr holding the registry. (A short-lived
 // scoped_refptr might delete the rules registry before it is constructed.)
 void RulesCacheDelegate::Init(RulesRegistry* registry) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // WARNING: The first use of |registry_| will bind it to the calling thread
   // so don't use this here.
@@ -93,7 +93,7 @@ void RulesCacheDelegate::Init(RulesRegistry* registry) {
 
 void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
                                      scoped_ptr<base::Value> value) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!profile_)
     return;
 
@@ -111,7 +111,7 @@ void RulesCacheDelegate::WriteToStorage(const std::string& extension_id,
 }
 
 void RulesCacheDelegate::CheckIfReady() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (notified_registry_ || !waiting_for_extensions_.empty())
     return;
 
@@ -148,7 +148,7 @@ void RulesCacheDelegate::ReadRulesForInstalledExtensions() {
 }
 
 void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!profile_)
     return;
 
@@ -177,7 +177,7 @@ void RulesCacheDelegate::ReadFromStorage(const std::string& extension_id) {
 void RulesCacheDelegate::ReadFromStorageCallback(
     const std::string& extension_id,
     scoped_ptr<base::Value> value) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(
       rules_registry_thread_,
       FROM_HERE,

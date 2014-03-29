@@ -186,7 +186,7 @@ NetworkingPrivateServiceClient::ServiceCallbacks::ServiceCallbacks() {}
 NetworkingPrivateServiceClient::ServiceCallbacks::~ServiceCallbacks() {}
 
 void NetworkingPrivateServiceClient::Shutdown() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   // Clear callbacks map to release callbacks from UI thread.
   callbacks_map_.Clear();
@@ -615,7 +615,7 @@ void NetworkingPrivateServiceClient::AfterVerifyAndEncryptCredentials(
     ServiceCallbacksID callback_id,
     const std::string& encrypted_data,
     const std::string& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   if (!error.empty()) {
@@ -648,7 +648,7 @@ void NetworkingPrivateServiceClient::AfterVerifyAndEncryptData(
 
 void NetworkingPrivateServiceClient::OnNetworksChangedEventOnUIThread(
     const std::vector<std::string>& network_guids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FOR_EACH_OBSERVER(Observer,
                     network_events_observers_,
                     OnNetworksChangedEvent(network_guids));
@@ -656,7 +656,7 @@ void NetworkingPrivateServiceClient::OnNetworksChangedEventOnUIThread(
 
 void NetworkingPrivateServiceClient::OnNetworkListChangedEventOnUIThread(
     const std::vector<std::string>& network_guids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FOR_EACH_OBSERVER(Observer,
                     network_events_observers_,
                     OnNetworkListChangedEvent(network_guids));

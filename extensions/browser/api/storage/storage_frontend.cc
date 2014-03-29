@@ -87,7 +87,7 @@ void StorageFrontend::Init(
     const scoped_refptr<SettingsStorageFactory>& factory) {
   observers_ = new SettingsObserverList();
   browser_context_observer_.reset(new DefaultObserver(browser_context_));
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!browser_context_->IsOffTheRecord());
 
   observers_->AddObserver(browser_context_observer_.get());
@@ -102,7 +102,7 @@ void StorageFrontend::Init(
 }
 
 StorageFrontend::~StorageFrontend() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_->RemoveObserver(browser_context_observer_.get());
   for (CacheMap::iterator it = caches_.begin(); it != caches_.end(); ++it) {
     ValueStoreCache* cache = it->second;
@@ -128,7 +128,7 @@ void StorageFrontend::RunWithStorage(
     scoped_refptr<const Extension> extension,
     settings_namespace::Namespace settings_namespace,
     const ValueStoreCache::StorageCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(extension.get());
 
   ValueStoreCache* cache = caches_[settings_namespace];
@@ -141,7 +141,7 @@ void StorageFrontend::RunWithStorage(
 }
 
 void StorageFrontend::DeleteStorageSoon(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (CacheMap::iterator it = caches_.begin(); it != caches_.end(); ++it) {
     ValueStoreCache* cache = it->second;
     BrowserThread::PostTask(
@@ -153,7 +153,7 @@ void StorageFrontend::DeleteStorageSoon(const std::string& extension_id) {
 }
 
 scoped_refptr<SettingsObserverList> StorageFrontend::GetObservers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return observers_;
 }
 

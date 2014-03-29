@@ -218,7 +218,7 @@ void BrowsingDataSettingsFunction::SetDetails(
 }
 
 void BrowsingDataRemoverFunction::OnBrowsingDataRemoverDone() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   this->SendResponse(true);
 
   Release();  // Balanced in RunImpl.

@@ -40,7 +40,7 @@ extensions::ComponentLoader* GetComponentLoader(BrowserContext* context) {
 }
 
 void LoadGaiaAuthExtension(BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   extensions::ComponentLoader* component_loader = GetComponentLoader(context);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -79,7 +79,7 @@ void LoadGaiaAuthExtension(BrowserContext* context) {
 }
 
 void UnloadGaiaAuthExtension(BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::StoragePartition* partition =
       content::BrowserContext::GetStoragePartitionForSite(

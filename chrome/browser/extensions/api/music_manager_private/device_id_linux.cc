@@ -192,7 +192,7 @@ namespace api {
 
 // static
 void DeviceId::GetRawDeviceId(const IdCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,

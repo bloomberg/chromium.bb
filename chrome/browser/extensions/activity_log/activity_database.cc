@@ -57,7 +57,7 @@ void ActivityDatabase::Init(const base::FilePath& db_name) {
   if (did_init_) return;
   did_init_ = true;
   if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    DCHECK_CURRENTLY_ON(BrowserThread::DB);
   db_.set_histogram_tag("Activity");
   db_.set_error_callback(
       base::Bind(&ActivityDatabase::DatabaseErrorCallback,
@@ -136,7 +136,7 @@ void ActivityDatabase::SetBatchModeForTesting(bool batch_mode) {
 
 sql::Connection* ActivityDatabase::GetSqlConnection() {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::DB))
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+    DCHECK_CURRENTLY_ON(BrowserThread::DB);
   if (valid_db_) {
     return &db_;
   } else {

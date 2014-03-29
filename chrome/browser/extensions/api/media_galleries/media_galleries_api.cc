@@ -262,7 +262,7 @@ class SelectDirectoryDialog : public ui::SelectFileDialog::Listener,
 MediaGalleriesEventRouter::MediaGalleriesEventRouter(
     content::BrowserContext* context)
     : profile_(Profile::FromBrowserContext(context)), weak_ptr_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   media_scan_manager()->AddObserver(profile_, this);
 }
@@ -271,7 +271,7 @@ MediaGalleriesEventRouter::~MediaGalleriesEventRouter() {
 }
 
 void MediaGalleriesEventRouter::Shutdown() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   weak_ptr_factory_.InvalidateWeakPtrs();
   media_scan_manager()->RemoveObserver(profile_);
   media_scan_manager()->CancelScansForProfile(profile_);
@@ -353,7 +353,7 @@ void MediaGalleriesEventRouter::DispatchEventToExtension(
     const std::string& extension_id,
     const std::string& event_name,
     scoped_ptr<base::ListValue> event_args) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
   if (!router->ExtensionHasEventListener(extension_id, event_name))
@@ -657,7 +657,7 @@ bool MediaGalleriesStartMediaScanFunction::RunImpl() {
 }
 
 void MediaGalleriesStartMediaScanFunction::OnPreferencesInit() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MediaGalleriesEventRouter* api = MediaGalleriesEventRouter::Get(GetProfile());
   if (!api->ExtensionHasScanProgressListener(GetExtension()->id())) {
     error_ = kMissingEventListener;
@@ -685,7 +685,7 @@ bool MediaGalleriesCancelMediaScanFunction::RunImpl() {
 }
 
 void MediaGalleriesCancelMediaScanFunction::OnPreferencesInit() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   media_scan_manager()->CancelScan(GetProfile(), GetExtension());
   SendResponse(true);
 }
@@ -716,7 +716,7 @@ MediaGalleriesAddScanResultsFunction::MakeDialog(
 }
 
 void MediaGalleriesAddScanResultsFunction::OnPreferencesInit() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const Extension* extension = GetExtension();
   MediaGalleriesPreferences* preferences =
       media_file_system_registry()->GetPreferences(GetProfile());
@@ -789,7 +789,7 @@ bool MediaGalleriesGetMetadataFunction::RunImpl() {
 
 void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
     bool mime_type_only, const std::string& blob_uuid) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // BlobReader is self-deleting.
   BlobReader* reader = new BlobReader(
@@ -804,7 +804,7 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
 void MediaGalleriesGetMetadataFunction::SniffMimeType(
     bool mime_type_only, const std::string& blob_uuid,
     scoped_ptr<std::string> blob_header, int64 total_blob_length) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::string mime_type;
   bool mime_type_sniffed = net::SniffMimeTypeFromLocalData(

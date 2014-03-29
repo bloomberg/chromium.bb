@@ -57,7 +57,7 @@ void MessagePropertyProvider::GetDomainBoundCertOnIOThread(
     scoped_refptr<net::URLRequestContextGetter> request_context_getter,
     const std::string& host,
     const DomainBoundCertCallback& reply) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::ServerBoundCertService* server_bound_cert_service =
       request_context_getter->GetURLRequestContext()->
           server_bound_cert_service();

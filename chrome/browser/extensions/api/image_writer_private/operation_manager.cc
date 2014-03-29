@@ -139,7 +139,7 @@ void OperationManager::DestroyPartitions(
 void OperationManager::OnProgress(const ExtensionId& extension_id,
                                   image_writer_api::Stage stage,
                                   int progress) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   image_writer_api::ProgressInfo info;
   info.stage = stage;
@@ -155,7 +155,7 @@ void OperationManager::OnProgress(const ExtensionId& extension_id,
 }
 
 void OperationManager::OnComplete(const ExtensionId& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_ptr<base::ListValue> args(image_writer_api::OnWriteComplete::Create());
   scoped_ptr<Event> event(new Event(
@@ -171,7 +171,7 @@ void OperationManager::OnError(const ExtensionId& extension_id,
                                image_writer_api::Stage stage,
                                int progress,
                                const std::string& error_message) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   image_writer_api::ProgressInfo info;
 
   DLOG(ERROR) << "ImageWriter error: " << error_message;

@@ -2612,7 +2612,7 @@ void ExtensionService::OnBlacklistUpdated() {
 
 void ExtensionService::ManageBlacklist(
     const extensions::Blacklist::BlacklistStateMap& state_map) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::set<std::string> blocked;
   ExtensionIdSet greylist;

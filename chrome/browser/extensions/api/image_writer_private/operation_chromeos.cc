@@ -32,7 +32,7 @@ void ClearImageBurner() {
 }  // namespace
 
 void Operation::Write(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   SetStage(image_writer_api::STAGE_WRITE);
 
   BrowserThread::PostTask(
@@ -44,14 +44,14 @@ void Operation::Write(const base::Closure& continuation) {
 }
 
 void Operation::VerifyWrite(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // No verification is available in Chrome OS currently.
   continuation.Run();
 }
 
 void Operation::StartWriteOnUIThread(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ImageBurnerClient* burner =
       chromeos::DBusThreadManager::Get()->GetImageBurnerClient();

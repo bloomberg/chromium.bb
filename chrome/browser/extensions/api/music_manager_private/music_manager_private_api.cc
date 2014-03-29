@@ -27,7 +27,7 @@ MusicManagerPrivateGetDeviceIdFunction::
 }
 
 bool MusicManagerPrivateGetDeviceIdFunction::RunImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DeviceId::GetDeviceId(
       this->extension_id(),
       base::Bind(
@@ -38,7 +38,7 @@ bool MusicManagerPrivateGetDeviceIdFunction::RunImpl() {
 
 void MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback(
     const std::string& device_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   bool response;
   if (device_id.empty()) {
     SetError(kDeviceIdNotSupported);

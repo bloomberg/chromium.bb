@@ -43,7 +43,7 @@ SyncStorageBackend::SyncStorageBackend(
       observers_(observers),
       sync_type_(sync_type),
       flare_(flare) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(sync_type_ == syncer::EXTENSION_SETTINGS ||
          sync_type_ == syncer::APP_SETTINGS);
 }
@@ -51,7 +51,7 @@ SyncStorageBackend::SyncStorageBackend(
 SyncStorageBackend::~SyncStorageBackend() {}
 
 ValueStore* SyncStorageBackend::GetStorage(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::DictionaryValue empty;
   return GetOrCreateStorageWithSyncData(extension_id, empty);
 }
@@ -59,7 +59,7 @@ ValueStore* SyncStorageBackend::GetStorage(const std::string& extension_id) {
 SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
     const std::string& extension_id,
     const base::DictionaryValue& sync_data) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   StorageObjMap::iterator maybe_storage = storage_objs_.find(extension_id);
   if (maybe_storage != storage_objs_.end()) {
@@ -87,7 +87,7 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
 }
 
 void SyncStorageBackend::DeleteStorage(const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Clear settings when the extension is uninstalled.  Leveldb implementations
   // will also delete the database from disk when the object is destroyed as a
@@ -105,7 +105,7 @@ void SyncStorageBackend::DeleteStorage(const std::string& extension_id) {
 }
 
 std::set<std::string> SyncStorageBackend::GetKnownExtensionIDs() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::set<std::string> result;
 
   // Storage areas can be in-memory as well as on disk. |storage_objs_| will
@@ -134,7 +134,7 @@ std::set<std::string> SyncStorageBackend::GetKnownExtensionIDs() const {
 
 syncer::SyncDataList SyncStorageBackend::GetAllSyncData(syncer::ModelType type)
     const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Ignore the type, it's just for sanity checking; assume that whatever base
   // path we're constructed with is correct for the sync type.
   DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
@@ -165,7 +165,7 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
     const syncer::SyncDataList& initial_sync_data,
     scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
     scoped_ptr<syncer::SyncErrorFactory> sync_error_factory) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK_EQ(sync_type_, type);
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
@@ -231,7 +231,7 @@ syncer::SyncMergeResult SyncStorageBackend::MergeDataAndStartSyncing(
 syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const syncer::SyncChangeList& sync_changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(sync_processor_.get());
 
   // Group changes by extension, to pass all changes in a single method call.
@@ -260,7 +260,7 @@ syncer::SyncError SyncStorageBackend::ProcessSyncChanges(
 }
 
 void SyncStorageBackend::StopSyncing(syncer::ModelType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
   DCHECK_EQ(sync_type_, type);
 

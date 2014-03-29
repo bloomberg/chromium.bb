@@ -232,7 +232,7 @@ bool CookiesGetFunction::RunImpl() {
 }
 
 void CookiesGetFunction::GetCookieOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store =
       store_browser_context_->GetURLRequestContext()->cookie_store();
   cookies_helpers::GetCookieListFromStore(
@@ -265,7 +265,7 @@ void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
 }
 
 void CookiesGetFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendResponse(true);
 }
 
@@ -304,7 +304,7 @@ bool CookiesGetAllFunction::RunImpl() {
 }
 
 void CookiesGetAllFunction::GetAllCookiesOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieStore* cookie_store =
       store_browser_context_->GetURLRequestContext()->cookie_store();
   cookies_helpers::GetCookieListFromStore(
@@ -330,7 +330,7 @@ void CookiesGetAllFunction::GetAllCookiesCallback(
 }
 
 void CookiesGetAllFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendResponse(true);
 }
 
@@ -368,7 +368,7 @@ bool CookiesSetFunction::RunImpl() {
 }
 
 void CookiesSetFunction::SetCookieOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   net::CookieMonster* cookie_monster =
       store_browser_context_->GetURLRequestContext()
           ->cookie_store()
@@ -439,7 +439,7 @@ void CookiesSetFunction::PullCookieCallback(
 }
 
 void CookiesSetFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success_) {
     std::string name =
         parsed_args_->details.name.get() ? *parsed_args_->details.name
@@ -484,7 +484,7 @@ bool CookiesRemoveFunction::RunImpl() {
 }
 
 void CookiesRemoveFunction::RemoveCookieOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Remove the cookie
   net::CookieStore* cookie_store =
@@ -510,7 +510,7 @@ void CookiesRemoveFunction::RemoveCookieCallback() {
 }
 
 void CookiesRemoveFunction::RespondOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendResponse(true);
 }
 

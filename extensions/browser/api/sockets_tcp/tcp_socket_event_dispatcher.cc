@@ -32,7 +32,7 @@ TCPSocketEventDispatcher::GetFactoryInstance() {
 // static
 TCPSocketEventDispatcher* TCPSocketEventDispatcher::Get(
     content::BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   return BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher>::Get(context);
 }
@@ -58,21 +58,21 @@ TCPSocketEventDispatcher::ReadParams::~ReadParams() {}
 
 void TCPSocketEventDispatcher::OnSocketConnect(const std::string& extension_id,
                                                int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+  DCHECK_CURRENTLY_ON(thread_id_);
 
   StartSocketRead(extension_id, socket_id);
 }
 
 void TCPSocketEventDispatcher::OnSocketResume(const std::string& extension_id,
                                               int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+  DCHECK_CURRENTLY_ON(thread_id_);
 
   StartSocketRead(extension_id, socket_id);
 }
 
 void TCPSocketEventDispatcher::StartSocketRead(const std::string& extension_id,
                                                int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+  DCHECK_CURRENTLY_ON(thread_id_);
 
   ReadParams params;
   params.thread_id = thread_id_;
@@ -86,7 +86,7 @@ void TCPSocketEventDispatcher::StartSocketRead(const std::string& extension_id,
 
 // static
 void TCPSocketEventDispatcher::StartRead(const ReadParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   ResumableTCPSocket* socket =
       params.sockets->Get(params.extension_id, params.socket_id);
@@ -113,7 +113,7 @@ void TCPSocketEventDispatcher::ReadCallback(
     const ReadParams& params,
     int bytes_read,
     scoped_refptr<net::IOBuffer> io_buffer) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   // If |bytes_read| == 0, the connection has been closed by the peer.
   // If |bytes_read| < 0, there was a network error, and |bytes_read| is a value
@@ -168,7 +168,7 @@ void TCPSocketEventDispatcher::ReadCallback(
 // static
 void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
                                          scoped_ptr<Event> event) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
@@ -182,7 +182,7 @@ void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
 void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
                                              const std::string& extension_id,
                                              scoped_ptr<Event> event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =
       reinterpret_cast<content::BrowserContext*>(browser_context_id);

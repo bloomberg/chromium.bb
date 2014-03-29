@@ -298,7 +298,7 @@ void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {
 }
 
 void UnpackedInstaller::ConfirmInstall() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::string16 error = installer_.CheckManagementPolicy();
   if (!error.empty()) {
     ReportExtensionLoadError(base::UTF16ToUTF8(error));

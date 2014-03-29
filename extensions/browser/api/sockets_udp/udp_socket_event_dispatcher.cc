@@ -28,7 +28,7 @@ UDPSocketEventDispatcher::GetFactoryInstance() {
 // static
 UDPSocketEventDispatcher* UDPSocketEventDispatcher::Get(
     content::BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   return BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher>::Get(context);
 }
@@ -59,7 +59,7 @@ void UDPSocketEventDispatcher::OnSocketBind(const std::string& extension_id,
 
 void UDPSocketEventDispatcher::OnSocketResume(const std::string& extension_id,
                                               int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+  DCHECK_CURRENTLY_ON(thread_id_);
 
   ReceiveParams params;
   params.thread_id = thread_id_;
@@ -73,7 +73,7 @@ void UDPSocketEventDispatcher::OnSocketResume(const std::string& extension_id,
 
 /* static */
 void UDPSocketEventDispatcher::StartReceive(const ReceiveParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   ResumableUDPSocket* socket =
       params.sockets->Get(params.extension_id, params.socket_id);
@@ -101,7 +101,7 @@ void UDPSocketEventDispatcher::ReceiveCallback(
     scoped_refptr<net::IOBuffer> io_buffer,
     const std::string& address,
     int port) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   // If |bytes_read| == 0, the message contained no data.
   // If |bytes_read| < 0, there was a network error, and |bytes_read| is a value
@@ -154,7 +154,7 @@ void UDPSocketEventDispatcher::ReceiveCallback(
 /* static */
 void UDPSocketEventDispatcher::PostEvent(const ReceiveParams& params,
                                          scoped_ptr<Event> event) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
@@ -168,7 +168,7 @@ void UDPSocketEventDispatcher::PostEvent(const ReceiveParams& params,
 void UDPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
                                              const std::string& extension_id,
                                              scoped_ptr<Event> event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =
       reinterpret_cast<content::BrowserContext*>(browser_context_id);

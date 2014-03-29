@@ -68,7 +68,7 @@ struct UserScriptListener::ProfileData {
 
 UserScriptListener::UserScriptListener()
     : user_scripts_ready_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::NotificationService::AllSources());
@@ -96,7 +96,7 @@ UserScriptListener::~UserScriptListener() {
 
 bool UserScriptListener::ShouldDelayRequest(const GURL& url,
                                             ResourceType::Type resource_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If it's a frame load, then we need to check the URL against the list of
   // user scripts to see if we need to wait.
@@ -136,7 +136,7 @@ void UserScriptListener::StartDelayedRequests() {
 }
 
 void UserScriptListener::CheckIfAllUserScriptsReady() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool was_ready = user_scripts_ready_;
 
   user_scripts_ready_ = true;
@@ -151,14 +151,14 @@ void UserScriptListener::CheckIfAllUserScriptsReady() {
 }
 
 void UserScriptListener::UserScriptsReady(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   profile_data_[profile_id].user_scripts_ready = true;
   CheckIfAllUserScriptsReady();
 }
 
 void UserScriptListener::ProfileDestroyed(void* profile_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   profile_data_.erase(profile_id);
 
   // We may have deleted the only profile we were waiting on.
@@ -167,7 +167,7 @@ void UserScriptListener::ProfileDestroyed(void* profile_id) {
 
 void UserScriptListener::AppendNewURLPatterns(void* profile_id,
                                               const URLPatterns& new_patterns) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   user_scripts_ready_ = false;
 
@@ -180,7 +180,7 @@ void UserScriptListener::AppendNewURLPatterns(void* profile_id,
 
 void UserScriptListener::ReplaceURLPatterns(void* profile_id,
                                             const URLPatterns& patterns) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ProfileData& data = profile_data_[profile_id];
   data.url_patterns = patterns;
@@ -188,7 +188,7 @@ void UserScriptListener::ReplaceURLPatterns(void* profile_id,
 
 void UserScriptListener::CollectURLPatterns(const Extension* extension,
                                             URLPatterns* patterns) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   const UserScriptList& scripts =
       ContentScriptsInfo::GetContentScripts(extension);
@@ -203,7 +203,7 @@ void UserScriptListener::CollectURLPatterns(const Extension* extension,
 void UserScriptListener::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_LOADED: {

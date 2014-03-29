@@ -112,7 +112,7 @@ syncer::SyncChange CreateDelete(
 
 syncer::SyncableService* GetSyncableService(content::BrowserContext* context,
                                             syncer::ModelType type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(type == syncer::APP_SETTINGS || type == syncer::EXTENSION_SETTINGS);
   StorageFrontend* frontend = StorageFrontend::Get(context);
   SyncValueStoreCache* sync_cache = static_cast<SyncValueStoreCache*>(

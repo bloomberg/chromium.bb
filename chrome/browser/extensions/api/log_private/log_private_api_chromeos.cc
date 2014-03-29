@@ -105,7 +105,7 @@ LogPrivateAPI::GetFactoryInstance() {
 }
 
 void LogPrivateAPI::OnAddEntry(const net::NetLog::Entry& entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!pending_entries_.get()) {
     pending_entries_.reset(new base::ListValue());
     BrowserThread::PostDelayedTask(
@@ -125,7 +125,7 @@ void LogPrivateAPI::PostPendingEntries() {
 }
 
 void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (std::set<std::string>::iterator ix = net_internal_watches_.begin();
        ix != net_internal_watches_.end(); ++ix) {
@@ -140,7 +140,7 @@ void LogPrivateAPI::AddEntriesOnUI(scoped_ptr<base::ListValue> value) {
 }
 
 void LogPrivateAPI::MaybeStartNetInternalLogging() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!logging_net_internals_) {
     g_browser_process->io_thread()->net_log()->AddThreadSafeObserver(
         this, net::NetLog::LOG_ALL_BUT_BYTES);
@@ -158,7 +158,7 @@ void LogPrivateAPI::MaybeStopNetInternalLogging() {
 }
 
 void LogPrivateAPI::StopNetInternalLogging() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (net_log() && logging_net_internals_) {
     net_log()->RemoveThreadSafeObserver(this);
     logging_net_internals_ = false;

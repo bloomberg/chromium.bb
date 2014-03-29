@@ -89,7 +89,7 @@ bool PageCaptureSaveAsMHTMLFunction::OnMessageReceived(
 }
 
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   bool success = base::CreateTemporaryFile(&mhtml_path_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -115,7 +115,7 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
     return;
   }
 
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!success) {
     ReturnFailure(kTemporaryFileError);
     return;
@@ -151,7 +151,7 @@ void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(
 }
 
 void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   error_ = error;
 
@@ -161,7 +161,7 @@ void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
 }
 
 void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = GetWebContents();
   if (!web_contents || !render_view_host()) {

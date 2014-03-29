@@ -23,7 +23,7 @@ ExtensionInstaller::~ExtensionInstaller() {
 
 void ExtensionInstaller::CheckRequirements(
     const RequirementsCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   requirements_checker_->Check(extension_, callback);
 }
 

@@ -34,7 +34,7 @@ bool BrowserPermissionsPolicyDelegate::CanExecuteScriptOnPage(
     const UserScript* script,
     int process_id,
     std::string* error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if !defined(OS_CHROMEOS)
   // NULL in unit tests.

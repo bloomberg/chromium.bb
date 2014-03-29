@@ -38,7 +38,7 @@ namespace {
 void DeleteOrigin(Profile* profile,
                   StoragePartition* partition,
                   const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile);
   DCHECK(partition);
 

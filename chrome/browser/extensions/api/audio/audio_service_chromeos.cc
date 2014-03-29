@@ -107,7 +107,7 @@ void AudioServiceImpl::RemoveObserver(AudioService::Observer* observer) {
 }
 
 void AudioServiceImpl::StartGetInfo(const GetInfoCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(cras_audio_client_);
   // TODO(jennyz,rkc): Replace cras_audio_client_ call with CrasAudioHandler
   // Api call.

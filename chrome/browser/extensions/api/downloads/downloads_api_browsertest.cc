@@ -732,7 +732,7 @@ class HTML5FileWriter {
   static void CopyInCompletion(bool* result,
                                base::WaitableEvent* done_event,
                                base::File::Error error) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     *result = error == base::File::FILE_OK;
     done_event->Signal();
   }
@@ -743,7 +743,7 @@ class HTML5FileWriter {
       const base::FilePath& temp_file,
       bool* result,
       base::WaitableEvent* done_event) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context->operation_runner()->CopyInForeignFile(
         temp_file, path,
         base::Bind(&CopyInCompletion,

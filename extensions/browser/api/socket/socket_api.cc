@@ -668,14 +668,14 @@ void SocketGetNetworkListFunction::GetNetworkListOnFileThread() {
 }
 
 void SocketGetNetworkListFunction::HandleGetNetworkListError() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   error_ = kNetworkListError;
   SendResponse(false);
 }
 
 void SocketGetNetworkListFunction::SendResponseOnUIThread(
     const net::NetworkInterfaceList& interface_list) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::vector<linked_ptr<core_api::socket::NetworkInterface> > create_arg;
   create_arg.reserve(interface_list.size());

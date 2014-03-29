@@ -175,7 +175,7 @@ void WritableFileChecker::Check() {
 WritableFileChecker::~WritableFileChecker() {}
 
 void WritableFileChecker::TaskDone() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (--outstanding_tasks_ == 0) {
     if (error_path_.empty())
       on_success_.Run();
@@ -193,7 +193,7 @@ void WritableFileChecker::Error(const base::FilePath& error_path) {
 }
 
 void WritableFileChecker::CheckLocalWritableFiles() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   std::string error;
   for (std::vector<base::FilePath>::const_iterator it = paths_.begin();
        it != paths_.end();

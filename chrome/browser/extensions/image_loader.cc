@@ -71,7 +71,7 @@ SkBitmap ResizeIfNeeded(const SkBitmap& bitmap,
 }
 
 void LoadResourceOnUIThread(int resource_id, SkBitmap* bitmap) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   gfx::ImageSkia image(
       *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
@@ -320,7 +320,7 @@ void ImageLoader::LoadImagesAsync(
     const Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
     const ImageLoaderImageCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
@@ -336,7 +336,7 @@ void ImageLoader::LoadImageFamilyAsync(
     const extensions::Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
     const ImageLoaderImageFamilyCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
@@ -351,7 +351,7 @@ void ImageLoader::LoadImageFamilyAsync(
 
 void ImageLoader::ReplyBack(const ImageLoaderImageCallback& callback,
                             const std::vector<LoadResult>& load_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   gfx::ImageSkia image_skia;
 
@@ -377,7 +377,7 @@ void ImageLoader::ReplyBack(const ImageLoaderImageCallback& callback,
 void ImageLoader::ReplyBackWithImageFamily(
     const ImageLoaderImageFamilyCallback& callback,
     const std::vector<LoadResult>& load_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<std::pair<int, int>, gfx::ImageSkia> image_skia_map;
   gfx::ImageFamily image_family;

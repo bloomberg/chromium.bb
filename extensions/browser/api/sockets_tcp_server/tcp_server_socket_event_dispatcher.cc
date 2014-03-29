@@ -28,7 +28,7 @@ TCPServerSocketEventDispatcher::GetFactoryInstance() {
 // static
 TCPServerSocketEventDispatcher* TCPServerSocketEventDispatcher::Get(
     content::BrowserContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   return BrowserContextKeyedAPIFactory<TCPServerSocketEventDispatcher>::Get(
       context);
@@ -65,7 +65,7 @@ TCPServerSocketEventDispatcher::AcceptParams::~AcceptParams() {}
 void TCPServerSocketEventDispatcher::OnServerSocketListen(
     const std::string& extension_id,
     int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+  DCHECK_CURRENTLY_ON(thread_id_);
 
   StartSocketAccept(extension_id, socket_id);
 }
@@ -73,7 +73,7 @@ void TCPServerSocketEventDispatcher::OnServerSocketListen(
 void TCPServerSocketEventDispatcher::OnServerSocketResume(
     const std::string& extension_id,
     int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+  DCHECK_CURRENTLY_ON(thread_id_);
 
   StartSocketAccept(extension_id, socket_id);
 }
@@ -81,7 +81,7 @@ void TCPServerSocketEventDispatcher::OnServerSocketResume(
 void TCPServerSocketEventDispatcher::StartSocketAccept(
     const std::string& extension_id,
     int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+  DCHECK_CURRENTLY_ON(thread_id_);
 
   AcceptParams params;
   params.thread_id = thread_id_;
@@ -96,7 +96,7 @@ void TCPServerSocketEventDispatcher::StartSocketAccept(
 
 // static
 void TCPServerSocketEventDispatcher::StartAccept(const AcceptParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   ResumableTCPServerSocket* socket =
       params.server_sockets->Get(params.extension_id, params.socket_id);
@@ -120,7 +120,7 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     const AcceptParams& params,
     int result_code,
     net::TCPClientSocket* socket) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   if (result_code >= 0) {
     ResumableTCPSocket* client_socket =
@@ -169,7 +169,7 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
 // static
 void TCPServerSocketEventDispatcher::PostEvent(const AcceptParams& params,
                                                scoped_ptr<Event> event) {
-  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+  DCHECK_CURRENTLY_ON(params.thread_id);
 
   BrowserThread::PostTask(BrowserThread::UI,
                           FROM_HERE,
@@ -184,7 +184,7 @@ void TCPServerSocketEventDispatcher::DispatchEvent(
     void* browser_context_id,
     const std::string& extension_id,
     scoped_ptr<Event> event) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::BrowserContext* context =
       reinterpret_cast<content::BrowserContext*>(browser_context_id);

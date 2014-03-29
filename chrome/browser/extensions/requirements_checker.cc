@@ -30,7 +30,7 @@ RequirementsChecker::~RequirementsChecker() {
 
 void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
     base::Callback<void(std::vector<std::string> errors)> callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   callback_ = callback;
   const RequirementsInfo& requirements =

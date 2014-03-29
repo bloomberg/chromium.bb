@@ -41,7 +41,7 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
 Operation::~Operation() {}
 
 void Operation::Cancel() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   stage_ = image_writer_api::STAGE_NONE;
 
@@ -88,7 +88,7 @@ void Operation::Start() {
 }
 
 void Operation::Unzip(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (IsCancelled()) {
     return;
   }
@@ -225,25 +225,25 @@ void Operation::SetStage(image_writer_api::Stage stage) {
 }
 
 bool Operation::IsCancelled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   return stage_ == image_writer_api::STAGE_NONE;
 }
 
 void Operation::AddCleanUpFunction(const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   cleanup_functions_.push_back(callback);
 }
 
 void Operation::CompleteAndContinue(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   SetProgress(kProgressComplete);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, continuation);
 }
 
 #if !defined(OS_CHROMEOS)
 void Operation::StartUtilityClient() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (!image_writer_client_) {
     image_writer_client_ = new ImageWriterUtilityClient();
     AddCleanUpFunction(base::Bind(&Operation::StopUtilityClient, this));
@@ -251,7 +251,7 @@ void Operation::StartUtilityClient() {
 }
 
 void Operation::StopUtilityClient() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -259,7 +259,7 @@ void Operation::StopUtilityClient() {
 }
 
 void Operation::WriteImageProgress(int64 total_bytes, int64 curr_bytes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (IsCancelled()) {
     return;
   }
@@ -362,19 +362,19 @@ void Operation::MD5Chunk(
 }
 
 void Operation::OnUnzipFailure() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   Error(error::kUnzipGenericError);
 }
 
 void Operation::OnUnzipProgress(int64 total_bytes, int64 progress_bytes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   int progress_percent = kProgressComplete * progress_bytes / total_bytes;
   SetProgress(progress_percent);
 }
 
 void Operation::CleanUp() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   for (std::vector<base::Closure>::iterator it = cleanup_functions_.begin();
        it != cleanup_functions_.end();
        ++it) {

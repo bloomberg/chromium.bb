@@ -617,7 +617,7 @@ void ActivityLog::OnScriptsExecuted(
 void ActivityLog::OnApiEventDispatched(const std::string& extension_id,
                                        const std::string& event_name,
                                        scoped_ptr<base::ListValue> event_args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<Action> action = new Action(extension_id,
                                             base::Time::Now(),
                                             Action::ACTION_API_EVENT,
@@ -629,7 +629,7 @@ void ActivityLog::OnApiEventDispatched(const std::string& extension_id,
 void ActivityLog::OnApiFunctionCalled(const std::string& extension_id,
                                       const std::string& api_name,
                                       scoped_ptr<base::ListValue> args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_refptr<Action> action = new Action(extension_id,
                                             base::Time::Now(),
                                             Action::ACTION_API_CALL,

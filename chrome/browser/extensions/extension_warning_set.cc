@@ -179,7 +179,7 @@ ExtensionWarning ExtensionWarning::CreateDownloadFilenameConflictWarning(
 
 std::string ExtensionWarning::GetLocalizedMessage(
     const ExtensionSet* extensions) const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // These parameters may be unsafe (URLs and Extension names) and need
   // to be HTML-escaped before being embedded in the UI. Also extension IDs

@@ -345,7 +345,7 @@ void RemoveEventListenerOnUI(
   const std::string& event_name,
   int process_id,
   const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
@@ -371,7 +371,7 @@ void SendOnMessageEventOnUI(
     void* profile_id,
     const std::string& extension_id,
     scoped_ptr<base::DictionaryValue> event_argument) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
@@ -433,7 +433,7 @@ WebRequestAPI::GetFactoryInstance() {
 }
 
 void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Note that details.event_name includes the sub-event details (e.g. "/123").
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,

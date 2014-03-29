@@ -99,7 +99,7 @@ NativeProcessLauncherImpl::Core::~Core() {
 }
 
 void NativeProcessLauncherImpl::Core::Detach() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   detached_ = true;
 }
 
@@ -199,7 +199,7 @@ void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
     base::ProcessHandle process_handle,
     base::File read_file,
     base::File write_file) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (detached_)
     return;
 

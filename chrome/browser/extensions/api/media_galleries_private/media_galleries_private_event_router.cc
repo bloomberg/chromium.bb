@@ -23,17 +23,17 @@ MediaGalleriesPrivateEventRouter::MediaGalleriesPrivateEventRouter(
     Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 MediaGalleriesPrivateEventRouter::~MediaGalleriesPrivateEventRouter() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void MediaGalleriesPrivateEventRouter::OnGalleryChanged(
     MediaGalleryPrefId gallery_id,
     const std::set<std::string>& extension_ids) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   EventRouter* router =
       extensions::ExtensionSystem::Get(profile_)->event_router();
   if (!router->HasEventListener(

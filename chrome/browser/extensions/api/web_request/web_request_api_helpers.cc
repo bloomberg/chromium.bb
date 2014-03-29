@@ -1288,7 +1288,7 @@ void ClearCacheOnNavigation() {
 void NotifyWebRequestAPIUsed(
     void* profile_id,
     scoped_refptr<const extensions::Extension> extension) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;

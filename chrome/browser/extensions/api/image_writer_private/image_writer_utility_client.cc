@@ -20,7 +20,7 @@ void ImageWriterUtilityClient::Write(const ProgressCallback& progress_callback,
                                      const ErrorCallback& error_callback,
                                      const base::FilePath& source,
                                      const base::FilePath& target) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StartHost();
 
@@ -40,7 +40,7 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
                                       const ErrorCallback& error_callback,
                                       const base::FilePath& source,
                                       const base::FilePath& target) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   StartHost();
 
@@ -56,7 +56,7 @@ void ImageWriterUtilityClient::Verify(const ProgressCallback& progress_callback,
 }
 
 void ImageWriterUtilityClient::Cancel(const CancelCallback& cancel_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!utility_process_host_) {
     // If we haven't connected, there is nothing to cancel.

@@ -28,7 +28,7 @@ void SystemInfoProvider::InitializeProvider(const base::Closure&
 
 void SystemInfoProvider::StartQueryInfo(
     const QueryInfoCompletionCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!callback.is_null());
 
   callbacks_.push(callback);
@@ -43,7 +43,7 @@ void SystemInfoProvider::StartQueryInfo(
 }
 
 void SystemInfoProvider::OnQueryCompleted(bool success) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   while (!callbacks_.empty()) {
     QueryInfoCompletionCallback callback = callbacks_.front();

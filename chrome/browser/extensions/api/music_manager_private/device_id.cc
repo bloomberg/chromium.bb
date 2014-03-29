@@ -33,7 +33,7 @@ bool ComputeHmacSha256(const std::string& key,
 void GetRawDeviceIdCallback(const std::string& extension_id,
                             const DeviceId::IdCallback& callback,
                             const std::string& raw_device_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (raw_device_id.empty()) {
     callback.Run("");
@@ -179,7 +179,7 @@ namespace api {
 // static
 void DeviceId::GetDeviceId(const std::string& extension_id,
                            const IdCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(!extension_id.empty());
 
   // Forward call to platform specific implementation, then compute the HMAC

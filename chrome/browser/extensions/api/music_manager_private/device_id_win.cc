@@ -193,7 +193,7 @@ std::string GetRlzMachineId() {
 
 void GetMacAddressCallback(const DeviceId::IdCallback& callback,
                            const std::string& mac_address) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::string machine_id = GetRlzMachineId();
   if (mac_address.empty() || machine_id.empty()) {
@@ -210,7 +210,7 @@ namespace api {
 
 // static
 void DeviceId::GetRawDeviceId(const IdCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,

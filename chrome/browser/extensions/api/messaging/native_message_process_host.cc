@@ -109,7 +109,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
 #endif
       read_pending_(false),
       write_pending_(false) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // It's safe to use base::Unretained() here because NativeMessagePort always
   // deletes us on the IO thread.
@@ -119,7 +119,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
 }
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   Close(std::string());
 }
 
@@ -145,7 +145,7 @@ NativeMessageProcessHost::CreateWithLauncher(
     const std::string& native_host_name,
     int destination_port,
     scoped_ptr<NativeProcessLauncher> launcher) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_ptr<NativeMessageProcessHost> process(new NativeMessageProcessHost(
       weak_client_ui, source_extension_id, native_host_name,
@@ -155,7 +155,7 @@ NativeMessageProcessHost::CreateWithLauncher(
 }
 
 void NativeMessageProcessHost::LaunchHostProcess() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   GURL origin(std::string(kExtensionScheme) + "://" + source_extension_id_);
   launcher_->Launch(origin, native_host_name_,
@@ -168,7 +168,7 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
     base::ProcessHandle process_handle,
     base::File read_file,
     base::File write_file) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   switch (result) {
     case NativeProcessLauncher::RESULT_INVALID_NAME:
@@ -212,7 +212,7 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
 }
 
 void NativeMessageProcessHost::Send(const std::string& json) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (closed_)
     return;
@@ -271,7 +271,7 @@ void NativeMessageProcessHost::WaitRead() {
 }
 
 void NativeMessageProcessHost::DoRead() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   while (!closed_ && !read_pending_) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);
@@ -284,7 +284,7 @@ void NativeMessageProcessHost::DoRead() {
 }
 
 void NativeMessageProcessHost::OnRead(int result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(read_pending_);
   read_pending_ = false;
 
@@ -293,7 +293,7 @@ void NativeMessageProcessHost::OnRead(int result) {
 }
 
 void NativeMessageProcessHost::HandleReadResult(int result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (closed_)
     return;
@@ -314,7 +314,7 @@ void NativeMessageProcessHost::HandleReadResult(int result) {
 
 void NativeMessageProcessHost::ProcessIncomingData(
     const char* data, int data_size) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   incoming_data_.append(data, data_size);
 
@@ -345,7 +345,7 @@ void NativeMessageProcessHost::ProcessIncomingData(
 }
 
 void NativeMessageProcessHost::DoWrite() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   while (!write_pending_ && !closed_) {
     if (!current_write_buffer_.get() ||
@@ -367,7 +367,7 @@ void NativeMessageProcessHost::DoWrite() {
 }
 
 void NativeMessageProcessHost::HandleWriteResult(int result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (result <= 0) {
     if (result == net::ERR_IO_PENDING) {
@@ -383,7 +383,7 @@ void NativeMessageProcessHost::HandleWriteResult(int result) {
 }
 
 void NativeMessageProcessHost::OnWritten(int result) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   DCHECK(write_pending_);
   write_pending_ = false;
@@ -393,7 +393,7 @@ void NativeMessageProcessHost::OnWritten(int result) {
 }
 
 void NativeMessageProcessHost::Close(const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (!closed_) {
     closed_ = true;

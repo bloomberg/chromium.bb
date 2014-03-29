@@ -31,7 +31,7 @@ WriteFromUrlOperation::~WriteFromUrlOperation() {
 }
 
 void WriteFromUrlOperation::StartImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   GetDownloadTarget(base::Bind(
       &WriteFromUrlOperation::Download,
@@ -52,7 +52,7 @@ void WriteFromUrlOperation::StartImpl() {
 
 void WriteFromUrlOperation::GetDownloadTarget(
     const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (IsCancelled()) {
     return;
   }
@@ -72,7 +72,7 @@ void WriteFromUrlOperation::GetDownloadTarget(
 }
 
 void WriteFromUrlOperation::Download(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (IsCancelled()) {
     return;
@@ -110,7 +110,7 @@ void WriteFromUrlOperation::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
     int64 current,
     int64 total) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (IsCancelled()) {
     url_fetcher_.reset(NULL);
@@ -122,7 +122,7 @@ void WriteFromUrlOperation::OnURLFetchDownloadProgress(
 }
 
 void WriteFromUrlOperation::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (source->GetStatus().is_success() && source->GetResponseCode() == 200) {
     SetProgress(kProgressComplete);
@@ -137,7 +137,7 @@ void WriteFromUrlOperation::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void WriteFromUrlOperation::VerifyDownload(const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (IsCancelled()) {
     return;
@@ -163,7 +163,7 @@ void WriteFromUrlOperation::VerifyDownload(const base::Closure& continuation) {
 void WriteFromUrlOperation::VerifyDownloadCompare(
     const base::Closure& continuation,
     const std::string& download_hash) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (download_hash != hash_) {
     Error(error::kDownloadHashError);
     return;
@@ -178,7 +178,7 @@ void WriteFromUrlOperation::VerifyDownloadCompare(
 
 void WriteFromUrlOperation::VerifyDownloadComplete(
     const base::Closure& continuation) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   if (IsCancelled()) {
     return;
   }

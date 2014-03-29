@@ -28,49 +28,49 @@ SyncableSettingsStorage::SyncableSettingsStorage(
       delegate_(delegate),
       sync_type_(sync_type),
       flare_(flare) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 
 SyncableSettingsStorage::~SyncableSettingsStorage() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 }
 
 size_t SyncableSettingsStorage::GetBytesInUse(const std::string& key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return delegate_->GetBytesInUse(key);
 }
 
 size_t SyncableSettingsStorage::GetBytesInUse(
     const std::vector<std::string>& keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return delegate_->GetBytesInUse(keys);
 }
 
 size_t SyncableSettingsStorage::GetBytesInUse() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return delegate_->GetBytesInUse();
 }
 
 ValueStore::ReadResult SyncableSettingsStorage::Get(
     const std::string& key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return delegate_->Get(key);
 }
 
 ValueStore::ReadResult SyncableSettingsStorage::Get(
     const std::vector<std::string>& keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return delegate_->Get(keys);
 }
 
 ValueStore::ReadResult SyncableSettingsStorage::Get() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   return delegate_->Get();
 }
 
 ValueStore::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const std::string& key, const base::Value& value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Set(options, key, value);
   if (result->HasError()) {
     return result.Pass();
@@ -81,7 +81,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
 
 ValueStore::WriteResult SyncableSettingsStorage::Set(
     WriteOptions options, const base::DictionaryValue& values) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Set(options, values);
   if (result->HasError()) {
     return result.Pass();
@@ -92,7 +92,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Set(
 
 ValueStore::WriteResult SyncableSettingsStorage::Remove(
     const std::string& key) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Remove(key);
   if (result->HasError()) {
     return result.Pass();
@@ -103,7 +103,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
 
 ValueStore::WriteResult SyncableSettingsStorage::Remove(
     const std::vector<std::string>& keys) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Remove(keys);
   if (result->HasError()) {
     return result.Pass();
@@ -113,7 +113,7 @@ ValueStore::WriteResult SyncableSettingsStorage::Remove(
 }
 
 ValueStore::WriteResult SyncableSettingsStorage::Clear() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   WriteResult result = delegate_->Clear();
   if (result->HasError()) {
     return result.Pass();
@@ -166,7 +166,7 @@ void SyncableSettingsStorage::SyncResultIfEnabled(
 syncer::SyncError SyncableSettingsStorage::StartSyncing(
     const base::DictionaryValue& sync_state,
     scoped_ptr<SettingsSyncProcessor> sync_processor) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!sync_processor_.get());
 
   sync_processor_ = sync_processor.Pass();
@@ -190,7 +190,7 @@ syncer::SyncError SyncableSettingsStorage::StartSyncing(
 
 syncer::SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
     const base::DictionaryValue& settings) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   ValueStoreChangeList changes;
   for (base::DictionaryValue::Iterator i(settings); !i.IsAtEnd(); i.Advance()) {
@@ -210,7 +210,7 @@ syncer::SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
 syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
     const base::DictionaryValue& sync_state,
     const base::DictionaryValue& settings) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // Treat this as a list of changes to sync and use ProcessSyncChanges.
   // This gives notifications etc for free.
   scoped_ptr<base::DictionaryValue> new_sync_state(sync_state.DeepCopy());
@@ -263,13 +263,13 @@ syncer::SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
 }
 
 void SyncableSettingsStorage::StopSyncing() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   sync_processor_.reset();
 }
 
 syncer::SyncError SyncableSettingsStorage::ProcessSyncChanges(
     const SettingSyncDataList& sync_changes) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!sync_changes.empty()) << "No sync changes for " << extension_id_;
 
   if (!sync_processor_.get()) {

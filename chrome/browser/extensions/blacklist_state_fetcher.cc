@@ -27,7 +27,7 @@ class BlacklistRequestContextGetter : public net::URLRequestContextGetter {
       net::URLRequestContextGetter* parent_context_getter) :
           network_task_runner_(
               BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     url_request_context_.reset(new net::URLRequestContext());
     url_request_context_->CopyFrom(
         parent_context_getter->GetURLRequestContext());
@@ -37,7 +37,7 @@ class BlacklistRequestContextGetter : public net::URLRequestContextGetter {
       scoped_refptr<net::URLRequestContextGetter> parent_context_getter,
       base::Callback<void(scoped_refptr<net::URLRequestContextGetter>)>
           callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     scoped_refptr<net::URLRequestContextGetter> context_getter =
         new BlacklistRequestContextGetter(parent_context_getter);
@@ -47,7 +47,7 @@ class BlacklistRequestContextGetter : public net::URLRequestContextGetter {
   }
 
   virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     return url_request_context_.get();
   }
 
@@ -75,14 +75,14 @@ BlacklistStateFetcher::BlacklistStateFetcher()
       weak_ptr_factory_(this) {}
 
 BlacklistStateFetcher::~BlacklistStateFetcher() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   STLDeleteContainerPairFirstPointers(requests_.begin(), requests_.end());
   requests_.clear();
 }
 
 void BlacklistStateFetcher::Request(const std::string& id,
                                     const RequestCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!safe_browsing_config_) {
     if (g_browser_process && g_browser_process->safe_browsing_service()) {
       SetSafeBrowsingConfig(
@@ -124,14 +124,14 @@ void BlacklistStateFetcher::Request(const std::string& id,
 void BlacklistStateFetcher::SaveRequestContext(
     const std::string& id,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!url_request_context_getter_)
     url_request_context_getter_ = request_context_getter;
   SendRequest(id);
 }
 
 void BlacklistStateFetcher::SendRequest(const std::string& id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ClientCRXListInfoRequest request;
   request.set_id(id);
@@ -176,7 +176,7 @@ GURL BlacklistStateFetcher::RequestUrl() const {
 }
 
 void BlacklistStateFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<const net::URLFetcher*, std::string>::iterator it =
      requests_.find(source);

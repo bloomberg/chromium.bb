@@ -258,7 +258,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       approval_(approval.release()),
       total_modules_(0),
       download_started_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
 
   registrar_.Add(this, chrome::NOTIFICATION_CRX_INSTALLER_DONE,
@@ -270,7 +270,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
 }
 
 void WebstoreInstaller::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddRef();  // Balanced in ReportSuccess and ReportFailure.
 
   if (!Extension::IdIsValid(id_)) {
@@ -552,7 +552,7 @@ void WebstoreInstaller::DownloadCrx(
 // early-returns into a single branch makes it hard to see exactly which pointer
 // it is.
 void WebstoreInstaller::StartDownload(const base::FilePath& file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (file.empty()) {
     ReportFailure(kDownloadDirectoryError, FAILURE_REASON_OTHER);

@@ -94,7 +94,7 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunImpl() {
 
 void WebrtcLoggingPrivateSetMetaDataFunction::SetMetaDataCallback(
     bool success, const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success)
     SetError(error_message);
   SendResponse(success);
@@ -128,7 +128,7 @@ bool WebrtcLoggingPrivateStartFunction::RunImpl() {
 
 void WebrtcLoggingPrivateStartFunction::StartCallback(
     bool success, const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success)
     SetError(error_message);
   SendResponse(success);
@@ -187,7 +187,7 @@ bool WebrtcLoggingPrivateStopFunction::RunImpl() {
 
 void WebrtcLoggingPrivateStopFunction::StopCallback(
     bool success, const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success)
     SetError(error_message);
   SendResponse(success);
@@ -222,7 +222,7 @@ bool WebrtcLoggingPrivateUploadFunction::RunImpl() {
 void WebrtcLoggingPrivateUploadFunction::UploadCallback(
     bool success, const std::string& report_id,
     const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (success) {
     api::webrtc_logging_private::UploadResult result;
     result.report_id = report_id;
@@ -261,7 +261,7 @@ bool WebrtcLoggingPrivateDiscardFunction::RunImpl() {
 
 void WebrtcLoggingPrivateDiscardFunction::DiscardCallback(
     bool success, const std::string& error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success)
     SetError(error_message);
   SendResponse(success);

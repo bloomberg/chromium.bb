@@ -90,7 +90,7 @@ class SafeBrowsingClientImpl
   // SafeBrowsingService on the IO thread.
   void StartCheck(scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
                   const std::set<std::string>& extension_ids) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (database_manager->CheckExtensionIDs(extension_ids, this)) {
       // Definitely not blacklisted. Callback immediately.
       callback_message_loop_->PostTask(
@@ -105,7 +105,7 @@ class SafeBrowsingClientImpl
 
   virtual void OnCheckExtensionsResult(
       const std::set<std::string>& hits) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     callback_message_loop_->PostTask(FROM_HERE, base::Bind(callback_, hits));
     Release();  // Balanced in StartCheck.
   }
@@ -184,7 +184,7 @@ Blacklist::~Blacklist() {
 
 void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
                                   const GetBlacklistedIDsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (ids.empty() || !g_database_manager.Get().get().get()) {
     base::MessageLoopProxy::current()->PostTask(
@@ -218,7 +218,7 @@ void Blacklist::IsBlacklisted(const std::string& extension_id,
 void Blacklist::GetBlacklistStateForIDs(
     const GetBlacklistedIDsCallback& callback,
     const std::set<std::string>& blacklisted_ids) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::set<std::string> ids_unknown_state;
   BlacklistStateMap extensions_state;
@@ -267,7 +267,7 @@ void Blacklist::ReturnBlacklistStateMap(
 
 void Blacklist::RequestExtensionsBlacklistState(
     const std::set<std::string>& ids, const base::Callback<void()>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!state_fetcher_)
     state_fetcher_.reset(new BlacklistStateFetcher());
 
@@ -284,7 +284,7 @@ void Blacklist::RequestExtensionsBlacklistState(
 
 void Blacklist::OnBlacklistStateReceived(const std::string& id,
                                          BlacklistState state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   blacklist_state_cache_[id] = state;
 
   // Go through the opened requests and call the callbacks for those requests
@@ -322,12 +322,12 @@ BlacklistStateFetcher* Blacklist::ResetBlacklistStateFetcherForTest() {
 }
 
 void Blacklist::AddObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
 }
 
 void Blacklist::RemoveObserver(Observer* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.RemoveObserver(observer);
 }
 

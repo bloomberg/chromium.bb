@@ -39,7 +39,7 @@ NetworkingPrivateServiceClientFactory
 
 KeyedService* NetworkingPrivateServiceClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return new NetworkingPrivateServiceClient(
       wifi::WiFiService::Create(),
       NetworkingPrivateServiceClient::CryptoVerify::Create());
