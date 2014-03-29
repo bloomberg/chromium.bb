@@ -42,6 +42,10 @@
 
 namespace WebCore {
 
+// Minimum size, in pixels, at which anti alias is enabled for certain
+// scripts. Only applies to the Direct Write backend for now.
+static const unsigned s_minSizeForComplexScriptsAntiAlias = 32;
+
 FontCache::FontCache()
     : m_purgePreventCount(0)
 {
@@ -143,6 +147,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         family = panUniFonts[i];
         data = getFontPlatformData(fontDescription, AtomicString(family, wcslen(family)));
     }
+
     // When i-th font (0-base) in |panUniFonts| contains a character and
     // we get out of the loop, |i| will be |i + 1|. That is, if only the
     // last font in the array covers the character, |i| will be numFonts.
@@ -209,6 +214,34 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontDescription.style() == FontStyleItalic && !tf->isItalic() || fontDescription.isSyntheticItalic(),
         fontDescription.orientation(),
         s_useSubpixelPositioning);
+
+    // FIXME: Turn this into a script to min-size table.
+    if (s_useDirectWrite
+        && (fontDescription.script() == USCRIPT_SIMPLIFIED_HAN
+            || fontDescription.script() == USCRIPT_TRADITIONAL_HAN
+            || fontDescription.script() == USCRIPT_HIRAGANA
+            || fontDescription.script() == USCRIPT_KATAKANA
+            || fontDescription.script() == USCRIPT_KATAKANA_OR_HIRAGANA
+            || fontDescription.script() == USCRIPT_HANGUL
+            || fontDescription.script() == USCRIPT_THAI
+            || fontDescription.script() == USCRIPT_HEBREW
+            || fontDescription.script() == USCRIPT_ARABIC
+            || fontDescription.script() == USCRIPT_DEVANAGARI
+            || fontDescription.script() == USCRIPT_BENGALI
+            || fontDescription.script() == USCRIPT_GURMUKHI
+            || fontDescription.script() == USCRIPT_GUJARATI
+            || fontDescription.script() == USCRIPT_TAMIL
+            || fontDescription.script() == USCRIPT_TELUGU
+            || fontDescription.script() == USCRIPT_KANNADA
+            || fontDescription.script() == USCRIPT_GEORGIAN
+            || fontDescription.script() == USCRIPT_ARMENIAN
+            || fontDescription.script() == USCRIPT_THAANA
+            || fontDescription.script() == USCRIPT_CANADIAN_ABORIGINAL
+            || fontDescription.script() == USCRIPT_CHEROKEE
+            || fontDescription.script() == USCRIPT_MONGOLIAN)) {
+        result->setMinSizeForAntiAlias(s_minSizeForComplexScriptsAntiAlias);
+    }
+
     return result;
 }
 

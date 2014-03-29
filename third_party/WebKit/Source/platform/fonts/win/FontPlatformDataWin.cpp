@@ -52,28 +52,34 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     paint->setTypeface(typeface());
     paint->setFakeBoldText(m_syntheticBold);
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
-    paint->setSubpixelText(m_useSubpixelPositioning);
 
-    int textFlags = paintTextFlags();
-    // Only set painting flags when we're actually painting.
-    if (context && !context->couldUseLCDRenderedText()) {
-        textFlags &= ~SkPaint::kLCDRenderText_Flag;
-        // If we *just* clear our request for LCD, then GDI seems to
-        // sometimes give us AA text, and sometimes give us BW text. Since the
-        // original intent was LCD, we want to force AA (rather than BW), so we
-        // add a special bit to tell Skia to do its best to avoid the BW: by
-        // drawing LCD offscreen and downsampling that to AA.
-        textFlags |= SkPaint::kGenA8FromLCD_Flag;
-    }
-
+    uint32_t textFlags = paintTextFlags();
+    uint32_t flags = paint->getFlags();
     static const uint32_t textFlagsMask = SkPaint::kAntiAlias_Flag |
         SkPaint::kLCDRenderText_Flag |
         SkPaint::kGenA8FromLCD_Flag;
-
-    SkASSERT(!(textFlags & ~textFlagsMask));
-    uint32_t flags = paint->getFlags();
     flags &= ~textFlagsMask;
-    flags |= textFlags;
+
+    if (ts >= m_minSizeForAntiAlias) {
+        paint->setSubpixelText(m_useSubpixelPositioning);
+
+        // Only set painting flags when we're actually painting.
+        if (context && !context->couldUseLCDRenderedText()) {
+            textFlags &= ~SkPaint::kLCDRenderText_Flag;
+            // If we *just* clear our request for LCD, then GDI seems to
+            // sometimes give us AA text, and sometimes give us BW text. Since the
+            // original intent was LCD, we want to force AA (rather than BW), so we
+            // add a special bit to tell Skia to do its best to avoid the BW: by
+            // drawing LCD offscreen and downsampling that to AA.
+            textFlags |= SkPaint::kGenA8FromLCD_Flag;
+        }
+        SkASSERT(!(textFlags & ~textFlagsMask));
+        flags |= textFlags;
+
+    } else {
+        paint->setSubpixelText(false);
+    }
+
     paint->setFlags(flags);
 }
 
@@ -131,6 +137,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(true)
     , m_useSubpixelPositioning(false)
+    , m_minSizeForAntiAlias(0)
 {
 }
 
@@ -143,6 +150,7 @@ FontPlatformData::FontPlatformData()
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(false)
+    , m_minSizeForAntiAlias(0)
 {
 }
 
@@ -156,6 +164,7 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(false)
+    , m_minSizeForAntiAlias(0)
 {
 }
 
@@ -168,6 +177,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
+    , m_minSizeForAntiAlias(data.m_minSizeForAntiAlias)
 {
 }
 
@@ -180,6 +190,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
     , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
+    , m_minSizeForAntiAlias(data.m_minSizeForAntiAlias)
 {
 }
 
@@ -193,6 +204,7 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     , m_typeface(tf)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(useSubpixelPositioning)
+    , m_minSizeForAntiAlias(0)
 {
     m_paintTextFlags = computePaintTextFlags(fontFamilyName());
 }
@@ -210,6 +222,7 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_orientation = data.m_orientation;
         m_typeface = data.m_typeface;
         m_paintTextFlags = data.m_paintTextFlags;
+        m_minSizeForAntiAlias = data.m_minSizeForAntiAlias;
     }
     return *this;
 }

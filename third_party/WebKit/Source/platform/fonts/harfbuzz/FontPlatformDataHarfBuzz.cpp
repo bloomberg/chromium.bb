@@ -92,6 +92,9 @@ FontPlatformData::FontPlatformData()
     , m_syntheticItalic(false)
     , m_orientation(Horizontal)
     , m_isHashTableDeletedValue(false)
+#if OS(WIN)
+    , m_minSizeForAntiAlias(0)
+#endif
 {
 }
 
@@ -101,6 +104,9 @@ FontPlatformData::FontPlatformData(float textSize, bool syntheticBold, bool synt
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(Horizontal)
     , m_isHashTableDeletedValue(false)
+#if OS(WIN)
+    , m_minSizeForAntiAlias(0)
+#endif
 {
 }
 
@@ -114,6 +120,9 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src)
     , m_style(src.m_style)
     , m_harfBuzzFace(nullptr)
     , m_isHashTableDeletedValue(false)
+#if OS(WIN)
+    , m_minSizeForAntiAlias(0)
+#endif
 {
 }
 
@@ -138,6 +147,9 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_orientation(src.m_orientation)
     , m_harfBuzzFace(nullptr)
     , m_isHashTableDeletedValue(false)
+#if OS(WIN)
+    , m_minSizeForAntiAlias(0)
+#endif
 {
     querySystemForRenderStyle(FontDescription::subpixelPositioning());
 }
@@ -156,6 +168,9 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& src)
     m_harfBuzzFace = nullptr;
     m_orientation = src.m_orientation;
     m_style = src.m_style;
+#if OS(WIN)
+    m_minSizeForAntiAlias = src.m_minSizeForAntiAlias;
+#endif
 
     return *this;
 }
