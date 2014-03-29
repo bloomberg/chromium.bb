@@ -27,19 +27,19 @@ class ApplicationCacheErrorEvent FINAL : public Event {
 public:
     virtual ~ApplicationCacheErrorEvent();
 
-    static PassRefPtr<ApplicationCacheErrorEvent> create()
+    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create()
     {
-        return adoptRef(new ApplicationCacheErrorEvent);
+        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCacheErrorEvent);
     }
 
-    static PassRefPtr<ApplicationCacheErrorEvent> create(blink::WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
+    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(blink::WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
     {
-        return adoptRef(new ApplicationCacheErrorEvent(reason, url, status, message));
+        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCacheErrorEvent(reason, url, status, message));
     }
 
-    static PassRefPtr<ApplicationCacheErrorEvent> create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
+    static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
     {
-        return adoptRef(new ApplicationCacheErrorEvent(eventType, initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCacheErrorEvent(eventType, initializer));
     }
 
     const String& reason() const { return m_reason; }
@@ -48,6 +48,8 @@ public:
     const String& message() const { return m_message; }
 
     virtual const AtomicString& interfaceName() const OVERRIDE { return EventNames::ApplicationCacheErrorEvent; }
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     ApplicationCacheErrorEvent();

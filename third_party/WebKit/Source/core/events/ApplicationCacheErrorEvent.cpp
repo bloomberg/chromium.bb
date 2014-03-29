@@ -74,4 +74,9 @@ ApplicationCacheErrorEvent::~ApplicationCacheErrorEvent()
 {
 }
 
+void ApplicationCacheErrorEvent::trace(Visitor* visitor)
+{
+    Event::trace(visitor);
+}
+
 } // namespace WebCore
