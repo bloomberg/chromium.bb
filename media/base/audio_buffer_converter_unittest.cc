@@ -12,6 +12,8 @@
 
 namespace media {
 
+// Important: Use an odd buffer size here so SIMD issues are caught.
+const int kOutFrameSize = 441;
 const int kOutSampleRate = 44100;
 const ChannelLayout kOutChannelLayout = CHANNEL_LAYOUT_STEREO;
 const int kOutChannelCount = 2;
@@ -39,7 +41,7 @@ class AudioBufferConverterTest : public ::testing::Test {
                                   kOutChannelLayout,
                                   kOutSampleRate,
                                   16,
-                                  512);
+                                  kOutFrameSize);
     ResetConverter(output_params);
   }
 

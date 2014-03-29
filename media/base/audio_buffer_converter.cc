@@ -199,10 +199,13 @@ void AudioBufferConverter::ConvertIfPossible() {
   // The AudioConverter wants requests of a fixed size, so we'll slide an
   // AudioBus of that size across the |output_buffer|.
   while (frames_remaining != 0) {
-    int frames_this_iteration =
-        std::min(output_params_.frames_per_buffer(), frames_remaining);
-
-    int offset_into_buffer = output_buffer->frame_count() - frames_remaining;
+    // It's important that this is a multiple of AudioBus::kChannelAlignment in
+    // all requests except for the last, otherwise downstream SIMD optimizations
+    // will crash on unaligned data.
+    const int frames_this_iteration = std::min(
+        static_cast<int>(SincResampler::kDefaultRequestSize), frames_remaining);
+    const int offset_into_buffer =
+        output_buffer->frame_count() - frames_remaining;
 
     // Wrap the portion of the AudioBuffer in an AudioBus so the AudioConverter
     // can fill it.
