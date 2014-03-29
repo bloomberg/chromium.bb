@@ -241,6 +241,13 @@ public:
     virtual WebPerformance performance() const = 0;
 
 
+    // Closing -------------------------------------------------------------
+
+    // Runs beforeunload handlers for this frame, returning false if a
+    // handler suppressed unloading.
+    virtual bool dispatchBeforeUnloadEvent() = 0;
+
+
     // Scripting ----------------------------------------------------------
 
     // Returns a NPObject corresponding to this frame's DOMWindow.

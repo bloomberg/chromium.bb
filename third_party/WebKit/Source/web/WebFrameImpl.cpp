@@ -745,6 +745,13 @@ WebPerformance WebFrameImpl::performance() const
     return WebPerformance(&frame()->domWindow()->performance());
 }
 
+bool WebFrameImpl::dispatchBeforeUnloadEvent()
+{
+    if (!frame())
+        return true;
+    return frame()->loader().shouldClose();
+}
+
 NPObject* WebFrameImpl::windowObject() const
 {
     if (!frame())

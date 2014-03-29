@@ -2403,14 +2403,11 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
 
 bool WebViewImpl::dispatchBeforeUnloadEvent()
 {
-    // FIXME: This should really cause a recursive depth-first walk of all
-    // frames in the tree, calling each frame's onbeforeunload.  At the moment,
-    // we're consistent with Safari 3.1, not IE/FF.
-    LocalFrame* frame = m_page->mainFrame();
+    WebFrame* frame = mainFrame();
     if (!frame)
         return true;
 
-    return frame->loader().shouldClose();
+    return frame->dispatchBeforeUnloadEvent();
 }
 
 void WebViewImpl::dispatchUnloadEvent()
