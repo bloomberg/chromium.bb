@@ -139,8 +139,6 @@ public:
     bool useSVGZoomRules() const { return element() && element()->isSVGElement(); }
 
 private:
-    friend class StyleResolveScope;
-
     ElementResolveContext m_elementContext;
     Document& m_document;
 
