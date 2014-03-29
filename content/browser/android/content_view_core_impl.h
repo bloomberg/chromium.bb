@@ -352,6 +352,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void DeleteScaledSnapshotTexture();
 
+  bool OnMotionEvent(const ui::MotionEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
   // Update focus state of the RenderWidgetHostView.

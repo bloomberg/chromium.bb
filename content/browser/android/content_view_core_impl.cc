@@ -1028,11 +1028,7 @@ void ContentViewCoreImpl::CancelActiveTouchSequenceIfNecessary() {
 
   scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
   DCHECK(cancel_event);
-  if (!gesture_provider_.OnTouchEvent(*cancel_event))
-    return;
-
-  rwhv->SendTouchEvent(
-      CreateWebTouchEventFromMotionEvent(*cancel_event, 1.f / dpi_scale()));
+  OnMotionEvent(*cancel_event);
 }
 
 jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
@@ -1052,6 +1048,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                                            jfloat touch_major_0,
                                            jfloat touch_major_1) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  // Avoid synthesizing a touch event if it cannot be forwarded.
   if (!rwhv)
     return false;
 
@@ -1071,11 +1068,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(JNIEnv* env,
                            touch_major_0,
                            touch_major_1);
 
-  if (!gesture_provider_.OnTouchEvent(event))
-    return false;
-
-  rwhv->SendTouchEvent(WebTouchEventBuilder::Build(event, 1.f / dpi_scale()));
-  return true;
+  return OnMotionEvent(event);
 }
 
 float ContentViewCoreImpl::GetDpiScale() const {
@@ -1129,6 +1122,26 @@ WebGestureEvent ContentViewCoreImpl::MakeGestureEvent(
     WebInputEvent::Type type, int64 time_ms, float x, float y) const {
   return WebGestureEventBuilder::Build(
       type, time_ms / 1000.0, x / dpi_scale(), y / dpi_scale());
+}
+
+bool ContentViewCoreImpl::OnMotionEvent(const ui::MotionEvent& event) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (!rwhv)
+    return false;
+
+  if (!gesture_provider_.OnTouchEvent(event))
+    return false;
+
+  RenderWidgetHostImpl* host = RenderWidgetHostImpl::From(
+      rwhv->GetRenderWidgetHost());
+  if (!host->ShouldForwardTouchEvent()) {
+    ConfirmTouchEvent(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    return true;
+  }
+
+  rwhv->SendTouchEvent(
+      CreateWebTouchEventFromMotionEvent(event, 1.f / dpi_scale()));
+  return true;
 }
 
 void ContentViewCoreImpl::SendGestureEvent(

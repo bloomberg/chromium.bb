@@ -57,12 +57,6 @@ class WebGestureEventBuilder {
                                       int y);
 };
 
-class WebTouchEventBuilder {
- public:
-  static blink::WebTouchEvent Build(const MotionEventAndroid& event,
-                                    float scale);
-};
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_WEB_INPUT_EVENT_BUILDERS_ANDROID_H_

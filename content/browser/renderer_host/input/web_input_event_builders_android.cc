@@ -133,10 +133,4 @@ WebGestureEvent WebGestureEventBuilder::Build(WebInputEvent::Type type,
   return result;
 }
 
-blink::WebTouchEvent WebTouchEventBuilder::Build(
-    const MotionEventAndroid& event,
-    float scale) {
-  return CreateWebTouchEventFromMotionEvent(event, scale);
-}
-
 }  // namespace content
