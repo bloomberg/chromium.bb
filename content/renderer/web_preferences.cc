@@ -325,8 +325,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setDoubleTapToZoomEnabled(prefs.double_tap_to_zoom_enabled);
   settings->setMediaPlaybackRequiresUserGesture(
       prefs.user_gesture_required_for_media_playback);
-  settings->setMediaFullscreenRequiresUserGesture(
-      prefs.user_gesture_required_for_media_fullscreen);
   settings->setDefaultVideoPosterURL(
         base::ASCIIToUTF16(prefs.default_video_poster_url.spec()));
   settings->setSupportDeprecatedTargetDensityDPI(
