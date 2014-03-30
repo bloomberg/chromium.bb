@@ -97,7 +97,7 @@ void PrivetInfoOperationImpl::Start() {
       CreatePrivetURL(kPrivetInfoPath), net::URLFetcher::GET, this);
 
   url_fetcher_->DoNotRetryOnTransientError();
-  url_fetcher_->AllowEmptyPrivetToken();
+  url_fetcher_->SendEmptyPrivetToken();
 
   url_fetcher_->Start();
 }

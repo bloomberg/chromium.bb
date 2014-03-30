@@ -209,7 +209,24 @@ TEST_F(PrivetURLFetcherTest, Header2) {
   PrivetURLFetcher::SetTokenForHost(GURL(kSamplePrivetURL).GetOrigin().spec(),
                                     "");
 
-  privet_urlfetcher_->AllowEmptyPrivetToken();
+  privet_urlfetcher_->SendEmptyPrivetToken();
+  privet_urlfetcher_->Start();
+
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher != NULL);
+  net::HttpRequestHeaders headers;
+  fetcher->GetExtraRequestHeaders(&headers);
+
+  std::string header_token;
+  ASSERT_TRUE(headers.GetHeader("X-Privet-Token", &header_token));
+  EXPECT_EQ(kEmptyPrivetToken, header_token);
+}
+
+TEST_F(PrivetURLFetcherTest, AlwaysSendEmpty) {
+  PrivetURLFetcher::SetTokenForHost(GURL(kSamplePrivetURL).GetOrigin().spec(),
+                                    "SampleToken");
+
+  privet_urlfetcher_->SendEmptyPrivetToken();
   privet_urlfetcher_->Start();
 
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);

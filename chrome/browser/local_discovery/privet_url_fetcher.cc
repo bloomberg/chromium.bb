@@ -72,7 +72,7 @@ PrivetURLFetcher::PrivetURLFetcher(
       request_context_(request_context),
       delegate_(delegate),
       do_not_retry_on_transient_error_(false),
-      allow_empty_privet_token_(false),
+      send_empty_privet_token_(false),
       has_byte_range_(false),
       make_response_file_(false),
       byte_range_start_(0),
@@ -99,12 +99,16 @@ void PrivetURLFetcher::DoNotRetryOnTransientError() {
   do_not_retry_on_transient_error_ = true;
 }
 
-void PrivetURLFetcher::AllowEmptyPrivetToken() {
+void PrivetURLFetcher::SendEmptyPrivetToken() {
   DCHECK(tries_ == 0);
-  allow_empty_privet_token_ = true;
+  send_empty_privet_token_ = true;
 }
 
 std::string PrivetURLFetcher::GetPrivetAccessToken() {
+  if (send_empty_privet_token_) {
+    return std::string();
+  }
+
   TokenMapHolder* token_map_holder = TokenMapHolder::GetInstance();
   TokenMap::iterator found = token_map_holder->map.find(GetHostString());
   return found != token_map_holder->map.end() ? found->second : std::string();
@@ -173,12 +177,16 @@ void PrivetURLFetcher::Try() {
 void PrivetURLFetcher::Start() {
   DCHECK_EQ(tries_, 0);  // We haven't called |Start()| yet.
 
-  std::string privet_access_token = GetPrivetAccessToken();
-  if (privet_access_token.empty() && !allow_empty_privet_token_) {
-    RequestTokenRefresh();
-  } else {
-    Try();
+  if (!send_empty_privet_token_) {
+    std::string privet_access_token;
+    privet_access_token = GetPrivetAccessToken();
+    if (privet_access_token.empty()) {
+      RequestTokenRefresh();
+      return;
+    }
   }
+
+  Try();
 }
 
 void PrivetURLFetcher::SetUploadData(const std::string& upload_content_type,

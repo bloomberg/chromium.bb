@@ -76,7 +76,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
 
   void DoNotRetryOnTransientError();
 
-  void AllowEmptyPrivetToken();
+  void SendEmptyPrivetToken();
 
   // Set the contents of the Range header. |OnRawData| must return true if this
   // is called.
@@ -116,7 +116,7 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   Delegate* delegate_;
 
   bool do_not_retry_on_transient_error_;
-  bool allow_empty_privet_token_;
+  bool send_empty_privet_token_;
   bool has_byte_range_;
   bool make_response_file_;
 
