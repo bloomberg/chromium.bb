@@ -92,6 +92,7 @@
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -2418,6 +2419,24 @@ void PepperPluginInstanceImpl::SelectedFindResultChanged(PP_Instance instance,
     render_frame_->reportFindInPageSelection(
         find_identifier_, index + 1, blink::WebRect());
   }
+}
+
+void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
+                                            const PP_Rect* tickmarks,
+                                            uint32_t count) {
+  if (!render_frame_ || !render_frame_->GetWebFrame())
+    return;
+
+  blink::WebVector<blink::WebRect> tickmarks_converted(
+      static_cast<size_t>(count));
+  for (uint32 i = 0; i < count; ++i) {
+    tickmarks_converted[i] = blink::WebRect(tickmarks[i].point.x,
+                                            tickmarks[i].point.y,
+                                            tickmarks[i].size.width,
+                                            tickmarks[i].size.height);;
+  }
+  blink::WebFrame* frame = render_frame_->GetWebFrame();
+  frame->setTickmarks(tickmarks_converted);
 }
 
 PP_Bool PepperPluginInstanceImpl::IsFullscreen(PP_Instance instance) {

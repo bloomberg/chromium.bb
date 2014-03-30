@@ -84,6 +84,9 @@ class PPB_Instance_API {
                                           PP_Bool final_result) = 0;
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) = 0;
+  virtual void SetTickmarks(PP_Instance instance,
+                            const PP_Rect* tickmarks,
+                            uint32_t count) = 0;
 
   // Fullscreen.
   virtual PP_Bool IsFullscreen(PP_Instance instance) = 0;

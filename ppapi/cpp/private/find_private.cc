@@ -8,6 +8,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/module_impl.h"
+#include "ppapi/cpp/rect.h"
 
 namespace pp {
 
@@ -80,6 +81,18 @@ void Find_Private::SelectedFindResultChanged(int32_t index) {
   if (has_interface<PPB_Find_Private>()) {
     get_interface<PPB_Find_Private>()->SelectedFindResultChanged(
         associated_instance_.pp_instance(), index);
+  }
+}
+
+void Find_Private::SetTickmarks(const std::vector<pp::Rect>& tickmarks) {
+  if (has_interface<PPB_Find_Private>()) {
+    if (tickmarks.empty())
+      return;
+    std::vector<PP_Rect> tickmarks_converted(tickmarks.begin(),
+                                             tickmarks.end());
+    get_interface<PPB_Find_Private>()->SetTickmarks(
+        associated_instance_.pp_instance(), &tickmarks_converted[0],
+        static_cast<uint32_t>(tickmarks.size()));
   }
 }
 

@@ -66,6 +66,9 @@ class PluginInstance : public ppapi::thunk::PPB_Instance_API {
                                           PP_Bool final_result) OVERRIDE;
   virtual void SelectedFindResultChanged(PP_Instance instance,
                                          int32_t index) OVERRIDE;
+  virtual void SetTickmarks(PP_Instance instance,
+                            const PP_Rect* tickmarks,
+                            uint32_t count) OVERRIDE;
   virtual PP_Bool IsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Bool SetFullscreen(PP_Instance instance,
                                 PP_Bool fullscreen) OVERRIDE;

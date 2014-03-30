@@ -653,6 +653,9 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_NumberOfFindResultsChanged,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SelectFindResultChanged,
                     PP_Instance /* instance */,
                     int32_t /* index */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SetTickmarks,
+                    PP_Instance /* instance */,
+                    std::vector<PP_Rect> /* tickmarks */)
 
 // PPP_Printing
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPrinting_QuerySupportedFormats,

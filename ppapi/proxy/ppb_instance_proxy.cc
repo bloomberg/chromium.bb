@@ -133,6 +133,8 @@ bool PPB_Instance_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnHostMsgNumberOfFindResultsChanged)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SelectFindResultChanged,
                         OnHostMsgSelectFindResultChanged)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetTickmarks,
+                        OnHostMsgSetTickmarks)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_PostMessage,
                         OnHostMsgPostMessage)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBInstance_SetFullscreen,
@@ -333,6 +335,14 @@ void PPB_Instance_Proxy::SelectedFindResultChanged(PP_Instance instance,
                                                    int32_t index) {
   dispatcher()->Send(new PpapiHostMsg_PPBInstance_SelectFindResultChanged(
       API_ID_PPB_INSTANCE, instance, index));
+}
+
+void PPB_Instance_Proxy::SetTickmarks(PP_Instance instance,
+                                      const PP_Rect* tickmarks,
+                                      uint32_t count) {
+  dispatcher()->Send(new PpapiHostMsg_PPBInstance_SetTickmarks(
+      API_ID_PPB_INSTANCE, instance,
+      std::vector<PP_Rect>(tickmarks, tickmarks + count)));
 }
 
 PP_Bool PPB_Instance_Proxy::IsFullscreen(PP_Instance instance) {
@@ -942,6 +952,21 @@ void PPB_Instance_Proxy::OnHostMsgSelectFindResultChanged(
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->SelectedFindResultChanged(instance, index);
+}
+
+void PPB_Instance_Proxy::OnHostMsgSetTickmarks(
+    PP_Instance instance,
+    const std::vector<PP_Rect>& tickmarks) {
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+    return;
+  if (tickmarks.empty())
+    return;
+  EnterInstanceNoLock enter(instance);
+  if (enter.succeeded()) {
+    enter.functions()->SetTickmarks(instance,
+                                    &tickmarks[0],
+                                    static_cast<uint32_t>(tickmarks.size()));
+  }
 }
 
 void PPB_Instance_Proxy::OnHostMsgSetFullscreen(PP_Instance instance,

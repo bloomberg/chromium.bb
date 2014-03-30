@@ -172,6 +172,12 @@ void PluginInstance::SelectedFindResultChanged(PP_Instance instance,
   NOTIMPLEMENTED();
 }
 
+void PluginInstance::SetTickmarks(PP_Instance instance,
+                                  const PP_Rect* tickmarks,
+                                  uint32_t count) {
+  NOTIMPLEMENTED();
+}
+
 PP_Bool PluginInstance::IsFullscreen(PP_Instance instance) {
   NOTIMPLEMENTED();
   return PP_FALSE;

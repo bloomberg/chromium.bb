@@ -53,5 +53,14 @@ interface PPB_Find_Private {
   void SelectedFindResultChanged(
       [in] PP_Instance instance,
       [in] int32_t index);
+
+  /**
+   * Updates the tickmarks on the scrollbar for the find request. |tickmarks|
+   * contains |count| PP_Rects indicating the tickmark ranges.
+   */
+  void SetTickmarks(
+      [in] PP_Instance instance,
+      [in, size_as=count] PP_Rect[] tickmarks,
+      [in] uint32_t count);
 };
 

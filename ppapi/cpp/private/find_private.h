@@ -6,6 +6,7 @@
 #define PPAPI_CPP_PRIVATE_FIND_PRIVATE_H_
 
 #include <string>
+#include <vector>
 
 #include "ppapi/c/private/ppp_find_private.h"
 #include "ppapi/cpp/instance_handle.h"
@@ -13,6 +14,7 @@
 namespace pp {
 
 class Instance;
+class Rect;
 
 // This class allows you to associate the PPP_Find and PPB_Find C-based
 // interfaces with an object. It associates itself with the given instance, and
@@ -53,6 +55,7 @@ class Find_Private {
   void SetPluginToHandleFindRequests();
   void NumberOfFindResultsChanged(int32_t total, bool final_result);
   void SelectedFindResultChanged(int32_t index);
+  void SetTickmarks(const std::vector<pp::Rect>& tickmarks);
 
  private:
   InstanceHandle associated_instance_;
