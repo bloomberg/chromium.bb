@@ -59,6 +59,36 @@ function checkEntries(expectedEntries, actualEntries) {
   });
 }
 
+function checkOnChangedEvent(expectedCallbackCount) {
+  // The frequency in ms between checking whether the right events have
+  // fired. Every 10 attempts progress is logged.
+  var retryPeriod = 100;
+
+  var callbackCount = 0;
+  var done = chrome.test.listenForever(chrome.sessions.onChanged, function() {
+      callbackCount++;
+    }
+  );
+
+  return function() {
+    var retry = 0;
+    var checkEvent = function() {
+      if (callbackCount < expectedCallbackCount) {
+        retry++;
+        if (retry % 10 == 0)
+          console.log("Waiting for " +
+                      (expectedCallbackCount - callbackCount) +
+                      " more onChanged events");
+        window.setTimeout(checkEvent, retryPeriod);
+      } else {
+        assertEq(callbackCount, expectedCallbackCount);
+        done();
+      }
+    };
+    window.setTimeout(checkEvent, retryPeriod);
+  };
+}
+
 chrome.test.runTests([
   // After setupWindows
   //
@@ -108,6 +138,8 @@ chrome.test.runTests([
   function retrieveClosedTabs() {
     // Check that the recently closed list contains what we expect
     // after removing tabs.
+    var checkEvent = checkOnChangedEvent(2);
+
     callForEach(
       chrome.tabs.remove,
       firstWindowTabIds.slice(0, 2).reverse(),
@@ -125,6 +157,7 @@ chrome.test.runTests([
             entries.forEach(function(entry) {
               recentlyClosedTabIds.push(entry.tab.sessionId);
             });
+            checkEvent();
           })
         );
       }
@@ -134,6 +167,8 @@ chrome.test.runTests([
   function retrieveClosedWindows() {
     // Check that the recently closed list contains what we expect
     // after removing windows.
+    var checkEvent = checkOnChangedEvent(2);
+
     callForEach(
       chrome.windows.remove,
       windowIds.slice(1, 3).reverse(),
@@ -154,6 +189,7 @@ chrome.test.runTests([
             entries.forEach(function(entry) {
               recentlyClosedWindowIds.push(entry.window.sessionId);
             });
+            checkEvent();
           })
         );
       }
@@ -197,6 +233,8 @@ chrome.test.runTests([
   },
 
   function restoreClosedTabs() {
+    var checkEvent = checkOnChangedEvent(2);
+
     chrome.windows.get(windowIds[0], {"populate": true},
       callbackPass(function(win) {
         var tabCountBeforeRestore = win.tabs.length;
@@ -212,6 +250,7 @@ chrome.test.runTests([
             win.tabs.forEach(function(tab, i) {
               assertEq(pages[i++], tab.url);
             });
+            checkEvent();
           })
         );
       })
@@ -219,6 +258,8 @@ chrome.test.runTests([
   },
 
   function restoreTabInClosedWindow() {
+    var checkEvent = checkOnChangedEvent(1);
+
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
       chrome.sessions.restore(recentlyClosedSecondWindowTabIds[0],
@@ -229,6 +270,7 @@ chrome.test.runTests([
               assertEq(windowCountBeforeRestore + 1, win.length);
               assertEq(1, win[win.length - 1].tabs.length);
               assertEq(pages[0], win[win.length - 1].tabs[0].url);
+              checkEvent();
             })
           );
         })
@@ -237,11 +279,14 @@ chrome.test.runTests([
   },
 
   function restoreClosedWindows() {
+    var checkEvent = checkOnChangedEvent(1);
+
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
       chrome.sessions.restore(recentlyClosedWindowIds[0],
           function(win_session) {
             assertEq(1, win_session.window.tabs.length);
+            checkEvent();
           });
       function done() {
         chrome.windows.getAll({"populate": true},
@@ -285,6 +330,8 @@ chrome.test.runTests([
   },
 
   function restoreMostRecentEntry() {
+    var checkEvent = checkOnChangedEvent(1);
+
     chrome.windows.getAll({"populate": true}, callbackPass(function(win) {
       var windowCountBeforeRestore = win.length;
       chrome.sessions.restore(callbackPass(function(win_session) {
@@ -292,6 +339,7 @@ chrome.test.runTests([
         chrome.windows.getAll({"populate": true},
           callbackPass(function(win) {
             assertEq(windowCountBeforeRestore + 1, win.length);
+            checkEvent();
           })
         );
       }));

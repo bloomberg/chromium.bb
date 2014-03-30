@@ -35,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/net_util.h"
 #include "ui/base/layout.h"
@@ -591,6 +592,61 @@ bool SessionsRestoreFunction::RunImpl() {
   return session_id->IsForeign() ?
       RestoreForeignSession(*session_id, browser)
       : RestoreLocalSession(*session_id, browser);
+}
+
+SessionsEventRouter::SessionsEventRouter(Profile* profile)
+    : profile_(profile),
+      tab_restore_service_(TabRestoreServiceFactory::GetForProfile(profile)) {
+  // TabRestoreServiceFactory::GetForProfile() can return NULL (i.e., when in
+  // incognito mode)
+  if (tab_restore_service_) {
+    tab_restore_service_->LoadTabsFromLastSession();
+    tab_restore_service_->AddObserver(this);
+  }
+}
+
+SessionsEventRouter::~SessionsEventRouter() {
+  if (tab_restore_service_)
+    tab_restore_service_->RemoveObserver(this);
+}
+
+void SessionsEventRouter::TabRestoreServiceChanged(
+    TabRestoreService* service) {
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  EventRouter::Get(profile_)->BroadcastEvent(make_scoped_ptr(
+      new Event(api::sessions::OnChanged::kEventName, args.Pass())));
+}
+
+void SessionsEventRouter::TabRestoreServiceDestroyed(
+    TabRestoreService* service) {
+  tab_restore_service_ = NULL;
+}
+
+SessionsAPI::SessionsAPI(content::BrowserContext* context)
+    : browser_context_(context) {
+  EventRouter::Get(browser_context_)->RegisterObserver(this,
+      api::sessions::OnChanged::kEventName);
+}
+
+SessionsAPI::~SessionsAPI() {
+}
+
+void SessionsAPI::Shutdown() {
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
+}
+
+static base::LazyInstance<BrowserContextKeyedAPIFactory<SessionsAPI> >
+    g_factory = LAZY_INSTANCE_INITIALIZER;
+
+BrowserContextKeyedAPIFactory<SessionsAPI>*
+SessionsAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+void SessionsAPI::OnListenerAdded(const EventListenerInfo& details) {
+  sessions_event_router_.reset(
+      new SessionsEventRouter(Profile::FromBrowserContext(browser_context_)));
+  EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
 }  // namespace extensions
