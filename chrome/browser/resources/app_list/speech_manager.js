@@ -82,6 +82,7 @@ cr.define('speech', function() {
       this.audioManager_.start();
       this.setState_(SpeechState.HOTWORD_RECOGNIZING);
     } else {
+      this.pluginManager_.stopRecognizer();
       this.setState_(SpeechState.READY);
     }
     chrome.send('setHotwordRecognizerState', [true]);
