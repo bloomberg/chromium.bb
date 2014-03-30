@@ -34,6 +34,9 @@ namespace {
 const char kCodecNameOpus[] = "OPUS";
 const char kCodecNameVp8[] = "VP8";
 
+// To convert from kilobits per second to bits to per second.
+const int kBitrateMultiplier = 1000;
+
 // This constant defines the number of sets of audio data to buffer
 // in the FIFO. If input audio and output data have different resampling
 // rates then buffer is necessary to avoid audio glitches.
@@ -49,6 +52,7 @@ CastRtpPayloadParams DefaultOpusPayload() {
   payload.codec_name = kCodecNameOpus;
   payload.clock_rate = 48000;
   payload.channels = 2;
+  // The value is 0 which means VBR.
   payload.min_bitrate = payload.max_bitrate =
       media::cast::kDefaultAudioEncoderBitrate;
   return payload;
@@ -63,8 +67,8 @@ CastRtpPayloadParams DefaultVp8Payload() {
   payload.clock_rate = 90000;
   payload.width = 1280;
   payload.height = 720;
-  payload.min_bitrate = 50 * 1000;
-  payload.max_bitrate = 2000 * 1000;
+  payload.min_bitrate = 50;
+  payload.max_bitrate = 2000;
   return payload;
 }
 
@@ -90,7 +94,7 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->use_external_encoder = false;
   config->frequency = params.payload.clock_rate;
   config->channels = params.payload.channels;
-  config->bitrate = params.payload.max_bitrate;
+  config->bitrate = params.payload.max_bitrate * kBitrateMultiplier;
   config->codec = media::cast::transport::kPcm16;
   if (params.payload.codec_name == kCodecNameOpus)
     config->codec = media::cast::transport::kOpus;
@@ -107,8 +111,9 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->use_external_encoder = false;
   config->width = params.payload.width;
   config->height = params.payload.height;
-  config->min_bitrate = config->start_bitrate = params.payload.min_bitrate;
-  config->max_bitrate = params.payload.max_bitrate;
+  config->min_bitrate = config->start_bitrate =
+      params.payload.min_bitrate * kBitrateMultiplier;
+  config->max_bitrate = params.payload.max_bitrate * kBitrateMultiplier;
   if (params.payload.codec_name == kCodecNameVp8)
     config->codec = media::cast::transport::kVp8;
   else

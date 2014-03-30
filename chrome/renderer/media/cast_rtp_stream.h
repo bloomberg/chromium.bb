@@ -47,10 +47,10 @@ struct CastRtpPayloadParams {
   // Update frequency of payload sample.
   int clock_rate;
 
-  // Maximum bitrate.
+  // Maximum bitrate in kilobits per second.
   int max_bitrate;
 
-  // Minimum bitrate.
+  // Minimum bitrate in kilobits per second.
   int min_bitrate;
 
   // Number of audio channels.
