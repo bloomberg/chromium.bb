@@ -1655,6 +1655,11 @@ String Internals::layerTreeAsText(Document* document, ExceptionState& exceptionS
 
 String Internals::elementLayerTreeAsText(Element* element, ExceptionState& exceptionState) const
 {
+    if (!element) {
+        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
+        return String();
+    }
+
     FrameView* frameView = element->document().view();
     frameView->updateLayoutAndStyleForPainting();
 
