@@ -31,6 +31,7 @@
             'remoting_base',
             'remoting_protocol',
             'remoting_resources',
+            '../base/base.gyp:base_i18n',
             '../crypto/crypto.gyp:crypto',
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
