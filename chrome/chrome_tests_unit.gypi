@@ -883,6 +883,7 @@
         'browser/extensions/api/image_writer_private/destroy_partitions_operation_unittest.cc',
         'browser/extensions/api/image_writer_private/operation_manager_unittest.cc',
         'browser/extensions/api/image_writer_private/operation_unittest.cc',
+        'browser/extensions/api/image_writer_private/removable_storage_provider_chromeos_unittest.cc',
         'browser/extensions/api/image_writer_private/test_utils.cc',
         'browser/extensions/api/image_writer_private/write_from_file_operation_unittest.cc',
         'browser/extensions/api/image_writer_private/write_from_url_operation_unittest.cc',

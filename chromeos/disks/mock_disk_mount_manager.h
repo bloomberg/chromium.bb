@@ -16,6 +16,8 @@
 namespace chromeos {
 namespace disks {
 
+// TODO(tbarzic): Replace this mock with a fake implementation
+// (http://crbug.com/355757)
 class MockDiskMountManager : public DiskMountManager {
  public:
   MockDiskMountManager();
@@ -60,7 +62,10 @@ class MockDiskMountManager : public DiskMountManager {
       const std::string& vendor_name,
       const std::string& product_name,
       DeviceType device_type,
-      uint64 total_size_in_bytes);
+      uint64 total_size_in_bytes,
+      bool is_parent,
+      bool has_media,
+      bool on_boot_device);
 
   // Removes the fake disk entry associated with the mounted device. This
   // function is primarily for StorageMonitorTest.

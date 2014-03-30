@@ -196,8 +196,16 @@ void StorageMonitorCrosTest::MountDevice(
     uint64 device_size_in_bytes) {
   if (error_code == chromeos::MOUNT_ERROR_NONE) {
     disk_mount_manager_mock_->CreateDiskEntryForMountDevice(
-        mount_info, unique_id, device_label, vendor_name, product_name,
-        device_type, device_size_in_bytes);
+        mount_info,
+        unique_id,
+        device_label,
+        vendor_name,
+        product_name,
+        device_type,
+        device_size_in_bytes,
+        false /* is_parent */,
+        true /* has_media */,
+        false /* on_boot_device */);
   }
   monitor_->OnMountEvent(DiskMountManager::MOUNTING, error_code, mount_info);
   WaitForFileThread();
