@@ -291,7 +291,7 @@ void DeltaUpdateOpPatchHost::StartProcess(scoped_ptr<IPC::Message> message) {
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
       this, base::MessageLoopProxy::current().get());
   host->DisableSandbox();
-  host->Send(message.get());
+  host->Send(message.release());
 }
 
 bool DeltaUpdateOpPatchHost::OnMessageReceived(const IPC::Message& message) {
