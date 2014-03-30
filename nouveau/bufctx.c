@@ -44,12 +44,6 @@ struct nouveau_bufref_priv {
 	struct nouveau_bufctx *bufctx;
 };
 
-static inline struct nouveau_bufref_priv *
-nouveau_bufref(struct nouveau_bufref *bctx)
-{
-	return (struct nouveau_bufref_priv *)bctx;
-}
-
 struct nouveau_bufbin_priv {
 	struct nouveau_bufref_priv *list;
 	int relocs;
