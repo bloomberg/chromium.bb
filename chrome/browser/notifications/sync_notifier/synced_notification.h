@@ -33,7 +33,9 @@ class ChromeNotifierService;
 
 class SyncedNotification : public chrome::BitmapFetcherDelegate {
  public:
-  explicit SyncedNotification(const syncer::SyncData& sync_data);
+  SyncedNotification(const syncer::SyncData& sync_data,
+                     ChromeNotifierService* notifier,
+                     NotificationUIManager* notification_manager);
 
   virtual ~SyncedNotification();
 
@@ -46,6 +48,38 @@ class SyncedNotification : public chrome::BitmapFetcherDelegate {
   static const int kUndefinedPriority = 65535;
 
   void Update(const syncer::SyncData& sync_data);
+
+  // Display the notification in the notification center
+  void Show(Profile* profile);
+
+  // This gets a pointer to the SyncedNotificationSpecifics part
+  // of the sync data.
+  sync_pb::EntitySpecifics GetEntitySpecifics() const;
+
+  // Display the notification if it has the specified app_id_name.
+  void ShowAllForAppId(Profile* profile,
+                       std::string app_id_name);
+
+  // Remove the notification if it has the specified app_id_name.
+  void HideAllForAppId(std::string app_id_name);
+
+  // Fill up the queue of bitmaps to fetch.
+  void QueueBitmapFetchJobs(ChromeNotifierService* notifier_service,
+                            Profile* profile);
+
+  // Start the bitmap fetching.  When it is complete, the callback
+  // will call Show().
+  void StartBitmapFetch();
+
+  // Check against an incoming notification, see if only the read state is
+  // different.
+  bool EqualsIgnoringReadState(const SyncedNotification& other) const;
+
+  // Mark the notification as Read.
+  void NotificationHasBeenRead();
+
+  // Mark a notification as Dismissed (deleted).
+  void NotificationHasBeenDismissed();
 
   // Here are some helper functions to get individual data parts out of a
   // SyncedNotification.
@@ -74,50 +108,30 @@ class SyncedNotification : public chrome::BitmapFetcherDelegate {
   size_t GetButtonCount() const;
   std::string GetContainedNotificationTitle(int index) const;
   std::string GetContainedNotificationMessage(int index) const;
-  std::string GetSendingServiceId() const;
   const gfx::Image& GetAppIcon() const;
 
   // Use this to prevent toasting a notification.
-  void SetToastState(bool toast_state);
-
-  bool EqualsIgnoringReadState(const SyncedNotification& other) const;
-
-  void NotificationHasBeenRead();
-  void NotificationHasBeenDismissed();
-
-  // Fill up the queue of bitmaps to fetch.
-  void QueueBitmapFetchJobs(NotificationUIManager* notification_manager,
-                            ChromeNotifierService* notifier_service,
-                            Profile* profile);
-
-  // Start the bitmap fetching.  When it is complete, the callback
-  // will call Show().
-  void StartBitmapFetch();
-
-  // Display the notification in the notification center
-  void Show(NotificationUIManager* notification_manager,
-            ChromeNotifierService* notifier_service,
-            Profile* profile);
-
-  // This gets a pointer to the SyncedNotificationSpecifics part
-  // of the sync data.
-  sync_pb::EntitySpecifics GetEntitySpecifics() const;
+  void set_toast_state(bool toast_state);
 
   // Write a notification to the console log.
   void LogNotification();
 
  private:
-  // Helper function to mark a notification as read or dismissed.
-  void SetReadState(const ReadState& read_state);
-
   // Method inherited from BitmapFetcher delegate.
   virtual void OnFetchComplete(const GURL url, const SkBitmap* bitmap) OVERRIDE;
 
   // If this bitmap has a valid GURL, create a fetcher for it.
-  void AddBitmapToFetchQueue(const GURL& gurl);
+  void CreateBitmapFetcher(const GURL& gurl);
 
   // Check to see if we have responses for all the bitmaps we need.
   bool AreAllBitmapsFetched();
+
+  // Helper function to mark a notification as read or dismissed.
+  void SetReadState(const ReadState& read_state);
+
+  void SetNotifierServiceForTest(ChromeNotifierService* notifier) {
+    notifier_service_ = notifier;
+  }
 
   sync_pb::SyncedNotificationSpecifics specifics_;
   NotificationUIManager* notification_manager_;
@@ -134,13 +148,15 @@ class SyncedNotification : public chrome::BitmapFetcherDelegate {
   bool image_bitmap_fetch_pending_;
   std::vector<bool> button_bitmaps_fetch_pending_;
 
-
   friend class SyncedNotificationTest;
 
-  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, AddBitmapToFetchQueueTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, CreateBitmapFetcherTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, OnFetchCompleteTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, QueueBitmapFetchJobsTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, EmptyBitmapTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, ShowIfNewlyEnabledTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationTest, HideIfNewlyRemovedTest);
+  FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest, SetAddedAppIdsTest);
 
   DISALLOW_COPY_AND_ASSIGN(SyncedNotification);
 };

@@ -1468,6 +1468,8 @@
         'browser/notifications/sync_notifier/chrome_notifier_service.h',
         'browser/notifications/sync_notifier/chrome_notifier_service_factory.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_factory.h',
+        'browser/notifications/sync_notifier/image_holder.cc',
+        'browser/notifications/sync_notifier/image_holder.h',
         'browser/notifications/sync_notifier/synced_notification.cc',
         'browser/notifications/sync_notifier/synced_notification.h',
         'browser/notifications/sync_notifier/synced_notification_app_info.cc',

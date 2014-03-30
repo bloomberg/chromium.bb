@@ -46,6 +46,9 @@ class SyncedNotificationTest : public testing::Test {
   // Methods from testing::Test.
 
   virtual void SetUp() OVERRIDE {
+    notification_manager_.reset(new StubNotificationUIManager(GURL(
+        kSyncedNotificationsWelcomeOrigin)));
+
     sync_data1_ = CreateSyncData(kTitle1, kText1, kIconUrl1, kImageUrl1,
                                  kAppId1, kKey1, kUnread);
     sync_data2_ = CreateSyncData(kTitle2, kText2, kIconUrl2, kImageUrl2,
@@ -58,13 +61,15 @@ class SyncedNotificationTest : public testing::Test {
     sync_data4_ = CreateSyncData(kTitle1, kText1, kIconUrl1, kImageUrl1,
                                  kAppId1, kKey1, kDismissed);
 
-    notification1_.reset(new SyncedNotification(sync_data1_));
-    notification2_.reset(new SyncedNotification(sync_data2_));
-    notification3_.reset(new SyncedNotification(sync_data3_));
-    notification4_.reset(new SyncedNotification(sync_data4_));
+    notification1_.reset(new SyncedNotification(
+        sync_data1_, NULL, notification_manager_.get()));
+    notification2_.reset(new SyncedNotification(
+        sync_data2_, NULL, notification_manager_.get()));
+    notification3_.reset(new SyncedNotification(
+        sync_data3_, NULL, notification_manager_.get()));
+    notification4_.reset(new SyncedNotification(
+        sync_data4_, NULL, notification_manager_.get()));
 
-    notification_manager_.reset(new StubNotificationUIManager(GURL(
-        kSyncedNotificationsWelcomeOrigin)));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -153,7 +158,6 @@ TEST_F(SyncedNotificationTest, GetImageURLTest) {
   EXPECT_EQ(expected_image_url, found_image_url);
 }
 
-// TODO(petewil): test with a multi-line message
 TEST_F(SyncedNotificationTest, GetTextTest) {
   std::string found_text = notification1_->GetText();
   std::string expected_text(kText1);
@@ -242,7 +246,8 @@ TEST_F(SyncedNotificationTest, EqualsIgnoringReadStateTest) {
 
 TEST_F(SyncedNotificationTest, UpdateTest) {
   scoped_ptr<SyncedNotification> notification5;
-  notification5.reset(new SyncedNotification(sync_data1_));
+  notification5.reset(new SyncedNotification(
+      sync_data1_, NULL, notification_manager()));
 
   // update with the sync data from notification2, and ensure they are equal.
   notification5->Update(sync_data2_);
@@ -257,7 +262,7 @@ TEST_F(SyncedNotificationTest, ShowTest) {
     return;
 
   // Call the method under test using the pre-populated data.
-  notification1_->Show(notification_manager(), NULL, NULL);
+  notification1_->Show(NULL);
 
   const Notification notification = notification_manager()->notification();
 
@@ -278,23 +283,24 @@ TEST_F(SyncedNotificationTest, DismissTest) {
     return;
 
   // Call the method under test using a dismissed notification.
-  notification4_->Show(notification_manager(), NULL, NULL);
+  notification4_->Show(NULL);
 
   EXPECT_EQ(std::string(kKey1), notification_manager()->dismissed_id());
 }
 
-TEST_F(SyncedNotificationTest, AddBitmapToFetchQueueTest) {
+TEST_F(SyncedNotificationTest, CreateBitmapFetcherTest) {
   scoped_ptr<SyncedNotification> notification6;
-  notification6.reset(new SyncedNotification(sync_data1_));
+  notification6.reset(new SyncedNotification(
+      sync_data1_, NULL, notification_manager()));
 
   // Add two bitmaps to the queue.
-  notification6->AddBitmapToFetchQueue(GURL(kIconUrl1));
-  notification6->AddBitmapToFetchQueue(GURL(kIconUrl2));
+  notification6->CreateBitmapFetcher(GURL(kIconUrl1));
+  notification6->CreateBitmapFetcher(GURL(kIconUrl2));
 
   EXPECT_EQ(GURL(kIconUrl1), notification6->fetchers_[0]->url());
   EXPECT_EQ(GURL(kIconUrl2), notification6->fetchers_[1]->url());
 
-  notification6->AddBitmapToFetchQueue(GURL(kIconUrl2));
+  notification6->CreateBitmapFetcher(GURL(kIconUrl2));
 }
 
 TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
@@ -305,10 +311,10 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   notification1_->notification_manager_ = notification_manager();
 
   // Add the bitmaps to the queue for us to match up.
-  notification1_->AddBitmapToFetchQueue(GURL(kIconUrl1));
-  notification1_->AddBitmapToFetchQueue(GURL(kImageUrl1));
-  notification1_->AddBitmapToFetchQueue(GURL(kButtonOneIconUrl));
-  notification1_->AddBitmapToFetchQueue(GURL(kButtonTwoIconUrl));
+  notification1_->CreateBitmapFetcher(GURL(kIconUrl1));
+  notification1_->CreateBitmapFetcher(GURL(kImageUrl1));
+  notification1_->CreateBitmapFetcher(GURL(kButtonOneIconUrl));
+  notification1_->CreateBitmapFetcher(GURL(kButtonTwoIconUrl));
 
   // Put some realistic looking bitmap data into the url_fetcher.
   SkBitmap bitmap;
@@ -349,7 +355,7 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   //     image, notification1_->GetAppIconBitmap()));
 }
 
-
+// TODO(petewil): Empty bitmap should count as a successful fetch.
 TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
   if (!UseRichNotifications())
     return;
@@ -358,10 +364,10 @@ TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
   notification1_->notification_manager_ = notification_manager();
 
   // Add the bitmaps to the queue for us to match up.
-  notification1_->AddBitmapToFetchQueue(GURL(kIconUrl1));
-  notification1_->AddBitmapToFetchQueue(GURL(kImageUrl1));
-  notification1_->AddBitmapToFetchQueue(GURL(kButtonOneIconUrl));
-  notification1_->AddBitmapToFetchQueue(GURL(kButtonTwoIconUrl));
+  notification1_->CreateBitmapFetcher(GURL(kIconUrl1));
+  notification1_->CreateBitmapFetcher(GURL(kImageUrl1));
+  notification1_->CreateBitmapFetcher(GURL(kButtonOneIconUrl));
+  notification1_->CreateBitmapFetcher(GURL(kButtonTwoIconUrl));
 
   // Put some realistic looking bitmap data into the url_fetcher.
   SkBitmap bitmap;
@@ -397,6 +403,50 @@ TEST_F(SyncedNotificationTest, EmptyBitmapTest) {
   EXPECT_EQ(
       std::string(kText1),
       base::UTF16ToUTF8(notification_manager()->notification().message()));
+}
+
+TEST_F(SyncedNotificationTest, ShowIfNewlyEnabledTest) {
+  if (!UseRichNotifications())
+    return;
+
+  // Call the method using the wrong app id, nothing should get shown.
+  notification1_->ShowAllForAppId(NULL, kAppId2);
+
+  // Ensure no notification was generated and shown.
+  const Notification notification1 = notification_manager()->notification();
+  EXPECT_EQ(std::string(), base::UTF16ToUTF8(notification1.replace_id()));
+
+  // Call the method under test using the pre-populated data.
+  notification1_->ShowAllForAppId(NULL, kAppId1);
+
+  const Notification notification2 = notification_manager()->notification();
+
+  // Check the base fields of the notification.
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification2.type());
+  EXPECT_EQ(std::string(kTitle1), base::UTF16ToUTF8(notification2.title()));
+  EXPECT_EQ(std::string(kText1), base::UTF16ToUTF8(notification2.message()));
+  EXPECT_EQ(std::string(kExpectedOriginUrl), notification2.origin_url().spec());
+  EXPECT_EQ(std::string(kKey1), base::UTF16ToUTF8(notification2.replace_id()));
+
+  EXPECT_EQ(kFakeCreationTime, notification2.timestamp().ToDoubleT());
+  EXPECT_EQ(kNotificationPriority, notification2.priority());
+}
+
+TEST_F(SyncedNotificationTest, HideIfNewlyRemovedTest) {
+  if (!UseRichNotifications())
+    return;
+
+  // Add the notification to the notification manger, so it exists before we
+  // we remove it.
+  notification1_->Show(NULL);
+  const Notification* found1 = notification_manager()->FindById(kKey1);
+  EXPECT_NE(reinterpret_cast<Notification*>(NULL), found1);
+
+  // Call the method under test using the pre-populated data.
+  notification1_->HideAllForAppId(kAppId1);
+
+  // Ensure the notification was removed from the notification manager
+  EXPECT_EQ(std::string(kKey1), notification_manager()->dismissed_id());
 }
 
 // TODO(petewil): Add a test for a notification being read and or deleted.

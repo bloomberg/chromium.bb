@@ -4,6 +4,12 @@
 
 #include "chrome/browser/notifications/sync_notifier/sync_notifier_test_utils.h"
 
+// Test data for App Info structures.
+const char kSendingService1Name[] = "TestService1";
+const char kSendingService2Name[] = "TestService2";
+const char kSendingService3Name[] = "TestService3";
+const char kTestIconUrl[] = "https://www.google.com/someicon.png";
+
 // Fake data for creating a SyncData object to use in creating a
 // SyncedNotification.
 const char kAppId1[] = "fboilmbenheemaomgaeehigklolhkhnf";
@@ -196,3 +202,87 @@ syncer::SyncData CreateSyncData(
 
   return sync_data;
 }
+
+namespace notifier {
+
+StubSyncedNotificationAppInfoService::StubSyncedNotificationAppInfoService(
+    Profile* profile) : SyncedNotificationAppInfoService(profile) {
+  on_bitmap_fetches_done_called_ = false;
+}
+
+StubSyncedNotificationAppInfoService::~StubSyncedNotificationAppInfoService() {
+}
+
+syncer::SyncMergeResult
+StubSyncedNotificationAppInfoService::MergeDataAndStartSyncing(
+      syncer::ModelType type,
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) {
+    return syncer::SyncMergeResult(syncer::SYNCED_NOTIFICATION_APP_INFO);
+}
+
+syncer::SyncError StubSyncedNotificationAppInfoService::ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) {
+    return syncer::SyncError();
+}
+
+syncer::SyncDataList StubSyncedNotificationAppInfoService::GetAllSyncData(
+    syncer::ModelType type) const {
+    return syncer::SyncDataList();
+}
+
+void StubSyncedNotificationAppInfoService::OnBitmapFetchesDone(
+    std::vector<std::string> added_app_ids,
+    std::vector<std::string> removed_app_ids) {
+    added_app_ids_ = added_app_ids;
+    removed_app_ids_ = removed_app_ids;
+    on_bitmap_fetches_done_called_ = true;
+}
+
+scoped_ptr<SyncedNotificationAppInfo>
+StubSyncedNotificationAppInfoService::
+    CreateSyncedNotificationAppInfoFromProtobuf(
+        const sync_pb::SyncedNotificationAppInfo& app_info) {
+  return scoped_ptr<SyncedNotificationAppInfo>();
+}
+
+SyncedNotificationAppInfo*
+StubSyncedNotificationAppInfoService::FindSyncedNotificationAppInfoByName(
+    const std::string& name) {
+  return NULL;
+}
+
+SyncedNotificationAppInfo*
+StubSyncedNotificationAppInfoService::FindSyncedNotificationAppInfoByAppId(
+    const std::string& app_id) {
+  return NULL;
+}
+
+std::string
+StubSyncedNotificationAppInfoService::FindSendingServiceNameFromAppId(
+    const std::string app_id) {
+  return std::string();
+}
+std::vector<SyncedNotificationSendingServiceSettingsData>
+StubSyncedNotificationAppInfoService::GetAllSendingServiceSettingsData() {
+  std::vector<SyncedNotificationSendingServiceSettingsData> empty;
+  return empty;
+}
+
+
+// Probe functions to return data.
+std::vector<std::string> StubSyncedNotificationAppInfoService::added_app_ids() {
+  return added_app_ids_;
+}
+
+std::vector<std::string>
+StubSyncedNotificationAppInfoService::removed_app_ids() {
+    return removed_app_ids_;
+}
+bool StubSyncedNotificationAppInfoService::on_bitmap_fetches_done_called() {
+  return on_bitmap_fetches_done_called_;
+}
+
+}  // namespace notifier

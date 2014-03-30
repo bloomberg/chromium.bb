@@ -8,10 +8,17 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service.h"
 #include "sync/api/sync_data.h"
+#include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 
+// Test data for App Info structures.
+extern const char kSendingService1Name[];
+extern const char kSendingService2Name[];
+extern const char kSendingService3Name[];
+extern const char kTestIconUrl[];
 
 // Fake data for creating a SyncedNotification.
 extern const char kAppId1[];
@@ -94,5 +101,64 @@ syncer::SyncData CreateSyncData(
     const std::string& app_id,
     const std::string& key,
       const sync_pb::CoalescedSyncedNotification_ReadState read_state);
+
+namespace notifier {
+
+// Stub out the SyncedNotificationAppInfoService.  This is used to
+// 1. Verify that when bitmaps are fetched, the OnFetchComplete causes a call to
+// OnBitmapFetchesDone.
+// 2. Provide the app info for our first sending service.
+class StubSyncedNotificationAppInfoService
+    : public SyncedNotificationAppInfoService {
+ public:
+  // Interface functions from SyncedNotificationAppInfoService
+    explicit StubSyncedNotificationAppInfoService(Profile* profile);
+  virtual ~StubSyncedNotificationAppInfoService();
+  virtual void Shutdown() OVERRIDE{}
+  virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
+      syncer::ModelType type,
+      const syncer::SyncDataList& initial_sync_data,
+      scoped_ptr<syncer::SyncChangeProcessor> sync_processor,
+      scoped_ptr<syncer::SyncErrorFactory> error_handler) OVERRIDE;
+  virtual void StopSyncing(syncer::ModelType type) OVERRIDE{}
+  virtual syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) OVERRIDE;
+  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const
+      OVERRIDE;
+  void ProcessIncomingAppInfoProtobuf(
+      const sync_pb::SyncedNotificationAppInfo& app_info) {}
+  void ProcessRemovedAppInfoProtobuf(
+      const sync_pb::SyncedNotificationAppInfo& app_info) {}
+  // Remember the arguments we saw in the most recent call.
+  virtual void OnBitmapFetchesDone(std::vector<std::string> added_app_ids,
+                                   std::vector<std::string> removed_app_ids)
+      OVERRIDE;
+  scoped_ptr<SyncedNotificationAppInfo>
+  CreateSyncedNotificationAppInfoFromProtobuf(
+      const sync_pb::SyncedNotificationAppInfo& app_info);
+  SyncedNotificationAppInfo* FindSyncedNotificationAppInfoByAppId(
+      const std::string& app_id);
+  std::string FindSendingServiceNameFromAppId(const std::string app_id);
+  std::vector<SyncedNotificationSendingServiceSettingsData>
+  GetAllSendingServiceSettingsData();
+  void AddForTest(
+      scoped_ptr<notifier::SyncedNotificationAppInfo> sending_service_info) {}
+  static void set_avoid_bitmap_fetching_for_test(bool avoid) {}
+
+  // Probe functions to return data.
+  std::vector<std::string> added_app_ids();
+  std::vector<std::string> removed_app_ids();
+  bool on_bitmap_fetches_done_called();
+
+ private:
+  SyncedNotificationAppInfo* FindSyncedNotificationAppInfoByName(
+      const std::string& name);
+  std::vector<std::string> added_app_ids_;
+  std::vector<std::string> removed_app_ids_;
+  bool on_bitmap_fetches_done_called_;
+};
+
+}  // namespace notifier
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_SYNC_NOTIFIER_SYNC_NOTIFIER_TEST_UTILS_H_

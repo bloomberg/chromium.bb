@@ -24,6 +24,21 @@ class SyncedNotificationAppInfo;
 
 namespace notifier {
 
+// Information that the ChromeNotifierService needs from this app info to be
+// able to properly enable and disable the sending services.
+struct SyncedNotificationSendingServiceSettingsData {
+  SyncedNotificationSendingServiceSettingsData(
+      std::string settings_display_name,
+      gfx::Image settings_icon,
+      message_center::NotifierId notifier_id);
+  std::string settings_display_name;
+  gfx::Image settings_icon;
+  message_center::NotifierId notifier_id;
+};
+
+
+class ChromeNotifierService;
+
 // The SyncedNotificationAppInfoService contains and syncs AppInfo protobufs
 // from the server with metadata about the services sending synced
 // notifications.
@@ -65,10 +80,33 @@ class SyncedNotificationAppInfoService : public syncer::SyncableService,
   void ProcessRemovedAppInfoProtobuf(
       const sync_pb::SyncedNotificationAppInfo& app_info);
 
+  // When the bitmaps are all ready, tell ChromeNotifierService about changes.
+  virtual void OnBitmapFetchesDone(std::vector<std::string> added_app_ids,
+                                   std::vector<std::string> removed_app_ids);
+
   // Convert the protobuf to our internal format.
-  static scoped_ptr<SyncedNotificationAppInfo>
+  scoped_ptr<SyncedNotificationAppInfo>
       CreateSyncedNotificationAppInfoFromProtobuf(
           const sync_pb::SyncedNotificationAppInfo& app_info);
+
+  // Get the app info that contains this sending service name.
+  SyncedNotificationAppInfo* FindSyncedNotificationAppInfoByName(
+      const std::string& name);
+
+  // Get the app info that contains this app id.
+  SyncedNotificationAppInfo* FindSyncedNotificationAppInfoByAppId(
+      const std::string& app_id);
+
+  // Lookup the sending service name for a given app id.
+  std::string FindSendingServiceNameFromAppId(const std::string app_id);
+
+  // Return a list of all sending service names.
+  std::vector<SyncedNotificationSendingServiceSettingsData>
+  GetAllSendingServiceSettingsData();
+
+  void set_chrome_notifier_service(ChromeNotifierService* notifier) {
+    chrome_notifier_service_ = notifier;
+  }
 
   // Functions for test.
   void AddForTest(
@@ -76,14 +114,18 @@ class SyncedNotificationAppInfoService : public syncer::SyncableService,
     Add(sending_service_info.Pass());
   }
 
+  // If we allow the tests to do bitmap fetching, they will attempt to fetch
+  // a URL from the web, which will fail.  We can already test the majority
+  // of what we want without also trying to fetch bitmaps.  Other tests will
+  // cover bitmap fetching.
+  static void set_avoid_bitmap_fetching_for_test(bool avoid) {
+    avoid_bitmap_fetching_for_test_ = avoid;
+  }
+
  private:
   // Add an app_info object to our list.  This takes ownership of the pointer.
   void Add(
       scoped_ptr<notifier::SyncedNotificationAppInfo> sending_service_info);
-
-  // Get the app info that contains this ID.
-  SyncedNotificationAppInfo* FindSyncedNotificationAppInfoByName(
-      const std::string& name);
 
   // Remove this app info.
   void FreeSyncedNotificationAppInfoByName(const std::string& name);
@@ -102,6 +144,14 @@ class SyncedNotificationAppInfoService : public syncer::SyncableService,
   // Cache of the sync info.
   syncer::SyncData sync_data_;
 
+  // Don't let unit tests try to hit the network.
+  static bool avoid_bitmap_fetching_for_test_;
+
+  // Pointer to the ChromeNotifierService.  Its lifetime is controlled by the
+  // ChromeNotifierService itself, which will zero out the pointer when it is
+  // destroyed.
+  ChromeNotifierService* chrome_notifier_service_;
+
   friend class SyncedNotificationAppInfoServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationAppInfoServiceTest,
                            MergeDataAndStartSyncingTest);
@@ -111,6 +161,8 @@ class SyncedNotificationAppInfoService : public syncer::SyncableService,
                            ProcessSyncChangesNonEmptyModel);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationAppInfoServiceTest,
                            FindSyncedNotificationAppInfoByNameTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncedNotificationAppInfoServiceTest,
+                           FindSyncedNotificationAppInfoByNameTestTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationAppInfoServiceTest,
                            FreeSyncedNotificationAppInfoByNameTest);
   FRIEND_TEST_ALL_PREFIXES(SyncedNotificationAppInfoServiceTest,

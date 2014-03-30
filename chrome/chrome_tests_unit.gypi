@@ -1124,6 +1124,7 @@
         'browser/notifications/message_center_settings_controller_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_delegate_unittest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_service_unittest.cc',
+        'browser/notifications/sync_notifier/image_holder_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_app_info_unittest.cc',
         'browser/notifications/sync_notifier/synced_notification_app_info_service_unittest.cc',

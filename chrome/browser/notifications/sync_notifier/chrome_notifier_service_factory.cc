@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
+#include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -45,8 +46,13 @@ bool ChromeNotifierServiceFactory::UseSyncedNotifications(
 
 ChromeNotifierServiceFactory::ChromeNotifierServiceFactory()
     : BrowserContextKeyedServiceFactory(
-        "ChromeNotifierService",
-        BrowserContextDependencyManager::GetInstance()) {}
+          "ChromeNotifierService",
+          BrowserContextDependencyManager::GetInstance()) {
+  // Mark this service as depending on the SyncedNotificationAppInfoService.
+  // Marking it provides a guarantee that the other service will alwasys be
+  // running whenever the ChromeNotifierServiceFactory is.
+  DependsOn(SyncedNotificationAppInfoServiceFactory::GetInstance());
+}
 
 ChromeNotifierServiceFactory::~ChromeNotifierServiceFactory() {
 }

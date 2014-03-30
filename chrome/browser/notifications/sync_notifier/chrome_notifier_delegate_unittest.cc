@@ -45,7 +45,7 @@ class StubChromeNotifierService : public notifier::ChromeNotifierService {
     // Set enough fields in sync_data, including specifics, for our tests
     // to pass.
     notifier::SyncedNotification* notification =
-        new notifier::SyncedNotification(sync_data);
+        new notifier::SyncedNotification(sync_data, this, NULL);
     // Retain ownership to avoid memory leaks in tests.
     owned_notifications_.push_back(notification);
     return notification;

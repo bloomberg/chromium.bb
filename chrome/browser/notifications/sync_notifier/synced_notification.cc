@@ -68,9 +68,12 @@ COMPILE_ASSERT(static_cast<sync_pb::CoalescedSyncedNotification_ReadState>(
                sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED,
                local_enum_must_match_protobuf_enum);
 
-SyncedNotification::SyncedNotification(const syncer::SyncData& sync_data)
-    : notification_manager_(NULL),
-      notifier_service_(NULL),
+SyncedNotification::SyncedNotification(
+    const syncer::SyncData& sync_data,
+    ChromeNotifierService* notifier_service,
+    NotificationUIManager* notification_manager)
+    : notification_manager_(notification_manager),
+      notifier_service_(notifier_service),
       profile_(NULL),
       toast_state_(true),
       app_icon_bitmap_fetch_pending_(true),
@@ -86,166 +89,19 @@ void SyncedNotification::Update(const syncer::SyncData& sync_data) {
   specifics_.CopyFrom(sync_data.GetSpecifics().synced_notification());
 }
 
-sync_pb::EntitySpecifics SyncedNotification::GetEntitySpecifics() const {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.mutable_synced_notification()->CopyFrom(specifics_);
-  return entity_specifics;
-}
-
-// Check that we have either fetched or gotten an error on all the bitmaps we
-// asked for.
-bool SyncedNotification::AreAllBitmapsFetched() {
-  bool app_icon_ready = GetAppIconUrl().is_empty() ||
-      !app_icon_bitmap_.IsEmpty() || !app_icon_bitmap_fetch_pending_;
-  bool images_ready = GetImageUrl().is_empty() || !image_bitmap_.IsEmpty() ||
-      !image_bitmap_fetch_pending_;
-  bool sender_picture_ready = GetProfilePictureUrl(0).is_empty() ||
-      !sender_bitmap_.IsEmpty() || !sender_bitmap_fetch_pending_;
-  bool button_bitmaps_ready = true;
-  for (unsigned int j = 0; j < GetButtonCount(); ++j) {
-    if (!GetButtonIconUrl(j).is_empty()
-        && button_bitmaps_[j].IsEmpty()
-        && button_bitmaps_fetch_pending_[j]) {
-      button_bitmaps_ready = false;
-      break;
-    }
-  }
-
-  return app_icon_ready && images_ready && sender_picture_ready &&
-      button_bitmaps_ready;
-}
-
-// TODO(petewil): The fetch mechanism appears to be returning two bitmaps on the
-// mac - perhaps one is regular, one is high dpi?  If so, ensure we use the high
-// dpi bitmap when appropriate.
-void SyncedNotification::OnFetchComplete(const GURL url,
-                                         const SkBitmap* bitmap) {
-  // TODO(petewil): Add timeout mechanism in case bitmaps take too long.  Do we
-  // already have one built into URLFetcher?
-  // Make sure we are on the thread we expect.
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  gfx::Image downloaded_image;
-  if (bitmap != NULL)
-    downloaded_image = gfx::Image::CreateFrom1xBitmap(*bitmap);
-
-  // Match the incoming bitmaps to URLs.  In case this is a dup, make sure to
-  // try all potentially matching urls.
-  if (GetAppIconUrl() == url) {
-    app_icon_bitmap_ = downloaded_image;
-    if (app_icon_bitmap_.IsEmpty())
-      app_icon_bitmap_fetch_pending_ = false;
-  }
-  if (GetImageUrl() == url) {
-    image_bitmap_ = downloaded_image;
-    if (image_bitmap_.IsEmpty())
-      image_bitmap_fetch_pending_ = false;
-  }
-  if (GetProfilePictureUrl(0) == url) {
-    sender_bitmap_ = downloaded_image;
-    if (sender_bitmap_.IsEmpty())
-      sender_bitmap_fetch_pending_ = false;
-  }
-
-  // If this URL matches one or more button bitmaps, save them off.
-  for (unsigned int i = 0; i < GetButtonCount(); ++i) {
-    if (GetButtonIconUrl(i) == url) {
-      if (bitmap != NULL) {
-        button_bitmaps_[i] = gfx::Image::CreateFrom1xBitmap(*bitmap);
-      }
-      button_bitmaps_fetch_pending_[i] = false;
-    }
-  }
-
-  DVLOG(2) << __FUNCTION__ << " popping bitmap " << url;
-
-  // See if all bitmaps are already accounted for, if so call Show.
-  if (AreAllBitmapsFetched()) {
-    Show(notification_manager_, notifier_service_, profile_);
-  }
-}
-
-void SyncedNotification::QueueBitmapFetchJobs(
-    NotificationUIManager* notification_manager,
-    ChromeNotifierService* notifier_service,
-    Profile* profile) {
-  // If we are not using the MessageCenter, call show now, and the existing
-  // code will handle the bitmap fetch for us.
-  if (!UseRichNotifications()) {
-    Show(notification_manager, notifier_service, profile);
-    return;
-  }
-
-  // Save off the arguments for the call to Show.
-  notification_manager_ = notification_manager;
-  notifier_service_ = notifier_service;
-  profile_ = profile;
-
-  // Ensure our bitmap vector has as many entries as there are buttons,
-  // so that when the bitmaps arrive the vector has a slot for them.
-  for (unsigned int i = 0; i < GetButtonCount(); ++i) {
-    button_bitmaps_.push_back(gfx::Image());
-    button_bitmaps_fetch_pending_.push_back(true);
-    AddBitmapToFetchQueue(GetButtonIconUrl(i));
-  }
-
-  // If there is a profile image bitmap, fetch it
-  if (GetProfilePictureCount() > 0) {
-    // TODO(petewil): When we have the capacity to display more than one bitmap,
-    // modify this code to fetch as many as we can display
-    AddBitmapToFetchQueue(GetProfilePictureUrl(0));
-  }
-
-  // If the URL is non-empty, add it to our queue of URLs to fetch.
-  AddBitmapToFetchQueue(GetAppIconUrl());
-  AddBitmapToFetchQueue(GetImageUrl());
-
-  // Check to see if we don't need to fetch images, either because we already
-  // did, or because the URLs are empty. If so, we can display the notification.
-
-  // See if all bitmaps are accounted for, if so call Show().
-  if (AreAllBitmapsFetched()) {
-    Show(notification_manager_, notifier_service_, profile_);
-  }
-}
-
-void SyncedNotification::StartBitmapFetch() {
-  // Now that we have queued and counted them all, start the fetching.
-  ScopedVector<chrome::BitmapFetcher>::iterator iter;
-  for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
-    (*iter)->Start(profile_);
-  }
-}
-
-void SyncedNotification::AddBitmapToFetchQueue(const GURL& url) {
-  // Check for dups, ignore any request for a dup.
-  ScopedVector<chrome::BitmapFetcher>::iterator iter;
-  for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
-    if ((*iter)->url() == url)
-      return;
-  }
-
-  if (url.is_valid()) {
-    fetchers_.push_back(new chrome::BitmapFetcher(url, this));
-    DVLOG(2) << __FUNCTION__ << "Pushing bitmap " << url;
-  }
-}
-
-void SyncedNotification::Show(NotificationUIManager* notification_manager,
-                              ChromeNotifierService* notifier_service,
-                              Profile* profile) {
+void SyncedNotification::Show(Profile* profile) {
   // Let NotificationUIManager know that the notification has been dismissed.
   if (SyncedNotification::kRead == GetReadState() ||
       SyncedNotification::kDismissed == GetReadState() ) {
-    notification_manager->CancelById(GetKey());
+    notification_manager_->CancelById(GetKey());
     DVLOG(2) << "Dismissed or read notification arrived"
              << GetHeading() << " " << GetText();
     return;
   }
 
   // |notifier_service| can be NULL in tests.
-  if (UseRichNotifications() && notifier_service) {
-    notifier_service->ShowWelcomeToastIfNecessary(this, notification_manager);
+  if (UseRichNotifications() && notifier_service_) {
+    notifier_service_->ShowWelcomeToastIfNecessary(this, notification_manager_);
   }
 
   // Set up the fields we need to send and create a Notification object.
@@ -264,7 +120,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
   // The delegate will eventually catch calls that the notification
   // was read or deleted, and send the changes back to the server.
   scoped_refptr<NotificationDelegate> delegate =
-      new ChromeNotifierDelegate(GetKey(), notifier_service);
+      new ChromeNotifierDelegate(GetKey(), notifier_service_);
 
   // Some inputs and fields are only used if there is a notification center.
   if (UseRichNotifications()) {
@@ -364,7 +220,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
     // has already been shown.
     ui_notification.set_shown_as_popup(!toast_state_);
 
-    notification_manager->Add(ui_notification, profile);
+    notification_manager_->Add(ui_notification, profile);
   } else {
     // In this case we have a Webkit Notification, not a Rich Notification.
     Notification ui_notification(GetOriginUrl(),
@@ -376,7 +232,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
                                  replace_key,
                                  delegate.get());
 
-    notification_manager->Add(ui_notification, profile);
+    notification_manager_->Add(ui_notification, profile);
   }
 
   DVLOG(1) << "Showing Synced Notification! " << heading << " " << text
@@ -384,6 +240,76 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
            << GetProfilePictureUrl(0) << " " << GetReadState();
 
   return;
+}
+
+sync_pb::EntitySpecifics SyncedNotification::GetEntitySpecifics() const {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.mutable_synced_notification()->CopyFrom(specifics_);
+  return entity_specifics;
+}
+
+// Display the notification if it has the specified app_id_name.
+void SyncedNotification::ShowAllForAppId(Profile* profile,
+                                         std::string app_id_name) {
+  if (app_id_name == GetAppId())
+    Show(profile);
+}
+
+// Remove the notification if it has the specified app_id_name.
+void SyncedNotification::HideAllForAppId(std::string app_id_name) {
+  if (app_id_name == GetAppId()) {
+    notification_manager_->CancelById(GetKey());
+  }
+}
+
+void SyncedNotification::QueueBitmapFetchJobs(
+    ChromeNotifierService* notifier_service,
+    Profile* profile) {
+  // If we are not using the MessageCenter, call show now, and the existing
+  // code will handle the bitmap fetch for us.
+  if (!UseRichNotifications()) {
+    Show(profile);
+    return;
+  }
+
+  // Save off the arguments for the call to Show.
+  notifier_service_ = notifier_service;
+  profile_ = profile;
+
+  // Ensure our bitmap vector has as many entries as there are buttons,
+  // so that when the bitmaps arrive the vector has a slot for them.
+  for (unsigned int i = 0; i < GetButtonCount(); ++i) {
+    button_bitmaps_.push_back(gfx::Image());
+    button_bitmaps_fetch_pending_.push_back(true);
+    CreateBitmapFetcher(GetButtonIconUrl(i));
+  }
+
+  // If there is a profile image bitmap, fetch it
+  if (GetProfilePictureCount() > 0) {
+    // TODO(petewil): When we have the capacity to display more than one bitmap,
+    // modify this code to fetch as many as we can display
+    CreateBitmapFetcher(GetProfilePictureUrl(0));
+  }
+
+  // If the URL is non-empty, add it to our queue of URLs to fetch.
+  CreateBitmapFetcher(GetAppIconUrl());
+  CreateBitmapFetcher(GetImageUrl());
+
+  // Check to see if we don't need to fetch images, either because we already
+  // did, or because the URLs are empty. If so, we can display the notification.
+
+  // See if all bitmaps are accounted for, if so call Show().
+  if (AreAllBitmapsFetched()) {
+    Show(profile_);
+  }
+}
+
+void SyncedNotification::StartBitmapFetch() {
+  // Now that we have queued and counted them all, start the fetching.
+  ScopedVector<chrome::BitmapFetcher>::iterator iter;
+  for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
+    (*iter)->Start(profile_);
+  }
 }
 
 // This should detect even small changes in case the server updated the
@@ -442,36 +368,6 @@ bool SyncedNotification::EqualsIgnoringReadState(
   }
 
   return false;
-}
-
-void SyncedNotification::LogNotification() {
-  std::string readStateString("Unread");
-  if (SyncedNotification::kRead == GetReadState())
-    readStateString = "Read";
-  else if (SyncedNotification::kDismissed == GetReadState())
-    readStateString = "Dismissed";
-
-  DVLOG(2) << " Notification: Heading is " << GetHeading()
-           << " description is " << GetDescription()
-           << " key is " << GetKey()
-           << " read state is " << readStateString;
-}
-
-// Set the read state on the notification, returns true for success.
-void SyncedNotification::SetReadState(const ReadState& read_state) {
-
-  // Convert the read state to the protobuf type for read state.
-  if (kDismissed == read_state)
-    specifics_.mutable_coalesced_notification()->set_read_state(
-        sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED);
-  else if (kUnread == read_state)
-    specifics_.mutable_coalesced_notification()->set_read_state(
-        sync_pb::CoalescedSyncedNotification_ReadState_UNREAD);
-  else if (kRead == read_state)
-    specifics_.mutable_coalesced_notification()->set_read_state(
-        sync_pb::CoalescedSyncedNotification_ReadState_READ);
-  else
-    NOTREACHED();
 }
 
 void SyncedNotification::NotificationHasBeenRead() {
@@ -627,33 +523,6 @@ int SyncedNotification::GetPriority() const {
   }
 }
 
-size_t SyncedNotification::GetNotificationCount() const {
-  return specifics_.coalesced_notification().render_info().
-      expanded_info().collapsed_info_size();
-}
-
-size_t SyncedNotification::GetButtonCount() const {
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      target_size();
-}
-
-size_t SyncedNotification::GetProfilePictureCount() const {
-  return specifics_.coalesced_notification().render_info().collapsed_info().
-      simple_collapsed_layout().profile_image_size();
-}
-
-GURL SyncedNotification::GetProfilePictureUrl(unsigned int which_url) const {
-  if (GetProfilePictureCount() <= which_url)
-    return GURL();
-
-  std::string url_spec = specifics_.coalesced_notification().render_info().
-      collapsed_info().simple_collapsed_layout().profile_image(which_url).
-      image_url();
-
-  return AddDefaultSchemaIfNeeded(url_spec);
-}
-
-
 std::string SyncedNotification::GetDefaultDestinationTitle() const {
   if (!specifics_.coalesced_notification().render_info().collapsed_info().
       default_destination().icon().has_alt_text()) {
@@ -726,6 +595,31 @@ GURL SyncedNotification::GetButtonUrl(unsigned int which_button) const {
   return AddDefaultSchemaIfNeeded(url_spec);
 }
 
+GURL SyncedNotification::GetProfilePictureUrl(unsigned int which_url) const {
+  if (GetProfilePictureCount() <= which_url)
+    return GURL();
+
+  std::string url_spec = specifics_.coalesced_notification().render_info().
+      collapsed_info().simple_collapsed_layout().profile_image(which_url).
+      image_url();
+
+  return AddDefaultSchemaIfNeeded(url_spec);
+}
+
+size_t SyncedNotification::GetProfilePictureCount() const {
+  return specifics_.coalesced_notification().render_info().collapsed_info().
+      simple_collapsed_layout().profile_image_size();
+}
+
+size_t SyncedNotification::GetNotificationCount() const {
+  return specifics_.coalesced_notification().render_info().
+      expanded_info().collapsed_info_size();
+}
+
+size_t SyncedNotification::GetButtonCount() const {
+  return specifics_.coalesced_notification().render_info().collapsed_info().
+      target_size();
+}
 std::string SyncedNotification::GetContainedNotificationTitle(
     int index) const {
   if (specifics_.coalesced_notification().render_info().expanded_info().
@@ -746,20 +640,127 @@ std::string SyncedNotification::GetContainedNotificationMessage(
       collapsed_info(index).simple_collapsed_layout().description();
 }
 
-std::string SyncedNotification::GetSendingServiceId() const {
-  // TODO(petewil): We are building a new protocol (a new sync datatype) to send
-  // the service name and icon from the server.  For now this method is
-  // hardcoded to the name of our first service using synced notifications.
-  // Once the new protocol is built, remove this hardcoding.
-  return kFirstSyncedNotificationServiceId;
-}
-
 const gfx::Image& SyncedNotification::GetAppIcon() const {
   return app_icon_bitmap_;
 }
 
-void SyncedNotification::SetToastState(bool toast_state) {
+void SyncedNotification::set_toast_state(bool toast_state) {
   toast_state_ = toast_state;
+}
+
+void SyncedNotification::LogNotification() {
+  std::string readStateString("Unread");
+  if (SyncedNotification::kRead == GetReadState())
+    readStateString = "Read";
+  else if (SyncedNotification::kDismissed == GetReadState())
+    readStateString = "Dismissed";
+
+  DVLOG(2) << " Notification: Heading is " << GetHeading()
+           << " description is " << GetDescription()
+           << " key is " << GetKey()
+           << " read state is " << readStateString;
+}
+
+// TODO(petewil): The fetch mechanism appears to be returning two bitmaps on the
+// mac - perhaps one is regular, one is high dpi?  If so, ensure we use the high
+// dpi bitmap when appropriate.
+void SyncedNotification::OnFetchComplete(const GURL url,
+                                         const SkBitmap* bitmap) {
+  // Make sure we are on the thread we expect.
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  gfx::Image downloaded_image;
+  if (bitmap != NULL)
+    downloaded_image = gfx::Image::CreateFrom1xBitmap(*bitmap);
+
+  // Match the incoming bitmaps to URLs.  In case this is a dup, make sure to
+  // try all potentially matching urls.
+  if (GetAppIconUrl() == url) {
+    app_icon_bitmap_ = downloaded_image;
+    if (app_icon_bitmap_.IsEmpty())
+      app_icon_bitmap_fetch_pending_ = false;
+  }
+  if (GetImageUrl() == url) {
+    image_bitmap_ = downloaded_image;
+    if (image_bitmap_.IsEmpty())
+      image_bitmap_fetch_pending_ = false;
+  }
+  if (GetProfilePictureUrl(0) == url) {
+    sender_bitmap_ = downloaded_image;
+    if (sender_bitmap_.IsEmpty())
+      sender_bitmap_fetch_pending_ = false;
+  }
+
+  // If this URL matches one or more button bitmaps, save them off.
+  for (unsigned int i = 0; i < GetButtonCount(); ++i) {
+    if (GetButtonIconUrl(i) == url) {
+      if (bitmap != NULL) {
+        button_bitmaps_[i] = gfx::Image::CreateFrom1xBitmap(*bitmap);
+      }
+      button_bitmaps_fetch_pending_[i] = false;
+    }
+  }
+
+  DVLOG(2) << __FUNCTION__ << " popping bitmap " << url;
+
+  // See if all bitmaps are already accounted for, if so call Show.
+  if (AreAllBitmapsFetched()) {
+    Show(profile_);
+  }
+}
+
+void SyncedNotification::CreateBitmapFetcher(const GURL& url) {
+  // Check for dups, ignore any request for a dup.
+  ScopedVector<chrome::BitmapFetcher>::iterator iter;
+  for (iter = fetchers_.begin(); iter != fetchers_.end(); ++iter) {
+    if ((*iter)->url() == url)
+      return;
+  }
+
+  if (url.is_valid()) {
+    fetchers_.push_back(new chrome::BitmapFetcher(url, this));
+    DVLOG(2) << __FUNCTION__ << "Pushing bitmap " << url;
+  }
+}
+
+// Check that we have either fetched or gotten an error on all the bitmaps we
+// asked for.
+bool SyncedNotification::AreAllBitmapsFetched() {
+  bool app_icon_ready = GetAppIconUrl().is_empty() ||
+      !app_icon_bitmap_.IsEmpty() || !app_icon_bitmap_fetch_pending_;
+  bool images_ready = GetImageUrl().is_empty() || !image_bitmap_.IsEmpty() ||
+      !image_bitmap_fetch_pending_;
+  bool sender_picture_ready = GetProfilePictureUrl(0).is_empty() ||
+      !sender_bitmap_.IsEmpty() || !sender_bitmap_fetch_pending_;
+  bool button_bitmaps_ready = true;
+  for (unsigned int j = 0; j < GetButtonCount(); ++j) {
+    if (!GetButtonIconUrl(j).is_empty()
+        && button_bitmaps_[j].IsEmpty()
+        && button_bitmaps_fetch_pending_[j]) {
+      button_bitmaps_ready = false;
+      break;
+    }
+  }
+
+  return app_icon_ready && images_ready && sender_picture_ready &&
+      button_bitmaps_ready;
+}
+
+// Set the read state on the notification, returns true for success.
+void SyncedNotification::SetReadState(const ReadState& read_state) {
+
+  // Convert the read state to the protobuf type for read state.
+  if (kDismissed == read_state)
+    specifics_.mutable_coalesced_notification()->set_read_state(
+        sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED);
+  else if (kUnread == read_state)
+    specifics_.mutable_coalesced_notification()->set_read_state(
+        sync_pb::CoalescedSyncedNotification_ReadState_UNREAD);
+  else if (kRead == read_state)
+    specifics_.mutable_coalesced_notification()->set_read_state(
+        sync_pb::CoalescedSyncedNotification_ReadState_READ);
+  else
+    NOTREACHED();
 }
 
 }  // namespace notifier
