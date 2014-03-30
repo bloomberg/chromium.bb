@@ -1363,13 +1363,15 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   // Make the context current and update the IOSurface with the handle
   // passed in by the swap command.
-  gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-      compositing_iosurface_context_->cgl_context());
-  if (!compositing_iosurface_->SetIOSurfaceWithContextCurrent(
-          compositing_iosurface_context_, surface_handle, size,
-          surface_scale_factor)) {
-    LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
-    return;
+  {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+        compositing_iosurface_context_->cgl_context());
+    if (!compositing_iosurface_->SetIOSurfaceWithContextCurrent(
+            compositing_iosurface_context_, surface_handle, size,
+            surface_scale_factor)) {
+      LOG(ERROR) << "Failed SetIOSurface on CompositingIOSurfaceMac";
+      return;
+    }
   }
 
   // Grab video frames now that the IOSurface has been set up. Note that this
@@ -1384,12 +1386,14 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
                                               &frame, &callback)) {
       // Flush the context that updated the IOSurface, to ensure that the
       // context that does the copy picks up the correct version.
-      glFlush();
+      {
+        gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+            compositing_iosurface_context_->cgl_context());
+        glFlush();
+      }
       compositing_iosurface_->CopyToVideoFrame(
           gfx::Rect(size), frame,
           base::Bind(callback, present_time));
-      DCHECK_EQ(CGLGetCurrentContext(),
-                compositing_iosurface_context_->cgl_context());
       frame_was_captured = true;
     }
   }
@@ -1447,6 +1451,8 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
     compositing_iosurface_layer_async_timer_.Reset();
     [compositing_iosurface_layer_ gotNewFrame];
   } else {
+    gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
+        compositing_iosurface_context_->cgl_context());
     DrawIOSurfaceWithoutCoreAnimation();
   }
 
