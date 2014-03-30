@@ -688,7 +688,13 @@ TEST_F(ChromeNotifierServiceTest, CheckInitializedServicesTest) {
   EXPECT_EQ(0U, notification_manager()->added_notifications());
 }
 
-TEST_F(ChromeNotifierServiceTest, SetAddedAppIdsTest) {
+#if defined(TOOLKIT_GTK)
+// TODO(petewil): crbug.com/358031
+#define MAYBE_SetAddedAppIdsTest DISABLED_SetAddedAppIdsTest
+#else
+#define MAYBE_SetAddedAppIdsTest SetAddedAppIdsTest
+#endif
+TEST_F(ChromeNotifierServiceTest, MAYBE_SetAddedAppIdsTest) {
   ChromeNotifierService notifier(profile_.get(), notification_manager());
   notifier.set_avoid_bitmap_fetching_for_test(true);
 
