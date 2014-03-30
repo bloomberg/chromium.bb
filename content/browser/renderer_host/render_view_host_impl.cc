@@ -368,10 +368,8 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
       !command_line.HasSwitch(switches::kDisableLocalStorage);
   prefs.databases_enabled =
       !command_line.HasSwitch(switches::kDisableDatabases);
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
-  prefs.webaudio_enabled =
-      command_line.HasSwitch(switches::kEnableWebAudio);
-#else
+#if defined(OS_ANDROID)
+  // WebAudio is enabled by default on x86 and ARM.
   prefs.webaudio_enabled =
       !command_line.HasSwitch(switches::kDisableWebAudio);
 #endif

@@ -27,11 +27,12 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
     WebRuntimeFeatures::enableMediaSource(false);
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
   }
-  // WebAudio is enabled by default only on ARM and only when the
+  // WebAudio is enabled by default on ARM and X86 and only when the
   // MediaCodec API is available.
   WebRuntimeFeatures::enableWebAudio(
       media::MediaCodecBridge::IsAvailable() &&
-      (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM));
+      ((android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM) ||
+       (android_getCpuFamily() == ANDROID_CPU_FAMILY_X86)));
   // Android does not support the Gamepad API.
   WebRuntimeFeatures::enableGamepad(false);
   // Android does not have support for PagePopup
@@ -97,20 +98,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
     WebRuntimeFeatures::enableServiceWorker(true);
 
 #if defined(OS_ANDROID)
-  // WebAudio requires the MediaCodec API.
-#if defined(ARCH_CPU_X86)
-  // WebAudio is disabled by default on x86.
-  WebRuntimeFeatures::enableWebAudio(
-      command_line.HasSwitch(switches::kEnableWebAudio) &&
-      media::MediaCodecBridge::IsAvailable());
-#elif defined(ARCH_CPU_ARMEL)
-  // WebAudio is enabled by default on ARM.
+  // WebAudio is enabled by default on ARM and X86, if the MediaCodec
+  // API is available.
   WebRuntimeFeatures::enableWebAudio(
       !command_line.HasSwitch(switches::kDisableWebAudio) &&
       media::MediaCodecBridge::IsAvailable());
-#else
-  WebRuntimeFeatures::enableWebAudio(false);
-#endif
 #else
   if (command_line.HasSwitch(switches::kDisableWebAudio))
     WebRuntimeFeatures::enableWebAudio(false);

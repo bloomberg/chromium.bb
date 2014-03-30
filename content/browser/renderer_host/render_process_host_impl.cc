@@ -1194,12 +1194,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSpeechRecognition,
     switches::kMediaDrmEnableNonCompositing,
     switches::kNetworkCountryIso,
-#endif
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
-    switches::kEnableWebAudio,
-#else
-    // Need to be able to disable webaudio on other platforms where it
-    // is enabled by default.
     switches::kDisableWebAudio,
 #endif
 #if defined(OS_MACOSX)

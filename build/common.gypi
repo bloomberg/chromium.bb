@@ -1825,11 +1825,6 @@
       ['use_titlecase_in_grd_files==1', {
         'grit_defines': ['-D', 'use_titlecase'],
       }],
-      ['OS=="android" and (target_arch=="ia32" or target_arch=="x64")', {
-        # WebAudio on Android/x86 is disabled by default, unlike
-        # everywhere else, so use appropriate message.
-        'grit_defines': ['-D', 'use_webaudio_enable_message'],
-      }],
       ['use_third_party_translations==1', {
         'grit_defines': ['-D', 'use_third_party_translations'],
         'locales': [

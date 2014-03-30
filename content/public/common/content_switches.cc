@@ -1026,12 +1026,8 @@ const char kNetworkCountryIso[] = "network-country-iso";
 const char kRemoteDebuggingSocketName[]     = "remote-debugging-socket-name";
 #endif
 
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
-const char kEnableWebAudio[]                = "enable-webaudio";
-#else
 // Disable web audio API.
 const char kDisableWebAudio[]               = "disable-webaudio";
-#endif
 
 #if defined(OS_CHROMEOS)
 // Disables panel fitting (used for mirror mode).

@@ -297,11 +297,7 @@ extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 #endif
 
-#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
-CONTENT_EXPORT extern const char kEnableWebAudio[];
-#else
 CONTENT_EXPORT extern const char kDisableWebAudio[];
-#endif
 
 #if defined(OS_CHROMEOS)
 CONTENT_EXPORT extern const char kDisablePanelFitting[];
