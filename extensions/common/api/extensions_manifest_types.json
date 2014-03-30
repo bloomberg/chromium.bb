@@ -1,0 +1,78 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The type schemas for structured manifest items. Not actually a callable API.
+
+[
+  {
+    "namespace": "extensionsManifestTypes",
+    "description": "Schemas for structured manifest entries",
+    "compiler_options": {
+      "generate_error_messages": true
+    },
+    "types": [
+      {
+        "id": "SocketHostPatterns",
+        "description": "<p>A single string or a list of strings representing host:port patterns.</p>",
+        "choices": [
+          { "type": "string" },
+          { "type": "array", "items": { "type": "string" } }
+        ]
+      },
+      {
+        "id": "sockets",
+        "type": "object",
+        "description": "The <code>sockets</code> manifest property declares which sockets operations an app can issue.",
+        "properties": {
+          "udp": {
+            "description": "The <code>udp</code> manifest property declares which sockets.udp operations an app can issue.",
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "bind": {
+                "description": "<p>The host:port pattern for <code>bind</code> operations.</p>",
+                "optional": true,
+                "$ref": "SocketHostPatterns"
+              },
+              "send": {
+                "description": "<p>The host:port pattern for <code>send</code> operations.</p>",
+                "optional": true,
+                "$ref": "SocketHostPatterns"
+              },
+              "multicastMembership": {
+                "description": "<p>The host:port pattern for <code>joinGroup</code> operations.</p>",
+                "optional": true,
+                "$ref": "SocketHostPatterns"
+              }
+            }
+          },
+          "tcp": {
+            "description": "The <code>tcp</code> manifest property declares which sockets.tcp operations an app can issue.",
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "connect": {
+                "description": "<p>The host:port pattern for <code>connect</code> operations.</p>",
+                "optional": true,
+                "$ref": "SocketHostPatterns"
+              }
+            }
+          },
+          "tcpServer": {
+            "description": "The <code>tcpServer</code> manifest property declares which sockets.tcpServer operations an app can issue.",
+            "optional": true,
+            "type": "object",
+            "properties": {
+              "listen": {
+                "description": "<p>The host:port pattern for <code>listen</code> operations.</p>",
+                "optional": true,
+                "$ref": "SocketHostPatterns"
+              }
+            }
+          }
+        }
+      }
+    ]
+  }
+]

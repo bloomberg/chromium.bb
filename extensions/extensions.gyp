@@ -28,6 +28,12 @@
       ],
       'sources': [
         'common/api/messaging/message.h',
+        'common/api/sockets/sockets_manifest_handler.cc',
+        'common/api/sockets/sockets_manifest_handler.h',
+        'common/api/sockets/sockets_manifest_data.cc',
+        'common/api/sockets/sockets_manifest_data.h',
+        'common/api/sockets/sockets_manifest_permission.cc',
+        'common/api/sockets/sockets_manifest_permission.h',
         'common/common_manifest_handlers.cc',
         'common/common_manifest_handlers.h',
         'common/crx_file.cc',

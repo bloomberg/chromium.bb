@@ -6,10 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
-#include "chrome/common/extensions/api/sockets/sockets_manifest_handler.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "extensions/common/api/generated_schemas.h"
+#include "extensions/common/api/sockets/sockets_manifest_handler.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"

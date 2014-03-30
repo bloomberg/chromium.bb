@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_API_SOCKETS_SOCKETS_MANIFEST_DATA_H_
-#define CHROME_COMMON_EXTENSIONS_API_SOCKETS_SOCKETS_MANIFEST_DATA_H_
+#ifndef EXTENSIONS_COMMON_API_SOCKETS_SOCKETS_MANIFEST_DATA_H_
+#define EXTENSIONS_COMMON_API_SOCKETS_SOCKETS_MANIFEST_DATA_H_
 
 #include <vector>
 
@@ -37,9 +37,8 @@ class SocketsManifestData : public Extension::ManifestData {
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
-  static scoped_ptr<SocketsManifestData> FromValue(
-      const base::Value& value,
-      base::string16* error);
+  static scoped_ptr<SocketsManifestData> FromValue(const base::Value& value,
+                                                   base::string16* error);
 
   const SocketsManifestPermission* permission() const {
     return permission_.get();
@@ -51,4 +50,4 @@ class SocketsManifestData : public Extension::ManifestData {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_API_SOCKETS_SOCKETS_MANIFEST_DATA_H_
+#endif  // EXTENSIONS_COMMON_API_SOCKETS_SOCKETS_MANIFEST_DATA_H_

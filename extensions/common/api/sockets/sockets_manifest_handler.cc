@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/sockets/sockets_manifest_handler.h"
+#include "extensions/common/api/sockets/sockets_manifest_handler.h"
 
-#include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
-#include "chrome/common/extensions/api/sockets/sockets_manifest_permission.h"
+#include "extensions/common/api/sockets/sockets_manifest_data.h"
+#include "extensions/common/api/sockets/sockets_manifest_permission.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 

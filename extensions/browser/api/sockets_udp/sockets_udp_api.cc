@@ -4,10 +4,10 @@
 
 #include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
 
-#include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/browser/api/socket/udp_socket.h"
 #include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
+#include "extensions/common/api/sockets/sockets_manifest_data.h"
 #include "net/base/net_errors.h"
 
 namespace extensions {

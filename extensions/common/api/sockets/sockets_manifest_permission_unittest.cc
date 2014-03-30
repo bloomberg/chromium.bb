@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/pickle.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/sockets/sockets_manifest_permission.h"
+#include "extensions/common/api/sockets/sockets_manifest_permission.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "ipc/ipc_message.h"
@@ -19,16 +19,16 @@ namespace extensions {
 
 namespace {
 
-const char kUdpBindPermission[]=
+const char kUdpBindPermission[] =
     "{ \"udp\": { \"bind\": [\"127.0.0.1:3007\", \"a.com:80\"] } }";
 
-const char kUdpSendPermission[]=
+const char kUdpSendPermission[] =
     "{ \"udp\": { \"send\": [\"\", \"a.com:80\"] } }";
 
-const char kTcpConnectPermission[]=
+const char kTcpConnectPermission[] =
     "{ \"tcp\": { \"connect\": [\"127.0.0.1:80\", \"a.com:80\"] } }";
 
-const char kTcpServerListenPermission[]=
+const char kTcpServerListenPermission[] =
     "{ \"tcpServer\": { \"listen\": [\"127.0.0.1:80\", \"a.com:80\"] } }";
 
 static void AssertEmptyPermission(const SocketsManifestPermission* permission) {
@@ -50,8 +50,7 @@ static scoped_ptr<SocketsManifestPermission> PermissionFromValue(
   base::string16 error16;
   scoped_ptr<SocketsManifestPermission> permission(
       SocketsManifestPermission::FromValue(value, &error16));
-  EXPECT_TRUE(permission)
-      << "Error parsing Value into permission: " << error16;
+  EXPECT_TRUE(permission) << "Error parsing Value into permission: " << error16;
   return permission.Pass();
 }
 
@@ -64,22 +63,20 @@ static scoped_ptr<SocketsManifestPermission> PermissionFromJSON(
 struct CheckFormatEntry {
   CheckFormatEntry(SocketPermissionRequest::OperationType operation_type,
                    std::string host_pattern)
-      : operation_type(operation_type),
-        host_pattern(host_pattern) {
-  }
+      : operation_type(operation_type), host_pattern(host_pattern) {}
 
   // operators <, == are needed by container std::set and algorithms
   // std::set_includes and std::set_differences.
   bool operator<(const CheckFormatEntry& rhs) const {
     if (operation_type == rhs.operation_type)
-      return  host_pattern < rhs.host_pattern;
+      return host_pattern < rhs.host_pattern;
 
     return operation_type < rhs.operation_type;
   }
 
   bool operator==(const CheckFormatEntry& rhs) const {
     return operation_type == rhs.operation_type &&
-      host_pattern == rhs.host_pattern;
+           host_pattern == rhs.host_pattern;
   }
 
   SocketPermissionRequest::OperationType operation_type;
@@ -95,21 +92,22 @@ static testing::AssertionResult CheckFormat(
 
   if (permissions.size() != permission->entries().size()) {
     return testing::AssertionFailure()
-        << "Incorrect # of entries in json: " << json;
+           << "Incorrect # of entries in json: " << json;
   }
 
   // Note: We use multiset because SocketsManifestPermission does not have to
   // store entries in the order found in the json message.
   std::multiset<CheckFormatEntry> parsed_permissions;
-  for (SocketsManifestPermission::SocketPermissionEntrySet::const_iterator
-      it = permission->entries().begin(); it != permission->entries().end();
-      ++it) {
+  for (SocketsManifestPermission::SocketPermissionEntrySet::const_iterator it =
+           permission->entries().begin();
+       it != permission->entries().end();
+       ++it) {
     parsed_permissions.insert(
-        CheckFormatEntry(it->pattern().type,  it->GetHostPatternAsString()));
+        CheckFormatEntry(it->pattern().type, it->GetHostPatternAsString()));
   }
 
-  if (!std::equal(permissions.begin(), permissions.end(),
-      parsed_permissions.begin())) {
+  if (!std::equal(
+          permissions.begin(), permissions.end(), parsed_permissions.begin())) {
     return testing::AssertionFailure() << "Incorrect socket operations.";
   }
   return testing::AssertionSuccess();
@@ -119,43 +117,37 @@ static testing::AssertionResult CheckFormat(const std::string& json) {
   return CheckFormat(std::multiset<CheckFormatEntry>(), json);
 }
 
-static testing::AssertionResult CheckFormat(
-    const std::string& json,
-    const CheckFormatEntry& op1) {
-  CheckFormatEntry entries[] = {
-    op1
-  };
-  return CheckFormat(std::multiset<CheckFormatEntry>(
-      entries, entries + arraysize(entries)), json);
+static testing::AssertionResult CheckFormat(const std::string& json,
+                                            const CheckFormatEntry& op1) {
+  CheckFormatEntry entries[] = {op1};
+  return CheckFormat(
+      std::multiset<CheckFormatEntry>(entries, entries + arraysize(entries)),
+      json);
 }
 
-static testing::AssertionResult CheckFormat(
-    const std::string& json,
-    const CheckFormatEntry& op1,
-    const CheckFormatEntry& op2) {
-  CheckFormatEntry entries[] = {
-    op1, op2
-  };
-  return CheckFormat(std::multiset<CheckFormatEntry>(
-      entries, entries + arraysize(entries)), json);
+static testing::AssertionResult CheckFormat(const std::string& json,
+                                            const CheckFormatEntry& op1,
+                                            const CheckFormatEntry& op2) {
+  CheckFormatEntry entries[] = {op1, op2};
+  return CheckFormat(
+      std::multiset<CheckFormatEntry>(entries, entries + arraysize(entries)),
+      json);
 }
 
-static testing::AssertionResult CheckFormat(
-    const std::string& json,
-    const CheckFormatEntry& op1,
-    const CheckFormatEntry& op2,
-    const CheckFormatEntry& op3,
-    const CheckFormatEntry& op4,
-    const CheckFormatEntry& op5,
-    const CheckFormatEntry& op6,
-    const CheckFormatEntry& op7,
-    const CheckFormatEntry& op8,
-    const CheckFormatEntry& op9) {
-  CheckFormatEntry entries[] = {
-    op1, op2, op3, op4, op5, op6, op7, op8, op9
-  };
-  return CheckFormat(std::multiset<CheckFormatEntry>(
-      entries, entries + arraysize(entries)), json);
+static testing::AssertionResult CheckFormat(const std::string& json,
+                                            const CheckFormatEntry& op1,
+                                            const CheckFormatEntry& op2,
+                                            const CheckFormatEntry& op3,
+                                            const CheckFormatEntry& op4,
+                                            const CheckFormatEntry& op5,
+                                            const CheckFormatEntry& op6,
+                                            const CheckFormatEntry& op7,
+                                            const CheckFormatEntry& op8,
+                                            const CheckFormatEntry& op9) {
+  CheckFormatEntry entries[] = {op1, op2, op3, op4, op5, op6, op7, op8, op9};
+  return CheckFormat(
+      std::multiset<CheckFormatEntry>(entries, entries + arraysize(entries)),
+      json);
 }
 
 }  // namespace
@@ -210,59 +202,74 @@ TEST(SocketsManifestPermissionTest, Empty) {
 }
 
 TEST(SocketsManifestPermissionTest, JSONFormats) {
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"send\":\"\"}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"udp\":{\"send\":\"\"}}",
       CheckFormatEntry(SocketPermissionRequest::UDP_SEND_TO, "*:*")));
   EXPECT_TRUE(CheckFormat("{\"udp\":{\"send\":[]}}"));
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"send\":[\"\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"udp\":{\"send\":[\"\"]}}",
       CheckFormatEntry(SocketPermissionRequest::UDP_SEND_TO, "*:*")));
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"send\":[\"a:80\", \"b:10\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"udp\":{\"send\":[\"a:80\", \"b:10\"]}}",
       CheckFormatEntry(SocketPermissionRequest::UDP_SEND_TO, "a:80"),
       CheckFormatEntry(SocketPermissionRequest::UDP_SEND_TO, "b:10")));
 
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"bind\":\"\"}}",
-      CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "*:*")));
+  EXPECT_TRUE(
+      CheckFormat("{\"udp\":{\"bind\":\"\"}}",
+                  CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "*:*")));
   EXPECT_TRUE(CheckFormat("{\"udp\":{\"bind\":[]}}"));
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"bind\":[\"\"]}}",
-      CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "*:*")));
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"bind\":[\"a:80\", \"b:10\"]}}",
-      CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "a:80"),
-      CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "b:10")));
+  EXPECT_TRUE(
+      CheckFormat("{\"udp\":{\"bind\":[\"\"]}}",
+                  CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "*:*")));
+  EXPECT_TRUE(
+      CheckFormat("{\"udp\":{\"bind\":[\"a:80\", \"b:10\"]}}",
+                  CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "a:80"),
+                  CheckFormatEntry(SocketPermissionRequest::UDP_BIND, "b:10")));
 
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"multicastMembership\":\"\"}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"udp\":{\"multicastMembership\":\"\"}}",
       CheckFormatEntry(SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP, "")));
   EXPECT_TRUE(CheckFormat("{\"udp\":{\"multicastMembership\":[]}}"));
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"multicastMembership\":[\"\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"udp\":{\"multicastMembership\":[\"\"]}}",
       CheckFormatEntry(SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP, "")));
-  EXPECT_TRUE(CheckFormat("{\"udp\":{\"multicastMembership\":[\"\", \"\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"udp\":{\"multicastMembership\":[\"\", \"\"]}}",
       CheckFormatEntry(SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP, "")));
 
-  EXPECT_TRUE(CheckFormat("{\"tcp\":{\"connect\":\"\"}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"tcp\":{\"connect\":\"\"}}",
       CheckFormatEntry(SocketPermissionRequest::TCP_CONNECT, "*:*")));
   EXPECT_TRUE(CheckFormat("{\"tcp\":{\"connect\":[]}}"));
-  EXPECT_TRUE(CheckFormat("{\"tcp\":{\"connect\":[\"\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"tcp\":{\"connect\":[\"\"]}}",
       CheckFormatEntry(SocketPermissionRequest::TCP_CONNECT, "*:*")));
-  EXPECT_TRUE(CheckFormat("{\"tcp\":{\"connect\":[\"a:80\", \"b:10\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"tcp\":{\"connect\":[\"a:80\", \"b:10\"]}}",
       CheckFormatEntry(SocketPermissionRequest::TCP_CONNECT, "a:80"),
       CheckFormatEntry(SocketPermissionRequest::TCP_CONNECT, "b:10")));
 
-  EXPECT_TRUE(CheckFormat("{\"tcpServer\":{\"listen\":\"\"}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"tcpServer\":{\"listen\":\"\"}}",
       CheckFormatEntry(SocketPermissionRequest::TCP_LISTEN, "*:*")));
   EXPECT_TRUE(CheckFormat("{\"tcpServer\":{\"listen\":[]}}"));
-  EXPECT_TRUE(CheckFormat("{\"tcpServer\":{\"listen\":[\"\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"tcpServer\":{\"listen\":[\"\"]}}",
       CheckFormatEntry(SocketPermissionRequest::TCP_LISTEN, "*:*")));
-  EXPECT_TRUE(CheckFormat("{\"tcpServer\":{\"listen\":[\"a:80\", \"b:10\"]}}",
+  EXPECT_TRUE(CheckFormat(
+      "{\"tcpServer\":{\"listen\":[\"a:80\", \"b:10\"]}}",
       CheckFormatEntry(SocketPermissionRequest::TCP_LISTEN, "a:80"),
       CheckFormatEntry(SocketPermissionRequest::TCP_LISTEN, "b:10")));
 
   EXPECT_TRUE(CheckFormat(
       "{"
-        "\"udp\":{"
-          "\"send\":[\"a:80\", \"b:10\"],"
-          "\"bind\":[\"a:80\", \"b:10\"],"
-          "\"multicastMembership\":\"\""
-        "},"
-        "\"tcp\":{\"connect\":[\"a:80\", \"b:10\"]},"
-        "\"tcpServer\":{\"listen\":[\"a:80\", \"b:10\"]}"
+      "\"udp\":{"
+      "\"send\":[\"a:80\", \"b:10\"],"
+      "\"bind\":[\"a:80\", \"b:10\"],"
+      "\"multicastMembership\":\"\""
+      "},"
+      "\"tcp\":{\"connect\":[\"a:80\", \"b:10\"]},"
+      "\"tcpServer\":{\"listen\":[\"a:80\", \"b:10\"]}"
       "}",
       CheckFormatEntry(SocketPermissionRequest::UDP_SEND_TO, "a:80"),
       CheckFormatEntry(SocketPermissionRequest::UDP_SEND_TO, "b:10"),
@@ -273,7 +280,6 @@ TEST(SocketsManifestPermissionTest, JSONFormats) {
       CheckFormatEntry(SocketPermissionRequest::TCP_CONNECT, "b:10"),
       CheckFormatEntry(SocketPermissionRequest::TCP_LISTEN, "a:80"),
       CheckFormatEntry(SocketPermissionRequest::TCP_LISTEN, "b:10")));
-
 }
 
 TEST(SocketsManifestPermissionTest, FromToValue) {
