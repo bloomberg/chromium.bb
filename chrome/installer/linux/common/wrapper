@@ -48,5 +48,12 @@ if [[ -n "@@SXS_USER_DATA_DIR@@" ]]; then
   fi
 fi
 
+# Make sure that the profile directory specified in the environment, if any,
+# overrides the default.
+if [[ -n "$CHROME_USER_DATA_DIR" ]]; then
+  PROFILE_DIRECTORY_FLAG="--user-data-dir=$CHROME_USER_DATA_DIR"
+fi
+
 # Note: exec -a below is a bashism.
-exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$@"
+exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$PROFILE_DIRECTORY_FLAG" \
+  "$@"
