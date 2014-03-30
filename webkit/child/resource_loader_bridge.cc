@@ -6,10 +6,6 @@
 
 namespace webkit_glue {
 
-ResourceLoaderBridge::SyncLoadResponse::SyncLoadResponse() {}
-
-ResourceLoaderBridge::SyncLoadResponse::~SyncLoadResponse() {}
-
 ResourceLoaderBridge::ResourceLoaderBridge() {}
 
 ResourceLoaderBridge::~ResourceLoaderBridge() {}

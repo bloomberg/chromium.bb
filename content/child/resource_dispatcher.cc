@@ -18,6 +18,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
 #include "content/child/site_isolation_policy.h"
+#include "content/child/sync_load_response.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/service_worker_types.h"

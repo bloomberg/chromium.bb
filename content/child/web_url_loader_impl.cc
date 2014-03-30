@@ -16,6 +16,7 @@
 #include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
+#include "content/child/sync_load_response.h"
 #include "content/common/resource_request_body.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
@@ -231,7 +232,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   void SetDefersLoading(bool value);
   void DidChangePriority(WebURLRequest::Priority new_priority);
   void Start(const WebURLRequest& request,
-             ResourceLoaderBridge::SyncLoadResponse* sync_load_response);
+             SyncLoadResponse* sync_load_response);
 
   // ResourceLoaderBridge::Peer methods:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
@@ -306,9 +307,8 @@ void WebURLLoaderImpl::Context::DidChangePriority(
         ConvertWebKitPriorityToNetPriority(new_priority));
 }
 
-void WebURLLoaderImpl::Context::Start(
-    const WebURLRequest& request,
-    ResourceLoaderBridge::SyncLoadResponse* sync_load_response) {
+void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
+                                      SyncLoadResponse* sync_load_response) {
   DCHECK(!bridge_.get());
 
   request_ = request;  // Save the request.
@@ -828,7 +828,7 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
                                          WebURLResponse& response,
                                          WebURLError& error,
                                          WebData& data) {
-  ResourceLoaderBridge::SyncLoadResponse sync_load_response;
+  SyncLoadResponse sync_load_response;
   context_->Start(request, &sync_load_response);
 
   const GURL& final_url = sync_load_response.url;
