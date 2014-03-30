@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "mojo/examples/pepper_container_app/graphics_3d_resource.h"
 #include "mojo/examples/pepper_container_app/thunk.h"
-#include "mojo/public/gles2/gles2.h"
+#include "mojo/public/c/gles2/gles2.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"
 

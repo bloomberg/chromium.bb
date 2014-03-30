@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_GLES2_GLES2_TYPES_H_
-#define MOJO_PUBLIC_GLES2_GLES2_TYPES_H_
+#ifndef MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_
+#define MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_
 
 // Note: This header should be compilable as C.
 
 #include <stdint.h>
 
-#include "mojo/public/gles2/gles2_export.h"
+#include "mojo/public/c/gles2/gles2_export.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct MojoGLES2ContextPrivate *MojoGLES2Context;
+typedef struct MojoGLES2ContextPrivate* MojoGLES2Context;
 typedef void (*MojoGLES2ContextLost)(void* closure);
 typedef void (*MojoGLES2DrawAnimationFrame)(void* closure);
 
@@ -23,4 +23,4 @@ typedef void (*MojoGLES2DrawAnimationFrame)(void* closure);
 }  // extern "C"
 #endif
 
-#endif  // MOJO_PUBLIC_GLES2_GLES2_TYPES_H_
+#endif  // MOJO_PUBLIC_C_GLES2_GLES2_TYPES_H_

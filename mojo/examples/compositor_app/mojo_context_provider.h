@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/output/context_provider.h"
+#include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/gles2/gles2.h"
 
 namespace mojo {
 namespace examples {

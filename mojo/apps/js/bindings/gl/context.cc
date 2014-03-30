@@ -10,7 +10,7 @@
 #include "gin/array_buffer.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_context_data.h"
-#include "mojo/public/gles2/gles2.h"
+#include "mojo/public/c/gles2/gles2.h"
 
 namespace gin {
 template<>

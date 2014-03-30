@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include "mojo/public/c/gles2/gles2_export.h"
+#include "mojo/public/c/gles2/gles2_types.h"
 #include "mojo/public/c/system/async_waiter.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/gles2/gles2_export.h"
-#include "mojo/public/gles2/gles2_types.h"
 
 namespace mojo {
 class GLES2Interface;

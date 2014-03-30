@@ -28,7 +28,7 @@ class GLES2ImplForCommandBuffer : public GLES2Interface {
   virtual ReturnType Function PARAMETERS OVERRIDE {                \
     return gpu_interface_->Function ARGUMENTS;                     \
   }
-#include "mojo/public/gles2/gles2_call_visitor_autogen.h"
+#include "mojo/public/c/gles2/gles2_call_visitor_autogen.h"
 #undef VISIT_GL_CALL
 
  private:

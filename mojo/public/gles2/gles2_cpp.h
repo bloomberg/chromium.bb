@@ -5,8 +5,8 @@
 #ifndef MOJO_PUBLIC_GLES2_GLES2_CPP_H_
 #define MOJO_PUBLIC_GLES2_GLES2_CPP_H_
 
+#include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/environment/default_async_waiter.h"
-#include "mojo/public/gles2/gles2.h"
 
 namespace mojo {
 

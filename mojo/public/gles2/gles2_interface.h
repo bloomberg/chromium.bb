@@ -14,7 +14,7 @@ class GLES2Interface {
   virtual ~GLES2Interface() {}
 #define VISIT_GL_CALL(Function, ReturnType, PARAMETERS, ARGUMENTS) \
   virtual ReturnType Function PARAMETERS = 0;
-#include "mojo/public/gles2/gles2_call_visitor_autogen.h"
+#include "mojo/public/c/gles2/gles2_call_visitor_autogen.h"
 #undef VISIT_GL_CALL
 };
 

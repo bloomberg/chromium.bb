@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "mojo/public/gles2/gles2_types.h"
+#include "mojo/public/c/gles2/gles2_types.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_graphics_3d_api.h"

@@ -17,7 +17,7 @@ _SIZE_OF_UINT32 = 4
 _SIZE_OF_COMMAND_HEADER = 4
 _FIRST_SPECIFIC_COMMAND_ID = 256
 
-_LICENSE = """// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+_LICENSE = """// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7844,7 +7844,7 @@ def main(argv):
   gen.WriteCommonUtilsImpl("common/gles2_cmd_utils_implementation_autogen.h")
   gen.WriteGLES2Header("../GLES2/gl2chromium_autogen.h")
   gen.WriteMojoGLCallVisitor(
-      "../../mojo/public/gles2/gles2_call_visitor_autogen.h")
+      "../../mojo/public/c/gles2/gles2_call_visitor_autogen.h")
 
   Format([
       "common/gles2_cmd_format_autogen.h",
@@ -7876,7 +7876,7 @@ def main(argv):
   os.chdir("../..")
   Format([
       "gpu/GLES2/gl2chromium_autogen.h",
-      "mojo/public/gles2/gles2_call_visitor_autogen.h",
+      "mojo/public/c/gles2/gles2_call_visitor_autogen.h",
       "ppapi/c/dev/ppb_opengles2ext_dev.h",
       "ppapi/c/ppb_opengles2.h",
       "ppapi/lib/gl/gles2/gles2.c",

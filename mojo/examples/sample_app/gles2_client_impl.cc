@@ -8,7 +8,7 @@
 #include <GLES2/gl2ext.h>
 #include <math.h>
 
-#include "mojo/public/gles2/gles2.h"
+#include "mojo/public/c/gles2/gles2.h"
 #include "ui/events/event_constants.h"
 
 namespace mojo {

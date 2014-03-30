@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "mojo/examples/pepper_container_app/mojo_ppapi_globals.h"
 #include "mojo/examples/pepper_container_app/plugin_instance.h"
-#include "mojo/public/gles2/gles2.h"
+#include "mojo/public/c/gles2/gles2.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace mojo {

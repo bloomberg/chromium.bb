@@ -61,8 +61,8 @@
         ],
       },
       'sources': [
-        'public/gles2/gles2.h',
-        'public/gles2/gles2_export.h',
+        'public/c/gles2/gles2.h',
+        'public/c/gles2/gles2_export.h',
         'public/gles2/gles2_private.cc',
         'public/gles2/gles2_private.h',
       ],
