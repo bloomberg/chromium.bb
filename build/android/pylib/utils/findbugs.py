@@ -66,8 +66,11 @@ def _Rebaseline(current_warnings_set, known_bugs_file):
   return 0
 
 
-def _GetChromeClasses():
-  path = constants.GetOutDirectory()
+def _GetChromeClasses(release_version):
+  version = 'Debug'
+  if release_version:
+    version = 'Release'
+  path = os.path.join(constants.DIR_SOURCE_ROOT, 'out', version)
   cmd = 'find %s -name "*.class"' % path
   out = cmd_helper.GetCmdOutput(shlex.split(cmd))
   if not out:
@@ -76,7 +79,7 @@ def _GetChromeClasses():
 
 
 def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
-        rebaseline, findbug_args):
+        rebaseline, release_version, findbug_args):
   """Run the FindBugs.
 
   Args:
@@ -88,6 +91,8 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
     auxiliary_classes: the classes help to analyze, refer to FindBug's
                        -auxclasspath command line option.
     rebaseline: True if the known_bugs file needs rebaseline.
+    release_version: True if the release version needs check, otherwise check
+                     debug version.
     findbug_args: addtional command line options needs pass to Findbugs.
   """
 
@@ -130,7 +135,7 @@ def _Run(exclude, known_bugs, classes_to_analyze, auxiliary_classes,
   if findbug_args:
     cmd = '%s %s ' % (cmd, findbug_args)
 
-  chrome_classes = _GetChromeClasses()
+  chrome_classes = _GetChromeClasses(release_version)
   if not chrome_classes:
     return 1
   cmd = '%s %s ' % (cmd, chrome_classes)
@@ -163,7 +168,7 @@ def Run(options):
   if options.auxclasspath:
     auxclasspath = options.auxclasspath.split(':')
   return _Run(exclude_file, known_bugs_file, options.only_analyze, auxclasspath,
-              options.rebaseline, options.findbug_args)
+              options.rebaseline, options.release_build, options.findbug_args)
 
 
 def GetCommonParser():
@@ -201,6 +206,12 @@ def GetCommonParser():
                     default=None,
                     dest='known_bugs',
                     help='Not report the bugs in the given file.')
+
+  parser.add_option('-l',
+                    '--release-build',
+                    action='store_true',
+                    dest='release_build',
+                    help='Analyze release build instead of debug.')
 
   parser.add_option('-f',
                     '--findbug-args',
