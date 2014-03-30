@@ -517,6 +517,10 @@ void SSLBlockingPage::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // When detection is disabled, captive portal service always sends
+  // RESULT_INTERNET_CONNECTED. Ignore any probe results in that case.
+  if (!captive_portal_detection_enabled_)
+    return;
   if (type == chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT) {
     captive_portal_probe_completed_ = true;
     captive_portal::CaptivePortalService::Results* results =
