@@ -2464,13 +2464,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       event.stopPropagation();
     }
 
-    switch (util.getKeyModifiers(event) + event.keyCode) {
-      case '27':  // Escape
+    switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+      case 'U+001B':  // Escape
         this.cancelRename_();
         event.preventDefault();
         break;
 
-      case '13':  // Enter
+      case 'Enter':
         this.commitRename_();
         event.preventDefault();
         break;

@@ -758,7 +758,13 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
                       TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive")));
+                      TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
+                      TestParameter(IN_GUEST_MODE,
+                                    "createNewFolderDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "createNewFolderDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "createNewFolderDrive")));
 
 INSTANTIATE_TEST_CASE_P(
     DriveSpecific,
