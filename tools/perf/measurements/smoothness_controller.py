@@ -65,5 +65,7 @@ class SmoothnessController(object):
         results.Add(r.name, r.unit, r.value)
 
   def CleanUp(self, tab):
+    if tab.browser.platform.IsRawDisplayFrameRateSupported():
+      tab.browser.platform.StopRawDisplayFrameRateMeasurement()
     if tab.browser.is_tracing_running:
       tab.browser.StopTracing()
