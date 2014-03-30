@@ -84,8 +84,6 @@ void Message::InitLoggingVariables() {
 
 Message& Message::operator=(const Message& other) {
   *static_cast<Pickle*>(this) = other;
-  // TODO(vtl): Remove once bug resolved.
-  CHECK(header()) << "crbug.com/357915";
 #if defined(OS_POSIX)
   file_descriptor_set_ = other.file_descriptor_set_;
 #endif
