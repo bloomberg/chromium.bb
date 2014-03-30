@@ -965,6 +965,8 @@ TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
 
   // GesturePinchUpdate waits for an ack.
+  // This also verifies that GesturePinchUpdates for touchscreen are sent
+  // to the renderer (in contrast to the TrackpadPinchUpdate test).
   SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
                        WebGestureEvent::Touchscreen);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
@@ -1294,6 +1296,21 @@ TEST_F(InputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
   // This test will become invalid if GestureDoubleTap stops requiring an ack.
   DCHECK(!WebInputEventTraits::IgnoresAckDisposition(
       WebInputEvent::GestureDoubleTap));
+  EXPECT_EQ(0, client_->in_flight_event_count());
+}
+
+// Test that GesturePinchUpdate is handled specially for trackpad
+TEST_F(InputRouterImplTest, TrackpadPinchUpdate) {
+  // For now Trackpad PinchUpdate events are just immediately ACKed
+  // as unconsumed without going to the renderer.
+  // TODO(rbyers): Update for wheel event behavior - crbug.com/289887.
+  // Note that the Touchscreen case is verified as NOT doing this as
+  // part of the ShowPressIsInOrder test.
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_handler_->ack_state());
   EXPECT_EQ(0, client_->in_flight_event_count());
 }
 

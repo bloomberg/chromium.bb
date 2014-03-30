@@ -487,6 +487,8 @@ class CONTENT_EXPORT WebContentsImpl
       const blink::WebMouseWheelEvent& event) OVERRIDE;
   virtual bool PreHandleGestureEvent(
       const blink::WebGestureEvent& event) OVERRIDE;
+  virtual bool HandleGestureEvent(
+      const blink::WebGestureEvent& event) OVERRIDE;
   virtual void DidSendScreenRects(RenderWidgetHostImpl* rwh) OVERRIDE;
 #if defined(OS_WIN)
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
@@ -985,6 +987,11 @@ class CONTENT_EXPORT WebContentsImpl
   // case we don't want saved settings to apply to it and we don't want to
   // remember it.
   bool temporary_zoom_settings_;
+
+  // The raw accumulated zoom value and the actual zoom increments made for an
+  // an in-progress pinch gesture.
+  float totalPinchGestureAmount_;
+  int currentPinchZoomStepDelta_;
 
   // The intrinsic size of the page.
   gfx::Size preferred_size_;

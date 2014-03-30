@@ -108,11 +108,6 @@ class Command;
   // NO on growth.
   BOOL isShrinkingFromZoomed_;
 
-  // The raw accumulated zoom value and the actual zoom increments made for an
-  // an in-progress pinch gesture.
-  CGFloat totalMagnifyGestureAmount_;
-  NSInteger currentZoomStepDelta_;
-
   // The view controller that manages the incognito badge or the multi-profile
   // avatar button. Depending on whether the --new-profile-management flag is
   // used, the multi-profile button can either be the avatar's icon badge or a

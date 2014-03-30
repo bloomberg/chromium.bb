@@ -242,6 +242,7 @@ void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& original_gesture_event) {
   event_stream_validator_.OnEvent(original_gesture_event.event);
   GestureEventWithLatencyInfo gesture_event(original_gesture_event);
+
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
     return;
 
@@ -420,6 +421,18 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
 void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
                                       const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
+  // Trackpad pinch gestures are not yet handled by the renderer.
+  // TODO(rbyers): Send mousewheel for trackpad pinch - crbug.com/289887.
+  if (input_event.type == WebInputEvent::GesturePinchUpdate &&
+      static_cast<const WebGestureEvent&>(input_event).sourceDevice ==
+          WebGestureEvent::Touchpad) {
+    ProcessInputEventAck(input_event.type,
+                         INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+                         latency_info,
+                         ACK_SOURCE_NONE);
+    return;
+  }
+
   if (OfferToOverscrollController(input_event, latency_info))
     return;
 

@@ -2134,6 +2134,11 @@ void RenderWidgetHostImpl::OnGestureEventAck(
         ui::INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT, 0 ,0);
   }
 
+  if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED) {
+    if (delegate_->HandleGestureEvent(event.event))
+      ack_result = INPUT_EVENT_ACK_STATE_CONSUMED;
+  }
+
   if (view_)
     view_->GestureEventAck(event.event, ack_result);
 }

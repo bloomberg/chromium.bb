@@ -88,6 +88,7 @@ using blink::WebInputEvent;
 using blink::WebInputEventFactory;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
+using blink::WebGestureEvent;
 
 // These are not documented, so use only after checking -respondsToSelector:.
 @interface NSApplication (UndocumentedSpeechMethods)
@@ -2921,6 +2922,20 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
     const WebMouseWheelEvent& webEvent =
         WebInputEventFactory::mouseWheelEvent(event, self);
     renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
+  }
+}
+
+// Called repeatedly during a pinch gesture, with incremental change values.
+- (void)magnifyWithEvent:(NSEvent*)event {
+  if (renderWidgetHostView_->render_widget_host_) {
+    // Send a GesturePinchUpdate event.
+    // Note that we don't attempt to bracket these by GesturePinchBegin/End (or
+    // GestureSrollBegin/End) as is done for touchscreen.  Keeping track of when
+    // a pinch is active would take a little more work here, and we don't need
+    // it for anything yet.
+    const WebGestureEvent& webEvent =
+        WebInputEventFactory::gestureEvent(event, self);
+    renderWidgetHostView_->render_widget_host_->ForwardGestureEvent(webEvent);
   }
 }
 

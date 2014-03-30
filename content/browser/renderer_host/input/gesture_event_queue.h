@@ -68,6 +68,8 @@ class CONTENT_EXPORT GestureEventQueue {
 
   // Returns |true| if the caller should immediately forward the provided
   // |GestureEventWithLatencyInfo| argument to the renderer.
+  // If this function returns false, then the event may be queued and forwared
+  // at a later point.
   bool ShouldForward(const GestureEventWithLatencyInfo&);
 
   // Indicates that the caller has received an acknowledgement from the renderer

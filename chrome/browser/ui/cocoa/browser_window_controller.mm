@@ -1868,41 +1868,6 @@ enum {
   }
 }
 
-// Called repeatedly during a pinch gesture, with incremental change values.
-- (void)magnifyWithEvent:(NSEvent*)event {
-  // The deltaZ difference necessary to trigger a zoom action. Derived from
-  // experimentation to find a value that feels reasonable.
-  const float kZoomStepValue = 0.6;
-
-  // Find the (absolute) thresholds on either side of the current zoom factor,
-  // then convert those to actual numbers to trigger a zoom in or out.
-  // This logic deliberately makes the range around the starting zoom value for
-  // the gesture twice as large as the other ranges (i.e., the notches are at
-  // ..., -3*step, -2*step, -step, step, 2*step, 3*step, ... but not at 0)
-  // so that it's easier to get back to your starting point than it is to
-  // overshoot.
-  float nextStep = (abs(currentZoomStepDelta_) + 1) * kZoomStepValue;
-  float backStep = abs(currentZoomStepDelta_) * kZoomStepValue;
-  float zoomInThreshold = (currentZoomStepDelta_ >= 0) ? nextStep : -backStep;
-  float zoomOutThreshold = (currentZoomStepDelta_ <= 0) ? -nextStep : backStep;
-
-  unsigned int command = 0;
-  totalMagnifyGestureAmount_ += [event magnification];
-  if (totalMagnifyGestureAmount_ > zoomInThreshold) {
-    command = IDC_ZOOM_PLUS;
-  } else if (totalMagnifyGestureAmount_ < zoomOutThreshold) {
-    command = IDC_ZOOM_MINUS;
-  }
-
-  if (command && chrome::IsCommandEnabled(browser_.get(), command)) {
-    currentZoomStepDelta_ += (command == IDC_ZOOM_PLUS) ? 1 : -1;
-    chrome::ExecuteCommandWithDisposition(
-        browser_.get(),
-        command,
-        ui::WindowOpenDispositionFromNSEvent(event));
-  }
-}
-
 // Delegate method called when window is resized.
 - (void)windowDidResize:(NSNotification*)notification {
   [self saveWindowPositionIfNeeded];
