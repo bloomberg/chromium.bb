@@ -72,14 +72,15 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   manager->core()->service()->RefreshPolicy(callback);
 }
 
+void UserPolicySigninServiceBase::GoogleSignedOut(const std::string& username) {
+  ShutdownUserCloudPolicyManager();
+}
+
 void UserPolicySigninServiceBase::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
-      ShutdownUserCloudPolicyManager();
-      break;
     case chrome::NOTIFICATION_PROFILE_ADDED:
       // A new profile has been loaded - if it's signed in, then initialize the
       // UCPM, otherwise shut down the UCPM (which deletes any cached policy
@@ -132,6 +133,8 @@ void UserPolicySigninServiceBase::OnClientError(CloudPolicyClient* client) {
 }
 
 void UserPolicySigninServiceBase::Shutdown() {
+  if (signin_manager())
+    signin_manager()->RemoveObserver(this);
   PrepareForUserCloudPolicyManagerShutdown();
 }
 
@@ -180,12 +183,11 @@ void UserPolicySigninServiceBase::InitializeOnProfileReady(Profile* profile) {
     return;
   }
 
-  // Shutdown the UserCloudPolicyManager when the user signs out. We do
-  // this here because we don't want to get SIGNED_OUT notifications until
-  // after the profile has started initializing (http://crbug.com/316229).
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(profile));
+  // Shutdown the UserCloudPolicyManager when the user signs out. We start
+  // observing the SigninManager here because we don't want to get signout
+  // notifications until after the profile has started initializing
+  // (http://crbug.com/316229).
+  signin_manager()->AddObserver(this);
 
   std::string username = signin_manager()->GetAuthenticatedUsername();
   if (username.empty())

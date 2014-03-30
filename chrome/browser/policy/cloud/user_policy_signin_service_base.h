@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
@@ -21,7 +22,6 @@
 
 class PrefService;
 class Profile;
-class SigninManager;
 
 namespace net {
 class URLRequestContextGetter;
@@ -47,7 +47,8 @@ class UserCloudPolicyManager;
 class UserPolicySigninServiceBase : public KeyedService,
                                     public CloudPolicyClient::Observer,
                                     public CloudPolicyService::Observer,
-                                    public content::NotificationObserver {
+                                    public content::NotificationObserver,
+                                    public SigninManagerBase::Observer {
  public:
   // The callback invoked once policy registration is complete. Passed
   // |dm_token| and |client_id| parameters are empty if policy registration
@@ -80,6 +81,9 @@ class UserPolicySigninServiceBase : public KeyedService,
       const std::string& client_id,
       scoped_refptr<net::URLRequestContextGetter> profile_request_context,
       const PolicyFetchCallback& callback);
+
+  // SigninManagerBase::Observer implementation:
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
