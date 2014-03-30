@@ -11336,7 +11336,8 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Net.ErrorCodesForImages" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>skonig@chromium.org</owner>
+  <owner>hbengali@chromium.org</owner>
   <summary>
     Net error codes that requests for images end with, including net::OK and
     net:ERR_ABORTED.
