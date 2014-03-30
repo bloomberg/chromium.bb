@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -42,7 +43,8 @@ KeyedService* FakeSigninManagerBase::Build(content::BrowserContext* context) {
 
 FakeSigninManager::FakeSigninManager(Profile* profile)
     : SigninManager(
-          ChromeSigninClientFactory::GetInstance()->GetForProfile(profile)) {}
+          ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile)) {}
 
 FakeSigninManager::~FakeSigninManager() {
 }

@@ -130,7 +130,8 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
 #if defined(OS_CHROMEOS)
   service = new SigninManagerBase(client);
 #else
-  service = new SigninManager(client);
+  service = new SigninManager(
+      client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
 #endif
   service->Initialize(profile, g_browser_process->local_state());
   FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(service));

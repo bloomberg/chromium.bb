@@ -1475,7 +1475,7 @@ void OneClickSigninHelper::DidStopLoading(
     case AUTO_ACCEPT_ACCEPTED:
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_WITH_DEFAULTS);
-      SigninManager::DisableOneClickSignIn(profile);
+      SigninManager::DisableOneClickSignIn(profile->GetPrefs());
       // Start syncing with the default settings - prompt the user to sign in
       // first.
       if (!do_not_start_sync_for_testing_) {
@@ -1491,7 +1491,7 @@ void OneClickSigninHelper::DidStopLoading(
     case AUTO_ACCEPT_CONFIGURE:
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_WITH_ADVANCED);
-      SigninManager::DisableOneClickSignIn(profile);
+      SigninManager::DisableOneClickSignIn(profile->GetPrefs());
       // Display the extra confirmation (even in the SAML case) in case this
       // was an untrusted renderer.
       if (!do_not_start_sync_for_testing_) {

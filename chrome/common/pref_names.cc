@@ -1850,12 +1850,6 @@ const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 const char kInvalidationServiceUseGCMChannel[] =
     "invalidation_service.use_gcm_channel";
 
-// Local state pref containing a string regex that restricts which accounts
-// can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,
-// all accounts are allowed (no restrictions).
-const char kGoogleServicesUsernamePattern[] =
-    "google.services.username_pattern";
-
 // Local hash of authentication password, used for off-line authentication
 // when on-line authentication is not available.
 const char kGoogleServicesPasswordHash[] = "google.services.password_hash";

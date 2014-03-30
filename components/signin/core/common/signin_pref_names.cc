@@ -20,6 +20,12 @@ const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
 // services.
 const char kGoogleServicesUsername[] = "google.services.username";
 
+// Local state pref containing a string regex that restricts which accounts
+// can be used to log in to chrome (e.g. "*@google.com"). If missing or blank,
+// all accounts are allowed (no restrictions).
+const char kGoogleServicesUsernamePattern[] =
+    "google.services.username_pattern";
+
 // Boolean which stores if the user is allowed to signin to chrome.
 const char kSigninAllowed[] = "signin.allowed";
 

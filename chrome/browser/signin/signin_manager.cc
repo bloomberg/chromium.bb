@@ -13,8 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
@@ -22,6 +20,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_cookie_helper.h"
+#include "components/signin/core/common/signin_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -61,13 +60,15 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
           .find(kChromiumSyncService) != std::string::npos;
 }
 
-SigninManager::SigninManager(SigninClient* client)
+SigninManager::SigninManager(SigninClient* client,
+                             ProfileOAuth2TokenService* token_service)
     : SigninManagerBase(client),
       profile_(NULL),
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
-      client_(client) {}
+      client_(client),
+      token_service_(token_service) {}
 
 void SigninManager::AddMergeSessionObserver(
     MergeSessionHelper::Observer* observer) {
@@ -85,11 +86,9 @@ SigninManager::~SigninManager() {
 }
 
 void SigninManager::InitTokenService() {
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   const std::string& account_id = GetAuthenticatedUsername();
-  if (token_service && !account_id.empty())
-    token_service->LoadCredentials(account_id);
+  if (token_service_ && !account_id.empty())
+    token_service_->LoadCredentials(account_id);
 }
 
 std::string SigninManager::SigninTypeToString(
@@ -214,7 +213,7 @@ void SigninManager::SignOut() {
 
   const std::string& username = GetAuthenticatedUsername();
   clear_authenticated_username();
-  profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
+  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 
   // Erase (now) stale information from AboutSigninInternals.
   NotifyDiagnosticsObservers(USERNAME, "");
@@ -222,11 +221,9 @@ void SigninManager::SignOut() {
   // Revoke all tokens before sending signed_out notification, because there
   // may be components that don't listen for token service events when the
   // profile is not connected to an account.
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   LOG(WARNING) << "Revoking refresh token on server. Reason: sign out, "
                << "IsSigninAllowed: " << IsSigninAllowed();
-  token_service->RevokeAllCredentials();
+  token_service_->RevokeAllCredentials();
 
   // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
   // fixed.
@@ -251,12 +248,13 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
         base::Bind(&SigninManager::OnGoogleServicesUsernamePatternChanged,
                    weak_pointer_factory_.GetWeakPtr()));
   }
-  signin_allowed_.Init(prefs::kSigninAllowed, profile_->GetPrefs(),
-      base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
-                 base::Unretained(this)));
+  signin_allowed_.Init(prefs::kSigninAllowed,
+                       client_->GetPrefs(),
+                       base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
+                                  base::Unretained(this)));
 
-  std::string user = profile_->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
+  std::string user =
+      client_->GetPrefs()->GetString(prefs::kGoogleServicesUsername);
   if ((!user.empty() && !IsAllowedUsername(user)) || !IsSigninAllowed()) {
     // User is signed in, but the username is invalid - the administrator must
     // have changed the policy since the last signin, so sign out the user.
@@ -264,10 +262,8 @@ void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
   }
 
   InitTokenService();
-  account_id_helper_.reset(new SigninAccountIdHelper(
-      client_,
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_),
-      this));
+  account_id_helper_.reset(
+      new SigninAccountIdHelper(client_, token_service_, this));
 }
 
 void SigninManager::Shutdown() {
@@ -348,17 +344,13 @@ const std::string& SigninManager::GetUsernameForAuthInProgress() const {
   return possibly_invalid_username_;
 }
 
-void SigninManager::DisableOneClickSignIn(Profile* profile) {
-  PrefService* pref_service = profile->GetPrefs();
-  pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
+void SigninManager::DisableOneClickSignIn(PrefService* prefs) {
+  prefs->SetBoolean(prefs::kReverseAutologinEnabled, false);
 }
 
 void SigninManager::CompletePendingSignin() {
   DCHECK(!possibly_invalid_username_.empty());
   OnSignedIn(possibly_invalid_username_);
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
 
   // If inline sign in is enabled, but new profile management is not, perform a
   // merge session now to push the user's credentials into the cookie jar.
@@ -368,13 +360,13 @@ void SigninManager::CompletePendingSignin() {
 
   if (do_merge_session_in_signin_manager) {
     merge_session_helper_.reset(new MergeSessionHelper(
-        token_service, profile_->GetRequestContext(), NULL));
+        token_service_, client_->GetURLRequestContext(), NULL));
   }
 
   DCHECK(!temp_refresh_token_.empty());
   DCHECK(!GetAuthenticatedUsername().empty());
-  token_service->UpdateCredentials(GetAuthenticatedUsername(),
-                                   temp_refresh_token_);
+  token_service_->UpdateCredentials(GetAuthenticatedUsername(),
+                                    temp_refresh_token_);
   temp_refresh_token_.clear();
 
   if (do_merge_session_in_signin_manager)
@@ -405,7 +397,7 @@ void SigninManager::OnSignedIn(const std::string& username) {
   client_->GoogleSigninSucceeded(GetAuthenticatedUsername(), password_);
 
   password_.clear();  // Don't need it anymore.
-  DisableOneClickSignIn(profile_);  // Don't ever offer again.
+  DisableOneClickSignIn(client_->GetPrefs());  // Don't ever offer again.
 }
 
 void SigninManager::ProhibitSignout(bool prohibit_signout) {

@@ -31,7 +31,6 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_member.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -40,6 +39,7 @@
 #include "net/cookies/canonical_cookie.h"
 
 class PrefService;
+class ProfileOAuth2TokenService;
 class SigninAccountIdHelper;
 class SigninClient;
 
@@ -62,7 +62,7 @@ class SigninManager : public SigninManagerBase {
   // OneClickSigninHelper.
   static const char kChromeSigninEffectiveSite[];
 
-  explicit SigninManager(SigninClient* client);
+  SigninManager(SigninClient* client, ProfileOAuth2TokenService* token_service);
   virtual ~SigninManager();
 
   // Returns true if the username is allowed based on the policy string.
@@ -115,9 +115,10 @@ class SigninManager : public SigninManagerBase {
   // authenticated. Returns an empty string if no auth is in progress.
   const std::string& GetUsernameForAuthInProgress() const;
 
-  // Set the profile preference to turn off one-click sign-in so that it won't
-  // ever show it again in this profile (even if the user tries a new account).
-  static void DisableOneClickSignIn(Profile* profile);
+  // Set the preference to turn off one-click sign-in so that it won't ever
+  // show it again for the user associated with |prefs| (even if the user tries
+  // a new account).
+  static void DisableOneClickSignIn(PrefService* prefs);
 
   // Tells the SigninManager whether to prohibit signout for this profile.
   // If |prohibit_signout| is true, then signout will be prohibited.
@@ -201,6 +202,10 @@ class SigninManager : public SigninManagerBase {
   // The SigninClient object associated with this object. Must outlive this
   // object.
   SigninClient* client_;
+
+  // The ProfileOAuth2TokenService instance associated with this object. Must
+  // outlive this object.
+  ProfileOAuth2TokenService* token_service_;
 
   // Helper object to listen for changes to signin preferences stored in non-
   // profile-specific local prefs (like kGoogleServicesUsernamePattern).

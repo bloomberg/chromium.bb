@@ -46,7 +46,8 @@ KeyedService* SigninManagerBuild(content::BrowserContext* context) {
   SigninManager* service = NULL;
   Profile* profile = static_cast<Profile*>(context);
   service = new SigninManager(
-      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
   service->Initialize(profile, NULL);
   return service;
 }
@@ -138,7 +139,8 @@ class SigninManagerTest : public testing::Test {
   void CreateNakedSigninManager() {
     DCHECK(!manager_);
     naked_manager_.reset(new SigninManager(
-        ChromeSigninClientFactory::GetInstance()->GetForProfile(profile())));
+        ChromeSigninClientFactory::GetInstance()->GetForProfile(profile()),
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile())));
 
     manager_ = naked_manager_.get();
     manager_->AddObserver(&test_observer_);
