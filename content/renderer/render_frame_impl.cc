@@ -779,13 +779,13 @@ void RenderFrameImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {
 }
 
 void RenderFrameImpl::OnBeforeUnload() {
-  // TODO(creis): Move dispatchBeforeUnloadEvent to WebFrame.  Until then, this
-  // should only be called on the main frame.  Eventually, the browser process
-  // should dispatch it to every frame that needs it.
+  // TODO(creis): Right now, this is only called on the main frame.  Make the
+  // browser process send dispatchBeforeUnloadEvent to every frame that needs
+  // it.
   CHECK(!frame_->parent());
 
   base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
-  bool proceed = render_view_->webview()->dispatchBeforeUnloadEvent();
+  bool proceed = frame_->dispatchBeforeUnloadEvent();
   base::TimeTicks before_unload_end_time = base::TimeTicks::Now();
   Send(new FrameHostMsg_BeforeUnload_ACK(routing_id_, proceed,
                                          before_unload_start_time,

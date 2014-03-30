@@ -1933,7 +1933,7 @@ bool TestRunner::IsCommandEnabled(const std::string& command) {
 }
 
 bool TestRunner::CallShouldCloseOnWebView() {
-  return web_view_->dispatchBeforeUnloadEvent();
+  return web_view_->mainFrame()->dispatchBeforeUnloadEvent();
 }
 
 void TestRunner::SetDomainRelaxationForbiddenForURLScheme(
