@@ -5,9 +5,9 @@
 #include <string>
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
@@ -76,37 +76,26 @@ class WebRtcLogUploaderTest : public testing::Test {
   }
 
   bool AddLinesToTestFile(int number_of_lines) {
-    int flags = base::PLATFORM_FILE_OPEN |
-                base::PLATFORM_FILE_APPEND;
-    base::PlatformFileError error = base::PLATFORM_FILE_OK;
-    base::PlatformFile test_list_file =
-        base::CreatePlatformFile(test_list_path_, flags, NULL, &error);
-    EXPECT_EQ(base::PLATFORM_FILE_OK, error);
-    EXPECT_NE(base::kInvalidPlatformFileValue, test_list_file);
-    if (base::PLATFORM_FILE_OK != error ||
-        base::kInvalidPlatformFileValue == test_list_file) {
+    base::File test_list_file(test_list_path_,
+                              base::File::FLAG_OPEN | base::File::FLAG_APPEND);
+    EXPECT_TRUE(test_list_file.IsValid());
+    if (!test_list_file.IsValid())
       return false;
-    }
 
     for (int i = 0; i < number_of_lines; ++i) {
       EXPECT_EQ(static_cast<int>(sizeof(kTestTime)) - 1,
-                base::WritePlatformFileAtCurrentPos(test_list_file,
-                                                    kTestTime,
-                                                    sizeof(kTestTime) - 1));
-      EXPECT_EQ(1, base::WritePlatformFileAtCurrentPos(test_list_file, ",", 1));
+                test_list_file.WriteAtCurrentPos(kTestTime,
+                                                 sizeof(kTestTime) - 1));
+      EXPECT_EQ(1, test_list_file.WriteAtCurrentPos(",", 1));
       EXPECT_EQ(static_cast<int>(sizeof(kTestReportId)) - 1,
-                base::WritePlatformFileAtCurrentPos(test_list_file,
-                                                    kTestReportId,
-                                                    sizeof(kTestReportId) - 1));
-      EXPECT_EQ(1, base::WritePlatformFileAtCurrentPos(test_list_file, ",", 1));
+                test_list_file.WriteAtCurrentPos(kTestReportId,
+                                                 sizeof(kTestReportId) - 1));
+      EXPECT_EQ(1, test_list_file.WriteAtCurrentPos(",", 1));
       EXPECT_EQ(static_cast<int>(sizeof(kTestLocalId)) - 1,
-                base::WritePlatformFileAtCurrentPos(
-                    test_list_file, kTestLocalId, sizeof(kTestLocalId) - 1));
-      EXPECT_EQ(1, base::WritePlatformFileAtCurrentPos(test_list_file,
-                                                       "\n", 1));
+                test_list_file.WriteAtCurrentPos(kTestLocalId,
+                                                 sizeof(kTestLocalId) - 1));
+      EXPECT_EQ(1, test_list_file.WriteAtCurrentPos("\n", 1));
     }
-    EXPECT_TRUE(base::ClosePlatformFile(test_list_file));
-
     return true;
   }
 
