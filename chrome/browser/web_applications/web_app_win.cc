@@ -32,8 +32,6 @@ namespace {
 const base::FilePath::CharType kIconChecksumFileExt[] =
     FILE_PATH_LITERAL(".ico.md5");
 
-// Width and height of icons exported to .ico files.
-
 // Calculates checksum of an icon family using MD5.
 // The checksum is derived from all of the icons in the family.
 void GetImageCheckSum(const gfx::ImageFamily& image, base::MD5Digest* digest) {
@@ -173,12 +171,8 @@ bool CreateShortcutsInPaths(
   }
 
   // Generates file name to use with persisted ico and shortcut file.
-  base::FilePath file_name =
-      web_app::internals::GetSanitizedFileName(shortcut_info.title);
-
-  // Creates an ico file to use with shortcut.
-  base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
-      FILE_PATH_LITERAL(".ico"));
+  base::FilePath icon_file =
+      web_app::internals::GetIconFilePath(web_app_path, shortcut_info.title);
   if (!web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon)) {
     return false;
   }
@@ -214,8 +208,11 @@ bool CreateShortcutsInPaths(
 
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {
-    base::FilePath shortcut_file = shortcut_paths[i].Append(file_name).
-        AddExtension(installer::kLnkExt);
+    base::FilePath shortcut_file =
+        shortcut_paths[i]
+            .Append(
+                 web_app::internals::GetSanitizedFileName(shortcut_info.title))
+            .AddExtension(installer::kLnkExt);
     if (creation_reason == web_app::SHORTCUT_CREATION_AUTOMATED) {
       // Check whether there is an existing shortcut to this app.
       std::vector<base::FilePath> shortcut_files =
@@ -336,10 +333,23 @@ base::FilePath CreateShortcutInWebAppDir(
   std::vector<base::FilePath> paths;
   paths.push_back(web_app_dir);
   std::vector<base::FilePath> out_filenames;
-  CreateShortcutsInPaths(web_app_dir, shortcut_info, paths,
-                         SHORTCUT_CREATION_BY_USER, &out_filenames);
-  DCHECK_EQ(out_filenames.size(), 1u);
-  return out_filenames[0];
+  base::FilePath web_app_dir_shortcut =
+      web_app_dir.Append(internals::GetSanitizedFileName(shortcut_info.title))
+          .AddExtension(installer::kLnkExt);
+  if (!PathExists(web_app_dir_shortcut)) {
+    CreateShortcutsInPaths(web_app_dir,
+                           shortcut_info,
+                           paths,
+                           SHORTCUT_CREATION_BY_USER,
+                           &out_filenames);
+    DCHECK_EQ(out_filenames.size(), 1u);
+    DCHECK_EQ(out_filenames[0].value(), web_app_dir_shortcut.value());
+  } else {
+    internals::CheckAndSaveIcon(
+        internals::GetIconFilePath(web_app_dir, shortcut_info.title),
+        shortcut_info.favicon);
+  }
+  return web_app_dir_shortcut;
 }
 
 namespace internals {
@@ -393,8 +403,7 @@ bool CreatePlatformShortcuts(
     return false;
 
   if (pin_to_taskbar) {
-    base::FilePath file_name =
-        web_app::internals::GetSanitizedFileName(shortcut_info.title);
+    base::FilePath file_name = GetSanitizedFileName(shortcut_info.title);
     // Use the web app path shortcut for pinning to avoid having unique numbers
     // in the application name.
     base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
@@ -431,8 +440,7 @@ void UpdatePlatformShortcuts(
     // GetShortcutLocationsAndDeleteShortcuts will have deleted it. In that
     // case, re-pin it.
     if (was_pinned_to_taskbar) {
-      base::FilePath file_name =
-          web_app::internals::GetSanitizedFileName(shortcut_info.title);
+      base::FilePath file_name = GetSanitizedFileName(shortcut_info.title);
       // Use the web app path shortcut for pinning to avoid having unique
       // numbers in the application name.
       base::FilePath shortcut_to_pin = web_app_path.Append(file_name).
@@ -442,9 +450,8 @@ void UpdatePlatformShortcuts(
   }
 
   // Update the icon if necessary.
-  base::FilePath icon_file = web_app_path.Append(file_name).AddExtension(
-      FILE_PATH_LITERAL(".ico"));
-  web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info.favicon);
+  base::FilePath icon_file = GetIconFilePath(web_app_path, shortcut_info.title);
+  CheckAndSaveIcon(icon_file, shortcut_info.favicon);
 }
 
 void DeletePlatformShortcuts(
@@ -531,6 +538,12 @@ std::vector<base::FilePath> GetShortcutPaths(
     }
   }
   return shortcut_paths;
+}
+
+base::FilePath GetIconFilePath(const base::FilePath& web_app_path,
+                               const base::string16& title) {
+  return web_app_path.Append(GetSanitizedFileName(title))
+      .AddExtension(FILE_PATH_LITERAL(".ico"));
 }
 
 }  // namespace internals

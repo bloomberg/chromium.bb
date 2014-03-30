@@ -25,6 +25,9 @@ namespace internals {
 bool CheckAndSaveIcon(const base::FilePath& icon_file,
                       const gfx::ImageFamily& image);
 
+base::FilePath GetIconFilePath(const base::FilePath& web_app_path,
+                               const base::string16& title);
+
 }  // namespace internals
 
 }  // namespace web_app

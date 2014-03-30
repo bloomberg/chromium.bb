@@ -291,8 +291,8 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
     return;
   }
 
-  base::FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
-      FILE_PATH_LITERAL(".ico"));
+  base::FilePath icon_file =
+      web_app::internals::GetIconFilePath(web_app_path, shortcut_info_.title);
   web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info_.favicon);
 
   // Update existing shortcuts' description, icon and app id.
