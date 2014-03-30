@@ -22,6 +22,7 @@
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
+#include "ui/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/views/test/views_test_base.h"
 
@@ -178,6 +179,42 @@ class AppsGridViewTest : public views::ViewsTestBase {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppsGridViewTest);
+};
+
+class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
+ public:
+  TestAppsGridViewFolderDelegate() : show_bubble_(false) {}
+  virtual ~TestAppsGridViewFolderDelegate() {}
+
+  // Overridden from AppsGridViewFolderDelegate:
+  virtual void UpdateFolderViewBackground(bool show_bubble) OVERRIDE {
+    show_bubble_ = show_bubble;
+  }
+
+  virtual void ReparentItem(AppListItemView* original_drag_view,
+                            const gfx::Point& drag_point_in_folder_grid)
+      OVERRIDE {}
+
+  virtual void DispatchDragEventForReparent(AppsGridView::Pointer pointer,
+                                            const ui::LocatedEvent& event)
+      OVERRIDE {}
+
+  virtual void DispatchEndDragEventForReparent(
+      bool events_forwarded_to_drag_drop_host) OVERRIDE {}
+
+  virtual bool IsPointOutsideOfFolderBoundary(const gfx::Point& point)
+      OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsOEMFolder() const OVERRIDE { return false; }
+
+  bool show_bubble() { return show_bubble_; }
+
+ private:
+  bool show_bubble_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestAppsGridViewFolderDelegate);
 };
 
 TEST_F(AppsGridViewTest, CreatePage) {
@@ -523,6 +560,26 @@ TEST_F(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
   EXPECT_EQ(std::string("Item 1,Item 0,Item 3,Item 2"),
             model_->GetModelContent());
   test_api_->LayoutToIdealBounds();
+}
+
+TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
+  const int kTotalItems = 4;
+  TestAppsGridViewFolderDelegate folder_delegate;
+  apps_grid_view_->set_folder_delegate(&folder_delegate);
+  model_->PopulateApps(kTotalItems);
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
+            model_->GetModelContent());
+
+  gfx::Point mouse_from = GetItemTileRectAt(0, 0).CenterPoint();
+  gfx::Point mouse_to = GetItemTileRectAt(0, 1).CenterPoint();
+
+  // Starts a mouse drag and then cancels it.
+  SimulateDrag(AppsGridView::MOUSE, mouse_from, mouse_to);
+  EXPECT_TRUE(folder_delegate.show_bubble());
+  apps_grid_view_->EndDrag(true);
+  EXPECT_FALSE(folder_delegate.show_bubble());
+  EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
+            model_->GetModelContent());
 }
 
 TEST_F(AppsGridViewTest, HighlightWithKeyboard) {

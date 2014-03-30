@@ -7,6 +7,7 @@
 
 #include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/app_list/views/apps_grid_view.h"
+#include "ui/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ui/app_list/views/folder_header_view.h"
 #include "ui/app_list/views/folder_header_view_delegate.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -31,7 +32,8 @@ class PaginationModel;
 class AppListFolderView : public views::View,
                           public FolderHeaderViewDelegate,
                           public AppListModelObserver,
-                          public ui::ImplicitAnimationObserver {
+                          public ui::ImplicitAnimationObserver,
+                          public AppsGridViewFolderDelegate {
  public:
   AppListFolderView(AppsContainerView* container_view,
                     AppListModel* model,
@@ -49,38 +51,10 @@ class AppListFolderView : public views::View,
   // AppListFolderView.
   gfx::Rect GetItemIconBoundsAt(int index);
 
-  // Updates the folder view background to show or hide folder container ink
-  // bubble.
-  void UpdateFolderViewBackground(bool show_bubble);
-
   void UpdateFolderNameVisibility(bool visible);
-
-  // Returns true if |point| falls outside of the folder container ink bubble.
-  bool IsPointOutsideOfFolderBoundray(const gfx::Point& point);
-
-  // Called when a folder item is dragged out of the folder to be re-parented.
-  // |original_drag_view| is the |drag_view_| inside the folder's grid view.
-  // |drag_point_in_folder_grid| is the last drag point in coordinate of the
-  // AppsGridView inside the folder.
-  void ReparentItem(AppListItemView* original_drag_view,
-      const gfx::Point& drag_point_in_folder_grid);
-
-  // Dispatches drag event from the hidden grid view to the root level grid view
-  // for re-parenting a folder item.
-  void DispatchDragEventForReparent(AppsGridView::Pointer pointer,
-      const ui::LocatedEvent& event);
-
-  // Dispatches EndDrag event from the hidden grid view to the root level grid
-  // view for reparenting a folder item.
-  // |events_forwarded_to_drag_drop_host|: True if the dragged item is dropped
-  // to the drag_drop_host, eg. dropped on shelf.
-  void DispatchEndDragEventForReparent(bool events_forwarded_to_drag_drop_host);
 
   // Hides the view immediately without animation.
   void HideViewImmediately();
-
-  // Returns true if the associated folder item is an OEM folder.
-  bool IsOEMFolder() const;
 
   // views::View
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -111,6 +85,19 @@ class AppListFolderView : public views::View,
   virtual void GiveBackFocusToSearchBox() OVERRIDE;
   virtual void SetItemName(AppListFolderItem* item,
                            const std::string& name) OVERRIDE;
+
+  // Overridden from AppsGridViewFolderDelegate:
+  virtual void UpdateFolderViewBackground(bool show_bubble) OVERRIDE;
+  virtual void ReparentItem(AppListItemView* original_drag_view,
+                            const gfx::Point& drag_point_in_folder_grid)
+      OVERRIDE;
+  virtual void DispatchDragEventForReparent(AppsGridView::Pointer pointer,
+                                            const ui::LocatedEvent& event)
+      OVERRIDE;
+  virtual void DispatchEndDragEventForReparent(
+      bool events_forwarded_to_drag_drop_host) OVERRIDE;
+  virtual bool IsPointOutsideOfFolderBoundary(const gfx::Point& point) OVERRIDE;
+  virtual bool IsOEMFolder() const OVERRIDE;
 
   AppsContainerView* container_view_;  // Not owned.
   AppListMainView* app_list_main_view_;   // Not Owned.
