@@ -6,7 +6,6 @@
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -33,10 +32,6 @@ class MockProfileDelegate : public Profile::Delegate {
 // Creates a prefs file in the given directory.
 void CreatePrefsFileInDirectory(const base::FilePath& directory_path) {
   base::FilePath pref_path(directory_path.Append(chrome::kPreferencesFilename));
-  base::PlatformFile file = base::CreatePlatformFile(pref_path,
-      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE, NULL, NULL);
-  ASSERT_TRUE(file != base::kInvalidPlatformFileValue);
-  ASSERT_TRUE(base::ClosePlatformFile(file));
   std::string data("{}");
   ASSERT_TRUE(base::WriteFile(pref_path, data.c_str(), data.size()));
 }
