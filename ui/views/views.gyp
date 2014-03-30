@@ -5,13 +5,6 @@
   'variables': {
     'chromium_code': 1,
   },
-  'target_defaults': {
-    'conditions': [
-      ['OS!="linux" or chromeos==1', {
-        'sources/': [ ['exclude', '_linux\\.(h|cc)$'] ],
-      }],
-    ],
-  },
   'targets': [
     {
       'target_name': 'views',
