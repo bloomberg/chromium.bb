@@ -703,13 +703,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         scm = gclient_scm.GetScmName(parsed_url)
         if not options.scm or scm in options.scm:
           cwd = os.path.normpath(os.path.join(self.root.root_dir, self.name))
-          # Pass in the SCM type as an env variable
+          # Pass in the SCM type as an env variable.  Make sure we don't put
+          # unicode strings in the environment.
           env = os.environ.copy()
           if scm:
-            env['GCLIENT_SCM'] = scm
+            env['GCLIENT_SCM'] = str(scm)
           if parsed_url:
-            env['GCLIENT_URL'] = parsed_url
-          env['GCLIENT_DEP_PATH'] = self.name
+            env['GCLIENT_URL'] = str(parsed_url)
+          env['GCLIENT_DEP_PATH'] = str(self.name)
           if options.prepend_dir and scm == 'git':
             print_stdout = False
             def filter_fn(line):
