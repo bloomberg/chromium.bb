@@ -102,27 +102,28 @@ bool PinMatchesCategory(IPin* pin, REFGUID category) {
 }
 
 // Finds a IPin on a IBaseFilter given the direction an category.
-HRESULT GetPin(IBaseFilter* filter, PIN_DIRECTION pin_dir, REFGUID category,
-               IPin** pin) {
-  DCHECK(pin);
+ScopedComPtr<IPin> GetPin(IBaseFilter* filter, PIN_DIRECTION pin_dir,
+                          REFGUID category) {
+  ScopedComPtr<IPin> pin;
   ScopedComPtr<IEnumPins> pin_emum;
   HRESULT hr = filter->EnumPins(pin_emum.Receive());
   if (pin_emum == NULL)
-    return hr;
+    return pin;
 
   // Get first unconnected pin.
   hr = pin_emum->Reset();  // set to first pin
-  while ((hr = pin_emum->Next(1, pin, NULL)) == S_OK) {
+  while ((hr = pin_emum->Next(1, pin.Receive(), NULL)) == S_OK) {
     PIN_DIRECTION this_pin_dir = static_cast<PIN_DIRECTION>(-1);
-    hr = (*pin)->QueryDirection(&this_pin_dir);
+    hr = pin->QueryDirection(&this_pin_dir);
     if (pin_dir == this_pin_dir) {
-      if (category == GUID_NULL || PinMatchesCategory(*pin, category))
-        return S_OK;
+      if (category == GUID_NULL || PinMatchesCategory(pin, category))
+        return pin;
     }
-    (*pin)->Release();
+    pin.Release();
   }
 
-  return E_FAIL;
+  DCHECK(!pin);
+  return pin;
 }
 
 // Release the format block for a media type.
@@ -383,9 +384,8 @@ void VideoCaptureDeviceWin::GetDeviceSupportedFormats(const Name& device,
       return;
     }
 
-    base::win::ScopedComPtr<IPin> output_capture_pin;
-    hr = GetPin(capture_filter, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE,
-                output_capture_pin.Receive());
+    base::win::ScopedComPtr<IPin> output_capture_pin(
+        GetPin(capture_filter, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE));
     if (!output_capture_pin) {
       DVLOG(2) << "Failed to get capture output pin";
       return;
@@ -472,8 +472,8 @@ bool VideoCaptureDeviceWin::Init() {
     return false;
   }
 
-  hr = GetPin(capture_filter_, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE,
-              output_capture_pin_.Receive());
+  output_capture_pin_ =
+      GetPin(capture_filter_, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE);
   if (!output_capture_pin_) {
     DVLOG(2) << "Failed to get capture output pin";
     return false;
@@ -579,9 +579,8 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     hr = mjpg_filter_.CreateInstance(CLSID_MjpegDec, NULL, CLSCTX_INPROC);
 
     if (SUCCEEDED(hr)) {
-      GetPin(mjpg_filter_, PINDIR_INPUT, GUID_NULL, input_mjpg_pin_.Receive());
-      GetPin(mjpg_filter_, PINDIR_OUTPUT, GUID_NULL,
-             output_mjpg_pin_.Receive());
+      input_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_INPUT, GUID_NULL);
+      output_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_OUTPUT, GUID_NULL);
       hr = graph_builder_->AddFilter(mjpg_filter_, NULL);
     }
 
