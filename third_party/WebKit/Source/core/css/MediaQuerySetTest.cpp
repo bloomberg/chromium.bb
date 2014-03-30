@@ -11,31 +11,12 @@
 
 #include <gtest/gtest.h>
 
-const unsigned outputCharArrayLen = 256;
-
 namespace WebCore {
 
 typedef struct {
     const char* input;
     const char* output;
 } TestCase;
-
-int getCharArray(String str, char* output)
-{
-    if (str.isNull())
-        return 0;
-
-    unsigned i;
-    if (str.is8Bit()) {
-        for (i = 0; i < str.length(); ++i)
-            output[i] = str.characters8()[i];
-    } else {
-        for (i = 0; i < str.length(); ++i)
-            output[i] = str.characters16()[i];
-    }
-    output[i++] = 0;
-    return i;
-}
 
 TEST(MediaQueryParserTest, Basic)
 {
@@ -46,6 +27,7 @@ TEST(MediaQueryParserTest, Basic)
         {"screen", 0},
         {"screen and (color)", 0},
         {"all and (min-width:500px)", "(min-width: 500px)"},
+        {"all and (min-width:/*bla*/500px)", "(min-width: 500px)"},
         {"(min-width:500px)", "(min-width: 500px)"},
         {"screen and (color), projection and (color)", 0},
         {"not screen and (color)", 0},
@@ -121,7 +103,6 @@ TEST(MediaQueryParserTest, Basic)
     for (unsigned i = 0; testCases[i].input; ++i) {
         RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create(testCases[i].input);
         StringBuilder output;
-        char outputCharArray[outputCharArrayLen];
         size_t j = 0;
         while (j < querySet->queryVector().size()) {
             String queryText = querySet->queryVector()[j]->cssText();
@@ -131,12 +112,10 @@ TEST(MediaQueryParserTest, Basic)
                 break;
             output.append(", ");
         }
-        ASSERT(output.length() < outputCharArrayLen);
-        getCharArray(output.toString(), outputCharArray);
         if (testCases[i].output)
-            ASSERT_STREQ(testCases[i].output, outputCharArray);
+            ASSERT_STREQ(testCases[i].output, output.toString().ascii().data());
         else
-            ASSERT_STREQ(testCases[i].input, outputCharArray);
+            ASSERT_STREQ(testCases[i].input, output.toString().ascii().data());
     }
 }
 

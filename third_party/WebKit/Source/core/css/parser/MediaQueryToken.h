@@ -24,6 +24,7 @@ enum MediaQueryTokenType {
     LeftParenthesisToken = 10,
     RightParenthesisToken = 11,
     EOFToken = 12,
+    CommentToken = 13,
 };
 
 enum NumericValueType {
@@ -47,6 +48,7 @@ public:
 
     MediaQueryTokenType type() const { return m_type; }
     String value() const { return m_value; }
+    String textForUnitTests() const;
 
     UChar delimiter() const { return m_delimiter; }
     NumericValueType numericValueType() const { return m_numericValueType; }

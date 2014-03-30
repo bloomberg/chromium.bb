@@ -34,6 +34,7 @@ private:
     MediaQueryToken consumeNumber();
 
     void consumeUntilNonWhitespace();
+    bool consumeUntilCommentEndFound();
 
     bool consumeIfNext(UChar);
     String consumeName();

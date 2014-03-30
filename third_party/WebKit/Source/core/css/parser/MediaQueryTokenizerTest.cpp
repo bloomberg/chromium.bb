@@ -10,17 +10,35 @@
 
 namespace WebCore {
 
-typedef pair<String, MediaQueryTokenType* > TestCase;
+typedef struct {
+    const char* input;
+    const char* output;
+} TestCase;
+
 TEST(MediaQueryTokenizerTest, Basic)
 {
-    Vector<TestCase> testcases;
-    MediaQueryTokenType tokenTypeArr[] = {LeftParenthesisToken, IdentToken, ColonToken, WhitespaceToken, PercentageToken, RightParenthesisToken, EOFToken };
-    TestCase testCase1("(max-width: 50%)", (MediaQueryTokenType*)&tokenTypeArr);
-    testcases.append(testCase1);
-    Vector<MediaQueryToken> tokens;
-    MediaQueryTokenizer::tokenize(testcases[0].first, tokens);
-    for (size_t i = 0; i < tokens.size(); i++) {
-        ASSERT_EQ(testcases[0].second[i], tokens[i].type());
+    TestCase testCases[] = {
+        { "(max-width: 50px)", "(max-width: 50px)" },
+        { "(max-width: /* comment */50px)", "(max-width: 50px)" },
+        { "(max-width: /** *commen*t */60px)", "(max-width: 60px)" },
+        { "(max-width: /** *commen*t **/70px)", "(max-width: 70px)" },
+        { "(max-width: /** *commen*t **//**/80px)", "(max-width: 80px)" },
+        { "(max-width: /*/ **/90px)", "(max-width: 90px)" },
+        { "(max-width: /*/ **/*100px)", "(max-width: *100px)" },
+        { "(max-width: 110px/*)", "(max-width: 110px" },
+        { "(max-width: 120px)/*", "(max-width: 120px)" },
+        { "(max-width: 130px)/**", "(max-width: 130px)" },
+        { "(max-width: /***/140px)/**/", "(max-width: 140px)" },
+        { 0, 0 } // Do not remove the terminator line.
+    };
+
+    for (int i = 0; testCases[i].input; ++i) {
+        Vector<MediaQueryToken> tokens;
+        MediaQueryTokenizer::tokenize(testCases[i].input, tokens);
+        StringBuilder output;
+        for (size_t j = 0; j < tokens.size(); ++j)
+            output.append(tokens[j].textForUnitTests());
+        ASSERT_STREQ(testCases[i].output, output.toString().ascii().data());
     }
 }
 

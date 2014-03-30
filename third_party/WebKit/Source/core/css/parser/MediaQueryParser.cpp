@@ -162,7 +162,7 @@ void MediaQueryParser::processToken(TokenIterator& token)
     MediaQueryTokenType type = token->type();
 
     // Call the function that handles current state
-    if (type != WhitespaceToken)
+    if (type != WhitespaceToken && type != CommentToken)
         ((this)->*(m_state))(type, token);
 }
 

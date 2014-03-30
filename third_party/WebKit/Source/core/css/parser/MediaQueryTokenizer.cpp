@@ -106,6 +106,11 @@ MediaQueryToken MediaQueryTokenizer::hyphenMinus(UChar cc)
 
 MediaQueryToken MediaQueryTokenizer::solidus(UChar cc)
 {
+    if (consumeIfNext('*')) {
+        // We're intentionally deviating from the spec here, by creating tokens for CSS comments.
+        return consumeUntilCommentEndFound()? MediaQueryToken(CommentToken): MediaQueryToken(EOFToken);
+    }
+
     return MediaQueryToken(DelimiterToken, cc);
 }
 
@@ -158,8 +163,9 @@ void MediaQueryTokenizer::tokenize(String string, Vector<MediaQueryToken>& outTo
     MediaQueryInputStream input(string);
     MediaQueryTokenizer tokenizer(input);
     while (true) {
-        outTokens.append(tokenizer.nextToken());
-        if (outTokens.last().type() == EOFToken)
+        MediaQueryToken token = tokenizer.nextToken();
+        outTokens.append(token);
+        if (token.type() == EOFToken)
             return;
     }
 }
@@ -294,6 +300,23 @@ void MediaQueryTokenizer::consumeUntilNonWhitespace()
     // Using HTML space here rather than CSS space since we don't do preprocessing
     while (isHTMLSpace<UChar>(m_input.currentInputChar()))
         consume();
+}
+
+bool MediaQueryTokenizer::consumeUntilCommentEndFound()
+{
+    UChar c = consume();
+    while (true) {
+        if (c == kEndOfFileMarker)
+            return false;
+        if (c != '*') {
+            c = consume();
+            continue;
+        }
+        c = consume();
+        if (c == '/')
+            break;
+    }
+    return true;
 }
 
 bool MediaQueryTokenizer::consumeIfNext(UChar character)
