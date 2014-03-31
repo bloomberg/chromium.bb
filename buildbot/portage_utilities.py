@@ -188,7 +188,7 @@ class EBuild(object):
 
   # A structure to hold computed values of CROS_WORKON_*.
   CrosWorkonVars = collections.namedtuple(
-      'CrosWorkonVars', ['localname', 'project', 'subdir'])
+      'CrosWorkonVars', ('localname', 'project', 'subdir'))
 
   @classmethod
   def _Print(cls, message):
@@ -341,11 +341,16 @@ class EBuild(object):
   def GetCrosWorkonVars(ebuild_path, pkg_name):
     """Return computed (as sourced ebuild script) values of:
 
-        * CROS_WORKON_LOCALNAME
-        * CROS_WORKON_PROJECT
-        * CROS_WORKON_SUBDIR
+      * CROS_WORKON_LOCALNAME
+      * CROS_WORKON_PROJECT
+      * CROS_WORKON_SUBDIR
 
-    The return value is a CrosWorkonVars tuple.
+    Args:
+      ebuild_path: Path to the ebuild file (e.g: platform2-9999.ebuild).
+      pkg_name: The package name (e.g.: platform2).
+
+    Returns:
+      A CrosWorkonVars tuple.
     """
     workon_vars = (
         'CROS_WORKON_LOCALNAME',
