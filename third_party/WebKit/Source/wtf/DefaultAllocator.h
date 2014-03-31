@@ -66,7 +66,7 @@ public:
     struct VectorBackingHelper {
         typedef void Type;
     };
-    template<typename T, typename U, typename V, typename W, typename X>
+    template<typename T>
     struct HashTableBackingHelper {
         typedef void Type;
     };

@@ -306,7 +306,7 @@ public:
 template<typename Traits>
 class ShouldBeTraced {
 public:
-    static const bool value = Traits::template NeedsTracingLazily<void>::value;
+    static const bool value = Traits::template NeedsTracingLazily<>::value;
 };
 
 } // namespace WTF

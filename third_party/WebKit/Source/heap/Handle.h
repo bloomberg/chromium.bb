@@ -891,9 +891,9 @@ struct IsWeak<WebCore::WeakMember<T> > {
     static const bool value = true;
 };
 
-template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
-struct IsWeak<WebCore::HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
-    static const bool value = Traits::isWeak;
+template<typename Table>
+struct IsWeak<WebCore::HeapHashTableBacking<Table> > {
+    static const bool value = Table::ValueTraits::isWeak;
 };
 
 template<typename T> inline T* getPtr(const WebCore::Member<T>& p)
@@ -908,8 +908,8 @@ struct NeedsTracing<std::pair<T, U> > {
 
 // We define specialization of the NeedsTracing trait for off heap collections
 // since we don't support tracing them.
-template<typename T>
-struct NeedsTracing<Vector<T> > {
+template<typename T, size_t N>
+struct NeedsTracing<Vector<T, N> > {
     static const bool value = false;
 };
 

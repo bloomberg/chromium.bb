@@ -480,8 +480,12 @@ struct OffHeapCollectionTraceTrait<WTF::Deque<T, N> > {
 
 template<typename T, typename Traits = WTF::VectorTraits<T> >
 class HeapVectorBacking;
-template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
-class HeapHashTableBacking;
+
+template<typename Table>
+class HeapHashTableBacking {
+public:
+    static void finalize(void* pointer);
+};
 
 template<typename T>
 class DefaultTraceTrait<T, false> {

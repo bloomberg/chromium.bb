@@ -241,6 +241,8 @@ namespace WTF {
         typedef typename KeyTraits::PeekInType KeyPeekInType;
         typedef typename KeyTraits::PassInType KeyPassInType;
         typedef Value ValueType;
+        typedef Extractor ExtractorType;
+        typedef KeyTraits KeyTraitsType;
         typedef typename Traits::PeekInType ValuePeekInType;
         typedef IdentityHashTranslator<HashFunctions> IdentityTranslatorType;
         typedef HashTableAddResult<ValueType> AddResult;
@@ -296,7 +298,7 @@ namespace WTF {
             ASSERT(!Allocator::isGarbageCollected);
             if (LIKELY(!m_table))
                 return;
-            deallocateTable(m_table, m_tableSize);
+            deleteAllBucketsAndDeallocate(m_table, m_tableSize);
             m_table = 0;
         }
 
@@ -351,7 +353,7 @@ namespace WTF {
 
     private:
         static ValueType* allocateTable(unsigned size);
-        static void deallocateTable(ValueType* table, unsigned size);
+        static void deleteAllBucketsAndDeallocate(ValueType* table, unsigned size);
 
         typedef std::pair<ValueType*, bool> LookupType;
         typedef std::pair<LookupType, unsigned> FullLookupType;
@@ -884,7 +886,7 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::allocateTable(unsigned size)
     {
-        typedef typename Allocator::template HashTableBackingHelper<Key, Value, Extractor, Traits, KeyTraits>::Type HashTableBacking;
+        typedef typename Allocator::template HashTableBackingHelper<HashTable>::Type HashTableBacking;
 
         size_t allocSize = size * sizeof(ValueType);
         ValueType* result;
@@ -899,14 +901,25 @@ namespace WTF {
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::deallocateTable(ValueType* table, unsigned size)
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::deleteAllBucketsAndDeallocate(ValueType* table, unsigned size)
     {
-        if (Allocator::isGarbageCollected)
-            return;
         if (Traits::needsDestruction) {
             for (unsigned i = 0; i < size; ++i) {
-                if (!isDeletedBucket(table[i]))
-                    table[i].~ValueType();
+                // This code is called when the hash table is cleared or
+                // resized. We have allocated a new backing store and we need
+                // to run the destructors on the old backing store, as it is
+                // being freed. If we are GCing we need to both call the
+                // destructor and mark the bucket as deleted, otherwise the
+                // destructor gets called again when the GC finds the backing
+                // store. With the default allocator it's enough to call the
+                // destructor, since we will free the memory explicitly and
+                // we won't see the memory with the bucket again.
+                if (!isEmptyOrDeletedBucket(table[i])) {
+                    if (Allocator::isGarbageCollected)
+                        deleteBucket(table[i]);
+                    else
+                        table[i].~ValueType();
+                }
             }
         }
         Allocator::backingFree(table);
@@ -954,7 +967,7 @@ namespace WTF {
 
         m_deletedCount = 0;
 
-        deallocateTable(oldTable, oldTableSize);
+        deleteAllBucketsAndDeallocate(oldTable, oldTableSize);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
@@ -963,7 +976,7 @@ namespace WTF {
         if (!m_table)
             return;
 
-        deallocateTable(m_table, m_tableSize);
+        deleteAllBucketsAndDeallocate(m_table, m_tableSize);
         m_table = 0;
         m_tableSize = 0;
         m_tableSizeMask = 0;

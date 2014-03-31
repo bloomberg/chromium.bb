@@ -1312,9 +1312,9 @@ public:
 
     // Like the VectorBackingHelper, but this type is used for HashSet and
     // HashMap, both of which are implemented using HashTable.
-    template<typename T, typename U, typename V, typename W, typename X>
+    template<typename Table>
     struct HashTableBackingHelper {
-        typedef HeapHashTableBacking<T, U, V, W, X> Type;
+        typedef HeapHashTableBacking<Table> Type;
     };
 
     template<typename T>
@@ -1399,7 +1399,7 @@ struct ThreadingTrait<WeakMember<T> > {
 };
 
 template<typename Key, typename Value, typename T, typename U, typename V>
-struct ThreadingTrait<HashMap<Key, Value, HeapAllocator, T, U, V> > {
+struct ThreadingTrait<HashMap<Key, Value, T, U, V, HeapAllocator> > {
     static const ThreadAffinity Affinity =
         (ThreadingTrait<Key>::Affinity == MainThreadOnly)
         && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
@@ -1413,7 +1413,7 @@ struct ThreadingTrait<WTF::KeyValuePair<First, Second> > {
 };
 
 template<typename T, typename U, typename V>
-struct ThreadingTrait<HashSet<T, HeapAllocator, U, V> > {
+struct ThreadingTrait<HashSet<T, U, V, HeapAllocator> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
@@ -1428,17 +1428,21 @@ struct ThreadingTrait<HeapVectorBacking<T, Traits> > {
     static const ThreadAffinity Affinity = ThreadingTrait<T>::Affinity;
 };
 
-template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
-struct ThreadingTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
+template<typename Table>
+struct ThreadingTrait<HeapHashTableBacking<Table> > {
+    typedef typename Table::KeyType Key;
+    typedef typename Table::ValueType Value;
     static const ThreadAffinity Affinity =
         (ThreadingTrait<Key>::Affinity == MainThreadOnly)
         && (ThreadingTrait<Value>::Affinity == MainThreadOnly) ? MainThreadOnly : AnyThread;
 };
 
-template<typename Key, typename Value>
-struct ThreadingTrait<HeapHashMap<Key, Value> > : public ThreadingTrait<HashMap<Key, Value, HeapAllocator> > { };
-template<typename Value>
-struct ThreadingTrait<HeapHashSet<Value> > : public ThreadingTrait<HashSet<Value, HeapAllocator> > { };
+template<typename T, typename U, typename V, typename W, typename X>
+struct ThreadingTrait<HeapHashMap<T, U, V, W, X> > : public ThreadingTrait<HashMap<T, U, V, W, X, HeapAllocator> > { };
+
+template<typename T, typename U, typename V>
+struct ThreadingTrait<HeapHashSet<T, U, V> > : public ThreadingTrait<HashSet<T, U, V, HeapAllocator> > { };
+
 template<typename T, size_t inlineCapacity>
 struct ThreadingTrait<HeapVector<T, inlineCapacity> > : public ThreadingTrait<Vector<T, inlineCapacity, HeapAllocator> > { };
 
@@ -1516,17 +1520,17 @@ const GCInfo GCInfoTrait<HeapVectorBacking<T, Traits> >::info = {
     Traits::needsDestruction,
 };
 
-template<typename T, typename U, typename V, typename W, typename X>
-struct GCInfoTrait<HeapHashTableBacking<T, U, V, W, X> > {
+template<typename Table>
+struct GCInfoTrait<HeapHashTableBacking<Table> > {
     static const GCInfo* get() { return &info; }
     static const GCInfo info;
 };
 
-template<typename T, typename U, typename V, typename Traits, typename W>
-const GCInfo GCInfoTrait<HeapHashTableBacking<T, U, V, Traits, W> >::info = {
-    TraceTrait<HeapHashTableBacking<T, U, V, Traits, W> >::trace,
-    FinalizerTrait<HeapHashTableBacking<T, U, V, Traits, W> >::finalize,
-    Traits::needsDestruction,
+template<typename Table>
+const GCInfo GCInfoTrait<HeapHashTableBacking<Table> >::info = {
+    TraceTrait<HeapHashTableBacking<Table> >::trace,
+    HeapHashTableBacking<Table>::finalize,
+    Table::ValueTraits::needsDestruction,
 };
 
 template<bool markWeakMembersStrongly, typename T, typename Traits>
@@ -1550,15 +1554,17 @@ struct BaseVisitVectorBackingTrait {
     }
 };
 
-template<bool markWeakMembersStrongly, typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
+template<bool markWeakMembersStrongly, typename Table>
 struct BaseVisitHashTableBackingTrait {
+    typedef typename Table::ValueType Value;
+    typedef typename Table::ValueTraits Traits;
     static void mark(WebCore::Visitor* visitor, void* self)
     {
         Value* array = reinterpret_cast<Value*>(self);
         WebCore::FinalizedHeapObjectHeader* header = WebCore::FinalizedHeapObjectHeader::fromPayload(self);
         size_t length = header->payloadSize() / sizeof(Value);
         for (size_t i = 0; i < length; i++) {
-            if (!WTF::HashTableHelper<Value, Extractor, KeyTraits>::isEmptyOrDeletedBucket(array[i]))
+            if (!WTF::HashTableHelper<Value, typename Table::ExtractorType, typename Table::KeyTraitsType>::isEmptyOrDeletedBucket(array[i]))
                 CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, markWeakMembersStrongly, Value, Traits>::mark(visitor, array[i]);
         }
     }
@@ -1605,13 +1611,13 @@ struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, HeapVe
 };
 
 // FTT (hash table)
-template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
-struct CollectionBackingTraceTrait<false, true, true, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void> : public BaseVisitHashTableBackingTrait<true, Key, Value, Extractor, Traits, KeyTraits> {
+template<typename Table>
+struct CollectionBackingTraceTrait<false, true, true, HeapHashTableBacking<Table>, void> : public BaseVisitHashTableBackingTrait<true, Table> {
 };
 
 // TXX (hash table)
-template<bool isWeak, bool markWeakMembersStrongly, typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
-struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void> : public BaseVisitHashTableBackingTrait<markWeakMembersStrongly, Key, Value, Extractor, Traits, KeyTraits> {
+template<bool isWeak, bool markWeakMembersStrongly, typename Table>
+struct CollectionBackingTraceTrait<true, isWeak, markWeakMembersStrongly, HeapHashTableBacking<Table>, void> : public BaseVisitHashTableBackingTrait<markWeakMembersStrongly, Table> {
 };
 
 // FTT (key value pair)
@@ -1685,13 +1691,14 @@ struct TraceTrait<HeapVectorBacking<T, Traits> > {
 // we disable weak processing of table entries. When the backing is found
 // through the owning hash table we mark differently, in order to do weak
 // processing.
-template<typename Key, typename Value, typename Extractor, typename Traits, typename KeyTraits>
-struct TraceTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> > {
-    typedef HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits> Backing;
+template<typename Table>
+struct TraceTrait<HeapHashTableBacking<Table> > {
+    typedef HeapHashTableBacking<Table> Backing;
+    typedef typename Table::ValueTraits Traits;
     static void trace(WebCore::Visitor* visitor, void* self)
     {
         if (WTF::ShouldBeTraced<Traits>::value || Traits::isWeak)
-            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, true, HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>, void>::mark(visitor, self);
+            CollectionBackingTraceTrait<WTF::ShouldBeTraced<Traits>::value, Traits::isWeak, true, Backing, void>::mark(visitor, self);
     }
     static void mark(Visitor* visitor, const Backing* backing)
     {
@@ -1707,6 +1714,22 @@ struct TraceTrait<HeapHashTableBacking<Key, Value, Extractor, Traits, KeyTraits>
 #endif
     }
 };
+
+template<typename Table>
+void HeapHashTableBacking<Table>::finalize(void* pointer)
+{
+    typedef typename Table::ValueType Value;
+    ASSERT(Table::ValueTraits::needsDestruction);
+    FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(pointer);
+    // Use the payload size as recorded by the heap to determine how many
+    // elements to finalize.
+    size_t length = header->payloadSize() / sizeof(Value);
+    Value* table = reinterpret_cast<Value*>(pointer);
+    for (unsigned i = 0; i < length; i++) {
+        if (!Table::isEmptyOrDeletedBucket(table[i]))
+            table[i].~Value();
+    }
+}
 
 template<typename T, typename U, typename V, typename W, typename X>
 struct GCInfoTrait<HeapHashMap<T, U, V, W, X> > : public GCInfoTrait<HashMap<T, U, V, W, X, HeapAllocator> > { };
