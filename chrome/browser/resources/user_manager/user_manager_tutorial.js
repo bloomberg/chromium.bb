@@ -110,10 +110,10 @@ cr.define('cr.ui.login', function() {
       $('slide-welcome').classList.add('single-pod');
       $('slide-your-chrome').classList.add('single-pod');
       $('slide-complete').classList.add('single-pod');
-    } else {
-      $('pod-row').focusPod();  // No focused pods.
-      $('inner-container').classList.add('disabled');
     }
+
+    $('pod-row').focusPod();  // No focused pods.
+    $('inner-container').classList.add('disabled');
   };
 
   /**
