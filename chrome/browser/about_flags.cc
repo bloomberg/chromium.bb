@@ -1739,13 +1739,6 @@ const Experiment kExperiments[] = {
   },
 #if defined(USE_AURA) || defined(OS_WIN)
   {
-    "enable-save-password-bubble",
-    IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_NAME,
-    IDS_FLAGS_ENABLE_PASSWORD_BUBBLE_DESCRIPTION,
-    kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableSavePasswordBubble)
-  },
-  {
     "enable-permissions-bubbles",
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_NAME,
     IDS_FLAGS_ENABLE_PERMISSIONS_BUBBLES_DESCRIPTION,
@@ -1837,6 +1830,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableInstantSearchClicks)
   },
 #endif
+  {
+    "enable-save-password-bubble",
+    IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_NAME,
+    IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableSavePasswordBubble)
+  }
 };
 
 const Experiment* experiments = kExperiments;
