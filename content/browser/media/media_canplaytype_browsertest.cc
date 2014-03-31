@@ -83,6 +83,9 @@ private:
   DISALLOW_COPY_AND_ASSIGN(MediaCanPlayTypeTest);
 };
 
+// TODO(amogh.bihani): http://crbug.com/357665
+#if !defined(OS_ANDROID)
+
 IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_wav) {
   EXPECT_EQ(kMaybe, CanPlay("'audio/wav'"));
   EXPECT_EQ(kProbably, CanPlay("'audio/wav; codecs=\"1\"'"));
@@ -1096,5 +1099,7 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_HLS) {
             CanPlay("'application/vnd.apple.mpegurl; codecs=\"unknown\"'"));
   // ---------------------------------------------------------------------------
 }
+
+#endif  // !OS_ANDROID
 
 }  // namespace content
