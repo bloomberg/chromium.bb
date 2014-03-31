@@ -23,6 +23,7 @@
 #define RuleFeature_h
 
 #include "core/css/invalidation/DescendantInvalidationSet.h"
+#include "core/css/invalidation/StyleInvalidator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -84,13 +85,10 @@ public:
         return m_metadata.idsInRules.contains(idValue);
     }
 
-    void scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element*);
-    void scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element*);
+    void scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element&);
+    void scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element&);
 
-    void scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element*);
-
-    // Clears all style invalidation state for the passed node.
-    void clearStyleInvalidation(Node*);
+    void scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element&);
 
     int hasIdsInSelectors() const
     {
@@ -102,13 +100,10 @@ public:
     // FIXME: record these internally to this class instead calls from StyleResolver to here.
     void addContentAttr(const AtomicString& attributeName);
 
+    StyleInvalidator& styleInvalidator();
+
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
-
-    typedef Vector<RefPtr<DescendantInvalidationSet> > InvalidationList;
-    typedef HashMap<Element*, OwnPtr<InvalidationList> > PendingInvalidationMap;
-
-    PendingInvalidationMap& pendingInvalidationMap();
 
 private:
     typedef HashMap<AtomicString, RefPtr<DescendantInvalidationSet> > InvalidationSetMap;
@@ -156,17 +151,13 @@ private:
     const CSSSelector* extractInvalidationSetFeatures(const CSSSelector&, InvalidationSetFeatures&);
     void addFeaturesToInvalidationSets(const CSSSelector&, const InvalidationSetFeatures&);
 
-    void addClassToInvalidationSet(const AtomicString& className, Element*);
-
-    InvalidationList& ensurePendingInvalidationList(Element*);
+    void addClassToInvalidationSet(const AtomicString& className, Element&);
 
     FeatureMetadata m_metadata;
     InvalidationSetMap m_classInvalidationSets;
     InvalidationSetMap m_attributeInvalidationSets;
-
-    PendingInvalidationMap m_pendingInvalidationMap;
-
     bool m_targetedStyleRecalcEnabled;
+    StyleInvalidator m_styleInvalidator;
 };
 
 

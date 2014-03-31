@@ -16,18 +16,43 @@
 
 namespace WebCore {
 
-void StyleInvalidator::invalidate()
+void StyleInvalidator::invalidate(Document& document)
 {
-    if (Element* documentElement = m_document.documentElement())
+    if (Element* documentElement = document.documentElement())
         invalidate(*documentElement);
-    m_document.clearChildNeedsStyleInvalidation();
-    m_document.clearNeedsStyleInvalidation();
+    document.clearChildNeedsStyleInvalidation();
+    document.clearNeedsStyleInvalidation();
+    clearPendingInvalidations();
+}
+
+void StyleInvalidator::scheduleInvalidation(PassRefPtr<DescendantInvalidationSet> invalidationSet, Element& element)
+{
+    ensurePendingInvalidationList(element).append(invalidationSet);
+    element.setNeedsStyleInvalidation();
+}
+
+StyleInvalidator::InvalidationList& StyleInvalidator::ensurePendingInvalidationList(Element& element)
+{
+    PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(&element, nullptr);
+    if (addResult.isNewEntry)
+        addResult.storedValue->value = adoptPtr(new InvalidationList);
+    return *addResult.storedValue->value;
+}
+
+void StyleInvalidator::clearInvalidation(Node& node)
+{
+    node.clearChildNeedsStyleInvalidation();
+    node.clearNeedsStyleInvalidation();
+    if (node.isElementNode())
+        m_pendingInvalidationMap.remove(toElement(&node));
+}
+
+void StyleInvalidator::clearPendingInvalidations()
+{
     m_pendingInvalidationMap.clear();
 }
 
-StyleInvalidator::StyleInvalidator(Document& document)
-    : m_document(document)
-    , m_pendingInvalidationMap(document.styleResolver()->ruleFeatureSet().pendingInvalidationMap())
+StyleInvalidator::StyleInvalidator()
 { }
 
 void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvalidationSet& invalidationSet)
@@ -60,10 +85,10 @@ bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element)
 {
     bool thisElementNeedsStyleRecalc = false;
     if (element.needsStyleInvalidation()) {
-        if (RuleFeatureSet::InvalidationList* invalidationList = m_pendingInvalidationMap.get(&element)) {
+        if (InvalidationList* invalidationList = m_pendingInvalidationMap.get(&element)) {
             // FIXME: it's really only necessary to clone the render style for this element, not full style recalc.
             thisElementNeedsStyleRecalc = true;
-            for (RuleFeatureSet::InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
+            for (InvalidationList::const_iterator it = invalidationList->begin(); it != invalidationList->end(); ++it) {
                 m_recursionData.pushInvalidationSet(**it);
                 if ((*it)->wholeSubtreeInvalid()) {
                     element.setNeedsStyleRecalc(SubtreeStyleChange);

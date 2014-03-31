@@ -1004,7 +1004,7 @@ void Node::detach(const AttachContext& context)
     setChildNeedsStyleRecalc();
 
     if (StyleResolver* resolver = document().styleResolver())
-        resolver->ruleFeatureSet().clearStyleInvalidation(this);
+        resolver->ruleFeatureSet().styleInvalidator().clearInvalidation(*this);
 
 #ifndef NDEBUG
     detachingNode = 0;

@@ -348,10 +348,10 @@ void RuleFeatureSet::clear()
     m_metadata.clear();
     m_classInvalidationSets.clear();
     m_attributeInvalidationSets.clear();
-    m_pendingInvalidationMap.clear();
+    m_styleInvalidator.clearPendingInvalidations();
 }
 
-void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element* element)
+void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element& element)
 {
     unsigned changedSize = changedClasses.size();
     for (unsigned i = 0; i < changedSize; ++i) {
@@ -359,7 +359,7 @@ void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitStr
     }
 }
 
-void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element* element)
+void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element& element)
 {
     if (!oldClasses.size())
         scheduleStyleInvalidationForClassChange(newClasses, element);
@@ -392,41 +392,21 @@ void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitStr
     }
 }
 
-void RuleFeatureSet::scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element* element)
+void RuleFeatureSet::scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element& element)
 {
-    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName())) {
-        ensurePendingInvalidationList(element).append(invalidationSet);
-        element->setNeedsStyleInvalidation();
-    }
+    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_attributeInvalidationSets.get(attributeName.localName()))
+        m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
 }
 
-void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element* element)
+void RuleFeatureSet::addClassToInvalidationSet(const AtomicString& className, Element& element)
 {
-    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className)) {
-        ensurePendingInvalidationList(element).append(invalidationSet);
-        element->setNeedsStyleInvalidation();
-    }
+    if (RefPtr<DescendantInvalidationSet> invalidationSet = m_classInvalidationSets.get(className))
+        m_styleInvalidator.scheduleInvalidation(invalidationSet, element);
 }
 
-RuleFeatureSet::InvalidationList& RuleFeatureSet::ensurePendingInvalidationList(Element* element)
+StyleInvalidator& RuleFeatureSet::styleInvalidator()
 {
-    PendingInvalidationMap::AddResult addResult = m_pendingInvalidationMap.add(element, nullptr);
-    if (addResult.isNewEntry)
-        addResult.storedValue->value = adoptPtr(new InvalidationList);
-    return *addResult.storedValue->value;
-}
-
-void RuleFeatureSet::clearStyleInvalidation(Node* node)
-{
-    node->clearChildNeedsStyleInvalidation();
-    node->clearNeedsStyleInvalidation();
-    if (node->isElementNode())
-        m_pendingInvalidationMap.remove(toElement(node));
-}
-
-RuleFeatureSet::PendingInvalidationMap& RuleFeatureSet::pendingInvalidationMap()
-{
-    return m_pendingInvalidationMap;
+    return m_styleInvalidator;
 }
 
 } // namespace WebCore

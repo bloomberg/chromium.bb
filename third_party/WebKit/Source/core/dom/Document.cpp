@@ -1590,7 +1590,7 @@ void Document::updateStyleInvalidationIfNeeded()
     TRACE_EVENT0("webkit", "Document::computeNeedsStyleRecalcState");
     ASSERT(styleResolver());
 
-    StyleInvalidator(*this).invalidate();
+    styleResolver()->ruleFeatureSet().styleInvalidator().invalidate(*this);
 }
 
 void Document::updateDistributionForNodeIfNeeded(Node* node)

@@ -5,16 +5,24 @@
 #ifndef StyleInvalidator_h
 #define StyleInvalidator_h
 
-#include "core/css/RuleFeature.h"
 #include "heap/Heap.h"
 
 namespace WebCore {
 
+class DescendantInvalidationSet;
+class Document;
+class Element;
+
 class StyleInvalidator {
-    STACK_ALLOCATED();
 public:
-    explicit StyleInvalidator(Document&);
-    void invalidate();
+    StyleInvalidator();
+    void invalidate(Document&);
+    void scheduleInvalidation(PassRefPtr<DescendantInvalidationSet>, Element&);
+
+    // Clears all style invalidation state for the passed node.
+    void clearInvalidation(Node&);
+
+    void clearPendingInvalidations();
 
 private:
     bool invalidate(Element&);
@@ -55,8 +63,12 @@ private:
         RecursionData* m_data;
     };
 
-    Document& m_document;
-    RuleFeatureSet::PendingInvalidationMap& m_pendingInvalidationMap;
+    typedef Vector<RefPtr<DescendantInvalidationSet> > InvalidationList;
+    typedef HashMap<Element*, OwnPtr<InvalidationList> > PendingInvalidationMap;
+
+    InvalidationList& ensurePendingInvalidationList(Element&);
+
+    PendingInvalidationMap m_pendingInvalidationMap;
     RecursionData m_recursionData;
 };
 
