@@ -2096,7 +2096,6 @@ _arm_release.add_config('daisy-release',
 
 _arm_release.add_config('daisy_skate-release',
   boards=['daisy_skate'],
-  hw_tests=[],
 )
 
 _arm_release.add_config('daisy_spring-release',
