@@ -43,6 +43,7 @@ class LocalFrame;
 class ExecutionContext;
 class WorkerGlobalScope;
 
+// FIXME: ScriptState is deprecated and going to be removed. Use NewScriptState instead.
 class ScriptState {
     WTF_MAKE_NONCOPYABLE(ScriptState);
 public:

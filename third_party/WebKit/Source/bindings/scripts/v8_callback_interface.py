@@ -120,7 +120,7 @@ def generate_arguments_contents(arguments, call_with_this_handle):
             # causes leaks between isolated worlds if a different context is
             # used.
             'cpp_value_to_v8_value': argument.idl_type.cpp_value_to_v8_value(
-                argument.name, isolate='m_isolate',
+                argument.name, isolate='isolate',
                 creation_context='v8::Handle<v8::Object>()'),
         }
 

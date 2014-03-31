@@ -35,6 +35,8 @@
             'v8/MIDIAccessResolver.h',
             'v8/NPV8Object.cpp',
             'v8/NPV8Object.h',
+            'v8/NewScriptState.cpp',
+            'v8/NewScriptState.h',
             'v8/Nullable.h',
             'v8/PageScriptDebugServer.cpp',
             'v8/PageScriptDebugServer.h',

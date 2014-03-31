@@ -44,16 +44,16 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     if (!canInvokeCallback())
         return true;
 
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Isolate* isolate = m_scriptState->isolate();
     v8::HandleScope handleScope(isolate);
 
-    v8::Handle<v8::Context> v8Context = toV8Context(executionContext(), *m_world);
+    v8::Handle<v8::Context> v8Context = m_scriptState->context();
     if (v8Context.IsEmpty())
         return true;
 
     v8::Context::Scope scope(v8Context);
 
-    v8::Handle<v8::Value> transactionHandle = toV8(transaction, v8::Handle<v8::Object>(), v8Context->GetIsolate());
+    v8::Handle<v8::Value> transactionHandle = toV8(transaction, v8::Handle<v8::Object>(), isolate);
     v8::Handle<v8::Value> errorHandle = toV8(error, v8::Handle<v8::Object>(), isolate);
     if (transactionHandle.IsEmpty() || errorHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())

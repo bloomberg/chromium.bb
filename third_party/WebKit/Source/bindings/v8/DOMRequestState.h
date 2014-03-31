@@ -34,6 +34,7 @@
 
 namespace WebCore {
 
+// FIXME: DOMRequestState is deprecated and going to be removed. Use NewScriptState instead.
 class DOMRequestState {
 public:
     explicit DOMRequestState(ExecutionContext* executionContext)

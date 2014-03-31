@@ -31,7 +31,7 @@
 #ifndef DOMWrapperWorld_h
 #define DOMWrapperWorld_h
 
-#include "bindings/v8/V8PerContextData.h"
+#include "bindings/v8/NewScriptState.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
@@ -71,8 +71,7 @@ public:
 
     static DOMWrapperWorld& world(v8::Handle<v8::Context> context)
     {
-        ASSERT(!context.IsEmpty());
-        return V8PerContextData::world(context);
+        return NewScriptState::from(context)->world();
     }
 
     static DOMWrapperWorld& current(v8::Isolate* isolate)

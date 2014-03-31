@@ -31,6 +31,7 @@
 #include "config.h"
 #include "bindings/v8/V8PerContextData.h"
 
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "wtf/StringExtras.h"
@@ -48,55 +49,6 @@ static void disposeMapWithUnsafePersistentValues(Map* map)
     map->clear();
 }
 
-class V8PerContextDataHolder {
-    WTF_MAKE_NONCOPYABLE(V8PerContextDataHolder);
-public:
-    static void install(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
-    {
-        new V8PerContextDataHolder(context, world);
-    }
-
-    static V8PerContextDataHolder* from(v8::Handle<v8::Context> context)
-    {
-        V8PerContextDataHolder* holder = static_cast<V8PerContextDataHolder*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
-        // V8PerContextDataHolder::from() must not be called for a context that does not have
-        // valid embedder data in the embedder field.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(holder);
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(holder->context() == context);
-        return holder;
-    }
-
-    V8PerContextData* perContextData() const { return m_perContextData; }
-    void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
-    DOMWrapperWorld& world() const { return *m_world; }
-    v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
-
-private:
-    V8PerContextDataHolder(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
-        : m_isolate(context->GetIsolate())
-        , m_context(m_isolate, context)
-        , m_perContextData(0)
-        , m_world(world)
-    {
-        ASSERT(m_world);
-        m_context.setWeak(this, &V8PerContextDataHolder::weakCallback);
-        context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
-    }
-
-    ~V8PerContextDataHolder() { }
-
-    static void weakCallback(const v8::WeakCallbackData<v8::Context, V8PerContextDataHolder>& data)
-    {
-        data.GetValue()->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, 0);
-        delete data.GetParameter();
-    }
-
-    v8::Isolate* m_isolate;
-    ScopedPersistent<v8::Context> m_context;
-    V8PerContextData* m_perContextData;
-    RefPtr<DOMWrapperWorld> m_world;
-};
-
 V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
     : m_activityLogger(0)
     , m_isolate(context->GetIsolate())
@@ -105,8 +57,8 @@ V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<D
     , m_customElementBindings(adoptPtr(new CustomElementBindingMap()))
 {
     m_contextHolder->SetContext(context);
-    V8PerContextDataHolder::install(context, world);
-    V8PerContextDataHolder::from(context)->setPerContextData(this);
+    NewScriptState::install(context, world);
+    NewScriptState::from(context)->setPerContextData(this);
 
     v8::Context::Scope contextScope(context);
     ASSERT(m_errorPrototype.isEmpty());
@@ -120,7 +72,7 @@ V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<D
 V8PerContextData::~V8PerContextData()
 {
     v8::HandleScope handleScope(m_isolate);
-    V8PerContextDataHolder::from(m_context.newLocal(m_isolate))->setPerContextData(0);
+    NewScriptState::from(m_context.newLocal(m_isolate))->setPerContextData(0);
 
     disposeMapWithUnsafePersistentValues(&m_wrapperBoilerplates);
     disposeMapWithUnsafePersistentValues(&m_constructorMap);
@@ -128,13 +80,7 @@ V8PerContextData::~V8PerContextData()
 
 V8PerContextData* V8PerContextData::from(v8::Handle<v8::Context> context)
 {
-    return V8PerContextDataHolder::from(context)->perContextData();
-}
-
-DOMWrapperWorld& V8PerContextData::world(v8::Handle<v8::Context> context)
-{
-    DOMWrapperWorld& world = V8PerContextDataHolder::from(context)->world();
-    return world;
+    return NewScriptState::from(context)->perContextData();
 }
 
 v8::Local<v8::Object> V8PerContextData::createWrapperFromCacheSlowCase(const WrapperTypeInfo* type)
