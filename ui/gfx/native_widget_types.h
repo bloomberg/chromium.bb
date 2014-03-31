@@ -122,12 +122,6 @@ typedef aura::Window* NativeView;
 typedef aura::Window* NativeWindow;
 typedef SkRegion* NativeRegion;
 typedef ui::Event* NativeEvent;
-#elif defined(OS_WIN)
-typedef HCURSOR NativeCursor;
-typedef HWND NativeView;
-typedef HWND NativeWindow;
-typedef HRGN NativeRegion;
-typedef MSG NativeEvent;
 #elif defined(OS_IOS)
 typedef void* NativeCursor;
 typedef UIView* NativeView;
@@ -207,30 +201,6 @@ typedef NativeImageType* NativeImage;
 //
 // See comment at the top of the file for usage.
 typedef intptr_t NativeViewId;
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-// Convert a NativeViewId to a NativeView.
-//
-// On Windows, we pass an HWND into the renderer. As stated above, the renderer
-// should not be performing operations on the view.
-static inline NativeView NativeViewFromId(NativeViewId id) {
-  return reinterpret_cast<NativeView>(id);
-}
-#define NativeViewFromIdInBrowser(x) NativeViewFromId(x)
-#elif defined(OS_POSIX) || defined(USE_AURA)
-// On Mac, Linux and USE_AURA, a NativeView is a pointer to an object, and is
-// useless outside the process in which it was created. NativeViewFromId should
-// only be used inside the appropriate platform ifdef outside of the browser.
-// (NativeViewFromIdInBrowser can be used everywhere in the browser.) If your
-// cross-platform design involves a call to NativeViewFromId from outside the
-// browser it will never work on Mac or Linux and is fundamentally broken.
-
-// Please do not call this from outside the browser. It won't work; the name
-// should give you a subtle hint.
-static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
-  return reinterpret_cast<NativeView>(id);
-}
-#endif  // defined(OS_POSIX)
 
 // PluginWindowHandle is an abstraction wrapping "the types of windows
 // used by NPAPI plugins". On Windows it's an HWND, on X it's an X
