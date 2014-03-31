@@ -41,7 +41,9 @@
 #include "components/sync_driver/pref_names.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -55,6 +57,15 @@ using ::testing::AtLeast;
 using ::testing::Return;
 
 namespace {
+
+// Used to confirm OneClickSigninHelper does not trigger redirect when there is
+// a pending navigation.
+class MockWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+   MOCK_METHOD2(OpenURLFromTab,
+                content::WebContents*(content::WebContents* source,
+                                      const content::OpenURLParams& params));
+};
 
 class SigninManagerMock : public FakeSigninManager {
  public:
@@ -740,6 +751,24 @@ TEST_F(OneClickSigninHelperTest, RemoveObserverFromProfileSyncService) {
   EXPECT_CALL(*sync_service, RemoveObserver(_));
   EXPECT_CALL(*sync_service, RemoveObserver(helper));
   SetContents(NULL);
+}
+
+TEST_F(OneClickSigninHelperTest, NoRedirectToNTPWithPendingEntry) {
+  content::NavigationController& controller = web_contents()->GetController();
+  EXPECT_FALSE(controller.GetPendingEntry());
+
+  const GURL fooWebUIURL("chrome://foo");
+  controller.LoadURL(fooWebUIURL, content::Referrer(),
+                     content::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_EQ(fooWebUIURL, controller.GetPendingEntry()->GetURL());
+
+  MockWebContentsDelegate delegate;
+  EXPECT_CALL(delegate, OpenURLFromTab(_, _)).Times(0);
+  web_contents()->SetDelegate(&delegate);
+  OneClickSigninHelper::RedirectToNtpOrAppsPage(
+      web_contents(), signin::SOURCE_UNKNOWN);
+
+  EXPECT_EQ(fooWebUIURL, controller.GetPendingEntry()->GetURL());
 }
 
 // I/O thread tests

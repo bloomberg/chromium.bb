@@ -52,7 +52,7 @@ class SigninBrowserTest : public InProcessBrowserTest {
             ",EXCLUDE localhost");
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
     // All tests in this file are for the web based sign in flows.
-    // TODO(guohui): adds new tests for inline sign in flows.
+    // TODO(guohui): fix tests for inline sign in flows.
     command_line->AppendSwitch(switches::kEnableWebBasedSignin);
   }
 
@@ -203,7 +203,7 @@ class BackOnNTPCommitObserver : public content::WebContentsObserver {
 // DidStopLoading of the NTP.
 IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   GURL ntp_url(chrome::kChromeUINewTabURL);
-  GURL start_url = signin::GetPromoURL(signin::SOURCE_START_PAGE, true);
+  GURL start_url = signin::GetPromoURL(signin::SOURCE_START_PAGE, false);
   GURL skip_url = signin::GetLandingURL("ntp", 1);
 
   ChromeSigninClient* signin =
@@ -232,11 +232,10 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   // has had a chance to remove the navigation entry.
   BackOnNTPCommitObserver commit_observer(web_contents);
 
-  // Since the navigation to the blank URL is monitored for, the
-  // OneClickSigninHelper initiates immediately a navigation to the NTP.
-  // Thus, we expect the visible URL to be the NTP.
+  // Since OneClickSigninHelper aborts redirect to NTP, thus we expect the
+  // visible URL to be the starting URL.
   EXPECT_EQ(skip_url, web_contents->GetLastCommittedURL());
-  EXPECT_EQ(ntp_url, web_contents->GetVisibleURL());
+  EXPECT_EQ(start_url, web_contents->GetVisibleURL());
 
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,

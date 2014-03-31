@@ -1200,6 +1200,12 @@ bool OneClickSigninHelper::HandleCrossAccountError(
 // static
 void OneClickSigninHelper::RedirectToNtpOrAppsPage(
     content::WebContents* contents, signin::Source source) {
+  // Do nothing if a navigation is pending, since this call can be triggered
+  // from DidStartLoading. This avoids deleting the pending entry while we are
+  // still navigating to it. See crbug/346632.
+  if (contents->GetController().GetPendingEntry())
+    return;
+
   VLOG(1) << "RedirectToNtpOrAppsPage";
   // Redirect to NTP/Apps page and display a confirmation bubble
   GURL url(source == signin::SOURCE_APPS_PAGE_LINK ?
