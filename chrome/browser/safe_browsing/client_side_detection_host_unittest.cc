@@ -218,8 +218,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->set_client_side_detection_service(csd_service_.get());
     csd_host_->set_safe_browsing_managers(ui_manager_.get(),
                                           database_manager_.get());
-    // We need to create this here since we don't call
-    // DidNavigateMainFramePostCommit in this test.
+    // We need to create this here since we don't call DidStopLanding in
+    // this test.
     csd_host_->browse_info_.reset(new BrowseInfo);
   }
 
@@ -246,8 +246,8 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->OnPhishingDetectionDone(verdict_str);
   }
 
-  void DocumentOnLoadCompletedInMainFrame(int32 page_id) {
-    csd_host_->DocumentOnLoadCompletedInMainFrame(page_id);
+  void DidStopLoading() {
+    csd_host_->DidStopLoading(pending_rvh());
   }
 
   void UpdateIPUrlMap(const std::string& ip, const std::string& host) {
@@ -767,7 +767,7 @@ TEST_F(ClientSideDetectionHostTest,
 }
 
 TEST_F(ClientSideDetectionHostTest,
-       DocumentOnLoadCompletedInMainFrameShowMalwareInterstitial) {
+       DidStopLoadingShowMalwareInterstitial) {
   // Case 9: client thinks the page match malware IP and so does the server.
   // We show an sub-resource malware interstitial.
   MockBrowserFeatureExtractor* mock_extractor =
@@ -798,7 +798,7 @@ TEST_F(ClientSideDetectionHostTest,
               SendClientReportMalwareRequest(
                   Pointee(PartiallyEqualMalwareVerdict(malware_verdict)), _))
       .WillOnce(DoAll(DeleteArg<0>(), SaveArg<1>(&cb)));
-  DocumentOnLoadCompletedInMainFrame(GetBrowseInfo()->page_id);
+  DidStopLoading();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
   ASSERT_FALSE(cb.is_null());

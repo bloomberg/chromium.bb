@@ -21953,6 +21953,9 @@ other types of suffix sets.
 
 <histogram name="SBClientMalware.UnexpectedPageId" enum="BooleanHit">
   <owner>noelutz@chromium.org</owner>
+  <obsolete>
+    Deprecated 03/2014.  That part of the code got deleted.
+  </obsolete>
   <summary>
     Counts the number of times the page ID that completed the page load does not
     match the browse info page ID.  We expect that number to be zero.

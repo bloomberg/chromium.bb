@@ -313,7 +313,7 @@ ClientSideDetectionHost::ClientSideDetectionHost(WebContents* tab)
       classification_request_(NULL),
       should_extract_malware_features_(true),
       should_classify_for_malware_(false),
-      onload_complete_(false),
+      pageload_complete_(false),
       weak_factory_(this),
       unsafe_unique_page_id_(-1) {
   DCHECK(tab);
@@ -389,7 +389,7 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
 
   should_extract_malware_features_ = true;
   should_classify_for_malware_ = false;
-  onload_complete_ = false;
+  pageload_complete_ = false;
 
   // Check whether we can cassify the current URL for phishing or malware.
   classification_request_ = new ShouldClassifyUrlRequest(
@@ -504,19 +504,12 @@ void ClientSideDetectionHost::OnMalwarePreClassificationDone(
   MaybeStartMalwareFeatureExtraction();
 }
 
-void ClientSideDetectionHost::DocumentOnLoadCompletedInMainFrame(
-    int32 page_id) {
+void ClientSideDetectionHost::DidStopLoading(content::RenderViewHost* rvh) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!csd_service_ || !browse_info_.get())
     return;
-  DVLOG(2) << "Main frame onload hander called.";
-  if (browse_info_->page_id != page_id) {
-    // Something weird is happening here.  The BrowseInfo page ID
-    // should always be the same as the most recent load.
-    UMA_HISTOGRAM_BOOLEAN("SBClientMalware.UnexpectedPageId", 1);
-    return;
-  }
-  onload_complete_ = true;
+  DVLOG(2) << "Page finished loading.";
+  pageload_complete_ = true;
   MaybeStartMalwareFeatureExtraction();
 }
 
@@ -524,7 +517,7 @@ void ClientSideDetectionHost::MaybeStartMalwareFeatureExtraction() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (csd_service_ && browse_info_.get() &&
       should_classify_for_malware_ &&
-      onload_complete_) {
+      pageload_complete_) {
     scoped_ptr<ClientMalwareRequest> malware_request(
         new ClientMalwareRequest);
     // Start browser-side malware feature extraction.  Once we're done it will

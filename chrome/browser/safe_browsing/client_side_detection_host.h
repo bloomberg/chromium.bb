@@ -125,9 +125,9 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Inherited from WebContentsObserver.  This is called once the onload handler
-  // is called.
-  virtual void DocumentOnLoadCompletedInMainFrame(int32 page_id) OVERRIDE;
+  // Inherited from WebContentsObserver.  This is called once the page is
+  // done loading.
+  virtual void DidStopLoading(content::RenderViewHost* rvh) OVERRIDE;
 
   // Returns true if the user has seen a regular SafeBrowsing
   // interstitial for the current page.  This is only true if the user has
@@ -169,7 +169,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
 
   bool should_extract_malware_features_;
   bool should_classify_for_malware_;
-  bool onload_complete_;
+  bool pageload_complete_;
 
   base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_;
 
