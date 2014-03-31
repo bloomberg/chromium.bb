@@ -415,7 +415,7 @@ void AppListSyncableService::RemoveSyncItem(const std::string& id) {
   DeleteSyncItem(sync_item);
 }
 
-void AppListSyncableService::ResolveFolderPositions() {
+void AppListSyncableService::ResolveFolderPositions(bool move_oem_to_end) {
   if (!app_list::switches::IsFolderUIEnabled())
     return;
 
@@ -427,6 +427,10 @@ void AppListSyncableService::ResolveFolderPositions() {
     AppListItem* app_item = model_->FindItem(sync_item->item_id);
     if (!app_item)
       continue;
+    if (move_oem_to_end && app_item->id() == kOemFolderId) {
+      // Move the OEM folder to the end.
+      model_->SetItemPosition(app_item, syncer::StringOrdinal());
+    }
     UpdateAppItemFromSyncItem(sync_item, app_item);
   }
 }
@@ -478,18 +482,21 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   // Create SyncItem entries for initial_sync_data.
   size_t new_items = 0, updated_items = 0;
+  bool oem_folder_is_synced = false;
   for (syncer::SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
     const syncer::SyncData& data = *iter;
-    DVLOG(2) << this << "  Initial Sync Item: "
-             << data.GetSpecifics().app_list().item_id()
+    const std::string& item_id = data.GetSpecifics().app_list().item_id();
+    DVLOG(2) << this << "  Initial Sync Item: " << item_id
              << " Type: " << data.GetSpecifics().app_list().item_type();
     DCHECK_EQ(syncer::APP_LIST, data.GetDataType());
     if (ProcessSyncItemSpecifics(data.GetSpecifics().app_list()))
       ++new_items;
     else
       ++updated_items;
-    unsynced_items.erase(data.GetSpecifics().app_list().item_id());
+    unsynced_items.erase(item_id);
+    if (item_id == kOemFolderId)
+      oem_folder_is_synced = true;
   }
 
   result.set_num_items_after_association(sync_items_.size());
@@ -510,7 +517,9 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   // Adding items may have created folders without setting their positions
   // since we haven't started observing the item list yet. Resolve those.
-  ResolveFolderPositions();
+  // Also ensure the OEM folder is at the end if its position hasn't been set.
+  bool move_oem_to_end = !oem_folder_is_synced;
+  ResolveFolderPositions(move_oem_to_end);
 
   // Start observing app list model changes.
   model_observer_.reset(new ModelObserver(this));

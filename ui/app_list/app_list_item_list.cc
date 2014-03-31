@@ -87,9 +87,8 @@ void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
                     OnListItemMoved(from_index, to_index, target_item));
 }
 
-void AppListItemList::SetItemPosition(
-    AppListItem* item,
-    const syncer::StringOrdinal& new_position) {
+void AppListItemList::SetItemPosition(AppListItem* item,
+                                      syncer::StringOrdinal new_position) {
   DCHECK(item);
   size_t from_index;
   if (!FindItemIndex(item->id(), &from_index)) {
@@ -97,6 +96,12 @@ void AppListItemList::SetItemPosition(
     return;
   }
   DCHECK(app_list_items_[from_index] == item);
+  if (!new_position.IsValid()) {
+    size_t last_index = app_list_items_.size() - 1;
+    if (from_index == last_index)
+      return;  // Already last item, do nothing.
+    new_position = app_list_items_[last_index]->position().CreateAfter();
+  }
   // First check if the order would remain the same, in which case just update
   // the position.
   size_t to_index = GetItemSortOrderIndex(new_position, item->id());

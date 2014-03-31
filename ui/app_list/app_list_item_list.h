@@ -44,9 +44,9 @@ class APP_LIST_EXPORT AppListItemList {
   void MoveItem(size_t from_index, size_t to_index);
 
   // Sets the position of |item| which is expected to be a member of
-  // |app_list_items_| and sorts the list accordingly.
-  void SetItemPosition(AppListItem* item,
-                       const syncer::StringOrdinal& new_position);
+  // |app_list_items_| and sorts the list accordingly. If |new_position| is
+  // invalid, move the item to the end of the list.
+  void SetItemPosition(AppListItem* item, syncer::StringOrdinal new_position);
 
   AppListItem* item_at(size_t index) {
     DCHECK_LT(index, app_list_items_.size());

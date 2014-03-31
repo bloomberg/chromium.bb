@@ -90,7 +90,8 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
                           syncer::StringOrdinal position);
 
   // Sets the position of |item| either in |top_level_item_list_| or the folder
-  // specified by |item|->folder_id().
+  // specified by |item|->folder_id(). If |new_position| is invalid, move the
+  // item to the end of the list.
   void SetItemPosition(AppListItem* item,
                        const syncer::StringOrdinal& new_position);
 
