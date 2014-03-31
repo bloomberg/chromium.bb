@@ -60,8 +60,6 @@ leak:WebCore::MouseEvent::create
 leak:WebCore::V8WindowShell::initializeIfNeeded
 leak:WebCore::*::*GetterCallback
 leak:WebCore::CSSComputedStyleDeclaration::create
-
-# crbug.com/358014
 leak:WebCore::V8PerIsolateData::ensureDomInJSContext
 
 # http://crbug.com/356785
