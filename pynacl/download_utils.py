@@ -229,6 +229,11 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
         print '%s is identical to the up to date file.' % filename
       return False
 
+  if (os.path.isfile(filename)
+      and hash_val is not None
+      and hash_val == HashFile(filename)):
+    return True
+
   if verbose:
     print 'Updating %s\n\tfrom %s.' % (filename, url)
   EnsureFileCanBeWritten(filename)

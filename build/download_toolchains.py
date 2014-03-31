@@ -213,6 +213,10 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
     dst: destination directory for the toolchain.
     hashes: expected hashes of the toolchain.
   """
+  if isinstance(flavor, tuple):
+    flavor_name = flavor[0]
+  else:
+    flavor_name = flavor
 
   toolchain_dir = os.path.join(PARENT_DIR, 'toolchain')
   if not os.path.exists(toolchain_dir):
@@ -271,6 +275,11 @@ def SyncFlavor(flavor, urls, dst, hashes, min_time, keep=False, force=False,
   untar_dir = tempfile.mkdtemp(
       suffix=suffix, prefix=prefix, dir=toolchain_dir)
   try:
+    if verbose:
+      tar_file = os.path.basename(filepath)
+      rel_dest = os.path.relpath(dst, toolchain_dir)
+      print '%s: Extracting "%s" -> "%s"...' % (flavor_name, tar_file, rel_dest)
+
     for filepath in filepaths:
       tar = cygtar.CygTar(filepath, 'r:*', verbose=verbose)
       curdir = os.getcwd()

@@ -152,7 +152,14 @@ class CygTar(object):
     self.size_map = {}
     self.file_hashes = {}
     # Set errorlevel=1 so that fatal errors actually raise!
-    self.tar = tarfile.open(filename, mode, errorlevel=1)
+    if 'r' in mode:
+      self.read_file = open(filename, 'rb')
+      self.read_filesize = os.path.getsize(filename)
+      self.tar = tarfile.open(mode=mode, fileobj=self.read_file, errorlevel=1)
+    else:
+      self.read_file = None
+      self.read_filesize = 0
+      self.tar = tarfile.open(filename, mode=mode, errorlevel=1)
     self.verbose = verbose
 
   def __DumpInfo(self, tarinfo):
@@ -286,17 +293,17 @@ class CygTar(object):
     if self.verbose:
       sys.stdout.write('|' + ('-' * 48) + '|\n')
       sys.stdout.flush()
-      div = float(len(self.tar.getmembers())) / 50.0
-      dots = 0
-      cnt = 0
+      dots_outputted = 0
 
     for m in self.tar:
       if self.verbose:
-        cnt += 1
-        while float(dots) * div < float(cnt):
-          dots += 1
-          sys.stdout.write('.')
+        cnt = self.read_file.tell()
+        curdots = cnt * 50 / self.read_filesize
+        if dots_outputted < curdots:
+          for dot in xrange(dots_outputted, curdots):
+            sys.stdout.write('.')
           sys.stdout.flush()
+          dots_outputted = curdots
 
       # For symlinks in Windows we create Cygwin 1.7 style symlinks since the
       # toolchain is Cygwin based.  For hardlinks on Windows, we use mklink if
