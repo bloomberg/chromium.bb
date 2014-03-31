@@ -10,6 +10,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
 #include "url/gurl.h"
@@ -96,6 +97,11 @@ class NET_EXPORT_PRIVATE HttpAuthCache {
 
     // List of paths that define the realm's protection space.
     PathList paths_;
+
+    // Times the entry was created and last used (by looking up, adding a path,
+    // or updating the challenge.)
+    base::TimeTicks creation_time_;
+    base::TimeTicks last_use_time_;
   };
 
   // Prevent unbounded memory growth. These are safeguards for abuse; it is

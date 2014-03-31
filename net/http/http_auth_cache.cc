@@ -5,6 +5,7 @@
 #include "net/http/http_auth_cache.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 
 namespace {
@@ -57,6 +58,14 @@ struct IsEnclosedBy {
   const std::string& path;
 };
 
+void RecordLookupPosition(int position) {
+  UMA_HISTOGRAM_COUNTS_100("Net.HttpAuthCacheLookupPosition", position);
+}
+
+void RecordLookupByPathPosition(int position) {
+  UMA_HISTOGRAM_COUNTS_100("Net.HttpAuthCacheLookupByPathPosition", position);
+}
+
 }  // namespace
 
 namespace net {
@@ -73,12 +82,18 @@ HttpAuthCache::Entry* HttpAuthCache::Lookup(const GURL& origin,
                                             HttpAuth::Scheme scheme) {
   CheckOriginIsValid(origin);
 
+  int entries_examined = 0;
   // Linear scan through the realm entries.
   for (EntryList::iterator it = entries_.begin(); it != entries_.end(); ++it) {
+    ++entries_examined;
     if (it->origin() == origin && it->realm() == realm &&
-        it->scheme() == scheme)
+        it->scheme() == scheme) {
+      it->last_use_time_ = base::TimeTicks::Now();
+      RecordLookupPosition(entries_examined);
       return &(*it);
+    }
   }
+  RecordLookupPosition(0);
   return NULL;  // No realm entry found.
 }
 
@@ -89,6 +104,7 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
                                                   const std::string& path) {
   HttpAuthCache::Entry* best_match = NULL;
   size_t best_match_length = 0;
+  int best_match_position = 0;
   CheckOriginIsValid(origin);
   CheckPathIsValid(path);
 
@@ -98,15 +114,21 @@ HttpAuthCache::Entry* HttpAuthCache::LookupByPath(const GURL& origin,
   // within the protection space ...
   std::string parent_dir = GetParentDirectory(path);
 
+  int entries_examined = 0;
   // Linear scan through the realm entries.
   for (EntryList::iterator it = entries_.begin(); it != entries_.end(); ++it) {
+    ++entries_examined;
     size_t len = 0;
     if (it->origin() == origin && it->HasEnclosingPath(parent_dir, &len) &&
         (!best_match || len > best_match_length)) {
-      best_match_length = len;
       best_match = &(*it);
+      best_match_length = len;
+      best_match_position = entries_examined;
     }
   }
+  if (best_match)
+    best_match->last_use_time_ = base::TimeTicks::Now();
+  RecordLookupByPathPosition(best_match_position);
   return best_match;
 }
 
@@ -119,20 +141,30 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   CheckOriginIsValid(origin);
   CheckPathIsValid(path);
 
+  base::TimeTicks now = base::TimeTicks::Now();
+
   // Check for existing entry (we will re-use it if present).
   HttpAuthCache::Entry* entry = Lookup(origin, realm, scheme);
   if (!entry) {
+    bool evicted = false;
     // Failsafe to prevent unbounded memory growth of the cache.
     if (entries_.size() >= kMaxNumRealmEntries) {
       LOG(WARNING) << "Num auth cache entries reached limit -- evicting";
+      UMA_HISTOGRAM_LONG_TIMES("Net.HttpAuthCacheAddEvictedCreation",
+          now - entries_.back().creation_time_);
+      UMA_HISTOGRAM_LONG_TIMES("Net.HttpAuthCacheAddEvictedLastUse",
+          now - entries_.back().last_use_time_);
       entries_.pop_back();
+      evicted = true;
     }
+    UMA_HISTOGRAM_BOOLEAN("Net.HttpAuthCacheAddEvicted", evicted);
 
     entries_.push_front(Entry());
     entry = &entries_.front();
     entry->origin_ = origin;
     entry->realm_ = realm;
     entry->scheme_ = scheme;
+    entry->creation_time_ = now;
   }
   DCHECK_EQ(origin, entry->origin_);
   DCHECK_EQ(realm, entry->realm_);
@@ -142,6 +174,7 @@ HttpAuthCache::Entry* HttpAuthCache::Add(const GURL& origin,
   entry->credentials_ = credentials;
   entry->nonce_count_ = 1;
   entry->AddPath(path);
+  entry->last_use_time_ = now;
 
   return entry;
 }
@@ -166,12 +199,15 @@ void HttpAuthCache::Entry::AddPath(const std::string& path) {
     // Remove any entries that have been subsumed by the new entry.
     paths_.remove_if(IsEnclosedBy(parent_dir));
 
+    bool evicted = false;
     // Failsafe to prevent unbounded memory growth of the cache.
     if (paths_.size() >= kMaxNumPathsPerRealmEntry) {
       LOG(WARNING) << "Num path entries for " << origin()
                    << " has grown too large -- evicting";
       paths_.pop_back();
+      evicted = true;
     }
+    UMA_HISTOGRAM_BOOLEAN("Net.HttpAuthCacheAddPathEvicted", evicted);
 
     // Add new path.
     paths_.push_front(parent_dir);
@@ -221,6 +257,7 @@ bool HttpAuthCache::UpdateStaleChallenge(const GURL& origin,
   if (!entry)
     return false;
   entry->UpdateStaleChallenge(auth_challenge);
+  entry->last_use_time_ = base::TimeTicks::Now();
   return true;
 }
 

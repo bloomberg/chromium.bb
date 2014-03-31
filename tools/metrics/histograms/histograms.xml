@@ -11642,6 +11642,51 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpAuthCacheAddEvicted">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Whether adding an entry to the HTTP auth cache evicted another entry.
+  </summary>
+</histogram>
+
+<histogram name="Net.HttpAuthCacheAddEvictedCreation">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    When an HTTP auth cache entry is evicted, the time since it was created.
+  </summary>
+</histogram>
+
+<histogram name="Net.HttpAuthCacheAddEvictedLastUse">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    When an HTTP auth cache entry is evicted, the time since it was last used.
+  </summary>
+</histogram>
+
+<histogram name="Net.HttpAuthCacheAddPathEvicted">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    Whether adding a path to an entry in the HTTP auth cache evicted another
+    path.
+  </summary>
+</histogram>
+
+<histogram name="Net.HttpAuthCacheLookupByPathPosition">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    When looking up an HTTP auth cache entry by path, the position (1-indexed)
+    of the entry on a hit, or 0 on a miss.
+  </summary>
+</histogram>
+
+<histogram name="Net.HttpAuthCacheLookupPosition">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    When looking up an HTTP auth cache entry by realm, the position (1-indexed)
+    of the entry on a hit, or 0 on a miss.
+  </summary>
+</histogram>
+
 <histogram name="Net.HttpAuthCount" enum="HttpAuthCount">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
