@@ -408,9 +408,9 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
             if (m_box->frameView()->isInPerformLayout())
                 m_box->setShouldDoFullRepaintAfterLayout(true);
             else
-                m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->newRepaintRect()));
+                m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->renderer()->newRepaintRect()), InvalidationScroll);
         } else {
-            m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()));
+            m_box->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(layer()->repainter().repaintRect()), InvalidationScroll);
         }
     }
 

@@ -82,6 +82,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 #include <algorithm>
 #ifndef NDEBUG
 #include <stdio.h>
@@ -1365,8 +1366,13 @@ RenderLayerModelObject* RenderObject::containerForRepaint() const
     return repaintContainer;
 }
 
-void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect& r) const
+void RenderObject::repaintUsingContainer(const RenderLayerModelObject* repaintContainer, const IntRect& r, InvalidationReason invalidationReason) const
 {
+    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "RenderObject::repaintUsingContainer()",
+        "object", TRACE_STR_COPY(this->debugName().ascii().data()),
+        "info", TRACE_STR_COPY(String::format("rect: %d,%d %dx%d, invalidation_reason: %s",
+            r.x(), r.y(), r.width(), r.height(), invalidationReasonToString(invalidationReason)).ascii().data()));
+
     if (!repaintContainer) {
         view()->repaintViewRectangle(r);
         return;
@@ -1443,7 +1449,7 @@ void RenderObject::repaint() const
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
     RenderLayerModelObject* repaintContainer = containerForRepaint();
-    repaintUsingContainer(repaintContainer ? repaintContainer : view, pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)));
+    repaintUsingContainer(repaintContainer ? repaintContainer : view, pixelSnappedIntRect(clippedOverflowRectForRepaint(repaintContainer)), InvalidationRepaint);
 }
 
 void RenderObject::repaintRectangle(const LayoutRect& r) const
@@ -1466,12 +1472,42 @@ void RenderObject::repaintRectangle(const LayoutRect& r) const
 
     RenderLayerModelObject* repaintContainer = containerForRepaint();
     computeRectForRepaint(repaintContainer, dirtyRect);
-    repaintUsingContainer(repaintContainer ? repaintContainer : view, pixelSnappedIntRect(dirtyRect));
+    repaintUsingContainer(repaintContainer ? repaintContainer : view, pixelSnappedIntRect(dirtyRect), InvalidationRepaintRectangle);
 }
 
 IntRect RenderObject::pixelSnappedAbsoluteClippedOverflowRect() const
 {
     return pixelSnappedIntRect(absoluteClippedOverflowRect());
+}
+
+const char* RenderObject::invalidationReasonToString(InvalidationReason reason) const
+{
+    switch (reason) {
+    case InvalidationIncremental:
+        return "incremental";
+    case InvalidationSelfLayout:
+        return "self layout";
+    case InvalidationBorderFitLines:
+        return "border fit lines";
+    case InvalidationBorderRadius:
+        return "border radius";
+    case InvalidationBoundsChangeWithBackground:
+        return "bounds change with background";
+    case InvalidationBoundsChange:
+        return "bounds change";
+    case InvalidationScroll:
+        return "scroll";
+    case InvalidationSelection:
+        return "selection";
+    case InvalidationLayer:
+        return "layer";
+    case InvalidationRepaint:
+        return "repaint";
+    case InvalidationRepaintRectangle:
+        return "repaint rectangle";
+    }
+    ASSERT_NOT_REACHED();
+    return "";
 }
 
 bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repaintContainer, bool wasSelfLayout,
@@ -1485,33 +1521,36 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
     // ASSERT(!newBoundsPtr || *newBoundsPtr == clippedOverflowRectForRepaint(repaintContainer));
     LayoutRect newBounds = newBoundsPtr ? *newBoundsPtr : clippedOverflowRectForRepaint(repaintContainer);
 
-    bool fullRepaint = wasSelfLayout;
+    InvalidationReason invalidationReason = wasSelfLayout ? InvalidationSelfLayout : InvalidationIncremental;
+
     // Presumably a background or a border exists if border-fit:lines was specified.
-    if (!fullRepaint && style()->borderFit() == BorderFitLines)
-        fullRepaint = true;
-    if (!fullRepaint && style()->hasBorderRadius()) {
+    if (invalidationReason == InvalidationIncremental && style()->borderFit() == BorderFitLines)
+        invalidationReason = InvalidationBorderFitLines;
+
+    if (invalidationReason == InvalidationIncremental && style()->hasBorderRadius()) {
         // If a border-radius exists and width/height is smaller than
         // radius width/height, we cannot use delta-repaint.
         RoundedRect oldRoundedRect = style()->getRoundedBorderFor(oldBounds);
         RoundedRect newRoundedRect = style()->getRoundedBorderFor(newBounds);
-        fullRepaint = oldRoundedRect.radii() != newRoundedRect.radii();
+        if (oldRoundedRect.radii() != newRoundedRect.radii())
+            invalidationReason = InvalidationBorderRadius;
     }
 
-    if (!fullRepaint && (mustRepaintBackgroundOrBorder() && (newBounds != oldBounds)))
-        fullRepaint = true;
+    if (invalidationReason == InvalidationIncremental && (mustRepaintBackgroundOrBorder() && (newBounds != oldBounds)))
+        invalidationReason = InvalidationBoundsChangeWithBackground;
 
     // If we shifted, we don't know the exact reason so we are conservative and trigger a full invalidation. Shifting could
     // be caused by some layout property (left / top) or some in-flow renderer inserted / removed before us in the tree.
-    if (!fullRepaint && newBounds.location() != oldBounds.location())
-        fullRepaint = true;
+    if (invalidationReason == InvalidationIncremental && newBounds.location() != oldBounds.location())
+        invalidationReason = InvalidationBoundsChange;
 
     if (!repaintContainer)
         repaintContainer = v;
 
-    if (fullRepaint) {
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds));
+    if (invalidationReason != InvalidationIncremental) {
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds), invalidationReason);
         if (newBounds != oldBounds)
-            repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds));
+            repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds), invalidationReason);
         return true;
     }
 
@@ -1520,27 +1559,27 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
 
     LayoutUnit deltaLeft = newBounds.x() - oldBounds.x();
     if (deltaLeft > 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.x(), oldBounds.y(), deltaLeft, oldBounds.height()));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.x(), oldBounds.y(), deltaLeft, oldBounds.height()), invalidationReason);
     else if (deltaLeft < 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.x(), newBounds.y(), -deltaLeft, newBounds.height()));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.x(), newBounds.y(), -deltaLeft, newBounds.height()), invalidationReason);
 
     LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
     if (deltaRight > 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height()), invalidationReason);
     else if (deltaRight < 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height()), invalidationReason);
 
     LayoutUnit deltaTop = newBounds.y() - oldBounds.y();
     if (deltaTop > 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.x(), oldBounds.y(), oldBounds.width(), deltaTop));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.x(), oldBounds.y(), oldBounds.width(), deltaTop), invalidationReason);
     else if (deltaTop < 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.x(), newBounds.y(), newBounds.width(), -deltaTop));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.x(), newBounds.y(), newBounds.width(), -deltaTop), invalidationReason);
 
     LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
     if (deltaBottom > 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom), invalidationReason);
     else if (deltaBottom < 0)
-        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom));
+        repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom), invalidationReason);
 
     // FIXME: This is a limitation of our visual overflow being a single rectangle.
     if (!style()->boxShadow() && !style()->hasBorderImageOutsets() && !style()->hasOutline())
@@ -1569,7 +1608,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         LayoutUnit right = min<LayoutUnit>(newBounds.maxX(), oldBounds.maxX());
         if (rightRect.x() < right) {
             rightRect.setWidth(min(rightRect.width(), right - rightRect.x()));
-            repaintUsingContainer(repaintContainer, pixelSnappedIntRect(rightRect));
+            repaintUsingContainer(repaintContainer, pixelSnappedIntRect(rightRect), invalidationReason);
         }
     }
     LayoutUnit height = absoluteValue(newBounds.height() - oldBounds.height());
@@ -1590,7 +1629,7 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         LayoutUnit bottom = min(newBounds.maxY(), oldBounds.maxY());
         if (bottomRect.y() < bottom) {
             bottomRect.setHeight(min(bottomRect.height(), bottom - bottomRect.y()));
-            repaintUsingContainer(repaintContainer, pixelSnappedIntRect(bottomRect));
+            repaintUsingContainer(repaintContainer, pixelSnappedIntRect(bottomRect), invalidationReason);
         }
     }
     return false;

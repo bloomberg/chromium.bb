@@ -1048,6 +1048,8 @@ void FrameView::repaintTree(RenderObject* root)
     // we continue to track repaint rects until this function is called.
     ASSERT(!m_nestedLayoutCount);
 
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "FrameView::repaintTree");
+
     // FIXME: really, we're in the repaint phase here, and the compositing queries are legal.
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
@@ -3107,6 +3109,9 @@ void FrameView::setTracksRepaints(bool trackRepaints)
         if (RenderView* renderView = frame->contentRenderer())
             renderView->compositor()->setTracksRepaints(trackRepaints);
     }
+
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
+        "FrameView::setTracksRepaints", "enabled", trackRepaints);
 
     resetTrackedRepaints();
     m_isTrackingRepaints = trackRepaints;

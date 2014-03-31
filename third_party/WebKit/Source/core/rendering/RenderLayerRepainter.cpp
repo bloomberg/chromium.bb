@@ -82,9 +82,9 @@ void RenderLayerRepainter::repaintAfterLayout(RenderGeometryMap* geometryMap, bo
         if (shouldCheckForRepaint) {
             if (view && !view->document().printing()) {
                 if (m_repaintStatus & NeedsFullRepaint) {
-                    m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldRepaintRect));
+                    m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(oldRepaintRect), InvalidationLayer);
                     if (m_repaintRect != oldRepaintRect)
-                        m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect));
+                        m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_repaintRect), InvalidationLayer);
                 } else {
                     m_renderer->repaintAfterLayoutIfNeeded(repaintContainer, m_renderer->selfNeedsLayout(), oldRepaintRect, &m_repaintRect);
                 }
@@ -151,7 +151,7 @@ inline bool RenderLayerRepainter::shouldRepaintLayer() const
 // Since we're only painting non-composited layers, we know that they all share the same repaintContainer.
 void RenderLayerRepainter::repaintIncludingNonCompositingDescendants(RenderLayerModelObject* repaintContainer)
 {
-    m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer->clippedOverflowRectForRepaint(repaintContainer)));
+    m_renderer->repaintUsingContainer(repaintContainer, pixelSnappedIntRect(m_renderer->clippedOverflowRectForRepaint(repaintContainer)), InvalidationLayer);
 
     for (RenderLayer* curr = m_renderer->layer()->firstChild(); curr; curr = curr->nextSibling()) {
         if (!curr->hasCompositedLayerMapping())
