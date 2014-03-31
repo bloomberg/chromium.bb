@@ -18,7 +18,6 @@
 #include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_uploader.h"
-#include "chrome/browser/drive/gdata_wapi_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -167,25 +166,15 @@ APIUtil::APIUtil(Profile* profile,
       content::BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> task_runner(
       blocking_pool->GetSequencedTaskRunner(blocking_pool->GetSequenceToken()));
-  if (IsDriveAPIDisabled()) {
-    drive_service_.reset(new drive::GDataWapiService(
-        oauth_service_,
-        profile->GetRequestContext(),
-        task_runner.get(),
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseDownloadUrlForProduction),
-        std::string() /* custom_user_agent */));
-  } else {
-    drive_service_.reset(new drive::DriveAPIService(
-        oauth_service_,
-        profile->GetRequestContext(),
-        task_runner.get(),
-        GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
-        GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
-        GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
-        std::string() /* custom_user_agent */));
-  }
-
+  DCHECK(!IsDriveAPIDisabled());
+  drive_service_.reset(new drive::DriveAPIService(
+      oauth_service_,
+      profile->GetRequestContext(),
+      task_runner.get(),
+      GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
+      GURL(google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction),
+      GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
+      std::string() /* custom_user_agent */));
   drive_service_->Initialize(signin_manager_->GetAuthenticatedAccountId());
   drive_service_->AddObserver(this);
   has_initialized_token_ = drive_service_->HasRefreshToken();

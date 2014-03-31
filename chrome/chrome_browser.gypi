@@ -676,8 +676,6 @@
         'browser/drive/drive_uploader.h',
         'browser/drive/event_logger.cc',
         'browser/drive/event_logger.h',
-        'browser/drive/gdata_wapi_service.cc',
-        'browser/drive/gdata_wapi_service.h',
         'browser/enumerate_modules_model_win.cc',
         'browser/enumerate_modules_model_win.h',
         'browser/extensions/signin/gaia_auth_extension_loader.cc',
