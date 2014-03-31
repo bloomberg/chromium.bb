@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
@@ -42,6 +43,17 @@ void PluginStreamUrl::URLRedirectResponse(bool allow) {
     UpdateUrl(pending_redirect_url_.c_str());
 }
 
+void PluginStreamUrl::FetchRange(const std::string& range) {
+  PluginURLFetcher* range_fetcher = new PluginURLFetcher(
+      this, url_, plugin_url_fetcher_->first_party_for_cookies(), "GET", NULL,
+      0, plugin_url_fetcher_->referrer(), range, false, false,
+      plugin_url_fetcher_->origin_pid(),
+      plugin_url_fetcher_->render_frame_id(),
+      plugin_url_fetcher_->render_view_id(), id_,
+      plugin_url_fetcher_->copy_stream_data());
+  range_request_fetchers_.push_back(range_fetcher);
+}
+
 bool PluginStreamUrl::Close(NPReason reason) {
   // Protect the stream against it being destroyed or the whole plugin instance
   // being destroyed within the destroy stream handler.
@@ -71,7 +83,10 @@ void PluginStreamUrl::CancelRequest() {
     for (size_t i = 0; i < range_requests_.size(); ++i)
       instance()->webplugin()->CancelResource(range_requests_[i]);
   }
+
   range_requests_.clear();
+
+  STLDeleteElements(&range_request_fetchers_);
 }
 
 void PluginStreamUrl::WillSendRequest(const GURL& url, int http_status_code) {
@@ -165,6 +180,8 @@ PluginStreamUrl::~PluginStreamUrl() {
   if (!plugin_url_fetcher_.get() && instance() && instance()->webplugin()) {
     instance()->webplugin()->ResourceClientDeleted(AsResourceClient());
   }
+
+  STLDeleteElements(&range_request_fetchers_);
 }
 
 void PluginStreamUrl::AddRangeRequestResourceId(unsigned long resource_id) {
@@ -176,11 +193,11 @@ void PluginStreamUrl::SetDeferLoading(bool value) {
   // If we determined that the request had failed via the HTTP headers in the
   // response then we send out a failure notification to the plugin process, as
   // certain plugins don't handle HTTP failure codes correctly.
-  if (!value &&
-      plugin_url_fetcher_.get() &&
-      plugin_url_fetcher_->pending_failure_notification()) {
-    // This object may be deleted now.
-    DidFail(id_);
+  if (plugin_url_fetcher_.get()) {
+    if (!value && plugin_url_fetcher_->pending_failure_notification()) {
+      // This object may be deleted now.
+      DidFail(id_);
+    }
     return;
   }
   if (id_ > 0)

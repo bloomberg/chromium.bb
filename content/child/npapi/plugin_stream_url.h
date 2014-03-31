@@ -34,6 +34,8 @@ class PluginStreamUrl : public PluginStream,
 
   void URLRedirectResponse(bool allow);
 
+  void FetchRange(const std::string& range);
+
   // Stop sending the stream to the client.
   // Overrides the base Close so we can cancel our fetching the URL if
   // it is still loading.
@@ -69,9 +71,14 @@ class PluginStreamUrl : public PluginStream,
 
   GURL url_;
   unsigned long id_;
+
   // Ids of additional resources requested via range requests issued on
   // seekable streams.
+  // This is used when we're loading resources through the renderer, i.e. not
+  // using plugin_url_fetcher_.
   std::vector<unsigned long> range_requests_;
+  // This is used when we're using plugin_url_fetcher_.
+  std::vector<PluginURLFetcher*> range_request_fetchers_;
 
   // If the plugin participates in HTTP URL redirect handling then this member
   // holds the url being redirected to while we wait for the plugin to make a

@@ -29,6 +29,7 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
                    const char* buf,
                    unsigned int len,
                    const GURL& referrer,
+                   const std::string& range,
                    bool notify_redirects,
                    bool is_plugin_src_load,
                    int origin_pid,
@@ -44,6 +45,12 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   // Called with the plugin's reply to NPP_URLRedirectNotify.
   void URLRedirectResponse(bool allow);
 
+  GURL first_party_for_cookies() { return first_party_for_cookies_; }
+  GURL referrer() { return referrer_; }
+  int origin_pid() { return origin_pid_; }
+  int render_frame_id() { return render_frame_id_; }
+  int render_view_id() { return render_view_id_; }
+  bool copy_stream_data() { return copy_stream_data_; }
   bool pending_failure_notification() { return pending_failure_notification_; }
 
  private:
@@ -74,6 +81,9 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   GURL referrer_;
   bool notify_redirects_;
   bool is_plugin_src_load_;
+  int origin_pid_;
+  int render_frame_id_;
+  int render_view_id_;
   unsigned long resource_id_;
   bool copy_stream_data_;
   int64 data_offset_;

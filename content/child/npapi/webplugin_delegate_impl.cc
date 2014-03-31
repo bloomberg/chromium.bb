@@ -325,7 +325,7 @@ void WebPluginDelegateImpl::FetchURL(unsigned long resource_id,
   bool copy_stream_data = !!(quirks_ & PLUGIN_QUIRK_COPY_STREAM_DATA);
   plugin_stream->SetPluginURLFetcher(new PluginURLFetcher(
       plugin_stream, url, first_party_for_cookies, method, buf, len,
-      referrer, notify_redirects, is_plugin_src_load, origin_pid,
+      referrer, std::string(), notify_redirects, is_plugin_src_load, origin_pid,
       render_frame_id, render_view_id, resource_id, copy_stream_data));
 }
 
