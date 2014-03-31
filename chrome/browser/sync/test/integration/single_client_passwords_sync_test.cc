@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/password_manager/core/browser/password_form_data.h"
@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncTest, Sanity) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_EQ(1, GetPasswordCount(0));
 }

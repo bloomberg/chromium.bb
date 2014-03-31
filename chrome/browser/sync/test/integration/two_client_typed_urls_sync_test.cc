@@ -204,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, DisableEnableSync) {
   GURL url2(kUrl2);
   AddUrlToHistory(0, url1);
   AddUrlToHistory(1, url2);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(1)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((1))));
 
   // Make sure that no data was exchanged.
   history::URLRows post_sync_urls = GetTypedUrlsFromClient(0);
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // before syncing client 0, so we have both of client 1's URLs in the sync DB
   // at the time that client 0 does model association.
   ASSERT_TRUE(GetClient(1)->SetupSync()) << "SetupSync() failed";
-  AwaitCommitActivityCompletion(GetClient(1)->service());
+  AwaitCommitActivityCompletion(GetSyncService((1)));
   ASSERT_TRUE(GetClient(0)->SetupSync()) << "SetupSync() failed";
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 

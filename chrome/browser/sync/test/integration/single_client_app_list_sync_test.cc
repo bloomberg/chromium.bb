@@ -4,8 +4,8 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_app_list_helper.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
       app_list::AppListSyncableServiceFactory::GetForProfile(verifier());
   ASSERT_EQ(kNumApps + kNumDefaultApps, service->GetNumSyncItemsForTest());
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
 
 }

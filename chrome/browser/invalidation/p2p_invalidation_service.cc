@@ -21,7 +21,8 @@ namespace invalidation {
 
 P2PInvalidationService::P2PInvalidationService(
     Profile* profile,
-    scoped_ptr<InvalidationAuthProvider> auth_provider)
+    scoped_ptr<InvalidationAuthProvider> auth_provider,
+    syncer::P2PNotificationTarget notification_target)
     : auth_provider_(auth_provider.Pass()) {
   notifier::NotifierOptions notifier_options =
       ParseNotifierOptions(*CommandLine::ForCurrentProcess());
@@ -30,7 +31,7 @@ P2PInvalidationService::P2PInvalidationService(
   invalidator_.reset(new syncer::P2PInvalidator(
           notifier::PushClient::CreateDefault(notifier_options),
           invalidator_id_,
-          syncer::NOTIFY_ALL));
+          notification_target));
 }
 
 P2PInvalidationService::~P2PInvalidationService() {

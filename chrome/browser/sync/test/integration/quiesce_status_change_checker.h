@@ -38,7 +38,7 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
   virtual base::TimeDelta GetTimeoutDuration();
 
   // Blocks until all clients have quiesced or we time out.
-  void Await();
+  void Wait();
 
   // A callback function for some helper objects.
   void OnServiceStateChanged(ProfileSyncService* service);

@@ -182,14 +182,14 @@ class MigrationTest : public SyncTest  {
   syncer::ModelTypeSet GetPreferredDataTypes() {
     // ProfileSyncService must already have been created before we can call
     // GetPreferredDataTypes().
-    DCHECK(GetClient(0)->service());
+    DCHECK(GetSyncService((0)));
     syncer::ModelTypeSet preferred_data_types =
-        GetClient(0)->service()->GetPreferredDataTypes();
+        GetSyncService((0))->GetPreferredDataTypes();
     preferred_data_types.RemoveAll(syncer::ProxyTypes());
     // Make sure all clients have the same preferred data types.
     for (int i = 1; i < num_clients(); ++i) {
       const syncer::ModelTypeSet other_preferred_data_types =
-          GetClient(i)->service()->GetPreferredDataTypes();
+          GetSyncService((i))->GetPreferredDataTypes();
       EXPECT_TRUE(preferred_data_types.Equals(other_preferred_data_types));
     }
     return preferred_data_types;
@@ -238,7 +238,7 @@ class MigrationTest : public SyncTest  {
     for (int i = 0; i < num_clients(); ++i) {
       MigrationChecker* checker = migration_checkers_[i];
       checker->set_expected_types(migrate_types);
-      checker->Await();
+      checker->Wait();
       ASSERT_FALSE(checker->TimedOut());
     }
   }

@@ -38,7 +38,7 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
 
 bool AwaitSyncDisabled(ProfileSyncService* service) {
   SyncDisabledChecker checker(service);
-  checker.Await();
+  checker.Wait();
   return !checker.TimedOut();
 }
 
@@ -84,13 +84,13 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   // Add an item, wait for sync, and trigger a birthday error on the server.
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   TriggerBirthdayError();
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
   SetTitle(0, node2, L"new_title2");
-  ASSERT_TRUE(AwaitSyncDisabled(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitSyncDisabled(GetSyncService((0))));
 }
 
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
@@ -98,7 +98,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
   syncer::SyncProtocolError protocol_error;
   protocol_error.error_type = syncer::TRANSIENT_ERROR;
@@ -112,12 +112,12 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   SetTitle(0, node2, L"new_title2");
 
   // Wait until an actionable error is encountered.
-  ActionableErrorChecker actionable_error_checker(GetClient(0)->service());
-  actionable_error_checker.Await();
+  ActionableErrorChecker actionable_error_checker(GetSyncService((0)));
+  actionable_error_checker.Wait();
   ASSERT_FALSE(actionable_error_checker.TimedOut());
 
   ProfileSyncService::Status status;
-  GetClient(0)->service()->QueryDetailedSyncStatus(&status);
+  GetSyncService((0))->QueryDetailedSyncStatus(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, protocol_error.error_type);
   ASSERT_EQ(status.sync_protocol_error.action, protocol_error.action);
   ASSERT_EQ(status.sync_protocol_error.url, protocol_error.url);
@@ -134,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_ErrorWhileSettingUp) {
   protocol_error.error_description = "Not My Fault";
   protocol_error.url = "www.google.com";
 
-  if (clients()[0]->service()->auto_start_enabled()) {
+  if (GetSyncService(0)->auto_start_enabled()) {
     // In auto start enabled platforms like chrome os we should be
     // able to set up even if the first sync while setting up fails.
     // Trigger error on every 2 out of 3 requests.
@@ -145,14 +145,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_ErrorWhileSettingUp) {
     // In Non auto start enabled environments if the setup sync fails then
     // the setup would fail. So setup sync normally.
     ASSERT_TRUE(SetupSync()) << "Setup sync failed";
-    ASSERT_TRUE(clients()[0]->DisableSyncForDatatype(syncer::AUTOFILL));
+    ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(syncer::AUTOFILL));
 
     // Trigger error on every 2 out of 3 requests.
     TriggerSyncError(protocol_error, SyncTest::ERROR_FREQUENCY_TWO_THIRDS);
 
     // Now enable a datatype, whose first 2 syncs would fail, but we should
     // recover and setup succesfully on the third attempt.
-    ASSERT_TRUE(clients()[0]->EnableSyncForDatatype(syncer::AUTOFILL));
+    ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::AUTOFILL));
   }
 }
 
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
   syncer::SyncProtocolError protocol_error;
   protocol_error.error_type = syncer::NOT_MY_BIRTHDAY;
@@ -174,9 +174,9 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, L"title2");
   SetTitle(0, node2, L"new_title2");
-  ASSERT_TRUE(AwaitSyncDisabled(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitSyncDisabled(GetSyncService((0))));
   ProfileSyncService::Status status;
-  GetClient(0)->service()->QueryDetailedSyncStatus(&status);
+  GetSyncService((0))->QueryDetailedSyncStatus(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, protocol_error.error_type);
   ASSERT_EQ(status.sync_protocol_error.action, protocol_error.action);
   ASSERT_EQ(status.sync_protocol_error.url, protocol_error.url);
@@ -188,17 +188,17 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_DisableDatatypeWhileRunning) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   syncer::ModelTypeSet synced_datatypes =
-      GetClient(0)->service()->GetPreferredDataTypes();
+      GetSyncService((0))->GetPreferredDataTypes();
   ASSERT_TRUE(synced_datatypes.Has(syncer::TYPED_URLS));
   GetProfile(0)->GetPrefs()->SetBoolean(
       prefs::kSavingBrowserHistoryDisabled, true);
 
-  synced_datatypes = GetClient(0)->service()->GetPreferredDataTypes();
+  synced_datatypes = GetSyncService((0))->GetPreferredDataTypes();
   ASSERT_FALSE(synced_datatypes.Has(syncer::TYPED_URLS));
 
   const BookmarkNode* node1 = AddFolder(0, 0, L"title1");
   SetTitle(0, node1, L"new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   // TODO(lipalani)" Verify initial sync ended for typed url is false.
 }
 

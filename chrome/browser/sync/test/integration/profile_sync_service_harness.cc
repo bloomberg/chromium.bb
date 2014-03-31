@@ -98,7 +98,7 @@ class SyncSetupChecker : public SingleClientStatusChangeChecker {
 
 bool AwaitSyncSetupCompletion(ProfileSyncService* service) {
   SyncSetupChecker checker(service);
-  checker.Await();
+  checker.Wait();
   return !checker.TimedOut();
 }
 
@@ -172,7 +172,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Wait for the OnBackendInitialized() callback.
   BackendInitializeChecker checker(service());
-  checker.Await();
+  checker.Wait();
 
   if (checker.TimedOut()) {
     LOG(ERROR) << "OnBackendInitialized() timed out.";
@@ -266,7 +266,7 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
     services.push_back((*it)->service());
   }
   QuiesceStatusChangeChecker checker(services);
-  checker.Await();
+  checker.Wait();
   return !checker.TimedOut();
 }
 

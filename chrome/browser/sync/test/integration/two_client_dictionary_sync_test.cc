@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(dictionary_helper::AddWord(0, "foo"));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(dictionary_helper::DictionaryMatchesVerifier(0));
   ASSERT_FALSE(dictionary_helper::DictionaryMatchesVerifier(1));
 }

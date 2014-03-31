@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/common/pref_names.h"
 
 using preferences_helper::BooleanPrefMatches;
 using preferences_helper::ChangeBooleanPref;
@@ -25,6 +25,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientPreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
 }

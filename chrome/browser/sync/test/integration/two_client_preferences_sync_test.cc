@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisablePreferences) {
 
   GetClient(1)->DisableSyncForDatatype(syncer::PREFERENCES);
   ChangeBooleanPref(0, prefs::kPasswordManagerEnabled);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_FALSE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
 
   GetClient(1)->EnableSyncForDatatype(syncer::PREFERENCES);
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DisableSync) {
 
   GetClient(1)->DisableSyncForAllDatatypes();
   ChangeBooleanPref(0, prefs::kPasswordManagerEnabled);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_FALSE(BooleanPrefMatches(prefs::kPasswordManagerEnabled));
 
   ChangeBooleanPref(1, prefs::kShowHomeButton);

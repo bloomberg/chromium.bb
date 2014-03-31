@@ -22,6 +22,7 @@
 #include "sync/test/local_sync_test_server.h"
 
 class Profile;
+class ProfileSyncService;
 class ProfileSyncServiceHarness;
 class P2PInvalidationForwarder;
 
@@ -141,6 +142,12 @@ class SyncTest : public InProcessBrowserTest {
     return clients_.get();
   }
 
+  // Returns a ProfileSyncService at the given index.
+  ProfileSyncService* GetSyncService(int index);
+
+  // Returns the set of ProfileSyncServices.
+  std::vector<ProfileSyncService*> GetSyncServices();
+
   // Returns a pointer to the sync profile that is used to verify changes to
   // individual sync profiles. Callee owns the object and manages its lifetime.
   Profile* verifier() WARN_UNUSED_RESULT;
@@ -164,6 +171,14 @@ class SyncTest : public InProcessBrowserTest {
 
   // Disable outgoing network connections for the given profile.
   virtual void DisableNetwork(Profile* profile);
+
+  // Sets whether or not the sync clients in this test should respond to
+  // notifications of their own commits.  Real sync clients do not do this, but
+  // many test assertions require this behavior.
+  //
+  // Default is to return true.  Test should override this if they require
+  // different behavior.
+  virtual bool TestUsesSelfNotifications();
 
   // Kicks off encryption for profile |index|.
   bool EnableEncryption(int index);

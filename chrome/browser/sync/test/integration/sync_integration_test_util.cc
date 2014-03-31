@@ -41,19 +41,19 @@ class PassphraseAcceptedChecker : public SingleClientStatusChangeChecker {
 
 bool AwaitPassphraseRequired(ProfileSyncService* service) {
   PassphraseRequiredChecker checker(service);
-  checker.Await();
+  checker.Wait();
   return !checker.TimedOut();
 }
 
 bool AwaitPassphraseAccepted(ProfileSyncService* service) {
   PassphraseAcceptedChecker checker(service);
-  checker.Await();
+  checker.Wait();
   return !checker.TimedOut();
 }
 
 bool AwaitCommitActivityCompletion(ProfileSyncService* service) {
   UpdatedProgressMarkerChecker checker(service);
-  checker.Await();
+  checker.Wait();
   return !checker.TimedOut();
 }
 

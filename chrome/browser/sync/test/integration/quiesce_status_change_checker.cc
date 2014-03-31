@@ -158,7 +158,7 @@ base::TimeDelta QuiesceStatusChangeChecker::GetTimeoutDuration() {
   return base::TimeDelta::FromSeconds(45);
 }
 
-void QuiesceStatusChangeChecker::Await() {
+void QuiesceStatusChangeChecker::Wait() {
   DVLOG(1) << "Await: " << GetDebugMessage();
 
   if (IsExitConditionSatisfied()) {

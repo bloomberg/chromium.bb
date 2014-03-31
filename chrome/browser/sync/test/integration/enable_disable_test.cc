@@ -44,8 +44,8 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   DisableNotifications();
 
   const syncer::ModelTypeSet registered_types =
-      GetClient(0)->service()->GetRegisteredDataTypes();
-  syncer::UserShare* user_share = GetClient(0)->service()->GetUserShare();
+      GetSyncService((0))->GetRegisteredDataTypes();
+  syncer::UserShare* user_share = GetSyncService((0))->GetUserShare();
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
        it.Good(); it.Inc()) {
     ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
@@ -90,9 +90,9 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   DisableNotifications();
 
   const syncer::ModelTypeSet registered_types =
-      GetClient(0)->service()->GetRegisteredDataTypes();
+      GetSyncService((0))->GetRegisteredDataTypes();
 
-  syncer::UserShare* user_share = GetClient(0)->service()->GetUserShare();
+  syncer::UserShare* user_share = GetSyncService((0))->GetUserShare();
 
   // Make sure all top-level nodes exist first.
   for (syncer::ModelTypeSet::Iterator it = registered_types.First();
@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     }
 
     syncer::UserShare* user_share =
-        GetClient(0)->service()->GetUserShare();
+        GetSyncService((0))->GetUserShare();
 
     ASSERT_FALSE(DoesTopLevelNodeExist(user_share, it.Get()))
         << syncer::ModelTypeToString(it.Get());

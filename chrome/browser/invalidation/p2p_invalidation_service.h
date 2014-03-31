@@ -6,6 +6,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "sync/notifier/p2p_invalidator.h"
 
 #ifndef CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
 #define CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
@@ -28,7 +29,8 @@ class P2PInvalidationService
       public InvalidationService {
  public:
   P2PInvalidationService(Profile* profile,
-                         scoped_ptr<InvalidationAuthProvider> auth_provider);
+                         scoped_ptr<InvalidationAuthProvider> auth_provider,
+                         syncer::P2PNotificationTarget notification_target);
   virtual ~P2PInvalidationService();
 
   // Overrides KeyedService method.

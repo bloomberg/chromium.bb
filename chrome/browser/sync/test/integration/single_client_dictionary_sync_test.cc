@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/test/integration/dictionary_helper.h"
-#include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
@@ -25,10 +25,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientDictionarySyncTest, Sanity) {
 
   std::string word = "foo";
   ASSERT_TRUE(dictionary_helper::AddWord(0, word));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 
   ASSERT_TRUE(dictionary_helper::RemoveWord(0, word));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetClient(0)->service()));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
   ASSERT_TRUE(dictionary_helper::DictionariesMatch());
 }
