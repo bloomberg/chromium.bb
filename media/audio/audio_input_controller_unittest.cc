@@ -145,14 +145,9 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
 // Test that the AudioInputController reports an error when the input stream
 // stops. This can happen when the underlying audio layer stops feeding data as
 // a result of a removed microphone device.
-#if defined(OS_MACOSX)
-// Disabled on Mac due to crbug.com/357501.
-// TODO(tommi): Remove the test when the timer workaround has been removed.
-#define MAYBE_RecordAndError DISABLED_RecordAndError
-#else
-#define MAYBE_RecordAndError RecordAndError
-#endif
-TEST_F(AudioInputControllerTest, MAYBE_RecordAndError) {
+// Disabled due to crbug.com/357569 and crbug.com/357501.
+// TODO(henrika): Remove the test when the timer workaround has been removed.
+TEST_F(AudioInputControllerTest, DISABLED_RecordAndError) {
   MockAudioInputControllerEventHandler event_handler;
   int count = 0;
 

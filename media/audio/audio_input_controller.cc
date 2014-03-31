@@ -202,11 +202,15 @@ void AudioInputController::DoCreateForStream(
 
   DCHECK(!no_data_timer_.get());
 
-#if defined(OS_MACOSX)
   // This is a fix for crbug.com/357501.  The timer can trigger when closing
   // the lid on Macs, which causes more problems than the timer fixes.
+  // Also, in crbug.com/357569, the goal is to remove usage of this timer
+  // since it was added to solve a crash on Windows that no longer can be
+  // reproduced.
+  // TODO(henrika): remove usage of timer when it has been verified on Canary
+  // that we are safe doing so. Goal is to get rid of |no_data_timer_| and
+  // everything that is tied to it.
   enable_nodata_timer = false;
-#endif
 
   if (enable_nodata_timer) {
     // Create the data timer which will call DoCheckForNoData(). The timer
