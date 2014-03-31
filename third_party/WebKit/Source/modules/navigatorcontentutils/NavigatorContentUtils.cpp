@@ -128,7 +128,7 @@ NavigatorContentUtils::~NavigatorContentUtils()
 {
 }
 
-PassRefPtr<NavigatorContentUtils> NavigatorContentUtils::create(NavigatorContentUtilsClient* client)
+PassRefPtr<NavigatorContentUtils> NavigatorContentUtils::create(PassOwnPtr<NavigatorContentUtilsClient> client)
 {
     return adoptRef(new NavigatorContentUtils(client));
 }
@@ -216,7 +216,7 @@ const char* NavigatorContentUtils::supplementName()
     return "NavigatorContentUtils";
 }
 
-void provideNavigatorContentUtilsTo(Page& page, NavigatorContentUtilsClient* client)
+void provideNavigatorContentUtilsTo(Page& page, PassOwnPtr<NavigatorContentUtilsClient> client)
 {
     RefCountedSupplement<Page, NavigatorContentUtils>::provideTo(page, NavigatorContentUtils::supplementName(), NavigatorContentUtils::create(client));
 }

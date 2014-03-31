@@ -50,16 +50,16 @@ public:
     static String isProtocolHandlerRegistered(Navigator&, const String& scheme, const String& url, ExceptionState&);
     static void unregisterProtocolHandler(Navigator&, const String& scheme, const String& url, ExceptionState&);
 
-    static PassRefPtr<NavigatorContentUtils> create(NavigatorContentUtilsClient*);
+    static PassRefPtr<NavigatorContentUtils> create(PassOwnPtr<NavigatorContentUtilsClient>);
 
 private:
-    explicit NavigatorContentUtils(NavigatorContentUtilsClient* client)
+    explicit NavigatorContentUtils(PassOwnPtr<NavigatorContentUtilsClient> client)
         : m_client(client)
     { }
 
-    NavigatorContentUtilsClient* client() { return m_client; }
+    NavigatorContentUtilsClient* client() { return m_client.get(); }
 
-    NavigatorContentUtilsClient* m_client;
+    OwnPtr<NavigatorContentUtilsClient> m_client;
 };
 
 } // namespace WebCore
