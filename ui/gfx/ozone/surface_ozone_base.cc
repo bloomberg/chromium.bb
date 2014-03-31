@@ -4,6 +4,7 @@
 
 #include "ui/gfx/ozone/surface_ozone_base.h"
 
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/vsync_provider.h"
 
