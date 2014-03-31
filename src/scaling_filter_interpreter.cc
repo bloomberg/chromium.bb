@@ -212,7 +212,7 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.scroll.dy *= screen_y_scale_;
       copy.details.scroll.ordinal_dx *= screen_x_scale_;
       copy.details.scroll.ordinal_dy *= screen_y_scale_;
-      if (australian_scrolling_.val_) {
+      if (!australian_scrolling_.val_) {
         copy.details.scroll.dx *= -1;
         copy.details.scroll.dy *= -1;
         copy.details.scroll.ordinal_dx *= -1;
@@ -224,7 +224,7 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.fling.vy *= screen_y_scale_;
       copy.details.fling.ordinal_vx *= screen_x_scale_;
       copy.details.fling.ordinal_vy *= screen_y_scale_;
-      if (australian_scrolling_.val_) {
+      if (!australian_scrolling_.val_) {
         copy.details.fling.vx *= -1;
         copy.details.fling.vy *= -1;
         copy.details.fling.ordinal_vx *= -1;
@@ -237,7 +237,7 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.swipe.dy *= screen_y_scale_;
       copy.details.swipe.ordinal_dx *= screen_x_scale_;
       copy.details.swipe.ordinal_dy *= screen_y_scale_;
-      if (australian_scrolling_.val_) {
+      if (!australian_scrolling_.val_) {
         copy.details.swipe.dx *= -1;
         copy.details.swipe.dy *= -1;
         copy.details.swipe.ordinal_dx *= -1;

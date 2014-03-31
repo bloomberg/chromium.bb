@@ -235,13 +235,13 @@ TEST(ScalingFilterInterpreterTest, SimpleTest) {
   out = wrapper.SyncInterpret(&hs[2], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeScroll, out->type);
-  EXPECT_FLOAT_EQ(4.1 * 133.0 / 25.4, out->details.scroll.dx);
-  EXPECT_FLOAT_EQ(-10.3 * 133.0 / 25.4, out->details.scroll.dy);
+  EXPECT_FLOAT_EQ(-4.1 * 133.0 / 25.4, out->details.scroll.dx);
+  EXPECT_FLOAT_EQ(10.3 * 133.0 / 25.4, out->details.scroll.dy);
   out = wrapper.SyncInterpret(&hs[3], NULL);
   ASSERT_NE(reinterpret_cast<Gesture*>(NULL), out);
   EXPECT_EQ(kGestureTypeFling, out->type);
-  EXPECT_FLOAT_EQ(201.8 * 133.0 / 25.4, out->details.fling.vx);
-  EXPECT_FLOAT_EQ(-112.4 * 133.0 / 25.4, out->details.fling.vy);
+  EXPECT_FLOAT_EQ(-201.8 * 133.0 / 25.4, out->details.fling.vx);
+  EXPECT_FLOAT_EQ(112.4 * 133.0 / 25.4, out->details.fling.vy);
   EXPECT_EQ(GESTURES_FLING_START, out->details.fling.fling_state);
 
   // Test if we will drop the low pressure event.
