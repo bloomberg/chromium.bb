@@ -40,21 +40,19 @@ class FakeVideoDecoder : public VideoDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual scoped_refptr<VideoFrame> GetDecodeOutput() OVERRIDE;
 
-  // Holds the next init/read/reset/stop callback from firing.
+  // Holds the next init/decode/reset callback from firing.
   void HoldNextInit();
-  void HoldNextRead();
+  void HoldNextDecode();
   void HoldNextReset();
-  void HoldNextStop();
 
-  // Satisfies the pending init/read/reset/stop callback, which must be ready
-  // to fire when these methods are called.
+  // Satisfies the pending init/decode/reset callback, which must be ready to
+  // fire when these methods are called.
   void SatisfyInit();
-  void SatisfyRead();
+  void SatisfyDecode();
   void SatisfyReset();
-  void SatisfyStop();
 
   int total_bytes_decoded() const { return total_bytes_decoded_; }
 
@@ -66,12 +64,11 @@ class FakeVideoDecoder : public VideoDecoder {
 
   // Callback for updating |total_bytes_decoded_|.
   void OnFrameDecoded(int buffer_size,
-                      const DecodeCB& read_cb,
+                      const DecodeCB& decode_cb,
                       Status status,
                       const scoped_refptr<VideoFrame>& video_frame);
 
   void DoReset();
-  void DoStop();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -84,7 +81,6 @@ class FakeVideoDecoder : public VideoDecoder {
   CallbackHolder<PipelineStatusCB> init_cb_;
   CallbackHolder<DecodeCB> decode_cb_;
   CallbackHolder<base::Closure> reset_cb_;
-  CallbackHolder<base::Closure> stop_cb_;
 
   VideoDecoderConfig current_config_;
 

@@ -287,13 +287,12 @@ void OpusAudioDecoder::Reset(const base::Closure& closure) {
   task_runner_->PostTask(FROM_HERE, closure);
 }
 
-void OpusAudioDecoder::Stop(const base::Closure& closure) {
+void OpusAudioDecoder::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   opus_multistream_decoder_ctl(opus_decoder_, OPUS_RESET_STATE);
   ResetTimestampState();
   CloseDecoder();
-  task_runner_->PostTask(FROM_HERE, closure);
 }
 
 OpusAudioDecoder::~OpusAudioDecoder() {}

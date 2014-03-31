@@ -104,7 +104,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   vda_->Reset();
 }
 
-void GpuVideoDecoder::Stop(const base::Closure& closure) {
+void GpuVideoDecoder::Stop() {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   if (vda_)
     DestroyVDA();
@@ -112,7 +112,6 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEOSFrame());
   if (!pending_reset_cb_.is_null())
     base::ResetAndReturn(&pending_reset_cb_).Run();
-  BindToCurrentLoop(closure).Run();
 }
 
 static bool IsCodedSizeSupported(const gfx::Size& coded_size) {

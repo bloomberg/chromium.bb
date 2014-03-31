@@ -249,7 +249,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
         .WillRepeatedly(InvokeWithoutArgs(
             this, &DecryptingAudioDecoderTest::AbortAllPendingCBs));
 
-    decoder_->Stop(NewExpectedClosure());
+    decoder_->Stop();
     message_loop_.RunUntilIdle();
   }
 

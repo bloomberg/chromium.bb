@@ -156,7 +156,7 @@ void DecryptingAudioDecoder::Reset(const base::Closure& closure) {
   DoReset();
 }
 
-void DecryptingAudioDecoder::Stop(const base::Closure& closure) {
+void DecryptingAudioDecoder::Stop() {
   DVLOG(2) << "Stop() - state: " << state_;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -179,7 +179,6 @@ void DecryptingAudioDecoder::Stop(const base::Closure& closure) {
     base::ResetAndReturn(&reset_cb_).Run();
 
   state_ = kStopped;
-  task_runner_->PostTask(FROM_HERE, closure);
 }
 
 DecryptingAudioDecoder::~DecryptingAudioDecoder() {

@@ -37,7 +37,7 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok

@@ -219,7 +219,6 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(config.IsValidConfig());
   DCHECK(!config.is_encrypted());
   DCHECK(decode_cb_.is_null());
-  DCHECK(reset_cb_.is_null());
 
   if (!ConfigureDecoder(config)) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
@@ -329,29 +328,14 @@ void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
 void VpxVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(reset_cb_.is_null());
-  reset_cb_ = BindToCurrentLoop(closure);
+  DCHECK(decode_cb_.is_null());
 
-  // Defer the reset if a decode is pending.
-  if (!decode_cb_.is_null())
-    return;
-
-  DoReset();
+  state_ = kNormal;
+  task_runner_->PostTask(FROM_HERE, closure);
 }
 
-void VpxVideoDecoder::Stop(const base::Closure& closure) {
+void VpxVideoDecoder::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::ScopedClosureRunner runner(BindToCurrentLoop(closure));
-
-  if (state_ == kUninitialized)
-    return;
-
-  if (!decode_cb_.is_null()) {
-    base::ResetAndReturn(&decode_cb_).Run(kAborted, NULL);
-    // Reset is pending only when decode is pending.
-    if (!reset_cb_.is_null())
-      base::ResetAndReturn(&reset_cb_).Run();
-  }
 
   state_ = kUninitialized;
 }
@@ -365,7 +349,6 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK_NE(state_, kError);
-  DCHECK(reset_cb_.is_null());
   DCHECK(!decode_cb_.is_null());
   DCHECK(buffer);
 
@@ -463,14 +446,6 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   CopyVpxImageTo(vpx_image, vpx_image_alpha, video_frame);
   (*video_frame)->SetTimestamp(base::TimeDelta::FromMicroseconds(timestamp));
   return true;
-}
-
-void VpxVideoDecoder::DoReset() {
-  DCHECK(decode_cb_.is_null());
-
-  state_ = kNormal;
-  reset_cb_.Run();
-  reset_cb_.Reset();
 }
 
 void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,

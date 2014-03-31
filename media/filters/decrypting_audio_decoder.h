@@ -49,7 +49,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual scoped_refptr<AudioBuffer> GetDecodeOutput() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok

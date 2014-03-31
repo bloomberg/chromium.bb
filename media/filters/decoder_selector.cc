@@ -123,8 +123,8 @@ void DecoderSelector<StreamType>::Abort() {
   if (decoder_) {
     // |decrypted_stream_| is either NULL or already initialized. We don't
     // need to Stop() |decrypted_stream_| in either case.
-    decoder_->Stop(base::Bind(&DecoderSelector<StreamType>::ReturnNullDecoder,
-                              weak_ptr_factory_.GetWeakPtr()));
+    decoder_->Stop();
+    ReturnNullDecoder();
     return;
   }
 

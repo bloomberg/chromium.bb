@@ -75,9 +75,9 @@ class MEDIA_EXPORT VideoDecoder {
   // Stops decoder, fires any pending callbacks and sets the decoder to an
   // uninitialized state. A VideoDecoder cannot be re-initialized after it has
   // been stopped.
-  // Note that if Initialize() has been called, Stop() must be called and
-  // complete before deleting the decoder.
-  virtual void Stop(const base::Closure& closure) = 0;
+  // Note that if Initialize() is pending or has finished successfully, Stop()
+  // must be called before destructing the decoder.
+  virtual void Stop() = 0;
 
   // Returns true if the output format has an alpha channel. Most formats do not
   // have alpha so the default is false. Override and return true for decoders

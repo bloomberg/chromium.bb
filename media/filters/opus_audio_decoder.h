@@ -36,12 +36,9 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
-  void DoReset();
-  void DoStop();
-
   // Reads from the demuxer stream with corresponding callback method.
   void ReadFromDemuxerStream();
   void DecodeBuffer(const scoped_refptr<DecoderBuffer>& input,

@@ -37,7 +37,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual bool HasAlpha() const OVERRIDE;
 
  private:
@@ -59,9 +59,6 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   bool VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
                  scoped_refptr<VideoFrame>* video_frame);
 
-  // Reset decoder and call |reset_cb_|.
-  void DoReset();
-
   void CopyVpxImageTo(const vpx_image* vpx_image,
                       const struct vpx_image* vpx_image_alpha,
                       scoped_refptr<VideoFrame>* video_frame);
@@ -70,8 +67,8 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   DecoderState state_;
 
+  // TODO(xhwang): Merge DecodeBuffer() into Decode() and remove this.
   DecodeCB decode_cb_;
-  base::Closure reset_cb_;
 
   VideoDecoderConfig config_;
 

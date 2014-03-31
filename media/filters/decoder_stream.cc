@@ -503,26 +503,14 @@ void DecoderStream<StreamType>::StopDecoder() {
   DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_STOPPED) << state_;
   DCHECK(!stop_cb_.is_null());
 
-  decoder_->Stop(base::Bind(&DecoderStream<StreamType>::OnDecoderStopped,
-                            weak_factory_.GetWeakPtr()));
-}
-
-template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::OnDecoderStopped() {
-  FUNCTION_DVLOG(2);
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(state_ != STATE_UNINITIALIZED && state_ != STATE_STOPPED) << state_;
-  // If Stop() was called during pending read/reset, read/reset callback should
-  // be fired before the stop callback is fired.
-  DCHECK(read_cb_.is_null());
-  DCHECK(reset_cb_.is_null());
-  DCHECK(!stop_cb_.is_null());
-
   state_ = STATE_STOPPED;
+  decoder_->Stop();
   stream_ = NULL;
   decoder_.reset();
   decrypting_demuxer_stream_.reset();
-  base::ResetAndReturn(&stop_cb_).Run();
+  // Post |stop_cb_| because pending |read_cb_| and/or |reset_cb_| are also
+  // posted in Stop().
+  task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
 }
 
 template class DecoderStream<DemuxerStream::VIDEO>;

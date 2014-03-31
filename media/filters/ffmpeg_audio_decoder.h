@@ -40,7 +40,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual scoped_refptr<AudioBuffer> GetDecodeOutput() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
-  virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   enum DecoderState {

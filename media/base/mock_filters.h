@@ -79,7 +79,7 @@ class MockVideoDecoder : public VideoDecoder {
   MOCK_METHOD2(Decode, void(const scoped_refptr<DecoderBuffer>& buffer,
                             const DecodeCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
-  MOCK_METHOD1(Stop, void(const base::Closure&));
+  MOCK_METHOD0(Stop, void());
   MOCK_CONST_METHOD0(HasAlpha, bool());
 
  private:
@@ -98,7 +98,7 @@ class MockAudioDecoder : public AudioDecoder {
                void(const scoped_refptr<DecoderBuffer>& buffer,
                     const DecodeCB&));
   MOCK_METHOD1(Reset, void(const base::Closure&));
-  MOCK_METHOD1(Stop, void(const base::Closure&));
+  MOCK_METHOD0(Stop, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioDecoder);

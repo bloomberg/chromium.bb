@@ -86,7 +86,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   }
 
   void Stop() {
-    decoder_->Stop(NewExpectedClosure());
+    decoder_->Stop();
     message_loop_.RunUntilIdle();
   }
 

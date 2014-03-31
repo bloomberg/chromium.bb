@@ -95,15 +95,18 @@ void FakeVideoDecoder::Reset(const base::Closure& closure) {
   DoReset();
 }
 
-void FakeVideoDecoder::Stop(const base::Closure& closure) {
+void FakeVideoDecoder::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  stop_cb_.SetCallback(BindToCurrentLoop(closure));
 
-  // Defer the stop if an init, a decode or a reset is pending.
-  if (!init_cb_.IsNull() || !decode_cb_.IsNull() || !reset_cb_.IsNull())
-    return;
+  if (!init_cb_.IsNull())
+    SatisfyInit();
+  if (!decode_cb_.IsNull())
+    SatisfyDecode();
+  if (!reset_cb_.IsNull())
+    SatisfyReset();
 
-  DoStop();
+  decoded_frames_.clear();
+  state_ = UNINITIALIZED;
 }
 
 scoped_refptr<VideoFrame> FakeVideoDecoder::GetDecodeOutput() {
@@ -120,7 +123,7 @@ void FakeVideoDecoder::HoldNextInit() {
   init_cb_.HoldCallback();
 }
 
-void FakeVideoDecoder::HoldNextRead() {
+void FakeVideoDecoder::HoldNextDecode() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   decode_cb_.HoldCallback();
 }
@@ -130,47 +133,26 @@ void FakeVideoDecoder::HoldNextReset() {
   reset_cb_.HoldCallback();
 }
 
-void FakeVideoDecoder::HoldNextStop() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  stop_cb_.HoldCallback();
-}
-
 void FakeVideoDecoder::SatisfyInit() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(decode_cb_.IsNull());
   DCHECK(reset_cb_.IsNull());
 
   init_cb_.RunHeldCallback();
-
-  if (!stop_cb_.IsNull())
-    DoStop();
 }
 
-void FakeVideoDecoder::SatisfyRead() {
+void FakeVideoDecoder::SatisfyDecode() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   decode_cb_.RunHeldCallback();
 
   if (!reset_cb_.IsNull())
     DoReset();
-
-  if (reset_cb_.IsNull() && !stop_cb_.IsNull())
-    DoStop();
 }
 
 void FakeVideoDecoder::SatisfyReset() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(decode_cb_.IsNull());
   reset_cb_.RunHeldCallback();
-
-  if (!stop_cb_.IsNull())
-    DoStop();
-}
-
-void FakeVideoDecoder::SatisfyStop() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(decode_cb_.IsNull());
-  DCHECK(reset_cb_.IsNull());
-  stop_cb_.RunHeldCallback();
 }
 
 void FakeVideoDecoder::DoReset() {
@@ -180,17 +162,6 @@ void FakeVideoDecoder::DoReset() {
 
   decoded_frames_.clear();
   reset_cb_.RunOrHold();
-}
-
-void FakeVideoDecoder::DoStop() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(decode_cb_.IsNull());
-  DCHECK(reset_cb_.IsNull());
-  DCHECK(!stop_cb_.IsNull());
-
-  state_ = UNINITIALIZED;
-  decoded_frames_.clear();
-  stop_cb_.RunOrHold();
 }
 
 void FakeVideoDecoder::OnFrameDecoded(

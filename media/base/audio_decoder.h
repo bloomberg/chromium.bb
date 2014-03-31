@@ -65,9 +65,9 @@ class MEDIA_EXPORT AudioDecoder {
   // Stops decoder, fires any pending callbacks and sets the decoder to an
   // uninitialized state. An AudioDecoder cannot be re-initialized after it has
   // been stopped.
-  // Note that if Initialize() has been called, Stop() must be called and
-  // complete before deleting the decoder.
-  virtual void Stop(const base::Closure& closure) = 0;
+  // Note that if Initialize() is pending or has finished successfully, Stop()
+  // must be called before destructing the decoder.
+  virtual void Stop() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoder);

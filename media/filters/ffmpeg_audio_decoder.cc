@@ -203,9 +203,8 @@ void FFmpegAudioDecoder::Reset(const base::Closure& closure) {
   task_runner_->PostTask(FROM_HERE, closure);
 }
 
-void FFmpegAudioDecoder::Stop(const base::Closure& closure) {
+void FFmpegAudioDecoder::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::ScopedClosureRunner runner(BindToCurrentLoop(closure));
 
   if (state_ == kUninitialized)
     return;

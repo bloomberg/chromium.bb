@@ -127,7 +127,6 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                     const PipelineStatusCB& status_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(decode_cb_.is_null());
-  DCHECK(reset_cb_.is_null());
   DCHECK(!config.is_encrypted());
 
   FFmpegGlue::InitializeFFmpeg();
@@ -169,37 +168,18 @@ void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
 void FFmpegVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(reset_cb_.is_null());
-  reset_cb_ = BindToCurrentLoop(closure);
-
-  // Defer the reset if a decode is pending.
-  if (!decode_cb_.is_null())
-    return;
-
-  DoReset();
-}
-
-void FFmpegVideoDecoder::DoReset() {
   DCHECK(decode_cb_.is_null());
 
   avcodec_flush_buffers(codec_context_.get());
   state_ = kNormal;
-  base::ResetAndReturn(&reset_cb_).Run();
+  task_runner_->PostTask(FROM_HERE, closure);
 }
 
-void FFmpegVideoDecoder::Stop(const base::Closure& closure) {
+void FFmpegVideoDecoder::Stop() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::ScopedClosureRunner runner(BindToCurrentLoop(closure));
 
   if (state_ == kUninitialized)
     return;
-
-  if (!decode_cb_.is_null()) {
-    base::ResetAndReturn(&decode_cb_).Run(kAborted, NULL);
-    // Reset is pending only when decode is pending.
-    if (!reset_cb_.is_null())
-      base::ResetAndReturn(&reset_cb_).Run();
-  }
 
   ReleaseFFmpegResources();
   state_ = kUninitialized;
@@ -217,7 +197,6 @@ void FFmpegVideoDecoder::DecodeBuffer(
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
   DCHECK_NE(state_, kError);
-  DCHECK(reset_cb_.is_null());
   DCHECK(!decode_cb_.is_null());
   DCHECK(buffer);
 

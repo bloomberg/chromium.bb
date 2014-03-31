@@ -26,11 +26,10 @@ class FakeVideoDecoderTest : public testing::Test {
         num_decoded_frames_(0),
         decode_status_(VideoDecoder::kNotEnoughData),
         is_decode_pending_(false),
-        is_reset_pending_(false),
-        is_stop_pending_(false) {}
+        is_reset_pending_(false) {}
 
   virtual ~FakeVideoDecoderTest() {
-    StopAndExpect(OK);
+    Stop();
   }
 
   void InitializeWithConfig(const VideoDecoderConfig& config) {
@@ -145,13 +144,13 @@ class FakeVideoDecoderTest : public testing::Test {
   void EnterPendingReadState() {
     // Pass the initial NOT_ENOUGH_DATA stage.
     ReadOneFrame();
-    decoder_->HoldNextRead();
+    decoder_->HoldNextDecode();
     ReadOneFrame();
     ExpectReadResult(PENDING);
   }
 
   void SatisfyReadAndExpect(CallbackResult result) {
-    decoder_->SatisfyRead();
+    decoder_->SatisfyDecode();
     message_loop_.RunUntilIdle();
     ExpectReadResult(result);
   }
@@ -198,42 +197,13 @@ class FakeVideoDecoderTest : public testing::Test {
     ExpectResetResult(OK);
   }
 
-  // Callback for VideoDecoder::Stop().
-  void OnDecoderStopped() {
-    DCHECK(is_stop_pending_);
-    is_stop_pending_ = false;
-  }
-
-  void ExpectStopResult(CallbackResult result) {
-    switch (result) {
-      case PENDING:
-        EXPECT_TRUE(is_stop_pending_);
-        break;
-      case OK:
-        EXPECT_FALSE(is_stop_pending_);
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  void StopAndExpect(CallbackResult result) {
-    is_stop_pending_ = true;
-    decoder_->Stop(base::Bind(&FakeVideoDecoderTest::OnDecoderStopped,
-                              base::Unretained(this)));
+  void Stop() {
+    decoder_->Stop();
     message_loop_.RunUntilIdle();
-    ExpectStopResult(result);
-  }
 
-  void EnterPendingStopState() {
-    decoder_->HoldNextStop();
-    StopAndExpect(PENDING);
-  }
-
-  void SatisfyStop() {
-    decoder_->SatisfyStop();
-    message_loop_.RunUntilIdle();
-    ExpectStopResult(OK);
+    // All pending callbacks must have been fired.
+    DCHECK(!is_decode_pending_);
+    DCHECK(!is_reset_pending_);
   }
 
   base::MessageLoop message_loop_;
@@ -249,7 +219,6 @@ class FakeVideoDecoderTest : public testing::Test {
   scoped_refptr<VideoFrame> frame_decoded_;
   bool is_decode_pending_;
   bool is_reset_pending_;
-  bool is_stop_pending_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeVideoDecoderTest);
@@ -286,7 +255,7 @@ TEST_F(FakeVideoDecoderTest, Read_ZeroDelay) {
 
 TEST_F(FakeVideoDecoderTest, Read_Pending_NotEnoughData) {
   Initialize();
-  decoder_->HoldNextRead();
+  decoder_->HoldNextDecode();
   ReadOneFrame();
   ExpectReadResult(PENDING);
   SatisfyReadAndExpect(NOT_ENOUGH_DATA);
@@ -347,75 +316,31 @@ TEST_F(FakeVideoDecoderTest, Stop) {
   Initialize();
   ReadOneFrame();
   ExpectReadResult(OK);
-  StopAndExpect(OK);
+  Stop();
 }
 
 TEST_F(FakeVideoDecoderTest, Stop_DuringPendingInitialization) {
   EnterPendingInitState();
-  EnterPendingStopState();
-  SatisfyInit();
-  SatisfyStop();
+  Stop();
 }
 
 TEST_F(FakeVideoDecoderTest, Stop_DuringPendingRead) {
   Initialize();
   EnterPendingReadState();
-  StopAndExpect(PENDING);
-  SatisfyRead();
-  ExpectStopResult(OK);
+  Stop();
 }
 
 TEST_F(FakeVideoDecoderTest, Stop_DuringPendingReset) {
   Initialize();
   EnterPendingResetState();
-  StopAndExpect(PENDING);
-  SatisfyReset();
-  ExpectStopResult(OK);
+  Stop();
 }
 
 TEST_F(FakeVideoDecoderTest, Stop_DuringPendingReadAndPendingReset) {
   Initialize();
   EnterPendingReadState();
   EnterPendingResetState();
-  StopAndExpect(PENDING);
-  SatisfyRead();
-  SatisfyReset();
-  ExpectStopResult(OK);
-}
-
-TEST_F(FakeVideoDecoderTest, Stop_Pending) {
-  Initialize();
-  decoder_->HoldNextStop();
-  StopAndExpect(PENDING);
-  decoder_->SatisfyStop();
-  message_loop_.RunUntilIdle();
-  ExpectStopResult(OK);
-}
-
-TEST_F(FakeVideoDecoderTest, Stop_PendingDuringPendingRead) {
-  Initialize();
-  EnterPendingReadState();
-  EnterPendingStopState();
-  SatisfyRead();
-  SatisfyStop();
-}
-
-TEST_F(FakeVideoDecoderTest, Stop_PendingDuringPendingReset) {
-  Initialize();
-  EnterPendingResetState();
-  EnterPendingStopState();
-  SatisfyReset();
-  SatisfyStop();
-}
-
-TEST_F(FakeVideoDecoderTest, Stop_PendingDuringPendingReadAndPendingReset) {
-  Initialize();
-  EnterPendingReadState();
-  EnterPendingResetState();
-  EnterPendingStopState();
-  SatisfyRead();
-  SatisfyReset();
-  SatisfyStop();
+  Stop();
 }
 
 TEST_F(FakeVideoDecoderTest, GetDecodeOutput) {

@@ -203,7 +203,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
         .WillRepeatedly(InvokeWithoutArgs(
             this, &DecryptingVideoDecoderTest::AbortAllPendingCBs));
 
-    decoder_->Stop(NewExpectedClosure());
+    decoder_->Stop();
     message_loop_.RunUntilIdle();
   }
 

@@ -148,6 +148,7 @@ class VideoFrameStreamTest
   }
 
   void OnStopped() {
+    DCHECK(!pending_initialize_);
     DCHECK(!pending_read_);
     DCHECK(!pending_reset_);
     DCHECK(pending_stop_);
@@ -178,9 +179,8 @@ class VideoFrameStreamTest
     DECRYPTOR_NO_KEY,
     DECODER_INIT,
     DECODER_REINIT,
-    DECODER_READ,
-    DECODER_RESET,
-    DECODER_STOP
+    DECODER_DECODE,
+    DECODER_RESET
   };
 
   void EnterPendingState(PendingState state) {
@@ -223,8 +223,8 @@ class VideoFrameStreamTest
         ReadUntilPending();
         break;
 
-      case DECODER_READ:
-        decoder_->HoldNextRead();
+      case DECODER_DECODE:
+        decoder_->HoldNextDecode();
         ReadUntilPending();
         break;
 
@@ -233,16 +233,6 @@ class VideoFrameStreamTest
         pending_reset_ = true;
         video_frame_stream_->Reset(base::Bind(&VideoFrameStreamTest::OnReset,
                                               base::Unretained(this)));
-        message_loop_.RunUntilIdle();
-        break;
-
-      case DECODER_STOP:
-        decoder_->HoldNextStop();
-        // Check that the pipeline statistics callback was fired correctly.
-        EXPECT_EQ(decoder_->total_bytes_decoded(), total_bytes_decoded_);
-        pending_stop_ = true;
-        video_frame_stream_->Stop(base::Bind(&VideoFrameStreamTest::OnStopped,
-                                             base::Unretained(this)));
         message_loop_.RunUntilIdle();
         break;
 
@@ -275,17 +265,12 @@ class VideoFrameStreamTest
         decoder_->SatisfyInit();
         break;
 
-      case DECODER_READ:
-        decoder_->SatisfyRead();
+      case DECODER_DECODE:
+        decoder_->SatisfyDecode();
         break;
 
       case DECODER_RESET:
         decoder_->SatisfyReset();
-        break;
-
-      case DECODER_STOP:
-        DCHECK(pending_stop_);
-        decoder_->SatisfyStop();
         break;
 
       case NOT_PENDING:
@@ -302,8 +287,8 @@ class VideoFrameStreamTest
   }
 
   void Read() {
-    EnterPendingState(DECODER_READ);
-    SatisfyPendingCallback(DECODER_READ);
+    EnterPendingState(DECODER_DECODE);
+    SatisfyPendingCallback(DECODER_DECODE);
   }
 
   void Reset() {
@@ -312,8 +297,12 @@ class VideoFrameStreamTest
   }
 
   void Stop() {
-    EnterPendingState(DECODER_STOP);
-    SatisfyPendingCallback(DECODER_STOP);
+    // Check that the pipeline statistics callback was fired correctly.
+    EXPECT_EQ(decoder_->total_bytes_decoded(), total_bytes_decoded_);
+    pending_stop_ = true;
+    video_frame_stream_->Stop(base::Bind(&VideoFrameStreamTest::OnStopped,
+                                         base::Unretained(this)));
+    message_loop_.RunUntilIdle();
   }
 
   base::MessageLoop message_loop_;
@@ -422,11 +411,11 @@ TEST_P(VideoFrameStreamTest, Reset_DuringDemuxerRead_ConfigChange) {
   Read();
 }
 
-TEST_P(VideoFrameStreamTest, Reset_DuringNormalDecoderRead) {
+TEST_P(VideoFrameStreamTest, Reset_DuringNormalDecoderDecode) {
   Initialize();
-  EnterPendingState(DECODER_READ);
+  EnterPendingState(DECODER_DECODE);
   EnterPendingState(DECODER_RESET);
-  SatisfyPendingCallback(DECODER_READ);
+  SatisfyPendingCallback(DECODER_DECODE);
   SatisfyPendingCallback(DECODER_RESET);
   Read();
 }
@@ -474,9 +463,7 @@ TEST_P(VideoFrameStreamTest, Stop_DuringSetDecryptor) {
 
 TEST_P(VideoFrameStreamTest, Stop_DuringInitialization) {
   EnterPendingState(DECODER_INIT);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DECODER_INIT);
-  SatisfyPendingCallback(DECODER_STOP);
+  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_AfterInitialization) {
@@ -487,9 +474,7 @@ TEST_P(VideoFrameStreamTest, Stop_AfterInitialization) {
 TEST_P(VideoFrameStreamTest, Stop_DuringReinitialization) {
   Initialize();
   EnterPendingState(DECODER_REINIT);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DECODER_REINIT);
-  SatisfyPendingCallback(DECODER_STOP);
+  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_AfterReinitialization) {
@@ -502,25 +487,19 @@ TEST_P(VideoFrameStreamTest, Stop_AfterReinitialization) {
 TEST_P(VideoFrameStreamTest, Stop_DuringDemuxerRead_Normal) {
   Initialize();
   EnterPendingState(DEMUXER_READ_NORMAL);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DEMUXER_READ_NORMAL);
-  SatisfyPendingCallback(DECODER_STOP);
+  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_DuringDemuxerRead_ConfigChange) {
   Initialize();
   EnterPendingState(DEMUXER_READ_CONFIG_CHANGE);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DEMUXER_READ_CONFIG_CHANGE);
-  SatisfyPendingCallback(DECODER_STOP);
+  Stop();
 }
 
-TEST_P(VideoFrameStreamTest, Stop_DuringNormalDecoderRead) {
+TEST_P(VideoFrameStreamTest, Stop_DuringNormalDecoderDecode) {
   Initialize();
-  EnterPendingState(DECODER_READ);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DECODER_READ);
-  SatisfyPendingCallback(DECODER_STOP);
+  EnterPendingState(DECODER_DECODE);
+  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_AfterNormalRead) {
@@ -545,9 +524,7 @@ TEST_P(VideoFrameStreamTest, Stop_DuringNoKeyRead) {
 TEST_P(VideoFrameStreamTest, Stop_DuringReset) {
   Initialize();
   EnterPendingState(DECODER_RESET);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DECODER_RESET);
-  SatisfyPendingCallback(DECODER_STOP);
+  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_AfterReset) {
@@ -558,22 +535,17 @@ TEST_P(VideoFrameStreamTest, Stop_AfterReset) {
 
 TEST_P(VideoFrameStreamTest, Stop_DuringRead_DuringReset) {
   Initialize();
-  EnterPendingState(DECODER_READ);
+  EnterPendingState(DECODER_DECODE);
   EnterPendingState(DECODER_RESET);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DECODER_READ);
-  SatisfyPendingCallback(DECODER_RESET);
-  SatisfyPendingCallback(DECODER_STOP);
+  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_AfterRead_DuringReset) {
   Initialize();
-  EnterPendingState(DECODER_READ);
+  EnterPendingState(DECODER_DECODE);
   EnterPendingState(DECODER_RESET);
-  SatisfyPendingCallback(DECODER_READ);
-  EnterPendingState(DECODER_STOP);
-  SatisfyPendingCallback(DECODER_RESET);
-  SatisfyPendingCallback(DECODER_STOP);
+  SatisfyPendingCallback(DECODER_DECODE);
+  Stop();
 }
 
 TEST_P(VideoFrameStreamTest, Stop_AfterRead_AfterReset) {
