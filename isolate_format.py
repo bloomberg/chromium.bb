@@ -16,6 +16,7 @@ import ast
 import itertools
 import logging
 import os
+import posixpath
 import re
 import sys
 
@@ -516,13 +517,49 @@ class ConfigSettings(object):
   def union(self, rhs):
     """Merges two config settings together into a new instance.
 
-    self has priority over rhs for .command. Use the same
-    .isolate_dir as the one having a .command. Preferring self over rhs.
+    A new instance is not created and self or rhs is returned if the other
+    object is the empty object.
+
+    self has priority over rhs for .command. Use the same .isolate_dir as the
+    one having a .command.
+
+    Dependencies listed in rhs are patch adjusted ONLY if they don't start with
+    a path variable, e.g. the characters '<('.
     """
+    # When an object has .isolate_dir == None, it means it is the empty object.
+    if rhs.isolate_dir is None:
+      return self
+    if self.isolate_dir is None:
+      return rhs
+
+    if sys.platform == 'win32':
+      assert self.isolate_dir[0].lower() == rhs.isolate_dir[0].lower()
+
+    # Takes the difference between the two isolate_dir. Note that while
+    # isolate_dir is in native path case, all other references are in posix.
+    l_rel_cwd, r_rel_cwd = self.isolate_dir, rhs.isolate_dir
+    use_rhs = bool(not self.command and rhs.command)
+    if use_rhs:
+      # Rebase files in rhs.
+      l_rel_cwd, r_rel_cwd = r_rel_cwd, l_rel_cwd
+
+    rebase_path = os.path.relpath(r_rel_cwd, l_rel_cwd).replace(
+        os.path.sep, '/')
+    def rebase_item(f):
+      if f.startswith('<(') or rebase_path == '.':
+        return f
+      return posixpath.join(rebase_path, f)
+
+    def map_both(l, r):
+      """Rebase items in either lhs or rhs, as needed."""
+      if use_rhs:
+        l, r = r, l
+      return sorted(l + map(rebase_item, r))
+
     var = {
-      KEY_TOUCHED: sorted(self.touched + rhs.touched),
-      KEY_TRACKED: sorted(self.tracked + rhs.tracked),
-      KEY_UNTRACKED: sorted(self.untracked + rhs.untracked),
+      KEY_TOUCHED: map_both(self.touched, rhs.touched),
+      KEY_TRACKED: map_both(self.tracked, rhs.tracked),
+      KEY_UNTRACKED: map_both(self.untracked, rhs.untracked),
       'command': self.command or rhs.command,
       'read_only': rhs.read_only if self.read_only is None else self.read_only,
     }

@@ -264,7 +264,8 @@ class IsolateTempdir(unittest.TestCase):
       expected[u'command'] = [u'python'] + [unicode(x) for x in args]
     self.assertEqual(expected, json.load(open(self.isolated, 'r')))
 
-  def _expected_saved_state(self, args, read_only, empty_file, extra_vars):
+  def _expected_saved_state(
+      self, args, read_only, empty_file, extra_vars, root_dir):
     expected = {
       u'OS': unicode(sys.platform),
       u'algo': u'sha-1',
@@ -281,8 +282,9 @@ class IsolateTempdir(unittest.TestCase):
       u'isolate_file': file_path.safe_relpath(
           file_path.get_native_path_case(unicode(self.filename())),
           unicode(os.path.dirname(self.isolated))),
-      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'path_variables': {},
+      u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
+      u'root_dir': unicode(root_dir or os.path.dirname(self.filename())),
       u'version': unicode(isolate.SavedState.EXPECTED_VERSION),
     }
     if args:
@@ -290,9 +292,11 @@ class IsolateTempdir(unittest.TestCase):
     expected['extra_variables'].update(extra_vars or {})
     self.assertEqual(expected, json.load(open(self.saved_state(), 'r')))
 
-  def _expect_results(self, args, read_only, extra_vars, empty_file):
+  def _expect_results(
+      self, args, read_only, extra_vars, empty_file, root_dir=None):
     self._expected_isolated(args, read_only, empty_file)
-    self._expected_saved_state(args, read_only, empty_file, extra_vars)
+    self._expected_saved_state(
+        args, read_only, empty_file, extra_vars, root_dir)
     # Also verifies run_isolated.py will be able to read it.
     with open(self.isolated, 'rb') as f:
       isolate.isolateserver.load_isolated(f.read(), ALGO)
@@ -463,7 +467,7 @@ class Isolate_check(IsolateTempdir):
 
   def test_touch_root(self):
     self._execute('check', 'touch_root.isolate', [], False)
-    self._expect_results(['touch_root.py'], None, None, None)
+    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
 
   def test_with_flag(self):
     self._execute(
@@ -588,7 +592,7 @@ class Isolate_hashtable(IsolateOutdir):
   def test_touch_root(self):
     self._execute('hashtable', 'touch_root.isolate', [], False)
     self._expected_hash_tree(None)
-    self._expect_results(['touch_root.py'], None, None, None)
+    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
 
   def test_with_flag(self):
     self._execute(
@@ -669,7 +673,7 @@ class Isolate_remap(IsolateOutdir):
   def test_touch_root(self):
     self._execute('remap', 'touch_root.isolate', [], False)
     self._expected_tree()
-    self._expect_results(['touch_root.py'], None, None, None)
+    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
 
   def test_with_flag(self):
     self._execute(
@@ -734,7 +738,7 @@ class Isolate_run(IsolateTempdir):
 
   def test_touch_root(self):
     self._execute('run', 'touch_root.isolate', [], False)
-    self._expect_results(['touch_root.py'], None, None, None)
+    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
 
   def test_with_flag(self):
     self._execute(
@@ -839,7 +843,7 @@ class Isolate_trace_read_merge(IsolateTempdir):
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
     self.assertEqual('', out)
-    self._expect_results(['touch_root.py'], None, None, None)
+    self._expect_results(['touch_root.py'], None, None, None, ROOT_DIR)
     expected = _wrap_in_condition(
         {
           KEY_TRACKED: [
@@ -1075,7 +1079,6 @@ class IsolateOther(IsolateTempdir):
     os.rename(indir, indir2)
 
     # simple.isolated.state is required; it contains the variables.
-    # This should still work.
     proc = subprocess.Popen(
         [
           sys.executable, 'isolate.py', 'run',
@@ -1087,8 +1090,8 @@ class IsolateOther(IsolateTempdir):
         cwd=ROOT_DIR,
         universal_newlines=True)
     stdout = proc.communicate()[0]
-    self.assertEqual('Simply works.\n', stdout)
-    self.assertEqual(0, proc.returncode)
+    self.assertEqual(1, proc.returncode)
+    self.assertTrue('simple.py is missing' in stdout)
 
   def test_empty_and_renamed(self):
     a_isolate = os.path.join(self.tempdir, 'a.isolate')

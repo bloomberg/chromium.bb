@@ -1347,15 +1347,20 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       ('amiga',): {
         'command': ['foo', 'amiga_or_win'],
         'isolate_dependency_tracked': [
-          'file_amiga',
+          # Note that the file was rebased from isolate1. This is important,
+          # isolate1 represent the canonical root path because it is the one
+          # that defined the command.
+          '../3/file_amiga',
         ],
         'isolate_dir': dir_1,
       },
       ('linux',): {
-        # Last included takes precedence.
+        # Last included takes precedence. *command comes from isolate2*, so
+        # it becomes the canonical root, so reference to file from isolate1 is
+        # via '../../1'.
         'command': ['foo', 'linux_or_mac'],
         'isolate_dependency_tracked': [
-          'file_linux',
+          '../../1/file_linux',
           'other/file',
         ],
         'isolate_dir': dir_3_2,
@@ -1364,9 +1369,9 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
         # command in isolate3 takes precedence over the ones included.
         'command': ['foo', 'mac'],
         'isolate_dependency_tracked': [
+          '../1/file_non_linux',
+          '2/other/file',
           'file_mac',
-          'file_non_linux',
-          'other/file',
         ],
         'isolate_dir': dir_3,
       },

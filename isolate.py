@@ -476,12 +476,17 @@ class SavedState(Flattenable):
     'read_only',
     # Relative cwd to use to start the command.
     'relative_cwd',
+    # Root directory the files are mapped from.
+    'root_dir',
     # Version of the saved state file format. Any breaking change must update
     # the value.
     'version',
   )
 
-  EXPECTED_VERSION = isolateserver.ISOLATED_FILE_VERSION + '1'
+  # Bump this version whenever the saved state changes. It is also keyed on the
+  # .isolated file version so any change in the generator will invalidate .state
+  # files.
+  EXPECTED_VERSION = isolateserver.ISOLATED_FILE_VERSION + '.2'
 
   def __init__(self, isolated_basedir):
     """Creates an empty SavedState.
@@ -507,10 +512,14 @@ class SavedState(Flattenable):
     self.path_variables = {}
     self.read_only = None
     self.relative_cwd = None
+    self.root_dir = None
     self.version = self.EXPECTED_VERSION
 
-  def update(
-      self, isolate_file, path_variables, config_variables, extra_variables):
+  def update_config(self, config_variables):
+    """Updates the saved state with only config variables."""
+    self.config_variables.update(config_variables)
+
+  def update(self, isolate_file, path_variables, extra_variables):
     """Updates the saved state with new data to keep GYP variables and internal
     reference to the original .isolate file.
     """
@@ -524,7 +533,6 @@ class SavedState(Flattenable):
     # .isolated.state.
     assert isolate_file == self.isolate_file or not self.isolate_file, (
         isolate_file, self.isolate_file)
-    self.config_variables.update(config_variables)
     self.extra_variables.update(extra_variables)
     self.isolate_file = isolate_file
     self.path_variables.update(path_variables)
@@ -600,8 +608,6 @@ class SavedState(Flattenable):
     # Refuse the load non-exact version, even minor difference. This is unlike
     # isolateserver.load_isolated(). This is because .isolated.state could have
     # changed significantly even in minor version difference.
-    if not re.match(r'^(\d+)\.(\d+)$', out.version):
-      raise isolateserver.ConfigError('Unknown version \'%s\'' % out.version)
     if out.version != cls.EXPECTED_VERSION:
       raise isolateserver.ConfigError(
           'Unsupported version \'%s\'' % out.version)
@@ -677,15 +683,10 @@ class CompleteState(object):
         'CompleteState.load_isolate(%s, %s, %s, %s, %s, %s)',
         cwd, isolate_file, path_variables, config_variables, extra_variables,
         ignore_broken_items)
-    relative_base_dir = os.path.dirname(isolate_file)
 
-    # Processes the variables.
-    path_variables = normalize_path_variables(
-        cwd, path_variables, relative_base_dir)
-    # Update the saved state.
-    self.saved_state.update(
-        isolate_file, path_variables, config_variables, extra_variables)
-    path_variables = self.saved_state.path_variables
+    # Config variables are not affected by the paths and must be used to
+    # retrieve the paths, so update them first.
+    self.saved_state.update_config(config_variables)
 
     with open(isolate_file, 'r') as f:
       # At that point, variables are not replaced yet in command and infiles.
@@ -694,6 +695,13 @@ class CompleteState(object):
           isolate_format.load_isolate_for_config(
               os.path.dirname(isolate_file), f.read(),
               self.saved_state.config_variables))
+
+    # Processes the variables with the new found relative root. Note that 'cwd'
+    # is used when path variables are used.
+    path_variables = normalize_path_variables(
+        cwd, path_variables, isolate_cmd_dir)
+    # Update the rest of the saved state.
+    self.saved_state.update(isolate_file, path_variables, extra_variables)
 
     total_variables = self.saved_state.path_variables.copy()
     total_variables.update(self.saved_state.config_variables)
@@ -713,38 +721,41 @@ class CompleteState(object):
     # root_dir is automatically determined by the deepest root accessed with the
     # form '../../foo/bar'. Note that path variables must be taken in account
     # too, add them as if they were input files.
-    root_dir = isolate_format.determine_root_dir(
+    self.saved_state.root_dir = isolate_format.determine_root_dir(
         isolate_cmd_dir, infiles + touched +
         self.saved_state.path_variables.values())
     # The relative directory is automatically determined by the relative path
     # between root_dir and the directory containing the .isolate file,
     # isolate_base_dir.
-    relative_cwd = os.path.relpath(isolate_cmd_dir, root_dir)
+    relative_cwd = os.path.relpath(isolate_cmd_dir, self.saved_state.root_dir)
     # Now that we know where the root is, check that the path_variables point
     # inside it.
     for k, v in self.saved_state.path_variables.iteritems():
-      if not file_path.path_starts_with(
-          root_dir, os.path.join(relative_base_dir, v)):
+      dest = os.path.join(isolate_cmd_dir, relative_cwd, v)
+      if not file_path.path_starts_with(self.saved_state.root_dir, dest):
         raise isolateserver.MappingError(
-            'Path variable %s=%r points outside the inferred root directory %s'
-            % (k, v, root_dir))
-    # Normalize the files based to root_dir. It is important to keep the
-    # trailing os.path.sep at that step.
+            'Path variable %s=%r points outside the inferred root directory '
+            '%s; %s'
+            % (k, v, self.saved_state.root_dir, dest))
+    # Normalize the files based to self.saved_state.root_dir. It is important to
+    # keep the trailing os.path.sep at that step.
     infiles = [
       file_path.relpath(
-          file_path.normpath(os.path.join(relative_base_dir, f)), root_dir)
+          file_path.normpath(os.path.join(isolate_cmd_dir, f)),
+          self.saved_state.root_dir)
       for f in infiles
     ]
     touched = [
       file_path.relpath(
-          file_path.normpath(os.path.join(relative_base_dir, f)), root_dir)
+          file_path.normpath(os.path.join(isolate_cmd_dir, f)),
+          self.saved_state.root_dir)
       for f in touched
     ]
     follow_symlinks = sys.platform != 'win32'
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept. Do not expand 'touched'.
     infiles = expand_directories_and_symlinks(
-        root_dir,
+        self.saved_state.root_dir,
         infiles,
         lambda x: re.match(r'.*\.(git|svn|pyc)$', x),
         follow_symlinks,
@@ -803,36 +814,7 @@ class CompleteState(object):
 
   @property
   def root_dir(self):
-    """Returns the absolute path of the root_dir to reference the .isolate file
-    via relative_cwd.
-
-    So that join(root_dir, relative_cwd, basename(isolate_file)) is equivalent
-    to isolate_filepath.
-    """
-    if not self.saved_state.isolate_file:
-      raise ExecutionError('Please specify --isolate')
-    isolate_dir = os.path.dirname(self.saved_state.isolate_filepath)
-    # Special case '.'.
-    if self.saved_state.relative_cwd == '.':
-      root_dir = isolate_dir
-    else:
-      if not isolate_dir.endswith(self.saved_state.relative_cwd):
-        raise ExecutionError(
-            ('Make sure the .isolate file is in the directory that will be '
-             'used as the relative directory. It is currently in %s and should '
-             'be in %s') % (isolate_dir, self.saved_state.relative_cwd))
-      # Walk back back to the root directory.
-      root_dir = isolate_dir[:-(len(self.saved_state.relative_cwd) + 1)]
-    return file_path.get_native_path_case(root_dir)
-
-  @property
-  def resultdir(self):
-    """Returns the absolute path containing the .isolated file.
-
-    It is usually equivalent to the variable PRODUCT_DIR. Uses the .isolated
-    path as the value.
-    """
-    return os.path.dirname(self.isolated_filepath)
+    return self.saved_state.root_dir
 
   def __str__(self):
     def indent(data, indent_length):

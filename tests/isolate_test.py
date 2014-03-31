@@ -293,6 +293,7 @@ class IsolateLoad(IsolateBase):
           os.path.dirname(options.isolated)),
       'path_variables': {},
       'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'root_dir': file_path.get_native_path_case(ROOT_DIR),
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
@@ -350,6 +351,7 @@ class IsolateLoad(IsolateBase):
           os.path.dirname(options.isolated)),
       'path_variables': {},
       'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'root_dir': file_path.get_native_path_case(ROOT_DIR),
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
@@ -419,6 +421,7 @@ class IsolateLoad(IsolateBase):
         'TEST_ISOLATE': '.',
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'root_dir': file_path.get_native_path_case(ROOT_DIR),
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
@@ -501,6 +504,7 @@ class IsolateLoad(IsolateBase):
         'PRODUCT_DIR': '.',
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'root_dir': file_path.get_native_path_case(ROOT_DIR),
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
@@ -599,6 +603,7 @@ class IsolateLoad(IsolateBase):
         'PRODUCT_DIR': os.path.join(u'..', '..', 'third_party'),
       },
       'relative_cwd': os.path.join(u'tests', 'isolate'),
+      'root_dir': file_path.get_native_path_case(ROOT_DIR),
       'version': isolate.SavedState.EXPECTED_VERSION,
     }
     self._cleanup_isolated(expected_saved_state)
@@ -723,6 +728,8 @@ class IsolateLoad(IsolateBase):
         u'PRODUCT_DIR': u'files1',
       },
       u'relative_cwd': u'.',
+      u'root_dir': file_path.get_native_path_case(
+          os.path.dirname(isolate_file)),
       u'version': unicode(isolate.SavedState.EXPECTED_VERSION),
     }
     self._cleanup_isolated(expected_saved_state)
@@ -740,10 +747,6 @@ class IsolateLoad(IsolateBase):
     # directory will lead to the proper relative directory. See
     # test_load_with_includes_with_commands in isolate_format_test.py as
     # reference.
-
-    # TODO(maruel): This test is completely broken due to bug #98.
-    return
-    # pylint: disable=W0101
 
     # Exactly the same thing as in isolate_format_test.py
     isolate1 = {
@@ -1074,20 +1077,19 @@ class IsolateLoad(IsolateBase):
           'indeed',
         ],
         u'%s/amiga/isolate/1' % dir_name)
-    # TODO(maruel): It's going to be fixed soon, bug #98.
-    #test_with_os(
-    #    'linux',
-    #    (
-    #      u'file_linux',
-    #      u'other/file',
-    #    ),
-    #    [
-    #      'foo',
-    #      'linux_or_mac',
-    #      u'../../../../../%s/linux/path' % cwd_name,
-    #      'indeed',
-    #    ],
-    #    u'%s/linux/isolate/3/2' % dir_name)
+    test_with_os(
+        'linux',
+        (
+          u'file_linux',
+          u'other/file',
+        ),
+        [
+          'foo',
+          'linux_or_mac',
+          u'../../../../../%s/linux/path' % cwd_name,
+          'indeed',
+        ],
+        u'%s/linux/isolate/3/2' % dir_name)
     test_with_os(
         'mac',
         (
@@ -1124,6 +1126,7 @@ class IsolateCommand(IsolateBase):
     out = isolate.CompleteState(None, isolate.SavedState(self.cwd))
     out.saved_state.isolate_file = u'blah.isolate'
     out.saved_state.relative_cwd = u''
+    out.saved_state.root_dir = ROOT_DIR
     return out
 
   def test_CMDarchive(self):
@@ -1237,8 +1240,8 @@ class IsolateCommand(IsolateBase):
         '"config_variables":{"OS":"dendy"},'
         '"extra_variables":{"EXECUTABLE_SUFFIX":""},"files":{},'
         '"isolate_file":"x.isolate","path_variables":{},'
-        '"relative_cwd":".","version":"%s"}'
-    ) % (sys.platform, isolate.SavedState.EXPECTED_VERSION)
+        '"relative_cwd":".","root_dir":"%s","version":"%s"}'
+    ) % (sys.platform, self.cwd, isolate.SavedState.EXPECTED_VERSION)
     self.assertEqual(expected_isolated_state, actual_isolated_state)
     isolated_state_data = json.loads(actual_isolated_state)
 
