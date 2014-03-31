@@ -378,7 +378,7 @@ bool ContentSettingsObserver::allowReadFromClipboard(WebFrame* frame,
   bool allowed = false;
   // TODO(dcheng): Should we consider a toURL() method on WebSecurityOrigin?
   Send(new ChromeViewHostMsg_CanTriggerClipboardRead(
-      GURL(frame->document().securityOrigin().toString().utf8()), &allowed));
+      GURL(frame->document().securityOrigin().toString()), &allowed));
   return allowed;
 }
 
@@ -386,7 +386,7 @@ bool ContentSettingsObserver::allowWriteToClipboard(WebFrame* frame,
                                                     bool default_value) {
   bool allowed = false;
   Send(new ChromeViewHostMsg_CanTriggerClipboardWrite(
-      GURL(frame->document().securityOrigin().toString().utf8()), &allowed));
+      GURL(frame->document().securityOrigin().toString()), &allowed));
   return allowed;
 }
 

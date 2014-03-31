@@ -37,8 +37,7 @@ void MidiDispatcher::requestSysexPermission(
       const WebMIDIPermissionRequest& request) {
   int bridge_id = requests_.Add(new WebMIDIPermissionRequest(request));
   WebSecurityOrigin security_origin = request.securityOrigin();
-  std::string origin = security_origin.toString().utf8();
-  GURL url(origin);
+  GURL url(security_origin.toString());
   Send(new MidiHostMsg_RequestSysExPermission(routing_id(), bridge_id, url,
       blink::WebUserGestureIndicator::isProcessingUserGesture()));
 }

@@ -1525,7 +1525,7 @@ WebView* RenderViewImpl::createView(
       RenderFrameImpl::FromWebFrame(creator)->GetRoutingID();
   params.opener_url = creator->document().url();
   params.opener_top_level_frame_url = creator->top()->document().url();
-  GURL security_url(creator->document().securityOrigin().toString().utf8());
+  GURL security_url(creator->document().securityOrigin().toString());
   if (!security_url.is_valid())
     security_url = GURL();
   params.opener_security_origin = security_url;
