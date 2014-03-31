@@ -45,6 +45,8 @@
         'chromeos/x11/touchscreen_delegate_x11.h',
         'display_constants.h',
         'display_export.h',
+        'display_switches.cc',
+        'display_switches.h',
         'edid_parser.cc',
         'edid_parser.h',
         'x11/edid_parser_x11.cc',

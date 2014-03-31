@@ -31,6 +31,7 @@
 #include "media/base/media_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
@@ -1065,6 +1066,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_MULTI_PROFILES_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kMultiProfiles),
+  },
+  {
+    "disable-display-color-calibration",
+    IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_NAME,
+    IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ui::switches::kDisableDisplayColorCalibration),
   },
 #endif  // defined(OS_CHROMEOS)
   { "disable-accelerated-video-decode",

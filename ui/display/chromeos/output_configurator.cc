@@ -5,6 +5,7 @@
 #include "ui/display/chromeos/output_configurator.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -13,6 +14,7 @@
 #include "ui/display/chromeos/display_mode.h"
 #include "ui/display/chromeos/display_snapshot.h"
 #include "ui/display/chromeos/native_display_delegate.h"
+#include "ui/display/display_switches.h"
 
 #if defined(USE_OZONE)
 #include "ui/display/chromeos/ozone/native_display_delegate_ozone.h"
@@ -402,11 +404,14 @@ bool OutputConfigurator::EnableOutputProtection(
 std::vector<ui::ColorCalibrationProfile>
 OutputConfigurator::GetAvailableColorCalibrationProfiles(
     int64_t display_id) {
-  for (size_t i = 0; i < cached_outputs_.size(); ++i) {
-    if (cached_outputs_[i].display &&
-        cached_outputs_[i].display->display_id() == display_id) {
-      return native_display_delegate_->GetAvailableColorCalibrationProfiles(
-          *cached_outputs_[i].display);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDisplayColorCalibration)) {
+    for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+      if (cached_outputs_[i].display &&
+          cached_outputs_[i].display->display_id() == display_id) {
+        return native_display_delegate_->GetAvailableColorCalibrationProfiles(
+            *cached_outputs_[i].display);
+      }
     }
   }
 
