@@ -166,14 +166,6 @@ bool IsElementEditable(const blink::WebInputElement& element) {
   return element.isEnabled() && !element.isReadOnly();
 }
 
-void SetElementAutofilled(blink::WebInputElement* element, bool autofilled) {
-  if (element->isAutofilled() == autofilled)
-    return;
-  element->setAutofilled(autofilled);
-  // Notify any changeEvent listeners.
-  element->dispatchFormControlChangeEvent();
-}
-
 bool DoUsernamesMatch(const base::string16& username1,
                       const base::string16& username2,
                       bool exact_match) {
@@ -297,11 +289,12 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   // The input text is being changed, so any autofilled password is now
   // outdated.
   blink::WebInputElement username = element;  // We need a non-const.
+  username.setAutofilled(false);
+
   blink::WebInputElement password = iter->second.password_field;
-  SetElementAutofilled(&username, false);
   if (password.isAutofilled()) {
-    password.setValue(base::string16());
-    SetElementAutofilled(&password, false);
+    password.setValue(base::string16(), true);
+    password.setAutofilled(false);
   }
 
   // If wait_for_username is true we will fill when the username loses focus.
@@ -812,7 +805,7 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // Input matches the username, fill in required values.
   if (IsElementAutocompletable(*username_element)) {
     username_element->setValue(username, true);
-    SetElementAutofilled(username_element, true);
+    username_element->setAutofilled(true);
 
     if (set_selection) {
       username_element->setSelectionRange(current_username.length(),
@@ -836,9 +829,6 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   password_element->setValue(password);
 #endif
 
-  // Note: Don't call SetElementAutofilled() here, as that dispatches an
-  // onChange event in JavaScript, which is not appropriate for the password
-  // element if a user gesture has not yet occured.
   password_element->setAutofilled(true);
   return true;
 }

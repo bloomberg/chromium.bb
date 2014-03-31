@@ -58,12 +58,12 @@ using base::ASCIIToUTF16;
 
 namespace autofill {
 
-static const char* kDataURIPrefix = "data:text/html;charset=utf-8,";
-static const char* kTestFormString =
+static const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
+static const char kTestFormString[] =
     "<form action=\"http://www.example.com/\" method=\"POST\">"
     "<label for=\"firstname\">First name:</label>"
     " <input type=\"text\" id=\"firstname\""
-    "        onFocus=\"domAutomationController.send(true)\"><br>"
+    "        onfocus=\"domAutomationController.send(true)\"><br>"
     "<label for=\"lastname\">Last name:</label>"
     " <input type=\"text\" id=\"lastname\"><br>"
     "<label for=\"address1\">Address line 1:</label>"
@@ -489,13 +489,83 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillSelectViaTab) {
   ExpectFilledTestForm();
 }
 
-// Test that a JavaScript onchange event is fired after auto-filling a form.
-// Temporarily disabled for crbug.com/353691.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       DISABLED_OnChangeAfterAutofill) {
+// Test that a JavaScript oninput event is fired after auto-filling a form.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnInputAfterAutofill) {
   CreateTestProfile();
 
-  const char* kOnChangeScript =
+  const char kOnInputScript[] =
+      "<script>"
+      "focused_fired = false;"
+      "unfocused_fired = false;"
+      "changed_select_fired = false;"
+      "unchanged_select_fired = false;"
+      "document.getElementById('firstname').oninput = function() {"
+      "  focused_fired = true;"
+      "};"
+      "document.getElementById('lastname').oninput = function() {"
+      "  unfocused_fired = true;"
+      "};"
+      "document.getElementById('state').oninput = function() {"
+      "  changed_select_fired = true;"
+      "};"
+      "document.getElementById('country').oninput = function() {"
+      "  unchanged_select_fired = true;"
+      "};"
+      "document.getElementById('country').value = 'US';"
+      "</script>";
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString + kOnInputScript)));
+
+  // Invoke Autofill.
+  FocusFirstNameField();
+
+  // Start filling the first name field with "M" and wait for the popup to be
+  // shown.
+  SendKeyToPageAndWait(ui::VKEY_M);
+
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+
+  // Press Enter to accept the autofill suggestions.
+  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+
+  // The form should be filled.
+  ExpectFilledTestForm();
+
+  bool focused_fired = false;
+  bool unfocused_fired = false;
+  bool changed_select_fired = false;
+  bool unchanged_select_fired = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(),
+      "domAutomationController.send(focused_fired);",
+      &focused_fired));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(),
+      "domAutomationController.send(unfocused_fired);",
+      &unfocused_fired));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(),
+      "domAutomationController.send(changed_select_fired);",
+      &changed_select_fired));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(),
+      "domAutomationController.send(unchanged_select_fired);",
+      &unchanged_select_fired));
+  EXPECT_TRUE(focused_fired);
+  EXPECT_TRUE(unfocused_fired);
+  EXPECT_TRUE(changed_select_fired);
+  EXPECT_FALSE(unchanged_select_fired);
+}
+
+// Test that a JavaScript onchange event is fired after auto-filling a form.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnChangeAfterAutofill) {
+  CreateTestProfile();
+
+  const char kOnChangeScript[] =
       "<script>"
       "focused_fired = false;"
       "unfocused_fired = false;"
@@ -537,9 +607,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   // The form should be filled.
   ExpectFilledTestForm();
 
-  // The change event should have already fired for unfocused fields, both of
-  // <input> and of <select> type. However, it should not yet have fired for the
-  // focused field.
   bool focused_fired = false;
   bool unfocused_fired = false;
   bool changed_select_fired = false;
@@ -560,17 +627,88 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
       GetRenderViewHost(),
       "domAutomationController.send(unchanged_select_fired);",
       &unchanged_select_fired));
-  EXPECT_FALSE(focused_fired);
+  EXPECT_TRUE(focused_fired);
   EXPECT_TRUE(unfocused_fired);
   EXPECT_TRUE(changed_select_fired);
   EXPECT_FALSE(unchanged_select_fired);
+}
 
-  // Unfocus the first name field. Its change event should fire.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, InputFiresBeforeChange) {
+  CreateTestProfile();
+
+  const char kInputFiresBeforeChangeScript[] =
+      "<script>"
+      "inputElementEvents = [];"
+      "function recordInputElementEvent(e) {"
+      "  if (e.target.tagName != 'INPUT') throw 'only <input> tags allowed';"
+      "  inputElementEvents.push(e.type);"
+      "}"
+      "selectElementEvents = [];"
+      "function recordSelectElementEvent(e) {"
+      "  if (e.target.tagName != 'SELECT') throw 'only <select> tags allowed';"
+      "  selectElementEvents.push(e.type);"
+      "}"
+      "document.getElementById('lastname').oninput = recordInputElementEvent;"
+      "document.getElementById('lastname').onchange = recordInputElementEvent;"
+      "document.getElementById('country').oninput = recordSelectElementEvent;"
+      "document.getElementById('country').onchange = recordSelectElementEvent;"
+      "</script>";
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString +
+           kInputFiresBeforeChangeScript)));
+
+  // Invoke and accept the Autofill popup and verify the form was filled.
+  FocusFirstNameField();
+  SendKeyToPageAndWait(ui::VKEY_M);
+  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+  SendKeyToPopupAndWait(ui::VKEY_RETURN);
+  ExpectFilledTestForm();
+
+  int num_input_element_events = -1;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
       GetRenderViewHost(),
-      "document.getElementById('firstname').blur();"
-      "domAutomationController.send(focused_fired);", &focused_fired));
-  EXPECT_TRUE(focused_fired);
+      "domAutomationController.send(inputElementEvents.length);",
+      &num_input_element_events));
+  EXPECT_EQ(2, num_input_element_events);
+
+  std::vector<std::string> input_element_events;
+  input_element_events.resize(2);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetRenderViewHost(),
+      "domAutomationController.send(inputElementEvents[0]);",
+      &input_element_events[0]));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetRenderViewHost(),
+      "domAutomationController.send(inputElementEvents[1]);",
+      &input_element_events[1]));
+
+  EXPECT_EQ("input", input_element_events[0]);
+  EXPECT_EQ("change", input_element_events[1]);
+
+  int num_select_element_events = -1;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      GetRenderViewHost(),
+      "domAutomationController.send(selectElementEvents.length);",
+      &num_select_element_events));
+  EXPECT_EQ(2, num_select_element_events);
+
+  std::vector<std::string> select_element_events;
+  select_element_events.resize(2);
+
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetRenderViewHost(),
+      "domAutomationController.send(selectElementEvents[0]);",
+      &select_element_events[0]));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      GetRenderViewHost(),
+      "domAutomationController.send(selectElementEvents[1]);",
+      &select_element_events[1]));
+
+  EXPECT_EQ("input", select_element_events[0]);
+  EXPECT_EQ("change", select_element_events[1]);
 }
 
 // Test that we can autofill forms distinguished only by their |id| attribute.
@@ -609,7 +747,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillFormWithRepeatedField) {
            "<form action=\"http://www.example.com/\" method=\"POST\">"
            "<label for=\"firstname\">First name:</label>"
            " <input type=\"text\" id=\"firstname\""
-           "        onFocus=\"domAutomationController.send(true)\"><br>"
+           "        onfocus=\"domAutomationController.send(true)\"><br>"
            "<label for=\"lastname\">Last name:</label>"
            " <input type=\"text\" id=\"lastname\"><br>"
            "<label for=\"address1\">Address line 1:</label>"
@@ -655,7 +793,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
            "<form action=\"http://www.example.com/\" method=\"POST\">"
            "<label for=\"firstname\">First name:</label>"
            " <input type=\"text\" id=\"firstname\""
-           "        onFocus=\"domAutomationController.send(true)\"><br>"
+           "        onfocus=\"domAutomationController.send(true)\"><br>"
            "<label for=\"middlename\">Middle name:</label>"
            " <input type=\"text\" id=\"middlename\" autocomplete=\"off\" /><br>"
            "<label for=\"lastname\">Last name:</label>"
@@ -735,10 +873,11 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicFormFill) {
            "    input_element.setAttribute('id', name);"
            "    input_element.setAttribute('name', name);"
            ""
-           "    /* Add the onFocus listener to the 'firstname' field. */"
+           "    /* Add the onfocus listener to the 'firstname' field. */"
            "    if (name === 'firstname') {"
-           "      input_element.setAttribute("
-           "          'onFocus', 'domAutomationController.send(true)');"
+           "      input_element.onfocus = function() {"
+           "        domAutomationController.send(true);"
+           "      };"
            "    }"
            ""
            "    form.appendChild(input_element);"
@@ -799,7 +938,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
                "<form action=\"http://www.example.com/\" method=\"POST\">"
                "<label for=\"fn\">なまえ</label>"
                " <input type=\"text\" id=\"fn\""
-               "        onFocus=\"domAutomationController.send(true)\""
+               "        onfocus=\"domAutomationController.send(true)\""
                "><br>"
                "<label for=\"ln\">みょうじ</label>"
                " <input type=\"text\" id=\"ln\"><br>"

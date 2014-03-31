@@ -206,9 +206,7 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
         input_element->setSelectionRange(length, length);
       }
     } else if (IsTextAreaElement(control_element)) {
-      WebTextAreaElement text_area = control_element.to<WebTextAreaElement>();
-      text_area.setValue(base::string16());
-      text_area.dispatchFormControlChangeEvent();
+      control_element.setValue(base::string16(), true);
     } else if (IsSelectElement(control_element)) {
       WebSelectElement select_element = control_element.to<WebSelectElement>();
 
@@ -216,8 +214,7 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
           initial_value_iter = initial_select_values_.find(select_element);
       if (initial_value_iter != initial_select_values_.end() &&
           select_element.value() != initial_value_iter->second) {
-        select_element.setValue(initial_value_iter->second);
-        select_element.dispatchFormControlChangeEvent();
+        select_element.setValue(initial_value_iter->second, true);
       }
     } else {
       WebInputElement input_element = control_element.to<WebInputElement>();
