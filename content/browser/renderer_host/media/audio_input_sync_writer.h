@@ -7,6 +7,7 @@
 
 #include "base/process/process.h"
 #include "base/sync_socket.h"
+#include "base/time/time.h"
 #include "media/audio/audio_input_controller.h"
 
 #if defined(OS_POSIX)
@@ -57,6 +58,12 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
   // Socket to be used by the renderer. The reference is released after
   // PrepareForeignSocketHandle() is called and ran successfully.
   scoped_ptr<base::CancelableSyncSocket> foreign_socket_;
+
+  // The time of the creation of this object.
+  base::Time creation_time_;
+
+  // The time of the last Write call.
+  base::Time last_write_time_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AudioInputSyncWriter);
 };
