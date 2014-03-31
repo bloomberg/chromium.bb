@@ -342,7 +342,10 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
   }
   content::MediaResponseCallback cb = callback_;
   callback_.Reset();
-  cb.Run(devices, content::MEDIA_DEVICE_OK, ui.Pass());
+  cb.Run(devices,
+         devices.empty() ?
+             content::MEDIA_DEVICE_NO_HARDWARE : content::MEDIA_DEVICE_OK,
+         ui.Pass());
 }
 
 void MediaStreamDevicesController::Deny(
