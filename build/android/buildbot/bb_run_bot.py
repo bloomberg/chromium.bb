@@ -68,7 +68,7 @@ def GetEnvironment(host_obj, testing, extra_env_vars=None):
     sys.exit(1)
   env = json.loads(json_env)
   env['GYP_DEFINES'] = env.get('GYP_DEFINES', '') + \
-      ' fastbuild=1 use_goma=1 gomadir=%s' % bb_utils.GOMA_DIR
+      ' OS=android fastbuild=1 use_goma=1 gomadir=%s' % bb_utils.GOMA_DIR
   if host_obj.target_arch:
     env['GYP_DEFINES'] += ' target_arch=%s' % host_obj.target_arch
   extra_gyp = host_obj.extra_gyp_defines
