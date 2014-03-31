@@ -16,3 +16,4 @@ handlers:
   upload: chrome-128.png
 - url: /.*
   script: appengine_main.py
+  secure: always
