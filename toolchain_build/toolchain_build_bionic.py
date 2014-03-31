@@ -29,11 +29,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-<<<<<<< HEAD
 BIONIC_VERSION = 'dc6a3b05fb2b0894088905031f8a5a92e975d023'
-=======
-BIONIC_VERSION = '1e9ce12c90dea60529450823aa07a76d76344386'
->>>>>>> master
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -124,7 +120,8 @@ def FetchBionicSources():
 
 def MungeIRT(src, dst):
   replace_map = {
-    'off_t': 'int64_t'
+    'off_t': 'int64_t',
+    'native_client/src/untrusted/irt/' : '',
   }
 
   with open(src, 'r') as srcf:
