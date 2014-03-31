@@ -10,7 +10,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
@@ -31,25 +30,24 @@ const int kMinUpdateIntervalSeconds = 5;
 
 GAIAInfoUpdateService::GAIAInfoUpdateService(Profile* profile)
     : profile_(profile) {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  signin_manager->AddObserver(this);
-
   PrefService* prefs = profile_->GetPrefs();
+  username_pref_.Init(prefs::kGoogleServicesUsername, prefs,
+                      base::Bind(&GAIAInfoUpdateService::OnUsernameChanged,
+                                 base::Unretained(this)));
+
   last_updated_ = base::Time::FromInternalValue(
       prefs->GetInt64(prefs::kProfileGAIAInfoUpdateTime));
   ScheduleNextUpdate();
 }
 
 GAIAInfoUpdateService::~GAIAInfoUpdateService() {
-  DCHECK(!profile_) << "Shutdown not called before dtor";
 }
 
 void GAIAInfoUpdateService::Update() {
   // The user must be logged in.
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  if (signin_manager->GetAuthenticatedAccountId().empty())
+  std::string username = profile_->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
+  if (username.empty())
     return;
 
   if (profile_image_downloader_)
@@ -153,13 +151,15 @@ void GAIAInfoUpdateService::OnProfileDownloadFailure(
   ScheduleNextUpdate();
 }
 
-void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
+void GAIAInfoUpdateService::OnUsernameChanged() {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile_->GetPath());
   if (profile_index == std::string::npos)
     return;
 
+  std::string username = profile_->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
   if (username.empty()) {
     // Unset the old user's GAIA info.
     cache.SetGAIANameOfProfileAtIndex(profile_index, base::string16());
@@ -174,19 +174,6 @@ void GAIAInfoUpdateService::OnUsernameChanged(const std::string& username) {
     // Update the new user's GAIA info.
     Update();
   }
-}
-
-void GAIAInfoUpdateService::Shutdown() {
-  timer_.Stop();
-  profile_image_downloader_.reset();
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  signin_manager->RemoveObserver(this);
-
-  // OK to reset |profile_| pointer here because GAIAInfoUpdateService will not
-  // access it again.  This pointer is also used to implement the delegate for
-  // |profile_image_downloader_|.  However that object was destroyed above.
-  profile_ = NULL;
 }
 
 void GAIAInfoUpdateService::ScheduleNextUpdate() {
@@ -204,14 +191,4 @@ void GAIAInfoUpdateService::ScheduleNextUpdate() {
     delta = desired_delta - update_delta;
 
   timer_.Start(FROM_HERE, delta, this, &GAIAInfoUpdateService::Update);
-}
-
-void GAIAInfoUpdateService::GoogleSigninSucceeded(
-    const std::string& username,
-    const std::string& password) {
-  OnUsernameChanged(username);
-}
-
-void GAIAInfoUpdateService::GoogleSignedOut(const std::string& username) {
-  OnUsernameChanged(std::string());
 }
