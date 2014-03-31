@@ -5,6 +5,9 @@
 #include "apps/launcher.h"
 
 #include "apps/apps_client.h"
+#include "apps/browser/api/app_runtime/app_runtime_api.h"
+#include "apps/browser/file_handler_util.h"
+#include "apps/common/api/app_runtime.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -12,11 +15,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/app_runtime.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -44,15 +45,15 @@
 #include "win8/util/win8_util.h"
 #endif
 
-namespace app_runtime = extensions::api::app_runtime;
+namespace app_runtime = apps::api::app_runtime;
 
+using apps::file_handler_util::GrantedFileEntry;
 using content::BrowserThread;
 using extensions::app_file_handler_util::CheckWritableFiles;
 using extensions::app_file_handler_util::FileHandlerForId;
 using extensions::app_file_handler_util::FileHandlerCanHandleFile;
 using extensions::app_file_handler_util::FirstFileHandlerForFile;
 using extensions::app_file_handler_util::CreateFileEntry;
-using extensions::app_file_handler_util::GrantedFileEntry;
 using extensions::app_file_handler_util::HasFileSystemWritePermission;
 using extensions::EventRouter;
 using extensions::Extension;
@@ -104,7 +105,7 @@ bool GetAbsolutePathFromCommandLine(const CommandLine& command_line,
 // load or obtain file launch data.
 void LaunchPlatformAppWithNoData(Profile* profile, const Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  extensions::AppEventRouter::DispatchOnLaunchedEvent(profile, extension);
+  AppEventRouter::DispatchOnLaunchedEvent(profile, extension);
 }
 
 // Class to handle launching of platform apps to open a specific path.
@@ -292,7 +293,7 @@ class PlatformAppPathLauncher
                         host->render_process_host()->GetID(),
                         file_path_,
                         false);
-    extensions::AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
+    AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
         profile_, extension_, handler_id_, mime_type, file_entry);
   }
 
@@ -384,7 +385,7 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
                                 app_runtime::OnRestarted::kEventName);
 
   if (listening_to_restart) {
-    extensions::AppEventRouter::DispatchOnRestartedEvent(profile, extension);
+    AppEventRouter::DispatchOnRestartedEvent(profile, extension);
     return;
   }
 
@@ -405,7 +406,7 @@ void LaunchPlatformAppWithUrl(Profile* profile,
                               const std::string& handler_id,
                               const GURL& url,
                               const GURL& referrer_url) {
-  extensions::AppEventRouter::DispatchOnLaunchedEventWithUrl(
+  AppEventRouter::DispatchOnLaunchedEventWithUrl(
       profile, extension, handler_id, url, referrer_url);
 }
 

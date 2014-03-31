@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
+#include "apps/common/api/generated_schemas.h"
 #include "base/command_line.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
@@ -154,15 +155,22 @@ bool ChromeExtensionsClient::IsScriptableURL(
 
 bool ChromeExtensionsClient::IsAPISchemaGenerated(
     const std::string& name) const {
+  // Test from most common to least common.
   return extensions::api::GeneratedSchemas::IsGenerated(name) ||
-         extensions::core_api::GeneratedSchemas::IsGenerated(name);
+         extensions::core_api::GeneratedSchemas::IsGenerated(name) ||
+         apps::api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ChromeExtensionsClient::GetAPISchema(
     const std::string& name) const {
+  // Test from most common to least common.
   if (extensions::api::GeneratedSchemas::IsGenerated(name))
     return extensions::api::GeneratedSchemas::Get(name);
-  return extensions::core_api::GeneratedSchemas::Get(name);
+
+  if (extensions::core_api::GeneratedSchemas::IsGenerated(name))
+    return extensions::core_api::GeneratedSchemas::Get(name);
+
+  return apps::api::GeneratedSchemas::Get(name);
 }
 
 // static

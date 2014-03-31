@@ -4,6 +4,7 @@
 
 #include "apps/shell/common/shell_extensions_client.h"
 
+#include "apps/common/api/generated_schemas.h"
 #include "base/logging.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
@@ -155,7 +156,8 @@ bool ShellExtensionsClient::IsAPISchemaGenerated(
   // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
   // moved out. See http://crbug.com/349042.
   return extensions::api::GeneratedSchemas::IsGenerated(name) ||
-         extensions::core_api::GeneratedSchemas::IsGenerated(name);
+         extensions::core_api::GeneratedSchemas::IsGenerated(name) ||
+         apps::api::GeneratedSchemas::IsGenerated(name);
 }
 
 base::StringPiece ShellExtensionsClient::GetAPISchema(
@@ -164,7 +166,11 @@ base::StringPiece ShellExtensionsClient::GetAPISchema(
   // moved out. See http://crbug.com/349042.
   if (extensions::api::GeneratedSchemas::IsGenerated(name))
     return extensions::api::GeneratedSchemas::Get(name);
-  return extensions::core_api::GeneratedSchemas::Get(name);
+
+  if (extensions::core_api::GeneratedSchemas::IsGenerated(name))
+    return extensions::core_api::GeneratedSchemas::Get(name);
+
+  return apps::api::GeneratedSchemas::Get(name);
 }
 
 }  // namespace apps

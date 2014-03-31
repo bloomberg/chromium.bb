@@ -6,6 +6,7 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
+#include "apps/browser/file_handler_util.h"
 #include "apps/saved_files_service.h"
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -322,7 +323,7 @@ void FileSystemEntryFunction::AddEntryToResponse(
     const base::FilePath& path,
     const std::string& id_override) {
   DCHECK(response_);
-  extensions::app_file_handler_util::GrantedFileEntry file_entry =
+  apps::file_handler_util::GrantedFileEntry file_entry =
       extensions::app_file_handler_util::CreateFileEntry(
           GetProfile(),
           GetExtension(),

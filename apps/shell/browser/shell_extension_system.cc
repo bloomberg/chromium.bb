@@ -75,7 +75,7 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
       content::NotificationService::NoDetails());
 
   // This is effectively the same behavior as
-  // extensions::AppEventRouter::DispatchOnLaunchedEvent without any dependency
+  // apps::AppEventRouter::DispatchOnLaunchedEvent without any dependency
   // on ExtensionSystem or Profile.
   scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue());
   launch_data->SetBoolean("isKioskSession", false);

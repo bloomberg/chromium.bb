@@ -16,6 +16,12 @@
 
 class Profile;
 
+namespace apps {
+namespace file_handler_util {
+struct GrantedFileEntry;
+}
+}
+
 namespace extensions {
 class ExtensionPrefs;
 
@@ -51,18 +57,9 @@ bool FileHandlerCanHandleFile(
     const std::string& mime_type,
     const base::FilePath& path);
 
-// Refers to a file entry that a renderer has been given access to.
-struct GrantedFileEntry {
-  GrantedFileEntry();
-
-  std::string id;
-  std::string filesystem_id;
-  std::string registered_name;
-};
-
 // Creates a new file entry and allows |renderer_id| to access |path|. This
 // registers a new file system for |path|.
-GrantedFileEntry CreateFileEntry(
+apps::file_handler_util::GrantedFileEntry CreateFileEntry(
     Profile* profile,
     const Extension* extension,
     int renderer_id,

@@ -4,6 +4,7 @@
 
 #include "apps/app_window.h"
 #include "apps/app_window_registry.h"
+#include "apps/common/api/app_runtime.h"
 #include "apps/launcher.h"
 #include "apps/ui/native_app_window.h"
 #include "base/bind.h"
@@ -29,7 +30,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/api/app_runtime.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_switches.h"
@@ -61,9 +61,9 @@ using apps::AppWindowRegistry;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 
-namespace extensions {
+namespace app_runtime = apps::api::app_runtime;
 
-namespace app_runtime = api::app_runtime;
+namespace extensions {
 
 namespace {
 

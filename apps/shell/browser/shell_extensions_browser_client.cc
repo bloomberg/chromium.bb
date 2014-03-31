@@ -4,6 +4,7 @@
 
 #include "apps/shell/browser/shell_extensions_browser_client.h"
 
+#include "apps/common/api/generated_api.h"
 #include "apps/shell/browser/shell_app_sorting.h"
 #include "apps/shell/browser/shell_extension_system_factory.h"
 #include "apps/shell/browser/shell_extension_web_contents_observer.h"
@@ -197,7 +198,10 @@ ShellExtensionsBrowserClient::GetExtensionSystemFactory() {
 
 void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {
+  // Generated APIs from lower-level modules.
   extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);
+  apps::api::GeneratedFunctionRegistry::RegisterAll(registry);
+
   // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
   // moved out. See http://crbug.com/349042.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);

@@ -1,26 +1,27 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
+#include "apps/browser/api/app_runtime/app_runtime_api.h"
 
+#include "apps/browser/file_handler_util.h"
+#include "apps/common/api/app_runtime.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
-#include "chrome/common/extensions/api/app_runtime.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 using content::BrowserContext;
+using extensions::Event;
+using extensions::Extension;
+using extensions::ExtensionPrefs;
+using extensions::ExtensionSystem;
 
-namespace extensions {
+namespace apps {
 
 namespace app_runtime = api::app_runtime;
 
@@ -29,17 +30,15 @@ namespace {
 void DispatchOnLaunchedEventImpl(const std::string& extension_id,
                                  scoped_ptr<base::DictionaryValue> launch_data,
                                  BrowserContext* context) {
-#if defined(OS_CHROMEOS)
-  launch_data->SetBoolean("isKioskSession",
-                          chromeos::UserManager::Get()->IsLoggedInAsKioskApp());
-#else
-  launch_data->SetBoolean("isKioskSession", false);
-#endif
+  // "Forced app mode" is true for Chrome OS kiosk mode.
+  launch_data->SetBoolean(
+      "isKioskSession",
+      extensions::ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode());
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(launch_data.release());
   ExtensionSystem* system = ExtensionSystem::Get(context);
-  scoped_ptr<Event> event(new Event(app_runtime::OnLaunched::kEventName,
-                                    args.Pass()));
+  scoped_ptr<Event> event(
+      new Event(app_runtime::OnLaunched::kEventName, args.Pass()));
   event->restrict_to_browser_context = context;
   event->can_load_ephemeral_apps = true;
   system->event_router()->DispatchEventWithLazyListener(extension_id,
@@ -61,8 +60,8 @@ void AppEventRouter::DispatchOnLaunchedEvent(BrowserContext* context,
 void AppEventRouter::DispatchOnRestartedEvent(BrowserContext* context,
                                               const Extension* extension) {
   scoped_ptr<base::ListValue> arguments(new base::ListValue());
-  scoped_ptr<Event> event(new Event(app_runtime::OnRestarted::kEventName,
-                                    arguments.Pass()));
+  scoped_ptr<Event> event(
+      new Event(app_runtime::OnRestarted::kEventName, arguments.Pass()));
   event->restrict_to_browser_context = context;
   event->can_load_ephemeral_apps = true;
   extensions::ExtensionSystem::Get(context)
@@ -76,7 +75,7 @@ void AppEventRouter::DispatchOnLaunchedEventWithFileEntry(
     const Extension* extension,
     const std::string& handler_id,
     const std::string& mime_type,
-    const extensions::app_file_handler_util::GrantedFileEntry& file_entry) {
+    const file_handler_util::GrantedFileEntry& file_entry) {
   // TODO(sergeygs): Use the same way of creating an event (using the generated
   // boilerplate) as below in DispatchOnLaunchedEventWithUrl.
   scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue);
@@ -107,4 +106,4 @@ void AppEventRouter::DispatchOnLaunchedEventWithUrl(
       extension->id(), launch_data.ToValue().Pass(), context);
 }
 
-}  // namespace extensions
+}  // namespace apps

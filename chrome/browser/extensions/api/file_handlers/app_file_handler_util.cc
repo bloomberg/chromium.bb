@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
+#include "apps/browser/file_handler_util.h"
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -19,6 +20,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #endif
+
+using apps::file_handler_util::GrantedFileEntry;
 
 namespace extensions {
 
@@ -347,8 +350,6 @@ void CheckWritableFiles(
       paths, profile, is_directory, on_success, on_failure));
   checker->Check();
 }
-
-GrantedFileEntry::GrantedFileEntry() {}
 
 bool HasFileSystemWritePermission(const Extension* extension) {
   return extension->HasAPIPermission(APIPermission::kFileSystemWrite);

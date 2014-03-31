@@ -26,14 +26,12 @@ include_rules = [
 
   # Pieces of the extensions system that need to move to src/extensions.
   # See http://crbug.com/162530 for details.
-  "+chrome/browser/extensions/api/app_runtime/app_runtime_api.h",
   "+chrome/browser/extensions/api/file_handlers/app_file_handler_util.h",
   "+chrome/browser/extensions/api/file_system/file_system_api.h",
   "+chrome/browser/extensions/chrome_extension_web_contents_observer.h",
   "+chrome/browser/extensions/extension_icon_image.h",
   "+chrome/browser/extensions/suggest_permission_util.h",
   "+chrome/browser/extensions/unpacked_installer.h",
-  "+chrome/common/extensions/api/app_runtime.h",
   "+chrome/common/extensions/api/app_window.h",
   "+chrome/common/extensions/manifest_handlers/icons_handler.h",
 ]

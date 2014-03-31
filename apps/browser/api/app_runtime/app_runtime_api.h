@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_APP_RUNTIME_APP_RUNTIME_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_APP_RUNTIME_APP_RUNTIME_API_H_
+#ifndef APPS_BROWSER_API_APP_RUNTIME_APP_RUNTIME_API_H_
+#define APPS_BROWSER_API_APP_RUNTIME_APP_RUNTIME_API_H_
 
 #include <string>
 
@@ -15,10 +15,12 @@ class WebContents;
 }
 
 namespace extensions {
-
 class Extension;
+}
 
-namespace app_file_handler_util {
+namespace apps {
+
+namespace file_handler_util {
 struct GrantedFileEntry;
 }
 
@@ -26,12 +28,12 @@ class AppEventRouter {
  public:
   // Dispatches the onLaunched event to the given app.
   static void DispatchOnLaunchedEvent(content::BrowserContext* context,
-                                      const Extension* extension);
+                                      const extensions::Extension* extension);
 
   // Dispatches the onRestarted event to the given app, providing a list of
   // restored file entries from the previous run.
   static void DispatchOnRestartedEvent(content::BrowserContext* context,
-                                       const Extension* extension);
+                                       const extensions::Extension* extension);
 
   // TODO(benwells): Update this comment, it is out of date.
   // Dispatches the onLaunched event to the given app, providing launch data of
@@ -50,20 +52,21 @@ class AppEventRouter {
   // manifest that resulted in a match which triggered this launch.
   static void DispatchOnLaunchedEventWithFileEntry(
       content::BrowserContext* context,
-      const Extension* extension,
+      const extensions::Extension* extension,
       const std::string& handler_id,
       const std::string& mime_type,
-      const extensions::app_file_handler_util::GrantedFileEntry& file_entry);
+      const file_handler_util::GrantedFileEntry& file_entry);
 
   // |handler_id| corresponds to the id of the url_handlers item
   // in the manifest that resulted in a match which triggered this launch.
-  static void DispatchOnLaunchedEventWithUrl(content::BrowserContext* context,
-                                             const Extension* extension,
-                                             const std::string& handler_id,
-                                             const GURL& url,
-                                             const GURL& referrer_url);
+  static void DispatchOnLaunchedEventWithUrl(
+      content::BrowserContext* context,
+      const extensions::Extension* extension,
+      const std::string& handler_id,
+      const GURL& url,
+      const GURL& referrer_url);
 };
 
-}  // namespace extensions
+}  // namespace apps
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_APP_RUNTIME_APP_RUNTIME_API_H_
+#endif  // APPS_BROWSER_API_APP_RUNTIME_APP_RUNTIME_API_H_

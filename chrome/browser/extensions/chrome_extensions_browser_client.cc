@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 
+#include "apps/common/api/generated_api.h"
 #include "base/command_line.h"
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -228,8 +229,11 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
   registry->RegisterFunction<
       extensions::chromedirectsetting::ClearDirectSettingFunction>();
 
-  // Generated APIs.
+  // Generated APIs from lower-level modules.
   extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);
+  apps::api::GeneratedFunctionRegistry::RegisterAll(registry);
+
+  // Generated APIs from Chrome.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
 #endif
 }
