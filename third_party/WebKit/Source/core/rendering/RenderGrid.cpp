@@ -223,8 +223,22 @@ void RenderGrid::removeChild(RenderObject* child)
         return;
 
     ASSERT(child->isBox());
-    // FIXME: We could avoid dirtying the grid in some cases (e.g. if it's an explicitly positioned element).
-    dirtyGrid();
+
+    if (style()->gridAutoFlow() != AutoFlowNone) {
+        // The grid needs to be recomputed as it might contain auto-placed items that will change their position.
+        dirtyGrid();
+        return;
+    }
+
+    const RenderBox* childBox = toRenderBox(child);
+    GridCoordinate coordinate = m_gridItemCoordinate.take(childBox);
+
+    for (size_t row = coordinate.rows.initialPositionIndex; row <= coordinate.rows.finalPositionIndex; ++row) {
+        for (size_t column = coordinate.columns.initialPositionIndex; column <= coordinate.columns.finalPositionIndex; ++column) {
+            GridCell& cell = m_grid[row][column];
+            cell.remove(cell.find(childBox));
+        }
+    }
 }
 
 void RenderGrid::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
