@@ -60,11 +60,11 @@ InspectorTest.createHeapSnapshotMockRaw = function()
     // A triple in parentheses indicates node index, self size and
     // retained size.
     //
-    //          --- A (14,2,2) --ac- C (40,4,10) -ce- E(57,6,6)
+    //          --- A (7,2,2) --ac- C (21,4,10) -ce- E(35,6,6)
     //         /    |                /
-    //  "" (1,0,20) 1       --bc-----
+    //  "" (0,0,20) 1       --bc-----
     //         \    v      /
-    //          --- B (27,3,8) --bd- D (50,5,5)
+    //          --- B (14,3,8) --bd- D (28,5,5)
     //
     return {
         snapshot: {

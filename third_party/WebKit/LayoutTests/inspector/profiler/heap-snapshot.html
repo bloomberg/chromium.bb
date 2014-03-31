@@ -30,6 +30,21 @@ function test()
     function runTestSuiteInWorker()
     {
         var testSuite = [
+            function postOrderIndexBug()
+            {
+                var builder = new InspectorTest.HeapSnapshotBuilder();
+                var node1 = new InspectorTest.HeapNode("Node1");
+                var node2 = new InspectorTest.HeapNode("Node2");
+                builder.rootNode.linkNode(node1, InspectorTest.HeapEdge.Type.internal);
+                builder.rootNode.linkNode(node2, InspectorTest.HeapEdge.Type.internal);
+                node2.linkNode(node1, InspectorTest.HeapEdge.Type.internal);
+                var snapshot = builder.createJSHeapSnapshot();
+                var postOrderIndexes = snapshot._buildPostOrderIndex().nodeOrdinal2PostOrderIndex;
+                var nodeOrdinals = snapshot._buildPostOrderIndex().postOrderIndex2NodeOrdinal;
+                InspectorTest.assertEquals(JSON.stringify(new Uint32Array([2, 0, 1])), JSON.stringify(postOrderIndexes), "postOrderIndexes");
+                InspectorTest.assertEquals(JSON.stringify(new Uint32Array([1, 2, 0])), JSON.stringify(nodeOrdinals), "nodeOrdinals");
+            },
+
             function heapSnapshotNodeSimpleTest()
             {
                 var snapshot = InspectorTest.createJSHeapSnapshotMockObject();
@@ -130,7 +145,7 @@ function test()
             {
                 var snapshot = new WebInspector.JSHeapSnapshot(InspectorTest.createHeapSnapshotMock(), new WebInspector.HeapSnapshotProgress());
                 var postOrderIndex2NodeOrdinal = snapshot._buildPostOrderIndex().postOrderIndex2NodeOrdinal;
-                var expected = [4,5,3,2,1,0];
+                var expected = [5,3,4,2,1,0];
                 for (var i = 0; i < expected.length; ++i)
                     InspectorTest.assertEquals(expected[i], postOrderIndex2NodeOrdinal[i], "Post ordered indexes");
             },
