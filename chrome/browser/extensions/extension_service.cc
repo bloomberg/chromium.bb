@@ -2272,14 +2272,6 @@ const Extension* ExtensionService::GetInstalledExtension(
   return registry_->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
 }
 
-bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {
-  // Allow bindings for all packaged extensions and component hosted apps.
-  const Extension* extension =
-      registry_->enabled_extensions().GetExtensionOrAppByURL(url);
-  return extension && (!extension->is_hosted_app() ||
-                       extension->location() == Manifest::COMPONENT);
-}
-
 bool ExtensionService::OnExternalExtensionFileFound(
          const std::string& id,
          const Version* version,

@@ -274,11 +274,6 @@ class ExtensionService
   // Scan the extension directory and clean up the cruft.
   void GarbageCollectExtensions();
 
-  // Returns true if |url| should get extension api bindings and be permitted
-  // to make api calls. Note that this is independent of what extension
-  // permissions the given extension has been granted.
-  bool ExtensionBindingsAllowed(const GURL& url);
-
   // Called when the initial extensions load has completed.
   virtual void OnLoadedInstalledExtensions();
 

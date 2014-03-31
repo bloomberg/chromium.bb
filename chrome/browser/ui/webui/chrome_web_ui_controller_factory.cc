@@ -12,7 +12,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,8 +67,12 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_utils.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/manifest.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 #include "url/gurl.h"
@@ -209,8 +212,16 @@ WebUIController* NewWebUI<dom_distiller::DomDistillerUi>(WebUI* web_ui,
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
 // hosted by actual tabs.
 bool NeedsExtensionWebUI(Profile* profile, const GURL& url) {
-  ExtensionService* service = profile ? profile->GetExtensionService() : NULL;
-  return service && service->ExtensionBindingsAllowed(url);
+  if (!profile)
+    return false;
+
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().
+          GetExtensionOrAppByURL(url);
+  // Allow bindings for all packaged extensions and component hosted apps.
+  return extension &&
+      (!extension->is_hosted_app() ||
+       extension->location() == extensions::Manifest::COMPONENT);
 }
 
 // Returns a function that can be used to create the right type of WebUI for a
@@ -326,7 +337,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #else
   // AppLauncherPage is not needed on Android.
   if (url.host() == chrome::kChromeUIAppLauncherPageHost &&
-      profile && profile->GetExtensionService()) {
+      profile && extensions::ExtensionSystem::Get(profile)->
+          extension_service()) {
     return &NewWebUI<AppLauncherPageUI>;
   }
   // Bookmarks are part of NTP on Android.
