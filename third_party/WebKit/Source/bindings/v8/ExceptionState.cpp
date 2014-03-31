@@ -79,6 +79,15 @@ void ExceptionState::setException(v8::Handle<v8::Value> exception)
     m_exception.set(m_isolate, exception);
 }
 
+void ExceptionState::throwException()
+{
+    ASSERT(!m_exception.isEmpty() || m_code);
+    if (m_exception.isEmpty())
+        throwDOMException(m_code, String()); // FIXME: Do we ever hit this? If so, where and why?
+    ASSERT(!m_exception.isEmpty());
+    V8ThrowException::throwError(m_exception.newLocal(m_isolate), m_isolate);
+}
+
 void ExceptionState::throwTypeError(const String& message)
 {
     ASSERT(m_isolate);

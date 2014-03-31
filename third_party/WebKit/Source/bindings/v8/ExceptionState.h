@@ -86,13 +86,9 @@ public:
 
     bool throwIfNeeded()
     {
-        if (m_exception.isEmpty()) {
-            if (!m_code)
-                return false;
-            throwDOMException(m_code, String()); // FIXME: Do we ever hit this? If so, where and why?
-        }
-
-        V8ThrowException::throwError(m_exception.newLocal(m_isolate), m_isolate);
+        if (!hadException())
+            return false;
+        throwException();
         return true;
     }
 
@@ -114,6 +110,7 @@ protected:
 
 private:
     void setException(v8::Handle<v8::Value>);
+    void throwException();
 
     String addExceptionContext(const String&) const;
 
