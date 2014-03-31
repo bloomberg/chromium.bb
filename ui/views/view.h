@@ -70,6 +70,7 @@ class ScrollView;
 class Widget;
 
 namespace internal {
+class PreEventDispatchHandler;
 class PostEventDispatchHandler;
 class RootView;
 }
@@ -1210,6 +1211,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 #endif
 
  private:
+  friend class internal::PreEventDispatchHandler;
   friend class internal::PostEventDispatchHandler;
   friend class internal::RootView;
   friend class FocusManager;

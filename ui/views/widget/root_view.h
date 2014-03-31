@@ -25,6 +25,7 @@ class Widget;
 // This is a views-internal API and should not be used externally.
 // Widget exposes this object as a View*.
 namespace internal {
+class PreEventDispatchHandler;
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootView class
@@ -209,6 +210,8 @@ class VIEWS_EXPORT RootView : public View,
 
   // The view currently handling scroll gesture events.
   View* scroll_gesture_handler_;
+
+  scoped_ptr<internal::PreEventDispatchHandler> pre_dispatch_handler_;
 
   // Focus ---------------------------------------------------------------------
 

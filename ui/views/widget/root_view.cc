@@ -49,6 +49,48 @@ class MouseEnterExitEvent : public ui::MouseEvent {
 
 }  // namespace
 
+// This event handler receives events in the pre-target phase and takes care of
+// the following:
+//   - Shows keyboard-triggered context menus.
+class PreEventDispatchHandler : public ui::EventHandler {
+ public:
+  explicit PreEventDispatchHandler(View* owner)
+      : owner_(owner) {
+  }
+  virtual ~PreEventDispatchHandler() {}
+
+ private:
+  // ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    CHECK_EQ(ui::EP_PRETARGET, event->phase());
+    if (event->handled())
+      return;
+
+    View* v = NULL;
+    if (owner_->GetFocusManager())  // Can be NULL in unittests.
+      v = owner_->GetFocusManager()->GetFocusedView();
+
+    // Special case to handle keyboard-triggered context menus.
+    if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
+       (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
+      // Clamp the menu location within the visible bounds of each ancestor view
+      // to avoid showing the menu over a completely different view or window.
+      gfx::Point location = v->GetKeyboardContextMenuLocation();
+      for (View* parent = v->parent(); parent; parent = parent->parent()) {
+        const gfx::Rect& parent_bounds = parent->GetBoundsInScreen();
+        location.SetToMax(parent_bounds.origin());
+        location.SetToMin(parent_bounds.bottom_right());
+      }
+      v->ShowContextMenu(location, ui::MENU_SOURCE_KEYBOARD);
+      event->StopPropagation();
+    }
+  }
+
+  View* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(PreEventDispatchHandler);
+};
+
 // static
 const char RootView::kViewClassName[] = "RootView";
 
@@ -69,11 +111,13 @@ RootView::RootView(Widget* widget)
       touch_pressed_handler_(NULL),
       gesture_handler_(NULL),
       scroll_gesture_handler_(NULL),
+      pre_dispatch_handler_(new internal::PreEventDispatchHandler(this)),
       focus_search_(this, false, false),
       focus_traversable_parent_(NULL),
       focus_traversable_parent_view_(NULL),
       event_dispatch_target_(NULL),
       old_dispatch_target_(NULL) {
+  AddPreTargetHandler(pre_dispatch_handler_.get());
 }
 
 RootView::~RootView() {
@@ -660,23 +704,8 @@ View::DragInfo* RootView::GetDragInfo() {
 
 void RootView::DispatchKeyEvent(ui::KeyEvent* event) {
   View* v = NULL;
-  if (GetFocusManager())  // NULL in unittests.
+  if (GetFocusManager())  // Can be NULL in unittests.
     v = GetFocusManager()->GetFocusedView();
-  // Special case to handle keyboard-triggered context menus.
-  if (v && v->enabled() && ((event->key_code() == ui::VKEY_APPS) ||
-     (event->key_code() == ui::VKEY_F10 && event->IsShiftDown()))) {
-    // Clamp the menu location within the visible bounds of each ancestor view
-    // to avoid showing the menu over a completely different view or window.
-    gfx::Point location = v->GetKeyboardContextMenuLocation();
-    for (View* parent = v->parent(); parent; parent = parent->parent()) {
-      const gfx::Rect& parent_bounds = parent->GetBoundsInScreen();
-      location.SetToMax(parent_bounds.origin());
-      location.SetToMin(parent_bounds.bottom_right());
-    }
-    v->ShowContextMenu(location, ui::MENU_SOURCE_KEYBOARD);
-    event->StopPropagation();
-    return;
-  }
 
   DispatchKeyEventStartAt(v, event);
 }
