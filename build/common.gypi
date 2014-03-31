@@ -2364,7 +2364,7 @@
           'GCC_GENERATE_DEBUGGING_SYMBOLS': 'NO',
         },
         'conditions': [
-          ['clang==1', {
+          ['clang==1 and asan==0 and msan==0 and tsan==0', {
             # Clang creates chubby debug information, which makes linking very
             # slow. For now, don't create debug information with clang.  See
             # http://crbug.com/70000
