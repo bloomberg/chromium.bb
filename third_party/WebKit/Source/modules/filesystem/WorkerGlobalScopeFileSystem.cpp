@@ -76,12 +76,12 @@ PassRefPtrWillBeRawPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitReq
         return nullptr;
     }
 
-    FileSystemSyncCallbackHelper helper;
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper.successCallback(), helper.errorCallback(), &worker, fileSystemType);
+    RefPtr<FileSystemSyncCallbackHelper> helper = FileSystemSyncCallbackHelper::create();
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = FileSystemCallbacks::create(helper->successCallback(), helper->errorCallback(), &worker, fileSystemType);
     callbacks->setShouldBlockUntilCompletion(true);
 
     LocalFileSystem::from(worker)->requestFileSystem(&worker, fileSystemType, size, callbacks.release());
-    return helper.getResult(exceptionState);
+    return helper->getResult(exceptionState);
 }
 
 void WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemURL(WorkerGlobalScope& worker, const String& url, PassOwnPtr<EntryCallback> successCallback, PassOwnPtr<ErrorCallback> errorCallback)
@@ -115,13 +115,13 @@ PassRefPtrWillBeRawPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLoca
         return nullptr;
     }
 
-    EntrySyncCallbackHelper resolveURLHelper;
-    OwnPtr<AsyncFileSystemCallbacks> callbacks = ResolveURICallbacks::create(resolveURLHelper.successCallback(), resolveURLHelper.errorCallback(), &worker);
+    RefPtr<EntrySyncCallbackHelper> resolveURLHelper = EntrySyncCallbackHelper::create();
+    OwnPtr<AsyncFileSystemCallbacks> callbacks = ResolveURICallbacks::create(resolveURLHelper->successCallback(), resolveURLHelper->errorCallback(), &worker);
     callbacks->setShouldBlockUntilCompletion(true);
 
     LocalFileSystem::from(worker)->resolveURL(&worker, completedURL, callbacks.release());
 
-    RefPtrWillBeRawPtr<EntrySync> entry = resolveURLHelper.getResult(exceptionState);
+    RefPtrWillBeRawPtr<EntrySync> entry = resolveURLHelper->getResult(exceptionState);
     if (!entry)
         return nullptr;
     return entry.release();

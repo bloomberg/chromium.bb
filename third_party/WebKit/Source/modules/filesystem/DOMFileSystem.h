@@ -73,6 +73,9 @@ public:
     static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>, PassRefPtrWillBeRawPtr<CBArg>);
 
     template <typename CB, typename CBArg>
+    static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>, const HeapVector<CBArg>&);
+
+    template <typename CB, typename CBArg>
     static void scheduleCallback(ExecutionContext*, PassOwnPtr<CB>, const CBArg&);
 
     template <typename CB, typename CBArg>
@@ -138,6 +141,14 @@ void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, PassOwn
     ASSERT(executionContext->isContextThread());
     if (callback)
         executionContext->postTask(adoptPtr(new DispatchCallbacRefPtrArgTask<CB, CBArg>(callback, arg)));
+}
+
+template <typename CB, typename CBArg>
+void DOMFileSystem::scheduleCallback(ExecutionContext* executionContext, PassOwnPtr<CB> callback, const HeapVector<CBArg>& arg)
+{
+    ASSERT(executionContext->isContextThread());
+    if (callback)
+        executionContext->postTask(adoptPtr(new DispatchCallbackNonPtrArgTask<CB, PersistentHeapVector<CBArg> >(callback, arg)));
 }
 
 template <typename CB, typename CBArg>

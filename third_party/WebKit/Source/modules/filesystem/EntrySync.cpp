@@ -52,30 +52,30 @@ PassRefPtrWillBeRawPtr<EntrySync> EntrySync::create(EntryBase* entry)
 
 PassRefPtrWillBeRawPtr<Metadata> EntrySync::getMetadata(ExceptionState& exceptionState)
 {
-    MetadataSyncCallbackHelper helper;
-    m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
-    return helper.getResult(exceptionState);
+    RefPtr<MetadataSyncCallbackHelper> helper = MetadataSyncCallbackHelper::create();
+    m_fileSystem->getMetadata(this, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    return helper->getResult(exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<EntrySync> EntrySync::moveTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
 {
-    EntrySyncCallbackHelper helper;
-    m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
-    return helper.getResult(exceptionState);
+    RefPtr<EntrySyncCallbackHelper> helper = EntrySyncCallbackHelper::create();
+    m_fileSystem->move(this, parent.get(), name, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    return helper->getResult(exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<EntrySync> EntrySync::copyTo(PassRefPtrWillBeRawPtr<DirectoryEntrySync> parent, const String& name, ExceptionState& exceptionState) const
 {
-    EntrySyncCallbackHelper helper;
-    m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
-    return helper.getResult(exceptionState);
+    RefPtr<EntrySyncCallbackHelper> helper = EntrySyncCallbackHelper::create();
+    m_fileSystem->copy(this, parent.get(), name, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    return helper->getResult(exceptionState);
 }
 
 void EntrySync::remove(ExceptionState& exceptionState) const
 {
-    VoidSyncCallbackHelper helper;
-    m_fileSystem->remove(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
-    helper.getResult(exceptionState);
+    RefPtr<VoidSyncCallbackHelper> helper = VoidSyncCallbackHelper::create();
+    m_fileSystem->remove(this, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    helper->getResult(exceptionState);
 }
 
 PassRefPtrWillBeRawPtr<EntrySync> EntrySync::getParent() const

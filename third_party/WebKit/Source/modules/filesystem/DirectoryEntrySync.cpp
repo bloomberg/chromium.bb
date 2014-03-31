@@ -54,24 +54,24 @@ PassRefPtrWillBeRawPtr<DirectoryReaderSync> DirectoryEntrySync::createReader()
 PassRefPtrWillBeRawPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
-    EntrySyncCallbackHelper helper;
-    m_fileSystem->getFile(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
-    return static_pointer_cast<FileEntrySync>(helper.getResult(exceptionState));
+    RefPtr<EntrySyncCallbackHelper> helper = EntrySyncCallbackHelper::create();
+    m_fileSystem->getFile(this, path, flags, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    return static_pointer_cast<FileEntrySync>(helper->getResult(exceptionState));
 }
 
 PassRefPtrWillBeRawPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
-    EntrySyncCallbackHelper helper;
-    m_fileSystem->getDirectory(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
-    return static_pointer_cast<DirectoryEntrySync>(helper.getResult(exceptionState));
+    RefPtr<EntrySyncCallbackHelper> helper = EntrySyncCallbackHelper::create();
+    m_fileSystem->getDirectory(this, path, flags, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    return static_pointer_cast<DirectoryEntrySync>(helper->getResult(exceptionState));
 }
 
 void DirectoryEntrySync::removeRecursively(ExceptionState& exceptionState)
 {
-    VoidSyncCallbackHelper helper;
-    m_fileSystem->removeRecursively(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous);
-    helper.getResult(exceptionState);
+    RefPtr<VoidSyncCallbackHelper> helper = VoidSyncCallbackHelper::create();
+    m_fileSystem->removeRecursively(this, helper->successCallback(), helper->errorCallback(), DOMFileSystemBase::Synchronous);
+    helper->getResult(exceptionState);
 }
 
 void DirectoryEntrySync::trace(Visitor* visitor)
