@@ -2,7 +2,7 @@
   'targets': [
     {
       'target_name': 'mojo_system',
-      'type': 'shared_library',
+      'type': '<(component)',
       'defines': [
         'MOJO_SYSTEM_IMPLEMENTATION',
       ],

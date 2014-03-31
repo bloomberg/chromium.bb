@@ -545,11 +545,6 @@
               '<(PRODUCT_DIR)/lib/libpeerconnection.so',
             ],
           }],
-          ['use_mojo==1', {
-            'packaging_files_binaries': [
-              '<(PRODUCT_DIR)/lib/libmojo_system.so',
-            ],
-          }],
         ],
       },
       'targets': [

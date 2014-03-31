@@ -185,17 +185,11 @@
             '<(PRODUCT_DIR)/icudtl.dat',
           ],
         }],
-        ['use_mojo==0', {
-          'inputs!': [
-            '<(PRODUCT_DIR)/mojo_system.dll',
-          ],
-        }],
       ],
       'inputs': [
         '<(create_installer_archive_py_path)',
         '<(PRODUCT_DIR)/chrome.exe',
         '<@(chrome_dll_path)',
-        '<(PRODUCT_DIR)/mojo_system.dll',
         '<(PRODUCT_DIR)/nacl64.exe',
         '<(PRODUCT_DIR)/ppGoogleNaClPluginChrome.dll',
         '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',

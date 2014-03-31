@@ -51,7 +51,6 @@
     ['OS=="linux"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/lib/libmojo_system.so',
           '<(PRODUCT_DIR)/lib/libmojo_test_support.so',
         ],
       },
@@ -71,7 +70,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/libmojo_gles2.dylib',
-          '<(PRODUCT_DIR)/libmojo_system.dylib',
           '<(PRODUCT_DIR)/libmojo_test_support.dylib',
         ],
       },

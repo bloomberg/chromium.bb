@@ -107,9 +107,8 @@ do_package() {
   # Use find-requires script to make sure the dependencies are complete
   # (especially libc and libstdc++ versions).
   # - Filter out udev to avoid libudev.so.0 vs. libudev.so.1 mismatches.
-  # - Filter out libmojo_system since that a library that we provide.
   DETECTED_DEPENDS="$(echo "${BUILDDIR}/chrome" | /usr/lib/rpm/find-requires |
-      grep -v 'udev\|libmojo_system')"
+      grep -v udev)"
 
   # Compare the expected dependency list to the generated list.
   BAD_DIFF=0

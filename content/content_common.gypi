@@ -506,15 +506,6 @@
         'content.gyp:webkit_version',
       ],
     }],
-    # Work around for bug in linker used on ia32 and mipsel machines (gold is
-    # not used on ia32 and mipsel machines). See bug 353273.
-    ['use_mojo==1 and OS=="linux" and (target_arch=="ia32" or target_arch=="mipsel") and component=="static_library"', {
-      'link_settings': {
-        'libraries': [
-          '<(PRODUCT_DIR)/lib/libmojo_system.so',
-        ],
-      },
-    }],
     ['use_mojo==0', {
       'sources!': [
         'common/mojo/mojo_channel_init.cc',

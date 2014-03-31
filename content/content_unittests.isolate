@@ -42,7 +42,6 @@
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
-          '<(PRODUCT_DIR)/lib/libmojo_system.so',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],
       },
@@ -70,7 +69,6 @@
         ],
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/mojo_system.dll',
           '<(PRODUCT_DIR)/ui_test.pak',
         ],
       },

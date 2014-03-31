@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_C_SYSTEM_SYSTEM_EXPORT_H_
 #define MOJO_PUBLIC_C_SYSTEM_SYSTEM_EXPORT_H_
 
+#if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
 #if defined(MOJO_SYSTEM_IMPLEMENTATION)
@@ -22,5 +23,11 @@
 #endif
 
 #endif  // defined(WIN32)
+
+#else  // !defined(COMPONENT_BUILD)
+
+#define MOJO_SYSTEM_EXPORT
+
+#endif  // defined(COMPONENT_BUILD)
 
 #endif  // MOJO_PUBLIC_C_SYSTEM_SYSTEM_EXPORT_H_
