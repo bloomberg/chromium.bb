@@ -31,6 +31,20 @@ namespace keyboard {
 // keyboard window.
 class KEYBOARD_EXPORT KeyboardControllerProxy {
  public:
+  class TestApi {
+   public:
+    explicit TestApi(KeyboardControllerProxy* proxy) : proxy_(proxy) {}
+
+    const content::WebContents* keyboard_contents() {
+      return proxy_->keyboard_contents_.get();
+    }
+
+   private:
+    KeyboardControllerProxy* proxy_;
+
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   KeyboardControllerProxy();
   virtual ~KeyboardControllerProxy();
 
@@ -104,6 +118,8 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   virtual void SetupWebContents(content::WebContents* contents);
 
  private:
+  friend class TestApi;
+
   // Loads the web contents for the given |url|.
   void LoadContents(const GURL& url);
 
