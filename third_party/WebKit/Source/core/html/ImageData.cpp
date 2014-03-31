@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-PassRefPtr<ImageData> ImageData::create(const IntSize& size)
+PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size)
 {
     Checked<int, RecordOverflow> dataSize = 4;
     dataSize *= size.width();
@@ -43,10 +43,10 @@ PassRefPtr<ImageData> ImageData::create(const IntSize& size)
     if (dataSize.hasOverflowed())
         return nullptr;
 
-    return adoptRef(new ImageData(size));
+    return adoptRefWillBeNoop(new ImageData(size));
 }
 
-PassRefPtr<ImageData> ImageData::create(const IntSize& size, PassRefPtr<Uint8ClampedArray> byteArray)
+PassRefPtrWillBeRawPtr<ImageData> ImageData::create(const IntSize& size, PassRefPtr<Uint8ClampedArray> byteArray)
 {
     Checked<int, RecordOverflow> dataSize = 4;
     dataSize *= size.width();
@@ -58,10 +58,10 @@ PassRefPtr<ImageData> ImageData::create(const IntSize& size, PassRefPtr<Uint8Cla
         || static_cast<unsigned>(dataSize.unsafeGet()) > byteArray->length())
         return nullptr;
 
-    return adoptRef(new ImageData(size, byteArray));
+    return adoptRefWillBeNoop(new ImageData(size, byteArray));
 }
 
-PassRefPtr<ImageData> ImageData::create(unsigned width, unsigned height, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ImageData> ImageData::create(unsigned width, unsigned height, ExceptionState& exceptionState)
 {
     if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
         exceptionState.throwTypeError("Illegal constructor");
@@ -80,12 +80,12 @@ PassRefPtr<ImageData> ImageData::create(unsigned width, unsigned height, Excepti
         return nullptr;
     }
 
-    RefPtr<ImageData> imageData = adoptRef(new ImageData(IntSize(width, height)));
+    RefPtrWillBeRawPtr<ImageData> imageData = adoptRefWillBeNoop(new ImageData(IntSize(width, height)));
     imageData->data()->zeroFill();
     return imageData.release();
 }
 
-PassRefPtr<ImageData> ImageData::create(Uint8ClampedArray* data, unsigned width, unsigned height, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ImageData> ImageData::create(Uint8ClampedArray* data, unsigned width, unsigned height, ExceptionState& exceptionState)
 {
     if (!RuntimeEnabledFeatures::imageDataConstructorEnabled()) {
         exceptionState.throwTypeError("Illegal constructor");
@@ -121,7 +121,7 @@ PassRefPtr<ImageData> ImageData::create(Uint8ClampedArray* data, unsigned width,
         return nullptr;
     }
 
-    return adoptRef(new ImageData(IntSize(width, height), data));
+    return adoptRefWillBeNoop(new ImageData(IntSize(width, height), data));
 }
 
 ImageData::ImageData(const IntSize& size)

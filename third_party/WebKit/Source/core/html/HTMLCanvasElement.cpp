@@ -384,7 +384,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
     String encodingMimeType = toEncodingMimeType(mimeType);
 
     // Try to get ImageData first, as that may avoid lossy conversions.
-    RefPtr<ImageData> imageData = getImageData();
+    RefPtrWillBeRawPtr<ImageData> imageData = getImageData();
 
     if (imageData)
         return ImageDataToDataURL(ImageDataBuffer(imageData->size(), imageData->data()), encodingMimeType, quality);
@@ -395,7 +395,7 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const double* qualit
     return buffer()->toDataURL(encodingMimeType, quality);
 }
 
-PassRefPtr<ImageData> HTMLCanvasElement::getImageData()
+PassRefPtrWillBeRawPtr<ImageData> HTMLCanvasElement::getImageData()
 {
     if (!m_context || !m_context->is3d())
         return nullptr;

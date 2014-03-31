@@ -1935,7 +1935,7 @@ private:
             return false;
         if (m_position + pixelDataLength > m_length)
             return false;
-        RefPtr<ImageData> imageData = ImageData::create(IntSize(width, height));
+        RefPtrWillBeRawPtr<ImageData> imageData = ImageData::create(IntSize(width, height));
         Uint8ClampedArray* pixelArray = imageData->data();
         ASSERT(pixelArray);
         ASSERT(pixelArray->length() >= pixelDataLength);

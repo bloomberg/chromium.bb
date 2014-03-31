@@ -861,7 +861,7 @@ void WebGLRenderingContextBase::paintRenderingResultsToCanvas()
         m_drawingBuffer->bind();
 }
 
-PassRefPtr<ImageData> WebGLRenderingContextBase::paintRenderingResultsToImageData()
+PassRefPtrWillBeRawPtr<ImageData> WebGLRenderingContextBase::paintRenderingResultsToImageData()
 {
     if (isContextLost())
         return nullptr;
@@ -3458,7 +3458,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
         }
     }
 
-    RefPtr<ImageData> imageData = canvas->getImageData();
+    RefPtrWillBeRawPtr<ImageData> imageData = canvas->getImageData();
     if (imageData)
         texImage2D(target, level, internalformat, format, type, imageData.get(), exceptionState);
     else
@@ -3677,7 +3677,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
         || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLCanvasElement, target, level, format, canvas->width(), canvas->height(), 0, format, type, xoffset, yoffset))
         return;
 
-    RefPtr<ImageData> imageData = canvas->getImageData();
+    RefPtrWillBeRawPtr<ImageData> imageData = canvas->getImageData();
     if (imageData)
         texSubImage2D(target, level, xoffset, yoffset, format, type, imageData.get(), exceptionState);
     else

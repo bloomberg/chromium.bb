@@ -30,6 +30,7 @@
 
 #include "core/html/HTMLElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "heap/Handle.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Canvas2DLayerBridge.h"
@@ -112,7 +113,7 @@ public:
     ImageBuffer* buffer() const;
     Image* copiedImage() const;
     void clearCopiedImage();
-    PassRefPtr<ImageData> getImageData();
+    PassRefPtrWillBeRawPtr<ImageData> getImageData();
     void makePresentationCopy();
     void clearPresentationCopy();
 

@@ -333,7 +333,7 @@ public:
 
     void markLayerComposited();
     virtual void paintRenderingResultsToCanvas() OVERRIDE;
-    PassRefPtr<ImageData> paintRenderingResultsToImageData();
+    PassRefPtrWillBeRawPtr<ImageData> paintRenderingResultsToImageData();
 
     void removeSharedObject(WebGLSharedObject*);
     void removeContextObject(WebGLContextObject*);
