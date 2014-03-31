@@ -13,19 +13,21 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_pump_dispatcher.h"
 #include "base/timer/timer.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace ui {
-class NativeTheme;
-class OSExchangeData;
+namespace base {
+class MessagePumpDispatcher;
 }
 namespace gfx {
 class Screen;
+}
+namespace ui {
+class NativeTheme;
+class OSExchangeData;
 }
 namespace views {
 
@@ -37,6 +39,7 @@ class View;
 
 namespace internal {
 class MenuControllerDelegate;
+class MenuMessagePumpDispatcher;
 class MenuRunnerImpl;
 }
 
@@ -45,8 +48,7 @@ class MenuRunnerImpl;
 // MenuController is used internally by the various menu classes to manage
 // showing, selecting and drag/drop for menus. All relevant events are
 // forwarded to the MenuController from SubmenuView and MenuHost.
-class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
-                                    public WidgetObserver {
+class VIEWS_EXPORT MenuController : public WidgetObserver {
  public:
   // Enumeration of how the menu should exit.
   enum ExitType {
@@ -140,6 +142,7 @@ class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
   static void TurnOffMenuSelectionHoldForTest();
 
  private:
+  friend class internal::MenuMessagePumpDispatcher;
   friend class internal::MenuRunnerImpl;
   friend class MenuHostRootView;
   friend class MenuItemView;
@@ -250,10 +253,6 @@ class VIEWS_EXPORT MenuController : public base::MessagePumpDispatcher,
   void SetSelectionOnPointerDown(SubmenuView* source,
                                  const ui::LocatedEvent& event);
   void StartDrag(SubmenuView* source, const gfx::Point& location);
-
-  // Dispatcher method. This returns true if the menu was canceled, or
-  // if the message is such that the menu should be closed.
-  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
   // Key processing. The return value of this is returned from Dispatch.
   // In other words, if this returns false (which happens if escape was

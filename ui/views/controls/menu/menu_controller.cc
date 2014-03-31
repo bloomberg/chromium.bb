@@ -21,8 +21,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
@@ -32,6 +30,7 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_host_root_view.h"
+#include "ui/views/controls/menu/menu_message_pump_dispatcher.h"
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
@@ -43,15 +42,14 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/dispatcher_client.h"
+#include "ui/wm/public/drag_drop_client.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/internal_constants.h"
 #include "ui/views/win/hwnd_util.h"
-#endif
-
-#if defined(USE_X11)
-#include <X11/Xlib.h>
 #endif
 
 using base::Time;
@@ -100,6 +98,67 @@ bool TitleMatchesMnemonic(MenuItemView* menu, base::char16 key) {
   base::string16 lower_title = base::i18n::ToLower(menu->title());
   return !lower_title.empty() && lower_title[0] == key;
 }
+
+aura::Window* GetOwnerRootWindow(views::Widget* owner) {
+  return owner ? owner->GetNativeWindow()->GetRootWindow() : NULL;
+}
+
+// ActivationChangeObserverImpl is used to observe activation changes and close
+// the menu. Additionally it listens for the root window to be destroyed and
+// cancel the menu as well.
+class ActivationChangeObserverImpl
+    : public aura::client::ActivationChangeObserver,
+      public aura::WindowObserver,
+      public ui::EventHandler {
+ public:
+  ActivationChangeObserverImpl(MenuController* controller, aura::Window* root)
+      : controller_(controller),
+        root_(root) {
+    aura::client::GetActivationClient(root_)->AddObserver(this);
+    root_->AddObserver(this);
+    root_->AddPreTargetHandler(this);
+  }
+
+  virtual ~ActivationChangeObserverImpl() {
+    Cleanup();
+  }
+
+  // aura::client::ActivationChangeObserver:
+  virtual void OnWindowActivated(aura::Window* gained_active,
+                                 aura::Window* lost_active) OVERRIDE {
+    if (!controller_->drag_in_progress())
+      controller_->CancelAll();
+  }
+
+  // aura::WindowObserver:
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE {
+    Cleanup();
+  }
+
+  // ui::EventHandler:
+  virtual void OnCancelMode(ui::CancelModeEvent* event) OVERRIDE {
+    controller_->CancelAll();
+  }
+
+ private:
+  void Cleanup() {
+    if (!root_)
+      return;
+    // The ActivationClient may have been destroyed by the time we get here.
+    aura::client::ActivationClient* client =
+        aura::client::GetActivationClient(root_);
+    if (client)
+      client->RemoveObserver(this);
+    root_->RemovePreTargetHandler(this);
+    root_->RemoveObserver(this);
+    root_ = NULL;
+  }
+
+  MenuController* controller_;
+  aura::Window* root_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActivationChangeObserverImpl);
+};
 
 }  // namespace
 
@@ -1001,94 +1060,6 @@ void MenuController::StartDrag(SubmenuView* source,
   }  // else case, someone canceled us, don't do anything
 }
 
-#if defined(OS_WIN)
-uint32_t MenuController::Dispatch(const MSG& msg) {
-  DCHECK(blocking_run_);
-
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
-    return (POST_DISPATCH_QUIT_LOOP | POST_DISPATCH_PERFORM_DEFAULT);
-
-  // NOTE: we don't get WM_ACTIVATE or anything else interesting in here.
-  switch (msg.message) {
-    case WM_CONTEXTMENU: {
-      MenuItemView* item = pending_state_.item;
-      if (item && item->GetRootMenuItem() != item) {
-        gfx::Point screen_loc(0, item->height());
-        View::ConvertPointToScreen(item, &screen_loc);
-        ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
-        if (GET_X_LPARAM(msg.lParam) == -1 && GET_Y_LPARAM(msg.lParam) == -1)
-          source_type = ui::MENU_SOURCE_KEYBOARD;
-        item->GetDelegate()->ShowContextMenu(item, item->GetCommand(),
-                                             screen_loc, source_type);
-      }
-      return POST_DISPATCH_NONE;
-    }
-
-    // NOTE: focus wasn't changed when the menu was shown. As such, don't
-    // dispatch key events otherwise the focused window will get the events.
-    case WM_KEYDOWN: {
-      bool result = OnKeyDown(ui::KeyboardCodeFromNative(msg));
-      TranslateMessage(&msg);
-      return result ? POST_DISPATCH_NONE : POST_DISPATCH_QUIT_LOOP;
-    }
-    case WM_CHAR: {
-      bool should_exit = SelectByChar(static_cast<base::char16>(msg.wParam));
-      return should_exit ? POST_DISPATCH_QUIT_LOOP : POST_DISPATCH_NONE;
-    }
-    case WM_KEYUP:
-      return POST_DISPATCH_NONE;
-
-    case WM_SYSKEYUP:
-      // We may have been shown on a system key, as such don't do anything
-      // here. If another system key is pushed we'll get a WM_SYSKEYDOWN and
-      // close the menu.
-      return POST_DISPATCH_NONE;
-
-    case WM_CANCELMODE:
-    case WM_SYSKEYDOWN:
-      // Exit immediately on system keys.
-      Cancel(EXIT_ALL);
-      return POST_DISPATCH_QUIT_LOOP;
-
-    default:
-      break;
-  }
-  return POST_DISPATCH_PERFORM_DEFAULT |
-         (exit_type_ == EXIT_NONE ? POST_DISPATCH_NONE
-                                  : POST_DISPATCH_QUIT_LOOP);
-}
-#else
-uint32_t MenuController::Dispatch(const base::NativeEvent& event) {
-  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
-    return (POST_DISPATCH_QUIT_LOOP | POST_DISPATCH_PERFORM_DEFAULT);
-
-  switch (ui::EventTypeFromNative(event)) {
-    case ui::ET_KEY_PRESSED: {
-      if (!OnKeyDown(ui::KeyboardCodeFromNative(event)))
-        return POST_DISPATCH_QUIT_LOOP;
-
-      // Do not check mnemonics if the Alt or Ctrl modifiers are pressed.
-      int flags = ui::EventFlagsFromNative(event);
-      if ((flags & (ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)) == 0) {
-        char c = ui::GetCharacterFromKeyCode(
-            ui::KeyboardCodeFromNative(event), flags);
-        if (SelectByChar(c))
-          return POST_DISPATCH_QUIT_LOOP;
-      }
-      return POST_DISPATCH_NONE;
-    }
-    case ui::ET_KEY_RELEASED:
-      return POST_DISPATCH_NONE;
-    default:
-      break;
-  }
-
-  return POST_DISPATCH_PERFORM_DEFAULT |
-         (exit_type_ == EXIT_NONE ? POST_DISPATCH_NONE
-                                  : POST_DISPATCH_QUIT_LOOP);
-}
-#endif
-
 bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
   DCHECK(blocking_run_);
 
@@ -1155,11 +1126,6 @@ bool MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       CloseSubmenu();
       break;
 
-#if defined(OS_WIN)
-    case VK_APPS:
-      break;
-#endif
-
     default:
       break;
   }
@@ -1203,6 +1169,25 @@ MenuController::~MenuController() {
     active_instance_ = NULL;
   StopShowTimer();
   StopCancelAllTimer();
+}
+
+void MenuController::RunMessageLoop(bool nested_menu) {
+  internal::MenuMessagePumpDispatcher nested_dispatcher(this);
+
+  // |owner_| may be NULL.
+  aura::Window* root = GetOwnerRootWindow(owner_);
+  if (root) {
+    scoped_ptr<ActivationChangeObserverImpl> observer;
+    if (!nested_menu)
+      observer.reset(new ActivationChangeObserverImpl(this, root));
+    aura::client::GetDispatcherClient(root)
+        ->RunWithDispatcher(&nested_dispatcher);
+  } else {
+    base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+    base::MessageLoop::ScopedNestableTaskAllower allow(loop);
+    base::RunLoop run_loop(&nested_dispatcher);
+    run_loop.Run();
+  }
 }
 
 MenuController::SendAcceleratorResultType
@@ -2321,6 +2306,12 @@ void MenuController::SetExitType(ExitType type) {
   }
 }
 
+bool MenuController::ShouldQuitNow() const {
+  aura::Window* root = GetOwnerRootWindow(owner_);
+  return !aura::client::GetDragDropClient(root) ||
+         !aura::client::GetDragDropClient(root)->IsDragDropInProgress();
+}
+
 void MenuController::HandleMouseLocation(SubmenuView* source,
                                          const gfx::Point& mouse_location) {
   if (showing_submenu_)
@@ -2351,6 +2342,12 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
     SetSelection(pending_state_.item->GetParentMenuItem(),
                  SELECTION_OPEN_SUBMENU);
   }
+}
+
+gfx::Screen* MenuController::GetScreen() {
+  aura::Window* root = GetOwnerRootWindow(owner_);
+  return root ? gfx::Screen::GetScreenFor(root)
+              : gfx::Screen::GetNativeScreen();
 }
 
 }  // namespace views
