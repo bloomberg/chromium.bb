@@ -1002,9 +1002,11 @@ public:
 protected:
     inline bool layerCreationAllowedForSubtree() const;
 
-    // Overrides should call the superclass at the end
-    virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle);
-    // Overrides should call the superclass at the start
+    // Overrides should call the superclass at the end. m_style will be 0 the first time
+    // this function will be called.
+    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle);
+    // Overrides should call the superclass at the start. |oldStyle| will be 0 the first
+    // time this function is called.
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
 

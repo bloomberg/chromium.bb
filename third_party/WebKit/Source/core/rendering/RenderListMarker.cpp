@@ -1078,9 +1078,9 @@ RenderListMarker* RenderListMarker::createAnonymous(RenderListItem* item)
     return renderer;
 }
 
-void RenderListMarker::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+void RenderListMarker::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
-    if (style() && (newStyle->listStylePosition() != style()->listStylePosition() || newStyle->listStyleType() != style()->listStyleType()))
+    if (style() && (newStyle.listStylePosition() != style()->listStylePosition() || newStyle.listStyleType() != style()->listStyleType()))
         setNeedsLayoutAndPrefWidthsRecalc();
 
     RenderBox::styleWillChange(diff, newStyle);

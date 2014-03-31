@@ -53,7 +53,7 @@ public:
     RenderLayer* layer() const { return m_layer.get(); }
     ScrollableArea* scrollableArea() const;
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE;
+    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
     virtual void updateFromStyle() { }
 

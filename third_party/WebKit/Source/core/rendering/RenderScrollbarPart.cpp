@@ -140,7 +140,7 @@ void RenderScrollbarPart::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void RenderScrollbarPart::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+void RenderScrollbarPart::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
     RenderBlock::styleWillChange(diff, newStyle);
     setInline(false);

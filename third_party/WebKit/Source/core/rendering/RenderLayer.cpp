@@ -3955,7 +3955,7 @@ void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle
 
     updateDescendantDependentFlags();
 
-    if (!oldStyle || !renderer()->style()->transformDataEquivalent(oldStyle))
+    if (!oldStyle || !renderer()->style()->transformDataEquivalent(*oldStyle))
         updateTransform();
 
     bool didPaintWithFilters = false;

@@ -153,7 +153,7 @@ protected:
     virtual void computePreferredLogicalWidths(float leadWidth);
     virtual void willBeDestroyed() OVERRIDE;
 
-    virtual void styleWillChange(StyleDifference, const RenderStyle*) OVERRIDE FINAL { }
+    virtual void styleWillChange(StyleDifference, const RenderStyle&) OVERRIDE FINAL { }
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
 
     virtual void setTextInternal(PassRefPtr<StringImpl>);

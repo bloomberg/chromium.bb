@@ -137,7 +137,7 @@ void RenderBox::removeFloatingOrPositionedChildFromBlockLists()
         RenderBlock::removePositionedObject(this);
 }
 
-void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
     RenderStyle* oldStyle = style();
     if (oldStyle) {
@@ -149,22 +149,24 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyl
             if (!RuntimeEnabledFeatures::repaintAfterLayoutEnabled() || diff != StyleDifferenceLayout)
                 view()->repaint();
 
-            if (oldStyle->hasEntirelyFixedBackground() != newStyle->hasEntirelyFixedBackground())
+            if (oldStyle->hasEntirelyFixedBackground() != newStyle.hasEntirelyFixedBackground())
                 view()->compositor()->rootFixedBackgroundsChanged();
         }
 
         // When a layout hint happens and an object's position style changes, we have to do a layout
         // to dirty the render tree using the old position value now.
-        if (diff == StyleDifferenceLayout && parent() && oldStyle->position() != newStyle->position()) {
+        if (diff == StyleDifferenceLayout && parent() && oldStyle->position() != newStyle.position()) {
             markContainingBlocksForLayout();
             if (oldStyle->position() == StaticPosition)
                 repaint();
-            else if (newStyle->hasOutOfFlowPosition())
+            else if (newStyle.hasOutOfFlowPosition())
                 parent()->setChildNeedsLayout();
-            if (isFloating() && !isOutOfFlowPositioned() && newStyle->hasOutOfFlowPosition())
+            if (isFloating() && !isOutOfFlowPositioned() && newStyle.hasOutOfFlowPosition())
                 removeFloatingOrPositionedChildFromBlockLists();
         }
-    } else if (newStyle && isBody())
+    // FIXME: This branch runs when !oldStyle, which means that layout was never called
+    // so what's the point in invalidating the whole view that we never painted?
+    } else if (isBody())
         view()->repaint();
 
     RenderBoxModelObject::styleWillChange(diff, newStyle);

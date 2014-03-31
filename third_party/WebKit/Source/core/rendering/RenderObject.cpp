@@ -1895,6 +1895,8 @@ inline bool RenderObject::shouldRepaintForStyleDifference(StyleDifference diff) 
 
 void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 {
+    ASSERT(style);
+
     if (m_style == style) {
         // We need to run through adjustStyleDifference() for iframes, plugins, and canvas so
         // style sharing is disabled for them. That should ensure that we never hit this code path.
@@ -1905,11 +1907,11 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
     StyleDifference diff = StyleDifferenceEqual;
     unsigned contextSensitiveProperties = ContextSensitivePropertyNone;
     if (m_style)
-        diff = m_style->visualInvalidationDiff(style.get(), contextSensitiveProperties);
+        diff = m_style->visualInvalidationDiff(*style, contextSensitiveProperties);
 
     diff = adjustStyleDifference(diff, contextSensitiveProperties);
 
-    styleWillChange(diff, style.get());
+    styleWillChange(diff, *style);
 
     RefPtr<RenderStyle> oldStyle = m_style.release();
     setStyleInternal(style);
@@ -1961,49 +1963,47 @@ static inline bool rendererHasBackground(const RenderObject* renderer)
     return renderer && renderer->hasBackground();
 }
 
-void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
+void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle& newStyle)
 {
     if (m_style) {
         // If our z-index changes value or our visibility changes,
         // we need to dirty our stacking context's z-order list.
-        if (newStyle) {
-            bool visibilityChanged = m_style->visibility() != newStyle->visibility()
-                || m_style->zIndex() != newStyle->zIndex()
-                || m_style->hasAutoZIndex() != newStyle->hasAutoZIndex();
-            if (visibilityChanged) {
-                document().setAnnotatedRegionsDirty(true);
-                if (AXObjectCache* cache = document().existingAXObjectCache())
-                    cache->childrenChanged(parent());
-            }
+        bool visibilityChanged = m_style->visibility() != newStyle.visibility()
+            || m_style->zIndex() != newStyle.zIndex()
+            || m_style->hasAutoZIndex() != newStyle.hasAutoZIndex();
+        if (visibilityChanged) {
+            document().setAnnotatedRegionsDirty(true);
+            if (AXObjectCache* cache = document().existingAXObjectCache())
+                cache->childrenChanged(parent());
+        }
 
-            // Keep layer hierarchy visibility bits up to date if visibility changes.
-            if (m_style->visibility() != newStyle->visibility()) {
-                // We might not have an enclosing layer yet because we might not be in the tree.
-                if (RenderLayer* layer = enclosingLayer()) {
-                    if (newStyle->visibility() == VISIBLE) {
-                        layer->setHasVisibleContent();
-                    } else if (layer->hasVisibleContent() && (this == layer->renderer() || layer->renderer()->style()->visibility() != VISIBLE)) {
-                        layer->dirtyVisibleContentStatus();
-                        if (diff > StyleDifferenceRepaintLayer)
-                            repaint();
-                    }
+        // Keep layer hierarchy visibility bits up to date if visibility changes.
+        if (m_style->visibility() != newStyle.visibility()) {
+            // We might not have an enclosing layer yet because we might not be in the tree.
+            if (RenderLayer* layer = enclosingLayer()) {
+                if (newStyle.visibility() == VISIBLE) {
+                    layer->setHasVisibleContent();
+                } else if (layer->hasVisibleContent() && (this == layer->renderer() || layer->renderer()->style()->visibility() != VISIBLE)) {
+                    layer->dirtyVisibleContentStatus();
+                    if (diff > StyleDifferenceRepaintLayer)
+                        repaint();
                 }
             }
         }
 
-        if (m_parent && (newStyle->outlineSize() < m_style->outlineSize() || shouldRepaintForStyleDifference(diff)))
+        if (m_parent && (newStyle.outlineSize() < m_style->outlineSize() || shouldRepaintForStyleDifference(diff)))
             repaint();
-        if (isFloating() && (m_style->floating() != newStyle->floating()))
+        if (isFloating() && (m_style->floating() != newStyle.floating()))
             // For changes in float styles, we need to conceivably remove ourselves
             // from the floating objects list.
             toRenderBox(this)->removeFloatingOrPositionedChildFromBlockLists();
-        else if (isOutOfFlowPositioned() && (m_style->position() != newStyle->position()))
+        else if (isOutOfFlowPositioned() && (m_style->position() != newStyle.position()))
             // For changes in positioning styles, we need to conceivably remove ourselves
             // from the positioned objects list.
             toRenderBox(this)->removeFloatingOrPositionedChildFromBlockLists();
 
         s_affectsParentBlock = isFloatingOrOutOfFlowPositioned()
-            && (!newStyle->isFloating() && !newStyle->hasOutOfFlowPosition())
+            && (!newStyle.isFloating() && !newStyle.hasOutOfFlowPosition())
             && parent() && (parent()->isRenderBlockFlow() || parent()->isRenderInline());
 
         // Clearing these bits is required to avoid leaving stale renderers.
@@ -2025,13 +2025,13 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
         shouldBlitOnFixedBackgroundImage = true;
 #endif
 
-        bool newStyleSlowScroll = newStyle && !shouldBlitOnFixedBackgroundImage && newStyle->hasFixedBackgroundImage();
+        bool newStyleSlowScroll = !shouldBlitOnFixedBackgroundImage && newStyle.hasFixedBackgroundImage();
         bool oldStyleSlowScroll = m_style && !shouldBlitOnFixedBackgroundImage && m_style->hasFixedBackgroundImage();
 
         bool drawsRootBackground = isRoot() || (isBody() && !rendererHasBackground(document().documentElement()->renderer()));
         if (drawsRootBackground && !shouldBlitOnFixedBackgroundImage) {
             if (view()->compositor()->supportsFixedRootBackgroundCompositing()) {
-                if (newStyleSlowScroll && newStyle->hasEntirelyFixedBackground())
+                if (newStyleSlowScroll && newStyle.hasEntirelyFixedBackground())
                     newStyleSlowScroll = false;
 
                 if (oldStyleSlowScroll && m_style->hasEntirelyFixedBackground())
@@ -2054,8 +2054,8 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
     // Since a CSS property cannot be applied directly to a text node, a
     // handler will have already been added for its parent so ignore it.
     TouchAction oldTouchAction = m_style ? m_style->touchAction() : TouchActionAuto;
-    if (node() && !node()->isTextNode() && (oldTouchAction == TouchActionAuto) != (newStyle->touchAction() == TouchActionAuto)) {
-        if (newStyle->touchAction() != TouchActionAuto)
+    if (node() && !node()->isTextNode() && (oldTouchAction == TouchActionAuto) != (newStyle.touchAction() == TouchActionAuto)) {
+        if (newStyle.touchAction() != TouchActionAuto)
             document().didAddTouchEventHandler(node());
         else
             document().didRemoveTouchEventHandler(node());

@@ -57,7 +57,7 @@ public:
     RenderObject* rendererOwningScrollbar() const;
 
 protected:
-    virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE;
+    virtual void styleWillChange(StyleDifference, const RenderStyle& newStyle) OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 

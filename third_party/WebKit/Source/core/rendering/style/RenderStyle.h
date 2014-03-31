@@ -360,7 +360,7 @@ public:
     static StyleRecalcChange stylePropagationDiff(const RenderStyle* oldStyle, const RenderStyle* newStyle);
 
     // Computes how much visual invalidation the style change causes: layout, repaint or recomposite.
-    StyleDifference visualInvalidationDiff(const RenderStyle*, unsigned& changedContextSensitiveProperties) const;
+    StyleDifference visualInvalidationDiff(const RenderStyle&, unsigned& changedContextSensitiveProperties) const;
 
     enum IsAtShadowBoundary {
         AtShadowBoundary,
@@ -862,7 +862,7 @@ public:
     const Length& transformOriginY() const { return rareNonInheritedData->m_transform->m_y; }
     float transformOriginZ() const { return rareNonInheritedData->m_transform->m_z; }
     bool hasTransform() const { return !rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
-    bool transformDataEquivalent(const RenderStyle* otherStyle) const { return rareNonInheritedData->m_transform == otherStyle->rareNonInheritedData->m_transform; }
+    bool transformDataEquivalent(const RenderStyle& otherStyle) const { return rareNonInheritedData->m_transform == otherStyle.rareNonInheritedData->m_transform; }
 
     TextEmphasisFill textEmphasisFill() const { return static_cast<TextEmphasisFill>(rareInheritedData->textEmphasisFill); }
     TextEmphasisMark textEmphasisMark() const;
@@ -1772,7 +1772,7 @@ private:
     Color lightingColor() const { return svgStyle()->lightingColor(); }
 
     void appendContent(PassOwnPtr<ContentData>);
-    StyleDifference repaintOnlyDiff(const RenderStyle* other, unsigned& changedContextSensitiveProperties) const;
+    StyleDifference repaintOnlyDiff(const RenderStyle& other, unsigned& changedContextSensitiveProperties) const;
 };
 
 inline int adjustForAbsoluteZoom(int value, float zoomFactor)
