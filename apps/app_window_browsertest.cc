@@ -23,7 +23,7 @@ typedef extensions::PlatformAppBrowserTest AppWindowBrowserTest;
 #endif
 
 // Verifies that the NativeAppWindows implement GetFrameInsets() correctly.
-// See crbug.com/346115
+// See http://crbug.com/346115
 IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForDefaultFrame) {
   AppWindow* app_window = CreateTestAppWindow("{}");
   NativeAppWindow* native_window = app_window->GetBaseWindow();
@@ -31,7 +31,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForDefaultFrame) {
 
   // It is a reasonable assumption that the top padding must be greater than
   // the bottom padding due to the title bar.
-  EXPECT_TRUE(insets.top() > insets.bottom());
+  EXPECT_GT(insets.top(), insets.bottom());
 
   CloseAppWindow(app_window);
 }
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForDefaultFrame) {
 #endif
 
 // Verifies that the NativeAppWindows implement GetFrameInsets() correctly.
-// See crbug.com/346115
+// See http://crbug.com/346115
 IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForColoredFrame) {
   AppWindow* app_window =
       CreateTestAppWindow("{ \"frame\": { \"color\": \"#ffffff\" } }");
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForColoredFrame) {
 
   // It is a reasonable assumption that the top padding must be greater than
   // the bottom padding due to the title bar.
-  EXPECT_TRUE(insets.top() > insets.bottom());
+  EXPECT_GT(insets.top(), insets.bottom());
 
   CloseAppWindow(app_window);
 }
