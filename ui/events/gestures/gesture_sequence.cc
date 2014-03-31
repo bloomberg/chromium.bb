@@ -612,6 +612,8 @@ GestureSequence::Gestures* GestureSequence::ProcessTouchEventForGesture(
         point.UpdateForScroll();
       break;
     case GST_SCROLL_FIRST_MOVED_HANDLED:
+      if (point.DidScroll(event, 0))
+        point.UpdateForScroll();
       break;
     case GST_SCROLL_FIRST_RELEASED:
     case GST_SCROLL_FIRST_CANCELLED:

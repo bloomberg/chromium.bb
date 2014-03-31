@@ -4037,7 +4037,6 @@ TEST_F(GestureRecognizerTest, TestExceedingSlopSlowly) {
   EXPECT_EQ(1, delegate->scroll_x());
   EXPECT_EQ(0, delegate->scroll_x_hint());
   delegate->Reset();
-
 }
 
 TEST_F(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
@@ -4083,10 +4082,12 @@ TEST_F(GestureRecognizerTest, ScrollAlternatelyConsumedTest) {
     delegate->ReceivedAck();
     EXPECT_FALSE(delegate->scroll_begin());
     EXPECT_TRUE(delegate->scroll_update());
+    EXPECT_EQ(10, delegate->scroll_x());
+    EXPECT_EQ(10, delegate->scroll_y());
     delegate->Reset();
 
-    x -= 10;
-    y += 10;
+    x += 20;
+    y += 20;
     ui::TouchEvent move3(
         ui::ET_TOUCH_MOVED, gfx::Point(x, y), kTouchId, tes.Now());
     DispatchEventUsingWindowDispatcher(&move3);
