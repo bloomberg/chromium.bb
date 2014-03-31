@@ -7,7 +7,7 @@ from operator import itemgetter
 
 from data_source import DataSource
 from extensions_paths import PRIVATE_TEMPLATES
-import features_utility as features
+from features_utility import Filtered
 from future import Future
 
 
@@ -19,7 +19,7 @@ def _ListifyPermissions(permissions):
     return 'description' in perm and not perm['name'].endswith('Private')
 
   return sorted(
-      ifilter(filter_permissions, permissions.values()),
+      ifilter(filter_permissions, permissions.itervalues()),
       key=itemgetter('name'))
 
 
@@ -68,7 +68,7 @@ class PermissionsDataSource(DataSource):
           del permission['partial']
 
       def filter_for_platform(permissions, platform):
-        return _ListifyPermissions(features.Filtered(permissions, platform))
+        return _ListifyPermissions(Filtered(permissions, platform))
       return {
         'declare_apps': filter_for_platform(permission_features, 'apps'),
         'declare_extensions': filter_for_platform(

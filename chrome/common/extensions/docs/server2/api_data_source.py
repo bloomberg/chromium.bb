@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import copy
+from copy import copy
 import logging
 import os
 import posixpath
@@ -432,14 +432,18 @@ class _JSCModel(object):
     if table_info is None:
       return misc_rows
 
-    for category in table_info.keys():
-      content = copy.deepcopy(table_info[category])
-      for node in content:
+    for category in table_info.iterkeys():
+      content = []
+      for node in table_info[category]:
         # If there is a 'partial' argument and it hasn't already been
         # converted to a Handlebar object, transform it to a template.
         if 'partial' in node:
+          # Note: it's enough to copy() not deepcopy() because only a single
+          # top-level key is being modified.
+          node = copy(node)
           node['partial'] = self._template_cache.GetFromFile(
               posixpath.join(PRIVATE_TEMPLATES, node['partial'])).Get()
+        content.append(node)
       misc_rows.append({ 'title': category, 'content': content })
     return misc_rows
 

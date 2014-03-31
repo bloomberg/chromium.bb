@@ -13,8 +13,10 @@ A Feature may have other keys from a _features.json file as well. Features with
 a whitelist are ignored as they are only useful to specific apps or extensions.
 '''
 
+from copy import copy
+
 from branch_utility import BranchUtility
-from copy import deepcopy
+
 
 def _GetPlatformsForExtensionTypes(extension_types):
   platforms = []
@@ -23,6 +25,7 @@ def _GetPlatformsForExtensionTypes(extension_types):
   if extension_types == 'all' or 'extension' in extension_types:
     platforms.append('extensions')
   return platforms
+
 
 def Parse(features_json):
   '''Process JSON from a _features.json file, standardizing it into a dictionary
@@ -41,18 +44,15 @@ def Parse(features_json):
     '''
     if name.endswith('Private'):
       return False
-
     return value.get('location') == 'component' or 'whitelist' in value
 
-    return False
-
-  for name, value in deepcopy(features_json).iteritems():
+  for name, rawvalue in features_json.iteritems():
     # Some feature names correspond to a list, typically because they're
     # whitelisted in stable for certain extensions and available in dev for
     # everybody else. Force a list down to a single feature by attempting to
     # remove the entries that don't affect the typical usage of an API.
-    if isinstance(value, list):
-      available_values = [subvalue for subvalue in value
+    if isinstance(rawvalue, list):
+      available_values = [subvalue for subvalue in rawvalue
                           if not ignore_feature(name, subvalue)]
       if not available_values:
         continue
@@ -65,16 +65,19 @@ def Parse(features_json):
         # To get the ball rolling, add a hack to combine the extension types.
         # See http://crbug.com/316194.
         extension_types = set()
-        for value in available_values:
-          extension_types.update(value.get('extension_types', ()))
+        for available_value in available_values:
+          extension_types.update(available_value.get('extension_types', ()))
 
         # For the base value, select the one with the most recent availability.
         channel_names = BranchUtility.GetAllChannelNames()
         available_values.sort(
             key=lambda v: channel_names.index(v.get('channel', 'stable')))
-        value = available_values[0]
 
+        # Note: copy() is enough because only a single toplevel key is modified.
+        value = copy(available_values[0])
         value['extension_types'] = list(extension_types)
+    else:
+      value = rawvalue
 
     if ignore_feature(name, value):
       continue
@@ -100,18 +103,15 @@ def Parse(features_json):
 
   return features
 
-def Filtered(features, platform=None):
+
+def Filtered(features, platform):
   '''Create a new Features dictionary from |features| that contains only items
-  relevant to |platform|. Items retained are deepcopied. Returns new features
-  dictionary.
+  relevant to |platform|. Feature values are unmodified; callers should
+  deepcopy() if they need to modify them.
   '''
-  filtered_features = {}
+  return dict((name, feature) for name, feature in features.iteritems()
+              if platform in feature['platforms'])
 
-  for name, feature in features.iteritems():
-    if not platform or platform in feature['platforms']:
-      filtered_features[name] = deepcopy(feature)
-
-  return filtered_features
 
 def MergedWith(features, other):
   '''Merge |features| with an additional dictionary to create a new features

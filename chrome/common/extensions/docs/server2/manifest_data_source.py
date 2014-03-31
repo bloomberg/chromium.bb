@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from copy import deepcopy
 import json
 
 from data_source import DataSource
-import features_utility
+from features_utility import Filtered
 from future import Future
 from manifest_features import ConvertDottedKeysToNested
 
@@ -115,7 +116,7 @@ class ManifestDataSource(DataSource):
       def for_templates(manifest_features, platform):
         return _AddLevelAnnotations(_ListifyAndSortDocs(
             ConvertDottedKeysToNested(
-                features_utility.Filtered(manifest_features, platform + 's')),
+                deepcopy(Filtered(manifest_features, platform + 's'))),
             app_name=platform.capitalize()))
       return {
         'apps': for_templates(manifest_features, 'app'),

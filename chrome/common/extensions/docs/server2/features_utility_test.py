@@ -7,6 +7,7 @@ import unittest
 
 from features_utility import Parse, Filtered, MergedWith
 
+
 class FeaturesUtilityTest(unittest.TestCase):
   def testFromJson(self):
     raw_features_json = {
@@ -111,10 +112,10 @@ class FeaturesUtilityTest(unittest.TestCase):
     apps_names = set(('doc1', 'doc3'))
     extension_names = set(('doc2', 'doc3'))
 
-    self.assertEqual(
-        apps_names, set(Filtered(unfiltered, 'apps').keys()))
-    self.assertEqual(
-        extension_names, set(Filtered(unfiltered, 'extensions').keys()))
+    self.assertEqual(sorted(apps_names),
+                     sorted(Filtered(unfiltered, 'apps').keys()))
+    self.assertEqual(sorted(extension_names),
+                     sorted(Filtered(unfiltered, 'extensions').keys()))
 
   def testMergeFeatures(self):
     features = {

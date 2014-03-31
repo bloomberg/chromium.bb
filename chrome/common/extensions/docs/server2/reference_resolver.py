@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from copy import deepcopy
+from copy import copy
 import logging
 import re
 
@@ -134,10 +134,11 @@ class ReferenceResolver(object):
       if link is None:
         return None
       self._object_store.Set(db_key, link)
-    else:
-      link = deepcopy(link)
+
     if title is not None:
+      link = copy(link)
       link['text'] = title
+
     return link
 
   def SafeGetLink(self, ref, namespace=None, title=None):
