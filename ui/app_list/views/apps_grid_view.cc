@@ -462,6 +462,10 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
   if (drag_and_drop_host_)
     return;
 
+  // Never create a second synchronous drag if the drag started in a folder.
+  if (IsDraggingForReparentInRootLevelGridView())
+    return;
+
   delegate_->GetShortcutPathForApp(
       drag_view_->item()->id(),
       base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
@@ -493,9 +497,6 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
                                       const ui::LocatedEvent& event) {
   DCHECK(drag_view_);
 
-  if (folder_delegate_)
-    UpdateDragStateInsideFolder(pointer, event);
-
   gfx::Point drag_point_in_grid_view;
   ExtractDragLocation(event, &drag_point_in_grid_view);
   UpdateDrag(pointer, drag_point_in_grid_view);
@@ -513,6 +514,9 @@ bool AppsGridView::UpdateDragFromItem(Pointer pointer,
 }
 
 void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
+  if (folder_delegate_)
+    UpdateDragStateInsideFolder(pointer, point);
+
   // EndDrag was called before if |drag_view_| is NULL.
   if (!drag_view_)
     return;
@@ -591,13 +595,15 @@ void AppsGridView::EndDrag(bool cancel) {
     drag_and_drop_host_->EndDrag(cancel);
     if (IsDraggingForReparentInHiddenGridView())
       folder_delegate_->DispatchEndDragEventForReparent(true);
-  } else if (!cancel && dragging()) {
+  } else {
     if (IsDraggingForReparentInHiddenGridView()) {
       // Forward the EndDrag event to the root level grid view.
-      folder_delegate_->DispatchEndDragEventForReparent(false);
+      folder_delegate_->DispatchEndDragEventForReparent(cancel);
       EndDragForReparentInHiddenFolderGridView();
       return;
-    } else {
+    }
+
+    if (!cancel && dragging()) {
       // Regular drag ending path, ie, not for reparenting.
       CalculateDropTarget(last_drag_point_, true);
       if (IsValidIndex(drop_target_)) {
@@ -728,15 +734,12 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
   dragging_for_reparent_item_ = true;
 }
 
-void AppsGridView::UpdateDragFromReparentItem(
-    Pointer pointer,
-    const ui::LocatedEvent& event) {
+void AppsGridView::UpdateDragFromReparentItem(Pointer pointer,
+                                              const gfx::Point& drag_point) {
   DCHECK(drag_view_);
   DCHECK(IsDraggingForReparentInRootLevelGridView());
 
-  gfx::Point drag_point_in_grid_view;
-  ExtractDragLocation(event, &drag_point_in_grid_view);
-  UpdateDrag(pointer, drag_point_in_grid_view);
+  UpdateDrag(pointer, drag_point);
 }
 
 bool AppsGridView::IsDraggedView(const views::View* view) const {
@@ -1290,16 +1293,15 @@ void AppsGridView::OnFolderDroppingTimer() {
     SetAsFolderDroppingTarget(drop_target_, true);
 }
 
-void AppsGridView::UpdateDragStateInsideFolder(
-    Pointer pointer,
-    const ui::LocatedEvent& event) {
+void AppsGridView::UpdateDragStateInsideFolder(Pointer pointer,
+                                               const gfx::Point& drag_point) {
   if (IsUnderOEMFolder())
     return;
 
   if (IsDraggingForReparentInHiddenGridView()) {
     // Dispatch drag event to root level grid view for re-parenting folder
     // folder item purpose.
-    DispatchDragEventForReparent(pointer, event);
+    DispatchDragEventForReparent(pointer, drag_point);
     return;
   }
 
@@ -1353,10 +1355,9 @@ bool AppsGridView::IsUnderOEMFolder() {
   return folder_delegate_->IsOEMFolder();
 }
 
-void AppsGridView::DispatchDragEventForReparent(
-    Pointer pointer,
-    const ui::LocatedEvent& event) {
-  folder_delegate_->DispatchDragEventForReparent(pointer, event);
+void AppsGridView::DispatchDragEventForReparent(Pointer pointer,
+                                                const gfx::Point& drag_point) {
+  folder_delegate_->DispatchDragEventForReparent(pointer, drag_point);
 }
 
 void AppsGridView::EndDragFromReparentItemInRootLevel(

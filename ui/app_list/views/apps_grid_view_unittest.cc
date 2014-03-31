@@ -195,9 +195,9 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
                             const gfx::Point& drag_point_in_folder_grid)
       OVERRIDE {}
 
-  virtual void DispatchDragEventForReparent(AppsGridView::Pointer pointer,
-                                            const ui::LocatedEvent& event)
-      OVERRIDE {}
+  virtual void DispatchDragEventForReparent(
+      AppsGridView::Pointer pointer,
+      const gfx::Point& drag_point_in_folder_grid) OVERRIDE {}
 
   virtual void DispatchEndDragEventForReparent(
       bool events_forwarded_to_drag_drop_host) OVERRIDE {}

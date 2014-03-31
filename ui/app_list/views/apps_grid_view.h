@@ -165,11 +165,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Updates drag in the root level grid view when receiving the drag event
   // dispatched from the hidden grid view for reparenting a folder item.
   void UpdateDragFromReparentItem(Pointer pointer,
-      const ui::LocatedEvent& event);
+                                  const gfx::Point& drag_point);
 
   // Dispatches the drag event from hidden grid view to the top level grid view.
   void DispatchDragEventForReparent(Pointer pointer,
-      const ui::LocatedEvent& event);
+                                    const gfx::Point& drag_point);
 
   // Handles EndDrag event dispatched from the hidden folder grid view in the
   // root level grid view to end reparenting a folder item.
@@ -422,7 +422,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Updates drag state for dragging inside a folder's grid view.
   void UpdateDragStateInsideFolder(Pointer pointer,
-      const ui::LocatedEvent& event);
+                                   const gfx::Point& drag_point);
 
   // Returns true if drag event is happening in the root level AppsGridView
   // for reparenting a folder item.

@@ -36,8 +36,9 @@ class APP_LIST_EXPORT AppsGridViewFolderDelegate {
 
   // Dispatches drag event from the hidden grid view to the root level grid view
   // for re-parenting a folder item.
-  virtual void DispatchDragEventForReparent(AppsGridView::Pointer pointer,
-                                            const ui::LocatedEvent& event) = 0;
+  virtual void DispatchDragEventForReparent(
+      AppsGridView::Pointer pointer,
+      const gfx::Point& drag_point_in_folder_grid) = 0;
 
   // Dispatches EndDrag event from the hidden grid view to the root level grid
   // view for reparenting a folder item.
