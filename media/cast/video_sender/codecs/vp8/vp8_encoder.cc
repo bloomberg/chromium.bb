@@ -294,7 +294,7 @@ uint32 Vp8Encoder::GetLatestFrameIdToReference() {
 Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
   // Update at most one buffer, except for key-frames.
 
-  Vp8Buffers buffer_to_update;
+  Vp8Buffers buffer_to_update = kNoBuffer;
   if (number_of_repeated_buffers_ < max_number_of_repeated_buffers_in_a_row_) {
     // TODO(pwestin): experiment with this. The issue with only this change is
     // that we can end up with only 4 frames in flight when we expect 6.

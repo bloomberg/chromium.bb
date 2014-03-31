@@ -133,7 +133,7 @@ bool EncodeTimestamp(uint16 timestamp,
   // gray-code the number
   timestamp = (timestamp >> 1) ^ timestamp;
   std::vector<double> frequencies;
-  for (int i = 0; i < kNumBits; i++) {
+  for (size_t i = 0; i < kNumBits; i++) {
     if ((timestamp >> i) & 1) {
       frequencies.push_back(kBaseFrequency * (i+1));
     }
@@ -185,7 +185,7 @@ bool DecodeTimestamp(const std::vector<int16>& samples, uint16* timestamp) {
     if (sense < kMinSense) continue;
     bool success = true;
     uint16 gray_coded = 0;
-    for (int bit = 0; success && bit < kNumBits; bit++) {
+    for (size_t bit = 0; success && bit < kNumBits; bit++) {
       double signal_strength = DecodeOneFrequency(
           &samples[start],
           kSamplesToAnalyze,

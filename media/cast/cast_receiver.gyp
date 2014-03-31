@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'includes': [
      'audio_receiver/audio_receiver.gypi',
      'video_receiver/video_receiver.gypi',

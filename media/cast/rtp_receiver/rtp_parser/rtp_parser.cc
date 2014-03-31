@@ -88,8 +88,8 @@ bool RtpParser::ParseCast(const uint8* packet,
   // Extract header.
   const uint8* data_ptr = packet;
   size_t data_length = length;
-  rtp_header->is_key_frame = (data_ptr[0] & kCastKeyFrameBitMask);
-  rtp_header->is_reference = (data_ptr[0] & kCastReferenceFrameIdBitMask);
+  rtp_header->is_key_frame = !!(data_ptr[0] & kCastKeyFrameBitMask);
+  rtp_header->is_reference = !!(data_ptr[0] & kCastReferenceFrameIdBitMask);
   rtp_header->frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(data_ptr[1]);
 
   base::BigEndianReader big_endian_reader(

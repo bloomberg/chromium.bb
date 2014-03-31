@@ -21,7 +21,6 @@ namespace {
 static const int64 kMinSchedulingDelayMs = 1;
 static const int64 kMinTimeBetweenOffsetUpdatesMs = 1000;
 static const int kTimeOffsetMaxCounter = 10;
-static const int64_t kMinProcessIntervalMs = 5;
 
 }  // namespace
 
@@ -176,7 +175,6 @@ void VideoReceiver::GetEncodedVideoFrame(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
       new transport::EncodedVideoFrame());
-  uint32 rtp_timestamp = 0;
   bool next_frame = false;
 
   if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &next_frame)) {

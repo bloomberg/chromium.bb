@@ -36,7 +36,6 @@ double I420PSNR(const scoped_refptr<media::VideoFrame>& frame1,
 }
 
 void PopulateVideoFrame(VideoFrame* frame, int start_value) {
-  int width = frame->coded_size().width();
   int height = frame->coded_size().height();
   int stride_y = frame->stride(VideoFrame::kYPlane);
   int stride_u = frame->stride(VideoFrame::kUPlane);

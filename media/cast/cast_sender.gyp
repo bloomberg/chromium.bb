@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'includes': [
     'audio_sender/audio_sender.gypi',
     'congestion_control/congestion_control.gypi',

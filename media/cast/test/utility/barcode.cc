@@ -123,7 +123,6 @@ bool DecodeBarcode(const scoped_refptr<VideoFrame>& frame,
     if (i[2] > unit_size * 2 || i[2] < unit_size / 2) valid = false;
     if (i[3] > unit_size * 2 || i[3] < unit_size / 2) valid = false;
     i += 4;
-    uint64 return_value = 0;
     for (size_t bit = 0; valid && bit < output->size(); bit++) {
       if (i[0] > unit_size / 2 && i[0] <= unit_size * 1.5 &&
           i[1] > unit_size * 1.5 && i[1] <= unit_size * 3) {

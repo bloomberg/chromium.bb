@@ -326,6 +326,7 @@ class PacketSender : public PacketPipe {
     int result;
     if (destination_->address().empty()) {
       VLOG(1) << "Destination has not been set yet.";
+      result = net::ERR_INVALID_ARGUMENT;
     } else {
       VLOG(1) << "Destination:" << destination_->ToString();
       result = udp_socket_->SendTo(buf,
@@ -410,12 +411,12 @@ class UDPProxyImpl : public UDPProxy {
                scoped_ptr<PacketPipe> to_dest_pipe,
                scoped_ptr<PacketPipe> from_dest_pipe,
                net::NetLog* net_log) :
-      proxy_thread_("media::cast::test::UdpProxy Thread"),
       local_port_(local_port),
       destination_(destination),
-      start_event_(false, false),
+      proxy_thread_("media::cast::test::UdpProxy Thread"),
       to_dest_pipe_(to_dest_pipe.Pass()),
-      from_dest_pipe_(to_dest_pipe.Pass()) {
+      from_dest_pipe_(to_dest_pipe.Pass()),
+      start_event_(false, false) {
     proxy_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     proxy_thread_.message_loop_proxy()->PostTask(

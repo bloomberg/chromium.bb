@@ -23,7 +23,7 @@ class LocalVideoEncodeAcceleratorClient;
 }  // namespace media
 
 namespace {
-static const int kOutputBufferCount = 3;
+static const size_t kOutputBufferCount = 3;
 
 void LogFrameEncodedEvent(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
@@ -181,7 +181,7 @@ class LocalVideoEncodeAcceleratorClient
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
     DCHECK(video_encode_accelerator_);
 
-    for (int j = 0; j < kOutputBufferCount; ++j) {
+    for (size_t j = 0; j < kOutputBufferCount; ++j) {
       create_video_encode_memory_cb_.Run(
           output_buffer_size,
           base::Bind(&LocalVideoEncodeAcceleratorClient::OnCreateSharedMemory,

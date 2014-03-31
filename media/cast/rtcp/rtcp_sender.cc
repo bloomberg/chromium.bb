@@ -129,7 +129,7 @@ bool BuildRtcpReceiverLogMessage(
     std::vector<RtcpReceiverEventLogMessage>::reverse_iterator sorted_rit =
         sorted_log_messages.rbegin();
     base::TimeTicks first_event_timestamp = sorted_rit->event_timestamp;
-    int events_in_frame = 0;
+    size_t events_in_frame = 0;
     while (sorted_rit != sorted_log_messages.rend() &&
            events_in_frame < kRtcpMaxReceiverLogMessages &&
            remaining_space >= kRtcpReceiverEventLogSize) {
@@ -803,7 +803,7 @@ void RtcpSender::BuildReceiverLog(
       receiver_log_message.pop_front();
     }
   }
-  DCHECK_EQ(total_number_of_messages_to_send, 0);
+  DCHECK_EQ(total_number_of_messages_to_send, 0u);
 }
 
 }  // namespace cast
