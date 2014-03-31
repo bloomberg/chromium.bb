@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+#include "native_client/src/untrusted/irt/irt.h"
+
 struct dirent;
 struct stat;
 struct timeval;
@@ -27,14 +29,15 @@ struct nacl_irt_dev_fdio_v0_2 {
   int (*dup2)(int fd, int newfd);
   int (*read)(int fd, void *buf, size_t count, size_t *nread);
   int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
-  int (*seek)(int fd, off_t offset, int whence, off_t *new_offset);
+  int (*seek)(int fd, nacl_irt_off_t offset, int whence,
+              nacl_irt_off_t *new_offset);
   int (*fstat)(int fd, struct stat *);
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
   int (*fchdir)(int fd);
   int (*fchmod)(int fd, mode_t mode);
   int (*fsync)(int fd);
   int (*fdatasync)(int fd);
-  int (*ftruncate)(int fd, off_t length);
+  int (*ftruncate)(int fd, nacl_irt_off_t length);
 };
 
 #define NACL_IRT_DEV_FDIO_v0_3  "nacl-irt-dev-fdio-0.3"
@@ -44,14 +47,15 @@ struct nacl_irt_dev_fdio {
   int (*dup2)(int fd, int newfd);
   int (*read)(int fd, void *buf, size_t count, size_t *nread);
   int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
-  int (*seek)(int fd, off_t offset, int whence, off_t *new_offset);
+  int (*seek)(int fd, nacl_irt_off_t offset, int whence,
+              nacl_irt_off_t *new_offset);
   int (*fstat)(int fd, struct stat *);
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
   int (*fchdir)(int fd);
   int (*fchmod)(int fd, mode_t mode);
   int (*fsync)(int fd);
   int (*fdatasync)(int fd);
-  int (*ftruncate)(int fd, off_t length);
+  int (*ftruncate)(int fd, nacl_irt_off_t length);
   int (*isatty)(int fd, int *result);
 };
 
@@ -81,7 +85,7 @@ struct nacl_irt_dev_filename {
   int (*chdir)(const char *pathname);
   int (*getcwd)(char *pathname, size_t len);
   int (*unlink)(const char *pathname);
-  int (*truncate)(const char *pathname, off_t length);
+  int (*truncate)(const char *pathname, nacl_irt_off_t length);
   int (*lstat)(const char *pathname, struct stat *);
   int (*link)(const char *oldpath, const char *newpath);
   int (*rename)(const char *oldpath, const char *newpath);

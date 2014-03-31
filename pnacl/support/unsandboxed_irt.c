@@ -218,7 +218,7 @@ static int irt_sysconf(int name, int *value) {
 }
 
 static int irt_mmap(void **addr, size_t len, int prot, int flags,
-                    int fd, off_t off) {
+                    int fd, nacl_irt_off_t off) {
   void *result = mmap(*addr, len, prot, flags, fd, off);
   if (result == MAP_FAILED)
     return errno;
@@ -415,7 +415,7 @@ static const struct nacl_irt_fdio irt_fdio = {
   irt_dup2,
   irt_read,
   irt_write,
-  (typeof(irt_fdio.seek)) irt_seek,
+  irt_seek,
   irt_fstat,
   USE_STUB(irt_fdio, getdents),
 };

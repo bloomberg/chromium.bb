@@ -7,6 +7,7 @@
 #define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_IRT_H_
 
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <time.h>
 
@@ -17,6 +18,8 @@ struct dirent;
 
 struct NaClExceptionContext;
 struct NaClMemMappingInfo;
+
+typedef int64_t nacl_irt_off_t;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -107,7 +110,8 @@ struct nacl_irt_fdio {
   int (*dup2)(int fd, int newfd);
   int (*read)(int fd, void *buf, size_t count, size_t *nread);
   int (*write)(int fd, const void *buf, size_t count, size_t *nwrote);
-  int (*seek)(int fd, off_t offset, int whence, off_t *new_offset);
+  int (*seek)(int fd, nacl_irt_off_t offset, int whence,
+              nacl_irt_off_t *new_offset);
   int (*fstat)(int fd, struct stat *);
   int (*getdents)(int fd, struct dirent *, size_t count, size_t *nread);
 };
@@ -157,7 +161,8 @@ struct nacl_irt_memory_v0_1 {
    */
   int (*sysbrk)(void **newbrk);
   /* Note: this version of mmap silently ignores PROT_EXEC bit.  */
-  int (*mmap)(void **addr, size_t len, int prot, int flags, int fd, off_t off);
+  int (*mmap)(void **addr, size_t len, int prot, int flags, int fd,
+              nacl_irt_off_t off);
   int (*munmap)(void *addr, size_t len);
 };
 
@@ -165,14 +170,16 @@ struct nacl_irt_memory_v0_1 {
 #define NACL_IRT_MEMORY_v0_2    "nacl-irt-memory-0.2"
 struct nacl_irt_memory_v0_2 {
   int (*sysbrk)(void **newbrk);
-  int (*mmap)(void **addr, size_t len, int prot, int flags, int fd, off_t off);
+  int (*mmap)(void **addr, size_t len, int prot, int flags, int fd,
+              nacl_irt_off_t off);
   int (*munmap)(void *addr, size_t len);
   int (*mprotect)(void *addr, size_t len, int prot);
 };
 
 #define NACL_IRT_MEMORY_v0_3    "nacl-irt-memory-0.3"
 struct nacl_irt_memory {
-  int (*mmap)(void **addr, size_t len, int prot, int flags, int fd, off_t off);
+  int (*mmap)(void **addr, size_t len, int prot, int flags, int fd,
+              nacl_irt_off_t off);
   int (*munmap)(void *addr, size_t len);
   int (*mprotect)(void *addr, size_t len, int prot);
 };
