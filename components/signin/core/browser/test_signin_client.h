@@ -36,9 +36,6 @@ class TestSigninClient : public SigninClient {
   // Returns a TestURLRequestContextGetter.
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
 
-  // Returns true.
-  virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
-
  private:
   // Loads the token database.
   void LoadDatabase();

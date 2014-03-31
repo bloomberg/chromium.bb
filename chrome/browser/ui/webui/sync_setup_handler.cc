@@ -54,7 +54,7 @@
 #if defined(OS_CHROMEOS)
 #include "components/signin/core/browser/signin_manager_base.h"
 #else
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 #endif
 
 using content::WebContents;

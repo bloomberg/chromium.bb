@@ -131,6 +131,9 @@ extern const char kWebKitFontScaleFactor[];
 extern const char kWebKitForceEnableZoom[];
 extern const char kWebKitPasswordEchoEnabled[];
 #endif
+extern const char kAutologinEnabled[];
+extern const char kReverseAutologinEnabled[];
+extern const char kReverseAutologinRejectedEmailList[];
 extern const char kSafeBrowsingEnabled[];
 extern const char kSafeBrowsingDownloadFeedbackEnabled[];
 extern const char kSafeBrowsingReportingEnabled[];

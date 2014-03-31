@@ -123,13 +123,6 @@ net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
   return profile_->GetRequestContext();
 }
 
-bool ChromeSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
-  // If inline sign in is enabled, but new profile management is not, the user's
-  // credentials should be merge into the cookie jar.
-  return !switches::IsEnableWebBasedSignin() &&
-         !switches::IsNewProfileManagement();
-}
-
 void ChromeSigninClient::GoogleSigninSucceeded(const std::string& username,
                                                const std::string& password) {
 #if !defined(OS_ANDROID)

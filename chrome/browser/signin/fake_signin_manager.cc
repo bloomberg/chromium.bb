@@ -31,7 +31,7 @@ KeyedService* FakeSigninManagerBase::Build(content::BrowserContext* context) {
 #else
   manager = new FakeSigninManager(profile);
 #endif
-  manager->Initialize(NULL);
+  manager->Initialize(profile, NULL);
   SigninManagerFactory::GetInstance()
       ->NotifyObserversOfSigninManagerCreationForTesting(manager);
   return manager;

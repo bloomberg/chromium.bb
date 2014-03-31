@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 
 #include <vector>
 
@@ -48,7 +48,7 @@ KeyedService* SigninManagerBuild(content::BrowserContext* context) {
   service = new SigninManager(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
-  service->Initialize(NULL);
+  service->Initialize(profile, NULL);
   return service;
 }
 
@@ -200,7 +200,7 @@ TEST_F(SigninManagerTest, SignInWithRefreshToken) {
   // Should persist across resets.
   ShutDownManager();
   CreateNakedSigninManager();
-  manager_->Initialize(NULL);
+  manager_->Initialize(profile(), NULL);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
 }
 
@@ -235,7 +235,7 @@ TEST_F(SigninManagerTest, SignOut) {
   // Should not be persisted anymore
   ShutDownManager();
   CreateNakedSigninManager();
-  manager_->Initialize(NULL);
+  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 }
 
@@ -273,7 +273,7 @@ TEST_F(SigninManagerTest, Prohibited) {
   g_browser_process->local_state()->SetString(
       prefs::kGoogleServicesUsernamePattern, ".*@google.com");
   CreateNakedSigninManager();
-  manager_->Initialize(g_browser_process->local_state());
+  manager_->Initialize(profile(), g_browser_process->local_state());
   EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
   EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
@@ -287,7 +287,7 @@ TEST_F(SigninManagerTest, TestAlternateWildcard) {
   g_browser_process->local_state()->SetString(
       prefs::kGoogleServicesUsernamePattern, "*@google.com");
   CreateNakedSigninManager();
-  manager_->Initialize(g_browser_process->local_state());
+  manager_->Initialize(profile(), g_browser_process->local_state());
   EXPECT_TRUE(manager_->IsAllowedUsername("test@google.com"));
   EXPECT_TRUE(manager_->IsAllowedUsername("happy@google.com"));
   EXPECT_FALSE(manager_->IsAllowedUsername("test@invalid.com"));
@@ -301,7 +301,7 @@ TEST_F(SigninManagerTest, ProhibitedAtStartup) {
   g_browser_process->local_state()->SetString(
       prefs::kGoogleServicesUsernamePattern, ".*@google.com");
   CreateNakedSigninManager();
-  manager_->Initialize(g_browser_process->local_state());
+  manager_->Initialize(profile(), g_browser_process->local_state());
   // Currently signed in user is prohibited by policy, so should be signed out.
   EXPECT_EQ("", manager_->GetAuthenticatedUsername());
 }
@@ -310,7 +310,7 @@ TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
   std::string user("monkey@invalid.com");
   profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, user);
   CreateNakedSigninManager();
-  manager_->Initialize(g_browser_process->local_state());
+  manager_->Initialize(profile(), g_browser_process->local_state());
   EXPECT_EQ(user, manager_->GetAuthenticatedUsername());
   // Update the profile - user should be signed out.
   g_browser_process->local_state()->SetString(
@@ -320,7 +320,7 @@ TEST_F(SigninManagerTest, ProhibitedAfterStartup) {
 
 TEST_F(SigninManagerTest, ExternalSignIn) {
   CreateNakedSigninManager();
-  manager_->Initialize(g_browser_process->local_state());
+  manager_->Initialize(profile(), g_browser_process->local_state());
   EXPECT_EQ("",
             profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
   EXPECT_EQ("", manager_->GetAuthenticatedUsername());

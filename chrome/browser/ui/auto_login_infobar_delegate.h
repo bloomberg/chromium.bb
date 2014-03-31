@@ -7,8 +7,8 @@
 
 #include <string>
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "components/auto_login_parser/auto_login_parser.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 class PrefService;
 class Profile;

@@ -11,10 +11,10 @@
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "components/signin/core/browser/signin_manager.h"
 
 namespace {
 const char kTestBookmarkURL[] = "http://www.google.com";

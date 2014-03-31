@@ -12,7 +12,7 @@
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_IOS)
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "google_apis/gaia/gaia_urls.h"
 #endif
 

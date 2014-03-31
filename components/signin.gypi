@@ -26,8 +26,6 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
         'keyed_service_core',
         'os_crypt',
         'signin_core_common',
@@ -41,8 +39,6 @@
         'signin/core/browser/mutable_profile_oauth2_token_service.h',
         'signin/core/browser/profile_oauth2_token_service.cc',
         'signin/core/browser/profile_oauth2_token_service.h',
-        'signin/core/browser/signin_account_id_helper.cc',
-        'signin/core/browser/signin_account_id_helper.h',
         'signin/core/browser/signin_client.h',
         'signin/core/browser/signin_error_controller.cc',
         'signin/core/browser/signin_error_controller.h',
@@ -50,8 +46,6 @@
         'signin/core/browser/signin_internals_util.h',
         'signin/core/browser/signin_manager_base.cc',
         'signin/core/browser/signin_manager_base.h',
-        'signin/core/browser/signin_manager.cc',
-        'signin/core/browser/signin_manager.h',
         'signin/core/browser/signin_manager_cookie_helper.cc',
         'signin/core/browser/signin_manager_cookie_helper.h',
         'signin/core/browser/webdata/token_service_table.cc',
@@ -67,15 +61,7 @@
             'signin/core/browser/mutable_profile_oauth2_token_service.h',
           ],
         }],
-        ['chromeos==1', {
-          'sources!': [
-            'signin/core/browser/signin_manager.cc',
-          ],
-        }],
       ],
-      
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [4267, ],
     },
     {
       'target_name': 'signin_core_browser_test_support',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 
 #include <string>
 #include <vector>
@@ -12,8 +12,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/signin/signin_account_id_helper.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_account_id_helper.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_cookie_helper.h"
@@ -51,14 +53,15 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
   // Any login UI URLs with signin=chromiumsync should be considered a web
   // URL (relies on GAIA keeping the "service=chromiumsync" query string
   // fragment present even when embedding inside a "continue" parameter).
-  return net::UnescapeURLComponent(url.query(),
-                                   net::UnescapeRule::URL_SPECIAL_CHARS)
-             .find(kChromiumSyncService) != std::string::npos;
+  return net::UnescapeURLComponent(
+      url.query(), net::UnescapeRule::URL_SPECIAL_CHARS)
+          .find(kChromiumSyncService) != std::string::npos;
 }
 
 SigninManager::SigninManager(SigninClient* client,
                              ProfileOAuth2TokenService* token_service)
     : SigninManagerBase(client),
+      profile_(NULL),
       prohibit_signout_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
@@ -77,7 +80,8 @@ void SigninManager::RemoveMergeSessionObserver(
     merge_session_helper_->RemoveObserver(observer);
 }
 
-SigninManager::~SigninManager() {}
+SigninManager::~SigninManager() {
+}
 
 void SigninManager::InitTokenService() {
   const std::string& account_id = GetAuthenticatedUsername();
@@ -85,7 +89,8 @@ void SigninManager::InitTokenService() {
     token_service_->LoadCredentials(account_id);
 }
 
-std::string SigninManager::SigninTypeToString(SigninManager::SigninType type) {
+std::string SigninManager::SigninTypeToString(
+    SigninManager::SigninType type) {
   switch (type) {
     case SIGNIN_TYPE_NONE:
       return "No Signin";
@@ -106,8 +111,8 @@ bool SigninManager::PrepareForSignin(SigninType type,
 
   if (!IsAllowedUsername(username)) {
     // Account is not allowed by admin policy.
-    HandleAuthError(
-        GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
+    HandleAuthError(GoogleServiceAuthError(
+        GoogleServiceAuthError::ACCOUNT_DISABLED));
     return false;
   }
 
@@ -197,7 +202,7 @@ void SigninManager::SignOut() {
 
   ClearTransientSigninData();
 
-  const std::string username = GetAuthenticatedUsername();
+  const std::string& username = GetAuthenticatedUsername();
   clear_authenticated_username();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 
@@ -214,8 +219,9 @@ void SigninManager::SignOut() {
   FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
 }
 
-void SigninManager::Initialize(PrefService* local_state) {
-  SigninManagerBase::Initialize(local_state);
+void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
+  profile_ = profile;
+  SigninManagerBase::Initialize(profile, local_state);
 
   // local_state can be null during unit tests.
   if (local_state) {
@@ -308,8 +314,8 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   if (!local_state)
     return true;  // In a unit test with no local state - all names are allowed.
 
-  std::string pattern =
-      local_state->GetString(prefs::kGoogleServicesUsernamePattern);
+  std::string pattern = local_state->GetString(
+      prefs::kGoogleServicesUsernamePattern);
   return IsUsernameAllowedByPolicy(username, pattern);
 }
 
@@ -329,7 +335,13 @@ void SigninManager::CompletePendingSignin() {
   DCHECK(!possibly_invalid_username_.empty());
   OnSignedIn(possibly_invalid_username_);
 
-  if (client_->ShouldMergeSigninCredentialsIntoCookieJar()) {
+  // If inline sign in is enabled, but new profile management is not, perform a
+  // merge session now to push the user's credentials into the cookie jar.
+  bool do_merge_session_in_signin_manager =
+      !switches::IsEnableWebBasedSignin() &&
+      !switches::IsNewProfileManagement();
+
+  if (do_merge_session_in_signin_manager) {
     merge_session_helper_.reset(new MergeSessionHelper(
         token_service_, client_->GetURLRequestContext(), NULL));
   }
@@ -340,7 +352,7 @@ void SigninManager::CompletePendingSignin() {
                                     temp_refresh_token_);
   temp_refresh_token_.clear();
 
-  if (client_->ShouldMergeSigninCredentialsIntoCookieJar())
+  if (do_merge_session_in_signin_manager)
     merge_session_helper_->LogIn(GetAuthenticatedUsername());
 }
 
@@ -352,14 +364,13 @@ void SigninManager::OnSignedIn(const std::string& username) {
   SetAuthenticatedUsername(username);
   possibly_invalid_username_.clear();
 
-  FOR_EACH_OBSERVER(
-      Observer,
-      observer_list_,
-      GoogleSigninSucceeded(GetAuthenticatedUsername(), password_));
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    GoogleSigninSucceeded(GetAuthenticatedUsername(),
+                                          password_));
 
   client_->GoogleSigninSucceeded(GetAuthenticatedUsername(), password_);
 
-  password_.clear();                           // Don't need it anymore.
+  password_.clear();  // Don't need it anymore.
   DisableOneClickSignIn(client_->GetPrefs());  // Don't ever offer again.
 }
 
@@ -367,4 +378,6 @@ void SigninManager::ProhibitSignout(bool prohibit_signout) {
   prohibit_signout_ = prohibit_signout;
 }
 
-bool SigninManager::IsSignoutProhibited() const { return prohibit_signout_; }
+bool SigninManager::IsSignoutProhibited() const {
+  return prohibit_signout_;
+}

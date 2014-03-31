@@ -13,7 +13,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 
 #if !defined(OS_CHROMEOS)
-#include "components/signin/core/browser/signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 #endif
 
 SigninTracker::SigninTracker(Profile* profile, Observer* observer)

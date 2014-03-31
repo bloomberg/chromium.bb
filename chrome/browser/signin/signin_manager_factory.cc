@@ -10,9 +10,9 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 SigninManagerFactory::SigninManagerFactory()
@@ -133,7 +133,7 @@ KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
   service = new SigninManager(
       client, ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
 #endif
-  service->Initialize(g_browser_process->local_state());
+  service->Initialize(profile, g_browser_process->local_state());
   FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(service));
   return service;
 }

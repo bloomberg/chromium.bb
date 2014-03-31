@@ -6,9 +6,6 @@
 
 namespace prefs {
 
-// Boolean identifying whether reverse auto-login is enabled.
-const char kAutologinEnabled[] = "autologin.enabled";
-
 // String the identifies the last user that logged into sync and other
 // google services. As opposed to kGoogleServicesUsername, this value is not
 // cleared on signout, but while the user is signed in the two values will
@@ -28,14 +25,6 @@ const char kGoogleServicesUsername[] = "google.services.username";
 // all accounts are allowed (no restrictions).
 const char kGoogleServicesUsernamePattern[] =
     "google.services.username_pattern";
-
-// Boolean identifying whether reverse auto-logins is enabled.
-const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
-
-// List to keep track of emails for which the user has rejected one-click
-// sign-in.
-const char kReverseAutologinRejectedEmailList[] =
-    "reverse_autologin.rejected_email_list";
 
 // Boolean which stores if the user is allowed to signin to chrome.
 const char kSigninAllowed[] = "signin.allowed";
