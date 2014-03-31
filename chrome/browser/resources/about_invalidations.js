@@ -101,6 +101,7 @@ cr.define('chrome.invalidations', function() {
     var registrar = oId.registrar;
     var name = oId.objectId.name;
     var source = oId.objectId.source;
+    var totalCount = oId.objectId.totalCount || 0;
     var key = source + '-' + name;
     var time = new Date();
     var version = oId.isUnknownVersion ? '?' :
@@ -112,7 +113,8 @@ cr.define('chrome.invalidations', function() {
       tableObjects[key] = {
         name: name,
         source: source,
-        count: 0,
+        totalCount: totalCount,
+        sessionCount: 0,
         registrar: registrar,
         time: '',
         version: '',
@@ -124,7 +126,8 @@ cr.define('chrome.invalidations', function() {
     // greyed out.
     tableObjects[key].type = 'content';
     if (isInvalidation) {
-      tableObjects[key].count = tableObjects[key].count + 1;
+      tableObjects[key].totalCount = tableObjects[key].totalCount + 1;
+      tableObjects[key].sessionCount = tableObjects[key].sessionCount + 1;
       tableObjects[key].time = time.toTimeString();
       tableObjects[key].version = version;
       tableObjects[key].payload = payload;

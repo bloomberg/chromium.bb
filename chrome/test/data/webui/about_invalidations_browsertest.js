@@ -26,7 +26,7 @@ TEST_F('InvalidationsWebUITest', 'testRegisteringNewInvalidation', function() {
   var invalidation = [{
     isUnknownVersion: 'true',
     objectId: {name: 'EXTENSIONS', source: 1004}
-    }];
+  }];
   invalidationsLog.value = '';
   chrome.invalidations.logInvalidations(invalidation);
   var isContained =
@@ -63,15 +63,15 @@ TEST_F('InvalidationsWebUITest', 'testChangingInvalidationsState', function() {
 // Test that objects ids appear on the table.
 TEST_F('InvalidationsWebUITest', 'testRegisteringNewIds', function() {
   var newDataType = [
-    { name: 'EXTENSIONS', source: 1004},
-    { name: 'FAVICON_IMAGE', source: 1004}
-    ];
-  var pattern1 = ['Fake', '1004', 'EXTENSIONS', '0', '', '', ''];
-  var pattern2 = ['Fake', '1004', 'FAVICON_IMAGE', '0', '', '', ''];
+    { name: 'EXTENSIONS', source: 1004, totalCount: 0},
+    { name: 'FAVICON_IMAGE', source: 1004, totalCount: 0}
+  ];
+  var pattern1 = ['Fake', '1004', 'EXTENSIONS', '0', '0', '', '', ''];
+  var pattern2 = ['Fake', '1004', 'FAVICON_IMAGE', '0', '0', '', '', ''];
   // Register two objects ID with 'Fake' registrar
   chrome.invalidations.updateIds('Fake', newDataType);
   // Disable the Extensions ObjectId by only sending FAVICON_IMAGE
-  newDataType = [{ name: 'FAVICON_IMAGE', source: 1004}];
+  newDataType = [{name: 'FAVICON_IMAGE', source: 1004}];
   chrome.invalidations.updateIds('Fake', newDataType);
 
   // Test that the two patterns are contained in the table.

@@ -37,7 +37,7 @@ class InvalidationsMessageHandler
   virtual void OnStateChange(const syncer::InvalidatorState& new_state)
       OVERRIDE;
   virtual void OnUpdateIds(const std::string& handler_name,
-                           const syncer::ObjectIdSet& ids_set) OVERRIDE;
+                           const syncer::ObjectIdCountMap& ids_set) OVERRIDE;
   virtual void OnDebugMessage(const base::DictionaryValue& details) OVERRIDE;
   virtual void OnInvalidation(
       const syncer::ObjectIdInvalidationMap& new_invalidations) OVERRIDE;

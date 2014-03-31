@@ -61,9 +61,17 @@ void InvalidationLogger::OnUpdateIds(
 void InvalidationLogger::EmitUpdatedIds() {
   for (std::map<std::string, syncer::ObjectIdSet>::const_iterator it =
        latest_ids_.begin(); it != latest_ids_.end(); ++it) {
+    const syncer::ObjectIdSet& object_ids_for_handler = it->second;
+    syncer::ObjectIdCountMap per_object_invalidation_count;
+    for (syncer::ObjectIdSet::const_iterator oid_it =
+             object_ids_for_handler.begin();
+         oid_it != object_ids_for_handler.end();
+         ++oid_it) {
+      per_object_invalidation_count[*oid_it] = invalidation_count_[*oid_it];
+    }
     FOR_EACH_OBSERVER(InvalidationLoggerObserver,
                       observer_list_,
-                      OnUpdateIds(it->first, it->second));
+                      OnUpdateIds(it->first, per_object_invalidation_count));
   }
 }
 
@@ -74,6 +82,14 @@ void InvalidationLogger::OnDebugMessage(const base::DictionaryValue& details) {
 
 void InvalidationLogger::OnInvalidation(
     const syncer::ObjectIdInvalidationMap& details) {
+  std::vector<syncer::Invalidation> internal_invalidations;
+  details.GetAllInvalidations(&internal_invalidations);
+  for (std::vector<syncer::Invalidation>::const_iterator it =
+           internal_invalidations.begin();
+       it != internal_invalidations.end();
+       ++it) {
+    invalidation_count_[it->object_id()]++;
+  }
   FOR_EACH_OBSERVER(
       InvalidationLoggerObserver, observer_list_, OnInvalidation(details));
 }

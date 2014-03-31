@@ -8,6 +8,7 @@
 #define SYNC_NOTIFIER_INVALIDATION_UTIL_H_
 
 #include <iosfwd>
+#include <map>
 #include <set>
 #include <string>
 
@@ -45,6 +46,9 @@ struct InvalidationVersionLessThan {
 };
 
 typedef std::set<invalidation::ObjectId, ObjectIdLessThan> ObjectIdSet;
+
+typedef std::map<invalidation::ObjectId, int, ObjectIdLessThan>
+    ObjectIdCountMap;
 
 SYNC_EXPORT bool RealModelTypeToObjectId(ModelType model_type,
                                          invalidation::ObjectId* object_id);

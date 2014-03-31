@@ -84,6 +84,9 @@ class InvalidationLogger {
   // and its owner.
   std::map<std::string, syncer::ObjectIdSet> latest_ids_;
 
+  // The map that counts how many invalidations per objectId there has been.
+  syncer::ObjectIdCountMap invalidation_count_;
+
   // The name of all invalidatorHandler registered (note that this is not
   // necessarily the same as the keys of latest_ids_, because they might
   // have not registered any object id).

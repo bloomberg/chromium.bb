@@ -88,13 +88,15 @@ void InvalidationsMessageHandler::OnStateChange(
 
 void InvalidationsMessageHandler::OnUpdateIds(
     const std::string& handler_name,
-    const syncer::ObjectIdSet& ids_set) {
+    const syncer::ObjectIdCountMap& ids) {
   base::ListValue list_of_objects;
-  for (syncer::ObjectIdSet::const_iterator it = ids_set.begin();
-       it != ids_set.end(); ++it) {
+  for (syncer::ObjectIdCountMap::const_iterator it = ids.begin();
+       it != ids.end();
+       ++it) {
     scoped_ptr<base::DictionaryValue> dic(new base::DictionaryValue());
-    dic->SetString("name", it->name());
-    dic->SetInteger("source", it->source());
+    dic->SetString("name", (it->first).name());
+    dic->SetInteger("source", (it->first).source());
+    dic->SetInteger("totalCount", it->second);
     list_of_objects.Append(dic.release());
   }
   web_ui()->CallJavascriptFunction("chrome.invalidations.updateIds",
