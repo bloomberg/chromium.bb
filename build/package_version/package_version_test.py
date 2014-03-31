@@ -18,6 +18,7 @@ import pynacl.file_tools
 import pynacl.platform
 import pynacl.working_directory
 
+import archive_info
 import package_info
 import package_locations
 import package_version
@@ -67,20 +68,19 @@ class TestPackageVersion(unittest.TestCase):
       archive_name = name_dict.get(archive_file, os.path.basename(archive_file))
 
       if os.path.isfile(archive_file):
-        archive_hash = package_info.GetArchiveHash(archive_file)
+        archive_hash = archive_info.GetArchiveHash(archive_file)
       else:
         archive_hash = 'invalid'
 
       archive_url = url_dict.get(archive_file, None)
       archive_src_tar_dir = src_dir_dict.get(archive_file, '')
       archive_dir = dir_dict.get(archive_file, '')
-      package_desc.AppendArchive(
-          archive_name,
-          archive_hash,
-          url=archive_url,
-          tar_src_dir=archive_src_tar_dir,
-          extract_dir=archive_dir
-      )
+      archive_desc = archive_info.ArchiveInfo(archive_name,
+                                              archive_hash,
+                                              url=archive_url,
+                                              tar_src_dir=archive_src_tar_dir,
+                                              extract_dir=archive_dir)
+      package_desc.AppendArchive(archive_desc)
 
     return package_desc
 
@@ -119,19 +119,18 @@ class TestPackageVersion(unittest.TestCase):
       )
 
       self.assertEqual(
-          package_info.GetArchiveHash(local_archive_file),
-          package_info.GetArchiveHash(mock_tar)
+          archive_info.GetArchiveHash(local_archive_file),
+          archive_info.GetArchiveHash(mock_tar)
        )
 
   def test_DownloadArchiveMissingURLFails(self):
     # Checks that we fail when the archive has no URL set.
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       package_desc = package_info.PackageInfo()
-      package_desc.AppendArchive(
-          'missing_name.tar',
-          'missing_hash',
-          url=None
-      )
+      archive_desc = archive_info.ArchiveInfo('missing_name.tar',
+                                              'missing_hash',
+                                              url=None)
+      package_desc.AppendArchive(archive_desc)
 
       tar_dir = os.path.join(work_dir, 'tar_dir')
       self.assertRaises(
@@ -152,11 +151,10 @@ class TestPackageVersion(unittest.TestCase):
       self._fake_downloader.StoreURL(fake_url, mock_tar)
 
       package_desc = package_info.PackageInfo()
-      package_desc.AppendArchive(
-          'invalid_name.tar',
-          'invalid_hash',
-          url=fake_url
-      )
+      archive_desc = archive_info.ArchiveInfo('invalid_name.tar',
+                                              'invalid_hash',
+                                              url=fake_url)
+      package_desc.AppendArchive(archive_desc)
 
       tar_dir = os.path.join(work_dir, 'tar_dir')
       self.assertRaises(
@@ -239,7 +237,10 @@ class TestPackageVersion(unittest.TestCase):
           package_name
       )
       downloaded_package = os.path.join(work_dir, 'download_package.json')
-      self._fake_storage.GetFile(remote_package_key, downloaded_package)
+      package_info.DownloadPackageInfoFiles(
+          downloaded_package,
+          remote_package_key,
+          downloader=self._fake_storage.GetFile)
       downloaded_package_desc = package_info.PackageInfo(downloaded_package)
 
       original_package_file = package_locations.GetLocalPackageFile(
@@ -285,7 +286,10 @@ class TestPackageVersion(unittest.TestCase):
           package_name
       )
       downloaded_package = os.path.join(work_dir, 'download_package.json')
-      self._fake_storage.GetFile(remote_package_key, downloaded_package)
+      package_info.DownloadPackageInfoFiles(
+          downloaded_package,
+          remote_package_key,
+          downloader=self._fake_storage.GetFile)
       downloaded_package_desc = package_info.PackageInfo(downloaded_package)
 
       original_package_desc = package_info.PackageInfo(custom_package_file)
@@ -321,7 +325,7 @@ class TestPackageVersion(unittest.TestCase):
       )
       self.assertEqual(
           self._fake_storage.WriteCount(),
-          1,
+          2,
           "Package did not get properly uploaded"
       )
 
@@ -332,8 +336,10 @@ class TestPackageVersion(unittest.TestCase):
           package_name
       )
       downloaded_package = os.path.join(work_dir, 'download_package.json')
-      url = self._fake_storage.GetFile(remote_package_key, downloaded_package)
-      self.assertTrue(url, "Storage could not find: %s" % remote_package_key)
+      package_info.DownloadPackageInfoFiles(
+          downloaded_package,
+          remote_package_key,
+          downloader=self._fake_storage.GetFile)
       downloaded_package_desc = package_info.PackageInfo(downloaded_package)
 
       # Verify everything (including URL) still matches.
@@ -374,8 +380,8 @@ class TestPackageVersion(unittest.TestCase):
       )
       self.assertEqual(
           self._fake_storage.WriteCount(),
-          2,
-          "2 files (package, archive) should have been uploaded."
+          3,
+          "3 files (package, archive_info, archive) should have been uploaded."
       )
 
       remote_package_key = package_locations.GetRemotePackageKey(
@@ -385,13 +391,16 @@ class TestPackageVersion(unittest.TestCase):
           package_name
       )
       downloaded_package = os.path.join(work_dir, 'download_package.json')
-      self._fake_storage.GetFile(remote_package_key, downloaded_package)
+      package_info.DownloadPackageInfoFiles(
+          downloaded_package,
+          remote_package_key,
+          downloader=self._fake_storage.GetFile)
       downloaded_package_desc = package_info.PackageInfo(downloaded_package)
 
       archive_list = downloaded_package_desc.GetArchiveList()
       self.assertEqual(len(archive_list), 1,
                        "The downloaded package does not have 1 archive.")
-      self.assertTrue(archive_list[0].url,
+      self.assertTrue(archive_list[0].GetArchiveData().url,
                       "The downloaded archive still does not have a proper URL")
 
   def test_ExtractPackageTargets(self):

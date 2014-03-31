@@ -10,6 +10,7 @@ import unittest
 
 
 MODULES = [
+    'archive_info_test',
     'package_info_test',
     'package_version_test',
     'packages_info_test',

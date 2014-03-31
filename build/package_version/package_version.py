@@ -20,14 +20,18 @@ Glossary:
   Revision Number: The SVN revision number of a sanctioned version. This number
     is used to synchronize packages to sanctioned versions.
 
-JSON File:
+JSON Files:
   Packages File - A file which describes the various package targets for each
     platform/architecture along with the packages associated with each package
     target.
     [Default file: build/package_version/standard_packages.json].
-  Package File - A file which describes the contents of a package along with
-    the hash each package archive associated with the package.
-    [Default file: toolchain/.tars/$PACKAGE_TARGET/$PACKAGE/$PACKAGE.json]
+  Package File - A file which contains the list of package archives within
+    a package.
+    [Default file: toolchain/.tars/$PACKAGE_TARGET/$PACKAGE.json]
+  Archive File - A file which describes an archive within a package. Each
+    archive description file will contain information about an archive such
+    as name, URL to download from, and hash.
+    [Default File: toolchain/.tars/$PACKAGE_TARGET/$PACKAGE/$ARCHIVE.json]
   Revision File - A file which describes the sanctioned version of package
     for each of the package targets associated with it.
     [Default file: toolchain_revisions/$PACKAGE.json]
@@ -47,6 +51,7 @@ import pynacl.gsd_storage
 import pynacl.log_tools
 import pynacl.platform
 
+import archive_info
 import package_info
 import package_locations
 import packages_info
@@ -120,7 +125,7 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   """
   downloaded_files = []
   if downloader is None:
-    downloader = gsd_storage.HttpDownload
+    downloader = pynacl.gsd_storage.HttpDownload
   local_package_file = package_locations.GetLocalPackageFile(
       tar_dir,
       package_target,
@@ -142,7 +147,7 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
           archive_name
       )
 
-      archive_hash = package_info.GetArchiveHash(archive_file)
+      archive_hash = archive_info.GetArchiveHash(archive_file)
       if archive_hash is not None:
         old_archives[archive_name] = archive_hash
 
@@ -150,31 +155,32 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   # archives described in the information file. Also keep track of what
   # new package names matches old package names. We will have to delete
   # stale package names after we are finished.
-  for archive_info in package_desc.GetArchiveList():
-    old_hash = old_archives.get(archive_info.name, None)
+  for archive_obj in package_desc.GetArchiveList():
+    archive_desc = archive_obj.GetArchiveData()
+    old_hash = old_archives.get(archive_desc.name, None)
     if old_hash is not None:
-      old_archives.pop(archive_info.name)
-      if archive_info.hash == old_hash:
-        logging.debug('Skipping matching archive: %s', archive_info.name)
+      old_archives.pop(archive_desc.name)
+      if archive_desc.hash == old_hash:
+        logging.debug('Skipping matching archive: %s', archive_desc.name)
         continue
 
     local_archive_file = package_locations.GetLocalPackageArchiveFile(
         tar_dir,
         package_target,
         package_name,
-        archive_info.name
+        archive_desc.name
     )
     pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
 
-    if archive_info.url is None:
-      raise IOError('Error, no URL for archive: %s' % archive_info.name)
+    if archive_desc.url is None:
+      raise IOError('Error, no URL for archive: %s' % archive_desc.name)
 
-    logging.info('Downloading package archive: %s', archive_info.name)
-    downloader(archive_info.url, local_archive_file)
-    verified_hash = package_info.GetArchiveHash(local_archive_file)
-    if verified_hash != archive_info.hash:
+    logging.info('Downloading package archive: %s', archive_desc.name)
+    downloader(archive_desc.url, local_archive_file)
+    verified_hash = archive_info.GetArchiveHash(local_archive_file)
+    if verified_hash != archive_desc.hash:
       raise IOError('Package hash check failed: %s != %s' %
-                    (verified_hash, archive_info.hash))
+                    (verified_hash, archive_desc.hash))
 
     downloaded_files.append(local_archive_file)
 
@@ -226,20 +232,19 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives):
       else:
         tar_src_dir = extract_param
 
-    archive_hash = package_info.GetArchiveHash(archive)
+    archive_hash = archive_info.GetArchiveHash(archive)
     if archive_hash is None:
       raise IOError('Invalid package: %s.' % archive)
 
     archive_name = os.path.basename(archive)
 
     archive_list.append(archive)
-    package_desc.AppendArchive(
-        archive_name,
-        archive_hash,
-        url=archive_url,
-        tar_src_dir=tar_src_dir,
-        extract_dir=extract_dir
-    )
+    archive_desc = archive_info.ArchiveInfo(archive_name,
+                                            archive_hash,
+                                            url=archive_url,
+                                            tar_src_dir=tar_src_dir,
+                                            extract_dir=extract_dir)
+    package_desc.AppendArchive(archive_desc)
 
   # We do not need to archive the package if it already matches. But if the
   # local package file is invalid or does not match, then we should recreate
@@ -312,7 +317,8 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
   package_desc = package_info.PackageInfo(local_package_file)
   upload_package_desc = package_info.PackageInfo()
 
-  for archive_desc in package_desc.GetArchiveList():
+  for archive_obj in package_desc.GetArchiveList():
+    archive_desc = archive_obj.GetArchiveData()
     url = archive_desc.url
     if url is None:
       archive_file = package_locations.GetLocalPackageArchiveFile(
@@ -320,7 +326,7 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
           package_target,
           package_name,
           archive_desc.name)
-      archive_hash = package_info.GetArchiveHash(archive_file)
+      archive_hash = archive_info.GetArchiveHash(archive_file)
       if archive_hash is None:
         raise IOError('Missing Archive File: %s' % archive_file)
       elif archive_hash != archive_desc.hash:
@@ -344,13 +350,13 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
       if annotate:
         print '@@@STEP_LINK@download@%s@@@' % url
 
-    upload_package_desc.AppendArchive(
+    archive_desc = archive_info.ArchiveInfo(
         archive_desc.name,
         archive_desc.hash,
         url=url,
         tar_src_dir=archive_desc.tar_src_dir,
-        extract_dir=archive_desc.extract_dir
-    )
+        extract_dir=archive_desc.extract_dir)
+    upload_package_desc.AppendArchive(archive_desc)
 
   upload_package_file = local_package_file + '.upload'
   pynacl.file_tools.MakeParentDirectoryIfAbsent(upload_package_file)
@@ -363,8 +369,8 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
       package_target,
       package_name
   )
-  url = storage.PutFile(upload_package_file, remote_package_key)
-  print '@@@STEP_LINK@download@%s@@@' % url
+  package_info.UploadPackageInfoFiles(storage, remote_package_key,
+                                      upload_package_file, annotate)
 
   return remote_package_key
 
@@ -385,7 +391,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
     downloader: function which takes a url and a file path for downloading.
   """
   if downloader is None:
-    downloader = gsd_storage.HttpDownload
+    downloader = pynacl.gsd_storage.HttpDownload
 
   for package_target, package_name in package_target_packages:
     package_file = package_locations.GetLocalPackageFile(
@@ -418,7 +424,8 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
 
     logging.info('Extracting package (%s) to directory: %s',
                  package_name, dest_package_dir)
-    for archive_desc in package_desc.GetArchiveList():
+    for archive_obj in package_desc.GetArchiveList():
+      archive_desc = archive_obj.GetArchiveData()
       archive_file = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
           package_target,
@@ -429,7 +436,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
       # Upon extraction, some files may not be downloaded (or have stale files),
       # we need to check the hash of each file and attempt to download it if
       # they do not match.
-      archive_hash = package_info.GetArchiveHash(archive_file)
+      archive_hash = archive_info.GetArchiveHash(archive_file)
       if archive_hash != archive_desc.hash:
         logging.warn('Expected archive missing, downloading: %s',
                      archive_desc.name)
@@ -438,7 +445,7 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
 
         pynacl.file_tools.MakeParentDirectoryIfAbsent(archive_file)
         downloader(archive_desc.url, archive_file)
-        archive_hash = package_info.GetArchiveHash(archive_file)
+        archive_hash = archive_info.GetArchiveHash(archive_file)
         if archive_hash != archive_desc.hash:
           raise IOError('Downloaded archive file does not match hash.'
                         ' [%s] Expected %s, received %s.' %

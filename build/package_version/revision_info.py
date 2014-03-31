@@ -14,6 +14,7 @@ can be made for it.
 import hashlib
 import json
 
+import archive_info
 import package_info
 import packages_info
 
@@ -55,12 +56,12 @@ class RevisionInfo(object):
       archive_list = package_desc.GetArchiveList()
       sorted_archive_list = sorted(
         archive_list,
-        key=lambda archive : archive.name
+        key=lambda archive : archive.GetArchiveData().name
       )
 
       hash_string += str(package_target)
       for archive in sorted_archive_list:
-        for field, member in archive._asdict().iteritems():
+        for field, member in archive.GetArchiveData()._asdict().iteritems():
           hash_string += '[%s:%s]' % (field, member)
 
     return hashlib.sha1(hash_string).hexdigest()
