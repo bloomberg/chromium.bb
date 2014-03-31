@@ -12,7 +12,6 @@
 import subprocess
 
 from driver_env import env
-from driver_log import Log
 import driver_tools
 import filetype
 

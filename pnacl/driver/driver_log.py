@@ -9,7 +9,6 @@
 # updates the copy in the toolchain/ tree.
 #
 
-import os
 import sys
 import pathtools
 

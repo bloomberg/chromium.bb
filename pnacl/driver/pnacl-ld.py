@@ -13,7 +13,6 @@ from driver_tools import *
 from driver_env import env
 from driver_log import Log
 import filetype
-import platform
 
 EXTRA_ENV = {
   'ALLOW_NATIVE': '0', # Allow LD args which will change the behavior

@@ -15,7 +15,6 @@ from driver_env import env
 from driver_log import Log
 import driver_tools
 import filetype
-import pathtools
 
 
 EXTRA_ENV = {

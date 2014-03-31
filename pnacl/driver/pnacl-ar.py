@@ -11,7 +11,6 @@
 
 import driver_tools
 from driver_env import env
-from driver_log import Log
 
 EXTRA_ENV = {
   'ARGS':    '',

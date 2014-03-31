@@ -11,7 +11,6 @@
 
 from driver_tools import Run, ParseArgs
 from driver_env import env
-from driver_log import Log
 
 EXTRA_ENV = { 'ARGS': '' }
 # just pass all args through to 'ARGS' and eventually to the underlying tool

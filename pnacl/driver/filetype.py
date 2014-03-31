@@ -6,8 +6,6 @@
 """Utilities for determining (and overriding) the types of files
 """
 
-import subprocess
-
 import artools
 import driver_log
 import elftools
@@ -234,5 +232,5 @@ def FileTypeToGCCType(filetype):
 
 def GCCTypeToFileType(gcctype):
   if gcctype not in FILE_TYPE_MAP:
-    Log.Fatal('language "%s" not recognized' % gcctype)
+    driver_log.Log.Fatal('language "%s" not recognized' % gcctype)
   return FILE_TYPE_MAP[gcctype]

@@ -15,11 +15,9 @@ import re
 import shlex
 import signal
 import subprocess
-import struct
 import sys
 import tempfile
 
-import artools
 import elftools
 import ldtools
 # filetype needs to be imported here because pnacl-driver injects calls to

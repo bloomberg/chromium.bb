@@ -447,7 +447,6 @@ def DriverOutputTypes(driver_flag, compiling_to_native):
 
 
 def ReadDriverRevision():
-  nacl_version = 'unknown'
   rev_file = env.getone('DRIVER_REV_FILE')
   # Might be an SVN version or a GIT hash (depending on the NaCl src client)
   nacl_ver = DriverOpen(rev_file, 'rb').readlines()[0]
