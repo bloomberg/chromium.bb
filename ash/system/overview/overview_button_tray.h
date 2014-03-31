@@ -26,6 +26,10 @@ class ASH_EXPORT OverviewButtonTray : public internal::TrayBackgroundView,
   explicit OverviewButtonTray(internal::StatusAreaWidget* status_area_widget);
   virtual ~OverviewButtonTray();
 
+  // Updates the tray's visibility based on the LoginStatus and the current
+  // state of MaximizeMode
+  virtual void UpdateAfterLoginStatusChange(user::LoginStatus status);
+
   // internal::ActionableView:
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
@@ -46,6 +50,10 @@ class ASH_EXPORT OverviewButtonTray : public internal::TrayBackgroundView,
   // Creates a new border for the icon. The padding is determined based on the
   // alignment of the shelf.
   void SetIconBorderForShelfAlignment();
+
+  // Sets the icon to visible if |maximize_mode_enabled| and
+  // WindowSelectorController::CanSelect.
+  void UpdateIconVisibility(bool maximize_mode_enabled);
 
   // Weak pointer, will be parented by TrayContainer for its lifetime.
   views::ImageView* icon_;

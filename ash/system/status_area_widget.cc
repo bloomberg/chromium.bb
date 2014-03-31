@@ -187,6 +187,8 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(
   if (logout_button_tray_)
     logout_button_tray_->UpdateAfterLoginStatusChange(login_status);
 #endif
+  if (overview_button_tray_)
+    overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
 
 }  // namespace internal

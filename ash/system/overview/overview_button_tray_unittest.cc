@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/user/login_status.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "base/time/time.h"
@@ -115,6 +116,20 @@ TEST_F(OverviewButtonTrayTest, SecondaryTrayCreatedVisible) {
   Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetSecondaryTray()->visible());
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+}
+
+// Tests that the tray loses visibility when a user logs out, and that it
+// regains visibility when a user logs back in.
+TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  SetUserLoggedIn(false);
+  Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_NONE);
+  EXPECT_FALSE(GetTray()->visible());
+  SetUserLoggedIn(true);
+  SetSessionStarted(true);
+  Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
+  EXPECT_TRUE(GetTray()->visible());
   Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
 }
 

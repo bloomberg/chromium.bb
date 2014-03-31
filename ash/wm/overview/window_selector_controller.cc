@@ -27,7 +27,9 @@ WindowSelectorController::~WindowSelectorController() {
 bool WindowSelectorController::CanSelect() {
   // Don't allow a window overview if the screen is locked or a modal dialog is
   // open.
-  return !Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
+  return Shell::GetInstance()->session_state_delegate()->
+             IsActiveUserSessionStarted() &&
+         !Shell::GetInstance()->session_state_delegate()->IsScreenLocked() &&
          !Shell::GetInstance()->IsSystemModalWindowOpen();
 }
 
