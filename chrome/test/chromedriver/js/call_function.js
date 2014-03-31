@@ -32,7 +32,7 @@ var ELEMENT_KEY = 'ELEMENT';
  * @const
  * @type {boolean}
  */
-var SHADOW_DOM_ENABLED = typeof WebKitShadowRoot === 'function';
+var SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';
 
 /**
  * A cache which maps IDs <-> cached objects for the purpose of identifying
@@ -100,7 +100,7 @@ Cache.prototype = {
     var nodeRoot = getNodeRoot(node);
     if (nodeRoot == document)
       return true;
-    else if (SHADOW_DOM_ENABLED && nodeRoot instanceof WebKitShadowRoot)
+    else if (SHADOW_DOM_ENABLED && nodeRoot instanceof ShadowRoot)
       return true;
 
     return false;
@@ -145,7 +145,7 @@ function wrap(value) {
   if (typeof(value) == 'object' && value != null) {
     var nodeType = value['nodeType'];
     if (nodeType == NodeType.ELEMENT || nodeType == NodeType.DOCUMENT
-        || (SHADOW_DOM_ENABLED && value instanceof WebKitShadowRoot)) {
+        || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {
       var wrapped = {};
       var root = getNodeRoot(value);
       wrapped[ELEMENT_KEY] = getPageCache(root).storeItem(value);
