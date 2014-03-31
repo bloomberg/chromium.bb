@@ -74,6 +74,7 @@ def remove_empty_branches(branch_tree):
   tag_set = git.tags()
   ensure_root_checkout = git.once(lambda: git.run('checkout', git.root()))
 
+  deletions = set()
   downstreams = collections.defaultdict(list)
   for branch, parent in git.topo_iter(branch_tree, top_down=False):
     downstreams[parent].append(branch)
@@ -84,6 +85,9 @@ def remove_empty_branches(branch_tree):
       logging.debug('branch %s merged to %s', branch, parent)
 
       for down in downstreams[branch]:
+        if down in deletions:
+          continue
+
         if parent in tag_set:
           git.set_branch_config(down, 'remote', '.')
           git.set_branch_config(down, 'merge', 'refs/tags/%s' % parent)
@@ -94,6 +98,7 @@ def remove_empty_branches(branch_tree):
           print ('Reparented %s to track %s (was tracking %s)'
                  % (down, parent, branch))
 
+      deletions.add(branch)
       print git.run('branch', '-d', branch)
 
 

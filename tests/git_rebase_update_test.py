@@ -116,6 +116,9 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     output, _ = self.repo.capture_stdio(self.reup.main)
     self.assertIn('Cannot rebase-update', output)
 
+    self.repo.run(self.nb.main, ['empty_branch'])
+    self.repo.run(self.nb.main, ['--upstream_current', 'empty_branch2'])
+
     self.repo.git('checkout', 'branch_K')
 
     output, _ = self.repo.capture_stdio(self.reup.main)
@@ -126,6 +129,8 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     self.assertIn('Rebasing: foobar', output)
     self.assertIn('Rebasing: sub_K', output)
     self.assertIn('Deleted branch branch_G', output)
+    self.assertIn('Deleted branch empty_branch', output)
+    self.assertIn('Deleted branch empty_branch2', output)
     self.assertIn('Reparented branch_K to track origin/master', output)
 
     self.assertSchema("""
