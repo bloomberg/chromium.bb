@@ -426,7 +426,45 @@ CancelCallback FakeDriveService::GetRemainingChangeList(
   DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
-  return GetRemainingResourceList(next_link, callback);
+  // "changestamp", "q", "parent" and "start-offset" are parameters to
+  // implement "paging" of the result on FakeDriveService.
+  // The URL should be the one filled in GetResourceListInternal of the
+  // previous method invocation, so it should start with "http://localhost/?".
+  // See also GetResourceListInternal.
+  DCHECK_EQ(next_link.host(), "localhost");
+  DCHECK_EQ(next_link.path(), "/");
+
+  int64 start_changestamp = 0;
+  std::string search_query;
+  std::string directory_resource_id;
+  int start_offset = 0;
+  int max_results = default_max_results_;
+  std::vector<std::pair<std::string, std::string> > parameters;
+  if (base::SplitStringIntoKeyValuePairs(
+          next_link.query(), '=', '&', &parameters)) {
+    for (size_t i = 0; i < parameters.size(); ++i) {
+      if (parameters[i].first == "changestamp") {
+        base::StringToInt64(parameters[i].second, &start_changestamp);
+      } else if (parameters[i].first == "q") {
+        search_query =
+            net::UnescapeURLComponent(parameters[i].second,
+                                      net::UnescapeRule::URL_SPECIAL_CHARS);
+      } else if (parameters[i].first == "parent") {
+        directory_resource_id =
+            net::UnescapeURLComponent(parameters[i].second,
+                                      net::UnescapeRule::URL_SPECIAL_CHARS);
+      } else if (parameters[i].first == "start-offset") {
+        base::StringToInt(parameters[i].second, &start_offset);
+      } else if (parameters[i].first == "max-results") {
+        base::StringToInt(parameters[i].second, &max_results);
+      }
+    }
+  }
+
+  GetResourceListInternal(
+      start_changestamp, search_query, directory_resource_id,
+      start_offset, max_results, NULL, callback);
+  return CancelCallback();
 }
 
 CancelCallback FakeDriveService::GetRemainingFileList(
@@ -436,7 +474,7 @@ CancelCallback FakeDriveService::GetRemainingFileList(
   DCHECK(!next_link.is_empty());
   DCHECK(!callback.is_null());
 
-  return GetRemainingResourceList(next_link, callback);
+  return GetRemainingChangeList(next_link, callback);
 }
 
 CancelCallback FakeDriveService::GetResourceEntry(
@@ -1192,64 +1230,6 @@ CancelCallback FakeDriveService::UninstallApp(
 
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(callback, error));
-  return CancelCallback();
-}
-
-CancelCallback FakeDriveService::GetResourceListInDirectoryByWapi(
-    const std::string& directory_resource_id,
-    const google_apis::GetResourceListCallback& callback) {
-  return GetResourceListInDirectory(
-      directory_resource_id == util::kWapiRootDirectoryResourceId ?
-          GetRootResourceId() :
-          directory_resource_id,
-      callback);
-}
-
-CancelCallback FakeDriveService::GetRemainingResourceList(
-    const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!next_link.is_empty());
-  DCHECK(!callback.is_null());
-
-  // "changestamp", "q", "parent" and "start-offset" are parameters to
-  // implement "paging" of the result on FakeDriveService.
-  // The URL should be the one filled in GetResourceListInternal of the
-  // previous method invocation, so it should start with "http://localhost/?".
-  // See also GetResourceListInternal.
-  DCHECK_EQ(next_link.host(), "localhost");
-  DCHECK_EQ(next_link.path(), "/");
-
-  int64 start_changestamp = 0;
-  std::string search_query;
-  std::string directory_resource_id;
-  int start_offset = 0;
-  int max_results = default_max_results_;
-  std::vector<std::pair<std::string, std::string> > parameters;
-  if (base::SplitStringIntoKeyValuePairs(
-          next_link.query(), '=', '&', &parameters)) {
-    for (size_t i = 0; i < parameters.size(); ++i) {
-      if (parameters[i].first == "changestamp") {
-        base::StringToInt64(parameters[i].second, &start_changestamp);
-      } else if (parameters[i].first == "q") {
-        search_query =
-            net::UnescapeURLComponent(parameters[i].second,
-                                      net::UnescapeRule::URL_SPECIAL_CHARS);
-      } else if (parameters[i].first == "parent") {
-        directory_resource_id =
-            net::UnescapeURLComponent(parameters[i].second,
-                                      net::UnescapeRule::URL_SPECIAL_CHARS);
-      } else if (parameters[i].first == "start-offset") {
-        base::StringToInt(parameters[i].second, &start_offset);
-      } else if (parameters[i].first == "max-results") {
-        base::StringToInt(parameters[i].second, &max_results);
-      }
-    }
-  }
-
-  GetResourceListInternal(
-      start_changestamp, search_query, directory_resource_id,
-      start_offset, max_results, NULL, callback);
   return CancelCallback();
 }
 

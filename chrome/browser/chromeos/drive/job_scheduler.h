@@ -207,18 +207,6 @@ class JobScheduler
       const ClientContext& context,
       const google_apis::GetResourceEntryCallback& callback);
 
-  // Adds a GetResourceListInDirectoryByWapi operation to the queue.
-  // |callback| must not be null.
-  void GetResourceListInDirectoryByWapi(
-      const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback);
-
-  // Adds GetRemainingResourceList operation to the queue.
-  // |callback| must not be null.
-  void GetRemainingResourceList(
-      const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback);
-
   // Adds AddPermission operation to the queue. |callback| must not be null.
   void AddPermission(const std::string& resource_id,
                      const std::string& email,

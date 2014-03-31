@@ -695,45 +695,6 @@ void JobScheduler::UploadExistingFile(
   StartJob(new_job);
 }
 
-void JobScheduler::GetResourceListInDirectoryByWapi(
-    const std::string& directory_resource_id,
-    const google_apis::GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  JobEntry* new_job = CreateNewJob(
-      TYPE_GET_RESOURCE_LIST_IN_DIRECTORY_BY_WAPI);
-  new_job->task = base::Bind(
-      &DriveServiceInterface::GetResourceListInDirectoryByWapi,
-      base::Unretained(drive_service_),
-      directory_resource_id,
-      base::Bind(&JobScheduler::OnGetResourceListJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
-                 callback));
-  new_job->abort_callback = CreateErrorRunCallback(callback);
-  StartJob(new_job);
-}
-
-void JobScheduler::GetRemainingResourceList(
-    const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  JobEntry* new_job = CreateNewJob(TYPE_GET_REMAINING_RESOURCE_LIST);
-  new_job->task = base::Bind(
-      &DriveServiceInterface::GetRemainingResourceList,
-      base::Unretained(drive_service_),
-      next_link,
-      base::Bind(&JobScheduler::OnGetResourceListJobDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 new_job->job_info.job_id,
-                 callback));
-  new_job->abort_callback = CreateErrorRunCallback(callback);
-  StartJob(new_job);
-}
-
 void JobScheduler::AddPermission(
     const std::string& resource_id,
     const std::string& email,
@@ -1121,8 +1082,6 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
     case TYPE_ADD_NEW_DIRECTORY:
     case TYPE_CREATE_FILE:
-    case TYPE_GET_RESOURCE_LIST_IN_DIRECTORY_BY_WAPI:
-    case TYPE_GET_REMAINING_RESOURCE_LIST:
     case TYPE_ADD_PERMISSION:
       return METADATA_QUEUE;
 

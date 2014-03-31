@@ -414,27 +414,6 @@ class DriveServiceInterface {
       const std::string& app_id,
       const google_apis::EntryActionCallback& callback) = 0;
 
-  // This is introduced as a temporary short term solution of the performance
-  // regression issue on Drive API v2.
-  //
-  // This fetches the resource list in a directory by using GData WAPI
-  // regardless of base protocol. In other words, even if we enables Drive API
-  // v2, this method uses GData WAPI to fetch the resource list.
-  //
-  // |directory_resource_id| must not be empty.
-  // |callback| must not be null.
-  virtual google_apis::CancelCallback GetResourceListInDirectoryByWapi(
-      const std::string& directory_resource_id,
-      const google_apis::GetResourceListCallback& callback) = 0;
-
-  // GetResourceListInDirectoryByWapi can be paged. This method fetches the
-  // following pages.
-  //
-  // |callback| must not be null.
-  virtual google_apis::CancelCallback GetRemainingResourceList(
-      const GURL& next_link,
-      const google_apis::GetResourceListCallback& callback) = 0;
-
   // Authorizes the account |email| to access |resource_id| as a |role|.
   //
   // |callback| must not be null.

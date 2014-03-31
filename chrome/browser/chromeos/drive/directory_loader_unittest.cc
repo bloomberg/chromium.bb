@@ -116,7 +116,6 @@ class DirectoryLoaderTest : public testing::Test {
                              base::MessageLoopProxy::current().get(),
                              metadata_.get(),
                              scheduler_.get(),
-                             drive_service_.get(),
                              about_resource_loader_.get(),
                              loader_controller_.get()));
   }

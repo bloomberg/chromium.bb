@@ -332,7 +332,6 @@ void FileSystem::ResetComponents() {
       blocking_task_runner_.get(),
       resource_metadata_,
       scheduler_,
-      drive_service_,
       about_resource_loader_.get(),
       loader_controller_.get()));
   directory_loader_->AddObserver(this);

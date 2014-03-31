@@ -43,7 +43,6 @@ using google_apis::GetContentCallback;
 using google_apis::GetResourceEntryCallback;
 using google_apis::GetResourceEntryRequest;
 using google_apis::GetResourceListCallback;
-using google_apis::GetResourceListRequest;
 using google_apis::GetShareUrlCallback;
 using google_apis::HTTP_NOT_IMPLEMENTED;
 using google_apis::HTTP_SUCCESS;
@@ -831,40 +830,6 @@ CancelCallback DriveAPIService::UninstallApp(
                                                 callback);
   request->set_app_id(app_id);
   return sender_->StartRequestWithRetry(request);
-}
-
-CancelCallback DriveAPIService::GetResourceListInDirectoryByWapi(
-    const std::string& directory_resource_id,
-    const google_apis::GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!directory_resource_id.empty());
-  DCHECK(!callback.is_null());
-
-  return sender_->StartRequestWithRetry(
-      new GetResourceListRequest(sender_.get(),
-                                 wapi_url_generator_,
-                                 GURL(),         // No override url
-                                 0,              // start changestamp
-                                 std::string(),  // empty search query
-                                 directory_resource_id,
-                                 callback));
-}
-
-CancelCallback DriveAPIService::GetRemainingResourceList(
-    const GURL& next_link,
-    const google_apis::GetResourceListCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!next_link.is_empty());
-  DCHECK(!callback.is_null());
-
-  return sender_->StartRequestWithRetry(
-      new GetResourceListRequest(sender_.get(),
-                                 wapi_url_generator_,
-                                 next_link,
-                                 0,              // start changestamp
-                                 std::string(),  // empty search query
-                                 std::string(),  // no directory resource id
-                                 callback));
 }
 
 google_apis::CancelCallback DriveAPIService::AddPermission(

@@ -15,8 +15,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
-#include "chrome/browser/drive/drive_api_util.h"
-#include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/event_logger.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -122,20 +120,8 @@ class DirectoryLoader::FeedFetcher {
     // Remember the time stamp for usage stats.
     start_time_ = base::TimeTicks::Now();
 
-    // We use WAPI's GetResourceListInDirectory even if Drive API v2 is
-    // enabled. This is the short term work around of the performance
-    // regression.
-    // TODO(hashimoto): Remove this. crbug.com/340931.
-
-    std::string resource_id = directory_fetch_info_.resource_id();
-    if (resource_id == root_folder_id_) {
-      // GData WAPI doesn't accept the root directory id which is used in Drive
-      // API v2. So it is necessary to translate it here.
-      resource_id = util::kWapiRootDirectoryResourceId;
-    }
-
-    loader_->scheduler_->GetResourceListInDirectoryByWapi(
-        resource_id,
+    loader_->scheduler_->GetResourceListInDirectory(
+        directory_fetch_info_.resource_id(),
         base::Bind(&FeedFetcher::OnResourceListFetched,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   }
@@ -156,7 +142,6 @@ class DirectoryLoader::FeedFetcher {
 
     DCHECK(resource_list);
     scoped_ptr<ChangeList> change_list(new ChangeList(*resource_list));
-    FixResourceIdInChangeList(change_list.get());
 
     GURL next_url;
     resource_list->GetNextFeedURL(&next_url);
@@ -197,7 +182,7 @@ class DirectoryLoader::FeedFetcher {
 
     if (!next_url.is_empty()) {
       // There is the remaining result so fetch it.
-      loader_->scheduler_->GetRemainingResourceList(
+      loader_->scheduler_->GetRemainingFileList(
           next_url,
           base::Bind(&FeedFetcher::OnResourceListFetched,
                      weak_ptr_factory_.GetWeakPtr(), callback));
@@ -213,29 +198,6 @@ class DirectoryLoader::FeedFetcher {
     callback.Run(FILE_ERROR_OK);
   }
 
-  // Fixes resource IDs in |change_list| into the format that |drive_service_|
-  // can understand. Note that |change_list| contains IDs in GData WAPI format
-  // since currently we always use WAPI for fast fetch, regardless of the flag.
-  void FixResourceIdInChangeList(ChangeList* change_list) {
-    std::vector<ResourceEntry>* entries = change_list->mutable_entries();
-    std::vector<std::string>* parent_resource_ids =
-        change_list->mutable_parent_resource_ids();
-    for (size_t i = 0; i < entries->size(); ++i) {
-      ResourceEntry* entry = &(*entries)[i];
-      if (entry->has_resource_id())
-        entry->set_resource_id(FixResourceId(entry->resource_id()));
-
-      (*parent_resource_ids)[i] = FixResourceId((*parent_resource_ids)[i]);
-    }
-  }
-
-  std::string FixResourceId(const std::string& resource_id) {
-    if (resource_id == util::kWapiRootDirectoryResourceId)
-      return root_folder_id_;
-    return loader_->drive_service_->GetResourceIdCanonicalizer().Run(
-        resource_id);
-  }
-
   DirectoryLoader* loader_;
   DirectoryFetchInfo directory_fetch_info_;
   std::string root_folder_id_;
@@ -249,14 +211,12 @@ DirectoryLoader::DirectoryLoader(
     base::SequencedTaskRunner* blocking_task_runner,
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
-    DriveServiceInterface* drive_service,
     AboutResourceLoader* about_resource_loader,
     LoaderController* loader_controller)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
-      drive_service_(drive_service),
       about_resource_loader_(about_resource_loader),
       loader_controller_(loader_controller),
       weak_ptr_factory_(this) {
