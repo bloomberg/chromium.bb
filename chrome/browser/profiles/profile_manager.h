@@ -93,7 +93,7 @@ class ProfileManager : public base::NonThreadSafe,
   bool IsValidProfile(Profile* profile);
 
   // Returns the directory where the first created profile is stored,
-  // relative to the user data directory currently in use..
+  // relative to the user data directory currently in use.
   base::FilePath GetInitialProfileDir();
 
   // Get the Profile last used (the Profile to which owns the most recently
