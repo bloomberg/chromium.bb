@@ -223,6 +223,11 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
 }
 
 void ContentVideoView::CreatePowerSaveBlocker() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableOverlayFullscreenVideoSubtitle)) {
+    return;
+  }
+
   if (power_save_blocker_) return;
 
   power_save_blocker_ = PowerSaveBlocker::Create(
