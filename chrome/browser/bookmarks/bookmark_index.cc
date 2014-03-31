@@ -16,6 +16,26 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/history/url_database.h"
+#include "third_party/icu/source/common/unicode/normalizer2.h"
+
+namespace {
+
+// Returns a normalized version of the UTF16 string |text|.  If it fails to
+// normalize the string, returns |text| itself as a best-effort.
+base::string16 Normalize(const base::string16& text) {
+  UErrorCode status = U_ZERO_ERROR;
+  const icu::Normalizer2* normalizer2 =
+      icu::Normalizer2::getInstance(NULL, "nfkc", UNORM2_COMPOSE, status);
+  icu::UnicodeString unicode_text(text.data(), text.length());
+  icu::UnicodeString unicode_normalized_text;
+  normalizer2->normalize(unicode_text, unicode_normalized_text, status);
+  if (U_FAILURE(status))
+    return text;
+  return base::string16(unicode_normalized_text.getBuffer(),
+                        unicode_normalized_text.length());
+}
+
+}  // namespace
 
 // Used when finding the set of bookmarks that match a query. Each match
 // represents a set of terms (as an interator into the Index) matching the
@@ -61,7 +81,8 @@ BookmarkIndex::~BookmarkIndex() {
 void BookmarkIndex::Add(const BookmarkNode* node) {
   if (!node->is_url())
     return;
-  std::vector<base::string16> terms = ExtractQueryWords(node->GetTitle());
+  std::vector<base::string16> terms =
+      ExtractQueryWords(Normalize(node->GetTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     RegisterNode(terms[i], node);
 }
@@ -70,15 +91,17 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
   if (!node->is_url())
     return;
 
-  std::vector<base::string16> terms = ExtractQueryWords(node->GetTitle());
+  std::vector<base::string16> terms =
+      ExtractQueryWords(Normalize(node->GetTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
     UnregisterNode(terms[i], node);
 }
 
 void BookmarkIndex::GetBookmarksWithTitlesMatching(
-    const base::string16& query,
+    const base::string16& input_query,
     size_t max_count,
     std::vector<BookmarkTitleMatch>* results) {
+  const base::string16 query = Normalize(input_query);
   std::vector<base::string16> terms = ExtractQueryWords(query);
   if (terms.empty())
     return;
@@ -156,7 +179,7 @@ void BookmarkIndex::AddMatchToResults(
   // of QueryParser may filter it out.  For example, the query
   // ["thi"] will match the bookmark titled [Thinking], but since
   // ["thi"] is quoted we don't want to do a prefix match.
-  if (parser->DoesQueryMatch(node->GetTitle(), query_nodes,
+  if (parser->DoesQueryMatch(Normalize(node->GetTitle()), query_nodes,
                              &(title_match.match_positions))) {
     title_match.node = node;
     results->push_back(title_match);
@@ -251,8 +274,6 @@ std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
   if (query.empty())
     return std::vector<base::string16>();
   QueryParser parser;
-  // TODO(brettw): use ICU normalization:
-  // http://userguide.icu-project.org/transforms/normalization
   parser.ParseQueryWords(base::i18n::ToLower(query), &terms);
   return terms;
 }

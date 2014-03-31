@@ -157,6 +157,36 @@ TEST_F(BookmarkIndexTest, Tests) {
   }
 }
 
+TEST_F(BookmarkIndexTest, TestNormalization) {
+  struct TestData {
+    const char* title;
+    const char* query;
+  } data[] = {
+    { "fooa\xcc\x88-test", "foo\xc3\xa4-test" },
+    { "fooa\xcc\x88-test", "fooa\xcc\x88-test" },
+    { "fooa\xcc\x88-test", "foo\xc3\xa4" },
+    { "fooa\xcc\x88-test", "fooa\xcc\x88" },
+    { "fooa\xcc\x88-test", "foo" },
+    { "foo\xc3\xa4-test", "foo\xc3\xa4-test" },
+    { "foo\xc3\xa4-test", "fooa\xcc\x88-test" },
+    { "foo\xc3\xa4-test", "foo\xc3\xa4" },
+    { "foo\xc3\xa4-test", "fooa\xcc\x88" },
+    { "foo\xc3\xa4-test", "foo" },
+    { "foo", "foo" }
+  };
+
+  GURL url("about:blank");
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
+    model_->AddURL(model_->other_node(), 0, base::UTF8ToUTF16(data[i].title),
+                   url);
+    std::vector<BookmarkTitleMatch> matches;
+    model_->GetBookmarksWithTitlesMatching(
+        base::UTF8ToUTF16(data[i].query), 10, &matches);
+    EXPECT_EQ(1u, matches.size());
+    model_.reset(new BookmarkModel(NULL));
+  }
+}
+
 // Makes sure match positions are updated appropriately.
 TEST_F(BookmarkIndexTest, MatchPositions) {
   struct TestData {
