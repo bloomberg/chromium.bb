@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <sys/sysctl.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"

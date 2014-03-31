@@ -1517,7 +1517,6 @@ class RestrictedDispatchDeadlockClient1 : public Worker {
     PossiblyDone();
   }
 
-  base::Thread* ListenerThread() { return Worker::ListenerThread(); }
  private:
   virtual bool OnMessageReceived(const Message& message) OVERRIDE {
     IPC_BEGIN_MESSAGE_MAP(RestrictedDispatchDeadlockClient1, message)

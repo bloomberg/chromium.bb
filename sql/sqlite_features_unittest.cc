@@ -46,10 +46,6 @@ class SQLiteFeaturesTest : public testing::Test {
 
   sql::Connection& db() { return db_; }
 
-  int sqlite_error() const {
-    return error_;
-  }
-
  private:
   base::ScopedTempDir temp_dir_;
   sql::Connection db_;
