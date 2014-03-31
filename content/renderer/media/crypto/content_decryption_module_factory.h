@@ -26,11 +26,11 @@ class ContentDecryptionModuleFactory {
   // callbacks can be called asynchronously.
   static scoped_ptr<media::MediaKeys> Create(
       const std::string& key_system,
+      const GURL& security_origin,
 #if defined(ENABLE_PEPPER_CDMS)
       const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
       RendererMediaPlayerManager* manager,
-      const GURL& frame_url,
       int* cdm_id,  // Output parameter indicating the CDM ID of the MediaKeys.
 #endif  // defined(ENABLE_PEPPER_CDMS)
       const media::SessionCreatedCB& session_created_cb,

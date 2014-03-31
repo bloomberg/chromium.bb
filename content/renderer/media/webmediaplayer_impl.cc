@@ -67,6 +67,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
@@ -779,7 +780,8 @@ WebMediaPlayerImpl::GenerateKeyRequestInternal(const std::string& key_system,
           BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnKeyMessage)));
     }
 
-    if (!proxy_decryptor_->InitializeCDM(key_system, frame_->document().url()))
+    GURL security_origin(frame_->document().securityOrigin().toString());
+    if (!proxy_decryptor_->InitializeCDM(key_system, security_origin))
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
     if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {

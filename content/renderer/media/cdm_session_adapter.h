@@ -17,6 +17,8 @@
 #include "content/renderer/media/crypto/pepper_cdm_wrapper.h"
 #endif
 
+class GURL;
+
 namespace content {
 
 class WebContentDecryptionModuleSessionImpl;
@@ -34,7 +36,8 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 #if defined(ENABLE_PEPPER_CDMS)
       const CreatePepperCdmCB& create_pepper_cdm_cb,
 #endif
-      const std::string& key_system);
+      const std::string& key_system,
+      const GURL& security_origin);
 
   // Creates a new session and adds it to the internal map. The caller owns the
   // created session. RemoveSession() must be called when destroying it.

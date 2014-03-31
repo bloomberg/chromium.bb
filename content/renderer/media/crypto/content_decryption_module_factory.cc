@@ -7,14 +7,10 @@
 #include "base/logging.h"
 #include "content/renderer/media/crypto/key_systems.h"
 #include "media/cdm/aes_decryptor.h"
+#include "url/gurl.h"
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/crypto/ppapi_decryptor.h"
-#include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/pepper_webplugin_impl.h"
-#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #elif defined(OS_ANDROID)
 #include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
@@ -24,11 +20,11 @@ namespace content {
 
 scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     const std::string& key_system,
+    const GURL& security_origin,
 #if defined(ENABLE_PEPPER_CDMS)
     const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
     RendererMediaPlayerManager* manager,
-    const GURL& frame_url,
     int* cdm_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::SessionCreatedCB& session_created_cb,
@@ -36,9 +32,15 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb) {
+  // TODO(jrummell): Pass |security_origin| to all constructors.
+  // TODO(jrummell): Enable the following line once blink code updated to
+  // check the security origin before calling.
+  // DCHECK(security_origin.is_valid());
+
 #if defined(OS_ANDROID)
   *cdm_id = RendererMediaPlayerManager::kInvalidCdmId;
 #endif
+
   if (CanUseAesDecryptor(key_system)) {
     return scoped_ptr<media::MediaKeys>(
         new media::AesDecryptor(session_created_cb,
@@ -64,7 +66,7 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
                          session_ready_cb,
                          session_closed_cb,
                          session_error_cb));
-  proxy_media_keys->InitializeCdm(key_system, frame_url);
+  proxy_media_keys->InitializeCdm(key_system, security_origin);
   *cdm_id = proxy_media_keys->GetCdmId();
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else

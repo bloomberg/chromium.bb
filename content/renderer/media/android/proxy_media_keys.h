@@ -28,7 +28,8 @@ class ProxyMediaKeys : public media::MediaKeys {
                  const media::SessionErrorCB& session_error_cb);
   virtual ~ProxyMediaKeys();
 
-  void InitializeCdm(const std::string& key_system, const GURL& frame_url);
+  void InitializeCdm(const std::string& key_system,
+                     const GURL& security_origin);
 
   // MediaKeys implementation.
   virtual bool CreateSession(uint32 session_id,

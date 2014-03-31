@@ -23,12 +23,7 @@ void WebHelperPluginDeleter::operator()(blink::WebHelperPlugin* plugin) const {
 scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
     blink::WebFrame* frame,
     const std::string& pluginType) {
-
-  // TODO(jrummell): Convert to DCHECK(frame) once Blink starts passing the
-  // WebFrame to WebContentDecryptionModuleImpl.
-  if (!frame)
-    return scoped_ptr<PepperCdmWrapper>();
-
+  DCHECK(frame);
   ScopedHelperPlugin helper_plugin(blink::WebHelperPlugin::create(
       blink::WebString::fromUTF8(pluginType), frame));
   if (!helper_plugin)

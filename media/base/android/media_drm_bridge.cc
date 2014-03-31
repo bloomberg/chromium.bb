@@ -233,11 +233,11 @@ bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
 
 MediaDrmBridge::MediaDrmBridge(int cdm_id,
                                const std::vector<uint8>& scheme_uuid,
-                               const GURL& frame_url,
+                               const GURL& security_origin,
                                MediaPlayerManager* manager)
     : cdm_id_(cdm_id),
       scheme_uuid_(scheme_uuid),
-      frame_url_(frame_url),
+      security_origin_(security_origin),
       manager_(manager) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
@@ -257,7 +257,7 @@ MediaDrmBridge::~MediaDrmBridge() {
 // static
 scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(int cdm_id,
                                                   const std::string& key_system,
-                                                  const GURL& frame_url,
+                                                  const GURL& security_origin,
                                                   MediaPlayerManager* manager) {
   scoped_ptr<MediaDrmBridge> media_drm_bridge;
   if (!IsAvailable())
@@ -268,7 +268,7 @@ scoped_ptr<MediaDrmBridge> MediaDrmBridge::Create(int cdm_id,
     return media_drm_bridge.Pass();
 
   media_drm_bridge.reset(
-      new MediaDrmBridge(cdm_id, scheme_uuid, frame_url, manager));
+      new MediaDrmBridge(cdm_id, scheme_uuid, security_origin, manager));
   if (media_drm_bridge->j_media_drm_.is_null())
     media_drm_bridge.reset();
 

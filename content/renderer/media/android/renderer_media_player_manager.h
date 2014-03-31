@@ -99,7 +99,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void InitializeCdm(int cdm_id,
                      ProxyMediaKeys* media_keys,
                      const std::string& key_system,
-                     const GURL& frame_url);
+                     const GURL& security_origin);
   void CreateSession(int cdm_id,
                      uint32 session_id,
                      CdmHostMsg_CreateSession_ContentType conent_type,

@@ -581,7 +581,7 @@ void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
 
 void BrowserMediaPlayerManager::OnInitializeCdm(int cdm_id,
                                                 const std::string& key_system,
-                                                const GURL& frame_url) {
+                                                const GURL& security_origin) {
   if (key_system.size() > kMaxKeySystemLength) {
     // This failure will be discovered and reported by OnCreateSession()
     // as GetDrmBridge() will return null.
@@ -594,7 +594,7 @@ void BrowserMediaPlayerManager::OnInitializeCdm(int cdm_id,
     return;
   }
 
-  AddDrmBridge(cdm_id, key_system, frame_url);
+  AddDrmBridge(cdm_id, key_system, security_origin);
 }
 
 void BrowserMediaPlayerManager::OnCreateSession(
@@ -651,7 +651,7 @@ void BrowserMediaPlayerManager::OnCreateSession(
       web_contents()->GetRenderViewHost()->GetRoutingID(),
       static_cast<int>(session_id),
       cdm_id,
-      drm_bridge->frame_url(),
+      drm_bridge->security_origin(),
       base::Bind(&BrowserMediaPlayerManager::CreateSessionIfPermitted,
                  weak_ptr_factory_.GetWeakPtr(),
                  cdm_id,
@@ -746,11 +746,11 @@ scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
 
 void BrowserMediaPlayerManager::AddDrmBridge(int cdm_id,
                                              const std::string& key_system,
-                                             const GURL& frame_url) {
+                                             const GURL& security_origin) {
   DCHECK(!GetDrmBridge(cdm_id));
 
   scoped_ptr<MediaDrmBridge> drm_bridge(
-      MediaDrmBridge::Create(cdm_id, key_system, frame_url, this));
+      MediaDrmBridge::Create(cdm_id, key_system, security_origin, this));
   if (!drm_bridge) {
     // This failure will be discovered and reported by OnCreateSession()
     // as GetDrmBridge() will return null.

@@ -249,11 +249,11 @@ void RendererMediaPlayerManager::SetCdm(int player_id, int cdm_id) {
 void RendererMediaPlayerManager::InitializeCdm(int cdm_id,
                                                ProxyMediaKeys* media_keys,
                                                const std::string& key_system,
-                                               const GURL& frame_url) {
+                                               const GURL& security_origin) {
   DCHECK_NE(cdm_id, kInvalidCdmId);
   RegisterMediaKeys(cdm_id, media_keys);
   Send(new CdmHostMsg_InitializeCdm(
-      routing_id(), cdm_id, key_system, frame_url));
+      routing_id(), cdm_id, key_system, security_origin));
 }
 
 void RendererMediaPlayerManager::CreateSession(

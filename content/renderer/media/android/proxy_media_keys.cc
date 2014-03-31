@@ -38,8 +38,8 @@ ProxyMediaKeys::~ProxyMediaKeys() {
 }
 
 void ProxyMediaKeys::InitializeCdm(const std::string& key_system,
-                                   const GURL& frame_url) {
-  manager_->InitializeCdm(cdm_id_, this, key_system, frame_url);
+                                   const GURL& security_origin) {
+  manager_->InitializeCdm(cdm_id_, this, key_system, security_origin);
 }
 
 bool ProxyMediaKeys::CreateSession(uint32 session_id,

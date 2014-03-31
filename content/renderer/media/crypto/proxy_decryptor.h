@@ -76,7 +76,8 @@ class ProxyDecryptor {
 #endif
 
   // Only call this once.
-  bool InitializeCDM(const std::string& key_system, const GURL& frame_url);
+  bool InitializeCDM(const std::string& key_system,
+                     const GURL& security_origin);
 
   // May only be called after InitializeCDM() succeeds.
   bool GenerateKeyRequest(const std::string& type,
@@ -93,7 +94,7 @@ class ProxyDecryptor {
 
   // Helper function to create MediaKeys to handle the given |key_system|.
   scoped_ptr<media::MediaKeys> CreateMediaKeys(const std::string& key_system,
-                                               const GURL& frame_url);
+                                               const GURL& security_origin);
 
   // Callbacks for firing session events.
   void OnSessionCreated(uint32 session_id, const std::string& web_session_id);

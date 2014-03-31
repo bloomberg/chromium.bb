@@ -25,7 +25,7 @@ IPC_ENUM_TRAITS(CdmHostMsg_CreateSession_ContentType)
 IPC_MESSAGE_ROUTED3(CdmHostMsg_InitializeCdm,
                     int /* cdm_id */,
                     std::string /* key_system */,
-                    GURL /* frame url */)
+                    GURL /* security_origin */)
 
 IPC_MESSAGE_ROUTED4(CdmHostMsg_CreateSession,
                     int /* cdm_id */,
