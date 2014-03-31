@@ -211,8 +211,16 @@ void RuntimeAPI::OnExtensionsReady() {
 
   registered_for_updates_ = true;
 
-  ExtensionSystem::Get(browser_context_)->extension_service()->
-      AddUpdateObserver(this);
+  ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
+  extension_system->extension_service()->AddUpdateObserver(this);
+
+  // RuntimeAPI is redirected in incognito, so |browser_context_| is never
+  // incognito. We don't observe incognito ProcessManagers but that is OK
+  // because we don't send onStartup events to incognito browser contexts.
+  DCHECK(!browser_context_->IsOffTheRecord());
+  // Some tests use partially constructed Profiles without a process manager.
+  if (extension_system->process_manager())
+    extension_system->process_manager()->AddObserver(this);
 }
 
 void RuntimeAPI::OnExtensionLoaded(const Extension* extension) {
@@ -264,6 +272,16 @@ void RuntimeAPI::OnExtensionUninstalled(const Extension* extension) {
   RuntimeEventRouter::OnExtensionUninstalled(profile, extension->id());
 }
 
+void RuntimeAPI::Shutdown() {
+  // ExtensionSystem deletes its ProcessManager during the Shutdown() phase, so
+  // the observer must be removed here and not in the RuntimeAPI destructor.
+  ProcessManager* process_manager =
+      ExtensionSystem::Get(browser_context_)->process_manager();
+  // Some tests use partially constructed Profiles without a process manager.
+  if (process_manager)
+    process_manager->RemoveObserver(this);
+}
+
 void RuntimeAPI::OnAppUpdateAvailable(const Extension* extension) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
@@ -273,6 +291,10 @@ void RuntimeAPI::OnAppUpdateAvailable(const Extension* extension) {
 void RuntimeAPI::OnChromeUpdateAvailable() {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(profile);
+}
+
+void RuntimeAPI::OnBackgroundHostStartup(const Extension* extension) {
+  RuntimeEventRouter::DispatchOnStartupEvent(browser_context_, extension->id());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

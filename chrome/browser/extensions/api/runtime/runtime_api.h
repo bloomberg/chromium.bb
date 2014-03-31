@@ -12,6 +12,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/update_observer.h"
 
 class Profile;
@@ -33,7 +34,8 @@ class ExtensionHost;
 // its related incognito instance.
 class RuntimeAPI : public BrowserContextKeyedAPI,
                    public content::NotificationObserver,
-                   public extensions::UpdateObserver {
+                   public UpdateObserver,
+                   public ProcessManagerObserver {
  public:
   static BrowserContextKeyedAPIFactory<RuntimeAPI>* GetFactoryInstance();
 
@@ -57,10 +59,14 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
   static const char* service_name() { return "RuntimeAPI"; }
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
+  virtual void Shutdown() OVERRIDE;
 
   // extensions::UpdateObserver overrides:
   virtual void OnAppUpdateAvailable(const Extension* extension) OVERRIDE;
   virtual void OnChromeUpdateAvailable() OVERRIDE;
+
+  // ProcessManagerObserver implementation:
+  virtual void OnBackgroundHostStartup(const Extension* extension) OVERRIDE;
 
   content::BrowserContext* browser_context_;
 
