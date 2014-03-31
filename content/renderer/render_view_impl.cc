@@ -1705,14 +1705,6 @@ bool RenderViewImpl::enumerateChosenDirectory(
       base::FilePath::FromUTF16Unsafe(path)));
 }
 
-void RenderViewImpl::didStartLoading(bool to_different_document) {
-  main_render_frame_->didStartLoading(to_different_document);
-}
-
-void RenderViewImpl::didStopLoading() {
-  main_render_frame_->didStopLoading();
-}
-
 void RenderViewImpl::FrameDidStartLoading(WebFrame* frame) {
   if (load_progress_tracker_ != NULL) {
     load_progress_tracker_->DidStartLoading(

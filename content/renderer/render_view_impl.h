@@ -437,11 +437,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool enumerateChosenDirectory(
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion);
-  // DEPRECATED
-  virtual void didStartLoading(bool to_different_document);
-  // DEPRECATED
-  virtual void didStopLoading();
-
   virtual void didCancelCompositionOnSelectionChange();
   virtual void didExecuteCommand(const blink::WebString& command_name);
   virtual bool handleCurrentKeyboardEvent();
