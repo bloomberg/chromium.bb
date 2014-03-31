@@ -2339,7 +2339,7 @@ public class AwSettingsTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testUseWideViewportWithTwoViews() throws Throwable {
-        ViewPair views = createViews();
+        ViewPair views = createViews(true);
         runPerViewSettingsTest(
             new AwSettingsUseWideViewportTestHelper(views.getContainer0(), views.getClient0()),
             new AwSettingsUseWideViewportTestHelper(views.getContainer1(), views.getClient1()));
@@ -2348,7 +2348,7 @@ public class AwSettingsTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
     public void testUseWideViewportWithTwoViewsNoQuirks() throws Throwable {
-        ViewPair views = createViews(false);
+        ViewPair views = createViews();
         runPerViewSettingsTest(
             new AwSettingsUseWideViewportTestHelper(views.getContainer0(), views.getClient0()),
             new AwSettingsUseWideViewportTestHelper(views.getContainer1(), views.getClient1()));
@@ -2722,7 +2722,7 @@ public class AwSettingsTest extends AwTestBase {
     }
 
     private ViewPair createViews() throws Throwable {
-        return createViews(true);
+        return createViews(false);
     }
 
     private ViewPair createViews(boolean supportsLegacyQuirks) throws Throwable {
