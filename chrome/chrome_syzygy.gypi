@@ -13,9 +13,6 @@
   'dependencies': [
     '<(DEPTH)/chrome/chrome.gyp:<(dll_name)_dll',
   ],
-  'variables': {
-    'dest_dir': '<(PRODUCT_DIR)/syzygy',
-  },
   'conditions': [
     ['syzyasan==0 and syzygy_optimize==1', {
       # Reorder chrome DLL executable.
