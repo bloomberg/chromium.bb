@@ -287,6 +287,14 @@ bool WebLayerImpl::haveWheelEventHandlers() const {
   return layer_->have_wheel_event_handlers();
 }
 
+void WebLayerImpl::setHaveScrollEventHandlers(bool have_scroll_event_handlers) {
+  layer_->SetHaveScrollEventHandlers(have_scroll_event_handlers);
+}
+
+bool WebLayerImpl::haveScrollEventHandlers() const {
+  return layer_->have_scroll_event_handlers();
+}
+
 void WebLayerImpl::setShouldScrollOnMainThread(
     bool should_scroll_on_main_thread) {
   layer_->SetShouldScrollOnMainThread(should_scroll_on_main_thread);

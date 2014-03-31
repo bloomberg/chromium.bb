@@ -283,6 +283,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   void SetHaveWheelEventHandlers(bool have_wheel_event_handlers);
   bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
 
+  void SetHaveScrollEventHandlers(bool have_scroll_event_handlers);
+  bool have_scroll_event_handlers() const {
+    return have_scroll_event_handlers_;
+  }
+
   void SetNonFastScrollableRegion(const Region& non_fast_scrollable_region);
   const Region& non_fast_scrollable_region() const {
     return non_fast_scrollable_region_;
@@ -572,6 +577,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool scrollable_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
+  bool have_scroll_event_handlers_ : 1;
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
   bool is_root_for_isolated_group_ : 1;

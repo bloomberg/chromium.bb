@@ -116,6 +116,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual bool userScrollableVertical() const;
   virtual void setHaveWheelEventHandlers(bool have_wheel_event_handlers);
   virtual bool haveWheelEventHandlers() const;
+  virtual void setHaveScrollEventHandlers(bool have_scroll_event_handlers);
+  virtual bool haveScrollEventHandlers() const;
   virtual void setShouldScrollOnMainThread(bool scroll_on_main);
   virtual bool shouldScrollOnMainThread() const;
   virtual void setNonFastScrollableRegion(

@@ -252,6 +252,15 @@ SkColor DebugColors::WheelEventHandlerRectFillColor() {
   return SkColorSetARGB(30, 189, 209, 57);
 }
 
+// Scroll-event-handler rects in teal.
+SkColor DebugColors::ScrollEventHandlerRectBorderColor() {
+  return SkColorSetARGB(255, 24, 167, 181);
+}
+int DebugColors::ScrollEventHandlerRectBorderWidth() { return 2; }
+SkColor DebugColors::ScrollEventHandlerRectFillColor() {
+  return SkColorSetARGB(30, 24, 167, 181);
+}
+
 // Non-fast-scrollable rects in orange.
 SkColor DebugColors::NonFastScrollableRectBorderColor() {
   return SkColorSetARGB(255, 238, 163, 59);

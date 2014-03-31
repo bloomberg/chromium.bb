@@ -48,6 +48,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       scroll_clip_layer_(NULL),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
+      have_scroll_event_handlers_(false),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
       stacking_order_changed_(false),
@@ -504,6 +505,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetMasksToBounds(masks_to_bounds_);
   layer->SetShouldScrollOnMainThread(should_scroll_on_main_thread_);
   layer->SetHaveWheelEventHandlers(have_wheel_event_handlers_);
+  layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
@@ -642,6 +644,8 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
 
   if (have_wheel_event_handlers_)
     result->SetBoolean("WheelHandler", have_wheel_event_handlers_);
+  if (have_scroll_event_handlers_)
+    result->SetBoolean("ScrollHandler", have_scroll_event_handlers_);
   if (!touch_event_handler_region_.IsEmpty()) {
     scoped_ptr<base::Value> region = touch_event_handler_region_.AsValue();
     result->Set("TouchRegion", region.release());
@@ -1435,6 +1439,12 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
     Region wheel_region(wheel_rect);
     state->Set("wheel_event_handler_region",
                wheel_region.AsValue().release());
+  }
+  if (have_scroll_event_handlers_) {
+    gfx::Rect scroll_rect(content_bounds());
+    Region scroll_region(scroll_rect);
+    state->Set("scroll_event_handler_region",
+               scroll_region.AsValue().release());
   }
   if (!non_fast_scrollable_region_.IsEmpty()) {
     state->Set("non_fast_scrollable_region",

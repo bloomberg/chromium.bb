@@ -41,6 +41,9 @@ void DebugRectHistory::SaveDebugRectsForCurrentFrame(
   if (debug_state.show_wheel_event_handler_rects)
     SaveWheelEventHandlerRects(root_layer);
 
+  if (debug_state.show_scroll_event_handler_rects)
+    SaveScrollEventHandlerRects(root_layer);
+
   if (debug_state.show_non_fast_scrollable_rects)
     SaveNonFastScrollableRects(root_layer);
 
@@ -216,6 +219,24 @@ void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
                                    MathUtil::MapClippedRect(
                                        layer->screen_space_transform(),
                                        wheel_rect)));
+}
+
+void DebugRectHistory::SaveScrollEventHandlerRects(LayerImpl* layer) {
+  LayerTreeHostCommon::CallFunctionForSubtree<LayerImpl>(
+      layer,
+      base::Bind(&DebugRectHistory::SaveScrollEventHandlerRectsCallback,
+                 base::Unretained(this)));
+}
+
+void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
+  if (!layer->have_scroll_event_handlers())
+    return;
+
+  gfx::RectF scroll_rect = gfx::RectF(layer->content_bounds());
+  scroll_rect.Scale(layer->contents_scale_x(), layer->contents_scale_y());
+  debug_rects_.push_back(DebugRect(
+      SCROLL_EVENT_HANDLER_RECT_TYPE,
+      MathUtil::MapClippedRect(layer->screen_space_transform(), scroll_rect)));
 }
 
 void DebugRectHistory::SaveNonFastScrollableRects(LayerImpl* layer) {

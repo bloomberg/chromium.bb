@@ -126,6 +126,10 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
   if (dict->GetBoolean("WheelHandler", &wheel_handler))
     new_layer->SetHaveWheelEventHandlers(wheel_handler);
 
+  bool scroll_handler;
+  if (dict->GetBoolean("ScrollHandler", &scroll_handler))
+    new_layer->SetHaveScrollEventHandlers(scroll_handler);
+
   if (dict->HasKey("TouchRegion")) {
     success &= dict->GetList("TouchRegion", &list);
     Region touch_region;

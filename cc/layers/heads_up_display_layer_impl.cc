@@ -702,6 +702,12 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
         stroke_width = DebugColors::WheelEventHandlerRectBorderWidth();
         label_text = "mousewheel event listener";
         break;
+      case SCROLL_EVENT_HANDLER_RECT_TYPE:
+        stroke_color = DebugColors::ScrollEventHandlerRectBorderColor();
+        fill_color = DebugColors::ScrollEventHandlerRectFillColor();
+        stroke_width = DebugColors::ScrollEventHandlerRectBorderWidth();
+        label_text = "scroll event listener";
+        break;
       case NON_FAST_SCROLLABLE_RECT_TYPE:
         stroke_color = DebugColors::NonFastScrollableRectBorderColor();
         fill_color = DebugColors::NonFastScrollableRectFillColor();

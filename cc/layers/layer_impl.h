@@ -408,6 +408,13 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   }
   bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
 
+  void SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
+    have_scroll_event_handlers_ = have_scroll_event_handlers;
+  }
+  bool have_scroll_event_handlers() const {
+    return have_scroll_event_handlers_;
+  }
+
   void SetNonFastScrollableRegion(const Region& region) {
     non_fast_scrollable_region_ = region;
   }
@@ -579,6 +586,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool scrollable_ : 1;
   bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
+  bool have_scroll_event_handlers_ : 1;
   bool user_scrollable_horizontal_ : 1;
   bool user_scrollable_vertical_ : 1;
   bool stacking_order_changed_ : 1;

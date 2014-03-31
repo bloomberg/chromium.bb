@@ -52,6 +52,7 @@ enum DebugRectType {
   NONOCCLUDING_RECT_TYPE,
   TOUCH_EVENT_HANDLER_RECT_TYPE,
   WHEEL_EVENT_HANDLER_RECT_TYPE,
+  SCROLL_EVENT_HANDLER_RECT_TYPE,
   NON_FAST_SCROLLABLE_RECT_TYPE,
   ANIMATION_BOUNDS_RECT_TYPE,
 };
@@ -103,6 +104,8 @@ class DebugRectHistory {
   void SaveTouchEventHandlerRectsCallback(LayerImpl* layer);
   void SaveWheelEventHandlerRects(LayerImpl* layer);
   void SaveWheelEventHandlerRectsCallback(LayerImpl* layer);
+  void SaveScrollEventHandlerRects(LayerImpl* layer);
+  void SaveScrollEventHandlerRectsCallback(LayerImpl* layer);
   void SaveNonFastScrollableRects(LayerImpl* layer);
   void SaveNonFastScrollableRectsCallback(LayerImpl* layer);
   void SaveLayerAnimationBoundsRects(

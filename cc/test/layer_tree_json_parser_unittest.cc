@@ -43,6 +43,9 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->have_wheel_event_handlers(),
                                         layer->have_wheel_event_handlers()));
   RETURN_IF_EXPECTATION_FAILS(
+      EXPECT_EQ(layer_impl->have_scroll_event_handlers(),
+                layer->have_scroll_event_handlers()));
+  RETURN_IF_EXPECTATION_FAILS(
       EXPECT_EQ(layer_impl->touch_event_handler_region(),
                 layer->touch_event_handler_region()));
 
@@ -78,6 +81,7 @@ TEST_F(LayerTreeJsonParserSanityCheck, Basic) {
   parent->SetPosition(gfx::Point(25, 25));
 
   child->SetHaveWheelEventHandlers(true);
+  child->SetHaveScrollEventHandlers(true);
 
   parent->AddChild(child.Pass());
   root_impl->AddChild(parent.Pass());

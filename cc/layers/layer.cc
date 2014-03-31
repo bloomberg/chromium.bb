@@ -44,6 +44,7 @@ Layer::Layer()
       scroll_clip_layer_id_(INVALID_ID),
       should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
+      have_scroll_event_handlers_(false),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
       is_root_for_isolated_group_(false),
@@ -763,6 +764,14 @@ void Layer::SetHaveWheelEventHandlers(bool have_wheel_event_handlers) {
   SetNeedsCommit();
 }
 
+void Layer::SetHaveScrollEventHandlers(bool have_scroll_event_handlers) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (have_scroll_event_handlers_ == have_scroll_event_handlers)
+    return;
+  have_scroll_event_handlers_ = have_scroll_event_handlers;
+  SetNeedsCommit();
+}
+
 void Layer::SetNonFastScrollableRegion(const Region& region) {
   DCHECK(IsPropertyChangeAllowed());
   if (non_fast_scrollable_region_ == region)
@@ -928,6 +937,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetMasksToBounds(masks_to_bounds_);
   layer->SetShouldScrollOnMainThread(should_scroll_on_main_thread_);
   layer->SetHaveWheelEventHandlers(have_wheel_event_handlers_);
+  layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
