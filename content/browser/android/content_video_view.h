@@ -76,10 +76,6 @@ class ContentVideoView {
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
 
  private:
-  // Destroy the |j_content_video_view_|. If |native_view_destroyed| is true,
-  // no further calls to the native object is allowed.
-  void DestroyContentVideoView(bool native_view_destroyed);
-
   // Creates the corresponding ContentVideoView Java object.
   JavaObjectWeakGlobalRef CreateJavaObject();
 
