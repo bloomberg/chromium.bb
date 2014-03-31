@@ -7,8 +7,9 @@
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
@@ -51,12 +52,15 @@ ManagePasswordItemView::ManagePasswordItemView(
       views::GridLayout::USE_PREF, field_2_width_, field_2_width_);
   column_set_manage->AddColumn(views::GridLayout::TRAILING,
       views::GridLayout::FILL, 0, views::GridLayout::USE_PREF, 0, 0);
+  column_set_manage->AddPaddingColumn(0, views::kItemLabelSpacing);
 
   if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
       ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED)
-    layout->StartRow(0, column_set_manage_id);
+    layout->StartRowWithPadding(0, column_set_manage_id,
+                                0, views::kRelatedControlVerticalSpacing);
   else
-    layout->StartRow(0, column_set_save_id);
+    layout->StartRowWithPadding(0, column_set_save_id,
+                                0, views::kRelatedControlVerticalSpacing);
 
   label_1_ = new views::Label(password_form_.username_value);
   label_1_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -69,25 +73,25 @@ ManagePasswordItemView::ManagePasswordItemView(
   label_2_->SetEnabled(false);
   label_2_->SetUnderline(false);
 
-  delete_button_ = new views::LabelButton(this, base::string16());
-  delete_button_->SetStyle(views::Button::STYLE_TEXTBUTTON);
-  delete_button_->SetImage(views::Button::STATE_NORMAL,
-                           *rb->GetImageSkiaNamed(IDR_CLOSE_2));
-  const int delete_button_height = delete_button_->GetPreferredSize().height();
+  delete_button_ = new views::ImageButton(this);
+  delete_button_->SetImage(views::ImageButton::STATE_NORMAL,
+                           rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
+  delete_button_->SetImage(views::ImageButton::STATE_HOVERED,
+                           rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
+  delete_button_->SetImage(views::ImageButton::STATE_PRESSED,
+                           rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
 
   layout->AddView(label_1_, 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL,
-                  -1, delete_button_height);
+                  views::GridLayout::FILL, views::GridLayout::FILL);
   layout->AddView(label_2_, 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL,
-                  -1, delete_button_height);
+                  views::GridLayout::FILL, views::GridLayout::FILL);
 
   if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
       ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED) {
     layout->AddView(delete_button_, 1, 1,
-                    views::GridLayout::FILL, views::GridLayout::FILL,
-                    -1, delete_button_height);
+                    views::GridLayout::FILL, views::GridLayout::FILL);
   }
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 }
 
 // static

@@ -7,10 +7,9 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "components/autofill/core/common/password_form.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace views {
-class LabelButton;
+class ImageButton;
 }
 
 // A custom view for credentials which allows the management of the specific
@@ -50,7 +49,7 @@ class ManagePasswordItemView : public views::View,
 
   // This button is used to set |delete_password_| and to bring up the the undo
   // link in |label_2|.
-  views::LabelButton* delete_button_;
+  views::ImageButton* delete_button_;
 
   ManagePasswordsBubbleModel* manage_passwords_bubble_model_;
   autofill::PasswordForm password_form_;
