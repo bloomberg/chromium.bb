@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "7.4",
+  "version": "7.5",
   "entries": [
     {
       "id": 1,
@@ -163,7 +163,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
     {
       "id": 17,
       "description": "Intel mesa drivers are crash-prone",
-      "cr_bugs": [76703, 164555, 225200],
+      "cr_bugs": [76703, 164555, 225200, 340886],
       "os": {
         "type": "linux"
       },
@@ -195,6 +195,13 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
           "driver_version": {
             "op": ">=",
             "value": "9.1"
+          }
+        },
+        {
+          "device_id": ["0x0a16"],
+          "driver_version": {
+            "op": ">=",
+            "value": "10.0.1"
           }
         }
       ],
