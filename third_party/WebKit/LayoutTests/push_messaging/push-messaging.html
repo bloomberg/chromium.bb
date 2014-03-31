@@ -1,0 +1,30 @@
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Tests for the Push API.');
+
+if (!window.testRunner)
+    debug('This test can not run without testRunner');
+
+window.jsTestIsAsync = true;
+
+shouldBeTrue('!!navigator.push');
+shouldBeTrue('!!navigator.push.register');
+shouldBe('String(navigator.push.register("senderId"))', '"[object Promise]"');
+
+// Currently we have an empty implementation that always fails.
+navigator.push.register('senderId').then(function successCallback() {
+  testFailed('Success callback invoked unexpectedly.');
+  finishJSTest();
+}, function errorCallback(e) {
+  error = e;
+  shouldBeNull('error');
+  finishJSTest();
+});
+
+</script>
+</body>
+</html>

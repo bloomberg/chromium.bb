@@ -1,0 +1,13 @@
+Tests for the Push API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS !!navigator.push is true
+PASS !!navigator.push.register is true
+PASS String(navigator.push.register("senderId")) is "[object Promise]"
+PASS error is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
