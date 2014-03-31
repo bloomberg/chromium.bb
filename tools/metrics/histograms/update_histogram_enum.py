@@ -8,12 +8,15 @@ If the file was pretty-printed, the updated version is pretty-printed too.
 """
 
 import logging
+import os
 import print_style
 import re
 import sys
 
 from xml.dom import minidom
-from diffutil import PromptUserToAcceptDiff
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
+from diff_util import PromptUserToAcceptDiff
 
 class UserError(Exception):
   def __init__(self, message):

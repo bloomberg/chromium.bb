@@ -32557,6 +32557,7 @@ other types of suffix sets.
   <int value="702" label="GCM_UNREGISTER"/>
   <int value="703" label="FILEBROWSERPRIVATE_REQUESTDRIVESHARE"/>
   <int value="704" label="METRICSPRIVATE_RECORDSPARSEVALUE"/>
+  <int value="705" label="HOTWORDPRIVATE_SETAUDIOLOGGINGENABLED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
