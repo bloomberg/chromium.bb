@@ -79,6 +79,7 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
 
   // aura::WindowObserver:
   virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
   // Detach the current layers and create new layers for |window_|.
   // Stack the original layers above |window_| and its transient
@@ -89,6 +90,9 @@ class HidingWindowAnimationObserver : public ui::ImplicitAnimationObserver,
   void DetachAndRecreateLayers();
 
  private:
+  // Invoked when the window is destroyed (or destroying).
+  void WindowInvalid();
+
   aura::Window* window_;
 
   // The owner of detached layers.
@@ -472,8 +476,12 @@ void HidingWindowAnimationObserver::OnImplicitAnimationsCompleted() {
 
 void HidingWindowAnimationObserver::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(window, window_);
-  window_->RemoveObserver(this);
-  window_ = NULL;
+  WindowInvalid();
+}
+
+void HidingWindowAnimationObserver::OnWindowDestroyed(aura::Window* window) {
+  DCHECK_EQ(window, window_);
+  WindowInvalid();
 }
 
 void HidingWindowAnimationObserver::DetachAndRecreateLayers() {
@@ -506,6 +514,11 @@ void HidingWindowAnimationObserver::DetachAndRecreateLayers() {
   // Make the new layer invisible immediately.
   window_->layer()->SetVisible(false);
   window_->layer()->SetOpacity(0);
+}
+
+void HidingWindowAnimationObserver::WindowInvalid() {
+  window_->RemoveObserver(this);
+  window_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
