@@ -450,8 +450,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("modal-dialog-opened.html"));
 }
 
+// TODO(dmazzoni): rebaseline after Blink change lands.
+// http://crbug.com/347464
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityModalDialogInIframeClosed) {
+                       DISABLED_AccessibilityModalDialogInIframeClosed) {
   RunTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-closed.html"));
 }
 

@@ -329,8 +329,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   RecursiveAssertUniqueIds(root, &ids);
 }
 
+// TODO(dmazzoni): Needs to be rebaselined. http://crbug.com/347464
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       IframeAccessibility) {
+                       DISABLED_IframeAccessibility) {
   // Create a data url and load it.
   const char url_str[] =
       "data:text/html,"
