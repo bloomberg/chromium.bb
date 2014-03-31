@@ -56,10 +56,13 @@ void FileMetadataHandler::GetFileMetadata(
       extension_id);
 
   // Get all metadata for the one specific origin.
-  SyncFileSystemServiceFactory::GetForProfile(profile_)->DumpFiles(
-      origin,
-      base::Bind(&FileMetadataHandler::DidGetFileMetadata,
-                 weak_factory_.GetWeakPtr()));
+  sync_file_system::SyncFileSystemService* sync_service =
+      SyncFileSystemServiceFactory::GetForProfile(profile_);
+  if (!sync_service)
+    return;
+  sync_service->DumpFiles(origin,
+                          base::Bind(&FileMetadataHandler::DidGetFileMetadata,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void FileMetadataHandler::GetExtensions(const base::ListValue* args) {

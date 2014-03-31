@@ -84,7 +84,7 @@ DriveFileSyncService::~DriveFileSyncService() {
     api_util_->RemoveObserver(this);
 
   drive::DriveNotificationManager* drive_notification_manager =
-      drive::DriveNotificationManagerFactory::GetForBrowserContext(profile_);
+      drive::DriveNotificationManagerFactory::FindForBrowserContext(profile_);
   if (drive_notification_manager)
     drive_notification_manager->RemoveObserver(this);
 }

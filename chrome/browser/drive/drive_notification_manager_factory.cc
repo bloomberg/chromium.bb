@@ -15,6 +15,14 @@ namespace drive {
 
 // static
 DriveNotificationManager*
+DriveNotificationManagerFactory::FindForBrowserContext(
+    content::BrowserContext* context) {
+  return static_cast<DriveNotificationManager*>(
+      GetInstance()->GetServiceForBrowserContext(context, false));
+}
+
+// static
+DriveNotificationManager*
 DriveNotificationManagerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   if (!ProfileSyncService::IsSyncEnabled())

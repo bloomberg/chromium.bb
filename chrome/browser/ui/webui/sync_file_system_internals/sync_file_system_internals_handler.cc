@@ -97,7 +97,7 @@ void SyncFileSystemInternalsHandler::GetServiceStatus(
 void SyncFileSystemInternalsHandler::GetNotificationSource(
     const base::ListValue* args) {
   drive::DriveNotificationManager* drive_notification_manager =
-      drive::DriveNotificationManagerFactory::GetForBrowserContext(profile_);
+      drive::DriveNotificationManagerFactory::FindForBrowserContext(profile_);
   if (!drive_notification_manager)
     return;
   bool xmpp_enabled = drive_notification_manager->push_notification_enabled();

@@ -293,7 +293,7 @@ void DriveIntegrationService::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   DriveNotificationManager* drive_notification_manager =
-      DriveNotificationManagerFactory::GetForBrowserContext(profile_);
+      DriveNotificationManagerFactory::FindForBrowserContext(profile_);
   if (drive_notification_manager)
     drive_notification_manager->RemoveObserver(this);
 

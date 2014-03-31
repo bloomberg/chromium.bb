@@ -21,6 +21,13 @@ class DriveNotificationManager;
 class DriveNotificationManagerFactory
     : public BrowserContextKeyedServiceFactory {
  public:
+  // Returns the |DriveNotificationManager| for |context| if one exists or NULL
+  // otherwise.
+  static DriveNotificationManager* FindForBrowserContext(
+      content::BrowserContext* context);
+
+  // Returns the |DriveNotificationManager| for |context|, creating it first if
+  // required.
   static DriveNotificationManager* GetForBrowserContext(
       content::BrowserContext* context);
 
