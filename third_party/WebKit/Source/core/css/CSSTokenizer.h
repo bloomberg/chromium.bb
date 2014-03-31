@@ -74,7 +74,7 @@ public:
     inline unsigned tokenStartOffset();
 
 private:
-    UChar*& currentCharacter16();
+    UChar* allocateStringBuffer16(size_t len);
 
     template <typename CharacterType>
     inline CharacterType*& currentCharacter();
@@ -92,29 +92,33 @@ private:
     inline CSSParserLocation tokenLocation();
 
     template <typename CharacterType>
-    unsigned parseEscape(CharacterType*&);
+    static unsigned parseEscape(CharacterType*&);
     template <typename DestCharacterType>
-    inline void UnicodeToChars(DestCharacterType*&, unsigned);
-    template <typename SrcCharacterType, typename DestCharacterType>
-    inline bool parseIdentifierInternal(SrcCharacterType*&, DestCharacterType*&, bool&);
+    static inline void UnicodeToChars(DestCharacterType*&, unsigned);
 
+    template <typename SrcCharacterType, typename DestCharacterType>
+    static inline bool parseIdentifierInternal(SrcCharacterType*&, DestCharacterType*&, bool&);
+    template <typename SrcCharacterType>
+    static size_t peekMaxIdentifierLen(SrcCharacterType*);
     template <typename CharacterType>
     inline void parseIdentifier(CharacterType*&, CSSParserString&, bool&);
 
+    template <typename SrcCharacterType>
+    static size_t peekMaxStringLen(SrcCharacterType*, UChar quote);
     template <typename SrcCharacterType, typename DestCharacterType>
-    inline bool parseStringInternal(SrcCharacterType*&, DestCharacterType*&, UChar);
-
+    static inline bool parseStringInternal(SrcCharacterType*&, DestCharacterType*&, UChar);
     template <typename CharacterType>
     inline void parseString(CharacterType*&, CSSParserString& resultString, UChar);
 
     template <typename CharacterType>
     inline bool findURI(CharacterType*& start, CharacterType*& end, UChar& quote);
-
+    template <typename SrcCharacterType>
+    static size_t peekMaxURILen(SrcCharacterType*, UChar quote);
     template <typename SrcCharacterType, typename DestCharacterType>
-    inline bool parseURIInternal(SrcCharacterType*&, DestCharacterType*&, UChar quote);
-
+    static inline bool parseURIInternal(SrcCharacterType*&, DestCharacterType*&, UChar quote);
     template <typename CharacterType>
     inline void parseURI(CSSParserString&);
+
     template <typename CharacterType>
     inline bool parseUnicodeRange();
     template <typename CharacterType>
@@ -155,6 +159,13 @@ private:
     OwnPtr<UChar[]> m_dataStart16;
     LChar* m_currentCharacter8;
     UChar* m_currentCharacter16;
+
+    // During parsing of an ASCII stylesheet we might locate escape
+    // sequences that expand into UTF-16 code points. Strings,
+    // identifiers and URIs containing such escape sequences are
+    // stored in m_cssStrings16 so that we don't have to store the
+    // whole stylesheet as UTF-16.
+    Vector<OwnPtr<UChar[]> > m_cssStrings16;
     union {
         LChar* ptr8;
         UChar* ptr16;

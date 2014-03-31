@@ -304,14 +304,17 @@ inline UChar*& CSSTokenizer::currentCharacter<UChar>()
     return m_currentCharacter16;
 }
 
-UChar*& CSSTokenizer::currentCharacter16()
+UChar* CSSTokenizer::allocateStringBuffer16(size_t len)
 {
-    if (!m_currentCharacter16) {
-        m_dataStart16 = adoptArrayPtr(new UChar[m_length]);
-        m_currentCharacter16 = m_dataStart16.get();
-    }
+    // Allocates and returns a CSSTokenizer owned buffer for storing
+    // UTF-16 data. Used to get a suitable life span for UTF-16
+    // strings, identifiers and URIs created by the tokenizer.
+    OwnPtr<UChar[]> buffer = adoptArrayPtr(new UChar[len]);
 
-    return m_currentCharacter16;
+    UChar* bufferPtr = buffer.get();
+
+    m_cssStrings16.append(buffer.release());
+    return bufferPtr;
 }
 
 template <>
@@ -412,7 +415,7 @@ unsigned CSSTokenizer::parseEscape(CharacterType*& src)
         return unicode;
     }
 
-    return *currentCharacter<CharacterType>()++;
+    return *src++;
 }
 
 template <>
@@ -436,6 +439,24 @@ inline void CSSTokenizer::UnicodeToChars<UChar>(UChar*& result, unsigned unicode
     }
 
     ++result;
+}
+
+template <typename SrcCharacterType>
+size_t CSSTokenizer::peekMaxIdentifierLen(SrcCharacterType* src)
+{
+    // The decoded form of an identifier (after resolving escape
+    // sequences) will not contain more characters (ASCII or UTF-16
+    // codepoints) than the input. This code can therefore ignore
+    // escape sequences completely.
+    SrcCharacterType* start = src;
+    do {
+        if (LIKELY(*src != '\\'))
+            src++;
+        else
+            parseEscape<SrcCharacterType>(src);
+    } while (isCSSLetter(src[0]) || (src[0] == '\\' && isCSSEscape(src[1])));
+
+    return src - start;
 }
 
 template <typename SrcCharacterType, typename DestCharacterType>
@@ -471,7 +492,7 @@ inline void CSSTokenizer::parseIdentifier(CharacterType*& result, CSSParserStrin
     if (UNLIKELY(!parseIdentifierInternal(currentCharacter<CharacterType>(), result, hasEscape))) {
         // Found an escape we couldn't handle with 8 bits, copy what has been recognized and continue
         ASSERT(is8BitSource());
-        UChar*& result16 = currentCharacter16();
+        UChar* result16 = allocateStringBuffer16((result - start) + peekMaxIdentifierLen(result));
         UChar* start16 = result16;
         int i = 0;
         for (; i < result - start; i++)
@@ -487,6 +508,18 @@ inline void CSSTokenizer::parseIdentifier(CharacterType*& result, CSSParserStrin
     }
 
     resultString.init(start, result - start);
+}
+
+template <typename SrcCharacterType>
+size_t CSSTokenizer::peekMaxStringLen(SrcCharacterType* src, UChar quote)
+{
+    // The decoded form of a CSS string (after resolving escape
+    // sequences) will not contain more characters (ASCII or UTF-16
+    // codepoints) than the input. This code can therefore ignore
+    // escape sequences completely and just return the length of the
+    // input string (possibly including terminating quote if any).
+    SrcCharacterType* end = checkAndSkipString(src, quote);
+    return end ? end - src : 0;
 }
 
 template <typename SrcCharacterType, typename DestCharacterType>
@@ -532,7 +565,7 @@ inline void CSSTokenizer::parseString(CharacterType*& result, CSSParserString& r
     if (UNLIKELY(!parseStringInternal(currentCharacter<CharacterType>(), result, quote))) {
         // Found an escape we couldn't handle with 8 bits, copy what has been recognized and continue
         ASSERT(is8BitSource());
-        UChar*& result16 = currentCharacter16();
+        UChar* result16 = allocateStringBuffer16((result - start) + peekMaxStringLen(result, quote));
         UChar* start16 = result16;
         int i = 0;
         for (; i < result - start; i++)
@@ -580,6 +613,29 @@ inline bool CSSTokenizer::findURI(CharacterType*& start, CharacterType*& end, UC
     return true;
 }
 
+template <typename SrcCharacterType>
+inline size_t CSSTokenizer::peekMaxURILen(SrcCharacterType* src, UChar quote)
+{
+    // The decoded form of a URI (after resolving escape sequences)
+    // will not contain more characters (ASCII or UTF-16 codepoints)
+    // than the input. This code can therefore ignore escape sequences
+    // completely.
+    SrcCharacterType* start = src;
+    if (quote) {
+        ASSERT(quote == '"' || quote == '\'');
+        return peekMaxStringLen(src, quote);
+    }
+
+    while (isURILetter(*src)) {
+        if (LIKELY(*src != '\\'))
+            src++;
+        else
+            parseEscape<SrcCharacterType>(src);
+    }
+
+    return src - start;
+}
+
 template <typename SrcCharacterType, typename DestCharacterType>
 inline bool CSSTokenizer::parseURIInternal(SrcCharacterType*& src, DestCharacterType*& dest, UChar quote)
 {
@@ -593,7 +649,7 @@ inline bool CSSTokenizer::parseURIInternal(SrcCharacterType*& src, DestCharacter
             *dest++ = *src++;
         } else {
             unsigned unicode = parseEscape<SrcCharacterType>(src);
-            if (unicode > 0xff && sizeof(SrcCharacterType) == 1)
+            if (unicode > 0xff && sizeof(DestCharacterType) == 1)
                 return false;
             UnicodeToChars(dest, unicode);
         }
@@ -619,11 +675,12 @@ inline void CSSTokenizer::parseURI(CSSParserString& string)
         // Reset the current character to the start of the URI and re-parse with
         // a 16-bit destination.
         ASSERT(is8BitSource());
-        UChar* uriStart16 = currentCharacter16();
+        UChar* result16 = allocateStringBuffer16(peekMaxURILen(uriStart, quote));
+        UChar* uriStart16 = result16;
         currentCharacter<CharacterType>() = uriStart;
-        bool result = parseURIInternal(currentCharacter<CharacterType>(), currentCharacter16(), quote);
+        bool result = parseURIInternal(currentCharacter<CharacterType>(), result16, quote);
         ASSERT_UNUSED(result, result);
-        string.init(uriStart16, currentCharacter16() - uriStart16);
+        string.init(uriStart16, result16 - uriStart16);
     }
 
     currentCharacter<CharacterType>() = uriEnd + 1;
