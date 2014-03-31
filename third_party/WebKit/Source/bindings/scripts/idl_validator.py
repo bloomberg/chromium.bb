@@ -32,16 +32,23 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler#TOC
 """
 
 
+import os.path
 import re
 
+module_path = os.path.dirname(__file__)
+source_path = os.path.join(module_path, os.pardir, os.pardir)
+EXTENDED_ATTRIBUTES_RELATIVE_PATH = os.path.join('bindings',
+                                                 'IDLExtendedAttributes.txt')
+EXTENDED_ATTRIBUTES_FILENAME = os.path.join(source_path,
+                                            EXTENDED_ATTRIBUTES_RELATIVE_PATH)
 
 class IDLInvalidExtendedAttributeError(Exception):
     pass
 
 
 class IDLExtendedAttributeValidator(object):
-    def __init__(self, extended_attributes_filename):
-        self.valid_extended_attributes = read_extended_attributes_file(extended_attributes_filename)
+    def __init__(self):
+        self.valid_extended_attributes = read_extended_attributes_file()
 
     def validate_extended_attributes(self, definitions):
         # FIXME: this should be done when parsing the file, rather than after.
@@ -78,9 +85,9 @@ class IDLExtendedAttributeValidator(object):
             raise IDLInvalidExtendedAttributeError('Invalid value "%s" found in extended attribute [%s=%s]' % (invalid_value, name, values_string))
 
 
-def read_extended_attributes_file(extended_attributes_filename):
+def read_extended_attributes_file():
     def extended_attribute_name_values():
-        with open(extended_attributes_filename) as extended_attributes_file:
+        with open(EXTENDED_ATTRIBUTES_FILENAME) as extended_attributes_file:
             for line in extended_attributes_file:
                 line = line.strip()
                 if not line or line.startswith('#'):

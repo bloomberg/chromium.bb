@@ -45,7 +45,6 @@ from utilities import write_file
 
 def parse_options():
     parser = OptionParser()
-    parser.add_option('--idl-attributes-file')
     parser.add_option('--output-directory')
     parser.add_option('--interfaces-info-file')
     parser.add_option('--write-file-only-if-changed', type='int')
@@ -78,9 +77,9 @@ class IdlCompiler(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, output_directory, idl_attributes_file,
-                 code_generator=None, interfaces_info=None,
-                 interfaces_info_filename='', only_if_changed=False):
+    def __init__(self, output_directory, code_generator=None,
+                 interfaces_info=None, interfaces_info_filename='',
+                 only_if_changed=False):
         """
         Args:
             interfaces_info:
@@ -95,8 +94,7 @@ class IdlCompiler(object):
         self.interfaces_info = interfaces_info
         self.only_if_changed = only_if_changed
         self.output_directory = output_directory
-        self.reader = IdlReader(interfaces_info, idl_attributes_file,
-                                output_directory)
+        self.reader = IdlReader(interfaces_info, output_directory)
 
     def compile_and_write(self, idl_filename, output_filenames):
         interface_name = idl_filename_to_interface_name(idl_filename)
@@ -129,10 +127,10 @@ class IdlCompilerV8(IdlCompiler):
 
 def main():
     options, idl_filename = parse_options()
-    idl_compiler = IdlCompilerV8(options.output_directory,
-                                 options.idl_attributes_file,
-                                 interfaces_info_filename=options.interfaces_info_file,
-                                 only_if_changed=options.write_file_only_if_changed)
+    idl_compiler = IdlCompilerV8(
+        options.output_directory,
+        interfaces_info_filename=options.interfaces_info_file,
+        only_if_changed=options.write_file_only_if_changed)
     idl_compiler.compile_file(idl_filename)
 
 

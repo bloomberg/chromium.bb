@@ -64,9 +64,6 @@ DEPENDENCY_IDL_FILES = frozenset([
 ])
 
 
-EXTENDED_ATTRIBUTES_FILE = os.path.join(source_path,
-                                        'bindings/IDLExtendedAttributes.txt')
-
 test_input_directory = os.path.join(source_path, 'bindings', 'tests', 'idls')
 reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
 
@@ -171,7 +168,6 @@ def bindings_tests(output_directory, verbose):
     try:
         generate_interface_dependencies()
         idl_compiler = IdlCompilerV8(output_directory,
-                                     EXTENDED_ATTRIBUTES_FILE,
                                      interfaces_info=interfaces_info,
                                      only_if_changed=True)
 

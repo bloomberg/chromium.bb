@@ -37,16 +37,13 @@ import os
 import blink_idl_parser
 from blink_idl_parser import BlinkIDLParser
 from idl_definitions import IdlDefinitions
-from idl_validator import IDLInvalidExtendedAttributeError, IDLExtendedAttributeValidator
+from idl_validator import EXTENDED_ATTRIBUTES_RELATIVE_PATH, IDLInvalidExtendedAttributeError, IDLExtendedAttributeValidator
 from interface_dependency_resolver import InterfaceDependencyResolver
 
 
 class IdlReader(object):
-    def __init__(self, interfaces_info=None, idl_attributes_filename=None, outputdir=''):
-        if idl_attributes_filename:
-            self.extended_attribute_validator = IDLExtendedAttributeValidator(idl_attributes_filename)
-        else:
-            self.extended_attribute_validator = None
+    def __init__(self, interfaces_info=None, outputdir=''):
+        self.extended_attribute_validator = IDLExtendedAttributeValidator()
 
         if interfaces_info:
             self.interface_dependency_resolver = InterfaceDependencyResolver(interfaces_info, self)
@@ -99,13 +96,14 @@ class IdlReader(object):
         try:
             self.extended_attribute_validator.validate_extended_attributes(definitions)
         except IDLInvalidExtendedAttributeError as error:
-            raise IDLInvalidExtendedAttributeError(
-    """IDL ATTRIBUTE ERROR in file %s:
+            raise IDLInvalidExtendedAttributeError("""
+IDL ATTRIBUTE ERROR in file:
+%s:
     %s
-If you want to add a new IDL extended attribute, please add it to
-    bindings/IDLExtendedAttributes.txt
+If you want to add a new IDL extended attribute, please add it to:
+    %s
 and add an explanation to the Blink IDL documentation at:
     http://www.chromium.org/blink/webidl/blink-idl-extended-attributes
-    """ % (idl_filename, str(error)))
+    """ % (idl_filename, str(error), EXTENDED_ATTRIBUTES_RELATIVE_PATH))
 
         return definitions

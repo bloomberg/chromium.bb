@@ -396,8 +396,6 @@
         'scripts/idl_compiler.py',
         '--output-dir',
         '<(bindings_output_dir)',
-        '--idl-attributes-file',
-        'IDLExtendedAttributes.txt',
         '--interfaces-info',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
         '<@(write_file_only_if_changed)',
