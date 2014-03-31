@@ -11845,6 +11845,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.IOThreadCreationToHttpRequestStart" units="milliseconds">
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Time from when the IOThread is created to when the first URL request is
+    started. Only requests that are created for a profile while Chrome is
+    starting up are considered.
+  </summary>
+</histogram>
+
 <histogram name="Net.IPv6ConnectDuration" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Duration of time spent during the UDP-connect IPv6 probe.</summary>

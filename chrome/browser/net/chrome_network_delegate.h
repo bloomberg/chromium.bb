@@ -226,6 +226,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   scoped_ptr<ClientHints> client_hints_;
 
+  bool first_request_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };
 

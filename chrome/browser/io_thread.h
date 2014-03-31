@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
+#include "base/time/time.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
@@ -213,6 +214,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
   void InitializeNetworkSessionParams(net::HttpNetworkSession::Params* params);
 
+  base::TimeTicks creation_time() const;
+
  private:
   // Provide SystemURLRequestContextGetter with access to
   // InitSystemRequestContext().
@@ -358,6 +361,8 @@ class IOThread : public content::BrowserThreadDelegate {
   bool is_spdy_disabled_by_policy_;
 
   base::WeakPtrFactory<IOThread> weak_factory_;
+
+  const base::TimeTicks creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThread);
 };

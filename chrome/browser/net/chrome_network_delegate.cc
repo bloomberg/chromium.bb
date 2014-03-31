@@ -64,6 +64,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/io_thread.h"
 #include "components/precache/content/precache_manager.h"
 #include "components/precache/content/precache_manager_factory.h"
 #endif
@@ -335,6 +336,14 @@ void RecordPrecacheStatsOnUIThread(const GURL& url,
 
   precache_manager->RecordStatsForFetch(url, fetch_time, size, was_cached);
 }
+
+void RecordIOThreadToRequestStartOnUIThread(
+    const base::TimeTicks& request_start) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::TimeDelta request_lag = request_start -
+      g_browser_process->io_thread()->creation_time();
+  UMA_HISTOGRAM_TIMES("Net.IOThreadCreationToHTTPRequestStart", request_lag);
+}
 #endif  // defined(OS_ANDROID)
 
 }  // namespace
@@ -350,7 +359,8 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       url_blacklist_manager_(NULL),
       domain_reliability_monitor_(NULL),
       received_content_length_(0),
-      original_content_length_(0) {
+      original_content_length_(0),
+      first_request_(true) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
 }
@@ -440,6 +450,26 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
+#if defined(OS_ANDROID)
+  // This UMA tracks the time to the first user-initiated request start, so
+  // only non-null profiles are considered.
+  if (first_request_ && profile_) {
+    bool record_timing = true;
+#if defined(DATA_REDUCTION_PROXY_PROBE_URL)
+    record_timing = (request->url() != GURL(DATA_REDUCTION_PROXY_PROBE_URL));
+#endif
+    if (record_timing) {
+      first_request_ = false;
+      net::LoadTimingInfo timing_info;
+      request->GetLoadTimingInfo(&timing_info);
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(&RecordIOThreadToRequestStartOnUIThread,
+                     timing_info.request_start));
+    }
+  }
+#endif  // defined(OS_ANDROID)
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // TODO(joaodasilva): This prevents extensions from seeing URLs that are
   // blocked. However, an extension might redirect the request to another URL,

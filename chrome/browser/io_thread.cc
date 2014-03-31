@@ -25,6 +25,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/default_tick_clock.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
@@ -417,7 +418,8 @@ IOThread::IOThread(
       globals_(NULL),
       sdch_manager_(NULL),
       is_spdy_disabled_by_policy_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      creation_time_(base::TimeTicks::Now()) {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 #if defined(OS_WIN)
   if (!win8::IsSingleWindowMetroMode())
@@ -998,6 +1000,10 @@ void IOThread::InitializeNetworkSessionParams(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
       globals_->enable_user_alternate_protocol_ports;
+}
+
+base::TimeTicks IOThread::creation_time() const {
+  return creation_time_;
 }
 
 net::SSLConfigService* IOThread::GetSSLConfigService() {
