@@ -42,8 +42,6 @@
 #include "wtf/unicode/CharacterNames.h"
 #include "wtf/Vector.h"
 
-#include <unicode/uscript.h>
-
 namespace WebCore {
 
 class Font;

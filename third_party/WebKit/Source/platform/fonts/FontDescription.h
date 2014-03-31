@@ -40,8 +40,6 @@
 
 #include "wtf/RefPtr.h"
 
-#include <unicode/uscript.h>
-
 namespace WebCore {
 
 class PLATFORM_EXPORT FontDescription {

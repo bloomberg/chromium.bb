@@ -36,7 +36,6 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"
 
-#include <unicode/uscript.h>
 
 namespace WebCore {
 

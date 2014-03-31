@@ -26,8 +26,6 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/unicode/Unicode.h"
 
-#include <unicode/brkiter.h>
-
 namespace WebCore {
 
 typedef icu::BreakIterator TextBreakIterator;

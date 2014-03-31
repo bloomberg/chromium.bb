@@ -31,7 +31,6 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-#include <unicode/rbbi.h>
 #include <unicode/ubrk.h>
 
 using namespace WTF;
