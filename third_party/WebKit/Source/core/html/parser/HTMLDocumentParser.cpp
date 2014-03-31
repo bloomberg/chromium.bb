@@ -39,8 +39,10 @@
 #include "core/html/parser/HTMLScriptRunner.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/DocumentLoader.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/WebThreadedDataReceiver.h"
 #include "wtf/Functional.h"
 
 namespace WebCore {
@@ -71,6 +73,30 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
         return HTMLTokenizer::PLAINTEXTState;
     return HTMLTokenizer::DataState;
 }
+
+class ParserDataReceiver : public blink::WebThreadedDataReceiver {
+public:
+    explicit ParserDataReceiver(WeakPtr<BackgroundHTMLParser> backgroundParser)
+        : m_backgroundParser(backgroundParser)
+    {
+    }
+
+    // WebThreadedDataReceiver
+    virtual void acceptData(const char* data, int dataLength) OVERRIDE FINAL
+    {
+        ASSERT(backgroundThread()->isCurrentThread());
+        if (m_backgroundParser.get())
+            m_backgroundParser.get()->appendRawBytesFromParserThread(data, dataLength);
+    }
+
+    virtual blink::WebThread* backgroundThread() OVERRIDE FINAL
+    {
+        return &HTMLParserThread::shared()->platformThread();
+    }
+
+private:
+    WeakPtr<BackgroundHTMLParser> m_backgroundParser;
+};
 
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument* document, bool reportErrors)
     : ScriptableDocumentParser(document)
@@ -675,6 +701,8 @@ void HTMLDocumentParser::startBackgroundParser()
     RefPtr<WeakReference<BackgroundHTMLParser> > reference = WeakReference<BackgroundHTMLParser>::createUnbound();
     m_backgroundParser = WeakPtr<BackgroundHTMLParser>(reference);
 
+    document()->loader()->attachThreadedDataReceiver(adoptPtr(new ParserDataReceiver(m_backgroundParser)));
+
     OwnPtr<BackgroundHTMLParser::Configuration> config = adoptPtr(new BackgroundHTMLParser::Configuration);
     config->options = m_options;
     config->parser = m_weakFactory.createWeakPtr();
@@ -984,7 +1012,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1("net", "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::appendBytes, m_backgroundParser, buffer.release()));
+        HTMLParserThread::shared()->postTask(bind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, buffer.release()));
         return;
     }
 

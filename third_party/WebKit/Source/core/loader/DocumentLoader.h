@@ -43,6 +43,10 @@
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 
+namespace blink {
+class WebThreadedDataReceiver;
+}
+
 namespace WTF {
 class SchedulePair;
 }
@@ -122,6 +126,7 @@ namespace WebCore {
         void startLoadingMainResource();
         void cancelMainResourceLoad(const ResourceError&);
 
+        void attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver>);
         DocumentLoadTiming* timing() { return &m_documentLoadTiming; }
 
         ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }

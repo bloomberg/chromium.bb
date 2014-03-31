@@ -46,12 +46,11 @@ public:
     static HTMLParserThread* shared();
 
     void postTask(const Closure&);
+    blink::WebThread& platformThread();
 
 private:
     HTMLParserThread();
     ~HTMLParserThread();
-
-    blink::WebThread& ensureThread();
 
     OwnPtr<blink::WebThread> m_thread;
 };

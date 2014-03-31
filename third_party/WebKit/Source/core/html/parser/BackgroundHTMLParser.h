@@ -65,7 +65,9 @@ public:
         String unparsedInput;
     };
 
-    void appendBytes(PassOwnPtr<Vector<char> >);
+    void appendRawBytesFromParserThread(const char* data, int dataLength);
+
+    void appendRawBytesFromMainThread(PassOwnPtr<Vector<char> >);
     void setDecoder(PassOwnPtr<TextResourceDecoder>);
     void flush();
     void resumeFrom(PassOwnPtr<Checkpoint>);
@@ -79,7 +81,7 @@ private:
     BackgroundHTMLParser(PassRefPtr<WeakReference<BackgroundHTMLParser> >, PassOwnPtr<Configuration>);
     ~BackgroundHTMLParser();
 
-    void append(const String&);
+    void appendDecodedBytes(const String&);
     void markEndOfFile();
     void pumpTokenizer();
     void sendTokensToMainThread();

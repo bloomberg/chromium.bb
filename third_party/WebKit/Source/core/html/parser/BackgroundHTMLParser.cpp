@@ -27,7 +27,6 @@
 #include "core/html/parser/BackgroundHTMLParser.h"
 
 #include "core/html/parser/HTMLDocumentParser.h"
-#include "core/html/parser/HTMLParserThread.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "wtf/MainThread.h"
@@ -101,25 +100,34 @@ BackgroundHTMLParser::~BackgroundHTMLParser()
 {
 }
 
-void BackgroundHTMLParser::append(const String& input)
+void BackgroundHTMLParser::appendRawBytesFromParserThread(const char* data, int dataLength)
+{
+    ASSERT(m_decoder);
+    updateDocument(m_decoder->decode(data, dataLength));
+}
+
+void BackgroundHTMLParser::appendRawBytesFromMainThread(PassOwnPtr<Vector<char> > buffer)
+{
+    ASSERT(m_decoder);
+    updateDocument(m_decoder->decode(buffer->data(), buffer->size()));
+}
+
+void BackgroundHTMLParser::appendDecodedBytes(const String& input)
 {
     ASSERT(!m_input.current().isClosed());
     m_input.append(input);
     pumpTokenizer();
 }
 
-void BackgroundHTMLParser::appendBytes(PassOwnPtr<Vector<char> > buffer)
-{
-    updateDocument(m_decoder->decode(buffer->data(), buffer->size()));
-}
-
 void BackgroundHTMLParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
 {
+    ASSERT(decoder);
     m_decoder = decoder;
 }
 
 void BackgroundHTMLParser::flush()
 {
+    ASSERT(m_decoder);
     updateDocument(m_decoder->flush());
 }
 
@@ -137,7 +145,7 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
     if (decodedData.isEmpty())
         return;
 
-    append(decodedData);
+    appendDecodedBytes(decodedData);
 }
 
 void BackgroundHTMLParser::resumeFrom(PassOwnPtr<Checkpoint> checkpoint)

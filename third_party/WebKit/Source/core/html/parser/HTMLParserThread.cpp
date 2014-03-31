@@ -65,7 +65,7 @@ HTMLParserThread* HTMLParserThread::shared()
     return s_sharedThread;
 }
 
-blink::WebThread& HTMLParserThread::ensureThread()
+blink::WebThread& HTMLParserThread::platformThread()
 {
     if (!m_thread)
         m_thread = adoptPtr(blink::Platform::current()->createThread("HTMLParserThread"));
@@ -74,7 +74,7 @@ blink::WebThread& HTMLParserThread::ensureThread()
 
 void HTMLParserThread::postTask(const Closure& closure)
 {
-    ensureThread().postTask(new Task(closure));
+    platformThread().postTask(new Task(closure));
 }
 
 } // namespace WebCore

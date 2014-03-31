@@ -37,6 +37,7 @@
 namespace blink {
 
 class WebData;
+class WebThreadedDataReceiver;
 class WebURLLoaderClient;
 class WebURLResponse;
 struct WebURLError;
@@ -70,6 +71,13 @@ public:
     // priority, but may increase when the resource is needed for rendering.
     virtual void didChangePriority(WebURLRequest::Priority newPriority) { }
     virtual void didChangePriority(WebURLRequest::Priority newPriority, int intraPriorityValue) { didChangePriority(newPriority); }
+
+    // Try to attach the given data receiver which from this point will receive data
+    // on its thread (provided by WebThreadedDataReceiver::backgroundThread(),
+    // rather than the WebURLLoaderClient. If successful, ownership
+    // of the data receiver is assumed by the WebURLLoader and the receiver should
+    // be deleted on the main thread when no longer needed.
+    virtual bool attachThreadedDataReceiver(WebThreadedDataReceiver*) { return false; }
 };
 
 } // namespace blink

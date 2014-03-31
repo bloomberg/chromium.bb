@@ -59,6 +59,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"
+#include "public/platform/WebThreadedDataReceiver.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
@@ -758,6 +759,12 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
         mainResourceLoader()->cancel(error);
 
     mainReceivedError(error);
+}
+
+void DocumentLoader::attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver> threadedDataReceiver)
+{
+    if (mainResourceLoader())
+        mainResourceLoader()->attachThreadedDataReceiver(threadedDataReceiver);
 }
 
 void DocumentLoader::endWriting(DocumentWriter* writer)

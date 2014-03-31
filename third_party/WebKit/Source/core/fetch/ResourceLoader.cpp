@@ -40,6 +40,7 @@
 #include "platform/network/ResourceError.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
+#include "public/platform/WebThreadedDataReceiver.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
@@ -176,6 +177,18 @@ void ResourceLoader::setDefersLoading(bool defers)
         m_request = applyOptions(m_deferredRequest);
         m_deferredRequest = ResourceRequest();
         start();
+    }
+}
+
+void ResourceLoader::attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver> threadedDataReceiver)
+{
+    if (m_loader) {
+        // The implementor of the WebURLLoader assumes ownership of the
+        // threaded data receiver if it signals that it got successfully
+        // attached.
+        blink::WebThreadedDataReceiver* rawThreadedDataReceiver = threadedDataReceiver.leakPtr();
+        if (!m_loader->attachThreadedDataReceiver(rawThreadedDataReceiver))
+            delete rawThreadedDataReceiver;
     }
 }
 

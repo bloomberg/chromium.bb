@@ -36,6 +36,10 @@
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
+namespace blink {
+class WebThreadedDataReceiver;
+}
+
 namespace WebCore {
 
 class Resource;
@@ -61,6 +65,8 @@ public:
 
     void setDefersLoading(bool);
     bool defersLoading() const { return m_defersLoading; }
+
+    void attachThreadedDataReceiver(PassOwnPtr<blink::WebThreadedDataReceiver>);
 
     void releaseResources();
 
