@@ -89,14 +89,6 @@ class DownloadOperation {
       const ClientContext& context,
       base::FilePath* drive_file_path,
       base::FilePath* cache_file_path,
-      FileError error);
-
-  // Part of EnsureFileDownloaded(). Called when it is ready to start
-  // downloading the file.
-  void EnsureFileDownloadedAfterPrepareForDownloadFile(
-      scoped_ptr<DownloadParams> params,
-      const ClientContext& context,
-      const base::FilePath& drive_file_path,
       base::FilePath* temp_download_file_path,
       FileError error);
 

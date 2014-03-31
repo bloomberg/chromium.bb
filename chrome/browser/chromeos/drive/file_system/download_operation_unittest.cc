@@ -63,14 +63,6 @@ TEST_F(DownloadOperationTest,
   // attribute is notified.
   EXPECT_EQ(1U, observer()->get_changed_paths().size());
   EXPECT_EQ(1U, observer()->get_changed_paths().count(file_in_root.DirName()));
-
-  // Verify that readable permission is set.
-  int permission = 0;
-  EXPECT_TRUE(base::GetPosixFilePermissions(file_path, &permission));
-  EXPECT_EQ(base::FILE_PERMISSION_READ_BY_USER |
-            base::FILE_PERMISSION_WRITE_BY_USER |
-            base::FILE_PERMISSION_READ_BY_GROUP |
-            base::FILE_PERMISSION_READ_BY_OTHERS, permission);
 }
 
 TEST_F(DownloadOperationTest,
@@ -492,6 +484,31 @@ TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_LocallyCreatedFile) {
   EXPECT_EQ(static_cast<int64>(0), cache_file_size);
   ASSERT_TRUE(entry);
   EXPECT_EQ(cache_file_size, entry->file_info().size());
+}
+
+TEST_F(DownloadOperationTest, CancelBeforeDownloadStarts) {
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  ResourceEntry src_entry;
+  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &src_entry));
+
+  // Start operation.
+  FileError error = FILE_ERROR_OK;
+  base::FilePath file_path;
+  scoped_ptr<ResourceEntry> entry;
+  base::Closure cancel_closure = operation_->EnsureFileDownloadedByLocalId(
+      GetLocalId(file_in_root),
+      ClientContext(USER_INITIATED),
+      GetFileContentInitializedCallback(),
+      google_apis::GetContentCallback(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &file_path, &entry));
+
+  // Cancel immediately.
+  ASSERT_FALSE(cancel_closure.is_null());
+  cancel_closure.Run();
+  test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_ABORT, error);
 }
 
 }  // namespace file_system

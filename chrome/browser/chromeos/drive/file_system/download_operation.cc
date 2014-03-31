@@ -42,6 +42,26 @@ bool GeneratesUniquePathWithExtension(
   return true;
 }
 
+// Prepares for downloading the file. Allocates the enough space for the file
+// in the cache.
+// If succeeded, returns FILE_ERROR_OK with |temp_download_file| storing the
+// path to the file in the cache.
+FileError PrepareForDownloadFile(internal::FileCache* cache,
+                                 int64 expected_file_size,
+                                 const base::FilePath& temporary_file_directory,
+                                 base::FilePath* temp_download_file) {
+  DCHECK(cache);
+  DCHECK(temp_download_file);
+
+  // Ensure enough space in the cache.
+  if (!cache->FreeDiskSpaceIfNeededFor(expected_file_size))
+    return FILE_ERROR_NO_LOCAL_SPACE;
+
+  return base::CreateTemporaryFileInDir(
+      temporary_file_directory,
+      temp_download_file) ? FILE_ERROR_OK : FILE_ERROR_FAILED;
+}
+
 // If the resource is a hosted document, creates a JSON file representing the
 // resource locally, and returns FILE_ERROR_OK with |cache_file_path| storing
 // the path to the JSON file.
@@ -57,7 +77,8 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     const base::FilePath& temporary_file_directory,
     const std::string& local_id,
     ResourceEntry* entry,
-    base::FilePath* cache_file_path) {
+    base::FilePath* cache_file_path,
+    base::FilePath* temp_download_file_path) {
   DCHECK(metadata);
   DCHECK(cache);
   DCHECK(cache_file_path);
@@ -103,7 +124,9 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     if (!entry->resource_id().empty()) {
       // This entry exists on the server, leave |cache_file_path| empty to
       // start download.
-      return FILE_ERROR_OK;
+      return PrepareForDownloadFile(cache, entry->file_info().size(),
+                                    temporary_file_directory,
+                                    temp_download_file_path);
     }
 
     // This entry does not exist on the server, store an empty file and mark it
@@ -123,8 +146,11 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   // Leave |cache_file_path| empty when the stored file is obsolete and has no
   // local modification.
   if (!cache_entry.is_dirty() &&
-      entry->file_specific_info().md5() != cache_entry.md5())
-    return FILE_ERROR_OK;
+      entry->file_specific_info().md5() != cache_entry.md5()) {
+    return PrepareForDownloadFile(cache, entry->file_info().size(),
+                                  temporary_file_directory,
+                                  temp_download_file_path);
+  }
 
   // Fill |cache_file_path| with the path to the cached file.
   error = cache->GetFile(local_id, cache_file_path);
@@ -142,76 +168,42 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   return FILE_ERROR_OK;
 }
 
+struct CheckPreconditionForEnsureFileDownloadedParams {
+  internal::ResourceMetadata* metadata;
+  internal::FileCache* cache;
+  base::FilePath temporary_file_directory;
+};
+
 // Calls CheckPreConditionForEnsureFileDownloaded() with the entry specified by
 // the given ID. Also fills |drive_file_path| with the path of the entry.
 FileError CheckPreConditionForEnsureFileDownloadedByLocalId(
-    internal::ResourceMetadata* metadata,
-    internal::FileCache* cache,
+    const CheckPreconditionForEnsureFileDownloadedParams& params,
     const std::string& local_id,
-    const base::FilePath& temporary_file_directory,
     base::FilePath* drive_file_path,
     base::FilePath* cache_file_path,
+    base::FilePath* temp_download_file_path,
     ResourceEntry* entry) {
-  *drive_file_path = metadata->GetFilePath(local_id);
+  *drive_file_path = params.metadata->GetFilePath(local_id);
   return CheckPreConditionForEnsureFileDownloaded(
-      metadata, cache, temporary_file_directory, local_id, entry,
-      cache_file_path);
+      params.metadata, params.cache, params.temporary_file_directory, local_id,
+      entry, cache_file_path, temp_download_file_path);
 }
 
 // Calls CheckPreConditionForEnsureFileDownloaded() with the entry specified by
 // the given file path.
 FileError CheckPreConditionForEnsureFileDownloadedByPath(
-    internal::ResourceMetadata* metadata,
-    internal::FileCache* cache,
+    const CheckPreconditionForEnsureFileDownloadedParams& params,
     const base::FilePath& file_path,
-    const base::FilePath& temporary_file_directory,
     base::FilePath* cache_file_path,
+    base::FilePath* temp_download_file_path,
     ResourceEntry* entry) {
   std::string local_id;
-  FileError error = metadata->GetIdByPath(file_path, &local_id);
+  FileError error = params.metadata->GetIdByPath(file_path, &local_id);
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
-      metadata, cache, temporary_file_directory, local_id, entry,
-      cache_file_path);
-}
-
-// Creates a file with unique name in |dir| and stores the path to |temp_file|.
-// Additionally, sets the permission of the file to allow read access from
-// others and group member users (i.e, "-rw-r--r--").
-// We need this wrapper because Drive cache files may be read from other
-// processes (e.g., cros_disks for mounting zip files).
-bool CreateTemporaryReadableFileInDir(const base::FilePath& dir,
-                                      base::FilePath* temp_file) {
-  if (!base::CreateTemporaryFileInDir(dir, temp_file))
-    return false;
-  return base::SetPosixFilePermissions(
-      *temp_file,
-      base::FILE_PERMISSION_READ_BY_USER |
-      base::FILE_PERMISSION_WRITE_BY_USER |
-      base::FILE_PERMISSION_READ_BY_GROUP |
-      base::FILE_PERMISSION_READ_BY_OTHERS);
-}
-
-// Prepares for downloading the file. Allocates the enough space for the file
-// in the cache.
-// If succeeded, returns FILE_ERROR_OK with |temp_download_file| storing the
-// path to the file in the cache.
-FileError PrepareForDownloadFile(internal::FileCache* cache,
-                                 int64 expected_file_size,
-                                 const base::FilePath& temporary_file_directory,
-                                 base::FilePath* temp_download_file) {
-  DCHECK(cache);
-  DCHECK(temp_download_file);
-
-  // Ensure enough space in the cache.
-  if (!cache->FreeDiskSpaceIfNeededFor(expected_file_size))
-    return FILE_ERROR_NO_LOCAL_SPACE;
-
-  // Create the temporary file which will store the downloaded content.
-  return CreateTemporaryReadableFileInDir(
-      temporary_file_directory,
-      temp_download_file) ? FILE_ERROR_OK : FILE_ERROR_FAILED;
+      params.metadata, params.cache, params.temporary_file_directory, local_id,
+      entry, cache_file_path, temp_download_file_path);
 }
 
 // Stores the downloaded file at |downloaded_file_path| into |cache|.
@@ -264,6 +256,7 @@ class DownloadOperation::DownloadParams {
         get_content_callback_(get_content_callback),
         completion_callback_(completion_callback),
         entry_(entry.Pass()),
+        was_cancelled_(false),
         weak_ptr_factory_(this) {
     DCHECK(!completion_callback_.is_null());
     DCHECK(entry_);
@@ -308,8 +301,11 @@ class DownloadOperation::DownloadParams {
 
   const ResourceEntry& entry() const { return *entry_; }
 
+  bool was_cancelled() const { return was_cancelled_; }
+
  private:
   void Cancel() {
+    was_cancelled_ = true;
     if (!cancel_download_closure_.is_null())
       cancel_download_closure_.Run();
   }
@@ -320,6 +316,7 @@ class DownloadOperation::DownloadParams {
 
   scoped_ptr<ResourceEntry> entry_;
   base::Closure cancel_download_closure_;
+  bool was_cancelled_;
 
   base::WeakPtrFactory<DownloadParams> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DownloadParams);
@@ -353,30 +350,35 @@ base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!completion_callback.is_null());
 
+  CheckPreconditionForEnsureFileDownloadedParams params;
+  params.metadata = metadata_;
+  params.cache = cache_;
+  params.temporary_file_directory = temporary_file_directory_;
   base::FilePath* drive_file_path = new base::FilePath;
   base::FilePath* cache_file_path = new base::FilePath;
+  base::FilePath* temp_download_file_path = new base::FilePath;
   ResourceEntry* entry = new ResourceEntry;
-  scoped_ptr<DownloadParams> params(new DownloadParams(
+  scoped_ptr<DownloadParams> download_params(new DownloadParams(
       initialized_callback, get_content_callback, completion_callback,
       make_scoped_ptr(entry)));
-  base::Closure cancel_closure = params->GetCancelClosure();
+  base::Closure cancel_closure = download_params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CheckPreConditionForEnsureFileDownloadedByLocalId,
-                 base::Unretained(metadata_),
-                 base::Unretained(cache_),
+                 params,
                  local_id,
-                 temporary_file_directory_,
                  drive_file_path,
                  cache_file_path,
+                 temp_download_file_path,
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&params),
+                 base::Passed(&download_params),
                  context,
                  base::Owned(drive_file_path),
-                 base::Owned(cache_file_path)));
+                 base::Owned(cache_file_path),
+                 base::Owned(temp_download_file_path)));
   return cancel_closure;
 }
 
@@ -389,29 +391,34 @@ base::Closure DownloadOperation::EnsureFileDownloadedByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!completion_callback.is_null());
 
+  CheckPreconditionForEnsureFileDownloadedParams params;
+  params.metadata = metadata_;
+  params.cache = cache_;
+  params.temporary_file_directory = temporary_file_directory_;
   base::FilePath* drive_file_path = new base::FilePath(file_path);
   base::FilePath* cache_file_path = new base::FilePath;
+  base::FilePath* temp_download_file_path = new base::FilePath;
   ResourceEntry* entry = new ResourceEntry;
-  scoped_ptr<DownloadParams> params(new DownloadParams(
+  scoped_ptr<DownloadParams> download_params(new DownloadParams(
       initialized_callback, get_content_callback, completion_callback,
       make_scoped_ptr(entry)));
-  base::Closure cancel_closure = params->GetCancelClosure();
+  base::Closure cancel_closure = download_params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CheckPreConditionForEnsureFileDownloadedByPath,
-                 base::Unretained(metadata_),
-                 base::Unretained(cache_),
+                 params,
                  file_path,
-                 temporary_file_directory_,
                  cache_file_path,
+                 temp_download_file_path,
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&params),
+                 base::Passed(&download_params),
                  context,
                  base::Owned(drive_file_path),
-                 base::Owned(cache_file_path)));
+                 base::Owned(cache_file_path),
+                 base::Owned(temp_download_file_path)));
   return cancel_closure;
 }
 
@@ -420,6 +427,7 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
     const ClientContext& context,
     base::FilePath* drive_file_path,
     base::FilePath* cache_file_path,
+    base::FilePath* temp_download_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(params);
@@ -439,57 +447,22 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
     return;
   }
 
-  DCHECK(!params->entry().resource_id().empty());
-
-  // If cache file is not found, try to download the file from the server
-  // instead. Check if we have enough space, based on the expected file size.
-  // - if we don't have enough space, try to free up the disk space
-  // - if we still don't have enough space, return "no space" error
-  // - if we have enough space, start downloading the file from the server
-  int64 size = params->entry().file_info().size();
-  base::FilePath* temp_download_file_path = new base::FilePath;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&PrepareForDownloadFile,
-                 base::Unretained(cache_),
-                 size,
-                 temporary_file_directory_,
-                 temp_download_file_path),
-      base::Bind(
-          &DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile,
-          weak_ptr_factory_.GetWeakPtr(),
-          base::Passed(&params),
-          context,
-          *drive_file_path,
-          base::Owned(temp_download_file_path)));
-}
-
-void DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile(
-    scoped_ptr<DownloadParams> params,
-    const ClientContext& context,
-    const base::FilePath& drive_file_path,
-    base::FilePath* temp_download_file_path,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(params);
-  DCHECK(temp_download_file_path);
-
-  if (error != FILE_ERROR_OK) {
-    params->OnError(error);
+  if (params->was_cancelled()) {
+    params->OnError(FILE_ERROR_ABORT);
     return;
   }
 
+  DCHECK(!params->entry().resource_id().empty());
   DownloadParams* params_ptr = params.get();
   JobID id = scheduler_->DownloadFile(
-      drive_file_path,
+      *drive_file_path,
       params_ptr->entry().file_info().size(),
       *temp_download_file_path,
       params_ptr->entry().resource_id(),
       context,
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 drive_file_path,
+                 *drive_file_path,
                  base::Passed(&params)),
       params_ptr->get_content_callback());
 
