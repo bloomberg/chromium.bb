@@ -1263,3 +1263,13 @@ def GetChromiteTrackingBranch():
       "Falling back to assuming the chromite checkout is derived from "
       "'master'; this *may* result in breakage." % cwd)
   return 'master'
+
+
+def GarbageCollection(git_repo):
+  """Cleanup unnecessary files and optimize the local repository.
+
+  Args:
+    git_repo: Directory of git repository.
+  """
+  # Use --auto so it only runs if housekeeping is necessary.
+  RunGit(git_repo, ['gc', '--auto'])
