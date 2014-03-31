@@ -85,7 +85,7 @@ struct NET_EXPORT_PRIVATE SpdySettingsScratch {
 
   void Reset() {
     setting_buf_len = 0;
-    last_setting_id = 0;
+    last_setting_id = -1;
   }
 
   // Buffer contains up to one complete key/value pair.
@@ -96,8 +96,8 @@ struct NET_EXPORT_PRIVATE SpdySettingsScratch {
 
   // The ID of the last setting that was processed in the current SETTINGS
   // frame. Used for detecting out-of-order or duplicate keys within a settings
-  // frame. Set to 0 before first key/value pair is processed.
-  uint32 last_setting_id;
+  // frame. Set to -1 before first key/value pair is processed.
+  int last_setting_id;
 };
 
 // SpdyFramerVisitorInterface is a set of callbacks for the SpdyFramer.
@@ -281,6 +281,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_AUTO_RESET,
     SPDY_READING_COMMON_HEADER,
     SPDY_CONTROL_FRAME_PAYLOAD,
+    SPDY_READ_PADDING_LENGTH,
+    SPDY_CONSUME_PADDING,
     SPDY_IGNORE_REMAINING_PAYLOAD,
     SPDY_FORWARD_STREAM_FRAME,
     SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK,
@@ -477,6 +479,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Returns the maximum size a frame can be (data or control).
   size_t GetFrameMaximumSize() const;
 
+  // Returns the maximum size that a control frame can be.
+  size_t GetControlFrameMaximumSize() const;
+
   // Returns the maximum payload size of a DATA frame.
   size_t GetDataFrameMaximumPayload() const;
 
@@ -544,6 +549,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessControlFrameHeaderBlock(const char* data,
                                         size_t len,
                                         bool is_hpack_header_block);
+  size_t ProcessFramePaddingLength(const char* data, size_t len);
+  size_t ProcessFramePadding(const char* data, size_t len);
   size_t ProcessDataFramePayload(const char* data, size_t len);
   size_t ProcessGoAwayFramePayload(const char* data, size_t len);
   size_t ProcessRstStreamFramePayload(const char* data, size_t len);
@@ -628,7 +635,17 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   SpdyState state_;
   SpdyState previous_state_;
   SpdyError error_code_;
+
+  // Note that for DATA frame, remaining_data_length_ is sum of lengths of
+  // frame header, padding length field (optional), data payload (optional) and
+  // padding payload (optional).
   size_t remaining_data_length_;
+
+  // The length (in bytes) of the padding payload to be processed.
+  size_t remaining_padding_payload_length_;
+
+  // The length (in bytes) of the padding length field to be processed.
+  size_t remaining_padding_length_fields_;
 
   // The number of bytes remaining to read from the current control frame's
   // headers. Note that header data blocks (for control types that have them)

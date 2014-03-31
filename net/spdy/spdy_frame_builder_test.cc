@@ -59,4 +59,22 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
             base::StringPiece(built->data(), expected->size()));
 }
 
+TEST_P(SpdyFrameBuilderTest, OverwriteFlags) {
+  // Create a HEADERS frame both via framer and manually via builder with
+  // different flags set, then make them match using OverwriteFlags().
+  SpdyFramer framer(spdy_version_);
+  if (spdy_version_ < SPDY4) {
+    return;
+  }
+  SpdyHeadersIR headers_ir(1);
+  headers_ir.set_end_headers(false);
+  scoped_ptr<SpdyFrame> expected(framer.SerializeHeaders(headers_ir));
+  SpdyFrameBuilder builder(expected->size());
+  builder.WriteFramePrefix(framer, HEADERS, HEADERS_FLAG_END_HEADERS, 1);
+  builder.OverwriteFlags(framer, 0);
+  scoped_ptr<SpdyFrame> built(builder.take());
+  EXPECT_EQ(base::StringPiece(expected->data(), expected->size()),
+            base::StringPiece(built->data(), built->size()));
+}
+
 }  // namespace net

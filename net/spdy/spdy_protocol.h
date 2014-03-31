@@ -291,8 +291,11 @@ enum SpdyFrameType {
 
 // Flags on data packets.
 enum SpdyDataFlags {
-  DATA_FLAG_NONE = 0,
-  DATA_FLAG_FIN = 1,
+DATA_FLAG_NONE = 0x00,
+  DATA_FLAG_FIN = 0x01,
+  DATA_FLAG_END_SEGMENT = 0x02,
+  DATA_FLAG_PAD_LOW = 0x10,
+  DATA_FLAG_PAD_HIGH = 0x20
 };
 
 // Flags on control packets
@@ -333,17 +336,22 @@ enum SpdySettingsFlags {
 
 // List of known settings.
 enum SpdySettingsIds {
-  SETTINGS_UPLOAD_BANDWIDTH = 0x1,
-  SETTINGS_DOWNLOAD_BANDWIDTH = 0x2,
+  SETTINGS_UPLOAD_BANDWIDTH,
+  SETTINGS_DOWNLOAD_BANDWIDTH,
   // Network round trip time in milliseconds.
-  SETTINGS_ROUND_TRIP_TIME = 0x3,
-  SETTINGS_MAX_CONCURRENT_STREAMS = 0x4,
+  SETTINGS_ROUND_TRIP_TIME,
+  // The maximum number of simultaneous live streams in each direction.
+  SETTINGS_MAX_CONCURRENT_STREAMS,
   // TCP congestion window in packets.
-  SETTINGS_CURRENT_CWND = 0x5,
+  SETTINGS_CURRENT_CWND,
   // Downstream byte retransmission rate in percentage.
-  SETTINGS_DOWNLOAD_RETRANS_RATE = 0x6,
+  SETTINGS_DOWNLOAD_RETRANS_RATE,
   // Initial window size in bytes
-  SETTINGS_INITIAL_WINDOW_SIZE = 0x7
+  SETTINGS_INITIAL_WINDOW_SIZE,
+  // HPACK header table maximum size.
+  SETTINGS_HEADER_TABLE_SIZE,
+  // Whether or not server push (PUSH_PROMISE) is enabled.
+  SETTINGS_ENABLE_PUSH,
 };
 
 // Status codes for RST_STREAM frames.
@@ -380,6 +388,44 @@ typedef uint8 SpdyPriority;
 typedef std::map<std::string, std::string> SpdyNameValueBlock;
 
 typedef uint64 SpdyPingId;
+
+// TODO(hkhalil): Add direct testing for this? It won't increase coverage any,
+// but is good to do anyway.
+class NET_EXPORT_PRIVATE SpdyConstants {
+ public:
+  // Returns true if a given on-the-wire enumeration of a frame type is valid
+  // for a given protocol version, false otherwise.
+  static bool IsValidFrameType(SpdyMajorVersion version, int frame_type_field);
+
+  // Parses a frame type from an on-the-wire enumeration of a given protocol
+  // version.
+  // Behavior is undefined for invalid frame type fields; consumers should first
+  // use IsValidFrameType() to verify validity of frame type fields.
+  static SpdyFrameType ParseFrameType(SpdyMajorVersion version,
+                                      int frame_type_field);
+
+  // Serializes a given frame type to the on-the-wire enumeration value for the
+  // given protocol version.
+  // Returns -1 on failure (I.E. Invalid frame type for the given version).
+  static int SerializeFrameType(SpdyMajorVersion version,
+                                SpdyFrameType frame_type);
+
+  // Returns true if a given on-the-wire enumeration of a setting id is valid
+  // for a given protocol version, false otherwise.
+  static bool IsValidSettingId(SpdyMajorVersion version, int setting_id_field);
+
+  // Parses a setting id from an on-the-wire enumeration of a given protocol
+  // version.
+  // Behavior is undefined for invalid setting id fields; consumers should first
+  // use IsValidSettingId() to verify validity of setting id fields.
+  static SpdySettingsIds ParseSettingId(SpdyMajorVersion version,
+                                        int setting_id_field);
+
+  // Serializes a given setting id to the on-the-wire enumeration value for the
+  // given protocol version.
+  // Returns -1 on failure (I.E. Invalid setting id for the given version).
+  static int SerializeSettingId(SpdyMajorVersion version, SpdySettingsIds id);
+};
 
 class SpdyFrame;
 typedef SpdyFrame SpdySerializedFrame;
@@ -483,6 +529,29 @@ class NET_EXPORT_PRIVATE SpdyDataIR
 
   base::StringPiece data() const { return data_; }
 
+  bool pad_low() const { return pad_low_; }
+
+  bool pad_high() const { return pad_high_; }
+
+  int padding_payload_len() const { return padding_payload_len_; }
+
+  void set_padding_len(int padding_len) {
+    // The padding_len should be in (0, 65535 + 2].
+    // Note that SpdyFramer::GetDataFrameMaximumPayload() enforces the overall
+    // payload size later so we actually can't pad more than 16375 bytes.
+    DCHECK_GT(padding_len, 0);
+    DCHECK_LT(padding_len, 65537);
+
+    if (padding_len <= 256) {
+      pad_low_ = true;
+      --padding_len;
+    } else {
+      pad_low_ = pad_high_ = true;
+      padding_len -= 2;
+    }
+    padding_payload_len_ = padding_len;
+  }
+
   // Deep-copy of data (keep private copy).
   void SetDataDeep(const base::StringPiece& data) {
     data_store_.reset(new std::string(data.data(), data.length()));
@@ -501,6 +570,11 @@ class NET_EXPORT_PRIVATE SpdyDataIR
   // Used to store data that this SpdyDataIR should own.
   scoped_ptr<std::string> data_store_;
   base::StringPiece data_;
+
+  bool pad_low_;
+  bool pad_high_;
+  // padding_payload_len_ = desired padding length - len(padding length field).
+  int padding_payload_len_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyDataIR);
 };
@@ -601,8 +675,6 @@ class NET_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
                   bool persist_value,
                   bool persisted,
                   int32 value) {
-    // TODO(hkhalil): DCHECK_LE(SETTINGS_UPLOAD_BANDWIDTH, id);
-    // TODO(hkhalil): DCHECK_GE(SETTINGS_INITIAL_WINDOW_SIZE, id);
     values_[id].persist_value = persist_value;
     values_[id].persisted = persisted;
     values_[id].value = value;

@@ -3648,9 +3648,7 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
   size_t right_size =
-      (spdy_util_.spdy_version() < SPDY4) ?
-      syn_reply_wrong_length->size() - framer.GetControlFrameHeaderSize() :
-      syn_reply_wrong_length->size();
+      syn_reply_wrong_length->size() - framer.GetControlFrameHeaderSize();
   size_t wrong_size = right_size - 4;
   test::SetFrameLength(syn_reply_wrong_length.get(),
                        wrong_size,
@@ -3666,7 +3664,8 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
 
   scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
   MockRead reads[] = {
-    MockRead(ASYNC, syn_reply_wrong_length->data(), wrong_size),
+    MockRead(ASYNC, syn_reply_wrong_length->data(),
+             syn_reply_wrong_length->size() - 4),
   };
 
   DelayedSocketData data(1, reads, arraysize(reads),
@@ -4411,6 +4410,7 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
 // Test that when there are settings saved that they are sent back to the
 // server upon session establishment.
 TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
+  // TODO(jgraettinger): Remove settings persistence mechanisms altogether.
   static const SpdyHeaderInfo kSynReplyInfo = {
     SYN_REPLY,                              // Syn Reply
     1,                                      // Stream ID
@@ -4441,9 +4441,9 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
   EXPECT_TRUE(spdy_session_pool->http_server_properties()->GetSpdySettings(
       host_port_pair).empty());
 
-  const SpdySettingsIds kSampleId1 = SETTINGS_UPLOAD_BANDWIDTH;
+  const SpdySettingsIds kSampleId1 = SETTINGS_MAX_CONCURRENT_STREAMS;
   unsigned int kSampleValue1 = 0x0a0a0a0a;
-  const SpdySettingsIds kSampleId2 = SETTINGS_ROUND_TRIP_TIME;
+  const SpdySettingsIds kSampleId2 = SETTINGS_INITIAL_WINDOW_SIZE;
   unsigned int kSampleValue2 = 0x0c0c0c0c;
 
   // First add a persisted setting.

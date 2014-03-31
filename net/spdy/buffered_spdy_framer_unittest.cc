@@ -199,8 +199,8 @@ INSTANTIATE_TEST_CASE_P(
 TEST_P(BufferedSpdyFramerTest, OnSetting) {
   SpdyFramer framer(spdy_version());
   SpdySettingsIR settings_ir;
-  settings_ir.AddSetting(SETTINGS_UPLOAD_BANDWIDTH, false, false, 0x00000002);
-  settings_ir.AddSetting(SETTINGS_DOWNLOAD_BANDWIDTH, false, false, 0x00000003);
+  settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE, false, false, 2);
+  settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS, false, false, 3);
   scoped_ptr<SpdyFrame> control_frame(framer.SerializeSettings(settings_ir));
   TestBufferedSpdyVisitor visitor(spdy_version());
 

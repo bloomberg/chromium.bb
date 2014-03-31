@@ -59,7 +59,7 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // information from the |framer| and length information from capacity_.
   bool WriteDataFrameHeader(const SpdyFramer& framer,
                             SpdyStreamId stream_id,
-                            SpdyDataFlags flags);
+                            uint8 flags);
 
   // Populates this frame with a SPDY4/HTTP2 frame prefix using
   // version-specific information from the |framer| and length information from
@@ -116,6 +116,11 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
   // size information of the length field to be written, and must be initialized
   // with the correct version for the frame being written.
   bool OverwriteLength(const SpdyFramer& framer, size_t length);
+
+  // Update (in-place) the flags field in the frame being built to reflect the
+  // given flags value.
+  // Used only for SPDY versions >=4.
+  bool OverwriteFlags(const SpdyFramer& framer, uint8 flags);
 
  private:
   // Checks to make sure that there is an appropriate amount of space for a

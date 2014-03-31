@@ -60,14 +60,15 @@ bool SpdyFrameBuilder::Seek(size_t length) {
 bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
                                                SpdyFrameType type,
                                                uint8 flags) {
-  DCHECK_GE(type, FIRST_CONTROL_TYPE);
-  DCHECK_LE(type, LAST_CONTROL_TYPE);
   DCHECK_GT(4, framer.protocol_version());
+  DCHECK_NE(-1,
+            SpdyConstants::SerializeFrameType(framer.protocol_version(), type));
   bool success = true;
   FlagsAndLength flags_length = CreateFlagsAndLength(
       flags, capacity_ - framer.GetControlFrameHeaderSize());
   success &= WriteUInt16(kControlFlagMask | framer.protocol_version());
-  success &= WriteUInt16(type);
+  success &= WriteUInt16(
+      SpdyConstants::SerializeFrameType(framer.protocol_version(), type));
   success &= WriteBytes(&flags_length, sizeof(flags_length));
   DCHECK_EQ(framer.GetControlFrameHeaderSize(), length());
   return success;
@@ -75,7 +76,7 @@ bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
 
 bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
                                             SpdyStreamId stream_id,
-                                            SpdyDataFlags flags) {
+                                            uint8 flags) {
   if (framer.protocol_version() >= 4) {
     return WriteFramePrefix(framer, DATA, flags, stream_id);
   }
@@ -97,16 +98,21 @@ bool SpdyFrameBuilder::WriteFramePrefix(const SpdyFramer& framer,
                                         SpdyFrameType type,
                                         uint8 flags,
                                         SpdyStreamId stream_id) {
-  DCHECK_LE(DATA, type);
-  DCHECK_GE(LAST_CONTROL_TYPE, type);
+  DCHECK_NE(-1,
+            SpdyConstants::SerializeFrameType(framer.protocol_version(), type));
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
   DCHECK_LE(4, framer.protocol_version());
   bool success = true;
   // Upstream DCHECK's that capacity_ is under the maximum frame size at this
   // point. Chromium does not, because of the large additional zlib inflation
   // factor we use. (Frame size is is still checked by OverwriteLength() below).
-  success &= WriteUInt16(capacity_);
-  success &= WriteUInt8(type);
+  if (type != DATA) {
+    success &= WriteUInt16(capacity_ - framer.GetControlFrameHeaderSize());
+  } else {
+    success &= WriteUInt16(capacity_ - framer.GetDataFrameMinimumSize());
+  }
+  success &= WriteUInt8(
+      SpdyConstants::SerializeFrameType(framer.protocol_version(), type));
   success &= WriteUInt8(flags);
   success &= WriteUInt32(stream_id);
   DCHECK_EQ(framer.GetDataFrameMinimumSize(), length());
@@ -145,12 +151,8 @@ bool SpdyFrameBuilder::WriteBytes(const void* data, uint32 data_len) {
 }
 
 bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
-  if (framer.protocol_version() < 4) {
-    return OverwriteLength(framer,
-                           length_ - framer.GetControlFrameHeaderSize());
-  } else {
-    return OverwriteLength(framer, length_);
-  }
+  return OverwriteLength(framer,
+                         length_ - framer.GetControlFrameHeaderSize());
 }
 
 bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
@@ -178,6 +180,18 @@ bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
     success = WriteUInt16(length);
   }
 
+  length_ = old_length;
+  return success;
+}
+
+bool SpdyFrameBuilder::OverwriteFlags(const SpdyFramer& framer,
+                                      uint8 flags) {
+  DCHECK_LE(SPDY4, framer.protocol_version());
+  bool success = false;
+  const size_t old_length = length_;
+  // Flags are the fourth octet in the frame prefix.
+  length_ = 3;
+  success = WriteUInt8(flags);
   length_ = old_length;
   return success;
 }

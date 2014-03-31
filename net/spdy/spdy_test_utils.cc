@@ -110,7 +110,7 @@ void SetFrameLength(SpdyFrame* frame, size_t length, int spdy_version) {
       }
       break;
     case 4:
-      CHECK_GT(1u<<16, length);
+      CHECK_GT(1u<<14, length);
       {
         int32 wire_length = base::HostToNet16(static_cast<uint16>(length));
         memcpy(frame->data(),

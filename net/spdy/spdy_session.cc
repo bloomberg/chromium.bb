@@ -1912,6 +1912,13 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
   if (availability_state_ == STATE_CLOSED)
     return;
 
+  if (data == NULL && len != 0) {
+    // This is notification of consumed data padding.
+    // TODO(jgraettinger): Properly flow padding into WINDOW_UPDATE frames.
+    // See crbug.com/353012.
+    return;
+  }
+
   DCHECK_LT(len, 1u << 24);
   if (net_log().IsLogging()) {
     net_log().AddEvent(
