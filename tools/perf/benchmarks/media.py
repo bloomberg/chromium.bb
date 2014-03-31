@@ -38,32 +38,34 @@ class MediaAndroid(test.Test):
   test = media.Media
   tag = 'android'
   page_set = 'page_sets/tough_video_cases.json'
-  # Exclude 4k and 50 fps media files (garden* & crowd*).
-  options = {'page_label_filter_exclude': '4k,50fps'}
+  # Exclude is_4k and 50 fps media files (garden* & crowd*).
+  options = {'page_label_filter_exclude': 'is_4k,is_50fps'}
 
 
 class MediaChromeOS4kOnly(test.Test):
-  """Benchmark for media performance on ChromeOS using only 4k test content."""
+  """Benchmark for media performance on ChromeOS using only is_4k test content.
+  """
   test = media.Media
   tag = 'chromeOS4kOnly'
   page_set = 'page_sets/tough_video_cases.json'
   options = {
-      'page_label_filter': '4k',
-      # Exclude 50fps test files: crbug/331816
-      'page_label_filter_exclude': '50fps'
+      'page_label_filter': 'is_4k',
+      # Exclude is_50fps test files: crbug/331816
+      'page_label_filter_exclude': 'is_50fps'
   }
 
 
 class MediaChromeOS(test.Test):
   """Benchmark for media performance on all ChromeOS platforms.
 
-  This benchmark does not run 4k content, there's a separate benchmark for that.
+  This benchmark does not run is_4k content, there's a separate benchmark for
+  that.
   """
   test = media.Media
   tag = 'chromeOS'
   page_set = 'page_sets/tough_video_cases.json'
-  # Exclude 50fps test files: crbug/331816
-  options = {'page_label_filter_exclude': '4k,50fps'}
+  # Exclude is_50fps test files: crbug/331816
+  options = {'page_label_filter_exclude': 'is_4k,is_50fps'}
 
 
 class MediaSourceExtensions(test.Test):
