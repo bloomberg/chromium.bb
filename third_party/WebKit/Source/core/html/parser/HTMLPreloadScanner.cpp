@@ -404,6 +404,8 @@ void HTMLPreloadScanner::scan(HTMLResourcePreloader* preloader, const KURL& star
 {
     ASSERT(isMainThread()); // HTMLTokenizer::updateStateFor only works on the main thread.
 
+    TRACE_EVENT1("webkit", "HTMLPreloadScanner::scan", "source_length", m_source.length());
+
     // When we start scanning, our best prediction of the baseElementURL is the real one!
     if (!startingBaseElementURL.isEmpty())
         m_scanner.setPredictedBaseElementURL(startingBaseElementURL);
