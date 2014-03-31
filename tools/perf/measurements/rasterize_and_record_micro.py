@@ -2,12 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import sys
 import time
 
 from telemetry.core.util import TimeoutException
 from telemetry.page import page_measurement
+from telemetry.page import page_test
 
 class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
   def __init__(self):
@@ -50,7 +50,9 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
     backend = browser._browser_backend # pylint: disable=W0212
     if (not hasattr(backend, 'chrome_branch_number') or
         (sys.platform != 'android' and backend.chrome_branch_number < 1713)):
-      return
+      raise page_test.TestNotSupportedOnPlatformFailure(
+          'rasterize_and_record_micro requires Chrome branch 1713 '
+          'or later. Skipping measurement.')
 
     # Check if the we actually have threaded forced compositing enabled.
     system_info = browser.GetSystemInfo()
@@ -61,9 +63,9 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
 
   def MeasurePage(self, page, tab, results):
     if not self._compositing_features_enabled:
-      logging.warning('Warning: RasterizeAndRecordMicro requires forced, '
-                      'threaded compositing and Chrome branch 1713 or newer.')
-      return
+      raise page_test.TestNotSupportedOnPlatformFailure(
+          'Compositing feature status unknown or not '+
+          'forced and threaded. Skipping measurement.')
 
     try:
       tab.WaitForJavaScriptExpression("document.readyState == 'complete'", 10)
@@ -131,4 +133,3 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
           total_picture_layers_with_no_content)
       results.Add('total_picture_layers_off_screen', 'count',
           total_picture_layers_off_screen)
-

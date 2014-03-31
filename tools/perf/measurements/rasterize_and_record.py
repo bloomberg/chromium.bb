@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import time
 
 from metrics import rendering_stats
 from telemetry.page import page_measurement
+from telemetry.page import page_test
 from telemetry.page.perf_tests_helper import FlattenList
 import telemetry.core.timeline.bounds as timeline_bounds
 from telemetry.core.timeline.model import TimelineModel
@@ -62,9 +62,9 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
 
   def MeasurePage(self, page, tab, results):
     if not self._compositing_features_enabled:
-      logging.warning('Warning: compositing feature status unknown or not '+
-                      'forced and threaded. Skipping measurement.')
-      return
+      raise page_test.TestNotSupportedOnPlatformFailure(
+          'Compositing feature status unknown or not '+
+          'forced and threaded. Skipping measurement.')
 
     # Rasterize only what's visible.
     tab.ExecuteJavaScript(

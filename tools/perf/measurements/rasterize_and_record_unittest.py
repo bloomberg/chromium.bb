@@ -2,10 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 from measurements import rasterize_and_record
 from telemetry import test
 from telemetry.core import wpr_modes
 from telemetry.page import page_measurement_unittest_base
+from telemetry.page import page_test
 from telemetry.unittest import options_for_unittests
 
 
@@ -29,7 +32,11 @@ class RasterizeAndRecordUnitTest(
   def testRasterizeAndRecord(self):
     ps = self.CreatePageSetFromFileInUnittestDataDir('blank.html')
     measurement = rasterize_and_record.RasterizeAndRecord()
-    results = self.RunMeasurement(measurement, ps, options=self._options)
+    try:
+      results = self.RunMeasurement(measurement, ps, options=self._options)
+    except page_test.TestNotSupportedOnPlatformFailure as failure:
+      logging.warning(str(failure))
+      return
     self.assertEquals(0, len(results.failures))
 
     rasterize_time = results.FindAllPageSpecificValuesNamed('rasterize_time')
