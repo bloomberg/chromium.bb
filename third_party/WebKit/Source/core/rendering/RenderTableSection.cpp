@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/rendering/RenderTableSection.h"
 
-// FIXME: Remove 'RuntimeEnabledFeatures.h' when http://crbug.com/78724 is closed.
-#include "RuntimeEnabledFeatures.h"
 #include <limits>
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
