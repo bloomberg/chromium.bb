@@ -266,7 +266,7 @@ int File::ReadAtCurrentPos(char* data, int size) {
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(read(file_.get(), data, size));
+    rv = HANDLE_EINTR(read(file_.get(), data + bytes_read, size - bytes_read));
     if (rv <= 0)
       break;
 
@@ -325,7 +325,8 @@ int File::WriteAtCurrentPos(const char* data, int size) {
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(write(file_.get(), data, size));
+    rv = HANDLE_EINTR(write(file_.get(), data + bytes_written,
+                            size - bytes_written));
     if (rv <= 0)
       break;
 

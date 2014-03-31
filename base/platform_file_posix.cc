@@ -261,7 +261,7 @@ int ReadPlatformFileAtCurrentPos(PlatformFile file, char* data, int size) {
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(read(file, data, size));
+    rv = HANDLE_EINTR(read(file, data + bytes_read, size - bytes_read));
     if (rv <= 0)
       break;
 
@@ -322,7 +322,7 @@ int WritePlatformFileAtCurrentPos(PlatformFile file,
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(write(file, data, size));
+    rv = HANDLE_EINTR(write(file, data + bytes_written, size - bytes_written));
     if (rv <= 0)
       break;
 
