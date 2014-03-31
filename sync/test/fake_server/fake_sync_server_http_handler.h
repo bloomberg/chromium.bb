@@ -14,7 +14,12 @@ namespace fake_server {
 // to test Sync client code.
 class FakeSyncServerHttpHandler : public net::HttpServer::Delegate {
  public:
+  // Creates a fake sync server that listens on an available port.
   FakeSyncServerHttpHandler();
+
+  // Creates a fake sync server that listens on a specified port.
+  explicit FakeSyncServerHttpHandler(int port);
+
   virtual ~FakeSyncServerHttpHandler();
 
   // Begin accepting HTTP requests. Must be called from an IO MessageLoop.
@@ -35,6 +40,8 @@ class FakeSyncServerHttpHandler : public net::HttpServer::Delegate {
   virtual void OnClose(int connection_id) OVERRIDE;
 
  private:
+  int requested_port_;
+
   scoped_refptr<net::HttpServer> server_;
 
   fake_server::FakeServer fake_sync_server_;

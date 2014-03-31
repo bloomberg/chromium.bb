@@ -15,17 +15,18 @@
 
 namespace fake_server {
 
-FakeSyncServerHttpHandler::FakeSyncServerHttpHandler() {
-}
+FakeSyncServerHttpHandler::FakeSyncServerHttpHandler() : requested_port_(0) {}
 
-FakeSyncServerHttpHandler::~FakeSyncServerHttpHandler() {
-}
+FakeSyncServerHttpHandler::FakeSyncServerHttpHandler(int port)
+    : requested_port_(port) {}
+
+FakeSyncServerHttpHandler::~FakeSyncServerHttpHandler() {}
 
 // Note that this must be called from within an IO MessageLoop because it
 // initializes a net::HttpServer.
 void FakeSyncServerHttpHandler::Start() {
   VLOG(1) << "Starting web server";
-  net::TCPListenSocketFactory factory("0.0.0.0", 0);
+  net::TCPListenSocketFactory factory("0.0.0.0", requested_port_);
   server_ = new net::HttpServer(factory, this);
   net::IPEndPoint address;
   int error = server_->GetLocalAddress(&address);
