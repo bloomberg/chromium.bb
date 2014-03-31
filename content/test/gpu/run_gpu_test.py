@@ -2,6 +2,7 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import os
 import sys
 
@@ -9,6 +10,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__),
     os.pardir, os.pardir, os.pardir, 'tools', 'telemetry'))
 
 from telemetry import test_runner
+from telemetry.core import environment
+
 
 if __name__ == '__main__':
-  sys.exit(test_runner.Main())
+  base_dir = os.path.dirname(os.path.realpath(__file__))
+  test_runner.config = environment.Environment([base_dir])
+  sys.exit(test_runner.main())

@@ -6,16 +6,14 @@
 import os
 import sys
 
-
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 
+from telemetry import test_runner
 from telemetry.core import environment
 from telemetry.core import util
-from telemetry.page import page_measurement_runner
 from telemetry.util import bootstrap
 
 
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 CROS_BOOSTRAP_DEPS_PATH = os.path.join(
     util.GetChromiumSrcDir(), 'tools', 'cros', 'bootstrap_deps')
 
@@ -25,9 +23,9 @@ def main():
     print bootstrap.ListAllDepsPaths(CROS_BOOSTRAP_DEPS_PATH)
     return 0
 
-  runner = page_measurement_runner.PageMeasurementRunner()
-  env = environment.Environment([BASE_DIR])
-  return runner.Run(env)
+  base_dir = os.path.dirname(os.path.realpath(__file__))
+  test_runner.config = environment.Environment([base_dir])
+  sys.exit(test_runner.main())
 
 
 if __name__ == '__main__':
