@@ -240,7 +240,7 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::StartParseFileInfo(
 
   // The properties meaningful for directories are already filled in
   // FillDriveEntryPropertiesValue().
-  if (owner_resource_entry_->has_file_specific_info()) {
+  if (!owner_resource_entry_->has_file_specific_info()) {
     CompleteGetFileProperties(drive::FILE_ERROR_OK);
     return;
   }
