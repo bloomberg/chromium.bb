@@ -696,6 +696,8 @@ virtual void AsyncTexImage2DCHROMIUM(GLenum target,
 
 virtual void WaitAsyncTexImage2DCHROMIUM(GLenum target) OVERRIDE;
 
+virtual void WaitAllAsyncTexImage2DCHROMIUM() OVERRIDE;
+
 virtual void DiscardFramebufferEXT(GLenum target,
                                    GLsizei count,
                                    const GLenum* attachments) OVERRIDE;

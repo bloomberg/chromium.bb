@@ -18,6 +18,11 @@
 namespace gpu {
 namespace gles2 {
 
+namespace {
+void EmptyPoll() {
+}
+}
+
 class QuerySyncManagerTest : public testing::Test {
  protected:
   static const int32 kNumCommandEntries = 400;
@@ -29,7 +34,7 @@ class QuerySyncManagerTest : public testing::Test {
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
     mapped_memory_.reset(new MappedMemoryManager(
-        helper_.get(), MappedMemoryManager::kNoLimit));
+        helper_.get(), base::Bind(&EmptyPoll), MappedMemoryManager::kNoLimit));
     sync_manager_.reset(new QuerySyncManager(mapped_memory_.get()));
   }
 
@@ -83,7 +88,7 @@ class QueryTrackerTest : public testing::Test {
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
     mapped_memory_.reset(new MappedMemoryManager(
-        helper_.get(), MappedMemoryManager::kNoLimit));
+        helper_.get(), base::Bind(&EmptyPoll), MappedMemoryManager::kNoLimit));
     query_tracker_.reset(new QueryTracker(mapped_memory_.get()));
   }
 

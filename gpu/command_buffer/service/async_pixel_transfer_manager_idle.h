@@ -25,13 +25,18 @@ class AsyncPixelTransferManagerIdle : public AsyncPixelTransferManager {
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
   virtual void ProcessMorePendingTransfers() OVERRIDE;
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
+  virtual void WaitAllAsyncTexImage2D() OVERRIDE;
 
   struct Task {
-    Task(uint64 transfer_id, const base::Closure& task);
+    Task(uint64 transfer_id,
+         AsyncPixelTransferDelegate* delegate,
+         const base::Closure& task);
     ~Task();
 
     // This is non-zero if pixel transfer task.
     uint64 transfer_id;
+
+    AsyncPixelTransferDelegate* delegate;
 
     base::Closure task;
   };

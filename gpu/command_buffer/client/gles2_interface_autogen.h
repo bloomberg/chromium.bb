@@ -478,6 +478,7 @@ virtual void AsyncTexImage2DCHROMIUM(GLenum target,
                                      GLenum type,
                                      const void* pixels) = 0;
 virtual void WaitAsyncTexImage2DCHROMIUM(GLenum target) = 0;
+virtual void WaitAllAsyncTexImage2DCHROMIUM() = 0;
 virtual void DiscardFramebufferEXT(GLenum target,
                                    GLsizei count,
                                    const GLenum* attachments) = 0;

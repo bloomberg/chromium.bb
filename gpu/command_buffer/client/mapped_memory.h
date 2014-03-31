@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_MAPPED_MEMORY_H_
 #define GPU_COMMAND_BUFFER_CLIENT_MAPPED_MEMORY_H_
 
+#include "base/bind.h"
 #include "base/memory/scoped_vector.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
 #include "gpu/command_buffer/common/buffer.h"
@@ -20,7 +21,8 @@ class GPU_EXPORT MemoryChunk {
  public:
   MemoryChunk(int32 shm_id,
               scoped_refptr<gpu::Buffer> shm,
-              CommandBufferHelper* helper);
+              CommandBufferHelper* helper,
+              const base::Closure& poll_callback);
   ~MemoryChunk();
 
   // Gets the size of the largest free block that is available without waiting.
@@ -121,6 +123,7 @@ class GPU_EXPORT MappedMemoryManager {
   // |unused_memory_reclaim_limit|: When exceeded this causes pending memory
   // to be reclaimed before allocating more memory.
   MappedMemoryManager(CommandBufferHelper* helper,
+                      const base::Closure& poll_callback,
                       size_t unused_memory_reclaim_limit);
 
   ~MappedMemoryManager();
@@ -165,6 +168,15 @@ class GPU_EXPORT MappedMemoryManager {
     return chunks_.size();
   }
 
+  size_t bytes_in_use() const {
+    size_t bytes_in_use = 0;
+    for (size_t ii = 0; ii < chunks_.size(); ++ii) {
+      MemoryChunk* chunk = chunks_[ii];
+      bytes_in_use += chunk->bytes_in_use();
+    }
+    return bytes_in_use;
+  }
+
   // Used for testing
   size_t allocated_memory() const {
     return allocated_memory_;
@@ -176,6 +188,7 @@ class GPU_EXPORT MappedMemoryManager {
   // size a chunk is rounded up to.
   unsigned int chunk_size_multiple_;
   CommandBufferHelper* helper_;
+  base::Closure poll_callback_;
   MemoryChunkVector chunks_;
   size_t allocated_memory_;
   size_t max_free_bytes_;

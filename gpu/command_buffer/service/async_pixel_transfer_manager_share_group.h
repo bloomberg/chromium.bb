@@ -31,6 +31,7 @@ class AsyncPixelTransferManagerShareGroup : public AsyncPixelTransferManager {
   virtual base::TimeDelta GetTotalTextureUploadTime() OVERRIDE;
   virtual void ProcessMorePendingTransfers() OVERRIDE;
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
+  virtual void WaitAllAsyncTexImage2D() OVERRIDE;
 
   // State shared between Managers and Delegates.
   struct SharedState {

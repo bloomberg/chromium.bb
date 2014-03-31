@@ -42,6 +42,11 @@ class MockClientCommandBufferImpl : public MockClientCommandBuffer {
   bool context_lost_;
 };
 
+namespace {
+void EmptyPoll() {
+}
+}
+
 class BufferTrackerTest : public testing::Test {
  protected:
   static const int32 kNumCommandEntries = 400;
@@ -53,7 +58,7 @@ class BufferTrackerTest : public testing::Test {
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
     mapped_memory_.reset(new MappedMemoryManager(
-        helper_.get(), MappedMemoryManager::kNoLimit));
+        helper_.get(), base::Bind(&EmptyPoll), MappedMemoryManager::kNoLimit));
     buffer_tracker_.reset(new BufferTracker(mapped_memory_.get()));
   }
 
@@ -125,6 +130,23 @@ TEST_F(BufferTrackerTest, LostContext) {
   EXPECT_EQ(0lu, mapped_memory_->num_chunks());
   // Check we can delete the buffer.
   buffer_tracker_->RemoveBuffer(kId);
+}
+
+TEST_F(BufferTrackerTest, Unmanage) {
+  const GLuint kId = 123;
+  const GLsizeiptr size = 64;
+
+  BufferTracker::Buffer* buffer = buffer_tracker_->CreateBuffer(kId, size);
+  ASSERT_TRUE(buffer != NULL);
+  EXPECT_EQ(mapped_memory_->bytes_in_use(), static_cast<size_t>(size));
+
+  void* mem = buffer->address();
+  buffer_tracker_->Unmanage(buffer);
+  buffer_tracker_->RemoveBuffer(kId);
+  EXPECT_EQ(mapped_memory_->bytes_in_use(), static_cast<size_t>(size));
+
+  mapped_memory_->Free(mem);
+  EXPECT_EQ(mapped_memory_->bytes_in_use(), static_cast<size_t>(0));
 }
 
 }  // namespace gles2

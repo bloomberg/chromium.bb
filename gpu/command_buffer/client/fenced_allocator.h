@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "gpu/command_buffer/common/types.h"
 #include "gpu/gpu_export.h"
@@ -35,7 +36,8 @@ class GPU_EXPORT FencedAllocator {
   // Creates a FencedAllocator. Note that the size of the buffer is passed, but
   // not its base address: everything is handled as offsets into the buffer.
   FencedAllocator(unsigned int size,
-                  CommandBufferHelper *helper);
+                  CommandBufferHelper *helper,
+                  const base::Closure& poll_callback);
 
   ~FencedAllocator();
 
@@ -136,6 +138,7 @@ class GPU_EXPORT FencedAllocator {
   Offset AllocInBlock(BlockIndex index, unsigned int size);
 
   CommandBufferHelper *helper_;
+  base::Closure poll_callback_;
   Container blocks_;
   size_t bytes_in_use_;
 
@@ -148,8 +151,9 @@ class FencedAllocatorWrapper {
  public:
   FencedAllocatorWrapper(unsigned int size,
                          CommandBufferHelper* helper,
+                         const base::Closure& poll_callback,
                          void* base)
-      : allocator_(size, helper),
+      : allocator_(size, helper, poll_callback),
         base_(base) { }
 
   // Allocates a block of memory. If the buffer is out of directly available

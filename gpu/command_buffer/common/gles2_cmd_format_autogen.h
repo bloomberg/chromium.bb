@@ -10102,7 +10102,10 @@ struct AsyncTexSubImage2DCHROMIUM {
             GLenum _format,
             GLenum _type,
             uint32 _data_shm_id,
-            uint32 _data_shm_offset) {
+            uint32 _data_shm_offset,
+            uint32 _async_upload_token,
+            uint32 _sync_data_shm_id,
+            uint32 _sync_data_shm_offset) {
     SetHeader();
     target = _target;
     level = _level;
@@ -10114,6 +10117,9 @@ struct AsyncTexSubImage2DCHROMIUM {
     type = _type;
     data_shm_id = _data_shm_id;
     data_shm_offset = _data_shm_offset;
+    async_upload_token = _async_upload_token;
+    sync_data_shm_id = _sync_data_shm_id;
+    sync_data_shm_offset = _sync_data_shm_offset;
   }
 
   void* Set(void* cmd,
@@ -10126,7 +10132,10 @@ struct AsyncTexSubImage2DCHROMIUM {
             GLenum _format,
             GLenum _type,
             uint32 _data_shm_id,
-            uint32 _data_shm_offset) {
+            uint32 _data_shm_offset,
+            uint32 _async_upload_token,
+            uint32 _sync_data_shm_id,
+            uint32 _sync_data_shm_offset) {
     static_cast<ValueType*>(cmd)->Init(_target,
                                        _level,
                                        _xoffset,
@@ -10136,7 +10145,10 @@ struct AsyncTexSubImage2DCHROMIUM {
                                        _format,
                                        _type,
                                        _data_shm_id,
-                                       _data_shm_offset);
+                                       _data_shm_offset,
+                                       _async_upload_token,
+                                       _sync_data_shm_id,
+                                       _sync_data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -10151,10 +10163,13 @@ struct AsyncTexSubImage2DCHROMIUM {
   uint32 type;
   uint32 data_shm_id;
   uint32 data_shm_offset;
+  uint32 async_upload_token;
+  uint32 sync_data_shm_id;
+  uint32 sync_data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(AsyncTexSubImage2DCHROMIUM) == 44,
-               Sizeof_AsyncTexSubImage2DCHROMIUM_is_not_44);
+COMPILE_ASSERT(sizeof(AsyncTexSubImage2DCHROMIUM) == 56,
+               Sizeof_AsyncTexSubImage2DCHROMIUM_is_not_56);
 COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, header) == 0,
                OffsetOf_AsyncTexSubImage2DCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, target) == 4,
@@ -10177,6 +10192,12 @@ COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_id) == 36,
                OffsetOf_AsyncTexSubImage2DCHROMIUM_data_shm_id_not_36);
 COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, data_shm_offset) == 40,
                OffsetOf_AsyncTexSubImage2DCHROMIUM_data_shm_offset_not_40);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, async_upload_token) == 44,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_async_upload_token_not_44);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, sync_data_shm_id) == 48,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_sync_data_shm_id_not_48);
+COMPILE_ASSERT(offsetof(AsyncTexSubImage2DCHROMIUM, sync_data_shm_offset) == 52,
+               OffsetOf_AsyncTexSubImage2DCHROMIUM_sync_data_shm_offset_not_52);
 
 struct AsyncTexImage2DCHROMIUM {
   typedef AsyncTexImage2DCHROMIUM ValueType;
@@ -10199,7 +10220,10 @@ struct AsyncTexImage2DCHROMIUM {
             GLenum _format,
             GLenum _type,
             uint32 _pixels_shm_id,
-            uint32 _pixels_shm_offset) {
+            uint32 _pixels_shm_offset,
+            uint32 _async_upload_token,
+            uint32 _sync_data_shm_id,
+            uint32 _sync_data_shm_offset) {
     SetHeader();
     target = _target;
     level = _level;
@@ -10211,6 +10235,9 @@ struct AsyncTexImage2DCHROMIUM {
     type = _type;
     pixels_shm_id = _pixels_shm_id;
     pixels_shm_offset = _pixels_shm_offset;
+    async_upload_token = _async_upload_token;
+    sync_data_shm_id = _sync_data_shm_id;
+    sync_data_shm_offset = _sync_data_shm_offset;
   }
 
   void* Set(void* cmd,
@@ -10223,7 +10250,10 @@ struct AsyncTexImage2DCHROMIUM {
             GLenum _format,
             GLenum _type,
             uint32 _pixels_shm_id,
-            uint32 _pixels_shm_offset) {
+            uint32 _pixels_shm_offset,
+            uint32 _async_upload_token,
+            uint32 _sync_data_shm_id,
+            uint32 _sync_data_shm_offset) {
     static_cast<ValueType*>(cmd)->Init(_target,
                                        _level,
                                        _internalformat,
@@ -10233,7 +10263,10 @@ struct AsyncTexImage2DCHROMIUM {
                                        _format,
                                        _type,
                                        _pixels_shm_id,
-                                       _pixels_shm_offset);
+                                       _pixels_shm_offset,
+                                       _async_upload_token,
+                                       _sync_data_shm_id,
+                                       _sync_data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -10248,10 +10281,13 @@ struct AsyncTexImage2DCHROMIUM {
   uint32 type;
   uint32 pixels_shm_id;
   uint32 pixels_shm_offset;
+  uint32 async_upload_token;
+  uint32 sync_data_shm_id;
+  uint32 sync_data_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(AsyncTexImage2DCHROMIUM) == 44,
-               Sizeof_AsyncTexImage2DCHROMIUM_is_not_44);
+COMPILE_ASSERT(sizeof(AsyncTexImage2DCHROMIUM) == 56,
+               Sizeof_AsyncTexImage2DCHROMIUM_is_not_56);
 COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, header) == 0,
                OffsetOf_AsyncTexImage2DCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, target) == 4,
@@ -10274,6 +10310,12 @@ COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_id) == 36,
                OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_id_not_36);
 COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_offset) == 40,
                OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_offset_not_40);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, async_upload_token) == 44,
+               OffsetOf_AsyncTexImage2DCHROMIUM_async_upload_token_not_44);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_id) == 48,
+               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_id_not_48);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_offset) == 52,
+               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_offset_not_52);
 
 struct WaitAsyncTexImage2DCHROMIUM {
   typedef WaitAsyncTexImage2DCHROMIUM ValueType;
@@ -10307,6 +10349,33 @@ COMPILE_ASSERT(offsetof(WaitAsyncTexImage2DCHROMIUM, header) == 0,
                OffsetOf_WaitAsyncTexImage2DCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(WaitAsyncTexImage2DCHROMIUM, target) == 4,
                OffsetOf_WaitAsyncTexImage2DCHROMIUM_target_not_4);
+
+struct WaitAllAsyncTexImage2DCHROMIUM {
+  typedef WaitAllAsyncTexImage2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kWaitAllAsyncTexImage2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(WaitAllAsyncTexImage2DCHROMIUM) == 4,
+               Sizeof_WaitAllAsyncTexImage2DCHROMIUM_is_not_4);
+COMPILE_ASSERT(offsetof(WaitAllAsyncTexImage2DCHROMIUM, header) == 0,
+               OffsetOf_WaitAllAsyncTexImage2DCHROMIUM_header_not_0);
 
 struct DiscardFramebufferEXT {
   typedef DiscardFramebufferEXT ValueType;
