@@ -45,7 +45,7 @@ struct ResourceImageInfo {
   int res_id;
 };
 
-static const ResourceImageInfo kResourceImageMap[] = {
+const ResourceImageInfo kResourceImageMap[] = {
   { PP_RESOURCEIMAGE_PDF_BUTTON_FTP, IDR_PDF_BUTTON_FTP },
   { PP_RESOURCEIMAGE_PDF_BUTTON_FTP_HOVER, IDR_PDF_BUTTON_FTP_HOVER },
   { PP_RESOURCEIMAGE_PDF_BUTTON_FTP_PRESSED, IDR_PDF_BUTTON_FTP_PRESSED },
@@ -98,21 +98,6 @@ static const ResourceImageInfo kResourceImageMap[] = {
       IDR_PDF_PAGE_INDICATOR_BACKGROUND },
   { PP_RESOURCEIMAGE_PDF_PAGE_DROPSHADOW, IDR_PDF_PAGE_DROPSHADOW },
   { PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON },
-};
-
-// Valid strings for user metrics actions.
-static const char* kValidUserMetricsActions[] = {
-  "PDF.PrintPage",
-  "PDF.ZoomFromBrowser",
-  "PDF.FitToPageButton",
-  "PDF.FitToWidthButton",
-  "PDF.ZoomOutButton",
-  "PDF.ZoomInButton",
-  "PDF.SaveButton",
-  "PDF.PrintButton",
-  "PDF.LoadSuccess",
-  "PDF.LoadFailure",
-  "PDF.PreviewDocumentLoadFailure",
 };
 
 }  // namespace
@@ -212,17 +197,8 @@ int32_t PepperPDFHost::OnHostMsgSetContentRestriction(
 int32_t PepperPDFHost::OnHostMsgUserMetricsRecordAction(
     ppapi::host::HostMessageContext* context,
     const std::string& action) {
-  bool valid = false;
-  for (size_t i = 0; i < arraysize(kValidUserMetricsActions); ++i) {
-    if (action == kValidUserMetricsActions[i]) {
-      valid = true;
-      break;
-    }
-  }
-  if (!valid) {
-    NOTREACHED();
+  if (action.empty())
     return PP_ERROR_FAILED;
-  }
   content::RenderThread::Get()->RecordComputedAction(action);
   return PP_OK;
 }
