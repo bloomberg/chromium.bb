@@ -5,3 +5,11 @@ include_rules = [
   "+mojo/public/c/system",
   "+mojo/public/cpp/system",
 ]
+
+specific_include_rules = {
+  r".*_(unit|perf)test\.cc": [
+    "+testing",
+    "+mojo/public/cpp/test_support",
+    "+mojo/public/cpp/utility",
+  ],
+}

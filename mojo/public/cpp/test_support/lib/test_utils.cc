@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/tests/test_utils.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/tests/test_support.h"
+#include "mojo/public/cpp/test_support/test_support.h"
 
 namespace mojo {
 namespace test {

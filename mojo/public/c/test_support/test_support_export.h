@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_TESTS_TEST_SUPPORT_EXPORT_H_
-#define MOJO_PUBLIC_TESTS_TEST_SUPPORT_EXPORT_H_
+#ifndef MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_EXPORT_H_
+#define MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_EXPORT_H_
 
 #if defined(WIN32)
 
@@ -23,4 +23,4 @@
 
 #endif  // defined(WIN32)
 
-#endif  // MOJO_PUBLIC_TESTS_TEST_SUPPORT_EXPORT_H_
+#endif  // MOJO_PUBLIC_C_TEST_SUPPORT_TEST_SUPPORT_EXPORT_H_

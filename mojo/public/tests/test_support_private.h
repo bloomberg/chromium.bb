@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_
 #define MOJO_PUBLIC_TESTS_TEST_SUPPORT_PRIVATE_H_
 
-#include "mojo/public/tests/test_support.h"
+#include "mojo/public/c/test_support/test_support.h"
 
 namespace mojo {
 namespace test {

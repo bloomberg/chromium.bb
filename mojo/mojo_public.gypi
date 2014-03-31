@@ -19,8 +19,6 @@
         'public/c/system/core.h',
         'public/c/system/macros.h',
         'public/c/system/system_export.h',
-        'public/cpp/system/core.h',
-        'public/cpp/system/macros.h',
         'public/system/core_private.cc',
         'public/system/core_private.h',
       ],
@@ -96,10 +94,10 @@
         ],
       },
       'sources': [
-        'public/tests/test_support.h',
+        'public/c/test_support/test_support.h',
+        'public/c/test_support/test_support_export.h',
         'public/tests/test_support_private.cc',
         'public/tests/test_support_private.h',
-        'public/tests/test_support_export.h',
       ],
       'conditions': [
         ['OS=="mac"', {
@@ -126,8 +124,8 @@
         'mojo_test_support',
       ],
       'sources': [
-        'public/tests/test_utils.cc',
-        'public/tests/test_utils.h',
+        'public/cpp/test_support/lib/test_utils.cc',
+        'public/cpp/test_support/test_utils.h',
       ],
     },
     # TODO(vtl): Reorganize the mojo_public_*_unittests.
