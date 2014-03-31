@@ -86,12 +86,25 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {
-    wallpaper_manager_util::OpenWallpaperManager();
+    if (CanOpenSetWallpaperPage())
+      wallpaper_manager_util::OpenWallpaperManager();
   }
 
   virtual bool CanOpenSetWallpaperPage() OVERRIDE {
-    if (!LoginState::Get()->IsUserAuthenticated())
+    const LoginState* login_state = LoginState::Get();
+    const LoginState::LoggedInUserType user_type =
+        login_state->GetLoggedInUserType();
+    if (!login_state->IsUserLoggedIn())
       return false;
+
+    // Whitelist user types that are allowed to change their wallpaper.  (Guest
+    // users are not, see crosbug 26900.)
+    if (user_type != LoginState::LOGGED_IN_USER_REGULAR &&
+        user_type != LoginState::LOGGED_IN_USER_OWNER &&
+        user_type != LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT &&
+        user_type != LoginState::LOGGED_IN_USER_LOCALLY_MANAGED) {
+      return false;
+    }
     const User* user = chromeos::UserManager::Get()->GetActiveUser();
     if (!user)
       return false;

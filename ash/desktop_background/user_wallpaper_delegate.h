@@ -44,8 +44,7 @@ class ASH_EXPORT UserWallpaperDelegate {
   // Opens the set wallpaper page in the browser.
   virtual void OpenSetWallpaperPage() = 0;
 
-  // Returns true if user can open set wallpaper page. Only guest user returns
-  // false currently.
+  // Returns true if user can open set wallpaper page.
   virtual bool CanOpenSetWallpaperPage() = 0;
 
   // Notifies delegate that wallpaper animation has finished.
