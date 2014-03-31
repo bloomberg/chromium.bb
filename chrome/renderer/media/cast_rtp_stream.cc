@@ -13,6 +13,7 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/video_encode_accelerator.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
@@ -33,6 +34,7 @@ namespace {
 
 const char kCodecNameOpus[] = "OPUS";
 const char kCodecNameVp8[] = "VP8";
+const char kCodecNameH264[] = "H264";
 
 // To convert from kilobits per second to bits to per second.
 const int kBitrateMultiplier = 1000;
@@ -72,6 +74,46 @@ CastRtpPayloadParams DefaultVp8Payload() {
   return payload;
 }
 
+CastRtpPayloadParams DefaultH264Payload() {
+  CastRtpPayloadParams payload;
+  payload.ssrc = 11;
+  payload.feedback_ssrc = 12;
+  payload.payload_type = 120;
+  payload.codec_name = kCodecNameH264;
+  payload.clock_rate = 90000;
+  payload.width = 1280;
+  payload.height = 720;
+  payload.min_bitrate = 50;
+  payload.max_bitrate = 2000;
+  return payload;
+}
+
+bool IsHardwareVP8EncodingSupported() {
+  // Query for hardware VP8 encoder support.
+  std::vector<media::VideoEncodeAccelerator::SupportedProfile> vea_profiles =
+      content::GetSupportedVideoEncodeAcceleratorProfiles();
+  for (size_t i = 0; i < vea_profiles.size(); ++i) {
+    if (vea_profiles[i].profile >= media::VP8PROFILE_MIN &&
+        vea_profiles[i].profile <= media::VP8PROFILE_MAX) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool IsHardwareH264EncodingSupported() {
+  // Query for hardware H.264 encoder support.
+  std::vector<media::VideoEncodeAccelerator::SupportedProfile> vea_profiles =
+      content::GetSupportedVideoEncodeAcceleratorProfiles();
+  for (size_t i = 0; i < vea_profiles.size(); ++i) {
+    if (vea_profiles[i].profile >= media::H264PROFILE_MIN &&
+        vea_profiles[i].profile <= media::H264PROFILE_MAX) {
+      return true;
+    }
+  }
+  return false;
+}
+
 std::vector<CastRtpParams> SupportedAudioParams() {
   // TODO(hclam): Fill in more codecs here.
   std::vector<CastRtpParams> supported_params;
@@ -80,8 +122,9 @@ std::vector<CastRtpParams> SupportedAudioParams() {
 }
 
 std::vector<CastRtpParams> SupportedVideoParams() {
-  // TODO(hclam): Fill in H264 here.
   std::vector<CastRtpParams> supported_params;
+  if (IsHardwareH264EncodingSupported())
+    supported_params.push_back(CastRtpParams(DefaultH264Payload()));
   supported_params.push_back(CastRtpParams(DefaultVp8Payload()));
   return supported_params;
 }
@@ -114,10 +157,15 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->min_bitrate = config->start_bitrate =
       params.payload.min_bitrate * kBitrateMultiplier;
   config->max_bitrate = params.payload.max_bitrate * kBitrateMultiplier;
-  if (params.payload.codec_name == kCodecNameVp8)
+  if (params.payload.codec_name == kCodecNameVp8) {
+    config->use_external_encoder = IsHardwareVP8EncodingSupported();
     config->codec = media::cast::transport::kVp8;
-  else
+  } else if (params.payload.codec_name == kCodecNameH264) {
+    config->use_external_encoder = IsHardwareH264EncodingSupported();
+    config->codec = media::cast::transport::kH264;
+  } else {
     return false;
+  }
   return true;
 }
 

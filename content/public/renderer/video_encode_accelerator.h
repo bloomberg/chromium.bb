@@ -26,6 +26,10 @@ CONTENT_EXPORT void
 CreateVideoEncodeAccelerator(
     const OnCreateVideoEncodeAcceleratorCallback& callback);
 
+// Returns list of encoding profiles supported by VideoEncodeAccelerator.
+CONTENT_EXPORT std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+GetSupportedVideoEncodeAcceleratorProfiles();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_RENDERER_VIDEO_ENCODE_ACCELERATOR_H_
