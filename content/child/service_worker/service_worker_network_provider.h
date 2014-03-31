@@ -38,6 +38,11 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
 
   int provider_id() const { return provider_id_; }
 
+  // This method is called for a provider that's associated with a
+  // running service worker script. The version_id indicates which
+  // ServiceWorkerVersion should be used.
+  void SetServiceWorkerVersionId(int64 version_id);
+
  private:
   const int provider_id_;
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNetworkProvider);

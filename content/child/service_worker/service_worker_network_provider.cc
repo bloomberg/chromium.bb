@@ -49,4 +49,12 @@ ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
       new ServiceWorkerHostMsg_ProviderDestroyed(provider_id_));
 }
 
+void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
+    int64 version_id) {
+  if (!ChildThread::current())
+    return;  // May be null in some tests.
+  ChildThread::current()->Send(
+      new ServiceWorkerHostMsg_SetVersionId(provider_id_, version_id));
+}
+
 }  // namespace content

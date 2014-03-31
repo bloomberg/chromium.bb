@@ -14,7 +14,7 @@ namespace content {
 RequestExtraData::RequestExtraData()
     : visibility_state_(blink::WebPageVisibilityStateVisible),
       render_frame_id_(MSG_ROUTING_NONE),
-      is_main_frame_(true),
+      is_main_frame_(false),
       parent_is_main_frame_(false),
       parent_render_frame_id_(-1),
       allow_download_(true),

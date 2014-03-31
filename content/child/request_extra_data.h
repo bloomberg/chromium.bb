@@ -14,8 +14,9 @@
 
 namespace content {
 
-// The RenderView stores an instance of this class in the "extra data" of each
-// ResourceRequest (see RenderFrameImpl::willSendRequest).
+// Can be used by callers to store extra data on every ResourceRequest
+// which will be incorporated into the ResourceHostMsg_Request message
+// sent by ResourceDispatcher.
 class CONTENT_EXPORT RequestExtraData
     : public NON_EXPORTED_BASE(blink::WebURLRequest::ExtraData) {
  public:

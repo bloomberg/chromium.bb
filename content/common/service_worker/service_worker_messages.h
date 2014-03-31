@@ -59,6 +59,43 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessage,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */)
 
+// Informs the browser of a new ServiceWorkerProvider in the child process,
+// |provider_id| is unique within its child process.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
+                     int /* provider_id */)
+
+// Informs the browser of a ServiceWorkerProvider being destroyed.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
+                     int /* provider_id */)
+
+// Informs the browser that |provider_id| is associated
+// with a service worker script running context and
+// |version_id| identifies which ServcieWorkerVersion.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_SetVersionId,
+                     int /* provider_id */,
+                     int64 /* version_id */)
+
+// Informs the browser of a new scriptable API client in the child process.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_AddScriptClient,
+                     int /* thread_id */,
+                     int /* provider_id */)
+
+// Informs the browser that the scriptable API client is unregistered.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_RemoveScriptClient,
+                     int /* thread_id */,
+                     int /* provider_id */)
+
+// Informs the browser that install event handling has finished.
+// Sent via EmbeddedWorker.
+IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_InstallEventFinished,
+                     blink::WebServiceWorkerEventResult)
+
+// Informs the browser that fetch event handling has finished.
+// Sent via EmbeddedWorker.
+IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
+                     content::ServiceWorkerFetchEventResult,
+                     content::ServiceWorkerResponse)
+
 // Messages sent from the browser to the child process.
 
 // Response to ServiceWorkerMsg_RegisterServiceWorker
@@ -93,32 +130,3 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_Message,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
 
-// Informs the browser of a new ServiceWorkerProvider in the child process,
-// |provider_id| is unique within its child process.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
-                     int /* provider_id */)
-
-// Informs the browser of a ServiceWorkerProvider being destroyed.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
-                     int /* provider_id */)
-
-// Informs the browser of a new scriptable API client in the child process.
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_AddScriptClient,
-                     int /* thread_id */,
-                     int /* provider_id */)
-
-// Informs the browser that the scriptable API client is unregistered.
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_RemoveScriptClient,
-                     int /* thread_id */,
-                     int /* provider_id */)
-
-// Informs the browser that install event handling has finished.
-// Sent via EmbeddedWorker.
-IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_InstallEventFinished,
-                     blink::WebServiceWorkerEventResult)
-
-// Informs the browser that fetch event handling has finished.
-// Sent via EmbeddedWorker.
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_FetchEventFinished,
-                     content::ServiceWorkerFetchEventResult,
-                     content::ServiceWorkerResponse)

@@ -21,7 +21,6 @@
 #include "content/child/sync_load_response.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
-#include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
@@ -129,38 +128,29 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.appcache_host_id = request_info.appcache_host_id;
   request_.download_to_file = request_info.download_to_file;
   request_.has_user_gesture = request_info.has_user_gesture;
-  if (request_info.extra_data) {
-    RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request_info.extra_data);
-    request_.visiblity_state = extra_data->visibility_state();
-    request_.render_frame_id = extra_data->render_frame_id();
-    request_.is_main_frame = extra_data->is_main_frame();
-    request_.parent_is_main_frame = extra_data->parent_is_main_frame();
-    request_.parent_render_frame_id = extra_data->parent_render_frame_id();
-    request_.allow_download = extra_data->allow_download();
-    request_.transition_type = extra_data->transition_type();
-    request_.should_replace_current_entry =
-        extra_data->should_replace_current_entry();
-    request_.transferred_request_child_id =
-        extra_data->transferred_request_child_id();
-    request_.transferred_request_request_id =
-        extra_data->transferred_request_request_id();
-    request_.service_worker_provider_id =
-        extra_data->service_worker_provider_id();
-    frame_origin_ = extra_data->frame_origin();
-  } else {
-    request_.visiblity_state = blink::WebPageVisibilityStateVisible;
-    request_.render_frame_id = MSG_ROUTING_NONE;
-    request_.is_main_frame = false;
-    request_.parent_is_main_frame = false;
-    request_.parent_render_frame_id = -1;
-    request_.allow_download = true;
-    request_.transition_type = PAGE_TRANSITION_LINK;
-    request_.should_replace_current_entry = false;
-    request_.transferred_request_child_id = -1;
-    request_.transferred_request_request_id = -1;
-    request_.service_worker_provider_id = kInvalidServiceWorkerProviderId;
-  }
+
+  const RequestExtraData kEmptyData;
+  const RequestExtraData* extra_data;
+  if (request_info.extra_data)
+    extra_data = static_cast<RequestExtraData*>(request_info.extra_data);
+  else
+    extra_data = &kEmptyData;
+  request_.visiblity_state = extra_data->visibility_state();
+  request_.render_frame_id = extra_data->render_frame_id();
+  request_.is_main_frame = extra_data->is_main_frame();
+  request_.parent_is_main_frame = extra_data->parent_is_main_frame();
+  request_.parent_render_frame_id = extra_data->parent_render_frame_id();
+  request_.allow_download = extra_data->allow_download();
+  request_.transition_type = extra_data->transition_type();
+  request_.should_replace_current_entry =
+      extra_data->should_replace_current_entry();
+  request_.transferred_request_child_id =
+      extra_data->transferred_request_child_id();
+  request_.transferred_request_request_id =
+      extra_data->transferred_request_request_id();
+  request_.service_worker_provider_id =
+      extra_data->service_worker_provider_id();
+  frame_origin_ = extra_data->frame_origin();
 }
 
 IPCResourceLoaderBridge::~IPCResourceLoaderBridge() {

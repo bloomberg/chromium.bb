@@ -8,17 +8,22 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
 #include "base/threading/thread_local.h"
+#include "content/child/request_extra_data.h"
+#include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_task_runner.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/renderer/document_state.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_script_context.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerResponse.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebServiceWorkerNetworkProvider.h"
 
 namespace content {
 
@@ -38,6 +43,35 @@ void CallWorkerContextDestroyedOnMainThread(int embedded_worker_id) {
       WorkerContextDestroyed(embedded_worker_id);
 }
 
+// We store an instance of this class in the "extra data" of the WebDataSource
+// and attach a ServiceWorkerNetworkProvider to it as base::UserData.
+// (see createServiceWorkerNetworkProvider).
+class DataSourceExtraData
+    : public blink::WebDataSource::ExtraData,
+      public base::SupportsUserData {
+ public:
+  DataSourceExtraData() {}
+  virtual ~DataSourceExtraData() {}
+};
+
+// Called on the main thread only and blink owns it.
+class WebServiceWorkerNetworkProviderImpl
+    : public blink::WebServiceWorkerNetworkProvider {
+ public:
+  // Blink calls this method for each request starting with the main script,
+  // we tag them with the provider id.
+  virtual void willSendRequest(
+      blink::WebDataSource* data_source,
+      blink::WebURLRequest& request) {
+    ServiceWorkerNetworkProvider* provider =
+        ServiceWorkerNetworkProvider::FromDocumentState(
+            static_cast<DataSourceExtraData*>(data_source->extraData()));
+    scoped_ptr<RequestExtraData> extra_data(new RequestExtraData);
+    extra_data->set_service_worker_provider_id(provider->provider_id());
+    request.setExtraData(extra_data.release());
+  }
+};
+
 }  // namespace
 
 EmbeddedWorkerContextClient*
@@ -55,7 +89,6 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
       sender_(ChildThread::current()->thread_safe_sender()),
       main_thread_proxy_(base::MessageLoopProxy::current()),
       weak_factory_(this) {
-  g_worker_client_tls.Pointer()->Set(this);
 }
 
 EmbeddedWorkerContextClient::~EmbeddedWorkerContextClient() {
@@ -145,6 +178,28 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
                                  std::map<std::string, std::string>());
   script_context_->DidHandleFetchEvent(
       request_id, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, response);
+}
+
+blink::WebServiceWorkerNetworkProvider*
+EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
+    blink::WebDataSource* data_source) {
+  // Create a content::ServiceWorkerNetworkProvider for this data source so
+  // we can observe its requests.
+  scoped_ptr<ServiceWorkerNetworkProvider> provider(
+      new ServiceWorkerNetworkProvider());
+
+  // Tell the network provider about which version to load.
+  provider->SetServiceWorkerVersionId(service_worker_version_id_);
+
+  // The provider is kept around for the lifetime of the DataSource
+  // and ownership is transferred to the DataSource.
+  DataSourceExtraData* extra_data = new DataSourceExtraData();
+  data_source->setExtraData(extra_data);
+  ServiceWorkerNetworkProvider::AttachToDocumentState(
+      extra_data, provider.Pass());
+
+  // Blink is responsible for deleting the returned object.
+  return new WebServiceWorkerNetworkProviderImpl();
 }
 
 void EmbeddedWorkerContextClient::OnSendMessageToWorker(
