@@ -336,6 +336,10 @@ static const char kAsanDefaultOptionsNaCl[] = "handle_segv=0";
 // before ASan is initialized.
 extern "C"
 __attribute__((no_sanitize_address))
+// The function isn't referenced from the executable itself. Make sure it isn't
+// stripped by the linker.
+__attribute__((used))
+__attribute__((visibility("default")))
 const char* __asan_default_options() {
   return kAsanDefaultOptionsNaCl;
 }

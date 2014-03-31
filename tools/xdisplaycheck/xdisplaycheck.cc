@@ -111,5 +111,9 @@ int main(int argc, char* argv[]) {
 // XOpenDisplay leaks memory if it takes more than one try to connect. This
 // causes LSan bots to fail. We don't care about memory leaks in xdisplaycheck
 // anyway, so just disable LSan completely.
+// This function isn't referenced from the executable itself. Make sure it isn't
+// stripped by the linker.
+__attribute__((used))
+__attribute__((visibility("default")))
 extern "C" int __lsan_is_turned_off() { return 1; }
 #endif
