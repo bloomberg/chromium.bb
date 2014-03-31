@@ -282,7 +282,7 @@ TEST_P(QuicSessionTest, StreamIdTooLarge) {
   QuicStreamId stream_id = 5;
   session_.GetIncomingDataStream(stream_id);
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
-  session_.GetIncomingDataStream(stream_id + 102);
+  session_.GetIncomingDataStream(stream_id + kMaxStreamIdDelta + 2);
 }
 
 TEST_P(QuicSessionTest, DecompressionError) {
@@ -333,14 +333,6 @@ TEST_P(QuicSessionTest, OnCanWrite) {
   TestStream* stream4 = session_.CreateOutgoingDataStream();
   TestStream* stream6 = session_.CreateOutgoingDataStream();
 
-  // Streams should not be flow control blocked _and_ write blocked.
-  // WINDOW_UPDATE frames ensure that streams are not flow control blocked.
-  if (version() >= QUIC_VERSION_17) {
-    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
-    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
-    stream6->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream6->id(), 1234));
-  }
-
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
@@ -366,14 +358,6 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   TestStream* stream4 = session_.CreateOutgoingDataStream();
   TestStream* stream6 = session_.CreateOutgoingDataStream();
-
-  // Streams should not be flow control blocked _and_ write blocked.
-  // WINDOW_UPDATE frames ensure that streams are not flow control blocked.
-  if (version() >= QUIC_VERSION_17) {
-    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
-    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
-    stream6->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream6->id(), 1234));
-  }
 
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
@@ -413,19 +397,11 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
 
   // Test that blocking other streams does not change our status.
   TestStream* stream2 = session_.CreateOutgoingDataStream();
-  // Ensure stream is not flow control blocked.
-  if (version() >= QUIC_VERSION_17) {
-    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
-  }
   StreamBlocker stream2_blocker(&session_, stream2->id());
   stream2_blocker.MarkWriteBlocked();
   EXPECT_FALSE(session_.HasPendingHandshake());
 
   TestStream* stream3 = session_.CreateOutgoingDataStream();
-  // Ensure stream is not flow control blocked.
-  if (version() >= QUIC_VERSION_17) {
-    stream3->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream3->id(), 1234));
-  }
   StreamBlocker stream3_blocker(&session_, stream3->id());
   stream3_blocker.MarkWriteBlocked();
   EXPECT_FALSE(session_.HasPendingHandshake());
@@ -435,10 +411,6 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
   EXPECT_TRUE(session_.HasPendingHandshake());
 
   TestStream* stream4 = session_.CreateOutgoingDataStream();
-  // Ensure stream is not flow control blocked.
-  if (version() >= QUIC_VERSION_17) {
-    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
-  }
   StreamBlocker stream4_blocker(&session_, stream4->id());
   stream4_blocker.MarkWriteBlocked();
   EXPECT_TRUE(session_.HasPendingHandshake());
@@ -472,14 +444,6 @@ TEST_P(QuicSessionTest, OnCanWriteWithClosedStream) {
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   TestStream* stream4 = session_.CreateOutgoingDataStream();
   TestStream* stream6 = session_.CreateOutgoingDataStream();
-
-  // Streams should not be flow control blocked _and_ write blocked.
-  // WINDOW_UPDATE frames ensure that streams are not flow control blocked.
-  if (version() >= QUIC_VERSION_17) {
-    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
-    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
-    stream6->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream6->id(), 1234));
-  }
 
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
@@ -533,6 +497,34 @@ TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
   QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenStreams());
+}
+
+TEST_P(QuicSessionTest, MultipleRstStreamsCauseSingleConnectionClose) {
+  // If multiple invalid reset stream frames arrive in a single packet, this
+  // should trigger a connection close. However there is no need to send
+  // multiple connection close frames.
+
+  // Create valid stream.
+  const QuicStreamId kStreamId = 5;
+  QuicStreamFrame data1(kStreamId, false, 0, MakeIOVector("HT"));
+  vector<QuicStreamFrame> frames;
+  frames.push_back(data1);
+  EXPECT_TRUE(session_.OnStreamFrames(frames));
+  EXPECT_EQ(1u, session_.GetNumOpenStreams());
+
+  // Process first invalid stream reset, resulting in the connection being
+  // closed.
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID))
+      .Times(1);
+  QuicStreamId kLargeInvalidStreamId = 99999999;
+  QuicRstStreamFrame rst1(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);
+  session_.OnRstStream(rst1);
+  QuicConnectionPeer::CloseConnection(connection_);
+
+  // Processing of second invalid stream reset should not result in the
+  // connection being closed for a second time.
+  QuicRstStreamFrame rst2(kLargeInvalidStreamId, QUIC_STREAM_NO_ERROR, 0);
+  session_.OnRstStream(rst2);
 }
 
 TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {

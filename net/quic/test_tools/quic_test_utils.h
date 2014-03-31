@@ -482,6 +482,7 @@ class MockLossAlgorithm : public LossDetectionInterface {
   MockLossAlgorithm();
   virtual ~MockLossAlgorithm();
 
+  MOCK_CONST_METHOD0(GetLossDetectionType, LossDetectionType());
   MOCK_METHOD4(DetectLostPackets,
                SequenceNumberSet(const QuicUnackedPacketMap& unacked_packets,
                                  const QuicTime& time,

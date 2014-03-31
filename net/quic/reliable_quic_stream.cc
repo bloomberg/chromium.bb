@@ -351,7 +351,7 @@ QuicConsumedData ReliableQuicStream::WritevData(
   if (IsFlowControlEnabled()) {
     if (send_window == 0 && !fin_with_zero_data) {
       // Quick return if we can't send anything.
-      session_->MarkFlowControlBlocked(id(), EffectivePriority());
+      session()->connection()->SendBlocked(id());
       return QuicConsumedData(0, false);
     }
 
@@ -383,7 +383,7 @@ QuicConsumedData ReliableQuicStream::WritevData(
                << flow_control_send_limit_;
       // The entire send_window has been consumed, we are now flow control
       // blocked.
-      session_->MarkFlowControlBlocked(id(), EffectivePriority());
+      session()->connection()->SendBlocked(id());
     }
     if (fin && consumed_data.fin_consumed) {
       fin_sent_ = true;
@@ -479,12 +479,7 @@ void ReliableQuicStream::UpdateFlowControlSendLimit(QuicStreamOffset offset) {
 }
 
 bool ReliableQuicStream::IsFlowControlBlocked() const {
-  if (IsFlowControlEnabled()) {
-    return stream_bytes_written_ == flow_control_send_limit_ ||
-           SendWindowSize() == 0;
-  } else {
-    return false;
-  }
+  return IsFlowControlEnabled() && SendWindowSize() == 0;
 }
 
 uint64 ReliableQuicStream::SendWindowSize() const {

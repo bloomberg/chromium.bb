@@ -27,7 +27,7 @@ class TimeLossAlgorithmTest : public ::testing::Test {
     SerializedPacket packet(sequence_number, PACKET_1BYTE_SEQUENCE_NUMBER,
                             NULL, 0, new RetransmittableFrames());
     unacked_packets_.AddPacket(packet);
-    unacked_packets_.SetPending(sequence_number, clock_.Now(), 1000);
+    unacked_packets_.SetSent(sequence_number, clock_.Now(), 1000, true);
   }
 
   void VerifyLosses(QuicPacketSequenceNumber largest_observed,

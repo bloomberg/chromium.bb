@@ -167,6 +167,7 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       supported_versions_(supported_versions),
       alternative_decrypter_latch_(false),
       is_server_(is_server),
+      validate_flags_(true),
       creation_time_(creation_time) {
   DCHECK(!supported_versions.empty());
   quic_version_ = supported_versions_[0];
@@ -885,7 +886,8 @@ bool QuicFramer::ProcessPublicHeader(
   public_header->version_flag =
       (public_flags & PACKET_PUBLIC_FLAGS_VERSION) != 0;
 
-  if (!public_header->version_flag && public_flags > PACKET_PUBLIC_FLAGS_MAX) {
+  if (validate_flags_ &&
+      !public_header->version_flag && public_flags > PACKET_PUBLIC_FLAGS_MAX) {
     set_detailed_error("Illegal public flags value.");
     return false;
   }

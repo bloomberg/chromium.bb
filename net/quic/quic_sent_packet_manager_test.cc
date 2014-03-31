@@ -22,7 +22,7 @@ namespace {
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicSentPacketManagerTest()
-      : manager_(true, &clock_, &stats_, kFixRate),
+      : manager_(true, &clock_, &stats_, kFixRate, kNack),
         send_algorithm_(new StrictMock<MockSendAlgorithm>) {
     QuicSentPacketManagerPeer::SetSendAlgorithm(&manager_, send_algorithm_);
     // Disable tail loss probes for most tests.
@@ -149,6 +149,16 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     SerializedPacket packet(CreateFecPacket(sequence_number));
     manager_.OnSerializedPacket(packet);
     manager_.OnPacketSent(sequence_number, clock_.ApproximateNow(),
+                          packet.packet->length(), NOT_RETRANSMISSION,
+                          NO_RETRANSMITTABLE_DATA);
+  }
+
+  void SendAckPacket(QuicPacketSequenceNumber sequence_number) {
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, sequence_number, _, _))
+                    .Times(1).WillOnce(Return(false));
+    SerializedPacket packet(CreatePacket(sequence_number, false));
+    manager_.OnSerializedPacket(packet);
+    manager_.OnPacketSent(sequence_number, clock_.Now(),
                           packet.packet->length(), NOT_RETRANSMISSION,
                           NO_RETRANSMITTABLE_DATA);
   }
@@ -642,16 +652,14 @@ TEST_F(QuicSentPacketManagerTest, FackRetransmit17Packets) {
 
 TEST_F(QuicSentPacketManagerTest, FackRetransmit14PacketsAlternateAcks) {
   const size_t kNumSentPackets = 30;
-  // Transmit 15 packets of data and 15 ack packets.  The send algorithm will
-  // inform the congestion manager not to save the acks by returning false.
+  // Transmit 15 packets of data and 15 ack packets.  The send algorithm returns
+  // false to inform the sent packet manager not to count acks as pending.
   for (QuicPacketSequenceNumber i = 1; i <= kNumSentPackets; ++i) {
-    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _))
-                    .Times(1).WillOnce(Return(i % 2 == 0 ? false : true));
-    SerializedPacket packet(CreatePacket(i, i % 2 == 1));
-    manager_.OnSerializedPacket(packet);
-    manager_.OnPacketSent(
-        i, clock_.Now(), 1000, NOT_RETRANSMISSION,
-        i % 2 == 0 ? NO_RETRANSMITTABLE_DATA : HAS_RETRANSMITTABLE_DATA);
+    if (i % 2 == 0) {
+      SendAckPacket(i);
+    } else {
+      SendDataPacket(i);
+    }
   }
 
   // Nack the first 29 packets 3 times.
@@ -662,8 +670,7 @@ TEST_F(QuicSentPacketManagerTest, FackRetransmit14PacketsAlternateAcks) {
   for (size_t i = 1; i < kNumSentPackets; ++i) {
     received_info.missing_packets.insert(i);
   }
-  // We never actually get an ack call, since the kNumSentPackets packet was
-  // not saved.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(14);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(14);
   manager_.OnIncomingAck(received_info, clock_.Now());
@@ -681,6 +688,29 @@ TEST_F(QuicSentPacketManagerTest, FackRetransmit14PacketsAlternateAcks) {
     EXPECT_EQ(1 + 2 * i, manager_.NextPendingRetransmission().sequence_number);
     manager_.OnRetransmittedPacket(1 + 2 * i, kNumSentPackets + 1 + i);
   }
+}
+
+TEST_F(QuicSentPacketManagerTest, AckAckAndUpdateRtt) {
+  SendDataPacket(1);
+  SendAckPacket(2);
+
+  // Now ack the ack and expect an RTT update.
+  ReceivedPacketInfo received_info;
+  received_info.largest_observed = 2;
+  received_info.delta_time_largest_observed =
+      QuicTime::Delta::FromMilliseconds(5);
+
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _)).Times(1);
+  manager_.OnIncomingAck(received_info, clock_.Now());
+
+  SendAckPacket(3);
+
+  // Now ack the ack and expect only an RTT update.
+  received_info.largest_observed = 3;
+
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  manager_.OnIncomingAck(received_info, clock_.Now());
 }
 
 TEST_F(QuicSentPacketManagerTest, Rtt) {
@@ -1176,6 +1206,20 @@ TEST_F(QuicSentPacketManagerTest, GetLossDelay) {
       .WillOnce(Return(SequenceNumberSet()));
   manager_.OnRetransmissionTimeout();
 }
+
+TEST_F(QuicSentPacketManagerTest, NegotiateTimeLossDetection) {
+  QuicConfig config;
+  QuicTagVector loss_detection;
+  loss_detection.push_back(kTIME);
+  config.set_loss_detection(loss_detection, kTIME);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  manager_.SetFromConfig(config);
+
+  EXPECT_EQ(kTime,
+            QuicSentPacketManagerPeer::GetLossAlgorithm(
+                &manager_)->GetLossDetectionType());
+}
+
 
 }  // namespace
 }  // namespace test

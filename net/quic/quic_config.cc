@@ -296,6 +296,7 @@ QuicErrorCode QuicFixedUint32::ProcessServerHello(
 
 QuicConfig::QuicConfig()
     : congestion_control_(kCGST, PRESENCE_REQUIRED),
+      loss_detection_(kLOSS, PRESENCE_OPTIONAL),
       idle_connection_state_lifetime_seconds_(kICSL, PRESENCE_REQUIRED),
       keepalive_timeout_seconds_(kKATO, PRESENCE_OPTIONAL),
       max_streams_per_connection_(kMSPC, PRESENCE_REQUIRED),
@@ -309,6 +310,10 @@ QuicConfig::QuicConfig()
   // All optional non-zero parameters should be initialized here.
   server_initial_congestion_window_.set(kMaxInitialWindow,
                                         kDefaultInitialWindow);
+  QuicTagVector loss_detection;
+  loss_detection.push_back(kNACK);
+  loss_detection.push_back(kTIME);
+  loss_detection_.set(loss_detection, kNACK);
 }
 
 QuicConfig::~QuicConfig() {}
@@ -321,6 +326,16 @@ void QuicConfig::set_congestion_control(
 
 QuicTag QuicConfig::congestion_control() const {
   return congestion_control_.GetTag();
+}
+
+void QuicConfig::set_loss_detection(
+    const QuicTagVector& loss_detection,
+    QuicTag default_loss_detection) {
+  loss_detection_.set(loss_detection, default_loss_detection);
+}
+
+QuicTag QuicConfig::loss_detection() const {
+  return loss_detection_.GetTag();
 }
 
 void QuicConfig::set_idle_connection_state_lifetime(
@@ -391,6 +406,7 @@ bool QuicConfig::negotiated() {
   // of them in negotiated, ToHandshakeMessage, ProcessClientHello, and
   // ProcessServerHello.
   return congestion_control_.negotiated() &&
+      loss_detection_.negotiated() &&
       idle_connection_state_lifetime_seconds_.negotiated() &&
       keepalive_timeout_seconds_.negotiated() &&
       max_streams_per_connection_.negotiated() &&
@@ -415,6 +431,9 @@ void QuicConfig::SetDefaults() {
       kDefaultMaxTimeForCryptoHandshakeSecs);
   server_initial_congestion_window_.set(kDefaultInitialWindow,
                                         kDefaultInitialWindow);
+  QuicTagVector loss_detection;
+  loss_detection.push_back(kNACK);
+  loss_detection_.set(loss_detection, kNACK);
 }
 
 void QuicConfig::EnablePacing(bool enable_pacing) {
@@ -434,7 +453,7 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   server_initial_congestion_window_.ToHandshakeMessage(out);
   // TODO(ianswett): Don't transmit parameters which are optional and not set.
   initial_round_trip_time_us_.ToHandshakeMessage(out);
-
+  loss_detection_.ToHandshakeMessage(out);
   // Don't add peer_initial_flow_control_window_bytes here, it is not a
   // negotiated value.
 }
@@ -472,6 +491,9 @@ QuicErrorCode QuicConfig::ProcessClientHello(
     error = peer_initial_flow_control_window_bytes_.ProcessClientHello(
         client_hello, error_details);
   }
+  if (error == QUIC_NO_ERROR) {
+    error = loss_detection_.ProcessClientHello(client_hello, error_details);
+  }
   return error;
 }
 
@@ -507,6 +529,9 @@ QuicErrorCode QuicConfig::ProcessServerHello(
   if (error == QUIC_NO_ERROR) {
     error = peer_initial_flow_control_window_bytes_.ProcessServerHello(
         server_hello, error_details);
+  }
+  if (error == QUIC_NO_ERROR) {
+    error = loss_detection_.ProcessServerHello(server_hello, error_details);
   }
   return error;
 }

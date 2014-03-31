@@ -1090,8 +1090,8 @@ TEST_P(QuicFramerTest, PacketHeaderWith1ByteSequenceNumber) {
 
 TEST_P(QuicFramerTest, InvalidPublicFlag) {
   unsigned char packet[] = {
-    // public flags, unknown flag at bit 6
-    0x40,
+    // public flags: all flags set but the public reset flag and version flag.
+    0xFC,
     // connection_id
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
@@ -1109,6 +1109,11 @@ TEST_P(QuicFramerTest, InvalidPublicFlag) {
                        arraysize(packet),
                        "Illegal public flags value.",
                        QUIC_INVALID_PACKET_HEADER);
+
+  // Now turn off validation.
+  framer_.set_validate_flags(false);
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
 };
 
 TEST_P(QuicFramerTest, InvalidPublicFlagWithMatchingVersions) {

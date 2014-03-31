@@ -19,9 +19,11 @@ class RttStats;
 class NET_EXPORT_PRIVATE LossDetectionInterface {
  public:
   // Creates a TCP loss detector.
-  static LossDetectionInterface* Create();
+  static LossDetectionInterface* Create(LossDetectionType loss_type);
 
   virtual ~LossDetectionInterface() {}
+
+  virtual LossDetectionType GetLossDetectionType() const = 0;
 
   // Called when a new ack arrives or the loss alarm fires.
   virtual SequenceNumberSet DetectLostPackets(

@@ -484,9 +484,16 @@ QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
 
   implicitly_created_streams_.erase(stream_id);
   if (stream_id > largest_peer_created_stream_id_) {
-    // TODO(rch) add unit test for this
     if (stream_id - largest_peer_created_stream_id_ > kMaxStreamIdDelta) {
-      connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
+      // We may already have sent a connection close due to multiple reset
+      // streams in the same packet.
+      if (connection()->connected()) {
+        LOG(ERROR) << "Trying to get stream: " << stream_id
+                   << ", largest peer created stream: "
+                   << largest_peer_created_stream_id_
+                   << ", max delta: " << kMaxStreamIdDelta;
+        connection()->SendConnectionClose(QUIC_INVALID_STREAM_ID);
+      }
       return NULL;
     }
     if (largest_peer_created_stream_id_ == 0) {
@@ -562,19 +569,6 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
     priority = kHighestPriority;
   }
   write_blocked_streams_.PushBack(id, priority);
-}
-
-void QuicSession::MarkFlowControlBlocked(QuicStreamId id,
-                                         QuicPriority priority) {
-  ReliableQuicStream* stream = GetStream(id);
-  if (stream == NULL) {
-    LOG(DFATAL) << "Trying to mark nonexistent stream " << id
-                << " flow control blocked.";
-    return;
-  }
-
-  // Send a BLOCKED frame to peer.
-  connection()->SendBlocked(id);
 }
 
 bool QuicSession::HasDataToWrite() const {

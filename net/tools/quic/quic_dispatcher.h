@@ -68,7 +68,7 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   virtual ~QuicDispatcher();
 
-  void Initialize(int fd);
+  virtual void Initialize(int fd);
 
   // Process the incoming packet by creating a new session, passing it to
   // an existing session, or passing it to the TimeWaitListManager.
@@ -151,6 +151,8 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   const QuicConfig& config() const { return config_; }
 
   const QuicCryptoServerConfig& crypto_config() const { return crypto_config_; }
+
+  QuicFramer* framer() { return &framer_; }
 
  private:
   class QuicFramerVisitor;

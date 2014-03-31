@@ -2069,7 +2069,7 @@ TEST_P(QuicConnectionTest, DontLatchUnackedPacket) {
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(1);
   SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);  // Packet 1;
-  // From now on, we send acks, so the send algorithm won't save them.
+  // From now on, we send acks, so the send algorithm won't mark them pending.
   ON_CALL(*send_algorithm_, OnPacketSent(_, _, _, _))
               .WillByDefault(Return(false));
   SendAckPacketToPeer();  // Packet 2
@@ -2078,17 +2078,28 @@ TEST_P(QuicConnectionTest, DontLatchUnackedPacket) {
   QuicAckFrame frame = InitAckFrame(1, 0);
   ProcessAckPacket(&frame);
 
-  // Verify that our internal state has least-unacked as 3.
+  // Verify that our internal state has least-unacked as 2, because we're still
+  // waiting for a potential ack for 2.
+  EXPECT_EQ(2u, outgoing_ack()->sent_info.least_unacked);
+
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  frame = InitAckFrame(2, 0);
+  ProcessAckPacket(&frame);
   EXPECT_EQ(3u, outgoing_ack()->sent_info.least_unacked);
 
   // When we send an ack, we make sure our least-unacked makes sense.  In this
   // case since we're not waiting on an ack for 2 and all packets are acked, we
   // set it to 3.
   SendAckPacketToPeer();  // Packet 3
-  // Since this was an ack packet, we set least_unacked to 4.
-  EXPECT_EQ(4u, outgoing_ack()->sent_info.least_unacked);
+  // Least_unacked remains at 3 until another ack is received.
+  EXPECT_EQ(3u, outgoing_ack()->sent_info.least_unacked);
   // Check that the outgoing ack had its sequence number as least_unacked.
   EXPECT_EQ(3u, least_unacked());
+
+  // Ack the ack, which updates the rtt and raises the least unacked.
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  frame = InitAckFrame(3, 0);
+  ProcessAckPacket(&frame);
 
   ON_CALL(*send_algorithm_, OnPacketSent(_, _, _, _))
               .WillByDefault(Return(true));
@@ -2098,6 +2109,22 @@ TEST_P(QuicConnectionTest, DontLatchUnackedPacket) {
               .WillByDefault(Return(false));
   SendAckPacketToPeer();  // Packet 5
   EXPECT_EQ(4u, least_unacked());
+
+  // Send two data packets at the end, and ensure if the last one is acked,
+  // the least unacked is raised above the ack packets.
+  ON_CALL(*send_algorithm_, OnPacketSent(_, _, _, _))
+              .WillByDefault(Return(true));
+  SendStreamDataToPeer(1, "bar", 6, false, NULL);  // Packet 6
+  SendStreamDataToPeer(1, "bar", 9, false, NULL);  // Packet 7
+
+  EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
+  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(2);
+  frame = InitAckFrame(7, 0);
+  NackPacket(5, &frame);
+  NackPacket(6, &frame);
+  ProcessAckPacket(&frame);
+
+  EXPECT_EQ(6u, outgoing_ack()->sent_info.least_unacked);
 }
 
 TEST_P(QuicConnectionTest, ReviveMissingPacketAfterFecPacket) {

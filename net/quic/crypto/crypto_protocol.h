@@ -47,6 +47,10 @@ const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');  // TCP cubic
 const QuicTag kPACE = TAG('P', 'A', 'C', 'E');  // Paced TCP cubic
 const QuicTag kINAR = TAG('I', 'N', 'A', 'R');  // Inter arrival
 
+// Loss detection algorithm types
+const QuicTag kNACK = TAG('N', 'A', 'C', 'K');  // TCP style nack counting
+const QuicTag kTIME = TAG('T', 'I', 'M', 'E');  // Time based
+
 // Proof types (i.e. certificate types)
 // NOTE: although it would be silly to do so, specifying both kX509 and kX59R
 // is allowed and is equivalent to specifying only kX509.
@@ -64,6 +68,7 @@ const QuicTag kAEAD = TAG('A', 'E', 'A', 'D');  // Authenticated
                                                 // encryption algorithms
 const QuicTag kCGST = TAG('C', 'G', 'S', 'T');  // Congestion control
                                                 // feedback types
+const QuicTag kLOSS = TAG('L', 'O', 'S', 'S');  // Loss detection algorithms
 const QuicTag kICSL = TAG('I', 'C', 'S', 'L');  // Idle connection state
                                                 // lifetime
 const QuicTag kKATO = TAG('K', 'A', 'T', 'O');  // Keepalive timeout

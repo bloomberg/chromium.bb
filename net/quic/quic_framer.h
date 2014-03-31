@@ -365,6 +365,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
     quic_version_ = versions[0];
   }
 
+  void set_validate_flags(bool value) { validate_flags_ = value; }
+
  private:
   friend class test::QuicFramerPeer;
 
@@ -512,6 +514,8 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Tracks if the framer is being used by the entity that received the
   // connection or the entity that initiated it.
   bool is_server_;
+  // If false, skip validation that the public flags are set to legal values.
+  bool validate_flags_;
   // The time this frames was created.  Time written to the wire will be
   // written as a delta from this value.
   QuicTime creation_time_;

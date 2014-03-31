@@ -102,10 +102,14 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Test only.
   SequenceNumberSet GetUnackedPackets() const;
 
-  // Sets a packet pending, with the sent time |sent_time|.
-  void SetPending(QuicPacketSequenceNumber sequence_number,
-                  QuicTime sent_time,
-                  QuicByteCount bytes_sent);
+  // Sets a packet as sent with the sent time |sent_time|.  Marks the packet
+  // as pending and tracks the |bytes_sent| if |set_pending| is true.
+  // Packets marked as pending are expected to be marked as missing when they
+  // don't arrive, indicating the need for retransmission.
+  void SetSent(QuicPacketSequenceNumber sequence_number,
+               QuicTime sent_time,
+               QuicByteCount bytes_sent,
+               bool set_pending);
 
   // Clears up to |num_to_clear| previous transmissions in order to make room
   // in the ack frame for new acks.
@@ -150,6 +154,9 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Neuters the specified packet.  Deletes any retransmittable
   // frames, and sets all_transmissions to only include itself.
   void NeuterPacket(QuicPacketSequenceNumber sequence_number);
+
+  // Returns true if the packet has been marked as sent by SetSent.
+  static bool IsSentAndNotPending(const TransmissionInfo& transmission_info);
 
  private:
   QuicPacketSequenceNumber largest_sent_packet_;

@@ -94,9 +94,9 @@ const bool kIncludeVersion = true;
 const size_t kStartOfHashData = 0;
 
 // Limit on the delta between stream IDs.
-const QuicStreamId kMaxStreamIdDelta = 100;
+const QuicStreamId kMaxStreamIdDelta = 200;
 // Limit on the delta between header IDs.
-const QuicHeaderId kMaxHeaderIdDelta = 100;
+const QuicHeaderId kMaxHeaderIdDelta = 200;
 
 // Reserved ID for the crypto stream.
 const QuicStreamId kCryptoStreamId = 1;
@@ -675,6 +675,11 @@ enum CongestionFeedbackType {
   kTCP,  // Used to mimic TCP.
   kInterArrival,  // Use additional inter arrival information.
   kFixRate,  // Provided for testing.
+};
+
+enum LossDetectionType {
+  kNack,  // Used to mimic TCP's loss detection.
+  kTime,  // Time based loss detection.
 };
 
 struct NET_EXPORT_PRIVATE CongestionFeedbackMessageTCP {

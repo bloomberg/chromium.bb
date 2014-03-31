@@ -198,6 +198,14 @@ void QuicUnackedPacketMap::NeuterPacket(
   }
 }
 
+// static
+bool QuicUnackedPacketMap::IsSentAndNotPending(
+    const TransmissionInfo& transmission_info) {
+  return !transmission_info.pending &&
+      transmission_info.sent_time != QuicTime::Zero() &&
+      transmission_info.bytes_sent == 0;
+}
+
 bool QuicUnackedPacketMap::IsUnacked(
     QuicPacketSequenceNumber sequence_number) const {
   return ContainsKey(unacked_packets_, sequence_number);
@@ -333,9 +341,10 @@ SequenceNumberSet QuicUnackedPacketMap::GetUnackedPackets() const {
   return unacked_packets;
 }
 
-void QuicUnackedPacketMap::SetPending(QuicPacketSequenceNumber sequence_number,
-                                      QuicTime sent_time,
-                                      QuicByteCount bytes_sent) {
+void QuicUnackedPacketMap::SetSent(QuicPacketSequenceNumber sequence_number,
+                                   QuicTime sent_time,
+                                   QuicByteCount bytes_sent,
+                                   bool set_pending) {
   DCHECK_LT(0u, sequence_number);
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
   if (it == unacked_packets_.end()) {
@@ -346,10 +355,12 @@ void QuicUnackedPacketMap::SetPending(QuicPacketSequenceNumber sequence_number,
   DCHECK(!it->second.pending);
 
   largest_sent_packet_ = max(sequence_number, largest_sent_packet_);
-  bytes_in_flight_ += bytes_sent;
   it->second.sent_time = sent_time;
-  it->second.bytes_sent = bytes_sent;
-  it->second.pending = true;
+  if (set_pending) {
+    bytes_in_flight_ += bytes_sent;
+    it->second.bytes_sent = bytes_sent;
+    it->second.pending = true;
+  }
 }
 
 }  // namespace net

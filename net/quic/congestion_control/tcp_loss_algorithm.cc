@@ -23,6 +23,10 @@ static const double kEarlyRetransmitLossDelayMultiplier = 1.25;
 TCPLossAlgorithm::TCPLossAlgorithm()
     : loss_detection_timeout_(QuicTime::Zero()) { }
 
+LossDetectionType TCPLossAlgorithm::GetLossDetectionType() const {
+  return kNack;
+}
+
 // Uses nack counts to decide when packets are lost.
 SequenceNumberSet TCPLossAlgorithm::DetectLostPackets(
     const QuicUnackedPacketMap& unacked_packets,

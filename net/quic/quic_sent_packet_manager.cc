@@ -54,14 +54,15 @@ bool HasCryptoHandshake(
 QuicSentPacketManager::QuicSentPacketManager(bool is_server,
                                              const QuicClock* clock,
                                              QuicConnectionStats* stats,
-                                             CongestionFeedbackType type)
+                                             CongestionFeedbackType type,
+                                             LossDetectionType loss_type)
     : unacked_packets_(),
       is_server_(is_server),
       clock_(clock),
       stats_(stats),
       send_algorithm_(
           SendAlgorithmInterface::Create(clock, &rtt_stats_, type, stats)),
-      loss_algorithm_(LossDetectionInterface::Create()),
+      loss_algorithm_(LossDetectionInterface::Create(loss_type)),
       largest_observed_(0),
       consecutive_rto_count_(0),
       consecutive_tlp_count_(0),
@@ -82,6 +83,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   }
   if (config.congestion_control() == kPACE) {
     MaybeEnablePacing();
+  }
+  if (config.loss_detection() == kTIME) {
+    loss_algorithm_.reset(LossDetectionInterface::Create(kTime));
   }
   send_algorithm_->SetFromConfig(config, is_server_);
 }
@@ -151,12 +155,18 @@ void QuicSentPacketManager::HandleAckForSentPackets(
   while (it != unacked_packets_.end()) {
     QuicPacketSequenceNumber sequence_number = it->first;
     if (sequence_number > received_info.largest_observed) {
-      // These are very new sequence_numbers.
+      // These packets are still in flight.
       break;
     }
 
     if (IsAwaitingPacket(received_info, sequence_number)) {
-      ++it;
+      // Remove any packets not being tracked by the send algorithm, allowing
+      // the high water mark to be raised if necessary.
+      if (QuicUnackedPacketMap::IsSentAndNotPending(it->second)) {
+        it = MarkPacketHandled(sequence_number, NOT_RECEIVED_BY_PEER);
+      } else {
+        ++it;
+      }
       continue;
     }
 
@@ -370,17 +380,17 @@ bool QuicSentPacketManager::OnPacketSent(
     return false;
   }
 
-  // Only track packets the send algorithm wants us to track.
+  // Only track packets as pending that the send algorithm wants us to track.
   if (!send_algorithm_->OnPacketSent(sent_time, sequence_number, bytes,
                                      has_retransmittable_data)) {
-    unacked_packets_.RemovePacket(sequence_number);
+    unacked_packets_.SetSent(sequence_number, sent_time, bytes, false);
     // Do not reset the retransmission timer, since the packet isn't tracked.
     return false;
   }
 
   const bool set_retransmission_timer = !unacked_packets_.HasPendingPackets();
 
-  unacked_packets_.SetPending(sequence_number, sent_time, bytes);
+  unacked_packets_.SetSent(sequence_number, sent_time, bytes, true);
 
   // Reset the retransmission timer anytime a packet is sent in tail loss probe
   // mode or before the crypto handshake has completed.

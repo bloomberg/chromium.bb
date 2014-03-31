@@ -23,6 +23,10 @@ static const double kLossDelayMultiplier = 1.25;
 TimeLossAlgorithm::TimeLossAlgorithm()
     : loss_detection_timeout_(QuicTime::Zero()) { }
 
+LossDetectionType TimeLossAlgorithm::GetLossDetectionType() const {
+  return kTime;
+}
+
 SequenceNumberSet TimeLossAlgorithm::DetectLostPackets(
     const QuicUnackedPacketMap& unacked_packets,
     const QuicTime& time,

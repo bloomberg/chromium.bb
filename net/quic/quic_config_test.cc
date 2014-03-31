@@ -84,6 +84,9 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   client_config.set_initial_round_trip_time_us(
       10 * base::Time::kMicrosecondsPerMillisecond,
       10 * base::Time::kMicrosecondsPerMillisecond);
+  QuicTagVector loss_detection;
+  loss_detection.push_back(kNACK);
+  client_config.set_loss_detection(loss_detection, kNACK);
   CryptoHandshakeMessage msg;
   client_config.ToHandshakeMessage(&msg);
   string error_details;
@@ -98,6 +101,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
             config_.initial_round_trip_time_us());
+  EXPECT_EQ(kNACK, config_.loss_detection());
 }
 
 TEST_F(QuicConfigTest, ProcessServerHello) {
@@ -116,6 +120,9 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.set_initial_round_trip_time_us(
       10 * base::Time::kMicrosecondsPerMillisecond,
       10 * base::Time::kMicrosecondsPerMillisecond);
+  QuicTagVector loss_detection;
+  loss_detection.push_back(kNACK);
+  server_config.set_loss_detection(loss_detection, kNACK);
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg);
   string error_details;
@@ -132,6 +139,7 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.keepalive_timeout());
   EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
             config_.initial_round_trip_time_us());
+  EXPECT_EQ(kNACK, config_.loss_detection());
 }
 
 TEST_F(QuicConfigTest, MissingOptionalValuesInCHLO) {

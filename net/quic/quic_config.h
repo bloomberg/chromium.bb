@@ -197,6 +197,11 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   QuicTag congestion_control() const;
 
+  void set_loss_detection(const QuicTagVector& loss_detection,
+                          QuicTag default_loss_detection);
+
+  QuicTag loss_detection() const;
+
   void set_idle_connection_state_lifetime(
       QuicTime::Delta max_idle_connection_state_lifetime,
       QuicTime::Delta default_idle_conection_state_lifetime);
@@ -256,6 +261,8 @@ class NET_EXPORT_PRIVATE QuicConfig {
  private:
   // Congestion control feedback type.
   QuicNegotiableTag congestion_control_;
+  // Loss detection feedback type.
+  QuicNegotiableTag loss_detection_;
   // Idle connection state lifetime
   QuicNegotiableUint32 idle_connection_state_lifetime_seconds_;
   // Keepalive timeout, or 0 to turn off keepalive probes
