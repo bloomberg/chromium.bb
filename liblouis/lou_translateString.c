@@ -243,11 +243,6 @@ trace_translate (const char *tableList, const widechar * inbufx,
 	  else
 	    outbuf[k] = getCharFromDots (currentOutput[k]);
 	}
-      // Blank the end of the translation buffer
-      for (k = dest; k < *outlen; k++)
-	{
-	  outbuf[k] = 0;
-	}
       *inlen = realInlen;
       *outlen = dest;
       if (inputPositions != NULL)
