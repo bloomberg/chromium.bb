@@ -68,6 +68,7 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   typedef std::map<std::string, linked_ptr<AccountInfo> > AccountInfoMap;
 
   friend class ProfileOAuth2TokenServiceFactory;
+  friend class MutableProfileOAuth2TokenServiceTest;
 
   MutableProfileOAuth2TokenService();
   virtual ~MutableProfileOAuth2TokenService();

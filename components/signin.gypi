@@ -68,6 +68,7 @@
       'type': 'static_library',
       'dependencies': [
         'signin_core_browser',
+        '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
         '..',
@@ -75,6 +76,8 @@
       'sources': [
         'signin/core/browser/fake_auth_status_provider.cc',
         'signin/core/browser/fake_auth_status_provider.h',
+        'signin/core/browser/test_signin_client.cc',
+        'signin/core/browser/test_signin_client.h',
       ],
     },
   ],
