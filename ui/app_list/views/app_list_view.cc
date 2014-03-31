@@ -439,10 +439,8 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
   if (widget != GetWidget())
     return;
 
-  // We clear the search when hiding so the next time the app list appears it is
-  // not showing search results.
   if (!visible)
-    app_list_main_view_->search_box_view()->ClearSearch();
+    app_list_main_view_->ResetForShow();
 
   // Whether we need to signin or not may have changed since last time we were
   // shown.

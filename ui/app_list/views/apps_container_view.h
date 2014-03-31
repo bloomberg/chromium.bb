@@ -43,6 +43,12 @@ class AppsContainerView : public views::View,
   // a folder view with |folder_item|. If |folder_item| is NULL skips animation.
   void ShowApps(AppListFolderItem* folder_item);
 
+  // Resets the app list to a state where it shows the main grid view. This is
+  // called when the user opens the launcher for the first time or when the user
+  // hides and then shows it. This is necessary because we only hide and show
+  // the launcher on Windows and Linux so we need to reset to a fresh state.
+  void ResetForShowApps();
+
   // Sets |drag_and_drop_host_| for the current app list in both
   // app_list_folder_view_ and root level apps_grid_view_.
   void SetDragAndDropHostOfCurrentAppList(

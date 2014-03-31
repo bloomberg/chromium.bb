@@ -66,6 +66,12 @@ void AppsContainerView::ShowApps(AppListFolderItem* folder_item) {
                true);  /* show apps with animation */
 }
 
+void AppsContainerView::ResetForShowApps() {
+  SetShowState(SHOW_APPS, false /* show apps without animation */);
+  folder_background_view_->UpdateFolderContainerBubble(
+      FolderBackgroundView::NO_BUBBLE);
+}
+
 void AppsContainerView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   apps_grid_view()->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
@@ -145,7 +151,7 @@ void AppsContainerView::SetShowState(ShowState show_state,
         apps_grid_view_->ScheduleShowHideAnimation(true);
       } else {
         app_list_folder_view_->HideViewImmediately();
-        apps_grid_view_->SetVisible(true);
+        apps_grid_view_->ResetForShowApps();
       }
       break;
     case SHOW_ACTIVE_FOLDER:

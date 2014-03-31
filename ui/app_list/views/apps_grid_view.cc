@@ -367,6 +367,17 @@ void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
       kTopPadding, kLeftRightPadding, 0, kLeftRightPadding));
 }
 
+void AppsGridView::ResetForShowApps() {
+  activated_item_view_ = NULL;
+  layer()->SetOpacity(1.0f);
+  SetVisible(true);
+  // Set all views to visible in case they weren't made visible again by an
+  // incomplete animation.
+  for (int i = 0; i < view_model_.view_size(); ++i) {
+    view_model_.view_at(i)->SetVisible(true);
+  }
+}
+
 void AppsGridView::SetModel(AppListModel* model) {
   if (model_)
     model_->RemoveObserver(this);

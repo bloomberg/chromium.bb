@@ -83,6 +83,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   int cols() { return cols_; }
   int rows_per_page() { return rows_per_page_; }
 
+  // This resets the grid view to a fresh state for showing the app list.
+  void ResetForShowApps();
+
   // Sets |model| to use. Note this does not take ownership of |model|.
   void SetModel(AppListModel* model);
 

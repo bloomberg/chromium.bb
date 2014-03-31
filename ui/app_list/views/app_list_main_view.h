@@ -45,6 +45,8 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   void ShowAppListWhenReady();
 
+  void ResetForShow();
+
   void Close();
 
   void Prerender();
