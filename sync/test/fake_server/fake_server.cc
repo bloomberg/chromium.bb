@@ -202,8 +202,21 @@ bool FakeServer::CreateDefaultPermanentItems(
     }
   }
 
-  // TODO(pvalenzuela): Create the mobile bookmarks folder when the fake server
-  // is used by mobile tests.
+  return true;
+}
+
+bool FakeServer::CreateMobileBookmarksPermanentItem() {
+  // This folder is called "Synced Bookmarks" by sync and is renamed
+  // "Mobile Bookmarks" by the mobile client UIs.
+  FakeServerEntity* mobile_bookmarks_entity =
+      PermanentEntity::Create(syncer::BOOKMARKS,
+                              "synced_bookmarks",
+                              "Synced Bookmarks",
+                              ModelTypeToRootTag(syncer::BOOKMARKS));
+  if (mobile_bookmarks_entity == NULL) {
+    return false;
+  }
+  SaveEntity(mobile_bookmarks_entity);
   return true;
 }
 
@@ -257,6 +270,10 @@ bool FakeServer::HandleGetUpdatesRequest(
 
   scoped_ptr<UpdateSieve> sieve = UpdateSieve::Create(get_updates);
   if (!CreateDefaultPermanentItems(sieve->GetFirstTimeTypes())) {
+    return false;
+  }
+  if (get_updates.create_mobile_bookmarks_folder() &&
+      !CreateMobileBookmarksPermanentItem()) {
     return false;
   }
 

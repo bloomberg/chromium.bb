@@ -44,6 +44,9 @@ class FakeServer {
   bool CreateDefaultPermanentItems(
       const std::vector<syncer::ModelType>& first_time_types);
 
+  // Inserts the mobile bookmarks folder entity in |entities_|.
+  bool CreateMobileBookmarksPermanentItem();
+
   // Saves a |entity| to |entities_|.
   void SaveEntity(FakeServerEntity* entity);
 
