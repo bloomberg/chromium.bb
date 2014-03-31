@@ -35,10 +35,12 @@ public abstract class ContentSwitches {
     // SelfBrailleService.
     public static final String ACCESSIBILITY_DEBUG_BRAILLE_SERVICE = "debug-braille-service";
 
-    // Whether to always expose web content using Android's accessibility
-    // framework instead of injecting javascript for accessibility.
-    public static final String DISABLE_ACCESSIBILITY_SCRIPT_INJECTION =
-            "disable-accessibility-script-injection";
+    // Disables exposing web content using Android's accessibility
+    // framework and enables the (older) javascript injection accessibility.
+    // TODO(dmazzoni): remove this after native accessibility is in stable.
+    // http://crbug.com/356775
+    public static final String ENABLE_ACCESSIBILITY_SCRIPT_INJECTION =
+            "enable-accessibility-script-injection";
 
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";

@@ -2919,8 +2919,8 @@ public class ContentViewCore
      */
     public boolean isDeviceAccessibilityScriptInjectionEnabled() {
         try {
-            if (CommandLine.getInstance().hasSwitch(
-                    ContentSwitches.DISABLE_ACCESSIBILITY_SCRIPT_INJECTION)) {
+            if (!CommandLine.getInstance().hasSwitch(
+                    ContentSwitches.ENABLE_ACCESSIBILITY_SCRIPT_INJECTION)) {
                 return false;
             }
 
