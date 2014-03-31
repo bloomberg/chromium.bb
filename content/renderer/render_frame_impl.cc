@@ -49,6 +49,7 @@
 #include "content/renderer/child_frame_compositing_helper.h"
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/dom_automation_controller.h"
+#include "content/renderer/image_loading_helper.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
@@ -341,6 +342,9 @@ void RenderFrameImpl::SetWebFrame(blink::WebFrame* web_frame) {
   new PepperBrowserConnection(this);
 #endif
   new SharedWorkerRepository(this);
+
+  if (!frame_->parent())
+    new ImageLoadingHelper(this);
 
   // We delay calling this until we have the WebFrame so that any observer or
   // embedder can call GetWebFrame on any RenderFrame.

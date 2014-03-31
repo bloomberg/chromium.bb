@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
 
 class SkBitmap;
@@ -19,10 +19,10 @@ namespace content {
 class MultiResolutionImageResourceFetcher;
 
 // This class deals with image downloading.
-// One instance of ImageLoadingHelper is owned by RenderView.
-class ImageLoadingHelper : public RenderViewObserver {
+// One instance of ImageLoadingHelper is owned by RenderFrame.
+class ImageLoadingHelper : public RenderFrameObserver {
  public:
-  explicit ImageLoadingHelper(RenderView* render_view);
+  explicit ImageLoadingHelper(RenderFrame* render_frame);
 
  private:
   virtual ~ImageLoadingHelper();
@@ -59,7 +59,7 @@ class ImageLoadingHelper : public RenderViewObserver {
   // Decodes a data: URL image or returns an empty image in case of failure.
   SkBitmap ImageFromDataUrl(const GURL&) const;
 
-  // RenderViewObserver implementation.
+  // RenderFrameObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   typedef ScopedVector<MultiResolutionImageResourceFetcher>

@@ -170,12 +170,12 @@ const char kWebContentsAndroidKey[] = "web_contents_android";
 base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
-static int StartDownload(content::RenderViewHost* rvh,
+static int StartDownload(content::RenderFrameHost* rfh,
                          const GURL& url,
                          bool is_favicon,
                          uint32_t max_bitmap_size) {
   static int g_next_image_download_id = 0;
-  rvh->Send(new ImageMsg_DownloadImage(rvh->GetRoutingID(),
+  rfh->Send(new ImageMsg_DownloadImage(rfh->GetRoutingID(),
                                        ++g_next_image_download_id,
                                        url,
                                        is_favicon,
@@ -2061,8 +2061,7 @@ int WebContentsImpl::DownloadImage(const GURL& url,
                                    bool is_favicon,
                                    uint32_t max_bitmap_size,
                                    const ImageDownloadCallback& callback) {
-  RenderViewHost* host = GetRenderViewHost();
-  int id = StartDownload(host, url, is_favicon, max_bitmap_size);
+  int id = StartDownload(GetMainFrame(), url, is_favicon, max_bitmap_size);
   image_download_map_[id] = callback;
   return id;
 }

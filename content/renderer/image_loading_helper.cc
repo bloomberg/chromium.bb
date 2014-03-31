@@ -9,7 +9,7 @@
 #include "content/child/image_decoder.h"
 #include "content/common/image_messages.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/fetchers/multi_resolution_image_resource_fetcher.h"
 #include "net/base/data_url.h"
 #include "skia/ext/image_operations.h"
@@ -97,8 +97,8 @@ void FilterAndResizeImagesForMaximalSize(
 
 namespace content {
 
-ImageLoadingHelper::ImageLoadingHelper(RenderView* render_view)
-    : RenderViewObserver(render_view) {
+ImageLoadingHelper::ImageLoadingHelper(RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame) {
 }
 
 ImageLoadingHelper::~ImageLoadingHelper() {
@@ -136,13 +136,10 @@ bool ImageLoadingHelper::DownloadImage(int id,
                                        const GURL& image_url,
                                        bool is_favicon,
                                        uint32_t max_image_size) {
-  // Make sure webview was not shut down.
-  if (!render_view()->GetWebView())
-    return false;
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.push_back(new MultiResolutionImageResourceFetcher(
       image_url,
-      render_view()->GetWebView()->mainFrame(),
+      render_frame()->GetWebFrame(),
       id,
       is_favicon ? WebURLRequest::TargetIsFavicon :
                    WebURLRequest::TargetIsImage,
