@@ -24,7 +24,7 @@ PushManager::~PushManager()
 
 ScriptPromise PushManager::registerPushMessaging(ExecutionContext* context, const String& senderId)
 {
-    RefPtrWillBeRawPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
     ScriptPromise promise = resolver->promise();
     // FIXME: Implement registration.
     resolver->reject(ScriptValue::createNull());
