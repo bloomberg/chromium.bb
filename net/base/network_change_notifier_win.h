@@ -59,7 +59,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierWin
 
   // Does the actual work to determine the current connection type.
   // It is not thread safe, see crbug.com/324913.
-  ConnectionType RecomputeCurrentConnectionType() const;
+  virtual ConnectionType RecomputeCurrentConnectionType() const;
 
   void SetCurrentConnectionType(ConnectionType connection_type);
 

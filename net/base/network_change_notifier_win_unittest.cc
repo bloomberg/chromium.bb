@@ -30,9 +30,9 @@ class TestNetworkChangeNotifierWin : public NetworkChangeNotifierWin {
     set_is_watching(false);
   }
 
-  // From NetworkChangeNotifier.
+  // From NetworkChangeNotifierWin.
   virtual NetworkChangeNotifier::ConnectionType
-      GetCurrentConnectionType() const OVERRIDE {
+      RecomputeCurrentConnectionType() const OVERRIDE {
     return NetworkChangeNotifier::CONNECTION_UNKNOWN;
   }
 
