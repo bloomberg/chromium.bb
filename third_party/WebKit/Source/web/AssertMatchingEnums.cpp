@@ -45,6 +45,7 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/InjectedStyleSheets.h"
@@ -110,6 +111,7 @@
 #include "public/web/WebFormElement.h"
 #include "public/web/WebGeolocationError.h"
 #include "public/web/WebGeolocationPosition.h"
+#include "public/web/WebHistoryCommitType.h"
 #include "public/web/WebIconURL.h"
 #include "public/web/WebInputElement.h"
 #include "public/web/WebInputEvent.h"
@@ -595,6 +597,11 @@ COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewBackgroundTab, NavigationPoli
 COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewForegroundTab, NavigationPolicyNewForegroundTab);
 COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewWindow, NavigationPolicyNewWindow);
 COMPILE_ASSERT_MATCHING_ENUM(WebNavigationPolicyNewPopup, NavigationPolicyNewPopup);
+
+COMPILE_ASSERT_MATCHING_ENUM(WebStandardCommit, StandardCommit);
+COMPILE_ASSERT_MATCHING_ENUM(WebBackForwardCommit, BackForwardCommit);
+COMPILE_ASSERT_MATCHING_ENUM(WebInitialCommitInChildFrame, InitialCommitInChildFrame);
+COMPILE_ASSERT_MATCHING_ENUM(WebHistoryInertCommit, HistoryInertCommit);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelDebug, DebugMessageLevel);
 COMPILE_ASSERT_MATCHING_ENUM(WebConsoleMessage::LevelLog, LogMessageLevel);

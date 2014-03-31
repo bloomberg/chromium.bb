@@ -1720,12 +1720,15 @@ PassRefPtr<LocalFrame> WebFrameImpl::createChildFrame(const FrameLoadRequest& re
 
     // If we're moving in the back/forward list, we might want to replace the content
     // of this child frame with whatever was there at that point.
-    HistoryItem* childItem = 0;
-    if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished())
-        childItem = frame()->page()->historyController().itemForNewChildFrame(childFrame.get());
+    RefPtr<HistoryItem> childItem;
+    if (isBackForwardLoadType(frame()->loader().loadType()) && !frame()->document()->loadEventFinished()) {
+        childItem = PassRefPtr<HistoryItem>(webframe->client()->historyItemForNewChildFrame(webframe));
+        if (!childItem)
+            childItem = frame()->page()->historyController().itemForNewChildFrame(childFrame.get());
+    }
 
     if (childItem)
-        childFrame->loader().loadHistoryItem(childItem);
+        childFrame->loader().loadHistoryItem(childItem.get());
     else
         childFrame->loader().load(FrameLoadRequest(0, request.resourceRequest(), "_self"));
 

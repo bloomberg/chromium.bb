@@ -35,6 +35,8 @@
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
 #include "WebDragOperation.h"
+#include "WebHistoryCommitType.h"
+#include "WebHistoryItem.h"
 #include "WebPageVisibilityState.h"
 #include "WebWidget.h"
 
@@ -485,6 +487,14 @@ public:
     // the same z-order number, the later added one will be on top.
     virtual void addPageOverlay(WebPageOverlay*, int /*z-order*/) = 0;
     virtual void removePageOverlay(WebPageOverlay*) = 0;
+
+
+    // History (TEMPORARY) --------------------------------------------------
+    // These are shims to enable blink's HistoryController to move to content/.
+    virtual void updateForCommit(WebFrame*, const WebHistoryItem&, WebHistoryCommitType, bool navigationWithinPage) { }
+    virtual WebHistoryItem itemForNewChildFrame(WebFrame*) const { return WebHistoryItem(); }
+    virtual void removeChildrenForRedirect(WebFrame*) { }
+
 
     // Testing functionality for TestRunner ---------------------------------
 
