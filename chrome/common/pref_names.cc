@@ -300,15 +300,6 @@ const char kShowAppsShortcutInBookmarkBar[] = "bookmark_bar.show_apps_shortcut";
 // the bookmark editor.
 const char kBookmarkEditorExpandedNodes[] = "bookmark_editor.expanded_nodes";
 
-// Booleans identifying whether normal and reverse auto-logins are enabled.
-const char kAutologinEnabled[] = "autologin.enabled";
-const char kReverseAutologinEnabled[] = "reverse_autologin.enabled";
-
-// List to keep track of emails for which the user has rejected one-click
-// sign-in.
-const char kReverseAutologinRejectedEmailList[] =
-    "reverse_autologin.rejected_email_list";
-
 // Boolean that is true when SafeBrowsing is enabled.
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
 

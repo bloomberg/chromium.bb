@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_account_id_helper.h"
+#include "components/signin/core/browser/signin_account_id_helper.h"
 
 #include "base/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -99,8 +99,7 @@ void SigninAccountIdHelper::GaiaIdFetcher::OnOAuthError() {
   VLOG(1) << "OnOAuthError";
 }
 
-void SigninAccountIdHelper::GaiaIdFetcher::OnNetworkError(
-    int response_code) {
+void SigninAccountIdHelper::GaiaIdFetcher::OnNetworkError(int response_code) {
   VLOG(1) << "OnNetworkError " << response_code;
 }
 
@@ -161,4 +160,3 @@ bool SigninAccountIdHelper::disable_for_test_ = false;
 void SigninAccountIdHelper::SetDisableForTest(bool disable_for_test) {
   disable_for_test_ = disable_for_test;
 }
-

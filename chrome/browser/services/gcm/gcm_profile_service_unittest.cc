@@ -42,7 +42,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #else
-#include "chrome/browser/signin/signin_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #endif
 
 using namespace extensions;
@@ -136,7 +136,7 @@ class FakeSigninManager : public SigninManagerBase {
       : SigninManagerBase(
             ChromeSigninClientFactory::GetInstance()->GetForProfile(profile)),
         profile_(profile) {
-    Initialize(profile, NULL);
+    Initialize(NULL);
   }
 
   virtual ~FakeSigninManager() {

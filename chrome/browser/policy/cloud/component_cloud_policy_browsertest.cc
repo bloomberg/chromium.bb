@@ -40,9 +40,9 @@
 #include "chromeos/chromeos_switches.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #endif
 
 using testing::InvokeWithoutArgs;

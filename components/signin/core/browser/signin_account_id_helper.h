@@ -1,11 +1,11 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_ACCOUNT_ID_HELPER_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_ACCOUNT_ID_HELPER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ACCOUNT_ID_HELPER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ACCOUNT_ID_HELPER_H_
 
-#include "chrome/browser/signin/signin_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -53,4 +53,4 @@ class SigninAccountIdHelper : public SigninManagerBase::Observer,
   DISALLOW_COPY_AND_ASSIGN(SigninAccountIdHelper);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_ACCOUNT_ID_HELPER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_ACCOUNT_ID_HELPER_H_

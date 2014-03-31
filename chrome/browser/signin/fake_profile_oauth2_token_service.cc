@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/signin/signin_account_id_helper.h"
+#include "components/signin/core/browser/signin_account_id_helper.h"
 
 FakeProfileOAuth2TokenService::PendingRequest::PendingRequest() {
 }

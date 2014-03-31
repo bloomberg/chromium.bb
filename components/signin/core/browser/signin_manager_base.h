@@ -38,9 +38,6 @@
 
 class PrefService;
 
-// TODO(blundell): Eliminate this forward declaration once SigninManager no
-// longer needs Profile. crbug.com/334209
-class Profile;
 class SigninClient;
 
 class SigninManagerBase : public KeyedService {
@@ -65,9 +62,7 @@ class SigninManagerBase : public KeyedService {
   virtual ~SigninManagerBase();
 
   // If user was signed in, load tokens from DB if available.
-  // TODO(blundell): Eliminate the |profile| argument once SigninManager no
-  // longer needs Profile. crbug.com/334209
-  virtual void Initialize(Profile* profile, PrefService* local_state);
+  virtual void Initialize(PrefService* local_state);
   bool IsInitialized() const;
 
   // Returns true if a signin to Chrome is allowed (by policy or pref).

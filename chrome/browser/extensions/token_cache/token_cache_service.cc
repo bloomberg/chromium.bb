@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
 
 #include "base/logging.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/signin/core/browser/signin_manager.h"
 
 using base::Time;
 using base::TimeDelta;
