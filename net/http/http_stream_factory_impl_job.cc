@@ -668,6 +668,11 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
       // No proxies/direct to choose from. This happens when we don't support
       // any of the proxies in the returned list.
       result = ERR_NO_SUPPORTED_PROXIES;
+    } else if (using_quic_ &&
+               (!proxy_info_.is_quic() && !proxy_info_.is_direct())) {
+      // QUIC can not be spoken to non-QUIC proxies.  This error should not be
+      // user visible, because the non-alternate job should be resumed.
+      result = ERR_NO_SUPPORTED_PROXIES;
     }
   }
 

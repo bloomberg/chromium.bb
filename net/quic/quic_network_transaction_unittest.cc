@@ -645,6 +645,48 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   SendRequestAndExpectQuicResponse("hello!");
 }
 
+TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
+  proxy_service_.reset(
+      ProxyService::CreateFixedFromPacResult("PROXY myproxy:70"));
+  HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
+
+  // Since we are using a proxy, the QUIC job will not succeed.
+  MockWrite http_writes[] = {
+    MockWrite(SYNCHRONOUS, 0, "GET http://www.google.com/ HTTP/1.1\r\n"),
+    MockWrite(SYNCHRONOUS, 1, "Host: www.google.com\r\n"),
+    MockWrite(SYNCHRONOUS, 2, "Proxy-Connection: keep-alive\r\n\r\n")
+  };
+
+  MockRead http_reads[] = {
+    MockRead(SYNCHRONOUS, 3, "HTTP/1.1 200 OK\r\n"),
+    MockRead(SYNCHRONOUS, 4, kQuicAlternateProtocolHttpHeader),
+    MockRead(SYNCHRONOUS, 5, "hello world"),
+    MockRead(SYNCHRONOUS, OK, 6)
+  };
+
+  StaticSocketDataProvider http_data(http_reads, arraysize(http_reads),
+                                     http_writes, arraysize(http_writes));
+  socket_factory_.AddSocketDataProvider(&http_data);
+
+  // In order for a new QUIC session to be established via alternate-protocol
+  // without racing an HTTP connection, we need the host resolution to happen
+  // synchronously.
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule("www.google.com", "192.168.0.1", "");
+  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80));
+  AddressList address;
+  host_resolver_.Resolve(info,
+                         DEFAULT_PRIORITY,
+                         &address,
+                         CompletionCallback(),
+                         NULL,
+                         net_log_.bound());
+
+  CreateSession();
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+  SendRequestAndExpectHttpResponse("hello world");
+}
+
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   HttpStreamFactory::EnableNpnSpdy3();  // Enables QUIC too.
 
