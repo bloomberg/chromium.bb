@@ -49,8 +49,8 @@ fi
 
 export GYP_DEFINES="${GYP_DEFINES} ${DEFINES}"
 
-FLAGS="-f android -Gdefault_target=All -Glimit_to_target_all=1 "\
-"--depth=${CHROME_SRC} ${CHROME_SRC}/android_webview/all_webview.gyp"
+FLAGS="-f android -Gdefault_target=libwebviewchromium -Glimit_to_target_all=1 "\
+"--depth=${CHROME_SRC} ${CHROME_SRC}/android_webview/android_webview.gyp"
 
 for host_os in linux mac; do
   host_platform=$(echo $host_os | sed -e 's/mac/darwin/')
