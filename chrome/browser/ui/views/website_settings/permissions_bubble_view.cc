@@ -7,12 +7,19 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "grit/generated_resources.h"
+#include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/label_button_border.h"
+#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
+#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
@@ -31,11 +38,86 @@ const int kButtonBorderSize = 2;
 
 }  // namespace
 
-// View implementation for the permissions bubble.
-class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
-                                      public views::ButtonListener {
+// Model for an Allow/Block combobox control. Each combobox has a separate
+// model, which remembers the index of the permission it is associated with.
+class PermissionComboboxModel : public ui::ComboboxModel {
  public:
-  explicit PermissionsBubbleDelegateView(
+  enum Item {
+    STATE_ALLOW = 0,
+    STATE_BLOCK = 1
+  };
+
+  PermissionComboboxModel(int index, Item default_item);
+  virtual ~PermissionComboboxModel() {}
+
+  virtual int GetItemCount() const OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetDefaultIndex() const OVERRIDE;
+
+  // Return the item index this combobox is the model for.
+  int index() { return index_; }
+
+ private:
+  int index_;
+  int default_item_;
+};
+
+PermissionComboboxModel::PermissionComboboxModel(int index, Item default_item)
+    : index_(index), default_item_(default_item) {}
+
+int PermissionComboboxModel::GetItemCount() const {
+  return 2;  // 'allow' and 'block'
+}
+
+base::string16 PermissionComboboxModel::GetItemAt(int index) {
+  if (index == 0)
+    return l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
+  else
+    return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+}
+
+int PermissionComboboxModel::GetDefaultIndex() const {
+  return default_item_;
+}
+
+class CustomizeDenyComboboxModel : public ui::ComboboxModel {
+ public:
+  enum Item {
+    INDEX_DENY = 0,
+    INDEX_CUSTOMIZE = 1
+  };
+
+  CustomizeDenyComboboxModel() {}
+  virtual ~CustomizeDenyComboboxModel() {}
+
+  virtual int GetItemCount() const OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
+  virtual int GetDefaultIndex() const OVERRIDE;
+};
+
+int CustomizeDenyComboboxModel::GetItemCount() const {
+  return 2;
+}
+
+base::string16 CustomizeDenyComboboxModel::GetItemAt(int index) {
+  if (index == INDEX_DENY)
+    return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+  else
+    return l10n_util::GetStringUTF16(IDS_PERMISSION_CUSTOMIZE);
+}
+
+int CustomizeDenyComboboxModel::GetDefaultIndex() const {
+  return INDEX_DENY;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// View implementation for the permissions bubble.
+
+class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
+                                      public views::ButtonListener,
+                                      public views::ComboboxListener {
+ public:
+  PermissionsBubbleDelegateView(
       views::View* anchor,
       PermissionBubbleViewViews* owner,
       const std::vector<PermissionBubbleRequest*>& requests,
@@ -56,12 +138,16 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   virtual void ButtonPressed(views::Button* button,
                              const ui::Event& event) OVERRIDE;
 
+  // ComboboxListener:
+  virtual void OnPerformAction(views::Combobox* combobox) OVERRIDE;
+
  private:
   PermissionBubbleViewViews* owner_;
   views::Button* allow_;
   views::Button* deny_;
-  views::Button* customize_;
+  views::Combobox* deny_combobox_;
   base::string16 title_;
+  std::string hostname_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsBubbleDelegateView);
 };
@@ -76,7 +162,9 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
       owner_(owner),
       allow_(NULL),
       deny_(NULL),
-      customize_(NULL) {
+      deny_combobox_(NULL) {
+  DCHECK(!requests.empty());
+
   RemoveAllChildViews(true);
   set_close_on_esc(false);
   set_close_on_deactivate(false);
@@ -86,57 +174,65 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  if (requests.size() == 1) {
-    title_ = requests[0]->GetMessageText();
-    if (GetWidget())
-      GetWidget()->UpdateWindowTitle();
-  } else {
-    for (std::vector<PermissionBubbleRequest*>::const_iterator it =
-             requests.begin();
-         it != requests.end(); it++) {
-      if (customization_mode) {
-        views::Checkbox* label =
-            new views::Checkbox((*it)->GetMessageTextFragment());
-        label->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-        label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-        AddChildView(label);
-      } else {
-        // TODO(gbillock): i18n the bullet string?
-        const base::string16 bullet = base::UTF8ToUTF16(" • ");
-        views::Label* label =
-            new views::Label(bullet + (*it)->GetMessageTextFragment());
-        label->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-        label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-        AddChildView(label);
-      }
+  // TODO(gbillock): account for different requests from different hosts.
+  hostname_ = requests[0]->GetRequestingHostname().host();
+
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+  for (size_t index = 0; index < requests.size(); index++) {
+    DCHECK(index < accept_state.size());
+    // The row is laid out containing a leading-aligned label area and a
+    // trailing column which will be filled during customization with a
+    // combobox.
+    views::View* row = new views::View();
+    views::GridLayout* row_layout = new views::GridLayout(row);
+    row->SetLayoutManager(row_layout);
+    views::ColumnSet* columns = row_layout->AddColumnSet(0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                       0, views::GridLayout::USE_PREF, 0, 0);
+    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
+                       100, views::GridLayout::USE_PREF, 0, 0);
+    row_layout->StartRow(0, 0);
+
+    views::View* label_container = new views::View();
+    label_container->SetLayoutManager(
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 5));
+    views::ImageView* icon = new views::ImageView();
+    icon->SetImage(bundle.GetImageSkiaNamed(requests.at(index)->GetIconID()));
+    label_container->AddChildView(icon);
+    views::Label* label =
+        new views::Label(requests.at(index)->GetMessageTextFragment());
+    label->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label_container->AddChildView(label);
+    row_layout->AddView(label_container);
+
+    if (customization_mode) {
+      views::Combobox* combobox = new views::Combobox(
+          new PermissionComboboxModel(index,
+              accept_state[index] ? PermissionComboboxModel::STATE_ALLOW
+                                  : PermissionComboboxModel::STATE_BLOCK));
+      combobox->set_listener(this);
+      row_layout->AddView(combobox);
+    } else {
+      row_layout->AddView(new views::View());
     }
+
+    AddChildView(row);
   }
 
   views::View* button_row = new views::View();
   views::GridLayout* button_layout = new views::GridLayout(button_row);
   views::ColumnSet* columns = button_layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                     100.0, views::GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                     0, views::GridLayout::USE_PREF, 0, 0);
-  if (!customization_mode) {
-    columns->AddPaddingColumn(0, kItemMajorSpacing - (2*kButtonBorderSize));
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                       0, views::GridLayout::USE_PREF, 0, 0);
-  }
-
   button_row->SetLayoutManager(button_layout);
   AddChildView(button_row);
 
-  button_layout->StartRow(0, 0);
-
-  // Customization case: empty "Customize" label and an "OK" button
+  // Customization case: just an "OK" button
   if (customization_mode) {
-    button_layout->AddView(new views::View());
-
+    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
+                       100, views::GridLayout::USE_PREF, 0, 0);
+    button_layout->StartRow(0, 0);
     views::LabelButton* ok_button =
-        new views::LabelButton(this, l10n_util::GetStringUTF16(
-            IDS_OK));
+        new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_OK));
     ok_button->SetStyle(views::Button::STYLE_BUTTON);
     button_layout->AddView(ok_button);
     allow_ = ok_button;
@@ -145,26 +241,14 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
     return;
   }
 
-  // Only show the "Customize" button if there is more than one option.
-  if (requests.size() > 1) {
-    views::LabelButton* customize = new views::LabelButton(this,
-        l10n_util::GetStringUTF16(IDS_PERMISSION_CUSTOMIZE));
-    customize->SetStyle(views::Button::STYLE_TEXTBUTTON);
-    customize->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLUE);
-    customize->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLUE);
-    customize->SetTextColor(views::Button::STATE_PRESSED, SK_ColorBLUE);
-    button_layout->AddView(customize);
-  } else {
-    button_layout->AddView(new views::View());
-  }
+  // No customization: lay out the Deny/Allow buttons.
 
-  // Lay out the Deny/Allow buttons.
-  base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
-  views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
-  deny_button->SetStyle(views::Button::STYLE_BUTTON);
-  deny_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-  button_layout->AddView(deny_button);
-  deny_ = deny_button;
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
+                     100, views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(0, kItemMajorSpacing - (2*kButtonBorderSize));
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
+                     0, views::GridLayout::USE_PREF, 0, 0);
+  button_layout->StartRow(0, 0);
 
   base::string16 allow_text = l10n_util::GetStringUTF16(IDS_PERMISSION_ALLOW);
   views::LabelButton* allow_button = new views::LabelButton(this, allow_text);
@@ -172,6 +256,25 @@ PermissionsBubbleDelegateView::PermissionsBubbleDelegateView(
   allow_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   button_layout->AddView(allow_button);
   allow_ = allow_button;
+
+  // Deny button is a regular button when there's only one option, and a
+  // STYLE_ACTION Combobox when there are more than one option and
+  // customization is an option.
+  base::string16 deny_text = l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
+  if (requests.size() == 1) {
+    views::LabelButton* deny_button = new views::LabelButton(this, deny_text);
+    deny_button->SetStyle(views::Button::STYLE_BUTTON);
+    deny_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+    button_layout->AddView(deny_button);
+    deny_ = deny_button;
+  } else {
+    views::Combobox* deny_combobox = new views::Combobox(
+        new CustomizeDenyComboboxModel());
+    deny_combobox->set_listener(this);
+    deny_combobox->SetStyle(views::Combobox::STYLE_ACTION);
+    button_layout->AddView(deny_combobox);
+    deny_combobox_ = deny_combobox;
+  }
 
   button_layout->AddPaddingRow(0, kBubbleOuterMargin);
 }
@@ -199,7 +302,8 @@ base::string16 PermissionsBubbleDelegateView::GetWindowTitle() const {
     return title_;
   }
 
-  return l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT);
+  return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
+                                    base::UTF8ToUTF16(hostname_));
 }
 
 void PermissionsBubbleDelegateView::SizeToContents() {
@@ -223,9 +327,27 @@ void PermissionsBubbleDelegateView::ButtonPressed(views::Button* button,
     owner_->Accept();
   else if (button == deny_)
     owner_->Deny();
-  else if (button == customize_)
-    owner_->SetCustomizationMode();
 }
+
+void PermissionsBubbleDelegateView::OnPerformAction(
+    views::Combobox* combobox) {
+  if (combobox == deny_combobox_) {
+    if (combobox->selected_index() ==
+        CustomizeDenyComboboxModel::INDEX_CUSTOMIZE)
+      owner_->SetCustomizationMode();
+    else if (combobox->selected_index() ==
+             CustomizeDenyComboboxModel::INDEX_DENY)
+      owner_->Deny();
+    return;
+  }
+
+  PermissionComboboxModel* model =
+      static_cast<PermissionComboboxModel*>(combobox->model());
+  owner_->Toggle(model->index(), combobox->selected_index() == 0);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// PermissionBubbleViewViews
 
 PermissionBubbleViewViews::PermissionBubbleViewViews(views::View* anchor_view)
     : anchor_view_(anchor_view),
@@ -256,9 +378,7 @@ void PermissionBubbleViewViews::Show(
 }
 
 bool PermissionBubbleViewViews::CanAcceptRequestUpdate() {
-  // TODO(gbillock): support this.
-  // return bubble_delegate_ && bubble_delegate_->IsMouseHovered();
-  return false;
+  return !(bubble_delegate_ && bubble_delegate_->IsMouseHovered());
 }
 
 void PermissionBubbleViewViews::Hide() {
