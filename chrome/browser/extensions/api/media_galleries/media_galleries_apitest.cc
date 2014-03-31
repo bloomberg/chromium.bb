@@ -422,8 +422,9 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   scoped_ptr<EnsureMediaDirectoriesExists> ensure_media_directories_exists_;
 };
 
-// Flaky on WinXP Tests(1): http://crbug.com/354425
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+// Test is flaky, it fails on certain bots, namely WinXP Tests(1) and Linux
+// (dbg)(1)(32).  See crbug.com/354425.
+#if (defined(ARCH_CPU_X86)) && (defined(OS_WIN) || defined(OS_LINUX))
 #define MAYBE_MediaGalleriesNoAccess DISABLED_MediaGalleriesNoAccess
 #else
 #define MAYBE_MediaGalleriesNoAccess MediaGalleriesNoAccess
@@ -459,9 +460,9 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
       << message_;
 }
 
-// Test is flaky, it fails only on a certain bot, namely WinXP Tests(1).
-// See crbug.com/354425 .
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+// Test is flaky, it fails on certain bots, namely WinXP Tests(1) and Linux
+// (dbg)(1)(32).  See crbug.com/354425.
+#if (defined(ARCH_CPU_X86)) && (defined(OS_WIN) || defined(OS_LINUX))
 #define MAYBE_MediaGalleriesCopyTo DISABLED_MediaGalleriesCopyTo
 #else
 #define MAYBE_MediaGalleriesCopyTo MediaGalleriesCopyTo

@@ -103,8 +103,8 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
 
 }  // namespace
 
-// Flaky on WinXP Tests(1): http://crbug.com/354425
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+// Flaky on WinXP Tests(1) and Linux Tests(dbg)(1): http://crbug.com/354425 .
+#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
 #define MAYBE_GetFileStatus DISABLED_GetFileStatus
 #else
 #define MAYBE_GetFileStatus GetFileStatus
@@ -115,10 +115,11 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatus) {
       << message_;
 }
 
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
 // SyncFileSystemApiTest.GetFileStatuses fails under AddressSanitizer
 // on Precise. See http://crbug.com/230779.
-// Also fails on WinXP Tests(1). See crbug.com/354425 .
+// Also fails on WinXP Tests(1).  And on Linux Tests(dbg)(1).
+// See crbug.com/354425 .
 #define MAYBE_GetFileStatuses DISABLED_GetFileStatuses
 #else
 #define MAYBE_GetFileStatuses GetFileStatuses
@@ -143,9 +144,10 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatuses) {
       << message_;
 }
 
-// Test is flaky, it fails only on a certain bot, namely WinXP Tests(1).
+// Test is flaky, it fails only certain bots, namely WinXP Tests(1)
+// and Linux Tests(dbg)(1).
 // See crbug.com/354425 .
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
 #define MAYBE_GetUsageAndQuota DISABLED_GetUsageAndQuota
 #else
 #define MAYBE_GetUsageAndQuota GetUsageAndQuota
@@ -201,9 +203,10 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
       << message_;
 }
 
-// Test is flaky, it fails only on a certain bot, namely WinXP Tests(1).
+// Test is flaky, it fails only certain bots, namely WinXP Tests(1)
+// and Linux Tests(dbg)(1).
 // See crbug.com/354425 .
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
+#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
 #define MAYBE_WriteFileThenGetUsage DISABLED_WriteFileThenGetUsage
 #else
 #define MAYBE_WriteFileThenGetUsage WriteFileThenGetUsage

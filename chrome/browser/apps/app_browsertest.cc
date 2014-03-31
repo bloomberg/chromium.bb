@@ -396,7 +396,12 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
             observer.tabs()[1]->GetURL().spec());
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Iframes) {
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+#define MAYBE_Iframes DISABLED_Iframes
+#else
+#define MAYBE_Iframes Iframes
+#endif
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_Iframes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/iframes")) << message_;
 }
