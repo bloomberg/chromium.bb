@@ -89,6 +89,19 @@ void FakePictureLayerImpl::SetAllTilesVisible() {
   }
 }
 
+void FakePictureLayerImpl::ResetAllTilesPriorities() {
+  for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
+       ++tiling_idx) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(tiling_idx);
+    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
+    for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
+      Tile* tile = tiles[tile_idx];
+      tile->SetPriority(ACTIVE_TREE, TilePriority());
+      tile->SetPriority(PENDING_TREE, TilePriority());
+    }
+  }
+}
+
 void FakePictureLayerImpl::SetAllTilesReady() {
   for (size_t tiling_idx = 0; tiling_idx < tilings_->num_tilings();
        ++tiling_idx) {

@@ -7,6 +7,7 @@
 
 #include <queue>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -14,6 +15,7 @@
 #include "base/values.h"
 #include "cc/base/ref_counted_managed.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
+#include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/memory_history.h"
 #include "cc/resources/picture_pile_impl.h"
@@ -23,7 +25,6 @@
 #include "cc/resources/tile.h"
 
 namespace cc {
-class PictureLayerImpl;
 class RasterWorkerPoolDelegate;
 class ResourceProvider;
 
@@ -57,6 +58,52 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
     PictureLayerImpl* active_layer;
     PictureLayerImpl* pending_layer;
+  };
+
+  class CC_EXPORT RasterTileIterator {
+   public:
+    RasterTileIterator(TileManager* tile_manager, TreePriority tree_priority);
+    ~RasterTileIterator();
+
+    RasterTileIterator& operator++();
+    operator bool() const;
+    Tile* operator*();
+
+   private:
+    struct PairedPictureLayerIterator {
+      PairedPictureLayerIterator();
+      ~PairedPictureLayerIterator();
+
+      Tile* PeekTile(TreePriority tree_priority);
+      void PopTile(TreePriority tree_priority);
+
+      std::pair<PictureLayerImpl::LayerRasterTileIterator*, WhichTree>
+          NextTileIterator(TreePriority tree_priority);
+
+      PictureLayerImpl::LayerRasterTileIterator active_iterator;
+      PictureLayerImpl::LayerRasterTileIterator pending_iterator;
+
+      std::vector<Tile*> returned_shared_tiles;
+    };
+
+    class RasterOrderComparator {
+     public:
+      explicit RasterOrderComparator(TreePriority tree_priority);
+
+      bool operator()(PairedPictureLayerIterator* a,
+                      PairedPictureLayerIterator* b) const;
+
+     private:
+      bool ComparePriorities(const TilePriority& a_priority,
+                             const TilePriority& b_priority,
+                             bool prioritize_low_res) const;
+      TreePriority tree_priority_;
+    };
+
+    std::vector<PairedPictureLayerIterator> paired_iterators_;
+    std::vector<PairedPictureLayerIterator*> iterator_heap_;
+    TreePriority tree_priority_;
+    RasterOrderComparator comparator_;
   };
 
   static scoped_ptr<TileManager> Create(

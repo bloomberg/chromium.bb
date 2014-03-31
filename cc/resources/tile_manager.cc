@@ -1336,4 +1336,200 @@ TileManager::PairedPictureLayer::PairedPictureLayer()
 
 TileManager::PairedPictureLayer::~PairedPictureLayer() {}
 
+TileManager::RasterTileIterator::RasterTileIterator(TileManager* tile_manager,
+                                                    TreePriority tree_priority)
+    : tree_priority_(tree_priority), comparator_(tree_priority) {
+  std::vector<TileManager::PairedPictureLayer> paired_layers;
+  tile_manager->GetPairedPictureLayers(&paired_layers);
+  bool prioritize_low_res = tree_priority_ == SMOOTHNESS_TAKES_PRIORITY;
+
+  paired_iterators_.reserve(paired_layers.size());
+  iterator_heap_.reserve(paired_layers.size());
+  for (std::vector<TileManager::PairedPictureLayer>::iterator it =
+           paired_layers.begin();
+       it != paired_layers.end();
+       ++it) {
+    PairedPictureLayerIterator paired_iterator;
+    if (it->active_layer) {
+      paired_iterator.active_iterator =
+          PictureLayerImpl::LayerRasterTileIterator(it->active_layer,
+                                                    prioritize_low_res);
+    }
+
+    if (it->pending_layer) {
+      paired_iterator.pending_iterator =
+          PictureLayerImpl::LayerRasterTileIterator(it->pending_layer,
+                                                    prioritize_low_res);
+    }
+
+    if (paired_iterator.PeekTile(tree_priority_) != NULL) {
+      paired_iterators_.push_back(paired_iterator);
+      iterator_heap_.push_back(&paired_iterators_.back());
+    }
+  }
+
+  std::make_heap(iterator_heap_.begin(), iterator_heap_.end(), comparator_);
+}
+
+TileManager::RasterTileIterator::~RasterTileIterator() {}
+
+TileManager::RasterTileIterator& TileManager::RasterTileIterator::operator++() {
+  DCHECK(*this);
+
+  std::pop_heap(iterator_heap_.begin(), iterator_heap_.end(), comparator_);
+  PairedPictureLayerIterator* paired_iterator = iterator_heap_.back();
+  iterator_heap_.pop_back();
+
+  paired_iterator->PopTile(tree_priority_);
+  if (paired_iterator->PeekTile(tree_priority_) != NULL) {
+    iterator_heap_.push_back(paired_iterator);
+    std::push_heap(iterator_heap_.begin(), iterator_heap_.end(), comparator_);
+  }
+  return *this;
+}
+
+TileManager::RasterTileIterator::operator bool() const {
+  return !iterator_heap_.empty();
+}
+
+Tile* TileManager::RasterTileIterator::operator*() {
+  DCHECK(*this);
+  return iterator_heap_.front()->PeekTile(tree_priority_);
+}
+
+TileManager::RasterTileIterator::PairedPictureLayerIterator::
+    PairedPictureLayerIterator() {}
+
+TileManager::RasterTileIterator::PairedPictureLayerIterator::
+    ~PairedPictureLayerIterator() {}
+
+Tile* TileManager::RasterTileIterator::PairedPictureLayerIterator::PeekTile(
+    TreePriority tree_priority) {
+  PictureLayerImpl::LayerRasterTileIterator* next_iterator =
+      NextTileIterator(tree_priority).first;
+  if (!next_iterator)
+    return NULL;
+
+  DCHECK(*next_iterator);
+  DCHECK(std::find(returned_shared_tiles.begin(),
+                   returned_shared_tiles.end(),
+                   **next_iterator) == returned_shared_tiles.end());
+  return **next_iterator;
+}
+
+void TileManager::RasterTileIterator::PairedPictureLayerIterator::PopTile(
+    TreePriority tree_priority) {
+  PictureLayerImpl::LayerRasterTileIterator* next_iterator =
+      NextTileIterator(tree_priority).first;
+  DCHECK(next_iterator);
+  DCHECK(*next_iterator);
+  returned_shared_tiles.push_back(**next_iterator);
+  ++(*next_iterator);
+
+  next_iterator = NextTileIterator(tree_priority).first;
+  while (next_iterator &&
+         std::find(returned_shared_tiles.begin(),
+                   returned_shared_tiles.end(),
+                   **next_iterator) != returned_shared_tiles.end()) {
+    ++(*next_iterator);
+    next_iterator = NextTileIterator(tree_priority).first;
+  }
+}
+
+std::pair<PictureLayerImpl::LayerRasterTileIterator*, WhichTree>
+TileManager::RasterTileIterator::PairedPictureLayerIterator::NextTileIterator(
+    TreePriority tree_priority) {
+  // If both iterators are out of tiles, return NULL.
+  if (!active_iterator && !pending_iterator) {
+    return std::pair<PictureLayerImpl::LayerRasterTileIterator*, WhichTree>(
+        NULL, ACTIVE_TREE);
+  }
+
+  // If we only have one iterator with tiles, return it.
+  if (!active_iterator)
+    return std::make_pair(&pending_iterator, PENDING_TREE);
+  if (!pending_iterator)
+    return std::make_pair(&active_iterator, ACTIVE_TREE);
+
+  // Now both iterators have tiles, so we have to decide based on tree priority.
+  switch (tree_priority) {
+    case SMOOTHNESS_TAKES_PRIORITY:
+      return std::make_pair(&active_iterator, ACTIVE_TREE);
+    case NEW_CONTENT_TAKES_PRIORITY:
+      return std::make_pair(&pending_iterator, ACTIVE_TREE);
+    case SAME_PRIORITY_FOR_BOTH_TREES: {
+      Tile* active_tile = *active_iterator;
+      Tile* pending_tile = *pending_iterator;
+      if (active_tile == pending_tile)
+        return std::make_pair(&active_iterator, ACTIVE_TREE);
+
+      const TilePriority& active_priority = active_tile->priority(ACTIVE_TREE);
+      const TilePriority& pending_priority =
+          pending_tile->priority(PENDING_TREE);
+
+      if (active_priority.IsHigherPriorityThan(pending_priority))
+        return std::make_pair(&active_iterator, ACTIVE_TREE);
+      return std::make_pair(&pending_iterator, PENDING_TREE);
+    }
+  }
+
+  NOTREACHED();
+  // Keep the compiler happy.
+  return std::pair<PictureLayerImpl::LayerRasterTileIterator*, WhichTree>(
+      NULL, ACTIVE_TREE);
+}
+
+TileManager::RasterTileIterator::RasterOrderComparator::RasterOrderComparator(
+    TreePriority tree_priority)
+    : tree_priority_(tree_priority) {}
+
+bool TileManager::RasterTileIterator::RasterOrderComparator::ComparePriorities(
+    const TilePriority& a_priority,
+    const TilePriority& b_priority,
+    bool prioritize_low_res) const {
+  if (b_priority.resolution != a_priority.resolution) {
+    return (prioritize_low_res && b_priority.resolution == LOW_RESOLUTION) ||
+           (!prioritize_low_res && b_priority.resolution == HIGH_RESOLUTION) ||
+           (a_priority.resolution == NON_IDEAL_RESOLUTION);
+  }
+
+  return b_priority.IsHigherPriorityThan(a_priority);
+}
+
+bool TileManager::RasterTileIterator::RasterOrderComparator::operator()(
+    PairedPictureLayerIterator* a,
+    PairedPictureLayerIterator* b) const {
+  std::pair<PictureLayerImpl::LayerRasterTileIterator*, WhichTree> a_pair =
+      a->NextTileIterator(tree_priority_);
+  DCHECK(a_pair.first);
+  DCHECK(*a_pair.first);
+
+  std::pair<PictureLayerImpl::LayerRasterTileIterator*, WhichTree> b_pair =
+      b->NextTileIterator(tree_priority_);
+  DCHECK(b_pair.first);
+  DCHECK(*b_pair.first);
+
+  Tile* a_tile = **a_pair.first;
+  Tile* b_tile = **b_pair.first;
+
+  switch (tree_priority_) {
+    case SMOOTHNESS_TAKES_PRIORITY:
+      return ComparePriorities(a_tile->priority(ACTIVE_TREE),
+                               b_tile->priority(ACTIVE_TREE),
+                               true /* prioritize low res */);
+    case NEW_CONTENT_TAKES_PRIORITY:
+      return ComparePriorities(a_tile->priority(PENDING_TREE),
+                               b_tile->priority(PENDING_TREE),
+                               false /* prioritize low res */);
+    case SAME_PRIORITY_FOR_BOTH_TREES:
+      return ComparePriorities(a_tile->priority(a_pair.second),
+                               b_tile->priority(b_pair.second),
+                               false /* prioritize low res */);
+  }
+
+  NOTREACHED();
+  // Keep the compiler happy.
+  return false;
+}
+
 }  // namespace cc

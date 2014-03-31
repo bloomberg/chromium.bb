@@ -62,6 +62,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   void SetAllTilesVisible();
   void SetAllTilesReady();
   void SetAllTilesReadyInTiling(PictureLayerTiling* tiling);
+  void ResetAllTilesPriorities();
 
  protected:
   FakePictureLayerImpl(
