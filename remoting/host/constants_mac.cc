@@ -7,8 +7,6 @@
 namespace remoting {
 
 #define SERVICE_NAME "org.chromium.chromoting"
-#define PREFPANE_BUNDLE_NAME "ChromeRemoteDesktop.prefPane"
-#define HOST_BUNDLE_NAME "ChromeRemoteDesktopHost.bundle"
 
 #define APPLICATIONS_DIR "/Applications/"
 #define HELPER_TOOLS_DIR "/Library/PrivilegedHelperTools/"

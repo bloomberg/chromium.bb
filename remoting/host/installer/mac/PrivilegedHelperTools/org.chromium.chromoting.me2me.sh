@@ -4,11 +4,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Version = @@VERSION@@
-
 NAME=org.chromium.chromoting
-HOST_BUNDLE_NAME=ChromeRemoteDesktopHost.bundle
-PREFPANE_BUNDLE_NAME=ChromeRemoteDesktop.prefPane
+HOST_BUNDLE_NAME=@@HOST_BUNDLE_NAME@@
+PREFPANE_BUNDLE_NAME=@@PREFPANE_BUNDLE_NAME@@
 CONFIG_DIR=/Library/PrivilegedHelperTools
 ENABLED_FILE=$CONFIG_DIR/$NAME.me2me_enabled
 CONFIG_FILE=$CONFIG_DIR/$NAME.json

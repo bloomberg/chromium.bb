@@ -34,10 +34,16 @@
           'mac_bundle': 1,
           'variables': {
             'bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_UNINSTALLER_BUNDLE_ID@")',
+            'host_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_NAME@")',
+            'prefpane_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_NAME@")',
           },
           'dependencies': [
             '<(DEPTH)/base/base.gyp:base',
             'remoting_infoplist_strings',
+          ],
+          'defines': [
+            'HOST_BUNDLE_NAME="<(host_bundle_name)"',
+            'PREFPANE_BUNDLE_NAME="<(prefpane_bundle_name)"',
           ],
           'sources': [
             'host/constants_mac.cc',
@@ -169,11 +175,18 @@
           'type': 'loadable_module',
           'mac_bundle': 1,
           'product_extension': 'prefPane',
-          'defines': [
-            'JSON_USE_EXCEPTION=0',
-          ],
+          'variables': {
+            'bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_ID@")',
+            'host_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_HOST_BUNDLE_NAME@")',
+            'prefpane_bundle_name': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_NAME@")',
+          },
           'dependencies': [
             'remoting_infoplist_strings',
+          ],
+          'defines': [
+            'HOST_BUNDLE_NAME="<(host_bundle_name)"',
+            'PREFPANE_BUNDLE_NAME="<(prefpane_bundle_name)"',
+            'JSON_USE_EXCEPTION=0',
           ],
           'include_dirs': [
             '../third_party/jsoncpp/overrides/include/',
@@ -209,9 +222,6 @@
               '$(SDKROOT)/System/Library/Frameworks/PreferencePanes.framework',
               '$(SDKROOT)/System/Library/Frameworks/Security.framework',
             ],
-          },
-          'variables': {
-            'bundle_id': '<!(python <(version_py_path) -f <(branding_path) -t "@MAC_PREFPANE_BUNDLE_ID@")',
           },
           'xcode_settings': {
             'ARCHS': ['i386', 'x86_64'],
