@@ -75,7 +75,6 @@ INITIAL_ENV = {
                           # if it only has the backend translator.
 
   'USE_EMULATOR'        : '0',
-  'USE_BOOTSTRAP'       : '${BUILD_OS==linux ? 1 : 0}',
   # Args passed from one driver invocation to another
   'INHERITED_DRIVER_ARGS' : '',
 
