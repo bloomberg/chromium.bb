@@ -90,16 +90,14 @@ class PepperContainerApp: public Application,
       plugin_instance_->DidChangeView(bounds);
   }
 
-  virtual void OnEvent(const Event& event) OVERRIDE {
-    if (event.location().is_null())
-      return;
-
-    {
+  virtual void OnEvent(const Event& event,
+                       const mojo::Callback<void()>& callback) OVERRIDE {
+    if (!event.location().is_null()) {
       ppapi::ProxyAutoLock lock;
 
       // TODO(yzshen): Handle events.
     }
-    viewport_->AckEvent(event);
+    callback.Run();
   }
 
   // MojoPpapiGlobals::Delegate implementation.

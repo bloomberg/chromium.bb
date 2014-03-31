@@ -60,7 +60,8 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual void OnCreated() OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
   virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE;
-  virtual void OnEvent(const Event& event) OVERRIDE;
+  virtual void OnEvent(const Event& event,
+                       const mojo::Callback<void()>& callback) OVERRIDE;
 
   static ui::ContextFactory* context_factory_;
 

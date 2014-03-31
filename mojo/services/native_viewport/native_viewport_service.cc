@@ -33,8 +33,7 @@ class NativeViewportImpl
  public:
   NativeViewportImpl()
       : widget_(gfx::kNullAcceleratedWidget),
-        waiting_for_event_ack_(false),
-        pending_event_timestamp_(0) {}
+        waiting_for_event_ack_(false) {}
   virtual ~NativeViewportImpl() {}
 
   virtual void Create(const Rect& bounds) OVERRIDE {
@@ -82,8 +81,7 @@ class NativeViewportImpl
     CreateCommandBufferIfNeeded();
   }
 
-  virtual void AckEvent(const Event& event) OVERRIDE {
-    DCHECK_EQ(event.time_stamp(), pending_event_timestamp_);
+  void AckEvent() {
     waiting_for_event_ack_ = false;
   }
 
@@ -118,13 +116,12 @@ class NativeViewportImpl
     if (waiting_for_event_ack_ && IsRateLimitedEventType(ui_event))
       return false;
 
-    pending_event_timestamp_ = ui_event->time_stamp().ToInternalValue();
     AllocationScope scope;
 
     Event::Builder event;
     event.set_action(ui_event->type());
     event.set_flags(ui_event->flags());
-    event.set_time_stamp(pending_event_timestamp_);
+    event.set_time_stamp(ui_event->time_stamp().ToInternalValue());
 
     if (ui_event->IsMouseEvent() || ui_event->IsTouchEvent()) {
       ui::LocatedEvent* located_event =
@@ -148,7 +145,9 @@ class NativeViewportImpl
       event.set_key_data(key_data.Finish());
     }
 
-    client()->OnEvent(event.Finish());
+    client()->OnEvent(event.Finish(),
+                      base::Bind(&NativeViewportImpl::AckEvent,
+                                 base::Unretained(this)));
     waiting_for_event_ack_ = true;
     return false;
   }
@@ -177,7 +176,6 @@ class NativeViewportImpl
   ScopedCommandBufferClientHandle command_buffer_handle_;
   scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;
-  int64 pending_event_timestamp_;
 };
 
 }  // namespace services

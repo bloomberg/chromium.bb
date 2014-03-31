@@ -62,10 +62,9 @@ class SampleApp : public Application, public NativeViewportClient {
     host_->SetSize(bounds.size());
   }
 
-  virtual void OnEvent(const Event& event) OVERRIDE {
-    if (!event.location().is_null()) {
-      viewport_->AckEvent(event);
-    }
+  virtual void OnEvent(const Event& event,
+                       const mojo::Callback<void()>& callback) OVERRIDE {
+    callback.Run();
   }
 
  private:

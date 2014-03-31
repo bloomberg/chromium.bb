@@ -82,9 +82,8 @@ class ViewManagerImpl : public Service<ViewManager, ViewManagerImpl>,
   virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE {
     // TODO(beng):
   }
-  virtual void OnEvent(const Event& event) OVERRIDE {
-    if (!event.location().is_null())
-      native_viewport_->AckEvent(event);
+  virtual void OnEvent(const Event& event,
+                       const mojo::Callback<void()>& callback) OVERRIDE {
     if (event.action() == ui::ET_KEY_RELEASED) {
       if (event.key_data().key_code() == ui::VKEY_L &&
           (event.flags() & ui::EF_CONTROL_DOWN)) {
@@ -92,6 +91,7 @@ class ViewManagerImpl : public Service<ViewManager, ViewManagerImpl>,
         launcher_->Show();
       }
     }
+    callback.Run();
   }
 
   // Overridden from LauncherClient:

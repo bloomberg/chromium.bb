@@ -45,7 +45,6 @@ interface NativeViewport {
   Close();
   SetBounds(Rect bounds);
   CreateGLES2Context(handle<message_pipe> gles2_client);
-  AckEvent(Event event);
 };
 
 [Peer=NativeViewport]
@@ -53,7 +52,7 @@ interface NativeViewportClient {
   OnCreated();
   OnBoundsChanged(Rect bounds);
   OnDestroyed();
-  OnEvent(Event event);
+  OnEvent(Event event) => ();
 };
 
 }

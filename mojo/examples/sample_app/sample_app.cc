@@ -71,11 +71,11 @@ class SampleApp : public Application, public mojo::NativeViewportClient {
     gles2_client_->SetSize(bounds.size());
   }
 
-  virtual void OnEvent(const Event& event) MOJO_OVERRIDE {
-    if (!event.location().is_null()) {
+  virtual void OnEvent(const Event& event,
+                       const mojo::Callback<void()>& callback) MOJO_OVERRIDE {
+    if (!event.location().is_null())
       gles2_client_->HandleInputEvent(event);
-      viewport_->AckEvent(event);
-    }
+    callback.Run();
   }
 
  private:
