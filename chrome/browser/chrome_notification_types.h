@@ -707,25 +707,6 @@ enum NotificationType {
   // are a ChromeCookieDetails object.
   NOTIFICATION_COOKIE_CHANGED,
 
-  // Signin Manager ----------------------------------------------------------
-  // TODO(blundell): Eliminate SigninManager notifications once
-  // crbug.com/333997 is fixed.
-
-  // Sent when a user signs into Google services such as sync.
-  // The source is the Profile. The details are a
-  // GoogleServiceSigninSuccessDetails object.
-  NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-
-  // Sent when a user fails to sign into Google services such as sync.
-  // The source is the Profile. The details are a GoogleServiceAuthError
-  // object.
-  NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-
-  // Sent when the currently signed-in user for a user has been signed out.
-  // The source is the Profile. The details are a
-  // GoogleServiceSignoutDetails object.
-  NOTIFICATION_GOOGLE_SIGNED_OUT,
-
   // Download Notifications --------------------------------------------------
 
   // Sent when a download is initiated. It is possible that the download will

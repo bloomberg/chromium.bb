@@ -43,26 +43,6 @@ class PrefService;
 class Profile;
 class SigninClient;
 
-// Details for the Notification type GOOGLE_SIGNIN_SUCCESSFUL.
-// TODO(blundell): Eliminate this struct once crbug.com/333997 is fixed.
-// A listener might use this to make note of a username / password
-// pair for encryption keys.
-struct GoogleServiceSigninSuccessDetails {
-  GoogleServiceSigninSuccessDetails(const std::string& in_username,
-                                    const std::string& in_password)
-      : username(in_username), password(in_password) {}
-  std::string username;
-  std::string password;
-};
-
-// Details for the Notification type NOTIFICATION_GOOGLE_SIGNED_OUT.
-// TODO(blundell): Eliminate this struct once crbug.com/333997 is fixed.
-struct GoogleServiceSignoutDetails {
-  explicit GoogleServiceSignoutDetails(const std::string& in_username)
-      : username(in_username) {}
-  std::string username;
-};
-
 class SigninManagerBase : public KeyedService {
  public:
   class Observer {

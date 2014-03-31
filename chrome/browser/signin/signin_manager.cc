@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
@@ -21,7 +20,6 @@
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_cookie_helper.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
@@ -175,13 +173,6 @@ void SigninManager::ClearTransientSigninData() {
 void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
   ClearTransientSigninData();
 
-  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
-  // fixed.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
-      content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceAuthError>(&error));
-
   FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSigninFailed(error));
 }
 
@@ -224,14 +215,6 @@ void SigninManager::SignOut() {
   LOG(WARNING) << "Revoking refresh token on server. Reason: sign out, "
                << "IsSigninAllowed: " << IsSigninAllowed();
   token_service_->RevokeAllCredentials();
-
-  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
-  // fixed.
-  GoogleServiceSignoutDetails details(username);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-      content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceSignoutDetails>(&details));
 
   FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
 }
@@ -380,15 +363,6 @@ void SigninManager::OnExternalSigninCompleted(const std::string& username) {
 void SigninManager::OnSignedIn(const std::string& username) {
   SetAuthenticatedUsername(username);
   possibly_invalid_username_.clear();
-
-  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
-  // fixed.
-  GoogleServiceSigninSuccessDetails details(GetAuthenticatedUsername(),
-                                            password_);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-      content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceSigninSuccessDetails>(&details));
 
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     GoogleSigninSucceeded(GetAuthenticatedUsername(),

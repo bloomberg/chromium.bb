@@ -287,7 +287,7 @@ void AccountReconcilor::UnregisterWithSigninManager() {
 
 void AccountReconcilor::RegisterWithTokenService() {
   VLOG(1) << "AccountReconcilor::RegisterWithTokenService";
-  // During re-auth, the reconcilor will get a GOOGLE_SIGNIN_SUCCESSFUL
+  // During re-auth, the reconcilor will get a callback about successful signin
   // even when the profile is already connected.  Avoid re-registering
   // with the token service since this will DCHECK.
   if (registered_with_token_service_)

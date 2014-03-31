@@ -273,7 +273,6 @@ public class SigninManager {
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
 
         // Tell the native side that sign-in has completed.
-        // This will trigger NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL.
         nativeOnSignInCompleted(mNativeSigninManagerAndroid, mSignInAccount.name);
 
         // Register for invalidations.

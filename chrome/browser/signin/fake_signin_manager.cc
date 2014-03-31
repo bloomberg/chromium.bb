@@ -6,7 +6,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -15,7 +14,6 @@
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_service.h"
 
 FakeSigninManagerBase::FakeSigninManagerBase(Profile* profile)
     : SigninManagerBase(
@@ -87,14 +85,6 @@ void FakeSigninManager::SignOut() {
   set_password(std::string());
   const std::string username = authenticated_username_;
   authenticated_username_.clear();
-
-  // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
-  // fixed.
-  GoogleServiceSignoutDetails details(username);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-      content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceSignoutDetails>(&details));
 
   FOR_EACH_OBSERVER(SigninManagerBase::Observer, observer_list_,
                     GoogleSignedOut(username));
