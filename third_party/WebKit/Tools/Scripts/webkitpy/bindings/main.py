@@ -22,6 +22,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+from contextlib import contextmanager
 import filecmp
 import fnmatch
 import os
@@ -31,12 +32,12 @@ import tempfile
 
 from webkitpy.common.system.executive import Executive
 
-# Add Source path to PYTHONPATH to support function calls to bindings/scripts
-# for compute_interfaces_info and idl_compiler
+# Source/ path is needed both to find input IDL files, and to import other
+# Python modules.
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
                                             os.pardir, os.pardir, 'Source'))
-sys.path.append(source_path)
+sys.path.append(source_path)  # for Source/bindings imports
 
 from bindings.scripts.compute_interfaces_info import compute_interfaces_info, interfaces_info
 from bindings.scripts.idl_compiler import IdlCompilerV8
@@ -70,25 +71,22 @@ test_input_directory = os.path.join(source_path, 'bindings', 'tests', 'idls')
 reference_directory = os.path.join(source_path, 'bindings', 'tests', 'results')
 
 
-class ScopedTempDir(object):
-    """Wrapper for tempfile.mkdtemp() so it's usable with 'with' statement."""
-    def __init__(self):
-        self.dir_path = tempfile.mkdtemp()
+@contextmanager
+def TemporaryDirectory():
+    """Wrapper for tempfile.mkdtemp() so it's usable with 'with' statement.
 
-    def __enter__(self):
-        return self.dir_path
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        # The temporary directory is used as an output directory, so it
-        # contains unknown files (it isn't empty), hence use rmtree
-        shutil.rmtree(self.dir_path)
+    Simple backport of tempfile.TemporaryDirectory from Python 3.2.
+    """
+    name = tempfile.mkdtemp()
+    yield name
+    shutil.rmtree(name)
 
 
 def generate_interface_dependencies():
     def idl_paths_recursive(directory):
         # This is slow, especially on Windows, due to os.walk making
-        # excess stat() calls. Faster versions may appear in future
-        # versions of Python:
+        # excess stat() calls. Faster versions may appear in Python 3.5 or
+        # later:
         # https://github.com/benhoyt/scandir
         # http://bugs.python.org/issue11406
         idl_paths = []
@@ -140,6 +138,8 @@ def bindings_tests(output_directory, verbose):
         reference_basename = os.path.basename(reference_filename)
 
         if not filecmp.cmp(reference_filename, output_filename):
+            # cmp is much faster than diff, and usual case is "no differance",
+            # so only run diff if cmp detects a difference
             print 'FAIL: %s' % reference_basename
             print diff(reference_filename, output_filename)
             return False
@@ -168,26 +168,27 @@ def bindings_tests(output_directory, verbose):
             return False
         return True
 
-    generate_interface_dependencies()
-    idl_compiler = IdlCompilerV8(output_directory,
-                                 EXTENDED_ATTRIBUTES_FILE,
-                                 interfaces_info=interfaces_info,
-                                 only_if_changed=True)
+    try:
+        generate_interface_dependencies()
+        idl_compiler = IdlCompilerV8(output_directory,
+                                     EXTENDED_ATTRIBUTES_FILE,
+                                     interfaces_info=interfaces_info,
+                                     only_if_changed=True)
 
-    idl_basenames = [filename
-                     for filename in os.listdir(test_input_directory)
-                     if (filename.endswith('.idl') and
-                         # Dependencies aren't built
-                         # (they are used by the dependent)
-                         filename not in DEPENDENCY_IDL_FILES)]
-    for idl_basename in idl_basenames:
-        idl_path = os.path.realpath(
-            os.path.join(test_input_directory, idl_basename))
-        idl_compiler.compile_file(idl_path)
-        if verbose:
-            print 'Compiled: %s' % filename
-
-    delete_cache_files()
+        idl_basenames = [filename
+                         for filename in os.listdir(test_input_directory)
+                         if (filename.endswith('.idl') and
+                             # Dependencies aren't built
+                             # (they are used by the dependent)
+                             filename not in DEPENDENCY_IDL_FILES)]
+        for idl_basename in idl_basenames:
+            idl_path = os.path.realpath(
+                os.path.join(test_input_directory, idl_basename))
+            idl_compiler.compile_file(idl_path)
+            if verbose:
+                print 'Compiled: %s' % filename
+    finally:
+        delete_cache_files()
 
     # Detect all changes
     passed = identical_output_files()
@@ -209,5 +210,5 @@ def run_bindings_tests(reset_results, verbose):
     if reset_results:
         print 'Resetting results'
         return bindings_tests(reference_directory, verbose)
-    with ScopedTempDir() as temp_dir:
+    with TemporaryDirectory() as temp_dir:
         return bindings_tests(temp_dir, verbose)
