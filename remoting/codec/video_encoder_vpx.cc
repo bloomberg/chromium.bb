@@ -77,12 +77,62 @@ ScopedVpxCodec CreateVP8Codec(const webrtc::DesktopSize& size) {
   return codec.Pass();
 }
 
+ScopedVpxCodec CreateVP9Codec(const webrtc::DesktopSize& size) {
+  ScopedVpxCodec codec(new vpx_codec_ctx_t);
+
+  // Configure the encoder.
+  vpx_codec_enc_cfg_t config;
+  const vpx_codec_iface_t* algo = vpx_codec_vp9_cx();
+  CHECK(algo);
+  vpx_codec_err_t ret = vpx_codec_enc_config_default(algo, &config, 0);
+  if (ret != VPX_CODEC_OK)
+    return ScopedVpxCodec();
+
+  //config.rc_target_bitrate = size.width() * size.height() *
+  //    config.rc_target_bitrate / config.g_w / config.g_h;
+  config.g_w = size.width();
+  config.g_h = size.height();
+  config.g_pass = VPX_RC_ONE_PASS;
+
+  // Only the default profile is currently supported for VP9 encoding.
+  config.g_profile = 0;
+
+  // Start emitting packets immediately.
+  config.g_lag_in_frames = 0;
+
+  // Prevent VP9 from ruining output quality with quantization.
+  config.rc_max_quantizer = 0;
+
+  if (vpx_codec_enc_init(codec.get(), algo, &config, 0))
+    return ScopedVpxCodec();
+
+  // VP9 encode doesn't yet support Realtime, so falls back to Good quality,
+  // for which 4 is the lowest CPU usage.
+  // Note that this is configured via the same parameter as for VP8.
+  if (vpx_codec_control(codec.get(), VP8E_SET_CPUUSED, 4))
+    return ScopedVpxCodec();
+
+  // Use the lowest level of noise sensitivity so as to spend less time
+  // on motion estimation and inter-prediction mode.
+  // Note that this is configured via the same parameter as for VP8.
+  if (vpx_codec_control(codec.get(), VP8E_SET_NOISE_SENSITIVITY, 0))
+    return ScopedVpxCodec();
+
+  return codec.Pass();
+}
+
 }  // namespace
 
 // static
 scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP8() {
   return scoped_ptr<VideoEncoderVpx>(
       new VideoEncoderVpx(base::Bind(&CreateVP8Codec)));
+}
+
+// static
+scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9() {
+  return scoped_ptr<VideoEncoderVpx>(
+      new VideoEncoderVpx(base::Bind(&CreateVP9Codec)));
 }
 
 VideoEncoderVpx::~VideoEncoderVpx() {}
