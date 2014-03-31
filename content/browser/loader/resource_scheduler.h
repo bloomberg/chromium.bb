@@ -87,6 +87,11 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
  private:
   class RequestQueue;
   class ScheduledResourceRequest;
+  struct RequestPriorityParams;
+  struct ScheduledResourceSorter {
+    bool operator()(const ScheduledResourceRequest* a,
+                    const ScheduledResourceRequest* b) const;
+  };
   struct Client;
 
   typedef int64 ClientId;
@@ -106,7 +111,8 @@ class CONTENT_EXPORT ResourceScheduler : public base::NonThreadSafe {
   // reprioritized, it will move to the end of the queue for that priority
   // level.
   void ReprioritizeRequest(ScheduledResourceRequest* request,
-                           net::RequestPriority new_priority);
+                           net::RequestPriority new_priority,
+                           int intra_priority_value);
 
   // Attempts to load any pending requests in |client|, based on the
   // results of ShouldStartRequest().

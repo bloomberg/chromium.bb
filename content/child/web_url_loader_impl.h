@@ -39,7 +39,8 @@ class WebURLLoaderImpl : public blink::WebURLLoader {
       blink::WebURLLoaderClient* client);
   virtual void cancel();
   virtual void setDefersLoading(bool value);
-  virtual void didChangePriority(blink::WebURLRequest::Priority new_priority);
+  virtual void didChangePriority(blink::WebURLRequest::Priority new_priority,
+                                 int intra_priority_value);
 
  private:
   class Context;
