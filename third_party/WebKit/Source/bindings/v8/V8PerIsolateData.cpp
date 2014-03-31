@@ -34,7 +34,6 @@
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8ScriptRunner.h"
-#include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -129,11 +128,8 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
 
 v8::Local<v8::Context> V8PerIsolateData::ensureDomInJSContext()
 {
-    if (!m_domInJSPerContextData) {
+    if (!m_domInJSPerContextData)
         m_domInJSPerContextData = V8PerContextData::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
-        // The V8PerContextData is collected via a weak reference callback from the V8Context, which is expected to not always shutdown cleanly.
-        WTF_ANNOTATE_LEAKING_OBJECT_PTR(m_domInJSPerContextData.get());
-    }
     return m_domInJSPerContextData->context();
 }
 
