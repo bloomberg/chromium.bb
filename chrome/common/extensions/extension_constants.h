@@ -80,6 +80,9 @@ namespace extension_misc {
   // The extension id of the Cloud Print component application.
   extern const char kCloudPrintAppId[];
 
+  // The extension id of the Easy Unlock component application.
+  extern const char kEasyUnlockAppId[];
+
   // The extension id of the Enterprise Web Store component application.
   extern const char kEnterpriseWebStoreAppId[];
 

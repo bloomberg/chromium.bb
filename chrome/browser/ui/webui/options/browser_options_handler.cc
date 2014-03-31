@@ -51,6 +51,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/easy_unlock.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -1630,7 +1631,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
 
 void BrowserOptionsHandler::HandleLaunchEasyUnlockSetup(
     const base::ListValue* args) {
-  // TODO(tengs): launch Easy Unlock setup flow.
+  easy_unlock::LaunchEasyUnlockSetup(Profile::FromWebUI(web_ui()));
 }
 
 void BrowserOptionsHandler::HandleRequestHotwordSetupRetry(
