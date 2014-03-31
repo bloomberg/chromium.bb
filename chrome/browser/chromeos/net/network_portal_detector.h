@@ -39,6 +39,7 @@ class NetworkPortalDetector : public ErrorScreen::Observer {
 
     CaptivePortalStatus status;
     int response_code;
+    base::TimeTicks time;
   };
 
   class Observer {

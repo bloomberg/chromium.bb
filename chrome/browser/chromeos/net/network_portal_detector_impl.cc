@@ -105,6 +105,18 @@ void RecordDiscrepancyWithShill(
   }
 }
 
+void RecordPortalToOnlineTransition(const base::TimeDelta& duration) {
+  if (InSession()) {
+    UMA_HISTOGRAM_LONG_TIMES(
+        NetworkPortalDetectorImpl::kSessionPortalToOnlineHistogram,
+        duration);
+  } else {
+    UMA_HISTOGRAM_LONG_TIMES(
+        NetworkPortalDetectorImpl::kOobePortalToOnlineHistogram,
+        duration);
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +132,8 @@ const char NetworkPortalDetectorImpl::kOobeShillPortalHistogram[] =
     "CaptivePortal.OOBE.DiscrepancyWithShill_RestrictedPool";
 const char NetworkPortalDetectorImpl::kOobeShillOfflineHistogram[] =
     "CaptivePortal.OOBE.DiscrepancyWithShill_Offline";
+const char NetworkPortalDetectorImpl::kOobePortalToOnlineHistogram[] =
+    "CaptivePortal.OOBE.PortalToOnlineTransition";
 
 const char NetworkPortalDetectorImpl::kSessionDetectionResultHistogram[] =
     "CaptivePortal.Session.DetectionResult";
@@ -131,6 +145,8 @@ const char NetworkPortalDetectorImpl::kSessionShillPortalHistogram[] =
     "CaptivePortal.Session.DiscrepancyWithShill_RestrictedPool";
 const char NetworkPortalDetectorImpl::kSessionShillOfflineHistogram[] =
     "CaptivePortal.Session.DiscrepancyWithShill_Offline";
+const char NetworkPortalDetectorImpl::kSessionPortalToOnlineHistogram[] =
+    "CaptivePortal.Session.PortalToOnlineTransition";
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
@@ -406,6 +422,7 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
 
   CaptivePortalState state;
   state.response_code = response_code;
+  state.time = GetCurrentTimeTicks();
   switch (result) {
     case captive_portal::RESULT_NO_RESPONSE:
       if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {
@@ -482,6 +499,11 @@ void NetworkPortalDetectorImpl::OnDetectionCompleted(
     // previous one for this network. The reason is to record all stats
     // only when network changes it's state.
     RecordDetectionStats(network, state.status);
+    if (it != portal_state_map_.end() &&
+        it->second.status == CAPTIVE_PORTAL_STATUS_PORTAL &&
+        state.status == CAPTIVE_PORTAL_STATUS_ONLINE) {
+      RecordPortalToOnlineTransition(state.time - it->second.time);
+    }
 
     portal_state_map_[network->path()] = state;
   }

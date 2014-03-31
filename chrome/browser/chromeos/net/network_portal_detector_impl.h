@@ -50,12 +50,14 @@ class NetworkPortalDetectorImpl
   static const char kOobeShillOnlineHistogram[];
   static const char kOobeShillPortalHistogram[];
   static const char kOobeShillOfflineHistogram[];
+  static const char kOobePortalToOnlineHistogram[];
 
   static const char kSessionDetectionResultHistogram[];
   static const char kSessionDetectionDurationHistogram[];
   static const char kSessionShillOnlineHistogram[];
   static const char kSessionShillPortalHistogram[];
   static const char kSessionShillOfflineHistogram[];
+  static const char kSessionPortalToOnlineHistogram[];
 
   explicit NetworkPortalDetectorImpl(
       const scoped_refptr<net::URLRequestContextGetter>& request_context);

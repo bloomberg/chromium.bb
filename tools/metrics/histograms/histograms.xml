@@ -1846,6 +1846,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="CaptivePortal.OOBE.PortalToOnlineTransition"
+    units="milliseconds">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    Number of milliseconds passed between consecutive reports for the same
+    network about portal and online states.
+  </summary>
+</histogram>
+
 <histogram name="CaptivePortal.Session.DetectionDuration" units="milliseconds">
   <owner>ygorshenin@chromium.org</owner>
   <summary>
@@ -1873,6 +1882,15 @@ other types of suffix sets.
     The result of captive portal detection attempts in session if it diverges
     from network manager results. Detection result is recorded each time portal
     detection is completed for an active network.
+  </summary>
+</histogram>
+
+<histogram name="CaptivePortal.Session.PortalToOnlineTransition"
+    units="milliseconds">
+  <owner>ygorshenin@chromium.org</owner>
+  <summary>
+    Number of milliseconds passed between consecutive reports for the same
+    network about portal and online states.
   </summary>
 </histogram>
 
