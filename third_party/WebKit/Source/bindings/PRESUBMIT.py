@@ -32,8 +32,17 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+# Changes to v8/ do not change generated code or tests, so exclude from
+# _RunBindingsTests
+BLACK_LIST = (r'.*\bv8[\\\/].*',)
 
 def _RunBindingsTests(input_api, output_api):
+    # Skip if nothing to do
+    source_filter = lambda x: input_api.FilterSourceFile(
+                x, black_list=input_api.DEFAULT_BLACK_LIST + BLACK_LIST)
+    if not input_api.AffectedFiles(file_filter=source_filter):
+        return []
+
     if input_api.is_committing:
         message_type = output_api.PresubmitError
     else:
