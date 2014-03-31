@@ -2070,6 +2070,10 @@ void Document::attach(const AttachContext& context)
 
     ContainerNode::attach(context);
 
+    // FTA can't update render view info while the Document is detached, so update now in case anything changed.
+    if (FastTextAutosizer* textAutosizer = fastTextAutosizer())
+        textAutosizer->updatePageInfo();
+
     m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
 }
 

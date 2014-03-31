@@ -50,6 +50,7 @@
 #include "core/page/StorageClient.h"
 #include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/storage/StorageNamespace.h"
@@ -487,20 +488,19 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
         }
         break;
     case SettingsDelegate::TextAutosizingChange:
-        // FTA needs both setNeedsRecalcStyle and setNeedsLayout after a setting change.
-        if (RuntimeEnabledFeatures::fastTextAutosizingEnabled()) {
-            setNeedsRecalcStyleInAllFrames();
+        if (!mainFrame())
+            break;
+        if (FastTextAutosizer* textAutosizer = mainFrame()->document()->fastTextAutosizer()) {
+            textAutosizer->updatePageInfoInAllFrames();
         } else {
-            // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
             for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-                TextAutosizer* textAutosizer = frame->document()->textAutosizer();
-                if (textAutosizer)
+                if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
                     textAutosizer->recalculateMultipliers();
             }
+            // TextAutosizing updates RenderStyle during layout phase (via TextAutosizer::processSubtree).
+            // We should invoke setNeedsLayout here.
+            setNeedsLayoutInAllFrames();
         }
-        // TextAutosizing updates RenderStyle during layout phase (via TextAutosizer::processSubtree).
-        // We should invoke setNeedsLayout here.
-        setNeedsLayoutInAllFrames();
         break;
     case SettingsDelegate::ScriptEnableChange:
         m_inspectorController->scriptsEnabled(settings().scriptEnabled());

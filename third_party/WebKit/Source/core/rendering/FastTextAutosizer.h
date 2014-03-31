@@ -60,6 +60,8 @@ public:
         return adoptPtr(new FastTextAutosizer(document));
     }
 
+    void updatePageInfoInAllFrames();
+    void updatePageInfo();
     void record(const RenderBlock*);
     void destroy(const RenderBlock*);
     void inflateListItem(RenderListItem*, RenderListMarker*);
@@ -82,10 +84,9 @@ private:
         NotEnoughText
     };
 
-    enum PageAutosizingStatus {
-        PageAutosizingStatusUnknown,
-        PageNeedsAutosizing,
-        PageDoesNotNeedAutosizing
+    enum RelayoutBehavior {
+        AlreadyInLayout, // The default; appropriate if we are already in layout.
+        LayoutNeeded // Use this if changing a multiplier outside of layout.
     };
 
     // A supercluster represents autosizing information about a set of two or
@@ -190,7 +191,8 @@ private:
     void inflateTable(RenderTable*);
     void inflate(RenderBlock*);
     bool enabled();
-    void updateRenderViewInfo();
+    void setAllTextNeedsLayout();
+    void resetMultipliers();
     void prepareClusterStack(const RenderObject*);
     bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
@@ -211,7 +213,7 @@ private:
     // block's width otherwise.
     float widthFromBlock(const RenderBlock*);
     float multiplierFromBlock(const RenderBlock*);
-    void applyMultiplier(RenderObject*, float);
+    void applyMultiplier(RenderObject*, float, RelayoutBehavior = AlreadyInLayout);
     bool isWiderOrNarrowerDescendant(Cluster*);
     bool isLayoutRoot(const RenderBlock*) const;
 
@@ -230,10 +232,10 @@ private:
     int m_frameWidth; // LocalFrame width in density-independent pixels (DIPs).
     int m_layoutWidth; // Layout width in CSS pixels.
     float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
-    PageAutosizingStatus m_pageAutosizingStatus;
+    bool m_pageNeedsAutosizing;
+    bool m_previouslyAutosized;
     const RenderBlock* m_firstBlock; // First block to receive beginLayout.
 #ifndef NDEBUG
-    bool m_renderViewInfoPrepared;
     BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.
 #endif
 

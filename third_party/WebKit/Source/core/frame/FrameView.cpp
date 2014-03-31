@@ -370,8 +370,10 @@ void FrameView::setFrameRect(const IntRect& newRect)
         return;
 
     // Autosized font sizes depend on the width of the viewing area.
+    bool autosizerNeedsUpdating = false;
     if (newRect.width() != oldRect.width()) {
         if (isMainFrame() && m_frame->settings()->textAutosizingEnabled()) {
+            autosizerNeedsUpdating = true;
             for (LocalFrame* frame = m_frame.get(); frame; frame = frame->tree().traverseNext()) {
                 if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
                     textAutosizer->recalculateMultipliers();
@@ -382,6 +384,12 @@ void FrameView::setFrameRect(const IntRect& newRect)
     ScrollView::setFrameRect(newRect);
 
     updateScrollableAreaSet();
+
+    if (autosizerNeedsUpdating) {
+        // This needs to be after the call to ScrollView::setFrameRect, because it reads the new width.
+        if (FastTextAutosizer* textAutosizer = m_frame->document()->fastTextAutosizer())
+            textAutosizer->updatePageInfoInAllFrames();
+    }
 
     if (RenderView* renderView = this->renderView()) {
         if (renderView->usesCompositing())
@@ -1776,6 +1784,11 @@ void FrameView::repaintContentRectangle(const IntRect& r)
 
 void FrameView::contentsResized()
 {
+    if (isMainFrame() && m_frame->document()) {
+        if (FastTextAutosizer* textAutosizer = m_frame->document()->fastTextAutosizer())
+            textAutosizer->updatePageInfoInAllFrames();
+    }
+
     ScrollView::contentsResized();
     if (RenderView* renderView = this->renderView()) {
         // Don't directly repaint layer in setNeedsLayout. We'll handle repaint in layout().
