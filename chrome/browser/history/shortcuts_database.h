@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "sql/connection.h"
+#include "sql/meta_table.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -125,6 +126,8 @@ class ShortcutsDatabase : public base::RefCountedThreadSafe<ShortcutsDatabase> {
   // The sql database. Not valid until Init is called.
   sql::Connection db_;
   base::FilePath database_path_;
+
+  sql::MetaTable meta_table_;
 
   static const base::FilePath::CharType kShortcutsDatabaseName[];
 

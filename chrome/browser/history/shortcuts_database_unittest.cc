@@ -220,14 +220,19 @@ TEST_F(ShortcutsDatabaseTest, DeleteAllShortcuts) {
   EXPECT_EQ(0U, shortcuts.size());
 }
 
-TEST(ShortcutsDatabaseMigrationTest, MigrateV1ToV2) {
-  // Open the v1 test file and use it to create a test database in a temp dir.
+TEST(ShortcutsDatabaseMigrationTest, MigrateTableAddFillIntoEdit) {
+  // Use the pre-v0 test file to create a test database in a temp dir.
   base::FilePath sql_path;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
-  sql_path = sql_path.AppendASCII("History").AppendASCII("Shortcuts.v1.sql");
+  sql_path = sql_path.AppendASCII("History").AppendASCII(
+#if defined(OS_ANDROID)
+      "Shortcuts.v1.sql");
+#else
+      "Shortcuts.no_fill_into_edit.sql");
+#endif
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts.db"));
+  base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts1.db"));
   ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path, sql_path));
 
   CheckV2ColumnExistence(db_path, false);
@@ -260,6 +265,40 @@ TEST(ShortcutsDatabaseMigrationTest, MigrateV1ToV2) {
     EXPECT_TRUE(statement.ColumnString(4).empty());
   }
   EXPECT_TRUE(statement.Succeeded());
+#if !defined(OS_WIN)
+  EXPECT_TRUE(temp_dir.Delete());
+#endif
+}
+
+TEST(ShortcutsDatabaseMigrationTest, MigrateV0ToV1) {
+  // Use the v0 test file to create a test database in a temp dir.
+  base::FilePath sql_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &sql_path));
+  sql_path = sql_path.AppendASCII("History").AppendASCII("Shortcuts.v0.sql");
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath db_path(temp_dir.path().AppendASCII("TestShortcuts2.db"));
+  ASSERT_TRUE(sql::test::CreateDatabaseFromSQL(db_path, sql_path));
+
+  // Create a ShortcutsDatabase from the test database, which will migrate the
+  // test database to the current version.
+  {
+    scoped_refptr<ShortcutsDatabase> db(new ShortcutsDatabase(db_path));
+    db->Init();
+  }
+
+  // Check that all the old type values got converted to new values.
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(db_path));
+  sql::Statement statement(connection.GetUniqueStatement(
+      "SELECT count(1) FROM omni_box_shortcuts WHERE type in (9, 10, 11, 12)"));
+  ASSERT_TRUE(statement.is_valid());
+  while (statement.Step())
+    EXPECT_EQ(0, statement.ColumnInt(0));
+  EXPECT_TRUE(statement.Succeeded());
+#if !defined(OS_WIN)
+  EXPECT_TRUE(temp_dir.Delete());
+#endif
 }
 
 }  // namespace history

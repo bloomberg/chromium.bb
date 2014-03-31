@@ -26,7 +26,7 @@ namespace {
 
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
-// or database without *too* many bad effects.
+// our database without *too* many bad effects.
 const int kCurrentVersionNumber = 28;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
