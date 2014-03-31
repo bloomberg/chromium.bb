@@ -4,6 +4,7 @@
 
 from metrics import cpu
 from metrics import media
+from metrics import system_memory
 from metrics import power
 from telemetry.page import page_measurement
 
@@ -21,6 +22,7 @@ class Media(page_measurement.PageMeasurement):
     # Used to add browser power and CPU metrics to results per test.
     self._add_browser_metrics = False
     self._cpu_metric = None
+    self._memory_metric = None
     self._power_metric = power.PowerMetric()
 
   def results_are_the_same_on_every_page(self):
@@ -39,14 +41,14 @@ class Media(page_measurement.PageMeasurement):
     self._media_metric.Start(page, tab)
 
     # Reset to false for every page.
-    self._add_browser_metrics = False
-    if hasattr(page, 'add_browser_metrics'):
-      self._add_browser_metrics = page.add_browser_metrics
+    self._add_browser_metrics = (page.add_browser_metrics
+        if hasattr(page, 'add_browser_metrics') else False)
 
-    # Start browser metrics at page level to isolate startup CPU usage.
     if self._add_browser_metrics:
       self._cpu_metric = cpu.CpuMetric(tab.browser)
       self._cpu_metric.Start(page, tab)
+      self._memory_metric = system_memory.SystemMemoryMetric(tab.browser)
+      self._memory_metric.Start(page, tab)
       self._power_metric.Start(page, tab)
 
   def MeasurePage(self, page, tab, results):
@@ -56,7 +58,13 @@ class Media(page_measurement.PageMeasurement):
 
     if self._add_browser_metrics:
       self._cpu_metric.Stop(page, tab)
-      self._cpu_metric.AddResults(tab, results, trace_name=trace_name)
+      self._memory_metric.Stop(page, tab)
       self._power_metric.Stop(page, tab)
+      self._cpu_metric.AddResults(tab, results, trace_name=trace_name)
+      exclude_metrics = ['WorkingSetSizePeak', 'SystemCommitCharge', 'VMPeak',
+                         'VM']
+      self._memory_metric.AddResults(tab, results,
+                                     trace_name=trace_name,
+                                     exclude_metrics=exclude_metrics)
       self._power_metric.AddResults(tab, results)
 
