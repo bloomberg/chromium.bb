@@ -431,18 +431,10 @@ void RenderThreadImpl::Init() {
 #endif
   }
 
-  is_gpu_rasterization_enabled_ = false;
-  is_gpu_rasterization_forced_ = false;
-  if (is_impl_side_painting_enabled_ &&
-      !command_line.HasSwitch(switches::kDisableGpuRasterization)) {
-    if (command_line.HasSwitch(switches::kForceGpuRasterization)) {
-      is_gpu_rasterization_forced_ = true;
-    } else if (command_line.HasSwitch(switches::kEnableGpuRasterization) ||
-               command_line.HasSwitch(
-                   switches::kEnableBleedingEdgeRenderingFastPaths)) {
-      is_gpu_rasterization_enabled_ = true;
-    }
-  }
+  is_gpu_rasterization_enabled_ =
+      command_line.HasSwitch(switches::kEnableGpuRasterization);
+  is_gpu_rasterization_forced_ =
+      command_line.HasSwitch(switches::kForceGpuRasterization);
 
   is_low_res_tiling_enabled_ = true;
   if (command_line.HasSwitch(switches::kDisableLowResTiling) &&

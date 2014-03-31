@@ -155,6 +155,14 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
           " line or not supported by the current system.",
           false
       },
+      {
+          "raster",
+          false,
+          !IsGpuRasterizationEnabled() && !IsForceGpuRasterizationEnabled(),
+          "Accelerated rasterization has not been enabled or"
+          " is not supported by the current system.",
+          true
+      }
   };
   DCHECK(index < arraysize(kGpuFeatureInfo));
   *eof = (index == arraysize(kGpuFeatureInfo) - 1);
@@ -273,6 +281,30 @@ bool IsImplSidePaintingEnabled() {
 #endif
 }
 
+bool IsGpuRasterizationEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (!IsImplSidePaintingEnabled())
+    return false;
+
+  if (command_line.HasSwitch(switches::kDisableGpuRasterization))
+    return false;
+  else if (command_line.HasSwitch(switches::kEnableGpuRasterization))
+    return true;
+
+  return command_line.HasSwitch(
+      switches::kEnableBleedingEdgeRenderingFastPaths);
+}
+
+bool IsForceGpuRasterizationEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (!IsImplSidePaintingEnabled())
+    return false;
+
+  return command_line.HasSwitch(switches::kForceGpuRasterization);
+}
+
 base::Value* GetFeatureStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
@@ -328,17 +360,16 @@ base::Value* GetFeatureStatus() {
           status += "_force";
         if (has_thread)
           status += "_threaded";
-      }
-      if (gpu_feature_info.name == "css_animation") {
+      } else if (gpu_feature_info.name == "css_animation") {
         if (has_thread)
           status = "accelerated_threaded";
         else
           status = "accelerated";
+      } else if (gpu_feature_info.name == "raster") {
+        if (IsForceGpuRasterizationEnabled())
+          status += "_force";
       }
     }
-    // TODO(reveman): Remove this when crbug.com/223286 has been fixed.
-    if (gpu_feature_info.name == "raster" && IsImplSidePaintingEnabled())
-      status = "disabled_software_multithreaded";
     feature_status_dict->SetString(
         gpu_feature_info.name.c_str(), status.c_str());
   }

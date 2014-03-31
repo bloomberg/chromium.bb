@@ -968,6 +968,12 @@ static void AppendGpuCommandLineFlags(CommandLine* command_line) {
   if (IsImplSidePaintingEnabled())
     command_line->AppendSwitch(switches::kEnableImplSidePainting);
 
+  if (content::IsGpuRasterizationEnabled())
+    command_line->AppendSwitch(switches::kEnableGpuRasterization);
+
+  if (content::IsForceGpuRasterizationEnabled())
+    command_line->AppendSwitch(switches::kForceGpuRasterization);
+
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   DCHECK(gpu_data_manager);
@@ -1038,7 +1044,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFiltersOverIPC,
     switches::kDisableGpu,
     switches::kDisableGpuCompositing,
-    switches::kDisableGpuRasterization,
     switches::kDisableGpuVsync,
     switches::kDisableLowResTiling,
     switches::kDisableHistogramCustomizer,
@@ -1079,7 +1084,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableFastTextAutosizing,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
-    switches::kEnableGpuRasterization,
     switches::kEnableGPUServiceLogging,
     switches::kEnableHighDpiCompositingForFixedPosition,
     switches::kEnableHTMLImports,
@@ -1114,7 +1118,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebMIDI,
     switches::kForceDeviceScaleFactor,
-    switches::kForceGpuRasterization,
     switches::kFullMemoryCrashReport,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,

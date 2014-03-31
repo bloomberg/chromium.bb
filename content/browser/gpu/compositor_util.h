@@ -26,6 +26,12 @@ CONTENT_EXPORT bool IsDelegatedRendererEnabled();
 // for the renderer.
 CONTENT_EXPORT bool IsImplSidePaintingEnabled();
 
+// Returns true if gpu rasterization is on (via flags) for the renderer.
+CONTENT_EXPORT bool IsGpuRasterizationEnabled();
+
+// Returns true if force-gpu-rasterization is on (via flags) for the renderer.
+CONTENT_EXPORT bool IsForceGpuRasterizationEnabled();
+
 CONTENT_EXPORT base::Value* GetFeatureStatus();
 CONTENT_EXPORT base::Value* GetProblems();
 CONTENT_EXPORT base::Value* GetDriverBugWorkarounds();
