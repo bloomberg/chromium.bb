@@ -35,6 +35,8 @@
 #include "wtf/Forward.h"
 #include "wtf/unicode/Unicode.h"
 
+#include <unicode/uscript.h>
+
 namespace WebCore {
 
 PLATFORM_EXPORT UScriptCode localeToScriptCodeForFontSelection(const String&);
