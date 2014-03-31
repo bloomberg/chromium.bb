@@ -101,11 +101,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
         data.scroll_update.velocity_y_ordinal;
   }
 
-  int touch_id() const {
-    DCHECK_EQ(ui::ET_GESTURE_LONG_PRESS, type_);
-    return data.touch_id;
-  }
-
   float first_finger_width() const {
     DCHECK_EQ(ui::ET_GESTURE_TWO_FINGER_TAP, type_);
     return data.first_finger_enclosing_rectangle.width;
@@ -178,8 +173,6 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
       float x_ordinal;
       float y_ordinal;
     } fling_velocity;
-
-    int touch_id;  // LONG_PRESS touch-id.
 
     // Dimensions of the first finger's enclosing rectangle for
     // TWO_FINGER_TAP.

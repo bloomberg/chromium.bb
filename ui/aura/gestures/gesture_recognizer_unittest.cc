@@ -199,7 +199,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float velocity_y_ordinal() const { return velocity_y_ordinal_; }
   float scroll_x_hint() const { return scroll_x_hint_; }
   float scroll_y_hint() const { return scroll_y_hint_; }
-  int touch_id() const { return touch_id_; }
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
 
@@ -263,7 +262,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         break;
       case ui::ET_GESTURE_LONG_PRESS:
         long_press_ = true;
-        touch_id_ = gesture->details().touch_id();
         break;
       case ui::ET_GESTURE_LONG_TAP:
         long_tap_ = true;
@@ -343,7 +341,6 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float velocity_y_ordinal_;
   float scroll_x_hint_;
   float scroll_y_hint_;
-  int touch_id_;
   gfx::Rect bounding_box_;
   int tap_count_;
 
@@ -1386,7 +1383,6 @@ TEST_F(GestureRecognizerTest, GestureEventLongPress) {
   // Wait until the timer runs out
   delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
   EXPECT_TRUE(delegate->long_press());
-  EXPECT_EQ(0, delegate->touch_id());
   EXPECT_FALSE(delegate->tap_cancel());
 
   delegate->Reset();
@@ -1478,7 +1474,6 @@ TEST_F(GestureRecognizerTest, GestureEventLongTap) {
   // Wait until the timer runs out
   delegate->WaitUntilReceivedGesture(ui::ET_GESTURE_LONG_PRESS);
   EXPECT_TRUE(delegate->long_press());
-  EXPECT_EQ(0, delegate->touch_id());
   EXPECT_FALSE(delegate->tap_cancel());
 
   delegate->Reset();
