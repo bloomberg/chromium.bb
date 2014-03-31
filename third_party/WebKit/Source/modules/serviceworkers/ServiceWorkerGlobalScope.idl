@@ -31,8 +31,9 @@
     GlobalContext=ServiceWorkerGlobalScope,
     RuntimeEnabled=ServiceWorker,
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
-  attribute EventHandler oninstall;
   attribute EventHandler onactivate;
   attribute EventHandler onfetch;
+  attribute EventHandler oninstall;
+  attribute EventHandler onmessage;
   attribute EventHandler onsync;
 };
