@@ -31,7 +31,7 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
   virtual ~WebRtcDisableEncryptionFlagBrowserTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
+    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
@@ -44,15 +44,18 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
   }
 
  protected:
-  PeerConnectionServerRunner peerconnection_server_;
+  test::PeerConnectionServerRunner peerconnection_server_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRtcDisableEncryptionFlagBrowserTest);
 };
 
 // Makes a call and checks that there's encryption or not in the SDP offer.
+// TODO(phoglund): this is unreliable on non-webrtc bots because its peer
+// connection server could clash with other tests running in parallel,
+// therefore only running manually.
 IN_PROC_BROWSER_TEST_F(WebRtcDisableEncryptionFlagBrowserTest,
-                       VerifyEncryption) {
+                       MANUAL_VerifyEncryption) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
