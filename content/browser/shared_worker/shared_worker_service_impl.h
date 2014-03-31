@@ -108,7 +108,7 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
       SharedWorkerMessageFilter* filter,
       int worker_route_id);
 
-  SharedWorkerInstance* FindSharedWorkerInstance(
+  SharedWorkerHost* FindSharedWorkerHost(
       const GURL& url,
       const base::string16& name,
       const WorkerStoragePartition& worker_partition,

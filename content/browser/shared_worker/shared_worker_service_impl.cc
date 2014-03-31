@@ -129,22 +129,22 @@ void SharedWorkerServiceImpl::CreateWorker(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   ScopedWorkerDependencyChecker checker(this);
   *url_mismatch = false;
-  SharedWorkerInstance* existing_instance =
-      FindSharedWorkerInstance(
-          params.url, params.name, partition, resource_context);
-  if (existing_instance) {
-    if (params.url != existing_instance->url()) {
+  SharedWorkerHost* existing_host = FindSharedWorkerHost(
+      params.url, params.name, partition, resource_context);
+  if (existing_host) {
+    if (params.url != existing_host->instance()->url()) {
       *url_mismatch = true;
       return;
     }
-    if (existing_instance->load_failed()) {
+    if (existing_host->load_failed()) {
       filter->Send(new ViewMsg_WorkerScriptLoadFailed(route_id));
       return;
     }
-    existing_instance->AddFilter(filter, route_id);
-    existing_instance->worker_document_set()->Add(
-        filter, params.document_id, filter->render_process_id(),
-        params.render_frame_route_id);
+    existing_host->AddFilter(filter, route_id);
+    existing_host->worker_document_set()->Add(filter,
+                                              params.document_id,
+                                              filter->render_process_id(),
+                                              params.render_frame_route_id);
     filter->Send(new ViewMsg_WorkerCreated(route_id));
     return;
   }
@@ -156,12 +156,13 @@ void SharedWorkerServiceImpl::CreateWorker(
       params.security_policy_type,
       resource_context,
       partition));
-  instance->AddFilter(filter, route_id);
-  instance->worker_document_set()->Add(
-      filter, params.document_id, filter->render_process_id(),
-      params.render_frame_route_id);
-
   scoped_ptr<SharedWorkerHost> host(new SharedWorkerHost(instance.release()));
+  host->AddFilter(filter, route_id);
+  host->worker_document_set()->Add(filter,
+                                   params.document_id,
+                                   filter->render_process_id(),
+                                   params.render_frame_route_id);
+
   host->Init(filter);
   const int worker_route_id = host->worker_route_id();
   worker_hosts_.set(std::make_pair(filter->render_process_id(),
@@ -298,7 +299,7 @@ SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
                                           worker_route_id));
 }
 
-SharedWorkerInstance* SharedWorkerServiceImpl::FindSharedWorkerInstance(
+SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
     const GURL& url,
     const base::string16& name,
     const WorkerStoragePartition& partition,
@@ -307,8 +308,9 @@ SharedWorkerInstance* SharedWorkerServiceImpl::FindSharedWorkerInstance(
        iter != worker_hosts_.end();
        ++iter) {
     SharedWorkerInstance* instance = iter->second->instance();
-    if (instance && instance->Matches(url, name, partition, resource_context))
-      return instance;
+    if (instance && !iter->second->closed() &&
+        instance->Matches(url, name, partition, resource_context))
+      return iter->second;
   }
   return NULL;
 }
@@ -322,9 +324,9 @@ SharedWorkerServiceImpl::GetRenderersWithWorkerDependency() {
     const int process_id = host_iter->first.first;
     if (dependent_renderers.count(process_id))
       continue;
-    SharedWorkerInstance* instance = host_iter->second->instance();
-    if (instance &&
-        instance->worker_document_set()->ContainsExternalRenderer(process_id)) {
+    if (host_iter->second->instance() &&
+        host_iter->second->worker_document_set()->ContainsExternalRenderer(
+            process_id)) {
       dependent_renderers.insert(process_id);
     }
   }

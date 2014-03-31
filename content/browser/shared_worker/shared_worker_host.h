@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_HOST_H_
 #define CONTENT_BROWSER_SHARED_WORKER_SHARED_WORKER_HOST_H_
 
+#include <list>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
+#include "content/browser/worker_host/worker_document_set.h"
 
 class GURL;
 
@@ -68,7 +70,12 @@ class SharedWorkerHost {
   // Terminates the given worker, i.e. based on a UI action.
   void TerminateWorker();
 
+  void AddFilter(SharedWorkerMessageFilter* filter, int route_id);
+
   SharedWorkerInstance* instance() { return instance_.get(); }
+  WorkerDocumentSet* worker_document_set() const {
+    return worker_document_set_.get();
+  }
   SharedWorkerMessageFilter* container_render_filter() const {
     return container_render_filter_;
   }
@@ -76,8 +83,28 @@ class SharedWorkerHost {
     return container_render_filter_->render_process_id();
   }
   int worker_route_id() const { return worker_route_id_; }
+  bool load_failed() const { return load_failed_; }
+  bool closed() const { return closed_; }
 
  private:
+  // Unique identifier for a worker client.
+  class FilterInfo {
+   public:
+    FilterInfo(SharedWorkerMessageFilter* filter, int route_id)
+        : filter_(filter), route_id_(route_id), message_port_id_(0) {}
+    SharedWorkerMessageFilter* filter() const { return filter_; }
+    int route_id() const { return route_id_; }
+    int message_port_id() const { return message_port_id_; }
+    void set_message_port_id(int id) { message_port_id_ = id; }
+
+   private:
+    SharedWorkerMessageFilter* filter_;
+    int route_id_;
+    int message_port_id_;
+  };
+
+  typedef std::list<FilterInfo> FilterList;
+
   // Relays |message| to the SharedWorker. Takes care of parsing the message if
   // it contains a message port and sending it a valid route id.
   void RelayMessage(const IPC::Message& message,
@@ -86,9 +113,19 @@ class SharedWorkerHost {
   // Return a vector of all the render process/render frame IDs.
   std::vector<std::pair<int, int> > GetRenderFrameIDsForWorker();
 
+  void RemoveFilters(SharedWorkerMessageFilter* filter);
+  bool HasFilter(SharedWorkerMessageFilter* filter, int route_id) const;
+  void SetMessagePortID(SharedWorkerMessageFilter* filter,
+                        int route_id,
+                        int message_port_id);
+
   scoped_ptr<SharedWorkerInstance> instance_;
+  scoped_refptr<WorkerDocumentSet> worker_document_set_;
+  FilterList filters_;
   SharedWorkerMessageFilter* container_render_filter_;
   int worker_route_id_;
+  bool load_failed_;
+  bool closed_;
   const base::TimeTicks creation_time_;
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerHost);
 };
