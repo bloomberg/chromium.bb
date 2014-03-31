@@ -80,12 +80,14 @@ protected:
 
 private:
     // DateTimeFieldElement functions.
-    virtual void didBlur() OVERRIDE FINAL;
     virtual void handleKeyboardEvent(KeyboardEvent*) OVERRIDE FINAL;
     virtual float maximumWidth(const Font&) OVERRIDE;
     virtual void stepDown() OVERRIDE FINAL;
     virtual void stepUp() OVERRIDE FINAL;
     virtual String value() const OVERRIDE FINAL;
+
+    // Node functions.
+    virtual void setFocus(bool) OVERRIDE FINAL;
 
     String formatValue(int) const;
     int roundUp(int) const;

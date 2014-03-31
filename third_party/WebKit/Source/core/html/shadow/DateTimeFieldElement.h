@@ -79,8 +79,6 @@ public:
 
 protected:
     DateTimeFieldElement(Document&, FieldOwner&);
-    virtual void didBlur();
-    virtual void didFocus();
     void focusOnNextField();
     virtual void handleKeyboardEvent(KeyboardEvent*) = 0;
     void initialize(const AtomicString& pseudo, const String& axHelpText, int axMinimum, int axMaximum);
@@ -89,6 +87,9 @@ protected:
     void updateVisibleValue(EventBehavior);
     virtual int valueAsInteger() const = 0;
     virtual int valueForARIAValueNow() const;
+
+    // Node functions.
+    virtual void setFocus(bool) OVERRIDE;
 
 private:
     void defaultKeyboardEventHandler(KeyboardEvent*);
