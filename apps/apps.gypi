@@ -253,6 +253,7 @@
           'defines': [
             'HAS_OUT_OF_PROC_TEST_RUNNER',
           ],
+          'msvs_large_pdb': 1,
           'sources': [
             # TODO(yoz): Refactor once we have a second test target.
             'test/app_shell_test.h',
