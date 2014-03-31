@@ -16,7 +16,7 @@ namespace test {
 // TODO(vtl): Maybe this should be defined in a test-only file instead.
 DispatcherTransport DispatcherTryStartTransport(
     Dispatcher* dispatcher) {
-  return Dispatcher::CoreImplAccess::TryStartTransport(dispatcher);
+  return Dispatcher::HandleTableAccess::TryStartTransport(dispatcher);
 }
 
 }  // namespace test
@@ -24,7 +24,7 @@ DispatcherTransport DispatcherTryStartTransport(
 // Dispatcher ------------------------------------------------------------------
 
 // static
-DispatcherTransport Dispatcher::CoreImplAccess::TryStartTransport(
+DispatcherTransport Dispatcher::HandleTableAccess::TryStartTransport(
     Dispatcher* dispatcher) {
   DCHECK(dispatcher);
 

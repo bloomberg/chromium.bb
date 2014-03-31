@@ -126,6 +126,8 @@
         'system/data_pipe_producer_dispatcher.h',
         'system/dispatcher.cc',
         'system/dispatcher.h',
+        'system/handle_table.cc',
+        'system/handle_table.h',
         'system/local_data_pipe.cc',
         'system/local_data_pipe.h',
         'system/local_message_pipe_endpoint.cc',

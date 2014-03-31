@@ -7,23 +7,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core_private.h"
+#include "mojo/system/handle_table.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
 
-class CoreImpl;
 class Dispatcher;
-
-// Test-only function (defined/used in embedder/test_embedder.cc). Declared here
-// so it can be friended.
-namespace internal {
-bool ShutdownCheckNoLeaks(CoreImpl*);
-}
 
 // |CoreImpl| is a singleton object that implements the Mojo system calls. All
 // public methods are thread-safe.
@@ -131,11 +124,6 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
   // invalid.
   scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
 
-  // Assigns a new handle for the given dispatcher; returns
-  // |MOJO_HANDLE_INVALID| on failure (due to hitting resource limits) or if
-  // |dispatcher| is null. Must be called under |handle_table_lock_|.
-  MojoHandle AddDispatcherNoLock(const scoped_refptr<Dispatcher>& dispatcher);
-
   // Internal implementation of |Wait()| and |WaitMany()|; doesn't do basic
   // validation of arguments.
   MojoResult WaitManyInternal(const MojoHandle* handles,
@@ -147,9 +135,8 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
 
   // TODO(vtl): |handle_table_lock_| should be a reader-writer lock (if only we
   // had them).
-  base::Lock handle_table_lock_;  // Protects the immediately-following members.
-  HandleTableMap handle_table_;
-  MojoHandle next_handle_;  // Invariant: never |MOJO_HANDLE_INVALID|.
+  base::Lock handle_table_lock_;  // Protects |handle_table_|.
+  HandleTable handle_table_;
 
   // ---------------------------------------------------------------------------
 

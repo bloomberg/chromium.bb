@@ -27,6 +27,7 @@ class Channel;
 class CoreImpl;
 class Dispatcher;
 class DispatcherTransport;
+class HandleTable;
 class LocalMessagePipeEndpoint;
 class MessageInTransit;
 class ProxyMessagePipeEndpoint;
@@ -126,16 +127,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
   void RemoveWaiter(Waiter* waiter);
 
   // A dispatcher must be put into a special state in order to be sent across a
-  // message pipe. Outside of tests, only |CoreImplAccess| is allowed to do
+  // message pipe. Outside of tests, only |HandleTableAccess| is allowed to do
   // this, since there are requirements on the handle table (see below).
   //
   // In this special state, only a restricted set of operations is allowed.
   // These are the ones available as |DispatcherTransport| methods. Other
   // |Dispatcher| methods must not be called until |DispatcherTransport::End()|
   // has been called.
-  class CoreImplAccess {
+  class HandleTableAccess {
    private:
     friend class CoreImpl;
+    friend class HandleTable;
     // Tests also need this, to avoid needing |CoreImpl|.
     friend DispatcherTransport test::DispatcherTryStartTransport(Dispatcher*);
 
@@ -300,8 +302,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
 };
 
 // Wrapper around a |Dispatcher| pointer, while it's being processed to be
-// passed in a message pipe. See the comment about |Dispatcher::CoreImplAccess|
-// for more details.
+// passed in a message pipe. See the comment about
+// |Dispatcher::HandleTableAccess| for more details.
 //
 // Note: This class is deliberately "thin" -- no more expensive than a
 // |Dispatcher*|.
@@ -324,7 +326,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport {
   Dispatcher* dispatcher() { return dispatcher_; }
 
  private:
-  friend class Dispatcher::CoreImplAccess;
+  friend class Dispatcher::HandleTableAccess;
 
   explicit DispatcherTransport(Dispatcher* dispatcher)
       : dispatcher_(dispatcher) {}

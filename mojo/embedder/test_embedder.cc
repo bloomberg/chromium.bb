@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/system/core_impl.h"
+#include "mojo/system/handle_table.h"
 
 namespace mojo {
 
@@ -15,12 +16,15 @@ namespace internal {
 
 bool ShutdownCheckNoLeaks(CoreImpl* core_impl) {
   // No point in taking the lock.
-  if (core_impl->handle_table_.empty())
+  const HandleTable::HandleToEntryMap& handle_to_entry_map =
+      core_impl->handle_table_.handle_to_entry_map_;
+
+  if (handle_to_entry_map.empty())
     return true;
 
-  for (CoreImpl::HandleTableMap::const_iterator it =
-           core_impl->handle_table_.begin();
-       it != core_impl->handle_table_.end();
+  for (HandleTable::HandleToEntryMap::const_iterator it =
+           handle_to_entry_map.begin();
+       it != handle_to_entry_map.end();
        ++it) {
     LOG(ERROR) << "Mojo embedder shutdown: Leaking handle " << (*it).first;
   }

@@ -87,8 +87,7 @@ CoreImpl::HandleTableEntry::~HandleTableEntry() {
   DCHECK(!busy);
 }
 
-CoreImpl::CoreImpl()
-    : next_handle_(MOJO_HANDLE_INVALID + 1) {
+CoreImpl::CoreImpl() {
 }
 
 CoreImpl::~CoreImpl() {
@@ -99,7 +98,7 @@ CoreImpl::~CoreImpl() {
 MojoHandle CoreImpl::AddDispatcher(
     const scoped_refptr<Dispatcher>& dispatcher) {
   base::AutoLock locker(handle_table_lock_);
-  return AddDispatcherNoLock(dispatcher);
+  return handle_table_.AddDispatcher(dispatcher);
 }
 
 MojoTimeTicks CoreImpl::GetTimeTicksNow() {
@@ -113,13 +112,10 @@ MojoResult CoreImpl::Close(MojoHandle handle) {
   scoped_refptr<Dispatcher> dispatcher;
   {
     base::AutoLock locker(handle_table_lock_);
-    HandleTableMap::iterator it = handle_table_.find(handle);
-    if (it == handle_table_.end())
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    if (it->second.busy)
-      return MOJO_RESULT_BUSY;
-    dispatcher = it->second.dispatcher;
-    handle_table_.erase(it);
+    MojoResult result = handle_table_.GetAndRemoveDispatcher(handle,
+                                                             &dispatcher);
+    if (result != MOJO_RESULT_OK)
+      return result;
   }
 
   // The dispatcher doesn't have a say in being closed, but gets notified of it.
@@ -160,31 +156,25 @@ MojoResult CoreImpl::CreateMessagePipe(MojoHandle* message_pipe_handle0,
   scoped_refptr<MessagePipeDispatcher> dispatcher0(new MessagePipeDispatcher());
   scoped_refptr<MessagePipeDispatcher> dispatcher1(new MessagePipeDispatcher());
 
-  MojoHandle h0, h1;
+  std::pair<MojoHandle, MojoHandle> handle_pair;
   {
     base::AutoLock locker(handle_table_lock_);
-
-    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
-    // (outside the table lock).
-    h0 = AddDispatcherNoLock(dispatcher0);
-    if (h0 == MOJO_HANDLE_INVALID)
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-    // TODO(vtl): crbug.com/345911: On failure, we should close both dispatchers
-    // (outside the table lock).
-    h1 = AddDispatcherNoLock(dispatcher1);
-    if (h1 == MOJO_HANDLE_INVALID) {
-      handle_table_.erase(h0);
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
-    }
+    handle_pair = handle_table_.AddDispatcherPair(dispatcher0, dispatcher1);
+  }
+  if (handle_pair.first == MOJO_HANDLE_INVALID) {
+    DCHECK_EQ(handle_pair.second, MOJO_HANDLE_INVALID);
+    LOG(ERROR) << "Handle table full";
+    dispatcher0->Close();
+    dispatcher1->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
   scoped_refptr<MessagePipe> message_pipe(new MessagePipe());
   dispatcher0->Init(message_pipe, 0);
   dispatcher1->Init(message_pipe, 1);
 
-  *message_pipe_handle0 = h0;
-  *message_pipe_handle1 = h1;
+  *message_pipe_handle0 = handle_pair.first;
+  *message_pipe_handle1 = handle_pair.second;
   return MOJO_RESULT_OK;
 }
 
@@ -234,71 +224,10 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
   // handles from the handle table.
   {
     base::AutoLock locker(handle_table_lock_);
-
-    std::vector<HandleTableEntry*> entries(num_handles);
-
-    // First verify all the handles and get their dispatchers.
-    uint32_t i;
-    MojoResult error_result = MOJO_RESULT_INTERNAL;
-    for (i = 0; i < num_handles; i++) {
-      // Sending your own handle is not allowed (and, for consistency, returns
-      // "busy").
-      if (handles[i] == message_pipe_handle) {
-        error_result = MOJO_RESULT_BUSY;
-        break;
-      }
-
-      HandleTableMap::iterator it = handle_table_.find(handles[i]);
-      if (it == handle_table_.end()) {
-        error_result = MOJO_RESULT_INVALID_ARGUMENT;
-        break;
-      }
-
-      entries[i] = &it->second;
-      if (entries[i]->busy) {
-        error_result = MOJO_RESULT_BUSY;
-        break;
-      }
-      // Note: By marking the handle as busy here, we're also preventing the
-      // same handle from being sent multiple times in the same message.
-      entries[i]->busy = true;
-
-      // Try to start the transport.
-      DispatcherTransport transport =
-          Dispatcher::CoreImplAccess::TryStartTransport(
-              entries[i]->dispatcher.get());
-      if (!transport.is_valid()) {
-        // Unset the busy flag (since it won't be unset below).
-        entries[i]->busy = false;
-        error_result = MOJO_RESULT_BUSY;
-        break;
-      }
-
-      // Check if the dispatcher is busy (e.g., in a two-phase read/write).
-      // (Note that this must be done after the dispatcher's lock is acquired.)
-      if (transport.IsBusy()) {
-        // Unset the busy flag and end the transport (since it won't be done
-        // below).
-        entries[i]->busy = false;
-        transport.End();
-        error_result = MOJO_RESULT_BUSY;
-        break;
-      }
-
-      // Hang on to the transport (which we'll need to end the transport).
-      transports[i] = transport;
-    }
-    if (i < num_handles) {
-      DCHECK_NE(error_result, MOJO_RESULT_INTERNAL);
-
-      // Unset the busy flags and release the locks.
-      for (uint32_t j = 0; j < i; j++) {
-        DCHECK(entries[j]->busy);
-        entries[j]->busy = false;
-        transports[j].End();
-      }
-      return error_result;
-    }
+    MojoResult result = handle_table_.MarkBusyAndStartTransport(
+        message_pipe_handle, handles, num_handles, &transports);
+    if (result != MOJO_RESULT_OK)
+      return result;
   }
 
   MojoResult rv = dispatcher->WriteMessage(bytes, num_bytes, &transports,
@@ -309,28 +238,12 @@ MojoResult CoreImpl::WriteMessage(MojoHandle message_pipe_handle,
   for (uint32_t i = 0; i < num_handles; i++)
     transports[i].End();
 
-  if (rv == MOJO_RESULT_OK) {
+  {
     base::AutoLock locker(handle_table_lock_);
-
-    // Succeeded, so the handles should be removed from the handle table. (The
-    // transferring to new dispatchers/closing must have already been done.)
-    for (uint32_t i = 0; i < num_handles; i++) {
-      HandleTableMap::iterator it = handle_table_.find(handles[i]);
-      DCHECK(it != handle_table_.end());
-      DCHECK(it->second.busy);
-      it->second.busy = false;  // For the sake of a |DCHECK()|.
-      handle_table_.erase(it);
-    }
-  } else {
-    base::AutoLock locker(handle_table_lock_);
-
-    // Failed, so the handles should go back to their normal state.
-    for (uint32_t i = 0; i < num_handles; i++) {
-      HandleTableMap::iterator it = handle_table_.find(handles[i]);
-      DCHECK(it != handle_table_.end());
-      DCHECK(it->second.busy);
-      it->second.busy = false;
-    }
+    if (rv == MOJO_RESULT_OK)
+      handle_table_.RemoveBusyHandles(handles, num_handles);
+    else
+      handle_table_.RestoreBusyHandles(handles, num_handles);
   }
 
   return rv;
@@ -366,17 +279,19 @@ MojoResult CoreImpl::ReadMessage(MojoHandle message_pipe_handle,
     DCHECK(num_handles);
     DCHECK_LE(dispatchers.size(), static_cast<size_t>(*num_handles));
 
-    base::AutoLock locker(handle_table_lock_);
-
-    for (size_t i = 0; i < dispatchers.size(); i++) {
-      // TODO(vtl): What should we do if we hit the maximum handle table size
-      // here? Currently, we'll just fill in those handles with
-      // |MOJO_HANDLE_INVALID| (and return success anyway).
-      // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
-      // (outside the table lock).
-      handles[i] = AddDispatcherNoLock(dispatchers[i]);
-      LOG_IF(ERROR, handles[i] == MOJO_HANDLE_INVALID)
-          << "Failed to add dispatcher (" << dispatchers[i].get() << ")";
+    bool success;
+    {
+      base::AutoLock locker(handle_table_lock_);
+      success = handle_table_.AddDispatcherVector(dispatchers, handles);
+    }
+    if (!success) {
+      LOG(ERROR) << "Received message with " << dispatchers.size()
+                 << " handles, but handle table full";
+      // Close dispatchers (outside the lock).
+      for (size_t i = 0; i < dispatchers.size(); i++) {
+        if (dispatchers[i])
+          dispatchers[i]->Close();
+      }
     }
   }
 
@@ -409,31 +324,27 @@ MojoResult CoreImpl::CreateDataPipe(const MojoCreateDataPipeOptions* options,
   scoped_refptr<DataPipeConsumerDispatcher> consumer_dispatcher(
       new DataPipeConsumerDispatcher());
 
-  MojoHandle producer_handle, consumer_handle;
+  std::pair<MojoHandle, MojoHandle> handle_pair;
   {
     base::AutoLock locker(handle_table_lock_);
-
-    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
-    // (outside the table lock).
-    producer_handle = AddDispatcherNoLock(producer_dispatcher);
-    if (producer_handle == MOJO_HANDLE_INVALID)
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-    // TODO(vtl): crbug.com/345911: On failure, we should close both dispatchers
-    // (outside the table lock).
-    consumer_handle = AddDispatcherNoLock(consumer_dispatcher);
-    if (consumer_handle == MOJO_HANDLE_INVALID) {
-      handle_table_.erase(producer_handle);
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
-    }
+    handle_pair = handle_table_.AddDispatcherPair(producer_dispatcher,
+                                                  consumer_dispatcher);
   }
+  if (handle_pair.first == MOJO_HANDLE_INVALID) {
+    DCHECK_EQ(handle_pair.second, MOJO_HANDLE_INVALID);
+    LOG(ERROR) << "Handle table full";
+    producer_dispatcher->Close();
+    consumer_dispatcher->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+  DCHECK_NE(handle_pair.second, MOJO_HANDLE_INVALID);
 
   scoped_refptr<DataPipe> data_pipe(new LocalDataPipe(validated_options));
   producer_dispatcher->Init(data_pipe);
   consumer_dispatcher->Init(data_pipe);
 
-  *data_pipe_producer_handle = producer_handle;
-  *data_pipe_consumer_handle = consumer_handle;
+  *data_pipe_producer_handle = handle_pair.first;
+  *data_pipe_consumer_handle = handle_pair.second;
   return MOJO_RESULT_OK;
 }
 
@@ -534,15 +445,11 @@ MojoResult CoreImpl::CreateSharedBuffer(
     return result;
   }
 
-  MojoHandle h;
-  {
-    base::AutoLock locker(handle_table_lock_);
-
-    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
-    // (outside the table lock).
-    h = AddDispatcherNoLock(dispatcher);
-    if (h == MOJO_HANDLE_INVALID)
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  MojoHandle h = AddDispatcher(dispatcher);
+  if (h == MOJO_HANDLE_INVALID) {
+    LOG(ERROR) << "Handle table full";
+    dispatcher->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
   *shared_buffer_handle = h;
@@ -567,15 +474,11 @@ MojoResult CoreImpl::DuplicateBufferHandle(
   if (result != MOJO_RESULT_OK)
     return result;
 
-  MojoHandle new_handle;
-  {
-    base::AutoLock locker(handle_table_lock_);
-
-    // TODO(vtl): crbug.com/345911: On failure, we should close the dispatcher
-    // (outside the table lock).
-    new_handle = AddDispatcherNoLock(new_dispatcher);
-    if (new_handle == MOJO_HANDLE_INVALID)
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  MojoHandle new_handle = AddDispatcher(new_dispatcher);
+  if (new_handle == MOJO_HANDLE_INVALID) {
+    LOG(ERROR) << "Handle table full";
+    dispatcher->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
   *new_buffer_handle = new_handle;
@@ -620,37 +523,7 @@ scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {
     return NULL;
 
   base::AutoLock locker(handle_table_lock_);
-  HandleTableMap::iterator it = handle_table_.find(handle);
-  if (it == handle_table_.end())
-    return NULL;
-
-  return it->second.dispatcher;
-}
-
-MojoHandle CoreImpl::AddDispatcherNoLock(
-    const scoped_refptr<Dispatcher>& dispatcher) {
-  handle_table_lock_.AssertAcquired();
-  DCHECK_NE(next_handle_, MOJO_HANDLE_INVALID);
-
-  if (!dispatcher.get() || handle_table_.size() >= kMaxHandleTableSize)
-    return MOJO_HANDLE_INVALID;
-
-  // TODO(vtl): Maybe we want to do something different/smarter. (Or maybe try
-  // assigning randomly?)
-  while (handle_table_.find(next_handle_) != handle_table_.end()) {
-    next_handle_++;
-    if (next_handle_ == MOJO_HANDLE_INVALID)
-      next_handle_++;
-  }
-
-  MojoHandle new_handle = next_handle_;
-  handle_table_[new_handle] = HandleTableEntry(dispatcher);
-
-  next_handle_++;
-  if (next_handle_ == MOJO_HANDLE_INVALID)
-    next_handle_++;
-
-  return new_handle;
+  return handle_table_.GetDispatcher(handle);
 }
 
 // Note: We allow |handles| to repeat the same handle multiple times, since
