@@ -221,6 +221,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return GroupRole;
     if (isHTMLAnchorElement(*node()) && isClickable())
         return LinkRole;
+    if (node()->hasTagName(iframeTag))
+        return IframeRole;
 
     return UnknownRole;
 }
