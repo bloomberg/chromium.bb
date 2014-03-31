@@ -26,7 +26,8 @@ function FolderShortcutsDataModel(volumeManager) {
 
   // Queue to serialize resolving entries.
   this.queue_ = new AsyncUtil.Queue();
-  this.queue_.run(this.volumeManager_.ensureInitialized.bind(this));
+  this.queue_.run(
+      this.volumeManager_.ensureInitialized.bind(this.volumeManager_));
 
   // Load the shortcuts. Runs within the queue.
   this.load_();
