@@ -32,6 +32,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/switches.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -353,8 +354,9 @@ class CastV2PerformanceTest
     if (HasFlag(kDisableVsync))
       command_line->AppendSwitch(switches::kDisableGpuVsync);
 
-    command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
-                                    kExtensionId);
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        kExtensionId);
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 

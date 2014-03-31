@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(OS_CHROMEOS)
@@ -117,8 +118,9 @@ class ExtensionNetworkingPrivateApiTest :
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
-    command_line->AppendSwitchASCII(::switches::kWhitelistedExtensionID,
-                                    "epcifkihnkjgphfkloaaleeakhpmgdmn");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        "epcifkihnkjgphfkloaaleeakhpmgdmn");
 
     // TODO(pneubeck): Remove the following hack, once the NetworkingPrivateAPI
     // uses the ProfileHelper to obtain the userhash crbug/238623.
@@ -260,8 +262,9 @@ class ExtensionNetworkingPrivateApiTest :
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
-    command_line->AppendSwitchASCII(::switches::kWhitelistedExtensionID,
-                                    "epcifkihnkjgphfkloaaleeakhpmgdmn");
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        "epcifkihnkjgphfkloaaleeakhpmgdmn");
   }
 
   static KeyedService* CreateNetworkingPrivateServiceClient(

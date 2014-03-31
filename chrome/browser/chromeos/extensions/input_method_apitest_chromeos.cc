@@ -13,12 +13,12 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/api/test/test_api.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -89,7 +89,8 @@ class ExtensionInputMethodApiTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, "ilanclmaeigfpnmdlgelmhkpkegdioip");
+        extensions::switches::kWhitelistedExtensionID,
+        "ilanclmaeigfpnmdlgelmhkpkegdioip");
   }
 };
 

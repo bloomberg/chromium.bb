@@ -6,8 +6,8 @@
 #include "chrome/browser/extensions/api/mdns/mdns_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/mdns.h"
+#include "extensions/common/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using extensions::DnsSdRegistry;
@@ -44,7 +44,8 @@ class MDnsAPITest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, "ddchlicdkolnonkihahngkmmmjnjlkkf");
+        extensions::switches::kWhitelistedExtensionID,
+        "ddchlicdkolnonkihahngkmmmjnjlkkf");
   }
 
   void SetUpTestDnsSdRegistry() {

@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/switches.h"
 #include "ui/compositor/compositor_switches.h"
 
 namespace {
@@ -36,7 +37,7 @@ class TabCaptureApiTest : public ExtensionApiTest {
  public:
   void AddExtensionToCommandLineWhitelist() {
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, kExtensionId);
+        extensions::switches::kWhitelistedExtensionID, kExtensionId);
   }
 };
 

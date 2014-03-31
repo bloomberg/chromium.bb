@@ -58,6 +58,9 @@ const char kGlobalCommands[] = "global-commands";
 const char kShowComponentExtensionOptions[] =
     "show-component-extension-options";
 
+// Adds the given extension ID to all the permission whitelists.
+const char kWhitelistedExtensionID[] = "whitelisted-extension-id";
+
 }  // namespace switches
 
 }  // namespace extensions

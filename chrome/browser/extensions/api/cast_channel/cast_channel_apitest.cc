@@ -9,9 +9,9 @@
 #include "chrome/browser/extensions/api/cast_channel/cast_socket.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/switches.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -74,7 +74,8 @@ class CastChannelAPITest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, kTestExtensionId);
+        extensions::switches::kWhitelistedExtensionID,
+        kTestExtensionId);
   }
 
   void SetUpMockCastSocket() {

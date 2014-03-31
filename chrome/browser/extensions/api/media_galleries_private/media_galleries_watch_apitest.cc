@@ -14,11 +14,11 @@
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/media_galleries/media_galleries_test_util.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/switches.h"
 
 namespace {
 
@@ -82,8 +82,9 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
   // ExtensionApiTest overrides.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
-                                    kTestExtensionId);
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        kTestExtensionId);
   }
 
   void ExecuteCmdAndCheckReply(content::RenderViewHost* host,

@@ -24,6 +24,7 @@ extern const char kExtensionsOnChromeURLs[];
 extern const char kForceDevModeHighlighting[];
 extern const char kGlobalCommands[];
 extern const char kShowComponentExtensionOptions[];
+extern const char kWhitelistedExtensionID[];
 
 }  // namespace switches
 

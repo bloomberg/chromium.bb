@@ -29,6 +29,7 @@
 #include "content/public/common/content_switches.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "ui/compositor/compositor_switches.h"
@@ -133,8 +134,9 @@ class TabCapturePerformanceTest
     if (HasFlag(kDisableVsync))
       command_line->AppendSwitch(switches::kDisableGpuVsync);
 
-    command_line->AppendSwitchASCII(switches::kWhitelistedExtensionID,
-                                    kExtensionId);
+    command_line->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        kExtensionId);
     ExtensionApiTest::SetUpCommandLine(command_line);
   }
 

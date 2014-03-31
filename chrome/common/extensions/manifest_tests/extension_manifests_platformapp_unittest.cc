@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
@@ -84,7 +83,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   // key in the init_platform_app_csp.json manifest.)
   std::string test_id = "ahplfneplbnjcflhdgkkjeiglkkfeelb";
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      ::switches::kWhitelistedExtensionID, test_id);
+      switches::kWhitelistedExtensionID, test_id);
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_platform_app_csp.json");
   EXPECT_EQ(0U, extension->install_warnings().size())

@@ -13,8 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "extensions/common/switches.h"
 
 using chrome::VersionInfo;
 
