@@ -51,7 +51,7 @@ blink::WebGestureCurve* InputHandlerWrapper::CreateFlingAnimationCurve(
       deviceSource, velocity, cumulative_scroll);
 }
 
-void InputHandlerWrapper::DidOverscroll(const cc::DidOverscrollParams& params) {
+void InputHandlerWrapper::DidOverscroll(const DidOverscrollParams& params) {
   input_handler_manager_->DidOverscroll(routing_id_, params);
 }
 

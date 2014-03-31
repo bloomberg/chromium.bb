@@ -24,12 +24,6 @@ namespace cc {
 
 class LayerScrollOffsetDelegate;
 
-struct DidOverscrollParams {
-  gfx::Vector2dF accumulated_overscroll;
-  gfx::Vector2dF latest_overscroll_delta;
-  gfx::Vector2dF current_fling_velocity;
-};
-
 class CC_EXPORT InputHandlerClient {
  public:
   virtual ~InputHandlerClient() {}
@@ -41,7 +35,8 @@ class CC_EXPORT InputHandlerClient {
   // Called when scroll deltas reaching the root scrolling layer go unused.
   // The accumulated overscroll is scoped by the most recent call to
   // InputHandler::ScrollBegin.
-  virtual void DidOverscroll(const DidOverscrollParams& params) = 0;
+  virtual void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
+                             const gfx::Vector2dF& latest_overscroll_delta) = 0;
 
  protected:
   InputHandlerClient() {}
@@ -93,8 +88,6 @@ class CC_EXPORT InputHandler {
   // Returns ScrollStarted if a layer was being actively being scrolled,
   // ScrollIgnored if not.
   virtual ScrollStatus FlingScrollBegin() = 0;
-
-  virtual void NotifyCurrentFlingVelocity(const gfx::Vector2dF& velocity) = 0;
 
   virtual void MouseMoveAt(const gfx::Point& mouse_position) = 0;
 

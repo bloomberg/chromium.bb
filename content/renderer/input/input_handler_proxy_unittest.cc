@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/swap_promise_monitor.h"
+#include "content/common/input/did_overscroll_params.h"
 #include "content/renderer/input/input_handler_proxy_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,8 +68,6 @@ class MockInputHandler : public cc::InputHandler {
                                        float page_scale,
                                        base::TimeDelta duration) OVERRIDE {}
 
-  virtual void NotifyCurrentFlingVelocity(
-      const gfx::Vector2dF& velocity) OVERRIDE {}
   virtual void MouseMoveAt(const gfx::Point& mouse_position) OVERRIDE {}
 
   MOCK_METHOD1(HaveTouchEventHandlersAt, bool(const gfx::Point& point));
@@ -86,28 +85,29 @@ class MockInputHandler : public cc::InputHandler {
 // indefinitely.
 class FakeWebGestureCurve : public blink::WebGestureCurve {
  public:
-  FakeWebGestureCurve(const blink::WebFloatPoint& velocity,
-                      const blink::WebSize& cumulative_scroll)
+  FakeWebGestureCurve(const blink::WebFloatSize& velocity,
+                      const blink::WebFloatSize& cumulative_scroll)
       : velocity_(velocity), cumulative_scroll_(cumulative_scroll) {}
 
   virtual ~FakeWebGestureCurve() {}
 
   // Returns false if curve has finished and can no longer be applied.
   virtual bool apply(double time, blink::WebGestureCurveTarget* target) {
-    blink::WebSize displacement(velocity_.x * time, velocity_.y * time);
+    blink::WebFloatSize displacement(velocity_.width * time,
+                                     velocity_.height * time);
     blink::WebFloatSize increment(
         displacement.width - cumulative_scroll_.width,
         displacement.height - cumulative_scroll_.height);
     cumulative_scroll_ = displacement;
     // scrollBy() could delete this curve if the animation is over, so don't
     // touch any member variables after making that call.
-    target->scrollBy(increment);
+    target->scrollBy(increment, velocity_);
     return true;
   }
 
  private:
-  blink::WebFloatPoint velocity_;
-  blink::WebSize cumulative_scroll_;
+  blink::WebFloatSize velocity_;
+  blink::WebFloatSize cumulative_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWebGestureCurve);
 };
@@ -127,10 +127,12 @@ class MockInputHandlerProxyClient
       int deviceSource,
       const WebFloatPoint& velocity,
       const WebSize& cumulative_scroll) OVERRIDE {
-    return new FakeWebGestureCurve(velocity, cumulative_scroll);
+    return new FakeWebGestureCurve(
+        blink::WebFloatSize(velocity.x, velocity.y),
+        blink::WebFloatSize(cumulative_scroll.width, cumulative_scroll.height));
   }
 
-  virtual void DidOverscroll(const cc::DidOverscrollParams& params) OVERRIDE {}
+  MOCK_METHOD1(DidOverscroll, void(const DidOverscrollParams&));
   virtual void DidStopFlinging() OVERRIDE {}
 
  private:
@@ -1085,10 +1087,19 @@ TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
   // Simulate hitting the bottom content edge.
-  cc::DidOverscrollParams overscroll_params;
-  overscroll_params.accumulated_overscroll = gfx::Vector2dF(0, 100);
-  overscroll_params.current_fling_velocity = gfx::Vector2dF(0, 10);
-  input_handler_->DidOverscroll(overscroll_params);
+  gfx::Vector2dF accumulated_overscroll(0, 100);
+  gfx::Vector2dF latest_overscroll_delta(0, 10);
+  EXPECT_CALL(mock_client_,
+              DidOverscroll(testing::AllOf(
+                  testing::Field(&DidOverscrollParams::accumulated_overscroll,
+                                 testing::Eq(accumulated_overscroll)),
+                  testing::Field(&DidOverscrollParams::latest_overscroll_delta,
+                                 testing::Eq(latest_overscroll_delta)),
+                  testing::Field(
+                      &DidOverscrollParams::current_fling_velocity,
+                      testing::Property(&gfx::Vector2dF::y, testing::Gt(0))))));
+  input_handler_->DidOverscroll(accumulated_overscroll,
+                                latest_overscroll_delta);
 
   // The next call to animate will no longer scroll vertically.
   EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
@@ -1145,9 +1156,19 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
   // Simulate hitting the bottom content edge.
-  cc::DidOverscrollParams overscroll_params;
-  overscroll_params.accumulated_overscroll = gfx::Vector2dF(0, 100);
-  input_handler_->DidOverscroll(overscroll_params);
+  gfx::Vector2dF accumulated_overscroll(0, 100);
+  gfx::Vector2dF latest_overscroll_delta(0, 100);
+  EXPECT_CALL(mock_client_,
+              DidOverscroll(testing::AllOf(
+                  testing::Field(&DidOverscrollParams::accumulated_overscroll,
+                                 testing::Eq(accumulated_overscroll)),
+                  testing::Field(&DidOverscrollParams::latest_overscroll_delta,
+                                 testing::Eq(latest_overscroll_delta)),
+                  testing::Field(
+                      &DidOverscrollParams::current_fling_velocity,
+                      testing::Property(&gfx::Vector2dF::y, testing::Gt(0))))));
+  input_handler_->DidOverscroll(accumulated_overscroll,
+                                latest_overscroll_delta);
 
   // The next call to animate will no longer scroll vertically.
   EXPECT_CALL(mock_input_handler_, ScheduleAnimation());
@@ -1160,9 +1181,19 @@ TEST_F(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
   // Simulate hitting the right content edge.
-  overscroll_params.accumulated_overscroll = gfx::Vector2dF(100, 100);
-  input_handler_->DidOverscroll(overscroll_params);
-
+  accumulated_overscroll = gfx::Vector2dF(100, 100);
+  latest_overscroll_delta = gfx::Vector2dF(100, 0);
+  EXPECT_CALL(mock_client_,
+              DidOverscroll(testing::AllOf(
+                  testing::Field(&DidOverscrollParams::accumulated_overscroll,
+                                 testing::Eq(accumulated_overscroll)),
+                  testing::Field(&DidOverscrollParams::latest_overscroll_delta,
+                                 testing::Eq(latest_overscroll_delta)),
+                  testing::Field(
+                      &DidOverscrollParams::current_fling_velocity,
+                      testing::Property(&gfx::Vector2dF::x, testing::Gt(0))))));
+  input_handler_->DidOverscroll(accumulated_overscroll,
+                                latest_overscroll_delta);
   // The next call to animate will no longer scroll horizontally or vertically,
   // and the fling should be cancelled.
   EXPECT_CALL(mock_input_handler_, ScheduleAnimation()).Times(0);

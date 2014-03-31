@@ -72,17 +72,15 @@ bool FlingAnimatorImpl::apply(double /* time */,
     return false;
   }
 
-  target->notifyCurrentFlingVelocity(blink::WebFloatSize(
-      scroller_.GetCurrVelocityX(), scroller_.GetCurrVelocityY()));
-
   gfx::PointF current_position(scroller_.GetCurrX(), scroller_.GetCurrY());
   gfx::Vector2dF scroll_amount(current_position - last_position_);
   last_position_ = current_position;
 
   // scrollBy() could delete this curve if the animation is over, so don't touch
   // any member variables after making that call.
-  target->scrollBy(blink::WebFloatSize(scroll_amount));
-  return true;
+  return target->scrollBy(blink::WebFloatSize(scroll_amount),
+                          blink::WebFloatSize(scroller_.GetCurrVelocityX(),
+                                              scroller_.GetCurrVelocityY()));
 }
 
 FlingAnimatorImpl* FlingAnimatorImpl::CreateAndroidGestureCurve(

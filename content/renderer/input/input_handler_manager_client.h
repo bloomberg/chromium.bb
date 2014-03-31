@@ -17,7 +17,6 @@ struct LatencyInfo;
 
 namespace cc {
 class InputHandler;
-struct DidOverscrollParams;
 }
 
 namespace blink {
@@ -25,6 +24,7 @@ class WebInputEvent;
 }
 
 namespace content {
+struct DidOverscrollParams;
 
 class CONTENT_EXPORT InputHandlerManagerClient {
  public:
@@ -46,7 +46,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
                                   cc::InputHandler* input_handler) = 0;
   virtual void DidRemoveInputHandler(int routing_id) = 0;
   virtual void DidOverscroll(int routing_id,
-                             const cc::DidOverscrollParams& params) = 0;
+                             const DidOverscrollParams& params) = 0;
   virtual void DidStopFlinging(int routing_id) = 0;
 
  protected:

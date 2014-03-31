@@ -23,10 +23,9 @@ bool WebGestureCurveMock::apply(double time,
   blink::WebFloatSize increment(displacement.width - cumulative_scroll_.width,
       displacement.height - cumulative_scroll_.height);
   cumulative_scroll_ = displacement;
-  target->notifyCurrentFlingVelocity(blink::WebFloatSize(velocity_.x,
-                                                          velocity_.y));
+  blink::WebFloatSize velocity(velocity_.x, velocity_.y);
   // scrollBy() could delete this curve if the animation is over, so don't
   // touch any member variables after making that call.
-  target->scrollBy(increment);
+  target->scrollBy(increment, velocity);
   return true;
 }

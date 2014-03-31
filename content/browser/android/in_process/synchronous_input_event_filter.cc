@@ -67,7 +67,7 @@ void SynchronousInputEventFilter::DidRemoveInputHandler(int routing_id) {
 
 void SynchronousInputEventFilter::DidOverscroll(
     int routing_id,
-    const cc::DidOverscrollParams& params) {
+    const DidOverscrollParams& params) {
   // The SynchronusCompositorImpl can be NULL if the WebContents that it's
   // bound to has already been deleted.
   SynchronousCompositorImpl* compositor =

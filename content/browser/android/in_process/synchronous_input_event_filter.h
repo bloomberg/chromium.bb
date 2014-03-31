@@ -37,7 +37,7 @@ class SynchronousInputEventFilter : public InputHandlerManagerClient {
                                   cc::InputHandler* input_handler) OVERRIDE;
   virtual void DidRemoveInputHandler(int routing_id) OVERRIDE;
   virtual void DidOverscroll(int routing_id,
-                             const cc::DidOverscrollParams& params) OVERRIDE;
+                             const DidOverscrollParams& params) OVERRIDE;
   virtual void DidStopFlinging(int routing_id) OVERRIDE;
 
  private:

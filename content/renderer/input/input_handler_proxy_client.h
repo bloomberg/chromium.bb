@@ -14,6 +14,8 @@ struct WebSize;
 
 namespace content {
 
+struct DidOverscrollParams;
+
 // All callbacks invoked from the compositor thread.
 class InputHandlerProxyClient {
  public:
@@ -32,7 +34,7 @@ class InputHandlerProxyClient {
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) = 0;
 
-  virtual void DidOverscroll(const cc::DidOverscrollParams& params) = 0;
+  virtual void DidOverscroll(const DidOverscrollParams& params) = 0;
 
   virtual void DidStopFlinging() = 0;
 
