@@ -16,7 +16,6 @@ PNACL_LINK := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=c++)
 PNACL_LIB := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=ar)
 PNACL_STRIP := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=strip)
 PNACL_FINALIZE := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=finalize)
-PNACL_TRANSLATE := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=translate)
 
 #
 # Compile Macro
@@ -94,19 +93,8 @@ endef
 # $5 = List of lib dirs
 # $6 = Other Linker Args
 #
-# For debugging, we translate the pre-finalized .bc file.
-#
 define LINKER_RULE
 all: $(1).pexe 
-$(1)_x86_32.nexe : $(1).bc
-	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch x86-32 $$^ -o $$@)
-
-$(1)_x86_64.nexe : $(1).bc
-	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch x86-64 $$^ -o $$@)
-
-$(1)_arm.nexe : $(1).bc
-	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch arm $$^ -o $$@)
-
 $(1).pexe: $(1).bc
 	$(call LOG,FINALIZE,$$@,$(PNACL_FINALIZE) -o $$@ $$^)
 
@@ -124,9 +112,6 @@ endef
 # $4 = List of DEPS
 # $5 = POSIX Linker Switches
 # $6 = VC Linker Switches
-#
-# NOTE:  For Debug builds we translate the .bc file to a .nexe instead of
-# using the finalizing to a .pexe.  This enables debugging.
 #
 define LINK_RULE
 $(call LINKER_RULE,$(OUTDIR)/$(1),$(foreach src,$(2),$(call SRC_TO_OBJ,$(src))),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
@@ -164,11 +149,7 @@ endef
 #
 NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
 
-ifeq ($(CONFIG),Debug)
-EXECUTABLES=$(OUTDIR)/$(1)_x86_32.nexe $(OUTDIR)/$(1)_x86_64.nexe $(OUTDIR)/$(1)_arm.nexe
-else
 EXECUTABLES=$(OUTDIR)/$(1).pexe $(OUTDIR)/$(1)_unstripped.bc
-endif
 
 define NMF_RULE
 all: $(OUTDIR)/$(1).nmf
@@ -186,10 +167,3 @@ all: $(OUTDIR)/$(1).html
 $(OUTDIR)/$(1).html: $(EXECUTABLES)
 	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef
-
-
-#
-# Determine which executable to pass into the debugger.  For pnacl, this is
-# the .bc -> .nexe translated app.
-#
-GDB_DEBUG_TARGET = $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe

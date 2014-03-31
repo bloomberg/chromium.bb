@@ -503,8 +503,11 @@ run_package: check_for_chrome all
 	$(CHROME_PATH_ESCAPE) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
 
 GDB_ARGS += -D $(GDB_PATH)
+# PNaCl's nexe is acquired with "remote get nexe <path>" instead of the NMF.
+ifeq (,$(findstring $(TOOLCHAIN),pnacl))
 GDB_ARGS += -D --eval-command="nacl-manifest $(abspath $(OUTDIR))/$(TARGET).nmf"
 GDB_ARGS += -D $(GDB_DEBUG_TARGET)
+endif
 
 .PHONY: debug
 debug: check_for_chrome all $(PAGE)
