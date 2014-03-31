@@ -6,24 +6,25 @@
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_ozone.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 
 namespace content {
 
 SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
-    : compositor_(compositor), realized_widget_(gfx::kNullAcceleratedWidget) {
+    : compositor_(compositor) {
   gfx::SurfaceFactoryOzone* factory = gfx::SurfaceFactoryOzone::GetInstance();
 
   if (factory->InitializeHardware() != gfx::SurfaceFactoryOzone::INITIALIZED)
     LOG(FATAL) << "Failed to initialize hardware in OZONE";
 
-  realized_widget_ = factory->RealizeAcceleratedWidget(compositor_->widget());
+  surface_ozone_ = factory->CreateSurfaceForWidget(compositor_->widget());
 
-  if (realized_widget_ == gfx::kNullAcceleratedWidget)
-    LOG(FATAL) << "Failed to get a realized AcceleratedWidget";
+  if (!surface_ozone_->InitializeCanvas())
+    LOG(FATAL) << "Failed to initialize canvas";
 
-  vsync_provider_ = factory->CreateVSyncProvider(realized_widget_);
+  vsync_provider_ = surface_ozone_->CreateVSyncProvider();
 }
 
 SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {
@@ -34,17 +35,15 @@ void SoftwareOutputDeviceOzone::Resize(const gfx::Size& viewport_size) {
     return;
 
   viewport_size_ = viewport_size;
-  gfx::Rect bounds(viewport_size_);
 
-  gfx::SurfaceFactoryOzone* factory = gfx::SurfaceFactoryOzone::GetInstance();
-  factory->AttemptToResizeAcceleratedWidget(compositor_->widget(),
-                                            bounds);
-
-  canvas_ = skia::SharePtr(factory->GetCanvasForWidget(realized_widget_));
+  surface_ozone_->ResizeCanvas(viewport_size_);
 }
 
 SkCanvas* SoftwareOutputDeviceOzone::BeginPaint(const gfx::Rect& damage_rect) {
   DCHECK(gfx::Rect(viewport_size_).Contains(damage_rect));
+
+  // Get canvas for next frame.
+  canvas_ = surface_ozone_->GetCanvas();
 
   canvas_->clipRect(gfx::RectToSkRect(damage_rect), SkRegion::kReplace_Op);
   // Save the current state so we can restore once we're done drawing. This is
@@ -63,9 +62,8 @@ void SoftwareOutputDeviceOzone::EndPaint(cc::SoftwareFrameData* frame_data) {
   if (damage_rect_.IsEmpty())
     return;
 
-  bool scheduled = gfx::SurfaceFactoryOzone::GetInstance()->SchedulePageFlip(
-      compositor_->widget());
-  DCHECK(scheduled) << "Failed to schedule pageflip";
+  bool scheduled = surface_ozone_->PresentCanvas();
+  DCHECK(scheduled) << "Failed to present canvas";
 }
 
 }  // namespace content

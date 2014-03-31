@@ -12,7 +12,11 @@
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/ozone/surface_ozone_base.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
+
+namespace gfx {
 
 namespace {
 
@@ -25,9 +29,42 @@ void WriteDataToFile(const base::FilePath& location,
                   png_data.size());
 }
 
-}
+class FileSurface : public SurfaceOzoneBase {
+ public:
+  FileSurface(const base::FilePath& location) : location_(location) {}
+  virtual ~FileSurface() {}
 
-namespace gfx {
+  bool InitializeCanvas() OVERRIDE { return true; }
+
+  bool ResizeCanvas(const Size& viewport_size) OVERRIDE {
+    SkImageInfo info = SkImageInfo::MakeN32Premul(viewport_size.width(),
+                                                  viewport_size.height());
+    device_ = skia::AdoptRef(SkBitmapDevice::Create(info));
+    canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
+    return true;
+  }
+
+  skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE { return canvas_; }
+
+  bool PresentCanvas() OVERRIDE {
+    SkBitmap bitmap;
+    bitmap.setConfig(
+        SkBitmap::kARGB_8888_Config, device_->width(), device_->height());
+
+    if (canvas_->readPixels(&bitmap, 0, 0)) {
+      base::WorkerPool::PostTask(
+          FROM_HERE, base::Bind(&WriteDataToFile, location_, bitmap), true);
+    }
+    return true;
+  }
+
+ private:
+  base::FilePath location_;
+  skia::RefPtr<SkBitmapDevice> device_;
+  skia::RefPtr<SkCanvas> canvas_;
+};
+
+}  // namespace
 
 FileSurfaceFactory::FileSurfaceFactory(
     const base::FilePath& dump_location)
@@ -51,48 +88,15 @@ AcceleratedWidget FileSurfaceFactory::GetAcceleratedWidget() {
   return 1;
 }
 
-AcceleratedWidget FileSurfaceFactory::RealizeAcceleratedWidget(
+scoped_ptr<SurfaceOzone> FileSurfaceFactory::CreateSurfaceForWidget(
     AcceleratedWidget widget) {
-  return 1;
+  return make_scoped_ptr<SurfaceOzone>(new FileSurface(location_));
 }
 
 bool FileSurfaceFactory::LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
   return false;
-}
-
-bool FileSurfaceFactory::AttemptToResizeAcceleratedWidget(
-    AcceleratedWidget widget,
-    const Rect& bounds) {
-  SkImageInfo info = SkImageInfo::MakeN32Premul(bounds.width(),
-                                                bounds.height());
-  device_ = skia::AdoptRef(SkBitmapDevice::Create(info));
-  canvas_ = skia::AdoptRef(new SkCanvas(device_.get()));
-  return true;
-}
-
-bool FileSurfaceFactory::SchedulePageFlip(AcceleratedWidget widget) {
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                   device_->width(),
-                   device_->height());
-
-  if (canvas_->readPixels(&bitmap, 0, 0)) {
-    base::WorkerPool::PostTask(FROM_HERE,
-        base::Bind(&WriteDataToFile, location_, bitmap),
-        true);
-  }
-  return true;
-}
-
-SkCanvas* FileSurfaceFactory::GetCanvasForWidget(AcceleratedWidget w) {
-  return canvas_.get();
-}
-
-scoped_ptr<VSyncProvider> FileSurfaceFactory::CreateVSyncProvider(
-    AcceleratedWidget w) {
-  return scoped_ptr<VSyncProvider>();
 }
 
 }  // namespace gfx

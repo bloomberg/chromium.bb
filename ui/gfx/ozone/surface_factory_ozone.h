@@ -20,6 +20,7 @@ class SkCanvas;
 namespace gfx {
 class VSyncProvider;
 class OverlayCandidatesOzone;
+class SurfaceOzone;
 typedef intptr_t NativeBufferOzone;
 
 // The Ozone interface allows external implementations to hook into Chromium to
@@ -109,42 +110,19 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // before it can be used to create a GL surface.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() = 0;
 
-  // Realizes an AcceleratedWidget so that the returned AcceleratedWidget
-  // can be used to to create a GLSurface. This method may only be called in
-  // a process that has a valid GL context.
-  virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
-      gfx::AcceleratedWidget w) = 0;
+  // Create a surface for the specified gfx::AcceleratedWidget.
+  //
+  // Note: When used from content, this is called in the GPU process. The
+  // platform must support creation of SurfaceOzone from the GPU process
+  // using only the handle contained in gfx::AcceleratedWidget.
+  virtual scoped_ptr<SurfaceOzone> CreateSurfaceForWidget(
+      gfx::AcceleratedWidget widget);
 
   // Sets up GL bindings for the native surface. Takes two callback parameters
   // that allow Ozone to register the GL bindings.
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) = 0;
-
-  // If possible attempts to resize the given AcceleratedWidget instance and if
-  // a resize action was performed returns true, otherwise false (native
-  // hardware may only support a single fixed size).
-  virtual bool AttemptToResizeAcceleratedWidget(
-      gfx::AcceleratedWidget w,
-      const gfx::Rect& bounds) = 0;
-
-  // Called after the appropriate GL swap buffers command. Used if extra work
-  // is needed to perform the actual buffer swap.
-  virtual bool SchedulePageFlip(gfx::AcceleratedWidget w);
-
-  // Returns a SkCanvas for the backing buffers. Drawing to the canvas will draw
-  // to the native surface. The canvas is intended for use when no EGL
-  // acceleration is possible. Its implementation is optional when an EGL
-  // backend is provided for rendering.
-  virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w);
-
-  // Returns a gfx::VsyncProvider for the provided AcceleratedWidget. Note
-  // that this may be called after we have entered the sandbox so if there are
-  // operations (e.g. opening a file descriptor providing vsync events) that
-  // must be done outside of the sandbox, they must have been completed
-  // in InitializeHardware. Returns an empty scoped_ptr on error.
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
-      gfx::AcceleratedWidget w) = 0;
 
   // Returns an array of EGL properties, which can be used in any EGL function
   // used to select a display configuration. Note that all properties should be

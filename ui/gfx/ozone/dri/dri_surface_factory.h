@@ -8,12 +8,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_ozone.h"
 
 namespace gfx {
 
 class DriSurface;
 class DriWrapper;
 class HardwareDisplayController;
+class SurfaceOzone;
 
 // SurfaceFactoryOzone implementation on top of DRM/KMS using dumb buffers.
 // This implementation is used in conjunction with the software rendering
@@ -27,23 +29,20 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
   virtual void ShutdownHardware() OVERRIDE;
 
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual gfx::AcceleratedWidget RealizeAcceleratedWidget(
+
+  virtual scoped_ptr<SurfaceOzone> CreateSurfaceForWidget(
       gfx::AcceleratedWidget w) OVERRIDE;
 
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
 
-  virtual bool AttemptToResizeAcceleratedWidget(
-      gfx::AcceleratedWidget w,
-      const gfx::Rect& bounds) OVERRIDE;
+  virtual bool SchedulePageFlip(gfx::AcceleratedWidget w);
 
-  virtual bool SchedulePageFlip(gfx::AcceleratedWidget w) OVERRIDE;
-
-  virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w) OVERRIDE;
+  virtual SkCanvas* GetCanvasForWidget(gfx::AcceleratedWidget w);
 
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
-      gfx::AcceleratedWidget w) OVERRIDE;
+      gfx::AcceleratedWidget w);
 
   void SetHardwareCursor(AcceleratedWidget window,
                          const SkBitmap& image,

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/command_line.h"
-#include "ui/gfx/vsync_provider.h"
+#include "ui/gfx/ozone/surface_ozone.h"
 
 namespace gfx {
 
@@ -33,12 +33,10 @@ intptr_t SurfaceFactoryOzone::GetNativeDisplay() {
   return 0;
 }
 
-bool SurfaceFactoryOzone::SchedulePageFlip(gfx::AcceleratedWidget w) {
-  return true;
-}
-
-SkCanvas* SurfaceFactoryOzone::GetCanvasForWidget(gfx::AcceleratedWidget w) {
-  return NULL;
+scoped_ptr<SurfaceOzone> SurfaceFactoryOzone::CreateSurfaceForWidget(
+    gfx::AcceleratedWidget widget) {
+  NOTIMPLEMENTED();
+  return scoped_ptr<SurfaceOzone>();
 }
 
 const int32* SurfaceFactoryOzone::GetEGLSurfaceProperties(

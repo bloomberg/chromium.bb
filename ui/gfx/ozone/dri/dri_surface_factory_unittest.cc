@@ -263,7 +263,7 @@ TEST_F(DriSurfaceFactoryTest, FailSurfaceInitialization) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_EQ(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
+  EXPECT_FALSE(factory_->CreateSurfaceForWidget(w));
 }
 
 TEST_F(DriSurfaceFactoryTest, FailBindingSurfaceToController) {
@@ -275,7 +275,7 @@ TEST_F(DriSurfaceFactoryTest, FailBindingSurfaceToController) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_EQ(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
+  EXPECT_FALSE(factory_->CreateSurfaceForWidget(w));
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
@@ -285,7 +285,7 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_NE(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
+  EXPECT_TRUE(factory_->CreateSurfaceForWidget(w));
 }
 
 TEST_F(DriSurfaceFactoryTest, FailSchedulePageFlip) {
@@ -297,7 +297,8 @@ TEST_F(DriSurfaceFactoryTest, FailSchedulePageFlip) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_NE(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
+  scoped_ptr<gfx::SurfaceOzone> surf = factory_->CreateSurfaceForWidget(w);
+  EXPECT_TRUE(surf);
 
   EXPECT_FALSE(factory_->SchedulePageFlip(w));
 }
@@ -309,7 +310,8 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulSchedulePageFlip) {
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
 
-  EXPECT_NE(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
+  scoped_ptr<gfx::SurfaceOzone> surf = factory_->CreateSurfaceForWidget(w);
+  EXPECT_TRUE(surf);
 
   EXPECT_TRUE(factory_->SchedulePageFlip(w));
 }
@@ -320,7 +322,9 @@ TEST_F(DriSurfaceFactoryTest, SetCursorImage) {
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
-  EXPECT_NE(gfx::kNullAcceleratedWidget, factory_->RealizeAcceleratedWidget(w));
+
+  scoped_ptr<gfx::SurfaceOzone> surf = factory_->CreateSurfaceForWidget(w);
+  EXPECT_TRUE(surf);
 
   SkBitmap image;
   SkImageInfo info = SkImageInfo::Make(

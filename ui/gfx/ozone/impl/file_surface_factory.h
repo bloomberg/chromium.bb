@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/gfx/skia_util.h"
 
 class SkBitmapDevice;
 class SkCanvas;
@@ -26,21 +25,13 @@ class GFX_EXPORT FileSurfaceFactory : public SurfaceFactoryOzone {
   virtual HardwareState InitializeHardware() OVERRIDE;
   virtual void ShutdownHardware() OVERRIDE;
   virtual AcceleratedWidget GetAcceleratedWidget() OVERRIDE;
-  virtual AcceleratedWidget RealizeAcceleratedWidget(
+  virtual scoped_ptr<SurfaceOzone> CreateSurfaceForWidget(
       AcceleratedWidget widget) OVERRIDE;
   virtual bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) OVERRIDE;
-  virtual bool AttemptToResizeAcceleratedWidget(AcceleratedWidget widget,
-                                                const Rect& bounds) OVERRIDE;
-  virtual bool SchedulePageFlip(AcceleratedWidget widget) OVERRIDE;
-  virtual SkCanvas* GetCanvasForWidget(AcceleratedWidget widget) OVERRIDE;
-  virtual scoped_ptr<VSyncProvider> CreateVSyncProvider(
-      AcceleratedWidget widget) OVERRIDE;
 
   base::FilePath location_;
-  skia::RefPtr<SkBitmapDevice> device_;
-  skia::RefPtr<SkCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSurfaceFactory);
 };

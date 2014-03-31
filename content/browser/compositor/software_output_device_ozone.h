@@ -13,6 +13,10 @@ namespace ui {
 class Compositor;
 }
 
+namespace gfx {
+class SurfaceOzone;
+}
+
 namespace content {
 
 // Ozone implementation which relies on software rendering. Ozone will present
@@ -31,7 +35,7 @@ class CONTENT_EXPORT SoftwareOutputDeviceOzone
  private:
   ui::Compositor* compositor_;
 
-  gfx::AcceleratedWidget realized_widget_;
+  scoped_ptr<gfx::SurfaceOzone> surface_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzone);
 };

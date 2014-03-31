@@ -26,8 +26,6 @@ WindowTreeHostOzone::WindowTreeHostOzone(const gfx::Rect& bounds)
       gfx::SurfaceFactoryOzone::GetInstance();
   widget_ = surface_factory->GetAcceleratedWidget();
 
-  surface_factory->AttemptToResizeAcceleratedWidget(widget_, bounds_);
-
   base::MessagePumpOzone::Current()->AddDispatcherForRootWindow(this);
   CreateCompositor(GetAcceleratedWidget());
 }

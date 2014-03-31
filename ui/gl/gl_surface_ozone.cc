@@ -8,12 +8,35 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
+#include "ui/gfx/ozone/surface_ozone.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 
 namespace gfx {
+
+namespace {
+
+// A thin wrapper around GLSurfaceEGL that owns the EGLNativeWindow
+class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
+ public:
+  GLSurfaceOzoneEGL(scoped_ptr<SurfaceOzone> ozone_surface)
+      : NativeViewGLSurfaceEGL(ozone_surface->GetEGLNativeWindow()),
+        ozone_surface_(ozone_surface.Pass()) {}
+
+  virtual ~GLSurfaceOzoneEGL() {
+    Destroy();  // EGL surface must be destroyed before SurfaceOzone
+  }
+
+ private:
+  // The native surface. Deleting this is allowed to free the EGLNativeWindow.
+  scoped_ptr<SurfaceOzone> ozone_surface_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLSurfaceOzoneEGL);
+};
+
+}  // namespace
 
 // static
 bool GLSurface::InitializeOneOffInternal() {
@@ -50,16 +73,15 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   }
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
   if (window != kNullAcceleratedWidget) {
-    EGLNativeWindowType egl_window =
-        gfx::SurfaceFactoryOzone::GetInstance()->RealizeAcceleratedWidget(
-            window);
-    scoped_ptr<VSyncProvider> sync_provider =
-        gfx::SurfaceFactoryOzone::GetInstance()->CreateVSyncProvider(
-            egl_window);
-    scoped_refptr<NativeViewGLSurfaceEGL> surface =
-        new NativeViewGLSurfaceEGL(egl_window);
-    if (surface->Initialize(sync_provider.Pass()))
-      return surface;
+    scoped_ptr<SurfaceOzone> surface_ozone =
+        SurfaceFactoryOzone::GetInstance()->CreateSurfaceForWidget(window);
+    if (!surface_ozone->InitializeEGL())
+      return NULL;
+    scoped_refptr<GLSurfaceOzoneEGL> surface =
+        new GLSurfaceOzoneEGL(surface_ozone.Pass());
+    if (!surface->Initialize(surface_ozone->CreateVSyncProvider()))
+      return NULL;
+    return surface;
   } else {
     scoped_refptr<GLSurface> surface = new GLSurfaceStub();
     if (surface->Initialize())
