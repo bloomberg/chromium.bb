@@ -30,6 +30,7 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
   virtual gfx::Transform GetValue(double t) const OVERRIDE;
   virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
                                     gfx::BoxF* bounds) const OVERRIDE;
+  virtual bool AffectsScale() const OVERRIDE;
 
  private:
   gfx::Tween::Type tween_type_;
@@ -56,6 +57,7 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
   virtual gfx::Transform GetValue(double t) const OVERRIDE;
   virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
                                     gfx::BoxF* bounds) const OVERRIDE;
+  virtual bool AffectsScale() const OVERRIDE;
 
  private:
   TransformAnimationCurveAdapter base_curve_;

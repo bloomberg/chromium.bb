@@ -437,6 +437,21 @@ bool LayerAnimationController::TransformAnimationBoundsForBox(
   return true;
 }
 
+bool LayerAnimationController::HasAnimationThatAffectsScale() const {
+  for (size_t i = 0; i < active_animations_.size(); ++i) {
+    if (active_animations_[i]->is_finished() ||
+        active_animations_[i]->target_property() != Animation::Transform)
+      continue;
+
+    const TransformAnimationCurve* transform_animation_curve =
+        active_animations_[i]->curve()->ToTransformAnimationCurve();
+    if (transform_animation_curve->AffectsScale())
+      return true;
+  }
+
+  return false;
+}
+
 void LayerAnimationController::PushNewAnimationsToImplThread(
     LayerAnimationController* controller_impl) const {
   // Any new animations owned by the main thread's controller are cloned and

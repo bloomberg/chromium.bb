@@ -1677,5 +1677,60 @@ TEST(LayerAnimationControllerTest, FinishedAndAbortedEventsForGroup) {
   EXPECT_EQ(Animation::Opacity, (*events)[1].target_property);
 }
 
+TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+
+  EXPECT_FALSE(controller_impl->HasAnimationThatAffectsScale());
+
+  controller_impl->AddAnimation(CreateAnimation(
+      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
+      1,
+      Animation::Opacity));
+
+  // Opacity animations don't affect scale.
+  EXPECT_FALSE(controller_impl->HasAnimationThatAffectsScale());
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve1(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations1, scoped_ptr<TimingFunction>()));
+  operations1.AppendTranslate(10.0, 15.0, 0.0);
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations1, scoped_ptr<TimingFunction>()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 2, 2, Animation::Transform));
+  controller_impl->AddAnimation(animation.Pass());
+
+  // Translations don't affect scale.
+  EXPECT_FALSE(controller_impl->HasAnimationThatAffectsScale());
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve2(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations2;
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations2, scoped_ptr<TimingFunction>()));
+  operations2.AppendScale(2.0, 3.0, 4.0);
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations2, scoped_ptr<TimingFunction>()));
+
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
+  controller_impl->AddAnimation(animation.Pass());
+
+  EXPECT_TRUE(controller_impl->HasAnimationThatAffectsScale());
+
+  controller_impl->GetAnimation(3, Animation::Transform)
+      ->SetRunState(Animation::Finished, 0.0);
+
+  // Only unfinished animations should be considered by
+  // HasAnimationThatAffectsScale.
+  EXPECT_FALSE(controller_impl->HasAnimationThatAffectsScale());
+}
+
 }  // namespace
 }  // namespace cc

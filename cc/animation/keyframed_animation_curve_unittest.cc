@@ -451,5 +451,36 @@ TEST(KeyframedAnimationCurveTest, AnimatedBounds) {
             bounds.ToString());
 }
 
+// Tests that animations that affect scale are correctly identified.
+TEST(KeyframedAnimationCurveTest, AffectsScale) {
+  scoped_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  curve->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations1, scoped_ptr<TimingFunction>()));
+  operations1.AppendTranslate(2.0, 3.0, -1.0);
+  TransformOperations operations2;
+  operations2.AppendTranslate(4.0, 1.0, 2.0);
+  curve->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations2, scoped_ptr<TimingFunction>()));
+
+  EXPECT_FALSE(curve->AffectsScale());
+
+  TransformOperations operations3;
+  operations3.AppendScale(2.f, 2.f, 2.f);
+  curve->AddKeyframe(TransformKeyframe::Create(
+      2.0, operations3, scoped_ptr<TimingFunction>()));
+
+  EXPECT_TRUE(curve->AffectsScale());
+
+  TransformOperations operations4;
+  operations3.AppendTranslate(2.f, 2.f, 2.f);
+  curve->AddKeyframe(TransformKeyframe::Create(
+      3.0, operations4, scoped_ptr<TimingFunction>()));
+
+  EXPECT_TRUE(curve->AffectsScale());
+}
+
 }  // namespace
 }  // namespace cc

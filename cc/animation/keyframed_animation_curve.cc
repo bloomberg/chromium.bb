@@ -333,6 +333,14 @@ bool KeyframedTransformAnimationCurve::AnimatedBoundsForBox(
   return true;
 }
 
+bool KeyframedTransformAnimationCurve::AffectsScale() const {
+  for (size_t i = 0; i < keyframes_.size(); ++i) {
+    if (keyframes_[i]->Value().AffectsScale())
+      return true;
+  }
+  return false;
+}
+
 scoped_ptr<KeyframedFilterAnimationCurve> KeyframedFilterAnimationCurve::
     Create() {
   return make_scoped_ptr(new KeyframedFilterAnimationCurve);

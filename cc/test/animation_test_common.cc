@@ -168,6 +168,8 @@ bool FakeTransformTransition::AnimatedBoundsForBox(const gfx::BoxF& box,
   return false;
 }
 
+bool FakeTransformTransition::AffectsScale() const { return false; }
+
 scoped_ptr<AnimationCurve> FakeTransformTransition::Clone() const {
   return make_scoped_ptr(new FakeTransformTransition(*this))
       .PassAs<AnimationCurve>();

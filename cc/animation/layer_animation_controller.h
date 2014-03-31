@@ -119,6 +119,8 @@ class CC_EXPORT LayerAnimationController
   bool TransformAnimationBoundsForBox(const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
 
+  bool HasAnimationThatAffectsScale() const;
+
  protected:
   friend class base::RefCounted<LayerAnimationController>;
 
