@@ -250,3 +250,6 @@ race:sctp_express_handle_sack
 
 # http://crbug.com/350982
 race:libvpx/vp9/decoder/vp9_thread.c
+
+# http://crbug.com/356118
+race:WebCore::ThreadState::copyStackUntilSafePointScope
