@@ -149,6 +149,7 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyMediaPlayer, OnDestroyPlayer)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DestroyAllMediaPlayers,
                         DestroyAllMediaPlayers)
+    IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_SetCdm, OnSetCdm)
     IPC_MESSAGE_HANDLER(CdmHostMsg_InitializeCdm, OnInitializeCdm)
     IPC_MESSAGE_HANDLER(CdmHostMsg_CreateSession, OnCreateSession)
     IPC_MESSAGE_HANDLER(CdmHostMsg_UpdateSession, OnUpdateSession)
@@ -522,10 +523,14 @@ void BrowserMediaPlayerManager::OnInitialize(
 
   RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
       web_contents()->GetRenderProcessHost());
-  AddPlayer(CreateMediaPlayer(
+  MediaPlayerAndroid* player = CreateMediaPlayer(
       type, player_id, url, first_party_for_cookies, demuxer_client_id,
       host->GetBrowserContext()->IsOffTheRecord(), this,
-      host->browser_demuxer_android()));
+      host->browser_demuxer_android());
+  if (!player)
+    return;
+
+  AddPlayer(player);
 }
 
 void BrowserMediaPlayerManager::OnStart(int player_id) {
@@ -590,9 +595,6 @@ void BrowserMediaPlayerManager::OnInitializeCdm(int cdm_id,
   }
 
   AddDrmBridge(cdm_id, key_system, frame_url);
-  // In EME v0.1b MediaKeys lives in the media element. So the |cdm_id|
-  // is the same as the |player_id|.
-  OnSetMediaKeys(cdm_id, cdm_id);
 }
 
 void BrowserMediaPlayerManager::OnCreateSession(
@@ -781,13 +783,14 @@ void BrowserMediaPlayerManager::RemoveDrmBridge(int cdm_id) {
   }
 }
 
-void BrowserMediaPlayerManager::OnSetMediaKeys(int player_id, int cdm_id) {
+void BrowserMediaPlayerManager::OnSetCdm(int player_id, int cdm_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   MediaDrmBridge* drm_bridge = GetDrmBridge(cdm_id);
-  if (!player || !drm_bridge) {
-    DVLOG(1) << "OnSetMediaKeys(): Player and MediaKeys must be present.";
+  if (!drm_bridge || !player) {
+    DVLOG(1) << "Cannot set CDM on the specified player.";
     return;
   }
+
   // TODO(qinmin): add the logic to decide whether we should create the
   // fullscreen surface for EME lv1.
   player->SetDrmBridge(drm_bridge);

@@ -240,10 +240,17 @@ void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
   Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
 }
 
+void RendererMediaPlayerManager::SetCdm(int player_id, int cdm_id) {
+  if (cdm_id == kInvalidCdmId)
+    return;
+  Send(new MediaPlayerHostMsg_SetCdm(routing_id(), player_id, cdm_id));
+}
+
 void RendererMediaPlayerManager::InitializeCdm(int cdm_id,
                                                ProxyMediaKeys* media_keys,
                                                const std::string& key_system,
                                                const GURL& frame_url) {
+  DCHECK_NE(cdm_id, kInvalidCdmId);
   RegisterMediaKeys(cdm_id, media_keys);
   Send(new CdmHostMsg_InitializeCdm(
       routing_id(), cdm_id, key_system, frame_url));
@@ -254,6 +261,7 @@ void RendererMediaPlayerManager::CreateSession(
     uint32 session_id,
     CdmHostMsg_CreateSession_ContentType content_type,
     const std::vector<uint8>& init_data) {
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_CreateSession(
       routing_id(), cdm_id, session_id, content_type, init_data));
 }
@@ -262,15 +270,18 @@ void RendererMediaPlayerManager::UpdateSession(
     int cdm_id,
     uint32 session_id,
     const std::vector<uint8>& response) {
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(
       new CdmHostMsg_UpdateSession(routing_id(), cdm_id, session_id, response));
 }
 
 void RendererMediaPlayerManager::ReleaseSession(int cdm_id, uint32 session_id) {
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_ReleaseSession(routing_id(), cdm_id, session_id));
 }
 
 void RendererMediaPlayerManager::DestroyCdm(int cdm_id) {
+  DCHECK(GetMediaKeys(cdm_id)) << "|cdm_id| not registered.";
   Send(new CdmHostMsg_DestroyCdm(routing_id(), cdm_id));
 }
 

@@ -19,14 +19,18 @@ uint32 CdmSessionAdapter::next_session_id_ = kStartingSessionId;
 COMPILE_ASSERT(kStartingSessionId > media::MediaKeys::kInvalidSessionId,
                invalid_starting_value);
 
-CdmSessionAdapter::CdmSessionAdapter() : weak_ptr_factory_(this) {}
+CdmSessionAdapter::CdmSessionAdapter() :
+#if defined(OS_ANDROID)
+    cdm_id_(0),
+#endif
+    weak_ptr_factory_(this) {}
 
 CdmSessionAdapter::~CdmSessionAdapter() {}
 
 bool CdmSessionAdapter::Initialize(
 #if defined(ENABLE_PEPPER_CDMS)
     const CreatePepperCdmCB& create_pepper_cdm_cb,
-#endif
+#endif  // defined(ENABLE_PEPPER_CDMS)
     const std::string& key_system) {
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   media_keys_ =
@@ -37,9 +41,9 @@ bool CdmSessionAdapter::Initialize(
 #elif defined(OS_ANDROID)
           // TODO(xhwang): Support Android.
           NULL,
-          0,
           // TODO(ddorwin): Get the URL for the frame containing the MediaKeys.
           GURL(),
+          &cdm_id_,
 #endif  // defined(ENABLE_PEPPER_CDMS)
           base::Bind(&CdmSessionAdapter::OnSessionCreated, weak_this),
           base::Bind(&CdmSessionAdapter::OnSessionMessage, weak_this),
@@ -91,6 +95,12 @@ void CdmSessionAdapter::ReleaseSession(uint32 session_id) {
 media::Decryptor* CdmSessionAdapter::GetDecryptor() {
   return media_keys_->GetDecryptor();
 }
+
+#if defined(OS_ANDROID)
+int CdmSessionAdapter::GetCdmId() const {
+  return cdm_id_;
+}
+#endif  // defined(OS_ANDROID)
 
 void CdmSessionAdapter::OnSessionCreated(uint32 session_id,
                                          const std::string& web_session_id) {

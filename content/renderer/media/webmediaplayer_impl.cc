@@ -1306,7 +1306,7 @@ void WebMediaPlayerImpl::SetDecryptorReadyCB(
   DCHECK(decryptor_ready_cb_.is_null());
 
   // Mixed use of prefixed and unprefixed EME APIs is disallowed by Blink.
-  DCHECK(!(proxy_decryptor_ && web_cdm_));
+  DCHECK(!proxy_decryptor_ || !web_cdm_);
 
   if (proxy_decryptor_) {
     decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor());

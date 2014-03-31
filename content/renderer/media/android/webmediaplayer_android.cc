@@ -18,10 +18,10 @@
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/media/android/proxy_media_keys.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/crypto/key_systems.h"
+#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webmediaplayer_delegate.h"
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "content/renderer/render_frame_impl.h"
@@ -31,6 +31,8 @@
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
+// TODO(xhwang): Remove when we remove prefixed EME implementation.
+#include "media/base/media_keys.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "net/base/mime_util.h"
@@ -106,6 +108,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       current_time_(0),
       is_remote_(false),
       media_log_(media_log),
+      web_cdm_(NULL),
       weak_factory_(this) {
   DCHECK(manager_);
 
@@ -1268,8 +1271,6 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
           frame_,
 #else
           manager_,
-          player_id_,  // TODO(xhwang): Use cdm_id when MediaKeys are
-                       // separated from WebMediaPlayer.
 #endif  // defined(ENABLE_PEPPER_CDMS)
           base::Bind(&WebMediaPlayerAndroid::OnKeyAdded,
                      weak_factory_.GetWeakPtr()),
@@ -1284,11 +1285,12 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
       return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
     }
 
-    if (proxy_decryptor_ && !decryptor_ready_cb_.is_null()) {
+    if (!decryptor_ready_cb_.is_null()) {
       base::ResetAndReturn(&decryptor_ready_cb_)
           .Run(proxy_decryptor_->GetDecryptor());
     }
 
+    manager_->SetCdm(player_id_, proxy_decryptor_->GetCdmId());
     current_key_system_ = key_system;
   } else if (key_system != current_key_system_) {
     return WebMediaPlayer::MediaKeyExceptionInvalidPlayerState;
@@ -1388,6 +1390,24 @@ WebMediaPlayerAndroid::CancelKeyRequestInternal(const std::string& key_system,
   return WebMediaPlayer::MediaKeyExceptionNoError;
 }
 
+void WebMediaPlayerAndroid::setContentDecryptionModule(
+    blink::WebContentDecryptionModule* cdm) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+
+  // TODO(xhwang): Support setMediaKeys(0) if necessary: http://crbug.com/330324
+  if (!cdm)
+    return;
+
+  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+  if (!web_cdm_)
+    return;
+
+  if (!decryptor_ready_cb_.is_null())
+    base::ResetAndReturn(&decryptor_ready_cb_).Run(web_cdm_->GetDecryptor());
+
+  manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
+}
+
 void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
 
@@ -1476,13 +1496,18 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
   // detail.
   DCHECK(decryptor_ready_cb_.is_null());
 
+  // Mixed use of prefixed and unprefixed EME APIs is disallowed by Blink.
+  DCHECK(!proxy_decryptor_ || !web_cdm_);
+
   if (proxy_decryptor_) {
     decryptor_ready_cb.Run(proxy_decryptor_->GetDecryptor());
     return;
   }
 
-  // TODO(xhwang): Also notify |web_cdm_| when we implement
-  // setContentDecryptionModule(). See: http://crbug.com/224786
+  if (web_cdm_) {
+    decryptor_ready_cb.Run(web_cdm_->GetDecryptor());
+    return;
+  }
 
   decryptor_ready_cb_ = decryptor_ready_cb;
 }

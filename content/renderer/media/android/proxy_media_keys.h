@@ -21,7 +21,6 @@ class RendererMediaPlayerManager;
 class ProxyMediaKeys : public media::MediaKeys {
  public:
   ProxyMediaKeys(RendererMediaPlayerManager* proxy,
-                 int cdm_id,
                  const media::SessionCreatedCB& session_created_cb,
                  const media::SessionMessageCB& session_message_cb,
                  const media::SessionReadyCB& session_ready_cb,
@@ -54,7 +53,13 @@ class ProxyMediaKeys : public media::MediaKeys {
                       media::MediaKeys::KeyError error_code,
                       uint32 system_code);
 
+  int GetCdmId() const;
+
  private:
+  // CDM ID should be unique per renderer process.
+  // TODO(xhwang): Use uint32 to prevent undefined overflow behavior.
+  static int next_cdm_id_;
+
   RendererMediaPlayerManager* manager_;
   int cdm_id_;
   media::SessionCreatedCB session_created_cb_;

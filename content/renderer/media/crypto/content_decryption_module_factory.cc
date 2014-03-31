@@ -28,14 +28,17 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
     const CreatePepperCdmCB& create_pepper_cdm_cb,
 #elif defined(OS_ANDROID)
     RendererMediaPlayerManager* manager,
-    int cdm_id,
     const GURL& frame_url,
+    int* cdm_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb) {
+#if defined(OS_ANDROID)
+  *cdm_id = RendererMediaPlayerManager::kInvalidCdmId;
+#endif
   if (CanUseAesDecryptor(key_system)) {
     return scoped_ptr<media::MediaKeys>(
         new media::AesDecryptor(session_created_cb,
@@ -44,7 +47,6 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
                                 session_closed_cb,
                                 session_error_cb));
   }
-
 #if defined(ENABLE_PEPPER_CDMS)
   return scoped_ptr<media::MediaKeys>(
       PpapiDecryptor::Create(key_system,
@@ -57,13 +59,13 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #elif defined(OS_ANDROID)
   scoped_ptr<ProxyMediaKeys> proxy_media_keys(
       new ProxyMediaKeys(manager,
-                         cdm_id,
                          session_created_cb,
                          session_message_cb,
                          session_ready_cb,
                          session_closed_cb,
                          session_error_cb));
   proxy_media_keys->InitializeCdm(key_system, frame_url);
+  *cdm_id = proxy_media_keys->GetCdmId();
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else
   return scoped_ptr<media::MediaKeys>();

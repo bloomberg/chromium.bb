@@ -43,6 +43,12 @@ class WebContentDecryptionModuleImpl
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
   media::Decryptor* GetDecryptor();
 
+#if defined(OS_ANDROID)
+  // Returns the CDM ID associated with this object. May be kInvalidCdmId if no
+  // CDM ID is associated, such as when Clear Key is used.
+  int GetCdmId() const;
+#endif  // defined(OS_ANDROID)
+
   // blink::WebContentDecryptionModule implementation.
   virtual blink::WebContentDecryptionModuleSession* createSession(
       blink::WebContentDecryptionModuleSession::Client* client);

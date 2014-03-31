@@ -250,6 +250,11 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen, int /* player_id */)
 // Requests the player to exit fullscreen.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_ExitFullscreen, int /* player_id */)
 
+// Requests the player with |player_id| to use the CDM with |cdm_id|.
+IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetCdm,
+                    int /* player_id */,
+                    int /* cdm_id */);
+
 // Sent after the renderer demuxer has seeked.
 IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DemuxerSeekDone,
                      int /* demuxer_client_id */,

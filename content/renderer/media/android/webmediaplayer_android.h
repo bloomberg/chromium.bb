@@ -36,6 +36,7 @@ class MessageLoopProxy;
 }
 
 namespace blink {
+class WebContentDecryptionModule;
 class WebFrame;
 class WebURL;
 }
@@ -53,8 +54,9 @@ class WebLayerImpl;
 }
 
 namespace content {
-class WebMediaPlayerDelegate;
 class RendererMediaPlayerManager;
+class WebContentDecryptionModuleImpl;
+class WebMediaPlayerDelegate;
 
 // This class implements blink::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
@@ -214,6 +216,8 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual MediaKeyException cancelKeyRequest(
       const blink::WebString& key_system,
       const blink::WebString& session_id);
+  virtual void setContentDecryptionModule(
+      blink::WebContentDecryptionModule* cdm);
 
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
@@ -427,10 +431,18 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // through GenerateKeyRequest() directly from WebKit.
   std::string init_data_type_;
 
-  media::DecryptorReadyCB decryptor_ready_cb_;
-
   // Manages decryption keys and decrypts encrypted frames.
   scoped_ptr<ProxyDecryptor> proxy_decryptor_;
+
+  // Non-owned pointer to the CDM. Updated via calls to
+  // setContentDecryptionModule().
+  WebContentDecryptionModuleImpl* web_cdm_;
+
+  // This is only Used by Clear Key key system implementation, where a renderer
+  // side CDM will be used. This is similar to WebMediaPlayerImpl. For other key
+  // systems, a browser side CDM will be used and we set CDM by calling
+  // manager_->SetCdm() directly.
+  media::DecryptorReadyCB decryptor_ready_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;

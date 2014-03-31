@@ -44,6 +44,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   }
 
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
+
   if (!adapter->Initialize(
 #if defined(ENABLE_PEPPER_CDMS)
           base::Bind(&PepperCdmWrapperImpl::Create, frame),
@@ -57,8 +58,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
 
 WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(
     scoped_refptr<CdmSessionAdapter> adapter)
-    : adapter_(adapter) {
-}
+    : adapter_(adapter) {}
 
 WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() {
 }
@@ -73,5 +73,11 @@ WebContentDecryptionModuleImpl::createSession(
 media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {
   return adapter_->GetDecryptor();
 }
+
+#if defined(OS_ANDROID)
+int WebContentDecryptionModuleImpl::GetCdmId() const {
+  return adapter_->GetCdmId();
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace content

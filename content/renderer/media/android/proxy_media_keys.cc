@@ -13,16 +13,18 @@
 
 namespace content {
 
+int ProxyMediaKeys::next_cdm_id_ =
+    RendererMediaPlayerManager::kInvalidCdmId + 1;
+
 ProxyMediaKeys::ProxyMediaKeys(
     RendererMediaPlayerManager* manager,
-    int cdm_id,
     const media::SessionCreatedCB& session_created_cb,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionReadyCB& session_ready_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::SessionErrorCB& session_error_cb)
     : manager_(manager),
-      cdm_id_(cdm_id),
+      cdm_id_(next_cdm_id_++),
       session_created_cb_(session_created_cb),
       session_message_cb_(session_message_cb),
       session_ready_cb_(session_ready_cb),
@@ -109,6 +111,10 @@ void ProxyMediaKeys::OnSessionError(uint32 session_id,
                                     media::MediaKeys::KeyError error_code,
                                     uint32 system_code) {
   session_error_cb_.Run(session_id, error_code, system_code);
+}
+
+int ProxyMediaKeys::GetCdmId() const {
+  return cdm_id_;
 }
 
 }  // namespace content

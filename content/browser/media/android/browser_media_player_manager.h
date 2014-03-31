@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_ANDROID_BROWSER_MEDIA_PLAYER_MANAGER_H_
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -147,7 +146,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                        uint32 session_id,
                        const std::vector<uint8>& response);
   void OnReleaseSession(int cdm_id, uint32 session_id);
-  void OnSetMediaKeys(int player_id, int cdm_id);
+  void OnSetCdm(int player_id, int cdm_id);
   void OnDestroyCdm(int cdm_id);
 
   // Cancels all pending session creations associated with |cdm_id|.
@@ -220,7 +219,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // An array of managed media DRM bridges.
   ScopedVector<media::MediaDrmBridge> drm_bridges_;
 
-  // a set of media keys IDs that are pending approval or approved to access
+  // A set of media keys IDs that are pending approval or approved to access
   // device DRM credentials.
   // These 2 sets does not cover all the EME videos. If a video only streams
   // clear data, it will not be included in either set.

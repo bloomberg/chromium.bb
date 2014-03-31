@@ -17,6 +17,7 @@
 #include "content/renderer/media/video_frame_compositor.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
+// TODO(xhwang): Remove when we remove prefixed EME implementation.
 #include "media/base/media_keys.h"
 #include "media/base/pipeline.h"
 #include "media/base/text_track.h"

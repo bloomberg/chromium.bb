@@ -65,6 +65,12 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
   media::Decryptor* GetDecryptor();
 
+#if defined(OS_ANDROID)
+  // Returns the CDM ID associated with the |media_keys_|. May be kInvalidCdmId
+  // if no CDM ID is associated.
+  int GetCdmId() const;
+#endif
+
  private:
   friend class base::RefCounted<CdmSessionAdapter>;
   typedef std::map<uint32, WebContentDecryptionModuleSessionImpl*> SessionMap;
@@ -85,12 +91,16 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // Helper function of the callbacks.
   WebContentDecryptionModuleSessionImpl* GetSession(uint32 session_id);
 
+  // Session ID should be unique per renderer process for debugging purposes.
+  static uint32 next_session_id_;
+
   scoped_ptr<media::MediaKeys> media_keys_;
 
   SessionMap sessions_;
 
-  // Session ID should be unique per renderer process for debugging purposes.
-  static uint32 next_session_id_;
+#if defined(OS_ANDROID)
+  int cdm_id_;
+#endif
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_;
