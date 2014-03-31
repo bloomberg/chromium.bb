@@ -54,12 +54,16 @@ void FillDriveEntryPropertiesValue(
   properties->shared_with_me.reset(new bool(shared_with_me));
   properties->shared.reset(new bool(entry_proto.shared()));
 
+  const drive::PlatformFileInfoProto& file_info = entry_proto.file_info();
+  properties->file_size.reset(new double(file_info.size()));
+  properties->last_modified_time.reset(new double(
+      base::Time::FromInternalValue(file_info.last_modified()).ToJsTime()));
+
   if (!entry_proto.has_file_specific_info())
     return;
 
   const drive::FileSpecificInfo& file_specific_info =
       entry_proto.file_specific_info();
-
   properties->thumbnail_url.reset(
       new std::string("https://www.googledrive.com/thumb/" +
           entry_proto.resource_id() + "?width=500&height=500"));
