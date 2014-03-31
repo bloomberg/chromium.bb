@@ -5,9 +5,9 @@
 #include "base/message_loop/message_loop.h"
 #include "gin/public/isolate_holder.h"
 #include "mojo/apps/js/mojo_runner_delegate.h"
+#include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/public/gles2/gles2_cpp.h"
 
 #if defined(WIN32)
 #if !defined(CDECL)
