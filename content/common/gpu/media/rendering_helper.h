@@ -78,6 +78,9 @@ class RenderingHelper {
   // Get the platform specific handle to the OpenGL display.
   void* GetGLDisplay();
 
+  // Get the platform specific handle to the OpenGL context.
+  NativeContextType GetGLContext();
+
   // Get rendered thumbnails as RGB.
   // Sets alpha_solid to true if the alpha channel is entirely 0xff.
   void GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,

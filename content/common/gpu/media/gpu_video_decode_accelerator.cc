@@ -261,7 +261,8 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_.reset(
       new DXVAVideoDecodeAccelerator(make_context_current_));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
-  scoped_ptr<V4L2Device> device = V4L2Device::Create();
+  scoped_ptr<V4L2Device> device =
+      V4L2Device::Create(stub_->decoder()->GetGLContext()->GetHandle());
   if (!device.get()) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;

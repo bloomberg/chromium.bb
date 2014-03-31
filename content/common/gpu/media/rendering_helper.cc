@@ -485,6 +485,8 @@ void RenderingHelper::DeleteTexture(uint32 texture_id) {
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
+NativeContextType RenderingHelper::GetGLContext() { return gl_context_; }
+
 void* RenderingHelper::GetGLDisplay() {
 #if GL_VARIANT_GLX
   return x_display_;

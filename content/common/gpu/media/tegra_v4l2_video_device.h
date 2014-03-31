@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// This file contains the implementation of ExynosV4L2Device used on
-// Exynos platform.
+// This file contains the implementation of TegraV4L2Device used on
+// Tegra platform.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_EXYNOS_V4L2_VIDEO_DEVICE_H_
-#define CONTENT_COMMON_GPU_MEDIA_EXYNOS_V4L2_VIDEO_DEVICE_H_
+#ifndef CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_VIDEO_DEVICE_H_
+#define CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_VIDEO_DEVICE_H_
 
 #include "content/common/gpu/media/v4l2_video_device.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace content {
 
-class ExynosV4L2Device : public V4L2Device {
+// This class implements the V4L2Device interface for Tegra platform.
+// It interfaces with libtegrav4l2 library which provides API that exhibit the
+// V4L2 specification via the library API instead of system calls.
+class TegraV4L2Device : public V4L2Device {
  public:
-  ExynosV4L2Device();
-  virtual ~ExynosV4L2Device();
+  explicit TegraV4L2Device(EGLContext egl_context);
+  virtual ~TegraV4L2Device();
 
-  // V4L2Device implementation.
-  virtual int Ioctl(int request, void* arg) OVERRIDE;
+  virtual int Ioctl(int flags, void* arg) OVERRIDE;
   virtual bool Poll(bool poll_device, bool* event_pending) OVERRIDE;
   virtual bool SetDevicePollInterrupt() OVERRIDE;
   virtual bool ClearDevicePollInterrupt() OVERRIDE;
@@ -43,12 +46,12 @@ class ExynosV4L2Device : public V4L2Device {
   // The actual device fd.
   int device_fd_;
 
-  // eventfd fd to signal device poll thread when its poll() should be
-  // interrupted.
-  int device_poll_interrupt_fd_;
+  // The EGLContext associated with this device.
+  EGLContext egl_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExynosV4L2Device);
+  DISALLOW_COPY_AND_ASSIGN(TegraV4L2Device);
 };
+
 }  //  namespace content
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_EXYNOS_V4L2_VIDEO_DEVICE_H_
+#endif  // CONTENT_COMMON_GPU_MEDIA_TEGRA_V4L2_VIDEO_DEVICE_H_

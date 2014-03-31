@@ -9,6 +9,9 @@
 #ifndef CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
 #define CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_
 
+#include "ui/gfx/size.h"
+#include "ui/gl/gl_bindings.h"
+
 namespace content {
 
 class V4L2Device {
@@ -16,10 +19,10 @@ class V4L2Device {
   V4L2Device();
   virtual ~V4L2Device();
 
-  // Tries to create and initialize an appropriate V4L2Device object for the
+  // Creates and initializes an appropriate V4L2Device object for the
   // current platform and returns a scoped_ptr<V4L2Device> on success else
   // returns NULL.
-  static scoped_ptr<V4L2Device> Create();
+  static scoped_ptr<V4L2Device> Create(EGLContext egl_context);
 
   // Parameters and return value are the same as for the standard ioctl() system
   // call.
@@ -50,7 +53,32 @@ class V4L2Device {
                      int flags,
                      unsigned int offset) = 0;
   virtual void Munmap(void* addr, unsigned int len) = 0;
+
+  // Does all the initialization of V4L2Device, returns true on success.
+  virtual bool Initialize() = 0;
+
+  // Creates an EGLImageKHR since each V4L2Device may use a different method of
+  // acquiring one and associating it to the given texture. The texture_id is
+  // used to bind the texture to the returned EGLImageKHR. buffer_index can be
+  // used to associate the returned EGLImageKHR by the underlying V4L2Device
+  // implementation.
+  virtual EGLImageKHR CreateEGLImage(EGLDisplay egl_display,
+                                     GLuint texture_id,
+                                     gfx::Size frame_buffer_size,
+                                     unsigned int buffer_index,
+                                     size_t planes_count) = 0;
+
+  // Destroys the EGLImageKHR.
+  virtual EGLBoolean DestroyEGLImage(EGLDisplay egl_display,
+                                     EGLImageKHR egl_image) = 0;
+
+  // Returns the supported texture target for the V4L2Device.
+  virtual GLenum GetTextureTarget() = 0;
+
+  // Returns the preferred pixel format supported by this V4L2Device.
+  virtual uint32 PreferredOutputFormat() = 0;
 };
+
 }  //  namespace content
 
 #endif  //  CONTENT_COMMON_GPU_MEDIA_V4L2_VIDEO_DEVICE_H_

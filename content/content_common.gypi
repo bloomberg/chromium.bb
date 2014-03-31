@@ -616,6 +616,8 @@
         'common/gpu/media/exynos_v4l2_video_device.h',
         'common/gpu/media/exynos_video_encode_accelerator.cc',
         'common/gpu/media/exynos_video_encode_accelerator.h',
+        'common/gpu/media/tegra_v4l2_video_device.cc',
+        'common/gpu/media/tegra_v4l2_video_device.h',
         'common/gpu/media/v4l2_video_decode_accelerator.cc',
         'common/gpu/media/v4l2_video_decode_accelerator.h',
         'common/gpu/media/v4l2_video_device.cc',

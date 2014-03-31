@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
+
 #include <fcntl.h>
+#include <libdrm/drm_fourcc.h>
 #include <linux/videodev2.h>
 #include <poll.h>
 #include <sys/eventfd.h>
@@ -10,8 +12,10 @@
 #include <sys/mman.h>
 
 #include "base/debug/trace_event.h"
+#include "base/files/scoped_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "content/common/gpu/media/exynos_v4l2_video_device.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace content {
 
@@ -114,4 +118,63 @@ bool ExynosV4L2Device::Initialize() {
   }
   return true;
 }
+
+EGLImageKHR ExynosV4L2Device::CreateEGLImage(EGLDisplay egl_display,
+                                             GLuint texture_id,
+                                             gfx::Size frame_buffer_size,
+                                             unsigned int buffer_index,
+                                             size_t planes_count) {
+  DVLOG(3) << "CreateEGLImage()";
+
+  scoped_ptr<base::ScopedFD[]> dmabuf_fds(new base::ScopedFD[planes_count]);
+  for (size_t i = 0; i < planes_count; ++i) {
+    // Export the DMABUF fd so we can export it as a texture.
+    struct v4l2_exportbuffer expbuf;
+    memset(&expbuf, 0, sizeof(expbuf));
+    expbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+    expbuf.index = buffer_index;
+    expbuf.plane = i;
+    expbuf.flags = O_CLOEXEC;
+    if (HANDLE_EINTR(Ioctl(VIDIOC_EXPBUF, &expbuf) != 0)) {
+      return EGL_NO_IMAGE_KHR;
+    }
+    dmabuf_fds[i].reset(expbuf.fd);
+  }
+  DCHECK_EQ(planes_count, 2);
+  EGLint attrs[] = {
+      EGL_WIDTH,                     0, EGL_HEIGHT,                    0,
+      EGL_LINUX_DRM_FOURCC_EXT,      0, EGL_DMA_BUF_PLANE0_FD_EXT,     0,
+      EGL_DMA_BUF_PLANE0_OFFSET_EXT, 0, EGL_DMA_BUF_PLANE0_PITCH_EXT,  0,
+      EGL_DMA_BUF_PLANE1_FD_EXT,     0, EGL_DMA_BUF_PLANE1_OFFSET_EXT, 0,
+      EGL_DMA_BUF_PLANE1_PITCH_EXT,  0, EGL_NONE, };
+  attrs[1] = frame_buffer_size.width();
+  attrs[3] = frame_buffer_size.height();
+  attrs[5] = DRM_FORMAT_NV12;
+  attrs[7] = dmabuf_fds[0].get();
+  attrs[9] = 0;
+  attrs[11] = frame_buffer_size.width();
+  attrs[13] = dmabuf_fds[1].get();
+  attrs[15] = 0;
+  attrs[17] = frame_buffer_size.width();
+
+  EGLImageKHR egl_image = eglCreateImageKHR(
+      egl_display, EGL_NO_CONTEXT, EGL_LINUX_DMA_BUF_EXT, NULL, attrs);
+  if (egl_image == EGL_NO_IMAGE_KHR) {
+    return egl_image;
+  }
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_id);
+  glEGLImageTargetTexture2DOES(GL_TEXTURE_EXTERNAL_OES, egl_image);
+
+  return egl_image;
+}
+
+EGLBoolean ExynosV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
+                                             EGLImageKHR egl_image) {
+  return eglDestroyImageKHR(egl_display, egl_image);
+}
+
+GLenum ExynosV4L2Device::GetTextureTarget() { return GL_TEXTURE_EXTERNAL_OES; }
+
+uint32 ExynosV4L2Device::PreferredOutputFormat() { return V4L2_PIX_FMT_NV12M; }
+
 }  //  namespace content

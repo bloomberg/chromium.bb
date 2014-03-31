@@ -556,7 +556,8 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
       new DXVAVideoDecodeAccelerator(base::Bind(&DoNothingReturnTrue)));
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
 
-  scoped_ptr<V4L2Device> device = V4L2Device::Create();
+  scoped_ptr<V4L2Device> device = V4L2Device::Create(
+      static_cast<EGLContext>(rendering_helper_->GetGLContext()));
   if (!device.get()) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;

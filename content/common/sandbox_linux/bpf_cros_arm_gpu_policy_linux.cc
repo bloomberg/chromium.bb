@@ -180,6 +180,11 @@ bool CrosArmGpuProcessPolicy::PreSandboxHook() {
 
   // Preload the Mali library.
   dlopen("/usr/lib/libmali.so", dlopen_flag);
+  // Preload the Tegra V4L2 (video decode acceleration) library.
+  dlopen("/usr/lib/libtegrav4l2.so", dlopen_flag);
+  // Resetting errno since platform-specific libraries will fail on other
+  // platforms.
+  errno = 0;
 
   return true;
 }
