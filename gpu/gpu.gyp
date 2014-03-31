@@ -130,7 +130,7 @@
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '<(angle_path)/src/build_angle.gyp:translator',
+        '<(angle_path)/src/build_angle.gyp:translator_static',
       ],
       'variables': {
         'ANGLE_DIR': '<(angle_path)',
