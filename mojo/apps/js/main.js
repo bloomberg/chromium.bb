@@ -11,7 +11,7 @@ define([
     'mojo/apps/js/bindings/gl',
     'mojo/apps/js/bindings/threading',
     'mojo/services/native_viewport/native_viewport.mojom',
-    'mojo/public/shell/shell.mojom',
+    'mojo/public/interfaces/shell/shell.mojom',
 ], function(console,
             monotonicClock,
             timer,

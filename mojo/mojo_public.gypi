@@ -358,7 +358,7 @@
       'target_name': 'mojo_shell_bindings',
       'type': 'static_library',
       'sources': [
-        'public/shell/shell.mojom',
+        'public/interfaces/shell/shell.mojom',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
@@ -376,10 +376,10 @@
       'target_name': 'mojo_shell_client',
       'type': 'static_library',
       'sources': [
-        'public/shell/lib/application.cc',
-        'public/shell/lib/service.cc',
-        'public/shell/application.h',
-        'public/shell/service.h',
+        'public/cpp/shell/application.h',
+        'public/cpp/shell/service.h',
+        'public/cpp/shell/lib/application.cc',
+        'public/cpp/shell/lib/service.cc',
       ],
       'dependencies': [
         'mojo_shell_bindings',

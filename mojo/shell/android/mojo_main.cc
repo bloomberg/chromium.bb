@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/MojoMain_jni.h"
-#include "mojo/public/shell/application.h"
+#include "mojo/public/cpp/shell/application.h"
 #include "mojo/service_manager/service_loader.h"
 #include "mojo/service_manager/service_manager.h"
 #include "mojo/services/native_viewport/native_viewport_service.h"

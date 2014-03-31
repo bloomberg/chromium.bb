@@ -10,7 +10,7 @@
 #include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/shell/shell.mojom.h"
+#include "mojo/public/interfaces/shell/shell.mojom.h"
 
 // Utility classes for creating ShellClients that vend service instances.
 // To use define a class that implements your specific server api, e.g. FooImpl
