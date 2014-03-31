@@ -89,7 +89,7 @@
 #define ARCH_CPU_ARMEL 1
 #define ARCH_CPU_32_BITS 1
 #define WCHAR_T_IS_UNSIGNED 1
-#elif defined(__arm64__)
+#elif defined(__aarch64__)
 #define ARCH_CPU_ARM_FAMILY 1
 #define ARCH_CPU_ARM64 1
 #define ARCH_CPU_64_BITS 1
