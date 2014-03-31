@@ -288,8 +288,10 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
     return false;
   }
 
-  if (!StartDevicePoll())
-    return false;
+  // StartDevicePoll will NOTIFY_ERROR on failure, so IgnoreResult is fine here.
+  decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
+      base::IgnoreResult(&V4L2VideoDecodeAccelerator::StartDevicePoll),
+      base::Unretained(this)));
 
   SetDecoderState(kInitialized);
 
@@ -1407,8 +1409,7 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
 bool V4L2VideoDecodeAccelerator::StartDevicePoll() {
   DVLOG(3) << "StartDevicePoll()";
   DCHECK(!device_poll_thread_.IsRunning());
-  if (decoder_thread_.IsRunning())
-    DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   // Start up the device poll thread and schedule its first DevicePollTask().
   if (!device_poll_thread_.Start()) {
