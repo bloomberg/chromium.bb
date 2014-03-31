@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/transport/cast_transport_config.h"
 
@@ -82,8 +83,9 @@ class InProcessReceiver {
   friend class base::RefCountedThreadSafe<InProcessReceiver>;
 
   // CastReceiver callbacks that receive a frame and then request another.
-  void GotAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
-                     const base::TimeTicks& playout_time);
+  void GotAudioFrame(scoped_ptr<AudioBus> audio_frame,
+                     const base::TimeTicks& playout_time,
+                     bool is_continuous);
   void GotVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
                      const base::TimeTicks& render_time);
   void PullNextAudioFrame();

@@ -2,216 +2,243 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/simple_test_tick_clock.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/stl_util.h"
+#include "base/synchronization/condition_variable.h"
+#include "base/synchronization/lock.h"
+#include "base/sys_byteorder.h"
+#include "base/time/time.h"
 #include "media/cast/audio_receiver/audio_decoder.h"
-#include "media/cast/cast_environment.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "media/cast/cast_config.h"
+#include "media/cast/test/utility/audio_utility.h"
+#include "media/cast/test/utility/standalone_cast_environment.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/opus/src/include/opus.h"
 
 namespace media {
 namespace cast {
 
 namespace {
-class TestRtpPayloadFeedback : public RtpPayloadFeedback {
- public:
-  TestRtpPayloadFeedback() {}
-  virtual ~TestRtpPayloadFeedback() {}
+struct TestScenario {
+  transport::AudioCodec codec;
+  int num_channels;
+  int sampling_rate;
 
-  virtual void CastFeedback(const RtcpCastMessage& cast_feedback) OVERRIDE {
-    EXPECT_EQ(1u, cast_feedback.ack_frame_id_);
-    EXPECT_EQ(0u, cast_feedback.missing_frames_and_packets_.size());
-  }
+  TestScenario(transport::AudioCodec c, int n, int s)
+      : codec(c), num_channels(n), sampling_rate(s) {}
 };
-}  // namespace.
+}  // namespace
 
-class AudioDecoderTest : public ::testing::Test {
+class AudioDecoderTest : public ::testing::TestWithParam<TestScenario> {
+ public:
+  AudioDecoderTest()
+      : cast_environment_(new StandaloneCastEnvironment()),
+        cond_(&lock_) {}
+
  protected:
-  AudioDecoderTest() {
-    testing_clock_ = new base::SimpleTestTickClock();
-    testing_clock_->Advance(base::TimeDelta::FromMilliseconds(1234));
-    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
-    cast_environment_ =
-        new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_).Pass(),
-                            task_runner_,
-                            task_runner_,
-                            task_runner_);
-  }
-  virtual ~AudioDecoderTest() {}
+  virtual void SetUp() OVERRIDE {
+    AudioReceiverConfig decoder_config;
+    decoder_config.use_external_decoder = false;
+    decoder_config.frequency = GetParam().sampling_rate;
+    decoder_config.channels = GetParam().num_channels;
+    decoder_config.codec = GetParam().codec;
+    audio_decoder_.reset(new AudioDecoder(cast_environment_, decoder_config));
+    CHECK_EQ(STATUS_AUDIO_INITIALIZED, audio_decoder_->InitializationResult());
 
-  void Configure(const AudioReceiverConfig& audio_config) {
-    audio_decoder_.reset(
-        new AudioDecoder(cast_environment_, audio_config, &cast_feedback_));
+    audio_bus_factory_.reset(
+        new TestAudioBusFactory(GetParam().num_channels,
+                                GetParam().sampling_rate,
+                                TestAudioBusFactory::kMiddleANoteFreq,
+                                0.5f));
+    last_frame_id_ = 0;
+    seen_a_decoded_frame_ = false;
+
+    if (GetParam().codec == transport::kOpus) {
+      opus_encoder_memory_.reset(
+          new uint8[opus_encoder_get_size(GetParam().num_channels)]);
+      OpusEncoder* const opus_encoder =
+          reinterpret_cast<OpusEncoder*>(opus_encoder_memory_.get());
+      CHECK_EQ(OPUS_OK, opus_encoder_init(opus_encoder,
+                                          GetParam().sampling_rate,
+                                          GetParam().num_channels,
+                                          OPUS_APPLICATION_AUDIO));
+      CHECK_EQ(OPUS_OK,
+               opus_encoder_ctl(opus_encoder, OPUS_SET_BITRATE(OPUS_AUTO)));
+    }
+
+    total_audio_feed_in_ = base::TimeDelta();
+    total_audio_decoded_ = base::TimeDelta();
   }
 
-  TestRtpPayloadFeedback cast_feedback_;
-  // Owned by CastEnvironment.
-  base::SimpleTestTickClock* testing_clock_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
-  scoped_refptr<CastEnvironment> cast_environment_;
+  // Called from the unit test thread to create another EncodedAudioFrame and
+  // push it into the decoding pipeline.
+  void FeedMoreAudio(const base::TimeDelta& duration,
+                     int num_dropped_frames) {
+    // Prepare a simulated EncodedAudioFrame to feed into the AudioDecoder.
+    scoped_ptr<transport::EncodedAudioFrame> encoded_frame(
+        new transport::EncodedAudioFrame());
+    encoded_frame->codec = GetParam().codec;
+    encoded_frame->frame_id = last_frame_id_ + 1 + num_dropped_frames;
+    last_frame_id_ = encoded_frame->frame_id;
+
+    const scoped_ptr<AudioBus> audio_bus(
+        audio_bus_factory_->NextAudioBus(duration).Pass());
+
+    // Encode |audio_bus| into |encoded_frame->data|.
+    const int num_elements = audio_bus->channels() * audio_bus->frames();
+    std::vector<int16> interleaved(num_elements);
+    audio_bus->ToInterleaved(
+        audio_bus->frames(), sizeof(int16), &interleaved.front());
+    if (GetParam().codec == transport::kPcm16) {
+      encoded_frame->data.resize(num_elements * sizeof(int16));
+      int16* const pcm_data =
+          reinterpret_cast<int16*>(string_as_array(&encoded_frame->data));
+      for (size_t i = 0; i < interleaved.size(); ++i)
+        pcm_data[i] = static_cast<int16>(base::HostToNet16(interleaved[i]));
+    } else if (GetParam().codec == transport::kOpus) {
+      OpusEncoder* const opus_encoder =
+          reinterpret_cast<OpusEncoder*>(opus_encoder_memory_.get());
+      const int kOpusEncodeBufferSize = 4000;
+      encoded_frame->data.resize(kOpusEncodeBufferSize);
+      const int payload_size =
+          opus_encode(opus_encoder,
+                      &interleaved.front(),
+                      audio_bus->frames(),
+                      reinterpret_cast<unsigned char*>(
+                          string_as_array(&encoded_frame->data)),
+                      encoded_frame->data.size());
+      CHECK_GT(payload_size, 1);
+      encoded_frame->data.resize(payload_size);
+    } else {
+      ASSERT_TRUE(false);  // Not reached.
+    }
+
+    {
+      base::AutoLock auto_lock(lock_);
+      total_audio_feed_in_ += duration;
+    }
+
+    cast_environment_->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(&AudioDecoder::DecodeFrame,
+                   base::Unretained(audio_decoder_.get()),
+                   base::Passed(&encoded_frame),
+                   base::Bind(&AudioDecoderTest::OnDecodedFrame,
+                              base::Unretained(this),
+                              num_dropped_frames == 0)));
+  }
+
+  // Blocks the caller until all audio that has been feed in has been decoded.
+  void WaitForAllAudioToBeDecoded() {
+    DCHECK(!cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+    base::AutoLock auto_lock(lock_);
+    while (total_audio_decoded_ < total_audio_feed_in_)
+      cond_.Wait();
+    EXPECT_EQ(total_audio_feed_in_.InMicroseconds(),
+              total_audio_decoded_.InMicroseconds());
+  }
+
+ private:
+  // Called by |audio_decoder_| to deliver each frame of decoded audio.
+  void OnDecodedFrame(bool should_be_continuous,
+                      scoped_ptr<AudioBus> audio_bus,
+                      bool is_continuous) {
+    DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+
+    // A NULL |audio_bus| indicates a decode error, which we don't expect.
+    ASSERT_FALSE(!audio_bus);
+
+    // Did the decoder detect whether frames were dropped?
+    EXPECT_EQ(should_be_continuous, is_continuous);
+
+    // Does the audio data seem to be intact?  For Opus, we have to ignore the
+    // first frame seen at the start (and immediately after dropped packet
+    // recovery) because it introduces a tiny, significant delay.
+    bool examine_signal = true;
+    if (GetParam().codec == transport::kOpus) {
+      examine_signal = seen_a_decoded_frame_ && should_be_continuous;
+      seen_a_decoded_frame_ = true;
+    }
+    if (examine_signal) {
+      for (int ch = 0; ch < audio_bus->channels(); ++ch) {
+        EXPECT_NEAR(
+            TestAudioBusFactory::kMiddleANoteFreq * 2 * audio_bus->frames() /
+                GetParam().sampling_rate,
+            CountZeroCrossings(audio_bus->channel(ch), audio_bus->frames()),
+            1);
+      }
+    }
+
+    // Signal the main test thread that more audio was decoded.
+    base::AutoLock auto_lock(lock_);
+    total_audio_decoded_ += base::TimeDelta::FromSeconds(1) *
+        audio_bus->frames() / GetParam().sampling_rate;
+    cond_.Signal();
+  }
+
+  const scoped_refptr<StandaloneCastEnvironment> cast_environment_;
   scoped_ptr<AudioDecoder> audio_decoder_;
+  scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
+  uint32 last_frame_id_;
+  bool seen_a_decoded_frame_;
+  scoped_ptr<uint8[]> opus_encoder_memory_;
+
+  base::Lock lock_;
+  base::ConditionVariable cond_;
+  base::TimeDelta total_audio_feed_in_;
+  base::TimeDelta total_audio_decoded_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderTest);
 };
 
-TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
-  AudioReceiverConfig audio_config;
-  audio_config.rtp_payload_type = 127;
-  audio_config.frequency = 16000;
-  audio_config.channels = 1;
-  audio_config.codec = transport::kPcm16;
-  audio_config.use_external_decoder = false;
-  Configure(audio_config);
-
-  RtpCastHeader rtp_header;
-  rtp_header.webrtc.header.payloadType = 127;
-  rtp_header.webrtc.header.sequenceNumber = 1234;
-  rtp_header.webrtc.header.timestamp = 0x87654321;
-  rtp_header.webrtc.header.ssrc = 0x12345678;
-  rtp_header.webrtc.header.paddingLength = 0;
-  rtp_header.webrtc.header.headerLength = 12;
-  rtp_header.webrtc.type.Audio.channel = 1;
-  rtp_header.webrtc.type.Audio.isCNG = false;
-
-  std::vector<int16> payload(640, 0x1234);
-  int number_of_10ms_blocks = 4;
-  int desired_frequency = 16000;
-  PcmAudioFrame audio_frame;
-  uint32 rtp_timestamp;
-
-  EXPECT_FALSE(audio_decoder_->GetRawAudioFrame(
-      number_of_10ms_blocks, desired_frequency, &audio_frame, &rtp_timestamp));
-
-  uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
-  size_t payload_size = payload.size() * sizeof(int16);
-
-  audio_decoder_->IncomingParsedRtpPacket(
-      payload_data, payload_size, rtp_header);
-
-  EXPECT_TRUE(audio_decoder_->GetRawAudioFrame(
-      number_of_10ms_blocks, desired_frequency, &audio_frame, &rtp_timestamp));
-  EXPECT_EQ(1, audio_frame.channels);
-  EXPECT_EQ(16000, audio_frame.frequency);
-  EXPECT_EQ(640ul, audio_frame.samples.size());
-  // First 10 samples per channel are 0 from NetEq.
-  for (size_t i = 10; i < audio_frame.samples.size(); ++i) {
-    EXPECT_EQ(0x3412, audio_frame.samples[i]);
-  }
+TEST_P(AudioDecoderTest, DecodesFramesWithSameDuration) {
+  const base::TimeDelta kTenMilliseconds =
+      base::TimeDelta::FromMilliseconds(10);
+  const int kNumFrames = 10;
+  for (int i = 0; i < kNumFrames; ++i)
+    FeedMoreAudio(kTenMilliseconds, 0);
+  WaitForAllAudioToBeDecoded();
 }
 
-TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
-  AudioReceiverConfig audio_config;
-  audio_config.rtp_payload_type = 127;
-  audio_config.frequency = 16000;
-  audio_config.channels = 2;
-  audio_config.codec = transport::kPcm16;
-  audio_config.use_external_decoder = false;
-  Configure(audio_config);
+TEST_P(AudioDecoderTest, DecodesFramesWithVaryingDuration) {
+  // These are the set of frame durations supported by the Opus encoder.
+  const int kFrameDurationMs[] = { 5, 10, 20, 40, 60 };
 
-  RtpCastHeader rtp_header;
-  rtp_header.frame_id = 0;
-  rtp_header.webrtc.header.payloadType = 127;
-  rtp_header.webrtc.header.sequenceNumber = 1234;
-  rtp_header.webrtc.header.timestamp = 0x87654321;
-  rtp_header.webrtc.header.ssrc = 0x12345678;
-  rtp_header.webrtc.header.paddingLength = 0;
-  rtp_header.webrtc.header.headerLength = 12;
-
-  rtp_header.webrtc.type.Audio.isCNG = false;
-  rtp_header.webrtc.type.Audio.channel = 2;
-
-  std::vector<int16> payload(640, 0x1234);
-
-  uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
-  size_t payload_size = payload.size() * sizeof(int16);
-
-  audio_decoder_->IncomingParsedRtpPacket(
-      payload_data, payload_size, rtp_header);
-
-  int number_of_10ms_blocks = 2;
-  int desired_frequency = 16000;
-  PcmAudioFrame audio_frame;
-  uint32 rtp_timestamp;
-
-  EXPECT_TRUE(audio_decoder_->GetRawAudioFrame(
-      number_of_10ms_blocks, desired_frequency, &audio_frame, &rtp_timestamp));
-  EXPECT_EQ(2, audio_frame.channels);
-  EXPECT_EQ(16000, audio_frame.frequency);
-  EXPECT_EQ(640ul, audio_frame.samples.size());
-  // First 10 samples per channel are 0 from NetEq.
-  for (size_t i = 10 * audio_config.channels; i < audio_frame.samples.size();
-       ++i) {
-    EXPECT_EQ(0x3412, audio_frame.samples[i]);
-  }
-
-  rtp_header.frame_id++;
-  rtp_header.webrtc.header.sequenceNumber++;
-  rtp_header.webrtc.header.timestamp += (audio_config.frequency / 100) * 2 * 2;
-
-  audio_decoder_->IncomingParsedRtpPacket(
-      payload_data, payload_size, rtp_header);
-
-  EXPECT_TRUE(audio_decoder_->GetRawAudioFrame(
-      number_of_10ms_blocks, desired_frequency, &audio_frame, &rtp_timestamp));
-  EXPECT_EQ(2, audio_frame.channels);
-  EXPECT_EQ(16000, audio_frame.frequency);
-  EXPECT_EQ(640ul, audio_frame.samples.size());
-  for (size_t i = 0; i < audio_frame.samples.size(); ++i) {
-    EXPECT_NEAR(0x3412, audio_frame.samples[i], 1000);
-  }
-  // Test cast callback.
-  audio_decoder_->SendCastMessage();
-  testing_clock_->Advance(base::TimeDelta::FromMilliseconds(33));
-  audio_decoder_->SendCastMessage();
+  const int kNumFrames = 10;
+  for (size_t i = 0; i < arraysize(kFrameDurationMs); ++i)
+    for (int j = 0; j < kNumFrames; ++j)
+      FeedMoreAudio(base::TimeDelta::FromMilliseconds(kFrameDurationMs[i]), 0);
+  WaitForAllAudioToBeDecoded();
 }
 
-TEST_F(AudioDecoderTest, Pcm16Resample) {
-  AudioReceiverConfig audio_config;
-  audio_config.rtp_payload_type = 127;
-  audio_config.frequency = 16000;
-  audio_config.channels = 2;
-  audio_config.codec = transport::kPcm16;
-  audio_config.use_external_decoder = false;
-  Configure(audio_config);
-
-  RtpCastHeader rtp_header;
-  rtp_header.webrtc.header.payloadType = 127;
-  rtp_header.webrtc.header.sequenceNumber = 1234;
-  rtp_header.webrtc.header.timestamp = 0x87654321;
-  rtp_header.webrtc.header.ssrc = 0x12345678;
-  rtp_header.webrtc.header.paddingLength = 0;
-  rtp_header.webrtc.header.headerLength = 12;
-
-  rtp_header.webrtc.type.Audio.isCNG = false;
-  rtp_header.webrtc.type.Audio.channel = 2;
-
-  std::vector<int16> payload(640, 0x1234);
-
-  uint8* payload_data = reinterpret_cast<uint8*>(&payload[0]);
-  size_t payload_size = payload.size() * sizeof(int16);
-
-  audio_decoder_->IncomingParsedRtpPacket(
-      payload_data, payload_size, rtp_header);
-
-  int number_of_10ms_blocks = 2;
-  int desired_frequency = 48000;
-  PcmAudioFrame audio_frame;
-  uint32 rtp_timestamp;
-
-  EXPECT_TRUE(audio_decoder_->GetRawAudioFrame(
-      number_of_10ms_blocks, desired_frequency, &audio_frame, &rtp_timestamp));
-
-  EXPECT_EQ(2, audio_frame.channels);
-  EXPECT_EQ(48000, audio_frame.frequency);
-  EXPECT_EQ(1920ul, audio_frame.samples.size());  // Upsampled to 48 KHz.
-  int count = 0;
-  // Resampling makes the variance worse.
-  for (size_t i = 100 * audio_config.channels; i < audio_frame.samples.size();
-       ++i) {
-    EXPECT_NEAR(0x3412, audio_frame.samples[i], 400);
-    if (0x3412 == audio_frame.samples[i])
-      count++;
+TEST_P(AudioDecoderTest, RecoversFromDroppedFrames) {
+  const base::TimeDelta kTenMilliseconds =
+      base::TimeDelta::FromMilliseconds(10);
+  const int kNumFrames = 100;
+  int next_drop_at = 3;
+  int next_num_dropped = 1;
+  for (int i = 0; i < kNumFrames; ++i) {
+    if (i == next_drop_at) {
+      const int num_dropped = next_num_dropped++;
+      next_drop_at *= 2;
+      i += num_dropped;
+      FeedMoreAudio(kTenMilliseconds, num_dropped);
+    } else {
+      FeedMoreAudio(kTenMilliseconds, 0);
+    }
   }
+  WaitForAllAudioToBeDecoded();
 }
+
+INSTANTIATE_TEST_CASE_P(AudioDecoderTestScenarios,
+                        AudioDecoderTest,
+                        ::testing::Values(
+                             TestScenario(transport::kPcm16, 1, 8000),
+                             TestScenario(transport::kPcm16, 2, 48000),
+                             TestScenario(transport::kOpus, 1, 8000),
+                             TestScenario(transport::kOpus, 2, 48000)));
 
 }  // namespace cast
 }  // namespace media

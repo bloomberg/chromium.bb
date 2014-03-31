@@ -56,6 +56,8 @@ scoped_ptr<PcmAudioFrame> ToPcmAudioFrame(const AudioBus& audio_bus,
 // Assuming |samples| contains a single-frequency sine wave (and maybe some
 // low-amplitude noise), count the number of times the sine wave crosses
 // zero.
+int CountZeroCrossings(const float* samples, int len);
+// DEPRECATED:
 int CountZeroCrossings(const std::vector<int16>& samples);
 
 // Encode |timestamp| into the samples pointed to by 'samples' in a way

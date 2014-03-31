@@ -17,34 +17,37 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
+#include "media/cast/framer/framer.h"
 #include "media/cast/rtcp/receiver_rtcp_event_subscriber.h"
-#include "media/cast/rtcp/rtcp.h"                          // RtcpCastMessage
+#include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtp_receiver/rtp_receiver.h"
-#include "media/cast/rtp_receiver/rtp_receiver_defines.h"  // RtpCastHeader
+#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
 #include "media/cast/transport/utility/transport_encryption_handler.h"
 
 namespace media {
 namespace cast {
 
 class AudioDecoder;
-class Framer;
-class LocalRtpAudioFeedback;
-class RtpReceiver;
-class RtpReceiverStatistics;
 
-struct DecodedAudioCallbackData {
-  DecodedAudioCallbackData();
-  ~DecodedAudioCallbackData();
-  int number_of_10ms_blocks;
-  int desired_frequency;
-  AudioFrameDecodedCallback callback;
-};
-
-// This class is not thread safe. Should only be called from the Main cast
+// AudioReceiver receives packets out-of-order while clients make requests for
+// complete frames in-order.  (A frame consists of one or more packets.)
+// AudioReceiver also includes logic for mapping RTP timestamps to the local
+// base::TimeTicks clock for each frame.
+//
+// Two types of frames can be requested: 1) A frame of decoded audio data; or 2)
+// a frame of still-encoded audio data, to be passed into an external audio
+// decoder.  Each request for a frame includes a callback which AudioReceiver
+// guarantees will be called at some point in the future.  Clients should
+// generally limit the number of outstanding requests (perhaps to just one or
+// two).  When AudioReceiver is destroyed, any outstanding requests will be
+// immediately invoked with a NULL frame.
+//
+// This class is not thread safe.  Should only be called from the Main cast
 // thread.
-class AudioReceiver : public base::NonThreadSafe,
-                      public base::SupportsWeakPtr<AudioReceiver>,
-                      public RtpReceiver {
+class AudioReceiver : public RtpReceiver,
+                      public RtpPayloadFeedback,
+                      public base::NonThreadSafe,
+                      public base::SupportsWeakPtr<AudioReceiver> {
  public:
   AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                 const AudioReceiverConfig& audio_config,
@@ -52,57 +55,59 @@ class AudioReceiver : public base::NonThreadSafe,
 
   virtual ~AudioReceiver();
 
-  // Extract a raw audio frame from the cast receiver.
-  // Actual decoding will be preformed on a designated audio_decoder thread.
-  void GetRawAudioFrame(int number_of_10ms_blocks,
-                        int desired_frequency,
-                        const AudioFrameDecodedCallback& callback);
+  // Request a decoded audio frame.  The audio signal data returned in the
+  // callback will have the sampling rate and number of channels as requested in
+  // the configuration that was passed to the ctor.
+  //
+  // The given |callback| is guaranteed to be run at some point in the future,
+  // even if to respond with NULL at shutdown time.
+  void GetRawAudioFrame(const AudioFrameDecodedCallback& callback);
 
   // Extract an encoded audio frame from the cast receiver.
+  //
+  // The given |callback| is guaranteed to be run at some point in the future,
+  // even if to respond with NULL at shutdown time.
   void GetEncodedAudioFrame(const AudioFrameEncodedCallback& callback);
 
-  // Should only be called from the main cast thread.
+  // Deliver another packet, possibly a duplicate, and possibly out-of-order.
   void IncomingPacket(scoped_ptr<Packet> packet);
 
   // Update target audio delay used to compute the playout time. Rtcp
   // will also be updated (will be included in all outgoing reports).
   void SetTargetDelay(base::TimeDelta target_delay);
 
+ protected:
+  friend class AudioReceiverTest;  // Invokes OnReceivedPayloadData().
+
   virtual void OnReceivedPayloadData(const uint8* payload_data,
                                      size_t payload_size,
                                      const RtpCastHeader& rtp_header) OVERRIDE;
 
+  // RtpPayloadFeedback implementation.
+  virtual void CastFeedback(const RtcpCastMessage& cast_message) OVERRIDE;
+
  private:
-  friend class LocalRtpAudioFeedback;
+  // Processes ready-to-consume packets from |framer_|, decrypting each packet's
+  // payload data, and then running the enqueued callbacks in order (one for
+  // each packet).  This method may post a delayed task to re-invoke itself in
+  // the future to wait for missing/incomplete frames.
+  void EmitAvailableEncodedFrames();
 
-  void CastFeedback(const RtcpCastMessage& cast_message);
+  // Clears the |is_waiting_for_consecutive_frame_| flag and invokes
+  // EmitAvailableEncodedFrames().
+  void EmitAvailableEncodedFramesAfterWaiting();
 
-  // Time to pull out the audio even though we are missing data.
-  void PlayoutTimeout();
-
-  bool PostEncodedAudioFrame(
-      const AudioFrameEncodedCallback& callback,
-      bool next_frame,
-      scoped_ptr<transport::EncodedAudioFrame>* encoded_frame);
-
-  // Actual decoding implementation - should be called under the audio decoder
-  // thread.
-  void DecodeAudioFrameThread(int number_of_10ms_blocks,
-                              int desired_frequency,
-                              const AudioFrameDecodedCallback callback);
-  void ReturnDecodedFrameWithPlayoutDelay(
-      scoped_ptr<PcmAudioFrame> audio_frame,
-      uint32 rtp_timestamp,
-      const AudioFrameDecodedCallback callback);
+  // Feeds an EncodedAudioFrame into |audio_decoder_|.  GetRawAudioFrame() uses
+  // this as a callback for GetEncodedAudioFrame().
+  void DecodeEncodedAudioFrame(
+      const AudioFrameDecodedCallback& callback,
+      scoped_ptr<transport::EncodedAudioFrame> encoded_frame,
+      const base::TimeTicks& playout_time);
 
   // Return the playout time based on the current time and rtp timestamp.
   base::TimeTicks GetPlayoutTime(base::TimeTicks now, uint32 rtp_timestamp);
 
   void InitializeTimers();
-
-  // Decrypts the data within the |audio_frame| and replaces the data with the
-  // decrypted string.
-  bool DecryptAudioFrame(scoped_ptr<transport::EncodedAudioFrame>* audio_frame);
 
   // Schedule the next RTCP report.
   void ScheduleNextRtcpReport();
@@ -116,7 +121,21 @@ class AudioReceiver : public base::NonThreadSafe,
   // Actually send the next cast message.
   void SendNextCastMessage();
 
-  scoped_refptr<CastEnvironment> cast_environment_;
+  // Receives an AudioBus from |audio_decoder_|, logs the event, and passes the
+  // data on by running the given |callback|.  This method is static to ensure
+  // it can be called after an AudioReceiver instance is destroyed.
+  // DecodeEncodedAudioFrame() uses this as a callback for
+  // AudioDecoder::DecodeFrame().
+  static void EmitRawAudioFrame(
+      const scoped_refptr<CastEnvironment>& cast_environment,
+      const AudioFrameDecodedCallback& callback,
+      uint32 frame_id,
+      uint32 rtp_timestamp,
+      const base::TimeTicks& playout_time,
+      scoped_ptr<AudioBus> audio_bus,
+      bool is_continuous);
+
+  const scoped_refptr<CastEnvironment> cast_environment_;
 
   // Subscribes to raw events.
   // Processes raw audio events to be sent over to the cast sender via RTCP.
@@ -125,18 +144,20 @@ class AudioReceiver : public base::NonThreadSafe,
   const transport::AudioCodec codec_;
   const int frequency_;
   base::TimeDelta target_delay_delta_;
-  scoped_ptr<Framer> audio_buffer_;
+  Framer framer_;
   scoped_ptr<AudioDecoder> audio_decoder_;
-  scoped_ptr<LocalRtpAudioFeedback> incoming_payload_feedback_;
-  scoped_ptr<Rtcp> rtcp_;
+  Rtcp rtcp_;
   base::TimeDelta time_offset_;
   base::TimeTicks time_first_incoming_packet_;
   uint32 first_incoming_rtp_timestamp_;
   transport::TransportEncryptionHandler decryptor_;
-  base::TimeTicks last_playout_time_;
 
-  std::list<AudioFrameEncodedCallback> queued_encoded_callbacks_;
-  std::list<DecodedAudioCallbackData> queued_decoded_callbacks_;
+  // Outstanding callbacks to run to deliver on client requests for frames.
+  std::list<AudioFrameEncodedCallback> frame_request_queue_;
+
+  // True while there's an outstanding task to re-invoke
+  // EmitAvailableEncodedFrames().
+  bool is_waiting_for_consecutive_frame_;
 
   // This mapping allows us to log kAudioAckSent as a frame event. In addition
   // it allows the event to be transmitted via RTCP.

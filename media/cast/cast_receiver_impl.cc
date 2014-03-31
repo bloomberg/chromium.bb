@@ -49,16 +49,12 @@ class LocalFrameReceiver : public FrameReceiver {
                                            callback));
   }
 
-  virtual void GetRawAudioFrame(int number_of_10ms_blocks,
-                                int desired_frequency,
-                                const AudioFrameDecodedCallback& callback)
+  virtual void GetRawAudioFrame(const AudioFrameDecodedCallback& callback)
       OVERRIDE {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&AudioReceiver::GetRawAudioFrame,
                                            audio_receiver_->AsWeakPtr(),
-                                           number_of_10ms_blocks,
-                                           desired_frequency,
                                            callback));
   }
 

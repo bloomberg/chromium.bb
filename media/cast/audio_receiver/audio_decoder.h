@@ -6,61 +6,52 @@
 #define MEDIA_CAST_AUDIO_RECEIVER_AUDIO_DECODER_H_
 
 #include "base/callback.h"
-#include "base/synchronization/lock.h"
+#include "base/memory/ref_counted.h"
+#include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/framer/cast_message_builder.h"
-#include "media/cast/framer/frame_id_map.h"
-#include "media/cast/rtp_receiver/rtp_receiver_defines.h"
-
-namespace webrtc {
-class AudioCodingModule;
-}
+#include "media/cast/transport/cast_transport_config.h"
 
 namespace media {
 namespace cast {
 
-typedef std::map<uint32, uint32> FrameIdRtpTimestampMap;
-
-// Thread safe class.
 class AudioDecoder {
  public:
-  AudioDecoder(scoped_refptr<CastEnvironment> cast_environment,
-               const AudioReceiverConfig& audio_config,
-               RtpPayloadFeedback* incoming_payload_feedback);
+  // Callback passed to DecodeFrame, to deliver decoded audio data from the
+  // decoder.  The number of samples in |audio_bus| may vary, and |audio_bus|
+  // can be NULL when errors occur.  |is_continuous| is normally true, but will
+  // be false if the decoder has detected a frame skip since the last decode
+  // operation; and the client should take steps to smooth audio discontinuities
+  // in this case.
+  typedef base::Callback<void(scoped_ptr<AudioBus> audio_bus,
+                              bool is_continuous)> DecodeFrameCallback;
+
+  AudioDecoder(const scoped_refptr<CastEnvironment>& cast_environment,
+               const AudioReceiverConfig& audio_config);
   virtual ~AudioDecoder();
 
-  // Extract a raw audio frame from the decoder.
-  // Set the number of desired 10ms blocks and frequency.
-  // Should be called from the cast audio decoder thread; however that is not
-  // required.
-  bool GetRawAudioFrame(int number_of_10ms_blocks,
-                        int desired_frequency,
-                        PcmAudioFrame* audio_frame,
-                        uint32* rtp_timestamp);
+  // Returns STATUS_AUDIO_INITIALIZED if the decoder was successfully
+  // constructed from the given AudioReceiverConfig.  If this method returns any
+  // other value, calls to DecodeFrame() will not succeed.
+  CastInitializationStatus InitializationResult() const;
 
-  // Insert an RTP packet to the decoder.
-  // Should be called from the main cast thread; however that is not required.
-  void IncomingParsedRtpPacket(const uint8* payload_data,
-                               size_t payload_size,
-                               const RtpCastHeader& rtp_header);
-
-  bool TimeToSendNextCastMessage(base::TimeTicks* time_to_send);
-  void SendCastMessage();
+  // Decode the payload in |encoded_frame| asynchronously.  |callback| will be
+  // invoked on the CastEnvironment::MAIN thread with the result.
+  //
+  // In the normal case, |encoded_frame->frame_id| will be
+  // monotonically-increasing by 1 for each successive call to this method.
+  // When it is not, the decoder will assume one or more frames have been
+  // dropped (e.g., due to packet loss), and will perform recovery actions.
+  void DecodeFrame(scoped_ptr<transport::EncodedAudioFrame> encoded_frame,
+                   const DecodeFrameCallback& callback);
 
  private:
-  scoped_refptr<CastEnvironment> cast_environment_;
+  class ImplBase;
+  class OpusImpl;
+  class Pcm16Impl;
 
-  // The webrtc AudioCodingModule is thread safe.
-  scoped_ptr<webrtc::AudioCodingModule> audio_decoder_;
-
-  FrameIdMap frame_id_map_;
-  CastMessageBuilder cast_message_builder_;
-
-  base::Lock lock_;
-  bool have_received_packets_;
-  FrameIdRtpTimestampMap frame_id_rtp_timestamp_map_;
-  uint32 last_played_out_timestamp_;
+  const scoped_refptr<CastEnvironment> cast_environment_;
+  scoped_refptr<ImplBase> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecoder);
 };

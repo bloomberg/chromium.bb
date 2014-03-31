@@ -77,11 +77,22 @@ void InProcessReceiver::StartOnMainThread() {
   PullNextVideoFrame();
 }
 
-void InProcessReceiver::GotAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
-                                      const base::TimeTicks& playout_time) {
+void InProcessReceiver::GotAudioFrame(scoped_ptr<AudioBus> audio_frame,
+                                      const base::TimeTicks& playout_time,
+                                      bool is_continuous) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  OnAudioFrame(audio_frame.Pass(), playout_time);
-  // TODO(miu): Put this back here: PullNextAudioFrame();
+  if (audio_frame.get()) {
+    // TODO(miu): Remove use of deprecated PcmAudioFrame and also pass
+    // |is_continuous| flag.
+    scoped_ptr<PcmAudioFrame> pcm_frame(new PcmAudioFrame());
+    pcm_frame->channels = audio_frame->channels();
+    pcm_frame->frequency = audio_config_.frequency;
+    pcm_frame->samples.resize(audio_frame->channels() * audio_frame->frames());
+    audio_frame->ToInterleaved(
+        audio_frame->frames(), sizeof(int16), &pcm_frame->samples.front());
+    OnAudioFrame(pcm_frame.Pass(), playout_time);
+  }
+  PullNextAudioFrame();
 }
 
 void InProcessReceiver::GotVideoFrame(
@@ -95,20 +106,8 @@ void InProcessReceiver::GotVideoFrame(
 void InProcessReceiver::PullNextAudioFrame() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   cast_receiver_->frame_receiver()->GetRawAudioFrame(
-      1 /* 10 ms of samples */,
-      audio_config_.frequency,
       base::Bind(&InProcessReceiver::GotAudioFrame,
                  weak_factory_.GetWeakPtr()));
-  // TODO(miu): Fix audio decoder so that it never drops a request for the next
-  // frame of audio.  Once fixed, remove this, and add PullNextAudioFrame() to
-  // the end of GotAudioFrame(), so that it behaves just like GotVideoFrame().
-  // http://crbug.com/347361
-  cast_environment_->PostDelayedTask(
-      CastEnvironment::MAIN,
-      FROM_HERE,
-      base::Bind(&InProcessReceiver::PullNextAudioFrame,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(10));
 }
 
 void InProcessReceiver::PullNextVideoFrame() {
