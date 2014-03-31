@@ -745,9 +745,11 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     OpenAudioFiles,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive")));
+    ::testing::Values(
+        TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioOpenDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "audioAutoAdvanceDrive")));
 
 INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
