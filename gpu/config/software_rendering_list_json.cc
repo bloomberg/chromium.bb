@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "7.2",
+  "version": "7.3",
   "entries": [
     {
       "id": 1,
@@ -1041,6 +1041,22 @@ LONG_STRING_CONST(
         "type": "linux"
       },
       "direct_rendering": false,
+      "features": [
+        "all"
+      ]
+    },
+    {
+      "id": 94,
+      "description": "Intel driver version 8.15.10.1749 causes GPU process hangs.",
+      "cr_bugs": [350566],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "=",
+        "value": "8.15.10.1749"
+      },
       "features": [
         "all"
       ]
