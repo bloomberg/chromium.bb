@@ -77,6 +77,8 @@ function runTest() {
 
     shouldThrow("node.minDecibels = -10");
     shouldThrow("node.maxDecibels = -150");
+    shouldThrow("node.minDecibels = -30");
+    shouldThrow("node.maxDecibels = -100");
     shouldThrow("node.smoothingTimeConstant = -0.1");
     shouldThrow("node.smoothingTimeConstant = 1.5");
 

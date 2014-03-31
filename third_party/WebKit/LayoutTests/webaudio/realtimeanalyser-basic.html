@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/audio-testing.js"></script>
+<script src="resoruces/compatibility.js"></script>
+</head>
+
+<body>
+<div id="description"></div>
+<div id="console"></div>
+
+<script>
+description("Basic tests for AnalyserNode.");
+
+var context = 0;
+
+function runTest() {
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    window.jsTestIsAsync = true;
+
+    context = new AudioContext();
+    var analyser = context.createAnalyser();
+
+    if (analyser.numberOfInputs === 1)
+        testPassed("AnalyserNode has one input.");
+    else
+        testFailed("AnalyserNode should have one input, not " + analyser.numberOfInputs + ".");
+
+    if (analyser.numberOfOutputs === 1)
+        testPassed("AnalyserNode has one output.");
+    else
+        testFailed("AnalyserNode should have one output.");
+
+    if (analyser.minDecibels === -100)
+        testPassed("minDecibels default value is -100.");
+    else
+        testFailed("minDecibels default value should be -100.");
+
+    if (analyser.maxDecibels === -30)
+        testPassed("maxDecibels default value is -30.");
+    else
+        testFailed("maxDecibels default value should be -30.");
+
+    if (analyser.smoothingTimeConstant === 0.8)
+        testPassed("smoothingTimeConstant default value is 0.8.");
+    else
+        testFailed("smoothingTimeConstant default value should be 0.8.");
+
+    var expectedValue = -50 - (1/3);
+    analyser.minDecibels = expectedValue;
+    if (analyser.minDecibels === expectedValue)
+        testPassed("minDecibels value is set to " + expectedValue + ".")
+    else
+        testFailed("minDecibels value should be set to " + expectedValue + ", not " + analyser.minDecibels + ".");
+
+    expectedValue = -40 - (1/3);
+    analyser.maxDecibels = expectedValue;
+    if (analyser.maxDecibels === expectedValue)
+        testPassed("maxDecibels value is set to " + expectedValue + ".")
+    else
+        testFailed("maxDecibels value should be set to " + expectedValue + ", not " + analyser.maxDecibels + ".");
+
+    finishJSTest();
+}
+
+runTest();
+
+</script>
+
+</body>
+</html>

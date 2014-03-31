@@ -80,9 +80,9 @@ void AnalyserNode::setFftSize(unsigned size, ExceptionState& exceptionState)
     }
 }
 
-void AnalyserNode::setMinDecibels(float k, ExceptionState& exceptionState)
+void AnalyserNode::setMinDecibels(double k, ExceptionState& exceptionState)
 {
-    if (k <= maxDecibels()) {
+    if (k < maxDecibels()) {
         m_analyser.setMinDecibels(k);
     } else {
         exceptionState.throwDOMException(
@@ -91,9 +91,9 @@ void AnalyserNode::setMinDecibels(float k, ExceptionState& exceptionState)
     }
 }
 
-void AnalyserNode::setMaxDecibels(float k, ExceptionState& exceptionState)
+void AnalyserNode::setMaxDecibels(double k, ExceptionState& exceptionState)
 {
-    if (k >= minDecibels()) {
+    if (k > minDecibels()) {
         m_analyser.setMaxDecibels(k);
     } else {
         exceptionState.throwDOMException(
@@ -102,14 +102,14 @@ void AnalyserNode::setMaxDecibels(float k, ExceptionState& exceptionState)
     }
 }
 
-void AnalyserNode::setSmoothingTimeConstant(float k, ExceptionState& exceptionState)
+void AnalyserNode::setSmoothingTimeConstant(double k, ExceptionState& exceptionState)
 {
     if (k >= 0 && k <= 1) {
         m_analyser.setSmoothingTimeConstant(k);
     } else {
         exceptionState.throwDOMException(
             IndexSizeError,
-            ExceptionMessages::indexOutsideRange("smoothing value", k, 0.0f, ExceptionMessages::InclusiveBound, 1.0f, ExceptionMessages::InclusiveBound));
+            ExceptionMessages::indexOutsideRange("smoothing value", k, 0.0, ExceptionMessages::InclusiveBound, 1.0, ExceptionMessages::InclusiveBound));
     }
 }
 
