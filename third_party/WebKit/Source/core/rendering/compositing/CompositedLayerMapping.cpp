@@ -1970,7 +1970,7 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
         paintInfo.renderLayer->paintLayer(context, paintingInfo, paintFlags);
     }
 
-    ASSERT(!paintInfo.renderLayer->m_usedTransparency);
+    ASSERT(!paintInfo.renderLayer->usedTransparency());
 
     // Manually restore the context to its original state by applying the opposite translation.
     context->translate(offset);
