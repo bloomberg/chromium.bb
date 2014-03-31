@@ -53,7 +53,15 @@ public:
     virtual void setNeedsTransformUpdate() OVERRIDE { m_needsBoundariesOrTransformUpdate = true; }
 
     IntSize containerSize() const { return m_containerSize; }
-    void setContainerSize(const IntSize& containerSize) { m_containerSize = containerSize; }
+    void setContainerSize(const IntSize& containerSize)
+    {
+        // SVGImage::draw() does a view layout prior to painting,
+        // and we need that layout to know of the new size otherwise
+        // the rendering may be incorrectly using the old size.
+        if (m_containerSize != containerSize)
+            setNeedsLayout();
+        m_containerSize = containerSize;
+    }
 
     virtual bool hasRelativeIntrinsicLogicalWidth() const OVERRIDE;
     virtual bool hasRelativeLogicalHeight() const OVERRIDE;

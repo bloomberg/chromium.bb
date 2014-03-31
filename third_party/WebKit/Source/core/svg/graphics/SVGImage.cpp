@@ -278,6 +278,7 @@ void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const Fl
         view->layout();
 
     view->paint(context, enclosingIntRect(srcRect));
+    ASSERT(!view->needsLayout());
 
     if (requiresTransparencyLayer)
         context->endLayer();
