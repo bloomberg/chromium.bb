@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -11,7 +12,7 @@
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/features/feature_channel.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 
 namespace {
@@ -66,7 +67,6 @@ class GcmApiTest : public ExtensionApiTest {
   const Extension* LoadTestExtension(const std::string& extension_path,
                                      const std::string& page_name);
   gcm::FakeGCMProfileService* service() const;
-  bool ShouldSkipTest() const;
 
  private:
   gcm::FakeGCMProfileService* fake_gcm_profile_service_;
@@ -83,6 +83,9 @@ void GcmApiTest::SetUpCommandLine(CommandLine* command_line) {
 }
 
 void GcmApiTest::SetUpOnMainThread() {
+  // Enable GCM such that tests could be run on all channels.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
+
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
       browser()->profile(), &gcm::FakeGCMProfileService::Build);
   fake_gcm_profile_service_ = static_cast<gcm::FakeGCMProfileService*>(
@@ -103,9 +106,6 @@ gcm::FakeGCMProfileService* GcmApiTest::service() const {
 const Extension* GcmApiTest::LoadTestExtension(
     const std::string& extension_path,
     const std::string& page_name) {
-  // TODO(jianli): Once the GCM API enters stable, remove |channel|.
-  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_UNKNOWN);
-
   const Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII(extension_path));
   if (extension) {
@@ -115,23 +115,11 @@ const Extension* GcmApiTest::LoadTestExtension(
   return extension;
 }
 
-bool GcmApiTest::ShouldSkipTest() const {
-  // TODO(jianli): Remove this once the GCM API enters stable.
-  return chrome::VersionInfo::GetChannel() ==
-      chrome::VersionInfo::CHANNEL_STABLE;
-}
-
 IN_PROC_BROWSER_TEST_F(GcmApiTest, RegisterValidation) {
-  if (ShouldSkipTest())
-    return;
-
   ASSERT_TRUE(RunExtensionTest("gcm/functions/register_validation"));
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
-  if (ShouldSkipTest())
-    return;
-
   StartCollecting();
   ASSERT_TRUE(RunExtensionTest("gcm/functions/register"));
 
@@ -144,9 +132,6 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, Unregister) {
-  if (ShouldSkipTest())
-    return;
-
   service()->AddExpectedUnregisterResponse(gcm::GCMClient::SUCCESS);
   service()->AddExpectedUnregisterResponse(gcm::GCMClient::SERVER_ERROR);
 
@@ -154,16 +139,10 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Unregister) {
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, SendValidation) {
-  if (ShouldSkipTest())
-    return;
-
   ASSERT_TRUE(RunExtensionTest("gcm/functions/send"));
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, SendMessageData) {
-  if (ShouldSkipTest())
-    return;
-
   StartCollecting();
   ASSERT_TRUE(RunExtensionTest("gcm/functions/send_message_data"));
 
@@ -255,9 +234,6 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, OnSendError) {
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, Incognito) {
-  if (ShouldSkipTest())
-    return;
-
   ResultCatcher catcher;
   catcher.RestrictToProfile(profile());
   ResultCatcher incognito_catcher;
