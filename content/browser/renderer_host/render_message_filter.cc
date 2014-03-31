@@ -87,6 +87,8 @@
 #include "content/common/sandbox_win.h"
 #endif
 #if defined(OS_ANDROID)
+#include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
 #include "media/base/android/webaudio_media_codec_bridge.h"
 #endif
 
@@ -374,6 +376,9 @@ void RenderMessageFilter::OnChannelClosing() {
   }
 #endif  // defined(ENABLE_PLUGINS)
   plugin_host_clients_.clear();
+#if defined(OS_ANDROID)
+  CompositorImpl::DestroyAllSurfaceTextures(render_process_id_);
+#endif
 }
 
 void RenderMessageFilter::OnChannelConnected(int32 peer_id) {
@@ -1296,6 +1301,22 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
         last_io_surface_ = io_surface;
         return;
       }
+    }
+  }
+#endif
+
+#if defined(OS_ANDROID)
+  if (GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(internalformat)) {
+    // Each surface texture is associated with a render process id. This allows
+    // the GPU service and Java Binder IPC to verify that a renderer is not
+    // trying to use a surface texture it doesn't own.
+    int surface_texture_id =
+        CompositorImpl::CreateSurfaceTexture(render_process_id_);
+    if (surface_texture_id != -1) {
+      handle->type = gfx::SURFACE_TEXTURE_BUFFER;
+      handle->surface_texture_id =
+          gfx::SurfaceTextureId(surface_texture_id, render_process_id_);
+      return;
     }
   }
 #endif

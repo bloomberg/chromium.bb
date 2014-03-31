@@ -81,6 +81,7 @@ static void OnChildProcessStarted(JNIEnv*,
 
 void StartChildProcess(
     const CommandLine::StringVector& argv,
+    int child_process_id,
     const std::vector<content::FileDescriptorInfo>& files_to_register,
     const StartChildProcessCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
@@ -119,6 +120,7 @@ void StartChildProcess(
   Java_ChildProcessLauncher_start(env,
       base::android::GetApplicationContext(),
       j_argv.obj(),
+      child_process_id,
       j_file_ids.obj(),
       j_file_fds.obj(),
       j_file_auto_close.obj(),
@@ -156,7 +158,19 @@ jobject GetViewSurface(JNIEnv* env, jclass clazz, jint surface_id) {
   // handled on a binder thread. Handling this on the UI thread will lead
   // to deadlocks.
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return CompositorImpl::GetSurface(surface_id);
+  return CompositorImpl::GetSurface(surface_id).Release();
+}
+
+jobject GetSurfaceTextureSurface(JNIEnv* env,
+                                 jclass clazz,
+                                 jint surface_texture_id,
+                                 jint child_process_id) {
+  // This is a synchronous call from a renderer process and is expected to be
+  // handled on a binder thread. Handling this on the UI thread will lead
+  // to deadlocks.
+  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return CompositorImpl::GetSurfaceTextureSurface(surface_texture_id,
+                                                  child_process_id).Release();
 }
 
 jboolean IsSingleProcess(JNIEnv* env, jclass clazz) {

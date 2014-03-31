@@ -50,6 +50,8 @@
         'android/surface_texture.h',
         'android/surface_texture_listener.cc',
         'android/surface_texture_listener.h',
+        'android/surface_texture_tracker.cc',
+        'android/surface_texture_tracker.h',
         'gl_bindings.h',
         'gl_bindings_skia_in_process.cc',
         'gl_bindings_skia_in_process.h',
@@ -279,6 +281,8 @@
           'sources': [
             'gl_image_android_native_buffer.cc',
             'gl_image_android_native_buffer.h',
+            'gl_image_surface_texture.cc',
+            'gl_image_surface_texture.h',
           ],
           'link_settings': {
             'libraries': [

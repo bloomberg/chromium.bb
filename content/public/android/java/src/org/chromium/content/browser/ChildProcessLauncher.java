@@ -305,6 +305,7 @@ public class ChildProcessLauncher {
     static void start(
             Context context,
             final String[] commandLine,
+            int childProcessId,
             int[] fileIds,
             int[] fileFds,
             boolean[] fileAutoClose,
@@ -366,7 +367,7 @@ public class ChildProcessLauncher {
 
         connection.setupConnection(commandLine,
                                    filesToBeMapped,
-                                   createCallback(callbackType),
+                                   createCallback(childProcessId, callbackType),
                                    connectionCallback,
                                    Linker.getSharedRelros());
     }
@@ -392,7 +393,8 @@ public class ChildProcessLauncher {
     /**
      * This implementation is used to receive callbacks from the remote service.
      */
-    private static IChildProcessCallback createCallback(final int callbackType) {
+    private static IChildProcessCallback createCallback(
+            final int childProcessId, final int callbackType) {
         return new IChildProcessCallback.Stub() {
             /**
              * This is called by the remote service regularly to tell us about new values. Note that
@@ -423,6 +425,21 @@ public class ChildProcessLauncher {
 
                 return nativeGetViewSurface(surfaceId);
             }
+
+            @Override
+            public Surface getSurfaceTextureSurface(int primaryId, int secondaryId) {
+                if (callbackType != CALLBACK_FOR_RENDERER_PROCESS) {
+                    Log.e(TAG, "Illegal callback for non-renderer process.");
+                    return null;
+                }
+
+                if (secondaryId != childProcessId) {
+                    Log.e(TAG, "Illegal secondaryId for renderer process.");
+                    return null;
+                }
+
+                return nativeGetSurfaceTextureSurface(primaryId, secondaryId);
+            }
         };
     }
 
@@ -435,6 +452,8 @@ public class ChildProcessLauncher {
 
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);
     private static native Surface nativeGetViewSurface(int surfaceId);
+    private static native Surface nativeGetSurfaceTextureSurface(
+            int surfaceTextureId, int childProcessId);
     private static native void nativeEstablishSurfacePeer(
             int pid, Surface surface, int primaryID, int secondaryID);
     private static native boolean nativeIsSingleProcess();

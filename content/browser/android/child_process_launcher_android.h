@@ -22,6 +22,7 @@ typedef base::Callback<void(base::ProcessHandle)> StartChildProcessCallback;
 // retuned if the process could not be created.
 void StartChildProcess(
     const base::CommandLine::StringVector& argv,
+    int child_process_id,
     const std::vector<FileDescriptorInfo>& files_to_register,
     const StartChildProcessCallback& callback);
 

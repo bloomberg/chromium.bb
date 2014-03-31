@@ -285,6 +285,22 @@ public class ChildProcessService extends Service {
         }
     }
 
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private Surface getSurfaceTextureSurface(int primaryId, int secondaryId) {
+        if (mCallback == null) {
+            Log.e(TAG, "No callback interface has been provided.");
+            return null;
+        }
+
+        try {
+            return mCallback.getSurfaceTextureSurface(primaryId, secondaryId);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Unable to call getSurfaceTextureSurface: " + e);
+            return null;
+        }
+    }
+
     /**
      * The main entry point for a child process. This should be called from a new thread since
      * it will not return until the child process exits. See child_process_service.{h,cc}

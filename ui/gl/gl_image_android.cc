@@ -8,6 +8,7 @@
 #include "ui/gl/gl_image_android_native_buffer.h"
 #include "ui/gl/gl_image_shm.h"
 #include "ui/gl/gl_image_stub.h"
+#include "ui/gl/gl_image_surface_texture.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace gfx {
@@ -44,6 +45,14 @@ scoped_refptr<GLImage> GLImage::CreateGLImageForGpuMemoryBuffer(
         case ANDROID_NATIVE_BUFFER: {
           scoped_refptr<GLImageAndroidNativeBuffer> image(
               new GLImageAndroidNativeBuffer(size));
+          if (!image->Initialize(buffer))
+            return NULL;
+
+          return image;
+        }
+        case SURFACE_TEXTURE_BUFFER: {
+          scoped_refptr<GLImageSurfaceTexture> image(
+              new GLImageSurfaceTexture(size));
           if (!image->Initialize(buffer))
             return NULL;
 

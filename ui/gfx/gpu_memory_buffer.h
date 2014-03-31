@@ -18,33 +18,44 @@ namespace gfx {
 enum GpuMemoryBufferType {
   EMPTY_BUFFER,
   SHARED_MEMORY_BUFFER,
-  ANDROID_NATIVE_BUFFER,
   IO_SURFACE_BUFFER,
-  GPU_MEMORY_BUFFER_TYPE_LAST = IO_SURFACE_BUFFER
+  ANDROID_NATIVE_BUFFER,
+  SURFACE_TEXTURE_BUFFER,
+  GPU_MEMORY_BUFFER_TYPE_LAST = SURFACE_TEXTURE_BUFFER
 };
+
+#if defined(OS_ANDROID)
+struct SurfaceTextureId {
+  SurfaceTextureId() : primary_id(0), secondary_id(0) {}
+  SurfaceTextureId(int32 primary_id, int32 secondary_id)
+      : primary_id(primary_id), secondary_id(secondary_id) {}
+  int32 primary_id;
+  int32 secondary_id;
+};
+#endif
 
 struct GpuMemoryBufferHandle {
   GpuMemoryBufferHandle()
       : type(EMPTY_BUFFER),
         handle(base::SharedMemory::NULLHandle())
-#if defined(OS_ANDROID)
-        , native_buffer(NULL)
-#endif
 #if defined(OS_MACOSX)
         , io_surface_id(0)
+#endif
+#if defined(OS_ANDROID)
+        , native_buffer(NULL)
 #endif
   {
   }
   bool is_null() const { return type == EMPTY_BUFFER; }
   GpuMemoryBufferType type;
   base::SharedMemoryHandle handle;
-#if defined(OS_ANDROID)
-  EGLClientBuffer native_buffer;
-#endif
 #if defined(OS_MACOSX)
   uint32 io_surface_id;
 #endif
-
+#if defined(OS_ANDROID)
+  EGLClientBuffer native_buffer;
+  SurfaceTextureId surface_texture_id;
+#endif
 };
 
 // Interface for creating and accessing a zero-copy GPU memory buffer.

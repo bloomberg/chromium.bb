@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "content/child/child_thread.h"
+#include "content/common/android/surface_texture_lookup.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/common/gpu/gpu_surface_lookup.h"
 #include "content/public/app/android_library_loader_hooks.h"
@@ -29,8 +30,9 @@ namespace content {
 
 namespace {
 
-class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
-                                    public content::GpuSurfaceLookup {
+class SurfaceTexturePeerChildImpl : public SurfaceTexturePeer,
+                                    public GpuSurfaceLookup,
+                                    public SurfaceTextureLookup {
  public:
   // |service| is the instance of
   // org.chromium.content.app.ChildProcessService.
@@ -38,12 +40,15 @@ class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
       const base::android::ScopedJavaLocalRef<jobject>& service)
       : service_(service) {
     GpuSurfaceLookup::InitInstance(this);
+    SurfaceTextureLookup::InitInstance(this);
   }
 
   virtual ~SurfaceTexturePeerChildImpl() {
     GpuSurfaceLookup::InitInstance(NULL);
+    SurfaceTextureLookup::InitInstance(NULL);
   }
 
+  // Overridden from SurfaceTexturePeer:
   virtual void EstablishSurfaceTexturePeer(
       base::ProcessHandle pid,
       scoped_refptr<gfx::SurfaceTexture> surface_texture,
@@ -57,6 +62,7 @@ class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
     CheckException(env);
   }
 
+  // Overridden from GpuSurfaceLookup:
   virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
     gfx::ScopedJavaSurface surface(
@@ -68,6 +74,24 @@ class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
 
     ANativeWindow* native_window = ANativeWindow_fromSurface(
         env, surface.j_surface().obj());
+
+    return native_window;
+  }
+
+  // Overridden from SurfaceTextureLookup:
+  virtual gfx::AcceleratedWidget AcquireNativeWidget(int primary_id,
+                                                     int secondary_id)
+      OVERRIDE {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    gfx::ScopedJavaSurface surface(
+        content::Java_ChildProcessService_getSurfaceTextureSurface(
+            env, service_.obj(), primary_id, secondary_id));
+
+    if (surface.j_surface().is_null())
+      return NULL;
+
+    ANativeWindow* native_window =
+        ANativeWindow_fromSurface(env, surface.j_surface().obj());
 
     return native_window;
   }
@@ -100,6 +124,9 @@ void InternalInitChildProcess(const std::vector<int>& file_ids,
   for (size_t i = 0; i < file_ids.size(); ++i)
     base::GlobalDescriptors::GetInstance()->Set(file_ids[i], file_fds[i]);
 
+  // SurfaceTexturePeerChildImpl implements the SurfaceTextureLookup interface,
+  // which need to be set before we create a compositor thread that could be
+  // using it to initialize resources.
   content::SurfaceTexturePeer::InitInstance(
       new SurfaceTexturePeerChildImpl(service));
 

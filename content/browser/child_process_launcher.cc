@@ -216,7 +216,7 @@ class ChildProcessLauncher::Context
         GetAdditionalMappedFilesForChildProcess(*cmd_line, child_process_id,
                                                 &files_to_register);
 
-    StartChildProcess(cmd_line->argv(), files_to_register,
+    StartChildProcess(cmd_line->argv(), child_process_id, files_to_register,
         base::Bind(&ChildProcessLauncher::Context::OnChildProcessStarted,
                    this_object, client_thread_id, begin_launch_time));
 

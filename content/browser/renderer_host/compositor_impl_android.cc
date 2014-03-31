@@ -12,11 +12,13 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -43,6 +45,9 @@
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/frame_time.h"
+#include "ui/gl/android/scoped_java_surface.h"
+#include "ui/gl/android/surface_texture.h"
+#include "ui/gl/android/surface_texture_tracker.h"
 #include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -131,6 +136,81 @@ class TransientUIResource : public cc::ScopedUIResource {
   bool retrieved_;
 };
 
+class SurfaceTextureTrackerImpl : public gfx::SurfaceTextureTracker {
+ public:
+  SurfaceTextureTrackerImpl() : next_surface_texture_id_(1) {
+    thread_checker_.DetachFromThread();
+  }
+
+  // Overridden from gfx::SurfaceTextureTracker:
+  virtual scoped_refptr<gfx::SurfaceTexture> AcquireSurfaceTexture(
+      int primary_id,
+      int secondary_id) OVERRIDE {
+    base::AutoLock lock(surface_textures_lock_);
+    scoped_ptr<SurfaceTextureInfo> info = surface_textures_.take_and_erase(
+        SurfaceTextureMapKey(primary_id, secondary_id));
+    return info ? info->surface_texture : NULL;
+  }
+
+  int AddSurfaceTexture(gfx::SurfaceTexture* surface_texture,
+                        int child_process_id) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    int surface_texture_id = next_surface_texture_id_++;
+    if (next_surface_texture_id_ == INT_MAX)
+      next_surface_texture_id_ = 1;
+
+    base::AutoLock lock(surface_textures_lock_);
+    SurfaceTextureMapKey key(surface_texture_id, child_process_id);
+    DCHECK(surface_textures_.find(key) == surface_textures_.end());
+    surface_textures_.set(
+        key, make_scoped_ptr(new SurfaceTextureInfo(surface_texture)));
+    return surface_texture_id;
+  }
+
+  void RemoveAllSurfaceTextures(int child_process_id) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    base::AutoLock lock(surface_textures_lock_);
+    SurfaceTextureMap::iterator it = surface_textures_.begin();
+    while (it != surface_textures_.end()) {
+      if (it->first.second == child_process_id)
+        surface_textures_.erase(it++);
+      else
+        ++it;
+    }
+  }
+
+  base::android::ScopedJavaLocalRef<jobject> GetSurface(
+      int surface_texture_id,
+      int child_process_id) const {
+    base::AutoLock lock(surface_textures_lock_);
+    SurfaceTextureMap::const_iterator it = surface_textures_.find(
+        SurfaceTextureMapKey(surface_texture_id, child_process_id));
+    return it == surface_textures_.end()
+               ? base::android::ScopedJavaLocalRef<jobject>()
+               : base::android::ScopedJavaLocalRef<jobject>(
+                     it->second->surface.j_surface());
+  }
+
+ private:
+  struct SurfaceTextureInfo {
+    explicit SurfaceTextureInfo(gfx::SurfaceTexture* surface_texture)
+        : surface_texture(surface_texture), surface(surface_texture) {}
+
+    scoped_refptr<gfx::SurfaceTexture> surface_texture;
+    gfx::ScopedJavaSurface surface;
+  };
+
+  typedef std::pair<int, int> SurfaceTextureMapKey;
+  typedef base::ScopedPtrHashMap<SurfaceTextureMapKey, SurfaceTextureInfo>
+      SurfaceTextureMap;
+  SurfaceTextureMap surface_textures_;
+  mutable base::Lock surface_textures_lock_;
+  int next_surface_texture_id_;
+  base::ThreadChecker thread_checker_;
+};
+base::LazyInstance<SurfaceTextureTrackerImpl> g_surface_texture_tracker =
+    LAZY_INSTANCE_INITIALIZER;
+
 static bool g_initialized = false;
 
 } // anonymous namespace
@@ -152,6 +232,9 @@ Compositor* Compositor::Create(CompositorClient* client,
 // static
 void Compositor::Initialize() {
   DCHECK(!CompositorImpl::IsInitialized());
+  // SurfaceTextureTracker instance must be set before we create a GPU thread
+  // that could be using it to initialize GLImage instances.
+  gfx::SurfaceTextureTracker::InitInstance(g_surface_texture_tracker.Pointer());
   g_initialized = true;
 }
 
@@ -161,14 +244,51 @@ bool CompositorImpl::IsInitialized() {
 }
 
 // static
-jobject CompositorImpl::GetSurface(int surface_id) {
+base::android::ScopedJavaLocalRef<jobject> CompositorImpl::GetSurface(
+    int surface_id) {
   base::AutoLock lock(g_surface_map_lock.Get());
   SurfaceMap* surfaces = g_surface_map.Pointer();
   SurfaceMap::iterator it = surfaces->find(surface_id);
-  jobject jsurface = it == surfaces->end() ? NULL : it->second.obj();
+  base::android::ScopedJavaLocalRef<jobject> jsurface(
+      it == surfaces->end()
+          ? base::android::ScopedJavaLocalRef<jobject>()
+          : base::android::ScopedJavaLocalRef<jobject>(it->second));
 
-  LOG_IF(WARNING, !jsurface) << "No surface for surface id " << surface_id;
+  LOG_IF(WARNING, !jsurface.is_null()) << "No surface for surface id "
+                                       << surface_id;
   return jsurface;
+}
+
+// static
+base::android::ScopedJavaLocalRef<jobject>
+CompositorImpl::GetSurfaceTextureSurface(int surface_texture_id,
+                                         int child_process_id) {
+  base::android::ScopedJavaLocalRef<jobject> jsurface(
+      g_surface_texture_tracker.Pointer()->GetSurface(surface_texture_id,
+                                                      child_process_id));
+
+  LOG_IF(WARNING, jsurface.is_null()) << "No surface for surface texture id "
+                                      << surface_texture_id;
+  return jsurface;
+}
+
+// static
+int CompositorImpl::CreateSurfaceTexture(int child_process_id) {
+  // Note: this needs to be 0 as the surface texture implemenation will take
+  // ownership of the texture and call glDeleteTextures when the GPU service
+  // attaches the surface texture to a real texture id. glDeleteTextures
+  // silently ignores 0.
+  const int kDummyTextureId = 0;
+  scoped_refptr<gfx::SurfaceTexture> surface_texture =
+      gfx::SurfaceTexture::Create(kDummyTextureId);
+  return g_surface_texture_tracker.Pointer()->AddSurfaceTexture(
+      surface_texture.get(), child_process_id);
+}
+
+// static
+void CompositorImpl::DestroyAllSurfaceTextures(int child_process_id) {
+  g_surface_texture_tracker.Pointer()->RemoveAllSurfaceTextures(
+      child_process_id);
 }
 
 CompositorImpl::CompositorImpl(CompositorClient* client,

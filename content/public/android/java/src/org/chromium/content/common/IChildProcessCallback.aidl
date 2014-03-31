@@ -13,4 +13,6 @@ interface IChildProcessCallback {
       int pid, in Surface surface, int primaryID, int secondaryID);
 
   Surface getViewSurface(int surfaceId);
+
+  Surface getSurfaceTextureSurface(int primaryId, int secondaryId);
 }

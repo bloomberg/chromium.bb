@@ -76,6 +76,8 @@ class GpuChannel : public IPC::Listener,
 
   base::ProcessId renderer_pid() const { return channel_->peer_pid(); }
 
+  int client_id() const { return client_id_; }
+
   scoped_refptr<base::MessageLoopProxy> io_message_loop() const {
     return io_message_loop_;
   }

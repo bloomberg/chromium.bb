@@ -5,6 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl_surface_texture.h"
 
 namespace content {
 
@@ -16,6 +17,14 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::Create(
     case gfx::SHARED_MEMORY_BUFFER: {
       scoped_ptr<GpuMemoryBufferImplShm> buffer(
           new GpuMemoryBufferImplShm(size, internalformat));
+      if (!buffer->Initialize(handle))
+        return scoped_ptr<GpuMemoryBufferImpl>();
+
+      return buffer.PassAs<GpuMemoryBufferImpl>();
+    }
+    case gfx::SURFACE_TEXTURE_BUFFER: {
+      scoped_ptr<GpuMemoryBufferImplSurfaceTexture> buffer(
+          new GpuMemoryBufferImplSurfaceTexture(size, internalformat));
       if (!buffer->Initialize(handle))
         return scoped_ptr<GpuMemoryBufferImpl>();
 

@@ -51,6 +51,9 @@ bool GpuChannelHost::IsValidGpuMemoryBuffer(
 #if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
 #endif
+#if defined(OS_ANDROID)
+    case gfx::SURFACE_TEXTURE_BUFFER:
+#endif
       return true;
     default:
       return false;
@@ -286,6 +289,10 @@ gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
     }
 #if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
+      return source_handle;
+#endif
+#if defined(OS_ANDROID)
+    case gfx::SURFACE_TEXTURE_BUFFER:
       return source_handle;
 #endif
     default:
