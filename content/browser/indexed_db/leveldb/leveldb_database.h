@@ -87,6 +87,7 @@ class CONTENT_EXPORT LevelDBDatabase {
   scoped_ptr<LevelDBIterator> CreateIterator(const LevelDBSnapshot* = 0);
   const LevelDBComparator* Comparator() const;
   void Compact(const base::StringPiece& start, const base::StringPiece& stop);
+  void CompactAll();
 
  protected:
   LevelDBDatabase();

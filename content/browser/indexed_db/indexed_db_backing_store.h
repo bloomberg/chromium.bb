@@ -78,6 +78,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const GURL& origin_url,
       LevelDBFactory* factory);
 
+  // Compact is public for testing.
+  virtual void Compact();
   virtual std::vector<base::string16> GetDatabaseNames();
   virtual leveldb::Status GetIDBDatabaseMetaData(
       const base::string16& name,
@@ -94,6 +96,12 @@ class CONTENT_EXPORT IndexedDBBackingStore
       int64 int_version);
   virtual leveldb::Status DeleteDatabase(const base::string16& name);
 
+  // Assumes caller has already closed the backing store.
+  static leveldb::Status DestroyBackingStore(const base::FilePath& path_base,
+                                             const GURL& origin_url);
+  static bool RecordCorruptionInfo(const base::FilePath& path_base,
+                                   const GURL& origin_url,
+                                   const std::string& message);
   leveldb::Status GetObjectStores(
       int64 database_id,
       IndexedDBDatabaseMetadata::ObjectStoreMap* map) WARN_UNUSED_RESULT;
@@ -325,6 +333,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const GURL& origin_url,
       scoped_ptr<LevelDBDatabase> db,
       scoped_ptr<LevelDBComparator> comparator);
+  static bool ReadCorruptionInfo(const base::FilePath& path_base,
+                                 const GURL& origin_url,
+                                 std::string& message);
 
   leveldb::Status FindKeyInIndex(
       IndexedDBBackingStore::Transaction* transaction,
