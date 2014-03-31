@@ -237,12 +237,6 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       copy.details.swipe.dy *= screen_y_scale_;
       copy.details.swipe.ordinal_dx *= screen_x_scale_;
       copy.details.swipe.ordinal_dy *= screen_y_scale_;
-      if (!australian_scrolling_.val_) {
-        copy.details.swipe.dx *= -1;
-        copy.details.swipe.dy *= -1;
-        copy.details.swipe.ordinal_dx *= -1;
-        copy.details.swipe.ordinal_dy *= -1;
-      }
       break;
     default:
       break;
