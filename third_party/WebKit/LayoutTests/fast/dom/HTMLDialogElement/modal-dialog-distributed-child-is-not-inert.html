@@ -25,7 +25,7 @@ jsTestIsAsync = true;
 description('Tests that nodes transposed into the dialog are not inert. The test passes if you can click the button.');
 
 dialog = document.querySelector('dialog');
-root = document.querySelector('#host').webkitCreateShadowRoot();
+root = document.querySelector('#host').createShadowRoot();
 root.appendChild(dialog);
 dialog.showModal();
 

@@ -25,7 +25,7 @@ function reloadUntil(max) {
 
 function init() {
     var shadowHost = document.createElement("SHADOWHOST");
-    var shadowRoot = shadowHost.webkitCreateShadowRoot();
+    var shadowRoot = shadowHost.createShadowRoot();
     var child = document.createElement("CHILD");
     shadowRoot.appendChild(child);
     child.style.zoom = 34;
