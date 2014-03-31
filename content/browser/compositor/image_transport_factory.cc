@@ -42,6 +42,7 @@ void ImageTransportFactory::InitializeForUnitTests(
 
   g_factory = new NoTransportImageTransportFactory(test_factory.Pass());
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
+  ui::Compositor::SetSharedBitmapManager(HostSharedBitmapManager::current());
 }
 
 // static

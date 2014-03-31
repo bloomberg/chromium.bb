@@ -1099,64 +1099,6 @@ TEST_P(ResourceProviderTest, TransferSoftwareResources) {
   EXPECT_FALSE(returned_to_child[3].lost);
 }
 
-TEST_P(ResourceProviderTest, TransferSoftwareToNonUber) {
-  // TODO(jbauman): Remove test when shared bitmap manager available
-  // everywhere.
-  if (GetParam() != ResourceProvider::Bitmap)
-    return;
-
-  scoped_ptr<FakeOutputSurface> parent_output_surface =
-      FakeOutputSurface::CreateSoftware(
-          make_scoped_ptr(new SoftwareOutputDevice));
-  FakeOutputSurfaceClient parent_output_surface_client;
-  CHECK(parent_output_surface->BindToClient(&parent_output_surface_client));
-
-  scoped_ptr<ResourceProvider> parent_resource_provider(
-      ResourceProvider::Create(parent_output_surface.get(),
-                               NULL,
-                               0,
-                               false,
-                               1));
-
-  gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
-  size_t pixel_size = TextureSizeBytes(size, format);
-  ASSERT_EQ(4U, pixel_size);
-
-  ResourceProvider::ResourceId id1 = resource_provider_->CreateResource(
-      size, GL_CLAMP_TO_EDGE, ResourceProvider::TextureUsageAny, format);
-  uint8_t data1[4] = { 1, 2, 3, 4 };
-  gfx::Rect rect(size);
-  resource_provider_->SetPixels(id1, data1, rect, rect, gfx::Vector2d());
-
-  ReturnedResourceArray returned_to_child;
-  int child_id = parent_resource_provider->CreateChild(
-      GetReturnCallback(&returned_to_child));
-  {
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
-    resource_ids_to_transfer.push_back(id1);
-    TransferableResourceArray list;
-    resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list);
-    ASSERT_EQ(1u, list.size());
-    EXPECT_TRUE(resource_provider_->InUseByConsumer(id1));
-    parent_resource_provider->ReceiveFromChild(child_id, list);
-  }
-
-  EXPECT_EQ(0u, parent_resource_provider->num_resources());
-  ASSERT_EQ(1u, returned_to_child.size());
-  EXPECT_EQ(returned_to_child[0].id, id1);
-  ResourceProvider::ResourceIdMap resource_map =
-      parent_resource_provider->GetChildToParentMap(child_id);
-  ResourceProvider::ResourceId mapped_id1 = resource_map[id1];
-  EXPECT_EQ(0u, mapped_id1);
-
-  parent_resource_provider->DestroyChild(child_id);
-  EXPECT_EQ(0u, parent_resource_provider->num_resources());
-
-  ASSERT_EQ(1u, returned_to_child.size());
-  EXPECT_FALSE(returned_to_child[0].lost);
-}
-
 TEST_P(ResourceProviderTest, TransferGLToSoftware) {
   if (GetParam() != ResourceProvider::Bitmap)
     return;

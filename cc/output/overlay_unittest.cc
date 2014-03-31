@@ -17,6 +17,7 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -209,8 +210,10 @@ TEST(OverlayTest, OverlaysProcessorHasStrategy) {
   output_surface.InitWithSingleOverlayValidator();
   EXPECT_TRUE(output_surface.overlay_candidate_validator() != NULL);
 
-  scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(&output_surface, NULL, 0, false, 1));
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<ResourceProvider> resource_provider(ResourceProvider::Create(
+      &output_surface, shared_bitmap_manager.get(), 0, false, 1));
 
   scoped_ptr<DefaultOverlayProcessor> overlay_processor(
       new DefaultOverlayProcessor(&output_surface, resource_provider.get()));
@@ -227,8 +230,9 @@ class SingleOverlayOnTopTest : public testing::Test {
     output_surface_->InitWithSingleOverlayValidator();
     EXPECT_TRUE(output_surface_->overlay_candidate_validator() != NULL);
 
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
+    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
+    resource_provider_ = ResourceProvider::Create(
+        output_surface_.get(), shared_bitmap_manager_.get(), 0, false, 1);
 
     overlay_processor_.reset(new SingleOverlayProcessor(
         output_surface_.get(), resource_provider_.get()));
@@ -238,6 +242,7 @@ class SingleOverlayOnTopTest : public testing::Test {
   scoped_refptr<TestContextProvider> provider_;
   scoped_ptr<OverlayOutputSurface> output_surface_;
   FakeOutputSurfaceClient client_;
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SingleOverlayProcessor> overlay_processor_;
 };
