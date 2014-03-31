@@ -66,7 +66,7 @@ class IPhotoDataProviderTest : public InProcessBrowserTest {
   }
 
   void RunTest() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     base::RunLoop loop;
     quit_closure_ = loop.QuitClosure();
     MediaFileSystemBackend::MediaTaskRunner()->PostTask(

@@ -31,7 +31,7 @@ void FindMostRecentDatabase(
     base::scoped_nsobject<NSString> recent_databases_key,
     const PListPathExtractor& path_extractor,
     const IAppsFinderCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   scoped_ptr<MacPreferences> real_preferences;
   MacPreferences* prefs = g_test_mac_preferences;

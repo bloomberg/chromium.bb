@@ -39,7 +39,7 @@ namespace {
 bool GetStorageInfoOnUIThread(const base::string16& storage_path,
                               base::string16* pnp_device_id,
                               base::string16* storage_object_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!storage_path.empty());
   DCHECK(pnp_device_id);
   DCHECK(storage_object_id);
@@ -303,7 +303,7 @@ void OnGetStorageInfoCreateDelegate(
     base::string16* pnp_device_id,
     base::string16* storage_object_id,
     bool succeeded) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(pnp_device_id);
   DCHECK(storage_object_id);
   if (!succeeded)
@@ -316,7 +316,7 @@ void OnGetStorageInfoCreateDelegate(
 void CreateMTPDeviceAsyncDelegate(
     const base::string16& device_location,
     const CreateMTPDeviceAsyncDelegateCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_location.empty());
   base::string16* pnp_device_id = new base::string16;
   base::string16* storage_object_id = new base::string16;
@@ -343,7 +343,7 @@ MTPDeviceDelegateImplWin::StorageDeviceInfo::StorageDeviceInfo(
     : pnp_device_id(pnp_device_id),
       registered_device_path(registered_device_path),
       storage_object_id(storage_object_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 MTPDeviceDelegateImplWin::PendingTaskInfo::PendingTaskInfo(
@@ -365,7 +365,7 @@ MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
       media_task_runner_(MediaFileSystemBackend::MediaTaskRunner()),
       task_in_progress_(false),
       weak_ptr_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!registered_device_path.empty());
   DCHECK(!pnp_device_id.empty());
   DCHECK(!storage_object_id.empty());
@@ -373,14 +373,14 @@ MTPDeviceDelegateImplWin::MTPDeviceDelegateImplWin(
 }
 
 MTPDeviceDelegateImplWin::~MTPDeviceDelegateImplWin() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 void MTPDeviceDelegateImplWin::GetFileInfo(
     const base::FilePath& file_path,
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!file_path.empty());
   base::File::Info* file_info = new base::File::Info;
   EnsureInitAndRunTask(
@@ -400,7 +400,7 @@ void MTPDeviceDelegateImplWin::ReadDirectory(
     const base::FilePath& root,
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!root.empty());
   fileapi::AsyncFileUtil::EntryList* entries =
       new fileapi::AsyncFileUtil::EntryList;
@@ -422,7 +422,7 @@ void MTPDeviceDelegateImplWin::CreateSnapshotFile(
     const base::FilePath& snapshot_file_path,
     const CreateSnapshotFileSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_file_path.empty());
   DCHECK(!snapshot_file_path.empty());
   scoped_ptr<SnapshotFileDetails> file_details(
@@ -455,7 +455,7 @@ void MTPDeviceDelegateImplWin::ReadBytes(
 }
 
 void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   PortableDeviceMapService::GetInstance()->MarkPortableDeviceForDeletion(
       storage_device_info_.registered_device_path);
   media_task_runner_->PostTask(
@@ -469,7 +469,7 @@ void MTPDeviceDelegateImplWin::CancelPendingTasksAndDeleteDelegate() {
 
 void MTPDeviceDelegateImplWin::EnsureInitAndRunTask(
     const PendingTaskInfo& task_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if ((init_state_ == INITIALIZED) && !task_in_progress_) {
     DCHECK(pending_tasks_.empty());
     DCHECK(!current_snapshot_details_.get());
@@ -522,7 +522,7 @@ void MTPDeviceDelegateImplWin::ProcessNextPendingRequest() {
 }
 
 void MTPDeviceDelegateImplWin::OnInitCompleted(bool succeeded) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   init_state_ = succeeded ? INITIALIZED : UNINITIALIZED;
   task_in_progress_ = false;
   ProcessNextPendingRequest();
@@ -533,7 +533,7 @@ void MTPDeviceDelegateImplWin::OnGetFileInfo(
     const ErrorCallback& error_callback,
     base::File::Info* file_info,
     base::File::Error error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_info);
   if (error == base::File::FILE_OK)
     success_callback.Run(*file_info);
@@ -548,7 +548,7 @@ void MTPDeviceDelegateImplWin::OnDidReadDirectory(
     const ErrorCallback& error_callback,
     fileapi::AsyncFileUtil::EntryList* file_list,
     base::File::Error error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_list);
   if (error == base::File::FILE_OK)
     success_callback.Run(*file_list, false /*no more entries*/);
@@ -561,7 +561,7 @@ void MTPDeviceDelegateImplWin::OnDidReadDirectory(
 void MTPDeviceDelegateImplWin::OnGetFileStream(
     scoped_ptr<SnapshotFileDetails> file_details,
     base::File::Error error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(file_details);
   DCHECK(!file_details->request_info().device_file_path.empty());
   DCHECK(!file_details->request_info().snapshot_file_path.empty());
@@ -581,7 +581,7 @@ void MTPDeviceDelegateImplWin::OnGetFileStream(
 void MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile(
     const base::FilePath& snapshot_file_path,
     DWORD bytes_written) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!snapshot_file_path.empty());
   if (!current_snapshot_details_.get())
     return;

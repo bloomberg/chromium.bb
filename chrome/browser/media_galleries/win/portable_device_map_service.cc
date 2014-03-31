@@ -33,7 +33,7 @@ void PortableDeviceMapService::AddPortableDevice(
 
 void PortableDeviceMapService::MarkPortableDeviceForDeletion(
     const base::string16& device_location) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_location.empty());
   base::AutoLock lock(lock_);
   PortableDeviceMap::iterator it = device_map_.find(device_location);

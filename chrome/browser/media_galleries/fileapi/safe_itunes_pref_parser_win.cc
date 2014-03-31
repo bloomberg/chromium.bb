@@ -19,12 +19,12 @@ SafeITunesPrefParserWin::SafeITunesPrefParserWin(
     : unsafe_xml_(unsafe_xml),
       callback_(callback),
       parser_state_(INITIAL_STATE) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!callback_.is_null());
 }
 
 void SafeITunesPrefParserWin::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -35,7 +35,7 @@ SafeITunesPrefParserWin::~SafeITunesPrefParserWin() {
 }
 
 void SafeITunesPrefParserWin::StartWorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
   UtilityProcessHost* host =
@@ -46,7 +46,7 @@ void SafeITunesPrefParserWin::StartWorkOnIOThread() {
 
 void SafeITunesPrefParserWin::OnGotITunesDirectory(
     const base::FilePath& library_file) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (parser_state_ != STARTED_PARSING_STATE)
     return;

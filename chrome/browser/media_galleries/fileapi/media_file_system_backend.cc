@@ -74,7 +74,7 @@ void AttemptAutoMountOnUIThread(
     const std::string& storage_domain,
     const std::string& mount_point,
     const base::Callback<void(base::File::Error result)>& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderViewHost* rvh =
       content::RenderViewHost::FromID(process_id, routing_id);

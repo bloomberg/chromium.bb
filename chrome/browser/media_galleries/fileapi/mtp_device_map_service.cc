@@ -27,7 +27,7 @@ MTPDeviceMapService* MTPDeviceMapService::GetInstance() {
 void MTPDeviceMapService::RegisterMTPFileSystem(
     const base::FilePath::StringType& device_location,
     const std::string& fsid) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   if (!ContainsKey(mtp_device_usage_map_, device_location)) {
     // Note that this initializes the delegate asynchronously, but since
@@ -44,7 +44,7 @@ void MTPDeviceMapService::RegisterMTPFileSystem(
 }
 
 void MTPDeviceMapService::RevokeMTPFileSystem(const std::string& fsid) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   MTPDeviceFileSystemMap::iterator it = mtp_device_map_.find(fsid);
   if (it != mtp_device_map_.end()) {
@@ -64,7 +64,7 @@ void MTPDeviceMapService::RevokeMTPFileSystem(const std::string& fsid) {
 void MTPDeviceMapService::AddAsyncDelegate(
     const base::FilePath::StringType& device_location,
     MTPDeviceAsyncDelegate* delegate) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(delegate);
   DCHECK(!device_location.empty());
   if (ContainsKey(async_delegate_map_, device_location))
@@ -74,7 +74,7 @@ void MTPDeviceMapService::AddAsyncDelegate(
 
 void MTPDeviceMapService::RemoveAsyncDelegate(
     const base::FilePath::StringType& device_location) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   AsyncDelegateMap::iterator it = async_delegate_map_.find(device_location);
   DCHECK(it != async_delegate_map_.end());
   it->second->CancelPendingTasksAndDeleteDelegate();
@@ -83,7 +83,7 @@ void MTPDeviceMapService::RemoveAsyncDelegate(
 
 MTPDeviceAsyncDelegate* MTPDeviceMapService::GetMTPDeviceAsyncDelegate(
     const std::string& filesystem_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath device_path;
   if (!fileapi::ExternalMountPoints::GetSystemInstance()->GetRegisteredPath(
           filesystem_id, &device_path)) {

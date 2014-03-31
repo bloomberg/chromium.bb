@@ -68,7 +68,7 @@ base::FilePath GetPicasaDatabasePath() {
 // Returns path of Picasa's DB3 database directory. May only be called on
 // threads that allow for disk IO, like the FILE thread or MediaTaskRunner.
 base::FilePath FindPicasaDatabaseOnFileThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
    base::FilePath path = GetPicasaDatabasePath();

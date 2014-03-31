@@ -56,7 +56,7 @@ SafePicasaAlbumTableReader::~SafePicasaAlbumTableReader() {
 }
 
 void SafePicasaAlbumTableReader::StartWorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
   utility_process_host_ = content::UtilityProcessHost::Create(
@@ -70,7 +70,7 @@ void SafePicasaAlbumTableReader::StartWorkOnIOThread() {
 }
 
 void SafePicasaAlbumTableReader::OnProcessStarted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (parser_state_ != PINGED_UTILITY_PROCESS_STATE)
     return;
 
@@ -115,7 +115,7 @@ void SafePicasaAlbumTableReader::OnParsePicasaPMPDatabaseFinished(
     bool parse_success,
     const std::vector<AlbumInfo>& albums,
     const std::vector<AlbumInfo>& folders) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
   if (parser_state_ != STARTED_PARSING_STATE)
     return;

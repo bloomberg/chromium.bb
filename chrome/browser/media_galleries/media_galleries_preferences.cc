@@ -308,7 +308,7 @@ base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
 }
 
 void InitializeImportedMediaGalleryRegistryOnFileThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   ImportedMediaGalleryRegistry::GetInstance()->Initialize();
 }
 
@@ -414,7 +414,7 @@ MediaGalleriesPreferences::~MediaGalleriesPreferences() {
 }
 
 void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (IsInitialized()) {
     if (!callback.is_null())

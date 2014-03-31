@@ -27,7 +27,7 @@ namespace {
 
 #if defined(OS_WIN)
 base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = attachment_services.CreateInstance(CLSID_AttachmentServices);
@@ -59,7 +59,7 @@ AVScanningFileValidator::~AVScanningFileValidator() {}
 void AVScanningFileValidator::StartPostWriteValidation(
     const base::FilePath& dest_platform_path,
     const ResultCallback& result_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 #if defined(OS_WIN)
   BrowserThread::PostTaskAndReplyWithResult(

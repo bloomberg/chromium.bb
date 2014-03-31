@@ -27,7 +27,7 @@ SafeAudioVideoChecker::SafeAudioVideoChecker(
 }
 
 void SafeAudioVideoChecker::Start() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (state_ != INITIAL_STATE)
     return;
   state_ = PINGED_STATE;
@@ -47,7 +47,7 @@ void SafeAudioVideoChecker::Start() {
 SafeAudioVideoChecker::~SafeAudioVideoChecker() {}
 
 void SafeAudioVideoChecker::OnProcessStarted() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (state_ != PINGED_STATE)
     return;
   state_ = STARTED_STATE;
@@ -64,7 +64,7 @@ void SafeAudioVideoChecker::OnProcessStarted() {
 }
 
 void SafeAudioVideoChecker::OnCheckingFinished(bool valid) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (state_ != STARTED_STATE)
     return;
   state_ = FINISHED_STATE;

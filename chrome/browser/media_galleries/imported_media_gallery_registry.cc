@@ -44,7 +44,7 @@ void ImportedMediaGalleryRegistry::Initialize() {
 
 bool ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
     const std::string& fs_name, const base::FilePath& database_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!fs_name.empty());
   DCHECK(!database_path.empty());
 
@@ -80,7 +80,7 @@ bool ImportedMediaGalleryRegistry::RegisterPicasaFilesystemOnUIThread(
 
 bool ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
     const std::string& fs_name, const base::FilePath& library_xml_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!library_xml_path.empty());
 
   bool result = false;
@@ -115,7 +115,7 @@ bool ImportedMediaGalleryRegistry::RegisterITunesFilesystemOnUIThread(
 
 bool ImportedMediaGalleryRegistry::RegisterIPhotoFilesystemOnUIThread(
     const std::string& fs_name, const base::FilePath& library_xml_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!library_xml_path.empty());
 
   bool result = false;
@@ -152,7 +152,7 @@ bool ImportedMediaGalleryRegistry::RegisterIPhotoFilesystemOnUIThread(
 
 bool ImportedMediaGalleryRegistry::RevokeImportedFilesystemOnUIThread(
     const std::string& fs_name) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (picasa_fs_names_.erase(fs_name)) {

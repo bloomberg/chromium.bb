@@ -493,7 +493,7 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
     const content::RenderViewHost* rvh,
     const extensions::Extension* extension,
     const MediaFileSystemsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile =
       Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());
@@ -522,7 +522,7 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
     const extensions::Extension* extension,
     MediaGalleryPrefId pref_id,
     const base::Callback<void(base::File::Error result)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(kInvalidMediaGalleryPrefId, pref_id);
 
   Profile* profile =
@@ -570,7 +570,7 @@ MediaScanManager* MediaFileSystemRegistry::media_scan_manager() {
 
 void MediaFileSystemRegistry::OnRemovableStorageDetached(
     const StorageInfo& info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Since revoking a gallery in the ExtensionGalleriesHost may cause it
   // to be removed from the map and therefore invalidate any iterator pointing
@@ -668,7 +668,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   bool RegisterFileSystemForMassStorage(const std::string& device_id,
                                         const std::string& fs_name,
                                         const base::FilePath& path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(StorageInfo::IsMassStorageDevice(device_id));
 
     // Sanity checks for |path|.
@@ -703,7 +703,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   bool RegisterFileSystemForMTPDevice(const std::string& device_id,
                                       const std::string fs_name,
                                       const base::FilePath& path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 
     // Sanity checks for |path|.
@@ -817,7 +817,7 @@ ExtensionGalleriesHost* MediaFileSystemRegistry::GetExtensionGalleryHost(
 
 void MediaFileSystemRegistry::OnExtensionGalleriesHostEmpty(
     Profile* profile, const std::string& extension_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ExtensionGalleriesHostMap::iterator extension_hosts =
       extension_hosts_map_.find(profile);

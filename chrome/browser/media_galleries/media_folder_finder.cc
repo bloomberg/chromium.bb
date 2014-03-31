@@ -131,7 +131,7 @@ base::FilePath GetPlatformSpecificDefaultScanRoot() {
 void GetDefaultScanRoots(const DefaultScanRootsCallback& callback,
                          bool has_override,
                          const std::vector<base::FilePath>& override_paths) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (has_override) {
     callback.Run(override_paths);
@@ -197,7 +197,7 @@ MediaFolderFinder::Worker::Worker(
     : folder_paths_are_absolute_(false),
       graylisted_folders_(graylisted_folders),
       filter_(new MediaPathFilter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (size_t i = 0; i < arraysize(kPrunedPaths); ++i) {
     base::FilePath path;
@@ -319,14 +319,14 @@ MediaFolderFinder::MediaFolderFinder(
       worker_(new Worker(graylisted_folders_)),
       has_roots_for_testing_(false),
       weak_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   worker_task_runner_ = pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 }
 
 MediaFolderFinder::~MediaFolderFinder() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   worker_task_runner_->DeleteSoon(FROM_HERE, worker_);
 
@@ -338,7 +338,7 @@ MediaFolderFinder::~MediaFolderFinder() {
 }
 
 void MediaFolderFinder::StartScan() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (scan_state_ != SCAN_STATE_NOT_STARTED)
     return;
@@ -357,7 +357,7 @@ MediaFolderFinder::graylisted_folders() const {
 
 void MediaFolderFinder::SetRootsForTesting(
     const std::vector<base::FilePath>& roots) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(SCAN_STATE_NOT_STARTED, scan_state_);
 
   has_roots_for_testing_ = true;
@@ -405,7 +405,7 @@ void MediaFolderFinder::OnInitialized(
 }
 
 void MediaFolderFinder::ScanFolder() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(SCAN_STATE_STARTED, scan_state_);
 
   if (folders_to_scan_.empty()) {
@@ -428,7 +428,7 @@ void MediaFolderFinder::ScanFolder() {
 
 void MediaFolderFinder::GotScanResults(const base::FilePath& path,
                                        const WorkerReply& reply) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(SCAN_STATE_STARTED, scan_state_);
   DCHECK(!path.empty());
   CHECK(!ContainsKey(results_, path));

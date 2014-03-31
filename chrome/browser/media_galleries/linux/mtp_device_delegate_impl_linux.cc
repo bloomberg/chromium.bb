@@ -27,7 +27,7 @@ const char kRootPath[] = "/";
 // "/DCIM".
 std::string GetDeviceRelativePath(const base::FilePath& registered_dev_path,
                                   const base::FilePath& file_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!registered_dev_path.empty());
   DCHECK(!file_path.empty());
   if (registered_dev_path == file_path)
@@ -48,7 +48,7 @@ std::string GetDeviceRelativePath(const base::FilePath& registered_dev_path,
 // corresponding storage device is detached, etc).
 MTPDeviceTaskHelper* GetDeviceTaskHelperForStorage(
     const std::string& storage_name) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return MTPDeviceTaskHelperMapService::GetInstance()->GetDeviceTaskHelper(
       storage_name);
 }
@@ -64,7 +64,7 @@ MTPDeviceTaskHelper* GetDeviceTaskHelperForStorage(
 void OpenStorageOnUIThread(
     const std::string& storage_name,
     const base::Callback<void(bool)>& reply_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper) {
@@ -90,7 +90,7 @@ void ReadDirectoryOnUIThread(
     const base::Callback<
         void(const fileapi::AsyncFileUtil::EntryList&)>& success_callback,
     const base::Callback<void(base::File::Error)>& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper)
@@ -112,7 +112,7 @@ void GetFileInfoOnUIThread(
     const std::string& file_path,
     const base::Callback<void(const base::File::Info&)>& success_callback,
     const base::Callback<void(base::File::Error)>& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper)
@@ -137,7 +137,7 @@ void WriteDataIntoSnapshotFileOnUIThread(
     const std::string& storage_name,
     const SnapshotRequestInfo& request_info,
     const base::File::Info& snapshot_file_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper)
@@ -155,7 +155,7 @@ void WriteDataIntoSnapshotFileOnUIThread(
 void ReadBytesOnUIThread(
     const std::string& storage_name,
     const MTPDeviceAsyncDelegate::ReadBytesRequest& request) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper)
@@ -170,7 +170,7 @@ void ReadBytesOnUIThread(
 // MediaTransferProtocolManager.
 void CloseStorageAndDestroyTaskHelperOnUIThread(
     const std::string& storage_name) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   MTPDeviceTaskHelper* task_helper =
       GetDeviceTaskHelperForStorage(storage_name);
   if (!task_helper)
@@ -198,21 +198,21 @@ MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
       task_in_progress_(false),
       device_path_(device_location),
       weak_ptr_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_path_.empty());
   base::RemoveChars(device_location, kRootPath, &storage_name_);
   DCHECK(!storage_name_.empty());
 }
 
 MTPDeviceDelegateImplLinux::~MTPDeviceDelegateImplLinux() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 
 void MTPDeviceDelegateImplLinux::GetFileInfo(
     const base::FilePath& file_path,
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!file_path.empty());
   base::Closure call_closure =
       base::Bind(&GetFileInfoOnUIThread,
@@ -231,7 +231,7 @@ void MTPDeviceDelegateImplLinux::ReadDirectory(
     const base::FilePath& root,
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!root.empty());
   std::string device_file_relative_path = GetDeviceRelativePath(device_path_,
                                                                 root);
@@ -257,7 +257,7 @@ void MTPDeviceDelegateImplLinux::CreateSnapshotFile(
     const base::FilePath& snapshot_file_path,
     const CreateSnapshotFileSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_file_path.empty());
   DCHECK(!snapshot_file_path.empty());
   std::string device_file_relative_path =
@@ -291,7 +291,7 @@ void MTPDeviceDelegateImplLinux::ReadBytes(
     net::IOBuffer* buf, int64 offset, int buf_len,
     const ReadBytesSuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_file_path.empty());
   std::string device_file_relative_path =
       GetDeviceRelativePath(device_path_, device_file_path);
@@ -310,7 +310,7 @@ void MTPDeviceDelegateImplLinux::ReadBytes(
 }
 
 void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // To cancel all the pending tasks, destroy the MTPDeviceTaskHelper object.
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
@@ -321,7 +321,7 @@ void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
 
 void MTPDeviceDelegateImplLinux::EnsureInitAndRunTask(
     const PendingTaskInfo& task_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if ((init_state_ == INITIALIZED) && !task_in_progress_) {
     task_in_progress_ = true;
     content::BrowserThread::PostTask(content::BrowserThread::UI,
@@ -345,7 +345,7 @@ void MTPDeviceDelegateImplLinux::EnsureInitAndRunTask(
 
 void MTPDeviceDelegateImplLinux::WriteDataIntoSnapshotFile(
     const base::File::Info& file_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(current_snapshot_request_info_.get());
   DCHECK_GT(file_info.size, 0);
   task_in_progress_ = true;
@@ -369,7 +369,7 @@ void MTPDeviceDelegateImplLinux::WriteDataIntoSnapshotFile(
 }
 
 void MTPDeviceDelegateImplLinux::ProcessNextPendingRequest() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!task_in_progress_);
   if (pending_tasks_.empty())
     return;
@@ -383,7 +383,7 @@ void MTPDeviceDelegateImplLinux::ProcessNextPendingRequest() {
 }
 
 void MTPDeviceDelegateImplLinux::OnInitCompleted(bool succeeded) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   init_state_ = succeeded ? INITIALIZED : UNINITIALIZED;
   task_in_progress_ = false;
   ProcessNextPendingRequest();
@@ -392,7 +392,7 @@ void MTPDeviceDelegateImplLinux::OnInitCompleted(bool succeeded) {
 void MTPDeviceDelegateImplLinux::OnDidGetFileInfo(
     const GetFileInfoSuccessCallback& success_callback,
     const base::File::Info& file_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   success_callback.Run(file_info);
   task_in_progress_ = false;
   ProcessNextPendingRequest();
@@ -403,7 +403,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
     const base::File::Info& file_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(task_in_progress_);
   if (!file_info.is_directory) {
     return HandleDeviceFileError(error_callback,
@@ -428,7 +428,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory(
 void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(
     scoped_ptr<SnapshotRequestInfo> snapshot_request_info,
     const base::File::Info& file_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!current_snapshot_request_info_.get());
   DCHECK(snapshot_request_info.get());
   DCHECK(task_in_progress_);
@@ -458,7 +458,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(
 void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
     const ReadDirectorySuccessCallback& success_callback,
     const fileapi::AsyncFileUtil::EntryList& file_list) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   success_callback.Run(file_list, false /*no more entries*/);
   task_in_progress_ = false;
   ProcessNextPendingRequest();
@@ -467,7 +467,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
 void MTPDeviceDelegateImplLinux::OnDidWriteDataIntoSnapshotFile(
     const base::File::Info& file_info,
     const base::FilePath& snapshot_file_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(current_snapshot_request_info_.get());
   DCHECK(task_in_progress_);
   current_snapshot_request_info_->success_callback.Run(
@@ -479,7 +479,7 @@ void MTPDeviceDelegateImplLinux::OnDidWriteDataIntoSnapshotFile(
 
 void MTPDeviceDelegateImplLinux::OnWriteDataIntoSnapshotFileError(
     base::File::Error error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(current_snapshot_request_info_.get());
   DCHECK(task_in_progress_);
   current_snapshot_request_info_->error_callback.Run(error);
@@ -491,7 +491,7 @@ void MTPDeviceDelegateImplLinux::OnWriteDataIntoSnapshotFileError(
 void MTPDeviceDelegateImplLinux::OnDidReadBytes(
     const ReadBytesSuccessCallback& success_callback,
     const base::File::Info& file_info, int bytes_read) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(task_in_progress_);
   success_callback.Run(file_info, bytes_read);
   task_in_progress_ = false;
@@ -501,7 +501,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadBytes(
 void MTPDeviceDelegateImplLinux::HandleDeviceFileError(
     const ErrorCallback& error_callback,
     base::File::Error error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(task_in_progress_);
   error_callback.Run(error);
   task_in_progress_ = false;
@@ -511,6 +511,6 @@ void MTPDeviceDelegateImplLinux::HandleDeviceFileError(
 void CreateMTPDeviceAsyncDelegate(
     const std::string& device_location,
     const CreateMTPDeviceAsyncDelegateCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   callback.Run(new MTPDeviceDelegateImplLinux(device_location));
 }

@@ -148,7 +148,7 @@ base::FilePath TestMediaFileSystemContext::GetRegisteredPath(
 void TestMediaFileSystemContext::AddFSEntry(const std::string& device_id,
                                             const base::FilePath& path,
                                             const std::string& fs_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(path.IsAbsolute());
   DCHECK(!path.ReferencesParent());
 

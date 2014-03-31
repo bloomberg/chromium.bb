@@ -217,7 +217,7 @@ void AddScanResultsForProfile(
 MediaFolderFinder::MediaFolderFinderResults FindContainerScanResults(
     const MediaFolderFinder::MediaFolderFinderResults& found_folders,
     const std::vector<base::FilePath>& sensitive_locations) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   std::vector<base::FilePath> abs_sensitive_locations;
   for (size_t i = 0; i < sensitive_locations.size(); ++i) {
     base::FilePath path = base::MakeAbsoluteFilePath(sensitive_locations[i]);
@@ -305,29 +305,29 @@ int CountScanResultsForExtension(MediaGalleriesPreferences* preferences,
 }  // namespace
 
 MediaScanManager::MediaScanManager() : weak_factory_(this) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 MediaScanManager::~MediaScanManager() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void MediaScanManager::AddObserver(Profile* profile,
                                    MediaScanManagerObserver* observer) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!ContainsKey(observers_, profile));
   observers_[profile].observer = observer;
 }
 
 void MediaScanManager::RemoveObserver(Profile* profile) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool scan_in_progress = ScanInProgress();
   observers_.erase(profile);
   DCHECK_EQ(scan_in_progress, ScanInProgress());
 }
 
 void MediaScanManager::CancelScansForProfile(Profile* profile) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observers_[profile].scanning_extensions.clear();
 
   if (!ScanInProgress())
@@ -338,7 +338,7 @@ void MediaScanManager::StartScan(Profile* profile,
                                  const extensions::Extension* extension,
                                  bool user_gesture) {
   DCHECK(extension);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ScanObserverMap::iterator scans_for_profile = observers_.find(profile);
   // We expect that an MediaScanManagerObserver has already been registered.
@@ -396,7 +396,7 @@ void MediaScanManager::StartScan(Profile* profile,
 
 void MediaScanManager::CancelScan(Profile* profile,
                                   const extensions::Extension* extension) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Erases the logical scan if found, early exit otherwise.
   ScanObserverMap::iterator scans_for_profile = observers_.find(profile);
@@ -435,7 +435,7 @@ MediaScanManager::ScanObservers::~ScanObservers() {}
 void MediaScanManager::Observe(
     int type, const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
@@ -464,7 +464,7 @@ bool MediaScanManager::ScanInProgress() const {
 void MediaScanManager::OnScanCompleted(
     bool success,
     const MediaFolderFinder::MediaFolderFinderResults& found_folders) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!folder_finder_ || !success) {
     folder_finder_.reset();
     return;

@@ -15,7 +15,7 @@ namespace {
 void PostResultToUIThread(storage_monitor::StorageInfo::Type type,
                           const IAppsFinderCallback& callback,
                           const std::string& unique_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   std::string device_id;
   if (!unique_id.empty())
@@ -30,7 +30,7 @@ void PostResultToUIThread(storage_monitor::StorageInfo::Type type,
 void FindIAppsOnFileThread(storage_monitor::StorageInfo::Type type,
                            const IAppsFinderTask& task,
                            const IAppsFinderCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!task.is_null());
   DCHECK(!callback.is_null());
 

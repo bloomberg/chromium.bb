@@ -38,7 +38,7 @@ std::string GetPrefFileData() {
 
 // Check the default location for a correctly named file.
 void TryDefaultLocation(const iapps::IAppsFinderCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   base::FilePath music_dir;
   if (!PathService::Get(chrome::DIR_USER_MUSIC, &music_dir)) {
@@ -58,7 +58,7 @@ void TryDefaultLocation(const iapps::IAppsFinderCallback& callback) {
 // Check the location that parsing the preferences XML file found.
 void FinishedParsingPrefXML(const iapps::IAppsFinderCallback& callback,
                             const base::FilePath& library_file) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   if (library_file.empty() || !base::PathExists(library_file)) {
     TryDefaultLocation(callback);
@@ -68,7 +68,7 @@ void FinishedParsingPrefXML(const iapps::IAppsFinderCallback& callback,
 }
 
 void FindITunesLibraryOnFileThread(const iapps::IAppsFinderCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   std::string xml_pref_data = GetPrefFileData();
   if (xml_pref_data.empty()) {
@@ -89,7 +89,7 @@ void FindITunesLibraryOnFileThread(const iapps::IAppsFinderCallback& callback) {
 // iTunes preferences XML file if it exists. If not or if the parsing fails,
 // ITunesFinderWin will try a default location as well.
 void FindITunesLibrary(const IAppsFinderCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   FindIAppsOnFileThread(storage_monitor::StorageInfo::ITUNES,
                         base::Bind(FindITunesLibraryOnFileThread), callback);
 }

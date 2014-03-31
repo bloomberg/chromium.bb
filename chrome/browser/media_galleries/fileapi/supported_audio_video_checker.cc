@@ -49,7 +49,7 @@ base::LazyInstance<SupportedAudioVideoExtensions> g_audio_video_extensions =
     LAZY_INSTANCE_INITIALIZER;
 
 base::PlatformFile OpenOnFileThread(const base::FilePath& path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   return base::CreatePlatformFile(
       path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
       NULL /*created*/, NULL /*error_code*/);
@@ -66,7 +66,7 @@ bool SupportedAudioVideoChecker::SupportsFileType(const base::FilePath& path) {
 
 void SupportedAudioVideoChecker::StartPreWriteValidation(
     const fileapi::CopyOrMoveFileValidator::ResultCallback& result_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(callback_.is_null());
   callback_ = result_callback;
 
@@ -85,7 +85,7 @@ SupportedAudioVideoChecker::SupportedAudioVideoChecker(
 }
 
 void SupportedAudioVideoChecker::OnFileOpen(const base::PlatformFile& file) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (file == base::kInvalidPlatformFileValue) {
     callback_.Run(base::File::FILE_ERROR_SECURITY);
     return;

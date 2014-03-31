@@ -61,7 +61,7 @@ void SafeIAppsLibraryParser::Start() {
 SafeIAppsLibraryParser::~SafeIAppsLibraryParser() {}
 
 void SafeIAppsLibraryParser::StartProcessOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy =
@@ -75,7 +75,7 @@ void SafeIAppsLibraryParser::StartProcessOnIOThread() {
 }
 
 void SafeIAppsLibraryParser::OnUtilityProcessStarted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (parser_state_ != PINGED_UTILITY_PROCESS_STATE)
     return;
 
@@ -109,7 +109,7 @@ void SafeIAppsLibraryParser::OnUtilityProcessStarted() {
 #if defined(OS_MACOSX)
 void SafeIAppsLibraryParser::OnGotIPhotoLibrary(
     bool result, const iphoto::parser::Library& library) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!iphoto_callback_.is_null());
 
   if (parser_state_ != STARTED_PARSING_STATE)
@@ -124,7 +124,7 @@ void SafeIAppsLibraryParser::OnGotIPhotoLibrary(
 
 void SafeIAppsLibraryParser::OnGotITunesLibrary(
     bool result, const itunes::parser::Library& library) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!itunes_callback_.is_null());
 
   if (parser_state_ != STARTED_PARSING_STATE)
@@ -137,7 +137,7 @@ void SafeIAppsLibraryParser::OnGotITunesLibrary(
 }
 
 void SafeIAppsLibraryParser::OnOpenLibraryFileFailed() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   OnError();
 }
 

@@ -23,11 +23,11 @@ SafeMediaMetadataParser::SafeMediaMetadataParser(Profile* profile,
       blob_size_(blob_size),
       mime_type_(mime_type),
       parser_state_(INITIAL_STATE) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void SafeMediaMetadataParser::Start(const DoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -41,7 +41,7 @@ SafeMediaMetadataParser::~SafeMediaMetadataParser() {
 
 void SafeMediaMetadataParser::StartWorkOnIOThread(
     const DoneCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIAL_STATE, parser_state_);
   DCHECK(!callback.is_null());
 
@@ -58,7 +58,7 @@ void SafeMediaMetadataParser::StartWorkOnIOThread(
 
 void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
     bool parse_success, const base::DictionaryValue& metadata_dictionary) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
 
   if (parser_state_ != STARTED_PARSING_STATE)
@@ -74,7 +74,7 @@ void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
 
 void SafeMediaMetadataParser::OnUtilityProcessRequestBlobBytes(
     int64 request_id, int64 byte_start, int64 length) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -84,7 +84,7 @@ void SafeMediaMetadataParser::OnUtilityProcessRequestBlobBytes(
 
 void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
     int64 request_id, int64 byte_start, int64 length) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // BlobReader is self-deleting.
   BlobReader* reader = new BlobReader(profile_, blob_uuid_, base::Bind(
@@ -96,7 +96,7 @@ void SafeMediaMetadataParser::StartBlobReaderOnUIThread(
 void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
     int64 request_id, scoped_ptr<std::string> data,
     int64 /* blob_total_size */) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -106,7 +106,7 @@ void SafeMediaMetadataParser::OnBlobReaderDoneOnUIThread(
 
 void SafeMediaMetadataParser::FinishRequestBlobBytes(
     int64 request_id, scoped_ptr<std::string> data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!utility_process_host_.get())
     return;
   utility_process_host_->Send(new ChromeUtilityMsg_RequestBlobBytes_Finished(
@@ -114,7 +114,7 @@ void SafeMediaMetadataParser::FinishRequestBlobBytes(
 }
 
 void SafeMediaMetadataParser::OnProcessCrashed(int exit_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
 
   BrowserThread::PostTask(

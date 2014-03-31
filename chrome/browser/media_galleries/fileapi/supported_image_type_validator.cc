@@ -100,7 +100,7 @@ bool SupportedImageTypeValidator::SupportsFileType(const base::FilePath& path) {
 
 void SupportedImageTypeValidator::StartPreWriteValidation(
     const ResultCallback& result_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(callback_.is_null());
   callback_ = result_callback;
 
@@ -119,7 +119,7 @@ SupportedImageTypeValidator::SupportedImageTypeValidator(
 }
 
 void SupportedImageTypeValidator::OnFileOpen(scoped_ptr<std::string> data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!data.get()) {
     callback_.Run(base::File::FILE_ERROR_SECURITY);
     return;

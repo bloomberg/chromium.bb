@@ -91,7 +91,7 @@ void SafePicasaAlbumsIndexer::ProcessFoldersBatch() {
 }
 
 void SafePicasaAlbumsIndexer::StartWorkOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
   UtilityProcessHost* host =
@@ -103,7 +103,7 @@ void SafePicasaAlbumsIndexer::StartWorkOnIOThread() {
 
 void SafePicasaAlbumsIndexer::OnIndexPicasaAlbumsContentsFinished(
     const AlbumImagesMap& albums_images) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
   if (parser_state_ != STARTED_PARSING_STATE)
     return;
@@ -115,7 +115,7 @@ void SafePicasaAlbumsIndexer::OnIndexPicasaAlbumsContentsFinished(
 }
 
 void SafePicasaAlbumsIndexer::OnProcessCrashed(int exit_code) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
 
   MediaFileSystemBackend::MediaTaskRunner()->PostTask(

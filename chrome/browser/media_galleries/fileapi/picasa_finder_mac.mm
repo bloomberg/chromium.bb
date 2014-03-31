@@ -29,7 +29,7 @@ void SetMacPreferencesForTesting(MacPreferences* preferences) {
 }
 
 base::FilePath GetCustomPicasaAppDataPathFromMacPreferences() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   scoped_ptr<MacPreferences> real_preferences;
   MacPreferences* prefs = g_test_mac_preferences;

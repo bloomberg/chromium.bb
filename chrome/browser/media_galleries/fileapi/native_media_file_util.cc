@@ -84,7 +84,7 @@ void NativeMediaFileUtil::CreateOrOpen(
     const fileapi::FileSystemURL& url,
     int file_flags,
     const CreateOrOpenCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Only called by NaCl, which should not have access to media file systems.
   base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
   callback.Run(base::File::FILE_ERROR_SECURITY,
@@ -96,7 +96,7 @@ void NativeMediaFileUtil::EnsureFileExists(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const EnsureFileExistsCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY, false);
 }
 
@@ -106,7 +106,7 @@ void NativeMediaFileUtil::CreateDirectory(
     bool exclusive,
     bool recursive,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -120,7 +120,7 @@ void NativeMediaFileUtil::GetFileInfo(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const GetFileInfoCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -134,7 +134,7 @@ void NativeMediaFileUtil::ReadDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -150,7 +150,7 @@ void NativeMediaFileUtil::Touch(
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -159,7 +159,7 @@ void NativeMediaFileUtil::Truncate(
     const fileapi::FileSystemURL& url,
     int64 length,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
@@ -170,7 +170,7 @@ void NativeMediaFileUtil::CopyFileLocal(
     CopyOrMoveOption option,
     const CopyFileProgressCallback& progress_callback,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -186,7 +186,7 @@ void NativeMediaFileUtil::MoveFileLocal(
     const fileapi::FileSystemURL& dest_url,
     CopyOrMoveOption option,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -201,7 +201,7 @@ void NativeMediaFileUtil::CopyInForeignFile(
     const base::FilePath& src_file_path,
     const fileapi::FileSystemURL& dest_url,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -215,7 +215,7 @@ void NativeMediaFileUtil::DeleteFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -230,7 +230,7 @@ void NativeMediaFileUtil::DeleteDirectory(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
@@ -244,7 +244,7 @@ void NativeMediaFileUtil::DeleteRecursively(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const StatusCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
@@ -252,7 +252,7 @@ void NativeMediaFileUtil::CreateSnapshotFile(
     scoped_ptr<fileapi::FileSystemOperationContext> context,
     const fileapi::FileSystemURL& url,
     const CreateSnapshotFileCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   fileapi::FileSystemOperationContext* context_ptr = context.get();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,

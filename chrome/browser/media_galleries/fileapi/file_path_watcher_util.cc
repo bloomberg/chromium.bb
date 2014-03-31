@@ -19,7 +19,7 @@ void OnFilePathChangedOnFileThread(
     const base::FilePathWatcher::Callback& callback,
     const base::FilePath& path,
     bool error) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   MediaFileSystemBackend::MediaTaskRunner()->PostTask(
       FROM_HERE, base::Bind(callback, path, error));
 }
@@ -30,7 +30,7 @@ void StartFilePathWatchOnFileThread(
     const base::FilePath& path,
     const FileWatchStartedCallback& watch_started_callback,
     const base::FilePathWatcher::Callback& path_changed_callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   // The watcher is created on the FILE thread because it is very difficult
   // to safely pass an already-created file watcher to a different thread.
   scoped_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
