@@ -60,6 +60,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/DateMath.h"
 
 namespace WebCore {
 
@@ -257,11 +258,6 @@ static bool eventHasListeners(const AtomicString& eventType, DOMWindow* window, 
     return false;
 }
 
-void TimelineTimeConverter::reset()
-{
-    m_startOffset = monotonicallyIncreasingTime() - currentTime();
-}
-
 void InspectorTimelineAgent::pushGCEventRecords()
 {
     if (!m_gcEvents.size())
@@ -270,9 +266,9 @@ void InspectorTimelineAgent::pushGCEventRecords()
     GCEvents events = m_gcEvents;
     m_gcEvents.clear();
     for (GCEvents::iterator i = events.begin(); i != events.end(); ++i) {
-        double ts = m_timeConverter.fromMonotonicallyIncreasingTime(i->startTime);
+        double ts = i->startTime * msPerSecond;
         RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(ts, m_maxCallStackDepth, TimelineRecordType::GCEvent, TimelineRecordFactory::createGCEventData(i->collectedBytes));
-        record->setEndTime(m_timeConverter.fromMonotonicallyIncreasingTime(i->endTime));
+        record->setEndTime(i->endTime * msPerSecond);
         addRecordToTimeline(record.release(), ts);
     }
 }
@@ -374,7 +370,6 @@ void InspectorTimelineAgent::innerStart()
     if (m_overlay)
         m_overlay->startedRecordingProfile();
     m_state->setBoolean(TimelineAgentState::started, true);
-    m_timeConverter.reset();
     m_instrumentingAgents->setInspectorTimelineAgent(this);
     ScriptGCEvent::addEventListener(this);
     if (m_client) {
@@ -777,17 +772,12 @@ void InspectorTimelineAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
 
 void InspectorTimelineAgent::didFinishLoadingResource(unsigned long identifier, bool didFail, double finishTime)
 {
-    appendRecord(TimelineRecordFactory::createResourceFinishData(IdentifiersFactory::requestId(identifier), didFail, finishTime * 1000), TimelineRecordType::ResourceFinish, false, 0);
+    appendRecord(TimelineRecordFactory::createResourceFinishData(IdentifiersFactory::requestId(identifier), didFail, finishTime), TimelineRecordType::ResourceFinish, false, 0);
 }
 
 void InspectorTimelineAgent::didFinishLoading(unsigned long identifier, DocumentLoader* loader, double monotonicFinishTime, int64_t)
 {
-    double finishTime = 0.0;
-    // FIXME: Expose all of the timing details to inspector and have it calculate finishTime.
-    if (monotonicFinishTime)
-        finishTime = loader->timing()->monotonicTimeToPseudoWallTime(monotonicFinishTime);
-
-    didFinishLoadingResource(identifier, false, finishTime);
+    didFinishLoadingResource(identifier, false, monotonicFinishTime * msPerSecond);
 }
 
 void InspectorTimelineAgent::didFailLoading(unsigned long identifier, const ResourceError& error)
@@ -937,13 +927,13 @@ void InspectorTimelineAgent::onBeginImplSideFrame(const TraceEventDispatcher::Tr
 void InspectorTimelineAgent::onPaintSetupBegin(const TraceEventDispatcher::TraceEvent& event)
 {
     ASSERT(!m_paintSetupStart);
-    m_paintSetupStart = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    m_paintSetupStart = event.timestamp() * msPerSecond;
 }
 
 void InspectorTimelineAgent::onPaintSetupEnd(const TraceEventDispatcher::TraceEvent& event)
 {
     ASSERT(m_paintSetupStart);
-    m_paintSetupEnd = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    m_paintSetupEnd = event.timestamp() * msPerSecond;
 }
 
 void InspectorTimelineAgent::onRasterTaskBegin(const TraceEventDispatcher::TraceEvent& event)
@@ -955,7 +945,7 @@ void InspectorTimelineAgent::onRasterTaskBegin(const TraceEventDispatcher::Trace
         return;
     ASSERT(!state.inKnownLayerTask);
     state.inKnownLayerTask = true;
-    double timestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    double timestamp = event.timestamp() * msPerSecond;
     RefPtr<JSONObject> data = TimelineRecordFactory::createLayerData(m_layerToNodeMap.get(layerId));
     RefPtr<TimelineEvent> record = TimelineRecordFactory::createBackgroundRecord(timestamp, String::number(event.threadIdentifier()), TimelineRecordType::Rasterize, data);
     state.recordStack.addScopedRecord(record, TimelineRecordType::Rasterize);
@@ -967,7 +957,7 @@ void InspectorTimelineAgent::onRasterTaskEnd(const TraceEventDispatcher::TraceEv
     if (!state.inKnownLayerTask)
         return;
     ASSERT(state.recordStack.isOpenRecordOfType(TimelineRecordType::Rasterize));
-    state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
+    state.recordStack.closeScopedRecord(event.timestamp() * msPerSecond);
     state.inKnownLayerTask = false;
 }
 
@@ -986,7 +976,7 @@ void InspectorTimelineAgent::onImageDecodeBegin(const TraceEventDispatcher::Trac
     }
     RefPtr<JSONObject> data = JSONObject::create();
     TimelineRecordFactory::setImageDetails(data.get(), imageInfo.backendNodeId, imageInfo.url);
-    double timeestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    double timeestamp = event.timestamp() * msPerSecond;
     state.recordStack.addScopedRecord(TimelineRecordFactory::createBackgroundRecord(timeestamp, String::number(event.threadIdentifier()), TimelineRecordType::DecodeImage, data), TimelineRecordType::DecodeImage);
 }
 
@@ -996,7 +986,7 @@ void InspectorTimelineAgent::onImageDecodeEnd(const TraceEventDispatcher::TraceE
     if (!state.decodedPixelRefId)
         return;
     ASSERT(state.recordStack.isOpenRecordOfType(TimelineRecordType::DecodeImage));
-    state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
+    state.recordStack.closeScopedRecord(event.timestamp() * msPerSecond);
 }
 
 void InspectorTimelineAgent::onRequestMainThreadFrame(const TraceEventDispatcher::TraceEvent& event)
@@ -1068,7 +1058,7 @@ void InspectorTimelineAgent::onLazyPixelRefDeleted(const TraceEventDispatcher::T
 
 void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
 {
-    double timelineTimestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp);
+    double timelineTimestamp = event.timestamp * msPerSecond;
     if (event.phase == GPUEvent::PhaseBegin) {
         m_pendingGPURecord = TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(event.foreign));
     } else if (m_pendingGPURecord) {
@@ -1085,7 +1075,7 @@ void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
 void InspectorTimelineAgent::onEmbedderCallbackBegin(const TraceEventDispatcher::TraceEvent& event)
 {
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    double timestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    double timestamp = event.timestamp() * msPerSecond;
     RefPtr<JSONObject> data = TimelineRecordFactory::createEmbedderCallbackData(event.asString(InstrumentationEventArguments::CallbackName));
     RefPtr<TimelineEvent> record = TimelineRecordFactory::createGenericRecord(timestamp, 0, TimelineRecordType::EmbedderCallback, data);
     state.recordStack.addScopedRecord(record, TimelineRecordType::EmbedderCallback);
@@ -1094,7 +1084,7 @@ void InspectorTimelineAgent::onEmbedderCallbackBegin(const TraceEventDispatcher:
 void InspectorTimelineAgent::onEmbedderCallbackEnd(const TraceEventDispatcher::TraceEvent& event)
 {
     TimelineThreadState& state = threadState(event.threadIdentifier());
-    state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
+    state.recordStack.closeScopedRecord(event.timestamp() * msPerSecond);
 }
 
 void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<TimelineEvent> record, double ts)
@@ -1306,7 +1296,7 @@ void InspectorTimelineAgent::releaseNodeIds()
 
 double InspectorTimelineAgent::timestamp()
 {
-    return m_timeConverter.fromMonotonicallyIncreasingTime(WTF::monotonicallyIncreasingTime());
+    return WTF::monotonicallyIncreasingTime() * msPerSecond;
 }
 
 FrameHost* InspectorTimelineAgent::frameHost() const
@@ -1318,7 +1308,7 @@ FrameHost* InspectorTimelineAgent::frameHost() const
 
 PassRefPtr<TimelineEvent> InspectorTimelineAgent::createRecordForEvent(const TraceEventDispatcher::TraceEvent& event, const String& type, PassRefPtr<JSONObject> data)
 {
-    double timeestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    double timeestamp = event.timestamp() * msPerSecond;
     return TimelineRecordFactory::createBackgroundRecord(timeestamp, String::number(event.threadIdentifier()), type, data);
 }
 

@@ -90,19 +90,6 @@ class XMLHttpRequest;
 
 typedef String ErrorString;
 
-class TimelineTimeConverter {
-public:
-    TimelineTimeConverter()
-        : m_startOffset(0)
-    {
-    }
-    double fromMonotonicallyIncreasingTime(double time) const  { return (time - m_startOffset) * 1000.0; }
-    void reset();
-
-private:
-    double m_startOffset;
-};
-
 class InspectorTimelineAgent FINAL
     : public TraceEventTarget<InspectorTimelineAgent>
     , public InspectorBaseAgent<InspectorTimelineAgent>
@@ -316,7 +303,6 @@ private:
     int m_id;
     unsigned long long m_layerTreeId;
 
-    TimelineTimeConverter m_timeConverter;
     int m_maxCallStackDepth;
 
     Vector<TimelineRecordEntry> m_recordStack;
