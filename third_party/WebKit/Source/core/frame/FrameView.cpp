@@ -1007,9 +1007,6 @@ void FrameView::layout(bool allowSubtree)
         return;
 
     if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
-        if (m_doFullRepaint)
-            renderView()->setShouldDoFullRepaintAfterLayout(true);
-
         repaintTree(rootForThisLayout);
 
     } else if (m_doFullRepaint) {
@@ -1054,10 +1051,23 @@ void FrameView::repaintTree(RenderObject* root)
     // Until those states are fully fledged, I'll just disable the ASSERTS.
     DisableCompositingQueryAsserts disabler;
 
-    for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
-        const LayoutRect& oldRepaintRect = renderer->oldRepaintRect();
-        const LayoutRect& newRepaintRect = renderer->newRepaintRect();
+    // If we are set to do a full repaint that means the RenderView will be
+    // invalidated. We can then skip issuing of invalidations for the child
+    // renderers as they'll be covered by the RenderView.
+    if (m_doFullRepaint) {
+        RenderView* view = renderView();
+        view->repaintAfterLayoutIfNeeded(view->containerForRepaint(), true, view->oldRepaintRect(), &(view->newRepaintRect()));
 
+        // Clear the invalidation flags for the root and child renderers.
+        for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
+            renderer->clearRepaintState();
+        }
+        return;
+    }
+
+    ASSERT(!m_doFullRepaint);
+
+    for (RenderObject* renderer = root; renderer; renderer = renderer->nextInPreOrder()) {
         if ((renderer->onlyNeededPositionedMovementLayout() && renderer->compositingState() != PaintsIntoOwnBacking)
             || (renderer->shouldDoFullRepaintIfSelfPaintingLayer()
                 && renderer->hasLayer()
@@ -1077,7 +1087,7 @@ void FrameView::repaintTree(RenderObject* root)
 
         } else {
             didFullRepaint = renderer->repaintAfterLayoutIfNeeded(renderer->containerForRepaint(),
-                renderer->shouldDoFullRepaintAfterLayout(), oldRepaintRect, &newRepaintRect);
+                renderer->shouldDoFullRepaintAfterLayout(), renderer->oldRepaintRect(), &(renderer->newRepaintRect()));
         }
 
         if (!didFullRepaint)
