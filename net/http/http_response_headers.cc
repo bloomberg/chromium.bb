@@ -26,6 +26,11 @@
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "net/http/http_status_code.h"
+#include "net/proxy/proxy_service.h"
+#endif
+
 using base::StringPiece;
 using base::Time;
 using base::TimeDelta;
@@ -1417,7 +1422,6 @@ bool HttpResponseHeaders::GetChromeProxyInfo(
   DCHECK(proxy_info);
   proxy_info->bypass_all = false;
   proxy_info->bypass_duration = base::TimeDelta();
-
   // Support header of the form Chrome-Proxy: bypass|block=<duration>, where
   // <duration> is the number of seconds to wait before retrying
   // the proxy. If the duration is 0, then the default proxy retry delay
@@ -1463,6 +1467,34 @@ bool HttpResponseHeaders::IsChromeProxyResponse() const {
       return true;
 
   return false;
+}
+
+ProxyService::DataReductionProxyBypassEventType
+HttpResponseHeaders::GetChromeProxyBypassEventType(
+    ChromeProxyInfo* chrome_proxy_info) const {
+  DCHECK(chrome_proxy_info);
+  if (GetChromeProxyInfo(chrome_proxy_info)) {
+    // A chrome-proxy response header is only present in a 502. For proper
+    // reporting, this check must come before the 5xx checks below.
+    if (chrome_proxy_info->bypass_duration < TimeDelta::FromMinutes(30))
+      return ProxyService::SHORT_BYPASS;
+    return ProxyService::LONG_BYPASS;
+  }
+  if (response_code() == HTTP_INTERNAL_SERVER_ERROR ||
+      response_code() == HTTP_BAD_GATEWAY ||
+      response_code() == HTTP_SERVICE_UNAVAILABLE) {
+    // Fall back if a 500, 502 or 503 is returned.
+    return ProxyService::INTERNAL_SERVER_ERROR_BYPASS;
+  }
+  if (!IsChromeProxyResponse() && (response_code() != HTTP_NOT_MODIFIED)) {
+    // A Via header might not be present in a 304. Since the goal of a 304
+    // response is to minimize information transfer, a sender in general
+    // should not generate representation metadata other than Cache-Control,
+    // Content-Location, Date, ETag, Expires, and Vary.
+    return ProxyService::MISSING_VIA_HEADER;
+  }
+  // There is no bypass event.
+  return ProxyService::BYPASS_EVENT_TYPE_MAX;
 }
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 

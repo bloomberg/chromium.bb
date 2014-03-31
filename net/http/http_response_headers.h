@@ -16,6 +16,10 @@
 #include "net/base/net_log.h"
 #include "net/http/http_version.h"
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "net/proxy/proxy_service.h"
+#endif
+
 class Pickle;
 class PickleIterator;
 
@@ -286,6 +290,12 @@ class NET_EXPORT HttpResponseHeaders
 
   // Returns true if response headers contain the Chrome proxy Via header value.
   bool IsChromeProxyResponse() const;
+
+  // Returns the reason why the Chrome proxy should be bypassed or not, and
+  // populates |proxy_info| with information on how long to bypass if
+  // applicable.
+  ProxyService::DataReductionProxyBypassEventType
+  GetChromeProxyBypassEventType(ChromeProxyInfo* proxy_info) const;
 #endif
 
   // Creates a Value for use with the NetLog containing the response headers.

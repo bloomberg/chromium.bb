@@ -13,6 +13,10 @@
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "net/proxy/proxy_service.h"
+#endif
+
 namespace {
 
 struct TestData {
@@ -2170,6 +2174,79 @@ TEST(HttpResponseHeadersTest, IsChromeProxyResponse) {
         new net::HttpResponseHeaders(headers));
 
     EXPECT_EQ(tests[i].expected_result, parsed->IsChromeProxyResponse());
+  }
+}
+
+TEST(HttpResponseHeadersTest, GetChromeProxyBypassEventType) {
+  const struct {
+     const char* headers;
+     net::ProxyService::DataReductionProxyBypassEventType expected_result;
+  } tests[] = {
+    { "HTTP/1.1 200 OK\n"
+      "Chrome-Proxy: bypass=0\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::SHORT_BYPASS,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Chrome-Proxy: bypass=1799\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::SHORT_BYPASS,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Chrome-Proxy: bypass=1800\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::LONG_BYPASS,
+    },
+    { "HTTP/1.1 500 Internal Server Error\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::INTERNAL_SERVER_ERROR_BYPASS,
+    },
+    { "HTTP/1.1 501 Not Implemented\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+    },
+    { "HTTP/1.1 502 Bad Gateway\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::INTERNAL_SERVER_ERROR_BYPASS,
+    },
+    { "HTTP/1.1 503 Service Unavailable\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::INTERNAL_SERVER_ERROR_BYPASS,
+    },
+    { "HTTP/1.1 504 Gateway Timeout\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+    },
+    { "HTTP/1.1 505 HTTP Version Not Supported\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n",
+      net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+    },
+    { "HTTP/1.1 304 Not Modified\n",
+        net::ProxyService::BYPASS_EVENT_TYPE_MAX,
+    },
+    { "HTTP/1.1 200 OK\n",
+        net::ProxyService::MISSING_VIA_HEADER,
+    },
+    { "HTTP/1.1 200 OK\n"
+      "Chrome-Proxy: bypass=1799\n",
+      net::ProxyService::SHORT_BYPASS,
+    },
+    { "HTTP/1.1 502 Bad Gateway\n",
+      net::ProxyService::INTERNAL_SERVER_ERROR_BYPASS,
+    },
+    { "HTTP/1.1 502 Bad Gateway\n"
+      "Chrome-Proxy: bypass=1799\n",
+      net::ProxyService::SHORT_BYPASS,
+    },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    std::string headers(tests[i].headers);
+    HeadersToRaw(&headers);
+    scoped_refptr<net::HttpResponseHeaders> parsed(
+        new net::HttpResponseHeaders(headers));
+    net::HttpResponseHeaders::ChromeProxyInfo chrome_proxy_info;
+    EXPECT_EQ(tests[i].expected_result,
+              parsed->GetChromeProxyBypassEventType(&chrome_proxy_info));
   }
 }
 #endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
