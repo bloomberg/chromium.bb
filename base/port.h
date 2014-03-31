@@ -16,19 +16,10 @@
 #define GG_ULONGLONG(x) x##ULL
 #endif
 
-// Per C99 7.8.14, define __STDC_CONSTANT_MACROS before including <stdint.h>
-// to get the INTn_C and UINTn_C macros for integer constants.  It's difficult
-// to guarantee any specific ordering of header includes, so it's difficult to
-// guarantee that the INTn_C macros can be defined by including <stdint.h> at
-// any specific point.  Provide GG_INTn_C macros instead.
-
-#define GG_INT8_C(x)    (x)
-#define GG_INT16_C(x)   (x)
-#define GG_INT32_C(x)   (x)
+// DEPRECATED: In Chromium, we force-define __STDC_CONSTANT_MACROS, so you can
+// just use the regular (U)INTn_C macros from <stdint.h>.
+// TODO(viettrungluu): Remove the remaining GG_(U)INTn_C macros.
 #define GG_INT64_C(x)   GG_LONGLONG(x)
-
-#define GG_UINT8_C(x)   (x ## U)
-#define GG_UINT16_C(x)  (x ## U)
 #define GG_UINT32_C(x)  (x ## U)
 #define GG_UINT64_C(x)  GG_ULONGLONG(x)
 
