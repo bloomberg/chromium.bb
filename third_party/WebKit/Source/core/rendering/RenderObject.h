@@ -104,6 +104,11 @@ enum MarkingBehavior {
     MarkContainingBlockChain,
 };
 
+enum RepaintLayerBehavior {
+    RepaintLayer,
+    DontRepaintLayer,
+};
+
 enum MapCoordinatesMode {
     IsFixed = 1 << 0,
     UseTransforms = 1 << 1,
@@ -611,7 +616,7 @@ public:
     Element* offsetParent() const;
 
     void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0, SubtreeLayoutScope* = 0);
-    void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
+    void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0, RepaintLayerBehavior = RepaintLayer);
     void clearNeedsLayout();
     void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void setNeedsPositionedMovementLayout();
@@ -1261,7 +1266,7 @@ inline bool RenderObject::isBeforeOrAfterContent() const
     return isBeforeContent() || isAfterContent();
 }
 
-inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
+inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter, RepaintLayerBehavior repaintLayer)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
@@ -1269,7 +1274,10 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
     if (!alreadyNeededLayout) {
         if (markParents == MarkContainingBlockChain && (!layouter || layouter->root() != this))
             markContainingBlocksForLayout(true, 0, layouter);
-        if (hasLayer())
+        // StyleDifferenceLayout is used for different cases currently, one of which is
+        // that our content changed which mandates an invalidation.
+        // FIXME: We should be able to skip this automatic invalidation (see crbug.com/325569).
+        if (repaintLayer == RepaintLayer && hasLayer())
             setLayerNeedsFullRepaint();
     }
 }
