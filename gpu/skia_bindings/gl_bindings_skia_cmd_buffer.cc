@@ -51,6 +51,7 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fDepthMask = glDepthMask;
   functions->fDisable = glDisable;
   functions->fDisableVertexAttribArray = glDisableVertexAttribArray;
+  functions->fDiscardFramebuffer = glDiscardFramebufferEXT;
   functions->fDrawArrays = glDrawArrays;
   functions->fDrawElements = glDrawElements;
   functions->fEnable = glEnable;

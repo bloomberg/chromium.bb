@@ -187,6 +187,11 @@ GLvoid StubGLDisableVertexAttribArray(GLuint index) {
   glDisableVertexAttribArray(index);
 }
 
+GLvoid StubGLDiscardFramebuffer(GLenum target, GLsizei numAttachments,
+                                const GLenum *attachments) {
+  glDiscardFramebufferEXT(target, numAttachments, attachments);
+}
+
 GLvoid StubGLDrawArrays(GLenum mode, GLint first, GLsizei count) {
   glDrawArrays(mode, first, count);
 }
@@ -631,6 +636,7 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   functions->fDepthMask = StubGLDepthMask;
   functions->fDisable = StubGLDisable;
   functions->fDisableVertexAttribArray = StubGLDisableVertexAttribArray;
+  functions->fDiscardFramebuffer = StubGLDiscardFramebuffer;
   functions->fDrawArrays = StubGLDrawArrays;
   functions->fDrawBuffer = StubGLDrawBuffer;
   functions->fDrawBuffers = StubGLDrawBuffers;
