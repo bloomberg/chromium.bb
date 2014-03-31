@@ -39,6 +39,7 @@ import adb_interface
 import am_instrument_parser
 import errors
 
+from pylib.device import device_blacklist
 
 # Pattern to search for the next whole line of pexpect output and capture it
 # into a match group. We can't use ^ and $ for line start end with pexpect,
@@ -79,28 +80,23 @@ def GetAVDs():
   avds = re_avd.findall(cmd_helper.GetCmdOutput(['android', 'list', 'avd']))
   return avds
 
-
 def ResetBadDevices():
-  """Removes the file that keeps track of bad devices for a current build."""
-  if os.path.exists(constants.BAD_DEVICES_JSON):
-    os.remove(constants.BAD_DEVICES_JSON)
-
+  """Removes the blacklist that keeps track of bad devices for a current
+     build.
+  """
+  device_blacklist.ResetBlacklist()
 
 def ExtendBadDevices(devices):
-  """Adds devices to BAD_DEVICES_JSON file.
+  """Adds devices to the blacklist that keeps track of bad devices for a
+     current build.
 
-  The devices listed in the BAD_DEVICES_JSON file will not be returned by
+  The devices listed in the bad devices file will not be returned by
   GetAttachedDevices.
 
   Args:
-    devices: list of bad devices to be added to the BAD_DEVICES_JSON file.
+    devices: list of bad devices to be added to the bad devices file.
   """
-  if os.path.exists(constants.BAD_DEVICES_JSON):
-    with open(constants.BAD_DEVICES_JSON, 'r') as f:
-      bad_devices = json.load(f)
-    devices.extend(bad_devices)
-  with open(constants.BAD_DEVICES_JSON, 'w') as f:
-    json.dump(list(set(devices)), f)
+  device_blacklist.ExtendBlacklist(devices)
 
 
 def GetAttachedDevices(hardware=True, emulator=True, offline=False):
@@ -150,12 +146,11 @@ def GetAttachedDevices(hardware=True, emulator=True, offline=False):
   if offline:
     devices = devices + offline_devices
 
-  # Remove bad devices listed in the bad_devices json file.
-  if os.path.exists(constants.BAD_DEVICES_JSON):
-    with open(constants.BAD_DEVICES_JSON, 'r') as f:
-      bad_devices = json.load(f)
-    logging.info('Avoiding bad devices %s', ' '.join(bad_devices))
-    devices = [device for device in devices if device not in bad_devices]
+  # Remove any devices in the blacklist.
+  blacklist = device_blacklist.ReadBlacklist()
+  if len(blacklist):
+    logging.info('Avoiding bad devices %s', ' '.join(blacklist))
+    devices = [device for device in devices if device not in blacklist]
 
   preferred_device = os.environ.get('ANDROID_SERIAL')
   if preferred_device in devices:

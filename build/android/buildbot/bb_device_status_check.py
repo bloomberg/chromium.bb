@@ -29,7 +29,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pylib import android_commands
 from pylib import constants
 from pylib.cmd_helper import GetCmdOutput
-
+from pylib.device import device_blacklist
 
 def DeviceInfo(serial, options):
   """Gathers info on a device via various adb calls.
@@ -275,8 +275,8 @@ def main():
   if args:
     parser.error('Unknown options %s' % args)
 
-  # Remove the last builds "bad devices" before checking device statuses.
-  android_commands.ResetBadDevices()
+  # Remove the last build's "bad devices" before checking device statuses.
+  device_blacklist.ResetBlacklist()
 
   if options.restart_usb:
     expected_devices = GetLastDevices(os.path.abspath(options.out_dir))
