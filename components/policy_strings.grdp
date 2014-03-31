@@ -49,6 +49,9 @@
   <message name="IDS_POLICY_DM_STATUS_UNKNOWN_ERROR" desc="Message indicating an unknown error from the enterprise server.">
     Unknown error
   </message>
+  <message name="IDS_POLICY_DM_STATUS_SERVICE_DOMAIN_MISMATCH" desc="Message indicating this client cannot be registered with the specified domain.">
+    Domain mismatch
+  </message>
 
   <message name="IDS_POLICY_VALIDATION_OK" desc="Message indicating successful policy validation.">
     Validation successful
@@ -308,13 +311,4 @@
       Managed bookmarks
     </message>
   </if>
-
-  <!-- TODO(mnissler): Move this message up to the other IDS_POLICY_DM_STATUS
-       messages in the file. It's here because there's a problem with the
-       Android build failing component_unittests due to string constant
-       mismatches between the code and the resources. -->
-  <message name="IDS_POLICY_DM_STATUS_SERVICE_DOMAIN_MISMATCH" desc="Message indicating this client cannot be registered with the specified domain.">
-    Domain mismatch
-  </message>
-
 </grit-part>
