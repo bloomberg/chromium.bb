@@ -200,7 +200,6 @@ public:
 
     // FIXME: Remove these unused settings.
     virtual void setFixedPositionCreatesStackingContext(bool) { }
-    virtual void setFullScreenEnabled(bool) { }
 
 protected:
     ~WebSettings() { }
