@@ -59,7 +59,7 @@ InspectorTest.domActionTest = function(testName, dataNodeSelectionCallback, test
 
 InspectorTest.editNodePart = function(node, className)
 {
-    var treeElement = WebInspector.panels.elements.treeOutline.findTreeElement(node);
+    var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
     var textElement = treeElement.listItemElement.getElementsByClassName(className)[0];
     if (!textElement && treeElement.childrenListElement)
         textElement = treeElement.childrenListElement.getElementsByClassName(className)[0];

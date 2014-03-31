@@ -6,8 +6,7 @@
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements").treeOutline.
-        addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
+    InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
     function selectedNodeChanged(event)
     {
         var node = event.data;

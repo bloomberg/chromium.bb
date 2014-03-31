@@ -15,7 +15,7 @@ function test()
     InspectorTest.runTestSuite([
         function testSetUp(next)
         {
-            treeOutline = WebInspector.panels.elements.treeOutline;
+            treeOutline = InspectorTest.firstElementsTreeOutline();
 
             InspectorTest.nodeWithId("parent-node", callback);
 

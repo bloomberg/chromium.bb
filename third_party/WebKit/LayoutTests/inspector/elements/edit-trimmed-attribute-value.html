@@ -11,7 +11,7 @@ function test()
 
     function execute()
     {
-        var treeElement = WebInspector.panels.elements.treeOutline.findTreeElement(InspectorTest.expandedNodeWithId("inspected"));
+        var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(InspectorTest.expandedNodeWithId("inspected"));
         var textElement = treeElement.listItemElement.getElementsByClassName("webkit-html-attribute")[0];
         InspectorTest.addResult("Original textContent");
         InspectorTest.addResult(treeElement.title.textContent);

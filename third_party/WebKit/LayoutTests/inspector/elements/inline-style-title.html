@@ -20,7 +20,7 @@ function test()
 
     InspectorTest.nodeWithId("inline-style", onInlineStyleQueried);
 
-    var treeOutline = WebInspector.panels.elements.treeOutline;
+    var treeOutline = InspectorTest.firstElementsTreeOutline();
     var treeElement;
 
     function onInlineStyleQueried(node)
@@ -38,7 +38,7 @@ function test()
 
     function onStyleUpdated()
     {
-        WebInspector.panels.elements.treeOutline._updateModifiedNodes();
+        InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
         InspectorTest.addResult("=== inline style text after change ===");
         InspectorTest.addResult(treeElement.title.textContent);
         InspectorTest.completeTest();

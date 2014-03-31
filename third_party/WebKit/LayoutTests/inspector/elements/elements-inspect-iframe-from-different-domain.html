@@ -29,7 +29,7 @@ function test()
 
     function selectedNodeId()
     {
-        var selectedElement = WebInspector.panels.elements.treeOutline.selectedTreeElement;
+        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
         if (!selectedElement)
             return "<no selected node>";
         return selectedElement.representedObject.getAttribute("id");

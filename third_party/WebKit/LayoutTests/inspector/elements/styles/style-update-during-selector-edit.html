@@ -13,7 +13,7 @@ function test()
 {
     WebInspector.inspectorView.showPanel("elements");
     InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
-    var treeOutline = WebInspector.panels.elements.treeOutline;
+    var treeOutline = InspectorTest.firstElementsTreeOutline();
     var seenRebuildUpdate;
     var seenAttrModified;
     var modifiedAttrNodes = [];

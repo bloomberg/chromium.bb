@@ -24,7 +24,7 @@ function test()
 
     function step1(node)
     {
-        dataTreeElement = WebInspector.panels.elements.treeOutline.findTreeElement(node);
+        dataTreeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
         dataTreeElement._expandedChildrenLimit = 5;
         dataTreeElement.reveal();
         dataTreeElement.expand();

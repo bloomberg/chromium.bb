@@ -39,7 +39,7 @@ function test()
 
             function testBody(node, done)
             {
-                var treeElement = WebInspector.panels.elements.treeOutline.findTreeElement(node);
+                var treeElement = InspectorTest.firstElementsTreeOutline().findTreeElement(node);
                 treeElement._editAsHTML();
                 InspectorTest.runAfterPendingDispatches(step2);
 

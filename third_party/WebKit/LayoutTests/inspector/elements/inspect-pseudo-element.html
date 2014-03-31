@@ -27,7 +27,7 @@ function test()
 
     function selectedNodeChanged()
     {
-        var selectedNode = WebInspector.panels.elements.treeOutline.selectedDOMNode();
+        var selectedNode = InspectorTest.firstElementsTreeOutline().selectedDOMNode();
         if (!selectedNode)
             InspectorTest.addResult("<no selected node>");
         else

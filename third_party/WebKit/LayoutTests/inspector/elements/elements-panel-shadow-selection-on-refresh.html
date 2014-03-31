@@ -73,7 +73,7 @@ function test()
 
         function dumpSelectedNode()
         {
-            var selectedElement = WebInspector.panels.elements.treeOutline.selectedTreeElement;
+            var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
             var nodeName = selectedElement ? selectedElement.representedObject.nodeNameInCorrectCase() : "null";
             InspectorTest.addResult("Selected node: '" + nodeName + "'");
         }

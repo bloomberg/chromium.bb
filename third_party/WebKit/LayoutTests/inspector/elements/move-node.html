@@ -24,7 +24,7 @@ function test()
 
         function testDragAndDrop(next)
         {
-            var treeOutline = WebInspector.panels.elements.treeOutline;
+            var treeOutline = InspectorTest.firstElementsTreeOutline();
             treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectionChanged);
 
             function selectionChanged()

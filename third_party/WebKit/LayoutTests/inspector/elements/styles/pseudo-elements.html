@@ -194,12 +194,12 @@ function test()
         function domCallback()
         {
             WebInspector.domModel.removeEventListener(eventName, domCallback, this);
-            WebInspector.inspectorView.panel("elements").treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+            InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
         }
 
         function treeCallback()
         {
-            WebInspector.inspectorView.panel("elements").treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+            InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
             InspectorTest.dumpElementsTree(containerNode);
             next();
         }

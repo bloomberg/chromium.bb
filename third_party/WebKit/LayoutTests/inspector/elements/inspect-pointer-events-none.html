@@ -42,7 +42,7 @@ function test()
 {
     function selectedNodeId()
     {
-        var selectedElement = WebInspector.panels.elements.treeOutline.selectedTreeElement;
+        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
         if (!selectedElement)
             return "<no selected node>";
         return selectedElement.representedObject.getAttribute("id");
@@ -64,26 +64,26 @@ function test()
 
     function step2()
     {
-        WebInspector.panels.elements.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
         InspectorTest.evaluateInPage("clickInner(true)");
     }
 
     function step3()
     {
-        WebInspector.panels.elements.treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
         expectSelectedNode("inner");
         WebInspector.domModel.setInspectModeEnabled(true, false, step4);
     }
 
     function step4()
     {
-        WebInspector.panels.elements.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
         InspectorTest.evaluateInPage("clickInner(false)");
     }
 
     function step5()
     {
-        WebInspector.panels.elements.treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+        InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
         expectSelectedNode("outer");
         InspectorTest.completeTest();
     }

@@ -113,13 +113,13 @@ function test()
 
     function findNodeTreeElement(id)
     {
-        WebInspector.panels.elements.treeOutline._updateModifiedNodes();
+        InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
         var expandedNode = InspectorTest.expandedNodeWithId(id);
         if (!expandedNode) {
             InspectorTest.addResult("'" + id + "' node not found");
             InspectorTest.completeTest();
         }
-        return WebInspector.panels.elements.treeOutline.findTreeElement(expandedNode);
+        return InspectorTest.firstElementsTreeOutline().findTreeElement(expandedNode);
     }
 }
 </script>

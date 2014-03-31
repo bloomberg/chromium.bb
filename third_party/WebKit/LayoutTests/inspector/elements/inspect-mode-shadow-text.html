@@ -23,14 +23,14 @@ function test()
 
     function step2()
     {
-        WebInspector.panels.elements.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
         InspectorTest.evaluateInPage("click()");
     }
 
     function step3()
     {
-        WebInspector.panels.elements.treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        var selectedElement = WebInspector.panels.elements.treeOutline.selectedTreeElement;
+        InspectorTest.firstElementsTreeOutline().removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
         InspectorTest.addResult("Node selected: " + selectedElement.representedObject.getAttribute("id"));
         InspectorTest.completeTest();
     }

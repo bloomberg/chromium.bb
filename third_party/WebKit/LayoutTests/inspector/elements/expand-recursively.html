@@ -7,7 +7,7 @@
 function test()
 {
     WebInspector.inspectorView.showPanel("elements");
-    var treeOutline = WebInspector.panels.elements.treeOutline;
+    var treeOutline = InspectorTest.firstElementsTreeOutline();
     InspectorTest.findNode(function() { return false; }, firstStep);
         
     function firstStep()

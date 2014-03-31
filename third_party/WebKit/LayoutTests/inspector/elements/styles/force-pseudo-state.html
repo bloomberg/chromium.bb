@@ -24,7 +24,7 @@ function test()
 
     InspectorTest.nodeWithId("div", foundDiv);
 
-    var divNodeId;
+    var divNode;
 
     function dumpData()
     {
@@ -32,11 +32,11 @@ function test()
         InspectorTest.dumpElementsTree();
     }
 
-    function foundDiv(divNode)
+    function foundDiv(node)
     {
-        divNodeId = divNode.id;
-        WebInspector.panels.elements._setPseudoClassForNodeId(divNodeId, "hover", true);
-        WebInspector.panels.elements._setPseudoClassForNodeId(divNodeId, "active", true);
+        divNode = node;
+        WebInspector.panels.elements._setPseudoClassForNode(divNode, "hover", true);
+        WebInspector.cssModel.forcePseudoState(divNode, "active", true);
         InspectorTest.selectNodeAndWaitForStyles("div", divSelected1);
     }
 
@@ -46,12 +46,12 @@ function test()
         InspectorTest.addResult("DIV with :hover and :active");
         dumpData();
         InspectorTest.waitForStyles("div", hoverCallback, true);
-        WebInspector.panels.elements._setPseudoClassForNodeId(divNodeId, "hover", false);
+        WebInspector.panels.elements._setPseudoClassForNode(divNode, "hover", false);
 
         function hoverCallback()
         {
             InspectorTest.waitForStyles("div", divSelected2, true);
-            WebInspector.panels.elements._setPseudoClassForNodeId(divNodeId, "focus", true);
+            WebInspector.panels.elements._setPseudoClassForNode(divNode, "focus", true);
         }
     }
 
@@ -61,12 +61,12 @@ function test()
         InspectorTest.addResult("DIV with :active and :focus");
         dumpData();
         InspectorTest.waitForStyles("div", focusCallback, true);
-        WebInspector.panels.elements._setPseudoClassForNodeId(divNodeId, "focus", false);
+        WebInspector.panels.elements._setPseudoClassForNode(divNode, "focus", false);
 
         function focusCallback()
         {
             InspectorTest.waitForStyles("div", divSelected3, true);
-            WebInspector.panels.elements._setPseudoClassForNodeId(divNodeId, "active", false);
+            WebInspector.panels.elements._setPseudoClassForNode(divNode, "active", false);
         }
     }
 

@@ -17,7 +17,7 @@ function test()
     {
         var node = WebInspector.domModel.nodeForId(nodeId);
         InspectorTest.assertTrue(node, "Node object should be resovled");
-        WebInspector.RemoteObject.resolveNode(node, undefined, step3);
+        node.resolveToObject(undefined, step3);
     }
 
     function step3(remoteObject)

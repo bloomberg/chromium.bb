@@ -170,6 +170,11 @@ InspectorTest.selectNodeAndWaitForStylesWithComputed = function(idValue, callbac
     InspectorTest.selectNodeAndWaitForStyles(idValue, stylesCallback);
 }
 
+InspectorTest.firstElementsTreeOutline = function()
+{
+    return WebInspector.panels.elements._treeOutlines[0];
+}
+
 InspectorTest.dumpSelectedElementStyles = function(excludeComputed, excludeMatched, omitLonghands, includeSelectorGroupMarks)
 {
     function extractText(element)
@@ -488,7 +493,7 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
         }
     }
 
-    var treeOutline = WebInspector.panels.elements.treeOutline;
+    var treeOutline = InspectorTest.firstElementsTreeOutline();
     treeOutline._updateModifiedNodes();
     print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
 };
@@ -508,8 +513,8 @@ InspectorTest.expandElementsTree = function(callback)
 
     function onAllNodesAvailable()
     {
-        WebInspector.panels.elements.treeOutline._updateModifiedNodes();
-        expand(WebInspector.panels.elements.treeOutline);
+        InspectorTest.firstElementsTreeOutline()._updateModifiedNodes();
+        expand(InspectorTest.firstElementsTreeOutline());
         callback();
     }
     WebInspector.inspectorView.showPanel("elements");
