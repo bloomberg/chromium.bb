@@ -4,6 +4,23 @@
 
 'use strict';
 
+(function() {
+
+function verifyTrack(audioAppId, query, title, artist) {
+  var p1 = verifyElenmentTextContent(
+              audioAppId,
+              query + ' > .data-title',
+              title);
+  var p2 = verifyElenmentTextContent(
+              audioAppId,
+              query +' > .data-artist',
+              artist);
+
+  return Promise.all(p1, p2).then(function(results) {
+    return results.every(function(result) { return result; });
+  });
+}
+
 /**
  * Tests if the audio player shows up for the selected image and that the audio
  * is loaded successfully.
@@ -57,13 +74,33 @@ function audioOpen(path) {
               'external' + path + '/Beautiful%20Song.ogg',
           element.attributes.currenttrackurl);
 
+      verifyTrack(
+          audioAppId,
+          'audio-player /deep/ .track[index="0"][active]',
+          'Beautiful Song',
+          'Unknown artist').then(this.next);
+    },
+    // Get the source file name.
+    function(result) {
+      chrome.test.assertTrue(result, 'Displayed data of 1st file is wrong.');
+
+      verifyTrack(
+          audioAppId,
+          'audio-player /deep/ .track[index="1"]:not([active])',
+          'Beautiful Song',
+          'Unknown artist').then(this.next);
+    },
+    // Wait for the changes of the player status.
+    function(result) {
+      chrome.test.assertTrue(result, 'Displayed data of 2nd file is wrong.');
+
       // Open another file.
       callRemoteTestUtil(
           'openFile', appId, ['newly added file.ogg'], this.next);
     },
     // Wait for the changes of the player status.
     function(result) {
-      chrome.test.assertTrue(result);
+      chrome.test.assertTrue(result, 'Fail to open the 2nd file');
       var query = 'audio-player' +
                   '[playing]' +
                   '[currenttrackurl$="newly%20added%20file.ogg"]';
@@ -76,12 +113,32 @@ function audioOpen(path) {
               'external' + path + '/newly%20added%20file.ogg',
           element.attributes.currenttrackurl);
 
+      verifyTrack(
+          audioAppId,
+          'audio-player /deep/ .track[index="0"][active]',
+          'Beautiful Song',
+          'Unknown artist').then(this.next);
+    },
+    // Get the source file name.
+    function(result) {
+      chrome.test.assertTrue(result, 'Displayed data of 1st file is wrong.');
+
+      verifyTrack(
+          audioAppId,
+          'audio-player /deep/ .track[index="1"]:not([active])',
+          'Beautiful Song',
+          'Unknown artist').then(this.next);
+    },
+    // Wait for the changes of the player status.
+    function(result) {
+      chrome.test.assertTrue(result, 'Displayed data of 2nd file is wrong.');
+
       // Close window
       closeWindowAndWait(audioAppId).then(this.next);
     },
     // Wait for the audio player.
     function(result) {
-      chrome.test.assertTrue(result);
+      chrome.test.assertTrue(result, 'Fail to close the window');
       checkIfNoErrorsOccured(this.next);
     }
   ]);
@@ -94,3 +151,5 @@ testcase.audioOpenDownloads = function() {
 testcase.audioOpenDrive = function() {
   audioOpen(RootPath.DRIVE);
 };
+
+})();
