@@ -148,11 +148,6 @@ public:
 
     // Closing -------------------------------------------------------------
 
-    // Runs beforeunload handlers for the current page, returning false if
-    // any handler suppressed unloading.
-    // OBSOLETE; DO NOT USE. Call it on WebFrame instead.
-    virtual bool dispatchBeforeUnloadEvent() = 0;
-
     // Runs unload handlers for the current page.
     virtual void dispatchUnloadEvent() = 0;
 

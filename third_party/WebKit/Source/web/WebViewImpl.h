@@ -187,7 +187,6 @@ public:
     virtual void setIsActive(bool value) OVERRIDE;
     virtual void setDomainRelaxationForbidden(bool, const WebString& scheme) OVERRIDE;
     virtual void setWindowFeatures(const WebWindowFeatures&) OVERRIDE;
-    virtual bool dispatchBeforeUnloadEvent() OVERRIDE;
     virtual void dispatchUnloadEvent() OVERRIDE;
     virtual WebFrame* mainFrame() OVERRIDE;
     virtual WebFrame* findFrameByName(

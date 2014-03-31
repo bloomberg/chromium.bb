@@ -2401,15 +2401,6 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
     m_page->mainFrame()->loader().reload(NormalReload, KURL(), newEncodingName);
 }
 
-bool WebViewImpl::dispatchBeforeUnloadEvent()
-{
-    WebFrame* frame = mainFrame();
-    if (!frame)
-        return true;
-
-    return frame->dispatchBeforeUnloadEvent();
-}
-
 void WebViewImpl::dispatchUnloadEvent()
 {
     // Run unload handlers.
