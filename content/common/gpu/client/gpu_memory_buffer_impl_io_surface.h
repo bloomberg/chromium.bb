@@ -25,7 +25,7 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
   bool Initialize(gfx::GpuMemoryBufferHandle handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void Map(AccessMode mode, void** vaddr) OVERRIDE;
+  virtual void* Map(AccessMode mode) OVERRIDE;
   virtual void Unmap() OVERRIDE;
   virtual uint32 GetStride() const OVERRIDE;
   virtual gfx::GpuMemoryBufferHandle GetHandle() const OVERRIDE;

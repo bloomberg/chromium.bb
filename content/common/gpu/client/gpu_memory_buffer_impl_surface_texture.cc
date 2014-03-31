@@ -65,7 +65,7 @@ bool GpuMemoryBufferImplSurfaceTexture::Initialize(
   return true;
 }
 
-void GpuMemoryBufferImplSurfaceTexture::Map(AccessMode mode, void** vaddr) {
+void* GpuMemoryBufferImplSurfaceTexture::Map(AccessMode mode) {
   TRACE_EVENT0("gpu", "GpuMemoryBufferImplSurfaceTexture::Map");
 
   DCHECK(!mapped_);
@@ -74,14 +74,13 @@ void GpuMemoryBufferImplSurfaceTexture::Map(AccessMode mode, void** vaddr) {
   int status = ANativeWindow_lock(native_window_, &buffer, NULL);
   if (status) {
     VLOG(1) << "ANativeWindow_lock failed with error code: " << status;
-    *vaddr = NULL;
-    return;
+    return NULL;
   }
 
   DCHECK_LE(size_.width(), buffer.stride);
-  *vaddr = buffer.bits;
   stride_ = buffer.stride * BytesPerPixel(internalformat_);
   mapped_ = true;
+  return buffer.bits;
 }
 
 void GpuMemoryBufferImplSurfaceTexture::Unmap() {

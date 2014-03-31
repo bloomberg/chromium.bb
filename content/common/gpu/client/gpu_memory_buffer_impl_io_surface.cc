@@ -11,14 +11,14 @@
 namespace content {
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
-    gfx::Size size, unsigned internalformat)
+    gfx::Size size,
+    unsigned internalformat)
     : GpuMemoryBufferImpl(size, internalformat),
       io_surface_support_(IOSurfaceSupport::Initialize()) {
   CHECK(io_surface_support_);
 }
 
-GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {
-}
+GpuMemoryBufferImplIOSurface::~GpuMemoryBufferImplIOSurface() {}
 
 // static
 bool GpuMemoryBufferImplIOSurface::IsFormatSupported(unsigned internalformat) {
@@ -52,11 +52,11 @@ bool GpuMemoryBufferImplIOSurface::Initialize(
   return true;
 }
 
-void GpuMemoryBufferImplIOSurface::Map(AccessMode mode, void** vaddr) {
+void* GpuMemoryBufferImplIOSurface::Map(AccessMode mode) {
   DCHECK(!mapped_);
   io_surface_support_->IOSurfaceLock(io_surface_, 0, NULL);
-  *vaddr = io_surface_support_->IOSurfaceGetBaseAddress(io_surface_);
   mapped_ = true;
+  return io_surface_support_->IOSurfaceGetBaseAddress(io_surface_);
 }
 
 void GpuMemoryBufferImplIOSurface::Unmap() {

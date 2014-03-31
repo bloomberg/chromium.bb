@@ -39,10 +39,12 @@ struct GpuMemoryBufferHandle {
       : type(EMPTY_BUFFER),
         handle(base::SharedMemory::NULLHandle())
 #if defined(OS_MACOSX)
-        , io_surface_id(0)
+        ,
+        io_surface_id(0u)
 #endif
 #if defined(OS_ANDROID)
-        , native_buffer(NULL)
+        ,
+        native_buffer(NULL)
 #endif
   {
   }
@@ -58,33 +60,25 @@ struct GpuMemoryBufferHandle {
 #endif
 };
 
-// Interface for creating and accessing a zero-copy GPU memory buffer.
-// This design evolved from the generalization of GraphicBuffer API
-// of Android framework.
-//
-// THREADING CONSIDERATIONS:
-//
-// This interface is thread-safe. However, multiple threads mapping
-// a buffer for Write or ReadOrWrite simultaneously may result in undefined
-// behavior and is not allowed.
+// This interface typically correspond to a type of shared memory that is also
+// shared with the GPU. A GPU memory buffer can be written to directly by
+// regular CPU code, but can also be read by the GPU.
 class GFX_EXPORT GpuMemoryBuffer {
  public:
-  enum AccessMode {
-    READ_ONLY,
-    WRITE_ONLY,
-    READ_WRITE,
-  };
+  enum AccessMode { READ_ONLY, WRITE_ONLY, READ_WRITE };
 
   GpuMemoryBuffer();
   virtual ~GpuMemoryBuffer();
 
-  // Maps the buffer so the client can write the bitmap data in |*vaddr|
-  // subsequently. This call may block, for instance if the hardware needs
-  // to finish rendering or if CPU caches need to be synchronized.
-  virtual void Map(AccessMode mode, void** vaddr) = 0;
+  // Maps the buffer into the client's address space so it can be written to by
+  // the CPU. This call may block, for instance if the GPU needs to finish
+  // accessing the buffer or if CPU caches need to be synchronized. |mode|
+  // indicate how the client intends to use the mapped buffer. Returns NULL on
+  // failure.
+  virtual void* Map(AccessMode mode) = 0;
 
-  // Unmaps the buffer. Called after all changes to the buffer are
-  // completed.
+  // Unmaps the buffer. It's illegal to use the pointer returned by Map() after
+  // this has been called.
   virtual void Unmap() = 0;
 
   // Returns true iff the buffer is mapped.

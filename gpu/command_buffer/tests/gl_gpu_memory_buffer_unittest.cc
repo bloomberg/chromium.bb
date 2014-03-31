@@ -42,7 +42,7 @@ class MockGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
     Die();
   }
 
-  MOCK_METHOD2(Map, void(gfx::GpuMemoryBuffer::AccessMode, void**));
+  MOCK_METHOD1(Map, void*(gfx::GpuMemoryBuffer::AccessMode));
   MOCK_METHOD0(Unmap, void());
   MOCK_CONST_METHOD0(IsMapped, bool());
   MOCK_CONST_METHOD0(GetStride, uint32());
@@ -149,9 +149,9 @@ TEST_F(MockGpuMemoryBufferTest, Lifecycle) {
   shared_memory.Map(bytes);
   EXPECT_TRUE(shared_memory.memory());
 
-  EXPECT_CALL(*gpu_memory_buffer, Map(_, _))
+  EXPECT_CALL(*gpu_memory_buffer, Map(gfx::GpuMemoryBuffer::READ_WRITE))
       .Times(1)
-      .WillOnce(SetArgPointee<1>(shared_memory.memory()))
+      .WillOnce(Return(shared_memory.memory()))
       .RetiresOnSaturation();
   uint8* mapped_buffer = static_cast<uint8*>(
       glMapImageCHROMIUM(image_id, GL_READ_WRITE));

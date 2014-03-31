@@ -31,8 +31,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void Map(gfx::GpuMemoryBuffer::AccessMode mode,
-                   void** vaddr) OVERRIDE {
+  virtual void* Map(gfx::GpuMemoryBuffer::AccessMode mode) OVERRIDE {
     AwMapMode map_mode = MAP_READ_ONLY;
     switch (mode) {
       case GpuMemoryBuffer::READ_ONLY:
@@ -47,9 +46,11 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       default:
         LOG(DFATAL) << "Unknown map mode: " << mode;
     }
-    int err = g_gl_draw_functions->map(buffer_id_, map_mode, vaddr);
+    void* vaddr = NULL;
+    int err = g_gl_draw_functions->map(buffer_id_, map_mode, &vaddr);
     DCHECK(!err);
     mapped_ = true;
+    return vaddr;
   }
   virtual void Unmap() OVERRIDE {
     int err = g_gl_draw_functions->unmap(buffer_id_);

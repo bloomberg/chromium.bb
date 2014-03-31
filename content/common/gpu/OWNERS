@@ -2,6 +2,9 @@ kbr@chromium.org
 piman@chromium.org
 sievers@chromium.org
 
+# GPU memory buffer implementations.
+per-file *gpu_memory_buffer*=reveman@chromium.org
+
 # For security review of IPC message files.
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=cdn@chromium.org

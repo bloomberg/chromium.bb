@@ -8,16 +8,13 @@
 
 namespace content {
 
-GpuMemoryBufferImpl::GpuMemoryBufferImpl(
-    gfx::Size size, unsigned internalformat)
-    : size_(size),
-      internalformat_(internalformat),
-      mapped_(false) {
+GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::Size size,
+                                         unsigned internalformat)
+    : size_(size), internalformat_(internalformat), mapped_(false) {
   DCHECK(IsFormatValid(internalformat));
 }
 
-GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
-}
+GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {}
 
 // static
 bool GpuMemoryBufferImpl::IsFormatValid(unsigned internalformat) {
@@ -42,9 +39,7 @@ size_t GpuMemoryBufferImpl::BytesPerPixel(unsigned internalformat) {
   }
 }
 
-bool GpuMemoryBufferImpl::IsMapped() const {
-  return mapped_;
-}
+bool GpuMemoryBufferImpl::IsMapped() const { return mapped_; }
 
 uint32 GpuMemoryBufferImpl::GetStride() const {
   return size_.width() * BytesPerPixel(internalformat_);

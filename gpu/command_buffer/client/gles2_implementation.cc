@@ -4003,9 +4003,7 @@ void* GLES2Implementation::MapImageCHROMIUMHelper(GLuint image_id,
     return NULL;
   }
 
-  void* mapped_buffer = NULL;
-  gpu_buffer->Map(mode, &mapped_buffer);
-  return mapped_buffer;
+  return gpu_buffer->Map(mode);
 }
 
 void* GLES2Implementation::MapImageCHROMIUM(

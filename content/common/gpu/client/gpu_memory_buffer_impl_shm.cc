@@ -8,13 +8,11 @@
 
 namespace content {
 
-GpuMemoryBufferImplShm::GpuMemoryBufferImplShm(
-    gfx::Size size, unsigned internalformat)
-    : GpuMemoryBufferImpl(size, internalformat) {
-}
+GpuMemoryBufferImplShm::GpuMemoryBufferImplShm(gfx::Size size,
+                                               unsigned internalformat)
+    : GpuMemoryBufferImpl(size, internalformat) {}
 
-GpuMemoryBufferImplShm::~GpuMemoryBufferImplShm() {
-}
+GpuMemoryBufferImplShm::~GpuMemoryBufferImplShm() {}
 
 bool GpuMemoryBufferImplShm::Initialize(gfx::GpuMemoryBufferHandle handle) {
   if (!base::SharedMemory::IsHandleValid(handle.handle))
@@ -31,13 +29,12 @@ bool GpuMemoryBufferImplShm::InitializeFromSharedMemory(
   return true;
 }
 
-void GpuMemoryBufferImplShm::Map(AccessMode mode, void** vaddr) {
+void* GpuMemoryBufferImplShm::Map(AccessMode mode) {
   DCHECK(!mapped_);
-  *vaddr = NULL;
   if (!shared_memory_->Map(size_.GetArea() * BytesPerPixel(internalformat_)))
-    return;
-  *vaddr = shared_memory_->memory();
+    return NULL;
   mapped_ = true;
+  return shared_memory_->memory();
 }
 
 void GpuMemoryBufferImplShm::Unmap() {

@@ -16,5 +16,8 @@ per-file transform*=shawnsingh@chromium.org
 per-file transform*=vollick@chromium.org
 per-file interpolated_transform*=vollick@chromium.org
 
+# GPU memory buffer interface.
+per-file gpu_memory_buffer*=reveman@chromium.org
+
 # If you're doing structural changes get a review from one of the OWNERS.
 per-file *.gyp*=*
