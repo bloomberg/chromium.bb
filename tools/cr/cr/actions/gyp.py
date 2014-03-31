@@ -15,7 +15,7 @@ class GypPrepareOut(cr.PrepareOut):
   ENABLED = cr.Config.From(
       GYP_GENERATORS='ninja',
       GYP_GENERATOR_FLAGS='output_dir={CR_OUT_BASE} config={CR_BUILDTYPE}',
-      GPP_DEF_target_arch='{CR_ENVSETUP_ARCH}',
+      GYP_DEF_target_arch='{CR_ENVSETUP_ARCH}',
   )
 
   def Prepare(self):
