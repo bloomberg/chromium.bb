@@ -17,7 +17,6 @@
     "transient": true,
     "persistent": false
   },
-  "offline_enabled": true,
   "mime_types": [
     "application/pdf"
   ],
