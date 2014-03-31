@@ -249,14 +249,9 @@ void GoogleURLTracker::StartFetchIfDesirable() {
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kGoogleBaseURL))
     return;
 
-  std::string fetch_url = CommandLine::ForCurrentProcess()->
-      GetSwitchValueASCII(switches::kGoogleSearchDomainCheckURL);
-  if (fetch_url.empty())
-    fetch_url = kSearchDomainCheckURL;
-
   already_fetched_ = true;
-  fetcher_.reset(net::URLFetcher::Create(fetcher_id_, GURL(fetch_url),
-                                         net::URLFetcher::GET, this));
+  fetcher_.reset(net::URLFetcher::Create(
+      fetcher_id_, GURL(kSearchDomainCheckURL), net::URLFetcher::GET, this));
   ++fetcher_id_;
   // We don't want this fetch to set new entries in the cache or cookies, lest
   // we alarm the user.

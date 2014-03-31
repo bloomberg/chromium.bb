@@ -796,10 +796,6 @@ const char kGoogleBaseURL[]                 = "google-base-url";
 // Enables using GAIA information to populate profile name and icon.
 const char kGoogleProfileInfo[]             = "google-profile-info";
 
-// Specifies an alternate URL to use for retrieving the search domain for
-// Google. Useful for testing.
-const char kGoogleSearchDomainCheckURL[]    = "google-search-domain-check-url";
-
 // Specifies a custom name for the GSSAPI library to load.
 const char kGSSAPILibraryName[]             = "gssapi-library-name";
 
