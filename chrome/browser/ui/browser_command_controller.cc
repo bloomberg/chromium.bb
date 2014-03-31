@@ -1051,7 +1051,8 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
   // Bookmark manager and settings page/subpages are forced to open in normal
   // mode. For this reason we disable these commands when incognito is forced.
   const bool command_enabled =
-      incognito_availability != IncognitoModePrefs::FORCED;
+      incognito_availability != IncognitoModePrefs::FORCED &&
+      !profile->IsGuestSession();
   command_updater->UpdateCommandEnabled(
       IDC_SHOW_BOOKMARK_MANAGER,
       browser_defaults::bookmarks_enabled && command_enabled);

@@ -155,6 +155,9 @@ class BrowserOptionsHandler
   // Returns if profiles list should be shown on settings page.
   bool ShouldShowMultiProfilesUserList();
 
+  // Returns if access to advanced settings should be allowed.
+  bool ShouldAllowAdvancedSettings();
+
   // Gets the current default browser state, and asynchronously reports it to
   // the WebUI page.
   void UpdateDefaultBrowserState();

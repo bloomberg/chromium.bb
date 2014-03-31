@@ -622,6 +622,7 @@ void BrowserOptionsHandler::RegisterCloudPrintValues(
 #endif
 
   values->SetBoolean("showSetDefault", ShouldShowSetDefaultBrowser());
+  values->SetBoolean("allowAdvancedSettings", ShouldAllowAdvancedSettings());
 }
 #endif  // defined(ENABLE_FULL_PRINTING)
 
@@ -995,6 +996,15 @@ bool BrowserOptionsHandler::ShouldShowMultiProfilesUserList() {
   if (profile->IsGuestSession())
     return false;
   return profiles::IsMultipleProfilesEnabled();
+#endif
+}
+
+bool BrowserOptionsHandler::ShouldAllowAdvancedSettings() {
+#if defined(OS_CHROMEOS)
+  // ChromeOS handles guest-mode restrictions in a different manner.
+  return true;
+#else
+  return !Profile::FromWebUI(web_ui())->IsGuestSession();
 #endif
 }
 

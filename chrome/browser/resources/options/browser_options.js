@@ -84,22 +84,27 @@ cr.define('options', function() {
 
       window.addEventListener('message', this.handleWindowMessage_.bind(this));
 
-      $('advanced-settings-expander').onclick = function() {
-        self.toggleSectionWithAnimation_(
-            $('advanced-settings'),
-            $('advanced-settings-container'));
+      if (loadTimeData.getBoolean('allowAdvancedSettings')) {
+        $('advanced-settings-expander').onclick = function() {
+          self.toggleSectionWithAnimation_(
+              $('advanced-settings'),
+              $('advanced-settings-container'));
 
-        // If the link was focused (i.e., it was activated using the keyboard)
-        // and it was used to show the section (rather than hiding it), focus
-        // the first element in the container.
-        if (document.activeElement === $('advanced-settings-expander') &&
-                $('advanced-settings').style.height === '') {
-          var focusElement = $('advanced-settings-container').querySelector(
-              'button, input, list, select, a[href]');
-          if (focusElement)
-            focusElement.focus();
-        }
-      };
+          // If the link was focused (i.e., it was activated using the keyboard)
+          // and it was used to show the section (rather than hiding it), focus
+          // the first element in the container.
+          if (document.activeElement === $('advanced-settings-expander') &&
+                  $('advanced-settings').style.height === '') {
+            var focusElement = $('advanced-settings-container').querySelector(
+                'button, input, list, select, a[href]');
+            if (focusElement)
+              focusElement.focus();
+          }
+        };
+      } else {
+        $('advanced-settings-expander').hidden = true;
+        $('advanced-settings').hidden = true;
+      }
 
       $('advanced-settings').addEventListener('webkitTransitionEnd',
           this.updateAdvancedSettingsExpander_.bind(this));
@@ -702,7 +707,10 @@ cr.define('options', function() {
     scrollToSection_: function(section) {
       var advancedSettings = $('advanced-settings');
       var container = $('advanced-settings-container');
-      if (advancedSettings.hidden && section.parentNode == container) {
+      var expander = $('advanced-settings-expander');
+      if (!expander.hidden &&
+          advancedSettings.hidden &&
+          section.parentNode == container) {
         this.showSection_($('advanced-settings'),
                           $('advanced-settings-container'),
                           /* animate */ false);
