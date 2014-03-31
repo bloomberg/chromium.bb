@@ -410,7 +410,7 @@ FloatRect RenderSVGShape::calculateStrokeBoundingBox() const
 void RenderSVGShape::updateRepaintBoundingBox()
 {
     m_repaintBoundingBox = strokeBoundingBox();
-    if (strokeWidth() < 1.0f)
+    if (strokeWidth() < 1.0f && !m_repaintBoundingBox.isEmpty())
         m_repaintBoundingBox.inflate(1);
     SVGRenderSupport::intersectRepaintRectWithResources(this, m_repaintBoundingBox);
 }
