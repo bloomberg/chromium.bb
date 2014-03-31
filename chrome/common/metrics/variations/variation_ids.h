@@ -279,7 +279,7 @@ enum ReservedVariationID {
 
   // iOS Phone New NTP trial.
   // Range: 3312047 - 3312050 (Beta); 3312100 - 3312103 (Stable)
-  //        3312112 - 3312113 (Stable)
+  //        3312112 - 3312113 (Stable); 3312372 (Stable)
   IOS_PHONE_NEW_NTP_OMNIBOX_HINT_BETA = 3312047,
   IOS_PHONE_NEW_NTP_CONTROL_1_BETA = 3312048,
   IOS_PHONE_NEW_NTP_FAKEBOX_HINT_BETA = 3312049,
@@ -288,9 +288,11 @@ enum ReservedVariationID {
   IOS_PHONE_NEW_NTP_CONTROL_1_STABLE = 3312115,
   IOS_PHONE_NEW_NTP_FAKEBOX_HINT_STABLE = 3312116,
   IOS_PHONE_NEW_NTP_CONTROL_2_STABLE = 3312117,
+  IOS_PHONE_NEW_NTP_HOLDBACK_STABLE = 3312372,
 
   // iOS Tablet New NTP trial.
   // Range: 3312104 - 3312107 (Beta); 3312108 - 3312111 (Stable)
+  //        3312373 (Stable)
   IOS_TABLET_NEW_NTP_OMNIBOX_HINT_BETA = 3312104,
   IOS_TABLET_NEW_NTP_CONTROL_1_BETA = 3312105,
   IOS_TABLET_NEW_NTP_FAKEBOX_HINT_BETA = 3312106,
@@ -299,6 +301,7 @@ enum ReservedVariationID {
   IOS_TABLET_NEW_NTP_CONTROL_1_STABLE = 3312109,
   IOS_TABLET_NEW_NTP_FAKEBOX_HINT_STABLE = 3312110,
   IOS_TABLET_NEW_NTP_CONTROL_2_STABLE = 3312111,
+  IOS_TABLET_NEW_NTP_HOLDBACK_STABLE = 3312373,
 
   // ExtensionInstallPrompt field trial.
   EXTENSION_INSTALL_PROMPT_EXPERIMENT_ID_MIN = 3312051,
@@ -325,7 +328,7 @@ enum ReservedVariationID {
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3312372,
+  NEXT_ID = 3312374,
 
   // USABLE IDs END HERE.
   //
