@@ -58,4 +58,46 @@ Swapping main and sidebar
 [sidebarView] left = 0; right = 500; top = 0; bottom = 340
 [childSplitView] left = 0; right = 500; top = 340; bottom = 500
 [thirdSidebarView] left = 0; right = 500; top = 420; bottom = 500
+Arranging preferred sizes
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 260; bottom = 420
+[sidebarView] left = 0; right = 500; top = 0; bottom = 260
+[childSplitView] left = 0; right = 500; top = 260; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 420; bottom = 500
+Less than sidebar preferred size
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 80; bottom = 400
+[sidebarView] left = 0; right = 500; top = 0; bottom = 80
+[childSplitView] left = 0; right = 500; top = 80; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 400; bottom = 500
+Size changes proportionally
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 320; bottom = 440
+[sidebarView] left = 0; right = 500; top = 0; bottom = 320
+[childSplitView] left = 0; right = 500; top = 320; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 440; bottom = 500
+Manual resize inside child split view
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 320; bottom = 450
+[sidebarView] left = 0; right = 500; top = 0; bottom = 320
+[childSplitView] left = 0; right = 500; top = 320; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 450; bottom = 500
+Manual resize inside child split view
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 320; bottom = 380
+[sidebarView] left = 0; right = 500; top = 0; bottom = 320
+[childSplitView] left = 0; right = 500; top = 320; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 380; bottom = 500
+Child split view gets more space
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 170; bottom = 380
+[sidebarView] left = 0; right = 500; top = 0; bottom = 170
+[childSplitView] left = 0; right = 500; top = 170; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 380; bottom = 500
+Child split view gets less space
+[splitView] left = 0; right = 500; top = 0; bottom = 500
+[mainView] left = 0; right = 500; top = 360; bottom = 450
+[sidebarView] left = 0; right = 500; top = 0; bottom = 360
+[childSplitView] left = 0; right = 500; top = 360; bottom = 500
+[thirdSidebarView] left = 0; right = 500; top = 450; bottom = 500
 

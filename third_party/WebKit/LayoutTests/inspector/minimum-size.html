@@ -96,6 +96,37 @@ function test()
     splitView.setSecondIsSidebar(false);
     dumpBoundingBoxes(views);
 
+    InspectorTest.addResult("Arranging preferred sizes");
+    firstSidebarView.setMinimumAndPreferredSizes(50, 50, 100, 100);
+    mainView.setMinimumAndPreferredSizes(50, 50, 200, 200);
+    thirdSidebarView.setMinimumAndPreferredSizes(50, 50, 100, 100);
+    splitView.setSidebarSize(260);
+    dumpBoundingBoxes(views);
+
+    InspectorTest.addResult("Less than sidebar preferred size");
+    splitView.setSidebarSize(80);
+    dumpBoundingBoxes(views);
+
+    InspectorTest.addResult("Size changes proportionally");
+    splitView.setSidebarSize(320);
+    dumpBoundingBoxes(views);
+
+    InspectorTest.addResult("Manual resize inside child split view");
+    childSplitView.setSidebarSize(50);
+    dumpBoundingBoxes(views);
+
+    InspectorTest.addResult("Manual resize inside child split view");
+    childSplitView.setSidebarSize(120);
+    dumpBoundingBoxes(views);
+
+    InspectorTest.addResult("Child split view gets more space");
+    splitView.setSidebarSize(170);
+    dumpBoundingBoxes(views);
+
+    InspectorTest.addResult("Child split view gets less space");
+    splitView.setSidebarSize(360);
+    dumpBoundingBoxes(views);
+
     InspectorTest.completeTest();
 }
 </script>
