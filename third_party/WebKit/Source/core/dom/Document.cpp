@@ -5448,10 +5448,11 @@ bool Document::hasFocus() const
     Page* page = this->page();
     if (!page)
         return false;
-    if (!page->focusController().isActive() || !page->focusController().isFocused() || !page->focusController().focusedFrame()->isLocalFrame())
+    if (!page->focusController().isActive() || !page->focusController().isFocused())
         return false;
-    if (LocalFrame* focusedFrame = toLocalFrame(page->focusController().focusedFrame())) {
-        if (focusedFrame->tree().isDescendantOf(frame()))
+    Frame* focusedFrame = page->focusController().focusedFrame();
+    if (focusedFrame && focusedFrame->isLocalFrame()) {
+        if (toLocalFrame(focusedFrame)->tree().isDescendantOf(frame()))
             return true;
     }
     return false;
