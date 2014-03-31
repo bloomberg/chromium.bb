@@ -234,6 +234,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Deactivate virtual keyboard on current root window controller.
   void DeactivateKeyboard(keyboard::KeyboardController* keyboard_controller);
 
+  // Tests if a window is associated with the virtual keyboard.
+  bool IsVirtualKeyboardWindow(aura::Window* window);
+
  private:
   explicit RootWindowController(aura::WindowTreeHost* host);
   enum RootWindowType {

@@ -1085,7 +1085,12 @@ bool Shell::CanWindowReceiveEvents(aura::Window* window) {
         (*iter)->GetSystemModalLayoutManager(window);
     if (layout_manager && layout_manager->CanWindowReceiveEvents(window))
       return true;
+    // Allow events to fall through to the virtual keyboard even if displaying
+    // a system modal dialog.
+    if ((*iter)->IsVirtualKeyboardWindow(window))
+      return true;
   }
+
   return false;
 }
 

@@ -650,6 +650,12 @@ void RootWindowController::DeactivateKeyboard(
   }
 }
 
+bool RootWindowController::IsVirtualKeyboardWindow(aura::Window* window) {
+  aura::Window* parent = GetContainer(
+      kShellWindowId_VirtualKeyboardParentContainer);
+  return parent ? parent->Contains(window) : false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 

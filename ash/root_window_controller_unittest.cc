@@ -606,7 +606,8 @@ TEST_F(NoSessionRootWindowControllerTest, Event) {
                 gfx::Point(size.width() - 1, size.height() - 1)));
 }
 
-class VirtualKeyboardRootWindowControllerTest : public test::AshTestBase {
+class VirtualKeyboardRootWindowControllerTest : public RootWindowControllerTest
+{
  public:
   VirtualKeyboardRootWindowControllerTest() {};
   virtual ~VirtualKeyboardRootWindowControllerTest() {};
@@ -726,6 +727,47 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   // Mock a login user profile change to reinitialize the keyboard.
   ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
   EXPECT_EQ(ash::Shell::GetScreen()->GetPrimaryDisplay().work_area(), before);
+}
+
+// Ensure that system modal dialogs do not block events targeted at the virtual
+// keyboard.
+TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* keyboard_container = Shell::GetContainer(root_window,
+      internal::kShellWindowId_VirtualKeyboardContainer);
+  ASSERT_TRUE(keyboard_container);
+  keyboard_container->Show();
+
+  aura::Window* keyboard_window = Shell::GetInstance()->keyboard_controller()->
+      proxy()->GetKeyboardWindow();
+  keyboard_container->AddChild(keyboard_window);
+  keyboard_window->set_owned_by_parent(false);
+  keyboard_window->SetBounds(gfx::Rect());
+  keyboard_window->Show();
+
+  ui::test::TestEventHandler* handler = new ui::test::TestEventHandler;
+  root_window->SetEventFilter(handler);
+  aura::test::EventGenerator root_window_event_generator(root_window);
+  aura::test::EventGenerator keyboard_event_generator(root_window,
+                                                      keyboard_window);
+
+  views::Widget* modal_widget =
+      CreateModalWidget(gfx::Rect(300, 10, 100, 100));
+
+  // Verify that mouse events to the root window are block with a visble modal
+  // dialog.
+  root_window_event_generator.ClickLeftButton();
+  EXPECT_EQ(0, handler->num_mouse_events());
+
+  // Verify that event dispatch to the virtual keyboard is unblocked.
+  keyboard_event_generator.ClickLeftButton();
+  EXPECT_EQ(1, handler->num_mouse_events() / 2);
+
+  modal_widget->Close();
+
+  // Verify that mouse events are now unblocked to the root window.
+  root_window_event_generator.ClickLeftButton();
+  EXPECT_EQ(2, handler->num_mouse_events() / 2);
 }
 
 }  // namespace test
