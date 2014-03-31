@@ -11,7 +11,7 @@ function test()
     var contentReceived;
     var finalMappedLocation;
     InspectorTest.createWorkspace();
-    var cssModel = new WebInspector.CSSStyleModel(InspectorTest.testWorkspace);
+    var cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.activeTarget(), InspectorTest.testWorkspace);
     var mapping = new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
 
     InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);

@@ -61,7 +61,7 @@ function test()
 
     InspectorTest.createWorkspace();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
-    cssModel = new WebInspector.CSSStyleModel(InspectorTest.testWorkspace);
+    cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.activeTarget(), InspectorTest.testWorkspace);
     new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
 
     var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), "resources/");

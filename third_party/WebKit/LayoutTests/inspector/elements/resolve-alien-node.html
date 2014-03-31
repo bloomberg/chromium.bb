@@ -9,7 +9,7 @@ function test()
 
     function step1(error, result, wasThrown)
     {
-        var spanWrapper = WebInspector.RemoteObject.fromPayload(result);
+        var spanWrapper = WebInspector.runtimeModel.createRemoteObject(result);
         spanWrapper.pushNodeToFrontend(step2);
     }
 

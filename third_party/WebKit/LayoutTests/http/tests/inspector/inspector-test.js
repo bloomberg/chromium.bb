@@ -83,7 +83,7 @@ InspectorTest.evaluateInPage = function(code, callback)
     function mycallback(error, result, wasThrown)
     {
         if (!error)
-            callback(WebInspector.RemoteObject.fromPayload(result), wasThrown);
+            callback(WebInspector.runtimeModel.createRemoteObject(result), wasThrown);
     }
     RuntimeAgent.evaluate(code, "console", false, mycallback);
 }
