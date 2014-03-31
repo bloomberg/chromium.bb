@@ -440,6 +440,15 @@ void SetReadOnlyProperty(PP_Instance instance,
     load_manager->SetReadOnlyProperty(key, value);
 }
 
+void ReportLoadSuccess(PP_Instance instance,
+                       const char* url,
+                       uint64_t loaded_bytes,
+                       uint64_t total_bytes) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    load_manager->ReportLoadSuccess(url, loaded_bytes, total_bytes);
+}
+
 void ReportLoadError(PP_Instance instance,
                      PP_NaClError error,
                      const char* error_message,
@@ -561,6 +570,7 @@ const PPB_NaCl_Private nacl_interface = {
   &OpenNaClExecutable,
   &DispatchEvent,
   &SetReadOnlyProperty,
+  &ReportLoadSuccess,
   &ReportLoadError,
   &InstanceCreated,
   &InstanceDestroyed,

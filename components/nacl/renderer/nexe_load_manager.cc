@@ -49,6 +49,17 @@ void HistogramEnumerate(const std::string& name,
   counter->Add(sample);
 }
 
+void HistogramEnumerateLoadStatus(PP_NaClError error_code,
+                                  bool is_installed) {
+  HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, PP_NACL_ERROR_MAX);
+
+  // Gather data to see if being installed changes load outcomes.
+  const char* name = is_installed ?
+      "NaCl.LoadStatus.Plugin.InstalledApp" :
+      "NaCl.LoadStatus.Plugin.NotInstalledApp";
+  HistogramEnumerate(name, error_code, PP_NACL_ERROR_MAX);
+}
+
 blink::WebString EventTypeToString(PP_NaClEventType event_type) {
   switch (event_type) {
     case PP_NACL_EVENT_LOADSTART:
@@ -94,6 +105,34 @@ NexeLoadManager::NexeLoadManager(
 }
 
 NexeLoadManager::~NexeLoadManager() {
+}
+
+void NexeLoadManager::ReportLoadSuccess(const std::string& url,
+                                        uint64_t loaded_bytes,
+                                        uint64_t total_bytes) {
+  // Check that we are on the main renderer thread.
+  DCHECK(content::RenderThread::Get());
+  set_nacl_ready_state(PP_NACL_READY_STATE_DONE);
+
+  // Inform JavaScript that loading was successful and is complete.
+  ProgressEvent load_event(pp_instance_, PP_NACL_EVENT_LOAD, url, true,
+      loaded_bytes, total_bytes);
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 load_event));
+
+  ProgressEvent loadend_event(pp_instance_, PP_NACL_EVENT_LOADEND, url, true,
+      loaded_bytes, total_bytes);
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 loadend_event));
+
+  // UMA
+  HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_SUCCESS, is_installed_);
 }
 
 void NexeLoadManager::ReportLoadError(PP_NaClError error,

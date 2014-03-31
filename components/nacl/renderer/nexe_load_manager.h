@@ -28,6 +28,9 @@ class NexeLoadManager {
   explicit NexeLoadManager(PP_Instance instance);
   ~NexeLoadManager();
 
+  void ReportLoadSuccess(const std::string& url,
+                         uint64_t loaded_bytes,
+                         uint64_t total_bytes);
   void ReportLoadError(PP_NaClError error,
                        const std::string& error_message,
                        const std::string& console_message);
@@ -43,6 +46,16 @@ class NexeLoadManager {
           length_is_computable(false),
           loaded_bytes(0),
           total_bytes(0) {
+    }
+    ProgressEvent(PP_Instance instance, PP_NaClEventType event_type,
+                  const std::string& resource_url, bool length_is_computable,
+                  uint64_t loaded_bytes, uint64_t total_bytes)
+        : instance(instance),
+          event_type(event_type),
+          resource_url(resource_url),
+          length_is_computable(length_is_computable),
+          loaded_bytes(loaded_bytes),
+          total_bytes(total_bytes) {
     }
     PP_Instance instance;
     PP_NaClEventType event_type;

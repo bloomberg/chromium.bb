@@ -3161,6 +3161,11 @@ static void Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty(PP_Instance instance,
   iface->SetReadOnlyProperty(instance, *key, *value);
 }
 
+static void Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess(PP_Instance instance, const char* url, uint64_t loaded_bytes, uint64_t total_bytes) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->ReportLoadSuccess(instance, url, loaded_bytes, total_bytes);
+}
+
 static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->ReportLoadError(instance, error, error_message, console_message);
@@ -5118,6 +5123,7 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable,
     .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, const char* resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
     .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty,
+    .ReportLoadSuccess = (void (*)(PP_Instance instance, const char* url, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
     .InstanceCreated = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceCreated,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,

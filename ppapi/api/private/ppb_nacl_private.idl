@@ -283,6 +283,12 @@ interface PPB_NaCl_Private {
                            [in] PP_Var key,
                            [in] PP_Var value);
 
+  /* Report that the nexe loaded successfully. */
+  void ReportLoadSuccess([in] PP_Instance instance,
+                         [in] str_t url,
+                         [in] uint64_t loaded_bytes,
+                         [in] uint64_t total_bytes);
+
   /* Report an error that occured while attempting to load a nexe. */
   void ReportLoadError([in] PP_Instance instance,
                        [in] PP_NaClError error,

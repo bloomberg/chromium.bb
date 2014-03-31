@@ -123,9 +123,7 @@ class Plugin : public pp::Instance {
     LENGTH_IS_COMPUTABLE = 1
   };
   // Report successful loading of a module.
-  void ReportLoadSuccess(LengthComputable length_computable,
-                         uint64_t loaded_bytes,
-                         uint64_t total_bytes);
+  void ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes);
   // Report an error that was encountered while loading a module.
   void ReportLoadError(const ErrorInfo& error_info);
   // Report loading a module was aborted, typically due to user action.

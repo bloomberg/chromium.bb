@@ -792,7 +792,7 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
         "NaCl.Perf.StartupTime.Total",
         static_cast<float>(ready_time_ - init_time_) / NACL_MICROS_PER_MILLI);
 
-    ReportLoadSuccess(LENGTH_IS_COMPUTABLE, nexe_size_, nexe_size_);
+    ReportLoadSuccess(nexe_size_, nexe_size_);
   } else {
     NaClLog(4, "NexeFileDidOpenContinuation: failed.");
     ReportLoadError(error_info);
@@ -902,7 +902,7 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
     int64_t loaded;
     int64_t total;
     pnacl_coordinator_->GetCurrentProgress(&loaded, &total);
-    ReportLoadSuccess(LENGTH_IS_COMPUTABLE, loaded, total);
+    ReportLoadSuccess(loaded, total);
   } else {
     ReportLoadError(error_info);
   }
@@ -1254,26 +1254,14 @@ bool Plugin::StreamAsFile(const nacl::string& url,
 }
 
 
-void Plugin::ReportLoadSuccess(LengthComputable length_computable,
-                               uint64_t loaded_bytes,
-                               uint64_t total_bytes) {
-  // Set the readyState attribute to indicate loaded.
-  nacl_interface_->SetNaClReadyState(pp_instance(), PP_NACL_READY_STATE_DONE);
-  // Inform JavaScript that loading was successful and is complete.
+void Plugin::ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes) {
   const nacl::string& url = nexe_downloader_.url();
-  EnqueueProgressEvent(
-      PP_NACL_EVENT_LOAD, url, length_computable, loaded_bytes, total_bytes);
-  EnqueueProgressEvent(
-      PP_NACL_EVENT_LOADEND, url, length_computable, loaded_bytes, total_bytes);
-
-  // UMA
-  HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_SUCCESS);
+  nacl_interface_->ReportLoadSuccess(
+      pp_instance(), url.c_str(), loaded_bytes, total_bytes);
 }
 
 
 void Plugin::ReportLoadError(const ErrorInfo& error_info) {
-  PLUGIN_PRINTF(("Plugin::ReportLoadError (error='%s')\n",
-                 error_info.message().c_str()));
   nacl_interface_->ReportLoadError(pp_instance(),
                                    error_info.error_code(),
                                    error_info.message().c_str(),
