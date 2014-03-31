@@ -182,8 +182,9 @@ class CryptoServerTest : public ::testing::Test {
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
         result, 1 /* ConnectionId */, client_address_,
-        supported_versions_.front(), supported_versions_, &clock_, rand_,
-        &params_, &out_, &error_details);
+        supported_versions_.front(), supported_versions_,
+        kInitialFlowControlWindowForTest, &clock_, rand_, &params_, &out_,
+        &error_details);
 
     if (should_succeed) {
       ASSERT_EQ(error, QUIC_NO_ERROR)
@@ -520,6 +521,36 @@ TEST_F(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
   EXPECT_EQ(0, strike_register_client_->PendingVerifications());
   // The message should be rejected now.
   EXPECT_EQ(kREJ, out_.tag());
+}
+
+TEST_F(CryptoServerTest, InitialFlowControlWindow) {
+  // Test that the SHLO contains a value for initial flow control window.
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "VER\0", client_version_.data(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      NULL);
+  ShouldSucceed(msg);
+  // The message should be rejected because the strike-register is still
+  // quiescent.
+  ASSERT_EQ(kREJ, out_.tag());
+  config_.set_replay_protection(false);
+
+  // The message should be accepted now.
+  ShouldSucceed(msg);
+  ASSERT_EQ(kSHLO, out_.tag());
+  CheckServerHello(out_);
+
+  // Ensure that the kIFCW tag is populated correctly.
+  QuicTag ifcw;
+  EXPECT_EQ(QUIC_NO_ERROR, out_.GetUint32(kIFCW, &ifcw));
+  EXPECT_EQ(kInitialFlowControlWindowForTest, ifcw);
 }
 
 }  // namespace test

@@ -52,6 +52,7 @@ void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
 void FixRateSender::OnPacketAcked(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
     QuicByteCount bytes_acked) {
+  DCHECK_GE(data_in_flight_, bytes_acked);
   data_in_flight_ -= bytes_acked;
 }
 
@@ -64,13 +65,11 @@ bool FixRateSender::OnPacketSent(
     QuicTime sent_time,
     QuicPacketSequenceNumber /*sequence_number*/,
     QuicByteCount bytes,
-    TransmissionType transmission_type,
     HasRetransmittableData /*has_retransmittable_data*/) {
   fix_rate_leaky_bucket_.Add(sent_time, bytes);
   paced_sender_.OnPacketSent(sent_time, bytes);
-  if (transmission_type == NOT_RETRANSMISSION) {
-    data_in_flight_ += bytes;
-  }
+  data_in_flight_ += bytes;
+
   return true;
 }
 
@@ -78,14 +77,14 @@ void FixRateSender::OnRetransmissionTimeout(bool packets_retransmitted) { }
 
 void FixRateSender::OnPacketAbandoned(
     QuicPacketSequenceNumber /*sequence_number*/,
-    QuicByteCount /*abandoned_bytes*/) {
+    QuicByteCount bytes_abandoned) {
+  DCHECK_GE(data_in_flight_, bytes_abandoned);
+  data_in_flight_ -= bytes_abandoned;
 }
 
 QuicTime::Delta FixRateSender::TimeUntilSend(
     QuicTime now,
-    TransmissionType /* transmission_type */,
-    HasRetransmittableData /*has_retransmittable_data*/,
-    IsHandshake /*handshake*/) {
+    HasRetransmittableData /*has_retransmittable_data*/) {
   if (CongestionWindow() > fix_rate_leaky_bucket_.BytesPending(now)) {
     if (CongestionWindow() <= data_in_flight_) {
       // We need an ack before we send more.

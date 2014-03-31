@@ -23,9 +23,6 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_unacked_packet_map.h"
 
-NET_EXPORT_PRIVATE extern bool FLAGS_track_retransmission_history;
-NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_pacing;
-
 namespace net {
 
 namespace test {
@@ -139,8 +136,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // calculations.
   virtual QuicTime::Delta TimeUntilSend(QuicTime now,
                                         TransmissionType transmission_type,
-                                        HasRetransmittableData retransmittable,
-                                        IsHandshake handshake);
+                                        HasRetransmittableData retransmittable);
 
   // Returns amount of time for delayed ack timer.
   const QuicTime::Delta DelayedAckTime() const;

@@ -471,6 +471,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     IPEndPoint client_address,
     QuicVersion version,
     const QuicVersionVector& supported_versions,
+    uint32 initial_flow_control_window_bytes,
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters *params,
@@ -720,6 +721,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   QuicSocketAddressCoder address_coder(client_address);
   out->SetStringPiece(kCADR, address_coder.Encode());
   out->SetStringPiece(kPUBS, forward_secure_public_value);
+
+  // Set initial receive window for flow control.
+  out->SetValue(kIFCW, initial_flow_control_window_bytes);
+
   return QUIC_NO_ERROR;
 }
 

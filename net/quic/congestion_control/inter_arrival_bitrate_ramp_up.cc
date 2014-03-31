@@ -78,7 +78,7 @@ void InterArrivalBitrateRampUp::UpdateChannelEstimate(
     halfway_point_ = available_channel_estimate_.Add(
         (channel_estimate_.Subtract(available_channel_estimate_).Scale(0.5f)));
     DVLOG(1) << "UpdateChannelEstimate; first usable value:"
-               << channel_estimate.ToKBitsPerSecond() << " Kbits/s";
+             << channel_estimate.ToKBitsPerSecond() << " Kbits/s";
     return;
   }
   if (current_rate_ < halfway_point_) {
@@ -96,7 +96,7 @@ void InterArrivalBitrateRampUp::UpdateChannelEstimate(
       CalcuateTimeToOriginPoint(channel_estimate_.Subtract(current_rate_));
 
   DVLOG(1) << "UpdateChannelEstimate; time to origin point:"
-             << time_to_origin_point_;
+           << time_to_origin_point_;
 }
 
 QuicBandwidth InterArrivalBitrateRampUp::GetNewBitrate(
@@ -118,9 +118,9 @@ QuicBandwidth InterArrivalBitrateRampUp::GetNewBitrate(
     // We need to update the epoch to reflect this state.
     epoch_ = epoch_.Add(time_from_last_update);
     DVLOG(1) << "Don't increase; our sent bitrate is:"
-               << sent_bitrate.ToKBitsPerSecond() << " Kbits/s"
-               << " current target rate is:"
-               << current_rate_.ToKBitsPerSecond() << " Kbits/s";
+             << sent_bitrate.ToKBitsPerSecond() << " Kbits/s"
+             << " current target rate is:"
+             << current_rate_.ToKBitsPerSecond() << " Kbits/s";
     return current_rate_;
   }
   QuicTime::Delta time_from_epoch = current_time.Subtract(epoch_);
@@ -155,7 +155,7 @@ QuicBandwidth InterArrivalBitrateRampUp::GetNewBitrate(
             CalcuateTimeToOriginPoint(channel_estimate_.Subtract(current_rate));
       }
       DVLOG(1) << "Passed the halfway point; time to origin point:"
-                 << time_to_origin_point_;
+               << time_to_origin_point_;
     }
     current_rate_ = current_rate;
   } else {

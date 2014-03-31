@@ -111,7 +111,7 @@ void InterArrivalSender::OnIncomingQuicCongestionFeedbackFrame(
     if (sent_it == packet_history_map_.end()) {
       // Too old data; ignore and move forward.
       DVLOG(1) << "Too old feedback move forward, sequence_number:"
-                 << sequence_number;
+               << sequence_number;
       continue;
     }
     QuicTime time_received = received_it->second;
@@ -187,11 +187,11 @@ bool InterArrivalSender::ProbingPhase(QuicTime feedback_receive_time) {
   current_bandwidth_ = new_rate;
   paced_sender_->UpdateBandwidthEstimate(feedback_receive_time, new_rate);
   DVLOG(1) << "Probe result; new rate:"
-             << new_rate.ToKBitsPerSecond() << " Kbits/s "
-             << " available estimate:"
-             << available_channel_estimate.ToKBitsPerSecond() << " Kbits/s "
-             << " channel estimate:"
-             << channel_estimate.ToKBitsPerSecond() << " Kbits/s ";
+           << new_rate.ToKBitsPerSecond() << " Kbits/s "
+           << " available estimate:"
+           << available_channel_estimate.ToKBitsPerSecond() << " Kbits/s "
+           << " channel estimate:"
+           << channel_estimate.ToKBitsPerSecond() << " Kbits/s ";
   return false;
 }
 
@@ -221,7 +221,6 @@ bool InterArrivalSender::OnPacketSent(
     QuicTime sent_time,
     QuicPacketSequenceNumber sequence_number,
     QuicByteCount bytes,
-    TransmissionType /*transmission_type*/,
     HasRetransmittableData /*has_retransmittable_data*/) {
   if (probing_) {
     probe_->OnPacketSent(bytes);
@@ -252,9 +251,7 @@ void InterArrivalSender::OnPacketAbandoned(
 
 QuicTime::Delta InterArrivalSender::TimeUntilSend(
     QuicTime now,
-    TransmissionType /*transmission_type*/,
-    HasRetransmittableData has_retransmittable_data,
-    IsHandshake /*handshake*/) {
+    HasRetransmittableData has_retransmittable_data) {
   // TODO(pwestin): implement outer_congestion_window_ logic.
   QuicTime::Delta outer_window = QuicTime::Delta::Zero();
 
@@ -337,8 +334,8 @@ void InterArrivalSender::EstimateNewBandwidth(QuicTime feedback_receive_time,
   paced_sender_->UpdateBandwidthEstimate(feedback_receive_time,
                                          current_bandwidth_);
   DVLOG(1) << "New bandwidth estimate in steady state:"
-             << current_bandwidth_.ToKBitsPerSecond()
-             << " Kbits/s";
+           << current_bandwidth_.ToKBitsPerSecond()
+           << " Kbits/s";
 }
 
 // Did we drain the network buffers in our expected pace?
@@ -385,15 +382,15 @@ void InterArrivalSender::EstimateNewBandwidthAfterDraining(
                          current_bandwidth_.Add(draining_rate).Scale(
                              1.0f - kMinBitrateReduction));
       DVLOG(1) << "Draining calculation; current rate:"
-                 << current_bandwidth_.ToKBitsPerSecond() << " Kbits/s "
-                 << "draining rate:"
-                 << draining_rate.ToKBitsPerSecond() << " Kbits/s "
-                 << "new estimate:"
-                 << new_estimate.ToKBitsPerSecond() << " Kbits/s "
-                 << " buffer reduction:"
-                 << buffer_reduction.ToMicroseconds() << " us "
-                 << " elapsed time:"
-                 << elapsed_time.ToMicroseconds()  << " us ";
+               << current_bandwidth_.ToKBitsPerSecond() << " Kbits/s "
+               << "draining rate:"
+               << draining_rate.ToKBitsPerSecond() << " Kbits/s "
+               << "new estimate:"
+               << new_estimate.ToKBitsPerSecond() << " Kbits/s "
+               << " buffer reduction:"
+               << buffer_reduction.ToMicroseconds() << " us "
+               << " elapsed time:"
+               << elapsed_time.ToMicroseconds()  << " us ";
     }
   }
   if (new_estimate == current_bandwidth_) {
@@ -421,7 +418,7 @@ void InterArrivalSender::EstimateNewBandwidthAfterDraining(
   paced_sender_->UpdateBandwidthEstimate(feedback_receive_time, new_estimate);
   current_bandwidth_ = new_estimate;
   DVLOG(1) << "New bandwidth estimate after draining:"
-             << new_estimate.ToKBitsPerSecond() << " Kbits/s";
+           << new_estimate.ToKBitsPerSecond() << " Kbits/s";
 }
 
 void InterArrivalSender::EstimateBandwidthAfterDelayEvent(
@@ -464,7 +461,7 @@ void InterArrivalSender::EstimateBandwidthAfterLossEvent(
   ResetCurrentBandwidth(feedback_receive_time,
                         current_bandwidth_.Scale(kPacketLossBitrateReduction));
   DVLOG(1) << "New bandwidth estimate after loss event:"
-             << current_bandwidth_.ToKBitsPerSecond() << " Kbits/s";
+           << current_bandwidth_.ToKBitsPerSecond() << " Kbits/s";
 }
 
 void InterArrivalSender::ResetCurrentBandwidth(QuicTime feedback_receive_time,

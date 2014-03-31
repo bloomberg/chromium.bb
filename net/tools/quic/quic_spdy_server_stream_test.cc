@@ -81,6 +81,12 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
     request_headers.ReplaceOrAppendHeader("content-length", "11");
 
     headers_string_ = SpdyUtils::SerializeRequestHeaders(request_headers);
+
+    // New streams rely on having the peer's flow control receive window
+    // negotiated in the config.
+    const uint32 kInitialWindow = 10 * kMaxPacketSize;
+    session_.config()->set_peer_initial_flow_control_window_bytes(
+        kInitialWindow);
     stream_.reset(new QuicSpdyServerStreamPeer(3, &session_));
   }
 

@@ -270,7 +270,8 @@ MockConnection::MockConnection(bool is_server)
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions()),
+                     is_server, QuicSupportedVersions(),
+                     kInitialFlowControlWindowForTest),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -280,7 +281,8 @@ MockConnection::MockConnection(IPEndPoint address,
     : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions()),
+                     is_server, QuicSupportedVersions(),
+                     kInitialFlowControlWindowForTest),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -291,7 +293,8 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions()),
+                     is_server, QuicSupportedVersions(),
+                     kInitialFlowControlWindowForTest),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -302,7 +305,8 @@ MockConnection::MockConnection(bool is_server,
                      IPEndPoint(TestPeerIPAddress(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, supported_versions),
+                     is_server, supported_versions,
+                     kInitialFlowControlWindowForTest),
       writer_(QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -457,6 +461,14 @@ IPAddressNumber Loopback4() {
   IPAddressNumber addr;
   CHECK(ParseIPLiteralToNumber("127.0.0.1", &addr));
   return addr;
+}
+
+void GenerateBody(string* body, int length) {
+  body->clear();
+  body->reserve(length);
+  for (int i = 0; i < length; ++i) {
+    body->append(1, static_cast<char>(32 + i % (126 - 32)));
+  }
 }
 
 QuicEncryptedPacket* ConstructEncryptedPacket(

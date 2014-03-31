@@ -37,6 +37,19 @@ QuicEpollConnectionHelper* QuicDispatcherPeer::GetHelper(
   return dispatcher->helper_.get();
 }
 
+// static
+QuicConnection* QuicDispatcherPeer::CreateQuicConnection(
+    QuicDispatcher* dispatcher,
+    QuicConnectionId connection_id,
+    const IPEndPoint& server,
+    const IPEndPoint& client,
+    uint32 initial_flow_control_window_bytes) {
+  return dispatcher->CreateQuicConnection(connection_id,
+                                          server,
+                                          client,
+                                          initial_flow_control_window_bytes);
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

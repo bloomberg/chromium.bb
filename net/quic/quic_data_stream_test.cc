@@ -6,17 +6,22 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/quic/test_tools/reliable_quic_stream_peer.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::StringPiece;
 using std::min;
 using testing::_;
+using testing::AnyNumber;
 using testing::InSequence;
+using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
@@ -272,6 +277,192 @@ TEST_P(QuicDataStreamTest, ProcessHeadersUsingReadvWithMultipleIovecs) {
     ASSERT_EQ(data.data()[i], buffer1[0]) << i;
     ASSERT_EQ(data.data()[i + 1], buffer2[0]) << i;
   }
+}
+
+TEST_P(QuicDataStreamTest, StreamFlowControlBlocked) {
+  // Tests that we send a BLOCKED frame to the peer when we attempt to write,
+  // but are flow control blocked.
+  if (GetParam() < QUIC_VERSION_17) {
+    return;
+  }
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+
+  Initialize(kShouldProcessData);
+
+  // Set a small flow control limit.
+  const uint64 kWindow = 36;
+  ReliableQuicStreamPeer::SetFlowControlSendOffset(stream_.get(), kWindow);
+  EXPECT_EQ(kWindow, ReliableQuicStreamPeer::SendWindowSize(stream_.get()));
+
+  // Try to send more data than the flow control limit allows.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  string body;
+  const uint64 kOverflow = 15;
+  GenerateBody(&body, kWindow + kOverflow);
+
+  EXPECT_CALL(*connection_, SendBlocked(kStreamId));
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, _)).WillOnce(
+      Return(QuicConsumedData(kWindow, true)));
+  stream_->WriteOrBufferData(body, false, NULL);
+
+  // Should have sent as much as possible, resulting in no send window left.
+  EXPECT_EQ(0u, ReliableQuicStreamPeer::SendWindowSize(stream_.get()));
+
+  // And we should have queued the overflowed data.
+  EXPECT_EQ(kOverflow,
+            ReliableQuicStreamPeer::SizeOfQueuedData(stream_.get()));
+}
+
+TEST_P(QuicDataStreamTest, StreamFlowControlNoWindowUpdateIfNotConsumed) {
+  // The flow control receive window decreases whenever we add new bytes to the
+  // sequencer, whether they are consumed immediately or buffered. However we
+  // only send WINDOW_UPDATE frames based on increasing number of bytes
+  // consumed.
+  if (GetParam() < QUIC_VERSION_17) {
+    return;
+  }
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+
+  // Don't process data - it will be buffered instead.
+  Initialize(!kShouldProcessData);
+
+  // Expect no WINDOW_UPDATE frames to be sent.
+  EXPECT_CALL(*connection_, SendWindowUpdate(_, _)).Times(0);
+
+  // Set a small flow control limit.
+  const uint64 kWindow = 36;
+  ReliableQuicStreamPeer::SetFlowControlReceiveOffset(stream_.get(),
+                                                      kWindow);
+  ReliableQuicStreamPeer::SetFlowControlMaxReceiveWindow(stream_.get(),
+                                                         kWindow);
+  EXPECT_EQ(kWindow, ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()));
+
+  // Stream receives enough data to fill a fraction of the receive window.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  string body;
+  GenerateBody(&body, kWindow / 3);
+  stream_->OnStreamHeaders(headers);
+  EXPECT_EQ(headers, stream_->data());
+  stream_->OnStreamHeadersComplete(false, headers.size());
+
+  QuicStreamFrame frame1(kStreamId, false, 0, MakeIOVector(body));
+  stream_->OnStreamFrame(frame1);
+  EXPECT_EQ(kWindow - (kWindow / 3),
+            ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()));
+
+  // Now receive another frame which results in the receive window being over
+  // half full. This should all be buffered, decreasing the receive window but
+  // not sending WINDOW_UPDATE.
+  QuicStreamFrame frame2(kStreamId, false, kWindow / 3, MakeIOVector(body));
+  stream_->OnStreamFrame(frame2);
+  EXPECT_EQ(kWindow - (2 * kWindow / 3),
+            ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()));
+}
+
+TEST_P(QuicDataStreamTest, StreamFlowControlWindowUpdate) {
+  // Tests that on receipt of data, the stream updates its receive window offset
+  // appropriately, and sends WINDOW_UPDATE frames when its receive window drops
+  // too low.
+  if (GetParam() < QUIC_VERSION_17) {
+    return;
+  }
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+
+  Initialize(kShouldProcessData);
+
+  // Set a small flow control limit.
+  const uint64 kWindow = 36;
+  ReliableQuicStreamPeer::SetFlowControlReceiveOffset(stream_.get(),
+                                                      kWindow);
+  ReliableQuicStreamPeer::SetFlowControlMaxReceiveWindow(stream_.get(),
+                                                         kWindow);
+  EXPECT_EQ(kWindow, ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()));
+
+  // Stream receives enough data to fill a fraction of the receive window.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  string body;
+  GenerateBody(&body, kWindow / 3);
+  stream_->OnStreamHeaders(headers);
+  EXPECT_EQ(headers, stream_->data());
+  stream_->OnStreamHeadersComplete(false, headers.size());
+
+  QuicStreamFrame frame1(kStreamId, false, 0, MakeIOVector(body));
+  stream_->OnStreamFrame(frame1);
+  EXPECT_EQ(kWindow - (kWindow / 3),
+            ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()));
+
+  // Now receive another frame which results in the receive window being over
+  // half full.  This will trigger the stream to increase its receive window
+  // offset and send a WINDOW_UPDATE. The result will be again an available
+  // window of kWindow bytes.
+  QuicStreamFrame frame2(kStreamId, false, kWindow / 3, MakeIOVector(body));
+  EXPECT_CALL(
+      *connection_,
+      SendWindowUpdate(
+          kStreamId,
+          ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()) + kWindow));
+  stream_->OnStreamFrame(frame2);
+  EXPECT_EQ(kWindow,
+            ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()));
+}
+
+TEST_P(QuicDataStreamTest, StreamFlowControlViolation) {
+  // Tests that on if the peer sends too much data (i.e. violates the flow
+  // control protocol), then we terminate the connection.
+  if (GetParam() < QUIC_VERSION_17) {
+    return;
+  }
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+
+  // Stream should not process data, so that data gets buffered in the
+  // sequencer, triggering flow control limits.
+  Initialize(!kShouldProcessData);
+
+  // Set a small flow control limit.
+  const uint64 kWindow = 50;
+  ReliableQuicStreamPeer::SetFlowControlReceiveOffset(stream_.get(),
+                                                      kWindow);
+
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  string body;
+  GenerateBody(&body, kWindow + 1);
+
+  stream_->OnStreamHeaders(headers);
+  EXPECT_EQ(headers, stream_->data());
+  stream_->OnStreamHeadersComplete(false, headers.size());
+
+  // Receive data to overflow the window, violating flow control.
+  QuicStreamFrame frame(kStreamId, false, 0, MakeIOVector(body));
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
+  EXPECT_DFATAL(stream_->OnStreamFrame(frame),
+                "Server: Flow control violation on stream: 3, our receive "
+                "offset is: 50, we have consumed: 0, we have buffered: 51, "
+                "total: 51");
+}
+
+TEST_P(QuicDataStreamTest, StreamFlowControlFinNotBlocked) {
+  // An attempt to write a FIN with no data should not be flow control blocked,
+  // even if the send window is 0.
+  if (GetParam() < QUIC_VERSION_17) {
+    return;
+  }
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+
+  Initialize(kShouldProcessData);
+
+  // Set a flow control limit of zero.
+  ReliableQuicStreamPeer::SetFlowControlReceiveOffset(stream_.get(), 0);
+  EXPECT_EQ(0u, ReliableQuicStreamPeer::ReceiveWindowSize(stream_.get()));
+
+  // Send a frame with a FIN but no data. This should not be blocked.
+  string body = "";
+  bool fin = true;
+
+  EXPECT_CALL(*connection_, SendBlocked(kStreamId)).Times(0);
+  EXPECT_CALL(*session_, WritevData(kStreamId, _, _, _, _)).WillOnce(
+      Return(QuicConsumedData(0, fin)));
+
+  stream_->WriteOrBufferData(body, fin, NULL);
 }
 
 }  // namespace

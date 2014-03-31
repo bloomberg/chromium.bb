@@ -12,6 +12,7 @@
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_session_key.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_packet_writer_wrapper.h"
@@ -21,6 +22,7 @@
 #include "url/gurl.h"
 
 using base::StringPiece;
+using net::test::kInitialFlowControlWindowForTest;
 using net::test::QuicConnectionPeer;
 using std::string;
 using std::vector;
@@ -100,16 +102,26 @@ class MockableQuicClient : public QuicClient {
  public:
   MockableQuicClient(IPEndPoint server_address,
                      const QuicSessionKey& server_key,
-                     const QuicVersionVector& supported_versions)
-      : QuicClient(server_address, server_key, supported_versions, false),
+                     const QuicVersionVector& supported_versions,
+                     uint32 initial_flow_control_window)
+      : QuicClient(server_address,
+                   server_key,
+                   supported_versions,
+                   false,
+                   initial_flow_control_window),
         override_connection_id_(0),
         test_writer_(NULL) {}
 
   MockableQuicClient(IPEndPoint server_address,
                      const QuicSessionKey& server_key,
                      const QuicConfig& config,
-                     const QuicVersionVector& supported_versions)
-      : QuicClient(server_address, server_key, config, supported_versions),
+                     const QuicVersionVector& supported_versions,
+                     uint32 initial_flow_control_window)
+      : QuicClient(server_address,
+                   server_key,
+                   config,
+                   supported_versions,
+                   initial_flow_control_window),
         override_connection_id_(0),
         test_writer_(NULL) {}
 
@@ -134,7 +146,10 @@ class MockableQuicClient : public QuicClient {
   }
 
   // Takes ownership of writer.
-  void UseWriter(QuicPacketWriterWrapper* writer) { test_writer_ = writer; }
+  void UseWriter(QuicPacketWriterWrapper* writer) {
+    CHECK(test_writer_ == NULL);
+    test_writer_ = writer;
+  }
 
   void UseConnectionId(QuicConnectionId connection_id) {
     override_connection_id_ = connection_id;
@@ -148,7 +163,10 @@ class MockableQuicClient : public QuicClient {
 QuicTestClient::QuicTestClient(IPEndPoint address,
                                const QuicSessionKey& server_key,
                                const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(address, server_key, supported_versions)) {
+    : client_(new MockableQuicClient(address,
+                                     server_key,
+                                     supported_versions,
+                                     kInitialFlowControlWindowForTest)) {
   Initialize(address, server_key, true);
 }
 
@@ -156,17 +174,26 @@ QuicTestClient::QuicTestClient(IPEndPoint address,
                                const QuicSessionKey& server_key,
                                bool secure,
                                const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(address, server_key, supported_versions)) {
+    : client_(new MockableQuicClient(address,
+                                     server_key,
+                                     supported_versions,
+                                     kInitialFlowControlWindowForTest)) {
   Initialize(address, server_key, secure);
 }
 
-QuicTestClient::QuicTestClient(IPEndPoint address,
-                               const QuicSessionKey& server_key,
-                               bool secure,
-                               const QuicConfig& config,
-                               const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(address, server_key, config,
-                                     supported_versions)) {
+QuicTestClient::QuicTestClient(
+    IPEndPoint address,
+    const QuicSessionKey& server_key,
+    bool secure,
+    const QuicConfig& config,
+    const QuicVersionVector& supported_versions,
+    uint32 client_initial_flow_control_receive_window)
+    : client_(
+        new MockableQuicClient(address,
+                               server_key,
+                               config,
+                               supported_versions,
+                               client_initial_flow_control_receive_window)) {
   Initialize(address, server_key, secure);
 }
 

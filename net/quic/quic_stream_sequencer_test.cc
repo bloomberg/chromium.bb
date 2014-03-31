@@ -81,6 +81,9 @@ class MockStream : public ReliableQuicStream {
   virtual QuicPriority EffectivePriority() const {
     return QuicUtils::HighestPriority();
   }
+  virtual bool IsFlowControlEnabled() const {
+    return true;
+  }
 };
 
 namespace {

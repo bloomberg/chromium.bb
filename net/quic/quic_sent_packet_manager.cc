@@ -12,26 +12,12 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_connection_stats.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils_chromium.h"
 
 using std::make_pair;
 using std::max;
 using std::min;
-
-// TODO(rtenneti): Remove this.
-// Do not flip this flag until the flakiness of the
-// net/tools/quic/end_to_end_test is fixed.
-// If true, then QUIC connections will track the retransmission history of a
-// packet so that an ack of a previous transmission will ack the data of all
-// other transmissions.
-bool FLAGS_track_retransmission_history = false;
-
-// Do not remove this flag until the Finch-trials described in b/11706275
-// are complete.
-// If true, QUIC connections will support the use of a pacing algorithm when
-// sending packets, in an attempt to reduce packet loss.  The client must also
-// request pacing for the server to enable it.
-bool FLAGS_enable_quic_pacing = true;
 
 namespace net {
 namespace {
@@ -242,7 +228,6 @@ void QuicSentPacketManager::MarkForRetransmission(
   const QuicUnackedPacketMap::TransmissionInfo& transmission_info =
       unacked_packets_.GetTransmissionInfo(sequence_number);
   LOG_IF(DFATAL, transmission_info.retransmittable_frames == NULL);
-  LOG_IF(DFATAL, transmission_info.sent_time == QuicTime::Zero());
   // TODO(ianswett): Currently the RTO can fire while there are pending NACK
   // retransmissions for the same data, which is not ideal.
   if (ContainsKey(pending_retransmissions_, sequence_number)) {
@@ -261,13 +246,28 @@ QuicSentPacketManager::PendingRetransmission
   DCHECK(!pending_retransmissions_.empty());
   QuicPacketSequenceNumber sequence_number =
       pending_retransmissions_.begin()->first;
+  TransmissionType transmission_type = pending_retransmissions_.begin()->second;
+  if (unacked_packets_.HasPendingCryptoPackets()) {
+    // Ensure crypto packets are retransmitted before other packets.
+    PendingRetransmissionMap::const_iterator it =
+        pending_retransmissions_.begin();
+    do {
+      if (HasCryptoHandshake(
+              unacked_packets_.GetTransmissionInfo(it->first))) {
+        sequence_number = it->first;
+        transmission_type = it->second;
+        break;
+      }
+      ++it;
+    } while (it != pending_retransmissions_.end());
+  }
   DCHECK(unacked_packets_.IsUnacked(sequence_number));
   const QuicUnackedPacketMap::TransmissionInfo& transmission_info =
       unacked_packets_.GetTransmissionInfo(sequence_number);
   DCHECK(transmission_info.retransmittable_frames);
 
   return PendingRetransmission(sequence_number,
-                               pending_retransmissions_.begin()->second,
+                               transmission_type,
                                *transmission_info.retransmittable_frames,
                                transmission_info.sequence_number_length);
 }
@@ -372,7 +372,6 @@ bool QuicSentPacketManager::OnPacketSent(
 
   // Only track packets the send algorithm wants us to track.
   if (!send_algorithm_->OnPacketSent(sent_time, sequence_number, bytes,
-                                     transmission_type,
                                      has_retransmittable_data)) {
     unacked_packets_.RemovePacket(sequence_number);
     // Do not reset the retransmission timer, since the packet isn't tracked.
@@ -605,10 +604,13 @@ void QuicSentPacketManager::MaybeUpdateRTT(
 QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
     QuicTime now,
     TransmissionType transmission_type,
-    HasRetransmittableData retransmittable,
-    IsHandshake handshake) {
-  return send_algorithm_->TimeUntilSend(now, transmission_type, retransmittable,
-                                        handshake);
+    HasRetransmittableData retransmittable) {
+  // The TLP logic is entirely contained within QuicSentPacketManager, so the
+  // send algorithm does not need to be consulted.
+  if (transmission_type == TLP_RETRANSMISSION) {
+    return QuicTime::Delta::Zero();
+  }
+  return send_algorithm_->TimeUntilSend(now, retransmittable);
 }
 
 // Ensures that the Delayed Ack timer is always set to a value lesser

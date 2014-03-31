@@ -22,6 +22,7 @@
 #include "net/quic/iovector.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_config.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 
 using base::hash_map;
@@ -35,8 +36,6 @@ using std::numeric_limits;
 using std::vector;
 using std::set;
 using std::string;
-
-extern bool FLAGS_quic_allow_oversized_packets_for_test;
 
 namespace net {
 
@@ -168,9 +167,9 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
                                QuicConnectionHelperInterface* helper,
                                QuicPacketWriter* writer,
                                bool is_server,
-                               const QuicVersionVector& supported_versions)
-    : framer_(supported_versions,
-              helper->GetClock()->ApproximateNow(),
+                               const QuicVersionVector& supported_versions,
+                               uint32 max_flow_control_receive_window_bytes)
+    : framer_(supported_versions, helper->GetClock()->ApproximateNow(),
               is_server),
       helper_(helper),
       writer_(writer),
@@ -204,7 +203,16 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       version_negotiation_state_(START_NEGOTIATION),
       is_server_(is_server),
       connected_(true),
-      address_migrating_(false) {
+      address_migrating_(false),
+      max_flow_control_receive_window_bytes_(
+          max_flow_control_receive_window_bytes) {
+  if (max_flow_control_receive_window_bytes_ < kDefaultFlowControlSendWindow) {
+    DLOG(ERROR) << "Initial receive window ("
+                << max_flow_control_receive_window_bytes_
+                << ") cannot be set lower than default ("
+                << kDefaultFlowControlSendWindow << ").";
+    max_flow_control_receive_window_bytes_ = kDefaultFlowControlSendWindow;
+  }
   if (!is_server_) {
     // Pacing will be enabled if the client negotiates it.
     sent_packet_manager_.MaybeEnablePacing();
@@ -891,7 +899,7 @@ void QuicConnection::MaybeSendInResponseToPacket() {
   // are queued locally, or drain streams which are blocked.
   QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
       time_of_last_received_packet_, NOT_RETRANSMISSION,
-      HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
+      HAS_RETRANSMITTABLE_DATA);
   if (delay.IsZero()) {
     send_alarm_->Cancel();
     WriteIfNotBlocked();
@@ -1201,7 +1209,7 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
 
   QuicTime now = clock_->Now();
   QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
-      now, transmission_type, retransmittable, handshake);
+      now, transmission_type, retransmittable);
   if (delay.IsInfinite()) {
     return false;
   }

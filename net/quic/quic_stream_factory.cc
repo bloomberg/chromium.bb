@@ -55,6 +55,9 @@ enum CreateSessionFailure {
 
 const uint64 kBrokenAlternateProtocolDelaySecs = 300;
 
+// The initial receive window size for both streams and sessions.
+const int32 kInitialReceiveWindowSize = 10 * 1024 * 1024;  // 10MB
+
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
@@ -740,10 +743,9 @@ int QuicStreamFactory::CreateSession(
         clock_.get(), random_generator_));
   }
 
-  QuicConnection* connection = new QuicConnection(connection_id, addr,
-                                                  helper_.get(),
-                                                  writer.get(), false,
-                                                  supported_versions_);
+  QuicConnection* connection =
+      new QuicConnection(connection_id, addr, helper_.get(), writer.get(),
+                         false, supported_versions_, kInitialReceiveWindowSize);
   writer->SetConnection(connection);
   connection->options()->max_packet_length = max_packet_length_;
 

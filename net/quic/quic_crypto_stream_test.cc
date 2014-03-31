@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -99,6 +100,11 @@ TEST_F(QuicCryptoStreamTest, ProcessBadData) {
   EXPECT_CALL(*connection_,
               SendConnectionClose(QUIC_CRYPTO_TAGS_OUT_OF_ORDER));
   EXPECT_EQ(0u, stream_.ProcessRawData(bad.data(), bad.length()));
+}
+
+TEST_F(QuicCryptoStreamTest, NoFlowControl) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  EXPECT_FALSE(stream_.IsFlowControlEnabled());
 }
 
 }  // namespace

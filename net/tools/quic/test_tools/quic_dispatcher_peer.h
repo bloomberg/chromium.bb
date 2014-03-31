@@ -7,6 +7,8 @@
 
 #include "net/tools/quic/quic_dispatcher.h"
 
+#include "net/base/ip_endpoint.h"
+
 namespace net {
 namespace tools {
 
@@ -28,6 +30,13 @@ class QuicDispatcherPeer {
   static QuicPacketWriterWrapper* GetWriter(QuicDispatcher* dispatcher);
 
   static QuicEpollConnectionHelper* GetHelper(QuicDispatcher* dispatcher);
+
+  static QuicConnection* CreateQuicConnection(
+      QuicDispatcher* dispatcher,
+      QuicConnectionId connection_id,
+      const IPEndPoint& server,
+      const IPEndPoint& client,
+      uint32 initial_flow_control_window_bytes);
 };
 
 }  // namespace test

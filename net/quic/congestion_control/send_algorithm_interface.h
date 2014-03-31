@@ -56,7 +56,6 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   virtual bool OnPacketSent(QuicTime sent_time,
                             QuicPacketSequenceNumber sequence_number,
                             QuicByteCount bytes,
-                            TransmissionType transmission_type,
                             HasRetransmittableData is_retransmittable) = 0;
 
   // Called when the retransmission timeout fires.  Neither OnPacketAbandoned
@@ -70,9 +69,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // Calculate the time until we can send the next packet.
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
-      TransmissionType transmission_type,
-      HasRetransmittableData has_retransmittable_data,
-      IsHandshake handshake) = 0;
+      HasRetransmittableData has_retransmittable_data) = 0;
 
   // What's the current estimated bandwidth in bytes per second.
   // Returns 0 when it does not have an estimate.

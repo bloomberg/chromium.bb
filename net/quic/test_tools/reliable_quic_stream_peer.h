@@ -24,6 +24,19 @@ class ReliableQuicStreamPeer {
   static bool FinSent(ReliableQuicStream* stream);
   static bool RstSent(ReliableQuicStream* stream);
 
+  static void SetFlowControlSendOffset(ReliableQuicStream* stream,
+                                       QuicStreamOffset offset);
+  static void SetFlowControlReceiveOffset(ReliableQuicStream* stream,
+                                          QuicStreamOffset offset);
+  static void SetFlowControlMaxReceiveWindow(ReliableQuicStream* stream,
+                                             uint64 window_size);
+  static QuicStreamOffset SendWindowOffset(ReliableQuicStream* stream);
+  static uint64 SendWindowSize(ReliableQuicStream* stream);
+  static QuicStreamOffset ReceiveWindowOffset(ReliableQuicStream* stream);
+  static uint64 ReceiveWindowSize(ReliableQuicStream* stream);
+
+  static uint32 SizeOfQueuedData(ReliableQuicStream* stream);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ReliableQuicStreamPeer);
 };

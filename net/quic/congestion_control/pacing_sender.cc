@@ -43,7 +43,6 @@ bool PacingSender::OnPacketSent(
     QuicTime sent_time,
     QuicPacketSequenceNumber sequence_number,
     QuicByteCount bytes,
-    TransmissionType transmission_type,
     HasRetransmittableData has_retransmittable_data) {
   // Only pace data packets once we have an updated RTT.
   if (has_retransmittable_data == HAS_RETRANSMITTABLE_DATA && updated_rtt_) {
@@ -57,7 +56,7 @@ bool PacingSender::OnPacketSent(
     next_packet_send_time_ = next_packet_send_time_.Add(delay);
   }
   return sender_->OnPacketSent(sent_time, sequence_number, bytes,
-                               transmission_type, has_retransmittable_data);
+                               has_retransmittable_data);
 }
 
 void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {
@@ -71,12 +70,9 @@ void PacingSender::OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
 
 QuicTime::Delta PacingSender::TimeUntilSend(
       QuicTime now,
-      TransmissionType transmission_type,
-      HasRetransmittableData has_retransmittable_data,
-      IsHandshake handshake) {
+      HasRetransmittableData has_retransmittable_data) {
   QuicTime::Delta time_until_send =
-      sender_->TimeUntilSend(now, transmission_type,
-                             has_retransmittable_data, handshake);
+      sender_->TimeUntilSend(now, has_retransmittable_data);
   if (!updated_rtt_) {
     // Don't pace if we don't have an updated RTT estimate.
     return time_until_send;

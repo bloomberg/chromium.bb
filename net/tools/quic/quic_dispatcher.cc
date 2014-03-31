@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/quic/quic_blocked_writer_interface.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
@@ -139,16 +140,19 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig& crypto_config,
                                const QuicVersionVector& supported_versions,
-                               EpollServer* epoll_server)
+                               EpollServer* epoll_server,
+                               uint32 initial_flow_control_window_bytes)
     : config_(config),
       crypto_config_(crypto_config),
       delete_sessions_alarm_(new DeleteSessionsAlarm(this)),
       epoll_server_(epoll_server),
       helper_(new QuicEpollConnectionHelper(epoll_server_)),
       supported_versions_(supported_versions),
+      supported_versions_no_flow_control_(supported_versions),
       current_packet_(NULL),
       framer_(supported_versions, /*unused*/ QuicTime::Zero(), true),
-      framer_visitor_(new QuicFramerVisitor(this)) {
+      framer_visitor_(new QuicFramerVisitor(this)),
+      initial_flow_control_window_bytes_(initial_flow_control_window_bytes) {
   framer_.set_visitor(framer_visitor_.get());
 }
 
@@ -163,6 +167,17 @@ void QuicDispatcher::Initialize(int fd) {
   time_wait_list_manager_.reset(
       new QuicTimeWaitListManager(writer_.get(), this,
                                   epoll_server(), supported_versions()));
+
+  // Remove all versions > QUIC_VERSION_16 from the
+  // supported_versions_no_flow_control_ vector.
+  QuicVersionVector::iterator it =
+      find(supported_versions_no_flow_control_.begin(),
+           supported_versions_no_flow_control_.end(), QUIC_VERSION_17);
+  if (it != supported_versions_no_flow_control_.end()) {
+    supported_versions_no_flow_control_.erase(
+        supported_versions_no_flow_control_.begin(), it + 1);
+  }
+  CHECK(!supported_versions_no_flow_control_.empty());
 }
 
 void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
@@ -337,7 +352,10 @@ QuicSession* QuicDispatcher::CreateQuicSession(
     const IPEndPoint& client_address) {
   QuicServerSession* session = new QuicServerSession(
       config_,
-      CreateQuicConnection(connection_id, server_address, client_address),
+      CreateQuicConnection(connection_id,
+                           server_address,
+                           client_address,
+                           initial_flow_control_window_bytes_),
       this);
   session->InitializeSession(crypto_config_);
   return session;
@@ -346,9 +364,22 @@ QuicSession* QuicDispatcher::CreateQuicSession(
 QuicConnection* QuicDispatcher::CreateQuicConnection(
     QuicConnectionId connection_id,
     const IPEndPoint& server_address,
-    const IPEndPoint& client_address) {
-  return new QuicConnection(connection_id, client_address, helper_.get(),
-                            writer_.get(), true, supported_versions_);
+    const IPEndPoint& client_address,
+    uint32 initial_flow_control_window) {
+  // If we have disabled per-stream flow control, then don't allow new
+  // connections to talk QUIC_VERSION_17 or higher.
+  if (FLAGS_enable_quic_stream_flow_control) {
+    return new QuicConnection(connection_id, client_address, helper_.get(),
+                              writer_.get(), true, supported_versions_,
+                              initial_flow_control_window_bytes_);
+  } else {
+    DVLOG(1)
+        << "Flow control disabled, creating QuicDispatcher WITHOUT version 17";
+    return new QuicConnection(connection_id, client_address, helper_.get(),
+                              writer_.get(), true,
+                              supported_versions_no_flow_control_,
+                              initial_flow_control_window_bytes_);
+  }
 }
 
 void QuicDispatcher::set_writer(QuicPacketWriter* writer) {

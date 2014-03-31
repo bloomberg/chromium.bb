@@ -69,4 +69,8 @@ QuicCryptoStream::crypto_negotiated_params() const {
   return crypto_negotiated_params_;
 }
 
+bool QuicCryptoStream::IsFlowControlEnabled() const {
+  return false;
+}
+
 }  // namespace net

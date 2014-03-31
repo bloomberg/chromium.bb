@@ -62,6 +62,9 @@ const QuicByteCount kMaxPacketSize = 1452;
 const size_t kDefaultInitialWindow = 10;
 const size_t kMaxInitialWindow = 100;
 
+// Default size of initial flow control window.
+const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
+
 // Maximum size of the congestion window, in packets, for TCP congestion control
 // algorithms.
 const size_t kMaxTcpCongestionWindow = 200;
@@ -259,7 +262,8 @@ enum QuicVersion {
 
   QUIC_VERSION_13 = 13,
   QUIC_VERSION_15 = 15,
-  QUIC_VERSION_16 = 16,  // Current version.
+  QUIC_VERSION_16 = 16,
+  QUIC_VERSION_17 = 17,  // Current version.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -269,7 +273,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are addding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_16,
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_17,
+                                                     QUIC_VERSION_16,
                                                      QUIC_VERSION_15,
                                                      QUIC_VERSION_13};
 

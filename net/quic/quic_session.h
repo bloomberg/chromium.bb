@@ -179,6 +179,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   virtual size_t GetNumOpenStreams() const;
 
   void MarkWriteBlocked(QuicStreamId id, QuicPriority priority);
+  void MarkFlowControlBlocked(QuicStreamId id, QuicPriority priority);
 
   // Returns true if the session has data to be sent, either queued in the
   // connection, or in a write-blocked stream.

@@ -5,6 +5,8 @@
 // A binary wrapper for QuicClient.  Connects to --hostname via --address
 // on --port and requests URLs specified on the command line.
 // Pass --secure to check the certificates using proof verifier.
+// Pass --initial_flow_control_window to specify the size of the initial flow
+// control receive window to advertise to server.
 //
 // For example:
 //  quic_client --address=127.0.0.1 --port=6122 --hostname=www.google.com
@@ -21,9 +23,14 @@
 #include "net/quic/quic_protocol.h"
 #include "net/tools/quic/quic_client.h"
 
+// The port the quic client will connect to.
 int32 FLAGS_port = 6121;
 std::string FLAGS_address = "127.0.0.1";
+// The hostname the quic client will connect to.
 std::string FLAGS_hostname = "localhost";
+// Size of the initial flow control receive window to advertise to server.
+int32 FLAGS_initial_flow_control_window = 100 * net::kMaxPacketSize;
+// Check the certificates using proof verifier.
 bool FLAGS_secure = false;
 
 int main(int argc, char *argv[]) {
@@ -76,7 +83,7 @@ int main(int argc, char *argv[]) {
       net::IPEndPoint(addr, FLAGS_port),
       net::QuicSessionKey(FLAGS_hostname, FLAGS_port, FLAGS_secure,
                           net::kPrivacyModeDisabled),
-      net::QuicSupportedVersions(), true);
+      net::QuicSupportedVersions(), true, FLAGS_initial_flow_control_window);
 
   client.Initialize();
 

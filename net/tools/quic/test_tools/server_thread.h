@@ -20,7 +20,8 @@ class ServerThread : public base::SimpleThread {
   ServerThread(IPEndPoint address,
                const QuicConfig& config,
                const QuicVersionVector& supported_versions,
-               bool strike_register_no_startup_period);
+               bool strike_register_no_startup_period,
+               uint32 server_initial_flow_control_receive_window);
 
   virtual ~ServerThread();
 

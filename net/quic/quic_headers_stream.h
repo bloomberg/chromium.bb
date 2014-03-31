@@ -37,6 +37,9 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   virtual uint32 ProcessRawData(const char* data, uint32 data_len) OVERRIDE;
   virtual QuicPriority EffectivePriority() const OVERRIDE;
 
+  // Headers stream is special and is not flow controlled.
+  virtual bool IsFlowControlEnabled() const OVERRIDE;
+
  private:
   class SpdyFramerVisitor;
 

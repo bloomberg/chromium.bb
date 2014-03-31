@@ -911,6 +911,8 @@
         'quic/quic_default_packet_writer.h',
         'quic/quic_fec_group.cc',
         'quic/quic_fec_group.h',
+        'quic/quic_flags.cc',
+        'quic/quic_flags.h',
         'quic/quic_framer.cc',
         'quic/quic_framer.h',
         'quic/quic_headers_stream.cc',

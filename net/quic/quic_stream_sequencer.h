@@ -73,9 +73,8 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Blocks processing of frames until |FlushBufferedFrames| is called.
   void SetBlockedUntilFlush();
 
-  size_t num_bytes_buffered() const {
-    return num_bytes_buffered_;
-  }
+  size_t num_bytes_buffered() const { return num_bytes_buffered_; }
+  QuicStreamOffset num_bytes_consumed() const { return num_bytes_consumed_; }
 
  private:
   friend class test::QuicStreamSequencerPeer;

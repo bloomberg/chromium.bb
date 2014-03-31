@@ -13,6 +13,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_data_writer.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_socket_address_coder.h"
 
 using base::StringPiece;
@@ -22,8 +23,6 @@ using std::max;
 using std::min;
 using std::numeric_limits;
 using std::string;
-
-bool FLAGS_quic_allow_oversized_packets_for_test = false;
 
 namespace net {
 

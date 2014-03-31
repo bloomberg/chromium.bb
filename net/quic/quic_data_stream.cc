@@ -184,10 +184,8 @@ bool QuicDataStream::FinishedReadingHeaders() {
   return headers_decompressed_ && decompressed_headers_.empty();
 }
 
-void QuicDataStream::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
-  DVLOG(1) << "Received WindowUpdateFrame for stream: " << id()
-           << ", with byte offset: " << frame.byte_offset;
-  // TODO(rjshade): Adjust flow control window.
+bool QuicDataStream::IsFlowControlEnabled() const {
+  return version() >= QUIC_VERSION_17;
 }
 
 }  // namespace net

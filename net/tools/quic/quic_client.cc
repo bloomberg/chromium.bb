@@ -34,7 +34,8 @@ const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicSessionKey& server_key,
                        const QuicVersionVector& supported_versions,
-                       bool print_response)
+                       bool print_response,
+                       uint32 initial_flow_control_window)
     : server_address_(server_address),
       server_key_(server_key),
       local_port_(0),
@@ -44,14 +45,16 @@ QuicClient::QuicClient(IPEndPoint server_address,
       packets_dropped_(0),
       overflow_supported_(false),
       supported_versions_(supported_versions),
-      print_response_(print_response) {
+      print_response_(print_response),
+      initial_flow_control_window_(initial_flow_control_window) {
   config_.SetDefaults();
 }
 
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicSessionKey& server_key,
                        const QuicConfig& config,
-                       const QuicVersionVector& supported_versions)
+                       const QuicVersionVector& supported_versions,
+                       uint32 initial_flow_control_window)
     : server_address_(server_address),
       server_key_(server_key),
       config_(config),
@@ -62,7 +65,8 @@ QuicClient::QuicClient(IPEndPoint server_address,
       packets_dropped_(0),
       overflow_supported_(false),
       supported_versions_(supported_versions),
-      print_response_(false) {
+      print_response_(false),
+      initial_flow_control_window_(initial_flow_control_window) {
 }
 
 QuicClient::~QuicClient() {
@@ -166,7 +170,8 @@ bool QuicClient::StartConnect() {
       server_key_,
       config_,
       new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
-                         writer_.get(), false, supported_versions_),
+                         writer_.get(), false, supported_versions_,
+                         initial_flow_control_window_),
       &crypto_config_));
   return session_->CryptoConnect();
 }

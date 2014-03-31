@@ -186,6 +186,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // version: version of the QUIC protocol in use for this connection
   // supported_versions: versions of the QUIC protocol that this server
   //     supports.
+  // initial_flow_control_window: size of initial flow control window this
+  //     server uses for new streams.
   // clock: used to validate client nonces and ephemeral keys.
   // rand: an entropy source
   // params: the state of the handshake. This may be updated with a server
@@ -199,6 +201,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       IPEndPoint client_address,
       QuicVersion version,
       const QuicVersionVector& supported_versions,
+      uint32 initial_flow_control_window_bytes,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCryptoNegotiatedParameters* params,

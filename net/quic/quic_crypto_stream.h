@@ -51,6 +51,9 @@ class NET_EXPORT_PRIVATE QuicCryptoStream
 
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
 
+  // Crypto stream is special and is not flow controlled.
+  virtual bool IsFlowControlEnabled() const OVERRIDE;
+
  protected:
   bool encryption_established_;
   bool handshake_confirmed_;

@@ -112,6 +112,8 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
           data.iovec()[i].iov_len);
     }
     num_bytes_consumed_ += bytes_consumed;
+    stream_->MaybeSendWindowUpdate();
+
     if (MaybeCloseStream()) {
       return true;
     }
@@ -287,6 +289,8 @@ void QuicStreamSequencer::FlushBufferedFrames() {
 void QuicStreamSequencer::RecordBytesConsumed(size_t bytes_consumed) {
   num_bytes_consumed_ += bytes_consumed;
   num_bytes_buffered_ -= bytes_consumed;
+
+  stream_->MaybeSendWindowUpdate();
 }
 
 }  // namespace net

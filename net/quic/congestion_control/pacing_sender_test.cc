@@ -36,22 +36,19 @@ class PacingSenderTest : public ::testing::Test {
     // In order for the packet to be sendable, the underlying sender must
     // permit it to be sent immediately.
     EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                             NOT_RETRANSMISSION,
-                                             HAS_RETRANSMITTABLE_DATA,
-                                             NOT_HANDSHAKE))
+                                             HAS_RETRANSMITTABLE_DATA))
         .WillOnce(Return(zero_time_));
     // Verify that the packet can be sent immediately.
     EXPECT_EQ(zero_time_,
-              pacing_sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
-                                            HAS_RETRANSMITTABLE_DATA,
-                                            NOT_HANDSHAKE));
+              pacing_sender_->TimeUntilSend(clock_.Now(),
+                                            HAS_RETRANSMITTABLE_DATA));
 
     // Actually send the packet.
     EXPECT_CALL(*mock_sender_,
                 OnPacketSent(clock_.Now(), sequence_number_, kMaxPacketSize,
-                             NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA));
+                             HAS_RETRANSMITTABLE_DATA));
     pacing_sender_->OnPacketSent(clock_.Now(), sequence_number_++,
-                                 kMaxPacketSize, NOT_RETRANSMISSION,
+                                 kMaxPacketSize,
                                  HAS_RETRANSMITTABLE_DATA);
   }
 
@@ -59,22 +56,19 @@ class PacingSenderTest : public ::testing::Test {
     // In order for the ack to be sendable, the underlying sender must
     // permit it to be sent immediately.
     EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                             NOT_RETRANSMISSION,
-                                             NO_RETRANSMITTABLE_DATA,
-                                             NOT_HANDSHAKE))
+                                             NO_RETRANSMITTABLE_DATA))
         .WillOnce(Return(zero_time_));
     // Verify that the ACK can be sent immediately.
     EXPECT_EQ(zero_time_,
-              pacing_sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
-                                            NO_RETRANSMITTABLE_DATA,
-                                            NOT_HANDSHAKE));
+              pacing_sender_->TimeUntilSend(clock_.Now(),
+                                            NO_RETRANSMITTABLE_DATA));
 
     // Actually send the packet.
     EXPECT_CALL(*mock_sender_,
                 OnPacketSent(clock_.Now(), sequence_number_, kMaxPacketSize,
-                             NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA));
+                             NO_RETRANSMITTABLE_DATA));
     pacing_sender_->OnPacketSent(clock_.Now(), sequence_number_++,
-                                 kMaxPacketSize, NOT_RETRANSMISSION,
+                                 kMaxPacketSize,
                                  NO_RETRANSMITTABLE_DATA);
   }
 
@@ -82,15 +76,12 @@ class PacingSenderTest : public ::testing::Test {
     // In order for the packet to be sendable, the underlying sender must
     // permit it to be sent immediately.
     EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                             NOT_RETRANSMISSION,
-                                             HAS_RETRANSMITTABLE_DATA,
-                                             NOT_HANDSHAKE))
+                                             HAS_RETRANSMITTABLE_DATA))
         .WillOnce(Return(zero_time_));
     // Verify that the packet is delayed.
     EXPECT_EQ(delay.ToMicroseconds(),
-              pacing_sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
-                                            HAS_RETRANSMITTABLE_DATA,
-                                            NOT_HANDSHAKE).ToMicroseconds());
+              pacing_sender_->TimeUntilSend(
+                  clock_.Now(), HAS_RETRANSMITTABLE_DATA).ToMicroseconds());
   }
 
   const QuicTime::Delta zero_time_;
@@ -103,26 +94,20 @@ class PacingSenderTest : public ::testing::Test {
 
 TEST_F(PacingSenderTest, NoSend) {
   EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                           NOT_RETRANSMISSION,
-                                           HAS_RETRANSMITTABLE_DATA,
-                                           NOT_HANDSHAKE))
+                                           HAS_RETRANSMITTABLE_DATA))
       .WillOnce(Return(infinite_time_));
   EXPECT_EQ(infinite_time_,
-            pacing_sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
-                                          HAS_RETRANSMITTABLE_DATA,
-                                          NOT_HANDSHAKE));
+            pacing_sender_->TimeUntilSend(clock_.Now(),
+                                          HAS_RETRANSMITTABLE_DATA));
 }
 
 TEST_F(PacingSenderTest, SendNow) {
   EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                           NOT_RETRANSMISSION,
-                                           HAS_RETRANSMITTABLE_DATA,
-                                           NOT_HANDSHAKE))
+                                           HAS_RETRANSMITTABLE_DATA))
       .WillOnce(Return(zero_time_));
   EXPECT_EQ(zero_time_,
-            pacing_sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
-                                          HAS_RETRANSMITTABLE_DATA,
-                                          NOT_HANDSHAKE));
+            pacing_sender_->TimeUntilSend(clock_.Now(),
+                                          HAS_RETRANSMITTABLE_DATA));
 }
 
 TEST_F(PacingSenderTest, VariousSending) {

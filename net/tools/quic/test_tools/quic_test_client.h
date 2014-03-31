@@ -42,7 +42,8 @@ class QuicTestClient :  public QuicDataStream::Visitor {
                  const QuicSessionKey& server_key,
                  bool secure,
                  const QuicConfig& config,
-                 const QuicVersionVector& supported_versions);
+                 const QuicVersionVector& supported_versions,
+                 uint32 client_initial_flow_control_receive_window);
 
   virtual ~QuicTestClient();
 

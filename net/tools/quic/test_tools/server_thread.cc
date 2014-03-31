@@ -13,14 +13,17 @@ namespace test {
 ServerThread::ServerThread(IPEndPoint address,
                            const QuicConfig& config,
                            const QuicVersionVector& supported_versions,
-                           bool strike_register_no_startup_period)
+                           bool strike_register_no_startup_period,
+                           uint32 server_initial_flow_control_receive_window)
     : SimpleThread("server_thread"),
       confirmed_(true, false),
       pause_(true, false),
       paused_(true, false),
       resume_(true, false),
       quit_(true, false),
-      server_(config, supported_versions),
+      server_(config,
+              supported_versions,
+              server_initial_flow_control_receive_window),
       address_(address),
       port_(0),
       initialized_(false) {

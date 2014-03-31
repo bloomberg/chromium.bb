@@ -169,6 +169,7 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
       session()->connection()->peer_address(),
       session()->connection()->version(),
       session()->connection()->supported_versions(),
+      session()->connection()->max_flow_control_receive_window_bytes(),
       session()->connection()->clock(),
       session()->connection()->random_generator(),
       &crypto_negotiated_params_, reply, error_details);

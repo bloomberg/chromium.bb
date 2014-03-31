@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_utils.h"
 
@@ -303,7 +304,8 @@ QuicConfig::QuicConfig()
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
       // TODO(rjshade): Make this PRESENCE_REQUIRED when retiring
       // QUIC_VERSION_17.
-      peer_initial_flow_control_window_bytes_(kIFCW, PRESENCE_OPTIONAL, 0) {
+      peer_initial_flow_control_window_bytes_(kIFCW, PRESENCE_OPTIONAL,
+                                              kDefaultFlowControlSendWindow) {
   // All optional non-zero parameters should be initialized here.
   server_initial_congestion_window_.set(kMaxInitialWindow,
                                         kDefaultInitialWindow);
@@ -432,7 +434,9 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   server_initial_congestion_window_.ToHandshakeMessage(out);
   // TODO(ianswett): Don't transmit parameters which are optional and not set.
   initial_round_trip_time_us_.ToHandshakeMessage(out);
-  peer_initial_flow_control_window_bytes_.ToHandshakeMessage(out);
+
+  // Don't add peer_initial_flow_control_window_bytes here, it is not a
+  // negotiated value.
 }
 
 QuicErrorCode QuicConfig::ProcessClientHello(

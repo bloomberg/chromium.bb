@@ -6,6 +6,7 @@
 
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_connection.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -57,6 +58,10 @@ class TestStream : public ReliableQuicStream {
     return QuicUtils::HighestPriority();
   }
 
+  virtual bool IsFlowControlEnabled() const OVERRIDE {
+    return true;
+  }
+
   using ReliableQuicStream::WriteOrBufferData;
   using ReliableQuicStream::CloseReadSide;
   using ReliableQuicStream::CloseWriteSide;
@@ -69,7 +74,8 @@ class TestStream : public ReliableQuicStream {
 
 class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
  public:
-  ReliableQuicStreamTest() {
+  ReliableQuicStreamTest()
+      : initial_flow_control_window_bytes_(kMaxPacketSize) {
     headers_[":host"] = "www.google.com";
     headers_[":path"] = "/index.hml";
     headers_[":scheme"] = "https";
@@ -102,6 +108,12 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   void Initialize(bool stream_should_process_data) {
     connection_ = new StrictMock<MockConnection>(kIsServer);
     session_.reset(new StrictMock<MockSession>(connection_));
+
+    // New streams rely on having the peer's flow control receive window
+    // negotiated in the config.
+    session_->config()->set_peer_initial_flow_control_window_bytes(
+        initial_flow_control_window_bytes_);
+
     stream_.reset(new TestStream(kStreamId, session_.get(),
                                  stream_should_process_data));
     stream2_.reset(new TestStream(kStreamId + 2, session_.get(),
@@ -113,6 +125,10 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   bool fin_sent() { return ReliableQuicStreamPeer::FinSent(stream_.get()); }
   bool rst_sent() { return ReliableQuicStreamPeer::RstSent(stream_.get()); }
 
+  void set_initial_flow_control_window_bytes(uint32 val) {
+    initial_flow_control_window_bytes_ = val;
+  }
+
  protected:
   MockConnection* connection_;
   scoped_ptr<MockSession> session_;
@@ -120,6 +136,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   scoped_ptr<TestStream> stream2_;
   SpdyHeaderBlock headers_;
   QuicWriteBlockedList* write_blocked_list_;
+  uint32 initial_flow_control_window_bytes_;
 };
 
 TEST_F(ReliableQuicStreamTest, WriteAllData) {
@@ -289,6 +306,37 @@ TEST_F(ReliableQuicStreamTest, OnlySendOneRst) {
   stream_->OnClose();
   EXPECT_FALSE(fin_sent());
   EXPECT_TRUE(rst_sent());
+}
+
+TEST_F(ReliableQuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+  set_initial_flow_control_window_bytes(1000);
+
+  Initialize(kShouldProcessData);
+
+  // If we receive multiple WINDOW_UPDATES (potentially out of order), then we
+  // want to make sure we latch the largest offset we see.
+
+  // Initially should be default.
+  EXPECT_EQ(initial_flow_control_window_bytes_,
+            ReliableQuicStreamPeer::SendWindowOffset(stream_.get()));
+
+  // Check a single WINDOW_UPDATE results in correct offset.
+  QuicWindowUpdateFrame window_update_1(stream_->id(), 1234);
+  stream_->OnWindowUpdateFrame(window_update_1);
+  EXPECT_EQ(window_update_1.byte_offset,
+            ReliableQuicStreamPeer::SendWindowOffset(stream_.get()));
+
+  // Now send a few more WINDOW_UPDATES and make sure that only the largest is
+  // remembered.
+  QuicWindowUpdateFrame window_update_2(stream_->id(), 1);
+  QuicWindowUpdateFrame window_update_3(stream_->id(), 9999);
+  QuicWindowUpdateFrame window_update_4(stream_->id(), 5678);
+  stream_->OnWindowUpdateFrame(window_update_2);
+  stream_->OnWindowUpdateFrame(window_update_3);
+  stream_->OnWindowUpdateFrame(window_update_4);
+  EXPECT_EQ(window_update_3.byte_offset,
+            ReliableQuicStreamPeer::SendWindowOffset(stream_.get()));
 }
 
 void SaveProxyAckNotifierDelegate(

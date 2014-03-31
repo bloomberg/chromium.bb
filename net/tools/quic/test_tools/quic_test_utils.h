@@ -27,6 +27,7 @@ namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
 static const int kTestPort = 123;
+static const uint32 kInitialFlowControlWindowForTest = 32 * 1024;  // 32 KB
 
 // Simple random number generator used to compute random numbers suitable
 // for pseudo-randomly dropping packets in tests.  It works by computing

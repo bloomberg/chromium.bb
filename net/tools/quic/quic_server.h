@@ -31,7 +31,8 @@ class QuicServer : public EpollCallbackInterface {
  public:
   QuicServer();
   QuicServer(const QuicConfig& config,
-             const QuicVersionVector& supported_versions);
+             const QuicVersionVector& supported_versions,
+             uint32 server_initial_flow_control_receive_window);
 
   virtual ~QuicServer();
 
@@ -120,6 +121,10 @@ class QuicServer : public EpollCallbackInterface {
   // element, with subsequent elements in descending order (versions can be
   // skipped as necessary).
   QuicVersionVector supported_versions_;
+
+  // Size of flow control receive window to advertise to clients on new
+  // connections.
+  uint32 server_initial_flow_control_receive_window_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };

@@ -280,7 +280,7 @@ void QuicSession::OnCanWrite() {
       has_pending_handshake_ = false;  // We just popped it.
     }
     ReliableQuicStream* stream = GetStream(stream_id);
-    if (stream != NULL) {
+    if (stream != NULL && !stream->IsFlowControlBlocked()) {
       // If the stream can't write all bytes, it'll re-add itself to the blocked
       // list.
       stream->OnCanWrite();
@@ -364,6 +364,26 @@ bool QuicSession::IsCryptoHandshakeConfirmed() {
 
 void QuicSession::OnConfigNegotiated() {
   connection_->SetFromConfig(config_);
+  // Tell all streams about the newly received peer receive window.
+  if (connection()->version() >= QUIC_VERSION_17) {
+    // Streams which were created before the SHLO was received (0RTT requests)
+    // are now informed of the peer's initial flow control window.
+    uint32 new_flow_control_send_window =
+        config_.peer_initial_flow_control_window_bytes();
+    if (new_flow_control_send_window < kDefaultFlowControlSendWindow) {
+      LOG(DFATAL)
+          << "Peer sent us an invalid flow control send window: "
+          << new_flow_control_send_window
+          << ", below default: " << kDefaultFlowControlSendWindow;
+      connection_->SendConnectionClose(QUIC_FLOW_CONTROL_ERROR);
+      return;
+    }
+    DataStreamMap::iterator it = stream_map_.begin();
+    while (it != stream_map_.end()) {
+      it->second->UpdateFlowControlSendLimit(new_flow_control_send_window);
+      it++;
+    }
+  }
 }
 
 void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
@@ -522,6 +542,9 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
 #ifndef NDEBUG
   ReliableQuicStream* stream = GetStream(id);
   if (stream != NULL) {
+    if (stream->IsFlowControlBlocked()) {
+      LOG(DFATAL) << "Stream " << id << " is flow control blocked.";
+    }
     LOG_IF(DFATAL, priority != stream->EffectivePriority())
         << "Priorities do not match.  Got: " << priority
         << " Expected: " << stream->EffectivePriority();
@@ -539,6 +562,19 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
     priority = kHighestPriority;
   }
   write_blocked_streams_.PushBack(id, priority);
+}
+
+void QuicSession::MarkFlowControlBlocked(QuicStreamId id,
+                                         QuicPriority priority) {
+  ReliableQuicStream* stream = GetStream(id);
+  if (stream == NULL) {
+    LOG(DFATAL) << "Trying to mark nonexistent stream " << id
+                << " flow control blocked.";
+    return;
+  }
+
+  // Send a BLOCKED frame to peer.
+  connection()->SendBlocked(id);
 }
 
 bool QuicSession::HasDataToWrite() const {

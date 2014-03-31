@@ -4,6 +4,10 @@
 
 #include "net/tools/quic/test_tools/mock_quic_dispatcher.h"
 
+#include "net/quic/test_tools/quic_test_utils.h"
+
+using net::test::kInitialFlowControlWindowForTest;
+
 namespace net {
 namespace tools {
 namespace test {
@@ -12,7 +16,11 @@ MockQuicDispatcher::MockQuicDispatcher(
     const QuicConfig& config,
     const QuicCryptoServerConfig& crypto_config,
     EpollServer* eps)
-    : QuicDispatcher(config, crypto_config, QuicSupportedVersions(), eps) {}
+    : QuicDispatcher(config,
+                     crypto_config,
+                     QuicSupportedVersions(),
+                     eps,
+                     kInitialFlowControlWindowForTest) {}
 
 MockQuicDispatcher::~MockQuicDispatcher() {}
 

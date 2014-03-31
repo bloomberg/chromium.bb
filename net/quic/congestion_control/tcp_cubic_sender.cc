@@ -132,7 +132,6 @@ void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
 bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
                                   QuicPacketSequenceNumber sequence_number,
                                   QuicByteCount bytes,
-                                  TransmissionType transmission_type,
                                   HasRetransmittableData is_retransmittable) {
   // Only update bytes_in_flight_ for data packets.
   if (is_retransmittable != HAS_RETRANSMITTABLE_DATA) {
@@ -146,7 +145,7 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
     // DCHECK_LT(largest_sent_sequence_number_, sequence_number);
     largest_sent_sequence_number_ = sequence_number;
   }
-  if (transmission_type == NOT_RETRANSMISSION && update_end_sequence_number_) {
+  if (update_end_sequence_number_) {
     end_sequence_number_ = sequence_number;
     if (AvailableSendWindow() == 0) {
       update_end_sequence_number_ = false;
@@ -164,17 +163,9 @@ void TcpCubicSender::OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
 
 QuicTime::Delta TcpCubicSender::TimeUntilSend(
     QuicTime /* now */,
-    TransmissionType transmission_type,
-    HasRetransmittableData has_retransmittable_data,
-    IsHandshake handshake) {
-  if (transmission_type == TLP_RETRANSMISSION ||
-      transmission_type == HANDSHAKE_RETRANSMISSION ||
-      has_retransmittable_data == NO_RETRANSMITTABLE_DATA ||
-      handshake == IS_HANDSHAKE) {
+    HasRetransmittableData has_retransmittable_data) {
+  if (has_retransmittable_data == NO_RETRANSMITTABLE_DATA) {
     // For TCP we can always send an ACK immediately.
-    // We also immediately send any handshake packet (CHLO, etc.).  We provide
-    // this special dispensation for handshake messages in QUIC, although the
-    // concept is not present in TCP.
     // We also allow tail loss probes to be sent immediately, in keeping with
     // tail loss probe (draft-dukkipati-tcpm-tcp-loss-probe-01).
     return QuicTime::Delta::Zero();

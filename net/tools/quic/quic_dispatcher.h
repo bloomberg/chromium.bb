@@ -63,7 +63,8 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   QuicDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig& crypto_config,
                  const QuicVersionVector& supported_versions,
-                 EpollServer* epoll_server);
+                 EpollServer* epoll_server,
+                 uint32 initial_flow_control_window_bytes);
 
   virtual ~QuicDispatcher();
 
@@ -117,7 +118,8 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   QuicConnection* CreateQuicConnection(QuicConnectionId connection_id,
                                        const IPEndPoint& server_address,
-                                       const IPEndPoint& client_address);
+                                       const IPEndPoint& client_address,
+                                       uint32 initial_flow_control_window);
 
   // Replaces the packet writer with |writer|. Takes ownership of |writer|.
   void set_writer(QuicPacketWriter* writer);
@@ -138,6 +140,9 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   const IPEndPoint& current_server_address() {
     return current_server_address_;
+  }
+  const IPEndPoint& current_client_address() {
+    return current_client_address_;
   }
   const QuicEncryptedPacket& current_packet() {
     return *current_packet_;
@@ -195,6 +200,13 @@ class QuicDispatcher : public QuicServerSessionVisitor {
   // skipped as necessary).
   const QuicVersionVector supported_versions_;
 
+  // Versions which do not support flow control (introduced in QUIC_VERSION_17).
+  // This is used to construct new QuicConnections when flow control is disabled
+  // via flag.
+  // TODO(rjshade): Remove this when
+  // FLAGS_enable_quic_stream_flow_control is removed.
+  QuicVersionVector supported_versions_no_flow_control_;
+
   // Information about the packet currently being handled.
   IPEndPoint current_client_address_;
   IPEndPoint current_server_address_;
@@ -202,6 +214,10 @@ class QuicDispatcher : public QuicServerSessionVisitor {
 
   QuicFramer framer_;
   scoped_ptr<QuicFramerVisitor> framer_visitor_;
+
+  // Initial flow control window size to advertize to peer on newly created
+  // connections.
+  const uint32 initial_flow_control_window_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };

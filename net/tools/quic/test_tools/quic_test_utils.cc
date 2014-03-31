@@ -11,6 +11,7 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 
 using base::StringPiece;
+using net::test::kInitialFlowControlWindowForTest;
 using net::test::MockHelper;
 
 namespace net {
@@ -22,7 +23,8 @@ MockConnection::MockConnection(bool is_server)
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions()),
+                     is_server, QuicSupportedVersions(),
+                     kInitialFlowControlWindowForTest),
       writer_(net::test::QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -32,7 +34,8 @@ MockConnection::MockConnection(IPEndPoint address,
     : QuicConnection(kTestConnectionId, address,
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions()),
+                     is_server, QuicSupportedVersions(),
+                     kInitialFlowControlWindowForTest),
       writer_(net::test::QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -43,7 +46,8 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, QuicSupportedVersions()),
+                     is_server, QuicSupportedVersions(),
+                     kInitialFlowControlWindowForTest),
       writer_(net::test::QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }
@@ -54,7 +58,8 @@ MockConnection::MockConnection(bool is_server,
                      IPEndPoint(net::test::Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
-                     is_server, supported_versions),
+                     is_server, QuicSupportedVersions(),
+                     kInitialFlowControlWindowForTest),
       writer_(net::test::QuicConnectionPeer::GetWriter(this)),
       helper_(helper()) {
 }

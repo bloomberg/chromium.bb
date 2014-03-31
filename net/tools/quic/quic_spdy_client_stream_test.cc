@@ -40,6 +40,11 @@ class QuicSpdyClientStreamTest : public TestWithParam<QuicVersion> {
     headers_.ReplaceOrAppendHeader("content-length", "11");
 
     headers_string_ = SpdyUtils::SerializeResponseHeaders(headers_);
+
+    // New streams rely on having the peer's flow control receive window
+    // negotiated in the config.
+    session_.config()->set_peer_initial_flow_control_window_bytes(
+        kInitialFlowControlWindowForTest);
     stream_.reset(new QuicSpdyClientStream(3, &session_));
   }
 

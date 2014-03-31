@@ -92,6 +92,20 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   void set_fin_sent(bool fin_sent) { fin_sent_ = fin_sent; }
   void set_rst_sent(bool rst_sent) { rst_sent_ = rst_sent; }
 
+  // Adjust our flow control windows according to new offset in |frame|.
+  virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
+
+  // True if this stream is blocked from writing due to flow control limits.
+  bool IsFlowControlBlocked() const;
+
+  // Updates our send window offset (if offset larger).
+  void UpdateFlowControlSendLimit(QuicStreamOffset offset);
+
+  // If our receive window has dropped below the threshold, then send a
+  // WINDOW_UPDATE frame. This is called whenever bytes are consumed from the
+  // sequencer's buffer.
+  void MaybeSendWindowUpdate();
+
  protected:
   // Sends as much of 'data' to the connection as the connection will consume,
   // and then buffers any remaining data in queued_data_.
@@ -127,6 +141,9 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   const QuicStreamSequencer* sequencer() const { return &sequencer_; }
   QuicStreamSequencer* sequencer() { return &sequencer_; }
 
+  // Returns true if flow control is enabled for this stream.
+  virtual bool IsFlowControlEnabled() const = 0;
+
  private:
   friend class test::ReliableQuicStreamPeer;
   friend class QuicStreamUtils;
@@ -142,6 +159,12 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
     // Can be nullptr.
     scoped_refptr<ProxyAckNotifierDelegate> delegate;
   };
+
+  // Calculates and returns available flow control send window.
+  uint64 SendWindowSize() const;
+
+  // Calculates and returns total number of bytes this stream has received.
+  uint64 TotalReceivedBytes() const;
 
   std::list<PendingData> queued_data_;
 
@@ -160,6 +183,23 @@ class NET_EXPORT_PRIVATE ReliableQuicStream {
   // is set to |QUIC_STREAM_CONNECTION_ERROR| when this happens and consumers
   // should check |connection_error_|.
   QuicErrorCode connection_error_;
+
+  // Stream level flow control.
+  // This stream is allowed to send up to flow_control_send_limit_ bytes. Once
+  // it has reached this limit it must not send more data until it receives a
+  // suitable WINDOW_UPDATE frame from the peer.
+  QuicStreamOffset flow_control_send_limit_;
+
+  // Stream level flow control.
+  // The maximum size of the stream receive window. Used to determine by how
+  // much we should increase the window offset when sending a WINDOW_UPDATE.
+  uint64 max_flow_control_receive_window_bytes_;
+
+  // Stream level flow control.
+  // This stream expects to receive up to receive_window_offset_bytes_.
+  // If the peer sends more than this (without sending us a WINDOW_UPDATE frame
+  // first), then this is a flow control error.
+  QuicStreamOffset flow_control_receive_window_offset_bytes_;
 
   // True if the read side is closed and further frames should be rejected.
   bool read_side_closed_;

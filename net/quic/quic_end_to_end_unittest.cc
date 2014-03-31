@@ -20,6 +20,7 @@
 #include "net/http/http_transaction_unittest.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
@@ -134,7 +135,8 @@ class QuicEndToEndTest : public PlatformTest {
     server_config_.SetDefaults();
     server_thread_.reset(new ServerThread(server_address_, server_config_,
                                           QuicSupportedVersions(),
-                                          strike_register_no_startup_period_));
+                                          strike_register_no_startup_period_,
+                                          kInitialFlowControlWindowForTest));
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());

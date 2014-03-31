@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_stream.h"
+#include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/reliable_quic_stream.h"
@@ -20,6 +21,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/spdy/spdy_framer.h"
+#include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,6 +53,8 @@ class TestCryptoStream : public QuicCryptoStream {
     handshake_confirmed_ = true;
     CryptoHandshakeMessage msg;
     string error_details;
+    session()->config()->set_peer_initial_flow_control_window_bytes(
+        kInitialFlowControlWindowForTest);
     session()->config()->ToHandshakeMessage(&msg);
     const QuicErrorCode error = session()->config()->ProcessClientHello(
         msg, &error_details);
@@ -72,6 +76,10 @@ class TestStream : public QuicDataStream {
 
   virtual uint32 ProcessData(const char* data, uint32 data_len) {
     return data_len;
+  }
+
+  void SendBody(const string& data, bool fin) {
+    WriteOrBufferData(data, fin, NULL);
   }
 
   MOCK_METHOD0(OnCanWrite, void());
@@ -98,7 +106,8 @@ class TestSession : public QuicSession {
  public:
   explicit TestSession(QuicConnection* connection)
       : QuicSession(connection, DefaultQuicConfig()),
-        crypto_stream_(this) {
+        crypto_stream_(this),
+        writev_consumes_all_data_(false) {
   }
 
   virtual TestCryptoStream* GetCryptoStream() OVERRIDE {
@@ -123,7 +132,29 @@ class TestSession : public QuicSession {
     return QuicSession::GetIncomingDataStream(stream_id);
   }
 
+  virtual QuicConsumedData WritevData(
+      QuicStreamId id,
+      const IOVector& data,
+      QuicStreamOffset offset,
+      bool fin,
+      QuicAckNotifier::DelegateInterface* ack_notifier_delegate) OVERRIDE {
+    // Always consumes everything.
+    if (writev_consumes_all_data_) {
+      return QuicConsumedData(data.TotalBufferSize(), fin);
+    } else {
+      return QuicSession::WritevData(id, data, offset, fin,
+                                     ack_notifier_delegate);
+    }
+  }
+
+  void set_writev_consumes_all_data(bool val) {
+    writev_consumes_all_data_ = val;
+  }
+
+ private:
   TestCryptoStream crypto_stream_;
+
+  bool writev_consumes_all_data_;
 };
 
 class QuicSessionTest : public ::testing::TestWithParam<QuicVersion> {
@@ -193,7 +224,7 @@ TEST_P(QuicSessionTest, PeerAddress) {
 TEST_P(QuicSessionTest, IsCryptoHandshakeConfirmed) {
   EXPECT_FALSE(session_.IsCryptoHandshakeConfirmed());
   CryptoHandshakeMessage message;
-  session_.crypto_stream_.OnHandshakeMessage(message);
+  session_.GetCryptoStream()->OnHandshakeMessage(message);
   EXPECT_TRUE(session_.IsCryptoHandshakeConfirmed());
 }
 
@@ -302,6 +333,14 @@ TEST_P(QuicSessionTest, OnCanWrite) {
   TestStream* stream4 = session_.CreateOutgoingDataStream();
   TestStream* stream6 = session_.CreateOutgoingDataStream();
 
+  // Streams should not be flow control blocked _and_ write blocked.
+  // WINDOW_UPDATE frames ensure that streams are not flow control blocked.
+  if (version() >= QUIC_VERSION_17) {
+    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
+    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
+    stream6->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream6->id(), 1234));
+  }
+
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
@@ -328,18 +367,26 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
   TestStream* stream4 = session_.CreateOutgoingDataStream();
   TestStream* stream6 = session_.CreateOutgoingDataStream();
 
+  // Streams should not be flow control blocked _and_ write blocked.
+  // WINDOW_UPDATE frames ensure that streams are not flow control blocked.
+  if (version() >= QUIC_VERSION_17) {
+    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
+    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
+    stream6->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream6->id(), 1234));
+  }
+
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream4->id(), kSomeMiddlePriority);
 
   StreamBlocker stream2_blocker(&session_, stream2->id());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream2, OnCanWrite());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream6, OnCanWrite());
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
       QuicTime::Delta::Infinite()));
   // stream4->OnCanWrite is not called.
 
@@ -347,14 +394,14 @@ TEST_P(QuicSessionTest, OnCanWriteCongestionControlBlocks) {
   EXPECT_TRUE(session_.HasPendingWrites());
 
   // Still congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
       QuicTime::Delta::Infinite()));
   session_.OnCanWrite();
   EXPECT_TRUE(session_.HasPendingWrites());
 
   // stream4->OnCanWrite is called once the connection stops being
   // congestion-control blocked.
-  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _, _)).WillOnce(Return(
+  EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _)).WillOnce(Return(
       QuicTime::Delta::Zero()));
   EXPECT_CALL(*stream4, OnCanWrite());
   session_.OnCanWrite();
@@ -366,11 +413,19 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
 
   // Test that blocking other streams does not change our status.
   TestStream* stream2 = session_.CreateOutgoingDataStream();
+  // Ensure stream is not flow control blocked.
+  if (version() >= QUIC_VERSION_17) {
+    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
+  }
   StreamBlocker stream2_blocker(&session_, stream2->id());
   stream2_blocker.MarkWriteBlocked();
   EXPECT_FALSE(session_.HasPendingHandshake());
 
   TestStream* stream3 = session_.CreateOutgoingDataStream();
+  // Ensure stream is not flow control blocked.
+  if (version() >= QUIC_VERSION_17) {
+    stream3->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream3->id(), 1234));
+  }
   StreamBlocker stream3_blocker(&session_, stream3->id());
   stream3_blocker.MarkWriteBlocked();
   EXPECT_FALSE(session_.HasPendingHandshake());
@@ -380,6 +435,10 @@ TEST_P(QuicSessionTest, BufferedHandshake) {
   EXPECT_TRUE(session_.HasPendingHandshake());
 
   TestStream* stream4 = session_.CreateOutgoingDataStream();
+  // Ensure stream is not flow control blocked.
+  if (version() >= QUIC_VERSION_17) {
+    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
+  }
   StreamBlocker stream4_blocker(&session_, stream4->id());
   stream4_blocker.MarkWriteBlocked();
   EXPECT_TRUE(session_.HasPendingHandshake());
@@ -413,6 +472,14 @@ TEST_P(QuicSessionTest, OnCanWriteWithClosedStream) {
   TestStream* stream2 = session_.CreateOutgoingDataStream();
   TestStream* stream4 = session_.CreateOutgoingDataStream();
   TestStream* stream6 = session_.CreateOutgoingDataStream();
+
+  // Streams should not be flow control blocked _and_ write blocked.
+  // WINDOW_UPDATE frames ensure that streams are not flow control blocked.
+  if (version() >= QUIC_VERSION_17) {
+    stream2->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream2->id(), 1234));
+    stream4->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream4->id(), 1234));
+    stream6->OnWindowUpdateFrame(QuicWindowUpdateFrame(stream6->id(), 1234));
+  }
 
   session_.MarkWriteBlocked(stream2->id(), kSomeMiddlePriority);
   session_.MarkWriteBlocked(stream6->id(), kSomeMiddlePriority);
@@ -449,7 +516,7 @@ TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {
   EXPECT_EQ(kDefaultInitialTimeoutSecs,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
   CryptoHandshakeMessage msg;
-  session_.crypto_stream_.OnHandshakeMessage(msg);
+  session_.GetCryptoStream()->OnHandshakeMessage(msg);
   EXPECT_EQ(kDefaultTimeoutSecs,
             QuicConnectionPeer::GetNetworkTimeout(connection_).ToSeconds());
 }
@@ -466,6 +533,59 @@ TEST_P(QuicSessionTest, RstStreamBeforeHeadersDecompressed) {
   QuicRstStreamFrame rst1(stream_id1, QUIC_STREAM_NO_ERROR, 0);
   session_.OnRstStream(rst1);
   EXPECT_EQ(0u, session_.GetNumOpenStreams());
+}
+
+TEST_P(QuicSessionTest, HandshakeUnblocksFlowControlBlockedStream) {
+  // Test that if a stream is flow control blocked, then on receipt of the SHLO
+  // containing a suitable send window offset, the stream becomes unblocked.
+  if (version() < QUIC_VERSION_17) {
+    return;
+  }
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+
+  // Ensure that Writev consumes all the data it is given (simulate no socket
+  // blocking).
+  session_.set_writev_consumes_all_data(true);
+
+  // Create a stream, and send enough data to make it flow control blocked.
+  TestStream* stream2 = session_.CreateOutgoingDataStream();
+  string body(kDefaultFlowControlSendWindow, '.');
+  EXPECT_FALSE(stream2->IsFlowControlBlocked());
+  stream2->SendBody(body, false);
+  EXPECT_TRUE(stream2->IsFlowControlBlocked());
+
+  // Now complete the crypto handshake, resulting in an increased flow control
+  // send window.
+  CryptoHandshakeMessage msg;
+  session_.GetCryptoStream()->OnHandshakeMessage(msg);
+
+  // Stream is now unblocked.
+  EXPECT_FALSE(stream2->IsFlowControlBlocked());
+}
+
+TEST_P(QuicSessionTest, InvalidFlowControlWindowInHandshake) {
+  // Test that receipt of an invalid (< default) flow control window from peer
+  // results in the connection being torn down.
+  if (version() < QUIC_VERSION_17) {
+    return;
+  }
+  ValueRestore<bool> old_flag(&FLAGS_enable_quic_stream_flow_control, true);
+
+  uint32 kInvalidWindow = kDefaultFlowControlSendWindow - 1;
+
+  CryptoHandshakeMessage msg;
+  string error_details;
+  session_.config()->set_peer_initial_flow_control_window_bytes(kInvalidWindow);
+  session_.config()->ToHandshakeMessage(&msg);
+  const QuicErrorCode error =
+      session_.config()->ProcessClientHello(msg, &error_details);
+  EXPECT_EQ(QUIC_NO_ERROR, error);
+
+  EXPECT_CALL(*connection_, SendConnectionClose(QUIC_FLOW_CONTROL_ERROR));
+  string expected_error("Peer sent us an invalid flow control send window: ");
+  expected_error.append(reinterpret_cast<const char*>(&kInvalidWindow),
+                        sizeof(kInvalidWindow));
+  EXPECT_DFATAL(session_.OnConfigNegotiated(), expected_error);
 }
 
 }  // namespace

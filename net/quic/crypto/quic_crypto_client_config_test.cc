@@ -6,6 +6,7 @@
 
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_session_key.h"
+#include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,13 +66,35 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
 }
 
-TEST(QuicCryptoClientConfigTest, PreferAesGcm) {
+TEST(QuicCryptoClientConfigTest, FillClientHello) {
+  QuicCryptoClientConfig::CachedState state;
   QuicCryptoClientConfig config;
-  config.SetDefaults();
-  if (config.aead.size() > 1)
-    EXPECT_NE(kAESG, config.aead[0]);
-  config.PreferAesGcm();
-  EXPECT_EQ(kAESG, config.aead[0]);
+  QuicCryptoNegotiatedParameters params;
+  QuicConnectionId kConnectionId = 1234;
+  uint32 kInitialFlowControlWindow = 5678;
+  string error_details;
+  MockRandom rand;
+  CryptoHandshakeMessage chlo;
+  QuicSessionKey server_key("www.google.com", 80, false, kPrivacyModeDisabled);
+  config.FillClientHello(server_key,
+                         kConnectionId,
+                         QuicVersionMax(),
+                         kInitialFlowControlWindow,
+                         &state,
+                         QuicWallTime::Zero(),
+                         &rand,
+                         &params,
+                         &chlo,
+                         &error_details);
+
+  // Verify that certain QuicTags have been set correctly in the CHLO.
+  QuicTag cver;
+  EXPECT_EQ(QUIC_NO_ERROR, chlo.GetUint32(kVER, &cver));
+  EXPECT_EQ(QuicVersionToQuicTag(QuicVersionMax()), cver);
+
+  QuicTag ifcw;
+  EXPECT_EQ(QUIC_NO_ERROR, chlo.GetUint32(kIFCW, &ifcw));
+  EXPECT_EQ(kInitialFlowControlWindow, ifcw);
 }
 
 TEST(QuicCryptoClientConfigTest, InchoateChloSecure) {

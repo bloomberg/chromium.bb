@@ -30,6 +30,7 @@ namespace test {
 
 static const QuicConnectionId kTestConnectionId = 42;
 static const int kTestPort = 123;
+static const uint32 kInitialFlowControlWindowForTest = 32 * 1024;  // 32 KB
 
 // Returns the test peer IP address.
 IPAddressNumber TestPeerIPAddress();
@@ -42,6 +43,8 @@ QuicVersion QuicVersionMin();
 
 // Returns an address for 127.0.0.1.
 IPAddressNumber Loopback4();
+
+void GenerateBody(std::string* body, int length);
 
 // Create an encrypted packet for testing.
 QuicEncryptedPacket* ConstructEncryptedPacket(
@@ -457,15 +460,14 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD2(OnPacketAcked,
                void(QuicPacketSequenceNumber, QuicByteCount));
   MOCK_METHOD2(OnPacketLost, void(QuicPacketSequenceNumber, QuicTime));
-  MOCK_METHOD5(OnPacketSent,
+  MOCK_METHOD4(OnPacketSent,
                bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
-                    TransmissionType, HasRetransmittableData));
+                    HasRetransmittableData));
   MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
   MOCK_METHOD2(OnPacketAbandoned, void(QuicPacketSequenceNumber sequence_number,
                                       QuicByteCount abandoned_bytes));
-  MOCK_METHOD4(TimeUntilSend, QuicTime::Delta(QuicTime now, TransmissionType,
-                                              HasRetransmittableData,
-                                              IsHandshake));
+  MOCK_METHOD2(TimeUntilSend, QuicTime::Delta(QuicTime now,
+                                              HasRetransmittableData));
   MOCK_CONST_METHOD0(BandwidthEstimate, QuicBandwidth(void));
   MOCK_METHOD1(UpdateRtt, void(QuicTime::Delta rtt_sample));
   MOCK_CONST_METHOD0(RetransmissionDelay, QuicTime::Delta(void));

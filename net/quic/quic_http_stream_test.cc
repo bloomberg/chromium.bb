@@ -60,7 +60,7 @@ class TestQuicConnection : public QuicConnection {
                      QuicConnectionHelper* helper,
                      QuicPacketWriter* writer)
       : QuicConnection(connection_id, address, helper, writer, false,
-                       versions) {
+                       versions, kInitialFlowControlWindowForTest) {
   }
 
   void SetSendAlgorithm(SendAlgorithmInterface* send_algorithm) {
@@ -184,10 +184,10 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_CALL(*receive_algorithm_, RecordIncomingPacket(_, _, _)).
         Times(AnyNumber());
     EXPECT_CALL(*send_algorithm_,
-                OnPacketSent(_, _, _, _, _)).WillRepeatedly(Return(true));
+                OnPacketSent(_, _, _, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*send_algorithm_, RetransmissionDelay()).WillRepeatedly(
         Return(QuicTime::Delta::Zero()));
-    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
+    EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _)).
         WillRepeatedly(Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
         Return(QuicBandwidth::Zero()));

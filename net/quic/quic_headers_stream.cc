@@ -207,6 +207,10 @@ uint32 QuicHeadersStream::ProcessRawData(const char* data,
 
 QuicPriority QuicHeadersStream::EffectivePriority() const { return 0; }
 
+bool QuicHeadersStream::IsFlowControlEnabled() const {
+  return false;
+}
+
 void QuicHeadersStream::OnSynStream(SpdyStreamId stream_id,
                                     SpdyPriority priority,
                                     bool fin) {

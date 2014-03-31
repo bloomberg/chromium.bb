@@ -18,11 +18,11 @@ class CryptoHandshakeMessage;
 // Describes whether or not a given QuicTag is required or optional in the
 // handshake message.
 enum QuicConfigPresence {
-  // This value can be absent from the handshake message. Default value is
-  // selected as the negotiated value in such a case.
+  // This negotiable value can be absent from the handshake message. Default
+  // value is selected as the negotiated value in such a case.
   PRESENCE_OPTIONAL,
-  // This value is required in the handshake message otherwise the Process*Hello
-  // function returns an error.
+  // This negotiable value is required in the handshake message otherwise the
+  // Process*Hello function returns an error.
   PRESENCE_REQUIRED,
 };
 
@@ -168,7 +168,7 @@ class NET_EXPORT_PRIVATE QuicFixedUint32 : public QuicConfigValue {
 
   void set_value(uint32 value) { value_ = value; }
 
-  // Serialises |name_| and |value_| to |out|.
+  // Serialises |tag_| and |value_| to |out|.
   virtual void ToHandshakeMessage(CryptoHandshakeMessage* out) const OVERRIDE;
 
   // Sets |value_| to the corresponding value from |client_hello_| if it exists.

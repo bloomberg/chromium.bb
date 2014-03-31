@@ -212,7 +212,8 @@ class NET_EXPORT_PRIVATE QuicConnection
                  QuicConnectionHelperInterface* helper,
                  QuicPacketWriter* writer,
                  bool is_server,
-                 const QuicVersionVector& supported_versions);
+                 const QuicVersionVector& supported_versions,
+                 uint32 max_flow_control_receive_window_bytes);
   virtual ~QuicConnection();
 
   // Sets connection parameters from the supplied |config|.
@@ -444,6 +445,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool CanWrite(TransmissionType transmission_type,
                 HasRetransmittableData retransmittable,
                 IsHandshake handshake);
+
+  uint32 max_flow_control_receive_window_bytes() const {
+    return max_flow_control_receive_window_bytes_;
+  }
 
  protected:
   // Send a packet to the peer using encryption |level|. If |sequence_number|
@@ -713,6 +718,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // If non-empty this contains the set of versions received in a
   // version negotiation packet.
   QuicVersionVector server_supported_versions_;
+
+  // Initial flow control receive window size for new streams.
+  uint32 max_flow_control_receive_window_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

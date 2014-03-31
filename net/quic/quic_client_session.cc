@@ -298,12 +298,12 @@ QuicReliableClientStream* QuicClientSession::CreateOutgoingDataStream() {
   }
   if (GetNumOpenStreams() >= get_max_open_streams()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
-               << "Already " << GetNumOpenStreams() << " open.";
+             << "Already " << GetNumOpenStreams() << " open.";
     return NULL;
   }
   if (goaway_received()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
-               << "Already received goaway.";
+             << "Already received goaway.";
     return NULL;
   }
   if (going_away_) {

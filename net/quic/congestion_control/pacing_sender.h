@@ -41,16 +41,13 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
   virtual bool OnPacketSent(QuicTime sent_time,
                             QuicPacketSequenceNumber sequence_number,
                             QuicByteCount bytes,
-                            TransmissionType transmission_type,
                             HasRetransmittableData is_retransmittable) OVERRIDE;
   virtual void OnRetransmissionTimeout(bool packets_retransmitted) OVERRIDE;
   virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number,
                                  QuicByteCount abandoned_bytes) OVERRIDE;
   virtual QuicTime::Delta TimeUntilSend(
       QuicTime now,
-      TransmissionType transmission_type,
-      HasRetransmittableData has_retransmittable_data,
-      IsHandshake handshake) OVERRIDE;
+      HasRetransmittableData has_retransmittable_data) OVERRIDE;
   virtual QuicBandwidth BandwidthEstimate() const OVERRIDE;
   virtual void UpdateRtt(QuicTime::Delta rtt_sample) OVERRIDE;
   virtual QuicTime::Delta RetransmissionDelay() const OVERRIDE;
