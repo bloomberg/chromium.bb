@@ -27,9 +27,9 @@ namespace input_method {
 namespace {
 
 const char pinyin_ime_id[] =
-    "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin";
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin";
 const char zhuyin_ime_id[] =
-    "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und";
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und";
 const char kKeyboardExtId[] =
 #if defined(OFFICIAL_BUILD)
     "habcdindjejkmepknlhkkloncjcpcnbf";

@@ -43,21 +43,21 @@ const struct {
   { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
   { "_comp_ime_cpgalbafkoofkjmaeonnfijgpfennjjnzh-t-i0-pinyin",
     "\xe6\x8b\xbc" },
-  { "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin",
     "\xe6\x8b\xbc" },
-  { "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-t-i0-wubi-1986",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-wubi-1986",
     "\xe4\xba\x94" }, // U+4E94
   { "pinyin-dv", "\xe6\x8b\xbc" },
   // For traditional Chinese input methods
   { "mozc-chewing", "\xe9\x85\xb7" },  // U+9177
   { "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und",
     "\xE6\xB3\xA8" },  // U+6CE8
-  { "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und",
     "\xE6\xB3\xA8" },  // U+6CE8
   { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
   { "_comp_ime_aeebooiibjahgpgmhkeocbeekccfknbjzh-hant-t-i0-cangjie-1987",
     "\xe5\x80\x89" },  // U+5009
-  { "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-hant-t-i0-cangjie-1987",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-cangjie-1987",
     "\xe5\x80\x89" },  // U+5009
   { "m17n:zh:quick", "\xe9\x80\x9f" },  // U+901F
   // For Hangul input method.
@@ -92,17 +92,17 @@ const struct {
   { "pinyin-dv", IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
   { "_comp_ime_cpgalbafkoofkjmaeonnfijgpfennjjnzh-t-i0-pinyin",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED},
-  { "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
-  { "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-t-i0-wubi-1986",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-wubi-1986",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_SIMPLIFIED },
   { "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
   { "_comp_ime_aeebooiibjahgpgmhkeocbeekccfknbjzh-hant-t-i0-cangjie-1987",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
-  { "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-hant-t-i0-cangjie-1987",
+  { "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-cangjie-1987",
     IDS_LANGUAGES_MEDIUM_LEN_NAME_CHINESE_TRADITIONAL },
 };
 const size_t kMappingImeIdToMediumLenNameResourceIdLen =
@@ -119,9 +119,9 @@ const struct {
 } kDefaultInputMethodRecommendation[] = {
   { "ja", "us", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us" },
   { "ja", "jp", "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp" },
-  { "zh-CN", "us", "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin" },
+  { "zh-CN", "us", "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin" },
   { "zh-TW", "us",
-    "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und" },
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-hant-t-i0-und" },
 #if defined(OFFICIAL_BUILD)
   { "th", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_th" },
   { "vi", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_vi_tcvn" },
@@ -187,6 +187,20 @@ const char* const kXkbIndicators[][2] = {{"am", "AM"},
                                          {"us(colemak)", "CO"},
                                          {"us(dvorak)", "DV"},
                                          {"us(intl)", "INTL"}, };
+
+// The old chinese input method ids for migration.
+// See crbug.com/357384.
+const char* kOldChineseExtensionIds[] = {
+  "goedamlknlnjaengojinmfgpmdjmkooo",
+  "nmblnjkfdkabgdofidlkienfnnbjhnab",
+  "gjhclobljhjhgoebiipblnmdodbmpdgd"
+};
+
+// The new chinese input method id for migration.
+// See crbug.com/357384.
+const char* kNewChineseExtensionId = "gjaehgfemfahhmlgpdfknkhdnemmolop";
+
+const size_t kExtensionIdLen = 32;
 
 }  // namespace
 
@@ -695,6 +709,20 @@ bool InputMethodUtil::MigrateXkbInputMethods(
   for (size_t i = 0; i < ids.size(); ++i) {
     std::string id =
         extension_ime_util::GetInputMethodIDByKeyboardLayout(ids[i]);
+    // Migrates the old chinese ime id to new ones.
+    // TODO(shuchen): Change the function name to MigrateInputMethods,
+    // and create an abstract layer to map a comprehensive input method id to
+    // the real extension based input method id.
+    // e.g. "zh-t-i0-pinyin" maps to
+    // "_comp_id_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin".
+    // See crbug.com/358083.
+    for (size_t j = 0; j < arraysize(kOldChineseExtensionIds); ++j) {
+      size_t pos = id.find(kOldChineseExtensionIds[j]);
+      if (pos != std::string::npos) {
+        id.replace(pos, kExtensionIdLen, kNewChineseExtensionId);
+        break;
+      }
+    }
     if (id != ids[i]) {
       ids[i] = id;
       rewritten = true;

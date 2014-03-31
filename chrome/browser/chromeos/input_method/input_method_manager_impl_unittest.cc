@@ -37,9 +37,11 @@ const char kNaclMozcUsId[] =
 const char kNaclMozcJpId[] =
     "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp";
 const char kExt2Engine1Id[] =
-    "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine1_engine_id";
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopext2_engine1_engine_id";
 const char kExt2Engine2Id[] =
-    "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine2_engine_id";
+    "_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopext2_engine2_engine_id";
+const char kPinyinImeId[] =
+    "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin";
 const char kXkbExtId[] =
 #if defined(OFFICIAL_BUILD)
     "jkghodnilhceideoidjikpgommlajknk";
@@ -187,7 +189,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     ime_list_.push_back(ext1);
 
     ComponentExtensionIME ext2;
-    ext2.id = "nmblnjkfdkabgdofidlkienfnnbjhnab";
+    ext2.id = "gjaehgfemfahhmlgpdfknkhdnemmolop";
     ext2.description = "ext2_description";
     ext2.path = base::FilePath("ext2_file_path");
 
@@ -1312,7 +1314,7 @@ TEST_F(InputMethodManagerImplTest,
   EXPECT_EQ(ext_id2, manager_->GetCurrentInputMethod().id());
 }
 
-TEST_F(InputMethodManagerImplTest, MigrateXkbInputMethodTest_1) {
+TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest_1) {
   extension_ime_util::ScopedUseExtensionKeyboardFlagForTesting
       scoped_flag(true);
 
@@ -1325,19 +1327,22 @@ TEST_F(InputMethodManagerImplTest, MigrateXkbInputMethodTest_1) {
   input_method_ids.push_back(
       std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng");
   input_method_ids.push_back("_comp_ime_asdf_pinyin");
+  input_method_ids.push_back(kPinyinImeId);
 
   manager_->MigrateXkbInputMethods(&input_method_ids);
 
-  ASSERT_EQ(3U, input_method_ids.size());
+  ASSERT_EQ(4U, input_method_ids.size());
 
   EXPECT_EQ(std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng",
             input_method_ids[0]);
   EXPECT_EQ(std::string("_comp_ime_") + kXkbExtId + "xkb:fr::fra",
             input_method_ids[1]);
   EXPECT_EQ("_comp_ime_asdf_pinyin", input_method_ids[2]);
+  EXPECT_EQ("_comp_ime_gjaehgfemfahhmlgpdfknkhdnemmolopzh-t-i0-pinyin",
+            input_method_ids[3]);
 }
 
-TEST_F(InputMethodManagerImplTest, MigrateXkbInputMethodTest_2) {
+TEST_F(InputMethodManagerImplTest, MigrateInputMethodTest_2) {
   extension_ime_util::ScopedUseExtensionKeyboardFlagForTesting
       scoped_flag(false);
 
