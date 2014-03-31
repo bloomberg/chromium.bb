@@ -153,7 +153,7 @@
   # cannot be lifted in a dependent to all_dependent_settings.
   'all_dependent_settings': {
     'variables': {
-      'apk_output_jar_path': '<(PRODUCT_DIR)/lib.java/<(jar_name)',
+      'apk_output_jar_path': '<(jar_path)',
     },
   },
   'conditions': [
@@ -614,7 +614,6 @@
       'message': 'Obfuscating <(_target_name)',
       'inputs': [
         '<(DEPTH)/build/android/ant/apk-obfuscate.xml',
-        '<(DEPTH)/build/android/ant/create-test-jar.js',
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/ant.py',
         '<(android_manifest_path)',
@@ -629,19 +628,15 @@
       'action': [
         'python', '<(DEPTH)/build/android/gyp/ant.py',
         '-quiet',
-        '-DADDITIONAL_SRC_DIRS=>(additional_src_dirs)',
         '-DANDROID_MANIFEST=<(android_manifest_path)',
         '-DANDROID_SDK_JAR=<(android_sdk_jar)',
         '-DANDROID_SDK_ROOT=<(android_sdk_root)',
         '-DANDROID_SDK_VERSION=<(android_sdk_version)',
         '-DANDROID_SDK_TOOLS=<(android_sdk_tools)',
         '-DAPK_NAME=<(apk_name)',
-        '-DCREATE_TEST_JAR_PATH=<(DEPTH)/build/android/ant/create-test-jar.js',
         '-DCONFIGURATION_NAME=<(CONFIGURATION_NAME)',
-        '-DGENERATED_SRC_DIRS=>(generated_src_dirs)',
         '-DINPUT_JARS_PATHS=>(input_jars_paths)',
         '-DIS_TEST_APK=<(is_test_apk)',
-        '-DJAR_PATH=<(PRODUCT_DIR)/lib.java/<(jar_name)',
         '-DOBFUSCATED_JAR_PATH=<(obfuscated_jar_path)',
         '-DOUT_DIR=<(intermediate_dir)',
         '-DPROGUARD_ENABLED=<(proguard_enabled)',
