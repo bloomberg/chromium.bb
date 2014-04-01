@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "mojo/public/bindings/lib/message_internal.h"
+#include "mojo/public/cpp/bindings/lib/message_internal.h"
 
 namespace mojo {
 

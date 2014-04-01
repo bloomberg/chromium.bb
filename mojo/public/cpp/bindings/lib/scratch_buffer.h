@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_LIB_SCRATCH_BUFFER_H_
-#define MOJO_PUBLIC_BINDINGS_LIB_SCRATCH_BUFFER_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SCRATCH_BUFFER_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_SCRATCH_BUFFER_H_
 
 #include <deque>
 
@@ -51,4 +51,4 @@ class ScratchBuffer : public Buffer {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_LIB_SCRATCH_BUFFER_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_SCRATCH_BUFFER_H_

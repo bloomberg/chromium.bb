@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_LIB_CONNECTOR_H_
-#define MOJO_PUBLIC_BINDINGS_LIB_CONNECTOR_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_
 
-#include "mojo/public/bindings/lib/message_queue.h"
+#include "mojo/public/cpp/bindings/lib/message_queue.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/environment/default_async_waiter.h"
 #include "mojo/public/cpp/system/core.h"
@@ -77,4 +77,4 @@ class Connector : public MessageReceiver {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_LIB_CONNECTOR_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_CONNECTOR_H_

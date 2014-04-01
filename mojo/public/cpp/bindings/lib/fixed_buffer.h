@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_
-#define MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_FIXED_BUFFER_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_FIXED_BUFFER_H_
 
 #include "mojo/public/cpp/bindings/buffer.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -65,4 +65,4 @@ class FixedBuffer : public Buffer {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_FIXED_BUFFER_H_

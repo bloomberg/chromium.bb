@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "mojo/public/bindings/lib/array_internal.h"
+#include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {

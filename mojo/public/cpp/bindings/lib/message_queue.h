@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_LIB_MESSAGE_QUEUE_H_
-#define MOJO_PUBLIC_BINDINGS_LIB_MESSAGE_QUEUE_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_QUEUE_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_QUEUE_H_
 
 #include <queue>
 
@@ -44,4 +44,4 @@ class MessageQueue {
 }  // namespace internal
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_LIB_MESSAGE_QUEUE_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_QUEUE_H_

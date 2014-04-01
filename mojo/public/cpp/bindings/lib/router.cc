@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/lib/router.h"
+#include "mojo/public/cpp/bindings/lib/router.h"
 
 namespace mojo {
 namespace internal {

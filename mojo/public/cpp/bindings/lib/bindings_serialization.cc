@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 
 #include <assert.h>
 
-#include "mojo/public/bindings/lib/bindings_internal.h"
+#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 namespace mojo {
 namespace internal {

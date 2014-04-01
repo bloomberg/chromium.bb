@@ -7,8 +7,8 @@
 
 #include <assert.h>
 
-#include "mojo/public/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/interface.h"
+#include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {

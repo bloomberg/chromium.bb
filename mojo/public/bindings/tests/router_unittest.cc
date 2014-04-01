@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mojo/public/bindings/lib/message_builder.h"
-#include "mojo/public/bindings/lib/message_queue.h"
-#include "mojo/public/bindings/lib/router.h"
+#include "mojo/public/cpp/bindings/lib/message_builder.h"
+#include "mojo/public/cpp/bindings/lib/message_queue.h"
+#include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/utility/run_loop.h"

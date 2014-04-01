@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/lib/fixed_buffer.h"
+#include "mojo/public/cpp/bindings/lib/fixed_buffer.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-#include "mojo/public/bindings/lib/bindings_serialization.h"
+#include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 
 namespace mojo {
 namespace internal {

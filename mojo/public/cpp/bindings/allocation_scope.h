@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_ALLOCATION_SCOPE_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_ALLOCATION_SCOPE_H_
 
-#include "mojo/public/bindings/lib/scratch_buffer.h"
+#include "mojo/public/cpp/bindings/lib/scratch_buffer.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
