@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/framer/cast_message_builder.h"
@@ -16,7 +18,7 @@ namespace {
 static const uint32 kSsrc = 0x1234;
 static const uint32 kShortTimeIncrementMs = 10;
 static const uint32 kLongTimeIncrementMs = 40;
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 
 typedef std::map<uint32, size_t> MissingPacketsMap;
 

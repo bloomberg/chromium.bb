@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 
+#include <stdint.h>
+
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/rtp_receiver/receiver_stats.h"
@@ -12,7 +14,7 @@
 namespace media {
 namespace cast {
 
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const uint32 kStdTimeIncrementMs = 33;
 
 class ReceiverStatsTest : public ::testing::Test {

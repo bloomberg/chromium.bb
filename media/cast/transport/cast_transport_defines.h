@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_TRANSPORT_CAST_TRANSPORT_DEFINES_H_
 #define MEDIA_CAST_TRANSPORT_CAST_TRANSPORT_DEFINES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 #include <string>
@@ -142,7 +144,7 @@ class FrameIdWrapHelper {
 
   static const uint8 kLowRangeThreshold = 63;
   static const uint8 kHighRangeThreshold = 192;
-  static const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
+  static const uint32 kStartFrameId = UINT32_C(0xffffffff);
 
   bool first_;
   uint32 frame_id_wrap_count_;

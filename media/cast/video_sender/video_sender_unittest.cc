@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -25,7 +27,7 @@ namespace media {
 namespace cast {
 
 namespace {
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const uint8 kPixelValue = 123;
 static const int kWidth = 320;
 static const int kHeight = 240;

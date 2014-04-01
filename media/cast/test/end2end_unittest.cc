@@ -10,6 +10,7 @@
 // that moves across the screen
 
 #include <math.h>
+#include <stdint.h>
 
 #include <functional>
 #include <list>
@@ -44,7 +45,7 @@ namespace cast {
 
 namespace {
 
-static const int64 kStartMillisecond = GG_INT64_C(1245);
+static const int64 kStartMillisecond = INT64_C(1245);
 static const int kAudioChannels = 2;
 static const double kSoundFrequency = 314.15926535897;  // Freq of sine wave.
 static const float kSoundVolume = 0.5f;

@@ -4,6 +4,8 @@
 
 #include "media/cast/video_receiver/video_decoder.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -32,7 +34,7 @@ bool VideoDecoder::DecodeVideoFrame(
     const base::TimeTicks render_time,
     const VideoFrameDecodedCallback& frame_decoded_cb) {
   DCHECK(encoded_frame->codec == codec_) << "Invalid codec";
-  DCHECK_GT(encoded_frame->data.size(), GG_UINT64_C(0)) << "Empty video frame";
+  DCHECK_GT(encoded_frame->data.size(), UINT64_C(0)) << "Empty video frame";
   return vp8_decoder_->Decode(encoded_frame, render_time, frame_decoded_cb);
 }
 

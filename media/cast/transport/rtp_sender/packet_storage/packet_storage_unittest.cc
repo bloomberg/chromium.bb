@@ -4,6 +4,8 @@
 
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/test/simple_test_tick_clock.h"
@@ -18,7 +20,7 @@ static const int kMaxDeltaStoredMs = 500;
 static const base::TimeDelta kDeltaBetweenFrames =
     base::TimeDelta::FromMilliseconds(33);
 
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 
 class PacketStorageTest : public ::testing::Test {
  protected:

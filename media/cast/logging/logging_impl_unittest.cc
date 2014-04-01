@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/rand_util.h"
@@ -21,7 +23,7 @@ const int64 kIntervalTime1S = 1;
 // Test frame rate goal - 30fps.
 const int kFrameIntervalMs = 33;
 
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 
 class LoggingImplTest : public ::testing::Test {
  protected:

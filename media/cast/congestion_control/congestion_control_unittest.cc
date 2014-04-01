@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/congestion_control/congestion_control.h"
@@ -13,7 +15,7 @@ namespace cast {
 static const uint32 kMaxBitrateConfigured = 5000000;
 static const uint32 kMinBitrateConfigured = 500000;
 static const uint32 kStartBitrate = 2000000;
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const int64 kRttMs = 20;
 static const int64 kAckRateMs = 33;
 
@@ -35,7 +37,7 @@ class CongestionControlTest : public ::testing::Test {
                                       int runtime_in_seconds) {
     const base::TimeDelta rtt = base::TimeDelta::FromMilliseconds(rtt_ms);
     const base::TimeDelta ack_rate =
-        base::TimeDelta::FromMilliseconds(GG_INT64_C(1000) / fps);
+        base::TimeDelta::FromMilliseconds(INT64_C(1000) / fps);
     uint32 new_bitrate = 0;
     EXPECT_FALSE(congestion_control_.OnAck(rtt, &new_bitrate));
 
@@ -160,21 +162,19 @@ TEST_F(CongestionControlTest, Timing) {
 }
 
 TEST_F(CongestionControlTest, Convergence24fps) {
-  EXPECT_GE(RunWithOneLossEventPerSecond(24, kRttMs, 100),
-            GG_UINT32_C(3000000));
+  EXPECT_GE(RunWithOneLossEventPerSecond(24, kRttMs, 100), UINT32_C(3000000));
 }
 
 TEST_F(CongestionControlTest, Convergence24fpsLongRtt) {
-  EXPECT_GE(RunWithOneLossEventPerSecond(24, 100, 100), GG_UINT32_C(500000));
+  EXPECT_GE(RunWithOneLossEventPerSecond(24, 100, 100), UINT32_C(500000));
 }
 
 TEST_F(CongestionControlTest, Convergence60fps) {
-  EXPECT_GE(RunWithOneLossEventPerSecond(60, kRttMs, 100),
-            GG_UINT32_C(3500000));
+  EXPECT_GE(RunWithOneLossEventPerSecond(60, kRttMs, 100), UINT32_C(3500000));
 }
 
 TEST_F(CongestionControlTest, Convergence60fpsLongRtt) {
-  EXPECT_GE(RunWithOneLossEventPerSecond(60, 100, 100), GG_UINT32_C(500000));
+  EXPECT_GE(RunWithOneLossEventPerSecond(60, 100, 100), UINT32_C(500000));
 }
 
 }  // namespace cast

@@ -4,6 +4,8 @@
 
 #include "media/cast/rtcp/rtcp_sender.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <vector>
 
@@ -21,7 +23,7 @@ namespace {
 
 // Max delta is 4095 milliseconds because we need to be able to encode it in
 // 12 bits.
-const int64 kMaxWireFormatTimeDeltaMs = GG_INT64_C(0xfff);
+const int64 kMaxWireFormatTimeDeltaMs = INT64_C(0xfff);
 
 // Converts a log event type to an integer value.
 // NOTE: We have only allocated 4 bits to represent the type of event over the

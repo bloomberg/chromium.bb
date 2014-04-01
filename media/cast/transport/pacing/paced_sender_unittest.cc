@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/big_endian.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/logging/simple_event_subscriber.h"
@@ -21,7 +23,7 @@ static const size_t kSize2 = 101;
 static const size_t kSize3 = 102;
 static const size_t kSize4 = 103;
 static const size_t kNackSize = 104;
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const uint32 kVideoSsrc = 0x1234;
 static const uint32 kAudioSsrc = 0x5678;
 

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <gtest/gtest.h>
+#include <stdint.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -21,7 +22,7 @@ namespace media {
 namespace cast {
 namespace transport {
 
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 
 class FakePacketSender : public transport::PacketSender {
  public:

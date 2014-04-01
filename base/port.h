@@ -20,7 +20,6 @@
 // just use the regular (U)INTn_C macros from <stdint.h>.
 // TODO(viettrungluu): Remove the remaining GG_(U)INTn_C macros.
 #define GG_INT64_C(x)   GG_LONGLONG(x)
-#define GG_UINT32_C(x)  (x ## U)
 #define GG_UINT64_C(x)  GG_ULONGLONG(x)
 
 // It's possible for functions that use a va_list, such as StringPrintf, to

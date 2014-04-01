@@ -5,6 +5,8 @@
 #ifndef MEDIA_CAST_CAST_DEFINES_H_
 #define MEDIA_CAST_CAST_DEFINES_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <set>
 
@@ -21,7 +23,7 @@ const int64 kDontShowTimeoutMs = 33;
 const float kDefaultCongestionControlBackOff = 0.875f;
 const uint32 kVideoFrequency = 90000;
 const int64 kSkippedFramesCheckPeriodkMs = 10000;
-const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
+const uint32 kStartFrameId = UINT32_C(0xffffffff);
 
 // Number of skipped frames threshold in fps (as configured) per period above.
 const int kSkippedFramesThreshold = 3;
@@ -81,7 +83,7 @@ typedef std::map<uint8, PacketIdSet> MissingFramesAndPacketsMap;
 // January 1970, in NTP seconds.
 // Network Time Protocol (NTP), which is in seconds relative to 0h UTC on
 // 1 January 1900.
-static const int64 kUnixEpochInNtpSeconds = GG_INT64_C(2208988800);
+static const int64 kUnixEpochInNtpSeconds = INT64_C(2208988800);
 
 // Magic fractional unit. Used to convert time (in microseconds) to/from
 // fractional NTP seconds.

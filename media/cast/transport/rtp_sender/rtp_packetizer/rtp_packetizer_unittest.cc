@@ -4,6 +4,8 @@
 
 #include "media/cast/transport/rtp_sender/rtp_packetizer/rtp_packetizer.h"
 
+#include <stdint.h>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/logging/simple_event_subscriber.h"
@@ -25,7 +27,7 @@ static const int kMaxPacketLength = 1500;
 static const int kSsrc = 0x12345;
 static const unsigned int kFrameSize = 5000;
 static const int kMaxPacketStorageTimeMs = 300;
-static const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
+static const uint32 kStartFrameId = UINT32_C(0xffffffff);
 }
 
 class TestRtpPacketTransport : public PacketSender {

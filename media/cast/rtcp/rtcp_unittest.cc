@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
@@ -24,7 +26,7 @@ static const uint32 kSenderSsrc = 0x10203;
 static const uint32 kReceiverSsrc = 0x40506;
 static const std::string kCName("test@10.1.1.1");
 static const uint32 kRtcpIntervalMs = 500;
-static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const int64 kStartMillisecond = INT64_C(12345678900000);
 static const int64 kAddedDelay = 123;
 static const int64 kAddedShortDelay = 100;
 
@@ -487,8 +489,8 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
 }
 
 TEST_F(RtcpTest, NtpAndTime) {
-  const int64 kSecondsbetweenYear1900and2010 = GG_INT64_C(40176 * 24 * 60 * 60);
-  const int64 kSecondsbetweenYear1900and2030 = GG_INT64_C(47481 * 24 * 60 * 60);
+  const int64 kSecondsbetweenYear1900and2010 = INT64_C(40176 * 24 * 60 * 60);
+  const int64 kSecondsbetweenYear1900and2030 = INT64_C(47481 * 24 * 60 * 60);
 
   uint32 ntp_seconds_1 = 0;
   uint32 ntp_fractions_1 = 0;
@@ -514,7 +516,7 @@ TEST_F(RtcpTest, NtpAndTime) {
 
   // Verify delta.
   EXPECT_EQ((out_2 - out_1), time_delta);
-  EXPECT_EQ((ntp_seconds_2 - ntp_seconds_1), GG_UINT32_C(1));
+  EXPECT_EQ((ntp_seconds_2 - ntp_seconds_1), UINT32_C(1));
   EXPECT_NEAR(ntp_fractions_2, ntp_fractions_1, 1);
 
   time_delta = base::TimeDelta::FromMilliseconds(500);
