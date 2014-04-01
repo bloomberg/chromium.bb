@@ -18,7 +18,7 @@
 namespace media {
 
 static const int kFakeCaptureTimeoutMs = 50;
-static const int kFakeCaptureBeepCycle = 10;  // Visual beep every 0.5s.
+static const int kFakeCaptureBeepCycle = 20;  // Visual beep every 1s.
 static const int kFakeCaptureCapabilityChangePeriod = 30;
 enum { kNumberOfFakeDevices = 2 };
 

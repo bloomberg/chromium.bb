@@ -63,7 +63,7 @@
     waitForVideo('remote-view-2');
   }
 
-  // Test that we can setup call with an audio and video track and check that
+  // Test that we can setup call with an audio and video track and check that 
   // the video resolution is as expected.
   function callAndExpectResolution(constraints,
                                    expected_width,
@@ -308,8 +308,8 @@
     // Wait until we have gathered samples and can conclude if audio is playing.
     addExpectedEvent();
     var onCallEstablished = function() {
-      // Gather 50 samples per second for 2 seconds.
-      gatherAudioLevelSamples(gSecondConnection, 100, 50, function(samples) {
+      gatherAudioLevelSamples(gSecondConnection, 300, 100,
+                              function(samples) {
         verifyAudioIsPlaying(samples);
         eventOccured();
       });
@@ -329,7 +329,7 @@
       enableRemoteAudio(gSecondConnection, false);
 
       setTimeout(function() {
-        gatherAudioLevelSamples(gSecondConnection, 100, 50, function(samples) {
+        gatherAudioLevelSamples(gSecondConnection, 200, 100, function(samples) {
           verifyIsSilent(samples);
           reportTestSuccess();
         });
@@ -348,11 +348,11 @@
       }, 500);
 
       setTimeout(function() {
-        gatherAudioLevelSamples(gSecondConnection, 100, 50, function(samples) {
+        gatherAudioLevelSamples(gSecondConnection, 200, 100, function(samples) {
           verifyAudioIsPlaying(samples);
           reportTestSuccess();
         });
-      }, 1500);
+      }, 1000);
     });
   }
 
