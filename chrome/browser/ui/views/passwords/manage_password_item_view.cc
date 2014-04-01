@@ -29,7 +29,7 @@ ManagePasswordItemView::ManagePasswordItemView(
 
   // Build the columnset we need for the current state of the model.
   int column_set_to_build =
-      manage_passwords_bubble_model_->WaitingToSavePassword()
+      !manage_passwords_bubble_model_->WaitingToSavePassword()
           ? COLUMN_SET_MANAGE
           : COLUMN_SET_SAVE;
   BuildColumnSet(layout, column_set_to_build);
@@ -51,9 +51,10 @@ ManagePasswordItemView::ManagePasswordItemView(
   label_2_->SetUnderline(false);
   layout->AddView(label_2_);
 
-  // If we're saving a password, construct and add the delete button: fills the
+  // If we're managing passwords (that is, we're not currently in the process
+  // of saving a password), construct and add the delete button: fills the
   // third non-padding column of the layout.
-  if (manage_passwords_bubble_model_->WaitingToSavePassword()) {
+  if (!manage_passwords_bubble_model_->WaitingToSavePassword()) {
     delete_button_ = new views::ImageButton(this);
     delete_button_->SetImage(views::ImageButton::STATE_NORMAL,
                              rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
