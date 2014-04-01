@@ -136,6 +136,11 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
     privet_http_factory_ =
         PrivetHTTPAsynchronousFactory::CreateInstance(
             service_discovery_client_.get(), profile->GetRequestContext());
+
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetInstance()->GetForProfile(profile);
+    if (signin_manager)
+      signin_manager->AddObserver(this);
   }
 
   privet_lister_->Start();
@@ -146,11 +151,6 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 #endif
 
   CheckUserLoggedIn();
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetInstance()->GetForProfile(profile);
-  if (signin_manager)
-    signin_manager->AddObserver(this);
 }
 
 void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
