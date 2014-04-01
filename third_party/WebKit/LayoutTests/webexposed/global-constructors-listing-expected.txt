@@ -470,7 +470,6 @@ WebKitGamepad
 WebKitMediaSource
 WebKitMutationObserver
 WebKitPoint
-WebKitShadowRoot
 WebKitSourceBuffer
 WebKitSourceBufferList
 WebKitTransitionEvent

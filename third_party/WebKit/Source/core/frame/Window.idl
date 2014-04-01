@@ -230,13 +230,6 @@
     [RuntimeEnabled=ScriptedSpeech] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
     [Conditional=WEB_AUDIO] attribute PannerNodeConstructor webkitAudioPannerNode;
 
-    // Prefixed ShadowRoot constructor should be phased out eventually, but for the moment it must be always exposed.
-    // Unprefixed ShadowRoot constructor should be visible when the feature flag is enabled.
-    // FIXME: When it's ready to remove WebKitShadowRoot, get rid of both constructors from Window.idl and remove
-    // [NoInterfaceObject] from ShadowRoot interface definition.
-    attribute ShadowRootConstructor ShadowRoot;
-    [MeasureAs=PrefixedShadowRootConstructor] attribute ShadowRootConstructor WebKitShadowRoot;
-
     // window.toString() requires special handling in V8
     [DoNotCheckSignature, DoNotCheckSecurity, Custom, NotEnumerable] DOMString toString();
 

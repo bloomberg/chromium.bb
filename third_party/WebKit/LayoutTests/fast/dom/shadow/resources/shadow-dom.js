@@ -41,7 +41,7 @@ function isShadowHost(node)
 
 function isShadowRoot(node)
 {
-    return node instanceof window.WebKitShadowRoot;
+    return node instanceof window.ShadowRoot;
 }
 
 function isIframeElement(element)
