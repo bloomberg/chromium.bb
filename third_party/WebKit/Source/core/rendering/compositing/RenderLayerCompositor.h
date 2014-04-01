@@ -46,6 +46,7 @@ class ScrollingCoordinator;
 class StickyPositionViewportConstraints;
 
 enum CompositingUpdateType {
+    CompositingUpdateNone,
     CompositingUpdateAfterStyleChange,
     CompositingUpdateAfterLayout,
     CompositingUpdateOnScroll,
@@ -321,16 +322,13 @@ private:
 
     CompositingReasonFinder m_compositingReasonFinder;
 
+    CompositingUpdateType m_pendingUpdateType;
+
     bool m_hasAcceleratedCompositing;
     bool m_showRepaintCounter;
 
-    // FIXME: This should absolutely not be mutable.
-    mutable bool m_needsToRecomputeCompositingRequirements;
+    bool m_needsToRecomputeCompositingRequirements;
     bool m_needsToUpdateLayerTreeGeometry;
-
-    // FIXME: We should remove m_pendingUpdateType and propagate the bits with CompositingPropertyUpdater instead.
-    GraphicsLayerUpdater::UpdateType m_pendingUpdateType;
-    CompositingPropertyUpdater::UpdateType m_pendingPropertyUpdateType;
 
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
