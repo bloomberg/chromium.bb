@@ -23,6 +23,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/cert_store_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -87,7 +88,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory.h"
-#include "webkit/browser/appcache/appcache_interceptor.h"
 #include "webkit/common/blob/blob_data.h"
 #include "webkit/browser/blob/blob_data_handle.h"
 #include "webkit/browser/blob/blob_storage_context.h"
@@ -797,7 +797,7 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
 
 void ResourceDispatcherHostImpl::OnInit() {
   scheduler_.reset(new ResourceScheduler);
-  appcache::AppCacheInterceptor::EnsureRegistered();
+  AppCacheInterceptor::EnsureRegistered();
 }
 
 void ResourceDispatcherHostImpl::OnShutdown() {
@@ -958,7 +958,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     }
   }
 
-  appcache::AppCacheInterceptor::CompleteCrossSiteTransfer(
+  AppCacheInterceptor::CompleteCrossSiteTransfer(
       loader->request(),
       child_id,
       request_data.appcache_host_id);
@@ -1137,7 +1137,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
       request_data.resource_type);
 
   // Have the appcache associate its extra info with the request.
-  appcache::AppCacheInterceptor::SetExtraRequestInfo(
+  AppCacheInterceptor::SetExtraRequestInfo(
       new_request.get(), filter_->appcache_service(), child_id,
       request_data.appcache_host_id, request_data.resource_type);
 

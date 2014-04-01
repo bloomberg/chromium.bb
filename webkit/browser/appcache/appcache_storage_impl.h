@@ -21,6 +21,7 @@
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace content {
+class AppCacheStorageImplTest;
 class ChromeAppCacheServiceTest;
 }
 
@@ -171,7 +172,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   std::deque<base::Closure> pending_simple_tasks_;
   base::WeakPtrFactory<AppCacheStorageImpl> weak_factory_;
 
-  friend class AppCacheStorageImplTest;
+  friend class content::AppCacheStorageImplTest;
   friend class content::ChromeAppCacheServiceTest;
 };
 

@@ -1,24 +1,26 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
-#define WEBKIT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
+#ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
+#define CONTENT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
 
 #include "base/memory/singleton.h"
+#include "content/common/content_export.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
-#include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/resource_type.h"
 
 namespace appcache {
-
 class AppCacheRequestHandler;
 class AppCacheService;
+}
+
+namespace content {
 
 // An interceptor to hijack requests and potentially service them out of
 // the appcache.
-class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheInterceptor
+class CONTENT_EXPORT AppCacheInterceptor
     : public net::URLRequest::Interceptor {
  public:
   // Registers a singleton instance with the net library.
@@ -29,7 +31,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheInterceptor
 
   // Must be called to make a request eligible for retrieval from an appcache.
   static void SetExtraRequestInfo(net::URLRequest* request,
-                                  AppCacheService* service,
+                                  appcache::AppCacheService* service,
                                   int process_id,
                                   int host_id,
                                   ResourceType::Type resource_type);
@@ -69,12 +71,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheInterceptor
   virtual ~AppCacheInterceptor();
 
   static void SetHandler(net::URLRequest* request,
-                         AppCacheRequestHandler* handler);
-  static AppCacheRequestHandler* GetHandler(net::URLRequest* request);
+                         appcache::AppCacheRequestHandler* handler);
+  static appcache::AppCacheRequestHandler* GetHandler(net::URLRequest* request);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheInterceptor);
 };
 
-}  // namespace appcache
+}  // namespace content
 
-#endif  // WEBKIT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
+#endif  // CONTENT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_

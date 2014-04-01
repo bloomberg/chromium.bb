@@ -22,6 +22,10 @@ namespace net {
 class IOBuffer;
 }
 
+namespace content {
+class AppCacheStorageImplTest;
+}
+
 namespace appcache {
 
 class AppCacheExecutableHandler;
@@ -142,7 +146,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCache
  private:
   friend class AppCacheGroup;
   friend class AppCacheHost;
-  friend class AppCacheStorageImplTest;
+  friend class content::AppCacheStorageImplTest;
   friend class AppCacheUpdateJobTest;
   friend class base::RefCounted<AppCache>;
 

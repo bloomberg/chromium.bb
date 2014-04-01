@@ -42,8 +42,6 @@
         'browser/appcache/appcache_histograms.h',
         'browser/appcache/appcache_host.cc',
         'browser/appcache/appcache_host.h',
-        'browser/appcache/appcache_interceptor.cc',
-        'browser/appcache/appcache_interceptor.h',
         'browser/appcache/appcache_policy.h',
         'browser/appcache/appcache_quota_client.cc',
         'browser/appcache/appcache_quota_client.h',

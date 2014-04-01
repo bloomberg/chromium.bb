@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/browser/appcache/appcache_interceptor.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -28,13 +29,35 @@
 #include "webkit/browser/appcache/appcache_entry.h"
 #include "webkit/browser/appcache/appcache_group.h"
 #include "webkit/browser/appcache/appcache_host.h"
-#include "webkit/browser/appcache/appcache_interceptor.h"
 #include "webkit/browser/appcache/appcache_request_handler.h"
 #include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/browser/appcache/appcache_storage_impl.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-namespace appcache {
+using appcache::FALLBACK_NAMESPACE;
+using appcache::NETWORK_NAMESPACE;
+using appcache::AppCacheBackendImpl;
+using appcache::AppCacheDatabase;
+using appcache::AppCacheEntry;
+using appcache::AppCacheFrontend;
+using appcache::AppCacheHost;
+using appcache::AppCacheInfo;
+using appcache::AppCacheGroup;
+using appcache::AppCacheService;
+using appcache::AppCacheStorage;
+using appcache::AppCacheStorageImpl;
+using appcache::AppCacheStorageReference;
+using appcache::AppCache;
+using appcache::ErrorDetails;
+using appcache::EventID;
+using appcache::kNoCacheId;
+using appcache::kNoResponseId;
+using appcache::INTERCEPT_NAMESPACE;
+using appcache::LogLevel;
+using appcache::Namespace;
+using appcache::Status;
+
+namespace content {
 
 namespace {
 
@@ -1598,7 +1621,7 @@ class AppCacheStorageImplTest : public testing::Test {
     MockAppCacheFrontend() : error_event_was_raised_(false) {}
 
     virtual void OnCacheSelected(
-        int host_id, const appcache::AppCacheInfo& info) OVERRIDE {}
+        int host_id, const AppCacheInfo& info) OVERRIDE {}
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
                                  Status status) OVERRIDE {}
     virtual void OnEventRaised(const std::vector<int>& host_ids,
@@ -1608,7 +1631,7 @@ class AppCacheStorageImplTest : public testing::Test {
         const GURL& url,
         int num_total, int num_complete) OVERRIDE {}
     virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const appcache::ErrorDetails& details)
+                                    const ErrorDetails& details)
         OVERRIDE {
       error_event_was_raised_ = true;
     }

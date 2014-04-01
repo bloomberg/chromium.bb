@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/frame_host/cross_site_transferring_request.h"
@@ -25,7 +26,6 @@
 #include "content/public/common/url_constants.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "webkit/browser/appcache/appcache_interceptor.h"
 
 namespace content {
 
@@ -308,7 +308,7 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
     transfer_url_chain = request()->url_chain();
     referrer = Referrer(GURL(request()->referrer()), info->GetReferrerPolicy());
 
-    appcache::AppCacheInterceptor::PrepareForCrossSiteTransfer(
+    AppCacheInterceptor::PrepareForCrossSiteTransfer(
         request(), global_id.child_id);
     ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(global_id);
   }

@@ -308,6 +308,8 @@
     'browser/appcache/appcache_dispatcher_host.h',
     'browser/appcache/appcache_frontend_proxy.cc',
     'browser/appcache/appcache_frontend_proxy.h',
+    'browser/appcache/appcache_interceptor.cc',
+    'browser/appcache/appcache_interceptor.h',
     'browser/appcache/chrome_appcache_service.cc',
     'browser/appcache/chrome_appcache_service.h',
     'browser/appcache/view_appcache_internals_job.h',

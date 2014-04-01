@@ -21,6 +21,10 @@ namespace net {
 class URLRequest;
 }  // namespace net
 
+namespace content {
+class AppCacheStorageImplTest;
+}
+
 namespace appcache {
 
 class AppCache;
@@ -291,7 +295,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheHost
   // First party url to be used in policy checks.
   GURL first_party_url_;
 
-  friend class AppCacheStorageImplTest;
+  friend class content::AppCacheStorageImplTest;
   friend class AppCacheRequestHandlerTest;
   friend class AppCacheUpdateJobTest;
   FRIEND_TEST_ALL_PREFIXES(AppCacheTest, CleanupUnusedCache);

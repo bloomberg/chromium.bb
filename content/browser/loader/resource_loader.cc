@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
+#include "content/browser/appcache/appcache_interceptor.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
@@ -29,7 +30,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/url_request/url_request_status.h"
-#include "webkit/browser/appcache/appcache_interceptor.h"
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -54,7 +54,7 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.connection_info = response_info.connection_info;
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->head.socket_address = request->GetSocketAddress();
-  appcache::AppCacheInterceptor::GetExtraResponseInfo(
+  AppCacheInterceptor::GetExtraResponseInfo(
       request,
       &response->head.appcache_id,
       &response->head.appcache_manifest_url);

@@ -25,6 +25,10 @@ class Statement;
 class StatementID;
 }
 
+namespace content {
+class AppCacheStorageImplTest;
+}
+
 namespace appcache {
 
 class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
@@ -208,7 +212,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
   bool is_recreating_;
   bool was_corruption_detected_;
 
-  friend class AppCacheStorageImplTest;
+  friend class content::AppCacheStorageImplTest;
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, CacheRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, EntryRecords);
   FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, QuickIntegrityCheck);

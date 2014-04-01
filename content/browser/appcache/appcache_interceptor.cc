@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/appcache/appcache_interceptor.h"
+#include "content/browser/appcache/appcache_interceptor.h"
 
 #include "webkit/browser/appcache/appcache_backend_impl.h"
 #include "webkit/browser/appcache/appcache_host.h"
@@ -11,7 +11,14 @@
 #include "webkit/browser/appcache/appcache_url_request_job.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
-namespace appcache {
+using appcache::AppCacheBackendImpl;
+using appcache::AppCacheHost;
+using appcache::AppCacheRequestHandler;
+using appcache::AppCacheService;
+using appcache::kNoCacheId;
+using appcache::kNoHostId;
+
+namespace content {
 
 // static
 AppCacheInterceptor* AppCacheInterceptor::GetInstance() {
@@ -118,4 +125,4 @@ net::URLRequestJob* AppCacheInterceptor::MaybeInterceptResponse(
   return handler->MaybeLoadFallbackForResponse(request, network_delegate);
 }
 
-}  // namespace appcache
+}  // namespace content
