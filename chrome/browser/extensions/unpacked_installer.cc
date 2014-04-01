@@ -284,10 +284,25 @@ void UnpackedInstaller::LoadWithFileAccess(int flags) {
     return;
   }
 
+  // The installation prompt is about to be shown, which means we're past the
+  // point of detecting installation errors. We can now safely remove the retry
+  // handler that listens for them.
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&UnpackedInstaller::UnregisterLoadRetryListener, this));
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&UnpackedInstaller::ShowInstallPrompt, this));
+}
+
+void UnpackedInstaller::UnregisterLoadRetryListener() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!service_weak_.get())
+    return;
+  service_weak_->NotifyLoadRetry(false, extension_path_);
 }
 
 void UnpackedInstaller::ReportExtensionLoadError(const std::string &error) {

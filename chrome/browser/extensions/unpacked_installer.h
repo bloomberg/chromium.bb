@@ -90,6 +90,9 @@ class UnpackedInstaller
   void CheckExtensionFileAccess();
   void LoadWithFileAccess(int flags);
 
+  // Notify the frontend that an attempt to retry will not be necessary.
+  void UnregisterLoadRetryListener();
+
   // Notify the frontend that there was an error loading an extension.
   void ReportExtensionLoadError(const std::string& error);
 

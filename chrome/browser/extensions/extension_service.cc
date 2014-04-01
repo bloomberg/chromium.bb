@@ -2366,6 +2366,11 @@ void ExtensionService::ReportExtensionLoadError(
                          error.c_str(),
                          retry_prompt.c_str()));
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy, &retry);
+  NotifyLoadRetry(retry, extension_path);
+}
+
+void ExtensionService::NotifyLoadRetry(bool retry,
+                                       const base::FilePath& extension_path) {
   std::pair<bool, const base::FilePath&> details(retry, extension_path);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_LOAD_RETRY,

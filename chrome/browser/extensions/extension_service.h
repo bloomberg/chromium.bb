@@ -394,6 +394,10 @@ class ExtensionService
                                 const std::string& error,
                                 bool be_noisy);
 
+  // Notifies ExtensionSettingsHandler whether or not to retry installation for
+  // given |extension_path|.
+  void NotifyLoadRetry(bool retry, const base::FilePath& extension_path);
+
   // ExtensionHost of background page calls this method right after its render
   // view has been created.
   void DidCreateRenderViewForBackgroundPage(extensions::ExtensionHost* host);
