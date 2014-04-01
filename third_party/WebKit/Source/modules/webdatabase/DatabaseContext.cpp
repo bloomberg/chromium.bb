@@ -239,7 +239,7 @@ void DatabaseContext::stopDatabases()
     // DatabaseThread.
 
     if (m_databaseThread && !m_hasRequestedTermination) {
-        DatabaseTaskSynchronizer sync;
+        TaskSynchronizer sync;
         m_databaseThread->requestTermination(&sync);
         m_hasRequestedTermination = true;
         sync.waitForTaskCompletion();

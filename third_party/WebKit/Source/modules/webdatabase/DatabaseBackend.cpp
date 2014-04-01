@@ -55,7 +55,7 @@ void DatabaseBackend::trace(Visitor* visitor)
 
 bool DatabaseBackend::openAndVerifyVersion(bool setVersionInNewDatabase, DatabaseError& error, String& errorMessage)
 {
-    DatabaseTaskSynchronizer synchronizer;
+    TaskSynchronizer synchronizer;
     if (!databaseContext()->databaseThread() || databaseContext()->databaseThread()->terminationRequested(&synchronizer))
         return false;
 

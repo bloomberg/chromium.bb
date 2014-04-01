@@ -25,6 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "config.h"
 #include "modules/webdatabase/DatabaseTask.h"
 
@@ -35,34 +36,7 @@
 
 namespace WebCore {
 
-DatabaseTaskSynchronizer::DatabaseTaskSynchronizer()
-    : m_taskCompleted(false)
-#ifndef NDEBUG
-    , m_hasCheckedForTermination(false)
-#endif
-{
-}
-
-void DatabaseTaskSynchronizer::waitForTaskCompletion()
-{
-    // Prevent the deadlock between park request by other threads and blocking
-    // by m_synchronousCondition.
-    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
-    m_synchronousMutex.lock();
-    while (!m_taskCompleted)
-        m_synchronousCondition.wait(m_synchronousMutex);
-    m_synchronousMutex.unlock();
-}
-
-void DatabaseTaskSynchronizer::taskCompleted()
-{
-    m_synchronousMutex.lock();
-    m_taskCompleted = true;
-    m_synchronousCondition.signal();
-    m_synchronousMutex.unlock();
-}
-
-DatabaseTask::DatabaseTask(DatabaseBackend* database, DatabaseTaskSynchronizer* synchronizer)
+DatabaseTask::DatabaseTask(DatabaseBackend* database, TaskSynchronizer* synchronizer)
     : m_database(database)
     , m_synchronizer(synchronizer)
 #if !LOG_DISABLED
@@ -109,7 +83,7 @@ void DatabaseTask::run()
 // *** DatabaseOpenTask ***
 // Opens the database file and verifies the version matches the expected version.
 
-DatabaseBackend::DatabaseOpenTask::DatabaseOpenTask(DatabaseBackend* database, bool setVersionInNewDatabase, DatabaseTaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
+DatabaseBackend::DatabaseOpenTask::DatabaseOpenTask(DatabaseBackend* database, bool setVersionInNewDatabase, TaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
     : DatabaseTask(database, synchronizer)
     , m_setVersionInNewDatabase(setVersionInNewDatabase)
     , m_error(error)
@@ -137,7 +111,7 @@ const char* DatabaseBackend::DatabaseOpenTask::debugTaskName() const
 // *** DatabaseCloseTask ***
 // Closes the database.
 
-DatabaseBackend::DatabaseCloseTask::DatabaseCloseTask(DatabaseBackend* database, DatabaseTaskSynchronizer* synchronizer)
+DatabaseBackend::DatabaseCloseTask::DatabaseCloseTask(DatabaseBackend* database, TaskSynchronizer* synchronizer)
     : DatabaseTask(database, synchronizer)
 {
 }
@@ -195,7 +169,7 @@ const char* DatabaseBackend::DatabaseTransactionTask::debugTaskName() const
 // *** DatabaseTableNamesTask ***
 // Retrieves a list of all tables in the database - for WebInspector support.
 
-DatabaseBackend::DatabaseTableNamesTask::DatabaseTableNamesTask(DatabaseBackend* database, DatabaseTaskSynchronizer* synchronizer, Vector<String>& names)
+DatabaseBackend::DatabaseTableNamesTask::DatabaseTableNamesTask(DatabaseBackend* database, TaskSynchronizer* synchronizer, Vector<String>& names)
     : DatabaseTask(database, synchronizer)
     , m_tableNames(names)
 {

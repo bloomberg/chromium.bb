@@ -44,12 +44,12 @@ namespace WebCore {
 
 class DatabaseBackend;
 class DatabaseTask;
-class DatabaseTaskSynchronizer;
 class Document;
 class MessageLoopInterruptor;
 class PendingGCRunner;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
+class TaskSynchronizer;
 
 class DatabaseThread : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseThread> {
 public:
@@ -58,8 +58,8 @@ public:
     void trace(Visitor*);
 
     void start();
-    void requestTermination(DatabaseTaskSynchronizer* cleanupSync);
-    bool terminationRequested(DatabaseTaskSynchronizer* taskSynchronizer = 0) const;
+    void requestTermination(TaskSynchronizer* cleanupSync);
+    bool terminationRequested(TaskSynchronizer* = 0) const;
 
     void scheduleTask(PassOwnPtr<DatabaseTask>);
 
@@ -88,7 +88,7 @@ private:
 
     OwnPtr<SQLTransactionClient> m_transactionClient;
     OwnPtrWillBeMember<SQLTransactionCoordinator> m_transactionCoordinator;
-    DatabaseTaskSynchronizer* m_cleanupSync;
+    TaskSynchronizer* m_cleanupSync;
 
     mutable Mutex m_terminationRequestedMutex;
     bool m_terminationRequested;
