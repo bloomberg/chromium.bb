@@ -108,7 +108,8 @@ enum NewTabURLState {
   NEW_TAB_URL_INSECURE = 4,
 
   // URL should not be used because Suggest is disabled.
-  NEW_TAB_URL_SUGGEST_OFF = 5,
+  // Not used anymore, see crbug.com/340424.
+  // NEW_TAB_URL_SUGGEST_OFF = 5,
 
   // URL should not be used because it is blocked for a supervised user.
   NEW_TAB_URL_BLOCKED = 6,
@@ -299,8 +300,6 @@ NewTabURLState IsValidNewTabURL(Profile* profile, const GURL& new_tab_url) {
     return NEW_TAB_URL_NOT_SET;
   if (!new_tab_url.SchemeIsSecure())
     return NEW_TAB_URL_INSECURE;
-  if (!IsSuggestPrefEnabled(profile))
-    return NEW_TAB_URL_SUGGEST_OFF;
   if (!IsURLAllowedForSupervisedUser(new_tab_url, profile))
     return NEW_TAB_URL_BLOCKED;
   return NEW_TAB_URL_VALID;
