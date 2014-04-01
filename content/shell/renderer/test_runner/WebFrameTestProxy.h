@@ -135,12 +135,12 @@ public:
         m_baseProxy->didReceiveResponse(frame, identifier, response);
         Base::didReceiveResponse(frame, identifier, response);
     }
-    virtual void didChangeResourcePriority(blink::WebFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority, int intra_priority_value)
+    virtual void didChangeResourcePriority(blink::WebFrame* frame, unsigned identifier, const blink::WebURLRequest::Priority& priority)
     {
         // This is not implemented in RenderFrameImpl, so need to explicitly call
         // into the base proxy.
-        m_baseProxy->didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
-        Base::didChangeResourcePriority(frame, identifier, priority, intra_priority_value);
+        m_baseProxy->didChangeResourcePriority(frame, identifier, priority);
+        Base::didChangeResourcePriority(frame, identifier, priority);
     }
     virtual void didFinishResourceLoad(blink::WebFrame* frame, unsigned identifier)
     {

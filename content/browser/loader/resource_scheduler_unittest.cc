@@ -189,15 +189,13 @@ class ResourceSchedulerTest : public testing::Test {
   }
 
   void ChangeRequestPriority(TestRequest* request,
-                             net::RequestPriority new_priority,
-                             int intra_priority = 0) {
+                             net::RequestPriority new_priority) {
     scoped_refptr<FakeResourceMessageFilter> filter(
         new FakeResourceMessageFilter(kChildId));
     const ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
         request->url_request());
     const GlobalRequestID& id = info->GetGlobalRequestID();
-    ResourceHostMsg_DidChangePriority msg(id.request_id, new_priority,
-                                          intra_priority);
+    ResourceHostMsg_DidChangePriority msg(id.request_id, new_priority);
     bool ok = false;
     rdh_.OnMessageReceived(msg, filter.get(), &ok);
     EXPECT_TRUE(ok);
@@ -454,28 +452,6 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   scheduler_.OnWillInsertBody(kChildId, kRouteId);
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
-}
-
-TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
-  // Dummies to enforce scheduling.
-  scoped_ptr<TestRequest> high(NewRequest("http://host/high", net::HIGHEST));
-  scoped_ptr<TestRequest> low(NewRequest("http://host/high", net::LOWEST));
-
-  const int kMaxNumDelayableRequestsPerClient = 10;  // Should match the .cc.
-  ScopedVector<TestRequest> lows;
-  for (int i = 0; i < kMaxNumDelayableRequestsPerClient; ++i) {
-    string url = "http://host/low" + base::IntToString(i);
-    lows.push_back(NewRequest(url.c_str(), net::IDLE));
-  }
-
-  scoped_ptr<TestRequest> request(NewRequest("http://host/req", net::IDLE));
-  EXPECT_FALSE(request->started());
-
-  ChangeRequestPriority(request.get(), net::IDLE, 1);
-  EXPECT_FALSE(request->started());
-
-  scheduler_.OnWillInsertBody(kChildId, kRouteId);
-  EXPECT_TRUE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
