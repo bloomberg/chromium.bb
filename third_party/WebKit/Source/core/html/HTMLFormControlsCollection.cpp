@@ -153,6 +153,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
+    NamedItemCache& cache = createNamedItemCache();
     HashSet<StringImpl*> foundInputElements;
 
     const Vector<FormAssociatedElement*>& elementsArray = formControlElements();
@@ -164,11 +165,11 @@ void HTMLFormControlsCollection::updateIdNameCache() const
             const AtomicString& idAttrVal = element->getIdAttribute();
             const AtomicString& nameAttrVal = element->getNameAttribute();
             if (!idAttrVal.isEmpty()) {
-                appendIdCache(idAttrVal, element);
+                cache.addElementWithId(idAttrVal, element);
                 foundInputElements.add(idAttrVal.impl());
             }
             if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal) {
-                appendNameCache(nameAttrVal, element);
+                cache.addElementWithName(nameAttrVal, element);
                 foundInputElements.add(nameAttrVal.impl());
             }
         }
@@ -181,13 +182,11 @@ void HTMLFormControlsCollection::updateIdNameCache() const
             const AtomicString& idAttrVal = element->getIdAttribute();
             const AtomicString& nameAttrVal = element->getNameAttribute();
             if (!idAttrVal.isEmpty() && !foundInputElements.contains(idAttrVal.impl()))
-                appendIdCache(idAttrVal, element);
+                cache.addElementWithId(idAttrVal, element);
             if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal && !foundInputElements.contains(nameAttrVal.impl()))
-                appendNameCache(nameAttrVal, element);
+                cache.addElementWithName(nameAttrVal, element);
         }
     }
-
-    setHasValidIdNameCache();
 }
 
 void HTMLFormControlsCollection::namedGetter(const AtomicString& name, bool& radioNodeListEnabled, RefPtr<RadioNodeList>& radioNodeList, bool& elementEnabled, RefPtr<Element>& element)

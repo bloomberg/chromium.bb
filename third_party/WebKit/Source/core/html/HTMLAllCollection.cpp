@@ -50,15 +50,16 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name, unsigne
 {
     updateIdNameCache();
 
-    if (Vector<Element*>* cache = idCache(name)) {
-        if (index < cache->size())
-            return cache->at(index);
-        index -= cache->size();
+    const NamedItemCache& cache = namedItemCache();
+    if (Vector<Element*>* elements = cache.getElementsById(name)) {
+        if (index < elements->size())
+            return elements->at(index);
+        index -= elements->size();
     }
 
-    if (Vector<Element*>* cache = nameCache(name)) {
-        if (index < cache->size())
-            return cache->at(index);
+    if (Vector<Element*>* elements = cache.getElementsByName(name)) {
+        if (index < elements->size())
+            return elements->at(index);
     }
 
     return 0;

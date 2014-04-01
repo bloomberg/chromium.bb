@@ -162,7 +162,6 @@ HTMLCollection::HTMLCollection(ContainerNode& ownerNode, CollectionType type, It
     : LiveNodeListBase(ownerNode, rootTypeFromCollectionType(type), invalidationTypeExcludingIdAndNameAttributes(type), type)
     , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
     , m_shouldOnlyIncludeDirectChildren(shouldTypeOnlyIncludeDirectChildren(type))
-    , m_hasValidIdNameCache(false)
 {
     ScriptWrappable::init(this);
 }
@@ -387,11 +386,12 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const
     // that are allowed a name attribute.
     updateIdNameCache();
 
-    Vector<Element*>* idResults = idCache(name);
+    const NamedItemCache& cache = namedItemCache();
+    Vector<Element*>* idResults = cache.getElementsById(name);
     if (idResults && !idResults->isEmpty())
         return idResults->first();
 
-    Vector<Element*>* nameResults = nameCache(name);
+    Vector<Element*>* nameResults = cache.getElementsByName(name);
     if (nameResults && !nameResults->isEmpty())
         return nameResults->first();
 
@@ -443,19 +443,18 @@ void HTMLCollection::updateIdNameCache() const
     if (hasValidIdNameCache())
         return;
 
+    NamedItemCache& cache = createNamedItemCache();
     ContainerNode& root = rootNode();
     for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
-            appendIdCache(idAttrVal, element);
+            cache.addElementWithId(idAttrVal, element);
         if (!element->isHTMLElement())
             continue;
         const AtomicString& nameAttrVal = element->getNameAttribute();
         if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal && (type() != DocAll || nameShouldBeVisibleInDocumentAll(toHTMLElement(*element))))
-            appendNameCache(nameAttrVal, element);
+            cache.addElementWithName(nameAttrVal, element);
     }
-
-    setHasValidIdNameCache();
 }
 
 void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element> >& result) const
@@ -466,22 +465,15 @@ void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Element>
 
     updateIdNameCache();
 
-    Vector<Element*>* idResults = idCache(name);
-    Vector<Element*>* nameResults = nameCache(name);
+    const NamedItemCache& cache = namedItemCache();
+    Vector<Element*>* idResults = cache.getElementsById(name);
+    Vector<Element*>* nameResults = cache.getElementsByName(name);
 
     for (unsigned i = 0; idResults && i < idResults->size(); ++i)
         result.append(idResults->at(i));
 
     for (unsigned i = 0; nameResults && i < nameResults->size(); ++i)
         result.append(nameResults->at(i));
-}
-
-void HTMLCollection::append(NodeCacheMap& map, const AtomicString& key, Element* element)
-{
-    OwnPtr<Vector<Element*> >& vector = map.add(key.impl(), nullptr).storedValue->value;
-    if (!vector)
-        vector = adoptPtr(new Vector<Element*>);
-    vector->append(element);
 }
 
 } // namespace WebCore
