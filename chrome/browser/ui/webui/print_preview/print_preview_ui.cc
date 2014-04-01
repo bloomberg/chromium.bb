@@ -275,6 +275,10 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->AddLocalizedString("destinationSearchTitle",
                              IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE);
   source->AddLocalizedString("userInfo", IDS_PRINT_PREVIEW_USER_INFO);
+  source->AddLocalizedString("accountSelectTitle",
+                             IDS_PRINT_PREVIEW_ACCOUNT_SELECT_TITLE);
+  source->AddLocalizedString("addAccountTitle",
+                             IDS_PRINT_PREVIEW_ADD_ACCOUNT_TITLE);
   source->AddLocalizedString("cloudPrintPromotion",
                              IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION);
   source->AddLocalizedString("searchBoxPlaceholder",

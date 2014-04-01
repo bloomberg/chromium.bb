@@ -8690,6 +8690,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_PRINT_PREVIEW_USER_INFO" desc="Message describing which user's destinations are being shown.">
           Showing destinations for <ph name="EMAIL">$1<ex>testing@gmail.com</ex></ph>
         </message>
+        <message name="IDS_PRINT_PREVIEW_ACCOUNT_SELECT_TITLE" desc="Title of the user's account selection control, to choose the account destinations are being shown for.">
+          Showing destinations for
+        </message>
+        <message name="IDS_PRINT_PREVIEW_ADD_ACCOUNT_TITLE" desc="Title of the selection control item to let user to sign into another account.">
+          Add account...
+        </message>
         <message name="IDS_PRINT_PREVIEW_CLOUD_PRINT_PROMOTION" desc="Message describing features of Google Cloud Print.">
           Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK">$1<ex>&lt;span&gt;</ex></ph>Sign in<ph name="END_LINK">$2<ex>&lt;/span&gt;</ex></ph> to print to Google Cloud Print.
         </message>
