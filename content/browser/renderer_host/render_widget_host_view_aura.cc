@@ -3652,7 +3652,7 @@ void RenderWidgetHostViewAura::OnLayerRecreated(ui::Layer* old_layer,
     new_layer->SetExternalTexture(old_texture.get());
   } else if (old_mailbox.IsSharedMemory()) {
     base::SharedMemory* old_buffer = old_mailbox.shared_memory();
-    const size_t size = old_mailbox.shared_memory_size_in_bytes();
+    const size_t size = old_mailbox.SharedMemorySizeInBytes();
 
     scoped_ptr<base::SharedMemory> new_buffer(new base::SharedMemory);
     new_buffer->CreateAndMapAnonymous(size);

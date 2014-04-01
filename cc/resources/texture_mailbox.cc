@@ -27,7 +27,11 @@ TextureMailbox::TextureMailbox(base::SharedMemory* shared_memory,
                                const gfx::Size& size)
     : shared_memory_(shared_memory),
       shared_memory_size_(size),
-      allow_overlay_(false) {}
+      allow_overlay_(false) {
+  // If an embedder of cc gives an invalid TextureMailbox, we should crash
+  // safely rather than overflow.
+  CHECK(CheckedSharedMemorySizeInBytes().IsValid());
+}
 
 TextureMailbox::~TextureMailbox() {}
 
@@ -45,8 +49,18 @@ bool TextureMailbox::Equals(const TextureMailbox& other) const {
   return !IsValid();
 }
 
-size_t TextureMailbox::shared_memory_size_in_bytes() const {
-  return 4 * shared_memory_size_.GetArea();
+size_t TextureMailbox::SharedMemorySizeInBytes() const {
+  size_t bytes_per_pixel = 4;
+  size_t width = shared_memory_size_.width();
+  size_t height = shared_memory_size_.height();
+  return bytes_per_pixel * width * height;
+}
+
+base::CheckedNumeric<size_t> TextureMailbox::CheckedSharedMemorySizeInBytes()
+    const {
+  return base::CheckedNumeric<size_t>(4) *
+         base::CheckedNumeric<size_t>(shared_memory_size_.width()) *
+         base::CheckedNumeric<size_t>(shared_memory_size_.height());
 }
 
 }  // namespace cc

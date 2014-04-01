@@ -124,8 +124,8 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
 
         if (!PlatformColor::SameComponentOrder(texture_copy_->format())) {
           // Swizzle colors. This is slow, but should be really uncommon.
-          swizzled.resize(texture_mailbox_.shared_memory_size_in_bytes());
-          for (size_t i = 0; i < texture_mailbox_.shared_memory_size_in_bytes();
+          swizzled.resize(texture_mailbox_.SharedMemorySizeInBytes());
+          for (size_t i = 0; i < texture_mailbox_.SharedMemorySizeInBytes();
                i += 4) {
             swizzled[i] = pixels[i + 2];
             swizzled[i + 1] = pixels[i + 1];
