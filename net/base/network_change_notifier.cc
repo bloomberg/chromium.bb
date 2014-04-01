@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier_factory.h"
@@ -66,16 +67,26 @@ class HistogramWatcher
   // because the only other interface, |NotifyDataReceived| is also
   // only called from the network thread.
   void Init() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(g_network_change_notifier);
     NetworkChangeNotifier::AddConnectionTypeObserver(this);
     NetworkChangeNotifier::AddIPAddressObserver(this);
     NetworkChangeNotifier::AddDNSObserver(this);
     NetworkChangeNotifier::AddNetworkChangeObserver(this);
   }
 
-  virtual ~HistogramWatcher() {}
+  virtual ~HistogramWatcher() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(g_network_change_notifier);
+    NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+    NetworkChangeNotifier::RemoveIPAddressObserver(this);
+    NetworkChangeNotifier::RemoveDNSObserver(this);
+    NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
   virtual void OnIPAddressChanged() OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
     UMA_HISTOGRAM_MEDIUM_TIMES("NCN.IPAddressChange",
                                SinceLast(&last_ip_address_change_));
     UMA_HISTOGRAM_MEDIUM_TIMES(
@@ -86,6 +97,7 @@ class HistogramWatcher
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(
       NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
     base::TimeTicks now = base::TimeTicks::Now();
     int32 kilobytes_read = bytes_read_since_last_connection_change_ / 1000;
     base::TimeDelta state_duration = SinceLast(&last_connection_change_);
@@ -229,6 +241,7 @@ class HistogramWatcher
 
   // NetworkChangeNotifier::DNSObserver implementation.
   virtual void OnDNSChanged() OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
     UMA_HISTOGRAM_MEDIUM_TIMES("NCN.DNSConfigChange",
                                SinceLast(&last_dns_change_));
   }
@@ -236,6 +249,7 @@ class HistogramWatcher
   // NetworkChangeNotifier::NetworkChangeObserver implementation.
   virtual void OnNetworkChanged(
       NetworkChangeNotifier::ConnectionType type) OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (type != NetworkChangeNotifier::CONNECTION_NONE) {
       UMA_HISTOGRAM_MEDIUM_TIMES("NCN.NetworkOnlineChange",
                                  SinceLast(&last_network_change_));
@@ -248,6 +262,7 @@ class HistogramWatcher
   // Record histogram data whenever we receive a packet. Should only be called
   // from the network thread.
   void NotifyDataReceived(const URLRequest& request, int bytes_read) {
+    DCHECK(thread_checker_.CalledOnValidThread());
     if (IsLocalhost(request.url().host()) ||
         !request.url().SchemeIsHTTPOrHTTPS()) {
       return;
@@ -337,6 +352,8 @@ class HistogramWatcher
   // Erring on the conservative side is hopefully offset by taking the maximum.
   int32 peak_kbps_since_last_connection_change_;
 
+  base::ThreadChecker thread_checker_;
+
   DISALLOW_COPY_AND_ASSIGN(HistogramWatcher);
 };
 
@@ -377,17 +394,22 @@ class NetworkChangeNotifier::NetworkChangeCalculator
         pending_connection_type_(CONNECTION_NONE) {}
 
   void Init() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(g_network_change_notifier);
     AddConnectionTypeObserver(this);
     AddIPAddressObserver(this);
   }
 
   virtual ~NetworkChangeCalculator() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(g_network_change_notifier);
     RemoveConnectionTypeObserver(this);
     RemoveIPAddressObserver(this);
   }
 
   // NetworkChangeNotifier::IPAddressObserver implementation.
   virtual void OnIPAddressChanged() OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE
         ? params_.ip_address_offline_delay_ : params_.ip_address_online_delay_;
     // Cancels any previous timer.
@@ -396,6 +418,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation.
   virtual void OnConnectionTypeChanged(ConnectionType type) OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
     pending_connection_type_ = type;
     base::TimeDelta delay = last_announced_connection_type_ == CONNECTION_NONE
         ? params_.connection_type_offline_delay_
@@ -406,6 +429,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
 
  private:
   void Notify() {
+    DCHECK(thread_checker_.CalledOnValidThread());
     // Don't bother signaling about dead connections.
     if (have_announced_ &&
         (last_announced_connection_type_ == CONNECTION_NONE) &&
@@ -432,9 +456,14 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   ConnectionType pending_connection_type_;
   // Used to delay notifications so duplicates can be combined.
   base::OneShotTimer<NetworkChangeCalculator> timer_;
+
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkChangeCalculator);
 };
 
 NetworkChangeNotifier::~NetworkChangeNotifier() {
+  network_change_calculator_.reset();
   DCHECK_EQ(this, g_network_change_notifier);
   g_network_change_notifier = NULL;
 }
@@ -518,8 +547,10 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
 // static
 void NetworkChangeNotifier::NotifyDataReceived(const URLRequest& request,
                                                int bytes_read) {
-  if (!g_network_change_notifier)
+  if (!g_network_change_notifier ||
+      !g_network_change_notifier->histogram_watcher_) {
     return;
+  }
   g_network_change_notifier->histogram_watcher_->NotifyDataReceived(request,
                                                                     bytes_read);
 }
@@ -528,7 +559,15 @@ void NetworkChangeNotifier::NotifyDataReceived(const URLRequest& request,
 void NetworkChangeNotifier::InitHistogramWatcher() {
   if (!g_network_change_notifier)
     return;
+  g_network_change_notifier->histogram_watcher_.reset(new HistogramWatcher());
   g_network_change_notifier->histogram_watcher_->Init();
+}
+
+// static
+void NetworkChangeNotifier::ShutdownHistogramWatcher() {
+  if (!g_network_change_notifier)
+    return;
+  g_network_change_notifier->histogram_watcher_.reset();
 }
 
 #if defined(OS_LINUX)
@@ -644,7 +683,6 @@ NetworkChangeNotifier::NetworkChangeNotifier(
         new ObserverListThreadSafe<NetworkChangeObserver>(
             ObserverListBase<NetworkChangeObserver>::NOTIFY_EXISTING_ONLY)),
       network_state_(new NetworkState()),
-      histogram_watcher_(new HistogramWatcher()),
       network_change_calculator_(new NetworkChangeCalculator(params)) {
   DCHECK(!g_network_change_notifier);
   g_network_change_notifier = this;

@@ -744,6 +744,9 @@ void IOThread::CleanUp() {
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
 
+  // Shutdown the HistogramWatcher on the IO thread.
+  net::NetworkChangeNotifier::ShutdownHistogramWatcher();
+
   // This must be reset before the ChromeNetLog is destroyed.
   network_change_observer_.reset();
 
