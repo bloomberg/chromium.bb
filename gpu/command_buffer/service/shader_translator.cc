@@ -205,7 +205,12 @@ bool ShaderTranslator::Translate(const char* shader) {
 
 std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
     const {
+
+#if ANGLE_SH_VERSION >= 122
+  const size_t kNumIntFields = 20;
+#else
   const size_t kNumIntFields = 16;
+#endif
   const size_t kNumEnumFields = 1;
   const size_t kNumFunctionPointerFields = 1;
   struct MustMatchShBuiltInResource {
@@ -256,7 +261,19 @@ std::string ShaderTranslator::GetStringForOptionsThatWouldEffectCompilation()
       ":MaxCallStackDepth:" +
       base::IntToString(compiler_options_.MaxCallStackDepth) +
       ":EXT_frag_depth:" +
+#if ANGLE_SH_VERSION >= 122
+      base::IntToString(compiler_options_.EXT_frag_depth) +
+      ":MaxVertexOutputVectors:" +
+      base::IntToString(compiler_options_.MaxVertexOutputVectors) +
+      ":MaxFragmentInputVectors:" +
+      base::IntToString(compiler_options_.MaxFragmentInputVectors) +
+      ":MinProgramTexelOffset:" +
+      base::IntToString(compiler_options_.MinProgramTexelOffset) +
+      ":MaxProgramTexelOffset:" +
+      base::IntToString(compiler_options_.MaxProgramTexelOffset));
+#else
       base::IntToString(compiler_options_.EXT_frag_depth));
+#endif
 }
 
 const char* ShaderTranslator::translated_shader() const {
