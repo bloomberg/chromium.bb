@@ -103,11 +103,6 @@ void CommandBufferClientImpl::SetGetBuffer(int32 shm_id) {
   last_put_offset_ = -1;
 }
 
-void CommandBufferClientImpl::SetGetOffset(int32 get_offset) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
 scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
     size_t size,
     int32* id) {
@@ -124,7 +119,6 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
     return NULL;
 
   *id = ++next_transfer_buffer_id_;
-  DCHECK(transfer_buffers_.find(*id) == transfer_buffers_.end());
 
   AllocationScope scope;
   command_buffer_->RegisterTransferBuffer(
@@ -132,42 +126,11 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
 
   scoped_refptr<gpu::Buffer> buffer =
       new gpu::Buffer(shared_memory.Pass(), size);
-  transfer_buffers_[*id] = buffer;
-
   return buffer;
 }
 
 void CommandBufferClientImpl::DestroyTransferBuffer(int32 id) {
-  TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  if (it != transfer_buffers_.end())
-    transfer_buffers_.erase(it);
   command_buffer_->DestroyTransferBuffer(id);
-}
-
-scoped_refptr<gpu::Buffer> CommandBufferClientImpl::GetTransferBuffer(
-    int32 id) {
-  TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  if (it != transfer_buffers_.end()) {
-    return it->second;
-  } else {
-    return NULL;
-  }
-}
-
-void CommandBufferClientImpl::SetToken(int32 token) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
-void CommandBufferClientImpl::SetParseError(gpu::error::Error error) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
-void CommandBufferClientImpl::SetContextLostReason(
-    gpu::error::ContextLostReason reason) {
-  // Not implemented in proxy.
-  NOTREACHED();
 }
 
 gpu::Capabilities CommandBufferClientImpl::GetCapabilities() {

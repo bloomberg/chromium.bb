@@ -69,11 +69,13 @@ TEST_F(NaClMessageScannerTest, SyncMessageAndReply) {
   NaClMessageScanner test;
   ppapi::proxy::SerializedHandle handle(
       ppapi::proxy::SerializedHandle::SHARED_MEMORY);
+  int id = -1;
   IPC::Message msg =
-      PpapiHostMsg_PPBGraphics3D_GetTransferBuffer(
+      PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer(
           ppapi::API_ID_PPB_GRAPHICS_3D,
           HostResource(),
-          0,  // id
+          4096,  // size
+          &id,
           &handle);
   scoped_ptr<IPC::Message> new_msg_ptr;
   EXPECT_NE(msg.type(), FindPendingSyncMessage(test, msg));

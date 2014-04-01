@@ -86,6 +86,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../gpu/gpu.gyp:command_buffer_common',
         '../ppapi/ppapi.gyp:ppapi_c',
         '../ppapi/ppapi_internal.gyp:ppapi_example_gles2_spinning_cube',
         'mojo_environment_chromium',

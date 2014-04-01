@@ -38,22 +38,6 @@ namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
-PP_Bool BufferToHandle(scoped_refptr<gpu::Buffer> buffer,
-                    int* shm_handle,
-                    uint32_t* shm_size) {
-  if (!buffer || !shm_handle || !shm_size)
-    return PP_FALSE;
-#if defined(OS_POSIX)
-  *shm_handle = buffer->shared_memory()->handle().fd;
-#elif defined(OS_WIN)
-  *shm_handle = reinterpret_cast<int>(buffer->shared_memory()->handle());
-#else
-  #error "Platform not supported."
-#endif
-  *shm_size = buffer->size();
-  return PP_TRUE;
-}
-
 }  // namespace.
 
 PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
@@ -112,22 +96,15 @@ gpu::CommandBuffer::State PPB_Graphics3D_Impl::GetState() {
   return GetCommandBuffer()->GetState();
 }
 
-int32_t PPB_Graphics3D_Impl::CreateTransferBuffer(uint32_t size) {
-  int32_t id = -1;
-  GetCommandBuffer()->CreateTransferBuffer(size, &id);
-  return id;
+scoped_refptr<gpu::Buffer> PPB_Graphics3D_Impl::CreateTransferBuffer(
+    uint32_t size,
+    int32_t* id) {
+  return GetCommandBuffer()->CreateTransferBuffer(size, id);
 }
 
 PP_Bool PPB_Graphics3D_Impl::DestroyTransferBuffer(int32_t id) {
   GetCommandBuffer()->DestroyTransferBuffer(id);
   return PP_TRUE;
-}
-
-PP_Bool PPB_Graphics3D_Impl::GetTransferBuffer(int32_t id,
-                                               int* shm_handle,
-                                               uint32_t* shm_size) {
-  scoped_refptr<gpu::Buffer> buffer = GetCommandBuffer()->GetTransferBuffer(id);
-  return BufferToHandle(buffer, shm_handle, shm_size);
 }
 
 PP_Bool PPB_Graphics3D_Impl::Flush(int32_t put_offset) {

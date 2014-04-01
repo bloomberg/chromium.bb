@@ -56,15 +56,9 @@ class CommandBufferClientImpl : public CommandBufferClient,
   virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;
   virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
   virtual void SetGetBuffer(int32 shm_id) OVERRIDE;
-  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
                                                           int32* id) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) OVERRIDE;
-  virtual void SetToken(int32 token) OVERRIDE;
-  virtual void SetParseError(gpu::error::Error error) OVERRIDE;
-  virtual void SetContextLostReason(gpu::error::ContextLostReason reason)
-      OVERRIDE;
 
   // gpu::GpuControl implementation:
   virtual gpu::Capabilities GetCapabilities() OVERRIDE;
@@ -88,8 +82,6 @@ class CommandBufferClientImpl : public CommandBufferClient,
   void CancelAnimationFrames();
 
  private:
-  typedef std::map<int32, scoped_refptr<gpu::Buffer> > TransferBufferMap;
-
   // CommandBufferClient implementation:
   virtual void DidInitialize(bool success) OVERRIDE;
   virtual void DidMakeProgress(const CommandBufferState& state) OVERRIDE;
@@ -115,7 +107,6 @@ class CommandBufferClientImpl : public CommandBufferClient,
 
   State last_state_;
   scoped_ptr<base::SharedMemory> shared_state_shm_;
-  TransferBufferMap transfer_buffers_;
   int32 last_put_offset_;
   int32 next_transfer_buffer_id_;
 

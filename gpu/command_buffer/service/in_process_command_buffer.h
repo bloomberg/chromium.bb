@@ -48,6 +48,7 @@ namespace gles2 {
 class GLES2Decoder;
 }
 
+class CommandBufferServiceBase;
 class GpuMemoryBufferFactory;
 class GpuScheduler;
 class TransferBufferManagerInterface;
@@ -87,15 +88,9 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;
   virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
   virtual void SetGetBuffer(int32 shm_id) OVERRIDE;
-  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
                                                           int32* id) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
-  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) OVERRIDE;
-  virtual void SetToken(int32 token) OVERRIDE;
-  virtual void SetParseError(gpu::error::Error error) OVERRIDE;
-  virtual void SetContextLostReason(
-      gpu::error::ContextLostReason reason) OVERRIDE;
   virtual gpu::error::Error GetLastError() OVERRIDE;
 
   // GpuControl implementation:
@@ -205,7 +200,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   gpu::Capabilities capabilities_;
 
   // Accessed on both threads:
-  scoped_ptr<CommandBuffer> command_buffer_;
+  scoped_ptr<CommandBufferServiceBase> command_buffer_;
   base::Lock command_buffer_lock_;
   base::WaitableEvent flush_event_;
   scoped_refptr<Service> service_;

@@ -10,9 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
-#include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/gpu_control.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +20,7 @@ namespace gpu {
 
 class CommandBufferHelper;
 
-class MockCommandBufferBase : public CommandBuffer {
+class MockCommandBufferBase : public CommandBufferServiceBase {
  public:
   static const int32 kTransferBufferBaseId = 0x123;
   static const int32 kMaxTransferBuffers = 6;

@@ -327,7 +327,7 @@ bool NaClMessageScanner::ScanMessage(
       uint32_t type = iter->second;
       pending_sync_msgs_.erase(iter);
       switch (type) {
-        CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_GetTransferBuffer)
+        CASE_FOR_REPLY(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer)
         CASE_FOR_REPLY(PpapiHostMsg_PPBImageData_CreateSimple)
         CASE_FOR_REPLY(PpapiHostMsg_ResourceSyncCall)
         CASE_FOR_REPLY(PpapiHostMsg_SharedMemory_CreateSharedMemory)

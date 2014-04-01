@@ -251,11 +251,6 @@ void CommandBufferProxyImpl::SetGetBuffer(int32 shm_id) {
   last_put_offset_ = -1;
 }
 
-void CommandBufferProxyImpl::SetGetOffset(int32 get_offset) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
 scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
     size_t size,
     int32* id) {
@@ -265,7 +260,6 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
     return NULL;
 
   int32 new_id = channel_->ReserveTransferBufferId();
-  DCHECK(transfer_buffers_.find(new_id) == transfer_buffers_.end());
 
   scoped_ptr<base::SharedMemory> shared_memory(
       channel_->factory()->AllocateSharedMemory(size));
@@ -294,7 +288,6 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
   *id = new_id;
   scoped_refptr<gpu::Buffer> buffer =
       new gpu::Buffer(shared_memory.Pass(), size);
-  transfer_buffers_[new_id] = buffer;
   return buffer;
 }
 
@@ -302,68 +295,7 @@ void CommandBufferProxyImpl::DestroyTransferBuffer(int32 id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  // Remove the transfer buffer from the client side cache.
-  TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  if (it != transfer_buffers_.end())
-    transfer_buffers_.erase(it);
-
   Send(new GpuCommandBufferMsg_DestroyTransferBuffer(route_id_, id));
-}
-
-scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::GetTransferBuffer(int32 id) {
-  if (last_state_.error != gpu::error::kNoError)
-    return NULL;
-
-  // Check local cache to see if there is already a client side shared memory
-  // object for this id.
-  TransferBufferMap::iterator it = transfer_buffers_.find(id);
-  if (it != transfer_buffers_.end()) {
-    return it->second;
-  }
-
-  // Assuming we are in the renderer process, the service is responsible for
-  // duplicating the handle. This might not be true for NaCl.
-  base::SharedMemoryHandle handle = base::SharedMemoryHandle();
-  uint32 size;
-  if (!Send(new GpuCommandBufferMsg_GetTransferBuffer(route_id_,
-                                                      id,
-                                                      &handle,
-                                                      &size))) {
-    return NULL;
-  }
-
-  // Cache the transfer buffer shared memory object client side.
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(handle, false));
-
-  // Map the shared memory on demand.
-  if (!shared_memory->memory()) {
-    if (!shared_memory->Map(size))
-      return NULL;
-  }
-
-  scoped_refptr<gpu::Buffer> buffer =
-      new gpu::Buffer(shared_memory.Pass(), size);
-  transfer_buffers_[id] = buffer;
-
-  return buffer;
-}
-
-void CommandBufferProxyImpl::SetToken(int32 token) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
-void CommandBufferProxyImpl::SetParseError(
-    gpu::error::Error error) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
-void CommandBufferProxyImpl::SetContextLostReason(
-    gpu::error::ContextLostReason reason) {
-  // Not implemented in proxy.
-  NOTREACHED();
 }
 
 gpu::Capabilities CommandBufferProxyImpl::GetCapabilities() {

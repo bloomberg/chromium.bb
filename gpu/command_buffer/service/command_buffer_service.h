@@ -14,9 +14,30 @@ namespace gpu {
 
 class TransferBufferManagerInterface;
 
+class GPU_EXPORT CommandBufferServiceBase : public CommandBuffer {
+ public:
+  // Sets the current get offset. This can be called from any thread.
+  virtual void SetGetOffset(int32 get_offset) = 0;
+
+  // Get the transfer buffer associated with an ID. Returns a null buffer for
+  // ID 0.
+  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) = 0;
+
+  // Allows the reader to update the current token value.
+  virtual void SetToken(int32 token) = 0;
+
+  // Allows the reader to set the current parse error.
+  virtual void SetParseError(error::Error) = 0;
+
+  // Allows the reader to set the current context lost reason.
+  // NOTE: if calling this in conjunction with SetParseError,
+  // call this first.
+  virtual void SetContextLostReason(error::ContextLostReason) = 0;
+};
+
 // An object that implements a shared memory command buffer and a synchronous
 // API to manage the put and get pointers.
-class GPU_EXPORT CommandBufferService : public CommandBuffer {
+class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
  public:
   typedef base::Callback<bool(int32)> GetBufferChangedCallback;
   explicit CommandBufferService(
@@ -32,10 +53,12 @@ class GPU_EXPORT CommandBufferService : public CommandBuffer {
   virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;
   virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
   virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
-  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
   virtual scoped_refptr<Buffer> CreateTransferBuffer(size_t size,
                                                      int32* id) OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
+
+  // CommandBufferServiceBase implementation:
+  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
   virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) OVERRIDE;
   virtual void SetToken(int32 token) OVERRIDE;
   virtual void SetParseError(error::Error error) OVERRIDE;

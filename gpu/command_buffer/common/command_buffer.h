@@ -113,9 +113,6 @@ class GPU_EXPORT CommandBuffer {
   // Also resets the get and put offsets to 0.
   virtual void SetGetBuffer(int32 transfer_buffer_id) = 0;
 
-  // Sets the current get offset. This can be called from any thread.
-  virtual void SetGetOffset(int32 get_offset) = 0;
-
   // Create a transfer buffer of the given size. Returns its ID or -1 on
   // error.
   virtual scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
@@ -123,21 +120,6 @@ class GPU_EXPORT CommandBuffer {
 
   // Destroy a transfer buffer. The ID must be positive.
   virtual void DestroyTransferBuffer(int32 id) = 0;
-
-  // Get the transfer buffer associated with an ID. Returns a null buffer for
-  // ID 0.
-  virtual scoped_refptr<gpu::Buffer> GetTransferBuffer(int32 id) = 0;
-
-  // Allows the reader to update the current token value.
-  virtual void SetToken(int32 token) = 0;
-
-  // Allows the reader to set the current parse error.
-  virtual void SetParseError(error::Error) = 0;
-
-  // Allows the reader to set the current context lost reason.
-  // NOTE: if calling this in conjunction with SetParseError,
-  // call this first.
-  virtual void SetContextLostReason(error::ContextLostReason) = 0;
 
 // The NaCl Win64 build only really needs the struct definitions above; having
 // GetLastError declared would mean we'd have to also define it, and pull more

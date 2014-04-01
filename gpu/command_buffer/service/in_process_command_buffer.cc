@@ -586,11 +586,6 @@ void InProcessCommandBuffer::DestroyTransferBuffer(int32 id) {
   QueueTask(task);
 }
 
-scoped_refptr<gpu::Buffer> InProcessCommandBuffer::GetTransferBuffer(int32 id) {
-  NOTREACHED();
-  return NULL;
-}
-
 gpu::Capabilities InProcessCommandBuffer::GetCapabilities() {
   return capabilities_;
 }
@@ -706,19 +701,6 @@ gpu::error::Error InProcessCommandBuffer::GetLastError() {
 bool InProcessCommandBuffer::Initialize() {
   NOTREACHED();
   return false;
-}
-
-void InProcessCommandBuffer::SetGetOffset(int32 get_offset) { NOTREACHED(); }
-
-void InProcessCommandBuffer::SetToken(int32 token) { NOTREACHED(); }
-
-void InProcessCommandBuffer::SetParseError(gpu::error::Error error) {
-  NOTREACHED();
-}
-
-void InProcessCommandBuffer::SetContextLostReason(
-    gpu::error::ContextLostReason reason) {
-  NOTREACHED();
 }
 
 namespace {

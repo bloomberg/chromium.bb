@@ -28,7 +28,7 @@ const int64 kUnscheduleFenceTimeOutDelay = 10000;
 const int64 kRescheduleTimeOutDelay = 1000;
 #endif
 
-GpuScheduler::GpuScheduler(CommandBuffer* command_buffer,
+GpuScheduler::GpuScheduler(CommandBufferServiceBase* command_buffer,
                            AsyncAPIInterface* handler,
                            gles2::GLES2Decoder* decoder)
     : command_buffer_(command_buffer),
