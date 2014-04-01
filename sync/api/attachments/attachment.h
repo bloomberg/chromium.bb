@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
@@ -33,14 +32,13 @@ class SYNC_EXPORT Attachment {
   // Creates an attachment with a unique id and the supplied data.
   //
   // Used when creating a brand new attachment.
-  static scoped_ptr<Attachment> Create(
-      const scoped_refptr<base::RefCountedMemory>& data);
+  static Attachment Create(const scoped_refptr<base::RefCountedMemory>& data);
 
   // Creates an attachment with the supplied id and data.
   //
   // Used when you want to recreate a specific attachment. E.g. creating a local
   // copy of an attachment that already exists on the sync server.
-  static scoped_ptr<Attachment> CreateWithId(
+  static Attachment CreateWithId(
       const AttachmentId& id,
       const scoped_refptr<base::RefCountedMemory>& data);
 
@@ -53,9 +51,6 @@ class SYNC_EXPORT Attachment {
  private:
   AttachmentId id_;
   scoped_refptr<base::RefCountedMemory> data_;
-
-  friend class AttachmentTest;
-  FRIEND_TEST_ALL_PREFIXES(AttachmentTest, CreateId_UniqueIdIsUnique);
 
   Attachment(const AttachmentId& id,
              const scoped_refptr<base::RefCountedMemory>& data);

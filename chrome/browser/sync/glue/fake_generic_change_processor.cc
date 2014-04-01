@@ -6,16 +6,17 @@
 
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/api/syncable_service.h"
 
 namespace browser_sync {
 
 FakeGenericChangeProcessor::FakeGenericChangeProcessor()
-    : GenericChangeProcessor(
-          NULL,
-          base::WeakPtr<syncer::SyncableService>(),
-          base::WeakPtr<syncer::SyncMergeResult>(),
-          NULL),
+    : GenericChangeProcessor(NULL,
+                             base::WeakPtr<syncer::SyncableService>(),
+                             base::WeakPtr<syncer::SyncMergeResult>(),
+                             NULL,
+                             syncer::FakeAttachmentService::CreateForTest()),
       sync_model_has_user_created_nodes_(true),
       sync_model_has_user_created_nodes_success_(true),
       crypto_ready_if_necessary_(true) {}

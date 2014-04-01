@@ -11,16 +11,16 @@ namespace syncer {
 Attachment::~Attachment() {}
 
 // Static.
-scoped_ptr<Attachment> Attachment::Create(
+Attachment Attachment::Create(
     const scoped_refptr<base::RefCountedMemory>& data) {
   return CreateWithId(AttachmentId::Create(), data);
 }
 
 // Static.
-scoped_ptr<Attachment> Attachment::CreateWithId(
+Attachment Attachment::CreateWithId(
     const AttachmentId& id,
     const scoped_refptr<base::RefCountedMemory>& data) {
-  return scoped_ptr<Attachment>(new Attachment(id, data)).Pass();
+  return Attachment(id, data);
 }
 
 const AttachmentId& Attachment::GetId() const { return id_; }

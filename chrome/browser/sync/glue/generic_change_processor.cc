@@ -39,13 +39,17 @@ void SetNodeSpecifics(const sync_pb::EntitySpecifics& entity_specifics,
 
 syncer::SyncData BuildRemoteSyncData(
     int64 sync_id,
-    const syncer::BaseNode& read_node) {
+    const syncer::BaseNode& read_node,
+    const syncer::AttachmentServiceProxy& attachment_service_proxy) {
+  const syncer::AttachmentIdList& attachment_ids = read_node.GetAttachmentIds();
   // Use the specifics of non-password datatypes directly (encryption has
   // already been handled).
   if (read_node.GetModelType() != syncer::PASSWORDS) {
     return syncer::SyncData::CreateRemoteData(sync_id,
                                               read_node.GetEntitySpecifics(),
-                                              read_node.GetModificationTime());
+                                              read_node.GetModificationTime(),
+                                              attachment_ids,
+                                              attachment_service_proxy);
   }
 
   // Passwords must be accessed differently, to account for their encryption,
@@ -55,7 +59,9 @@ syncer::SyncData BuildRemoteSyncData(
       CopyFrom(read_node.GetPasswordSpecifics());
   return syncer::SyncData::CreateRemoteData(sync_id,
                                             password_holder,
-                                            read_node.GetModificationTime());
+                                            read_node.GetModificationTime(),
+                                            attachment_ids,
+                                            attachment_service_proxy);
 }
 
 }  // namespace
@@ -64,12 +70,19 @@ GenericChangeProcessor::GenericChangeProcessor(
     DataTypeErrorHandler* error_handler,
     const base::WeakPtr<syncer::SyncableService>& local_service,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-    syncer::UserShare* user_share)
+    syncer::UserShare* user_share,
+    scoped_ptr<syncer::AttachmentService> attachment_service)
     : ChangeProcessor(error_handler),
       local_service_(local_service),
       merge_result_(merge_result),
-      share_handle_(user_share) {
+      share_handle_(user_share),
+      attachment_service_(attachment_service.Pass()),
+      attachment_service_weak_ptr_factory_(attachment_service_.get()),
+      attachment_service_proxy_(syncer::AttachmentServiceProxy(
+          base::MessageLoopProxy::current(),
+          attachment_service_weak_ptr_factory_.GetWeakPtr())) {
   DCHECK(CalledOnValidThread());
+  DCHECK(attachment_service_);
 }
 
 GenericChangeProcessor::~GenericChangeProcessor() {
@@ -92,11 +105,16 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
         specifics->mutable_password()->mutable_client_only_encrypted_data()->
             CopyFrom(it->extra->unencrypted());
       }
-      syncer_changes_.push_back(syncer::SyncChange(
-          FROM_HERE,
-          syncer::SyncChange::ACTION_DELETE,
-          syncer::SyncData::CreateRemoteData(
-              it->id, specifics ? *specifics : it->specifics, base::Time())));
+      const syncer::AttachmentIdList empty_list_of_attachment_ids;
+      syncer_changes_.push_back(
+          syncer::SyncChange(FROM_HERE,
+                             syncer::SyncChange::ACTION_DELETE,
+                             syncer::SyncData::CreateRemoteData(
+                                 it->id,
+                                 specifics ? *specifics : it->specifics,
+                                 base::Time(),
+                                 empty_list_of_attachment_ids,
+                                 attachment_service_proxy_)));
     } else {
       syncer::SyncChange::SyncChangeType action =
           (it->action == syncer::ChangeRecord::ACTION_ADD) ?
@@ -110,11 +128,10 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
                 base::Int64ToString(it->id));
         return;
       }
-      syncer_changes_.push_back(
-          syncer::SyncChange(
-              FROM_HERE,
-              action,
-              BuildRemoteSyncData(it->id, read_node)));
+      syncer_changes_.push_back(syncer::SyncChange(
+          FROM_HERE,
+          action,
+          BuildRemoteSyncData(it->id, read_node, attachment_service_proxy_)));
     }
   }
 }
@@ -186,8 +203,8 @@ syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
                               type);
       return error;
     }
-    current_sync_data->push_back(BuildRemoteSyncData(sync_child_node.GetId(),
-                                                     sync_child_node));
+    current_sync_data->push_back(BuildRemoteSyncData(
+        sync_child_node.GetId(), sync_child_node, attachment_service_proxy_));
   }
   return syncer::SyncError();
 }
@@ -338,6 +355,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
         NOTREACHED();
         return error;
       }
+      attachment_service_->OnSyncDataDelete(change.sync_data());
       if (merge_result_.get()) {
         merge_result_->set_num_items_deleted(
             merge_result_->num_items_deleted() + 1);
@@ -449,6 +467,7 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
   }
   sync_node->SetTitle(base::UTF8ToWide(change.sync_data().GetTitle()));
   SetNodeSpecifics(change.sync_data().GetSpecifics(), sync_node);
+  attachment_service_->OnSyncDataAdd(change.sync_data());
   if (merge_result_.get()) {
     merge_result_->set_num_items_added(merge_result_->num_items_added() + 1);
   }
@@ -550,6 +569,8 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
 
   sync_node->SetTitle(base::UTF8ToWide(change.sync_data().GetTitle()));
   SetNodeSpecifics(change.sync_data().GetSpecifics(), sync_node);
+  attachment_service_->OnSyncDataUpdate(sync_node->GetAttachmentIds(),
+                                        change.sync_data());
   if (merge_result_.get()) {
     merge_result_->set_num_items_modified(merge_result_->num_items_modified() +
                                           1);

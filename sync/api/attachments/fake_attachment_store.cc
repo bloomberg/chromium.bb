@@ -29,20 +29,16 @@ class FakeAttachmentStore::Backend
 
  private:
   friend class base::RefCountedThreadSafe<Backend>;
-  typedef std::map<AttachmentId, Attachment*> AttachmentMap;
 
   ~Backend();
-  Result Remove(const AttachmentId& id);
 
   scoped_refptr<base::SingleThreadTaskRunner> frontend_task_runner_;
   AttachmentMap attachments_;
-  STLValueDeleter<AttachmentMap> attachments_value_deleter_;
 };
 
 FakeAttachmentStore::Backend::Backend(
     const scoped_refptr<base::SingleThreadTaskRunner>& frontend_task_runner)
-    : frontend_task_runner_(frontend_task_runner),
-      attachments_value_deleter_(&attachments_) {}
+    : frontend_task_runner_(frontend_task_runner) {}
 
 FakeAttachmentStore::Backend::~Backend() {}
 
@@ -52,7 +48,7 @@ void FakeAttachmentStore::Backend::Read(const AttachmentId& id,
   scoped_ptr<Attachment> attachment;
   Result result = NOT_FOUND;
   if (iter != attachments_.end()) {
-    attachment.reset(new Attachment(*iter->second));
+    attachment.reset(new Attachment(iter->second));
     result = SUCCESS;
   }
   frontend_task_runner_->PostTask(
@@ -62,31 +58,22 @@ void FakeAttachmentStore::Backend::Read(const AttachmentId& id,
 void FakeAttachmentStore::Backend::Write(
     const scoped_refptr<base::RefCountedMemory>& bytes,
     const WriteCallback& callback) {
-  scoped_ptr<Attachment> attachment = Attachment::Create(bytes);
-  DCHECK(attachment.get());
-  AttachmentId attachment_id(attachment->GetId());
-  attachments_.insert(
-      AttachmentMap::value_type(attachment_id, attachment.release()));
+  Attachment attachment = Attachment::Create(bytes);
+  AttachmentId attachment_id(attachment.GetId());
+  attachments_.insert(AttachmentMap::value_type(attachment_id, attachment));
   frontend_task_runner_->PostTask(FROM_HERE,
                                   base::Bind(callback, SUCCESS, attachment_id));
 }
 
 void FakeAttachmentStore::Backend::Drop(const AttachmentId& id,
                                         const DropCallback& callback) {
-  Result result = Remove(id);
-  frontend_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
-}
-
-AttachmentStore::Result FakeAttachmentStore::Backend::Remove(
-    const AttachmentId& id) {
   Result result = NOT_FOUND;
   AttachmentMap::iterator iter = attachments_.find(id);
   if (iter != attachments_.end()) {
-    delete iter->second;
     attachments_.erase(iter);
     result = SUCCESS;
   }
-  return result;
+  frontend_task_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
 FakeAttachmentStore::FakeAttachmentStore(

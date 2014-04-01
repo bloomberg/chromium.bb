@@ -33,7 +33,7 @@ class SYNC_EXPORT FakeAttachmentStore : public AttachmentStore {
  public:
   // Construct a FakeAttachmentStore whose "IO" will be performed in
   // |backend_task_runner|.
-  FakeAttachmentStore(
+  explicit FakeAttachmentStore(
       const scoped_refptr<base::SequencedTaskRunner>& backend_task_runner);
 
   virtual ~FakeAttachmentStore();

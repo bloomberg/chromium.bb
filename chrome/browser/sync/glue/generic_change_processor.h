@@ -13,6 +13,8 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_error_handler.h"
+#include "sync/api/attachments/attachment_service.h"
+#include "sync/api/attachments/attachment_service_proxy.h"
 #include "sync/api/sync_change_processor.h"
 #include "sync/api/sync_merge_result.h"
 
@@ -46,7 +48,8 @@ class GenericChangeProcessor : public ChangeProcessor,
       DataTypeErrorHandler* error_handler,
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
-      syncer::UserShare* user_share);
+      syncer::UserShare* user_share,
+      scoped_ptr<syncer::AttachmentService> attachment_service);
   virtual ~GenericChangeProcessor();
 
   // ChangeProcessor interface.
@@ -125,6 +128,13 @@ class GenericChangeProcessor : public ChangeProcessor,
   // when it starts up). As such we can't wait until Start(_) has been called,
   // and have to keep a local pointer to the user_share.
   syncer::UserShare* const share_handle_;
+
+  scoped_ptr<syncer::AttachmentService> attachment_service_;
+  // Must be destroyed before attachment_service_ to ensure WeakPtrs are
+  // invalidated before attachment_service_ is destroyed.
+  base::WeakPtrFactory<syncer::AttachmentService>
+      attachment_service_weak_ptr_factory_;
+  syncer::AttachmentServiceProxy attachment_service_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericChangeProcessor);
 };

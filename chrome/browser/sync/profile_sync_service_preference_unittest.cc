@@ -35,6 +35,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/api/sync_data.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/change_record.h"
@@ -60,10 +61,12 @@ typedef std::map<const std::string, const base::Value*> PreferenceValues;
 
 ACTION_P(CreateAndSaveChangeProcessor, change_processor) {
   syncer::UserShare* user_share = arg0->GetUserShare();
-  *change_processor = new GenericChangeProcessor(arg1,
-                                                 arg2,
-                                                 arg3,
-                                                 user_share);
+  *change_processor = new GenericChangeProcessor(
+      arg1,
+      arg2,
+      arg3,
+      user_share,
+      syncer::FakeAttachmentService::CreateForTest());
   return *change_processor;
 }
 

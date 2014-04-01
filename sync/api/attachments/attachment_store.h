@@ -26,7 +26,7 @@ class SYNC_EXPORT AttachmentStore {
   virtual ~AttachmentStore();
 
   // TODO(maniscalco): Consider udpating Read and Write methods to support
-  // resumable transfers.
+  // resumable transfers (bug 353292).
 
   enum Result {
     SUCCESS,            // No error.

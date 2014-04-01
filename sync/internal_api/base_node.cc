@@ -290,6 +290,13 @@ ModelType BaseNode::GetModelType() const {
   return GetEntry()->GetModelType();
 }
 
+const syncer::AttachmentIdList BaseNode::GetAttachmentIds() const {
+  // TODO(maniscalco): Once EntryKernel is capable of storing AttachmentIds,
+  // update this method to retrieve the list of AttachmentIds from read_node and
+  // pass it to CreateRemoteData (bug 348625).
+  return AttachmentIdList();
+}
+
 void BaseNode::SetUnencryptedSpecifics(
     const sync_pb::EntitySpecifics& specifics) {
   ModelType type = GetModelTypeFromSpecifics(specifics);

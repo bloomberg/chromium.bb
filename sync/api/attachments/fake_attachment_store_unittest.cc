@@ -98,8 +98,8 @@ TEST_F(FakeAttachmentStoreTest, WriteReadRoundTrip) {
 TEST_F(FakeAttachmentStoreTest, Read_NotFound) {
   FakeAttachmentStore store(base::MessageLoopProxy::current());
   scoped_refptr<base::RefCountedString> some_data(new base::RefCountedString);
-  scoped_ptr<Attachment> some_attachment = Attachment::Create(some_data);
-  AttachmentId some_id = some_attachment->GetId();
+  Attachment some_attachment = Attachment::Create(some_data);
+  AttachmentId some_id = some_attachment.GetId();
   store.Read(some_id, read_callback);
   ClearAndPumpLoop();
   EXPECT_EQ(result, AttachmentStore::NOT_FOUND);

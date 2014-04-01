@@ -51,6 +51,7 @@
 #include "components/webdata/common/web_database.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/data_type_debug_info_listener.h"
 #include "sync/internal_api/public/read_node.h"
@@ -368,7 +369,8 @@ ACTION(MakeGenericChangeProcessor) {
       arg1,
       arg2,
       arg3,
-      user_share);
+      user_share,
+      syncer::FakeAttachmentService::CreateForTest());
 }
 
 ACTION(MakeSharedChangeProcessor) {

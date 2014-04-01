@@ -9,6 +9,11 @@
 #include <vector>
 
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/util/immutable.h"
+
+namespace sync_pb {
+class AttachmentIdProto;
+}  // namespace sync_pb
 
 namespace syncer {
 
@@ -29,14 +34,34 @@ class SYNC_EXPORT AttachmentId {
   // Needed for using AttachmentId as key in std::map.
   bool operator<(const AttachmentId& other) const;
 
-
   // Creates a unique attachment id.
   static AttachmentId Create();
 
- private:
-  std::string unique_id_;
+  // Creates an attachment id from an initialized proto.
+  static AttachmentId CreateFromProto(const sync_pb::AttachmentIdProto& proto);
 
-  AttachmentId(const std::string& unique_id);
+  const sync_pb::AttachmentIdProto& GetProto() const;
+
+ private:
+  // Necessary since we forward-declare sync_pb::AttachmentIdProto; see comments
+  // in immutable.h.
+  struct ImmutableAttachmentIdProtoTraits {
+    typedef sync_pb::AttachmentIdProto* Wrapper;
+    static void InitializeWrapper(Wrapper* wrapper);
+    static void DestroyWrapper(Wrapper* wrapper);
+    static const sync_pb::AttachmentIdProto& Unwrap(const Wrapper& wrapper);
+    static sync_pb::AttachmentIdProto* UnwrapMutable(Wrapper* wrapper);
+    static void Swap(sync_pb::AttachmentIdProto* t1,
+                     sync_pb::AttachmentIdProto* t2);
+  };
+
+  typedef Immutable<sync_pb::AttachmentIdProto,
+                    ImmutableAttachmentIdProtoTraits>
+      ImmutableAttachmentIdProto;
+
+  ImmutableAttachmentIdProto proto_;
+
+  AttachmentId(sync_pb::AttachmentIdProto* proto);
 };
 
 typedef std::vector<AttachmentId> AttachmentIdList;

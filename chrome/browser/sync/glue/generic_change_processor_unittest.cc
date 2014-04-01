@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
+#include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/api/fake_syncable_service.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_merge_result.h"
@@ -45,12 +46,12 @@ class SyncGenericChangeProcessorTest : public testing::Test {
                                         test_user_share_.user_share());
     }
     test_user_share_.encryption_handler()->Init();
-    change_processor_.reset(
-        new GenericChangeProcessor(
-            &data_type_error_handler_,
-            syncable_service_ptr_factory_.GetWeakPtr(),
-            merge_result_ptr_factory_.GetWeakPtr(),
-            test_user_share_.user_share()));
+    change_processor_.reset(new GenericChangeProcessor(
+        &data_type_error_handler_,
+        syncable_service_ptr_factory_.GetWeakPtr(),
+        merge_result_ptr_factory_.GetWeakPtr(),
+        test_user_share_.user_share(),
+        syncer::FakeAttachmentService::CreateForTest()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -237,7 +238,9 @@ TEST_F(SyncGenericChangeProcessorTest, UpdatePasswords) {
   }
 }
 
+// TODO(maniscalco): Add test cases that verify GenericChangeProcessor calls the
+// right methods on its AttachmentService at the right times (bug 353303).
+
 }  // namespace
 
 }  // namespace browser_sync
-

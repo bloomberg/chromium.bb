@@ -19,6 +19,7 @@ import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "article_specifics.proto";
+import "attachments.proto";
 import "autofill_specifics.proto";
 import "bookmark_specifics.proto";
 import "client_commands.proto";
@@ -366,6 +367,9 @@ message SyncEntity {
   // Refer to its definition in unique_position.proto for more information about
   // its internal representation.
   optional UniquePosition unique_position = 25;
+
+  // Attachment ids of attachments associated with this SyncEntity.
+  repeated AttachmentIdProto attachment_id = 26;
 };
 
 // This message contains diagnostic information used to correlate
@@ -930,4 +934,3 @@ message ClientToServerResponse {
   // sent with any subsequent ClientToServerMessages.
   optional ChipBag new_bag_of_chips = 14;
 };
-

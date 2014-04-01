@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "sync/api/attachments/attachment.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync.pb.h"
@@ -199,6 +200,9 @@ class SYNC_EXPORT BaseNode {
   // Do not call this function on items that do not support positioning
   // (ie. non-bookmarks).
   int GetPositionIndex() const;
+
+  // Returns this item's attachment ids.
+  const syncer::AttachmentIdList GetAttachmentIds() const;
 
   // These virtual accessors provide access to data members of derived classes.
   virtual const syncable::Entry* GetEntry() const = 0;

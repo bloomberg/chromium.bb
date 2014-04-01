@@ -1053,6 +1053,13 @@ base::DictionaryValue* ClientConfigParamsToValue(
   return value;
 }
 
+base::DictionaryValue* AttachmentIdProtoToValue(
+    const sync_pb::AttachmentIdProto& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(unique_id);
+  return value;
+}
+
 #undef SET
 #undef SET_REP
 

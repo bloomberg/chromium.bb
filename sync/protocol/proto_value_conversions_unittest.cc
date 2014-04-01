@@ -368,5 +368,9 @@ TEST_F(ProtoValueConversionsTest, ClientToServerResponseToValue) {
                                  "get_updates.entries"));
 }
 
+TEST_F(ProtoValueConversionsTest, AttachmentIdProtoToValue) {
+  TestSpecificsToValue(AttachmentIdProtoToValue);
+}
+
 }  // namespace
 }  // namespace syncer

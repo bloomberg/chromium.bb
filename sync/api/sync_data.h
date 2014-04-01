@@ -10,10 +10,15 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
+#include "sync/api/attachments/attachment.h"
+#include "sync/api/attachments/attachment_service_proxy.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/immutable.h"
+#include "sync/internal_api/public/util/weak_handle.h"
 
 namespace sync_pb {
 class EntitySpecifics;
@@ -22,15 +27,17 @@ class SyncEntity;
 
 namespace syncer {
 
+class AttachmentService;
+
 // A light-weight container for immutable sync data. Pass-by-value and storage
 // in STL containers are supported and encouraged if helpful.
 class SYNC_EXPORT SyncData {
  public:
   // Creates an empty and invalid SyncData.
   SyncData();
-   ~SyncData();
+  ~SyncData();
 
-   // Default copy and assign welcome.
+  // Default copy and assign welcome.
 
   // Helper methods for creating SyncData objects for local data.
   // The sync tag must be a string unique to this datatype and is used as a node
@@ -48,12 +55,25 @@ class SYNC_EXPORT SyncData {
       const std::string& sync_tag,
       const std::string& non_unique_title,
       const sync_pb::EntitySpecifics& specifics);
+  static SyncData CreateLocalDataWithAttachments(
+      const std::string& sync_tag,
+      const std::string& non_unique_title,
+      const sync_pb::EntitySpecifics& specifics,
+      const AttachmentList& attachments);
 
   // Helper method for creating SyncData objects originating from the syncer.
+  //
+  // TODO(maniscalco): Replace all calls to 3-arg CreateRemoteData with calls to
+  // the 5-arg version (bug 353296).
   static SyncData CreateRemoteData(
       int64 id,
       const sync_pb::EntitySpecifics& specifics,
-      const base::Time& last_modified_time);
+      const base::Time& last_modified_time,
+      const AttachmentIdList& attachment_ids,
+      const syncer::AttachmentServiceProxy& attachment_service);
+  static SyncData CreateRemoteData(int64 id,
+                                   const sync_pb::EntitySpecifics& specifics,
+                                   const base::Time& last_modified_time);
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
   // without valid data is to use the default constructor.
@@ -85,7 +105,48 @@ class SYNC_EXPORT SyncData {
   // Whether this sync data is for local data or data coming from the syncer.
   bool IsLocal() const;
 
+  // TODO(maniscalco): Reduce the dependence on knowing whether a SyncData is
+  // local (in the IsLocal() == true sense) or remote.  Make it harder for users
+  // of SyncData to accidentally call local-only methods on a remote SyncData
+  // (bug 357305).
+
   std::string ToString() const;
+
+  // Return a list of this SyncData's attachment ids.
+  //
+  // The attachments may or may not be present on this device.
+  AttachmentIdList GetAttachmentIds() const;
+
+  // Return a list of this SyncData's attachments.
+  //
+  // May only be called when IsLocal() is true.
+  const AttachmentList& GetLocalAttachmentsForUpload() const;
+
+  // Retrieve the attachments indentified by |attachment_ids|. Invoke |callback|
+  // with the requested attachments.
+  //
+  // May only be called when IsLocal() is false.
+  //
+  // |callback| will be invoked when the operation is complete (successfully or
+  // otherwise).
+  //
+  // Retrieving the requested attachments may require reading local storage or
+  // requesting the attachments from the network.
+  //
+  void GetOrDownloadAttachments(
+      const AttachmentIdList& attachment_ids,
+      const AttachmentService::GetOrDownloadCallback& callback);
+
+  // Drop (delete from local storage) the attachments associated with this
+  // SyncData specified in |attachment_ids|. This method will not delete
+  // attachments from the server.
+  //
+  // May only be called when IsLocal() is false.
+  //
+  // |callback| will be invoked when the operation is complete (successfully or
+  // otherwise).
+  void DropAttachments(const AttachmentIdList& attachment_ids,
+                       const AttachmentService::DropCallback& callback);
 
   // TODO(zea): Query methods for other sync properties: parent, successor, etc.
 
@@ -109,10 +170,13 @@ class SYNC_EXPORT SyncData {
   typedef Immutable<sync_pb::SyncEntity, ImmutableSyncEntityTraits>
       ImmutableSyncEntity;
 
-  // Clears |entity|.
-  SyncData(int64 id,
-           sync_pb::SyncEntity* entity,
-           const base::Time& remote_modification_time);
+  // Clears |entity| and |attachments|.
+  SyncData(
+      int64 id,
+      sync_pb::SyncEntity* entity,
+      AttachmentList* attachments,
+      const base::Time& remote_modification_time,
+      const syncer::AttachmentServiceProxy& attachment_service);
 
   // Whether this SyncData holds valid data.
   bool is_valid_;
@@ -126,6 +190,10 @@ class SYNC_EXPORT SyncData {
 
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
+
+  Immutable<AttachmentList> attachments_;
+
+  AttachmentServiceProxy attachment_service_;
 };
 
 // gmock printer helper.
