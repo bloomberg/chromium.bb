@@ -43,7 +43,7 @@ class DatabaseBackendBase;
 class DatabaseCallback;
 class DatabaseContext;
 class DatabaseSync;
-class DatabaseTaskSynchronizer;
+class TaskSynchronizer;
 class ExceptionState;
 class SecurityOrigin;
 class ExecutionContext;

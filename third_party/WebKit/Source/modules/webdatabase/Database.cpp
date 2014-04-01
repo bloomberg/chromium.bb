@@ -219,7 +219,7 @@ Vector<String> Database::tableNames()
     // FIXME: Not using isolatedCopy on these strings looks ok since threads take strict turns
     // in dealing with them. However, if the code changes, this may not be true anymore.
     Vector<String> result;
-    DatabaseTaskSynchronizer synchronizer;
+    TaskSynchronizer synchronizer;
     if (!databaseContext()->databaseThread() || databaseContext()->databaseThread()->terminationRequested(&synchronizer))
         return result;
 

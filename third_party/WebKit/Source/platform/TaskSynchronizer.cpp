@@ -25,17 +25,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "config.h"
-#include "modules/webdatabase/DatabaseTask.h"
 
-#include "platform/Logging.h"
-#include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseThread.h"
+#include "config.h"
+#include "platform/TaskSynchronizer.h"
+
+#include "heap/ThreadState.h"
 
 namespace WebCore {
 
-DatabaseTaskSynchronizer::DatabaseTaskSynchronizer()
+TaskSynchronizer::TaskSynchronizer()
     : m_taskCompleted(false)
 #ifndef NDEBUG
     , m_hasCheckedForTermination(false)
@@ -43,7 +41,7 @@ DatabaseTaskSynchronizer::DatabaseTaskSynchronizer()
 {
 }
 
-void DatabaseTaskSynchronizer::waitForTaskCompletion()
+void TaskSynchronizer::waitForTaskCompletion()
 {
     // Prevent the deadlock between park request by other threads and blocking
     // by m_synchronousCondition.
@@ -54,164 +52,12 @@ void DatabaseTaskSynchronizer::waitForTaskCompletion()
     m_synchronousMutex.unlock();
 }
 
-void DatabaseTaskSynchronizer::taskCompleted()
+void TaskSynchronizer::taskCompleted()
 {
     m_synchronousMutex.lock();
     m_taskCompleted = true;
     m_synchronousCondition.signal();
     m_synchronousMutex.unlock();
 }
-
-DatabaseTask::DatabaseTask(DatabaseBackend* database, DatabaseTaskSynchronizer* synchronizer)
-    : m_database(database)
-    , m_synchronizer(synchronizer)
-#if !LOG_DISABLED
-    , m_complete(false)
-#endif
-{
-}
-
-DatabaseTask::~DatabaseTask()
-{
-#if !LOG_DISABLED
-    ASSERT(m_complete || !m_synchronizer);
-#endif
-}
-
-void DatabaseTask::run()
-{
-    // Database tasks are meant to be used only once, so make sure this one hasn't been performed before.
-#if !LOG_DISABLED
-    ASSERT(!m_complete);
-#endif
-
-    if (!m_synchronizer && !m_database->databaseContext()->databaseThread()->isDatabaseOpen(m_database.get())) {
-        taskCancelled();
-#if !LOG_DISABLED
-        m_complete = true;
-#endif
-        return;
-    }
-
-    WTF_LOG(StorageAPI, "Performing %s %p\n", debugTaskName(), this);
-
-    m_database->resetAuthorizer();
-    doPerformTask();
-
-    if (m_synchronizer)
-        m_synchronizer->taskCompleted();
-
-#if !LOG_DISABLED
-    m_complete = true;
-#endif
-}
-
-// *** DatabaseOpenTask ***
-// Opens the database file and verifies the version matches the expected version.
-
-DatabaseBackend::DatabaseOpenTask::DatabaseOpenTask(DatabaseBackend* database, bool setVersionInNewDatabase, DatabaseTaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
-    : DatabaseTask(database, synchronizer)
-    , m_setVersionInNewDatabase(setVersionInNewDatabase)
-    , m_error(error)
-    , m_errorMessage(errorMessage)
-    , m_success(success)
-{
-    ASSERT(synchronizer); // A task with output parameters is supposed to be synchronous.
-}
-
-void DatabaseBackend::DatabaseOpenTask::doPerformTask()
-{
-    String errorMessage;
-    m_success = database()->performOpenAndVerify(m_setVersionInNewDatabase, m_error, errorMessage);
-    if (!m_success)
-        m_errorMessage = errorMessage.isolatedCopy();
-}
-
-#if !LOG_DISABLED
-const char* DatabaseBackend::DatabaseOpenTask::debugTaskName() const
-{
-    return "DatabaseOpenTask";
-}
-#endif
-
-// *** DatabaseCloseTask ***
-// Closes the database.
-
-DatabaseBackend::DatabaseCloseTask::DatabaseCloseTask(DatabaseBackend* database, DatabaseTaskSynchronizer* synchronizer)
-    : DatabaseTask(database, synchronizer)
-{
-}
-
-void DatabaseBackend::DatabaseCloseTask::doPerformTask()
-{
-    Database::from(database())->close();
-}
-
-#if !LOG_DISABLED
-const char* DatabaseBackend::DatabaseCloseTask::debugTaskName() const
-{
-    return "DatabaseCloseTask";
-}
-#endif
-
-// *** DatabaseTransactionTask ***
-// Starts a transaction that will report its results via a callback.
-
-DatabaseBackend::DatabaseTransactionTask::DatabaseTransactionTask(PassRefPtrWillBeRawPtr<SQLTransactionBackend> transaction)
-    : DatabaseTask(Database::from(transaction->database()), 0)
-    , m_transaction(transaction)
-{
-}
-
-DatabaseBackend::DatabaseTransactionTask::~DatabaseTransactionTask()
-{
-}
-
-void DatabaseBackend::DatabaseTransactionTask::doPerformTask()
-{
-    m_transaction->performNextStep();
-}
-
-void DatabaseBackend::DatabaseTransactionTask::taskCancelled()
-{
-    // If the task is being destructed without the transaction ever being run,
-    // then we must either have an error or an interruption. Give the
-    // transaction a chance to clean up since it may not have been able to
-    // run to its clean up state.
-
-    // Transaction phase 2 cleanup. See comment on "What happens if a
-    // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
-
-    m_transaction->notifyDatabaseThreadIsShuttingDown();
-}
-
-#if !LOG_DISABLED
-const char* DatabaseBackend::DatabaseTransactionTask::debugTaskName() const
-{
-    return "DatabaseTransactionTask";
-}
-#endif
-
-// *** DatabaseTableNamesTask ***
-// Retrieves a list of all tables in the database - for WebInspector support.
-
-DatabaseBackend::DatabaseTableNamesTask::DatabaseTableNamesTask(DatabaseBackend* database, DatabaseTaskSynchronizer* synchronizer, Vector<String>& names)
-    : DatabaseTask(database, synchronizer)
-    , m_tableNames(names)
-{
-    ASSERT(synchronizer); // A task with output parameters is supposed to be synchronous.
-}
-
-void DatabaseBackend::DatabaseTableNamesTask::doPerformTask()
-{
-    m_tableNames = Database::from(database())->performGetTableNames();
-}
-
-#if !LOG_DISABLED
-const char* DatabaseBackend::DatabaseTableNamesTask::debugTaskName() const
-{
-    return "DatabaseTableNamesTask";
-}
-#endif
 
 } // namespace WebCore
