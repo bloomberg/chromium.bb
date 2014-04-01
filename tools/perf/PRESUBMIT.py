@@ -38,9 +38,10 @@ def _CommonChecks(input_api, output_api):
 
 def _CheckJson(input_api, output_api):
   """Checks whether JSON files in this change can be parsed."""
-  affected_paths = input_api.change.AbsoluteLocalPaths()
-  json_filenames = [name for name in affected_paths if name.endswith('.json')]
-  for filename in json_filenames:
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    filename = affected_file.AbsoluteLocalPath()
+    if os.path.splitext(filename)[1] != '.json':
+      continue
     try:
       input_api.json.load(open(filename))
     except ValueError:
