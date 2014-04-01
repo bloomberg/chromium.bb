@@ -7248,9 +7248,9 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransformOrigin()
 {
     CSSParserValue* value = m_valueList->current();
     CSSValueID id = value->id;
-    RefPtrWillBeRawPtr<CSSValue> xValue;
-    RefPtrWillBeRawPtr<CSSValue> yValue;
-    RefPtrWillBeRawPtr<CSSValue> zValue;
+    RefPtrWillBeRawPtr<CSSValue> xValue = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> yValue = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> zValue = nullptr;
     if (id == CSSValueLeft || id == CSSValueRight) {
         xValue = cssValuePool().createIdentifierValue(id);
     } else if (id == CSSValueTop || id == CSSValueBottom) {
