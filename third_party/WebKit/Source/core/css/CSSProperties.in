@@ -214,6 +214,7 @@ column-fill type_name=ColumnFill
 -webkit-mask-repeat-x custom_all
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size custom_all
+perspective-origin custom_all
 -webkit-perspective-origin custom_all
 -webkit-perspective-origin-x type_name=Length, converter=convertLength
 -webkit-perspective-origin-y type_name=Length, converter=convertLength

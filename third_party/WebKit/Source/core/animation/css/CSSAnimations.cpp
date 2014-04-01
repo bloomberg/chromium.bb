@@ -79,6 +79,11 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
         return CSSPropertyPerspective;
     case CSSPropertyWebkitTransform:
         return CSSPropertyTransform;
+    case CSSPropertyWebkitPerspectiveOriginX:
+    case CSSPropertyWebkitPerspectiveOriginY:
+        if (RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled())
+            return CSSPropertyPerspectiveOrigin;
+        break;
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitTransformOriginZ:
@@ -691,7 +696,6 @@ void CSSAnimations::TransitionEventDelegate::onEventCondition(const TimedItem* t
     }
 }
 
-
 bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
 {
     switch (property) {
@@ -789,8 +793,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyWebkitMaskPositionY:
     case CSSPropertyWebkitMaskSize:
     case CSSPropertyPerspective:
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY:
     case CSSPropertyShapeOutside:
     case CSSPropertyShapeMargin:
     case CSSPropertyShapeImageThreshold:
@@ -802,8 +804,11 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
         return true;
+    case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransformOrigin:
         return RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled();
+    case CSSPropertyWebkitPerspectiveOriginX:
+    case CSSPropertyWebkitPerspectiveOriginY:
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitTransformOriginZ:

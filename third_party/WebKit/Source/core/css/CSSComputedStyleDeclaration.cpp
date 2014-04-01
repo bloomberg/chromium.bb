@@ -298,6 +298,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyOrder,
     CSSPropertyPerspective,
     CSSPropertyWebkitPerspective,
+    CSSPropertyPerspectiveOrigin,
     CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
     CSSPropertyWebkitRtlOrdering,
@@ -1493,6 +1494,7 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> 
     case CSSPropertyLeft:
     case CSSPropertyRight:
     case CSSPropertyTop:
+    case CSSPropertyPerspectiveOrigin:
     case CSSPropertyWebkitPerspectiveOrigin:
     case CSSPropertyTransform:
     case CSSPropertyWebkitTransform:
@@ -2512,6 +2514,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             if (!style->hasPerspective())
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return zoomAdjustedPixelValue(style->perspective(), *style);
+        case CSSPropertyPerspectiveOrigin:
         case CSSPropertyWebkitPerspectiveOrigin: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
             if (renderer) {
@@ -2770,10 +2773,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyWebkitMaxLogicalWidth:
         case CSSPropertyWebkitMaxLogicalHeight:
             ASSERT_NOT_REACHED();
-            break;
-
-        // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-        case CSSPropertyPerspectiveOrigin:
             break;
 
         /* Unimplemented @font-face properties */

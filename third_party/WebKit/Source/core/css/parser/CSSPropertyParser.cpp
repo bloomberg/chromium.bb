@@ -1168,13 +1168,23 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
             return true;
         }
         break;
+    case CSSPropertyPerspectiveOrigin: {
+        RefPtrWillBeRawPtr<CSSValueList> list = parseTransformOrigin();
+        if (!list || list->length() == 3)
+            return false;
+        // This values are added to match gecko serialization.
+        if (list->length() == 1)
+            list->append(cssValuePool().createValue(50, CSSPrimitiveValue::CSS_PERCENTAGE));
+        addProperty(propId, list.release(), important);
+        return true;
+    }
     case CSSPropertyWebkitPerspectiveOrigin:
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitPerspectiveOriginY: {
         RefPtrWillBeRawPtr<CSSValue> val1 = nullptr;
         RefPtrWillBeRawPtr<CSSValue> val2 = nullptr;
         CSSPropertyID propId1, propId2;
-        if (parsePerspectiveOrigin(propId, propId1, propId2, val1, val2)) {
+        if (parseWebkitPerspectiveOrigin(propId, propId1, propId2, val1, val2)) {
             addProperty(propId1, val1.release(), important);
             if (val2)
                 addProperty(propId2, val2.release(), important);
@@ -1624,9 +1634,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyUserZoom:
         validPrimitive = false;
         break;
-    // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-    case CSSPropertyPerspectiveOrigin:
-        return false;
     default:
         return parseSVGValue(propId, important);
     }
@@ -7352,7 +7359,7 @@ bool CSSPropertyParser::parseWebkitTransformOrigin(CSSPropertyID propId, CSSProp
     return value;
 }
 
-bool CSSPropertyParser::parsePerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, RefPtrWillBeRawPtr<CSSValue>& value, RefPtrWillBeRawPtr<CSSValue>& value2)
+bool CSSPropertyParser::parseWebkitPerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, RefPtrWillBeRawPtr<CSSValue>& value, RefPtrWillBeRawPtr<CSSValue>& value2)
 {
     propId1 = propId;
     propId2 = propId;
