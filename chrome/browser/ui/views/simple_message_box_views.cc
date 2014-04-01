@@ -191,24 +191,29 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                     MessageBoxType type,
                                     const base::string16& yes_text,
                                     const base::string16& no_text) {
+  // Views dialogs cannot be shown outside the UI thread message loop.
+  // Fallback to logging with a default response or a Windows MessageBox.
+  if (!base::MessageLoopForUI::IsCurrent() ||
+      !base::MessageLoopForUI::current()->is_running()) {
 #if defined(OS_WIN)
-  // GPU-based dialogs can't be used early on; fallback to a Windows MessageBox.
-  if (!base::MessageLoop::current()->is_running()) {
     int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,
                                 title, GetMessageBoxFlagsFromType(type));
     return (result == IDYES || result == IDOK) ?
         MESSAGE_BOX_RESULT_YES : MESSAGE_BOX_RESULT_NO;
-  }
+#else
+    LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "
+               << title << " - " << message;
+    return MESSAGE_BOX_RESULT_NO;
 #endif
+  }
 
   MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
   SimpleMessageBoxViews* dialog = new SimpleMessageBoxViews(
       title, message, type, yes_text, no_text, &result);
   CreateBrowserModalDialogViews(dialog, parent)->Show();
 
-  // Use the widget's window itself so that the message loop
-  // exists when the dialog is closed by some other means than
-  // |Cancel| or |Accept|.
+  // Use the widget's window itself so that the message loop exists when the
+  // dialog is closed by some other means than |Cancel| or |Accept|.
   aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
   aura::client::DispatcherClient* client =
       aura::client::GetDispatcherClient(anchor->GetRootWindow());
