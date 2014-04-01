@@ -31,23 +31,23 @@ TEST_F(HybridSlowStartTest, Simple) {
   QuicPacketSequenceNumber end_sequence_number = 3;
   slowStart_->Reset(end_sequence_number);
 
-  EXPECT_FALSE(slowStart_->EndOfRound(sequence_number++));
+  EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number++));
 
   // Test duplicates.
-  EXPECT_FALSE(slowStart_->EndOfRound(sequence_number));
+  EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number));
 
-  EXPECT_FALSE(slowStart_->EndOfRound(sequence_number++));
-  EXPECT_TRUE(slowStart_->EndOfRound(sequence_number++));
+  EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number++));
+  EXPECT_TRUE(slowStart_->IsEndOfRound(sequence_number++));
 
   // Test without a new registered end_sequence_number;
-  EXPECT_TRUE(slowStart_->EndOfRound(sequence_number++));
+  EXPECT_TRUE(slowStart_->IsEndOfRound(sequence_number++));
 
   end_sequence_number = 20;
   slowStart_->Reset(end_sequence_number);
   while (sequence_number < end_sequence_number) {
-    EXPECT_FALSE(slowStart_->EndOfRound(sequence_number++));
+    EXPECT_FALSE(slowStart_->IsEndOfRound(sequence_number++));
   }
-  EXPECT_TRUE(slowStart_->EndOfRound(sequence_number++));
+  EXPECT_TRUE(slowStart_->IsEndOfRound(sequence_number++));
 }
 
 TEST_F(HybridSlowStartTest, AckTrain) {
@@ -63,12 +63,12 @@ TEST_F(HybridSlowStartTest, AckTrain) {
       clock_.AdvanceTime(one_ms_);
       slowStart_->Update(rtt_, rtt_);
       EXPECT_FALSE(slowStart_->Exit());
-    }  while (!slowStart_->EndOfRound(sequence_number++));
+    }  while (!slowStart_->IsEndOfRound(sequence_number++));
     end_sequence_number *= 2;  // Exponential growth.
   }
   slowStart_->Reset(end_sequence_number);
 
-  for (int n = 0; n < 29 && !slowStart_->EndOfRound(sequence_number++); ++n) {
+  for (int n = 0; n < 29 && !slowStart_->IsEndOfRound(sequence_number++); ++n) {
     clock_.AdvanceTime(one_ms_);
     slowStart_->Update(rtt_, rtt_);
     EXPECT_FALSE(slowStart_->Exit());

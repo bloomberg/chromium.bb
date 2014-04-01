@@ -15,7 +15,7 @@
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_crypto_server_stream.h"
 #include "net/quic/quic_crypto_stream.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
@@ -41,9 +41,7 @@ class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
       : error_(false) {
   }
 
-  virtual void OnError(CryptoFramer* framer) OVERRIDE {
-    error_ = true;
-  }
+  virtual void OnError(CryptoFramer* framer) OVERRIDE { error_ = true; }
 
   virtual void OnHandshakeMessage(
       const CryptoHandshakeMessage& message) OVERRIDE {
@@ -179,9 +177,9 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   if (options.channel_id_enabled) {
     crypto_config.SetChannelIDSigner(ChannelIDSignerForTesting());
   }
-  QuicSessionKey server_key(kServerHostname, kServerPort, false,
-                            PRIVACY_MODE_DISABLED);
-  QuicCryptoClientStream client(server_key, &client_session, NULL,
+  QuicServerId server_id(kServerHostname, kServerPort, false,
+                         PRIVACY_MODE_DISABLED);
+  QuicCryptoClientStream client(server_id, &client_session, NULL,
                                 &crypto_config);
   client_session.SetCryptoStream(&client);
 
@@ -193,9 +191,9 @@ int CryptoTestUtils::HandshakeWithFakeClient(
   CompareClientAndServerKeys(&client, server);
 
   if (options.channel_id_enabled) {
-    EXPECT_EQ(crypto_config.channel_id_signer()->GetKeyForHostname(
-                  kServerHostname),
-              server->crypto_negotiated_params().channel_id);
+    EXPECT_EQ(
+        crypto_config.channel_id_signer()->GetKeyForHostname(kServerHostname),
+        server->crypto_negotiated_params().channel_id);
   }
 
   return client.num_sent_client_hellos();
@@ -494,7 +492,7 @@ CryptoHandshakeMessage CryptoTestUtils::BuildMessage(const char* message_tag,
       valuestr++;
       len--;
 
-      CHECK(len % 2 == 0);
+      CHECK_EQ(0u, len % 2);
       scoped_ptr<uint8[]> buf(new uint8[len/2]);
 
       for (size_t i = 0; i < len/2; i++) {

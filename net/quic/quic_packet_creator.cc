@@ -170,31 +170,11 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
     return 0;
   }
 
-  const size_t free_bytes = BytesFree();
-  size_t bytes_consumed = 0;
   const size_t data_size = data.TotalBufferSize();
-
-  // When a STREAM frame is the last frame in a packet, it consumes two fewer
-  // bytes of framing overhead.
-  // Anytime more data is available than fits in with the extra two bytes,
-  // the frame will be the last, and up to two extra bytes are consumed.
-  // TODO(ianswett): If QUIC pads, the 1 byte PADDING frame does not fit when
-  // 1 byte is available, because then the STREAM frame isn't the last.
-
-  // The minimum frame size(0 bytes of data) if it's not the last frame.
-  size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
-      framer_->version(), id, offset, false);
-  // Check if it's the last frame in the packet.
-  if (data_size + min_frame_size > free_bytes) {
-    // The minimum frame size(0 bytes of data) if it is the last frame.
-    size_t min_last_frame_size = QuicFramer::GetMinStreamFrameSize(
-        framer_->version(), id, offset, true);
-    bytes_consumed =
-        min<size_t>(free_bytes - min_last_frame_size, data_size);
-  } else {
-    DCHECK_LT(data_size, BytesFree());
-    bytes_consumed = data_size;
-  }
+  size_t min_last_frame_size = QuicFramer::GetMinStreamFrameSize(
+      framer_->version(), id, offset, /*last_frame_in_packet=*/ true);
+  size_t bytes_consumed =
+      min<size_t>(BytesFree() - min_last_frame_size, data_size);
 
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
   IOVector frame_data;

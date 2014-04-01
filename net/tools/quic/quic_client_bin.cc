@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
   // TODO(rjshade): Set version on command line.
   net::tools::QuicClient client(
       net::IPEndPoint(addr, FLAGS_port),
-      net::QuicSessionKey(FLAGS_hostname, FLAGS_port, FLAGS_secure,
-                          net::PRIVACY_MODE_DISABLED),
+      net::QuicServerId(FLAGS_hostname, FLAGS_port, FLAGS_secure,
+                        net::PRIVACY_MODE_DISABLED),
       net::QuicSupportedVersions(), true, FLAGS_initial_flow_control_window);
 
   client.Initialize();

@@ -2,32 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 
 using std::string;
 
 namespace net {
 
-QuicSessionKey::QuicSessionKey() {}
+QuicServerId::QuicServerId() {}
 
-QuicSessionKey::QuicSessionKey(const HostPortPair& host_port_pair,
-                               bool is_https,
-                               PrivacyMode privacy_mode)
+QuicServerId::QuicServerId(const HostPortPair& host_port_pair,
+                           bool is_https,
+                           PrivacyMode privacy_mode)
     : host_port_pair_(host_port_pair),
       is_https_(is_https),
       privacy_mode_(privacy_mode) {}
 
-QuicSessionKey::QuicSessionKey(const string& host,
-                               uint16 port,
-                               bool is_https,
-                               PrivacyMode privacy_mode)
+QuicServerId::QuicServerId(const string& host,
+                           uint16 port,
+                           bool is_https,
+                           PrivacyMode privacy_mode)
     : host_port_pair_(host, port),
       is_https_(is_https),
       privacy_mode_(privacy_mode) {}
 
-QuicSessionKey::~QuicSessionKey() {}
+QuicServerId::~QuicServerId() {}
 
-bool QuicSessionKey::operator<(const QuicSessionKey& other) const {
+bool QuicServerId::operator<(const QuicServerId& other) const {
   if (!host_port_pair_.Equals(other.host_port_pair_)) {
     return host_port_pair_ < other.host_port_pair_;
   }
@@ -37,13 +37,13 @@ bool QuicSessionKey::operator<(const QuicSessionKey& other) const {
   return privacy_mode_ < other.privacy_mode_;
 }
 
-bool QuicSessionKey::operator==(const QuicSessionKey& other) const {
+bool QuicServerId::operator==(const QuicServerId& other) const {
   return is_https_ == other.is_https_ &&
       privacy_mode_ == other.privacy_mode_ &&
       host_port_pair_.Equals(other.host_port_pair_);
 }
 
-string QuicSessionKey::ToString() const {
+string QuicServerId::ToString() const {
   return (is_https_ ? "https://" : "http://") + host_port_pair_.ToString() +
       (privacy_mode_ == PRIVACY_MODE_ENABLED ? "/private" : "");
 }

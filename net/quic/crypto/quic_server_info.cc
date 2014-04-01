@@ -29,8 +29,8 @@ void QuicServerInfo::State::Clear() {
   certs.clear();
 }
 
-QuicServerInfo::QuicServerInfo(const QuicSessionKey& server_key)
-    : server_key_(server_key) {
+QuicServerInfo::QuicServerInfo(const QuicServerId& server_id)
+    : server_id_(server_id) {
 }
 
 QuicServerInfo::~QuicServerInfo() {

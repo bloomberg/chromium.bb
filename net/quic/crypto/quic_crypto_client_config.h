@@ -14,6 +14,7 @@
 #include "net/base/net_export.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_server_id.h"
 
 namespace net {
 
@@ -22,7 +23,6 @@ class CryptoHandshakeMessage;
 class ProofVerifier;
 class ProofVerifyDetails;
 class QuicRandom;
-class QuicSessionKey;
 
 // QuicCryptoClientConfig contains crypto-related configuration settings for a
 // client. Note that this object isn't thread-safe. It's designed to be used on
@@ -132,9 +132,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // Sets the members to reasonable, default values.
   void SetDefaults();
 
-  // LookupOrCreate returns a CachedState for the given |server_key|. If no such
+  // LookupOrCreate returns a CachedState for the given |server_id|. If no such
   // CachedState currently exists, it will be created and cached.
-  CachedState* LookupOrCreate(const QuicSessionKey& server_key);
+  CachedState* LookupOrCreate(const QuicServerId& server_id);
 
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
   // source-address token or SCFG from a server. If |cached| is non-NULL, the
@@ -143,7 +143,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // |out_params->cached_certs|. |preferred_version| is the version of the
   // QUIC protocol that this client chose to use initially. This allows the
   // server to detect downgrade attacks.
-  void FillInchoateClientHello(const QuicSessionKey& server_key,
+  void FillInchoateClientHello(const QuicServerId& server_id,
                                const QuicVersion preferred_version,
                                const CachedState* cached,
                                QuicCryptoNegotiatedParameters* out_params,
@@ -162,7 +162,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // accept. |preferred_version| is the version of the QUIC protocol that this
   // client chose to use initially. This allows the server to detect downgrade
   // attacks.
-  QuicErrorCode FillClientHello(const QuicSessionKey& server_key,
+  QuicErrorCode FillClientHello(const QuicServerId& server_id,
                                 QuicConnectionId connection_id,
                                 const QuicVersion preferred_version,
                                 uint32 initial_flow_control_window_bytes,
@@ -216,10 +216,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   void SetChannelIDSigner(ChannelIDSigner* signer);
 
   // Initialize the CachedState from |canonical_crypto_config| for the
-  // |canonical_server_key| as the initial CachedState for |server_key|. We will
+  // |canonical_server_id| as the initial CachedState for |server_id|. We will
   // copy config data only if |canonical_crypto_config| has valid proof.
-  void InitializeFrom(const QuicSessionKey& server_key,
-                      const QuicSessionKey& canonical_server_key,
+  void InitializeFrom(const QuicServerId& server_id,
+                      const QuicServerId& canonical_server_id,
                       QuicCryptoClientConfig* canonical_crypto_config);
 
   // Adds |suffix| as a domain suffix for which the server's crypto config
@@ -239,15 +239,15 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   void DisableEcdsa();
 
  private:
-  typedef std::map<QuicSessionKey, CachedState*> CachedStateMap;
+  typedef std::map<QuicServerId, CachedState*> CachedStateMap;
 
-  // If the suffix of the hostname in |server_key| is in |canoncial_suffixes_|,
+  // If the suffix of the hostname in |server_id| is in |canoncial_suffixes_|,
   // then populate |cached| with the canonical cached state from
   // |canonical_server_map_| for that suffix.
-  void PopulateFromCanonicalConfig(const QuicSessionKey& server_key,
+  void PopulateFromCanonicalConfig(const QuicServerId& server_id,
                                    CachedState* cached);
 
-  // cached_states_ maps from the server_key to the cached information about
+  // cached_states_ maps from the server_id to the cached information about
   // that server.
   CachedStateMap cached_states_;
 
@@ -255,7 +255,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // from a canonical host suffix/port/scheme to a representative server with
   // the canonical suffix, which has a plausible set of initial certificates
   // (or at least server public key).
-  std::map<QuicSessionKey, QuicSessionKey> canonical_server_map_;
+  std::map<QuicServerId, QuicServerId> canonical_server_map_;
 
   // Contains list of suffixes (for exmaple ".c.youtube.com",
   // ".googlevideo.com") of canoncial hostnames.

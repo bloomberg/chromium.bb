@@ -519,20 +519,19 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   sent_entropy_manager_.ClearEntropyBefore(
       received_packet_manager_.least_packet_awaited_by_peer() - 1);
 
-  bool reset_retransmission_alarm =
-      sent_packet_manager_.OnIncomingAck(incoming_ack.received_info,
-                                         time_of_last_received_packet_);
+  sent_packet_manager_.OnIncomingAck(incoming_ack.received_info,
+                                     time_of_last_received_packet_);
   if (sent_packet_manager_.HasPendingRetransmissions()) {
     WriteIfNotBlocked();
   }
 
-  if (reset_retransmission_alarm) {
-    retransmission_alarm_->Cancel();
-    QuicTime retransmission_time =
-        sent_packet_manager_.GetRetransmissionTime();
-    if (retransmission_time != QuicTime::Zero()) {
-      retransmission_alarm_->Set(retransmission_time);
-    }
+  // Always reset the retransmission alarm when an ack comes in, since we now
+  // have a better estimate of the current rtt than when it was set.
+  retransmission_alarm_->Cancel();
+  QuicTime retransmission_time =
+      sent_packet_manager_.GetRetransmissionTime();
+  if (retransmission_time != QuicTime::Zero()) {
+    retransmission_alarm_->Set(retransmission_time);
   }
 }
 

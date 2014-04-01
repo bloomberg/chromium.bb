@@ -43,7 +43,7 @@ void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
 }
 
 QuicCryptoClientStream::QuicCryptoClientStream(
-    const QuicSessionKey& server_key,
+    const QuicServerId& server_id,
     QuicClientSessionBase* session,
     ProofVerifyContext* verify_context,
     QuicCryptoClientConfig* crypto_config)
@@ -51,7 +51,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
       crypto_config_(crypto_config),
-      server_key_(server_key),
+      server_id_(server_id),
       generation_counter_(0),
       proof_verify_callback_(NULL),
       verify_context_(verify_context) {
@@ -93,7 +93,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
   QuicErrorCode error;
   string error_details;
   QuicCryptoClientConfig::CachedState* cached =
-      crypto_config_->LookupOrCreate(server_key_);
+      crypto_config_->LookupOrCreate(server_id_);
 
   if (in != NULL) {
     DVLOG(1) << "Client: Received " << in->DebugString();
@@ -105,7 +105,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     switch (state) {
       case STATE_INITIALIZE: {
         if (!cached->IsEmpty() && !cached->signature().empty() &&
-            server_key_.is_https()) {
+            server_id_.is_https()) {
           DCHECK(crypto_config_->proof_verifier());
           // If the cached state needs to be verified, do it now.
           next_state_ = STATE_VERIFY_PROOF;
@@ -125,9 +125,11 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
         if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
           crypto_config_->FillInchoateClientHello(
-              server_key_,
+              server_id_,
               session()->connection()->supported_versions().front(),
-              cached, &crypto_negotiated_params_, &out);
+              cached,
+              &crypto_negotiated_params_,
+              &out);
           // Pad the inchoate client hello to fill up a packet.
           const size_t kFramingOverhead = 50;  // A rough estimate.
           const size_t max_packet_size =
@@ -151,7 +153,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         session()->config()->ToHandshakeMessage(&out);
         error = crypto_config_->FillClientHello(
-            server_key_,
+            server_id_,
             session()->connection()->connection_id(),
             session()->connection()->supported_versions().front(),
             session()->connection()->max_flow_control_receive_window_bytes(),
@@ -214,7 +216,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           return;
         }
         if (!cached->proof_valid()) {
-          if (!server_key_.is_https()) {
+          if (!server_id_.is_https()) {
             // We don't check the certificates for insecure QUIC connections.
             SetCachedProofValid(cached);
           } else if (!cached->signature().empty()) {
@@ -236,7 +238,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         verify_ok_ = false;
 
         ProofVerifier::Status status = verifier->VerifyProof(
-            server_key_.host(),
+            server_id_.host(),
             cached->server_config(),
             cached->certs(),
             cached->signature(),

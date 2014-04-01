@@ -78,9 +78,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void OnRetransmittedPacket(QuicPacketSequenceNumber old_sequence_number,
                              QuicPacketSequenceNumber new_sequence_number);
 
-  // Processes the incoming ack and returns true if the retransmission or ack
-  // alarm should be reset.
-  bool OnIncomingAck(const ReceivedPacketInfo& received_info,
+  // Processes the incoming ack.
+  void OnIncomingAck(const ReceivedPacketInfo& received_info,
                      QuicTime ack_receive_time);
 
   // Discards any information for the packet corresponding to |sequence_number|.

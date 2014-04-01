@@ -13,7 +13,7 @@
 
 namespace net {
 
-class QuicSessionKey;
+class QuicServerId;
 
 class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
  public:
@@ -21,7 +21,7 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
   virtual ~MockCryptoClientStreamFactory() {}
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
-      const QuicSessionKey& server_key,
+      const QuicServerId& server_id,
       QuicClientSession* session,
       QuicCryptoClientConfig* crypto_config) OVERRIDE;
 

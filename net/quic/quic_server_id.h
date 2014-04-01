@@ -13,30 +13,30 @@
 
 namespace net {
 
-// The key used to identify sessions. Includes the hostname, port, and scheme.
-class NET_EXPORT_PRIVATE QuicSessionKey {
+// The id used to identify sessions. Includes the hostname, port, scheme and
+// privacy_mode.
+class NET_EXPORT_PRIVATE QuicServerId {
  public:
-  QuicSessionKey();
-  QuicSessionKey(const HostPortPair& host_port_pair,
-                 bool is_https,
-                 PrivacyMode privacy_mode);
-  QuicSessionKey(const std::string& host,
-                 uint16 port,
-                 bool is_https,
-                 PrivacyMode privacy_mode);
-  ~QuicSessionKey();
+  QuicServerId();
+  QuicServerId(const HostPortPair& host_port_pair,
+               bool is_https,
+               PrivacyMode privacy_mode);
+  QuicServerId(const std::string& host,
+               uint16 port,
+               bool is_https,
+               PrivacyMode privacy_mode);
+  ~QuicServerId();
 
   // Needed to be an element of std::set.
-  bool operator<(const QuicSessionKey& other) const;
-  bool operator==(const QuicSessionKey& other) const;
+  bool operator<(const QuicServerId& other) const;
+  bool operator==(const QuicServerId& other) const;
 
-  // ToString() will convert the QuicSessionKey to "scheme:hostname:port".
-  // "scheme" would either be "http" or "https" based on |is_https|.
+  // ToString() will convert the QuicServerId to "scheme:hostname:port" or
+  // "scheme:hostname:port/private". "scheme" would either be "http" or "https"
+  // based on |is_https|.
   std::string ToString() const;
 
-  const HostPortPair& host_port_pair() const {
-    return host_port_pair_;
-  }
+  const HostPortPair& host_port_pair() const { return host_port_pair_; }
 
   const std::string& host() const { return host_port_pair_.host(); }
 

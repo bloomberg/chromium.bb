@@ -36,7 +36,7 @@ class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
 class QuicServerInfoFactory;
-class QuicSessionKey;
+class QuicServerId;
 class QuicStreamFactory;
 
 namespace test {
@@ -181,38 +181,38 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     bool operator==(const IpAliasKey &other) const;
   };
 
-  typedef std::map<QuicSessionKey, QuicClientSession*> SessionMap;
-  typedef std::set<QuicSessionKey> AliasSet;
+  typedef std::map<QuicServerId, QuicClientSession*> SessionMap;
+  typedef std::set<QuicServerId> AliasSet;
   typedef std::map<QuicClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicClientSession*> SessionSet;
   typedef std::map<IpAliasKey, SessionSet> IPAliasMap;
-  typedef std::map<QuicSessionKey, QuicCryptoClientConfig*> CryptoConfigMap;
-  typedef std::map<QuicSessionKey, Job*> JobMap;
+  typedef std::map<QuicServerId, QuicCryptoClientConfig*> CryptoConfigMap;
+  typedef std::map<QuicServerId, Job*> JobMap;
   typedef std::map<QuicStreamRequest*, Job*> RequestMap;
   typedef std::set<QuicStreamRequest*> RequestSet;
   typedef std::map<Job*, RequestSet> JobRequestsMap;
 
   // Returns a newly created QuicHttpStream owned by the caller, if a
   // matching session already exists.  Returns NULL otherwise.
-  scoped_ptr<QuicHttpStream> CreateIfSessionExists(const QuicSessionKey& key,
+  scoped_ptr<QuicHttpStream> CreateIfSessionExists(const QuicServerId& key,
                                                    const BoundNetLog& net_log);
 
-  bool OnResolution(const QuicSessionKey& session_key,
+  bool OnResolution(const QuicServerId& server_id,
                     const AddressList& address_list);
   void OnJobComplete(Job* job, int rv);
-  bool HasActiveSession(const QuicSessionKey& session_key) const;
-  bool HasActiveJob(const QuicSessionKey& session_key) const;
-  int CreateSession(const QuicSessionKey& session_key,
+  bool HasActiveSession(const QuicServerId& server_id) const;
+  bool HasActiveJob(const QuicServerId& server_id) const;
+  int CreateSession(const QuicServerId& server_id,
                     scoped_ptr<QuicServerInfo> quic_server_info,
                     const AddressList& address_list,
                     const BoundNetLog& net_log,
                     QuicClientSession** session);
-  void ActivateSession(const QuicSessionKey& key,
+  void ActivateSession(const QuicServerId& key,
                        QuicClientSession* session);
 
-  // Initializes the cached state associated with |session_key| in
+  // Initializes the cached state associated with |server_id| in
   // |crypto_config_| with the information in |server_info|.
-  void InitializeCachedState(const QuicSessionKey& session_key,
+  void InitializeCachedState(const QuicServerId& server_id,
                              const scoped_ptr<QuicServerInfo>& server_info);
 
   void ExpireBrokenAlternateProtocolMappings();

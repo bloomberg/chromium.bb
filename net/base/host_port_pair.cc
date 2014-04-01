@@ -4,6 +4,7 @@
 
 #include "net/base/host_port_pair.h"
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -47,6 +48,9 @@ std::string HostPortPair::ToString() const {
 }
 
 std::string HostPortPair::HostForURL() const {
+  // TODO(rtenneti): Add support for |host| to have '\0'.
+  LOG_IF(DFATAL, host_.find('\0') != std::string::npos)
+      << "Host has a null char: " << host_;
   // Check to see if the host is an IPv6 address.  If so, added brackets.
   if (host_.find(':') != std::string::npos) {
     DCHECK_NE(host_[0], '[');

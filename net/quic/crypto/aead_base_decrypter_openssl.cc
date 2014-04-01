@@ -17,8 +17,14 @@ namespace {
 
 // Clear OpenSSL error stack.
 void ClearOpenSslErrors() {
-#ifdef NDEBUG
   while (ERR_get_error()) {}
+}
+
+// In debug builds only, log OpenSSL error stack. Then clear OpenSSL error
+// stack.
+void DLogOpenSslErrors() {
+#ifdef NDEBUG
+  ClearOpenSslErrors();
 #else
   while (unsigned long error = ERR_get_error()) {
     char buf[120];
@@ -54,7 +60,7 @@ bool AeadBaseDecrypter::SetKey(StringPiece key) {
   EVP_AEAD_CTX_cleanup(ctx_.get());
   if (!EVP_AEAD_CTX_init(ctx_.get(), aead_alg_, key_, key_size_,
                          auth_tag_size_, NULL)) {
-    ClearOpenSslErrors();
+    DLogOpenSslErrors();
     return false;
   }
 
@@ -88,6 +94,8 @@ bool AeadBaseDecrypter::Decrypt(StringPiece nonce,
       associated_data.size());
 
   if (len < 0) {
+    // Because QuicFramer does trial decryption, decryption errors are expected
+    // when encryption level changes. So we don't log decryption errors.
     ClearOpenSslErrors();
     return false;
   }

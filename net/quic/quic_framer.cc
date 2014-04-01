@@ -1829,6 +1829,7 @@ bool QuicFramer::DecryptPayload(const QuicPacketHeader& header,
   }
 
   if  (decrypted_.get() == NULL) {
+    DLOG(WARNING) << "DecryptPacket failed";
     return false;
   }
 

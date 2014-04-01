@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "net/quic/congestion_control/rtt_stats.h"
+
 using std::max;
 using std::min;
 
@@ -13,6 +15,7 @@ namespace net {
 
 // Note(pwestin): the magic clamping numbers come from the original code in
 // tcp_cubic.c.
+const int64 kHybridStartLowWindow = 16;
 // Number of delay samples for detecting the increase of delay.
 const int kHybridStartMinSamples = 8;
 const int kHybridStartDelayFactorExp = 4;  // 2^4 = 16
@@ -25,10 +28,50 @@ HybridSlowStart::HybridSlowStart(const QuicClock* clock)
       found_ack_train_(false),
       found_delay_(false),
       round_start_(QuicTime::Zero()),
+      update_end_sequence_number_(true),
+      sender_end_sequence_number_(0),
       end_sequence_number_(0),
       last_time_(QuicTime::Zero()),
       sample_count_(0),
       current_rtt_(QuicTime::Delta::Zero()) {
+}
+
+void HybridSlowStart::OnPacketAcked(
+    QuicPacketSequenceNumber acked_sequence_number, bool in_slow_start) {
+  if (in_slow_start) {
+    if (IsEndOfRound(acked_sequence_number)) {
+      Reset(sender_end_sequence_number_);
+    }
+  }
+
+  if (sender_end_sequence_number_ == acked_sequence_number) {
+    DVLOG(1) << "Start update end sequence number @" << acked_sequence_number;
+    update_end_sequence_number_ = true;
+  }
+}
+
+void HybridSlowStart::OnPacketSent(QuicPacketSequenceNumber sequence_number,
+                                   QuicByteCount available_send_window) {
+  if (update_end_sequence_number_) {
+    sender_end_sequence_number_ = sequence_number;
+    if (available_send_window == 0) {
+      update_end_sequence_number_ = false;
+      DVLOG(1) << "Stop update end sequence number @" << sequence_number;
+    }
+  }
+}
+
+bool HybridSlowStart::ShouldExitSlowStart(const RttStats* rtt_stats,
+                                          int64 congestion_window) {
+  if (congestion_window < kHybridStartLowWindow) {
+    return false;
+  }
+  if (!started()) {
+    // Time to start the hybrid slow start.
+    Reset(sender_end_sequence_number_);
+  }
+  Update(rtt_stats->latest_rtt(), rtt_stats->min_rtt());
+  return Exit();
 }
 
 void HybridSlowStart::Restart() {
@@ -45,7 +88,7 @@ void HybridSlowStart::Reset(QuicPacketSequenceNumber end_sequence_number) {
   started_ = true;
 }
 
-bool HybridSlowStart::EndOfRound(QuicPacketSequenceNumber ack) {
+bool HybridSlowStart::IsEndOfRound(QuicPacketSequenceNumber ack) const {
   return end_sequence_number_ <= ack;
 }
 

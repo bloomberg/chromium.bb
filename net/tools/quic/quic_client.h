@@ -25,7 +25,7 @@
 namespace net {
 
 class ProofVerifier;
-class QuicSessionKey;
+class QuicServerId;
 
 namespace tools {
 
@@ -48,12 +48,12 @@ class QuicClient : public EpollCallbackInterface,
   };
 
   QuicClient(IPEndPoint server_address,
-             const QuicSessionKey& server_key,
+             const QuicServerId& server_id,
              const QuicVersionVector& supported_versions,
              bool print_response,
              uint32 initial_flow_control_window);
   QuicClient(IPEndPoint server_address,
-             const QuicSessionKey& server_key,
+             const QuicServerId& server_id,
              const QuicConfig& config,
              const QuicVersionVector& supported_versions,
              uint32 initial_flow_control_window);
@@ -138,11 +138,11 @@ class QuicClient : public EpollCallbackInterface,
 
   int fd() { return fd_; }
 
-  const QuicSessionKey& server_key() const { return server_key_; }
+  const QuicServerId& server_id() const { return server_id_; }
 
   // This should only be set before the initial Connect()
-  void set_server_key(const QuicSessionKey& server_key) {
-    server_key_ = server_key;
+  void set_server_id(const QuicServerId& server_id) {
+    server_id_ = server_id;
   }
 
   // SetProofVerifier sets the ProofVerifier that will be used to verify the
@@ -174,6 +174,11 @@ class QuicClient : public EpollCallbackInterface,
   virtual QuicEpollConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 
+  virtual int ReadPacket(char* buffer,
+                         int buffer_len,
+                         IPEndPoint* server_address,
+                         IPAddressNumber* client_ip);
+
  private:
   friend class net::tools::test::QuicClientPeer;
 
@@ -183,8 +188,8 @@ class QuicClient : public EpollCallbackInterface,
   // Address of the server.
   const IPEndPoint server_address_;
 
-  // |server_key_| is a tuple (hostname, port, is_https) of the server.
-  QuicSessionKey server_key_;
+  // |server_id_| is a tuple (hostname, port, is_https) of the server.
+  QuicServerId server_id_;
 
   // config_ and crypto_config_ contain configuration and cached state about
   // servers.

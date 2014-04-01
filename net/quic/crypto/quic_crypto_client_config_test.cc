@@ -5,7 +5,7 @@
 #include "net/quic/crypto/quic_crypto_client_config.h"
 
 #include "net/quic/crypto/proof_verifier.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/mock_random.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,8 +57,8 @@ TEST(QuicCryptoClientConfigTest, InchoateChlo) {
   QuicCryptoClientConfig config;
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
-  QuicSessionKey server_key("www.google.com", 80, false, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_key, QuicVersionMax(), &state,
+  QuicServerId server_id("www.google.com", 80, false, PRIVACY_MODE_DISABLED);
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state,
                                  &params, &msg);
 
   QuicTag cver;
@@ -75,8 +75,8 @@ TEST(QuicCryptoClientConfigTest, FillClientHello) {
   string error_details;
   MockRandom rand;
   CryptoHandshakeMessage chlo;
-  QuicSessionKey server_key("www.google.com", 80, false, PRIVACY_MODE_DISABLED);
-  config.FillClientHello(server_key,
+  QuicServerId server_id("www.google.com", 80, false, PRIVACY_MODE_DISABLED);
+  config.FillClientHello(server_id,
                          kConnectionId,
                          QuicVersionMax(),
                          kInitialFlowControlWindow,
@@ -102,8 +102,8 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecure) {
   QuicCryptoClientConfig config;
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
-  QuicSessionKey server_key("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_key, QuicVersionMax(), &state,
+  QuicServerId server_id("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state,
                                  &params, &msg);
 
   QuicTag pdmd;
@@ -117,8 +117,8 @@ TEST(QuicCryptoClientConfigTest, InchoateChloSecureNoEcdsa) {
   config.DisableEcdsa();
   QuicCryptoNegotiatedParameters params;
   CryptoHandshakeMessage msg;
-  QuicSessionKey server_key("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
-  config.FillInchoateClientHello(server_key, QuicVersionMax(), &state,
+  QuicServerId server_id("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  config.FillInchoateClientHello(server_id, QuicVersionMax(), &state,
                                  &params, &msg);
 
   QuicTag pdmd;
@@ -153,17 +153,19 @@ TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
 
 TEST(QuicCryptoClientConfigTest, InitializeFrom) {
   QuicCryptoClientConfig config;
-  QuicSessionKey canonical_key1("www.google.com", 80, false,
-                                PRIVACY_MODE_DISABLED);
+  QuicServerId canonical_server_id("www.google.com", 80, false,
+                                   PRIVACY_MODE_DISABLED);
   QuicCryptoClientConfig::CachedState* state =
-      config.LookupOrCreate(canonical_key1);
+      config.LookupOrCreate(canonical_server_id);
   // TODO(rch): Populate other fields of |state|.
   state->set_source_address_token("TOKEN");
   state->SetProofValid();
 
-  QuicSessionKey other_key("mail.google.com", 80, false, PRIVACY_MODE_DISABLED);
-  config.InitializeFrom(other_key, canonical_key1, &config);
-  QuicCryptoClientConfig::CachedState* other = config.LookupOrCreate(other_key);
+  QuicServerId other_server_id("mail.google.com", 80, false,
+                               PRIVACY_MODE_DISABLED);
+  config.InitializeFrom(other_server_id, canonical_server_id, &config);
+  QuicCryptoClientConfig::CachedState* other =
+      config.LookupOrCreate(other_server_id);
 
   EXPECT_EQ(state->server_config(), other->server_config());
   EXPECT_EQ(state->source_address_token(), other->source_address_token());

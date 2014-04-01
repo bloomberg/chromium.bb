@@ -14,7 +14,7 @@
 
 namespace net {
 
-class QuicSessionKey;
+class QuicServerId;
 
 class MockCryptoClientStream : public QuicCryptoClientStream {
  public:
@@ -36,7 +36,7 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
   };
 
   MockCryptoClientStream(
-      const QuicSessionKey& server_key,
+      const QuicServerId& server_id,
       QuicClientSessionBase* session,
       ProofVerifyContext* verify_context,
       QuicCryptoClientConfig* crypto_config,

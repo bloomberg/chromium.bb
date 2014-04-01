@@ -262,7 +262,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
-  EXPECT_TRUE(manager_.OnIncomingAck(received_info, clock_.ApproximateNow()));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   // No packets should be unacked.
   VerifyUnackedPackets(NULL, 0);
@@ -286,7 +286,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitAndSendThenAckPrevious) {
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
-  EXPECT_TRUE(manager_.OnIncomingAck(received_info, clock_.ApproximateNow()));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   // 2 remains unacked, but no packets have retransmittable data.
   QuicPacketSequenceNumber unacked[] = { 2 };
@@ -312,7 +312,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(1, _));
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
-  EXPECT_TRUE(manager_.OnIncomingAck(received_info, clock_.ApproximateNow()));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   SendDataPacket(3);
   SendDataPacket(4);
@@ -324,19 +324,19 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
   received_info.missing_packets.insert(2);
   EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(3, _));
-  EXPECT_TRUE(manager_.OnIncomingAck(received_info, clock_.ApproximateNow()));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   received_info.largest_observed = 4;
   EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(4, _));
-  EXPECT_TRUE(manager_.OnIncomingAck(received_info, clock_.ApproximateNow()));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   received_info.largest_observed = 5;
   EXPECT_CALL(*send_algorithm_, UpdateRtt(rtt));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(5, _));
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(2, _));
   EXPECT_CALL(*send_algorithm_, OnPacketLost(2, _));
-  EXPECT_TRUE(manager_.OnIncomingAck(received_info, clock_.ApproximateNow()));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   // No packets remain unacked.
   VerifyUnackedPackets(NULL, 0);
@@ -363,7 +363,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
   EXPECT_CALL(*send_algorithm_, UpdateRtt(QuicTime::Delta::Zero()));
-  EXPECT_TRUE(manager_.OnIncomingAck(received_info, clock_.ApproximateNow()));
+  manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   // Since 2 was marked for retransmit, when 1 is acked, 2 is discarded.
   VerifyUnackedPackets(NULL, 0);

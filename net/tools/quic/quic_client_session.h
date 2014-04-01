@@ -18,14 +18,14 @@
 namespace net {
 
 class QuicConnection;
-class QuicSessionKey;
+class QuicServerId;
 class ReliableQuicStream;
 
 namespace tools {
 
 class QuicClientSession : public QuicClientSessionBase {
  public:
-  QuicClientSession(const QuicSessionKey& server_key,
+  QuicClientSession(const QuicServerId& server_id,
                     const QuicConfig& config,
                     QuicConnection* connection,
                     QuicCryptoClientConfig* crypto_config);

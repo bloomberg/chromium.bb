@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "net/quic/quic_client_session.h"
 #include "net/quic/quic_crypto_client_stream.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 
 using std::string;
 
@@ -21,11 +21,11 @@ MockCryptoClientStreamFactory::MockCryptoClientStreamFactory()
 
 QuicCryptoClientStream*
 MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
-    const QuicSessionKey& server_key,
+    const QuicServerId& server_id,
     QuicClientSession* session,
     QuicCryptoClientConfig* crypto_config) {
   last_stream_ = new MockCryptoClientStream(
-      server_key, session, NULL, crypto_config, handshake_mode_,
+      server_id, session, NULL, crypto_config, handshake_mode_,
       proof_verify_details_);
   return last_stream_;
 }

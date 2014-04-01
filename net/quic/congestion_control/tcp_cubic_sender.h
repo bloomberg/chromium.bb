@@ -40,6 +40,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                  QuicConnectionStats* stats);
   virtual ~TcpCubicSender();
 
+  bool InSlowStart() const;
+
   // Start implementation of SendAlgorithmInterface.
   virtual void SetFromConfig(const QuicConfig& config, bool is_server) OVERRIDE;
   virtual void OnIncomingQuicCongestionFeedbackFrame(
@@ -97,10 +99,6 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
 
   // The congestion window before the last loss event.
   QuicByteCount bytes_in_flight_before_loss_;
-
-  // We need to keep track of the end sequence number of each RTT "burst".
-  bool update_end_sequence_number_;
-  QuicPacketSequenceNumber end_sequence_number_;
 
   // Track the largest packet that has been sent.
   QuicPacketSequenceNumber largest_sent_sequence_number_;

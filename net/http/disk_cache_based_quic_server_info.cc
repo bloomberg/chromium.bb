@@ -12,7 +12,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 
 namespace net {
 
@@ -44,9 +44,9 @@ struct DiskCacheBasedQuicServerInfo::CacheOperationDataShim {
 };
 
 DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
-    const QuicSessionKey& server_key,
+    const QuicServerId& server_id,
     HttpCache* http_cache)
-    : QuicServerInfo(server_key),
+    : QuicServerInfo(server_id),
       weak_factory_(this),
       data_shim_(new CacheOperationDataShim()),
       io_callback_(
@@ -56,7 +56,7 @@ DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
       state_(GET_BACKEND),
       ready_(false),
       found_entry_(false),
-      server_key_(server_key),
+      server_id_(server_id),
       http_cache_(http_cache),
       backend_(NULL),
       entry_(NULL) {
@@ -120,7 +120,7 @@ DiskCacheBasedQuicServerInfo::~DiskCacheBasedQuicServerInfo() {
 }
 
 std::string DiskCacheBasedQuicServerInfo::key() const {
-  return "quicserverinfo:" + server_key_.ToString();
+  return "quicserverinfo:" + server_id_.ToString();
 }
 
 void DiskCacheBasedQuicServerInfo::OnIOComplete(CacheOperationDataShim* unused,

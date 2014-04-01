@@ -18,7 +18,7 @@
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_default_packet_writer.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
@@ -119,7 +119,7 @@ QuicClientSession::QuicClientSession(
     QuicStreamFactory* stream_factory,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     scoped_ptr<QuicServerInfo> server_info,
-    const QuicSessionKey& server_key,
+    const QuicServerId& server_id,
     const QuicConfig& config,
     QuicCryptoClientConfig* crypto_config,
     NetLog* net_log)
@@ -140,8 +140,8 @@ QuicClientSession::QuicClientSession(
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
-              server_key, this, crypto_config) :
-          new QuicCryptoClientStream(server_key, this,
+              server_id, this, crypto_config) :
+          new QuicCryptoClientStream(server_id, this,
                                      new ProofVerifyContextChromium(net_log_),
                                      crypto_config));
 
@@ -149,7 +149,7 @@ QuicClientSession::QuicClientSession(
   // TODO(rch): pass in full host port proxy pair
   net_log_.BeginEvent(
       NetLog::TYPE_QUIC_SESSION,
-      NetLog::StringCallback("host", &server_key.host()));
+      NetLog::StringCallback("host", &server_id.host()));
 }
 
 QuicClientSession::~QuicClientSession() {

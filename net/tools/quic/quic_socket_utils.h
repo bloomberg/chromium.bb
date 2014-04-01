@@ -42,7 +42,9 @@ class QuicSocketUtils {
   //
   // If self_address is non-null, it will be set to the address the peer sent
   // packets to, assuming a packet was read.
-  static int ReadPacket(int fd, char* buffer, size_t buf_len,
+  static int ReadPacket(int fd,
+                        char* buffer,
+                        size_t buf_len,
                         uint32* dropped_packets,
                         IPAddressNumber* self_address,
                         IPEndPoint* peer_address);

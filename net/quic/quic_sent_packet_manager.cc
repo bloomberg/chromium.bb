@@ -117,7 +117,7 @@ void QuicSentPacketManager::OnRetransmittedPacket(
                                          new_sequence_number);
 }
 
-bool QuicSentPacketManager::OnIncomingAck(
+void QuicSentPacketManager::OnIncomingAck(
     const ReceivedPacketInfo& received_info, QuicTime ack_receive_time) {
   // We rely on delta_time_largest_observed to compute an RTT estimate, so
   // we only update rtt when the largest observed gets acked.
@@ -136,10 +136,6 @@ bool QuicSentPacketManager::OnIncomingAck(
     consecutive_tlp_count_ = 0;
     consecutive_crypto_retransmission_count_ = 0;
   }
-
-  // Always reset the retransmission alarm when an ack comes in, since we now
-  // have a better estimate of the current rtt than when it was set.
-  return true;
 }
 
 void QuicSentPacketManager::DiscardUnackedPacket(

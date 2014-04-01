@@ -16,8 +16,9 @@ namespace net {
 
 namespace {
 
-// Clear OpenSSL error stack.
-void ClearOpenSslErrors() {
+// In debug builds only, log OpenSSL error stack. Then clear OpenSSL error
+// stack.
+void DLogOpenSslErrors() {
 #ifdef NDEBUG
   while (ERR_get_error()) {}
 #else
@@ -56,7 +57,7 @@ bool AeadBaseEncrypter::SetKey(StringPiece key) {
 
   if (!EVP_AEAD_CTX_init(ctx_.get(), aead_alg_, key_, key_size_,
                          auth_tag_size_, NULL)) {
-    ClearOpenSslErrors();
+    DLogOpenSslErrors();
     return false;
   }
 
@@ -88,7 +89,7 @@ bool AeadBaseEncrypter::Encrypt(StringPiece nonce,
       associated_data.size());
 
   if (len < 0) {
-    ClearOpenSslErrors();
+    DLogOpenSslErrors();
     return false;
   }
 

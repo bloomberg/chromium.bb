@@ -19,7 +19,6 @@ namespace {
 // The minimum cwnd based on RFC 3782 (TCP NewReno) for cwnd reductions on a
 // fast retransmission.  The cwnd after a timeout is still 1.
 const QuicTcpCongestionWindow kMinimumCongestionWindow = 2;
-const int64 kHybridStartLowWindow = 16;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 const QuicByteCount kDefaultReceiveWindow = 64000;
 const int64 kInitialCongestionWindow = 10;
@@ -43,8 +42,6 @@ TcpCubicSender::TcpCubicSender(
       prr_delivered_(0),
       ack_count_since_loss_(0),
       bytes_in_flight_before_loss_(0),
-      update_end_sequence_number_(true),
-      end_sequence_number_(0),
       largest_sent_sequence_number_(0),
       largest_acked_sequence_number_(0),
       largest_sent_at_last_cutback_(0),
@@ -55,6 +52,10 @@ TcpCubicSender::TcpCubicSender(
 
 TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
+}
+
+bool TcpCubicSender::InSlowStart() const {
+  return congestion_window_ < slowstart_threshold_;
 }
 
 void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
@@ -79,10 +80,8 @@ void TcpCubicSender::OnPacketAcked(
   largest_acked_sequence_number_ = max(acked_sequence_number,
                                        largest_acked_sequence_number_);
   MaybeIncreaseCwnd(acked_sequence_number);
-  if (end_sequence_number_ == acked_sequence_number) {
-    DVLOG(1) << "Start update end sequence number @" << acked_sequence_number;
-    update_end_sequence_number_ = true;
-  }
+  // TODO(ianswett): Should this even be called when not in slow start?
+  hybrid_slow_start_.OnPacketAcked(acked_sequence_number, InSlowStart());
 }
 
 void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
@@ -145,13 +144,7 @@ bool TcpCubicSender::OnPacketSent(QuicTime /*sent_time*/,
     // DCHECK_LT(largest_sent_sequence_number_, sequence_number);
     largest_sent_sequence_number_ = sequence_number;
   }
-  if (update_end_sequence_number_) {
-    end_sequence_number_ = sequence_number;
-    if (AvailableSendWindow() == 0) {
-      update_end_sequence_number_ = false;
-      DVLOG(1) << "Stop update end sequence number @" << sequence_number;
-    }
-  }
+  hybrid_slow_start_.OnPacketSent(sequence_number, AvailableSendWindow());
   return true;
 }
 
@@ -252,11 +245,7 @@ void TcpCubicSender::MaybeIncreaseCwnd(
     // We don't increase the congestion window during recovery.
     return;
   }
-  if (congestion_window_ < slowstart_threshold_) {
-    // Slow start.
-    if (hybrid_slow_start_.EndOfRound(acked_sequence_number)) {
-      hybrid_slow_start_.Reset(end_sequence_number_);
-    }
+  if (InSlowStart()) {
     // congestion_window_cnt is the number of acks since last change of snd_cwnd
     if (congestion_window_ < max_tcp_congestion_window_) {
       // TCP slow start, exponential growth, increase by one for each ACK.
@@ -302,16 +291,9 @@ void TcpCubicSender::OnRetransmissionTimeout(bool packets_retransmitted) {
 
 void TcpCubicSender::UpdateRtt(QuicTime::Delta rtt) {
   // Hybrid start triggers when cwnd is larger than some threshold.
-  if (congestion_window_ <= slowstart_threshold_ &&
-      congestion_window_ >= kHybridStartLowWindow) {
-    if (!hybrid_slow_start_.started()) {
-      // Time to start the hybrid slow start.
-      hybrid_slow_start_.Reset(end_sequence_number_);
-    }
-    hybrid_slow_start_.Update(rtt, rtt_stats_->min_rtt());
-    if (hybrid_slow_start_.Exit()) {
-      slowstart_threshold_ = congestion_window_;
-    }
+  if (InSlowStart() &&
+      hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_, congestion_window_)) {
+     slowstart_threshold_ = congestion_window_;
   }
 }
 

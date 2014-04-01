@@ -10,7 +10,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/tools/balsa/balsa_headers.h"
@@ -22,6 +22,7 @@
 #include "url/gurl.h"
 
 using base::StringPiece;
+using net::QuicServerId;
 using net::test::kInitialFlowControlWindowForTest;
 using net::test::QuicConnectionPeer;
 using std::string;
@@ -101,11 +102,11 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
 class MockableQuicClient : public QuicClient {
  public:
   MockableQuicClient(IPEndPoint server_address,
-                     const QuicSessionKey& server_key,
+                     const QuicServerId& server_id,
                      const QuicVersionVector& supported_versions,
                      uint32 initial_flow_control_window)
       : QuicClient(server_address,
-                   server_key,
+                   server_id,
                    supported_versions,
                    false,
                    initial_flow_control_window),
@@ -113,12 +114,12 @@ class MockableQuicClient : public QuicClient {
         test_writer_(NULL) {}
 
   MockableQuicClient(IPEndPoint server_address,
-                     const QuicSessionKey& server_key,
+                     const QuicServerId& server_id,
                      const QuicConfig& config,
                      const QuicVersionVector& supported_versions,
                      uint32 initial_flow_control_window)
       : QuicClient(server_address,
-                   server_key,
+                   server_id,
                    config,
                    supported_versions,
                    initial_flow_control_window),
@@ -155,53 +156,69 @@ class MockableQuicClient : public QuicClient {
     override_connection_id_ = connection_id;
   }
 
+  virtual int ReadPacket(char* buffer,
+                         int buffer_len,
+                         IPEndPoint* server_address,
+                         IPAddressNumber* client_ip) OVERRIDE {
+    return QuicClient::ReadPacket(
+        buffer, buffer_len, server_address, client_ip);
+  }
+
  private:
   QuicConnectionId override_connection_id_;  // ConnectionId to use, if nonzero
   QuicPacketWriterWrapper* test_writer_;
 };
 
-QuicTestClient::QuicTestClient(IPEndPoint address,
-                               const QuicSessionKey& server_key,
+QuicTestClient::QuicTestClient(IPEndPoint server_address,
+                               const string& server_hostname,
                                const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(address,
-                                     server_key,
+    : client_(new MockableQuicClient(server_address,
+                                     QuicServerId(server_hostname,
+                                                  server_address.port(),
+                                                  false,
+                                                  PRIVACY_MODE_DISABLED),
                                      supported_versions,
                                      kInitialFlowControlWindowForTest)) {
-  Initialize(address, server_key, true);
+  Initialize(server_address, server_hostname, true);
 }
 
-QuicTestClient::QuicTestClient(IPEndPoint address,
-                               const QuicSessionKey& server_key,
+QuicTestClient::QuicTestClient(IPEndPoint server_address,
+                               const string& server_hostname,
                                bool secure,
                                const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(address,
-                                     server_key,
+    : client_(new MockableQuicClient(server_address,
+                                     QuicServerId(server_hostname,
+                                                  server_address.port(),
+                                                  secure,
+                                                  PRIVACY_MODE_DISABLED),
                                      supported_versions,
                                      kInitialFlowControlWindowForTest)) {
-  Initialize(address, server_key, secure);
+  Initialize(server_address, server_hostname, secure);
 }
 
 QuicTestClient::QuicTestClient(
-    IPEndPoint address,
-    const QuicSessionKey& server_key,
+    IPEndPoint server_address,
+    const string& server_hostname,
     bool secure,
     const QuicConfig& config,
     const QuicVersionVector& supported_versions,
     uint32 client_initial_flow_control_receive_window)
     : client_(
-        new MockableQuicClient(address,
-                               server_key,
+        new MockableQuicClient(server_address,
+                               QuicServerId(server_hostname,
+                                            server_address.port(),
+                                            secure,
+                                            PRIVACY_MODE_DISABLED),
                                config,
                                supported_versions,
                                client_initial_flow_control_receive_window)) {
-  Initialize(address, server_key, secure);
+  Initialize(server_address, server_hostname, secure);
 }
 
 void QuicTestClient::Initialize(IPEndPoint address,
-                                const QuicSessionKey& server_key,
+                                const string& hostname,
                                 bool secure) {
   server_address_ = address;
-  server_key_ = server_key;
   priority_ = 3;
   connect_attempted_ = false;
   secure_ = secure;
@@ -240,9 +257,9 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   if (!connected()) {
     GURL url(message.headers()->request_uri().as_string());
     if (!url.host().empty()) {
-      client_->set_server_key(
-          QuicSessionKey(url.host(), url.EffectiveIntPort(),
-                         url.SchemeIs("https"), PRIVACY_MODE_DISABLED));
+      client_->set_server_id(
+          QuicServerId(url.host(), url.EffectiveIntPort(),
+                       url.SchemeIs("https"), PRIVACY_MODE_DISABLED));
     }
   }
 
@@ -323,7 +340,7 @@ QuicTagValueMap QuicTestClient::GetServerConfig() const {
   net::QuicCryptoClientConfig* config =
       QuicClientPeer::GetCryptoConfig(client_.get());
   net::QuicCryptoClientConfig::CachedState* state =
-      config->LookupOrCreate(client_->server_key());
+      config->LookupOrCreate(client_->server_id());
   const net::CryptoHandshakeMessage* handshake_msg = state->GetServerConfig();
   if (handshake_msg != NULL) {
     return handshake_msg->tag_value_map();

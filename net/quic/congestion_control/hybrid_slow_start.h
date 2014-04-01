@@ -22,17 +22,30 @@
 
 namespace net {
 
+class RttStats;
+
 class NET_EXPORT_PRIVATE HybridSlowStart {
  public:
   explicit HybridSlowStart(const QuicClock* clock);
 
+  void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
+                     bool in_slow_start);
+
+  void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+                    QuicByteCount available_send_window);
+
+  bool ShouldExitSlowStart(const RttStats* rtt_stats,
+                           int64 congestion_window);
+
+  // TODO(ianswett): The following methods should be private, but that requires
+  // a follow up CL to update the unit test.
   // Start a new slow start phase.
   void Restart();
 
   // Returns true if this ack the last sequence number of our current slow start
   // round.
   // Call Reset if this returns true.
-  bool EndOfRound(QuicPacketSequenceNumber ack);
+  bool IsEndOfRound(QuicPacketSequenceNumber ack) const;
 
   // Call for each round (burst) in the slow start phase.
   void Reset(QuicPacketSequenceNumber end_sequence_number);
@@ -44,7 +57,7 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
   // Returns true when we should exit slow start.
   bool Exit();
 
-  bool started() { return started_; }
+  bool started() const { return started_; }
 
  private:
   const QuicClock* clock_;
@@ -52,6 +65,9 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
   bool found_ack_train_;
   bool found_delay_;
   QuicTime round_start_;  // Beginning of each slow start round.
+  // We need to keep track of the end sequence number of each RTT "burst".
+  bool update_end_sequence_number_;
+  QuicPacketSequenceNumber sender_end_sequence_number_;
   QuicPacketSequenceNumber end_sequence_number_;  // End of slow start round.
   QuicTime last_time_;  // Last time when the ACK spacing was close.
   uint8 sample_count_;  // Number of samples to decide current RTT.

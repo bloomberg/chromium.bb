@@ -5,19 +5,19 @@
 #include "net/quic/test_tools/mock_crypto_client_stream.h"
 
 #include "net/quic/quic_client_session_base.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
 MockCryptoClientStream::MockCryptoClientStream(
-    const QuicSessionKey& server_key,
+    const QuicServerId& server_id,
     QuicClientSessionBase* session,
     ProofVerifyContext* verify_context,
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode,
     const ProofVerifyDetails* proof_verify_details)
-    : QuicCryptoClientStream(server_key, session, verify_context,
+    : QuicCryptoClientStream(server_id, session, verify_context,
                              crypto_config),
       handshake_mode_(handshake_mode),
       proof_verify_details_(proof_verify_details) {

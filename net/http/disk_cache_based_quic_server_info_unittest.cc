@@ -11,7 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/http/mock_http_cache.h"
 #include "net/quic/crypto/quic_server_info.h"
-#include "net/quic/quic_session_key.h"
+#include "net/quic/quic_server_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -57,10 +57,9 @@ TEST(DiskCacheBasedQuicServerInfo, DeleteInCallback) {
   // of quic_server_info->WaitForDataReady(), so that the callback will run.
   MockBlockingBackendFactory* factory = new MockBlockingBackendFactory();
   MockHttpCache cache(factory);
-  QuicSessionKey server_key("www.verisign.com", 443, true,
-                            PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.verisign.com", 443, true, PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicServerInfo> quic_server_info(
-      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   quic_server_info->Start();
   TestCompletionCallback callback;
   int rv = quic_server_info->WaitForDataReady(callback.callback());
@@ -76,9 +75,9 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   AddMockTransaction(&kHostInfoTransaction1);
   TestCompletionCallback callback;
 
-  QuicSessionKey server_key("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicServerInfo> quic_server_info(
-      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   quic_server_info->Start();
   int rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -102,7 +101,7 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
 
   // Open the stored QuicServerInfo.
   quic_server_info.reset(
-      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -118,7 +117,7 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
 
   // Verify that the state was updated.
   quic_server_info.reset(
-      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -143,10 +142,9 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   TestCompletionCallback callback;
 
   // Persist data for port 443.
-  QuicSessionKey server_key1("www.google.com", 443, true,
-                             PRIVACY_MODE_DISABLED);
+  QuicServerId server_id1("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicServerInfo> quic_server_info1(
-      new DiskCacheBasedQuicServerInfo(server_key1, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id1, cache.http_cache()));
   quic_server_info1->Start();
   int rv = quic_server_info1->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -168,10 +166,9 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   base::MessageLoop::current()->RunUntilIdle();
 
   // Persist data for port 80.
-  QuicSessionKey server_key2("www.google.com", 80, false,
-                             PRIVACY_MODE_DISABLED);
+  QuicServerId server_id2("www.google.com", 80, false, PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicServerInfo> quic_server_info2(
-      new DiskCacheBasedQuicServerInfo(server_key2, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id2, cache.http_cache()));
   quic_server_info2->Start();
   rv = quic_server_info2->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -194,7 +191,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
 
   // Verify the stored QuicServerInfo for port 443.
   scoped_ptr<QuicServerInfo> quic_server_info(
-      new DiskCacheBasedQuicServerInfo(server_key1, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id1, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -209,7 +206,7 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
 
   // Verify the stored QuicServerInfo for port 80.
   quic_server_info.reset(
-      new DiskCacheBasedQuicServerInfo(server_key2, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id2, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
@@ -232,9 +229,9 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   AddMockTransaction(&kHostInfoTransaction1);
   TestCompletionCallback callback;
 
-  QuicSessionKey server_key("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("www.google.com", 443, true, PRIVACY_MODE_DISABLED);
   scoped_ptr<QuicServerInfo> quic_server_info(
-      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   EXPECT_FALSE(quic_server_info->IsDataReady());
   quic_server_info->Start();
   int rv = quic_server_info->WaitForDataReady(callback.callback());
@@ -266,7 +263,7 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
 
   // Verify that the state was updated.
   quic_server_info.reset(
-      new DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+      new DiskCacheBasedQuicServerInfo(server_id, cache.http_cache()));
   quic_server_info->Start();
   rv = quic_server_info->WaitForDataReady(callback.callback());
   EXPECT_EQ(OK, callback.GetResult(rv));
