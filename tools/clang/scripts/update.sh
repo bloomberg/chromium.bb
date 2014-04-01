@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=202554
+CLANG_REVISION=202555
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -1045,17 +1045,17 @@ if [ "${OS}" = "Darwin" ]; then
   # into different subdirectories.
   mkdir -p libcxxbuild/libcxx
   pushd libcxxbuild/libcxx
-  c++ -c ${CXXFLAGS} ${LIBCXXFLAGS} "${ABS_LIBCXX_DIR}"/src/*.cpp
+  ${CXX:-c++} -c ${CXXFLAGS} ${LIBCXXFLAGS} "${ABS_LIBCXX_DIR}"/src/*.cpp
   popd
 
   mkdir -p libcxxbuild/libcxxabi
   pushd libcxxbuild/libcxxabi
-  c++ -c ${CXXFLAGS} ${LIBCXXFLAGS} "${ABS_LIBCXXABI_DIR}"/src/*.cpp -I"${ABS_LIBCXXABI_DIR}/include"
+  ${CXX:-c++} -c ${CXXFLAGS} ${LIBCXXFLAGS} "${ABS_LIBCXXABI_DIR}"/src/*.cpp -I"${ABS_LIBCXXABI_DIR}/include"
   popd
 
   pushd libcxxbuild
-  cc libcxx/*.o libcxxabi/*.o -o libc++.1.dylib -dynamiclib -nodefaultlibs \
-    -current_version 1 -compatibility_version 1 \
+  ${CC:-cc} libcxx/*.o libcxxabi/*.o -o libc++.1.dylib -dynamiclib \
+    -nodefaultlibs -current_version 1 -compatibility_version 1 \
     -lSystem -install_name @executable_path/libc++.dylib \
     -Wl,-unexported_symbols_list,${ABS_LIBCXX_DIR}/lib/libc++unexp.exp \
     -Wl,-force_symbols_not_weak_list,${ABS_LIBCXX_DIR}/lib/notweak.exp \
@@ -1099,6 +1099,10 @@ if [[ -n "${with_android}" ]]; then
       --install-dir="${LLVM_BUILD_DIR}/android-toolchain" \
       --system=linux-x86_64 \
       --stl=stlport
+
+  # Android NDK r9d copies a broken unwind.h into the toolchain, see
+  # http://crbug.com/357890
+  rm -v "${LLVM_BUILD_DIR}"/android-toolchain/include/c++/*/unwind.h
 
   # Build ASan runtime for Android.
   # Note: LLVM_ANDROID_TOOLCHAIN_DIR is not relative to PWD, but to where we
