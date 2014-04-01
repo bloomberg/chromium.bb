@@ -701,6 +701,32 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
                                     InputHandler::Wheel));
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollHandlerNotPresent) {
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
+  EXPECT_FALSE(scroll_layer->have_scroll_event_handlers());
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+
+  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
+  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  host_impl_->ScrollEnd();
+  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollHandlerPresent) {
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
+  scroll_layer->SetHaveScrollEventHandlers(true);
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  DrawFrame();
+
+  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
+  EXPECT_TRUE(host_impl_->scroll_affects_scroll_handler());
+  host_impl_->ScrollEnd();
+  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollByReturnsCorrectValue) {
   SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->SetViewportSize(gfx::Size(100, 100));

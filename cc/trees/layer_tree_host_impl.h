@@ -284,8 +284,11 @@ class CC_EXPORT LayerTreeHostImpl
   LayerImpl* OuterViewportScrollLayer() const;
   LayerImpl* CurrentlyScrollingLayer() const;
 
-  int scroll_layer_id_when_mouse_over_scrollbar() {
+  int scroll_layer_id_when_mouse_over_scrollbar() const {
     return scroll_layer_id_when_mouse_over_scrollbar_;
+  }
+  bool scroll_affects_scroll_handler() const {
+    return scroll_affects_scroll_handler_;
   }
 
   bool IsCurrentlyScrolling() const;
@@ -508,7 +511,8 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::PointF& device_viewport_point,
       InputHandler::ScrollInputType type,
       LayerImpl* layer_hit_by_point,
-      bool* scroll_on_main_thread) const;
+      bool* scroll_on_main_thread,
+      bool* has_ancestor_scroll_handler) const;
   float DeviceSpaceDistanceToLayer(const gfx::PointF& device_viewport_point,
                                    LayerImpl* layer_impl);
   void StartScrollbarAnimationRecursive(LayerImpl* layer, base::TimeTicks time);
@@ -557,6 +561,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool did_lock_scrolling_layer_;
   bool should_bubble_scrolls_;
   bool wheel_scrolling_;
+  bool scroll_affects_scroll_handler_;
   int scroll_layer_id_when_mouse_over_scrollbar_;
 
   bool tile_priorities_dirty_;
