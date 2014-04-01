@@ -63,14 +63,14 @@ const int64 QuotaManager::kPerHostPersistentQuotaLimit = 10 * 1024 * kMBytes;
 
 const char QuotaManager::kDatabaseName[] = "QuotaManager";
 
+const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
+
 // Preserve kMinimumPreserveForSystem disk space for system book-keeping
 // when returning the quota to unlimited apps/extensions.
 // TODO(kinuko): This should be like 10% of the actual disk space.
 // For now we simply use a constant as getting the disk size needs
 // platform-dependent code. (http://crbug.com/178976)
-const int64 QuotaManager::kMinimumPreserveForSystem = 1024 * kMBytes;
-
-const int QuotaManager::kThresholdOfErrorsToBeBlacklisted = 3;
+int64 QuotaManager::kMinimumPreserveForSystem = 1024 * kMBytes;
 
 const int QuotaManager::kEvictionIntervalInMilliSeconds =
     30 * kMinutesInMilliSeconds;

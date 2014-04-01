@@ -37,10 +37,17 @@ namespace {
 class SyncFileSystemApiTest : public ExtensionApiTest {
  public:
   SyncFileSystemApiTest()
-      : mock_remote_service_(NULL), real_default_quota_(0) {}
+      : mock_remote_service_(NULL),
+        real_minimum_preserved_space_(0),
+        real_default_quota_(0) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+
+    real_minimum_preserved_space_ =
+        quota::QuotaManager::kMinimumPreserveForSystem;
+    quota::QuotaManager::kMinimumPreserveForSystem = 0;
+
     // TODO(calvinlo): Update test code after default quota is made const
     // (http://crbug.com/155488).
     real_default_quota_ = quota::QuotaManager::kSyncableStorageDefaultHostQuota;
@@ -48,6 +55,8 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
+    quota::QuotaManager::kMinimumPreserveForSystem =
+        real_minimum_preserved_space_;
     quota::QuotaManager::kSyncableStorageDefaultHostQuota = real_default_quota_;
     ExtensionApiTest::TearDownInProcessBrowserTestFixture();
   }
@@ -68,6 +77,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
 
  private:
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service_;
+  int64 real_minimum_preserved_space_;
   int64 real_default_quota_;
 };
 
@@ -103,34 +113,13 @@ ACTION_P5(ReturnWithFakeFileAddedStatus,
 
 }  // namespace
 
-// Flaky on WinXP Tests(1) and Linux Tests(dbg)(1): http://crbug.com/354425 .
-#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_GetFileStatus DISABLED_GetFileStatus
-#else
-#define MAYBE_GetFileStatus GetFileStatus
-#endif
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatus) {
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
   EXPECT_CALL(*mock_remote_service(), IsConflicting(_)).WillOnce(Return(true));
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/get_file_status"))
       << message_;
 }
 
-#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
-// SyncFileSystemApiTest.GetFileStatuses fails under AddressSanitizer
-// on Precise. See http://crbug.com/230779.
-// Also fails on WinXP Tests(1).  And on Linux Tests(dbg)(1).
-// See crbug.com/354425 .
-#define MAYBE_GetFileStatuses DISABLED_GetFileStatuses
-#else
-#define MAYBE_GetFileStatuses GetFileStatuses
-#endif
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatuses) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
-    return;
-#endif
-
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatuses) {
   // Mocking to return IsConflicting() == true only for the path "Conflicting".
   base::FilePath conflicting = base::FilePath::FromUTF8Unsafe("Conflicting");
   EXPECT_CALL(*mock_remote_service(),
@@ -144,15 +133,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatuses) {
       << message_;
 }
 
-// Test is flaky, it fails only certain bots, namely WinXP Tests(1)
-// and Linux Tests(dbg)(1).
-// See crbug.com/354425 .
-#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_GetUsageAndQuota DISABLED_GetUsageAndQuota
-#else
-#define MAYBE_GetUsageAndQuota GetUsageAndQuota
-#endif
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetUsageAndQuota) {
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetUsageAndQuota) {
   ASSERT_TRUE(RunExtensionTest("sync_file_system/get_usage_and_quota"))
       << message_;
 }
@@ -203,15 +184,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, RequestFileSystem) {
       << message_;
 }
 
-// Test is flaky, it fails only certain bots, namely WinXP Tests(1)
-// and Linux Tests(dbg)(1).
-// See crbug.com/354425 .
-#if defined(ARCH_CPU_X86) && (defined(OS_WIN) || defined(OS_LINUX))
-#define MAYBE_WriteFileThenGetUsage DISABLED_WriteFileThenGetUsage
-#else
-#define MAYBE_WriteFileThenGetUsage WriteFileThenGetUsage
-#endif
-IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_WriteFileThenGetUsage) {
+IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, WriteFileThenGetUsage) {
   ASSERT_TRUE(RunPlatformAppTest("sync_file_system/write_file_then_get_usage"))
       << message_;
 }

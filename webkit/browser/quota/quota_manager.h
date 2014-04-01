@@ -233,15 +233,14 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManager
 
   static const char kDatabaseName[];
 
-  static const int64 kMinimumPreserveForSystem;
-
   static const int kThresholdOfErrorsToBeBlacklisted;
 
   static const int kEvictionIntervalInMilliSeconds;
 
-  // This is kept non-const so that test code can change the value.
+  // These are kept non-const so that test code can change the value.
   // TODO(kinuko): Make this a real const value and add a proper way to set
   // the quota for syncable storage. (http://crbug.com/155488)
+  static int64 kMinimumPreserveForSystem;
   static int64 kSyncableStorageDefaultHostQuota;
 
  protected:
