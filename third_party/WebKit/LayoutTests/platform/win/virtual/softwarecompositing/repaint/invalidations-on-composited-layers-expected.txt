@@ -20,7 +20,6 @@
           (repaint rects
             (rect 0.00 0.00 400.00 400.00)
             (rect 0.00 0.00 400.00 400.00)
-            (rect 0.00 0.00 400.00 400.00)
           )
           (children 1
             (GraphicsLayer
@@ -30,7 +29,6 @@
               (drawsContent 1)
               (backgroundColor #0000FF)
               (repaint rects
-                (rect 0.00 0.00 75.00 75.00)
                 (rect 0.00 0.00 75.00 75.00)
                 (rect 0.00 0.00 75.00 75.00)
               )

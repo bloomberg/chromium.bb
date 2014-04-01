@@ -52,7 +52,6 @@ CASE 2, hovering over the outer div
               (repaint rects
                 (rect 0.00 0.00 132.00 132.00)
                 (rect 0.00 0.00 132.00 132.00)
-                (rect 0.00 0.00 132.00 132.00)
               )
             )
           )
@@ -86,8 +85,6 @@ CASE 3, hovering over the inner div
               (repaint rects
                 (rect 0.00 0.00 132.00 132.00)
                 (rect 0.00 0.00 132.00 132.00)
-                (rect 0.00 0.00 132.00 132.00)
-                (rect 18.00 21.00 87.00 87.00)
                 (rect 18.00 21.00 87.00 87.00)
                 (rect 18.00 21.00 87.00 87.00)
               )

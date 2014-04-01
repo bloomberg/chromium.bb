@@ -3,6 +3,5 @@ In DumpRenderTree, there should be repaint logs of 100x100 rect. We don't care h
 (repaint rects
   (rect 29 106 100 100)
   (rect 29 106 100 100)
-  (rect 29 106 100 100)
 )
 

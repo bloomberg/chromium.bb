@@ -3,11 +3,8 @@ Repaint test for http://bugs.webkit.org/show_bug.cgi?id=11359 Incomplete repaint
 (repaint rects
   (rect 220 264 122 110)
   (rect 220 264 122 110)
-  (rect 220 264 122 110)
   (rect 3 264 118 110)
   (rect 3 264 118 110)
-  (rect 3 264 118 110)
-  (rect 220 64 122 108)
   (rect 220 64 122 108)
   (rect 220 64 122 108)
 )

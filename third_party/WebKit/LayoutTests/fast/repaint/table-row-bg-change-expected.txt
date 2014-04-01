@@ -3,6 +3,5 @@ A	A	A
 (repaint rects
   (rect 8 10 200 97)
   (rect 8 10 200 97)
-  (rect 8 10 200 97)
 )
 

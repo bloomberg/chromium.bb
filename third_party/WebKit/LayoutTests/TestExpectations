@@ -479,6 +479,20 @@ crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-co
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
+Bug(jchaffraix) [ Mac ] compositing/repaint/invalidations-on-composited-layers.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/body-background-image.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/fixed.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/inline-color-change.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/outline-shrinking.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/rel-positioned-inline-with-overflow.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/table-cell-collapsed-border.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/table-collapsed-border.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] fast/repaint/textarea-set-disabled.html [ NeedsRebaseline ]
+Bug(jchaffraix) [ Mac ] virtual/softwarecompositing/repaint/invalidations-on-composited-layers.html [ NeedsRebaseline ]
+Bug(jchaffraix) compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+Bug(jchaffraix) virtual/gpu/compositedscrolling/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+Bug(jchaffraix) virtual/softwarecompositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
+
 crbug.com/278497 [ SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]

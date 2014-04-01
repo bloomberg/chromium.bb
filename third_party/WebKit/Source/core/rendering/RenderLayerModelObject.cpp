@@ -96,15 +96,12 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
     // we need to dirty our stacking context's z-order list.
     RenderStyle* oldStyle = style();
     if (oldStyle) {
-        if (parent()) {
-            // Do a repaint with the old style first, e.g., for example if we go from
-            // having an outline to not having an outline.
-            if (diff == StyleDifferenceRepaintLayer) {
-                layer()->repainter().repaintIncludingDescendants();
-                if (oldStyle->clip() != newStyle.clip())
-                    layer()->clipper().clearClipRectsIncludingDescendants();
-            } else if (diff == StyleDifferenceRepaint || newStyle.outlineSize() < oldStyle->outlineSize())
-                repaint();
+        // Do a repaint with the old style first through RenderLayerRepainter.
+        // RenderObject::styleWillChange takes care of repainting objects without RenderLayers.
+        if (parent() && diff == StyleDifferenceRepaintLayer) {
+            layer()->repainter().repaintIncludingDescendants();
+            if (oldStyle->clip() != newStyle.clip())
+                layer()->clipper().clearClipRectsIncludingDescendants();
         }
 
         if (diff == StyleDifferenceLayout || diff == StyleDifferenceSimplifiedLayout) {
