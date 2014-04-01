@@ -209,13 +209,6 @@ CString WebSocketHandshake::clientHandshakeMessage() const
     if (!m_clientProtocol.isEmpty())
         fields.append("Sec-WebSocket-Protocol: " + m_clientProtocol);
 
-    KURL url = httpURLForAuthenticationAndCookies();
-
-    String cookie = cookieRequestHeaderFieldValue(m_document, url);
-    if (!cookie.isEmpty())
-        fields.append("Cookie: " + cookie);
-    // Set "Cookie2: <cookie>" if cookies 2 exists for url?
-
     // Add no-cache headers to avoid compatibility issue.
     // There are some proxies that rewrite "Connection: upgrade"
     // to "Connection: close" in the response if a request doesn't contain
@@ -347,16 +340,6 @@ String WebSocketHandshake::failureReason() const
 const AtomicString& WebSocketHandshake::serverWebSocketProtocol() const
 {
     return m_response.headerFields().get("sec-websocket-protocol");
-}
-
-const AtomicString& WebSocketHandshake::serverSetCookie() const
-{
-    return m_response.headerFields().get("set-cookie");
-}
-
-const AtomicString& WebSocketHandshake::serverSetCookie2() const
-{
-    return m_response.headerFields().get("set-cookie2");
 }
 
 const AtomicString& WebSocketHandshake::serverUpgrade() const

@@ -67,7 +67,12 @@ public:
     String clientOrigin() const;
     String clientLocation() const;
 
+    // Builds a WebSocket opening handshake string to send to the server.
+    // Cookie headers will be added later by the platform code for security
+    // reason.
     CString clientHandshakeMessage() const;
+    // Builds an object representing WebSocket opening handshake to pass to the
+    // inspector.
     PassRefPtr<WebSocketHandshakeRequest> clientHandshakeRequest() const;
 
     // We're collecting data for histogram in the destructor. Note that calling
@@ -81,8 +86,6 @@ public:
     String failureReason() const;
 
     const AtomicString& serverWebSocketProtocol() const;
-    const AtomicString& serverSetCookie() const;
-    const AtomicString& serverSetCookie2() const;
     const AtomicString& serverUpgrade() const;
     const AtomicString& serverConnection() const;
     const AtomicString& serverWebSocketAccept() const;

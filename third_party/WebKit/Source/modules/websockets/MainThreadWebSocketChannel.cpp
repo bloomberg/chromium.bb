@@ -38,7 +38,6 @@
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
@@ -454,13 +453,6 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
                 m_document->addConsoleMessage(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
             }
 
-            if (!m_handshake->serverSetCookie().isEmpty()) {
-                if (cookiesEnabled(m_document)) {
-                    // Exception (for sandboxed documents) ignored.
-                    m_document->setCookie(m_handshake->serverSetCookie(), IGNORE_EXCEPTION);
-                }
-            }
-            // FIXME: handle set-cookie2.
             WTF_LOG(Network, "MainThreadWebSocketChannel %p Connected", this);
             skipBuffer(headerLength);
             m_client->didConnect();
