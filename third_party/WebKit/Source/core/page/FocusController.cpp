@@ -144,6 +144,7 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
 
     if (!focused && document->focusedElement()) {
         RefPtr<Element> focusedElement(document->focusedElement());
+        focusedElement->setFocus(false);
         focusedElement->dispatchBlurEvent(0);
         if (focusedElement == document->focusedElement()) {
             focusedElement->dispatchFocusOutEvent(EventTypeNames::focusout, 0);
@@ -156,6 +157,7 @@ static inline void dispatchEventsOnWindowAndFocusedNode(Document* document, bool
         window->dispatchEvent(Event::create(focused ? EventTypeNames::focus : EventTypeNames::blur));
     if (focused && document->focusedElement()) {
         RefPtr<Element> focusedElement(document->focusedElement());
+        focusedElement->setFocus(true);
         focusedElement->dispatchFocusEvent(0, FocusTypePage);
         if (focusedElement == document->focusedElement()) {
             document->focusedElement()->dispatchFocusInEvent(EventTypeNames::focusin, 0);
