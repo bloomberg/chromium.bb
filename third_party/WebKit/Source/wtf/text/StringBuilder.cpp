@@ -29,6 +29,7 @@
 
 #include "IntegerToStringConversion.h"
 #include "WTFString.h"
+#include "wtf/dtoa.h"
 
 namespace WTF {
 
@@ -344,6 +345,35 @@ void StringBuilder::appendNumber(long long number)
 void StringBuilder::appendNumber(unsigned long long number)
 {
     numberToStringUnsigned<StringBuilder>(number, this);
+}
+
+static void expandLCharToUCharInplace(UChar* buffer, size_t length)
+{
+    const LChar* sourceEnd = reinterpret_cast<LChar*>(buffer) + length;
+    UChar* current = buffer + length;
+    while (current != buffer)
+        *--current = *--sourceEnd;
+}
+
+void StringBuilder::appendNumber(double number, unsigned precision, TrailingZerosTruncatingPolicy trailingZerosTruncatingPolicy)
+{
+    bool truncateTrailingZeros = trailingZerosTruncatingPolicy == TruncateTrailingZeros;
+    size_t numberLength;
+    if (m_is8Bit) {
+        LChar* dest = appendUninitialized<LChar>(NumberToStringBufferLength);
+        const char* result = numberToFixedPrecisionString(number, precision, reinterpret_cast<char*>(dest), truncateTrailingZeros);
+        numberLength = strlen(result);
+    } else {
+        UChar* dest = appendUninitialized<UChar>(NumberToStringBufferLength);
+        const char* result = numberToFixedPrecisionString(number, precision, reinterpret_cast<char*>(dest), truncateTrailingZeros);
+        numberLength = strlen(result);
+        expandLCharToUCharInplace(dest, numberLength);
+    }
+    ASSERT(m_length >= NumberToStringBufferLength);
+    // Remove what appendUninitialized added.
+    m_length -= NumberToStringBufferLength;
+    ASSERT(numberLength <= NumberToStringBufferLength);
+    m_length += numberLength;
 }
 
 bool StringBuilder::canShrink() const

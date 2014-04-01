@@ -35,6 +35,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
+#include "wtf/unicode/CharacterNames.h"
 #include <gtest/gtest.h>
 
 namespace WTF {
@@ -314,6 +315,18 @@ TEST(StringBuilderTest, Substring)
         String substring = builder.substring(2, 10);
         ASSERT_EQ(String("c"), substring);
     }
+}
+
+TEST(StringBuilderTest, AppendNumberDoubleUChar)
+{
+    const double someNumber = 1.2345;
+    StringBuilder reference;
+    reference.append(replacementCharacter); // Make it UTF-16.
+    reference.append(String::number(someNumber));
+    StringBuilder test;
+    test.append(replacementCharacter);
+    test.appendNumber(someNumber);
+    ASSERT_EQ(reference, test);
 }
 
 } // namespace
