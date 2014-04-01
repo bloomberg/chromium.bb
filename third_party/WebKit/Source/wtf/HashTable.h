@@ -367,11 +367,11 @@ namespace WTF {
         bool shouldExpand() const { return (m_keyCount + m_deletedCount) * m_maxLoad >= m_tableSize; }
         bool mustRehashInPlace() const { return m_keyCount * m_minLoad < m_tableSize * 2; }
         bool shouldShrink() const { return m_keyCount * m_minLoad < m_tableSize && m_tableSize > KeyTraits::minimumTableSize; }
-        void expand();
-        void shrink() { rehash(m_tableSize / 2); }
+        ValueType* expand(ValueType* entry = 0);
+        void shrink() { rehash(m_tableSize / 2, 0); }
 
-        void rehash(unsigned newTableSize);
-        void reinsert(ValueType&);
+        ValueType* rehash(unsigned newTableSize, ValueType* entry);
+        ValueType* reinsert(ValueType&);
 
         static void initializeBucket(ValueType& bucket);
         static void deleteBucket(ValueType& bucket) { bucket.~ValueType(); Traits::constructDeletedValue(bucket); }
@@ -741,18 +741,8 @@ namespace WTF {
 
         ++m_keyCount;
 
-        if (shouldExpand()) {
-            // FIXME: This makes an extra copy on expand. Probably not that bad since
-            // expand is rare, but would be better to have a version of expand that can
-            // follow a pivot entry and return the new position.
-            typename WTF::RemoveReference<KeyPassInType>::Type enteredKey = Extractor::extract(*entry);
-            expand();
-            iterator findResult = find(enteredKey);
-            ASSERT(findResult != end());
-            ValueType* resultValue = findResult.get();
-            AddResult result(resultValue, true);
-            return result;
-        }
+        if (shouldExpand())
+            entry = expand(entry);
 
         return AddResult(entry, true);
     }
@@ -780,24 +770,14 @@ namespace WTF {
 
         HashTranslator::translate(*entry, key, extra, h);
         ++m_keyCount;
-        if (shouldExpand()) {
-            // FIXME: This makes an extra copy on expand. Probably not that bad since
-            // expand is rare, but would be better to have a version of expand that can
-            // follow a pivot entry and return the new position.
-            typename WTF::RemoveReference<KeyPassInType>::Type enteredKey = Extractor::extract(*entry);
-            expand();
-            iterator findResult = find(enteredKey);
-            ASSERT(findResult != end());
-            ValueType* resultValue = findResult.get();
-            AddResult result(resultValue, true);
-            return result;
-        }
+        if (shouldExpand())
+            entry = expand(entry);
 
         return AddResult(entry, true);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reinsert(ValueType& entry)
+    Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reinsert(ValueType& entry)
     {
         ASSERT(m_table);
         ASSERT(!lookupForWriting(Extractor::extract(entry)).second);
@@ -808,8 +788,10 @@ namespace WTF {
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         ++m_stats->numReinserts;
 #endif
+        Value* newEntry = lookupForWriting(Extractor::extract(entry)).first;
+        Mover<ValueType, Traits::needsDestruction>::move(entry, *newEntry);
 
-        Mover<ValueType, Traits::needsDestruction>::move(entry, *lookupForWriting(Extractor::extract(entry)).first);
+        return newEntry;
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
@@ -926,7 +908,7 @@ namespace WTF {
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::expand()
+    Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::expand(Value* entry)
     {
         unsigned newSize;
         if (!m_tableSize) {
@@ -938,11 +920,11 @@ namespace WTF {
             RELEASE_ASSERT(newSize > m_tableSize);
         }
 
-        rehash(newSize);
+        return rehash(newSize, entry);
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::rehash(unsigned newTableSize)
+    Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::rehash(unsigned newTableSize, Value* entry)
     {
         unsigned oldTableSize = m_tableSize;
         ValueType* oldTable = m_table;
@@ -961,13 +943,25 @@ namespace WTF {
         m_tableSize = newTableSize;
         m_tableSizeMask = newTableSize - 1;
 
-        for (unsigned i = 0; i != oldTableSize; ++i)
-            if (!isEmptyOrDeletedBucket(oldTable[i]))
-                reinsert(oldTable[i]);
+        Value* newEntry = 0;
+        for (unsigned i = 0; i != oldTableSize; ++i) {
+            if (isEmptyOrDeletedBucket(oldTable[i])) {
+                ASSERT(&oldTable[i] != entry);
+                continue;
+            }
+
+            Value* reinsertedEntry = reinsert(oldTable[i]);
+            if (&oldTable[i] == entry) {
+                ASSERT(!newEntry);
+                newEntry = reinsertedEntry;
+            }
+        }
 
         m_deletedCount = 0;
 
         deleteAllBucketsAndDeallocate(oldTable, oldTableSize);
+
+        return newEntry;
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
