@@ -168,7 +168,7 @@
     { "name": "docs.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "sites.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "spreadsheets.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
-    { "name": "appengine.google.com", "mode": "force-https", "pins": "google" },
+    { "name": "appengine.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "encrypted.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "accounts.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "profiles.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
