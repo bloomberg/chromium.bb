@@ -205,9 +205,15 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   // any associated values) if present in the browser command line
   static const char* const kSwitchNames[] = {
     switches::kDisableBreakpad,
-    switches::kDisableDirectNPAPIRequests,
+#if defined(OS_MACOSX)
+    switches::kDisableCoreAnimationPlugins,
+    switches::kEnableSandboxLogging,
+#endif
     switches::kEnableStatsTable,
     switches::kFullMemoryCrashReport,
+#if defined(OS_WIN)
+    switches::kHighDPISupport,
+#endif
     switches::kLoggingLevel,
     switches::kLogPluginMessages,
     switches::kNoSandbox,
@@ -215,13 +221,6 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
     switches::kTestSandbox,
     switches::kTraceStartup,
     switches::kUseGL,
-#if defined(OS_MACOSX)
-    switches::kDisableCoreAnimationPlugins,
-    switches::kEnableSandboxLogging,
-#endif
-#if defined(OS_WIN)
-    switches::kHighDPISupport,
-#endif
   };
 
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

@@ -81,7 +81,6 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
                                    const char* buf,
                                    unsigned int len,
                                    const GURL& referrer,
-                                   const std::string& range,
                                    bool notify_redirects,
                                    bool is_plugin_src_load,
                                    int origin_pid,
@@ -96,9 +95,6 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
       referrer_(referrer),
       notify_redirects_(notify_redirects),
       is_plugin_src_load_(is_plugin_src_load),
-      origin_pid_(origin_pid),
-      render_frame_id_(render_frame_id),
-      render_view_id_(render_view_id),
       resource_id_(resource_id),
       copy_stream_data_(copy_stream_data),
       data_offset_(0),
@@ -137,9 +133,6 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
         request_info.headers += "\r\n";
       request_info.headers += "Content-Type: application/x-www-form-urlencoded";
     }
-  } else {
-    if (!range.empty())
-      request_info.headers = std::string("Range: ") + range;
   }
 
   bridge_.reset(ChildThread::current()->resource_dispatcher()->CreateBridge(
