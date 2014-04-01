@@ -159,6 +159,11 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     return false;
   }
 
+  // These two variables are used below when this method is asked to pick a
+  // IPv6 address which has the shortest lifetime.
+  ULONG ipv6_valid_lifetime = 0;
+  scoped_ptr<NetworkInterface> ipv6_address;
+
   for (IP_ADAPTER_ADDRESSES *adapter = adapters; adapter != NULL;
        adapter = adapter->Next) {
     // Ignore the loopback device.
@@ -209,6 +214,22 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
           }
           uint32 index =
               (family == AF_INET) ? adapter->IfIndex : adapter->Ipv6IfIndex;
+          // Pick one IPv6 address with least valid lifetime.
+          // The reason we are checking |ValidLifeftime| as there is no other
+          // way identifying the interface type. Usually (and most likely) temp
+          // IPv6 will have a shorter ValidLifetime value then the permanent
+          // interface.
+          if (family == AF_INET6 &&
+              (policy & INCLUDE_ONLY_TEMP_IPV6_ADDRESS_IF_POSSIBLE)) {
+            if (ipv6_valid_lifetime == 0 ||
+                ipv6_valid_lifetime > address->ValidLifetime) {
+              ipv6_valid_lifetime = address->ValidLifetime;
+              ipv6_address.reset(new NetworkInterface(adapter->AdapterName,
+                                 base::SysWideToNativeMB(adapter->FriendlyName),
+                                 index, endpoint.address(), net_prefix));
+              continue;
+            }
+          }
           networks->push_back(
               NetworkInterface(adapter->AdapterName,
                                base::SysWideToNativeMB(adapter->FriendlyName),
@@ -218,6 +239,9 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
     }
   }
 
+  if (ipv6_address.get()) {
+    networks->push_back(*(ipv6_address.get()));
+  }
   return true;
 }
 
