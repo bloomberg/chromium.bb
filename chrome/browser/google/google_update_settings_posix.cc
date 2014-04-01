@@ -5,22 +5,23 @@
 #include "chrome/installer/util/google_update_settings.h"
 
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/chrome_paths.h"
 
-namespace google_update {
+namespace {
 
-static std::string& posix_guid() {
-  CR_DEFINE_STATIC_LOCAL(std::string, guid, ());
-  return guid;
-}
-
-}  // namespace google_update
+base::LazyInstance<std::string>::Leaky g_posix_guid = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<base::Lock>::Leaky g_posix_guid_lock =
+    LAZY_INSTANCE_INITIALIZER;
 
 // File name used in the user data dir to indicate consent.
-static const char kConsentToSendStats[] = "Consent To Send Stats";
+const char kConsentToSendStats[] = "Consent To Send Stats";
+
+}  // namespace
 
 // static
 bool GoogleUpdateSettings::GetCollectStatsConsent() {
@@ -29,8 +30,10 @@ bool GoogleUpdateSettings::GetCollectStatsConsent() {
   consent_file = consent_file.Append(kConsentToSendStats);
   std::string tmp_guid;
   bool consented = base::ReadFileToString(consent_file, &tmp_guid);
-  if (consented)
-    google_update::posix_guid().assign(tmp_guid);
+  if (consented) {
+    base::AutoLock lock(g_posix_guid_lock.Get());
+    g_posix_guid.Get().assign(tmp_guid);
+  }
   return consented;
 }
 
@@ -41,17 +44,18 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
   if (!base::DirectoryExists(consent_dir))
     return false;
 
+  base::AutoLock lock(g_posix_guid_lock.Get());
+
   base::FilePath consent_file = consent_dir.AppendASCII(kConsentToSendStats);
   if (consented) {
     if ((!base::PathExists(consent_file)) ||
-        (base::PathExists(consent_file) &&
-         !google_update::posix_guid().empty())) {
-      const char* c_str = google_update::posix_guid().c_str();
-      int size = google_update::posix_guid().size();
+        (base::PathExists(consent_file) && !g_posix_guid.Get().empty())) {
+      const char* c_str = g_posix_guid.Get().c_str();
+      int size = g_posix_guid.Get().size();
       return base::WriteFile(consent_file, c_str, size) == size;
     }
   } else {
-    google_update::posix_guid().clear();
+    g_posix_guid.Get().clear();
     return base::DeleteFile(consent_file, false);
   }
   return true;
@@ -59,7 +63,8 @@ bool GoogleUpdateSettings::SetCollectStatsConsent(bool consented) {
 
 // static
 bool GoogleUpdateSettings::GetMetricsId(std::string* metrics_id) {
-  *metrics_id = google_update::posix_guid();
+  base::AutoLock lock(g_posix_guid_lock.Get());
+  *metrics_id = g_posix_guid.Get();
   return true;
 }
 
@@ -73,8 +78,11 @@ bool GoogleUpdateSettings::SetMetricsId(const std::string& client_id) {
     return false;
   }
 
-  // Since user has consented, write the metrics id to the file.
-  google_update::posix_guid() = client_id;
+  {
+    // Since user has consented, write the metrics id to the file.
+    base::AutoLock lock(g_posix_guid_lock.Get());
+    g_posix_guid.Get() = client_id;
+  }
   return GoogleUpdateSettings::SetCollectStatsConsent(true);
 }
 
