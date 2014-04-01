@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<body>
+    <div id='element'></div>
+</body>
+
+<script>
+var element = document.getElementById('element');
+var duration = 1;
+
+var animation = new Animation(element,
+    [{opacity: '1', offset: 0},
+    {opacity: '0', offset: 1}],
+    duration);
+
+test(function() {
+    var startTime = document.timeline.currentTime;
+    var player = document.timeline.play(animation);
+    player.finish();
+    var finishTime = document.timeline.currentTime;
+    assert_greater_than_equal(startTime, 0);
+    assert_equals(startTime, finishTime);
+}, 'document.timeline.currentTime should not change within a script block.');
+</script>

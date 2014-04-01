@@ -169,16 +169,21 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
 TEST_F(AnimationDocumentTimelineTest, ZeroTime)
 {
     timeline = DocumentTimeline::create(document.get());
+    bool isNull;
 
     document->animationClock().updateTime(100);
-    EXPECT_TRUE(isNull(timeline->currentTime()));
+    EXPECT_TRUE(std::isnan(timeline->currentTime()));
+    EXPECT_TRUE(std::isnan(timeline->currentTime(isNull)));
+    EXPECT_TRUE(isNull);
 
     document->animationClock().updateTime(200);
-    EXPECT_TRUE(isNull(timeline->currentTime()));
+    EXPECT_TRUE(std::isnan(timeline->currentTime()));
 
     timeline->setZeroTime(300);
     document->animationClock().updateTime(300);
     EXPECT_EQ(0, timeline->currentTime());
+    EXPECT_EQ(0, timeline->currentTime(isNull));
+    EXPECT_FALSE(isNull);
 
     document->animationClock().updateTime(400);
     EXPECT_EQ(100, timeline->currentTime());

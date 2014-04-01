@@ -6,5 +6,6 @@
     RuntimeEnabled=WebAnimationsAPI,
     ImplementedAs=DocumentTimeline,
 ] interface Timeline {
+    readonly attribute double? currentTime;
     AnimationPlayer play(TimedItem source);
 };

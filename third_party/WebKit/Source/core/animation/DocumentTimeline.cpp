@@ -144,11 +144,21 @@ void DocumentTimeline::DocumentTimelineTiming::serviceOnNextFrame()
         m_timeline->m_document->view()->scheduleAnimation();
 }
 
+double DocumentTimeline::currentTime(bool& isNull)
+{
+    if (!m_document) {
+        isNull = true;
+        return std::numeric_limits<double>::quiet_NaN();
+    }
+    double result = m_document->animationClock().currentTime() - m_zeroTime;
+    isNull = std::isnan(result);
+    return result;
+}
+
 double DocumentTimeline::currentTime()
 {
-    if (!m_document)
-        return std::numeric_limits<double>::quiet_NaN();
-    return m_document->animationClock().currentTime() - m_zeroTime;
+    bool isNull;
+    return currentTime(isNull);
 }
 
 double DocumentTimeline::effectiveTime()
