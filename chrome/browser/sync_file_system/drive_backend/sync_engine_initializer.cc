@@ -77,19 +77,17 @@ ScopedVector<google_apis::FileResource> ConvertResourceEntriesToFileResources(
 SyncEngineInitializer::SyncEngineInitializer(
     SyncEngineContext* sync_context,
     base::SequencedTaskRunner* task_runner,
-    drive::DriveServiceInterface* drive_service,
     const base::FilePath& database_path,
     leveldb::Env* env_override)
     : sync_context_(sync_context),
       env_override_(env_override),
       task_runner_(task_runner),
-      drive_service_(drive_service),
       database_path_(database_path),
       find_sync_root_retry_count_(0),
       largest_change_id_(0),
       weak_ptr_factory_(this) {
+  DCHECK(sync_context);
   DCHECK(task_runner);
-  DCHECK(drive_service_);
 }
 
 SyncEngineInitializer::~SyncEngineInitializer() {
@@ -99,9 +97,11 @@ SyncEngineInitializer::~SyncEngineInitializer() {
 
 void SyncEngineInitializer::Run(scoped_ptr<SyncTaskToken> token) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Initialize] Start.");
+  DCHECK(sync_context_);
+  DCHECK(sync_context_->GetDriveService());
 
   // The metadata seems to have been already initialized. Just return with OK.
-  if (sync_context_ && sync_context_->GetMetadataDatabase()) {
+  if (sync_context_->GetMetadataDatabase()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Initialize] Already initialized.");
     SyncTaskManager::NotifyTaskDone(token.Pass(), SYNC_STATUS_OK);
@@ -144,7 +144,7 @@ void SyncEngineInitializer::DidCreateMetadataDatabase(
 void SyncEngineInitializer::GetAboutResource(
     scoped_ptr<SyncTaskToken> token) {
   set_used_network(true);
-  drive_service_->GetAboutResource(
+  sync_context_->GetDriveService()->GetAboutResource(
       base::Bind(&SyncEngineInitializer::DidGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
 }
@@ -180,7 +180,7 @@ void SyncEngineInitializer::FindSyncRoot(scoped_ptr<SyncTaskToken> token) {
   }
 
   set_used_network(true);
-  cancel_callback_ = drive_service_->SearchByTitle(
+  cancel_callback_ = sync_context_->GetDriveService()->SearchByTitle(
       kSyncRootFolderTitle,
       std::string(),  // parent_folder_id
       base::Bind(&SyncEngineInitializer::DidFindSyncRoot,
@@ -237,7 +237,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
   // If there are more results, retrieve them.
   GURL next_url;
   if (resource_list->GetNextFeedURL(&next_url)) {
-    cancel_callback_ = drive_service_->GetRemainingFileList(
+    cancel_callback_ = sync_context_->GetDriveService()->GetRemainingFileList(
         next_url,
         base::Bind(&SyncEngineInitializer::DidFindSyncRoot,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -261,7 +261,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
 void SyncEngineInitializer::CreateSyncRoot(scoped_ptr<SyncTaskToken> token) {
   DCHECK(!sync_root_folder_);
   set_used_network(true);
-  cancel_callback_ = drive_service_->AddNewDirectory(
+  cancel_callback_ = sync_context_->GetDriveService()->AddNewDirectory(
       root_folder_id_, kSyncRootFolderTitle,
       drive::DriveServiceInterface::AddNewDirectoryOptions(),
       base::Bind(&SyncEngineInitializer::DidCreateSyncRoot,
@@ -290,11 +290,13 @@ void SyncEngineInitializer::DidCreateSyncRoot(
 void SyncEngineInitializer::DetachSyncRoot(scoped_ptr<SyncTaskToken> token) {
   DCHECK(sync_root_folder_);
   set_used_network(true);
-  cancel_callback_ = drive_service_->RemoveResourceFromDirectory(
-      root_folder_id_, sync_root_folder_->resource_id(),
-      base::Bind(&SyncEngineInitializer::DidDetachSyncRoot,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&token)));
+  cancel_callback_ =
+      sync_context_->GetDriveService()->RemoveResourceFromDirectory(
+          root_folder_id_,
+          sync_root_folder_->resource_id(),
+          base::Bind(&SyncEngineInitializer::DidDetachSyncRoot,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&token)));
 }
 
 void SyncEngineInitializer::DidDetachSyncRoot(
@@ -317,11 +319,12 @@ void SyncEngineInitializer::ListAppRootFolders(
     scoped_ptr<SyncTaskToken> token) {
   DCHECK(sync_root_folder_);
   set_used_network(true);
-  cancel_callback_ = drive_service_->GetResourceListInDirectory(
-      sync_root_folder_->resource_id(),
-      base::Bind(&SyncEngineInitializer::DidListAppRootFolders,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&token)));
+  cancel_callback_ =
+      sync_context_->GetDriveService()->GetResourceListInDirectory(
+          sync_root_folder_->resource_id(),
+          base::Bind(&SyncEngineInitializer::DidListAppRootFolders,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&token)));
 }
 
 void SyncEngineInitializer::DidListAppRootFolders(
@@ -355,10 +358,11 @@ void SyncEngineInitializer::DidListAppRootFolders(
   set_used_network(true);
   GURL next_url;
   if (resource_list->GetNextFeedURL(&next_url)) {
-    cancel_callback_ = drive_service_->GetRemainingFileList(
-        next_url,
-        base::Bind(&SyncEngineInitializer::DidListAppRootFolders,
-                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
+    cancel_callback_ =
+        sync_context_->GetDriveService()->GetRemainingFileList(
+            next_url,
+            base::Bind(&SyncEngineInitializer::DidListAppRootFolders,
+                       weak_ptr_factory_.GetWeakPtr(), base::Passed(&token)));
     return;
   }
 

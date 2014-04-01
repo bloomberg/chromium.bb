@@ -97,7 +97,6 @@ class ConflictResolverTest : public testing::Test {
     SyncEngineInitializer* initializer =
         new SyncEngineInitializer(context_.get(),
                                   base::MessageLoopProxy::current(),
-                                  context_->GetDriveService(),
                                   database_dir_.path(),
                                   in_memory_env_.get());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
