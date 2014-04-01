@@ -68,7 +68,7 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
 
 void ManagePasswordsBubbleModel::OnPasswordAction(
     autofill::PasswordForm password_form,
-    bool remove) {
+    PasswordAction action) {
   if (!web_contents_)
     return;
   Profile* profile =
@@ -76,15 +76,15 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
   PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS).get();
   DCHECK(password_store);
-  if (remove)
+  if (action == REMOVE_PASSWORD)
     password_store->RemoveLogin(password_form);
   else
     password_store->AddLogin(password_form);
   // This is necessary in case the bubble is instantiated again, we thus do not
   // display the pending credentials if they were deleted.
   if (password_form.username_value == pending_credentials_.username_value) {
-    ManagePasswordsBubbleUIController::FromWebContents(web_contents_)->
-        set_password_submitted(!remove);
+    ManagePasswordsBubbleUIController::FromWebContents(web_contents_)
+        ->set_password_submitted(action == ADD_PASSWORD);
   }
 }
 

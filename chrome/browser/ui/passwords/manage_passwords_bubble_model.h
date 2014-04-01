@@ -27,6 +27,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
     MANAGE_PASSWORDS
   };
 
+  enum PasswordAction { REMOVE_PASSWORD, ADD_PASSWORD };
+
   // Called by the view code when the cancel button in clicked by the user.
   void OnCancelClicked();
 
@@ -38,7 +40,8 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
-  void OnPasswordAction(autofill::PasswordForm password_form, bool remove);
+  void OnPasswordAction(autofill::PasswordForm password_form,
+                        PasswordAction action);
 
   // Called by the view code when the ManagePasswordItemView is destroyed and
   // the user chose to delete the password.
@@ -48,6 +51,10 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 
   ManagePasswordsBubbleState manage_passwords_bubble_state() {
     return manage_passwords_bubble_state_;
+  }
+
+  bool WaitingToSavePassword() {
+    return manage_passwords_bubble_state() == PASSWORD_TO_BE_SAVED;
   }
 
   bool password_submitted() { return password_submitted_; }

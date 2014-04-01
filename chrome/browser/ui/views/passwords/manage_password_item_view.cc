@@ -27,44 +27,21 @@ ManagePasswordItemView::ManagePasswordItemView(
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   SetLayoutManager(layout);
 
-  const int column_set_save_id = 0;
-  views::ColumnSet* column_set_save = layout->AddColumnSet(column_set_save_id);
-  column_set_save->AddPaddingColumn(0, views::kItemLabelSpacing);
-  column_set_save->AddColumn(
-      views::GridLayout::FILL, views::GridLayout::FILL, 0,
-      views::GridLayout::FIXED, field_1_width_, field_1_width_);
-  column_set_save->AddPaddingColumn(0, views::kItemLabelSpacing);
-  column_set_save->AddColumn(
-      views::GridLayout::FILL, views::GridLayout::FILL, 1,
-      views::GridLayout::USE_PREF, field_2_width_, field_2_width_);
-  column_set_save->AddPaddingColumn(0, views::kItemLabelSpacing);
+  // Build the columnset we need for the current state of the model.
+  int column_set_to_build =
+      manage_passwords_bubble_model_->WaitingToSavePassword()
+          ? COLUMN_SET_MANAGE
+          : COLUMN_SET_SAVE;
+  BuildColumnSet(layout, column_set_to_build);
+  layout->StartRowWithPadding(
+      0, column_set_to_build, 0, views::kRelatedControlVerticalSpacing);
 
-  const int column_set_manage_id = 1;
-  views::ColumnSet* column_set_manage =
-      layout->AddColumnSet(column_set_manage_id);
-  column_set_manage->AddPaddingColumn(0, views::kItemLabelSpacing);
-  column_set_manage->AddColumn(
-      views::GridLayout::FILL, views::GridLayout::FILL, 0,
-      views::GridLayout::FIXED, field_1_width_, field_1_width_);
-  column_set_manage->AddPaddingColumn(0, views::kItemLabelSpacing);
-  column_set_manage->AddColumn(
-      views::GridLayout::FILL, views::GridLayout::FILL, 1,
-      views::GridLayout::USE_PREF, field_2_width_, field_2_width_);
-  column_set_manage->AddColumn(views::GridLayout::TRAILING,
-      views::GridLayout::FILL, 0, views::GridLayout::USE_PREF, 0, 0);
-  column_set_manage->AddPaddingColumn(0, views::kItemLabelSpacing);
-
-  if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
-      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED)
-    layout->StartRowWithPadding(0, column_set_manage_id,
-                                0, views::kRelatedControlVerticalSpacing);
-  else
-    layout->StartRowWithPadding(0, column_set_save_id,
-                                0, views::kRelatedControlVerticalSpacing);
-
+  // Add the username field: fills the first non-padding column of the layout.
   label_1_ = new views::Label(password_form_.username_value);
   label_1_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  layout->AddView(label_1_);
 
+  // Add the password field: fills the second non-padding column of the layout.
   label_2_ =
       new views::Link(GetPasswordDisplayString(password_form_.password_value));
   label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -72,26 +49,57 @@ ManagePasswordItemView::ManagePasswordItemView(
   label_2_->SetFocusable(false);
   label_2_->SetEnabled(false);
   label_2_->SetUnderline(false);
+  layout->AddView(label_2_);
 
-  delete_button_ = new views::ImageButton(this);
-  delete_button_->SetImage(views::ImageButton::STATE_NORMAL,
-                           rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
-  delete_button_->SetImage(views::ImageButton::STATE_HOVERED,
-                           rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
-  delete_button_->SetImage(views::ImageButton::STATE_PRESSED,
-                           rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
-
-  layout->AddView(label_1_, 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL);
-  layout->AddView(label_2_, 1, 1,
-                  views::GridLayout::FILL, views::GridLayout::FILL);
-
-  if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
-      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED) {
-    layout->AddView(delete_button_, 1, 1,
-                    views::GridLayout::FILL, views::GridLayout::FILL);
+  // If we're saving a password, construct and add the delete button: fills the
+  // third non-padding column of the layout.
+  if (manage_passwords_bubble_model_->WaitingToSavePassword()) {
+    delete_button_ = new views::ImageButton(this);
+    delete_button_->SetImage(views::ImageButton::STATE_NORMAL,
+                             rb->GetImageNamed(IDR_CLOSE_2).ToImageSkia());
+    delete_button_->SetImage(views::ImageButton::STATE_HOVERED,
+                             rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
+    delete_button_->SetImage(views::ImageButton::STATE_PRESSED,
+                             rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
+    layout->AddView(delete_button_, 1, 1);
   }
+
+  // Match the padding at the top of the row with padding at the bottom.
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+void ManagePasswordItemView::BuildColumnSet(views::GridLayout* layout,
+                                            int column_set_id) {
+  views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
+
+  // The username field.
+  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        0,
+                        views::GridLayout::FIXED,
+                        field_1_width_,
+                        field_1_width_);
+
+  // The password field.
+  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
+  column_set->AddColumn(views::GridLayout::FILL,
+                        views::GridLayout::FILL,
+                        1,
+                        views::GridLayout::USE_PREF,
+                        field_2_width_,
+                        field_2_width_);
+
+  // If we're in manage-mode, we need another column for the delete button.
+  if (column_set_id == COLUMN_SET_MANAGE) {
+    column_set->AddColumn(views::GridLayout::TRAILING,
+                          views::GridLayout::FILL,
+                          0,
+                          views::GridLayout::USE_PREF,
+                          0,
+                          0);
+  }
+  column_set->AddPaddingColumn(0, views::kItemLabelSpacing);
 }
 
 // static
@@ -109,21 +117,45 @@ ManagePasswordItemView::~ManagePasswordItemView() {
 }
 
 void ManagePasswordItemView::Refresh() {
+  // TODO(mkwst): We're currently swaping out values in the same view. We need
+  // to swap out views in order to enable some future work (and to make the undo
+  // button's alignment work correctly).
+
   if (delete_password_) {
+    // The user clicked the "delete password" button, so:
+    //
+    // Change the username string to "Deleted"
     label_1_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED));
+
+    // Change the password's text to "Undo", and enable the link.
     label_2_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     label_2_->SetEnabled(true);
-    delete_button_->SetVisible(false);
-    manage_passwords_bubble_model_->OnPasswordAction(password_form_, true);
+
+    if (delete_button_)
+      delete_button_->SetVisible(false);
   } else {
+    // The user clicked the "undo" button after deleting a password, so:
+    //
+    // Change the username string back to the username.
     label_1_->SetText(password_form_.username_value);
+
+    // Set the password string to the appropriate number of bullets, and
+    // disable the link.
     label_2_->SetText(GetPasswordDisplayString(password_form_.password_value));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_2_->SetEnabled(false);
-    delete_button_->SetVisible(true);
-    manage_passwords_bubble_model_->OnPasswordAction(password_form_, false);
+
+    if (delete_button_)
+      delete_button_->SetVisible(true);
   }
+
+  // After the view is consistent, notify the model that the password needs to
+  // be updated (either removed or put back into the store, as appropriate.
+  manage_passwords_bubble_model_->OnPasswordAction(
+      password_form_,
+      delete_password_ ? ManagePasswordsBubbleModel::REMOVE_PASSWORD
+                       : ManagePasswordsBubbleModel::ADD_PASSWORD);
 }
 
 void ManagePasswordItemView::ButtonPressed(views::Button* sender,

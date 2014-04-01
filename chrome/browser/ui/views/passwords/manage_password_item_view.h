@@ -9,6 +9,7 @@
 #include "components/autofill/core/common/password_form.h"
 
 namespace views {
+class GridLayout;
 class ImageButton;
 }
 
@@ -28,7 +29,13 @@ class ManagePasswordItemView : public views::View,
       const base::string16& password);
 
  private:
+  enum ColumnSets { COLUMN_SET_SAVE = 0, COLUMN_SET_MANAGE = 1, };
+
   virtual ~ManagePasswordItemView();
+
+  // Build a two-label column set using the widths stored in |field_1_width_|
+  // and |field_2_width_|.
+  void BuildColumnSet(views::GridLayout*, int column_set_id);
 
   // Changes the views according to the state of |delete_password_|.
   void Refresh();
