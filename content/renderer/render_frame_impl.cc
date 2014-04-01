@@ -1402,18 +1402,6 @@ blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       this, frame, extra_data, request, type, default_policy, is_redirect);
 }
 
-blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
-    blink::WebFrame* frame,
-    const blink::WebURLRequest& request,
-    blink::WebNavigationType type,
-    blink::WebNavigationPolicy default_policy,
-    bool is_redirect) {
-  DCHECK(!frame_ || frame_ == frame);
-  return decidePolicyForNavigation(frame,
-                                   frame->provisionalDataSource()->extraData(),
-                                   request, type, default_policy, is_redirect);
-}
-
 void RenderFrameImpl::willSendSubmitEvent(blink::WebFrame* frame,
                                           const blink::WebFormElement& form) {
   DCHECK(!frame_ || frame_ == frame);

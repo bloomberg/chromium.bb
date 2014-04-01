@@ -236,13 +236,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebNavigationType type,
       blink::WebNavigationPolicy default_policy,
       bool is_redirect);
-  // DEPRECATED
-  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType type,
-      blink::WebNavigationPolicy default_policy,
-      bool is_redirect);
   virtual void willSendSubmitEvent(blink::WebFrame* frame,
                                    const blink::WebFormElement& form);
   virtual void willSubmitForm(blink::WebFrame* frame,
