@@ -25,6 +25,7 @@ import android.widget.AdapterView.OnItemClickListener;
 
 import org.chromium.chrome.R;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -79,6 +80,7 @@ public class ShareHelper {
         List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
         if (resolveInfoList.size() == 0) return;
+        Collections.sort(resolveInfoList, new ResolveInfo.DisplayNameComparator(manager));
 
         final ShareDialogAdapter adapter =
                 new ShareDialogAdapter(activity, manager, resolveInfoList);
