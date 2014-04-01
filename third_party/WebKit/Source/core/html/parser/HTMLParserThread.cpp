@@ -32,7 +32,6 @@
 #include "core/html/parser/HTMLParserThread.h"
 
 #include "platform/Task.h"
-#include "platform/TaskSynchronizer.h"
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -46,12 +45,6 @@ HTMLParserThread::HTMLParserThread()
 
 HTMLParserThread::~HTMLParserThread()
 {
-    TaskSynchronizer taskSynchronizer;
-    ASSERT(s_sharedThread);
-    s_sharedThread->postTask(WTF::bind(&HTMLParserThread::cleanupHTMLParserThread, s_sharedThread, &taskSynchronizer));
-    taskSynchronizer.waitForTaskCompletion();
-    delete s_sharedThread;
-    s_sharedThread = 0;
 }
 
 void HTMLParserThread::init()
@@ -60,27 +53,11 @@ void HTMLParserThread::init()
     s_sharedThread = new HTMLParserThread;
 }
 
-void HTMLParserThread::setupHTMLParserThread()
-{
-    m_pendingGCRunner = adoptPtr(new PendingGCRunner);
-    m_messageLoopInterruptor = adoptPtr(new MessageLoopInterruptor(&platformThread()));
-    platformThread().addTaskObserver(m_pendingGCRunner.get());
-    ThreadState::attach();
-    ThreadState::current()->addInterruptor(m_messageLoopInterruptor.get());
-}
-
 void HTMLParserThread::shutdown()
 {
-}
-
-void HTMLParserThread::cleanupHTMLParserThread(TaskSynchronizer* taskSynchronizer)
-{
-    ThreadState::current()->removeInterruptor(m_messageLoopInterruptor.get());
-    ThreadState::detach();
-    platformThread().removeTaskObserver(m_pendingGCRunner.get());
-    taskSynchronizer->taskCompleted();
-    m_pendingGCRunner = 0;
-    m_messageLoopInterruptor = 0;
+    ASSERT(s_sharedThread);
+    delete s_sharedThread;
+    s_sharedThread = 0;
 }
 
 HTMLParserThread* HTMLParserThread::shared()
@@ -90,10 +67,8 @@ HTMLParserThread* HTMLParserThread::shared()
 
 blink::WebThread& HTMLParserThread::platformThread()
 {
-    if (!m_thread) {
+    if (!m_thread)
         m_thread = adoptPtr(blink::Platform::current()->createThread("HTMLParserThread"));
-        s_sharedThread->postTask(WTF::bind(&HTMLParserThread::setupHTMLParserThread, s_sharedThread));
-    }
     return *m_thread;
 }
 

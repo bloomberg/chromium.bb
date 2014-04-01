@@ -83,7 +83,7 @@ void DatabaseThread::setupDatabaseThread()
     ThreadState::current()->addInterruptor(m_messageLoopInterruptor.get());
 }
 
-void DatabaseThread::requestTermination(TaskSynchronizer *cleanupSync)
+void DatabaseThread::requestTermination(DatabaseTaskSynchronizer *cleanupSync)
 {
     MutexLocker lock(m_terminationRequestedMutex);
     ASSERT(!m_terminationRequested);
@@ -93,7 +93,7 @@ void DatabaseThread::requestTermination(TaskSynchronizer *cleanupSync)
     m_thread->postTask(new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThread, this)));
 }
 
-bool DatabaseThread::terminationRequested(TaskSynchronizer* taskSynchronizer) const
+bool DatabaseThread::terminationRequested(DatabaseTaskSynchronizer* taskSynchronizer) const
 {
 #ifndef NDEBUG
     if (taskSynchronizer)
