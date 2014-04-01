@@ -91,6 +91,9 @@ cr.define('print_preview', function() {
    * @enum {string}
    */
   DestinationSearch.EventType = {
+    // Dispatched when user requests to sign-in into another Google account.
+    ADD_ACCOUNT: 'print_preview.DestinationSearch.ADD_ACCOUNT',
+
     // Dispatched when the user requests to manage their cloud destinations.
     MANAGE_CLOUD_DESTINATIONS:
         'print_preview.DestinationSearch.MANAGE_CLOUD_DESTINATIONS',

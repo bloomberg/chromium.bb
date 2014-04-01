@@ -898,13 +898,18 @@ void PrintPreviewHandler::OnSigninComplete() {
     print_preview_ui->OnReloadPrintersList();
 }
 
-void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
+void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
+  bool add_account = false;
+  bool success = args->GetBoolean(0, &add_account);
+  DCHECK(success);
+
   Profile* profile = Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext());
   chrome::ScopedTabbedBrowserDisplayer displayer(
       profile, chrome::GetActiveDesktop());
   print_dialog_cloud::CreateCloudPrintSigninTab(
       displayer.browser(),
+      add_account,
       base::Bind(&PrintPreviewHandler::OnSigninComplete,
                  weak_factory_.GetWeakPtr()));
 }

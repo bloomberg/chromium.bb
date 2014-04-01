@@ -26,6 +26,7 @@ class CloudPrintURL {
   GURL GetCloudPrintServiceManageURL();
   GURL GetCloudPrintServiceEnableURL(const std::string& proxy_id);
   GURL GetCloudPrintSigninURL();
+  GURL GetCloudPrintAddAccountURL();
 
   // These aren't derived from the service, but it makes sense to keep all the
   // URLs together, and this gives the unit tests access for testing.

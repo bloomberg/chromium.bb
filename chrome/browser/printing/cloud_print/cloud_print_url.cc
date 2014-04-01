@@ -65,6 +65,18 @@ GURL CloudPrintURL::GetCloudPrintSigninURL() {
   return google_util::AppendGoogleLocaleParam(cloud_print_signin_url);
 }
 
+GURL CloudPrintURL::GetCloudPrintAddAccountURL() {
+  DCHECK(profile_);
+  GURL url(GaiaUrls::GetInstance()->add_account_url());
+  url = net::AppendQueryParameter(url, "service", "cloudprint");
+  url = net::AppendQueryParameter(url, "sarp", "1");
+  url = net::AppendQueryParameter(
+      url,
+      "continue",
+      profile_->GetPrefs()->GetString(prefs::kCloudPrintServiceURL));
+  return google_util::AppendGoogleLocaleParam(url);
+}
+
 GURL CloudPrintURL::GetCloudPrintServiceDialogURL() {
   GURL cloud_print_service_url = GetCloudPrintServiceURL();
   std::string path(cloud_print_service_url.path() + "/client/dialog.html");

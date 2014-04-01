@@ -61,9 +61,11 @@ void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
 bool CreatePrintDialogFromCommandLine(Profile* profile,
                                       const base::CommandLine& command_line);
 
-// Creates a tab with Google sinnin page.
+// Creates a tab with Google 'sign in' or 'add account' page, based on
+// passed |add_account| value.
 // Calls |callback| when complete.
 void CreateCloudPrintSigninTab(Browser* browser,
+                               bool add_account,
                                const base::Closure& callback);
 
 }  // namespace print_dialog_cloud

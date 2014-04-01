@@ -709,12 +709,15 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
 }
 
 void CreateCloudPrintSigninTab(Browser* browser,
+                               bool add_account,
                                const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CloudPrintURL cp_url(browser->profile());
   content::WebContents* web_contents =
       browser->OpenURL(
-          content::OpenURLParams(cp_url.GetCloudPrintSigninURL(),
+          content::OpenURLParams(add_account ?
+                                     cp_url.GetCloudPrintAddAccountURL() :
+                                     cp_url.GetCloudPrintSigninURL(),
                                  content::Referrer(), NEW_FOREGROUND_TAB,
                                  content::PAGE_TRANSITION_AUTO_BOOKMARK,
                                  false));

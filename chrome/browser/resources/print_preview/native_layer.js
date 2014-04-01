@@ -348,11 +348,13 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Opens the Google Cloud Print sign-in dialog. The DESTINATIONS_RELOAD
-     * event will be dispatched in response.
+     * Opens the Google Cloud Print sign-in tab. The DESTINATIONS_RELOAD event
+     *     will be dispatched in response.
+     * @param {boolean} addAccount Whether to open an 'add a new account' or
+     *     default sign in page.
      */
-    startCloudPrintSignIn: function() {
-      chrome.send('signIn');
+    startCloudPrintSignIn: function(addAccount) {
+      chrome.send('signIn', [addAccount]);
     },
 
     /** Navigates the user to the system printer settings interface. */

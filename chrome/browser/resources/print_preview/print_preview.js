@@ -347,8 +347,12 @@ cr.define('print_preview', function() {
           this.onManageLocalDestinationsActivated_.bind(this));
       this.tracker.add(
           this.destinationSearch_,
+          print_preview.DestinationSearch.EventType.ADD_ACCOUNT,
+          this.onCloudPrintSignInActivated_.bind(this, true /*addAccount*/));
+      this.tracker.add(
+          this.destinationSearch_,
           print_preview.DestinationSearch.EventType.SIGN_IN,
-          this.onCloudPrintSignInActivated_.bind(this));
+          this.onCloudPrintSignInActivated_.bind(this, false /*addAccount*/));
       this.tracker.add(
           this.destinationSearch_,
           print_preview.DestinationListItem.EventType.REGISTER_PROMO_CLICKED,
@@ -831,10 +835,12 @@ cr.define('print_preview', function() {
     /**
      * Called when the user wants to sign in to Google Cloud Print. Calls the
      * corresponding native layer event.
+     * @param {boolean} addAccount Whether to open an 'add a new account' or
+     *     default sign in page.
      * @private
      */
-    onCloudPrintSignInActivated_: function() {
-      this.nativeLayer_.startCloudPrintSignIn();
+    onCloudPrintSignInActivated_: function(addAccount) {
+      this.nativeLayer_.startCloudPrintSignIn(addAccount);
     },
 
     /**
