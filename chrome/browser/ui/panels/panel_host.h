@@ -35,7 +35,7 @@ class Rect;
 // delegates. Owned and used by Panel only.
 class PanelHost : public content::WebContentsDelegate,
                   public content::WebContentsObserver,
-                  public ExtensionFunctionDispatcher::Delegate {
+                  public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
   PanelHost(Panel* panel, Profile* profile);
   virtual ~PanelHost();
@@ -84,7 +84,7 @@ class PanelHost : public content::WebContentsDelegate,
       content::WebContents* web_contents) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  // ExtensionFunctionDispatcher::Delegate overrides.
+  // extensions::ExtensionFunctionDispatcher::Delegate overrides.
   virtual extensions::WindowController* GetExtensionWindowController() const
       OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
@@ -104,7 +104,7 @@ class PanelHost : public content::WebContentsDelegate,
 
   Panel* panel_;  // Weak, owns us.
   Profile* profile_;
-  ExtensionFunctionDispatcher extension_function_dispatcher_;
+  extensions::ExtensionFunctionDispatcher extension_function_dispatcher_;
 
   scoped_ptr<content::WebContents> web_contents_;
 

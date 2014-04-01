@@ -30,10 +30,11 @@ struct DraggableRegion;
 // the purpose of passing messages to the extensions system. It also creates
 // an extensions::WindowController instance for interfacing with the v1
 // extensions API.
-class AshPanelContents : public apps::AppWindowContents,
-                         public content::WebContentsObserver,
-                         public LauncherFaviconLoader::Delegate,
-                         public ExtensionFunctionDispatcher::Delegate {
+class AshPanelContents
+    : public apps::AppWindowContents,
+      public content::WebContentsObserver,
+      public LauncherFaviconLoader::Delegate,
+      public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
   explicit AshPanelContents(apps::AppWindow* host);
   virtual ~AshPanelContents();
@@ -50,7 +51,7 @@ class AshPanelContents : public apps::AppWindowContents,
   // LauncherFaviconLoader::Delegate overrides:
   virtual void FaviconUpdated() OVERRIDE;
 
-  // ExtensionFunctionDispatcher::Delegate
+  // extensions::ExtensionFunctionDispatcher::Delegate
   virtual extensions::WindowController* GetExtensionWindowController() const
       OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
@@ -68,7 +69,8 @@ class AshPanelContents : public apps::AppWindowContents,
   apps::AppWindow* host_;
   GURL url_;
   scoped_ptr<content::WebContents> web_contents_;
-  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+  scoped_ptr<extensions::ExtensionFunctionDispatcher>
+      extension_function_dispatcher_;
   scoped_ptr<AshPanelWindowController> window_controller_;
   scoped_ptr<LauncherFaviconLoader> launcher_favicon_loader_;
 

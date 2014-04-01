@@ -22,9 +22,7 @@
 #include "extensions/common/extension.h"
 #include "ipc/ipc_message.h"
 
-class ChromeRenderMessageFilter;
 class ExtensionFunction;
-class ExtensionFunctionDispatcher;
 class UIThreadExtensionFunction;
 class IOThreadExtensionFunction;
 
@@ -41,6 +39,8 @@ class WebContents;
 }
 
 namespace extensions {
+class ExtensionFunctionDispatcher;
+class ExtensionMessageFilter;
 class QuotaLimitHeuristic;
 }
 
@@ -316,11 +316,11 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     return render_frame_host_;
   }
 
-  void set_dispatcher(
-      const base::WeakPtr<ExtensionFunctionDispatcher>& dispatcher) {
+  void set_dispatcher(const base::WeakPtr<
+      extensions::ExtensionFunctionDispatcher>& dispatcher) {
     dispatcher_ = dispatcher;
   }
-  ExtensionFunctionDispatcher* dispatcher() const {
+  extensions::ExtensionFunctionDispatcher* dispatcher() const {
     return dispatcher_.get();
   }
 
@@ -342,7 +342,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   virtual void SendResponse(bool success) OVERRIDE;
 
   // The dispatcher that will service this extension function call.
-  base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
+  base::WeakPtr<extensions::ExtensionFunctionDispatcher> dispatcher_;
 
   // The RenderViewHost we will send responses to.
   content::RenderViewHost* render_view_host_;
@@ -377,13 +377,14 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   virtual IOThreadExtensionFunction* AsIOThreadExtensionFunction() OVERRIDE;
 
-  void set_ipc_sender(base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
-                      int routing_id) {
+  void set_ipc_sender(
+      base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender,
+      int routing_id) {
     ipc_sender_ = ipc_sender;
     routing_id_ = routing_id;
   }
 
-  base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_weak() const {
+  base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender_weak() const {
     return ipc_sender_;
   }
 
@@ -408,7 +409,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
   virtual void SendResponse(bool success) OVERRIDE;
 
  private:
-  base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_;
+  base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender_;
   int routing_id_;
 
   scoped_refptr<const extensions::InfoMap> extension_info_map_;

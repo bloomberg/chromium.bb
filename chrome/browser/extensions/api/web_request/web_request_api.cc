@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/extensions/api/web_request.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
@@ -45,6 +44,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -2179,8 +2179,8 @@ bool WebRequestAddEventListener::RunImpl() {
   int webview_instance_id = 0;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(5, &webview_instance_id));
 
-  base::WeakPtr<ChromeRenderMessageFilter> ipc_sender = ipc_sender_weak();
-
+  base::WeakPtr<extensions::ExtensionMessageFilter> ipc_sender =
+      ipc_sender_weak();
   int embedder_process_id =
       ipc_sender.get() ? ipc_sender->render_process_id() : -1;
 

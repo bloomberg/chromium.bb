@@ -175,12 +175,10 @@ IN_PROC_BROWSER_TEST_F(SerialApiTest, SerialFakeHardware) {
   catcher.RestrictToProfile(browser()->profile());
 
 #if SIMULATE_SERIAL_PORTS
-  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-      "serial.getDevices",
-      FakeSerialGetDevicesFunctionFactory));
-  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
-      "serial.connect",
-      FakeSerialConnectFunctionFactory));
+  ASSERT_TRUE(extensions::ExtensionFunctionDispatcher::OverrideFunction(
+      "serial.getDevices", FakeSerialGetDevicesFunctionFactory));
+  ASSERT_TRUE(extensions::ExtensionFunctionDispatcher::OverrideFunction(
+      "serial.connect", FakeSerialConnectFunctionFactory));
 #endif
 
   ASSERT_TRUE(RunExtensionTest("serial/api")) << message_;

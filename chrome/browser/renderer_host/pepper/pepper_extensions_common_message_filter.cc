@@ -29,7 +29,7 @@ namespace chrome {
 
 class PepperExtensionsCommonMessageFilter::DispatcherOwner
     : public content::WebContentsObserver,
-      public ExtensionFunctionDispatcher::Delegate {
+      public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
   DispatcherOwner(PepperExtensionsCommonMessageFilter* message_filter,
                   Profile* profile,
@@ -52,7 +52,7 @@ class PepperExtensionsCommonMessageFilter::DispatcherOwner
       delete this;
   }
 
-  // ExtensionFunctionDispatcher::Delegate implementation.
+  // extensions::ExtensionFunctionDispatcher::Delegate implementation.
   virtual extensions::WindowController* GetExtensionWindowController(
       ) const OVERRIDE {
     NOTREACHED();
@@ -64,13 +64,13 @@ class PepperExtensionsCommonMessageFilter::DispatcherOwner
     return NULL;
   }
 
-  ExtensionFunctionDispatcher* dispatcher() { return &dispatcher_; }
+  extensions::ExtensionFunctionDispatcher* dispatcher() { return &dispatcher_; }
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
  private:
   content::RenderFrameHost* render_frame_host_;
   scoped_refptr<PepperExtensionsCommonMessageFilter> message_filter_;
-  ExtensionFunctionDispatcher dispatcher_;
+  extensions::ExtensionFunctionDispatcher dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(DispatcherOwner);
 };

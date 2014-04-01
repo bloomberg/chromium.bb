@@ -11,12 +11,11 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 
-class ExtensionFunctionDispatcher;
-
 namespace content {
 class WebContents;
 }
 namespace extensions {
+class ExtensionFunctionDispatcher;
 class WindowController;
 }
 namespace gfx {
@@ -31,7 +30,7 @@ class InputMethod;
 class AshKeyboardControllerProxy
     : public keyboard::KeyboardControllerProxy,
       public content::WebContentsObserver,
-      public ExtensionFunctionDispatcher::Delegate {
+      public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
   AshKeyboardControllerProxy();
   virtual ~AshKeyboardControllerProxy();
@@ -58,7 +57,7 @@ class AshKeyboardControllerProxy
   // that case.
   virtual void SetUpdateInputType(ui::TextInputType type) OVERRIDE;
 
-  // ExtensionFunctionDispatcher::Delegate overrides
+  // extensions::ExtensionFunctionDispatcher::Delegate overrides
   virtual extensions::WindowController* GetExtensionWindowController() const
       OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
@@ -66,7 +65,8 @@ class AshKeyboardControllerProxy
   // content::WebContentsObserver overrides
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+  scoped_ptr<extensions::ExtensionFunctionDispatcher>
+      extension_function_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerProxy);
 };

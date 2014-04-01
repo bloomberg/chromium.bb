@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/content_settings.h"
@@ -19,7 +18,6 @@
 class CookieSettings;
 struct ExtensionHostMsg_APIActionOrEvent_Params;
 struct ExtensionHostMsg_DOMAction_Params;
-struct ExtensionHostMsg_Request_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
 class GURL;
 
@@ -129,9 +127,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
       const std::string& default_locale,
       IPC::Message* reply_msg);
   void OnExtensionCloseChannel(int port_id, const std::string& error_message);
-  void OnExtensionRequestForIOThread(
-      int routing_id,
-      const ExtensionHostMsg_Request_Params& params);
   void OnAddAPIActionToExtensionActivityLog(
       const std::string& extension_id,
       const ExtensionHostMsg_APIActionOrEvent_Params& params);
@@ -182,8 +177,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   scoped_refptr<extensions::InfoMap> extension_info_map_;
   // Used to look up permissions at database creation time.
   scoped_refptr<CookieSettings> cookie_settings_;
-
-  base::WeakPtrFactory<ChromeRenderMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderMessageFilter);
 };

@@ -170,7 +170,7 @@ void AshPanelContents::Initialize(content::BrowserContext* context,
   url_ = url;
 
   extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(context, this));
+      new extensions::ExtensionFunctionDispatcher(context, this));
 
   web_contents_.reset(
       content::WebContents::Create(content::WebContents::CreateParams(

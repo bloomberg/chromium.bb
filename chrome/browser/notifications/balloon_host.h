@@ -24,7 +24,7 @@ class SiteInstance;
 
 class BalloonHost : public content::WebContentsDelegate,
                     public content::WebContentsObserver,
-                    public ExtensionFunctionDispatcher::Delegate {
+                    public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
   explicit BalloonHost(Balloon* balloon);
 
@@ -34,7 +34,7 @@ class BalloonHost : public content::WebContentsDelegate,
   // Stops showing the balloon.
   void Shutdown();
 
-  // ExtensionFunctionDispatcher::Delegate overrides.
+  // extensions::ExtensionFunctionDispatcher::Delegate overrides.
   virtual extensions::WindowController* GetExtensionWindowController()
       const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
@@ -98,7 +98,7 @@ class BalloonHost : public content::WebContentsDelegate,
   // A flag to enable Web UI.
   bool enable_web_ui_;
 
-  ExtensionFunctionDispatcher extension_function_dispatcher_;
+  extensions::ExtensionFunctionDispatcher extension_function_dispatcher_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_BALLOON_HOST_H_

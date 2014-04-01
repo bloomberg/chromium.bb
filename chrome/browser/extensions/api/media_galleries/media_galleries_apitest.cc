@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, MAYBE_Scan) {
 
   // Override addScanResults so that the dialog is accepted as soon as it is
   // created.
-  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
+  ASSERT_TRUE(extensions::ExtensionFunctionDispatcher::OverrideFunction(
       "mediaGalleries.addScanResults",
       &TestMediaGalleriesAddScanResultsFunction::Factory));
 

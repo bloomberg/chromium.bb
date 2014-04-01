@@ -13,7 +13,6 @@
 #include "extensions/browser/extension_function.h"
 #include "ipc/ipc_sender.h"
 
-class ChromeRenderMessageFilter;
 struct ExtensionHostMsg_Request_Params;
 
 namespace content {
@@ -24,12 +23,13 @@ class WebContents;
 }
 
 namespace extensions {
+
 class Extension;
 class ExtensionAPI;
+class ExtensionMessageFilter;
 class InfoMap;
 class ProcessMap;
 class WindowController;
-}
 
 // A factory function for creating new ExtensionFunction instances.
 typedef ExtensionFunction* (*ExtensionFunctionFactory)();
@@ -52,9 +52,9 @@ class ExtensionFunctionDispatcher
  public:
   class Delegate {
    public:
-    // Returns the extensions::WindowController associated with this delegate,
-    // or NULL if no window is associated with the delegate.
-    virtual extensions::WindowController* GetExtensionWindowController() const;
+    // Returns the WindowController associated with this delegate, or NULL if no
+    // window is associated with the delegate.
+    virtual WindowController* GetExtensionWindowController() const;
 
     // Asks the delegate for any relevant WebContents associated with this
     // context. For example, the WebContents in which an infobar or
@@ -82,10 +82,10 @@ class ExtensionFunctionDispatcher
   // Dispatches an IO-thread extension function. Only used for specific
   // functions that must be handled on the IO-thread.
   static void DispatchOnIOThread(
-      extensions::InfoMap* extension_info_map,
-      void* profile,
+      InfoMap* extension_info_map,
+      void* profile_id,
       int render_process_id,
-      base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+      base::WeakPtr<ExtensionMessageFilter> ipc_sender,
       int routing_id,
       const ExtensionHostMsg_Request_Params& params);
 
@@ -115,7 +115,7 @@ class ExtensionFunctionDispatcher
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
-  void OnExtensionFunctionCompleted(const extensions::Extension* extension);
+  void OnExtensionFunctionCompleted(const Extension* extension);
 
   // The BrowserContext that this dispatcher is associated with.
   content::BrowserContext* browser_context() { return browser_context_; }
@@ -134,7 +134,7 @@ class ExtensionFunctionDispatcher
   // is returned. |function| must not be run in that case.
   static bool CheckPermissions(
       ExtensionFunction* function,
-      const extensions::Extension* extension,
+      const Extension* extension,
       const ExtensionHostMsg_Request_Params& params,
       const ExtensionFunction::ResponseCallback& callback);
 
@@ -143,11 +143,11 @@ class ExtensionFunctionDispatcher
   // Does not set subclass properties, or include_incognito.
   static ExtensionFunction* CreateExtensionFunction(
       const ExtensionHostMsg_Request_Params& params,
-      const extensions::Extension* extension,
+      const Extension* extension,
       int requesting_process_id,
-      const extensions::ProcessMap& process_map,
-      extensions::ExtensionAPI* api,
-      void* profile,
+      const ProcessMap& process_map,
+      ExtensionAPI* api,
+      void* profile_id,
       const ExtensionFunction::ResponseCallback& callback);
 
   // Helper to run the response callback with an access denied error. Can be
@@ -172,5 +172,7 @@ class ExtensionFunctionDispatcher
       UIThreadResponseCallbackWrapperMap;
   UIThreadResponseCallbackWrapperMap ui_thread_response_callback_wrappers_;
 };
+
+}  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_DISPATCHER_H_

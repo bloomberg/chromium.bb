@@ -112,7 +112,7 @@ void AshKeyboardControllerProxy::RequestAudioInput(
 void AshKeyboardControllerProxy::SetupWebContents(
     content::WebContents* contents) {
   extension_function_dispatcher_.reset(
-      new ExtensionFunctionDispatcher(GetBrowserContext(), this));
+      new extensions::ExtensionFunctionDispatcher(GetBrowserContext(), this));
   extensions::SetViewType(contents, extensions::VIEW_TYPE_VIRTUAL_KEYBOARD);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);

@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,6 +22,7 @@
 #include "content/public/common/result_codes.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "extensions/browser/extension_message_filter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -35,14 +35,10 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
-using extensions::Extension;
-using extensions::ExtensionAPI;
-using extensions::ExtensionsBrowserClient;
-using extensions::ExtensionSystem;
-using extensions::Feature;
 using content::BrowserThread;
 using content::RenderViewHost;
 
+namespace extensions {
 namespace {
 
 // Notifies the ApiActivityMonitor that an extension API function has been
@@ -67,7 +63,7 @@ void NotifyApiFunctionCalled(const std::string& extension_id,
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
 
-  extensions::ApiActivityMonitor* monitor =
+  ApiActivityMonitor* monitor =
       ExtensionsBrowserClient::Get()->GetApiActivityMonitor(browser_context);
   if (monitor)
     monitor->OnApiFunctionCalled(extension_id, api_name, args.Pass());
@@ -77,10 +73,8 @@ void NotifyApiFunctionCalled(const std::string& extension_id,
 // this because ExtensionAPI has mutable data. It should be possible to remove
 // this once all the extension APIs are updated to the feature system.
 struct Static {
-  Static()
-      : api(extensions::ExtensionAPI::CreateWithDefaultConfiguration()) {
-  }
-  scoped_ptr<extensions::ExtensionAPI> api;
+  Static() : api(ExtensionAPI::CreateWithDefaultConfiguration()) {}
+  scoped_ptr<ExtensionAPI> api;
 };
 base::LazyInstance<Static> g_global_io_data = LAZY_INSTANCE_INITIALIZER;
 
@@ -124,7 +118,7 @@ void CommonResponseCallback(IPC::Sender* ipc_sender,
 }
 
 void IOThreadResponseCallback(
-    const base::WeakPtr<ChromeRenderMessageFilter>& ipc_sender,
+    const base::WeakPtr<ExtensionMessageFilter>& ipc_sender,
     int routing_id,
     int request_id,
     ExtensionFunction::ResponseType type,
@@ -200,9 +194,8 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
   DISALLOW_COPY_AND_ASSIGN(UIThreadResponseCallbackWrapper);
 };
 
-extensions::WindowController*
-ExtensionFunctionDispatcher::Delegate::GetExtensionWindowController()
-    const {
+WindowController*
+ExtensionFunctionDispatcher::Delegate::GetExtensionWindowController() const {
   return NULL;
 }
 
@@ -229,10 +222,10 @@ bool ExtensionFunctionDispatcher::OverrideFunction(
 
 // static
 void ExtensionFunctionDispatcher::DispatchOnIOThread(
-    extensions::InfoMap* extension_info_map,
-    void* browser_context,
+    InfoMap* extension_info_map,
+    void* profile_id,
     int render_process_id,
-    base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
+    base::WeakPtr<ExtensionMessageFilter> ipc_sender,
     int routing_id,
     const ExtensionHostMsg_Request_Params& params) {
   const Extension* extension =
@@ -243,10 +236,13 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                  params.request_id));
 
   scoped_refptr<ExtensionFunction> function(
-      CreateExtensionFunction(params, extension, render_process_id,
+      CreateExtensionFunction(params,
+                              extension,
+                              render_process_id,
                               extension_info_map->process_map(),
                               g_global_io_data.Get().api.get(),
-                              browser_context, callback));
+                              profile_id,
+                              callback));
   if (!function.get())
     return;
 
@@ -264,18 +260,17 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   if (!CheckPermissions(function.get(), extension, params, callback))
     return;
 
-  extensions::QuotaService* quota = extension_info_map->GetQuotaService();
+  QuotaService* quota = extension_info_map->GetQuotaService();
   std::string violation_error = quota->Assess(extension->id(),
                                               function.get(),
                                               &params.arguments,
                                               base::TimeTicks::Now());
   if (violation_error.empty()) {
     scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
-    NotifyApiFunctionCalled(
-        extension->id(),
-        params.name,
-        args.Pass(),
-        static_cast<content::BrowserContext*>(browser_context));
+    NotifyApiFunctionCalled(extension->id(),
+                            params.name,
+                            args.Pass(),
+                            static_cast<content::BrowserContext*>(profile_id));
     function->Run();
   } else {
     function->OnQuotaExceeded(violation_error);
@@ -326,13 +321,11 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   DCHECK(render_view_host || render_frame_host);
   // TODO(yzshen): There is some shared logic between this method and
   // DispatchOnIOThread(). It is nice to deduplicate.
-  extensions::ProcessMap* process_map =
-      extensions::ProcessMap::Get(browser_context_);
+  ProcessMap* process_map = ProcessMap::Get(browser_context_);
   if (!process_map)
     return;
 
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser_context_);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   const Extension* extension = registry->enabled_extensions().GetByID(
       params.extension_id);
   if (!extension) {
@@ -347,7 +340,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
                               extension,
                               process_id,
                               *process_map,
-                              extensions::ExtensionAPI::GetSharedInstance(),
+                              ExtensionAPI::GetSharedInstance(),
                               browser_context_,
                               callback));
   if (!function.get())
@@ -374,7 +367,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     return;
 
   ExtensionSystem* extension_system = ExtensionSystem::Get(browser_context_);
-  extensions::QuotaService* quota = extension_system->quota_service();
+  QuotaService* quota = extension_system->quota_service();
   std::string violation_error = quota->Assess(extension->id(),
                                               function.get(),
                                               &params.arguments,
@@ -437,7 +430,7 @@ namespace {
 bool AllowHostedAppAPICall(const Extension& extension,
                            const GURL& source_url,
                            const std::string& function_name) {
-  if (extension.location() != extensions::Manifest::COMPONENT)
+  if (extension.location() != Manifest::COMPONENT)
     return false;
 
   if (!extension.web_extent().MatchesURL(source_url))
@@ -461,9 +454,9 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
     const ExtensionHostMsg_Request_Params& params,
     const Extension* extension,
     int requesting_process_id,
-    const extensions::ProcessMap& process_map,
-    extensions::ExtensionAPI* api,
-    void* profile,
+    const ProcessMap& process_map,
+    ExtensionAPI* api,
+    void* profile_id,
     const ExtensionFunction::ResponseCallback& callback) {
   if (!extension) {
     LOG(ERROR) << "Specified extension does not exist.";
@@ -503,7 +496,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
   function->set_has_callback(params.has_callback);
   function->set_user_gesture(params.user_gesture);
   function->set_extension(extension);
-  function->set_profile_id(profile);
+  function->set_profile_id(profile_id);
   function->set_response_callback(callback);
   function->set_source_tab_id(params.source_tab_id);
 
@@ -517,3 +510,5 @@ void ExtensionFunctionDispatcher::SendAccessDenied(
   callback.Run(ExtensionFunction::FAILED, empty_list,
                "Access to extension API denied.");
 }
+
+}  // namespace extensions

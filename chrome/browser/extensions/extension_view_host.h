@@ -121,7 +121,7 @@ class ExtensionViewHost
   virtual void RemoveObserver(
       web_modal::ModalDialogHostObserver* observer) OVERRIDE;
 
-  // ExtensionFunctionDispatcher::Delegate
+  // extensions::ExtensionFunctionDispatcher::Delegate
   virtual WindowController* GetExtensionWindowController() const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
   virtual content::WebContents* GetVisibleWebContents() const OVERRIDE;

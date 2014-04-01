@@ -9,7 +9,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_message_filter.h"
+
+struct ExtensionHostMsg_Request_Params;
 
 namespace base {
 class DictionaryValue;
@@ -21,6 +24,8 @@ class BrowserContext;
 
 namespace extensions {
 
+class InfoMap;
+
 // This class filters out incoming extension-specific IPC messages from the
 // renderer process. It is created on the UI thread. Messages may be handled on
 // the IO thread or the UI thread.
@@ -28,6 +33,8 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
  public:
   ExtensionMessageFilter(int render_process_id,
                          content::BrowserContext* context);
+
+  int render_process_id() { return render_process_id_; }
 
  private:
   virtual ~ExtensionMessageFilter();
@@ -63,11 +70,18 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   // Message handlers on the IO thread.
   void OnExtensionGenerateUniqueID(int* unique_id);
   void OnExtensionResumeRequests(int route_id);
+  void OnExtensionRequestForIOThread(
+      int routing_id,
+      const ExtensionHostMsg_Request_Params& params);
 
   const int render_process_id_;
 
   // Should only be accessed on the UI thread.
   content::BrowserContext* browser_context_;
+
+  scoped_refptr<extensions::InfoMap> extension_info_map_;
+
+  base::WeakPtrFactory<ExtensionMessageFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageFilter);
 };

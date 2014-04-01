@@ -260,7 +260,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
   SetTestCases(&test_cases);
 
   // Override extension function that will be used during the test.
-  ASSERT_TRUE(ExtensionFunctionDispatcher::OverrideFunction(
+  ASSERT_TRUE(extensions::ExtensionFunctionDispatcher::OverrideFunction(
       "fileBrowserHandlerInternal.selectFile",
       FileBrowserHandlerExtensionTest::TestSelectFileFunctionFactory));
 

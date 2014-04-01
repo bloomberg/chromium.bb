@@ -27,7 +27,7 @@ namespace keys = extensions::tabs_constants;
 namespace {
 
 class TestFunctionDispatcherDelegate
-    : public ExtensionFunctionDispatcher::Delegate {
+    : public extensions::ExtensionFunctionDispatcher::Delegate {
  public:
   explicit TestFunctionDispatcherDelegate(Browser* browser) :
       browser_(browser) {}
@@ -251,8 +251,8 @@ bool RunFunction(UIThreadExtensionFunction* function,
   function->SetArgs(parsed_args.get());
 
   TestFunctionDispatcherDelegate dispatcher_delegate(browser);
-  ExtensionFunctionDispatcher dispatcher(
-      browser->profile(), &dispatcher_delegate);
+  extensions::ExtensionFunctionDispatcher dispatcher(browser->profile(),
+                                                     &dispatcher_delegate);
   function->set_dispatcher(dispatcher.AsWeakPtr());
 
   function->set_browser_context(browser->profile());
