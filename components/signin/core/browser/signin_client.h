@@ -33,6 +33,10 @@ class SigninClient {
   // Returns the URL request context information associated with the client.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
 
+  // Returns whether the user's credentials should be merged into the cookie
+  // jar on signin completion.
+  virtual bool ShouldMergeSigninCredentialsIntoCookieJar() = 0;
+
   // Called when Google signin has succeeded.
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) {}

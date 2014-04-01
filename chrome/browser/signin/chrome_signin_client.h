@@ -47,6 +47,7 @@ class ChromeSigninClient : public SigninClient,
   virtual scoped_refptr<TokenWebData> GetDatabase() OVERRIDE;
   virtual bool CanRevokeCredentials() OVERRIDE;
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
+  virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) OVERRIDE;
 

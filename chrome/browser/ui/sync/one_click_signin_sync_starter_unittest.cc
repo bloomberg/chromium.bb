@@ -43,7 +43,7 @@ class OneClickSigninSyncStarterTest : public testing::Test {
     // Disable sync to simplify the creation of a OneClickSigninSyncStarter.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
 
-    signin_manager->Initialize(profile_.get(), NULL);
+    signin_manager->Initialize(NULL);
     signin_manager->SetAuthenticatedUsername(kTestingUsername);
   }
 

@@ -202,8 +202,8 @@
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/signin/chrome_signin_client.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/signin/core/browser/signin_manager.h"
 #endif
 
 #if !defined(OS_ANDROID)

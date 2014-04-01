@@ -27,7 +27,7 @@ SigninManagerBase::SigninManagerBase(SigninClient* client)
 
 SigninManagerBase::~SigninManagerBase() {}
 
-void SigninManagerBase::Initialize(Profile* profile, PrefService* local_state) {
+void SigninManagerBase::Initialize(PrefService* local_state) {
   // Should never call Initialize() twice.
   DCHECK(!IsInitialized());
   initialized_ = true;

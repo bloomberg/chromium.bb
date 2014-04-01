@@ -44,3 +44,7 @@ void TestSigninClient::LoadDatabase() {
                                WebDataServiceBase::ProfileErrorCallback());
   database_->Init();
 }
+
+bool TestSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
+  return true;
+}

@@ -12,8 +12,8 @@
 // TokenService.
 // TODO(tim): Bug 92948, 226464. ClientLogin is all but gone from use.
 
-#ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
-#define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_
 
 #if defined(OS_CHROMEOS)
 // On Chrome OS, SigninManagerBase is all that exists.
@@ -92,7 +92,7 @@ class SigninManager : public SigninManagerBase {
   // On platforms where SigninManager is responsible for dealing with
   // invalid username policy updates, we need to check this during
   // initialization and sign the user out.
-  virtual void Initialize(Profile* profile, PrefService* local_state) OVERRIDE;
+  virtual void Initialize(PrefService* local_state) OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
   // Invoked from an OAuthTokenFetchedCallback to complete user signin.
@@ -133,18 +133,11 @@ class SigninManager : public SigninManagerBase {
   void RemoveMergeSessionObserver(MergeSessionHelper::Observer* observer);
 
  protected:
-  // Pointer to parent profile (protected so FakeSigninManager can access
-  // it).
-  Profile* profile_;
-
   // Flag saying whether signing out is allowed.
   bool prohibit_signout_;
 
  private:
-  enum SigninType {
-    SIGNIN_TYPE_NONE,
-    SIGNIN_TYPE_WITH_REFRESH_TOKEN
-  };
+  enum SigninType { SIGNIN_TYPE_NONE, SIGNIN_TYPE_WITH_REFRESH_TOKEN };
 
   std::string SigninTypeToString(SigninType type);
   friend class FakeSigninManager;
@@ -222,4 +215,4 @@ class SigninManager : public SigninManagerBase {
 
 #endif  // !defined(OS_CHROMEOS)
 
-#endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_MANAGER_H_

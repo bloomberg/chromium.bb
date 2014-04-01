@@ -41,11 +41,11 @@ static KeyedService* BuildSigninManagerFake(content::BrowserContext* context) {
 #if defined (OS_CHROMEOS)
   SigninManagerBase* signin = new SigninManagerBase(
       ChromeSigninClientFactory::GetInstance()->GetForProfile(profile));
-  signin->Initialize(profile, NULL);
+  signin->Initialize(NULL);
   return signin;
 #else
   FakeSigninManager* manager = new FakeSigninManager(profile);
-  manager->Initialize(profile, g_browser_process->local_state());
+  manager->Initialize(g_browser_process->local_state());
   return manager;
 #endif
 }

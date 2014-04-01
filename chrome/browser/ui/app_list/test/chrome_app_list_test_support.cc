@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "components/signin/core/browser/signin_manager.h"
 
 namespace test {
 
