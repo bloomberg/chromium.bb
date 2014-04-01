@@ -193,8 +193,9 @@ SettingsEnforcementGroup GetSettingsEnforcementGroup() {
       GROUP_ENFORCE_ALWAYS },
   };
 
-  // TODO(gab): Switch the default to GROUP_ENFORCE_ALWAYS.
-  SettingsEnforcementGroup enforcement_group = GROUP_NO_ENFORCEMENT;
+  // Use the strongest enforcement setting in the absence of a field trial
+  // config.
+  SettingsEnforcementGroup enforcement_group = GROUP_ENFORCE_ALWAYS;
   bool group_determined_from_trial = false;
   base::FieldTrial* trial =
       base::FieldTrialList::Find(
