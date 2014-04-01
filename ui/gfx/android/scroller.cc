@@ -276,9 +276,6 @@ bool Scroller::ComputeScrollOffset(base::TimeTicks time) {
   if (finished_)
     return false;
 
-  if (time == curr_time_)
-    return true;
-
   base::TimeDelta time_passed = time - start_time_;
 
   if (time_passed < base::TimeDelta()) {

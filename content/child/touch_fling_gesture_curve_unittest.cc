@@ -24,12 +24,13 @@ namespace {
 
 class MockGestureCurveTarget : public WebGestureCurveTarget {
  public:
-  virtual bool scrollBy(const WebFloatSize& delta,
-                        const WebFloatSize& velocity) OVERRIDE {
+  virtual void scrollBy(const WebFloatSize& delta) {
     cumulative_delta_.width += delta.width;
     cumulative_delta_.height += delta.height;
+  }
+
+  virtual void notifyCurrentFlingVelocity(const WebFloatSize& velocity) {
     current_velocity_ = velocity;
-    return true;
   }
 
   WebFloatSize cumulative_delta() const { return cumulative_delta_; }

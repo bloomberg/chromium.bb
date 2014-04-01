@@ -10,7 +10,6 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "cc/input/input_handler.h"
-#include "content/common/input/did_overscroll_params.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -67,11 +66,10 @@ void InputEventFilter::DidRemoveInputHandler(int routing_id) {
 }
 
 void InputEventFilter::DidOverscroll(int routing_id,
-                                     const DidOverscrollParams& params) {
+                                     const cc::DidOverscrollParams& params) {
   if (!overscroll_notifications_enabled_)
     return;
 
-  // TODO(jdduke): Use |params| as the sole message argument, crbug/354444.
   SendMessage(ViewHostMsg_DidOverscroll(routing_id,
                                         params.accumulated_overscroll,
                                         params.current_fling_velocity));

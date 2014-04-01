@@ -150,9 +150,11 @@ bool TouchFlingGestureCurve::apply(double time, WebGestureCurveTarget* target) {
 
   if (time + time_offset_ < curve_duration_ ||
       scroll_increment != WebFloatSize()) {
+    target->notifyCurrentFlingVelocity(scroll_velocity);
     // scrollBy() could delete this curve if the animation is over, so don't
     // touch any member variables after making that call.
-    return target->scrollBy(scroll_increment, scroll_velocity);
+    target->scrollBy(scroll_increment);
+    return true;
   }
 
   return false;

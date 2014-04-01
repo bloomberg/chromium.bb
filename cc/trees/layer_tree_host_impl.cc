@@ -2317,8 +2317,11 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
   accumulated_root_overscroll_ += unused_root_delta;
   bool did_overscroll = !unused_root_delta.IsZero();
   if (did_overscroll && input_handler_client_) {
-    input_handler_client_->DidOverscroll(accumulated_root_overscroll_,
-                                         unused_root_delta);
+    DidOverscrollParams params;
+    params.accumulated_overscroll = accumulated_root_overscroll_;
+    params.latest_overscroll_delta = unused_root_delta;
+    params.current_fling_velocity = current_fling_velocity_;
+    input_handler_client_->DidOverscroll(params);
   }
 
   return did_scroll_content || did_scroll_top_controls;
@@ -2381,6 +2384,7 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingLayer() {
   active_tree_->ClearCurrentlyScrollingLayer();
   did_lock_scrolling_layer_ = false;
   accumulated_root_overscroll_ = gfx::Vector2dF();
+  current_fling_velocity_ = gfx::Vector2dF();
 }
 
 void LayerTreeHostImpl::ScrollEnd() {
@@ -2409,6 +2413,11 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   }
 
   return ScrollStarted;
+}
+
+void LayerTreeHostImpl::NotifyCurrentFlingVelocity(
+    const gfx::Vector2dF& velocity) {
+  current_fling_velocity_ = velocity;
 }
 
 float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
