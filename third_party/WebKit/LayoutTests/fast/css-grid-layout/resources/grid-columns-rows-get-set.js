@@ -90,6 +90,8 @@ testGridDefinitionsSetBadJSValues("minmax(-1%, 32%)", "minmax(2vw, -6em)");
 // Invalid expressions with calc
 testGridDefinitionsSetBadJSValues("calc(16px 30px)", "calc(25px + auto)");
 testGridDefinitionsSetBadJSValues("minmax(min-content, calc())", "calc(10%(");
+// Forward slash not allowed if not part of a shorthand
+testGridDefinitionsSetBadJSValues("10px /", "15px /");
 
 debug("");
 debug("Test setting grid-template-columns and grid-template-rows back to 'none' through JS");

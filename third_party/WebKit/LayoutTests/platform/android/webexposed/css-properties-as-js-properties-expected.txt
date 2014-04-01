@@ -121,6 +121,7 @@ gridColumnStart
 gridRow
 gridRowEnd
 gridRowStart
+gridTemplate
 gridTemplateAreas
 gridTemplateColumns
 gridTemplateRows

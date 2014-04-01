@@ -1983,7 +1983,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return valuesForGridShorthand(gridRowShorthand());
         case CSSPropertyGridArea:
             return valuesForGridShorthand(gridAreaShorthand());
-
+        case CSSPropertyGridTemplate:
+            return valuesForGridShorthand(gridTemplateShorthand());
         case CSSPropertyGridTemplateAreas:
             if (!style->namedGridAreaRowCount()) {
                 ASSERT(!style->namedGridAreaColumnCount());

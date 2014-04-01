@@ -29,6 +29,7 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/css/CSSGridTemplateAreasValue.h"
 #include "core/css/CSSParserMode.h"
 #include "core/css/CSSParserValues.h"
 #include "core/css/CSSProperty.h"
@@ -50,6 +51,7 @@ class CSSValue;
 class CSSValueList;
 class CSSBasicShape;
 class CSSBasicShapeInset;
+class CSSGridLineNamesValue;
 class Document;
 class Element;
 class ImmutableStylePropertySet;
@@ -150,14 +152,17 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseGridPosition();
     bool parseIntegerOrStringFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSPrimitiveValue>& gridLineName);
     bool parseGridItemPositionShorthand(CSSPropertyID, bool important);
+    bool parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSSValue>, bool important);
+    bool parseGridTemplateShorthand(bool important);
     bool parseGridAreaShorthand(bool important);
     bool parseSingleGridAreaLonghand(RefPtrWillBeRawPtr<CSSValue>&);
-    bool parseGridTrackList(CSSPropertyID, bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackList(bool important);
     bool parseGridTrackRepeatFunction(CSSValueList&);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackSize(CSSParserValueList& inputList);
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseGridBreadth(CSSParserValue*);
+    bool parseGridTemplateAreasRow(NamedGridAreaMap&, const size_t, size_t&);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTemplateAreas();
-    void parseGridLineNames(CSSParserValueList* inputList, CSSValueList&);
+    void parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = 0);
 
     bool parseClipShape(CSSPropertyID, bool important);
 

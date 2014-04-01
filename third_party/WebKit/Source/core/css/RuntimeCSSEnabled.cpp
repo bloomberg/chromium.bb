@@ -83,6 +83,7 @@ static void setPropertySwitchesFromRuntimeFeatures()
         CSSPropertyGridArea,
         CSSPropertyGridAutoFlow,
         CSSPropertyGridTemplateAreas,
+        CSSPropertyGridTemplate,
         CSSPropertyJustifySelf
     };
     setCSSPropertiesEnabled(cssGridLayoutProperties, WTF_ARRAY_LENGTH(cssGridLayoutProperties), RuntimeEnabledFeatures::cssGridLayoutEnabled());

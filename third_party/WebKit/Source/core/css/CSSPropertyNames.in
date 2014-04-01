@@ -323,6 +323,7 @@ grid-area
 grid-column
 grid-column-end
 grid-column-start
+grid-template
 grid-template-columns
 grid-template-rows
 grid-row
