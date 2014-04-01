@@ -31,7 +31,7 @@
 #ifndef V8CustomElementLifecycleCallbacks_h
 #define V8CustomElementLifecycleCallbacks_h
 
-#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
@@ -66,9 +66,8 @@ private:
 
     V8PerContextData* creationContextData();
 
-    v8::Isolate* m_isolate;
     CustomElementDefinition* m_owner;
-    RefPtr<DOMWrapperWorld> m_world;
+    RefPtr<NewScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_prototype;
     ScopedPersistent<v8::Function> m_created;
     ScopedPersistent<v8::Function> m_attached;

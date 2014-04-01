@@ -12,7 +12,6 @@
 namespace WebCore {
 
 class DOMError;
-class DOMWrapperWorld;
 class ExecutionContext;
 class MIDIAccess;
 
@@ -34,7 +33,7 @@ private:
     MIDIAccessResolver(PassRefPtr<ScriptPromiseResolver>, v8::Isolate*);
 
     RefPtr<ScriptPromiseResolver> m_resolver;
-    RefPtr<DOMWrapperWorld> m_world;
+    RefPtr<NewScriptState> m_scriptState;
 };
 
 } // namespace WebCore

@@ -13,7 +13,7 @@ namespace WebCore {
 
 MIDIAccessResolver::MIDIAccessResolver(PassRefPtr<ScriptPromiseResolver> resolver, v8::Isolate* isolate)
     : m_resolver(resolver)
-    , m_world(DOMWrapperWorld::current(isolate))
+    , m_scriptState(NewScriptState::current(isolate))
 {
 }
 
@@ -24,7 +24,7 @@ MIDIAccessResolver::~MIDIAccessResolver()
 void MIDIAccessResolver::resolve(MIDIAccess* access, ExecutionContext* executionContext)
 {
     v8::HandleScope handleScope(toIsolate(executionContext));
-    v8::Context::Scope contextScope(toV8Context(executionContext, *m_world));
+    v8::Context::Scope contextScope(m_scriptState->context());
 
     m_resolver->resolve(access, executionContext);
 }
@@ -32,7 +32,7 @@ void MIDIAccessResolver::resolve(MIDIAccess* access, ExecutionContext* execution
 void MIDIAccessResolver::reject(DOMError* error, ExecutionContext* executionContext)
 {
     v8::HandleScope handleScope(toIsolate(executionContext));
-    v8::Context::Scope contextScope(toV8Context(executionContext, *m_world));
+    v8::Context::Scope contextScope(m_scriptState->context());
 
     m_resolver->reject(error, executionContext);
 }

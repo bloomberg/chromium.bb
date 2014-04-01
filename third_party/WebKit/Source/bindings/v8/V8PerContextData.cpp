@@ -78,6 +78,11 @@ V8PerContextData::~V8PerContextData()
     disposeMapWithUnsafePersistentValues(&m_constructorMap);
 }
 
+PassOwnPtr<V8PerContextData> V8PerContextData::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+{
+    return adoptPtr(new V8PerContextData(context, world));
+}
+
 V8PerContextData* V8PerContextData::from(v8::Handle<v8::Context> context)
 {
     return NewScriptState::from(context)->perContextData();

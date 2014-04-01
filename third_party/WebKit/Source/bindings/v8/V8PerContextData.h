@@ -61,10 +61,7 @@ enum V8ContextEmbedderDataField {
 
 class V8PerContextData {
 public:
-    static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
-    {
-        return adoptPtr(new V8PerContextData(context, world));
-    }
+    static PassOwnPtr<V8PerContextData> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
     static V8PerContextData* from(v8::Handle<v8::Context>);
 
