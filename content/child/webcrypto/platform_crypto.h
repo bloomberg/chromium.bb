@@ -8,6 +8,7 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
@@ -91,6 +92,11 @@ Status SignHmac(SymKey* key,
 Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
                  const CryptoData& data,
                  blink::WebArrayBuffer* buffer);
+
+// Preconditions:
+//  * |algorithm| is a SHA function.
+scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
+    blink::WebCryptoAlgorithmId algorithm);
 
 // Preconditions:
 //  * |key| is non-null.

@@ -535,6 +535,11 @@ Status Digest(const blink::WebCryptoAlgorithm& algorithm,
   }
 }
 
+scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
+    blink::WebCryptoAlgorithmId algorithm) {
+  return platform::CreateDigestor(algorithm);
+}
+
 Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,

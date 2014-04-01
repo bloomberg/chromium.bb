@@ -83,6 +83,14 @@ class WebCryptoImpl : public blink::WebCrypto {
                                  const unsigned char* data,
                                  unsigned int data_size,
                                  blink::WebArrayBuffer& result);
+  // This method returns a digestor object that can be used to synchronously
+  // compute a digest one chunk at a time. Thus, the consume does not need to
+  // hold onto a large buffer with all the data to digest. Chunks can be given
+  // one at a time and the digest will be computed piecemeal. The allocated
+  // WebCrytpoDigestor that is returned by createDigestor must be freed by the
+  // caller.
+  virtual blink::WebCryptoDigestor* createDigestor(
+      blink::WebCryptoAlgorithmId algorithm_id);
 
   virtual bool deserializeKeyForClone(
       const blink::WebCryptoKeyAlgorithm& algorithm,

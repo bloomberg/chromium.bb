@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
@@ -85,6 +86,9 @@ CONTENT_EXPORT Status Decrypt(const blink::WebCryptoAlgorithm& algorithm,
 CONTENT_EXPORT Status Digest(const blink::WebCryptoAlgorithm& algorithm,
                              const CryptoData& data,
                              blink::WebArrayBuffer* buffer);
+
+CONTENT_EXPORT scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
+    blink::WebCryptoAlgorithmId algorithm);
 
 CONTENT_EXPORT Status
     GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,

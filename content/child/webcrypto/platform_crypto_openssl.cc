@@ -12,6 +12,7 @@
 #include <openssl/sha.h>
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/status.h"
 #include "content/child/webcrypto/webcrypto_util.h"
@@ -151,6 +152,93 @@ Status AesCbcEncryptDecrypt(EncryptOrDecrypt mode,
 
 }  // namespace
 
+class DigestorOpenSSL : public blink::WebCryptoDigestor {
+ public:
+  explicit DigestorOpenSSL(blink::WebCryptoAlgorithmId algorithm_id)
+      : initialized_(false),
+        digest_context_(EVP_MD_CTX_create()),
+        algorithm_id_(algorithm_id) {}
+
+  virtual bool consume(const unsigned char* data, unsigned int size) {
+    return ConsumeWithStatus(data, size).IsSuccess();
+  }
+
+  Status ConsumeWithStatus(const unsigned char* data, unsigned int size) {
+    crypto::OpenSSLErrStackTracer(FROM_HERE);
+    Status error = Init();
+    if (!error.IsSuccess())
+      return error;
+
+    if (!EVP_DigestUpdate(digest_context_.get(), data, size))
+      return Status::Error();
+
+    return Status::Success();
+  }
+
+  virtual bool finish(unsigned char*& result_data,
+                      unsigned int& result_data_size) {
+    Status error = FinishInternal(result_, &result_data_size);
+    if (!error.IsSuccess())
+      return false;
+    result_data = result_;
+    return true;
+  }
+
+  Status FinishWithWebArrayAndStatus(blink::WebArrayBuffer* result) {
+    const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
+    *result = blink::WebArrayBuffer::create(hash_expected_size, 1);
+    unsigned char* const hash_buffer =
+        static_cast<unsigned char* const>(result->data());
+    unsigned int hash_buffer_size;  // ignored
+    Status error = FinishInternal(hash_buffer, &hash_buffer_size);
+    if (!error.IsSuccess())
+      result->reset();
+    return error;
+  }
+
+ private:
+  Status Init() {
+    if (initialized_)
+      return Status::Success();
+
+    const EVP_MD* digest_algorithm = GetDigest(algorithm_id_);
+    if (!digest_algorithm)
+      return Status::ErrorUnexpected();
+
+    if (!digest_context_.get())
+      return Status::Error();
+
+    if (!EVP_DigestInit_ex(digest_context_.get(), digest_algorithm, NULL))
+      return Status::Error();
+
+    initialized_ = true;
+    return Status::Success();
+  }
+
+  Status FinishInternal(unsigned char* result, unsigned int* result_size) {
+    crypto::OpenSSLErrStackTracer(FROM_HERE);
+    Status error = Init();
+    if (!error.IsSuccess())
+      return error;
+
+    const int hash_expected_size = EVP_MD_CTX_size(digest_context_.get());
+    if (hash_expected_size <= 0)
+      return Status::ErrorUnexpected();
+    DCHECK_LE(hash_expected_size, EVP_MAX_MD_SIZE);
+
+    if (!EVP_DigestFinal_ex(digest_context_.get(), result, result_size) ||
+        static_cast<int>(*result_size) != hash_expected_size)
+      return Status::Error();
+
+    return Status::Success();
+  }
+
+  bool initialized_;
+  crypto::ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> digest_context_;
+  blink::WebCryptoAlgorithmId algorithm_id_;
+  unsigned char result_[EVP_MAX_MD_SIZE];
+};
+
 Status ExportKeyRaw(SymKey* key, blink::WebArrayBuffer* buffer) {
   *buffer = CreateArrayBuffer(Uint8VectorStart(key->key()), key->key().size());
   return Status::Success();
@@ -170,40 +258,17 @@ Status EncryptDecryptAesCbc(EncryptOrDecrypt mode,
 Status DigestSha(blink::WebCryptoAlgorithmId algorithm,
                  const CryptoData& data,
                  blink::WebArrayBuffer* buffer) {
-  crypto::OpenSSLErrStackTracer(FROM_HERE);
+  DigestorOpenSSL digestor(algorithm);
+  Status error = digestor.ConsumeWithStatus(data.bytes(), data.byte_length());
+  if (!error.IsSuccess())
+    return error;
+  return digestor.FinishWithWebArrayAndStatus(buffer);
+}
 
-  const EVP_MD* digest_algorithm = GetDigest(algorithm);
-  if (!digest_algorithm)
-    return Status::ErrorUnexpected();
-
-  crypto::ScopedOpenSSL<EVP_MD_CTX, EVP_MD_CTX_destroy> digest_context(
-      EVP_MD_CTX_create());
-  if (!digest_context.get())
-    return Status::Error();
-
-  if (!EVP_DigestInit_ex(digest_context.get(), digest_algorithm, NULL) ||
-      !EVP_DigestUpdate(
-          digest_context.get(), data.bytes(), data.byte_length())) {
-    return Status::Error();
-  }
-
-  const int hash_expected_size = EVP_MD_CTX_size(digest_context.get());
-  if (hash_expected_size <= 0)
-    return Status::ErrorUnexpected();
-  DCHECK_LE(hash_expected_size, EVP_MAX_MD_SIZE);
-
-  *buffer = blink::WebArrayBuffer::create(hash_expected_size, 1);
-  unsigned char* const hash_buffer =
-      reinterpret_cast<unsigned char* const>(buffer->data());
-
-  unsigned int hash_size = 0;
-  if (!EVP_DigestFinal_ex(digest_context.get(), hash_buffer, &hash_size) ||
-      static_cast<int>(hash_size) != hash_expected_size) {
-    buffer->reset();
-    return Status::Error();
-  }
-
-  return Status::Success();
+scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
+    blink::WebCryptoAlgorithmId algorithm_id) {
+  return scoped_ptr<blink::WebCryptoDigestor>(
+      new DigestorOpenSSL(algorithm_id));
 }
 
 Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,

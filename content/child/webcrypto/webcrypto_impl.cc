@@ -5,6 +5,7 @@
 #include "content/child/webcrypto/webcrypto_impl.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/shared_crypto.h"
 #include "content/child/webcrypto/status.h"
@@ -246,6 +247,11 @@ bool WebCryptoImpl::digestSynchronous(
   return (webcrypto::Digest(
               algorithm, webcrypto::CryptoData(data, data_size), &result))
       .IsSuccess();
+}
+
+blink::WebCryptoDigestor* WebCryptoImpl::createDigestor(
+    blink::WebCryptoAlgorithmId algorithm_id) {
+  return webcrypto::CreateDigestor(algorithm_id).release();
 }
 
 bool WebCryptoImpl::deserializeKeyForClone(
