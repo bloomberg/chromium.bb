@@ -102,15 +102,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual unsigned audioHardwareOutputChannels();
   virtual blink::WebDatabaseObserver* databaseObserver();
 
-  // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
-  virtual blink::WebAudioDevice* createAudioDevice(
-      size_t buffer_size, unsigned channels, double sample_rate,
-      blink::WebAudioDevice::RenderCallback* callback);
-  // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
-  virtual blink::WebAudioDevice* createAudioDevice(
-      size_t buffer_size, unsigned input_channels, unsigned channels,
-      double sample_rate, blink::WebAudioDevice::RenderCallback* callback);
-
   virtual blink::WebAudioDevice* createAudioDevice(
       size_t buffer_size, unsigned input_channels, unsigned channels,
       double sample_rate, blink::WebAudioDevice::RenderCallback* callback,
