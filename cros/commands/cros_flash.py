@@ -221,7 +221,7 @@ class USBImager(object):
     return removable_devices
 
   def ChooseRemovableDevice(self, devices):
-    """Lists all removable devices and ask user to select/confirm.
+    """Lists all removable devices and asks user to select/confirm.
 
     Args:
       devices: a list of device names (e.g. ['sda', 'sdb']).
@@ -294,6 +294,30 @@ class USBImager(object):
     return DevserverURLToLocalPath(url, static_dir,
                                    path.rsplit(os.path.sep)[-1])
 
+  def ChooseImageFromDirectory(self, dir_path):
+    """Lists all image files in |dir_path| and ask user to select one."""
+    images = [x for x in os.listdir(dir_path) if
+              os.path.isfile(os.path.join(dir_path, x)) and x.endswith(".bin")]
+    idx = 0
+    if len(images) == 0:
+      raise ValueError('No image found in %s.' % dir_path)
+    elif len(images) > 1:
+      idx = cros_build_lib.GetChoice(
+          'Multiple images found in %s. Please select one to continue:' % (
+          dir_path), images)
+
+    return os.path.join(dir_path, images[idx])
+
+  def _GetImagePath(self):
+    """Returns the image path to use."""
+    if os.path.isfile(self.image):
+      return self.image
+    elif os.path.isdir(self.image):
+      # Ask user which image (*.bin) in the folder to use.
+      return self.ChooseImageFromDirectory(self.image)
+    else:
+      return self.GetImagePathFromDevserver(self.image)
+
   def Run(self):
     """Image the removable device."""
     devices = self.ListAllRemovableDevices()
@@ -312,10 +336,7 @@ class USBImager(object):
       # Ask user to choose from the list.
       target = self.ChooseRemovableDevice(devices)
 
-    image_path = self.image
-    if not os.path.isfile(self.image):
-      image_path = self.GetImagePathFromDevserver(self.image)
-
+    image_path = self._GetImagePath()
     logging.info('Using image %s', image_path)
     try:
       self.CopyImageToDevice(image_path, self.DeviceNameToPath(target))
@@ -329,10 +350,8 @@ class FileImager(USBImager):
 
   def Run(self):
     """Copy the image to the path specified by self.device."""
-    image_path = self.image
-    if not os.path.isfile(self.image):
-      image_path = self.GetImagePathFromDevserver(self.image)
-
+    image_path = self._GetImagePath()
+    logging.info('Using image %s', image_path)
     if os.path.isdir(self.device):
       logging.info('Copying to %s',
                    os.path.join(self.device, os.path.basename(image_path)))
