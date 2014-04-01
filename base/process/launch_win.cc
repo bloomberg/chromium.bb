@@ -63,8 +63,15 @@ void RouteStdioToConsole() {
   // stdout/stderr on startup (before the handle IDs can be reused).
   // _fileno(stdout) will return -2 (_NO_CONSOLE_FILENO) if stdout was
   // invalid.
-  if (_fileno(stdout) >= 0 || _fileno(stderr) >= 0)
-    return;
+  if (_fileno(stdout) >= 0 || _fileno(stderr) >= 0) {
+    // _fileno was broken for SUBSYSTEM:WINDOWS from VS2010 to VS2012/2013.
+    // http://crbug.com/358267. Confirm that the underlying HANDLE is valid
+    // before aborting.
+    intptr_t stdout_handle = _get_osfhandle(_fileno(stdout));
+    intptr_t stderr_handle = _get_osfhandle(_fileno(stderr));
+    if (stdout_handle >= 0 || stderr_handle >= 0)
+      return;
+  }
 
   if (!AttachConsole(ATTACH_PARENT_PROCESS)) {
     unsigned int result = GetLastError();
