@@ -264,6 +264,7 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
 #endif
 
   nap->debug_stub_callbacks = NULL;
+  nap->debug_stub_port = 0;
   nap->main_nexe_desc = NULL;
   nap->irt_nexe_desc = NULL;
 

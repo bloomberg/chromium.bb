@@ -22,9 +22,11 @@
 using gdb_rsp::stringvec;
 using gdb_rsp::StringSplit;
 
-namespace port {
-
+#if NACL_WINDOWS
 typedef int socklen_t;
+#endif
+
+namespace port {
 
 class Transport : public ITransport {
  public:
@@ -421,6 +423,19 @@ ITransport *SocketBinding::AcceptConnection() {
     return new Transport(socket);
   }
   return NULL;
+}
+
+uint16_t SocketBinding::GetBoundPort() {
+  struct sockaddr_in saddr;
+  struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
+  // Clearing sockaddr_in first appears to be necessary on Mac OS X.
+  memset(&saddr, 0, sizeof(saddr));
+  socklen_t addrlen = static_cast<socklen_t>(sizeof(saddr));
+  if (::getsockname(socket_handle_, psaddr, &addrlen)) {
+    NaClLog(LOG_ERROR, "Failed to retrieve bound address.\n");
+    return 0;
+  }
+  return ntohs(saddr.sin_port);
 }
 
 }  // namespace port

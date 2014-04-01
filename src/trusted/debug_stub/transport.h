@@ -49,6 +49,9 @@ class SocketBinding {
   // Accept a connection on an already-bound TCP port.
   ITransport *AcceptConnection();
 
+  // Get port the socket is bound to.
+  uint16_t GetBoundPort();
+
  private:
   NaClSocketHandle socket_handle_;
 };

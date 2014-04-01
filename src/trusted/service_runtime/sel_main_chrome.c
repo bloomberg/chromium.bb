@@ -76,6 +76,7 @@ struct NaClChromeMainArgs *NaClChromeMainArgsCreate(void) {
 #if NACL_LINUX || NACL_OSX
   args->debug_stub_server_bound_socket_fd = NACL_INVALID_SOCKET;
 #endif
+  args->debug_stub_server_port_selected_handler_func = NULL;
   args->create_memory_object_func = NULL;
   args->validation_cache = NULL;
 #if NACL_WINDOWS
@@ -311,6 +312,9 @@ int NaClChromeMainLoad(struct NaClApp *nap,
 #endif
     if (!NaClDebugInit(nap)) {
       goto done;
+    }
+    if (NULL != args->debug_stub_server_port_selected_handler_func) {
+      args->debug_stub_server_port_selected_handler_func(nap->debug_stub_port);
     }
   }
 

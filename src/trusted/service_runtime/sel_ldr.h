@@ -391,6 +391,7 @@ struct NaClApp {
   struct DynArray           desc_tbl;  /* NaClDesc pointers */
 
   const struct NaClDebugCallbacks *debug_stub_callbacks;
+  uint16_t                        debug_stub_port;
   struct NaClDesc                 *main_nexe_desc;
   struct NaClDesc                 *irt_nexe_desc;
 

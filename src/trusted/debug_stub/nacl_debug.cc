@@ -47,16 +47,20 @@ static SocketBinding *g_socket_binding = NULL;
 int NaClDebugBindSocket() {
   if (g_socket_binding == NULL) {
     NaClDebugStubInit();
-    const char *addr = "127.0.0.1:4014";
-    g_socket_binding = SocketBinding::Bind(addr);
+    // Try port 4014 first for compatibility.
+    g_socket_binding = SocketBinding::Bind("127.0.0.1:4014");
+    // If port 4014 is not available, try any port.
     if (g_socket_binding == NULL) {
-      NaClLog(LOG_ERROR, "NaClStubThread: Failed to bind TCP port '%s'\n",
-              addr);
+      g_socket_binding = SocketBinding::Bind("127.0.0.1:0");
+    }
+    if (g_socket_binding == NULL) {
+      NaClLog(LOG_ERROR,
+              "NaClDebugStubBindSocket: Failed to bind any TCP port\n");
       return 0;
     }
     NaClLog(LOG_WARNING,
-            "nacl_debug(%d) : Connect GDB with 'target remote %s'.\n",
-            __LINE__, addr);
+            "nacl_debug(%d) : Connect GDB with 'target remote :%d\n",
+            __LINE__, g_socket_binding->GetBoundPort());
   }
   return 1;
 }
@@ -69,9 +73,6 @@ void NaClDebugSetBoundSocket(NaClSocketHandle bound_socket) {
 void WINAPI NaClStubThread(void *thread_arg) {
   UNREFERENCED_PARAMETER(thread_arg);
 
-  if (!NaClDebugBindSocket()) {
-    return;
-  }
   while (1) {
     // Wait for a connection.
     nacl::scoped_ptr<ITransport> trans(g_socket_binding->AcceptConnection());
@@ -123,6 +124,11 @@ int NaClDebugInit(struct NaClApp *nap) {
   g_target = new Target(nap);
   CHECK(g_target != NULL);
   g_target->Init();
+
+  if (!NaClDebugBindSocket()) {
+    return 0;
+  }
+  nap->debug_stub_port = g_socket_binding->GetBoundPort();
 
   NaClThread *thread = new NaClThread;
   CHECK(thread != NULL);
