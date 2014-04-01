@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_user_service.h"
@@ -938,8 +939,9 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  EXPECT_EQ(1U,
-            InfoBarService::FromWebContents(web_contents)->infobar_count());
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  EXPECT_EQ(1U, infobar_service->infobar_manager()->infobar_count());
 
   // The profile which normally opens last open pages displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last,
@@ -950,8 +952,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  EXPECT_EQ(1U,
-            InfoBarService::FromWebContents(web_contents)->infobar_count());
+  infobar_service = InfoBarService::FromWebContents(web_contents);
+  EXPECT_EQ(1U, infobar_service->infobar_manager()->infobar_count());
 
   // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls,
@@ -962,8 +964,8 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   ASSERT_EQ(1, tab_strip->count());
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
-  EXPECT_EQ(1U,
-            InfoBarService::FromWebContents(web_contents)->infobar_count());
+  infobar_service = InfoBarService::FromWebContents(web_contents);
+  EXPECT_EQ(1U, infobar_service->infobar_manager()->infobar_count());
 }
 
 class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {

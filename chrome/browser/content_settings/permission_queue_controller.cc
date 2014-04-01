@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/geolocation/geolocation_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/midi_permission_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -174,7 +175,7 @@ void PermissionQueueController::CancelInfoBarRequest(
        i != pending_infobar_requests_.end(); ++i) {
     if (i->id().Equals(id)) {
       if (i->has_infobar())
-        GetInfoBarService(id)->RemoveInfoBar(i->infobar());
+        GetInfoBarService(id)->infobar_manager()->RemoveInfoBar(i->infobar());
       else
         pending_infobar_requests_.erase(i);
       return;
@@ -208,7 +209,7 @@ void PermissionQueueController::CancelInfoBarRequests(int group_id) {
   for (PendingInfobarRequests::iterator i = infobar_requests_to_cancel.begin();
        i != infobar_requests_to_cancel.end();
        ++i) {
-    GetInfoBarService(i->id())->RemoveInfoBar(i->infobar());
+    GetInfoBarService(i->id())->infobar_manager()->RemoveInfoBar(i->infobar());
   }
 }
 
@@ -254,7 +255,7 @@ void PermissionQueueController::OnPermissionSet(
   // Remove all infobars for the same |requesting_frame| and |embedder|.
   for (PendingInfobarRequests::iterator i = infobars_to_remove.begin();
        i != infobars_to_remove.end(); ++i)
-    GetInfoBarService(i->id())->RemoveInfoBar(i->infobar());
+    GetInfoBarService(i->id())->infobar_manager()->RemoveInfoBar(i->infobar());
 
   // Send out the permission notifications.
   for (PendingInfobarRequests::iterator i = requests_to_notify.begin();

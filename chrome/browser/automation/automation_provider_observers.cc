@@ -36,6 +36,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"
 #include "chrome/browser/profiles/profile.h"
@@ -1214,8 +1215,9 @@ void InfoBarCountObserver::Observe(
 }
 
 void InfoBarCountObserver::CheckCount() {
-  if (InfoBarService::FromWebContents(web_contents_)->infobar_count() !=
-      target_count_)
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  if (infobar_service->infobar_manager()->infobar_count() != target_count_)
     return;
 
   if (automation_.get()) {

@@ -7,122 +7,53 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/insecure_content_infobar_delegate.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
-
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(InfoBarService);
 
-InfoBar* InfoBarService::AddInfoBar(scoped_ptr<InfoBar> infobar) {
-  DCHECK(infobar);
-  if (!infobars_enabled_)
+// static
+InfoBarManager* InfoBarService::InfoBarManagerFromWebContents(
+    content::WebContents* web_contents) {
+  InfoBarService* infobar_service = FromWebContents(web_contents);
+  // |infobar_service| may be NULL during shutdown.
+  if (!infobar_service)
     return NULL;
-
-  for (InfoBars::const_iterator i(infobars_.begin()); i != infobars_.end();
-       ++i) {
-    if ((*i)->delegate()->EqualsDelegate(infobar->delegate())) {
-      DCHECK_NE((*i)->delegate(), infobar->delegate());
-      return NULL;
-    }
-  }
-
-  InfoBar* infobar_ptr = infobar.release();
-  infobars_.push_back(infobar_ptr);
-  infobar_ptr->SetOwner(this);
-
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnInfoBarAdded(infobar_ptr));
-  // TODO(droger): Remove the notifications and use observers instead.
-  // See http://crbug.com/354380
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
-      content::Source<InfoBarService>(this),
-      content::Details<InfoBar::AddedDetails>(infobar_ptr));
-  return infobar_ptr;
+  return infobar_service->infobar_manager();
 }
 
-void InfoBarService::RemoveInfoBar(InfoBar* infobar) {
-  RemoveInfoBarInternal(infobar, true);
+InfoBar* InfoBarService::AddInfoBar(scoped_ptr<InfoBar> infobar) {
+  return infobar_manager_.AddInfoBar(infobar.Pass());
 }
 
 InfoBar* InfoBarService::ReplaceInfoBar(InfoBar* old_infobar,
                                         scoped_ptr<InfoBar> new_infobar) {
-  DCHECK(old_infobar);
-  if (!infobars_enabled_)
-    return AddInfoBar(new_infobar.Pass());  // Deletes the infobar.
-  DCHECK(new_infobar);
-
-  InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(),
-                                 old_infobar));
-  DCHECK(i != infobars_.end());
-
-  InfoBar* new_infobar_ptr = new_infobar.release();
-  i = infobars_.insert(i, new_infobar_ptr);
-  new_infobar_ptr->SetOwner(this);
-  InfoBar::ReplacedDetails replaced_details(old_infobar, new_infobar_ptr);
-
-  // Remove the old infobar before notifying, so that if any observers call back
-  // to AddInfoBar() or similar, we don't dupe-check against this infobar.
-  infobars_.erase(++i);
-
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnInfoBarReplaced(old_infobar, new_infobar_ptr));
-  // TODO(droger): Remove the notifications and use observers instead.
-  // See http://crbug.com/354380
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-      content::Source<InfoBarService>(this),
-      content::Details<InfoBar::ReplacedDetails>(&replaced_details));
-
-  old_infobar->CloseSoon();
-  return new_infobar_ptr;
-}
-
-void InfoBarService::AddObserver(Observer* obs) {
-  observer_list_.AddObserver(obs);
-}
-
-void InfoBarService::RemoveObserver(Observer* obs) {
-  observer_list_.RemoveObserver(obs);
+  return infobar_manager_.ReplaceInfoBar(old_infobar, new_infobar.Pass());
 }
 
 InfoBarService::InfoBarService(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      infobars_enabled_(true) {
+      infobar_manager_(web_contents) {
   DCHECK(web_contents);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableInfoBars))
-    infobars_enabled_ = false;
+  infobar_manager_.AddObserver(this);
 }
 
-InfoBarService::~InfoBarService() {
-  // Destroy all remaining InfoBars.  It's important to not animate here so that
-  // we guarantee that we'll delete all delegates before we do anything else.
-  RemoveAllInfoBars(false);
-  FOR_EACH_OBSERVER(Observer, observer_list_, OnServiceShuttingDown(this));
-}
+InfoBarService::~InfoBarService() {}
 
 void InfoBarService::RenderProcessGone(base::TerminationStatus status) {
-  RemoveAllInfoBars(true);
+  infobar_manager_.RemoveAllInfoBars(true);
 }
 
 void InfoBarService::NavigationEntryCommitted(
     const content::LoadCommittedDetails& load_details) {
-  // NOTE: It is not safe to change the following code to count upwards or
-  // use iterators, as the RemoveInfoBar() call synchronously modifies our
-  // delegate list.
-  for (size_t i = infobars_.size(); i > 0; --i) {
-    InfoBar* infobar = infobars_[i - 1];
-    if (infobar->delegate()->ShouldExpire(load_details))
-      RemoveInfoBar(infobar);
-  }
+  infobar_manager_.OnNavigation(load_details);
 }
 
 void InfoBarService::WebContentsDestroyed(content::WebContents* web_contents) {
+  infobar_manager_.OnWebContentsDestroyed();
+
   // The WebContents is going away; be aggressively paranoid and delete
   // ourselves lest other parts of the system attempt to add infobars or use
   // us otherwise during the destruction.
@@ -143,38 +74,38 @@ bool InfoBarService::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void InfoBarService::RemoveInfoBarInternal(InfoBar* infobar, bool animate) {
-  DCHECK(infobar);
-  if (!infobars_enabled_) {
-    DCHECK(infobars_.empty());
-    return;
-  }
+void InfoBarService::OnInfoBarAdded(InfoBar* infobar) {
+  // TODO(droger): Remove the notifications and have listeners change to be
+  // NavigationManager::Observers instead. See http://crbug.com/354380
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+      content::Source<InfoBarService>(this),
+      content::Details<InfoBar::AddedDetails>(infobar));
+}
 
-  InfoBars::iterator i(std::find(infobars_.begin(), infobars_.end(), infobar));
-  DCHECK(i != infobars_.end());
+void InfoBarService::OnInfoBarReplaced(InfoBar* old_infobar,
+                                       InfoBar* new_infobar) {
+  // TODO(droger): Remove the notifications and have listeners change to be
+  // NavigationManager::Observers instead. See http://crbug.com/354380
+  InfoBar::ReplacedDetails replaced_details(old_infobar, new_infobar);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
+      content::Source<InfoBarService>(this),
+      content::Details<InfoBar::ReplacedDetails>(&replaced_details));
+}
 
-  // Remove the infobar before notifying, so that if any observers call back to
-  // AddInfoBar() or similar, we don't dupe-check against this infobar.
-  infobars_.erase(i);
-
-  // This notification must happen before the call to CloseSoon() below, since
-  // observers may want to access |infobar| and that call can delete it.
-  FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnInfoBarRemoved(infobar, animate));
-  // TODO(droger): Remove the notifications and use observers instead.
-  // See http://crbug.com/354380
+void InfoBarService::OnInfoBarRemoved(InfoBar* infobar, bool animate) {
+  // TODO(droger): Remove the notifications and have listeners change to be
+  // NavigationManager::Observers instead. See http://crbug.com/354380
   InfoBar::RemovedDetails removed_details(infobar, animate);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::Source<InfoBarService>(this),
       content::Details<InfoBar::RemovedDetails>(&removed_details));
-
-  infobar->CloseSoon();
 }
 
-void InfoBarService::RemoveAllInfoBars(bool animate) {
-  while (!infobars_.empty())
-    RemoveInfoBarInternal(infobars_.back(), animate);
+void InfoBarService::OnManagerShuttingDown(InfoBarManager* manager) {
+  infobar_manager_.RemoveObserver(this);
 }
 
 void InfoBarService::OnDidBlockDisplayingInsecureContent() {

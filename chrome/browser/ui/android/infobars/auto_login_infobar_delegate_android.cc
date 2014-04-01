@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -105,8 +106,11 @@ void AutoLoginInfoBarDelegateAndroid::LoginFailed(JNIEnv* env, jobject obj) {
   // TODO(miguelg): Using SimpleAlertInfoBarDelegate::Create() animates in a new
   // infobar while we animate the current one closed.  It would be better to use
   // ReplaceInfoBar().
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents());
+  DCHECK(infobar_service);
   SimpleAlertInfoBarDelegate::Create(
-      infobar()->owner(), IDR_INFOBAR_WARNING,
+      infobar_service, IDR_INFOBAR_WARNING,
       l10n_util::GetStringUTF16(IDS_AUTO_LOGIN_FAILED), false);
   infobar()->RemoveSelf();
 }

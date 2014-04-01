@@ -63,6 +63,7 @@
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -1995,10 +1996,11 @@ void TestingAutomationProvider::SetWindowDimensions(
 base::ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   // Each infobar may have different properties depending on the type.
   base::ListValue* infobars = new base::ListValue;
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(wc);
-  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+  InfoBarManager* infobar_manager =
+      InfoBarService::FromWebContents(wc)->infobar_manager();
+  for (size_t i = 0; i < infobar_manager->infobar_count(); ++i) {
     base::DictionaryValue* infobar_item = new base::DictionaryValue;
-    InfoBarDelegate* infobar = infobar_service->infobar_at(i)->delegate();
+    InfoBarDelegate* infobar = infobar_manager->infobar_at(i)->delegate();
     switch (infobar->GetInfoBarAutomationType()) {
       case InfoBarDelegate::CONFIRM_INFOBAR:
         infobar_item->SetString("type", "confirm_infobar");
@@ -2072,19 +2074,19 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     return;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (infobar_index >= infobar_service->infobar_count()) {
+  InfoBarManager* infobar_manager =
+      InfoBarService::FromWebContents(web_contents)->infobar_manager();
+  if (infobar_index >= infobar_manager->infobar_count()) {
     reply.SendError(base::StringPrintf("No such infobar at index %" PRIuS,
                                        infobar_index));
     return;
   }
-  InfoBar* infobar = infobar_service->infobar_at(infobar_index);
+  InfoBar* infobar = infobar_manager->infobar_at(infobar_index);
   InfoBarDelegate* infobar_delegate = infobar->delegate();
 
   if (action == "dismiss") {
     infobar_delegate->InfoBarDismissed();
-    infobar_service->RemoveInfoBar(infobar);
+    infobar_manager->RemoveInfoBar(infobar);
     reply.SendSuccess(NULL);
     return;
   }
@@ -2097,7 +2099,7 @@ void TestingAutomationProvider::PerformActionOnInfobar(
     }
     if ((action == "accept") ?
         confirm_infobar_delegate->Accept() : confirm_infobar_delegate->Cancel())
-      infobar_service->RemoveInfoBar(infobar);
+      infobar_manager->RemoveInfoBar(infobar);
     reply.SendSuccess(NULL);
     return;
   }

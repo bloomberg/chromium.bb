@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/test_password_store_service.h"
@@ -75,7 +76,8 @@ class NavigationObserver : public content::NotificationObserver,
     switch (type) {
       case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
         if (should_automatically_accept_infobar_) {
-          infobar_service_->infobar_at(0)
+          infobar_service_->infobar_manager()
+              ->infobar_at(0)
               ->delegate()
               ->AsConfirmInfoBarDelegate()
               ->Accept();

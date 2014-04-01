@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_container.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 InfoBar::InfoBar(scoped_ptr<InfoBarDelegate> delegate)
@@ -51,7 +51,7 @@ SkColor InfoBar::GetBottomColor(InfoBarDelegate::Type infobar_type) {
       kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
 }
 
-void InfoBar::SetOwner(InfoBarService* owner) {
+void InfoBar::SetOwner(InfoBarManager* owner) {
   DCHECK(!owner_);
   owner_ = owner;
   delegate_->StoreActiveEntryUniqueID();

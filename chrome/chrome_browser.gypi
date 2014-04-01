@@ -954,6 +954,8 @@
         'browser/infobars/infobar_container.h',
         'browser/infobars/infobar_delegate.cc',
         'browser/infobars/infobar_delegate.h',
+        'browser/infobars/infobar_manager.cc',
+        'browser/infobars/infobar_manager.h',
         'browser/infobars/infobar_service.cc',
         'browser/infobars/infobar_service.h',
         'browser/infobars/insecure_content_infobar_delegate.cc',

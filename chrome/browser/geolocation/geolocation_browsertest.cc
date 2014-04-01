@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -420,7 +421,9 @@ void GeolocationBrowserTest::SetInfoBarResponse(const GURL& requesting_url,
     observer.Wait();
   }
 
-  InfoBarService::FromWebContents(web_contents)->RemoveInfoBar(infobar_);
+  InfoBarManager* infobar_manager =
+      InfoBarService::FromWebContents(web_contents)->infobar_manager();
+  infobar_manager->RemoveInfoBar(infobar_);
   LOG(WARNING) << "infobar response set";
   infobar_ = NULL;
   EXPECT_GT(usages_state.state_map().size(), state_map_size);
@@ -668,10 +671,11 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       current_browser()->tab_strip_model()->GetActiveWebContents());
-  size_t num_infobars_before_cancel = infobar_service->infobar_count();
+  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
+  size_t num_infobars_before_cancel = infobar_manager->infobar_count();
   // Change the iframe, and ensure the infobar is gone.
   IFrameLoader change_iframe_1(current_browser(), 1, current_url());
-  size_t num_infobars_after_cancel = infobar_service->infobar_count();
+  size_t num_infobars_after_cancel = infobar_manager->infobar_count();
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }
 

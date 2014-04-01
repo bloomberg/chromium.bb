@@ -802,8 +802,9 @@ void BrowserWindowGtk::OnActiveTabChanged(WebContents* old_contents,
 
   // Update various elements that are interested in knowing the current
   // WebContents.
-  infobar_container_->ChangeInfoBarService(
-      InfoBarService::FromWebContents(new_contents));
+  InfoBarManager* infobar_manager =
+      InfoBarService::InfoBarManagerFromWebContents(new_contents);
+  infobar_container_->ChangeInfoBarManager(infobar_manager);
   contents_container_->SetTab(new_contents);
   UpdateDevToolsForContents(new_contents);
 
@@ -1285,7 +1286,7 @@ void BrowserWindowGtk::TabDetachedAt(WebContents* contents, int index) {
   // browser_->tab_strip_model()->GetActiveWebContents() will return NULL or
   // something else.
   if (index == browser_->tab_strip_model()->active_index()) {
-    infobar_container_->ChangeInfoBarService(NULL);
+    infobar_container_->ChangeInfoBarManager(NULL);
     UpdateDevToolsForContents(NULL);
   }
   contents_container_->DetachTab(contents);

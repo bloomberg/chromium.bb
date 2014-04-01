@@ -15,23 +15,23 @@
 #include "ui/gfx/size.h"
 
 class InfoBarContainer;
-class InfoBarService;
+class InfoBarManager;
 
 // InfoBar is a cross-platform base class for an infobar "view" (in the MVC
 // sense), which owns a corresponding InfoBarDelegate "model".  Typically,
 // a caller will call XYZInfoBarDelegate::Create() and pass in the
-// InfoBarService for the relevant tab.  This will create an XYZInfoBarDelegate,
+// InfoBarManager for the relevant tab.  This will create an XYZInfoBarDelegate,
 // create a platform-specific subclass of InfoBar to own it, and then call
-// InfoBarService::AddInfoBar() to give it ownership of the infobar.
+// InfoBarManager::AddInfoBar() to give it ownership of the infobar.
 // During its life, the InfoBar may be shown and hidden as the owning tab is
-// switched between the foreground and background.  Eventually, InfoBarService
+// switched between the foreground and background.  Eventually, InfoBarManager
 // will instruct the InfoBar to close itself.  At this point, the InfoBar will
 // optionally animate closed; once it's no longer visible, it deletes itself,
 // destroying the InfoBarDelegate in the process.
 //
 // Thus, InfoBarDelegate and InfoBar implementations can assume they share
 // lifetimes, and not NULL-check each other; but if one needs to reach back into
-// the owning InfoBarService, it must check whether that's still possible.
+// the owning InfoBarManager, it must check whether that's still possible.
 class InfoBar : public gfx::AnimationDelegate {
  public:
   // These are the types passed as Details for infobar-related notifications.
@@ -55,7 +55,7 @@ class InfoBar : public gfx::AnimationDelegate {
   static SkColor GetTopColor(InfoBarDelegate::Type infobar_type);
   static SkColor GetBottomColor(InfoBarDelegate::Type infobar_type);
 
-  InfoBarService* owner() { return owner_; }
+  InfoBarManager* owner() { return owner_; }
   InfoBarDelegate* delegate() { return delegate_.get(); }
   const InfoBarDelegate* delegate() const { return delegate_.get(); }
   void set_container(InfoBarContainer* container) { container_ = container; }
@@ -63,7 +63,7 @@ class InfoBar : public gfx::AnimationDelegate {
   // Sets |owner_|.  This also calls StoreActiveEntryUniqueID() on |delegate_|.
   // This must only be called once as there's no way to extract an infobar from
   // its owner without deleting it, for reparenting in another tab.
-  void SetOwner(InfoBarService* owner);
+  void SetOwner(InfoBarManager* owner);
 
   // Makes the infobar visible.  If |animate| is true, the infobar is then
   // animated to full size.
@@ -129,7 +129,7 @@ class InfoBar : public gfx::AnimationDelegate {
   // itself.
   void MaybeDelete();
 
-  InfoBarService* owner_;
+  InfoBarManager* owner_;
   scoped_ptr<InfoBarDelegate> delegate_;
   InfoBarContainer* container_;
   gfx::SlideAnimation animation_;

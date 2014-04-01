@@ -23,7 +23,7 @@ InfoBarCocoa::~InfoBarCocoa() {
     [controller() infobarWillClose];
 }
 
-InfoBarService* InfoBarCocoa::OwnerCocoa() {
+InfoBarManager* InfoBarCocoa::OwnerCocoa() {
   return owner();
 }
 

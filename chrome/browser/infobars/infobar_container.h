@@ -9,19 +9,19 @@
 
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class InfoBar;
 
 // InfoBarContainer is a cross-platform base class to handle the visibility-
-// related aspects of InfoBars.  While InfoBarService owns the InfoBars, the
+// related aspects of InfoBars.  While InfoBarManager owns the InfoBars, the
 // InfoBarContainer is responsible for telling particular InfoBars that they
 // should be hidden or visible.
 //
 // Platforms need to subclass this to implement a few platform-specific
 // functions, which are pure virtual here.
-class InfoBarContainer : public InfoBarService::Observer {
+class InfoBarContainer : public InfoBarManager::Observer {
  public:
   class Delegate {
    public:
@@ -43,11 +43,11 @@ class InfoBarContainer : public InfoBarService::Observer {
   explicit InfoBarContainer(Delegate* delegate);
   virtual ~InfoBarContainer();
 
-  // Changes the InfoBarService for which this container is showing infobars.
+  // Changes the InfoBarManager for which this container is showing infobars.
   // This will hide all current infobars, remove them from the container, add
-  // the infobars from |infobar_service|, and show them all.  |infobar_service|
+  // the infobars from |infobar_manager|, and show them all.  |infobar_manager|
   // may be NULL.
-  void ChangeInfoBarService(InfoBarService* infobar_service);
+  void ChangeInfoBarManager(InfoBarManager* infobar_manager);
 
   // Returns the amount by which to overlap the toolbar above, and, when
   // |total_height| is non-NULL, set it to the height of the InfoBarContainer
@@ -99,12 +99,12 @@ class InfoBarContainer : public InfoBarService::Observer {
  private:
   typedef std::vector<InfoBar*> InfoBars;
 
-  // InfoBarService::Observer:
+  // InfoBarManager::Observer:
   virtual void OnInfoBarAdded(InfoBar* infobar) OVERRIDE;
   virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate) OVERRIDE;
   virtual void OnInfoBarReplaced(InfoBar* old_infobar,
                                  InfoBar* new_infobar) OVERRIDE;
-  virtual void OnServiceShuttingDown(InfoBarService* service) OVERRIDE;
+  virtual void OnManagerShuttingDown(InfoBarManager* manager) OVERRIDE;
 
   // Adds |infobar| to this container before the existing infobar at position
   // |position| and calls Show() on it.  |animate| is passed along to
@@ -121,7 +121,7 @@ class InfoBarContainer : public InfoBarService::Observer {
   int ArrowTargetHeightForInfoBar(size_t infobar_index) const;
 
   Delegate* delegate_;
-  InfoBarService* infobar_service_;
+  InfoBarManager* infobar_manager_;
   InfoBars infobars_;
 
   // Calculated in SetMaxTopArrowHeight().

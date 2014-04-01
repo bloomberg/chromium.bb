@@ -26,7 +26,7 @@ class InfoBarCocoa : public InfoBar {
   }
 
   // These functions allow access to protected InfoBar functions.
-  InfoBarService* OwnerCocoa();
+  InfoBarManager* OwnerCocoa();
 
   base::WeakPtr<InfoBarCocoa> GetWeakPtr();
 

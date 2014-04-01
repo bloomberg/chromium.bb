@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
@@ -339,8 +340,9 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
   if (infobar_) {
     static_cast<ExtensionDevToolsInfoBarDelegate*>(
         infobar_->delegate())->set_client_host(NULL);
-    InfoBarService::FromWebContents(WebContents::FromRenderViewHost(
-        agent_host_->GetRenderViewHost()))->RemoveInfoBar(infobar_);
+    InfoBarService* infobar_service = InfoBarService::FromWebContents(
+        WebContents::FromRenderViewHost(agent_host_->GetRenderViewHost()));
+    infobar_service->infobar_manager()->RemoveInfoBar(infobar_);
   }
   AttachedClientHosts::GetInstance()->Remove(this);
 }

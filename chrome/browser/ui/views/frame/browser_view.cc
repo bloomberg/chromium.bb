@@ -831,8 +831,10 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
     contents_web_view_->SetWebContents(NULL);
     devtools_web_view_->SetWebContents(NULL);
   }
-  infobar_container_->ChangeInfoBarService(
-      InfoBarService::FromWebContents(new_contents));
+
+  InfoBarManager* infobar_manager =
+      InfoBarService::InfoBarManagerFromWebContents(new_contents);
+  infobar_container_->ChangeInfoBarManager(infobar_manager);
 
   if (old_contents && PermissionBubbleManager::FromWebContents(old_contents))
     PermissionBubbleManager::FromWebContents(old_contents)->SetView(NULL);
@@ -1490,7 +1492,7 @@ void BrowserView::TabDetachedAt(WebContents* contents, int index) {
     // freed. This is because the focus manager performs some operations
     // on the selected WebContents when it is removed.
     contents_web_view_->SetWebContents(NULL);
-    infobar_container_->ChangeInfoBarService(NULL);
+    infobar_container_->ChangeInfoBarManager(NULL);
     UpdateDevToolsForContents(NULL, true);
   }
 }

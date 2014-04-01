@@ -43,6 +43,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
+#include "chrome/browser/infobars/infobar_manager.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2791,11 +2792,12 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
        browser()->tab_strip_model()->GetActiveWebContents());
+  InfoBarManager* infobar_manager = infobar_service->infobar_manager();
   // Verify that there is only one infobar.
-  ASSERT_EQ(1u, infobar_service->infobar_count());
+  ASSERT_EQ(1u, infobar_manager->infobar_count());
 
   // Get the infobar at index 0.
-  InfoBar* infobar = infobar_service->infobar_at(0);
+  InfoBar* infobar = infobar_manager->infobar_at(0);
   ConfirmInfoBarDelegate* confirm_infobar =
       infobar->delegate()->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(confirm_infobar != NULL);
@@ -2806,9 +2808,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
 
   // Click on the "Allow" button to allow multiple downloads.
   if (confirm_infobar->Accept())
-    infobar_service->RemoveInfoBar(infobar);
+    infobar_manager->RemoveInfoBar(infobar);
   // Verify that there are no more infobars.
-  EXPECT_EQ(0u, infobar_service->infobar_count());
+  EXPECT_EQ(0u, infobar_manager->infobar_count());
 
   // Waits for the download to complete.
   downloads_observer->WaitForFinished();

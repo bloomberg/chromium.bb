@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 InfoBarContainer::Delegate::~Delegate() {
@@ -19,20 +18,20 @@ InfoBarContainer::Delegate::~Delegate() {
 
 InfoBarContainer::InfoBarContainer(Delegate* delegate)
     : delegate_(delegate),
-      infobar_service_(NULL),
+      infobar_manager_(NULL),
       top_arrow_target_height_(InfoBar::kDefaultArrowTargetHeight) {
 }
 
 InfoBarContainer::~InfoBarContainer() {
   // RemoveAllInfoBarsForDestruction() should have already cleared our infobars.
   DCHECK(infobars_.empty());
-  if (infobar_service_)
-    infobar_service_->RemoveObserver(this);
+  if (infobar_manager_)
+    infobar_manager_->RemoveObserver(this);
 }
 
-void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
-  if (infobar_service_)
-    infobar_service_->RemoveObserver(this);
+void InfoBarContainer::ChangeInfoBarManager(InfoBarManager* infobar_manager) {
+  if (infobar_manager_)
+    infobar_manager_->RemoveObserver(this);
 
   // Hides all infobars in this container without animation.
   while (!infobars_.empty()) {
@@ -43,14 +42,14 @@ void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
     infobar->Hide(false);
   }
 
-  infobar_service_ = infobar_service;
-  if (infobar_service_) {
-    infobar_service_->AddObserver(this);
+  infobar_manager_ = infobar_manager;
+  if (infobar_manager_) {
+    infobar_manager_->AddObserver(this);
 
-    for (size_t i = 0; i < infobar_service_->infobar_count(); ++i) {
+    for (size_t i = 0; i < infobar_manager_->infobar_count(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarStateChanged() for each infobar.
-      AddInfoBar(infobar_service_->infobar_at(i), i, false, NO_CALLBACK);
+      AddInfoBar(infobar_manager_->infobar_at(i), i, false, NO_CALLBACK);
     }
   }
 
@@ -107,7 +106,7 @@ void InfoBarContainer::RemoveAllInfoBarsForDestruction() {
   // this point |delegate_| may be shutting down, and it's at best unimportant
   // and at worst disastrous to call that.
   delegate_ = NULL;
-  ChangeInfoBarService(NULL);
+  ChangeInfoBarManager(NULL);
 }
 
 void InfoBarContainer::OnInfoBarAdded(InfoBar* infobar) {
@@ -130,10 +129,10 @@ void InfoBarContainer::OnInfoBarReplaced(InfoBar* old_infobar,
   AddInfoBar(new_infobar, position, false, WANT_CALLBACK);
 }
 
-void InfoBarContainer::OnServiceShuttingDown(InfoBarService* service) {
-  DCHECK_EQ(infobar_service_, service);
-  infobar_service_->RemoveObserver(this);
-  infobar_service_ = NULL;
+void InfoBarContainer::OnManagerShuttingDown(InfoBarManager* manager) {
+  DCHECK_EQ(infobar_manager_, manager);
+  infobar_manager_->RemoveObserver(this);
+  infobar_manager_ = NULL;
 }
 
 void InfoBarContainer::AddInfoBar(InfoBar* infobar,
