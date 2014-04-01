@@ -78,6 +78,7 @@
           },
           'dependencies': [
             '../base/base.gyp:base',
+            '../base/base.gyp:base_static',
             '../ipc/ipc.gyp:ipc',
             '../ppapi/native_client/src/trusted/plugin/plugin.gyp:ppGoogleNaClPluginChrome',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
