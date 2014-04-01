@@ -249,7 +249,8 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     maxHeight = max<LayoutUnit>(0, maxHeight); // FIXME: Is this really necessary?
 
     setLineTopBottomPositions(lineTop, lineBottom, heightOfBlock, heightOfBlock + maxHeight);
-    setPaginatedLineWidth(block().availableLogicalWidthForContent());
+    if (block().view()->layoutState()->isPaginated())
+        setPaginatedLineWidth(block().availableLogicalWidthForContent());
 
     LayoutUnit annotationsAdjustment = beforeAnnotationsAdjustment();
     if (annotationsAdjustment) {
