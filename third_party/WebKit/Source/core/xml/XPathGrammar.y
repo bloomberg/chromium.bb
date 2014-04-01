@@ -51,7 +51,7 @@ using namespace XPath;
 
 %}
 
-%pure_parser
+%pure-parser
 %parse-param { WebCore::XPath::Parser* parser }
 
 %union

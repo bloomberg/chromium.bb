@@ -60,7 +60,7 @@ using namespace HTMLNames;
 
 %}
 
-%pure_parser
+%pure-parser
 
 %parse-param { BisonCSSParser* parser }
 %lex-param { BisonCSSParser* parser }
