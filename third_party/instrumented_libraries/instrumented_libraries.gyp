@@ -167,7 +167,6 @@
         '--with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts',
       ],
       'run_before_build': 'libfontconfig.sh',
-      'destdir_build': 1,
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -391,6 +390,7 @@
     {
       'library_name': 'libgnome-keyring0',
       'custom_configure_flags': [
+          # Build static libs (from debian/rules).
           '--enable-static',
           '--enable-tests=no',
       ],
