@@ -30,7 +30,11 @@ void VariationsHttpHeaderProvider::AppendHeaders(
     bool uma_enabled,
     net::HttpRequestHeaders* headers) {
   // Note the criteria for attaching Chrome experiment headers:
-  // 1. We only transmit to *.google.<TLD> or *.youtube.<TLD> domains.
+  // 1. We only transmit to Google owned domains which can evaluate experiments.
+  //    1a. These include hosts which have a standard postfix such as:
+  //         *.doubleclick.net or *.googlesyndication.com or
+  //         exactly www.googleadservices.com or
+  //         international TLD domains *.google.<TLD> or *.youtube.<TLD>.
   // 2. Only transmit for non-Incognito profiles.
   // 3. For the X-Chrome-UMA-Enabled bit, only set it if UMA is in fact enabled
   //    for this install of Chrome.
@@ -178,11 +182,19 @@ bool VariationsHttpHeaderProvider::ShouldAppendHeaders(const GURL& url) {
     return true;
   }
 
-  // The below mirrors logic in IsGoogleDomainUrl(), but for youtube.<TLD>.
   if (!url.is_valid() || !url.SchemeIsHTTPOrHTTPS())
     return false;
 
+  // Some domains don't have international TLD extensions, so testing for them
+  // is very straight forward.
   const std::string host = url.host();
+  if (EndsWith(host, ".doubleclick.net", false) ||
+      EndsWith(host, ".googlesyndication.com", false) ||
+      LowerCaseEqualsASCII(host, "www.googleadservices.com")) {
+    return true;
+  }
+
+  // The below mirrors logic in IsGoogleDomainUrl(), but for youtube.<TLD>.
   const size_t tld_length = net::registry_controlled_domains::GetRegistryLength(
       host,
       net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,

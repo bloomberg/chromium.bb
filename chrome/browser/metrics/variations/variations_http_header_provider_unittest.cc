@@ -46,14 +46,38 @@ TEST(VariationsHttpHeaderProviderTest, ShouldAppendHeaders) {
     { "http://google.co.uk", true },
     { "http://google.co.uk:8080/", true },
     { "http://www.google.co.uk:8080/", true },
+    { "http://google", false },
+
     { "http://youtube.com", true },
     { "http://www.youtube.com", true },
     { "http://www.youtube.ca", true },
     { "http://www.youtube.co.uk:8080/", true },
     { "https://www.youtube.com", true },
-    { "http://www.yahoo.com", false },
     { "http://youtube", false },
-    { "http://google", false },
+
+    { "http://www.yahoo.com", false },
+
+    { "http://ad.doubleclick.net", true },
+    { "https://a.b.c.doubleclick.net", true },
+    { "https://a.b.c.doubleclick.net:8081", true },
+    { "http://www.doubleclick.com", false },
+    { "http://www.doubleclick.net.com", false },
+    { "https://www.doubleclick.net.com", false },
+
+    { "http://ad.googlesyndication.com", true },
+    { "https://a.b.c.googlesyndication.com", true },
+    { "https://a.b.c.googlesyndication.com:8080", true },
+    { "http://www.doubleclick.edu", false },
+    { "http://www.googlesyndication.com.edu", false },
+    { "https://www.googlesyndication.com.com", false },
+
+    { "http://www.googleadservices.com", true },
+    { "http://www.googleadservices.com:8080", true },
+    { "https://www.googleadservices.com", true },
+    { "https://www.internal.googleadservices.com", false },
+    { "https://www2.googleadservices.com", false },
+    { "https://www.googleadservices.org", false },
+    { "https://www.googleadservices.com.co.uk", false },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
