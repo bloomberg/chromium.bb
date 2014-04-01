@@ -46,6 +46,7 @@
       ],
       'includes': [
         'ime/ime.gypi',
+        'platform/caca/caca.gypi',
       ],
       'actions': [
         {
