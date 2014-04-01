@@ -9,10 +9,14 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+from driver_tools import ArchMerge, DriverChain, GetArch, \
+    ParseArgs, ParseTriple, RunDriver, RunWithEnv, SetArch, \
+    SetExecutableMode, TempNameGen, UnrecognizedOption
 from driver_env import env
 from driver_log import Log
 import filetype
+import ldtools
+import pathtools
 
 EXTRA_ENV = {
   'ALLOW_NATIVE': '0', # Allow LD args which will change the behavior
@@ -548,7 +552,7 @@ def CheckInputsArch(inputs):
       ArchMerge(f, True)
     else:
       Log.Fatal("%s: Unexpected type of file for linking (%s)",
-                pathtools.touser(f), FileType(f))
+                pathtools.touser(f), filetype.FileType(f))
     count += 1
 
   if count == 0:

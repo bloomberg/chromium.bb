@@ -13,11 +13,15 @@
 # --pnacl-sb will cause the sandboxed LD to be used.
 # The bulk of this file is logic to invoke the sandboxed translator.
 
-from driver_tools import *
+import subprocess
+
+from driver_tools import CheckTranslatorPrerequisites, GetArch, ParseArgs, \
+    Run, UnrecognizedOption
 from driver_env import env
 from driver_log import Log
+import ldtools
+import pathtools
 
-import subprocess
 
 EXTRA_ENV = {
   'INPUTS'   : '',

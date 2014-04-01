@@ -9,10 +9,16 @@
 # updates the copy in the toolchain/ tree.
 #
 
-from driver_tools import *
+import re
+import subprocess
+
+from driver_tools import AddHostBinarySearchPath, DefaultOutputName, \
+    DriverChain, GetArch, ParseArgs, ParseTriple, Run, RunDriver, RunWithEnv, \
+    TempNameGen, UnrecognizedOption
 from driver_env import env
-from driver_log import Log
+from driver_log import DriverOpen, Log
 import filetype
+import pathtools
 
 EXTRA_ENV = {
   'ALLOW_TRANSLATE': '0',  # Allow bitcode translation before linking.
