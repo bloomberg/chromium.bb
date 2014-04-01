@@ -958,9 +958,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   bool always_uses_gpu = IsForceCompositingModeEnabled();
   bool established_gpu_channel = false;
 #if defined(USE_AURA) || defined(OS_ANDROID)
-  established_gpu_channel =
-      parsed_command_line_.HasSwitch(switches::kSingleProcess) ||
-      parsed_command_line_.HasSwitch(switches::kInProcessGPU);
+  established_gpu_channel = true;
 #if defined(USE_AURA)
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
     established_gpu_channel = always_uses_gpu = false;
