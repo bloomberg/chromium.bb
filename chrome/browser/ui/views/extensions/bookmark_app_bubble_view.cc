@@ -7,7 +7,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
-#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/bookmark_app_helper.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/pref_names.h"
@@ -257,8 +258,6 @@ void BookmarkAppBubbleView::ApplyEdits() {
   WebApplicationInfo install_info(web_app_info_);
   install_info.title = title_tf_->text();
 
-  scoped_refptr<extensions::CrxInstaller> installer(
-      extensions::CrxInstaller::CreateSilent(profile_->GetExtensionService()));
-  installer->set_error_on_unsupported_requirements(true);
-  installer->InstallWebApp(install_info);
+  extensions::CreateOrUpdateBookmarkApp(profile_->GetExtensionService(),
+                                        install_info);
 }

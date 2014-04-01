@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -18,9 +19,11 @@ namespace {
 #if !defined(OS_ANDROID)
 const char kAppUrl[] = "http://www.chromium.org";
 const char kAppTitle[] = "Test title";
+const char kAlternativeAppTitle[] = "Different test title";
 const char kAppDescription[] = "Test description";
 
 const int kIconSizeSmall = extension_misc::EXTENSION_ICON_SMALL;
+const int kIconSizeLarge = extension_misc::EXTENSION_ICON_LARGE;
 #endif
 
 class BookmarkAppHelperTest : public testing::Test {
@@ -63,6 +66,16 @@ void ValidateBitmapSizeAndColor(SkBitmap bitmap, int size, SkColor color) {
   EXPECT_EQ(size, bitmap.width());
   EXPECT_EQ(size, bitmap.height());
 }
+
+#if !defined(OS_ANDROID)
+WebApplicationInfo::IconInfo CreateIconInfoWithBitmap(int size, SkColor color) {
+  WebApplicationInfo::IconInfo icon_info;
+  icon_info.width = size;
+  icon_info.height = size;
+  icon_info.data = CreateSquareBitmapWithColor(size, color);
+  return icon_info;
+}
+#endif
 
 }  // namespace
 
@@ -126,6 +139,52 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   EXPECT_FALSE(
       IconsInfo::GetIconResource(
           extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY).empty());
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
+  EXPECT_EQ(0u, registry_->enabled_extensions().size());
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kAppUrl);
+  web_app_info.title = base::UTF8ToUTF16(kAppTitle);
+  web_app_info.description = base::UTF8ToUTF16(kAppDescription);
+  web_app_info.icons.push_back(
+      CreateIconInfoWithBitmap(kIconSizeSmall, SK_ColorRED));
+
+  extensions::CreateOrUpdateBookmarkApp(service_, web_app_info);
+  base::RunLoop().RunUntilIdle();
+
+  {
+    EXPECT_EQ(1u, registry_->enabled_extensions().size());
+    const Extension* extension = service_->extensions()->begin()->get();
+    EXPECT_TRUE(extension->from_bookmark());
+    EXPECT_EQ(kAppTitle, extension->name());
+    EXPECT_EQ(kAppDescription, extension->description());
+    EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+    EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
+                     extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY)
+                     .empty());
+  }
+
+  web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
+  web_app_info.icons[0] = CreateIconInfoWithBitmap(kIconSizeLarge, SK_ColorRED);
+
+  extensions::CreateOrUpdateBookmarkApp(service_, web_app_info);
+  base::RunLoop().RunUntilIdle();
+
+  {
+    EXPECT_EQ(1u, registry_->enabled_extensions().size());
+    const Extension* extension = service_->extensions()->begin()->get();
+    EXPECT_TRUE(extension->from_bookmark());
+    EXPECT_EQ(kAlternativeAppTitle, extension->name());
+    EXPECT_EQ(kAppDescription, extension->description());
+    EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
+    EXPECT_TRUE(extensions::IconsInfo::GetIconResource(
+                    extension, kIconSizeSmall, ExtensionIconSet::MATCH_EXACTLY)
+                    .empty());
+    EXPECT_FALSE(extensions::IconsInfo::GetIconResource(
+                     extension, kIconSizeLarge, ExtensionIconSet::MATCH_EXACTLY)
+                     .empty());
+  }
 }
 #endif
 

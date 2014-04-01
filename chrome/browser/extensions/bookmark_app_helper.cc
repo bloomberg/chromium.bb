@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -280,6 +281,14 @@ void BookmarkAppHelper::Observe(int type,
       NOTREACHED();
       break;
   }
+}
+
+void CreateOrUpdateBookmarkApp(ExtensionService* service,
+                               WebApplicationInfo& web_app_info) {
+  scoped_refptr<extensions::CrxInstaller> installer(
+      extensions::CrxInstaller::CreateSilent(service));
+  installer->set_error_on_unsupported_requirements(true);
+  installer->InstallWebApp(web_app_info);
 }
 
 }  // namespace extensions

@@ -88,6 +88,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 };
 
+// Creates or updates a bookmark app from the given |web_app_info|. Icons will
+// not be downloaded so only supplied icon data will be used.
+void CreateOrUpdateBookmarkApp(ExtensionService* service,
+                               WebApplicationInfo& web_app_info);
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_HELPER_H_
