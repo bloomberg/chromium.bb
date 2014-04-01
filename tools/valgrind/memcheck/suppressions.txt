@@ -6267,14 +6267,3 @@
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
    fun:_ZN3gpu12GpuScheduler10PutChangedEv
 }
-{
-   bug_348629
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7WebCore11ThreadStateC1Ev
-   fun:_ZN7WebCore11ThreadState6attachEv
-   fun:_ZN7WebCore12WorkerThread12workerThreadEv
-   fun:_ZN7WebCore12WorkerThread17workerThreadStartEPv
-   fun:_ZN3WTFL16threadEntryPointEPv
-   fun:_ZN3WTFL19wtfThreadEntryPointEPv
-}
