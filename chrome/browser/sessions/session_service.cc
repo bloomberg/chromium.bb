@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_data_deleter.h"
@@ -328,7 +329,30 @@ void SessionService::WindowClosing(const SessionID& window_id) {
     // false to true, so only update it if already true.
     has_open_trackable_browsers_ = HasOpenTrackableBrowsers(window_id);
   }
-  if (!has_open_trackable_browsers_)
+  bool use_pending_close = !has_open_trackable_browsers_;
+  if (!use_pending_close) {
+    // Somewhat outside of "normal behavior" is profile locking.  In this case
+    // (when IsSiginRequired has already been set True), we're closing all
+    // browser windows in turn but want them all to be restored when the user
+    // unlocks.  To accomplish this, we do a "pending close" on all windows
+    // instead of just the last one (which has no open_trackable_browsers).
+    // http://crbug.com/356818
+    //
+    // Some editions (like iOS) don't have a profile_manager and some tests
+    // don't supply one so be lenient.
+    if (g_browser_process) {
+      ProfileManager* profile_manager = g_browser_process->profile_manager();
+      if (profile_manager) {
+        ProfileInfoCache& profile_info =
+            profile_manager->GetProfileInfoCache();
+        size_t profile_index = profile_info.GetIndexOfProfileWithPath(
+            profile()->GetPath());
+        use_pending_close = profile_index != std::string::npos &&
+            profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
+      }
+    }
+  }
+  if (use_pending_close)
     pending_window_close_ids_.insert(window_id.id());
   else
     window_closing_ids_.insert(window_id.id());
@@ -1503,7 +1527,7 @@ void SessionService::CommitPendingCloses() {
 }
 
 bool SessionService::IsOnlyOneTabLeft() const {
-  if (!profile()) {
+  if (!profile() || profile()->AsTestingProfile()) {
     // We're testing, always return false.
     return false;
   }
@@ -1527,8 +1551,8 @@ bool SessionService::IsOnlyOneTabLeft() const {
 
 bool SessionService::HasOpenTrackableBrowsers(
     const SessionID& window_id) const {
-  if (!profile()) {
-    // We're testing, always return false.
+  if (!profile() || profile()->AsTestingProfile()) {
+    // We're testing, always return true.
     return true;
   }
 
@@ -1767,9 +1791,14 @@ void SessionService::TabClosing(WebContents* contents) {
 }
 
 void SessionService::MaybeDeleteSessionOnlyData() {
+  // Don't try anything if we're testing.  The browser_process is not fully
+  // created and DeleteSession will crash if we actually attempt it.
+  if (!profile() || profile()->AsTestingProfile())
+    return;
+
   // Clear session data if the last window for a profile has been closed and
   // closing the last window would normally close Chrome, unless background mode
-  // is active.
+  // is active.  Tests don't have a background_mode_manager.
   if (has_open_trackable_browsers_ ||
       browser_defaults::kBrowserAliveWithNoWindows ||
       g_browser_process->background_mode_manager()->IsBackgroundModeActive()) {
