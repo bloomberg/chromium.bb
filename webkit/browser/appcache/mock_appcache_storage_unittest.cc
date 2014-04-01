@@ -40,7 +40,8 @@ class MockAppCacheStorageTest : public testing::Test {
     }
 
     virtual void OnGroupMadeObsolete(AppCacheGroup* group,
-                                     bool success) OVERRIDE {
+                                     bool success,
+                                     int response_code) OVERRIDE {
       obsoleted_group_ = group;
       obsoleted_success_ = success;
     }
@@ -353,7 +354,7 @@ TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
   EXPECT_FALSE(cache->HasOneRef());
   EXPECT_FALSE(group->HasOneRef());
-  storage->MakeGroupObsolete(group.get(), &delegate);
+  storage->MakeGroupObsolete(group.get(), &delegate, 0);
   EXPECT_FALSE(group->is_obsolete());
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());

@@ -11,6 +11,7 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(appcache::EventID, appcache::EVENT_ID_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(appcache::Status, appcache::STATUS_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(appcache::ErrorReason, appcache::ERROR_REASON_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(appcache::AppCacheInfo)
   IPC_STRUCT_TRAITS_MEMBER(manifest_url)
@@ -32,6 +33,14 @@ IPC_STRUCT_TRAITS_BEGIN(appcache::AppCacheResourceInfo)
   IPC_STRUCT_TRAITS_MEMBER(is_fallback)
   IPC_STRUCT_TRAITS_MEMBER(is_foreign)
   IPC_STRUCT_TRAITS_MEMBER(is_explicit)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(appcache::ErrorDetails)
+IPC_STRUCT_TRAITS_MEMBER(message)
+IPC_STRUCT_TRAITS_MEMBER(reason)
+IPC_STRUCT_TRAITS_MEMBER(url)
+IPC_STRUCT_TRAITS_MEMBER(status)
+IPC_STRUCT_TRAITS_MEMBER(is_cross_origin)
 IPC_STRUCT_TRAITS_END()
 
 // AppCache messages sent from the child process to the browser.
@@ -132,7 +141,7 @@ IPC_MESSAGE_CONTROL4(AppCacheMsg_ProgressEventRaised,
 // Notifies the renderer of an AppCache error event.
 IPC_MESSAGE_CONTROL2(AppCacheMsg_ErrorEventRaised,
                      std::vector<int> /* host_ids */,
-                     std::string /* error_message */)
+                     appcache::ErrorDetails)
 
 // Notifies the renderer of an AppCache logging message.
 IPC_MESSAGE_CONTROL3(AppCacheMsg_LogMessage,

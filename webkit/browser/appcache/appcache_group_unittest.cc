@@ -38,8 +38,8 @@ class TestAppCacheFrontend : public appcache::AppCacheFrontend {
   }
 
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const std::string& message) OVERRIDE {
-  }
+                                  const appcache::ErrorDetails& details)
+      OVERRIDE {}
 
   virtual void OnProgressEventRaised(const std::vector<int>& host_ids,
                                      const GURL& url,

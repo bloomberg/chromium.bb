@@ -207,7 +207,8 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     virtual void OnGroupMadeObsolete(AppCacheGroup* group,
-                                     bool success) OVERRIDE {
+                                     bool success,
+                                     int response_code) OVERRIDE {
       obsoleted_group_ = group;
       obsoleted_success_ = success;
       test_->ScheduleNextTask();
@@ -820,7 +821,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(database()->InsertOnlineWhiteList(&online_whitelist_record));
 
     // Conduct the test.
-    storage()->MakeGroupObsolete(group_.get(), delegate());
+    storage()->MakeGroupObsolete(group_.get(), delegate(), 0);
     EXPECT_FALSE(group_->is_obsolete());
   }
 
@@ -1607,7 +1608,8 @@ class AppCacheStorageImplTest : public testing::Test {
         const GURL& url,
         int num_total, int num_complete) OVERRIDE {}
     virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const std::string& message) OVERRIDE {
+                                    const appcache::ErrorDetails& details)
+        OVERRIDE {
       error_event_was_raised_ = true;
     }
     virtual void OnLogMessage(int host_id, LogLevel log_level,

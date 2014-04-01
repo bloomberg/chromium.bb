@@ -8,12 +8,14 @@
 #include "base/id_map.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 using blink::WebApplicationCacheHost;
 using blink::WebApplicationCacheHostClient;
+using blink::WebString;
 using blink::WebURLRequest;
 using blink::WebURL;
 using blink::WebURLResponse;
@@ -133,16 +135,26 @@ void WebApplicationCacheHostImpl::OnProgressEventRaised(
 }
 
 void WebApplicationCacheHostImpl::OnErrorEventRaised(
-    const std::string& message) {
+    const appcache::ErrorDetails& details) {
   // Emit logging output prior to calling out to script as we can get
   // deleted within the script event handler.
   const char* kFormatString = "Application Cache Error event: %s";
-  std::string full_message = base::StringPrintf(kFormatString,
-                                                message.c_str());
+  std::string full_message =
+      base::StringPrintf(kFormatString, details.message.c_str());
   OnLogMessage(appcache::LOG_ERROR, full_message);
 
   status_ = cache_info_.is_complete ? appcache::IDLE : appcache::UNCACHED;
-  client_->notifyEventListener(static_cast<EventID>(appcache::ERROR_EVENT));
+  if (details.is_cross_origin) {
+    // Don't leak detailed information to script for cross-origin resources.
+    DCHECK_EQ(appcache::RESOURCE_ERROR, details.reason);
+    client_->notifyErrorEventListener(
+        static_cast<ErrorReason>(details.reason), details.url, 0, WebString());
+  } else {
+    client_->notifyErrorEventListener(static_cast<ErrorReason>(details.reason),
+                                      details.url,
+                                      details.status,
+                                      WebString::fromUTF8(details.message));
+  }
 }
 
 void WebApplicationCacheHostImpl::willStartMainResourceRequest(

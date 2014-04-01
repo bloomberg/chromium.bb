@@ -55,7 +55,8 @@ class AppCacheStorageImpl : public AppCacheStorage {
   virtual void MarkEntryAsForeign(const GURL& entry_url,
                                   int64 cache_id) OVERRIDE;
   virtual void MakeGroupObsolete(AppCacheGroup* group,
-                                 Delegate* delegate) OVERRIDE;
+                                 Delegate* delegate,
+                                 int response_code) OVERRIDE;
   virtual AppCacheResponseReader* CreateResponseReader(
       const GURL& manifest_url, int64 group_id, int64 response_id) OVERRIDE;
   virtual AppCacheResponseWriter* CreateResponseWriter(

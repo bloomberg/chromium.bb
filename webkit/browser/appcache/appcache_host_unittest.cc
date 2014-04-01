@@ -60,7 +60,8 @@ class AppCacheHostTest : public testing::Test {
     }
 
     virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                    const std::string& message) OVERRIDE {
+                                    const appcache::ErrorDetails& details)
+        OVERRIDE {
       last_event_id_ = ERROR_EVENT;
     }
 

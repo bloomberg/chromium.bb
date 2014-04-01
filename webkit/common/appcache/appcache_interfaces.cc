@@ -49,6 +49,27 @@ AppCacheResourceInfo::AppCacheResourceInfo()
 AppCacheResourceInfo::~AppCacheResourceInfo() {
 }
 
+ErrorDetails::ErrorDetails()
+    : message(),
+      reason(UNKNOWN_ERROR),
+      url(),
+      status(0),
+      is_cross_origin(false) {}
+
+ErrorDetails::ErrorDetails(
+    std::string in_message,
+    ErrorReason in_reason,
+    GURL in_url,
+    int in_status,
+    bool in_is_cross_origin)
+    : message(in_message),
+      reason(in_reason),
+      url(in_url),
+      status(in_status),
+      is_cross_origin(in_is_cross_origin) {}
+
+ErrorDetails::~ErrorDetails() {}
+
 Namespace::Namespace()
     : type(FALLBACK_NAMESPACE),
       is_pattern(false),

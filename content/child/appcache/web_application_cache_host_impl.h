@@ -34,7 +34,7 @@ class WebApplicationCacheHostImpl
   void OnStatusChanged(appcache::Status);
   void OnEventRaised(appcache::EventID);
   void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
-  void OnErrorEventRaised(const std::string& message);
+  void OnErrorEventRaised(const appcache::ErrorDetails& details);
   virtual void OnLogMessage(appcache::LogLevel log_level,
                             const std::string& message) {}
   virtual void OnContentBlocked(const GURL& manifest_url) {}

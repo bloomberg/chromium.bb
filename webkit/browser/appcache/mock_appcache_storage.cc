@@ -139,15 +139,18 @@ void MockAppCacheStorage::MarkEntryAsForeign(
   }
 }
 
-void MockAppCacheStorage::MakeGroupObsolete(
-    AppCacheGroup* group, Delegate* delegate) {
+void MockAppCacheStorage::MakeGroupObsolete(AppCacheGroup* group,
+                                            Delegate* delegate,
+                                            int response_code) {
   DCHECK(group && delegate);
 
   // Always make this method look async.
   ScheduleTask(
       base::Bind(&MockAppCacheStorage::ProcessMakeGroupObsolete,
-                 weak_factory_.GetWeakPtr(), make_scoped_refptr(group),
-                 make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+                 weak_factory_.GetWeakPtr(),
+                 make_scoped_refptr(group),
+                 make_scoped_refptr(GetOrCreateDelegateReference(delegate)),
+                 response_code));
 }
 
 AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(
@@ -415,10 +418,12 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
 
 void MockAppCacheStorage::ProcessMakeGroupObsolete(
     scoped_refptr<AppCacheGroup> group,
-    scoped_refptr<DelegateReference> delegate_ref) {
+    scoped_refptr<DelegateReference> delegate_ref,
+    int response_code) {
   if (simulate_make_group_obsolete_failure_) {
     if (delegate_ref->delegate)
-      delegate_ref->delegate->OnGroupMadeObsolete(group.get(), false);
+      delegate_ref->delegate->OnGroupMadeObsolete(
+          group.get(), false, response_code);
     return;
   }
 
@@ -439,7 +444,8 @@ void MockAppCacheStorage::ProcessMakeGroupObsolete(
   working_set()->RemoveGroup(group.get());
 
   if (delegate_ref->delegate)
-    delegate_ref->delegate->OnGroupMadeObsolete(group.get(), true);
+    delegate_ref->delegate->OnGroupMadeObsolete(
+        group.get(), true, response_code);
 }
 
 void MockAppCacheStorage::ScheduleTask(const base::Closure& task) {

@@ -13,8 +13,8 @@ namespace {
 
 class MockAppCacheFrontend : public AppCacheFrontend {
  public:
-  virtual void OnCacheSelected(
-      int host_id, const appcache::AppCacheInfo& info) OVERRIDE {}
+  virtual void OnCacheSelected(int host_id, const AppCacheInfo& info) OVERRIDE {
+  }
   virtual void OnStatusChanged(const std::vector<int>& host_ids,
                                Status status) OVERRIDE {}
   virtual void OnEventRaised(const std::vector<int>& host_ids,
@@ -24,7 +24,7 @@ class MockAppCacheFrontend : public AppCacheFrontend {
       const GURL& url,
       int num_total, int num_complete) OVERRIDE {}
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const std::string& message) OVERRIDE {}
+                                  const ErrorDetails& details) OVERRIDE {}
   virtual void OnLogMessage(int host_id, LogLevel log_level,
                             const std::string& message) OVERRIDE {}
   virtual void OnContentBlocked(

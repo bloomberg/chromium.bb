@@ -243,8 +243,9 @@ class MockFrontend : public AppCacheFrontend {
   }
 
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const std::string& message) OVERRIDE {
-    error_message_ = message;
+                                  const appcache::ErrorDetails& details)
+      OVERRIDE {
+    error_message_ = details.message;
     OnEventRaised(host_ids, ERROR_EVENT);
   }
 

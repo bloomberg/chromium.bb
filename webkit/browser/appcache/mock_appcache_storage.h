@@ -48,7 +48,8 @@ class MockAppCacheStorage : public AppCacheStorage {
   virtual void MarkEntryAsForeign(const GURL& entry_url,
                                   int64 cache_id) OVERRIDE;
   virtual void MakeGroupObsolete(AppCacheGroup* group,
-                                 Delegate* delegate) OVERRIDE;
+                                 Delegate* delegate,
+                                 int response_code) OVERRIDE;
   virtual AppCacheResponseReader* CreateResponseReader(
       const GURL& manifest_url, int64 group_id, int64 response_id) OVERRIDE;
   virtual AppCacheResponseWriter* CreateResponseWriter(
@@ -77,9 +78,9 @@ class MockAppCacheStorage : public AppCacheStorage {
   void ProcessStoreGroupAndNewestCache(
       scoped_refptr<AppCacheGroup> group, scoped_refptr<AppCache> newest_cache,
       scoped_refptr<DelegateReference> delegate_ref);
-  void ProcessMakeGroupObsolete(
-      scoped_refptr<AppCacheGroup> group,
-      scoped_refptr<DelegateReference> delegate_ref);
+  void ProcessMakeGroupObsolete(scoped_refptr<AppCacheGroup> group,
+                                scoped_refptr<DelegateReference> delegate_ref,
+                                int response_code);
   void ProcessFindResponseForMainRequest(
       const GURL& url, scoped_refptr<DelegateReference> delegate_ref);
 

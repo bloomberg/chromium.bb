@@ -116,7 +116,12 @@ void AppCacheHost::SelectCache(const GURL& document_url,
       std::vector<int> host_ids(1, host_id_);
       frontend_->OnEventRaised(host_ids, CHECKING_EVENT);
       frontend_->OnErrorEventRaised(
-          host_ids, "Cache creation was blocked by the content policy");
+          host_ids,
+          ErrorDetails("Cache creation was blocked by the content policy",
+                       POLICY_ERROR,
+                       GURL(),
+                       0,
+                       false /*is_cross_origin*/));
       frontend_->OnContentBlocked(host_id_, manifest_url);
       return;
     }

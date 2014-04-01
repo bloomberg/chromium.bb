@@ -1122,7 +1122,9 @@ void AppCacheStorageImpl::MarkEntryAsForeignTask::RunCompleted() {
 
 class AppCacheStorageImpl::MakeGroupObsoleteTask : public DatabaseTask {
  public:
-  MakeGroupObsoleteTask(AppCacheStorageImpl* storage, AppCacheGroup* group);
+  MakeGroupObsoleteTask(AppCacheStorageImpl* storage,
+                        AppCacheGroup* group,
+                        int response_code);
 
   // DatabaseTask:
   virtual void Run() OVERRIDE;
@@ -1137,16 +1139,22 @@ class AppCacheStorageImpl::MakeGroupObsoleteTask : public DatabaseTask {
   int64 group_id_;
   GURL origin_;
   bool success_;
+  int response_code_;
   int64 new_origin_usage_;
   std::vector<int64> newly_deletable_response_ids_;
 };
 
 AppCacheStorageImpl::MakeGroupObsoleteTask::MakeGroupObsoleteTask(
-    AppCacheStorageImpl* storage, AppCacheGroup* group)
-    : DatabaseTask(storage), group_(group), group_id_(group->group_id()),
+    AppCacheStorageImpl* storage,
+    AppCacheGroup* group,
+    int response_code)
+    : DatabaseTask(storage),
+      group_(group),
+      group_id_(group->group_id()),
       origin_(group->manifest_url().GetOrigin()),
-      success_(false), new_origin_usage_(-1) {
-}
+      success_(false),
+      response_code_(response_code),
+      new_origin_usage_(-1) {}
 
 void AppCacheStorageImpl::MakeGroupObsoleteTask::Run() {
   DCHECK(!success_);
@@ -1188,7 +1196,8 @@ void AppCacheStorageImpl::MakeGroupObsoleteTask::RunCompleted() {
       storage_->working_set()->RemoveGroup(group_.get());
     }
   }
-  FOR_EACH_DELEGATE(delegates_, OnGroupMadeObsolete(group_.get(), success_));
+  FOR_EACH_DELEGATE(
+      delegates_, OnGroupMadeObsolete(group_.get(), success_, response_code_));
   group_ = NULL;
 }
 
@@ -1607,11 +1616,12 @@ void AppCacheStorageImpl::MarkEntryAsForeign(
   pending_foreign_markings_.push_back(std::make_pair(entry_url, cache_id));
 }
 
-void AppCacheStorageImpl::MakeGroupObsolete(
-    AppCacheGroup* group, Delegate* delegate) {
+void AppCacheStorageImpl::MakeGroupObsolete(AppCacheGroup* group,
+                                            Delegate* delegate,
+                                            int response_code) {
   DCHECK(group && delegate);
   scoped_refptr<MakeGroupObsoleteTask> task(
-      new MakeGroupObsoleteTask(this, group));
+      new MakeGroupObsoleteTask(this, group, response_code));
   task->AddDelegate(GetOrCreateDelegateReference(delegate));
   task->Schedule();
 }

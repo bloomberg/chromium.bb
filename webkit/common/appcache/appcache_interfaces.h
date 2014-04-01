@@ -64,6 +64,18 @@ enum NamespaceType {
   NETWORK_NAMESPACE
 };
 
+enum ErrorReason {
+  MANIFEST_ERROR,
+  SIGNATURE_ERROR,
+  RESOURCE_ERROR,
+  CHANGED_ERROR,
+  ABORT_ERROR,
+  QUOTA_ERROR,
+  POLICY_ERROR,
+  UNKNOWN_ERROR,
+  ERROR_REASON_LAST = UNKNOWN_ERROR
+};
+
 struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheInfo {
   AppCacheInfo();
   ~AppCacheInfo();
@@ -95,6 +107,22 @@ struct WEBKIT_STORAGE_COMMON_EXPORT AppCacheResourceInfo {
   bool is_foreign;
   bool is_explicit;
   int64 response_id;
+};
+
+struct WEBKIT_STORAGE_COMMON_EXPORT ErrorDetails {
+  ErrorDetails();
+  ErrorDetails(std::string message,
+               ErrorReason reason,
+               GURL url,
+               int status,
+               bool is_cross_origin);
+  ~ErrorDetails();
+
+  std::string message;
+  ErrorReason reason;
+  GURL url;
+  int status;
+  bool is_cross_origin;
 };
 
 typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
@@ -131,7 +159,7 @@ class WEBKIT_STORAGE_COMMON_EXPORT AppCacheFrontend {
                                      const GURL& url,
                                      int num_total, int num_complete) = 0;
   virtual void OnErrorEventRaised(const std::vector<int>& host_ids,
-                                  const std::string& message) = 0;
+                                  const appcache::ErrorDetails& details) = 0;
   virtual void OnContentBlocked(int host_id,
                                 const GURL& manifest_url) = 0;
   virtual void OnLogMessage(int host_id, LogLevel log_level,

@@ -143,8 +143,9 @@ class AppCacheService::DeleteHelper : public AsyncHelper {
   // AppCacheStorage::Delegate implementation.
   virtual void OnGroupLoaded(
       appcache::AppCacheGroup* group, const GURL& manifest_url) OVERRIDE;
-  virtual void OnGroupMadeObsolete(
-      appcache::AppCacheGroup* group, bool success) OVERRIDE;
+  virtual void OnGroupMadeObsolete(appcache::AppCacheGroup* group,
+                                   bool success,
+                                   int response_code) OVERRIDE;
 
   GURL manifest_url_;
   DISALLOW_COPY_AND_ASSIGN(DeleteHelper);
@@ -155,7 +156,7 @@ void AppCacheService::DeleteHelper::OnGroupLoaded(
   if (group) {
     group->set_being_deleted(true);
     group->CancelUpdate();
-    service_->storage()->MakeGroupObsolete(group, this);
+    service_->storage()->MakeGroupObsolete(group, this, 0);
   } else {
     CallCallback(net::ERR_FAILED);
     delete this;
@@ -163,7 +164,9 @@ void AppCacheService::DeleteHelper::OnGroupLoaded(
 }
 
 void AppCacheService::DeleteHelper::OnGroupMadeObsolete(
-      appcache::AppCacheGroup* group, bool success) {
+    appcache::AppCacheGroup* group,
+    bool success,
+    int response_code) {
   CallCallback(success ? net::OK : net::ERR_FAILED);
   delete this;
 }
@@ -189,8 +192,9 @@ class AppCacheService::DeleteOriginHelper : public AsyncHelper {
   virtual void OnAllInfo(AppCacheInfoCollection* collection) OVERRIDE;
   virtual void OnGroupLoaded(
       appcache::AppCacheGroup* group, const GURL& manifest_url) OVERRIDE;
-  virtual void OnGroupMadeObsolete(
-      appcache::AppCacheGroup* group, bool success) OVERRIDE;
+  virtual void OnGroupMadeObsolete(appcache::AppCacheGroup* group,
+                                   bool success,
+                                   int response_code) OVERRIDE;
 
   void CacheCompleted(bool success);
 
@@ -236,14 +240,16 @@ void AppCacheService::DeleteOriginHelper::OnGroupLoaded(
   if (group) {
     group->set_being_deleted(true);
     group->CancelUpdate();
-    service_->storage()->MakeGroupObsolete(group, this);
+    service_->storage()->MakeGroupObsolete(group, this, 0);
   } else {
     CacheCompleted(false);
   }
 }
 
 void AppCacheService::DeleteOriginHelper::OnGroupMadeObsolete(
-      appcache::AppCacheGroup* group, bool success) {
+    appcache::AppCacheGroup* group,
+    bool success,
+    int response_code) {
   CacheCompleted(success);
 }
 

@@ -60,13 +60,14 @@ void AppCacheFrontendImpl::OnProgressEventRaised(
   }
 }
 
-void AppCacheFrontendImpl::OnErrorEventRaised(const std::vector<int>& host_ids,
-                                              const std::string& message) {
+void AppCacheFrontendImpl::OnErrorEventRaised(
+    const std::vector<int>& host_ids,
+    const appcache::ErrorDetails& details) {
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
     if (host)
-      host->OnErrorEventRaised(message);
+      host->OnErrorEventRaised(details);
   }
 }
 
@@ -99,6 +100,7 @@ COMPILE_ASSERT((int)WebApplicationCacheHost::UpdateReady ==
                (int)appcache::UPDATE_READY, UpdateReady);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Obsolete ==
                (int)appcache::OBSOLETE, Obsolete);
+
 COMPILE_ASSERT((int)WebApplicationCacheHost::CheckingEvent ==
                (int)appcache::CHECKING_EVENT, CheckingEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ErrorEvent ==
@@ -115,6 +117,7 @@ COMPILE_ASSERT((int)WebApplicationCacheHost::CachedEvent ==
                (int)appcache::CACHED_EVENT, CachedEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ObsoleteEvent ==
                (int)appcache::OBSOLETE_EVENT, ObsoleteEvent);
+
 COMPILE_ASSERT((int)WebConsoleMessage::LevelDebug ==
                (int)appcache::LOG_DEBUG, LevelDebug);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelLog ==
@@ -123,5 +126,30 @@ COMPILE_ASSERT((int)WebConsoleMessage::LevelWarning ==
                (int)appcache::LOG_WARNING, LevelWarning);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelError ==
                (int)appcache::LOG_ERROR, LevelError);
+
+COMPILE_ASSERT((int)WebApplicationCacheHost::ManifestError ==
+                   (int)appcache::MANIFEST_ERROR,
+               ManifestError);
+COMPILE_ASSERT((int)WebApplicationCacheHost::SignatureError ==
+                   (int)appcache::SIGNATURE_ERROR,
+               SignatureError);
+COMPILE_ASSERT((int)WebApplicationCacheHost::ResourceError ==
+                   (int)appcache::RESOURCE_ERROR,
+               ResourceError);
+COMPILE_ASSERT((int)WebApplicationCacheHost::ChangedError ==
+                   (int)appcache::CHANGED_ERROR,
+               ChangedError);
+COMPILE_ASSERT((int)WebApplicationCacheHost::AbortError ==
+                   (int)appcache::ABORT_ERROR,
+               AbortError);
+COMPILE_ASSERT((int)WebApplicationCacheHost::QuotaError ==
+                   (int)appcache::QUOTA_ERROR,
+               QuotaError);
+COMPILE_ASSERT((int)WebApplicationCacheHost::PolicyError ==
+                   (int)appcache::POLICY_ERROR,
+               PolicyError);
+COMPILE_ASSERT((int)WebApplicationCacheHost::UnknownError ==
+                   (int)appcache::UNKNOWN_ERROR,
+               UnknownError);
 
 }  // namespace content

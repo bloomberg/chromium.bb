@@ -54,8 +54,8 @@ void AppCacheDispatcher::OnProgressEventRaised(
 
 void AppCacheDispatcher::OnErrorEventRaised(
     const std::vector<int>& host_ids,
-    const std::string& message) {
-  frontend_->OnErrorEventRaised(host_ids, message);
+    const appcache::ErrorDetails& details) {
+  frontend_->OnErrorEventRaised(host_ids, details);
 }
 
 void AppCacheDispatcher::OnLogMessage(

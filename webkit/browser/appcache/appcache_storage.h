@@ -52,7 +52,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
         bool would_exceed_quota) {}
 
     // If the operation fails, success will be false.
-    virtual void OnGroupMadeObsolete(AppCacheGroup* group, bool success) {}
+    virtual void OnGroupMadeObsolete(AppCacheGroup* group,
+                                     bool success,
+                                     int response_code) {}
 
     // If a load fails the 'response_info' will be NULL.
     virtual void OnResponseInfoLoaded(
@@ -140,8 +142,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
   // Schedules a task to update persistent storage and doom the group and all
   // related caches and responses for deletion. Upon completion the in-memory
   // instance is marked as obsolete and the delegate callback is called.
-  virtual void MakeGroupObsolete(
-      AppCacheGroup* group, Delegate* delegate) = 0;
+  virtual void MakeGroupObsolete(AppCacheGroup* group,
+                                 Delegate* delegate,
+                                 int response_code) = 0;
 
   // Cancels all pending callbacks for the delegate. The delegate callbacks
   // will not be invoked after, however any scheduled operations will still
