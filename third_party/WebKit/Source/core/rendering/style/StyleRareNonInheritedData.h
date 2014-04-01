@@ -131,7 +131,6 @@ public:
 
     RefPtr<ShapeValue> m_shapeOutside;
     Length m_shapeMargin;
-    Length m_shapePadding;
     float m_shapeImageThreshold;
 
     RefPtr<ClipPathOperation> m_clipPath;

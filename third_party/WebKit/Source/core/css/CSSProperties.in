@@ -110,7 +110,6 @@ scroll-behavior type_name=ScrollBehavior
 shape-image-threshold type_name=float
 shape-margin type_name=Length, converter=convertLength
 shape-outside type_name=ShapeValue*, custom_value
-shape-padding type_name=Length, converter=convertLength
 size custom_all
 speak
 table-layout

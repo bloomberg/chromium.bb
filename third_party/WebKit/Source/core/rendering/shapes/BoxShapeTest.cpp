@@ -41,9 +41,9 @@ class BoxShapeTest : public ::testing::Test {
 protected:
     BoxShapeTest() { }
 
-    PassOwnPtr<Shape> createBoxShape(const RoundedRect& bounds, float shapeMargin, float shapePadding)
+    PassOwnPtr<Shape> createBoxShape(const RoundedRect& bounds, float shapeMargin)
     {
-        return Shape::createBoxShape(bounds, TopToBottomWritingMode, Length(shapeMargin, Fixed), Length(shapePadding, Fixed));
+        return Shape::createLayoutBoxShape(bounds, TopToBottomWritingMode, Length(shapeMargin, Fixed));
     }
 };
 
@@ -71,24 +71,6 @@ using namespace WebCore;
     EXPECT_EQ(0u, result.size());                                \
 }
 
-#define TEST_INCLUDED_INTERVAL(shapePtr, lineTop, lineHeight, expectedLeft, expectedRight) \
-{                                                                                          \
-    SegmentList result;                                                                    \
-    shapePtr->getIncludedIntervals(lineTop, lineHeight, result);                           \
-    EXPECT_EQ(1u, result.size());                                                          \
-    if (result.size() == 1u) {                                                             \
-        EXPECT_FLOAT_EQ(expectedLeft, result[0].logicalLeft);                              \
-        EXPECT_FLOAT_EQ(expectedRight, result[0].logicalRight);                            \
-    }                                                                                      \
-}
-
-#define TEST_NO_INCLUDED_INTERVAL(shapePtr, lineTop, lineHeight) \
-{                                                                \
-    SegmentList result;                                          \
-    shapePtr->getIncludedIntervals(lineTop, lineHeight, result); \
-    EXPECT_EQ(0u, result.size());                                \
-}
-
 /* The BoxShape is based on a 100x50 rectangle at 0,0. The shape-margin value is 10,
  * so the shapeMarginBoundingBox rectangle is 120x70 at -10,-10:
  *
@@ -97,23 +79,13 @@ using namespace WebCore;
  *       |        |
  *       +--------+
  *   -10,60     60,60
- *
- * The shape-padding value is 20, so the shapePaddingBoundingBox
- * rectangle is 60x10 at 20,20:
- *
- *     20,20    80,20
- *       +--------+
- *       |        |
- *       +--------+
- *     20,30    80,30
  */
 TEST_F(BoxShapeTest, zeroRadii)
 {
-    OwnPtr<Shape> shape = createBoxShape(RoundedRect(0, 0, 100, 50), 10, 20);
+    OwnPtr<Shape> shape = createBoxShape(RoundedRect(0, 0, 100, 50), 10);
     EXPECT_FALSE(shape->isEmpty());
 
     EXPECT_EQ(LayoutRect(-10, -10, 120, 70), shape->shapeMarginLogicalBoundingBox());
-    EXPECT_EQ(LayoutRect(20, 20, 60, 10), shape->shapePaddingLogicalBoundingBox());
 
     // A BoxShape's bounds include the top edge but not the bottom edge.
     // Similarly a "line", specified as top,height to the overlap methods,
@@ -138,32 +110,6 @@ TEST_F(BoxShapeTest, zeroRadii)
     TEST_NO_EXCLUDED_INTERVAL(shape, -12, 2);
     TEST_NO_EXCLUDED_INTERVAL(shape, 60, 1);
     TEST_NO_EXCLUDED_INTERVAL(shape, 100, 200);
-
-    EXPECT_TRUE(shape->lineOverlapsShapePaddingBounds(21, 1));
-    EXPECT_TRUE(shape->lineOverlapsShapePaddingBounds(20, 0));
-    EXPECT_TRUE(shape->lineOverlapsShapePaddingBounds(-10, 200));
-    EXPECT_TRUE(shape->lineOverlapsShapePaddingBounds(25, 35));
-    EXPECT_TRUE(shape->lineOverlapsShapePaddingBounds(29, 1));
-
-    EXPECT_FALSE(shape->lineOverlapsShapePaddingBounds(18, 2));
-    EXPECT_FALSE(shape->lineOverlapsShapePaddingBounds(30, 1));
-    EXPECT_FALSE(shape->lineOverlapsShapePaddingBounds(100, 200));
-
-    // A BoxShape only includes a line if the lines's top and
-    // bottom fit within the shapePaddingLogicalBoundingBox:
-    // top >= box.y && top + height <= box.maxY
-
-    TEST_INCLUDED_INTERVAL(shape, 21, 1, 20, 80);
-    TEST_INCLUDED_INTERVAL(shape, 20, 0, 20, 80);
-    TEST_INCLUDED_INTERVAL(shape, 20, 10, 20, 80);
-    TEST_INCLUDED_INTERVAL(shape, 25, 5, 20, 80);
-    TEST_INCLUDED_INTERVAL(shape, 29, 1, 20, 80);
-
-    TEST_NO_INCLUDED_INTERVAL(shape, 18, 2);
-    TEST_NO_INCLUDED_INTERVAL(shape, 30, 1);
-    TEST_NO_INCLUDED_INTERVAL(shape, 100, 200);
-    TEST_NO_INCLUDED_INTERVAL(shape, 19, 10);
-    TEST_NO_INCLUDED_INTERVAL(shape, 20, 100);
 }
 
 /* BoxShape geometry for this test. Corner radii are in parens, x and y intercepts
@@ -181,16 +127,10 @@ TEST_F(BoxShapeTest, zeroRadii)
 TEST_F(BoxShapeTest, getIntervals)
 {
     const RoundedRect::Radii cornerRadii(IntSize(10, 15), IntSize(10, 20), IntSize(25, 15), IntSize(20, 30));
-    OwnPtr<Shape> shape = createBoxShape(RoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0, 0);
+    OwnPtr<Shape> shape = createBoxShape(RoundedRect(IntRect(0, 0, 100, 100), cornerRadii), 0);
     EXPECT_FALSE(shape->isEmpty());
 
     EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->shapeMarginLogicalBoundingBox());
-    EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->shapePaddingLogicalBoundingBox());
-
-    TEST_INCLUDED_INTERVAL(shape, 5, 25, 2.5464401f, 96.61438f);
-    TEST_INCLUDED_INTERVAL(shape, 15, 1, 0, 99.682457f);
-    TEST_INCLUDED_INTERVAL(shape, 20, 50, 0, 100);
-    TEST_INCLUDED_INTERVAL(shape, 85, 10, 6.3661003f, 91.05542f);
 
     TEST_EXCLUDED_INTERVAL(shape, 10, 95, 0, 100);
     TEST_EXCLUDED_INTERVAL(shape, 5, 25, 0, 100);

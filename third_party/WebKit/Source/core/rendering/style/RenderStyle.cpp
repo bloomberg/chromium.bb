@@ -422,7 +422,6 @@ StyleDifference RenderStyle::visualInvalidationDiff(const RenderStyle& other, un
             || rareNonInheritedData->m_wrapFlow != other.rareNonInheritedData->m_wrapFlow
             || rareNonInheritedData->m_wrapThrough != other.rareNonInheritedData->m_wrapThrough
             || rareNonInheritedData->m_shapeMargin != other.rareNonInheritedData->m_shapeMargin
-            || rareNonInheritedData->m_shapePadding != other.rareNonInheritedData->m_shapePadding
             || rareNonInheritedData->m_order != other.rareNonInheritedData->m_order
             || rareNonInheritedData->m_alignContent != other.rareNonInheritedData->m_alignContent
             || rareNonInheritedData->m_alignItems != other.rareNonInheritedData->m_alignItems

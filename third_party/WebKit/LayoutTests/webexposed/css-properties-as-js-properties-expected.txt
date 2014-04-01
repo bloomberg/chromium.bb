@@ -197,7 +197,6 @@ scrollBehavior
 shapeImageThreshold
 shapeMargin
 shapeOutside
-shapePadding
 shapeRendering
 size
 speak

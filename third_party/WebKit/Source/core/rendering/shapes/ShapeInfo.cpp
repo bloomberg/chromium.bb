@@ -113,7 +113,6 @@ const Shape& ShapeInfo<RenderType>::computedShape() const
 
     WritingMode writingMode = this->styleForWritingMode()->writingMode();
     Length margin = m_renderer.style()->shapeMargin();
-    Length padding = m_renderer.style()->shapePadding();
     float shapeImageThreshold = m_renderer.style()->shapeImageThreshold();
     const ShapeValue* shapeValue = this->shapeValue();
     ASSERT(shapeValue);
@@ -121,19 +120,19 @@ const Shape& ShapeInfo<RenderType>::computedShape() const
     switch (shapeValue->type()) {
     case ShapeValue::Shape:
         ASSERT(shapeValue->shape());
-        m_shape = Shape::createShape(shapeValue->shape(), m_referenceBoxLogicalSize, writingMode, margin, padding);
+        m_shape = Shape::createShape(shapeValue->shape(), m_referenceBoxLogicalSize, writingMode, margin);
         break;
     case ShapeValue::Image: {
         Image* image;
         LayoutRect imageRect;
         getShapeImageAndRect(shapeValue, &m_renderer, m_referenceBoxLogicalSize, image, imageRect);
         const LayoutRect& marginRect = getShapeImageMarginRect(m_renderer, m_referenceBoxLogicalSize);
-        m_shape = Shape::createRasterShape(image, shapeImageThreshold, imageRect, marginRect, writingMode, margin, padding);
+        m_shape = Shape::createRasterShape(image, shapeImageThreshold, imageRect, marginRect, writingMode, margin);
         break;
     }
     case ShapeValue::Box: {
         const RoundedRect& shapeRect = m_renderer.style()->getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_renderer.view());
-        m_shape = Shape::createBoxShape(shapeRect, writingMode, margin, padding);
+        m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin);
         break;
     }
     case ShapeValue::Outside:

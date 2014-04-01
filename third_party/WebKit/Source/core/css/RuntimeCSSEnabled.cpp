@@ -52,7 +52,6 @@ static void setPropertySwitchesFromRuntimeFeatures()
     setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
     CSSPropertyID shapeProperties[] = {
         CSSPropertyShapeMargin,
-        CSSPropertyShapePadding,
         CSSPropertyShapeImageThreshold,
         CSSPropertyShapeOutside,
     };
