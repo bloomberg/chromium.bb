@@ -1395,22 +1395,31 @@ internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
   paladin_builder_name='x86-mario nowithdebug-paladin',
 )
 
-internal_pre_cq = internal_paladin.derive(
+pre_cq = internal_paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
   build_packages_in_background=True,
   compilecheck=True,
   pre_cq=True,
-  quick_unit=True,
   description='Verifies compilation and unit tests',
 )
 
+# Pre-CQ targets that only check compilation.
+compile_only_pre_cq = pre_cq.derive(
+  description='Verifies compilation only',
+  unittests=False,
+)
+
+# TODO(davidjames): Add peach_pit, nyan, and beaglebone to pre-cq.
 _config.add_group(constants.PRE_CQ_BUILDER_NAME,
-  internal_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
-  internal_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
-  internal_pre_cq.add_config('daisy_spring-pre-cq',
-                             arm, boards=['daisy_spring']),
-  internal_pre_cq.add_config('peach_pit-pre-cq',
-                             arm, boards=['peach_pit']),
+  # amd64 w/kernel 3.10.
+  pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
+  # daisy w/kernel 3.8.
+  pre_cq.add_config('daisy_spring-pre-cq', arm, boards=['daisy_spring']),
+
+  # lumpy w/kernel 3.8.
+  compile_only_pre_cq.add_config('lumpy-pre-cq', arm, boards=['lumpy']),
+  # amd64 w/kernel 3.4.
+  compile_only_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
 )
 
 internal_paladin.add_config('pre-cq-launcher',
