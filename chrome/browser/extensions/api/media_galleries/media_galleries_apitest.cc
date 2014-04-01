@@ -372,11 +372,6 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
                          .AppendASCII("common");
   }
 
-  base::FilePath GetWallpaperTestDataDir() const {
-    return test_data_dir_.AppendASCII("api_test")
-                         .AppendASCII("wallpaper");
-  }
-
   int num_galleries() const {
     return ensure_media_directories_exists_->num_galleries();
   }
@@ -612,7 +607,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, GetMetadata) {
 
   AddFileToSingleFakeGallery(media::GetTestDataFilePath("90rotation.mp4"));
   AddFileToSingleFakeGallery(media::GetTestDataFilePath("id3_png_test.mp3"));
-  AddFileToSingleFakeGallery(GetWallpaperTestDataDir().AppendASCII("test.jpg"));
 
   base::ListValue custom_args;
 #if defined(USE_PROPRIETARY_CODECS)

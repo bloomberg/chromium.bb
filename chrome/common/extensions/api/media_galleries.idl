@@ -104,26 +104,13 @@ namespace mediaGalleries {
     long? height;
     long? width;
 
-    // Defined for images only.
-    double? xResolution;
-    double? yResolution;
-
     // Defined for audio and video. In seconds.
     double? duration;
     
     // Defined for images and video. In degrees.
     long? rotation;
 
-    // Defined for images only.
-    DOMString? cameraMake;
-    DOMString? cameraModel;
-    double? exposureTimeSeconds;
-    boolean? flashFired;
-    double? fNumber;
-    double? focalLengthMm;
-    double? isoEquivalent;
-
-    // Defined for audio and video only.
+    // Generic metadata tags.
     DOMString? album;
     DOMString? artist;
     DOMString? comment;
