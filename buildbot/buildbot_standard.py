@@ -33,6 +33,7 @@ def SetupWindowsEnvironment(context):
 
   # The location of MSVC can differ depending on the version.
   msvc_locs = [
+      ('Microsoft Visual Studio 12.0', 'VS120COMNTOOLS', '2013'),
       ('Microsoft Visual Studio 10.0', 'VS100COMNTOOLS', '2010'),
       ('Microsoft Visual Studio 9.0', 'VS90COMNTOOLS', '2008'),
       ('Microsoft Visual Studio 8.0', 'VS80COMNTOOLS', '2005'),

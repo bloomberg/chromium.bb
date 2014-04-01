@@ -15,19 +15,13 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_CHECKED_CAST_H_ 1
 
 // Windows defines std::min and std::max in a different header
-// than gcc.
+// than gcc prior to Visual Studio 2013.
 #if NACL_WINDOWS
 #include <xutility>
 #endif
 
-#include <limits>
-
-#if !NACL_WINDOWS
-// this is where std::min/max SHOULD live. It's included here (rather than
-// in an else block along with the Windows include above) to avoid breaking
-// google cpplint's header file inclusion order rules.
 #include <algorithm>
-#endif
+#include <limits>
 
 // TODO(ilewis): remove reference to base as soon as we can get COMPILE_ASSERT
 //                from another source.
