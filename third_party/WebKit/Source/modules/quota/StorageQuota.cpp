@@ -106,7 +106,14 @@ ScriptPromise StorageQuota::requestPersistentQuota(ExecutionContext* executionCo
 {
     ASSERT(executionContext);
 
-    return StorageQuotaClient::from(executionContext)->requestPersistentQuota(executionContext, newQuota);
+    StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
+    if (!client) {
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+        resolver->reject(DOMError::create(NotSupportedError));
+        return resolver->promise();
+    }
+
+    return client->requestPersistentQuota(executionContext, newQuota);
 }
 
 StorageQuota::~StorageQuota()

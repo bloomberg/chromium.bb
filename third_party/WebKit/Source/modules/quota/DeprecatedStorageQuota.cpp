@@ -85,7 +85,13 @@ void DeprecatedStorageQuota::requestQuota(ExecutionContext* executionContext, un
         return;
     }
 
-    StorageQuotaClient::from(executionContext)->requestQuota(executionContext, storageType, newQuotaInBytes, successCallback, errorCallback);
+    StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
+    if (!client) {
+        executionContext->postTask(StorageErrorCallback::CallbackTask::create(errorCallback, NotSupportedError));
+        return;
+    }
+
+    client->requestQuota(executionContext, storageType, newQuotaInBytes, successCallback, errorCallback);
 }
 
 DeprecatedStorageQuota::~DeprecatedStorageQuota()
