@@ -581,6 +581,9 @@ class RemoteDeviceUpdater(object):
     try:
       ds.Start()
       url = ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=timeout)
+      # Prints the board/version.
+      logging.info('Using image from %s',
+                   os.path.join(*url.split(os.path.sep)[-2:]))
       ds.DownloadFile(os.path.join(url, self.ROOTFS_FILENAME), payload_dir)
       ds.DownloadFile(os.path.join(url, self.STATEFUL_FILENAME), payload_dir)
     except ds_wrapper.DevServerException:
