@@ -260,6 +260,14 @@ void MD5Final(MD5Digest* digest, MD5Context* context) {
         memset(ctx, 0, sizeof(*ctx));    /* In case it's sensitive */
 }
 
+void MD5IntermediateFinal(MD5Digest* digest, const MD5Context* context) {
+  /* MD5Final mutates the MD5Context*. Make a copy for generating the
+     intermediate value. */
+  MD5Context context_copy;
+  memcpy(&context_copy, context, sizeof(context_copy));
+  MD5Final(digest, &context_copy);
+}
+
 std::string MD5DigestToBase16(const MD5Digest& digest) {
   static char const zEncode[] = "0123456789abcdef";
 
