@@ -77,7 +77,8 @@ WebDataServiceBase::Handle WebDataService::GetKeywords(
 
 void WebDataService::SetDefaultSearchProviderID(TemplateURLID id) {
   wdbs_->ScheduleDBTask(
-      FROM_HERE, Bind(&WebDataService::SetDefaultSearchProviderImpl, this, id));
+      FROM_HERE,
+      Bind(&WebDataService::SetDefaultSearchProviderIDImpl, this, id));
 }
 
 void WebDataService::SetBuiltinKeywordVersion(int version) {
@@ -165,14 +166,16 @@ scoped_ptr<WDTypedResult> WebDataService::GetKeywordsImpl(WebDatabase* db) {
   return result_ptr.Pass();
 }
 
-WebDatabase::State WebDataService::SetDefaultSearchProviderImpl(
-    TemplateURLID id, WebDatabase* db) {
+WebDatabase::State WebDataService::SetDefaultSearchProviderIDImpl(
+    TemplateURLID id,
+    WebDatabase* db) {
   return KeywordTable::FromWebDatabase(db)->SetDefaultSearchProviderID(id) ?
       WebDatabase::COMMIT_NEEDED : WebDatabase::COMMIT_NOT_NEEDED;
 }
 
 WebDatabase::State WebDataService::SetBuiltinKeywordVersionImpl(
-    int version, WebDatabase* db) {
+    int version,
+    WebDatabase* db) {
   return KeywordTable::FromWebDatabase(db)->SetBuiltinKeywordVersion(version) ?
       WebDatabase::COMMIT_NEEDED : WebDatabase::COMMIT_NOT_NEEDED;
 }

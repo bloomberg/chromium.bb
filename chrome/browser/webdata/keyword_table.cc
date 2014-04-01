@@ -569,7 +569,7 @@ bool KeywordTable::GetTableContents(const char* table_name,
   std::string query("SELECT " + ColumnsForVersion(table_version, true) +
       " FROM " + std::string(table_name) + " ORDER BY id ASC");
   sql::Statement s((table_version == WebDatabase::kCurrentVersionNumber) ?
-      db_->GetCachedStatement(sql::StatementID(table_name), query.c_str()) :
+      db_->GetCachedStatement(SQL_FROM_HERE, query.c_str()) :
       db_->GetUniqueStatement(query.c_str()));
   while (s.Step())
     *contents += s.ColumnString(0);

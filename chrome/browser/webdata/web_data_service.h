@@ -194,8 +194,8 @@ class WebDataService : public WebDataServiceBase {
   WebDatabase::State UpdateKeywordImpl(const TemplateURLData& data,
                                        WebDatabase* db);
   scoped_ptr<WDTypedResult> GetKeywordsImpl(WebDatabase* db);
-  WebDatabase::State SetDefaultSearchProviderImpl(TemplateURLID r,
-                                                  WebDatabase* db);
+  WebDatabase::State SetDefaultSearchProviderIDImpl(TemplateURLID id,
+                                                    WebDatabase* db);
   WebDatabase::State SetBuiltinKeywordVersionImpl(int version, WebDatabase* db);
 
   //////////////////////////////////////////////////////////////////////////////
