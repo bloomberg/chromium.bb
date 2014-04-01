@@ -158,7 +158,8 @@ class SCMWrapper(object):
 
     actual_remote_url = self.GetActualRemoteURL()
     if actual_remote_url:
-      return actual_remote_url.rstrip('/') == self.url.rstrip('/')
+      return (gclient_utils.SplitUrlRevision(actual_remote_url)[0].rstrip('/')
+              == gclient_utils.SplitUrlRevision(self.url)[0].rstrip('/'))
     else:
       # This may occur if the self.checkout_path exists but does not contain a
       # valid git or svn checkout.
