@@ -118,35 +118,27 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
   std::string utf8_content_;
 };
 
-// Broken due to Polymer version mismatch http://crbug.com/357946.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_AttributesTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, AttributesTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("attributes_test.js")));
 }
 
-// Broken due to Polymer version mismatch http://crbug.com/357946.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_TypingTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")));
 }
 
-// Broken due to Polymer version mismatch http://crbug.com/357946.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_ControlKeysTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, ControlKeysTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("control_keys_test.js")));
 }
 
-// Broken due to Polymer version mismatch http://crbug.com/357946.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest,
-                       DISABLED_HideKeyboardKeyTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, HideKeyboardKeyTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("hide_keyboard_key_test.js")));
 }
 
-// Broken due to Polymer version mismatch http://crbug.com/357946.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest,
-                       DISABLED_KeysetTransitionTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, KeysetTransitionTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("keyset_transition_test.js")));
 }
 
-// Broken due to Polymer version mismatch http://crbug.com/357946.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_IsKeyboardLoaded) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, IsKeyboardLoaded) {
   content::RenderViewHost* keyboard_rvh = GetKeyboardRenderViewHost();
   ASSERT_TRUE(keyboard_rvh);
   bool loaded = false;
@@ -159,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_IsKeyboardLoaded) {
   ASSERT_TRUE(loaded);
 }
 
-// Broken due to Polymer version mismatch http://crbug.com/357946.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_EndToEndTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, EndToEndTest) {
   // Get the virtual keyboard's render view host.
   content::RenderViewHost* keyboard_rvh = GetKeyboardRenderViewHost();
   ASSERT_TRUE(keyboard_rvh);
