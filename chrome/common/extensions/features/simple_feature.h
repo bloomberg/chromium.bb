@@ -87,6 +87,7 @@ class SimpleFeature : public Feature {
   virtual std::set<Context>* GetContexts() OVERRIDE;
 
   virtual bool IsInternal() const OVERRIDE;
+  virtual bool IsBlockedInServiceWorker() const OVERRIDE;
 
   virtual bool IsIdInWhitelist(const std::string& extension_id) const OVERRIDE;
   static bool IsIdInWhitelist(const std::string& extension_id,

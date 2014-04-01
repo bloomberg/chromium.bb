@@ -37,6 +37,7 @@ class ComplexFeature : public Feature {
                                             Platform platform) const OVERRIDE;
 
   virtual bool IsIdInWhitelist(const std::string& extension_id) const OVERRIDE;
+  virtual bool IsBlockedInServiceWorker() const OVERRIDE;
 
  protected:
   // extensions::Feature:

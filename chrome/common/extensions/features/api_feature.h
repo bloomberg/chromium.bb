@@ -14,14 +14,17 @@ class APIFeature : public SimpleFeature {
   APIFeature();
   virtual ~APIFeature();
 
+  // extensions::Feature:
   virtual bool IsInternal() const OVERRIDE;
+  virtual bool IsBlockedInServiceWorker() const OVERRIDE;
 
   virtual std::string Parse(const base::DictionaryValue* value) OVERRIDE;
 
  private:
   bool internal_;
+  bool blocked_in_service_worker_;
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // CHROME_COMMON_EXTENSIONS_FEATURES_API_FEATURE_H_
