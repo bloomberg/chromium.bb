@@ -622,11 +622,18 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // |last_used_profile| is the last used incognito profile. Restoring it will
   // create a browser window for the corresponding original profile.
   if (last_opened_profiles.empty()) {
-    // If the last used profile was a guest, show the user manager instead.
-    if (switches::IsNewProfileManagement() &&
-        last_used_profile->IsGuestSession()) {
-      chrome::ShowUserManager(base::FilePath());
-      return true;
+    // If the last used profile is locked or was a guest, show the user manager.
+    if (switches::IsNewProfileManagement()) {
+      ProfileInfoCache& profile_info =
+          g_browser_process->profile_manager()->GetProfileInfoCache();
+      size_t profile_index = profile_info.GetIndexOfProfileWithPath(
+          last_used_profile->GetPath());
+      bool signin_required = profile_index != std::string::npos &&
+          profile_info.ProfileIsSigninRequiredAtIndex(profile_index);
+      if (signin_required || last_used_profile->IsGuestSession()) {
+        chrome::ShowUserManager(base::FilePath());
+        return true;
+      }
     }
     if (!browser_creator->LaunchBrowser(command_line, last_used_profile,
                                         cur_dir, is_process_startup,
