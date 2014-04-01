@@ -210,6 +210,11 @@ class GerritHelper(object):
         return [patch_dict]
       return [cros_patch.GerritPatch(patch_dict, self.remote, url_prefix)]
 
+    if change and git.IsSHA1(change, full=True):
+      # Use commit:sha1 for accurate query results (crbug.com/358381).
+      kwargs['commit'] = change
+      change = None
+
     if change and query_kwds.get('change'):
       raise GerritException('Bad query params: provided a change-id-like query,'
                             ' and a "change" search parameter')
