@@ -9,16 +9,12 @@
 # NOTE: we assume you have a symlink "CLIENT" in this directory pointing
 #       to your .../native_client directory
 
-ifndef BUILD_PLATFORM
-BUILD_PLATFORM="build_platform_undefined"
-endif
-
 ifndef SCONS_BUILD_PLATFORM
 SCONS_BUILD_PLATFORM="scons_build_platform_undefined"
 endif
 
-ifndef BUILD_ARCH
-BUILD_ARCH="build_arch_undefined"
+ifndef BUILD_ARCH_SHORT
+BUILD_ARCH_SHORT="build_arch_short_undefined"
 endif
 
 TC_ROOT=../../../toolchain

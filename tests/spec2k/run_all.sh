@@ -39,8 +39,9 @@ SPEC2K_BENCHMARKS="${LIST_FP_C} ${LIST_INT_C} ${LIST_INT_CPP}"
 # One of {./run.train.sh, ./run.ref.sh}
 SPEC2K_SCRIPT="./run.train.sh"
 
-# uncomment this to disable verification
-# verification time will be part of  overall benchmarking time
+# Uncomment this to disable verification of test results.
+# Otherwise, verification time is part of overall benchmarking time
+# (should probably separate that out).
 # export VERIFY=no
 export VERIFY=${VERIFY:-yes}
 export MAKEOPTS=${MAKEOPTS:-}
@@ -56,7 +57,6 @@ export SPEC_COMPILE_REPETITIONS=${SPEC_COMPILE_REPETITIONS:-1}
 
 export PNACL_LIBMODE=${PNACL_LIBMODE:-newlib}
 export DASHDASH=""
-DO_SIZE=true
 
 ######################################################################
 # Helper
@@ -69,32 +69,16 @@ readonly TC_BASE="${TC_ROOT}/${SCONS_BUILD_PLATFORM}_${BUILD_ARCH_SHORT}"
 readonly ARM_TRUSTED_TC="${TC_BASE}/arm_trusted"
 readonly QEMU_TOOL="${ARM_TRUSTED_TC}/run_under_qemu_arm"
 
-readonly PNACL_TC="${TC_BASE}/pnacl_newlib/${PNACL_LIBMODE}"
 readonly ARM_LLC_NEXE="${TC_BASE}/pnacl_translator/armv7/bin/pnacl-llc.nexe"
 
 readonly NNACL_TC="${TC_BASE}/nacl_${BUILD_ARCH_SHORT}_glibc"
 readonly RUNNABLE_LD_X8632="${NNACL_TC}/x86_64-nacl/lib32/runnable-ld.so"
 readonly RUNNABLE_LD_X8664="${NNACL_TC}/x86_64-nacl/lib/runnable-ld.so"
 
-gnu_size() {
-  if ! ${DO_SIZE}; then
-    return 0
-  fi
-  # If the PNaCl toolchain is installed, prefer to use its "size".
-  # TODO(robertm): standardize on one of the pnacl dirs
-  if [ -d "${PNACL_TC}/../host/bin/" ] ; then
-    GNU_SIZE="${PNACL_TC}/../host/bin/arm-pc-nacl-size"
-  elif [ -d "${PNACL_TC}/../pkg/binutils/bin/" ] ; then
-    GNU_SIZE="${PNACL_TC}/../pkg/binutils/bin/arm-pc-nacl-size"
-  elif ${BUILD_PLATFORM_LINUX} ; then
-    GNU_SIZE="size"
-  else
-    # There's nothing we can run here.
-    # The system might have "size" installed, but if it is not GNU,
-    # there's no guarantee it can handle ELF.
-    return 0
-  fi
-  "${GNU_SIZE}" "$@"
+echo_file_size() {
+  local file=$1
+  echo "Uncompressed size of ${file} is $(cat ${file} | wc -c)"
+  echo "Gzipped size of ${file} is $(gzip ${file} -c | wc -c)"
 }
 
 ######################################################################
@@ -155,7 +139,6 @@ SetupGccX8664Opt() {
 SetupEmcc() {
   PREFIX=../run_asmjs.sh
   SUFFIX=emcc.html
-  DO_SIZE=false
   VERIFY=no
 }
 
@@ -347,29 +330,6 @@ SetupPnaclTranslatorFastX8664Opt() {
   SUFFIX=pnacl_translator_fast.opt.x8664
 }
 
-
-
-SetupPnaclTranslatorJITX8632Common() {
- SetupSelLdr x86-32 "" "-S" "${RUNNABLE_LD_X8632} -- --library-path ${NNACL_TC}/x86_64-nacl/lib32 ${TC_BASE}/pnacl_newlib/glibc/tools-sb/x8632/nonsrpc/bin/lli.x8632.nexe -asm-verbose=false -march=x86 -mcpu=pentium4 -mtriple=i686-none-nacl-gnu -jit-emit-debug=false -disable-lazy-compilation"
-  DO_SIZE=false
-  DASHDASH=""
-}
-
-#@
-#@ SetupPnaclTranslatorJITX8632
-#@    use pnacl x8632 JIT translator (no lto)
-SetupPnaclTranslatorJITX8632() {
-  SetupPnaclTranslatorJITX8632Common
-  SUFFIX=unopt.pexe
-}
-
-#@
-#@ SetupPnaclTranslatorJITX8632Opt
-#@    use pnacl x8632 JIT translator
-SetupPnaclTranslatorJITX8632Opt() {
-  SetupPnaclTranslatorJITX8632Common
-  SUFFIX=opt.stripped.pexe
-}
 
 SetupPnaclX8632Common() {
   SetupSelLdr x86-32
@@ -707,9 +667,7 @@ BuildBenchmarks() {
          PERF_LOGGER="${PERF_LOGGER}" \
          REPETITIONS="${SPEC_COMPILE_REPETITIONS}" \
          COMPILE_REPEATER="${COMPILE_REPEATER}" \
-         BUILD_PLATFORM=${BUILD_PLATFORM} \
          SCONS_BUILD_PLATFORM=${SCONS_BUILD_PLATFORM} \
-         BUILD_ARCH=${BUILD_ARCH} \
          BUILD_ARCH_SHORT=${BUILD_ARCH_SHORT} \
          PNACL_LIBMODE=${PNACL_LIBMODE} \
          ${i#*.}.${SUFFIX}
@@ -724,6 +682,7 @@ BuildBenchmarks() {
 TimedRunCmd() {
   target="$1"
   shift
+  echo "Running: $@"
   /usr/bin/time -f "%U %S %e %C" --append -o "${target}" "$@"
 }
 
@@ -741,14 +700,15 @@ RunBenchmarks() {
   ConfigInfo "$@"
   for i in ${list} ; do
     SubBanner "Benchmarking: $i"
-    cd $i
+    pushd $i
     target_file=./${i#*.}.${SUFFIX}
-    gnu_size ${target_file}
+    echo_file_size ${target_file}
     # SCRIPTNAME is needed by run_asmjs.sh so that it knows
     # which version of the prepackaged files to use.
     export SCRIPTNAME="${script}"
+    echo "Running: ${script} ${target_file}"
     ${script} ${target_file}
-    cd ..
+    popd
   done
 }
 
@@ -773,7 +733,7 @@ RunTimedBenchmarks() {
     local benchname=${i#*.}
     local target_file=./${benchname}.${SUFFIX}
     local time_file=${target_file}.run_time
-    gnu_size  ${target_file}
+    echo_file_size  ${target_file}
     # SCRIPTNAME is needed by run_asmjs.sh so that it knows
     # which version of the prepackaged files to use.
     export SCRIPTNAME="${script}"
