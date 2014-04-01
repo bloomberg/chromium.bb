@@ -66,7 +66,6 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_hasElementsAssociatedByParser(false)
     , m_didFinishParsingChildren(false)
     , m_wasUserSubmitted(false)
-    , m_isSubmittingOrPreparingForSubmission(false)
     , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
@@ -283,22 +282,16 @@ bool HTMLFormElement::prepareForSubmission(Event* event)
 {
     RefPtr<HTMLFormElement> protector(this);
     LocalFrame* frame = document().frame();
-    if (m_isSubmittingOrPreparingForSubmission || !frame)
-        return m_isSubmittingOrPreparingForSubmission;
+    if (!frame)
+        return false;
 
-    m_isSubmittingOrPreparingForSubmission = true;
     m_shouldSubmit = false;
 
     // Interactive validation must be done before dispatching the submit event.
-    if (!validateInteractively(event)) {
-        m_isSubmittingOrPreparingForSubmission = false;
+    if (!validateInteractively(event))
         return false;
-    }
 
     frame->loader().client()->dispatchWillSendSubmitEvent(this);
-
-    // Set flag before submission as dispatchEvent could trigger another event
-    m_isSubmittingOrPreparingForSubmission = false;
 
     if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)))
         m_shouldSubmit = true;
@@ -336,12 +329,6 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     if (!view || !frame || !frame->page())
         return;
 
-    if (m_isSubmittingOrPreparingForSubmission) {
-        m_shouldSubmit = true;
-        return;
-    }
-
-    m_isSubmittingOrPreparingForSubmission = true;
     m_wasUserSubmitted = processingUserGesture;
 
     RefPtr<HTMLFormControlElement> firstSuccessfulSubmitButton;
@@ -375,7 +362,6 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
         firstSuccessfulSubmitButton->setActivatedSubmit(false);
 
     m_shouldSubmit = false;
-    m_isSubmittingOrPreparingForSubmission = false;
 }
 
 void HTMLFormElement::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)

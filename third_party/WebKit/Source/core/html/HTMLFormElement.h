@@ -171,7 +171,6 @@ private:
     bool m_didFinishParsingChildren;
 
     bool m_wasUserSubmitted;
-    bool m_isSubmittingOrPreparingForSubmission;
     bool m_shouldSubmit;
 
     bool m_isInResetFunction;
