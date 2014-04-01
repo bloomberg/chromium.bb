@@ -128,9 +128,9 @@ public:
     virtual double duration() const OVERRIDE FINAL;
     bool paused() const;
     double defaultPlaybackRate() const;
-    void setDefaultPlaybackRate(double);
+    void setDefaultPlaybackRate(double, ExceptionState&);
     double playbackRate() const;
-    void setPlaybackRate(double);
+    void setPlaybackRate(double, ExceptionState&);
     void updatePlaybackRate();
     PassRefPtr<TimeRanges> played();
     PassRefPtr<TimeRanges> seekable() const;
@@ -390,8 +390,6 @@ private:
 
     // Pauses playback without changing any states or generating events
     void setPausedInternal(bool);
-
-    void setPlaybackRateInternal(double);
 
     void setShouldDelayLoadEvent(bool);
     void invalidateCachedTime();

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MediaController - volume test</title>
+    <script src=video-test.js></script>
+    <script src=media-file.js></script>
+    <script>
+        function start()
+        {
+            findMediaElement();
+            waitForEvent('canplay', canplay);
+            video.src = findMediaFile("video", "content/test");
+        };
+
+        function canplay()
+        {
+            testExpected("video.controller.volume", 1.0);
+            run("video.controller.volume = 0.5");
+            testExpected("video.controller.volume", 0.5);
+            run("video.controller.volume = Number.MIN_VALUE");
+            testExpected("video.controller.volume", Number.MIN_VALUE);
+            run("video.controller.volume = 0");
+            testExpected("video.controller.volume", 0);
+
+            testDOMException("video.controller.volume = 1.5", "DOMException.INDEX_SIZE_ERR");
+            testDOMException("video.controller.volume = -0.5", "DOMException.INDEX_SIZE_ERR");
+            testException("video.controller.volume = -Infinity", '"TypeError: Failed to set the \'volume\' property on \'MediaController\': The value provided is infinite."');
+            testException("video.controller.volume = Infinity", '"TypeError: Failed to set the \'volume\' property on \'MediaController\': The value provided is infinite."');
+            testException("video.controller.volume = NaN", '"TypeError: Failed to set the \'volume\' property on \'MediaController\': The value provided is not a number."');
+
+            endTest();
+        };
+    </script>
+</head>
+<body>
+    <body onload="start()">
+        <video id="video" mediaGroup="group" controls autoplay></video>
+    </body>
+</body>
+</html>

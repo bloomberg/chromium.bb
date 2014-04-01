@@ -1,6 +1,9 @@
  
 RUN(controller = video.controller)
 EVENT(canplaythrough)
+TEST(controller.currentTime = -Infinity) THROWS("TypeError: Failed to set the 'currentTime' property on 'MediaController': The value provided is infinite.") OK
+TEST(controller.currentTime = Infinity) THROWS("TypeError: Failed to set the 'currentTime' property on 'MediaController': The value provided is infinite.") OK
+TEST(controller.currentTime = NaN) THROWS("TypeError: Failed to set the 'currentTime' property on 'MediaController': The value provided is not a number.") OK
 RUN(controller.play())
 EVENT(playing)
 EXPECTED (controller.paused == 'false') OK

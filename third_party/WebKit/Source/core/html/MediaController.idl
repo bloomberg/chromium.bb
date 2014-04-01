@@ -32,6 +32,7 @@
     readonly attribute TimeRanges seekable;
 
     readonly attribute double duration;
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
     [RaisesException=Setter] attribute double currentTime;
 
     readonly attribute boolean paused;
@@ -41,8 +42,8 @@
     void pause();
     void unpause();
 
-    attribute double defaultPlaybackRate;
-    attribute double playbackRate;
+    [RaisesException=Setter] attribute double defaultPlaybackRate;
+    [RaisesException=Setter] attribute double playbackRate;
 
     [RaisesException=Setter] attribute double volume;
     attribute boolean muted;

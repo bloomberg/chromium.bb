@@ -67,10 +67,10 @@ public:
     void unpause();
 
     double defaultPlaybackRate() const { return m_defaultPlaybackRate; }
-    void setDefaultPlaybackRate(double);
+    void setDefaultPlaybackRate(double, ExceptionState&);
 
     double playbackRate() const;
-    void setPlaybackRate(double);
+    void setPlaybackRate(double, ExceptionState&);
 
     double volume() const { return m_volume; }
     void setVolume(double, ExceptionState&);

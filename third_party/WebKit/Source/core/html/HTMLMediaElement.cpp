@@ -668,7 +668,7 @@ void HTMLMediaElement::prepareForLoad()
     }
 
     // 5 - Set the playbackRate attribute to the value of the defaultPlaybackRate attribute.
-    setPlaybackRate(defaultPlaybackRate());
+    setPlaybackRate(defaultPlaybackRate(), IGNORE_EXCEPTION);
 
     // 6 - Set the error attribute to null and the autoplaying flag to true.
     m_error = nullptr;
@@ -1870,6 +1870,11 @@ double HTMLMediaElement::currentTime() const
 
 void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionState)
 {
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(time)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(time));
+        return;
+    }
     if (m_mediaController) {
         exceptionState.throwDOMException(InvalidStateError, "The element is slaved to a MediaController.");
         return;
@@ -1908,8 +1913,13 @@ double HTMLMediaElement::defaultPlaybackRate() const
     return m_defaultPlaybackRate;
 }
 
-void HTMLMediaElement::setDefaultPlaybackRate(double rate)
+void HTMLMediaElement::setDefaultPlaybackRate(double rate, ExceptionState& exceptionState)
 {
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(rate)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(rate));
+        return;
+    }
     if (m_defaultPlaybackRate != rate) {
         m_defaultPlaybackRate = rate;
         scheduleEvent(EventTypeNames::ratechange);
@@ -1921,9 +1931,15 @@ double HTMLMediaElement::playbackRate() const
     return m_playbackRate;
 }
 
-void HTMLMediaElement::setPlaybackRate(double rate)
+void HTMLMediaElement::setPlaybackRate(double rate, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElement::setPlaybackRate(%f)", rate);
+
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(rate)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(rate));
+        return;
+    }
 
     if (m_playbackRate != rate) {
         m_playbackRate = rate;
@@ -2088,6 +2104,12 @@ double HTMLMediaElement::volume() const
 void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
 {
     WTF_LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
+
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(vol)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(vol));
+        return;
+    }
 
     if (vol < 0.0f || vol > 1.0f) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", vol, 0.0, ExceptionMessages::InclusiveBound, 1.0, ExceptionMessages::InclusiveBound));

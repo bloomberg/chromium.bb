@@ -57,11 +57,12 @@
     readonly attribute boolean seeking;
 
     // playback state
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
     [RaisesException=Setter] attribute double currentTime;
     readonly attribute double duration;
     readonly attribute boolean paused;
-    attribute double defaultPlaybackRate;
-    attribute double playbackRate;
+    [RaisesException=Setter] attribute double defaultPlaybackRate;
+    [RaisesException=Setter] attribute double playbackRate;
     readonly attribute TimeRanges played;
     readonly attribute TimeRanges seekable;
     readonly attribute boolean ended;

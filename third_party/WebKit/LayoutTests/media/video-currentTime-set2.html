@@ -2,12 +2,15 @@
 <script src=media-file.js></script>
 <script src=video-test.js></script>
 <script>
-    waitForEvent('canplaythrough',  
-    function () { 
-        video.currentTime = 1.5; 
+    waitForEvent('canplaythrough',
+    function () {
+        testException("video.currentTime = -Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The value provided is infinite."');
+        testException("video.currentTime = Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The value provided is infinite."');
+        testException("video.currentTime = NaN", '"TypeError: Failed to set the \'currentTime\' property on \'HTMLMediaElement\': The value provided is not a number."');
+        video.currentTime = 1.5;
         testExpected("video.currentTime.toFixed(1)", 1.5);
         video.play();
-        video.currentTime = 3.1; 
+        video.currentTime = 3.1;
         testExpected("video.currentTime.toFixed(1)", 3.1);
         endTest();
     });

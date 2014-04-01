@@ -9,6 +9,9 @@ RUN(video.volume = 0)
 EXPECTED (video.volume == '0') OK
 TEST(video.volume = 1.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (1.5) is outside the range [0, 1].) OK
 TEST(video.volume = -0.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (-0.5) is outside the range [0, 1].) OK
+TEST(video.volume = -Infinity) THROWS("TypeError: Failed to set the 'volume' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.volume = Infinity) THROWS("TypeError: Failed to set the 'volume' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.volume = NaN) THROWS("TypeError: Failed to set the 'volume' property on 'HTMLMediaElement': The value provided is not a number.") OK
 RUN(video.load())
 EVENT(canplaythrough)
 EXPECTED (video.volume == '0') OK

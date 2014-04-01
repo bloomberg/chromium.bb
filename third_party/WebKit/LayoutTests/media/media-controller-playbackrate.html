@@ -12,6 +12,16 @@
 
             var canplay = function() {
                 video.mediaGroup = "group";
+
+                // Test non-finite rates.
+                testException("video.controller.defaultPlaybackRate = -Infinity", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'MediaController\': The value provided is infinite."');
+                testException("video.controller.defaultPlaybackRate = Infinity", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'MediaController\': The value provided is infinite."');
+                testException("video.controller.defaultPlaybackRate = NaN", '"TypeError: Failed to set the \'defaultPlaybackRate\' property on \'MediaController\': The value provided is not a number."');
+                testException("video.controller.playbackRate = -Infinity", '"TypeError: Failed to set the \'playbackRate\' property on \'MediaController\': The value provided is infinite."');
+                testException("video.controller.playbackRate = Infinity", '"TypeError: Failed to set the \'playbackRate\' property on \'MediaController\': The value provided is infinite."');
+                testException("video.controller.playbackRate = NaN", '"TypeError: Failed to set the \'playbackRate\' property on \'MediaController\': The value provided is not a number."');
+
+                // Test that the controller rate sets the video rate.
                 video.playbackRate = 0;
                 video.defaultPlaybackRate = 0;
                 video.controller.playbackRate = 0;

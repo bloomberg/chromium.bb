@@ -55,5 +55,14 @@ EXPECTED (video.playbackRate == '5e-324') OK
 RUN(video.playbackRate = Number.MAX_VALUE)
 EXPECTED (video.playbackRate == '1.7976931348623157e+308') OK
 
+Test non-finite playback rates
+TEST(video.defaultPlaybackRate = -Infinity) THROWS("TypeError: Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.defaultPlaybackRate = Infinity) THROWS("TypeError: Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.defaultPlaybackRate = NaN) THROWS("TypeError: Failed to set the 'defaultPlaybackRate' property on 'HTMLMediaElement': The value provided is not a number.") OK
+
+TEST(video.playbackRate = -Infinity) THROWS("TypeError: Failed to set the 'playbackRate' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.playbackRate = Infinity) THROWS("TypeError: Failed to set the 'playbackRate' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.playbackRate = NaN) THROWS("TypeError: Failed to set the 'playbackRate' property on 'HTMLMediaElement': The value provided is not a number.") OK
+
 END OF TEST
 

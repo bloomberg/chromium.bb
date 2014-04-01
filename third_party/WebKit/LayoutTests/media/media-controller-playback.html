@@ -22,6 +22,11 @@
         function canplaythrough() {
             consoleWrite("EVENT(canplaythrough)");
             controller.removeEventListener('canplaythrough', canplaythrough, true);
+
+            testException("controller.currentTime = -Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'MediaController\': The value provided is infinite."');
+            testException("controller.currentTime = Infinity", '"TypeError: Failed to set the \'currentTime\' property on \'MediaController\': The value provided is infinite."');
+            testException("controller.currentTime = NaN", '"TypeError: Failed to set the \'currentTime\' property on \'MediaController\': The value provided is not a number."');
+
             controller.addEventListener('playing', playing, true);
             run('controller.play()');
         }

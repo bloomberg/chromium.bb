@@ -1,4 +1,10 @@
 EVENT(canplay)
+TEST(video.controller.defaultPlaybackRate = -Infinity) THROWS("TypeError: Failed to set the 'defaultPlaybackRate' property on 'MediaController': The value provided is infinite.") OK
+TEST(video.controller.defaultPlaybackRate = Infinity) THROWS("TypeError: Failed to set the 'defaultPlaybackRate' property on 'MediaController': The value provided is infinite.") OK
+TEST(video.controller.defaultPlaybackRate = NaN) THROWS("TypeError: Failed to set the 'defaultPlaybackRate' property on 'MediaController': The value provided is not a number.") OK
+TEST(video.controller.playbackRate = -Infinity) THROWS("TypeError: Failed to set the 'playbackRate' property on 'MediaController': The value provided is infinite.") OK
+TEST(video.controller.playbackRate = Infinity) THROWS("TypeError: Failed to set the 'playbackRate' property on 'MediaController': The value provided is infinite.") OK
+TEST(video.controller.playbackRate = NaN) THROWS("TypeError: Failed to set the 'playbackRate' property on 'MediaController': The value provided is not a number.") OK
 EVENT(play)
 EVENT(timeupdate)
 EXPECTED (video.currentTime != '0') OK

@@ -1,4 +1,7 @@
 EVENT(canplaythrough)
+TEST(video.currentTime = -Infinity) THROWS("TypeError: Failed to set the 'currentTime' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.currentTime = Infinity) THROWS("TypeError: Failed to set the 'currentTime' property on 'HTMLMediaElement': The value provided is infinite.") OK
+TEST(video.currentTime = NaN) THROWS("TypeError: Failed to set the 'currentTime' property on 'HTMLMediaElement': The value provided is not a number.") OK
 EXPECTED (video.currentTime.toFixed(1) == '1.5') OK
 EXPECTED (video.currentTime.toFixed(1) == '3.1') OK
 END OF TEST

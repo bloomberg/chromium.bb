@@ -160,6 +160,12 @@ double MediaController::currentTime() const
 
 void MediaController::setCurrentTime(double time, ExceptionState& exceptionState)
 {
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(time)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(time));
+        return;
+    }
+
     // When the user agent is to seek the media controller to a particular new playback position,
     // it must follow these steps:
     // If the new playback position is less than zero, then set it to zero.
@@ -218,8 +224,14 @@ void MediaController::pause()
     reportControllerState();
 }
 
-void MediaController::setDefaultPlaybackRate(double rate)
+void MediaController::setDefaultPlaybackRate(double rate, ExceptionState& exceptionState)
 {
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(rate)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(rate));
+        return;
+    }
+
     if (m_defaultPlaybackRate == rate)
         return;
 
@@ -236,8 +248,14 @@ double MediaController::playbackRate() const
     return m_clock->playRate();
 }
 
-void MediaController::setPlaybackRate(double rate)
+void MediaController::setPlaybackRate(double rate, ExceptionState& exceptionState)
 {
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(rate)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(rate));
+        return;
+    }
+
     if (m_clock->playRate() == rate)
         return;
 
@@ -254,6 +272,12 @@ void MediaController::setPlaybackRate(double rate)
 
 void MediaController::setVolume(double level, ExceptionState& exceptionState)
 {
+    // FIXME: generated bindings should check isfinite: http://crbug.com/354298
+    if (!std::isfinite(level)) {
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(level));
+        return;
+    }
+
     if (m_volume == level)
         return;
 

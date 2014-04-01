@@ -1,0 +1,15 @@
+EVENT(canplay)
+EXPECTED (video.controller.volume == '1') OK
+RUN(video.controller.volume = 0.5)
+EXPECTED (video.controller.volume == '0.5') OK
+RUN(video.controller.volume = Number.MIN_VALUE)
+EXPECTED (video.controller.volume == '5e-324') OK
+RUN(video.controller.volume = 0)
+EXPECTED (video.controller.volume == '0') OK
+TEST(video.controller.volume = 1.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'MediaController': The volume provided (1.5) is outside the range [0, 1].) OK
+TEST(video.controller.volume = -0.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'MediaController': The volume provided (-0.5) is outside the range [0, 1].) OK
+TEST(video.controller.volume = -Infinity) THROWS("TypeError: Failed to set the 'volume' property on 'MediaController': The value provided is infinite.") OK
+TEST(video.controller.volume = Infinity) THROWS("TypeError: Failed to set the 'volume' property on 'MediaController': The value provided is infinite.") OK
+TEST(video.controller.volume = NaN) THROWS("TypeError: Failed to set the 'volume' property on 'MediaController': The value provided is not a number.") OK
+END OF TEST
+

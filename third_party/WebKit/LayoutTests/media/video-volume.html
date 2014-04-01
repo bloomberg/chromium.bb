@@ -12,6 +12,9 @@
     testExpected("video.volume", 0);
     testDOMException("video.volume = 1.5", "DOMException.INDEX_SIZE_ERR");
     testDOMException("video.volume = -0.5", "DOMException.INDEX_SIZE_ERR");
+    testException("video.volume = -Infinity", '"TypeError: Failed to set the \'volume\' property on \'HTMLMediaElement\': The value provided is infinite."');
+    testException("video.volume = Infinity", '"TypeError: Failed to set the \'volume\' property on \'HTMLMediaElement\': The value provided is infinite."');
+    testException("video.volume = NaN", '"TypeError: Failed to set the \'volume\' property on \'HTMLMediaElement\': The value provided is not a number."');
     video.src = findMediaFile("video", "content/test");
     run("video.load()");
     waitForEvent("canplaythrough", function () {
