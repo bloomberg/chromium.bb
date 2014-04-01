@@ -27,8 +27,8 @@
           'action_name': 'generate_messages',
           'inputs': [
             '<(grit_dir)/grit.py',
-            'res/messages.grd',
-            'res/messages.grdp',
+            'res/libaddressinput_strings.grd',
+            'res/libaddressinput_strings.grdp',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/en_messages.cc',
