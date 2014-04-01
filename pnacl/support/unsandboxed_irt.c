@@ -22,6 +22,7 @@
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
+#include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
@@ -95,6 +96,38 @@ static void convert_to_nacl_stat(struct stat *dest_nacl,
   dest->nacl_abi_st_mtimensec = src->st_mtim.tv_nsec;
   dest->nacl_abi_st_ctime = src->st_ctim.tv_sec;
   dest->nacl_abi_st_ctimensec = src->st_ctim.tv_nsec;
+}
+
+static void copy_flag(int *dest, int src, int new_flag, int old_flag) {
+  if ((src & old_flag) != 0)
+    *dest |= new_flag;
+}
+
+/* Returns whether the conversion was successful. */
+static int convert_from_nacl_mmap_prot(int *prot, int prot_nacl) {
+  if ((prot_nacl & ~NACL_ABI_PROT_MASK) != 0)
+    return 0;
+  *prot = 0;
+  copy_flag(prot, prot_nacl, PROT_READ, NACL_ABI_PROT_READ);
+  copy_flag(prot, prot_nacl, PROT_WRITE, NACL_ABI_PROT_WRITE);
+  copy_flag(prot, prot_nacl, PROT_EXEC, NACL_ABI_PROT_EXEC);
+  return 1;
+}
+
+/* Returns whether the conversion was successful. */
+static int convert_from_nacl_mmap_flags(int *flags, int flags_nacl) {
+  int allowed = NACL_ABI_MAP_SHARED |
+                NACL_ABI_MAP_PRIVATE |
+                NACL_ABI_MAP_FIXED |
+                NACL_ABI_MAP_ANON;
+  if ((flags_nacl & ~allowed) != 0)
+    return 0;
+  *flags = 0;
+  copy_flag(flags, flags_nacl, MAP_SHARED, NACL_ABI_MAP_SHARED);
+  copy_flag(flags, flags_nacl, MAP_PRIVATE, NACL_ABI_MAP_PRIVATE);
+  copy_flag(flags, flags_nacl, MAP_FIXED, NACL_ABI_MAP_FIXED);
+  copy_flag(flags, flags_nacl, MAP_ANON, NACL_ABI_MAP_ANON);
+  return 1;
 }
 
 static int check_error(int result) {
@@ -219,7 +252,13 @@ static int irt_sysconf(int name, int *value) {
 
 static int irt_mmap(void **addr, size_t len, int prot, int flags,
                     int fd, nacl_irt_off_t off) {
-  void *result = mmap(*addr, len, prot, flags, fd, off);
+  int host_prot;
+  int host_flags;
+  if (!convert_from_nacl_mmap_prot(&host_prot, prot) ||
+      !convert_from_nacl_mmap_flags(&host_flags, flags)) {
+    return EINVAL;
+  }
+  void *result = mmap(*addr, len, host_prot, host_flags, fd, off);
   if (result == MAP_FAILED)
     return errno;
   *addr = result;
