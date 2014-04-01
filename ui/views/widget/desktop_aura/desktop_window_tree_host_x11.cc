@@ -748,6 +748,7 @@ gfx::AcceleratedWidget DesktopWindowTreeHostX11::GetAcceleratedWidget() {
 
 void DesktopWindowTreeHostX11::Show() {
   ShowWindowWithState(ui::SHOW_STATE_NORMAL);
+  native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
 }
 
 void DesktopWindowTreeHostX11::Hide() {
@@ -755,6 +756,7 @@ void DesktopWindowTreeHostX11::Hide() {
     XWithdrawWindow(xdisplay_, xwindow_, 0);
     window_mapped_ = false;
   }
+  native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
 void DesktopWindowTreeHostX11::ToggleFullScreen() {
