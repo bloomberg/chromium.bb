@@ -30,8 +30,7 @@
 namespace WebCore {
 
 ImageFrame::ImageFrame()
-    : m_bitmap(NativeImageSkia::create())
-    , m_allocator(0)
+    : m_allocator(0)
     , m_hasAlpha(false)
     , m_status(FrameEmpty)
     , m_duration(0)
@@ -51,10 +50,10 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other)
     if (this == &other)
         return *this;
 
-    m_bitmap = other.m_bitmap->clone();
+    m_bitmap = other.m_bitmap;
     // Keep the pixels locked since we will be writing directly into the
     // bitmap throughout this object's lifetime.
-    m_bitmap->bitmap().lockPixels();
+    m_bitmap.lockPixels();
     // Be sure to assign this before calling setStatus(), since setStatus() may
     // call notifyBitmapIfPixelsChanged().
     m_pixelsChanged = other.m_pixelsChanged;
@@ -78,7 +77,7 @@ ImageFrame& ImageFrame::operator=(const ImageFrame& other)
 
 void ImageFrame::clearPixelData()
 {
-    m_bitmap->bitmap().reset();
+    m_bitmap.reset();
     m_status = FrameEmpty;
     // NOTE: Do not reset other members here; clearFrameBufferCache()
     // calls this to free the bitmap data, but other functions like
@@ -88,7 +87,7 @@ void ImageFrame::clearPixelData()
 
 void ImageFrame::zeroFillPixelData()
 {
-    m_bitmap->bitmap().eraseARGB(0, 0, 0, 0);
+    m_bitmap.eraseARGB(0, 0, 0, 0);
     m_hasAlpha = true;
 }
 
@@ -98,9 +97,8 @@ bool ImageFrame::copyBitmapData(const ImageFrame& other)
         return true;
 
     m_hasAlpha = other.m_hasAlpha;
-    m_bitmap->bitmap().reset();
-    const NativeImageSkia* otherBitmap = other.m_bitmap.get();
-    return otherBitmap->bitmap().copyTo(&m_bitmap->bitmap(), otherBitmap->bitmap().colorType());
+    m_bitmap.reset();
+    return other.m_bitmap.copyTo(&m_bitmap, other.m_bitmap.colorType());
 }
 
 bool ImageFrame::setSize(int newWidth, int newHeight)
@@ -108,8 +106,8 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
     // setSize() should only be called once, it leaks memory otherwise.
     ASSERT(!width() && !height());
 
-    m_bitmap->bitmap().setConfig(SkImageInfo::MakeN32Premul(newWidth, newHeight));
-    if (!m_bitmap->bitmap().allocPixels(m_allocator, 0))
+    m_bitmap.setConfig(SkImageInfo::MakeN32Premul(newWidth, newHeight));
+    if (!m_bitmap.allocPixels(m_allocator, 0))
         return false;
 
     zeroFillPixelData();
@@ -118,7 +116,7 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
 
 PassRefPtr<NativeImageSkia> ImageFrame::asNewNativeImage() const
 {
-    return m_bitmap->clone();
+    return NativeImageSkia::create(m_bitmap);
 }
 
 bool ImageFrame::hasAlpha() const
@@ -135,18 +133,18 @@ void ImageFrame::setHasAlpha(bool alpha)
     // always are (e.g. jpeg).
     if (m_status != FrameComplete)
         alpha = true;
-    m_bitmap->bitmap().setAlphaType(alpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+    m_bitmap.setAlphaType(alpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
 }
 
 void ImageFrame::setStatus(Status status)
 {
     m_status = status;
     if (m_status == FrameComplete) {
-        m_bitmap->bitmap().setAlphaType(m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+        m_bitmap.setAlphaType(m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
         // Send pending pixels changed notifications now, because we can't do this after
-        // the bitmap was set immutable by setDataComplete().
+        // the bitmap has been marked immutable.
         notifyBitmapIfPixelsChanged();
-        m_bitmap->setDataComplete(); // Tell the bitmap it's done.
+        m_bitmap.setImmutable(); // Tell the bitmap it's done.
     }
 }
 
@@ -155,7 +153,7 @@ void ImageFrame::zeroFillFrameRect(const IntRect& rect)
     if (rect.isEmpty())
         return;
 
-    m_bitmap->bitmap().eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
+    m_bitmap.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
     setHasAlpha(true);
 }
 

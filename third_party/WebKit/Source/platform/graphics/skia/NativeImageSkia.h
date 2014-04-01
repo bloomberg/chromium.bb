@@ -101,18 +101,11 @@ public:
     // resized version if there is one.
     int decodedSize() const;
 
-    // Sets the immutable flag on the bitmap, indicating that the image data
-    // will not be modified any further. This is called by the image decoder
-    // when all data is complete, used by us to know whether we can cache
-    // resized images, and used by Skia for various optimizations.
-    void setDataComplete() { m_image.setImmutable(); }
-
     // Returns true if the entire image has been decoded.
     bool isDataComplete() const { return m_image.isImmutable(); }
 
     // Get reference to the internal SkBitmap representing this image.
     const SkBitmap& bitmap() const { return m_image; }
-    SkBitmap& bitmap() { return m_image; }
 
     // We can keep a resized version of the bitmap cached on this object.
     // This function will return true if there is a cached version of the given

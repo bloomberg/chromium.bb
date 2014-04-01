@@ -63,8 +63,9 @@ public:
         : Image(0)
         , m_size(size)
     {
-        m_nativeImage = NativeImageSkia::create();
-        EXPECT_TRUE(m_nativeImage->bitmap().allocN32Pixels(size.width(), size.height()));
+        SkBitmap bitmap;
+        EXPECT_TRUE(bitmap.allocN32Pixels(size.width(), size.height()));
+        m_nativeImage = NativeImageSkia::create(bitmap);
     }
 
     virtual IntSize size() const OVERRIDE

@@ -119,7 +119,7 @@ public:
     AlphaBlendSource alphaBlendSource() const { return m_alphaBlendSource; }
     bool premultiplyAlpha() const { return m_premultiplyAlpha; }
     SkBitmap::Allocator* allocator() const { return m_allocator; }
-    const SkBitmap& getSkBitmap() const { return m_bitmap->bitmap(); }
+    const SkBitmap& getSkBitmap() const { return m_bitmap; }
     // Returns true if the pixels changed, but the bitmap has not yet been notified.
     bool pixelsChanged() const { return m_pixelsChanged; }
 
@@ -139,7 +139,7 @@ public:
     void setAlphaBlendSource(AlphaBlendSource alphaBlendSource) { m_alphaBlendSource = alphaBlendSource; }
     void setPremultiplyAlpha(bool premultiplyAlpha) { m_premultiplyAlpha = premultiplyAlpha; }
     void setMemoryAllocator(SkBitmap::Allocator* allocator) { m_allocator = allocator; }
-    void setSkBitmap(const SkBitmap& bitmap) { m_bitmap = NativeImageSkia::create(bitmap); }
+    void setSkBitmap(const SkBitmap& bitmap) { m_bitmap = bitmap; }
     // The pixelsChanged flag needs to be set when the raw pixel data was directly modified
     // (e.g. through a pointer or setRGBA). The flag is usually set after a batch of changes was made.
     void setPixelsChanged(bool pixelsChanged) { m_pixelsChanged = pixelsChanged; }
@@ -154,7 +154,7 @@ public:
 
     inline PixelData* getAddr(int x, int y)
     {
-        return m_bitmap->bitmap().getAddr32(x, y);
+        return m_bitmap.getAddr32(x, y);
     }
 
     inline void setRGBA(int x, int y, unsigned r, unsigned g, unsigned b, unsigned a)
@@ -192,22 +192,22 @@ public:
     inline void notifyBitmapIfPixelsChanged()
     {
         if (m_pixelsChanged)
-            m_bitmap->bitmap().notifyPixelsChanged();
+            m_bitmap.notifyPixelsChanged();
         m_pixelsChanged = false;
     }
 
 private:
     int width() const
     {
-        return m_bitmap->bitmap().width();
+        return m_bitmap.width();
     }
 
     int height() const
     {
-        return m_bitmap->bitmap().height();
+        return m_bitmap.height();
     }
 
-    RefPtr<NativeImageSkia> m_bitmap;
+    SkBitmap m_bitmap;
     SkBitmap::Allocator* m_allocator;
     bool m_hasAlpha;
     // This will always just be the entire buffer except for GIF or WebP
