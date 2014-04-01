@@ -1800,6 +1800,11 @@ void AppsGridView::ButtonPressed(views::Button* sender,
     return;
 
   if (delegate_) {
+    // Always set the previous activated_item_view_ to be visible. This prevents
+    // a case where the item would remain hidden due the activated_item_view_
+    // changing during the animation.
+    if (activated_item_view_)
+      activated_item_view_->SetVisible(true);
     activated_item_view_ = static_cast<AppListItemView*>(sender);
     delegate_->ActivateApp(static_cast<AppListItemView*>(sender)->item(),
                            event.flags());
