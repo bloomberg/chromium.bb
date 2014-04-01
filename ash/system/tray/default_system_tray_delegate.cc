@@ -253,6 +253,10 @@ bool DefaultSystemTrayDelegate::GetBluetoothEnabled() {
   return bluetooth_enabled_;
 }
 
+bool DefaultSystemTrayDelegate::GetBluetoothDiscovering() {
+  return false;
+}
+
 void DefaultSystemTrayDelegate::ChangeProxySettings() {
 }
 

@@ -692,8 +692,7 @@ void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
 }
 
 void SystemTrayDelegateChromeOS::BluetoothStartDiscovering() {
-  if (bluetooth_discovery_session_.get() &&
-      bluetooth_discovery_session_->IsActive()) {
+  if (GetBluetoothDiscovering()) {
     LOG(WARNING) << "Already have active Bluetooth device discovery session.";
     return;
   }
@@ -707,8 +706,7 @@ void SystemTrayDelegateChromeOS::BluetoothStartDiscovering() {
 
 void SystemTrayDelegateChromeOS::BluetoothStopDiscovering() {
   should_run_bluetooth_discovery_ = false;
-  if (!bluetooth_discovery_session_.get() ||
-      !bluetooth_discovery_session_->IsActive()) {
+  if (!GetBluetoothDiscovering()) {
     LOG(WARNING) << "No active Bluetooth device discovery session.";
     return;
   }
@@ -862,6 +860,11 @@ bool SystemTrayDelegateChromeOS::GetBluetoothAvailable() {
 
 bool SystemTrayDelegateChromeOS::GetBluetoothEnabled() {
   return bluetooth_adapter_->IsPowered();
+}
+
+bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
+  return (bluetooth_discovery_session_.get() &&
+      bluetooth_discovery_session_->IsActive());
 }
 
 void SystemTrayDelegateChromeOS::ChangeProxySettings() {
@@ -1343,6 +1346,7 @@ void SystemTrayDelegateChromeOS::OnStartBluetoothDiscoverySession(
     return;
   VLOG(1) << "Claiming new Bluetooth device discovery session.";
   bluetooth_discovery_session_ = discovery_session.Pass();
+  GetSystemTrayNotifier()->NotifyBluetoothDiscoveringChanged();
 }
 
 void SystemTrayDelegateChromeOS::UpdateEnterpriseDomain() {

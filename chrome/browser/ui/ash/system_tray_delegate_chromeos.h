@@ -120,6 +120,7 @@ class SystemTrayDelegateChromeOS
   virtual void ShowOtherNetworkDialog(const std::string& type) OVERRIDE;
   virtual bool GetBluetoothAvailable() OVERRIDE;
   virtual bool GetBluetoothEnabled() OVERRIDE;
+  virtual bool GetBluetoothDiscovering() OVERRIDE;
   virtual void ChangeProxySettings() OVERRIDE;
   virtual ash::VolumeControlDelegate* GetVolumeControlDelegate() const OVERRIDE;
   virtual void SetVolumeControlDelegate(

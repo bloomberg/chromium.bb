@@ -251,6 +251,10 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
     return false;
   }
 
+  virtual bool GetBluetoothDiscovering() OVERRIDE {
+    return false;
+  }
+
   virtual void ChangeProxySettings() OVERRIDE {
   }
 

@@ -300,6 +300,9 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns whether bluetooth is enabled.
   virtual bool GetBluetoothEnabled() = 0;
 
+  // Returns whether the delegate has initiated a bluetooth discovery session.
+  virtual bool GetBluetoothDiscovering() = 0;
+
   // Shows UI for changing proxy settings.
   virtual void ChangeProxySettings() = 0;
 
