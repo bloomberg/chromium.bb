@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-<video id="video" autoplay="true" loop>
-    <source type="video/mp4">
-</video>
+<video id="video" loop></video>
 <script src="../resources/runner.js"></script>
 <script src="resources/canvas_runner.js"></script>
 <script>
@@ -22,7 +20,10 @@ function addPlayCallback(videoElement) {
     // This logic makes sure this perf test starts after playing the video.
     videoElement.addEventListener("canplaythrough", startVideo, true);
     videoElement.addEventListener("play", startPerfTest, true);
-    videoElement.src = "../resources/720x576i-anamorphic.mov";
+    videoElement.addEventListener('error', function(ev) {
+        CanvasRunner.logFatalError("\nmp4 codec is not supported on this platform. Received error event:" + ev.target.error.code + "\n");
+    }, false);
+    videoElement.src = "../resources/bear-1280x720.mp4";
 }
 
 function startVideo() {
