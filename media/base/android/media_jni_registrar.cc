@@ -18,6 +18,7 @@
 #include "media/midi/usb_midi_device_android.h"
 #include "media/midi/usb_midi_device_factory_android.h"
 #include "media/video/capture/android/video_capture_device_android.h"
+#include "media/video/capture/android/video_capture_device_factory_android.h"
 
 namespace media {
 
@@ -40,6 +41,8 @@ static base::android::RegistrationMethod kMediaRegisteredMethods[] = {
     UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory },
   { "VideoCaptureDevice",
     VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice },
+  { "VideoCaptureDeviceFactory",
+    VideoCaptureDeviceFactoryAndroid::RegisterVideoCaptureDeviceFactory },
   { "WebAudioMediaCodecBridge",
     WebAudioMediaCodecBridge::RegisterWebAudioMediaCodecBridge },
 };

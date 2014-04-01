@@ -450,6 +450,8 @@
         'midi/usb_midi_output_stream.h',
         'video/capture/android/video_capture_device_android.cc',
         'video/capture/android/video_capture_device_android.h',
+        'video/capture/android/video_capture_device_factory_android.cc',
+        'video/capture/android/video_capture_device_factory_android.h',
         'video/capture/fake_video_capture_device.cc',
         'video/capture/fake_video_capture_device.h',
         'video/capture/file_video_capture_device.cc',
@@ -1555,6 +1557,7 @@
           'type': 'none',
           'sources': [
             'base/android/java/src/org/chromium/media/VideoCapture.java',
+            'base/android/java/src/org/chromium/media/VideoCaptureFactory.java',
           ],
           'variables': {
             'jni_gen_package': 'media',

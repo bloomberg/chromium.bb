@@ -73,7 +73,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   VideoCaptureFormat capture_format_;
 
   // Java VideoCaptureAndroid instance.
-  base::android::ScopedJavaGlobalRef<jobject> j_capture_;
+  base::android::ScopedJavaLocalRef<jobject> j_capture_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceAndroid);
 };
