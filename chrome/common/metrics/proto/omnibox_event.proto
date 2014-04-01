@@ -18,7 +18,7 @@ message OmniboxEventProto {
   // The id of the originating tab for this omnibox interaction.
   // This is the current tab *unless* the user opened the target in a new tab.
   // In those cases, this is unset.  Tab ids are unique for a given session_id
-  // (in the containing protocol buffer ChromeUserMetricsExtensionsProto).
+  // (in the containing protocol buffer ChromeUserMetricsExtensionProto).
   optional int32 tab_id = 2;
 
   // The number of characters the user had typed before autocompleting.
