@@ -411,6 +411,8 @@ void InspectorCSSAgent::setFrontend(InspectorFrontend* frontend)
 void InspectorCSSAgent::clearFrontend()
 {
     ASSERT(m_frontend);
+    ErrorString error;
+    disable(&error);
     m_frontend = 0;
     resetNonPersistentData();
 }
@@ -507,6 +509,7 @@ void InspectorCSSAgent::wasEnabled(PassRefPtr<EnableCallback> callback)
 
 void InspectorCSSAgent::disable(ErrorString*)
 {
+    reset();
     m_instrumentingAgents->setInspectorCSSAgent(0);
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
 }
