@@ -1410,6 +1410,23 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   if (parsed_command_line().HasSwitch(switches::kEnableSdchOverHttps)) {
     net::SdchManager::EnableSecureSchemeSupport(true);
+  } else {
+    // Check SDCH field trial.
+    const char kSdchFieldTrialName[] = "SDCH";
+    const char kEnabledAllGroupName[] = "EnabledAll";
+    const char kEnabledHttpOnlyGroupName[] = "EnabledHttpOnly";
+    const char kDisabledAllGroupName[] = "DisabledAll";
+
+    base::StringPiece sdch_trial_group =
+        base::FieldTrialList::FindFullName(kSdchFieldTrialName);
+    if (sdch_trial_group.starts_with(kEnabledAllGroupName)) {
+      net::SdchManager::EnableSecureSchemeSupport(true);
+      net::SdchManager::EnableSdchSupport(true);
+    } else if (sdch_trial_group.starts_with(kEnabledHttpOnlyGroupName)) {
+      net::SdchManager::EnableSdchSupport(true);
+    } else if (sdch_trial_group.starts_with(kDisabledAllGroupName)) {
+      net::SdchManager::EnableSdchSupport(false);
+    }
   }
 
   if (parsed_command_line().HasSwitch(switches::kEnableWatchdog))
