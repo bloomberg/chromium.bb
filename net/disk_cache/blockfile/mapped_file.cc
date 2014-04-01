@@ -4,6 +4,10 @@
 
 #include "net/disk_cache/blockfile/mapped_file.h"
 
+#include <algorithm>
+
+#include "base/memory/scoped_ptr.h"
+
 namespace disk_cache {
 
 // Note: Most of this class is implemented in platform-specific files.
@@ -32,4 +36,11 @@ bool MappedFile::Store(const FileBlock* block,
   return Write(block->buffer(), block->size(), offset, callback, completed);
 }
 
+bool MappedFile::Preload() {
+  size_t file_len = GetLength();
+  scoped_ptr<char[]> buf(new char[file_len]);
+  if (!Read(buf.get(), file_len, 0))
+    return false;
+  return true;
+}
 }  // namespace disk_cache

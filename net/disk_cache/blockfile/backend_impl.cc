@@ -1285,7 +1285,7 @@ bool BackendImpl::InitBackingStore(bool* file_created) {
     return false;
 
   index_ = new MappedFile();
-  data_ = reinterpret_cast<Index*>(index_->Init(index_name, 0));
+  data_ = static_cast<Index*>(index_->Init(index_name, 0));
   if (!data_) {
     LOG(ERROR) << "Unable to map Index file";
     return false;
@@ -2016,9 +2016,8 @@ bool BackendImpl::CheckIndex() {
   if (!mask_)
     mask_ = data_->header.table_len - 1;
 
-  // Load the table into memory with a single read.
-  scoped_ptr<char[]> buf(new char[current_size]);
-  return index_->Read(buf.get(), current_size, 0);
+  // Load the table into memory.
+  return index_->Preload();
 }
 
 int BackendImpl::CheckAllEntries() {

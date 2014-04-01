@@ -46,6 +46,10 @@ class NET_EXPORT_PRIVATE MappedFile : public File {
   // Flush the memory-mapped section to disk (synchronously).
   void Flush();
 
+  // Heats up the file system cache and make sure the file is fully
+  // readable (synchronously).
+  bool Preload();
+
  private:
   virtual ~MappedFile();
 
