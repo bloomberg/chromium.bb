@@ -659,7 +659,6 @@ void DownloadItemImpl::DeleteFile(const base::Callback<void(bool)>& callback) {
       base::Bind(&DeleteDownloadedFile, current_path_),
       base::Bind(&DeleteDownloadedFileDone,
                  weak_ptr_factory_.GetWeakPtr(), callback));
-  current_path_.clear();
 }
 
 bool DownloadItemImpl::IsDangerous() const {
