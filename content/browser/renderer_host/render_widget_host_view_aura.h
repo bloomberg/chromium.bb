@@ -525,6 +525,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Detaches |this| from the input method object.
   void DetachFromInputMethod();
 
+  // Before calling RenderWidgetHost::ForwardKeyboardEvent(), this method
+  // calls our keybindings handler against the event and send matched
+  // edit commands to renderer instead.
+  void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
+
   // Dismisses a Web Popup on a mouse or touch press outside the popup and its
   // parent.
   void ApplyEventFilterForPopupExit(ui::LocatedEvent* event);

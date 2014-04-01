@@ -22,6 +22,7 @@ void LinuxUI::SetInstance(LinuxUI* instance) {
   LinuxInputMethodContextFactory::SetInstance(instance);
   LinuxFontDelegate::SetInstance(instance);
   LinuxShellDialog::SetInstance(instance);
+  ui::SetTextEditKeyBindingsDelegate(instance);
 }
 
 LinuxUI* LinuxUI::instance() {

@@ -49,6 +49,8 @@
         'g_object_destructor_filo.h',
         'gtk2_border.cc',
         'gtk2_border.h',
+        'gtk2_key_bindings_handler.cc',
+        'gtk2_key_bindings_handler.h',
         'gtk2_signal_registrar.cc',
         'gtk2_signal_registrar.h',
         'gtk2_ui.cc',

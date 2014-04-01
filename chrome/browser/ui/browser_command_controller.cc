@@ -68,6 +68,10 @@
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/events/x/text_edit_key_bindings_delegate_x11.h"
+#endif
+
 using content::NavigationEntry;
 using content::NavigationController;
 using content::WebContents;
@@ -282,6 +286,16 @@ bool BrowserCommandController::IsReservedCommandOrKey(
 
   if (window()->IsFullscreen() && command_id == IDC_FULLSCREEN)
     return true;
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(TOOLKIT_GTK)
+  // If this key was registered by the user as a content editing hotkey, then
+  // it is not reserved.
+  ui::TextEditKeyBindingsDelegateX11* delegate =
+      ui::GetTextEditKeyBindingsDelegate();
+  if (delegate && delegate->MatchEvent(*event.os_event, NULL))
+    return false;
+#endif
+
   return command_id == IDC_CLOSE_TAB ||
          command_id == IDC_CLOSE_WINDOW ||
          command_id == IDC_NEW_INCOGNITO_WINDOW ||

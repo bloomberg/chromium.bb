@@ -9,6 +9,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
+#include "ui/events/x/text_edit_key_bindings_delegate_x11.h"
 #include "ui/gfx/linux_font_delegate.h"
 #include "ui/shell_dialogs/linux_shell_dialog.h"
 #include "ui/views/controls/button/button.h"
@@ -42,7 +43,8 @@ class WindowButtonOrderObserver;
 // liuigtk3.so, etc.
 class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public gfx::LinuxFontDelegate,
-                             public ui::LinuxShellDialog {
+                             public ui::LinuxShellDialog,
+                             public ui::TextEditKeyBindingsDelegateX11 {
  public:
   virtual ~LinuxUI() {}
 

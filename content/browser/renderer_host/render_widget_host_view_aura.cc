@@ -94,6 +94,12 @@
 #include "ui/gfx/win/dpi.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "content/common/input_messages.h"
+#include "ui/events/x/text_edit_command_x11.h"
+#include "ui/events/x/text_edit_key_bindings_delegate_x11.h"
+#endif
+
 using gfx::RectToSkIRect;
 using gfx::SkIRectToRect;
 
@@ -2405,7 +2411,7 @@ void RenderWidgetHostViewAura::InsertChar(base::char16 ch, int flags) {
                                         ch,
                                         flags,
                                         now);
-    host_->ForwardKeyboardEvent(webkit_event);
+    ForwardKeyboardEvent(webkit_event);
   }
 }
 
@@ -2793,10 +2799,10 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
           event->is_char() ? event->GetCharacter() : event->key_code(),
           event->flags(),
           ui::EventTimeForNow().InSecondsF());
-      host_->ForwardKeyboardEvent(webkit_event);
+      ForwardKeyboardEvent(webkit_event);
     } else {
       NativeWebKeyboardEvent webkit_event(event);
-      host_->ForwardKeyboardEvent(webkit_event);
+      ForwardKeyboardEvent(webkit_event);
     }
   }
   event->SetHandled();
@@ -3567,6 +3573,35 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
   ui::InputMethod* input_method = GetInputMethod();
   if (input_method && input_method->GetTextInputClient() == this)
     input_method->SetFocusedTextInputClient(NULL);
+}
+
+void RenderWidgetHostViewAura::ForwardKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ui::TextEditKeyBindingsDelegateX11* keybinding_delegate =
+      ui::GetTextEditKeyBindingsDelegate();
+  std::vector<ui::TextEditCommandX11> commands;
+  if (!event.skip_in_browser &&
+      keybinding_delegate &&
+      event.os_event &&
+      keybinding_delegate->MatchEvent(*event.os_event, &commands)) {
+    // Transform from ui/ types to content/ types.
+    EditCommands edit_commands;
+    for (std::vector<ui::TextEditCommandX11>::const_iterator it =
+             commands.begin(); it != commands.end(); ++it) {
+      edit_commands.push_back(EditCommand(it->GetCommandString(),
+                                          it->argument()));
+    }
+    host_->Send(new InputMsg_SetEditCommandsForNextKeyEvent(
+        host_->GetRoutingID(), edit_commands));
+    NativeWebKeyboardEvent copy_event(event);
+    copy_event.match_edit_command = true;
+    host_->ForwardKeyboardEvent(copy_event);
+    return;
+  }
+#endif
+
+  host_->ForwardKeyboardEvent(event);
 }
 
 void RenderWidgetHostViewAura::LockResources() {

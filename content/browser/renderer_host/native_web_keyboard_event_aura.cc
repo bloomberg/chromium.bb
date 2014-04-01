@@ -34,21 +34,24 @@ namespace content {
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent()
     : os_event(NULL),
-      skip_in_browser(false) {
+      skip_in_browser(false),
+      match_edit_command(false) {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(gfx::NativeEvent native_event)
     : WebKeyboardEvent(MakeWebKeyboardEvent(
           static_cast<ui::KeyEvent*>(native_event))),
       os_event(CopyEvent(native_event)),
-      skip_in_browser(false) {
+      skip_in_browser(false),
+      match_edit_command(false) {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     const NativeWebKeyboardEvent& other)
     : WebKeyboardEvent(other),
       os_event(CopyEvent(other.os_event)),
-      skip_in_browser(other.skip_in_browser) {
+      skip_in_browser(other.skip_in_browser),
+      match_edit_command(false) {
 }
 
 NativeWebKeyboardEvent::NativeWebKeyboardEvent(
@@ -58,7 +61,8 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(
     int state,
     double time_stamp_seconds)
     : os_event(NULL),
-      skip_in_browser(false) {
+      skip_in_browser(false),
+      match_edit_command(false) {
   switch (key_event_type) {
     case ui::ET_KEY_PRESSED:
       type = is_char ? blink::WebInputEvent::Char :
@@ -88,7 +92,7 @@ NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(
   delete os_event;
   os_event = CopyEvent(other.os_event);
   skip_in_browser = other.skip_in_browser;
-
+  match_edit_command = other.match_edit_command;
   return *this;
 }
 

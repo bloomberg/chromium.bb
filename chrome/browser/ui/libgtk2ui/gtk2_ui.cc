@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtk2ui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_border.h"
+#include "chrome/browser/ui/libgtk2ui/gtk2_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_util.h"
 #include "chrome/browser/ui/libgtk2ui/native_theme_gtk2.h"
@@ -673,6 +674,15 @@ void Gtk2UI::NotifyWindowManagerStartupComplete() {
   // TODO(port) Implement this using _NET_STARTUP_INFO_BEGIN/_NET_STARTUP_INFO
   // from http://standards.freedesktop.org/startup-notification-spec/ instead.
   gdk_notify_startup_complete();
+}
+
+bool Gtk2UI::MatchEvent(const ui::Event& event,
+                        std::vector<ui::TextEditCommandX11>* commands) {
+  // Ensure that we have a keyboard handler.
+  if (!key_bindings_handler_)
+    key_bindings_handler_.reset(new Gtk2KeyBindingsHandler);
+
+  return key_bindings_handler_->MatchEvent(event, commands);
 }
 
 void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,

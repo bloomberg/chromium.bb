@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/libgtk2ui/gtk2_signal_registrar.h"
 #include "chrome/browser/ui/libgtk2ui/libgtk2ui_export.h"
 #include "chrome/browser/ui/libgtk2ui/owned_widget_gtk2.h"
+#include "ui/events/x/text_edit_key_bindings_delegate_x11.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -33,6 +34,7 @@ class Image;
 
 namespace libgtk2ui {
 class Gtk2Border;
+class Gtk2KeyBindingsHandler;
 class Gtk2SignalRegistrar;
 class GConfTitlebarListener;
 
@@ -109,6 +111,11 @@ class Gtk2UI : public views::LinuxUI {
       views::NativeThemeChangeObserver* observer) OVERRIDE;
   virtual bool UnityIsRunning() OVERRIDE;
   virtual void NotifyWindowManagerStartupComplete() OVERRIDE;
+
+  // ui::TextEditKeybindingDelegate:
+  virtual bool MatchEvent(
+      const ui::Event& event,
+      std::vector<ui::TextEditCommandX11>* commands) OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;
@@ -234,6 +241,8 @@ class Gtk2UI : public views::LinuxUI {
   // window button configuration.
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;
+
+  scoped_ptr<Gtk2KeyBindingsHandler> key_bindings_handler_;
 
   // Objects to notify when the window frame button order changes.
   ObserverList<views::WindowButtonOrderObserver> observer_list_;

@@ -54,10 +54,10 @@
         'keycodes/keyboard_codes.h',
         'latency_info.cc',
         'latency_info.h',
-        'x/device_list_cache_x.cc',
-        'x/device_list_cache_x.h',
         'x/device_data_manager.cc',
         'x/device_data_manager.h',
+        'x/device_list_cache_x.cc',
+        'x/device_list_cache_x.h',
         'x/touch_factory_x11.cc',
         'x/touch_factory_x11.h',
       ],
@@ -148,6 +148,10 @@
         'platform/x11/x11_event_source.h',
         'win/events_win.cc',
         'x/events_x.cc',
+        'x/text_edit_command_x11.cc',
+        'x/text_edit_command_x11.h',
+        'x/text_edit_key_bindings_delegate_x11.cc',
+        'x/text_edit_key_bindings_delegate_x11.h',
       ],
       'conditions': [
         # We explicitly enumerate the platforms we _do_ provide native cracking
@@ -155,6 +159,14 @@
         ['OS=="win" or use_x11==1 or use_ozone==1', {
           'sources!': [
             'events_stub.cc',
+          ],
+        }],
+        ['chromeos==1', {
+          'sources!': [
+            'x/text_edit_command_x11.cc',
+            'x/text_edit_command_x11.h',
+            'x/text_edit_key_bindings_delegate_x11.cc',
+            'x/text_edit_key_bindings_delegate_x11.h',
           ],
         }],
         ['use_x11==1', {

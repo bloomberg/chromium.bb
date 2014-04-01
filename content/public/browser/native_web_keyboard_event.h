@@ -67,7 +67,7 @@ struct CONTENT_EXPORT NativeWebKeyboardEvent :
   // Currently, it's only used by Linux and Mac ports.
   bool skip_in_browser;
 
-#if defined(TOOLKIT_GTK)
+#if defined(USE_AURA) || defined(TOOLKIT_GTK)
   // True if the key event matches an edit command. In order to ensure the edit
   // command always work in web page, the browser should not pre-handle this key
   // event as a reserved accelerator. See http://crbug.com/54573
