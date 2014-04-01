@@ -298,13 +298,13 @@ class ArchivingStageMixin(object):
       commands.UploadArchivedFile(
           self.archive_path, self.upload_url, filename, self._run.debug,
           update_list=True, acl=self.acl)
-    except (cros_build_lib.RunCommandError, timeout_util.TimeoutError) as e:
+    except (cros_build_lib.RunCommandError, timeout_util.TimeoutError):
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
         raise
 
       # Treat gsutil flake as a warning if it's the only problem.
-      self._HandleExceptionAsWarning(e)
+      self._HandleExceptionAsWarning(sys.exc_info())
 
   def GetMetadata(self, config=None, stage=None, final_status=None,
                   sync_instance=None, completion_instance=None):
