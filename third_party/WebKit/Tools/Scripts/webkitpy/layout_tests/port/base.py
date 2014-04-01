@@ -1512,10 +1512,6 @@ class Port(object):
             '\n'.join(('STDOUT: ' + l) for l in stdout_lines),
             '\n'.join(('STDERR: ' + l) for l in stderr_lines)))
 
-    def _get_leak_log(self, name, pid, stdout, stderr, newer_than):
-        match = re.match('#LEAK - (\S+) pid (\d+) (.+)\n', stderr)
-        return (stderr, match.group(3))
-
     def look_for_new_crash_logs(self, crashed_processes, start_time):
         pass
 

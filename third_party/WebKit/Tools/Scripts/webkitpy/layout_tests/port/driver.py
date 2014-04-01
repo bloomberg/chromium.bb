@@ -178,7 +178,6 @@ class Driver(object):
             self._server_process = None
 
         crash_log = None
-        leak_log = None
         if crashed:
             self.error_from_test, crash_log = self._get_crash_log(text, self.error_from_test, newer_than=start_time)
 
@@ -193,22 +192,17 @@ class Driver(object):
                 # Print stdout and stderr to the placeholder crash log; we want as much context as possible.
                 if self.error_from_test:
                     crash_log += '\nstdout:\n%s\nstderr:\n%s\n' % (text, self.error_from_test)
-        elif leaked:
-            self.error_from_test, leak_log = self._get_leak_log(text, self.error_from_test, newer_than=start_time)
 
         return DriverOutput(text, image, actual_image_hash, audio,
             crash=crashed, test_time=time.time() - test_begin_time, measurements=self._measurements,
             timeout=timed_out, error=self.error_from_test,
             crashed_process_name=self._crashed_process_name,
             crashed_pid=self._crashed_pid, crash_log=crash_log,
-            leak=leaked, leak_log=leak_log,
+            leak=leaked, leak_log=self._leak_log,
             pid=pid)
 
     def _get_crash_log(self, stdout, stderr, newer_than):
         return self._port._get_crash_log(self._crashed_process_name, self._crashed_pid, stdout, stderr, newer_than)
-
-    def _get_leak_log(self, stdout, stderr, newer_than):
-        return self._port._get_leak_log(self._crashed_process_name, self._crashed_pid, stdout, stderr, newer_than)
 
     # FIXME: Seems this could just be inlined into callers.
     @classmethod
@@ -285,6 +279,7 @@ class Driver(object):
         self._crashed_process_name = None
         self._crashed_pid = None
         self._leaked = False
+        self._leak_log = None
         cmd_line = self.cmd_line(pixel_tests, per_test_args)
         self._server_process = self._port._server_process_constructor(self._port, server_name, cmd_line, environment, logging=self._port.get_option("driver_logging"))
         self._server_process.start()
@@ -370,6 +365,8 @@ class Driver(object):
     def _check_for_leak(self, error_line):
         if error_line.startswith("#LEAK - "):
             self._leaked = True
+            match = re.match('#LEAK - (\S+) pid (\d+) (.+)\n', error_line)
+            self._leak_log = match.group(3)
         return self._leaked
 
     def _command_from_driver_input(self, driver_input):
@@ -485,7 +482,8 @@ class Driver(object):
             if err_line:
                 if self._check_for_driver_crash(err_line):
                     break
-                self._check_for_leak(err_line)
+                if self._check_for_leak(err_line):
+                    break
                 self.error_from_test += err_line
 
         block.decode_content()
