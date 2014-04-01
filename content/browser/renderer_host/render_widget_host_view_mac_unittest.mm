@@ -89,6 +89,12 @@ typedef NSUInteger NSEventPhase;
 - (void)touchesEndedWithEvent:(NSEvent*)event{}
 - (void)beginGestureWithEvent:(NSEvent*)event{}
 - (void)endGestureWithEvent:(NSEvent*)event{}
+- (BOOL)canRubberbandLeft:(NSView*)view {
+  return true;
+}
+- (BOOL)canRubberbandRight:(NSView*)view {
+  return true;
+}
 
 @end
 

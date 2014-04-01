@@ -2828,8 +2828,12 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   }
 
   if (renderWidgetHostView_->render_widget_host_) {
-    const WebMouseWheelEvent& webEvent =
-        WebInputEventFactory::mouseWheelEvent(event, self);
+    // History-swiping is not possible if the logic reaches this point.
+    // Allow rubber-banding in both directions.
+    bool canRubberbandLeft = true;
+    bool canRubberbandRight = true;
+    const WebMouseWheelEvent webEvent = WebInputEventFactory::mouseWheelEvent(
+        event, self, canRubberbandLeft, canRubberbandRight);
     renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
   }
 
@@ -2922,8 +2926,10 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
 
   // This is responsible for content scrolling!
   if (renderWidgetHostView_->render_widget_host_) {
-    const WebMouseWheelEvent& webEvent =
-        WebInputEventFactory::mouseWheelEvent(event, self);
+    BOOL canRubberbandLeft = [responderDelegate_ canRubberbandLeft:self];
+    BOOL canRubberbandRight = [responderDelegate_ canRubberbandRight:self];
+    const WebMouseWheelEvent webEvent = WebInputEventFactory::mouseWheelEvent(
+        event, self, canRubberbandLeft, canRubberbandRight);
     renderWidgetHostView_->render_widget_host_->ForwardWheelEvent(webEvent);
   }
 }

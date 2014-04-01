@@ -42,9 +42,11 @@ static BOOL forceMagicMouse = NO;
 
   return NO;
 }
+
 - (void)gotUnhandledWheelEvent {
   gotUnhandledWheelEvent_ = YES;
 }
+
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
   isPinnedLeft_ = left;
   isPinnedRight_ = right;
@@ -52,6 +54,32 @@ static BOOL forceMagicMouse = NO;
 
 - (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar {
   hasHorizontalScrollbar_ = hasHorizontalScrollbar;
+}
+
+- (BOOL)canRubberbandLeft:(NSView*)view {
+  Browser* browser = chrome::FindBrowserWithWindow([view window]);
+  // If history swiping isn't possible, allow rubberbanding.
+  if (!browser)
+    return true;
+  if (!chrome::CanGoBack(browser))
+    return true;
+  // History swiping is possible. By default, disallow rubberbanding.  If the
+  // user has both started, and then cancelled history swiping for this
+  // gesture, allow rubberbanding.
+  return inGesture_ && historySwipeCancelled_;
+}
+
+- (BOOL)canRubberbandRight:(NSView*)view {
+  Browser* browser = chrome::FindBrowserWithWindow([view window]);
+  // If history swiping isn't possible, allow rubberbanding.
+  if (!browser)
+    return true;
+  if (!chrome::CanGoForward(browser))
+    return true;
+  // History swiping is possible. By default, disallow rubberbanding.  If the
+  // user has both started, and then cancelled history swiping for this
+  // gesture, allow rubberbanding.
+  return inGesture_ && historySwipeCancelled_;
 }
 
 // Is is theoretically possible for multiple simultaneous gestures to occur, if
