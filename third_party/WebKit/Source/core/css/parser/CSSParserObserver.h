@@ -49,6 +49,7 @@ enum CSSParserError {
 
 // This only implemented by StyleSheetHandler in InspectorStyleSheet.cpp.
 class CSSParserObserver {
+    STACK_ALLOCATED();
 public:
     virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned offset) = 0;
     virtual void endRuleHeader(unsigned offset) = 0;

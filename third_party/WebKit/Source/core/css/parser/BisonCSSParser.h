@@ -78,10 +78,10 @@ struct CSSParserLocation {
 };
 
 class BisonCSSParser {
+    STACK_ALLOCATED();
     friend inline int cssyylex(void*, BisonCSSParser*);
-
 public:
-    BisonCSSParser(const CSSParserContext&);
+    explicit BisonCSSParser(const CSSParserContext&);
     ~BisonCSSParser();
 
     void rollbackLastProperties(int num);

@@ -59,14 +59,14 @@ using WebCore::RuleSourceDataList;
 using WebCore::CSSRuleSourceData;
 using WebCore::CSSStyleSheet;
 
-static PassOwnPtr<WebCore::BisonCSSParser> createCSSParser(WebCore::Document* document)
-{
-    return adoptPtr(new WebCore::BisonCSSParser(document ? WebCore::CSSParserContext(*document, 0) : WebCore::strictCSSParserContext()));
-}
-
 namespace {
 
 using namespace WebCore;
+
+static CSSParserContext parserContextForDocument(Document *document)
+{
+    return document ? CSSParserContext(*document, 0) : strictCSSParserContext();
+}
 
 class StyleSheetHandler FINAL : public CSSParserObserver {
 public:
@@ -75,6 +75,7 @@ public:
         , m_document(document)
         , m_styleSheetContents(styleSheetContents)
         , m_result(result)
+        , m_commentParser(parserContextForDocument(document))
         , m_propertyRangeStart(UINT_MAX)
         , m_selectorRangeStart(UINT_MAX)
         , m_commentRangeStart(UINT_MAX)
@@ -106,7 +107,7 @@ private:
     RuleSourceDataList* m_result;
     RuleSourceDataList m_currentRuleDataStack;
     RefPtr<CSSRuleSourceData> m_currentRuleData;
-    OwnPtr<BisonCSSParser> m_commentParser;
+    BisonCSSParser m_commentParser;
     unsigned m_propertyRangeStart;
     unsigned m_selectorRangeStart;
     unsigned m_commentRangeStart;
@@ -333,15 +334,13 @@ void StyleSheetHandler::endComment(unsigned offset)
         return;
 
     // FIXME: Use the actual rule type rather than STYLE_RULE?
-    if (!m_commentParser)
-        m_commentParser = createCSSParser(m_document);
     RuleSourceDataList sourceData;
 
     // FIXME: Use another subclass of BisonCSSParser::SourceDataHandler and assert that
     // no comments are encountered (will not need m_document and m_styleSheetContents).
     StyleSheetHandler handler(commentText, m_document, m_styleSheetContents, &sourceData);
     RefPtrWillBeRawPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
-    m_commentParser->parseDeclaration(tempMutableStyle.get(), commentText, &handler, m_styleSheetContents);
+    m_commentParser.parseDeclaration(tempMutableStyle.get(), commentText, &handler, m_styleSheetContents);
     Vector<CSSPropertySourceData>& commentPropertyData = sourceData.first()->styleSourceData->propertyData;
     if (commentPropertyData.size() != 1)
         return;
@@ -419,7 +418,7 @@ bool ParsedStyleSheet::ensureSourceData()
     RefPtrWillBeRawPtr<StyleSheetContents> newStyleSheet = StyleSheetContents::create(strictCSSParserContext());
     OwnPtr<RuleSourceDataList> result = adoptPtr(new RuleSourceDataList());
     StyleSheetHandler handler(text(), m_pageStyleSheet->ownerDocument(), newStyleSheet.get(), result.get());
-    createCSSParser(m_pageStyleSheet->ownerDocument())->parseSheet(newStyleSheet.get(), text(), TextPosition::minimumPosition(), &handler);
+    BisonCSSParser(parserContextForDocument(m_pageStyleSheet->ownerDocument())).parseSheet(newStyleSheet.get(), text(), TextPosition::minimumPosition(), &handler);
     setSourceData(result.release());
     return hasSourceData();
 }
@@ -556,7 +555,7 @@ bool InspectorStyle::verifyPropertyText(const String& propertyText, bool canOmit
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
     String declarationText = propertyText + (canOmitSemicolon ? ";" : " ") + bogusPropertyName + ": none";
     StyleSheetHandler handler(declarationText, ownerDocument(), styleSheetContents.get(), &sourceData);
-    createCSSParser(ownerDocument())->parseDeclaration(tempMutableStyle.get(), declarationText, &handler, styleSheetContents.get());
+    BisonCSSParser(parserContextForDocument(ownerDocument())).parseDeclaration(tempMutableStyle.get(), declarationText, &handler, styleSheetContents.get());
     Vector<CSSPropertySourceData>& propertyData = sourceData.first()->styleSourceData->propertyData;
     unsigned propertyCount = propertyData.size();
 
@@ -994,7 +993,7 @@ bool InspectorStyleSheet::setRuleSelector(const InspectorCSSId& id, const String
 static bool checkStyleRuleSelector(Document* document, const String& selector)
 {
     CSSSelectorList selectorList;
-    createCSSParser(document)->parseSelector(selector, selectorList);
+    BisonCSSParser(parserContextForDocument(document)).parseSelector(selector, selectorList);
     return selectorList.isValid();
 }
 
@@ -1596,7 +1595,7 @@ PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttribu
     RefPtrWillBeRawPtr<MutableStylePropertySet> tempDeclaration = MutableStylePropertySet::create();
     RuleSourceDataList ruleSourceDataResult;
     StyleSheetHandler handler(m_styleText, &m_element->document(), m_element->document().elementSheet().contents(), &ruleSourceDataResult);
-    createCSSParser(&m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet().contents());
+    BisonCSSParser(parserContextForDocument(&m_element->document())).parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet().contents());
     return ruleSourceDataResult.first().release();
 }
 
