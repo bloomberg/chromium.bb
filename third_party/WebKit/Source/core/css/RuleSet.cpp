@@ -177,10 +177,12 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component, RuleData& rule
 #endif
 
     const CSSSelector* it = &component;
-    for (; it->relation() == CSSSelector::SubSelector; it = it->tagHistory()) {
+    for (; it && it->relation() == CSSSelector::SubSelector; it = it->tagHistory()) {
         extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
     }
-    extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
+    // FIXME: this null check should not be necessary. See crbug.com/358475
+    if (it)
+        extractValuesforSelector(it, id, className, customPseudoElementName, tagName);
 
     // Prefer rule sets in order of most likely to apply infrequently.
     if (!id.isEmpty()) {

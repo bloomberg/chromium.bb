@@ -397,6 +397,8 @@ void CSSSelector::show(int indent) const
     if (tagHistory()) {
         printf("\n%*s--> (relation == %d)\n", indent, "", relation());
         tagHistory()->show(indent + 2);
+    } else {
+        printf("\n%*s--> (relation == %d)\n", indent, "", relation());
     }
 }
 

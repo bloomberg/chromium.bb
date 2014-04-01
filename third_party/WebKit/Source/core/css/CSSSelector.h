@@ -288,7 +288,7 @@ namespace WebCore {
         bool isShadowPseudoElement() const;
         bool isHostPseudoClass() const;
 
-        // FIXME: selectors with no tagHistory() get a relation() of Descendant. It should instead be
+        // FIXME: selectors with no tagHistory() get a relation() of Descendant (and sometimes even SubSelector). It should instead be
         // None.
         Relation relation() const { return static_cast<Relation>(m_relation); }
 
