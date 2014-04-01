@@ -586,6 +586,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool LoadTextInputInterface();
   bool LoadZoomInterface();
 
+  // Update any transforms that should be applied to the texture layer.
+  void UpdateLayerTransform();
+
   // Determines if we think the plugin has focus, both content area and webkit
   // (see has_webkit_focus_ below).
   bool PluginHasFocus() const;
