@@ -295,8 +295,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 }
 
 EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11) &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableD3D11))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableD3D11))
     return EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE;
 
   return EGL_DEFAULT_DISPLAY;
