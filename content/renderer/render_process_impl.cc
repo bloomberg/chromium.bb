@@ -68,11 +68,6 @@ RenderProcessImpl::RenderProcessImpl()
   }
 #endif
 
-  // Out of process dev tools rely upon auto break behavior.
-  std::string auto_break_flag("--debugger-auto-break");
-  v8::V8::SetFlagsFromString(auto_break_flag.c_str(),
-                             static_cast<int>(auto_break_flag.size()));
-
 #if defined(OS_ANDROID)
   if (base::android::SysUtils::IsLowEndDevice()) {
     std::string optimize_flag("--optimize-for-size");
