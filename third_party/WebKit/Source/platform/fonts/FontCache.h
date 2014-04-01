@@ -47,6 +47,10 @@
 #include <mlang.h>
 #endif
 
+#if OS(ANDROID)
+#include <unicode/uscript.h>
+#endif
+
 class SkTypeface;
 
 namespace WebCore {
