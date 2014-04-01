@@ -806,6 +806,18 @@ template <typename T> struct VectorTraits<WebCore::WeakMember<T> > : VectorTrait
     static const bool canMoveWithMemcpy = true;
 };
 
+template <typename T> struct VectorTraits<WebCore::HeapVector<T, 0> > : VectorTraitsBase<WebCore::HeapVector<T, 0> > {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <typename T, size_t inlineCapacity> struct VectorTraits<WebCore::HeapVector<T, inlineCapacity> > : VectorTraitsBase<WebCore::HeapVector<T, inlineCapacity> > {
+    static const bool needsDestruction = VectorTraits<T>::needsDestruction;
+    static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
+    static const bool canMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
+};
+
 template<typename T> struct HashTraits<WebCore::Member<T> > : SimpleClassHashTraits<WebCore::Member<T> > {
     static const bool needsDestruction = false;
     // FIXME: The distinction between PeekInType and PassInType is there for

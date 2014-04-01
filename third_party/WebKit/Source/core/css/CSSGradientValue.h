@@ -69,6 +69,22 @@ public:
     void trace(Visitor*);
 };
 
+} // namespace WebCore
+
+
+// We have to declare the VectorTraits specialization before CSSGradientValue
+// declares its inline capacity vector below.
+namespace WTF {
+
+template <> struct VectorTraits<WebCore::CSSGradientColorStop> : VectorTraitsBase<WebCore::CSSGradientColorStop> {
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+}
+
+namespace WebCore {
+
 class CSSGradientValue : public CSSImageGeneratorValue {
 public:
     PassRefPtr<Image> image(RenderObject*, const IntSize&);

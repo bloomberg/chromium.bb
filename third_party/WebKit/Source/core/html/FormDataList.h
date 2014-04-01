@@ -95,12 +95,11 @@ private:
 
 } // namespace WebCore
 
-// FIXME: oilpan: remove once traceability can be derived/inferred.
 namespace WTF {
-template<>
-struct NeedsTracing<WebCore::FormDataList::Item> {
-    static const bool value = true;
+template <> struct VectorTraits<WebCore::FormDataList::Item> : VectorTraitsBase<WebCore::FormDataList::Item> {
+    static const bool canInitializeWithMemset = true;
 };
+
 }
 
 #endif // FormDataList_h

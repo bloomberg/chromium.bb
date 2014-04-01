@@ -76,10 +76,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             // We clear out unused slots so that the visitor and the finalizer
             // do not visit them (or at least it does not matter if they do).
-            // canInitializeWithMemset tells us that the class does not expect
-            // matching constructor and destructor calls as long as the memory
-            // is zeroed.
-            COMPILE_ASSERT(!VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, ClassHasProblemsWithFinalizersCalledOnClearedMemory);
             memset(begin, 0, sizeof(T) * (end - begin));
         }
     };
@@ -572,12 +568,22 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         Vector()
         {
+            // Unused slots are initialized to zero so that the visitor and the
+            // finalizer can visit them safely. canInitializeWithMemset tells us
+            // that the class does not expect matching constructor and
+            // destructor calls as long as the memory is zeroed.
+            COMPILE_ASSERT(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, ClassHasProblemsWithFinalizersCalledOnClearedMemory);
             m_size = 0;
         }
 
         explicit Vector(size_t size)
             : Base(size)
         {
+            // Unused slots are initialized to zero so that the visitor and the
+            // finalizer can visit them safely. canInitializeWithMemset tells us
+            // that the class does not expect matching constructor and
+            // destructor calls as long as the memory is zeroed.
+            COMPILE_ASSERT(!Allocator::isGarbageCollected || !VectorTraits<T>::needsDestruction || VectorTraits<T>::canInitializeWithMemset, ClassHasProblemsWithFinalizersCalledOnClearedMemory);
             m_size = size;
             TypeOperations::initialize(begin(), end());
         }
