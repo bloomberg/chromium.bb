@@ -25,7 +25,7 @@
 #include "chrome/browser/task_manager/panel_information.h"
 #include "chrome/browser/task_manager/printing_information.h"
 #include "chrome/browser/task_manager/resource_provider.h"
-#include "chrome/browser/task_manager/tab_contents_resource_provider.h"
+#include "chrome/browser/task_manager/tab_contents_information.h"
 #include "chrome/browser/task_manager/web_contents_resource_provider.h"
 #include "chrome/browser/task_manager/worker_resource_provider.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -253,8 +253,10 @@ TaskManagerModel::TaskManagerModel(TaskManager* task_manager)
       task_manager,
       scoped_ptr<WebContentsInformation>(
           new task_manager::BackgroundInformation())));
-  AddResourceProvider(
-      new task_manager::TabContentsResourceProvider(task_manager));
+  AddResourceProvider(new task_manager::WebContentsResourceProvider(
+      task_manager,
+      scoped_ptr<WebContentsInformation>(
+          new task_manager::TabContentsInformation())));
   AddResourceProvider(new task_manager::WebContentsResourceProvider(
       task_manager,
       scoped_ptr<WebContentsInformation>(
