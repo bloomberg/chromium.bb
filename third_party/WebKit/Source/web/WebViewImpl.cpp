@@ -1563,17 +1563,22 @@ void WebViewImpl::resize(const WebSize& newSize)
                                  FloatSize(viewportAnchorXCoord, viewportAnchorYCoord));
     }
 
-    updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
-    updateMainFrameLayoutSize();
+    {
+        // Avoids unnecessary invalidations while various bits of state in FastTextAutosizer are updated.
+        FastTextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
 
-    WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
-    if (agentPrivate)
-        agentPrivate->webViewResized(newSize);
-    WebFrameImpl* webFrame = mainFrameImpl();
-    if (webFrame->frameView()) {
-        webFrame->frameView()->resize(m_size);
-        if (page()->settings().pinchVirtualViewportEnabled())
-            page()->frameHost().pinchViewport().setSize(m_size);
+        updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
+        updateMainFrameLayoutSize();
+
+        WebDevToolsAgentPrivate* agentPrivate = devToolsAgentPrivate();
+        if (agentPrivate)
+            agentPrivate->webViewResized(newSize);
+        WebFrameImpl* webFrame = mainFrameImpl();
+        if (webFrame->frameView()) {
+            webFrame->frameView()->resize(m_size);
+            if (page()->settings().pinchVirtualViewportEnabled())
+                page()->frameHost().pinchViewport().setSize(m_size);
+        }
     }
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {

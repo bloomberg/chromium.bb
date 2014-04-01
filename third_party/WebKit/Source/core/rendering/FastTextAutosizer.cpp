@@ -236,6 +236,7 @@ FastTextAutosizer::FastTextAutosizer(const Document* document)
     , m_baseMultiplier(0)
     , m_pageNeedsAutosizing(false)
     , m_previouslyAutosized(false)
+    , m_updatePageInfoDeferred(false)
     , m_firstBlock(0)
 #ifndef NDEBUG
     , m_blocksThatHaveBegunLayout()
@@ -290,7 +291,7 @@ void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
 
 void FastTextAutosizer::beginLayout(RenderBlock* block)
 {
-    ASSERT(enabled() && m_pageNeedsAutosizing);
+    ASSERT(enabled() && m_pageNeedsAutosizing && !m_updatePageInfoDeferred);
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(block);
 #endif
@@ -439,7 +440,7 @@ void FastTextAutosizer::updatePageInfoInAllFrames()
 
 void FastTextAutosizer::updatePageInfo()
 {
-    if (!enabled())
+    if (!enabled() || m_updatePageInfoDeferred)
         return;
 
     int previousFrameWidth = m_frameWidth;
@@ -985,6 +986,24 @@ FastTextAutosizer::LayoutScope::~LayoutScope()
 {
     if (m_textAutosizer)
         m_textAutosizer->endLayout(m_block);
+}
+
+FastTextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
+    : m_mainFrame(page->mainFrame())
+{
+    if (FastTextAutosizer* textAutosizer = m_mainFrame->document()->fastTextAutosizer()) {
+        ASSERT(!textAutosizer->m_updatePageInfoDeferred);
+        textAutosizer->m_updatePageInfoDeferred = true;
+    }
+}
+
+FastTextAutosizer::DeferUpdatePageInfo::~DeferUpdatePageInfo()
+{
+    if (FastTextAutosizer* textAutosizer = m_mainFrame->document()->fastTextAutosizer()) {
+        ASSERT(textAutosizer->m_updatePageInfoDeferred);
+        textAutosizer->m_updatePageInfoDeferred = false;
+        textAutosizer->updatePageInfoInAllFrames();
+    }
 }
 
 } // namespace WebCore

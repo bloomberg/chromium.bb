@@ -75,6 +75,14 @@ public:
         RenderBlock* m_block;
     };
 
+    class DeferUpdatePageInfo {
+    public:
+        explicit DeferUpdatePageInfo(Page*);
+        ~DeferUpdatePageInfo();
+    private:
+        RefPtr<LocalFrame> m_mainFrame;
+    };
+
 private:
     typedef HashSet<const RenderBlock*> BlockSet;
 
@@ -234,6 +242,7 @@ private:
     float m_baseMultiplier; // Includes accessibility font scale factor and device scale adjustment.
     bool m_pageNeedsAutosizing;
     bool m_previouslyAutosized;
+    bool m_updatePageInfoDeferred;
     const RenderBlock* m_firstBlock; // First block to receive beginLayout.
 #ifndef NDEBUG
     BlockSet m_blocksThatHaveBegunLayout; // Used to ensure we don't compute properties of a block before beginLayout() is called on it.
