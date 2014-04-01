@@ -85,13 +85,7 @@ public:
 
     RenderLayer& owningLayer() const { return m_owningLayer; }
 
-    enum UpdateAfterLayoutFlag {
-        CompositingChildrenOnly = 1 << 0,
-        NeedsFullRepaint = 1 << 1,
-        IsUpdateRoot = 1 << 2
-    };
-    typedef unsigned UpdateAfterLayoutFlags;
-    void updateAfterLayout(UpdateAfterLayoutFlags);
+    void updateAfterLayout(bool needsFullRepaint, bool isUpdateRoot);
 
     // Returns true if layer configuration changed.
     bool updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType);

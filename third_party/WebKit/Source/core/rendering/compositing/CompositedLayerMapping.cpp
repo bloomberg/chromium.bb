@@ -428,7 +428,7 @@ void CompositedLayerMapping::updateCompositingReasons()
     m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
 }
 
-void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
+void CompositedLayerMapping::updateAfterLayout(bool needsFullRepaint, bool isUpdateRoot)
 {
     RenderLayerCompositor* layerCompositor = compositor();
     if (!layerCompositor->compositingLayersNeedRebuild()) {
@@ -440,18 +440,18 @@ void CompositedLayerMapping::updateAfterLayout(UpdateAfterLayoutFlags flags)
         // The solution is to update compositing children of this layer here,
         // via updateCompositingChildrenGeometry().
         updateCompositedBounds(GraphicsLayerUpdater::ForceUpdate);
-        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer.stackingNode(), &m_owningLayer, flags & CompositingChildrenOnly);
+        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer.stackingNode(), &m_owningLayer);
 
-        if (flags & IsUpdateRoot) {
+        if (isUpdateRoot) {
             updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
             layerCompositor->updateRootLayerPosition();
             RenderLayerStackingNode* stackingContainer = m_owningLayer.stackingNode()->enclosingStackingContainerNode();
             if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainer && (stackingContainer != m_owningLayer.stackingNode()))
-                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer->layer(), flags & CompositingChildrenOnly);
+                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer->layer());
         }
     }
 
-    if (flags & NeedsFullRepaint && !paintsIntoCompositedAncestor())
+    if (needsFullRepaint && !paintsIntoCompositedAncestor())
         setContentsNeedDisplay();
 }
 

@@ -1407,7 +1407,7 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
 }
 
 // Recurs down the RenderLayer tree until its finds the compositing descendants of compositingAncestor and updates their geometry.
-void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer* layer, bool compositedChildrenOnly)
+void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer* layer)
 {
     if (layer->stackingNode() != compositingAncestor) {
         if (layer->hasCompositedLayerMapping()) {
@@ -1421,13 +1421,12 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
             }
 
             compositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
-            if (compositedChildrenOnly)
-                return;
+            return;
         }
     }
 
     if (layer->reflectionInfo())
-        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionInfo()->reflectionLayer(), compositedChildrenOnly);
+        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionInfo()->reflectionLayer());
 
     if (!layer->hasCompositingDescendant())
         return;
@@ -1438,9 +1437,8 @@ void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStack
 
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
-        updateCompositingDescendantGeometry(compositingAncestor, curNode->layer(), compositedChildrenOnly);
+        updateCompositingDescendantGeometry(compositingAncestor, curNode->layer());
 }
-
 
 void RenderLayerCompositor::repaintCompositedLayers()
 {

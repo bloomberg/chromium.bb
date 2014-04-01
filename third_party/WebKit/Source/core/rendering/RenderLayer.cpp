@@ -329,14 +329,8 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->updateLayerPositions(geometryMap, flags);
 
-    if ((flags & UpdateCompositingLayers) && hasCompositedLayerMapping()) {
-        CompositedLayerMapping::UpdateAfterLayoutFlags updateFlags = CompositedLayerMapping::CompositingChildrenOnly;
-        if (flags & NeedsFullRepaintInBacking)
-            updateFlags |= CompositedLayerMapping::NeedsFullRepaint;
-        if (isUpdateRoot)
-            updateFlags |= CompositedLayerMapping::IsUpdateRoot;
-        compositedLayerMapping()->updateAfterLayout(updateFlags);
-    }
+    if ((flags & UpdateCompositingLayers) && hasCompositedLayerMapping())
+        compositedLayerMapping()->updateAfterLayout(flags & NeedsFullRepaintInBacking, isUpdateRoot);
 
     if (geometryMap)
         geometryMap->popMappingsToAncestor(parent());
