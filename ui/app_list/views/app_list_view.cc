@@ -50,7 +50,8 @@ namespace app_list {
 
 namespace {
 
-void (*g_next_paint_callback)();
+// For UMA and testing. If non-null, triggered when the app list is painted.
+base::Closure g_next_paint_callback;
 
 // The margin from the edge to the speech UI.
 const int kSpeechUIMargin = 12;
@@ -199,9 +200,9 @@ gfx::Size AppListView::GetPreferredSize() {
 
 void AppListView::Paint(gfx::Canvas* canvas) {
   views::BubbleDelegateView::Paint(canvas);
-  if (g_next_paint_callback) {
-    g_next_paint_callback();
-    g_next_paint_callback = NULL;
+  if (!g_next_paint_callback.is_null()) {
+    g_next_paint_callback.Run();
+    g_next_paint_callback.Reset();
   }
 }
 
@@ -243,7 +244,7 @@ void AppListView::RemoveObserver(AppListViewObserver* observer) {
 }
 
 // static
-void AppListView::SetNextPaintCallback(void (*callback)()) {
+void AppListView::SetNextPaintCallback(const base::Closure& callback) {
   g_next_paint_callback = callback;
 }
 
