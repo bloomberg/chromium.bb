@@ -16,6 +16,7 @@ description("Tests ScriptProcessorNode.");
 
 var sampleRate = 44100.0;
 var outputChannels = 6;
+var playbackTime = 0.0;
 
 // For the current implementation of ScriptProcessorNode, when it works with OfflineAudioContext (which runs much faster
 // than real-time) the event.inputBuffer might be overwrite again before onaudioprocess ever get chance to be called.
@@ -40,6 +41,15 @@ function createBuffer(context, length) {
 }
 
 function processAudioData(event) {
+    playbackTime = event.playbackTime;
+    var expectedTime = context.currentTime + (bufferSize / context.sampleRate);
+    var allowedTimeGap = 0.0000001;
+
+    // There may be a little time gap which is from different thread operation
+    // between currentTime when main thread fires onaudioprocess() and currenTime when read in JS
+    // since currentTime is continuously increasing on audio thread.
+    shouldBeCloseTo("playbackTime", expectedTime, allowedTimeGap, true);
+
     buffer = event.outputBuffer;
     if (buffer.numberOfChannels != outputChannels)
         testFailed("numberOfOutputChannels doesn't match!");
@@ -50,7 +60,7 @@ function processAudioData(event) {
     buffer = event.inputBuffer;
     var bufferDataL = buffer.getChannelData(0);
     var bufferDataR = buffer.getChannelData(1);
-    
+
     var success = true;
     // Go through every sample and make sure it's all -1 for the left-channel, and all +1 for the right-channel.
     for (var i = 0; i < buffer.length; ++i) {

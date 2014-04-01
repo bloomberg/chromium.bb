@@ -265,8 +265,12 @@ void ScriptProcessorNode::fireProcessEvent()
         // This synchronizes with process().
         MutexLocker processLocker(m_processEventLock);
 
+        // Calculate a playbackTime with the buffersize which needs to be processed each time onaudioprocess is called.
+        // The outputBuffer being passed to JS will be played after exhuasting previous outputBuffer by double-buffering.
+        double playbackTime = (context()->currentSampleFrame() + m_bufferSize) / static_cast<double>(context()->sampleRate());
+
         // Call the JavaScript event handler which will do the audio processing.
-        dispatchEvent(AudioProcessingEvent::create(inputBuffer, outputBuffer));
+        dispatchEvent(AudioProcessingEvent::create(inputBuffer, outputBuffer, playbackTime));
     }
 }
 
