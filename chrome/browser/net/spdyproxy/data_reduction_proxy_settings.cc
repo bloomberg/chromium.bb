@@ -4,6 +4,8 @@
 
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
 
+#include <inttypes.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -144,9 +146,10 @@ void DataReductionProxySettings::InitDataReductionAuthentication(
     crypto::RandBytes(rand, 3 * sizeof(rand[0]));
 
     std::string realm =
-        base::StringPrintf("%s%lld", kAuthenticationRealmName, timestamp);
+        base::StringPrintf("%s%" PRId64, kAuthenticationRealmName, timestamp);
     std::string challenge = base::StringPrintf(
-        "%s realm=\"%s\", ps=\"%lld-%u-%u-%u\"", kAuthenticationRealmName,
+        "%s realm=\"%s\", ps=\"%" PRId64 "-%u-%u-%u\"",
+        kAuthenticationRealmName,
         realm.data(), timestamp, rand[0], rand[1], rand[2]);
     base::string16 password = AuthHashForSalt(timestamp);
 
@@ -633,7 +636,7 @@ base::string16 DataReductionProxySettings::AuthHashForSalt(int64 salt) {
   DCHECK(!key.empty());
 
   std::string salted_key =
-      base::StringPrintf("%lld%s%lld", salt, key.c_str(), salt);
+      base::StringPrintf("%" PRId64 "%s%" PRId64, salt, key.c_str(), salt);
   return base::UTF8ToUTF16(base::MD5String(salted_key));
 }
 
