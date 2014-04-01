@@ -777,7 +777,10 @@ To update/image the device with an xbuddy path:
 To update/image the device with a local image path:
   cros flash device /path/to/image.bin
 
-To device
+Examples:
+  cros flash 192.168.1.7 xbuddy://remote/x86-mario/latest-canary
+  cros flash 192.168.1.7 xbuddy://remote/x86-mario-paladin/R32-4830.0.0-rc1
+  cros flash usb:// xbuddy://remote/trybot-x86-mario-paladin/R32-5189.0.0-b100
 
 When updating the device, there are certain constraints on the local image path:
   1. The image path has to be in your source tree.
