@@ -25,6 +25,7 @@
       capture will only be available to URLs configured in AudioCaptureAllowedUrls.
 
       This policy affects all types of audio inputs and not only the built-in microphone.</translation>
+<translation id="7267809745244694722">Media keys default to function keys</translation>
 <translation id="9150416707757015439">This policy is deprecated. Please, use IncognitoModeAvailability instead.
       Enables Incognito mode in <ph name="PRODUCT_NAME"/>.
 
@@ -645,9 +646,6 @@
 <translation id="6417861582779909667">Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
 
           If this policy is left unset, the global default value will be used for all sites, either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
-<translation id="5457296720557564923">Allows pages to access JavaScript memory usage statistics.
-
-      This settings makes the memory statistics from the Developer Tools Profiles panel available to the web page itself.</translation>
 <translation id="5776485039795852974">Ask every time a site wants to show desktop notifications</translation>
 <translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
@@ -659,6 +657,12 @@
 <translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="1655229863189977773">Set disk cache size in bytes</translation>
+<translation id="3358275192586364144">Enables WPAD optimisation in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
+
+      Setting this to enabled causes Chrome to wait for a shorter interval for DNS-based WPAD servers.
+
+      If this policy is left unset, this will be enabled and the user will not
+      be able to change it.</translation>
 <translation id="6376842084200599664">Allows you to specify a list of extensions that will be installed silently, without user interaction.
 
           Each item of the list is a string that contains an extension ID and an update URL delimited by a semicolon (<ph name="SEMICOLON"/>). The extension ID is the 32-letter string found e.g. on <ph name="CHROME_EXTENSIONS_LINK"/> when in developer mode. The update URL should point to an Update Manifest XML document as described at <ph name="LINK_TO_EXTENSION_DOC1"/>. Note that the update URL set in this policy is only used for the initial installation; subsequent updates of the extension will use the update URL indicated in the extension's manifest.
@@ -776,6 +780,7 @@
 <translation id="1679420586049708690">Public session for auto-login</translation>
 <translation id="7625444193696794922">Specifies the release channel that this device should be locked to.</translation>
 <translation id="2552966063069741410">Timezone</translation>
+<translation id="3788662722837364290">Power management settings when the user becomes idle</translation>
 <translation id="2240879329269430151">Allows you to set whether websites are allowed to show pop-ups. Showing pop-ups can be either allowed for all websites or denied for all websites.
 
           If this policy is left unset, 'BlockPop-ups' will be used and the user will be able to change it.</translation>
@@ -860,7 +865,6 @@
 <translation id="8102913158860568230">Default mediastream setting</translation>
 <translation id="6641981670621198190">Disable support for 3D graphics APIs</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
-<translation id="7929480864713075819">Enable reporting memory info (JS heap size) to page</translation>
 <translation id="5703863730741917647">Specify the action to take when the idle delay is reached.
 
           Note that this policy is deprecated and will be removed in the future.
@@ -973,6 +977,7 @@
 <translation id="4057110413331612451">Allow enterprise user to be primary multiprofile user only</translation>
 <translation id="5365946944967967336">Show Home button on the toolbar</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
+<translation id="1933378685401357864">Wallpaper image</translation>
 <translation id="8451988835943702790">Use New Tab Page as homepage</translation>
 <translation id="4617338332148204752">Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Enables the use of a default search provider.
@@ -996,6 +1001,11 @@
 
           If this policy is left unset, the large cursor is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
+<translation id="687046793986382807">This policy has been retired as of <ph name="PRODUCT_NAME"/> version 35.
+
+      Memory info is reported to page anyway, regardless of the option value, but the sizes reported are
+      quantised and the rate of updates is limited for security reasons. To obtain real-time precise data,
+      please use tools like Telemetry.</translation>
 <translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
 <translation id="2411919772666155530">Block notifications from these sites</translation>
 <translation id="6923366716660828830">Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
@@ -1007,6 +1017,7 @@
 
           If this policy is set to false, screen wake lock requests will be ignored.</translation>
 <translation id="467236746355332046">Supported features:</translation>
+<translation id="5447306928176905178">Enable reporting memory info (JS heap size) to page (deprecated)</translation>
 <translation id="7632724434767231364">GSSAPI library name</translation>
 <translation id="3038323923255997294">Continue running background apps when <ph name="PRODUCT_NAME"/> is closed</translation>
 <translation id="8909280293285028130">Specifies the length of time without user input after which the screen is locked when running on AC power.
@@ -1055,6 +1066,17 @@
           This policy is optional. If not set, instant search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="6095999036251797924">Specifies the length of time without user input after which the screen is locked when running on AC power or battery.
+
+          When the length of time is set to a value greater than zero, it represents the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME"/> locks the screen.
+
+          When the length of time is set to zero, <ph name="PRODUCT_OS_NAME"/> does not lock the screen when the user becomes idle.
+
+          When the length of time is unset, a default length of time is used.
+
+          The recommended way to lock the screen on idle is to enable screen locking on suspend and have <ph name="PRODUCT_OS_NAME"/> suspend after the idle delay. This policy should only be used when screen locking should occur a significant amount of time sooner than suspend or when suspend on idle is not desired at all.
+
+          The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="1454846751303307294">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1089,6 +1111,32 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is set to false or is not configured, the icons are visible.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
+<translation id="553658564206262718">Configure power management settings when the user becomes idle.
+
+          This policy controls multiple settings for the power management strategy when the user becomes idle.
+
+          There are four types of action:
+          * The screen will be dimmed if the user remains idle for the time specified by |ScreenDim|.
+          * The screen will be turned off if the user remains idle for the time specified by |ScreenOff|.
+          * A warning dialogue will be shown if the user remains idle for the time specified by |IdleWarning|, telling the user that the idle action is about to be taken.
+          * The action specified by |IdleAction| will be taken if the user remains idle for the time specified by |Idle|.
+
+          For each of above actions, the delay should be specified in milliseconds, and needs to be set to a value greater than zero to trigger the corresponding action. In case the delay is set to zero, <ph name="PRODUCT_OS_NAME"/> will not take the corresponding action.
+
+          For each of the above delays, when the length of time is unset, a default value will be used.
+
+          Note that |ScreenDim| values will be clamped to be less than or equal to |ScreenOff|, |ScreenOff| and |IdleWarning| will be clamped to be less than or equal to |Idle|.
+
+          |IdleAction| can be one of four possible actions:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          When the |IdleAction| is unset, the default action is taken, which is suspend.
+
+          There are also separate settings for AC power and battery.
+          </translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME"/> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
 <translation id="2030905906517501646">Default search provider keyword</translation>
@@ -1305,6 +1353,32 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
       Leaving this policy not set will make <ph name="PRODUCT_NAME"/> use the default value of 5,000 milliseconds.</translation>
 <translation id="8099880303030573137">Idle delay when running on battery power</translation>
+<translation id="1709037111685927635">Configure wallpaper image.
+
+      This policy allows you to configure the wallpaper image that is shown on the desktop and on the login screen background for the user. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME"/> can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its size must not exceed 16 MB. The URL must be accessible without any authentication.
+
+      The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;The URL from which the wallpaper image can be downloaded.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;The SHA-256 hash of the wallpaper image.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME"/> will download and use the wallpaper image.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, the user can choose an image to be shown on the desktop and on the login screen background.</translation>
 <translation id="2761483219396643566">Idle warning delay when running on battery power</translation>
 <translation id="6281043242780654992">Configures policies for Native Messaging. Blacklisted native messaging hosts won't be allowed unless they are whitelisted.</translation>
 <translation id="1468307069016535757">Set the default state of the high contrast mode accessibility feature on the login screen.
@@ -1443,93 +1517,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If you enable or disable this setting, users cannot change or override this setting.
 
       If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.</translation>
+<translation id="2170233653554726857">Enable WPAD optimisation</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>
 <translation id="6233173491898450179">Set download directory</translation>
-<translation id="78524144210416006">Configure power management on the login screen in <ph name="PRODUCT_OS_NAME"/>.
-
-      This policy lets you configure how <ph name="PRODUCT_OS_NAME"/> behaves when there is no user activity for some amount of time while the login screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:
-      * The actions to take on idle or lid close cannot be to end the session.
-      * The default action taken on idle when running on AC power is to shut down.
-
-      The policy should be specified as a string that expresses the individual settings in JSON format, conforming to the following schema:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;Power management settings applicable only when running on AC power&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;Power management settings applicable only when running on battery power&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is dimmed, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the screen is turned off, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;The length of time without user input after which the idle action is taken, in milliseconds&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Action to take when the idle delay is reached&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Action to take when the lid is closed&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      If a setting is left unspecified, a default value is used.
-
-      If this policy is unset, defaults are used for all settings.</translation>
 <translation id="8908294717014659003">Allows you to set whether websites are allowed to get access to media capture devices. Access to media capture devices can be allowed by default, or the user can be asked every time a website wants to get access to media capture devices.
 
           If this policy is left not set, 'PromptOnAccess' will be used and the user will be able to change it.</translation>
@@ -1564,6 +1554,9 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If this policy is not set, the default size will be used and the user will be able to override it with the --media-cache-size flag.</translation>
 <translation id="5142301680741828703">Always render the following URL patterns in <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Configure extension installation whitelist</translation>
+<translation id="5893553533827140852">If this setting is enabled, then gnubby authentication requests will be proxied across a remote host connection.
+
+          If this setting is disabled or not configured, gnubby authentication requests will not be proxied.</translation>
 <translation id="187819629719252111">Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME"/> to display file selection dialogues.
 
       If you enable this setting, users can open file selection dialogues as normal.
@@ -1652,6 +1645,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If the &quot;RestoreOnStartup&quot; policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.</translation>
 <translation id="2098658257603918882">Enable reporting of usage and crash-related data</translation>
+<translation id="4633786464238689684">Changes the default behaviour of the top row keys to function keys.
+
+          If this policy is set to true, the keyboard's top row of keys will produce function key commands by default. The search key has to be pressed to revert their behaviour back to media keys.
+
+          If this policy is set to false or left unset, the keyboard will produce media key commands by default and function key commands when the search key is held.</translation>
 <translation id="2324547593752594014">Allows sign in to Chrome</translation>
 <translation id="172374442286684480">Allow all sites to set local data.</translation>
 <translation id="1151353063931113432">Allow images on these sites</translation>
@@ -1707,6 +1705,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           ExtensionInstallBlacklist takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.</translation>
 <translation id="2113068765175018713">Limit device uptime by automatically rebooting</translation>
+<translation id="4224610387358583899">Screen lock delays</translation>
 <translation id="7848840259379156480">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME"/> is installed.
       The default setting is to allow the host browser do the rendering, but you
       can optionally override this and have <ph name="PRODUCT_FRAME_NAME"/> render HTML pages by default.</translation>
@@ -1815,6 +1814,15 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME"/> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
 <translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
+<translation id="1956493342242507974">Configure power management on the log-in screen in <ph name="PRODUCT_OS_NAME"/>.
+
+      This policy lets you configure how <ph name="PRODUCT_OS_NAME"/> behaves when there is no user activity for some amount of time while the log-in screen is being shown. The policy controls multiple settings. For their individual semantics and value ranges, see the corresponding policies that control power management within a session. The only deviations from these policies are:
+      * The actions to take on idle or lid close cannot be to end the session.
+      * The default action taken on idle when running on AC power is to shut down.
+
+      If a setting is left unspecified, a default value is used.
+
+      If this policy is unset, defaults are used for all settings.</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>
 <translation id="5781806558783210276">Specifies the length of time without user input after which the idle action is taken when running on battery power.
@@ -1936,5 +1944,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       This policy affects all types of audio output and not only the built-in speakers. Audio accessibility features are also inhibited by this policy. Do not enable this policy if a screen reader is required for the user.
 
       If this setting is set to true or not configured then users can use all supported audio outputs on their device.</translation>
+<translation id="6517678361166251908">Allow gnubby authentication</translation>
 <translation id="4858735034935305895">Allow fullscreen mode</translation>
 </translationbundle>

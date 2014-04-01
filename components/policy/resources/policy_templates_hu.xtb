@@ -21,6 +21,7 @@
       hangrögzítés csak az AudioCaptureAllowedUrls listában szereplő URL-ek esetében érhető el.
 
       Ez a házirend minden hangbemenetre érvényes, nem csak a beépített mikrofonra.</translation>
+<translation id="7267809745244694722">A médiabillentyűk alapértelmezés szerint a funkcióbillentyűk</translation>
 <translation id="9150416707757015439">Ez a házirend elavult. Kérjük, használja helyette az IncognitoModeAvailability házirendet. Engedélyezi az inkognitómódot a következőben: <ph name="PRODUCT_NAME"/>. Ha ez a beállítás engedélyezve van, illetve nincs konfigurálva, akkor a felhasználók inkognitómódban is megnyithatják a weboldalakat. Ha a beállítás nincs engedélyezve, a felhasználók nem nyithatják meg inkognitómódban a weboldalakat. Ha a házirend beállítatlanul marad, akkor megtörténik az engedélyezése, a felhasználók pedig használni tudják az inkognitómódot.</translation>
 <translation id="4203389617541558220">Az eszköz működési idejének korlátozása automatikus újraindítások beütemezésével.
 
@@ -536,7 +537,6 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 
           Ha a beállítás le van tiltva vagy nincs megadva, a gazdagépeket bármely fiókkal meg lehet osztani.</translation>
 <translation id="6417861582779909667">Lehetővé teszi olyan URL-minták listájának megadását, amelyek meghatározzák azokat a webhelyeket, amelyek nem állíthatnak be cookie-kat. Ha a házirend konfigurálatlanul marad, a rendszer a globális alapértelmezés szerinti értéket használja a &quot;DefaultCookiesSetting&quot; házirendből (ha az be van állítva), vagy egyébként a felhasználó személyes konfigurációjából.</translation>
-<translation id="5457296720557564923">Lehetővé teszi, hogy az oldalak hozzáférjenek a JavaScript-memóriahasználati statisztikákhoz. Ez a beállítás a weboldal rendelkezésére bocsátja a Fejlesztői eszközök profil panelból a memóriastatisztikákat.</translation>
 <translation id="5776485039795852974">Kérdezzen rá minden alkalommal, amikor egy webhely asztali értesítéseket akar mutatni</translation>
 <translation id="5047604665028708335">Hozzáférés engedélyezése a tartalomcsomagokon kívüli webhelyekhez</translation>
 <translation id="5052081091120171147">Ez a házirend engedélyezése esetén a böngészési előzmények importálását kényszeríti a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha le van tiltva, nem történik meg a böngészési előzmények importálása. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
@@ -544,6 +544,12 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="7132877481099023201">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a videorögzítő eszközökhöz</translation>
 <translation id="8947415621777543415">Eszköz helyének jelentése</translation>
 <translation id="1655229863189977773">Lemezgyorsítótár méretének beállítása bájtban</translation>
+<translation id="3358275192586364144">Engedélyezi a WPAD optimalizálást a(z) <ph name="PRODUCT_NAME"/> termékben, és megakadályozza, hogy a felhasználók módosítsák ezt a beállítást.
+
+      Ha engedélyezi, akkor a Chrome rövidebb ideig vár a DNS-alapú WPAD-szerverek esetében.
+
+      Ha nem állítja be ezt a házirendet, ez engedélyezve lesz, és a felhasználó nem
+      fogja tudni módosítani.</translation>
 <translation id="6376842084200599664">Lehetővé teszi egy olyan bővítménylista megadását, amelynek elemei a háttérben, felhasználói közreműködés nélkül települnek.
 
           A lista minden eleme egy bővítményazonosítót és a frissítés URL-jét pontosvesszővel (<ph name="SEMICOLON"/>) elválasztva tartalmazó karakterlánc. A bővítményazonosító az a 32 betűs karakterlánc, amely például a <ph name="CHROME_EXTENSIONS_LINK"/> címen található fejlesztői módban. A frissítési URL-nek egy Update Manifest XML dokumentumra kell mutatnia (a leírását lásd itt: <ph name="LINK_TO_EXTENSION_DOC1"/>). Az ebben az irányelvben beállított frissítési URL csak az első telepítéshez használatos; a további frissítések a bővítmény jegyzékfájljában feltüntetett frissítési URL-t fogják használni.
@@ -641,6 +647,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="1679420586049708690">Nyilvános munkamenet automatikus bejelentkezéshez</translation>
 <translation id="7625444193696794922">Azt a kiadási csatornát határozza meg, amelyhez az eszközt hozzá kell kötni.</translation>
 <translation id="2552966063069741410">Időzóna</translation>
+<translation id="3788662722837364290">Energiagazdálkodási beállítások olyankor, amikor a felhasználó tétlen</translation>
 <translation id="2240879329269430151">Lehetővé teszi annak beállítását, hogy a weboldalak mutathatnak-e előugró ablakokat. Az előugró ablakok megjelenítését engedélyezheti vagy tilthatja minden webhely számára. Ha a házirend konfigurálatlanul marad, a rendszer a &quot;BlockPopups&quot; értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="2529700525201305165">Korlátozza, hogy mely felhasználók jelentkezhetnek be a(z) <ph name="PRODUCT_NAME"/> szolgáltatásba.</translation>
 <translation id="8971221018777092728">Nyilvános munkamenet automatikus bejelentkezési időzítője</translation>
@@ -719,7 +726,6 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="8102913158860568230">Alapértelmezett adatfolyam beállítás</translation>
 <translation id="6641981670621198190">3D grafikai API-k támogatásának tiltása</translation>
 <translation id="1265053460044691532">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet</translation>
-<translation id="7929480864713075819">A memóriával kapcsolatos információk jelentésének engedélyezése (JS-halomméret) az oldal számára</translation>
 <translation id="5703863730741917647">A tétlenségi késleltetés elérésekor végrehajtandó művelet megadása.
 
           Vegye figyelembe, hogy ez a házirend elavult, ezért a jövőben törlésre kerül.
@@ -802,6 +808,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="4057110413331612451">A vállalati felhasználó csak elsődleges felhasználó lehet többprofilos módban</translation>
 <translation id="5365946944967967336">Kezdőoldal gomb megjelenítése az eszköztáron</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
+<translation id="1933378685401357864">Háttérkép</translation>
 <translation id="8451988835943702790"> való használata</translation>
 <translation id="4617338332148204752">A metacímkék ellenőrzésének kihagyása a következőben: <ph name="PRODUCT_FRAME_NAME"/>.</translation>
 <translation id="8469342921412620373">Engedélyezi egy alapértelmezett keresési szolgáltató használatát. Ha engedélyezi ezt a beállítást, egy alapértelmezett keresés fut le, amikor a felhasználó olyan szöveget ad meg a cím- és keresősávban, amely nem URL. A többi alapértelmezett keresési házirend megadásával határozhatja meg az alapértelmezett keresési szolgáltatót. Ha ezeket üresen hagyja, a felhasználó választhatja meg az alapértelmezett szolgáltatót. Ha kikapcsolja ezt a beállítást, nem indul keresés, ha a felhasználó URL-től különböző szöveget ad meg a cím- és keresési sávban. Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül ezt a beállítást a következőben: <ph name="PRODUCT_NAME"/>. Ha a házirend beállítatlanul marad, az alapértelmezett keresési szolgáltató lesz engedélyezve, a felhasználó pedig megadhatja a keresési szolgáltatók listáját.</translation>
@@ -815,6 +822,11 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 
           Ha nem állítja be ezt a házirendet, akkor a nagy egérmutató kezdetben le lesz tiltva, de a felhasználó bármikor engedélyezheti.</translation>
 <translation id="2633084400146331575">Hangos visszajelzések engedélyezése</translation>
+<translation id="687046793986382807">Ez a házirend a(z) <ph name="PRODUCT_NAME"/> 35-ös verziójától kezdve megszűnt.
+
+      A memóriainformációkat tartalmazó jelentéseket a beállítás értékétől függetlenül megkapja az oldal, de a jelentett méretek
+      kvantálva vannak, ezenkívül biztonsági okokból a frissítési gyakoriság is korlátozva van. Valósidejű, pontos adatok lekéréséhez
+      használjon más eszközt, például a Telemetryt.</translation>
 <translation id="8731693562790917685">A tartalmi beállítások lehetővé teszik az adott típusú tartalmak (pl. cookie-k, képek vagy JavaScriptek) kezelésének meghatározását.</translation>
 <translation id="2411919772666155530">Értesítések letiltása ezeken a webhelyeken</translation>
 <translation id="6923366716660828830">Megadja az alapértelmezett keresési szolgáltató nevét. Ha üresen vagy beállítatlanul marad, a keresési URL által megadott gazdagépnév lesz használatban. A házirend csak akkor érvényesül, ha a &quot;DefaultSearchProviderEnabled&quot; házirend engedélyezve van.</translation>
@@ -824,6 +836,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 
           Ha a házirend értéke hamis, a képernyőébresztés zárolására vonatkozó kérelmeket figyelmen kívül hagyja a rendszer.</translation>
 <translation id="467236746355332046">Támogatott funkciók:</translation>
+<translation id="5447306928176905178">A memóriával kapcsolatos információk jelentésének engedélyezése (JS-halomméret) az oldal számára (elavult)</translation>
 <translation id="7632724434767231364">GSSAPI könyvtár neve</translation>
 <translation id="3038323923255997294">A háttéralkalmazások továbbfuttatása a(z) <ph name="PRODUCT_NAME"/> alkalmazás bezárása esetén</translation>
 <translation id="8909280293285028130">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer lezárja a képernyőt, ha hálózati áramról működik.
@@ -868,6 +881,17 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
           Ez egy opcionális házirend. Ha nincs beállítva, az azonnali keresési kérelmet a rendszer a GET metódus segítségével továbbítja.
 
           A házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
+<translation id="6095999036251797924">Megadja azt az időtartamot, amely után a képernyő zárolása megtörténik hálózati áramforrás vagy akkumulátor használata esetén.
+
+          Ha az időtartam értéke nagyobb nullánál, akkor azt az időtartamot fejezi ki, amennyi ideig a felhasználónak tétlennek kell lennie ahhoz, hogy a <ph name="PRODUCT_OS_NAME"/> zárolja a képernyőt.
+
+          Ha az időtartam értéke nulla, akkor a <ph name="PRODUCT_OS_NAME"/> nem zárolja a képernyőt olyankor, amikor a felhasználó tétlenné válik.
+
+          Ha az időtartam nincs beállítva, a rendszer az alapértelmezett időtartamot fogja használni.
+
+          A javasolt módszer a tétlenség esetén bekövetkező zárolásra az, hogy engedélyezze a képernyő zárolását felfüggesztés esetén, és a <ph name="PRODUCT_OS_NAME"/> a felfüggesztést a tétlenségi késleltetés után végezze el. Ezt a házirendet csak akkor használja, ha azt szeretné, hogy a képernyő zárolása jóval hamarabb történjen, mint a felfüggesztés, vagy ha egyáltalán nem szeretné, hogy bekövetkezzen a felfüggesztés tétlenség esetén.
+
+          A házirend értékét milliszekundumban kell megadni. Az értékeknek alacsonyabbnak kell lenniük a tétlenség késleltetésénél.</translation>
 <translation id="1454846751303307294">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak JavaScriptet. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a &quot;DefaultJavaScriptSetting&quot; házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="538108065117008131">A következő tartalomtípusok kezelésének engedélyezése a <ph name="PRODUCT_FRAME_NAME"/> számára.</translation>
 <translation id="2312134445771258233">Lehetővé teszi az induláskor betöltött lapok beállítását. Az &quot;Indításkor betöltendő URL-ek&quot; listájának tartalmát figyelmen kívül hagyja, hacsak a &quot;Teendő indításkor&quot; részben nem az &quot;URL-ek listájának megnyitása&quot; lehetőséget választja.</translation>
@@ -890,6 +914,32 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
       Ha a házirend hamis értékre van állítva, vagy nincs beállítva, az ikonok láthatóak.</translation>
 <translation id="5085647276663819155">Nyomtatási előnézet letiltása</translation>
 <translation id="8672321184841719703">Cél automatikus frissítési verziója</translation>
+<translation id="553658564206262718">Az energiagazdálkodási beállítások konfigurálása olyankor, amikor a felhasználó tétlen.
+
+          Ez a házirend többféle, az energiagazdálkodási stratégiára vonatkozó beállítást vezérel arra vonatkozóan, amikor a felhasználó tétlenné válik.
+
+          Négyféle művelet választható:
+          * A képernyő elhomályosodik, miután a felhasználó tétlen marad a |ScreenDim| beállítás által meghatározott ideig.
+          * A képernyő kikapcsol, miután a felhasználó tétlen marad a |ScreenOff| beállítás által meghatározott ideig.
+          * Figyelmeztető párbeszédpanel jelenik meg, miután a felhasználó tétlen marad az |IdleWarning| beállítás által meghatározott ideig – ez a figyelmeztetés tájékoztatja a felhasználót arról a műveletről, amelyet a tétlenség következtében hajt majd végre a rendszer.
+          * Az |IdleAction| beállítás által meghatározott művelet következik be, amennyiben a felhasználó tétlen marad az |Idle| által meghatározott ideig.
+
+          A késleltetés idejét a fenti műveletek mindegyikénél milliszekundumokban kell megadni, és a megadott értéknek nullánál nagyobbnak kell lennie a kapcsolódó művelet elindításához. Ha a késleltetés értéke nulla, akkor a <ph name="PRODUCT_OS_NAME"/> nem hajtja végre a kapcsolódó műveletet.
+
+          A fenti késleltetések mindegyikénél igaz, hogy amennyiben az időtartam nincs beállítva, akkor a rendszer az alapértelmezett időtartamot alkalmazza.
+
+          Felhívjuk figyelmét arra, hogy a |ScreenDim| értéke rögzítetten alacsonyabb vagy egyenlő kell, hogy legyen, mint a |ScreenOff| értéke, a |ScreenOff| és az |IdleWarning| értékei pedig rögzítetten alacsonyabbak vagy egyenlők kell, hogy legyenek, mint az |Idle| értéke.
+
+          Az |IdleAction| beállítása a következő négy művelet valamelyike lehet:
+          * |Suspend|
+          * |Logout|
+          * |Shutdown|
+          * |DoNothing|
+
+          Ha az |IdleAction| beállítás értéke nincs megadva, akkor az alapértelmezett művelet, azaz a felfüggesztés következik be.
+
+          Külön beállítások adhatók meg a hálózati áramforrásra és az akkumulátorra vonatkozóan is.
+          </translation>
 <translation id="1689963000958717134">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását a(z) <ph name="PRODUCT_OS_NAME"/>-eszköz minden felhasználójára. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">A kétlépcsős azonosítás engedélyezése távoli hozzáférésű gazdagépekhez</translation>
 <translation id="2030905906517501646">Alapértelmezett keresési szolgáltató kulcsszava</translation>
@@ -1060,6 +1110,32 @@ Ez a beállítás a TLS-domainű tanúsítványbővítmények tesztelésére has
 
       Ha a házirend nincs beállítva, a(z) <ph name="PRODUCT_NAME"/> az alapértelmezett 5000 ezredmásodperces értéket használja.</translation>
 <translation id="8099880303030573137">Tétlenség késleltetése akkumulátorról való működés során</translation>
+<translation id="1709037111685927635">Háttérkép konfigurálása.
+
+      Ez a házirend lehetővé teszi az asztalon és a felhasználó bejelentkező képernyőjén lévő háttérkép konfigurálását. A házirend az URL megadásával érhető el, ahonnan a(z) <ph name="PRODUCT_OS_NAME"/> letöltheti a háttérképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash értéket. A képnek JPEG formátumban kell lennie, mérete pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is elérhetőnek kell lennie.
+
+      A letöltés után a háttérkép a gyorsítótárba kerül. Ha az URL vagy a hash megváltozik, a Chrome OS újra letölti a képet.
+
+      A házirendet olyan karakterláncként kell megadni, amely JSON formátumban fejezi ki az URL-t és a hash értéket, valamint amely megfelel a következő sémának:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL, ahonnan a háttérkép letölthető.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;A háttérkép SHA-256 hash értéke.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Ha a házirend be van állítva, a(z) <ph name="PRODUCT_OS_NAME"/> letölti és felhasználja a háttérképet.
+
+      Ha beállítja ezt a házirendet, a felhasználók nem módosíthatják vagy bírálhatják felül.
+
+      Ha nem állítja be a házirendet, a felhasználó kiválaszthatja, hogy milyen háttérkép jelenjen meg az asztalon és a bejelentkezési képernyőn.</translation>
 <translation id="2761483219396643566">Tétlenségi figyelmeztetés késleltetése akkumulátorról való működés során</translation>
 <translation id="6281043242780654992">A Natív üzenetküldés házirendjeit konfigurálja. A tiltólistán szereplő natív üzenetkezelő gazdagépeket a rendszer nem engedélyezi, hacsak nem szerepelnek az engedélyezőlistán.</translation>
 <translation id="1468307069016535757">A nagy kontrasztú mód kisegítő lehetőség alapértelmezett állapotának beállítása a bejelentkezési képernyőn.
@@ -1174,93 +1250,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem tudják módosítani vagy felülírni azt.
 
       Ha a szabály nincs beállítva, a felhasználó eldöntheti, hogy használja-e a rendelkezésre álló adattömörítő proxyfunkciót.</translation>
+<translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
 <translation id="7424751532654212117">A tiltott bővítmények listájának kivétellistája</translation>
 <translation id="6233173491898450179">Letöltési könyvtár megadása</translation>
-<translation id="78524144210416006">Az energiagazdálkodás konfigurálása a bejelentkezési képernyőn a(z) <ph name="PRODUCT_OS_NAME"/> rendszerben.
-
-      Ez a házirend lehetővé teszi annak konfigurálását, hogy miként működjön a(z) <ph name="PRODUCT_OS_NAME"/>, ha egy ideje nincs felhasználói aktivitás, amikor a bejelentkezési képernyő látható. A házirend több beállítást szabályoz. Az egyes szemantikai jellemzők és az értéktartományok azokban a kapcsolódó házirendekben találhatók, amelyek az energiagazdálkodást szabályozzák egy-egy munkamenet során. A házirendtől csak a következők jelentenek eltérést:
-      * Tétlenség esetén és a fedél becsukásakor végrehajtandó műveletek nem zárhatják le a munkamenetet.
-      * Tétlenség esetén az alapértelmezett művelet hálózati áramforrásról való működés során a kikapcsolás.
-
-      A házirendet egy karakterlánccal kell megadni, amely megadja az egyes beállításokat JSON formátumban az alábbi séma szerint:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;AC&quot;: {
-            &quot;description&quot;: &quot;Csak hálózati áramforrásról való működés során alkalmazandó energiagazdálkodási beállítások&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;A felhasználói adatbevitel nélkül eltelt idő ezredmásodpercben, amely után a képernyő fényereje csökken&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;A felhasználói adatbevitel nélkül eltelt idő ezredmásodpercben, amely után a képernyő kikapcsolódik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;A felhasználói adatbevitel nélkül eltelt idő ezredmásodpercben, amely után a tétlenségi művelet lép érvénybe&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Végrehajtandó művelet a tétlenségi késleltetés elérésekor&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;Battery&quot;: {
-            &quot;description&quot;: &quot;Csak akkumulátorról való működés során alkalmazandó energiagazdálkodási beállítások&quot;,
-            &quot;type&quot;: &quot;object&quot;,
-            &quot;properties&quot;: {
-              &quot;Delays&quot;: {
-                &quot;type&quot;: &quot;object&quot;,
-                &quot;properties&quot;: {
-                  &quot;ScreenDim&quot;: {
-                    &quot;description&quot;: &quot;A felhasználói adatbevitel nélkül eltelt idő ezredmásodpercben, amely után a képernyő fényereje csökken&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;ScreenOff&quot;: {
-                    &quot;description&quot;: &quot;A felhasználói adatbevitel nélkül eltelt idő ezredmásodpercben, amely után a képernyő kikapcsolódik&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  },
-                  &quot;Idle&quot;: {
-                    &quot;description&quot;: &quot;A felhasználói adatbevitel nélkül eltelt idő ezredmásodpercben, amely után a tétlenségi művelet lép érvénybe&quot;,
-                    &quot;type&quot;: &quot;integer&quot;,
-                    &quot;minimum&quot;: 0
-                  }
-                }
-              },
-              &quot;IdleAction&quot;: {
-                &quot;description&quot;: &quot;Végrehajtandó művelet a tétlenségi késleltetés elérésekor&quot;,
-                &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-              }
-            }
-          },
-          &quot;LidCloseAction&quot;: {
-            &quot;description&quot;: &quot;Végrehajtandó művelet a fedél lecsukásakor&quot;,
-            &quot;enum&quot;: [ &quot;Suspend&quot;, &quot;Shutdown&quot;, &quot;DoNothing&quot; ]
-          },
-          &quot;UserActivityScreenDimDelayScale&quot;: {
-            &quot;description&quot;: &quot;Az a százalék, amellyel a képernyő fényerejének csökkentésére vonatkozó késleltetés kiterjesztésre kerül, ha felhasználói aktivitás figyelhető meg a képernyő fényerejének csökkentése közben vagy nem sokkal a képernyő kikapcsolása után&quot;,
-            &quot;type&quot;: &quot;integer&quot;,
-            &quot;minimum&quot;: 100
-          }
-        }
-      }
-
-      Ha valamelyik beállítás nincs megadva, az alapértelmezett érték érvényesül.
-
-      Ha ez a házirend nincs beállítva, az alapértelmezett értékek érvényesülnek mindegyik beállítás esetén.</translation>
 <translation id="8908294717014659003">Lehetővé teszi annak beállítását, hogy a webhelyek hozzáférhetnek-e a felvevőeszközökhöz. A felvevőeszközökhöz való hozzáférés engedélyezhető alapértelmezés szerint, vagy a rendszer rákérdezhet minden alkalommal, amikor egy webhely megpróbál hozzájuk férni.
 
           Ha nem állítja be ezt a házirendet, a „PromptOnAccess” kerül beállításra, amelyet a felhasználó megváltoztathat.</translation>
@@ -1295,6 +1287,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a házirend nincs beállítva, a rendszer az alapértelmezett méretet használja, és azt a felhasználó felülbírálhatja a „--media-cache-size” jelölővel.</translation>
 <translation id="5142301680741828703">Mindig a <ph name="PRODUCT_FRAME_NAME"/> segítségével jelenítse meg a következő URL-mintákat</translation>
 <translation id="4625915093043961294">Bővítménytelepítési kivétellista beállítása</translation>
+<translation id="5893553533827140852">Ha ez a beállítás engedélyezett, akkor a gnubby hitelesítési kéréseket a rendszer távoli szerverkapcsolaton keresztül proxyzza.
+
+          Ha a beállítás tiltva van, vagy nincs konfigurálva, akkor a rendszer nem proxyzza a gnubby hitelesítési kéréseket.</translation>
 <translation id="187819629719252111">Lehetővé teszi a hozzáférést a gépen lévő helyi fájlokhoz azáltal, hogy engedélyezi a(z) <ph name="PRODUCT_NAME"/> számára a fájlkiválasztási párbeszédablakok megjelenítését. Ha engedélyezi ezt a beállítást, a felhasználók a szokásos módon nyithatják meg a fájlkiválasztási párbeszédablakokat. Ha letiltja a beállítást, minden alkalommal, amikor a felhasználó olyan műveletet hajt végre, amely fájlkiválasztási párbeszédablakot hívna elő (például könyvjelzők importálása, fájlok feltöltése, linkek mentése stb.), egy üzenet jelenik meg helyette, a rendszer pedig úgy tekinti, hogy a felhasználó a Mégse gombra kattintott a fájlkiválasztási párbeszédablakban. Ha ez nincs beállítva, a felhasználók a szokásos módon nyithatnak meg fájlkiválasztási párbeszédablakokat.</translation>
 <translation id="4507081891926866240">Azon URL-minták listájának testreszabása, amelyeket minden esetben a(z) <ph name="PRODUCT_FRAME_NAME"/> segítségével kell megjeleníteni. Ha a házirend nincs beállítva, akkor a rendszer a &quot;ChromeFrameRendererSettings&quot; házirendben meghatározott alapértelmezett megjelenítőt használja valamennyi webhely esetében. Példamintákért lásd a következő címet: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Válassza ki, hogyan adja meg a proxyszerver beállításait</translation>
@@ -1361,6 +1356,11 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
           Ha a „RestoreOnStartup” házirend úgy van beállítva, hogy visszaállítsa az előző munkamenetek URL-jeit, akkor a böngésző nem veszi figyelembe ezt a házirendet, és tartósan eltárolja az adott webhelyekről származó cookie-kat.</translation>
 <translation id="2098658257603918882">Használati és összeomlással kapcsolatos adatok jelentésének engedélyezése</translation>
+<translation id="4633786464238689684">A legfelső sor billentyűinek alapértelmezett viselkedését módosítja funkciógombokra.
+
+          Ha a házirend értéke igaz, akkor a billentyűzet legfelső sorának billentyűi alapértelmezés szerint a funkciógombok feladatát fogják ellátni. A keresőbillentyűt kell megnyomni, hogy ismét médiabillentyűkként szolgáljanak.
+
+          Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor a billentyűk alapértelmezés szerint médiavezérlési funkciókat fognak ellátni, és akkor viselkednek funkcióbillentyűként, ha a keresőbillentyűt nyomva tartják.</translation>
 <translation id="2324547593752594014">Lehetővé teszi a bejelentkezést a Chrome-ba</translation>
 <translation id="172374442286684480">Helyi adatok beállításának engedélyezése minden webhely számára</translation>
 <translation id="1151353063931113432">Képek engedélyezése ezeken a webhelyeken</translation>
@@ -1411,6 +1411,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
               Az ExtensionInstallBlacklist elsőbbséget élvez ezen házirenddel szemben, azaz a feketelistán lévő bővítmények akkor sem lesznek telepítve, ha történetesen ezen a listán szereplő webhelyről származnak.</translation>
 <translation id="2113068765175018713">Eszköz működési idejének korlátozása automatikus újraindítással</translation>
+<translation id="4224610387358583899">Képernyő zárolásának késleltetései</translation>
 <translation id="7848840259379156480">Lehetővé teszi, hogy beállítsa az alapértelmezett HTML-megjelenítőt, ha a <ph name="PRODUCT_FRAME_NAME"/> telepítve van. Az alapértelmezett beállítás az, hogy a gazdagép böngészője végzi a megjelenítést, de opcionálisan ezt felülbírálhatja, és megjelenítheti a HTML oldalakat alapértelmezés szerint a <ph name="PRODUCT_FRAME_NAME"/> segítségével.</translation>
 <translation id="186719019195685253">Végrehajtandó művelet a tétlenségi késleltetés elérésekor hálózati áramforrásról történő üzemelés során</translation>
 <translation id="7890264460280019664">A hálózati interfészek listájának jelentése a szervernek a típusukkal és hardvercímükkel együtt.
@@ -1469,6 +1470,15 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       A házirend beállításánál egy URL-t kell megadni, amelyről a(z) <ph name="PRODUCT_OS_NAME"/> letöltheti az Általános Szerződési Feltételeket. Az Általános Szerződési Feltételek egyszerű szöveg formátumban legyenek, amelyet text/plain MIME típusként kell megjeleníteni. HTML-kódok nem engedélyezettek.</translation>
 <translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="2660846099862559570">Soha ne használjon proxyt</translation>
+<translation id="1956493342242507974">Energiagazdálkodás konfigurálása a bejelentkezési képernyőn a(z) <ph name="PRODUCT_OS_NAME"/> rendszerben.
+
+      A házirend segítségével beállíthatja, hogy a(z) <ph name="PRODUCT_OS_NAME"/> hogyan viselkedjen, ha egy ideig nem történik felhasználói tevékenység a bejelentkezési képernyő megjelenítése során. A házirend több beállítást irányít. Az egyes beállítások egyedi szemantikáját és értéktartományait azokban a megfelelő házirendekben tekintheti meg, amelyek egy munkamenet során irányítják az energiagazdálkodást. A házirendektől való eltérések csak a következők lehetnek:
+      * A tétlenség vagy a fedél lecsukása esetén elvégzett műveletek nem használhatók a munkamenet befejezéséhez.
+      * A tétlenség esetén az áramforráshoz csatlakoztatott állapotban elvégzett alapértelmezett művelet a kikapcsolás.
+
+      Ha egy beállítás nincs megadva, akkor az alapértelmezett érték használandó.
+
+      Ha ez a házirend nincs beállítva, az összes beállítás az alapértelmezett értéket használja.</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
 <translation id="5781806558783210276">Meghatározza azt a felhasználói bevitel nélkül eltelt időtartamot, amely után a rendszer tétlen állapotba kerül, ha akkumulátorról működik.
@@ -1575,5 +1585,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ez a házirend minden típusú hangkimenetre vonatkozik, nem csak a beépített hangszórókra. A házirend letiltja a kisegítő lehetőségek hanglejátszási funkcióit is. Ne engedélyezze ezt a házirendet, ha a felhasználónak szüksége van a képernyőolvasó funkcióra.
 
       Ha a beállítás értéke igaz, vagy ha nincs konfigurálva, akkor a felhasználók az eszköz összes támogatott hangkimenetét használhatják.</translation>
+<translation id="6517678361166251908">Gnubby hitelesítés engedélyezése</translation>
 <translation id="4858735034935305895">Teljes képernyős mód engedélyezése</translation>
 </translationbundle>
