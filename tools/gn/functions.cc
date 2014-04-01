@@ -233,6 +233,8 @@ Value RunConfig(const FunctionCallNode* function,
   // Create the new config.
   scoped_ptr<Config> config(new Config(scope->settings(), label));
   config->set_defined_from(function);
+  if (!Visibility::FillItemVisibility(config.get(), scope, err))
+    return Value();
 
   // Fill it.
   const SourceDir& input_dir = scope->GetSourceDir();

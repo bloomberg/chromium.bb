@@ -37,8 +37,19 @@ TargetGenerator::~TargetGenerator() {
 void TargetGenerator::Run() {
   // All target types use these.
   FillDependentConfigs();
+  if (err_->has_error())
+    return;
+
   FillData();
+  if (err_->has_error())
+    return;
+
   FillDependencies();
+  if (err_->has_error())
+    return;
+
+  if (!Visibility::FillItemVisibility(target_, scope_, err_))
+    return;
 
   // Do type-specific generation.
   DoRun();
@@ -163,11 +174,17 @@ void TargetGenerator::FillData() {
 
 void TargetGenerator::FillDependencies() {
   FillGenericDeps(variables::kDeps, &target_->deps());
+  if (err_->has_error())
+    return;
   FillGenericDeps(variables::kDatadeps, &target_->datadeps());
+  if (err_->has_error())
+    return;
 
   // This is a list of dependent targets to have their configs fowarded, so
   // it goes here rather than in FillConfigs.
   FillForwardDependentConfigs();
+  if (err_->has_error())
+    return;
 
   FillHardDep();
 }

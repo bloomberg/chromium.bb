@@ -107,6 +107,7 @@ Value RunToolchain(Scope* scope,
   // manager, but that has to be done in the lock.
   scoped_ptr<Toolchain> toolchain(new Toolchain(scope->settings(), label));
   toolchain->set_defined_from(function);
+  toolchain->visibility().SetPublic();
 
   Scope block_scope(scope);
   block_scope.SetProperty(&kToolchainPropertyKey, toolchain.get());

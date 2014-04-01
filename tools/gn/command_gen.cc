@@ -22,25 +22,48 @@ namespace {
 // Suppress output on success.
 const char kSwitchQuiet[] = "q";
 
-void BackgroundDoWrite(const Target* target, const Toolchain* toolchain) {
-  NinjaTargetWriter::RunAndWriteFile(target, toolchain);
+void BackgroundDoWrite(const Target* target,
+                       const Toolchain* toolchain,
+                       const std::vector<const Item*>& deps_for_visibility) {
+  // Validate visibility.
+  Err err;
+  for (size_t i = 0; i < deps_for_visibility.size(); i++) {
+    if (!Visibility::CheckItemVisibility(target, deps_for_visibility[i],
+                                         &err)) {
+      g_scheduler->FailWithError(err);
+      break;  // Don't return early since we need DecrementWorkCount below.
+    }
+  }
+
+  if (!err.has_error())
+    NinjaTargetWriter::RunAndWriteFile(target, toolchain);
   g_scheduler->DecrementWorkCount();
 }
 
 // Called on the main thread.
 void ItemResolvedCallback(base::subtle::Atomic32* write_counter,
                           scoped_refptr<Builder> builder,
-                          const Item* item) {
+                          const BuilderRecord* record) {
   base::subtle::NoBarrier_AtomicIncrement(write_counter, 1);
 
+  const Item* item = record->item();
   const Target* target = item->AsTarget();
   if (target) {
     const Toolchain* toolchain =
         builder->GetToolchain(target->settings()->toolchain_label());
     DCHECK(toolchain);
+
+    // Collect all dependencies.
+    std::vector<const Item*> deps;
+    for (BuilderRecord::BuilderRecordSet::const_iterator iter =
+             record->all_deps().begin();
+         iter != record->all_deps().end();
+         ++iter)
+      deps.push_back((*iter)->item());
+
     g_scheduler->IncrementWorkCount();
     g_scheduler->ScheduleWork(
-        base::Bind(&BackgroundDoWrite, target, toolchain));
+        base::Bind(&BackgroundDoWrite, target, toolchain, deps));
   }
 }
 

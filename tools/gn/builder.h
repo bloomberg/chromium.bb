@@ -20,7 +20,7 @@ class ParseNode;
 
 class Builder : public base::RefCountedThreadSafe<Builder> {
  public:
-  typedef base::Callback<void(const Item*)> ResolvedCallback;
+  typedef base::Callback<void(const BuilderRecord*)> ResolvedCallback;
 
   Builder(Loader* loader);
 

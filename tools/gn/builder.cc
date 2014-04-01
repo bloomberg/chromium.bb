@@ -378,7 +378,7 @@ bool Builder::ResolveItem(BuilderRecord* record, Err* err) {
   record->set_resolved(true);
   record->item()->OnResolved();
   if (!resolved_callback_.is_null())
-    resolved_callback_.Run(record->item());
+    resolved_callback_.Run(record);
 
   // Recursively update everybody waiting on this item to be resolved.
   BuilderRecordSet& waiting_set = record->waiting_on_resolution();

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "tools/gn/label.h"
+#include "tools/gn/visibility.h"
 
 class Config;
 class ParseNode;
@@ -31,6 +32,9 @@ class Item {
   const ParseNode* defined_from() const { return defined_from_; }
   void set_defined_from(const ParseNode* df) { defined_from_ = df; }
 
+  Visibility& visibility() { return visibility_; }
+  const Visibility& visibility() const { return visibility_; }
+
   // Manual RTTI.
   virtual Config* AsConfig();
   virtual const Config* AsConfig() const;
@@ -51,6 +55,8 @@ class Item {
   const Settings* settings_;
   Label label_;
   const ParseNode* defined_from_;
+
+  Visibility visibility_;
 };
 
 #endif  // TOOLS_GN_ITEM_H_

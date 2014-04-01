@@ -171,6 +171,10 @@ extern const char kSources[];
 extern const char kSources_HelpShort[];
 extern const char kSources_Help[];
 
+extern const char kVisibility[];
+extern const char kVisibility_HelpShort[];
+extern const char kVisibility_Help[];
+
 // -----------------------------------------------------------------------------
 
 struct VariableInfo {

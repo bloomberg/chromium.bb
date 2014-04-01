@@ -147,6 +147,8 @@
         'value_extractors.h',
         'variables.cc',
         'variables.h',
+        'visibility.cc',
+        'visibility.h',
       ],
     },
     {
@@ -192,6 +194,7 @@
         'test_with_scope.cc',
         'test_with_scope.h',
         'tokenizer_unittest.cc',
+        'visibility_unittest.cc',
       ],
       'dependencies': [
         'gn_lib',

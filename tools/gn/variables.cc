@@ -743,6 +743,73 @@ const char kSources_Help[] =
     "\n"
     "  A list of files relative to the current buildfile.\n";
 
+const char kVisibility[] = "visibility";
+const char kVisibility_HelpShort[] =
+    "visibility: [label list] A list of labels that can depend on a target.";
+const char kVisibility_Help[] =
+    "visibility: A list of labels that can depend on a target.\n"
+    "\n"
+    "  A label or a list of labels and label patterns that define which\n"
+    "  targets can depend on the current one. These permissions are checked\n"
+    "  via then \"check\" command (see \"gn help check\").\n"
+    "\n"
+    "  If visibility is not defined, it defaults to public (\"*\").\n"
+    "\n"
+    "  If visibility is defined, only the targets with labels that match it\n"
+    "  can depend on the current target. The empty list means no targets\n"
+    "  can depend on the current target.\n"
+    "\n"
+    "  Tip: Often you will want the same visibility for all targets in a\n"
+    "  BUILD file. In this case you can just put the definition at the top,\n"
+    "  outside of any target, and the targets will inherit that scope and see\n"
+    "  the definition.\n"
+    "\n"
+    "Matching:\n"
+    "\n"
+    "  You can specify \"*\" but the inputs aren't general patterns. The\n"
+    "  following classes of patterns are supported:\n"
+    "\n"
+    "   - Explicit (no wildcard):\n"
+    "       \"//foo/bar:baz\"\n"
+    "       \":baz\"\n"
+    "   - Wildcard target names:\n"
+    "       \"//foo/bar:*\" (any target in the //foo/bar/BUILD.gn file)\n"
+    "       \":*\"  (any target in the current build file)\n"
+    "   - Wildcard directory names (\"*\" is only supported at the end)\n"
+    "       \"*\"  (any target anywhere)\n"
+    "       \"//foo/bar/*\"  (any target in any subdir of //foo/bar)\n"
+    "       \"./*\"  (any target in the current build file or sub dirs)\n"
+    "\n"
+    "  The toolchain (normally an implicit part of a label) is ignored when\n"
+    "  checking visibility.\n"
+    "\n"
+    "Examples:\n"
+    "\n"
+    "  Only targets in the current buildfile (\"private\", the default):\n"
+    "    visibility = \":*\"\n"
+    "\n"
+    "  No targets (used for targets that should be leaf nodes):\n"
+    "    visibility = []\n"
+    "\n"
+    "  Any target (\"public\"):\n"
+    "    visibility = \"*\"\n"
+    "\n"
+    "  All targets in the current directory and any subdirectory:\n"
+    "    visibility = \"./*\"\n"
+    "\n"
+    "  Any target in \"//bar/BUILD.gn\":\n"
+    "    visibility = \"//bar:*\"\n"
+    "\n"
+    "  Any target in \"//bar/\" or any subdirectory thereof:\n"
+    "    visibility = \"//bar/*\"\n"
+    "\n"
+    "  Just these specific targets:\n"
+    "    visibility = [ \":mything\", \"//foo:something_else\" ]\n"
+    "\n"
+    "  Any target in the current directory and any subdirectory thereof, plus\n"
+    "  any targets in \"//bar/\" and any subdirectory thereof.\n"
+    "    visibility = [ \"./*\", \"//bar/*\" ]\n";
+
 // -----------------------------------------------------------------------------
 
 VariableInfo::VariableInfo()
@@ -806,6 +873,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Script)
     INSERT_VARIABLE(SourcePrereqs)
     INSERT_VARIABLE(Sources)
+    INSERT_VARIABLE(Visibility)
   }
   return info_map;
 }

@@ -143,6 +143,8 @@ static_library("gn_lib") {
     "value_extractors.h",
     "variables.cc",
     "variables.h",
+    "visibility.cc",
+    "visibility.h",
   ]
 
   deps = [
@@ -191,6 +193,7 @@ test("gn_unittests") {
     "test_with_scope.cc",
     "test_with_scope.h",
     "tokenizer_unittest.cc",
+    "visibility_unittest.cc",
   ]
   deps = [
     ":gn_lib",
