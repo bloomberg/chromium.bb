@@ -88,14 +88,6 @@ EXTRA_ENV = {
   'DEFAULTLIBS': '${ALLOW_ZEROCOST_CXX_EH ? -l:libgcc_eh.a} ' +
                  '-l:libgcc.a -l:libcrt_platform.a ',
 
-  'TRIPLE'      : '${TRIPLE_%ARCH%}',
-  'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabihf',
-  'TRIPLE_X8632': 'i686-none-nacl-gnu',
-  'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
-  'TRIPLE_MIPS32': 'mipsel-none-nacl-gnu',
-  'TRIPLE_X8632_LINUX': 'i686-linux-gnu',
-  'TRIPLE_X8632_NONSFI': 'i686-linux-gnu',
-
   # BE CAREFUL: anything added here can introduce skew between
   # the pnacl-translate commandline tool and the in-browser translator.
   # See: llvm/tools/pnacl-llc/srpc_main.cpp and
@@ -106,24 +98,6 @@ EXTRA_ENV = {
                       # linker rewrites which are quite messy in the nacl
                       # case and hence have not been implemented in gold
                       '${PIC ? -force-tls-non-pic} ',
-
-  'LLC_FLAGS_ARM'    :
-    ('-arm-reserve-r9 -sfi-disable-cp ' +
-     '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data ' +
-     '-no-inline-jumptables -float-abi=hard -mattr=+neon'),
-
-  'LLC_FLAGS_X8632' : '',
-  'LLC_FLAGS_X8664' : '',
-
-  'LLC_FLAGS_MIPS32': '-sfi-load -sfi-store -sfi-stack -sfi-branch -sfi-data',
-
-  # When linking against Linux glibc, don't use %gs:0 to read the
-  # thread pointer because that's not compatible with glibc's use of
-  # %gs.
-  'LLC_FLAGS_X8632_LINUX' : '-mtls-use-call',
-  # Similarly, Non-SFI Mode currently offers no optimized path for
-  # reading the thread pointer.
-  'LLC_FLAGS_X8632_NONSFI' : '-mtls-use-call',
 
   # LLC flags which set the target and output type.
   'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${outfiletype}',
@@ -141,33 +115,12 @@ EXTRA_ENV = {
   'OPT_LEVEL' : '',
 
   # faster translation == slower code
-  'LLC_FLAGS_FAST' : '${LLC_FLAGS_FAST_%ARCH%}'
+  'LLC_FLAGS_FAST' : '-O0'
                      # This, surprisingly, makes a measurable difference
                      ' -tail-merge-threshold=20',
 
-  'LLC_FLAGS_FAST_X8632': '-O0 ',
-  'LLC_FLAGS_FAST_X8664': '-O0 ',
-  'LLC_FLAGS_FAST_ARM':   '-O0 ',
-  'LLC_FLAGS_FAST_MIPS32': '-fast-isel',
-  'LLC_FLAGS_FAST_X8632_LINUX': '-O0',
-  'LLC_FLAGS_FAST_X8632_NONSFI': '-O0',
-
-  'LLC_FLAGS': '${LLC_FLAGS_TARGET} ${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%} ' +
+  'LLC_FLAGS': '${LLC_FLAGS_TARGET} ${LLC_FLAGS_COMMON} ${LLC_FLAGS_ARCH} ' +
                '${LLC_FLAGS_EXTRA}',
-
-  # CPU that is representative of baseline feature requirements for NaCl
-  # and/or chrome.  We may want to make this more like "-mtune"
-  # by specifying both "-mcpu=X" and "-mattr=+feat1,-feat2,...".
-  # Note: this may be different from the in-browser translator, which may
-  # do auto feature detection based on CPUID, but constrained by what is
-  # accepted by NaCl validators.
-  'LLC_MCPU'        : '-mcpu=${LLC_MCPU_%ARCH%}',
-  'LLC_MCPU_ARM'    : 'cortex-a9',
-  'LLC_MCPU_X8632'  : 'pentium4',
-  'LLC_MCPU_X8664'  : 'core2',
-  'LLC_MCPU_MIPS32' : 'mips32r2',
-  'LLC_MCPU_X8632_LINUX' : '${LLC_MCPU_X8632}',
-  'LLC_MCPU_X8632_NONSFI' : '${LLC_MCPU_X8632}',
 
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_PNACL_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
@@ -253,10 +206,59 @@ TranslatorPatterns = [
 ]
 
 
+def SetUpArch():
+  base_arch = env.getone('ARCH')
+  without_sfi = False
+  if base_arch.endswith('_NONSFI'):
+    base_arch = base_arch[:-len('_NONSFI')]
+    without_sfi = True
+  elif base_arch.endswith('_LINUX'):
+    base_arch = base_arch[:-len('_LINUX')]
+    without_sfi = True
+
+  if without_sfi:
+    triple_map = {'X8632': 'i686-linux-gnu'}
+  else:
+    triple_map = {
+        'X8632': 'i686-none-nacl-gnu',
+        'X8664': 'x86_64-none-nacl-gnu',
+        'ARM': 'armv7a-none-nacl-gnueabihf',
+        'MIPS32': 'mipsel-none-nacl-gnu'}
+  env.set('TRIPLE', triple_map[base_arch])
+
+  # CPU that is representative of baseline feature requirements for NaCl
+  # and/or chrome.  We may want to make this more like "-mtune"
+  # by specifying both "-mcpu=X" and "-mattr=+feat1,-feat2,...".
+  # Note: this may be different from the in-browser translator, which may
+  # do auto feature detection based on CPUID, but constrained by what is
+  # accepted by NaCl validators.
+  cpu_map = {
+      'X8632': 'pentium4',
+      'X8664': 'core2',
+      'ARM': 'cortex-a9',
+      'MIPS32': 'mips32r2'}
+  env.set('LLC_MCPU', '-mcpu=%s' % cpu_map[base_arch])
+
+  llc_flags_map = {
+      'ARM': ['-arm-reserve-r9', '-sfi-disable-cp', '-sfi-load', '-sfi-store',
+              '-sfi-stack', '-sfi-branch', '-sfi-data',
+              '-no-inline-jumptables', '-float-abi=hard', '-mattr=+neon'],
+      'MIPS32': ['-sfi-load', '-sfi-store', '-sfi-stack',
+                 '-sfi-branch', '-sfi-data']}
+  env.set('LLC_FLAGS_ARCH', *llc_flags_map.get(base_arch, []))
+  # When linking against Linux glibc, don't use %gs:0 to read the
+  # thread pointer because that's not compatible with glibc's use of
+  # %gs.  Similarly, Non-SFI Mode currently offers no optimized path
+  # for reading the thread pointer.
+  if without_sfi:
+    env.append('LLC_FLAGS_ARCH', '-mtls-use-call')
+
+
 def main(argv):
   env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, TranslatorPatterns)
   driver_tools.GetArch(required = True)
+  SetUpArch()
 
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
