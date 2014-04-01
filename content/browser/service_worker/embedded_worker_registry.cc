@@ -81,6 +81,7 @@ void EmbeddedWorkerRegistry::OnSendMessageToBrowser(
   if (message.type() == ServiceWorkerHostMsg_ActivateEventFinished::ID ||
       message.type() == ServiceWorkerHostMsg_InstallEventFinished::ID ||
       message.type() == ServiceWorkerHostMsg_FetchEventFinished::ID ||
+      message.type() == ServiceWorkerHostMsg_SyncEventFinished::ID ||
       IPC_MESSAGE_CLASS(message) == TestMsgStart) {
     found->second->OnMessageReceived(request_id, message);
     return;

@@ -49,6 +49,9 @@ class ServiceWorkerInternalsUI::OperationProxy
                              const GURL& scope);
   void StopWorkerOnIOThread(scoped_refptr<ServiceWorkerContextWrapper> context,
                             const GURL& scope);
+  void DispatchSyncEventToWorkerOnIOThread(
+      scoped_refptr<ServiceWorkerContextWrapper> context,
+      const GURL& scope);
 
  private:
   friend class base::RefCountedThreadSafe<OperationProxy>;
@@ -64,6 +67,10 @@ class ServiceWorkerInternalsUI::OperationProxy
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   void StopActiveWorker(
+      ServiceWorkerStatusCode status,
+      const scoped_refptr<ServiceWorkerRegistration>& registration);
+
+  void DispatchSyncEventToActiveWorker(
       ServiceWorkerStatusCode status,
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
@@ -102,6 +109,10 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
   web_ui->RegisterMessageCallback(
       "unregister",
       base::Bind(&ServiceWorkerInternalsUI::Unregister,
+                 base::Unretained(this)));
+  web_ui->RegisterMessageCallback(
+      "sync",
+      base::Bind(&ServiceWorkerInternalsUI::DispatchSyncEventToWorker,
                  base::Unretained(this)));
 }
 
@@ -176,6 +187,26 @@ bool ServiceWorkerInternalsUI::GetRegistrationInfo(
     return false;
 
   return true;
+}
+
+void ServiceWorkerInternalsUI::DispatchSyncEventToWorker(
+    const ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  base::FilePath partition_path;
+  GURL scope;
+  scoped_refptr<ServiceWorkerContextWrapper> context;
+  if (!GetRegistrationInfo(args, &partition_path, &scope, &context))
+    return;
+
+  scoped_ptr<ListValue> args_copy(args->DeepCopy());
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ServiceWorkerInternalsUI::OperationProxy::
+                     DispatchSyncEventToWorkerOnIOThread,
+                 new OperationProxy(AsWeakPtr(), args_copy.Pass()),
+                 context,
+                 scope));
 }
 
 void ServiceWorkerInternalsUI::Unregister(const ListValue* args) {
@@ -278,6 +309,18 @@ void ServiceWorkerInternalsUI::OperationProxy::StopWorkerOnIOThread(
   context->context()->storage()->FindRegistrationForPattern(
       scope,
       base::Bind(&ServiceWorkerInternalsUI::OperationProxy::StopActiveWorker,
+                 this));
+}
+
+void
+ServiceWorkerInternalsUI::OperationProxy::DispatchSyncEventToWorkerOnIOThread(
+    scoped_refptr<ServiceWorkerContextWrapper> context,
+    const GURL& scope) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  context->context()->storage()->FindRegistrationForPattern(
+      scope,
+      base::Bind(&ServiceWorkerInternalsUI::OperationProxy::
+                     DispatchSyncEventToActiveWorker,
                  this));
 }
 
@@ -418,6 +461,21 @@ void ServiceWorkerInternalsUI::OperationProxy::StopActiveWorker(
   }
 
   OperationComplete(status);
+}
+
+void ServiceWorkerInternalsUI::OperationProxy::DispatchSyncEventToActiveWorker(
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (status == SERVICE_WORKER_OK && registration->active_version() &&
+      registration->active_version()->status() ==
+          ServiceWorkerVersion::ACTIVE) {
+    registration->active_version()->DispatchSyncEvent(base::Bind(
+        &ServiceWorkerInternalsUI::OperationProxy::OperationComplete, this));
+    return;
+  }
+
+  OperationComplete(SERVICE_WORKER_ERROR_FAILED);
 }
 
 }  // namespace content

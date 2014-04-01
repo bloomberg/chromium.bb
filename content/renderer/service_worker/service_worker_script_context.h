@@ -45,6 +45,7 @@ class ServiceWorkerScriptContext {
   void DidHandleFetchEvent(int request_id,
                            ServiceWorkerFetchEventResult result,
                            const ServiceWorkerResponse& response);
+  void DidHandleSyncEvent(int request_id);
 
  private:
   // Send message back to the browser.
@@ -56,6 +57,7 @@ class ServiceWorkerScriptContext {
   void OnPostMessage(const base::string16& message,
                      const std::vector<int>& sent_message_port_ids,
                      const std::vector<int>& new_routing_ids);
+  void OnSyncEvent();
 
   // Not owned; embedded_context_ owns this.
   EmbeddedWorkerContextClient* embedded_context_;

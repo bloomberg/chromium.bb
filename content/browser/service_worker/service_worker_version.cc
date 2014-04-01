@@ -146,6 +146,17 @@ void HandleFetchResponse(const ServiceWorkerVersion::FetchCallback& callback,
   callback.Run(SERVICE_WORKER_OK, result, response);
 }
 
+void HandleSyncEventFinished(const StatusCallback& callback,
+                             ServiceWorkerStatusCode status,
+                             const IPC::Message& message) {
+  if (message.type() != ServiceWorkerHostMsg_SyncEventFinished::ID) {
+    NOTREACHED() << "Got unexpected response for SyncEvent: " << message.type();
+    callback.Run(SERVICE_WORKER_ERROR_FAILED);
+    return;
+  }
+  callback.Run(status);
+}
+
 }  // namespace
 
 ServiceWorkerVersion::ServiceWorkerVersion(
@@ -328,6 +339,13 @@ void ServiceWorkerVersion::DispatchFetchEvent(
   SendMessageAndRegisterCallback(
       ServiceWorkerMsg_FetchEvent(request),
       base::Bind(&HandleFetchResponse, callback));
+}
+
+void ServiceWorkerVersion::DispatchSyncEvent(const StatusCallback& callback) {
+  DCHECK_EQ(ACTIVE, status()) << status();
+  SendMessageAndRegisterCallback(
+      ServiceWorkerMsg_SyncEvent(),
+      base::Bind(&HandleSyncEventFinished, callback));
 }
 
 void ServiceWorkerVersion::AddProcessToWorker(int process_id) {

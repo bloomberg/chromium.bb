@@ -150,6 +150,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchFetchEvent(const ServiceWorkerFetchRequest& request,
                           const FetchCallback& callback);
 
+  // Sends sync event to the associated embedded worker and asynchronously calls
+  // |callback| when it errors out or it gets response from the worker to notify
+  // completion.
+  //
+  // This must be called when the status() is ACTIVE.
+  void DispatchSyncEvent(const StatusCallback& callback);
+
   // These are expected to be called when a renderer process host for the
   // same-origin as for this ServiceWorkerVersion is created.  The added
   // processes are used to run an in-renderer embedded worker.

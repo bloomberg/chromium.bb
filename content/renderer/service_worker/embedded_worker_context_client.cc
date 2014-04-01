@@ -209,6 +209,11 @@ EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
   return new WebServiceWorkerNetworkProviderImpl();
 }
 
+void EmbeddedWorkerContextClient::didHandleSyncEvent(int request_id) {
+  DCHECK(script_context_);
+  script_context_->DidHandleSyncEvent(request_id);
+}
+
 void EmbeddedWorkerContextClient::OnSendMessageToWorker(
     int thread_id,
     int embedded_worker_id,

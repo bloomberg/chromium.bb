@@ -71,6 +71,7 @@ class EmbeddedWorkerContextClient
       const blink::WebServiceWorkerResponse& response);
   virtual blink::WebServiceWorkerNetworkProvider*
       createServiceWorkerNetworkProvider(blink::WebDataSource* data_source);
+  virtual void didHandleSyncEvent(int request_id);
 
   // TODO: Implement DevTools related method overrides.
 

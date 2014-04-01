@@ -34,6 +34,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_Message, OnPostMessage)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SyncEvent, OnSyncEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -57,6 +58,10 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
     ServiceWorkerFetchEventResult result,
     const ServiceWorkerResponse& response) {
   Send(request_id, ServiceWorkerHostMsg_FetchEventFinished(result, response));
+}
+
+void ServiceWorkerScriptContext::DidHandleSyncEvent(int request_id) {
+  Send(request_id, ServiceWorkerHostMsg_SyncEventFinished());
 }
 
 void ServiceWorkerScriptContext::Send(int request_id,
@@ -93,6 +98,10 @@ void ServiceWorkerScriptContext::OnPostMessage(
   }
 
   proxy_->dispatchMessageEvent(message, ports);
+}
+
+void ServiceWorkerScriptContext::OnSyncEvent() {
+  proxy_->dispatchSyncEvent(current_request_id_);
 }
 
 }  // namespace content

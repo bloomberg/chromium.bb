@@ -135,3 +135,8 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_Message,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)
 
+// Sent via EmbeddedWorker to dispatch sync event.
+IPC_MESSAGE_CONTROL0(ServiceWorkerMsg_SyncEvent)
+
+// Informs the browser that sync event handling has finished.
+IPC_MESSAGE_CONTROL0(ServiceWorkerHostMsg_SyncEventFinished)

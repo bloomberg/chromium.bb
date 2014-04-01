@@ -276,12 +276,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(expected_status, status);
   }
 
-  void FetchTestHelper(const std::string& worker_url,
-                       ServiceWorkerFetchEventResult* result,
-                       ServiceWorkerResponse* response) {
-    RunOnIOThread(
-        base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
-
+  void FetchOnRegisteredWorker(ServiceWorkerFetchEventResult* result,
+                               ServiceWorkerResponse* response) {
     FetchResult fetch_result;
     fetch_result.status = SERVICE_WORKER_ERROR_FAILED;
     base::RunLoop fetch_run_loop;
@@ -295,6 +291,15 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     *result = fetch_result.result;
     *response = fetch_result.response;
     ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
+  }
+
+  void FetchTestHelper(const std::string& worker_url,
+                       ServiceWorkerFetchEventResult* result,
+                       ServiceWorkerResponse* response) {
+    RunOnIOThread(
+        base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
+
+    FetchOnRegisteredWorker(result, response);
   }
 
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
@@ -346,6 +351,13 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                       ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(version_);
     version_->StopWorker(CreateReceiver(BrowserThread::UI, done, result));
+  }
+
+  void SyncEventOnIOThread(const base::Closure& done,
+                           ServiceWorkerStatusCode* result) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    version_->DispatchSyncEvent(
+        CreateReceiver(BrowserThread::UI, done, result));
   }
 
  protected:
@@ -467,6 +479,31 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Rejected) {
   ServiceWorkerResponse response;
   FetchTestHelper("/service_worker/fetch_event_error.js", &result, &response);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, result);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, SyncEventHandled) {
+  RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
+                           "/service_worker/sync.js"));
+  ServiceWorkerFetchEventResult result;
+  ServiceWorkerResponse response;
+
+  // Should 404 before sync event.
+  FetchOnRegisteredWorker(&result, &response);
+  EXPECT_EQ(404, response.status_code);
+
+  // Run the sync event.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  base::RunLoop sync_run_loop;
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&self::SyncEventOnIOThread, this,
+                                     sync_run_loop.QuitClosure(),
+                                     &status));
+  sync_run_loop.Run();
+  ASSERT_EQ(SERVICE_WORKER_OK, status);
+
+  // Should 200 after sync event.
+  FetchOnRegisteredWorker(&result, &response);
+  EXPECT_EQ(200, response.status_code);
 }
 
 class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {

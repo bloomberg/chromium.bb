@@ -40,6 +40,7 @@ class ServiceWorkerInternalsUI
   void GetAllRegistrations(const base::ListValue* args);
   void StartWorker(const base::ListValue* args);
   void StopWorker(const base::ListValue* args);
+  void DispatchSyncEventToWorker(const base::ListValue* args);
   void Unregister(const base::ListValue* args);
 
   bool GetRegistrationInfo(

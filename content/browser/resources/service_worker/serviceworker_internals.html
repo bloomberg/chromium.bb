@@ -59,6 +59,8 @@
                        jsvalues=".scope:scope;.partition_path:$partition_path">Start</button>
                     <button href="#" class="unregister"
                        jsvalues=".scope:scope;.partition_path:$partition_path">Unregister</button>
+                    <button href="#" class="sync" jsdisplay="$this.active.running_status == 'RUNNING'"
+                       jsvalues=".scope:scope;.partition_path:$partition_path">Sync</button>
                     <span class="operation-status" style="display: none">Running...</span>
                 </div>
             </div>
@@ -77,4 +79,3 @@
     <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>
-
