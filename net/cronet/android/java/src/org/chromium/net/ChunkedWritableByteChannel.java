@@ -52,16 +52,14 @@ public class ChunkedWritableByteChannel implements WritableByteChannel {
             }
 
             // The supplied initial size was incorrect. Keep the accumulated
-            // data
-            // and switch to the usual "sequence of buffers" mode.
+            // data and switch to the usual "sequence of buffers" mode.
             mInitialBuffer.flip();
             mBuffers.add(mInitialBuffer);
             mInitialBuffer = null;
         }
 
         // We can't hold a reference to this buffer, because it may wrap native
-        // memory
-        // and is not guaranteed to be immutable.
+        // memory and is not guaranteed to be immutable.
         ByteBuffer tmpBuf = ByteBuffer.allocateDirect(size);
         tmpBuf.put(buffer).rewind();
         mBuffers.add(tmpBuf);

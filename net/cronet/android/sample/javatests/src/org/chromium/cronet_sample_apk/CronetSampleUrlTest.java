@@ -16,7 +16,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     private static final String URL = "http://127.0.0.1:8000";
 
     @SmallTest
-    @Feature({"Main"})
+    @Feature({"Cronet"})
     public void testLoadUrl() throws Exception {
         CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
 
@@ -31,7 +31,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     }
 
     @SmallTest
-    @Feature({"Main"})
+    @Feature({"Cronet"})
     public void testInvalidUrl() throws Exception {
         CronetSampleActivity activity = launchCronetSampleWithUrl(
                 "127.0.0.1:8000");
@@ -46,7 +46,7 @@ public class CronetSampleUrlTest extends CronetSampleTestBase {
     }
 
     @SmallTest
-    @Feature({"Main"})
+    @Feature({"Cronet"})
     public void testPostData() throws Exception {
         String[] commandLineArgs = {
                 CronetSampleActivity.POST_DATA_KEY, "test" };
