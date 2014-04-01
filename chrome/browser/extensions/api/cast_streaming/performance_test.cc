@@ -590,6 +590,8 @@ class CastV2PerformanceTest
         receiver_end_point.port());
     ASSERT_TRUE(RunExtensionSubtest("cast_streaming", page_url)) << message_;
     ASSERT_TRUE(tracing::EndTracing(&json_events));
+    receiver->Stop();
+
     // Stop all threads, removes the need for synchronization when analyzing
     // the data.
     cast_environment->Shutdown();
@@ -627,8 +629,6 @@ class CastV2PerformanceTest
     receiver->Analyze(test_name, GetSuffixForTestFlags());
 
     AnalyzeLatency(test_name, analyzer.get());
-
-    receiver->DestroySoon();
   }
 };
 

@@ -5,6 +5,7 @@
 #include "media/cast/test/utility/in_process_receiver.h"
 
 #include "base/bind_helpers.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
@@ -33,7 +34,7 @@ InProcessReceiver::InProcessReceiver(
       weak_factory_(this) {}
 
 InProcessReceiver::~InProcessReceiver() {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  Stop();
 }
 
 void InProcessReceiver::Start() {
@@ -41,6 +42,28 @@ void InProcessReceiver::Start() {
                               FROM_HERE,
                               base::Bind(&InProcessReceiver::StartOnMainThread,
                                          base::Unretained(this)));
+}
+
+void InProcessReceiver::Stop() {
+  base::WaitableEvent event(false, false);
+  if (cast_environment_->CurrentlyOn(CastEnvironment::MAIN)) {
+    StopOnMainThread(&event);
+  } else {
+    cast_environment_->PostTask(CastEnvironment::MAIN,
+                                FROM_HERE,
+                                base::Bind(&InProcessReceiver::StopOnMainThread,
+                                           base::Unretained(this),
+                                           &event));
+    event.Wait();
+  }
+}
+
+void InProcessReceiver::StopOnMainThread(base::WaitableEvent* event) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  cast_receiver_.reset(NULL);
+  transport_.reset(NULL);
+  weak_factory_.InvalidateWeakPtrs();
+  event->Signal();
 }
 
 void InProcessReceiver::DestroySoon() {

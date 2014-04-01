@@ -14,6 +14,7 @@
 
 namespace base {
 class TimeTicks;
+class WaitableEvent;
 }  // namespace base
 
 namespace net {
@@ -60,7 +61,13 @@ class InProcessReceiver {
 
   // Schedules destruction on the cast MAIN thread.  Any external references to
   // the InProcessReceiver instance become invalid.
+  // Deprecated: Use Stop instead.
+  // TODO(hubbe): Remove this function and change callers to use Stop.
   void DestroySoon();
+
+  // Destroy the sub-compontents of this class.
+  // After this call, it is safe to destroy this object on any thread.
+  void Stop();
 
  protected:
   // To be implemented by subclasses.  These are called on the Cast MAIN thread
@@ -74,6 +81,10 @@ class InProcessReceiver {
   // |transport_| receiving, and requests the first audio/video frame.
   // Subclasses may override to provide additional start-up functionality.
   virtual void StartOnMainThread();
+
+  // Helper method that destroys |transport_| and |cast_receiver_|.
+  // Subclasses may override to provide additional start-up functionality.
+  virtual void StopOnMainThread(base::WaitableEvent* event);
 
   // Callback for the transport to notify of status changes.  A default
   // implementation is provided here that simply logs socket errors.
