@@ -962,10 +962,8 @@ class GitWrapper(SCMWrapper):
       env.setdefault('SSH_ASKPASS', 'true')
     else:
       kwargs.setdefault('print_stdout', True)
-    stdout = kwargs.get('stdout', sys.stdout)
-    stdout.write('\n________ running \'git %s\' in \'%s\'\n' % (
-                 ' '.join(args), kwargs['cwd']))
-    return gclient_utils.CheckCallAndFilter(['git'] + args, **kwargs)
+    cmd = ['git'] + args
+    return gclient_utils.CheckCallAndFilterAndHeader(cmd, **kwargs)
 
 
 class SVNWrapper(SCMWrapper):

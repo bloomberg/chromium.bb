@@ -848,10 +848,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     # Test unversioned checkout.
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1'],
-        ['running', ('running', self.root_dir + '/src'),
-         'running', ('running', self.root_dir + '/src/repo2'),
-         'running', ('running', self.root_dir + '/src/repo2/repo_renamed'),
-         'running', 'running'])
+        ['running', 'running', 'running', 'running', 'running'])
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
@@ -866,14 +863,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'git_hooked1'))
 
     # Test incremental versioned sync: sync backward.
-    diffdir = os.path.join(self.root_dir, 'src', 'repo2', 'repo_renamed')
     self.parseGclient(
         ['sync', '--jobs', '1', '--revision',
         'src@' + self.githash('repo_1', 1),
         '--deps', 'mac', '--delete_unversioned_trees'],
-        ['running', ('running', self.root_dir + '/src/repo2/repo3'),
-         'running', ('running', self.root_dir + '/src/repo4'),
-         ('running', diffdir), 'deleting'])
+        ['running', 'running', 'deleting'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -881,12 +875,9 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
-    expect3 = ('running', os.path.join(self.root_dir, 'src', 'repo2', 'repo3'))
-    expect4 = ('running', os.path.join(self.root_dir, 'src', 'repo4'))
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1'],
-        ['running', ('running', self.root_dir + '/src/repo2/repo_renamed'),
-         'running', 'running', expect3, expect4])
+        ['running', 'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -904,10 +895,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1',
          '--revision', 'invalid@' + self.githash('repo_1', 1)],
-        ['running', ('running', self.root_dir + '/src'),
-         'running', ('running', self.root_dir + '/src/repo2'),
-         'running', ('running', self.root_dir + '/src/repo2/repo_renamed'),
-         'running', 'running'],
+        ['running', 'running', 'running', 'running', 'running'],
         'Please fix your script, having invalid --revision flags '
         'will soon considered an error.\n')
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
@@ -925,10 +913,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1',
          '--revision', self.githash('repo_1', 1)],
-        ['running', ('running', self.root_dir + '/src'),
-         'running', ('running', self.root_dir + '/src/repo2'),
-         'running', ('running', self.root_dir + '/src/repo2/repo3'),
-         'running', ('running', self.root_dir + '/src/repo4')])
+        ['running', 'running', 'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
                                 ('repo_3@1', 'src/repo2/repo3'),
@@ -943,10 +928,7 @@ class GClientSmokeGIT(GClientSmokeBase):
     # Test unversioned checkout.
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '8'],
-        ['running', ('running', self.root_dir + '/src'),
-         'running', ('running', self.root_dir + '/src/repo2'),
-         'running', ('running', self.root_dir + '/src/repo2/repo_renamed'),
-         'running', 'running'],
+        ['running', 'running', 'running', 'running', 'running'],
         untangle=True)
     # TODO(maruel): http://crosbug.com/3582 hooks run even if not matching, must
     # add sync parsing to get the list of updated files.
@@ -962,20 +944,11 @@ class GClientSmokeGIT(GClientSmokeBase):
     os.remove(join(self.root_dir, 'src', 'git_hooked1'))
 
     # Test incremental versioned sync: sync backward.
-    expect3 = ('running',
-               os.path.join(self.root_dir, 'src', 'repo2', 'repo_renamed'))
     # Use --jobs 1 otherwise the order is not deterministic.
     self.parseGclient(
         ['sync', '--revision', 'src@' + self.githash('repo_1', 1),
           '--deps', 'mac', '--delete_unversioned_trees', '--jobs', '1'],
-        [
-          'running',
-          ('running', self.root_dir + '/src/repo2/repo3'),
-          'running',
-          ('running', self.root_dir + '/src/repo4'),
-          expect3,
-          'deleting',
-        ],
+        [ 'running', 'running', 'deleting'],
         untangle=True)
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
@@ -984,12 +957,9 @@ class GClientSmokeGIT(GClientSmokeBase):
     tree['src/git_hooked2'] = 'git_hooked2'
     self.assertTree(tree)
     # Test incremental sync: delete-unversioned_trees isn't there.
-    expect4 = os.path.join(self.root_dir, 'src', 'repo2', 'repo3')
-    expect5 = os.path.join(self.root_dir, 'src', 'repo4')
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '8'],
-        ['running', ('running', self.root_dir + '/src/repo2/repo_renamed'),
-         'running', 'running', ('running', expect4), ('running', expect5)],
+        ['running', 'running', 'running'],
         untangle=True)
     tree = self.mangle_git_tree(('repo_1@2', 'src'),
                                 ('repo_2@1', 'src/repo2'),
@@ -1032,18 +1002,15 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
     expectation = [
         ('running', self.root_dir),                 # git clone repo_5
-        ('running', self.root_dir + '/src'),        # git checkout src
         ('running', self.root_dir),                 # pre-deps hook
         ('running', self.root_dir),                 # git clone repo_1
-        ('running', self.root_dir + '/src/repo1'),  # git checkout repo1
         ('running', self.root_dir),                 # git clone repo_1
-        ('running', self.root_dir + '/src/repo2'),  # git checkout repo2
     ]
     out = self.parseGclient(['sync', '--deps', 'mac', '--jobs=1',
                              '--revision', 'src@' + self.githash('repo_5', 2)],
                             expectation)
-    self.assertEquals(2, len(out[2]))
-    self.assertEquals('pre-deps hook', out[2][1])
+    self.assertEquals(2, len(out[1]))
+    self.assertEquals('pre-deps hook', out[1][1])
     tree = self.mangle_git_tree(('repo_5@2', 'src'),
                                 ('repo_1@2', 'src/repo1'),
                                 ('repo_2@1', 'src/repo2')
@@ -1088,7 +1055,6 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.gclient(['config', self.git_base + 'repo_5', '--name', 'src'])
     expectated_stdout = [
         ('running', self.root_dir),                 # git clone repo_5
-        ('running', self.root_dir + '/src'),        # git checkout src
         ('running', self.root_dir),                 # pre-deps hook
         ('running', self.root_dir),                 # pre-deps hook (fails)
     ]
@@ -1171,23 +1137,23 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     expected1 = ('running', os.path.join(self.root_dir, 'src'))
     expected2 = ('running', os.path.join(expected1[1], 'repo2'))
     expected3 = ('running', os.path.join(expected2[1], 'repo_renamed'))
-    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'],
-                            [expected1, expected2, expected3])
+    out = self.parseGclient(['status', '--deps', 'mac', '--jobs', '1'], [])
     # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
     # files.
-    self.assertEquals(3, len(out))
+    self.assertEquals(0, len(out))
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching. For each expected path, 'git reset' and 'git clean' are run, so
     # there should be two results for each. The last two results should reflect
-    # writing git_hooked1 and git_hooked2.
+    # writing git_hooked1 and git_hooked2. There's only one result for the third
+    # because it is clean and has no output for 'git clean'.
     expected4 = ('running', self.root_dir)
     out = self.parseGclient(['revert', '--deps', 'mac', '--jobs', '1'],
                             [expected1, expected1,
                              expected2, expected2,
-                             expected3, expected3,
+                             expected3,
                              expected4, expected4])
-    self.assertEquals(8, len(out))
+    self.assertEquals(7, len(out))
     tree = self.mangle_git_tree(('repo_1@3', 'src'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -1207,9 +1173,9 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     out = self.parseGclient(['revert', '--deps', 'mac', '--jobs', '1'],
                             [expected1, expected1,
                              expected2, expected2,
-                             expected3, expected3,
+                             expected3,
                              expected4, expected4])
-    self.assertEquals(8, len(out))
+    self.assertEquals(7, len(out))
     tree = self.mangle_git_tree(('repo_1@3', 'src'),
                                 ('repo_2@3', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -1221,7 +1187,7 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     out = results[0].splitlines(False)
     # TODO(maruel): http://crosbug.com/3584 It should output the unversioned
     # files.
-    self.assertEquals(6, len(out))
+    self.assertEquals(0, len(out))
 
 class GClientSmokeBoth(GClientSmokeBase):
   def setUp(self):
@@ -1238,16 +1204,12 @@ class GClientSmokeBoth(GClientSmokeBase):
         '{"name": "src-git",'
         '"url": "' + self.git_base + 'repo_1"}]'])
     self.parseGclient(['sync', '--deps', 'mac', '--jobs', '1'],
-        ['running',
-         'running', ('running', self.root_dir + '/src-git'),
-         'running',
+        ['running', 'running', 'running',
          # This is due to the way svn update is called for a single
          # file when File() is used in a DEPS file.
          ('running', self.root_dir + '/src/file/other'),
-         'running', 'running', 'running',
-         'running', ('running', self.root_dir + '/src/repo2'),
-         'running', ('running', self.root_dir + '/src/repo2/repo_renamed'),
-         'running', 'running', 'running'])
+         'running', 'running', 'running', 'running',
+         'running', 'running', 'running', 'running'])
     tree = self.mangle_git_tree(('repo_1@2', 'src-git'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -1278,7 +1240,7 @@ class GClientSmokeBoth(GClientSmokeBase):
     self.checkString('', stderr)
     self.assertEquals(0, returncode)
     results = self.splitBlock(stdout)
-    self.assertEquals(15, len(results))
+    self.assertEquals(12, len(results))
     tree = self.mangle_git_tree(('repo_1@2', 'src-git'),
                                 ('repo_2@1', 'src/repo2'),
                                 ('repo_3@2', 'src/repo2/repo_renamed'))
@@ -1305,12 +1267,8 @@ class GClientSmokeBoth(GClientSmokeBase):
     self.parseGclient(
         ['sync', '--deps', 'mac', '--jobs', '1', '--revision', '1',
          '-r', 'src-git@' + self.githash('repo_1', 1)],
-        ['running',
-         'running', ('running', self.root_dir + '/src-git'),
-         'running', 'running', 'running',
-         'running', ('running', self.root_dir + '/src/repo2'),
-         'running', ('running', self.root_dir + '/src/repo2/repo3'),
-         'running', ('running', self.root_dir + '/src/repo4')],
+        ['running', 'running', 'running', 'running', 'running',
+         'running', 'running', 'running'],
         expected_stderr=
             'You must specify the full solution name like --revision src@1\n'
             'when you have multiple solutions setup in your .gclient file.\n'
