@@ -220,11 +220,17 @@ For more information of cros build usage:
       root: The installation root of |pkg|.
     """
     logging.info('Unmerging %s...', pkg)
-    cmd = ['emerge', '--unmerge', pkg]
-    cmd.append('--root=%s' % root)
+    cmd = ['qmerge', '--yes']
+    # Check if qmerge is available on the device. If not, use emerge.
+    if device.RunCommand(
+        ['qmerge', '--version'], error_code_ok=True).returncode != 0:
+      cmd = ['emerge']
+
+    cmd.extend(['--unmerge', pkg, '--root=%s' % root])
     try:
-      result = device.RunCommand(cmd, capture_output=True, remote_sudo=True)
-      logging.debug(result.output)
+      # Always showing the qmerge/emerge output for clarity.
+      device.RunCommand(cmd, capture_output=False, remote_sudo=True,
+                        debug_level=logging.INFO)
     except Exception:
       logging.error('Failed to unmerge package %s', pkg)
       raise
