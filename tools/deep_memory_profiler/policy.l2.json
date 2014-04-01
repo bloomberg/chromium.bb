@@ -201,6 +201,11 @@
       "allocator": "mmap"
     },
     {
+      "name": "tc-webcore-cachedmatchedproperties",
+      "stacktrace": ".*WebCore::CachedMatchedProperties::(set|add).*",
+      "allocator": "malloc"
+    },
+    {
       "name": "tc-webcore-fontcache",
       "stacktrace": ".*WebCore::FontCache::getFontData.*",
       "allocator": "malloc"
