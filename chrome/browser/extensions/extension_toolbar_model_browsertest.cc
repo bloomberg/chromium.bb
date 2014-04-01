@@ -468,7 +468,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, HighlightMode) {
   EXPECT_EQ(id_c, ExtensionAt(2)->id());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, HighlightModeRemove) {
+#if defined(OS_MACOSX)
+// Flaky on Mac bots: http://crbug.com/358752
+#define MAYBE_HighlightModeRemove DISABLED_HighlightModeRemove
+#else
+#define MAYBE_HighlightModeRemove HighlightModeRemove
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionToolbarModelTest, MAYBE_HighlightModeRemove) {
   // Load three extensions with browser action.
   base::FilePath extension_a_path(test_data_dir_.AppendASCII("api_test")
                                                 .AppendASCII("browser_action")
