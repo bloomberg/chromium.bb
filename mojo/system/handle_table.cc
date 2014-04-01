@@ -181,9 +181,6 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
   return MOJO_RESULT_OK;
 }
 
-
-//////////////
-
 MojoHandle HandleTable::AddDispatcherNoSizeCheck(
     const scoped_refptr<Dispatcher>& dispatcher) {
   DCHECK(dispatcher);

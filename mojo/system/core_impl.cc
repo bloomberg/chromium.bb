@@ -59,7 +59,7 @@ namespace system {
 // (which subclasses can use to protect their data).
 //
 // The lock ordering is as follows:
-//   1. global handle table lock
+//   1. global handle table lock, global mapping table lock
 //   2. |Dispatcher| locks
 //   3. secondary object locks
 //   ...
@@ -503,19 +503,21 @@ MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
     return result;
 
   DCHECK(mapping);
-  *buffer = mapping->base();
+  void* address = mapping->base();
+  {
+    base::AutoLock locker(mapping_table_lock_);
+    result = mapping_table_.AddMapping(mapping.Pass());
+  }
+  if (result != MOJO_RESULT_OK)
+    return result;
 
-  // TODO(vtl): FIXME -- Record the mapping somewhere, so that it can be
-  // unmapped properly. For now, just leak it.
-  ignore_result(mapping.release());
-
+  *buffer = address;
   return MOJO_RESULT_OK;
 }
 
 MojoResult CoreImpl::UnmapBuffer(void* buffer) {
-  // TODO(vtl): FIXME
-  NOTIMPLEMENTED();
-  return MOJO_RESULT_UNIMPLEMENTED;
+  base::AutoLock locker(mapping_table_lock_);
+  return mapping_table_.RemoveMapping(buffer);
 }
 
 scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {

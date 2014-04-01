@@ -10,10 +10,13 @@
 namespace mojo {
 namespace system {
 
-// Maximum of open (Mojo) handles.
+// Maximum number of open (Mojo) handles.
 // TODO(vtl): This doesn't count "live" handles, some of which may live in
 // messages.
 const size_t kMaxHandleTableSize = 1000000;
+
+// Maximum number of active memory mappings.
+const size_t kMaxMappingTableSize = 1000000;
 
 const size_t kMaxWaitManyNumHandles = kMaxHandleTableSize;
 

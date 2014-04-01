@@ -251,8 +251,7 @@ TEST(CoreTest, BasicSharedBuffer) {
   static_cast<char*>(pointer)[51] = 'y';
 
   // Unmap it.
-  // TODO(vtl): Not yet implemented.
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED, MojoUnmapBuffer(pointer));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoUnmapBuffer(pointer));
 
   // Map half of |h1|.
   pointer = NULL;
@@ -265,8 +264,7 @@ TEST(CoreTest, BasicSharedBuffer) {
   EXPECT_EQ('y', static_cast<char*>(pointer)[1]);
 
   // Unmap it.
-  // TODO(vtl): Not yet implemented.
-  EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED, MojoUnmapBuffer(pointer));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoUnmapBuffer(pointer));
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }

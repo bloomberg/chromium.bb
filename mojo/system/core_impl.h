@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "mojo/public/system/core_private.h"
 #include "mojo/system/handle_table.h"
+#include "mojo/system/mapping_table.h"
 #include "mojo/system/system_impl_export.h"
 
 namespace mojo {
@@ -137,6 +138,9 @@ class MOJO_SYSTEM_IMPL_EXPORT CoreImpl : public Core {
   // had them).
   base::Lock handle_table_lock_;  // Protects |handle_table_|.
   HandleTable handle_table_;
+
+  base::Lock mapping_table_lock_;  // Protects |mapping_table_|.
+  MappingTable mapping_table_;
 
   // ---------------------------------------------------------------------------
 

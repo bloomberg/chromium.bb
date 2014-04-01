@@ -132,6 +132,8 @@
         'system/local_data_pipe.h',
         'system/local_message_pipe_endpoint.cc',
         'system/local_message_pipe_endpoint.h',
+        'system/mapping_table.cc',
+        'system/mapping_table.h',
         'system/memory.cc',
         'system/memory.h',
         'system/message_in_transit.cc',
