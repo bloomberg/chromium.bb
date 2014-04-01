@@ -39,7 +39,6 @@ CHROMEOS_EXPORT extern const char kEchoExtensionPath[];
 CHROMEOS_EXPORT extern const char kEnableCarrierSwitching[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];
 CHROMEOS_EXPORT extern const char kEnableNetworkPortalNotification[];
-CHROMEOS_EXPORT extern const char kEnableRollbackOption[];
 CHROMEOS_EXPORT extern const char kEnableRequestTabletSite[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnableForcedReEnrollment[];
