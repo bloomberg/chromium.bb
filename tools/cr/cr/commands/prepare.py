@@ -30,7 +30,13 @@ class PrepareCommand(cr.Command):
     self.Prepare()
 
   @classmethod
+  def UpdateContext(cls):
+    for preparation in PrepareOut.Plugins():
+      preparation.UpdateContext()
+
+  @classmethod
   def Prepare(cls):
+    cls.UpdateContext()
     for preparation in PrepareOut.Plugins():
       preparation.Prepare()
 
@@ -40,6 +46,12 @@ class PrepareOut(cr.Plugin, cr.Plugin.Type):
 
   See PrepareCommand for details.
   """
+
+  def UpdateContext(self):
+    """Update the context if needed.
+
+    This is also used by commands that want the environment setup correctly, but
+    are not going to call Prepare directly (such as sync)."""
 
   def Prepare(self):
     """All PrepareOut plugins must override this method to do their work."""

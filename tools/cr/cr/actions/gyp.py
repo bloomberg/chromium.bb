@@ -18,17 +18,19 @@ class GypPrepareOut(cr.PrepareOut):
       GYP_DEF_target_arch='{CR_ENVSETUP_ARCH}',
   )
 
-  def Prepare(self):
+  def UpdateContext(self):
     # Collapse GYP_DEFINES from all GYP_DEF prefixes
     gyp_defines = cr.context.Find('GYP_DEFINES') or ''
     for key, value in cr.context.exported.items():
       if key.startswith(GYP_DEFINE_PREFIX):
         gyp_defines += ' %s=%s' % (key[len(GYP_DEFINE_PREFIX):], value)
     cr.context['GYP_DEFINES'] = gyp_defines.strip()
+    if cr.context.verbose >= 1:
+      print cr.context.Substitute('GYP_DEFINES = {GYP_DEFINES}')
 
+  def Prepare(self):
     if cr.context.verbose >= 1:
       print cr.context.Substitute('Invoking gyp with {GYP_GENERATOR_FLAGS}')
-      print cr.context.Substitute('GYP_DEFINES = {GYP_DEFINES}')
 
     cr.Host.Execute(
         '{CR_SRC}/build/gyp_chromium',

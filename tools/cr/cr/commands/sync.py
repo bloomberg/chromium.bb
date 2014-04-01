@@ -41,6 +41,7 @@ class SyncCommand(cr.Command):
 
   @staticmethod
   def Sync(args):
+    cr.PrepareCommand.UpdateContext()
     # TODO(iancottrell): we should probably run the python directly,
     # rather than the shell wrapper
     # TODO(iancottrell): try to help out when the local state is not a good
