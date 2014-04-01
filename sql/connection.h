@@ -107,7 +107,7 @@ class SQL_EXPORT Connection {
 
   // Call to put the database in exclusive locking mode. There is no "back to
   // normal" flag because of some additional requirements sqlite puts on this
-  // transaition (requires another access to the DB) and because we don't
+  // transaction (requires another access to the DB) and because we don't
   // actually need it.
   //
   // Exclusive mode means that the database is not unlocked at the end of each

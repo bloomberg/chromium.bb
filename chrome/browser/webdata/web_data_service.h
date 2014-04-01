@@ -121,8 +121,8 @@ class WebDataService : public WebDataServiceBase {
   // On success, consumer is notified with WDResult<KeywordTable::Keywords>.
   Handle GetKeywords(WebDataServiceConsumer* consumer);
 
-  // Sets the keywords used for the default search provider.
-  void SetDefaultSearchProvider(const TemplateURL* url);
+  // Sets the ID of the default search provider.
+  void SetDefaultSearchProviderID(TemplateURLID id);
 
   // Sets the version of the builtin keywords.
   void SetBuiltinKeywordVersion(int version);
@@ -187,15 +187,15 @@ class WebDataService : public WebDataServiceBase {
   // Keywords.
   //
   //////////////////////////////////////////////////////////////////////////////
-  WebDatabase::State AddKeywordImpl(
-      const TemplateURLData& data, WebDatabase* db);
-  WebDatabase::State RemoveKeywordImpl(
-      TemplateURLID id, WebDatabase* db);
-  WebDatabase::State UpdateKeywordImpl(
-      const TemplateURLData& data, WebDatabase* db);
+  WebDatabase::State AddKeywordImpl(const TemplateURLData& data,
+                                    WebDatabase* db);
+  WebDatabase::State RemoveKeywordImpl(TemplateURLID id,
+                                       WebDatabase* db);
+  WebDatabase::State UpdateKeywordImpl(const TemplateURLData& data,
+                                       WebDatabase* db);
   scoped_ptr<WDTypedResult> GetKeywordsImpl(WebDatabase* db);
-  WebDatabase::State SetDefaultSearchProviderImpl(
-      TemplateURLID r, WebDatabase* db);
+  WebDatabase::State SetDefaultSearchProviderImpl(TemplateURLID r,
+                                                  WebDatabase* db);
   WebDatabase::State SetBuiltinKeywordVersionImpl(int version, WebDatabase* db);
 
   //////////////////////////////////////////////////////////////////////////////

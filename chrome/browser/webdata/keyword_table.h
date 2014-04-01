@@ -141,9 +141,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion53AddNewTabURLColumn();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);
-  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContentsOrdering);
-  FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, SanitizeURLs);
+  friend class KeywordTableTest;
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseMigrationTest, MigrateVersion44ToCurrent);
 
   // NOTE: Since the table columns have changed in different versions, many

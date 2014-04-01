@@ -888,13 +888,12 @@ void TemplateURLService::Observe(int type,
     // TODO(pkasting): Rather than communicating via prefs, we should eventually
     // observe policy changes directly.
     UpdateDefaultSearch();
-  } else if (type == chrome::NOTIFICATION_GOOGLE_URL_UPDATED) {
+  } else {
+    DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_URL_UPDATED, type);
     if (loaded_) {
       GoogleBaseURLChanged(
           content::Details<GoogleURLTracker::UpdatedDetails>(details)->first);
     }
-  } else {
-    NOTREACHED();
   }
 }
 
@@ -992,11 +991,9 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         FindNonExtensionTemplateURLForKeyword(turl->keyword());
     if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
       if (!existing_turl) {
-        NOTREACHED() << "Unexpected sync change state.";
         error = sync_error_factory_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType ACTION_DELETE");
-        LOG(ERROR) << "Trying to delete a non-existent TemplateURL.";
         continue;
       }
       if (existing_turl == GetDefaultSearchProvider()) {
@@ -1034,11 +1031,9 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       Remove(existing_turl);
     } else if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
       if (existing_turl) {
-        NOTREACHED() << "Unexpected sync change state.";
         error = sync_error_factory_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType ACTION_ADD");
-        LOG(ERROR) << "Trying to add an existing TemplateURL.";
         continue;
       }
       const std::string guid = turl->sync_guid();
@@ -1056,11 +1051,9 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
       SetDefaultSearchProviderIfNewlySynced(guid);
     } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE) {
       if (!existing_turl) {
-        NOTREACHED() << "Unexpected sync change state.";
         error = sync_error_factory_->CreateAndUploadError(
             FROM_HERE,
             "ProcessSyncChanges failed on ChangeType ACTION_UPDATE");
-        LOG(ERROR) << "Trying to update a non-existent TemplateURL.";
         continue;
       }
       if (existing_keyword_turl && (existing_keyword_turl != existing_turl)) {
@@ -1074,7 +1067,6 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         NotifyObservers();
     } else {
       // We've unexpectedly received an ACTION_INVALID.
-      NOTREACHED() << "Unexpected sync change state.";
       error = sync_error_factory_->CreateAndUploadError(
           FROM_HERE,
           "ProcessSyncChanges received an ACTION_INVALID");
@@ -1453,8 +1445,8 @@ void TemplateURLService::Init(const Initializer* initializers,
             &TemplateURLService::OnSyncedDefaultSearchProviderGUIDChanged,
             base::Unretained(this)));
   }
-  notification_registrar_.Add(this,
-      chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
+  notification_registrar_.Add(
+      this, chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
       content::NotificationService::AllSources());
 
   if (num_initializers > 0) {
@@ -2187,7 +2179,7 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
   }
 
   if (service_.get())
-    service_->SetDefaultSearchProvider(url);
+    service_->SetDefaultSearchProviderID(url ? url->id() : 0);
 
   // Inform sync the change to the show_in_default_list flag.
   if (url)
@@ -2252,16 +2244,12 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
 }
 
 void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
+  DCHECK(template_url != default_search_provider_);
+
   TemplateURLVector::iterator i =
       std::find(template_urls_.begin(), template_urls_.end(), template_url);
   if (i == template_urls_.end())
     return;
-
-  if (template_url == default_search_provider_) {
-    // Should never delete the default search provider.
-    NOTREACHED();
-    return;
-  }
 
   RemoveFromMaps(template_url);
 

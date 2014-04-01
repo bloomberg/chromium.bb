@@ -112,10 +112,8 @@ WebDataServiceBackend::~WebDataServiceBackend() {
 }
 
 void WebDataServiceBackend::Commit() {
-  if (db_ && init_status_ == sql::INIT_OK) {
-    db_->CommitTransaction();
-    db_->BeginTransaction();
-  } else {
-    NOTREACHED() << "Commit scheduled after Shutdown()";
-  }
+  DCHECK(db_);
+  DCHECK_EQ(sql::INIT_OK, init_status_);
+  db_->CommitTransaction();
+  db_->BeginTransaction();
 }

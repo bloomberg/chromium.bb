@@ -246,7 +246,7 @@ bool KeywordTable::AddKeyword(const TemplateURLData& data) {
   std::string query("INSERT INTO keywords (" + GetKeywordColumns() + ") "
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
                     "        ?)");
-  sql::Statement s(db_->GetUniqueStatement(query.c_str()));
+  sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query.c_str()));
   BindURLToStatement(data, &s, 0, 1);
 
   return s.Run();
@@ -254,8 +254,8 @@ bool KeywordTable::AddKeyword(const TemplateURLData& data) {
 
 bool KeywordTable::RemoveKeyword(TemplateURLID id) {
   DCHECK(id);
-  sql::Statement s(
-      db_->GetUniqueStatement("DELETE FROM keywords WHERE id = ?"));
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM keywords WHERE id = ?"));
   s.BindInt64(0, id);
 
   return s.Run();
@@ -283,15 +283,16 @@ bool KeywordTable::GetKeywords(Keywords* keywords) {
 
 bool KeywordTable::UpdateKeyword(const TemplateURLData& data) {
   DCHECK(data.id);
-  sql::Statement s(db_->GetUniqueStatement("UPDATE keywords SET short_name=?, "
-      "keyword=?, favicon_url=?, url=?, safe_for_autoreplace=?, "
-      "originating_url=?, date_created=?, usage_count=?, input_encodings=?, "
-      "show_in_default_list=?, suggest_url=?, prepopulate_id=?, "
-      "created_by_policy=?, instant_url=?, last_modified=?, sync_guid=?, "
-      "alternate_urls=?, search_terms_replacement_key=?, image_url=?,"
-      "search_url_post_params=?, suggest_url_post_params=?, "
-      "instant_url_post_params=?, image_url_post_params=?, new_tab_url=? "
-      "WHERE id=?"));
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE keywords SET short_name=?, keyword=?, favicon_url=?, url=?, "
+      "safe_for_autoreplace=?, originating_url=?, date_created=?, "
+      "usage_count=?, input_encodings=?, show_in_default_list=?, "
+      "suggest_url=?, prepopulate_id=?, created_by_policy=?, instant_url=?, "
+      "last_modified=?, sync_guid=?, alternate_urls=?, "
+      "search_terms_replacement_key=?, image_url=?, search_url_post_params=?, "
+      "suggest_url_post_params=?, instant_url_post_params=?, "
+      "image_url_post_params=?, new_tab_url=? WHERE id=?"));
   BindURLToStatement(data, &s, 24, 0);  // "24" binds id() as the last item.
 
   return s.Run();

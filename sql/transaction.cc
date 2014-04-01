@@ -20,30 +20,21 @@ Transaction::~Transaction() {
 }
 
 bool Transaction::Begin() {
-  if (is_open_) {
-    NOTREACHED() << "Beginning a transaction twice!";
-    return false;
-  }
+  DCHECK(!is_open_) << "Beginning a transaction twice!";
   is_open_ = connection_->BeginTransaction();
   return is_open_;
 }
 
 void Transaction::Rollback() {
-  if (!is_open_) {
-    NOTREACHED() << "Attempting to roll back a nonexistent transaction. "
-                 << "Did you remember to call Begin() and check its return?";
-    return;
-  }
+  DCHECK(is_open_) << "Attempting to roll back a nonexistent transaction. "
+                   << "Did you remember to call Begin() and check its return?";
   is_open_ = false;
   connection_->RollbackTransaction();
 }
 
 bool Transaction::Commit() {
-  if (!is_open_) {
-    NOTREACHED() << "Attempting to commit a nonexistent transaction. "
-                 << "Did you remember to call Begin() and check its return?";
-    return false;
-  }
+  DCHECK(is_open_) << "Attempting to commit a nonexistent transaction. "
+                   << "Did you remember to call Begin() and check its return?";
   is_open_ = false;
   return connection_->CommitTransaction();
 }
