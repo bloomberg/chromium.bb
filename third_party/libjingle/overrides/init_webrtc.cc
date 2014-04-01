@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
@@ -82,6 +83,22 @@ bool InitializeWebRtcModule() {
 
   base::NativeLibraryLoadError error;
   static base::NativeLibrary lib = base::LoadNativeLibrary(path, &error);
+#if defined(OS_WIN)
+  // We've been seeing problems on Windows with loading the DLL and we're
+  // not sure exactly why.  It could be that AV programs are quarantining the
+  // file or disallowing loading the DLL. To get a better picture of the errors
+  // we're checking these specific error codes.
+  if (error.code == ERROR_MOD_NOT_FOUND) {
+    // It's possible that we get this error due to failure to load other
+    // dependencies, so check first that libpeerconnection actually exists.
+    CHECK(base::PathExists(path));  // libpeerconnection itself is missing.
+    CHECK(lib);  // If we hit this, a dependency is missing.
+  } else if (error.code == ERROR_ACCESS_DENIED) {
+    CHECK(lib);  // AV blocking access?
+  }
+#endif
+
+  // Catch-all error handler for all other sorts of errors.
   CHECK(lib) << error.ToString();
 
   InitializeModuleFunction initialize_module =
