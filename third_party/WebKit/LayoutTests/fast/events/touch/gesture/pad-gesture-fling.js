@@ -4,9 +4,9 @@ var actualWheelEventsOccurred = 0;
 var cumulativeScrollX = 0;
 var cumulativeScrollY = 0;
 
-var minimumWheelEventsExpected = 40;
-var minimumScrollXExpected = "200";
-var minimumScrollYExpected = "200";
+var minimumWheelEventsExpected = "2";
+var minimumScrollXExpected = 300;
+var minimumScrollYExpected = 300;
 
 var positionX = 10;
 var positionY = 11;
@@ -25,14 +25,17 @@ function recordWheelEvent(event)
     cumulativeScrollX += event.wheelDeltaX;
     cumulativeScrollY += event.wheelDeltaY;
 
-    if (actualWheelEventsOccurred == minimumWheelEventsExpected) {
-      shouldBeGreaterThanOrEqual('cumulativeScrollX', minimumScrollXExpected);
-      shouldBeGreaterThanOrEqual('cumulativeScrollY', minimumScrollYExpected);
+    if (cumulativeScrollX >= minimumScrollXExpected
+            && cumulativeScrollY >= minimumScrollYExpected) {
+      shouldBeGreaterThanOrEqual('actualWheelEventsOccurred', minimumWheelEventsExpected);
+      shouldBeGreaterThanOrEqual('cumulativeScrollX', minimumScrollXExpected.toString());
+      shouldBeGreaterThanOrEqual('cumulativeScrollY', minimumScrollYExpected.toString());
 
       isSuccessfullyParsed();
       if (window.testRunner)
           testRunner.notifyDone();
     }
+    event.preventDefault();
 }
 
 document.addEventListener("mousewheel", recordWheelEvent);
