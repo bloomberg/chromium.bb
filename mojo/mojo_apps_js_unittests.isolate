@@ -20,7 +20,7 @@
           '<(PRODUCT_DIR)/mojo_apps_js_unittests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/gen/mojo/public/bindings/tests/',
+          '<(PRODUCT_DIR)/gen/mojo/public/interfaces/bindings/tests/',
           'apps/js/',
           'bindings/js/',
           'public/bindings/js/',

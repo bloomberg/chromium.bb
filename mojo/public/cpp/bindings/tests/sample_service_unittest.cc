@@ -6,9 +6,9 @@
 #include <ostream>
 #include <string>
 
-#include "mojo/public/bindings/tests/sample_service.mojom.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/interfaces/bindings/tests/sample_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

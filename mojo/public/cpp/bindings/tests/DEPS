@@ -1,4 +1,4 @@
 include_rules = [
-  "+mojo/public/bindings/tests",
   "+mojo/public/cpp/environment",
+  "+mojo/public/interfaces/bindings/tests",
 ]

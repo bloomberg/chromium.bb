@@ -143,10 +143,6 @@
         'mojo_utility',
       ],
       'sources': [
-        'public/bindings/tests/math_calculator.mojom',
-        'public/bindings/tests/sample_factory.mojom',
-        'public/bindings/tests/sample_interfaces.mojom',
-        'public/bindings/tests/test_structs.mojom',
         'public/cpp/bindings/tests/array_unittest.cc',
         'public/cpp/bindings/tests/buffer_unittest.cc',
         'public/cpp/bindings/tests/connector_unittest.cc',
@@ -156,6 +152,10 @@
         'public/cpp/bindings/tests/router_unittest.cc',
         'public/cpp/bindings/tests/sample_service_unittest.cc',
         'public/cpp/bindings/tests/type_conversion_unittest.cc',
+        'public/interfaces/bindings/tests/math_calculator.mojom',
+        'public/interfaces/bindings/tests/sample_factory.mojom',
+        'public/interfaces/bindings/tests/sample_interfaces.mojom',
+        'public/interfaces/bindings/tests/test_structs.mojom',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
@@ -291,9 +291,9 @@
       'target_name': 'mojo_sample_service',
       'type': 'static_library',
       'sources': [
-        'public/bindings/tests/sample_service.mojom',
-        'public/bindings/tests/sample_import.mojom',
-        'public/bindings/tests/sample_import2.mojom',
+        'public/interfaces/bindings/tests/sample_service.mojom',
+        'public/interfaces/bindings/tests/sample_import.mojom',
+        'public/interfaces/bindings/tests/sample_import2.mojom',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',

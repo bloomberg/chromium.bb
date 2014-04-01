@@ -6,9 +6,9 @@ define([
     "console",
     "mojo/apps/js/test/hexdump",
     "gin/test/expect",
-    "mojo/public/bindings/tests/sample_service.mojom",
-    "mojo/public/bindings/tests/sample_import.mojom",
-    "mojo/public/bindings/tests/sample_import2.mojom",
+    "mojo/public/interfaces/bindings/tests/sample_service.mojom",
+    "mojo/public/interfaces/bindings/tests/sample_import.mojom",
+    "mojo/public/interfaces/bindings/tests/sample_import2.mojom",
   ], function(console, hexdump, expect, sample, imported, imported2) {
 
   var global = this;
