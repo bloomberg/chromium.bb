@@ -146,8 +146,6 @@ class SyncEngine : public RemoteFileSyncService,
   drive::DriveServiceInterface* GetDriveService();
   drive::DriveUploaderInterface* GetDriveUploader();
   MetadataDatabase* GetMetadataDatabase();
-  RemoteChangeProcessor* GetRemoteChangeProcessor();
-  base::SequencedTaskRunner* GetBlockingTaskRunner();
 
  private:
   friend class DriveBackendSyncTest;

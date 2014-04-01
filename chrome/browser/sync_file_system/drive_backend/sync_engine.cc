@@ -463,14 +463,6 @@ MetadataDatabase* SyncEngine::GetMetadataDatabase() {
   return context_->GetMetadataDatabase();
 }
 
-RemoteChangeProcessor* SyncEngine::GetRemoteChangeProcessor() {
-  return context_->GetRemoteChangeProcessor();
-}
-
-base::SequencedTaskRunner* SyncEngine::GetBlockingTaskRunner() {
-  return context_->GetBlockingTaskRunner();
-}
-
 SyncEngine::SyncEngine(const base::FilePath& base_dir,
                        base::SequencedTaskRunner* task_runner,
                        scoped_ptr<drive::DriveServiceInterface> drive_service,
