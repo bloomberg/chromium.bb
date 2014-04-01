@@ -32,12 +32,14 @@ ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(ExecutionContex
 {
     if (context->isDocument()) {
         Document* document = toDocument(context);
+        if (!document->frame())
+            return 0;
+
         ServiceWorkerContainerClient* client = static_cast<ServiceWorkerContainerClient*>(Supplement<Page>::from(document->page(), supplementName()));
         if (client)
             return client;
 
-        // If it's not provided yet create it lazily.
-        ASSERT(document->frame());
+        // If it's not provided yet, create it lazily.
         document->page()->provideSupplement(ServiceWorkerContainerClient::supplementName(), ServiceWorkerContainerClient::create(document->frame()->loader().client()->createServiceWorkerProvider()));
         return static_cast<ServiceWorkerContainerClient*>(Supplement<Page>::from(document->page(), supplementName()));
     }

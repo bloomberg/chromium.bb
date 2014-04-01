@@ -70,6 +70,11 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
     ScriptPromise promise = resolver->promise();
 
+    if (!m_provider) {
+        resolver->reject(DOMError::create(InvalidStateError, "No associated provider is available"));
+        return promise;
+    }
+
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     KURL patternURL = executionContext->completeURL(options.scope);
     if (!documentOrigin->canRequest(patternURL)) {
@@ -93,11 +98,15 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
     ScriptPromise promise = resolver->promise();
 
+    if (!m_provider) {
+        resolver->reject(DOMError::create(InvalidStateError, "No associated provider is available"));
+        return promise;
+    }
+
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     KURL patternURL = executionContext->completeURL(pattern);
     if (!pattern.isEmpty() && !documentOrigin->canRequest(patternURL)) {
         resolver->reject(DOMError::create(SecurityError, "Can only unregister for patterns in the document's origin."));
-
         return promise;
     }
 
@@ -106,10 +115,15 @@ ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* 
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContext)
-    : m_provider(ServiceWorkerContainerClient::from(executionContext)->provider())
+    : m_provider(0)
 {
     ScriptWrappable::init(this);
-    m_provider->setClient(this);
+
+    if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext)) {
+        m_provider = client->provider();
+        if (m_provider)
+            m_provider->setClient(this);
+    }
 }
 
 } // namespace WebCore

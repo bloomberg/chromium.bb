@@ -53,8 +53,10 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(ExecutionContext* 
 
 void NavigatorServiceWorker::willDetachGlobalObjectFromFrame()
 {
-    m_serviceWorker->detachClient();
-    m_serviceWorker = nullptr;
+    if (m_serviceWorker) {
+        m_serviceWorker->detachClient();
+        m_serviceWorker = nullptr;
+    }
 }
 
 } // namespace WebCore
