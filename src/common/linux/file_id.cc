@@ -48,9 +48,7 @@
 
 namespace google_breakpad {
 
-FileID::FileID(const char* path) {
-  strncpy(path_, path, sizeof(path_));
-}
+FileID::FileID(const char* path) : path_(path) {}
 
 // ELF note name and desc are 32-bits word padded.
 #define NOTE_PADDING(a) ((a + 3) & ~3)
@@ -150,7 +148,7 @@ bool FileID::ElfFileIdentifierFromMappedFile(const void* base,
 }
 
 bool FileID::ElfFileIdentifier(uint8_t identifier[kMDGUIDSize]) {
-  MemoryMappedFile mapped_file(path_);
+  MemoryMappedFile mapped_file(path_.c_str());
   if (!mapped_file.data())  // Should probably check if size >= ElfW(Ehdr)?
     return false;
 
