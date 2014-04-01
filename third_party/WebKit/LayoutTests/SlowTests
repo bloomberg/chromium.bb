@@ -137,3 +137,13 @@ crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 
 crbug.com/358313 virtual/gpu/fast/canvas/webgl/webgl-large-texture.html [ Slow ]
+
+crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Slow ]
+
+crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Slow ]
+
+crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow ]
+
+crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
+
+crbug.com/357427 http/tests/workers/terminate-during-sync-operation.html [ Slow ]

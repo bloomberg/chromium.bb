@@ -606,10 +606,10 @@ crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-p
 crbug.com/334269 [ Mac ] fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
 crbug.com/298188 [ Win ] virtual/implsidepainting/inspector/timeline [ Skip ]
-crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass Slow ]
+crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass ]
 # Test results depends on image caching behavior in Blink/Skia. This is being
 # worked on actively. Rebaseline after impl-side painting becomes stable.
-crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass Slow ]
+crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass ]
 crbug.com/298188 [ Linux Debug ] virtual/implsidepainting/inspector/timeline/timeline-dom-content-loaded-event.html [ Pass Crash ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
@@ -690,7 +690,6 @@ crbug.com/312613 fast/canvas/canvas-blending-pattern-over-gradient.html [ Pass T
 crbug.com/313217 fast/dom/node-iterator-document-moved-crash.html [ Crash Pass ]
 crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
-crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass Timeout ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
@@ -777,8 +776,6 @@ crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video
 
 # ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
 crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
-
-crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
 
 crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFailure ]
 
@@ -951,7 +948,7 @@ crbug.com/357085 [ Win Debug ] virtual/threaded/animations/unanimated-style.html
 crbug.com/357088 [ Debug ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357088 [ Linux Release ] web-animations-api/timeline-updates-players.html [ Failure Pass ]
 crbug.com/357097 editing/context-menu-leak-document.html [ Failure ]
-crbug.com/357427 http/tests/workers/terminate-during-sync-operation.html [ Crash Pass Slow Timeout ]
+crbug.com/357427 http/tests/workers/terminate-during-sync-operation.html [ Crash Pass Timeout ]
 crbug.com/357437 web-animations-api/change-in-animation-frame.html [ Failure Pass ]
 crbug.com/357438 [ Mac Win ] compositing/plugins/invalidate_rect.html [ Failure Pass ]
 crbug.com/357438 [ Win ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure Pass ]
