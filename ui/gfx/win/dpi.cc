@@ -210,9 +210,17 @@ Rect ScreenToDIPRect(const Rect& pixel_bounds) {
 }
 
 Rect DIPToScreenRect(const Rect& dip_bounds) {
-  // TODO(kevers): Switch to non-deprecated method for float to int conversions.
-  return ToFlooredRectDeprecated(
-      ScaleRect(dip_bounds, GetDeviceScaleFactor()));
+  // We scale the origin by the scale factor and round up via ceil. This
+  // ensures that we get the original logical origin back when we scale down.
+  // We round the size down after scaling. It may be better to round this up
+  // on the same lines as the origin.
+  // TODO(ananta)
+  // Investigate if rounding size up on the same lines as origin is workable.
+  return gfx::Rect(
+      gfx::ToCeiledPoint(gfx::ScalePoint(
+          dip_bounds.origin(), GetDeviceScaleFactor())),
+      gfx::ToFlooredSize(gfx::ScaleSize(
+          dip_bounds.size(), GetDeviceScaleFactor())));
 }
 
 Size ScreenToDIPSize(const Size& size_in_pixels) {
