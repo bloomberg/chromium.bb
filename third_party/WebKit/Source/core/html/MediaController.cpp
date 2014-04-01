@@ -176,6 +176,7 @@ void MediaController::setCurrentTime(double time, ExceptionState& exceptionState
     time = min(time, duration());
 
     // Set the media controller position to the new playback position.
+    m_position = time;
     m_clock->setCurrentTime(time);
 
     // Seek each slaved media element to the new playback position relative to the media element timeline.
