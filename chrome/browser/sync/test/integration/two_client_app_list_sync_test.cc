@@ -470,6 +470,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   EXPECT_EQ(sync_pb::AppListSpecifics::TYPE_APP, sync_item->item_type);
 }
 
+#if !defined(OS_MACOSX)
+
 class TwoClientAppListSyncFolderTest : public TwoClientAppListSyncTest {
  public:
   TwoClientAppListSyncFolderTest() {}
@@ -568,3 +570,5 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncFolderTest, FolderAddRemove) {
   ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameAppListAsVerifier());
 }
+
+#endif  // !defined(OS_MACOSX)

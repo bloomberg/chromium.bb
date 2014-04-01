@@ -31,7 +31,11 @@ const char kEnableHotwordAlwaysOn[] = "enable-app-list-hotword-always-on";
 
 // Folder UI is enabled by default.
 bool IsFolderUIEnabled() {
+#if !defined(OS_MACOSX)
   return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableFolderUI);
+#else
+  return false;
+#endif
 }
 
 bool IsVoiceSearchEnabled() {

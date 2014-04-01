@@ -263,14 +263,18 @@ void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
     return;  // Item is not valid.
 
   std::string folder_id;
-  if (AppIsOem(app_item->id())) {
-    folder_id = FindOrCreateOemFolder();
-    DVLOG(1) << this << ": AddItem to OEM folder: " << sync_item->ToString();
-  } else {
-    folder_id = sync_item->parent_id;
-    DVLOG(1) << this << ": AddItem: " << sync_item->ToString()
-             << " Folder: '" << folder_id << "'";
+  if (app_list::switches::IsFolderUIEnabled()) {
+    if (AppIsOem(app_item->id())) {
+      folder_id = FindOrCreateOemFolder();
+      DVLOG(1) << this << ": AddItem to OEM folder: " << sync_item->ToString();
+    } else {
+      folder_id = sync_item->parent_id;
+      DVLOG(1) << this << ": AddItem: " << sync_item->ToString()
+               << " Folder: '" << folder_id << "'";
+    }
   }
+  DVLOG(1) << this << ": AddItem: " << sync_item->ToString()
+           << "Folder: '" << folder_id << "'";
   model_->AddItemToFolder(app_item.Pass(), folder_id);
 }
 
@@ -377,6 +381,8 @@ void AppListSyncableService::RemoveItem(const std::string& id) {
 
 void AppListSyncableService::UpdateItem(AppListItem* app_item) {
   // Check to see if the item needs to be moved to/from the OEM folder.
+  if (!app_list::switches::IsFolderUIEnabled())
+    return;
   bool is_oem = AppIsOem(app_item->id());
   if (!is_oem && app_item->folder_id() == kOemFolderId)
     model_->MoveItemToFolder(app_item, "");
