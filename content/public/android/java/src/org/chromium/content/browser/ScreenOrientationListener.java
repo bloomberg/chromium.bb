@@ -19,6 +19,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 /**
  * ScreenOrientationListener is a class that informs its observers when the
@@ -250,6 +251,8 @@ public class ScreenOrientationListener {
     private void notifyObservers() {
         int previousOrientation = mOrientation;
         updateOrientation();
+
+        DeviceDisplayInfo.create(mAppContext).updateNativeSharedDisplayInfo();
 
         if (mOrientation == previousOrientation) {
             return;

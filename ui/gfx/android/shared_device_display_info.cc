@@ -113,8 +113,8 @@ SharedDeviceDisplayInfo::SharedDeviceDisplayInfo()
       smallest_dip_width_(0) {
   JNIEnv* env = base::android::AttachCurrentThread();
   j_device_info_.Reset(
-      Java_DeviceDisplayInfo_createWithListener(env,
-          base::android::GetApplicationContext()));
+      Java_DeviceDisplayInfo_create(
+          env, base::android::GetApplicationContext()));
   UpdateDisplayInfo(env, j_device_info_.obj(),
       Java_DeviceDisplayInfo_getDisplayHeight(env, j_device_info_.obj()),
       Java_DeviceDisplayInfo_getDisplayWidth(env, j_device_info_.obj()),
