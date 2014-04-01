@@ -180,7 +180,15 @@ base::string16 MatchBackground(const char* title) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX,
                                     base::ASCIIToUTF16(title));
 }
+
 base::string16 MatchAnyBackground() { return MatchBackground("*"); }
+
+base::string16 MatchPrint(const char* title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRINT_PREFIX,
+                                    base::ASCIIToUTF16(title));
+}
+
+base::string16 MatchAnyPrint() { return MatchPrint("*"); }
 
 }  // namespace browsertest_util
 }  // namespace task_manager

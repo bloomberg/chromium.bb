@@ -361,6 +361,13 @@ WebContents* PrintPreviewDialogController::GetInitiator(
   return NULL;
 }
 
+void PrintPreviewDialogController::ForEachPreviewDialog(
+    base::Callback<void(content::WebContents*)> callback) {
+  for (size_t i = 0; i < preview_operations_.size(); ++i) {
+    callback.Run(preview_operations_[i]->preview_dialog);
+  }
+}
+
 // static
 bool PrintPreviewDialogController::IsPrintPreviewDialog(WebContents* contents) {
   return IsPrintPreviewURL(contents->GetURL());

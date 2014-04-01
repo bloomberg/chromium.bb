@@ -33,6 +33,8 @@ base::string16 MatchWebView(const char* title);     // "WebView: " + title
 base::string16 MatchAnyWebView();                   // "WebView: *"
 base::string16 MatchBackground(const char* title);  // "Background: " + title
 base::string16 MatchAnyBackground();                // "Background: *"
+base::string16 MatchPrint(const char* title);       // "Print: " + title
+base::string16 MatchAnyPrint();                     // "Print: *"
 
 }  // namespace browsertest_util
 }  // namespace task_manager

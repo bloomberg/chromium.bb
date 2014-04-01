@@ -2535,6 +2535,8 @@
         'browser/task_manager/notification_resource_provider.h',
         'browser/task_manager/panel_information.cc',
         'browser/task_manager/panel_information.h',
+        'browser/task_manager/printing_information.cc',
+        'browser/task_manager/printing_information.h',
         'browser/task_manager/renderer_resource.cc',
         'browser/task_manager/renderer_resource.h',
         'browser/task_manager/resource_provider.cc',
@@ -3247,6 +3249,7 @@
         ['enable_printing==0', {
           'sources/': [
             ['exclude', '^browser/printing/'],
+            ['exclude', '^browser/task_manager/printing_information.cc'],
           ],
         }],
         ['enable_printing==1', {
@@ -3263,6 +3266,7 @@
             ['exclude', '^browser/printing/print_view_manager.cc'],
             ['exclude', '^browser/printing/print_view_manager.h'],
             ['exclude', '^browser/printing/printer_manager_dialog.*'],
+            ['exclude', '^browser/task_manager/printing_information.cc'],
           ],
         }],
         ['enable_captive_portal_detection!=1', {

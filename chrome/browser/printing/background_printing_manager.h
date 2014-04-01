@@ -22,7 +22,7 @@ namespace printing {
 
 // Manages hidden WebContents that prints documents in the background.
 // The hidden WebContents are no longer part of any Browser / TabStripModel.
-// The WebContents started life as a ConstrainedPrintPreview dialog.
+// The WebContents started life as a ConstrainedWebDialog.
 // They get deleted when the printing finishes.
 class BackgroundPrintingManager : public base::NonThreadSafe,
                                   public content::NotificationObserver {

@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sessions/session_id.h"
 
@@ -51,6 +53,10 @@ class PrintPreviewDialogController
   // Returns the initiator for |preview_dialog|.
   // Returns NULL if no initiator exists for |preview_dialog|.
   content::WebContents* GetInitiator(content::WebContents* preview_dialog);
+
+  // Run |callback| on the dialog of each active print preview operation.
+  void ForEachPreviewDialog(
+      base::Callback<void(content::WebContents*)> callback);
 
   // Returns true if |contents| is a print preview dialog.
   static bool IsPrintPreviewDialog(content::WebContents* contents);

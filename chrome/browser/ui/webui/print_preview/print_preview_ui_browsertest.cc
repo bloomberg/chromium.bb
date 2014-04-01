@@ -8,8 +8,10 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -27,6 +29,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #endif
+
+using task_manager::browsertest_util::MatchAboutBlankTab;
+using task_manager::browsertest_util::MatchAnyPrint;
+using task_manager::browsertest_util::MatchAnyTab;
+using task_manager::browsertest_util::MatchPrint;
+using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 namespace {
 
@@ -77,6 +85,34 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, PrintCommands) {
 
   // Make sure advanced print command (Ctrl+Shift+p) is enabled.
   ASSERT_TRUE(chrome::IsCommandEnabled(browser(), IDC_ADVANCED_PRINT));
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewTest, TaskManagerNewPrintPreview) {
+  chrome::ShowTaskManager(browser());  // Show task manager BEFORE print dialog.
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyPrint()));
+
+  // Create the print preview dialog.
+  Print();
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyPrint()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchPrint("about:blank")));
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewTest, TaskManagerExistingPrintPreview) {
+  // Create the print preview dialog.
+  Print();
+
+  chrome::ShowTaskManager(browser());  // Show task manager AFTER print dialog.
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyPrint()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchPrint("about:blank")));
 }
 
 #if defined(OS_WIN)

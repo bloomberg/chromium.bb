@@ -34,10 +34,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(ENABLE_FULL_PRINTING)
-#include "chrome/browser/printing/background_printing_manager.h"
-#endif
-
 using content::WebContents;
 using extensions::Extension;
 
@@ -52,22 +48,11 @@ bool IsContentsPrerendering(WebContents* web_contents) {
          prerender_manager->IsWebContentsPrerendering(web_contents, NULL);
 }
 
-bool IsContentsBackgroundPrinted(WebContents* web_contents) {
-#if defined(ENABLE_FULL_PRINTING)
-  printing::BackgroundPrintingManager* printing_manager =
-      g_browser_process->background_printing_manager();
-  return printing_manager->HasPrintPreviewDialog(web_contents);
-#else
-  return false;
-#endif
-}
-
 }  // namespace
 
 namespace task_manager {
 
-// Tracks a single tab contents, prerendered page, Instant page, or background
-// printing page.
+// Tracks a single tab contents, prerendered page, or Instant page.
 class TabContentsResource : public RendererResource {
  public:
   explicit TabContentsResource(content::WebContents* web_contents);
@@ -192,7 +177,7 @@ void TabContentsResourceProvider::StartUpdating() {
 
   // The contents that are tracked by this resource provider are those that
   // are tab contents (WebContents serving as a tab in a Browser), Instant
-  // pages, prerender pages, and background printed pages.
+  // pages, and prerender pages.
 
   // Add all the existing WebContentses.
   for (TabContentsIterator iterator; !iterator.done(); iterator.Next()) {
@@ -216,19 +201,6 @@ void TabContentsResourceProvider::StartUpdating() {
         Add(contentses[j]);
     }
   }
-
-#if defined(ENABLE_FULL_PRINTING)
-  // Add all the pages being background printed.
-  printing::BackgroundPrintingManager* printing_manager =
-      g_browser_process->background_printing_manager();
-  std::set<content::WebContents*> printing_contents =
-      printing_manager->CurrentContentSet();
-  for (std::set<content::WebContents*>::iterator i =
-           printing_contents.begin();
-       i != printing_contents.end(); ++i) {
-    Add(*i);
-  }
-#endif
 
   // Then we register for notifications to get new web contents.
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,
@@ -269,10 +241,9 @@ void TabContentsResourceProvider::Add(WebContents* web_contents) {
 
   // The contents that are tracked by this resource provider are those that
   // are tab contents (WebContents serving as a tab in a Browser), Instant
-  // pages, prerender pages, and background printed pages.
+  // pages, or prerender pages.
   if (!chrome::FindBrowserWithWebContents(web_contents) &&
       !IsContentsPrerendering(web_contents) &&
-      !IsContentsBackgroundPrinted(web_contents) &&
       !DevToolsWindow::IsDevToolsWindow(web_contents->GetRenderViewHost())) {
     return;
   }
