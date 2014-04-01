@@ -884,7 +884,8 @@ class StartupWatchDogThread : public base::Watchdog {
 #ifndef NDEBUG
     DCHECK(false);
 #else
-    base::debug::DumpWithoutCrashing();
+    WatchDogThread::PostTask(FROM_HERE,
+                             base::Bind(&base::debug::DumpWithoutCrashing));
 #endif
   }
 
