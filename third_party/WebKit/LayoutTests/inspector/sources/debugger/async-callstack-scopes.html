@@ -67,10 +67,10 @@ function test()
 
     function step2()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
-    function didPaused()
+    function didPause()
     {
         var callStackPane = WebInspector.inspectorView.currentPanel().sidebarPanes.callstack;
         var scopeChainPane = WebInspector.inspectorView.currentPanel().sidebarPanes.scopechain;

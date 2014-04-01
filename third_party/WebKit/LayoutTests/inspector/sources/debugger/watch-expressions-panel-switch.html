@@ -45,10 +45,10 @@ var test = function()
         InspectorTest.addSniffer(WebInspector.WatchExpressionsSection.prototype, "update", watchExpressionsUpdated);
         // Switch to another panel to test how watch expressions evaluation together with panel switching.
         WebInspector.inspectorView.showPanel("network");
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
-    function didPaused(callFrames)
+    function didPause(callFrames)
     {
     }
 

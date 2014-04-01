@@ -114,17 +114,17 @@ var test = function()
 
     function step2()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     function resumeExecution()
     {
-        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
+        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
     }
 
     var step = 0;
     var callStacksOutput = [];
-    function didPaused(callFrames, reason, breakpointIds, asyncStackTrace)
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
         ++step;
         if (step === 1) {

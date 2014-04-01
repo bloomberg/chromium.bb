@@ -67,7 +67,7 @@ var test = function()
 
     function step5(callFrames)
     {
-        if (callFrames[0].location.lineNumber !== 9) {
+        if (callFrames[0].location().lineNumber !== 9) {
             InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(null, step5));
             return;
         }
@@ -168,7 +168,7 @@ var test = function()
 
     function step5(callFrames)
     {
-        if (callFrames[0].location.lineNumber !== 9) {
+        if (callFrames[0].location().lineNumber !== 9) {
             InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(null, step5));
             return;
         }

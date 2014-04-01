@@ -5,9 +5,8 @@ Debugger was enabled.
 Script source was shown.
 Script execution paused.
 Call stack:
-    0) Function ((internal script):(line number))
-    1) throwException (debugger-pause-in-internal.html:9)
-    2) handleClick (debugger-pause-in-internal.html:14)
+    0) throwException (debugger-pause-in-internal.html:9)
+    1) handleClick (debugger-pause-in-internal.html:14)
 Script execution resumed.
 Debugger was disabled.
 

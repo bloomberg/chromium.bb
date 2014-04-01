@@ -167,9 +167,8 @@ Call stack:
     [setTimeout]
     0) promiseCallback (async-callstack-promises.html:21)
     1) timeoutPromise (async-callstack-promises.html:9)
-    2) map ((internal script):(line number))
-    3) doTestPromiseAll (async-callstack-promises.html:103)
-    4) testFunctionTimeout (async-callstack-promises.html:50)
+    2) doTestPromiseAll (async-callstack-promises.html:103)
+    3) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
 

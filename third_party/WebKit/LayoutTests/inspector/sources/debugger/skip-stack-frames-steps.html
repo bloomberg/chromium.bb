@@ -61,17 +61,17 @@ function test()
 
     function step2()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     var step = 0;
     var stepInCount = 0;
-    function didPaused(callFrames, reason, breakpointIds, asyncStackTrace)
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
         if (stepInCount < 2) {
             ++stepInCount;
             WebInspector.panels.sources._stepIntoButton.element.click();
-            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
+            InspectorTest.waitUntilResumed(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
             return;
         }
 
@@ -79,7 +79,7 @@ function test()
         InspectorTest.captureStackTrace(callFrames);
         InspectorTest.addResult("");
         if (++step < totalDebuggerStatements)
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
+            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
         else
             InspectorTest.completeDebuggerTest();
     }

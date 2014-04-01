@@ -44,10 +44,10 @@ var test = function()
         InspectorTest.addResult("Script source was shown.");
         InspectorTest.setBreakpoint(currentSourceFrame, 9, "", true);
         InspectorTest.addSniffer(WebInspector.WatchExpressionsSection.prototype, "update", watchExpressionsUpdated);
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
-    function didPaused(callFrames)
+    function didPause(callFrames)
     {
     }
 

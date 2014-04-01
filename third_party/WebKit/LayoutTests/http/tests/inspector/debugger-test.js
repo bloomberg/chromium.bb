@@ -95,17 +95,17 @@ InspectorTest.runAsyncCallStacksTest = function(totalDebuggerStatements, maxAsyn
 
     function step2()
     {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
     var step = 0;
     var callStacksOutput = [];
-    function didPaused(callFrames, reason, breakpointIds, asyncStackTrace)
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
     {
         ++step;
         callStacksOutput.push(InspectorTest.captureStackTraceIntoString(callFrames, asyncStackTrace) + "\n");
         if (step < totalDebuggerStatements) {
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
+            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
         } else {
             InspectorTest.addResult("Captured call stacks in no particular order:");
             callStacksOutput.sort();
@@ -166,20 +166,20 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
     {
         for (var i = 0; i < callFrames.length; i++) {
             var frame = callFrames[i];
-            var script = WebInspector.debuggerModel.scriptForId(frame.location.scriptId);
+            var script = WebInspector.debuggerModel.scriptForId(frame.location().scriptId);
             var url;
             var lineNumber;
             if (script) {
                 url = WebInspector.displayNameForURL(script.sourceURL);
-                lineNumber = frame.location.lineNumber + 1;
+                lineNumber = frame.location().lineNumber + 1;
             } else {
                 url = "(internal script)";
                 lineNumber = "(line number)";
             }
             var s = "    " + i + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
             results.push(s);
-            if (options.printReturnValue && frame.returnValue)
-                results.push("       <return>: " + frame.returnValue.description);
+            if (options.printReturnValue && frame.returnValue())
+                results.push("       <return>: " + frame.returnValue().description);
         }
     }
 
@@ -188,7 +188,7 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
 
     while (asyncStackTrace) {
         results.push("    [" + (asyncStackTrace.description || "Async Call") + "]");
-        printCallFrames(asyncStackTrace.callFrames);
+        printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), asyncStackTrace.callFrames));
         if (asyncStackTrace.callFrames.peekLast().functionName === "testFunction")
             break;
         asyncStackTrace = asyncStackTrace.asyncStackTrace;
@@ -209,7 +209,7 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    InspectorTest._pausedScriptArguments = [callFrames, reason, breakpointIds, asyncStackTrace];
+    InspectorTest._pausedScriptArguments = [WebInspector.DebuggerModel.CallFrame.fromPayloadArray(WebInspector.targetManager.activeTarget(), callFrames), reason, breakpointIds, asyncStackTrace];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
         delete InspectorTest._waitUntilPausedCallback;
@@ -364,7 +364,7 @@ InspectorTest.createScriptMock = function(url, startLine, startColumn, isContent
     var endLine = startLine + lineCount - 1;
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.lineEndings()[lineCount - 2];
     var hasSourceURL = !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m) || !!source.match(/\/\/@\ssourceURL=\s*(\S*?)\s*$/m);
-    var script = new WebInspector.Script(scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
+    var script = new WebInspector.Script(WebInspector.targetManager.activeTarget(), scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
     script.requestContent = function(callback)
     {
         var trimmedSource = WebInspector.Script._trimSourceURLComment(source);

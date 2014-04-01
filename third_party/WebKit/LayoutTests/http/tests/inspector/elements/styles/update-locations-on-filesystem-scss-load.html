@@ -62,13 +62,14 @@ function test()
     InspectorTest.createWorkspace();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
     cssModel = new WebInspector.CSSStyleModel(WebInspector.targetManager.activeTarget(), InspectorTest.testWorkspace);
+    WebInspector.targetManager.activeTarget().cssModel = cssModel;
     new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
 
     var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), "resources/");
     var namePrefix = "update-locations-on-filesystem-scss-load."
     var cssURL = resourcesURL + namePrefix + "css";
     var scssURL = resourcesURL + namePrefix + "scss";
-    var cssLocation = new WebInspector.CSSLocation(cssURL, 0, 1);
+    var cssLocation = new WebInspector.CSSLocation(WebInspector.targetManager.activeTarget(), cssURL, 0, 1);
     var scssContent =
         ["a {",
         "  foo: bar;",
@@ -96,7 +97,7 @@ function test()
     addMockHeader(cssURL, cssURL + ".map");
     InspectorTest.addResult("Adding network resource.");
     InspectorTest.addMockUISourceCodeToWorkspace(cssURL, WebInspector.resourceTypes.Stylesheet, cssContent);
-    liveLocation = cssModel.createLiveLocation("1", cssLocation, updateDelegate);
+    liveLocation = cssLocation.createLiveLocation("1", updateDelegate);
     dumpLiveLocation();
 
     InspectorTest.addResult("Adding filesystem SCSS.");

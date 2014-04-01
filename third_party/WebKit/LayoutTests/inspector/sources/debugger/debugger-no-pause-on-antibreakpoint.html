@@ -47,7 +47,7 @@ var test = function()
     {
         InspectorTest.captureStackTrace(callFrames);
         
-        var exceptionLocation = callFrames[0].location;
+        var exceptionLocation = callFrames[0].location();
         DebuggerAgent.setBreakpointByUrl(exceptionLocation.lineNumber, undefined, scriptFileName,
                                          exceptionLocation.columnNumber, undefined, true, undefined);
 
