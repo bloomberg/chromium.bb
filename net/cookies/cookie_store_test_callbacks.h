@@ -48,20 +48,24 @@ class CookieCallback {
 
 // Callback implementations for the asynchronous CookieStore methods.
 
-class BoolResultCookieCallback : public CookieCallback {
+template <typename T>
+class ResultSavingCookieCallback : public CookieCallback {
  public:
-  BoolResultCookieCallback();
-  explicit BoolResultCookieCallback(base::Thread* run_in_thread);
+  ResultSavingCookieCallback() {
+  }
+  explicit ResultSavingCookieCallback(base::Thread* run_in_thread)
+      : CookieCallback(run_in_thread) {
+  }
 
-  void Run(bool result) {
+  void Run(T result) {
     result_ = result;
     CallbackEpilogue();
   }
 
-  bool result() { return result_; }
+  const T& result() { return result_; }
 
  private:
-  bool result_;
+  T result_;
 };
 
 class StringResultCookieCallback : public CookieCallback {
@@ -78,22 +82,6 @@ class StringResultCookieCallback : public CookieCallback {
 
  private:
   std::string result_;
-};
-
-class IntResultCookieCallback : public CookieCallback {
- public:
-  IntResultCookieCallback();
-  explicit IntResultCookieCallback(base::Thread* run_in_thread);
-
-  void Run(int result) {
-    result_ = result;
-    CallbackEpilogue();
-  }
-
-  int result() { return result_; }
-
- private:
-  int result_;
 };
 
 class NoResultCookieCallback : public CookieCallback {

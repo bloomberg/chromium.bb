@@ -118,11 +118,12 @@ class CookieStoreTest : public testing::Test {
                             const std::string& cookie_line,
                             const CookieOptions& options) {
     DCHECK(cs);
-    BoolResultCookieCallback callback;
+    ResultSavingCookieCallback<bool> callback;
     cs->SetCookieWithOptionsAsync(
         url, cookie_line, options,
-        base::Bind(&BoolResultCookieCallback::Run,
-                   base::Unretained(&callback)));
+        base::Bind(
+            &ResultSavingCookieCallback<bool>::Run,
+            base::Unretained(&callback)));
     RunFor(kTimeout);
     EXPECT_TRUE(callback.did_run());
     return callback.result();
@@ -164,10 +165,12 @@ class CookieStoreTest : public testing::Test {
                             const base::Time& delete_begin,
                             const base::Time& delete_end) {
     DCHECK(cs);
-    IntResultCookieCallback callback;
+    ResultSavingCookieCallback<int> callback;
     cs->DeleteAllCreatedBetweenAsync(
         delete_begin, delete_end,
-        base::Bind(&IntResultCookieCallback::Run, base::Unretained(&callback)));
+        base::Bind(
+            &ResultSavingCookieCallback<int>::Run,
+            base::Unretained(&callback)));
     RunFor(kTimeout);
     EXPECT_TRUE(callback.did_run());
     return callback.result();
@@ -178,10 +181,12 @@ class CookieStoreTest : public testing::Test {
                                      const base::Time delete_end,
                                      const GURL& url) {
     DCHECK(cs);
-    IntResultCookieCallback callback;
+    ResultSavingCookieCallback<int> callback;
     cs->DeleteAllCreatedBetweenForHostAsync(
         delete_begin, delete_end, url,
-        base::Bind(&IntResultCookieCallback::Run, base::Unretained(&callback)));
+        base::Bind(
+            &ResultSavingCookieCallback<int>::Run,
+            base::Unretained(&callback)));
     RunFor(kTimeout);
     EXPECT_TRUE(callback.did_run());
     return callback.result();
@@ -189,9 +194,11 @@ class CookieStoreTest : public testing::Test {
 
   int DeleteSessionCookies(CookieStore* cs) {
     DCHECK(cs);
-    IntResultCookieCallback callback;
+    ResultSavingCookieCallback<int> callback;
     cs->DeleteSessionCookiesAsync(
-        base::Bind(&IntResultCookieCallback::Run, base::Unretained(&callback)));
+        base::Bind(
+            &ResultSavingCookieCallback<int>::Run,
+            base::Unretained(&callback)));
     RunFor(kTimeout);
     EXPECT_TRUE(callback.did_run());
     return callback.result();
@@ -1052,10 +1059,12 @@ class MultiThreadedCookieStoreTest :
                                 const GURL& url,
                                 const std::string& cookie_line,
                                 const CookieOptions& options,
-                                BoolResultCookieCallback* callback) {
+                                ResultSavingCookieCallback<bool>* callback) {
     cs->SetCookieWithOptionsAsync(
         url, cookie_line, options,
-        base::Bind(&BoolResultCookieCallback::Run, base::Unretained(callback)));
+        base::Bind(
+            &ResultSavingCookieCallback<bool>::Run,
+            base::Unretained(callback)));
   }
 
   void DeleteCookieTask(CookieStore* cs,
@@ -1068,9 +1077,11 @@ class MultiThreadedCookieStoreTest :
   }
 
     void DeleteSessionCookiesTask(CookieStore* cs,
-                                  IntResultCookieCallback* callback) {
+                                  ResultSavingCookieCallback<int>* callback) {
     cs->DeleteSessionCookiesAsync(
-        base::Bind(&IntResultCookieCallback::Run, base::Unretained(callback)));
+        base::Bind(
+            &ResultSavingCookieCallback<int>::Run,
+            base::Unretained(callback)));
   }
 
  protected:
@@ -1128,7 +1139,7 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckSetCookieWithOptions) {
     options.set_include_httponly();
   EXPECT_TRUE(
       this->SetCookieWithOptions(cs.get(), this->url_google_, "A=B", options));
-  BoolResultCookieCallback callback(&this->other_thread_);
+  ResultSavingCookieCallback<bool> callback(&this->other_thread_);
   base::Closure task = base::Bind(
       &net::MultiThreadedCookieStoreTest<TypeParam>::SetCookieWithOptionsTask,
       base::Unretained(this),
@@ -1173,7 +1184,7 @@ TYPED_TEST_P(MultiThreadedCookieStoreTest, ThreadCheckDeleteSessionCookies) {
   EXPECT_EQ(0, this->DeleteSessionCookies(cs.get()));
   EXPECT_TRUE(
       this->SetCookieWithOptions(cs.get(), this->url_google_, "A=B", options));
-  IntResultCookieCallback callback(&this->other_thread_);
+  ResultSavingCookieCallback<int> callback(&this->other_thread_);
   base::Closure task = base::Bind(
       &net::MultiThreadedCookieStoreTest<TypeParam>::DeleteSessionCookiesTask,
       base::Unretained(this),
