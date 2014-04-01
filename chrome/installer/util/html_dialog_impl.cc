@@ -54,9 +54,8 @@ class HTMLDialogWin : public HTMLDialog {
     return static_cast<DialogResult>(result);
   }
 
-  // TODO(cpu): Not yet implemented.
   virtual std::wstring GetExtraResult() {
-    return std::wstring();
+    return extra_result_;
   }
 
  private:
@@ -68,6 +67,7 @@ class HTMLDialogWin : public HTMLDialog {
   static HHOOK hook_;
   static HINSTANCE mshtml_;
   static CustomizationCallback* callback_;
+  std::wstring extra_result_;
 };
 
 HTMLDialog* CreateNativeHTMLDialog(const std::wstring& url,
@@ -115,7 +115,7 @@ bool HTMLDialogWin::InternalDoDialog(CustomizationCallback* callback,
 
   wchar_t* extra_args = NULL;
   if (callback) {
-    callback->OnBeforeCreation(reinterpret_cast<void**>(&extra_args));
+    callback->OnBeforeCreation(&extra_args);
     // Sets a windows hook for this thread only.
     hook_ = ::SetWindowsHookEx(WH_GETMESSAGE, MsgFilter, NULL,
                                GetCurrentThreadId());
@@ -138,8 +138,13 @@ bool HTMLDialogWin::InternalDoDialog(CustomizationCallback* callback,
                                 &v_result);
   url_moniker->Release();
 
-  if (v_result.vt == VT_I4)
+  if (v_result.vt == VT_I4) {
     *result = v_result.intVal;
+  } else if (v_result.vt == VT_BSTR) {
+    *result = HTML_DLG_EXTRA;
+    extra_result_.assign(v_result.bstrVal, SysStringLen(v_result.bstrVal));
+  }
+
   ::VariantClear(&v_result);
 
   if (hook_) {
@@ -152,7 +157,7 @@ bool HTMLDialogWin::InternalDoDialog(CustomizationCallback* callback,
 
 // EulaHTMLDialog implementation ---------------------------------------------
 
-void EulaHTMLDialog::Customizer::OnBeforeCreation(void** extra) {
+void EulaHTMLDialog::Customizer::OnBeforeCreation(wchar_t** extra) {
 }
 
 // The customization of the window consists in removing the close button and

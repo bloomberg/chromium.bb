@@ -34,7 +34,7 @@ class HTMLDialog {
    public:
     // Called before the native window is created. Use it to pass arbitrary
     // parameters in |extra| to the rendering engine.
-    virtual void OnBeforeCreation(void** extra) = 0;
+    virtual void OnBeforeCreation(wchar_t** extra) = 0;
     // The native window has been created and is about to be visible. Use it
     // to customize the native |window| appearance.
     virtual void OnBeforeDisplay(void* window) = 0;
@@ -60,7 +60,8 @@ class HTMLDialog {
 // Factory method for the native HTML Dialog. When done with the object use
 // regular 'delete' operator to destroy the object. It might choose a
 // different underlying implementation according to the url protocol.
-HTMLDialog* CreateNativeHTMLDialog(const std::wstring& url);
+HTMLDialog* CreateNativeHTMLDialog(const std::wstring& url,
+                                   const std::wstring& param);
 
 // This class leverages HTMLDialog to create a dialog that is suitable
 // for a end-user-agreement modal dialog. The html shows a fairly standard
@@ -87,7 +88,7 @@ class EulaHTMLDialog {
  private:
   class Customizer : public HTMLDialog::CustomizationCallback {
    public:
-    virtual void OnBeforeCreation(void** extra);
+    virtual void OnBeforeCreation(wchar_t** extra);
     virtual void OnBeforeDisplay(void* window);
   };
 
