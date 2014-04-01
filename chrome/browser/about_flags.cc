@@ -1846,7 +1846,16 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_DESCRIPTION,
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableSavePasswordBubble)
+  },
+#if defined(GOOGLE_CHROME_BUILD)
+  {
+    "enable-easy-unlock",
+    IDS_FLAGS_ENABLE_EASY_UNLOCK_NAME,
+    IDS_FLAGS_ENABLE_EASY_UNLOCK_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(switches::kEnableEasyUnlock)
   }
+#endif
 };
 
 const Experiment* experiments = kExperiments;

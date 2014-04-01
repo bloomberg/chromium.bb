@@ -577,6 +577,20 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if !defined(OS_CHROMEOS)  // http://crbug.com/314799
   AddNetworkSpeechSynthesisExtension();
 #endif
+
+  if (command_line->HasSwitch(switches::kEnableEasyUnlock)) {
+    if (command_line->HasSwitch(switches::kEasyUnlockAppPath)) {
+      base::FilePath easy_unlock_path(
+          command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath));
+      Add(IDR_EASY_UNLOCK_MANIFEST, easy_unlock_path);
+    } else {
+#if defined(OS_CHROMEOS)
+      Add(IDR_EASY_UNLOCK_MANIFEST,
+          base::FilePath(
+              FILE_PATH_LITERAL("/usr/share/chromeos-assets/easy_unlock")));
+#endif
+    }
+  }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 #if defined(ENABLE_PLUGINS)

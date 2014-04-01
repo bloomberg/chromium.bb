@@ -466,6 +466,9 @@ const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 // given file. The file is overwritten if it exists.
 const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
 
+// Overrides the path of Easy Unlock component app.
+extern const char kEasyUnlockAppPath[]      = "easy-unlock-app-path";
+
 // Enables the <adview> tag in packaged apps.
 const char kEnableAdview[]                  = "enable-adview";
 
