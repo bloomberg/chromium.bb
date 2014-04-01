@@ -132,11 +132,8 @@ void TransientWindowManager::OnWindowStackingChanged(Window* window) {
 }
 
 void TransientWindowManager::OnWindowDestroying(Window* window) {
-  // TODO(sky): remove notes after safely landing and baking.
-
   // Removes ourselves from our transient parent (if it hasn't been done by the
   // RootWindow).
-  // NOTE: This use to be done after children where removed, now it is before.
   if (transient_parent_) {
     TransientWindowManager::Get(transient_parent_)->RemoveTransientChild(
         window_);
@@ -145,7 +142,6 @@ void TransientWindowManager::OnWindowDestroying(Window* window) {
   // Destroy transient children, only after we've removed ourselves from our
   // parent, as destroying an active transient child may otherwise attempt to
   // refocus us.
-  // NOTE: this use to be after removed from parent, now its before.
   Windows transient_children(transient_children_);
   STLDeleteElements(&transient_children);
   DCHECK(transient_children_.empty());
