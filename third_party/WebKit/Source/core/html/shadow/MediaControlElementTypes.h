@@ -37,7 +37,6 @@
 namespace WebCore {
 
 class HTMLMediaElement;
-class MediaControllerInterface;
 class MediaControls;
 
 enum MediaControlElementType {
@@ -85,7 +84,6 @@ protected:
 
     MediaControls& mediaControls() const { return m_mediaControls; }
     HTMLMediaElement& mediaElement() const;
-    MediaControllerInterface& mediaControllerInterface() const;
 
     void setDisplayType(MediaControlElementType);
 

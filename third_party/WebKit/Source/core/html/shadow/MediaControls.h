@@ -40,7 +40,6 @@ public:
     static PassRefPtr<MediaControls> create(HTMLMediaElement&);
 
     HTMLMediaElement& mediaElement() const { return m_mediaElement; }
-    MediaControllerInterface& mediaControllerInterface() const;
 
     void reset();
 

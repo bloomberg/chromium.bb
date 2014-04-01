@@ -79,11 +79,6 @@ HTMLMediaElement& MediaControlElement::mediaElement() const
     return mediaControls().mediaElement();
 }
 
-MediaControllerInterface& MediaControlElement::mediaControllerInterface() const
-{
-    return mediaControls().mediaControllerInterface();
-}
-
 void MediaControlElement::hide()
 {
     m_element->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);

@@ -38,6 +38,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/html/MediaController.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/vtt/VTTRegionList.h"
@@ -372,8 +373,12 @@ void MediaControlTimelineElement::defaultEventHandler(Event* event)
         return;
 
     double time = value().toDouble();
-    if (event->type() == EventTypeNames::input && time != mediaControllerInterface().currentTime())
-        mediaControllerInterface().setCurrentTime(time, IGNORE_EXCEPTION);
+    if (event->type() == EventTypeNames::input) {
+        if (mediaElement().controller())
+            mediaElement().controller()->setCurrentTime(time, IGNORE_EXCEPTION);
+        else
+            mediaElement().setCurrentTime(time, IGNORE_EXCEPTION);
+    }
 
     RenderSlider* slider = toRenderSlider(renderer());
     if (slider && slider->inDragMode())

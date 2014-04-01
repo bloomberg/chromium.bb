@@ -163,16 +163,9 @@ bool MediaControls::initializeControls()
     return true;
 }
 
-MediaControllerInterface& MediaControls::mediaControllerInterface() const
-{
-    if (m_mediaElement.controller())
-        return *m_mediaElement.controller();
-    return m_mediaElement;
-}
-
 void MediaControls::reset()
 {
-    double duration = mediaControllerInterface().duration();
+    double duration = mediaElement().duration();
     m_durationDisplay->setInnerText(RenderTheme::theme().formatMediaControlsTime(duration), ASSERT_NO_EXCEPTION);
     m_durationDisplay->setCurrentValue(duration);
 
@@ -180,8 +173,8 @@ void MediaControls::reset()
 
     updateCurrentTimeDisplay();
 
-    m_timeline->setDuration(mediaControllerInterface().duration());
-    m_timeline->setPosition(mediaControllerInterface().currentTime());
+    m_timeline->setDuration(duration);
+    m_timeline->setPosition(mediaElement().currentTime());
 
     if (!mediaElement().hasAudio())
         m_volumeSlider->hide();
@@ -233,7 +226,7 @@ void MediaControls::playbackStarted()
     m_durationDisplay->hide();
 
     updatePlayState();
-    m_timeline->setPosition(mediaControllerInterface().currentTime());
+    m_timeline->setPosition(mediaElement().currentTime());
     updateCurrentTimeDisplay();
 
     if (m_isFullscreen)
@@ -242,7 +235,7 @@ void MediaControls::playbackStarted()
 
 void MediaControls::playbackProgressed()
 {
-    m_timeline->setPosition(mediaControllerInterface().currentTime());
+    m_timeline->setPosition(mediaElement().currentTime());
     updateCurrentTimeDisplay();
 
     if (!m_isMouseOverControls && mediaElement().hasVideo())
@@ -252,7 +245,7 @@ void MediaControls::playbackProgressed()
 void MediaControls::playbackStopped()
 {
     updatePlayState();
-    m_timeline->setPosition(mediaControllerInterface().currentTime());
+    m_timeline->setPosition(mediaElement().currentTime());
     updateCurrentTimeDisplay();
     makeOpaque();
 
@@ -288,8 +281,8 @@ void MediaControls::endScrubbing()
 
 void MediaControls::updateCurrentTimeDisplay()
 {
-    double now = mediaControllerInterface().currentTime();
-    double duration = mediaControllerInterface().duration();
+    double now = mediaElement().currentTime();
+    double duration = mediaElement().duration();
 
     // After seek, hide duration display and show current time.
     if (now > 0) {

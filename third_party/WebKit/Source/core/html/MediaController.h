@@ -30,7 +30,6 @@
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/MediaControllerInterface.h"
 #include "platform/Timer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -43,7 +42,7 @@ class Event;
 class ExceptionState;
 class ExecutionContext;
 
-class MediaController FINAL : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTargetWithInlineData {
+class MediaController FINAL : public RefCounted<MediaController>, public ScriptWrappable, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(MediaController);
 public:
     static PassRefPtr<MediaController> create(ExecutionContext*);
@@ -57,9 +56,9 @@ public:
     PassRefPtr<TimeRanges> seekable() const;
     PassRefPtr<TimeRanges> played();
 
-    virtual double duration() const OVERRIDE;
-    virtual double currentTime() const OVERRIDE;
-    virtual void setCurrentTime(double, ExceptionState&) OVERRIDE;
+    double duration() const;
+    double currentTime() const;
+    void setCurrentTime(double, ExceptionState&);
 
     bool paused() const { return m_paused; }
     void play();

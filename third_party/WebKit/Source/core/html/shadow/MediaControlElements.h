@@ -155,6 +155,8 @@ public:
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
+    // FIXME: An "earliest possible position" will be needed once that concept
+    // is supported by HTMLMediaElement, see https://crbug.com/137275
     void setPosition(double);
     void setDuration(double);
 

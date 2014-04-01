@@ -29,7 +29,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/MediaControllerInterface.h"
 #include "core/html/track/TextTrack.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/vtt/VTTCue.h"
@@ -71,7 +70,7 @@ typedef Vector<CueInterval> CueList;
 // But it can't be until the Chromium WebMediaPlayerClientImpl class is fixed so it
 // no longer depends on typecasting a MediaPlayerClient to an HTMLMediaElement.
 
-class HTMLMediaElement : public Supplementable<HTMLMediaElement>, public HTMLElement, public MediaPlayerClient, public ActiveDOMObject, public MediaControllerInterface
+class HTMLMediaElement : public Supplementable<HTMLMediaElement>, public HTMLElement, public MediaPlayerClient, public ActiveDOMObject
 {
 public:
     static blink::WebMimeRegistry::SupportsType supportsType(const ContentType&, const String& keySystem = String());
@@ -123,9 +122,9 @@ public:
     bool seeking() const;
 
     // playback state
-    virtual double currentTime() const OVERRIDE FINAL;
-    virtual void setCurrentTime(double, ExceptionState&) OVERRIDE FINAL;
-    virtual double duration() const OVERRIDE FINAL;
+    double currentTime() const;
+    void setCurrentTime(double, ExceptionState&);
+    double duration() const;
     bool paused() const;
     double defaultPlaybackRate() const;
     void setDefaultPlaybackRate(double, ExceptionState&);
