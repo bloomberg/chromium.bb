@@ -359,9 +359,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_layerTreeViewCommitsDeferred(false)
     , m_compositorCreationFailed(false)
     , m_recreatingGraphicsContext(false)
-#if ENABLE(INPUT_SPEECH)
-    , m_speechInputClient(SpeechInputClientImpl::create(client))
-#endif
     , m_speechRecognitionClient(SpeechRecognitionClientProxy::create(client ? client->speechRecognizer() : 0))
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
     , m_userMediaClientImpl(this)
@@ -393,7 +390,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     MediaKeysController::provideMediaKeysTo(*m_page, &m_mediaKeysClientImpl);
     provideMIDITo(*m_page, m_midiClientProxy.get());
 #if ENABLE(INPUT_SPEECH)
-    provideSpeechInputTo(*m_page, m_speechInputClient.get());
+    provideSpeechInputTo(*m_page, SpeechInputClientImpl::create(client));
 #endif
     provideSpeechRecognitionTo(*m_page, m_speechRecognitionClient.get());
     provideNotification(*m_page, notificationPresenterImpl());

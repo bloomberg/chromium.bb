@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-SpeechInput::SpeechInput(SpeechInputClient* client)
+SpeechInput::SpeechInput(PassOwnPtr<SpeechInputClient> client)
     : m_client(client)
     , m_nextListenerId(1)
 {
@@ -50,7 +50,7 @@ SpeechInput::~SpeechInput()
     m_client->setListener(0);
 }
 
-PassOwnPtr<SpeechInput> SpeechInput::create(SpeechInputClient* client)
+PassOwnPtr<SpeechInput> SpeechInput::create(PassOwnPtr<SpeechInputClient> client)
 {
     return adoptPtr(new SpeechInput(client));
 }
@@ -120,7 +120,7 @@ const char* SpeechInput::supplementName()
     return "SpeechInput";
 }
 
-void provideSpeechInputTo(Page& page, SpeechInputClient* client)
+void provideSpeechInputTo(Page& page, PassOwnPtr<SpeechInputClient> client)
 {
     SpeechInput::provideTo(page, SpeechInput::supplementName(), SpeechInput::create(client));
 }

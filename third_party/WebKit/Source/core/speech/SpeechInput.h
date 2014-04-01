@@ -53,7 +53,7 @@ class SpeechInput FINAL : public SpeechInputListener, public Supplement<Page> {
 public:
     virtual ~SpeechInput();
 
-    static PassOwnPtr<SpeechInput> create(SpeechInputClient*);
+    static PassOwnPtr<SpeechInput> create(PassOwnPtr<SpeechInputClient>);
     static const char* supplementName();
     static SpeechInput* from(Page* page) { return static_cast<SpeechInput*>(Supplement<Page>::from(page, supplementName())); }
 
@@ -76,9 +76,9 @@ public:
     virtual void setRecognitionResult(int, const SpeechInputResultArray&) OVERRIDE;
 
 private:
-    explicit SpeechInput(SpeechInputClient*);
+    explicit SpeechInput(PassOwnPtr<SpeechInputClient>);
 
-    SpeechInputClient* m_client;
+    OwnPtr<SpeechInputClient> m_client;
     HashMap<int, SpeechInputListener*> m_listeners;
     int m_nextListenerId;
 };

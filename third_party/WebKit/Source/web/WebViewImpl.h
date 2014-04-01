@@ -736,9 +736,6 @@ private:
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;
 
-#if ENABLE(INPUT_SPEECH)
-    OwnPtr<SpeechInputClientImpl> m_speechInputClient;
-#endif
     OwnPtr<SpeechRecognitionClientProxy> m_speechRecognitionClient;
 
     OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;

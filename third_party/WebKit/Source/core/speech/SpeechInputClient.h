@@ -63,11 +63,10 @@ public:
     // recognition results are returned to the listener.
     virtual void cancelRecognition(int requestId) = 0;
 
-protected:
     virtual ~SpeechInputClient() { }
 };
 
-void provideSpeechInputTo(Page&, SpeechInputClient*);
+void provideSpeechInputTo(Page&, PassOwnPtr<SpeechInputClient>);
 
 } // namespace WebCore
 
