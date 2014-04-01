@@ -88,10 +88,12 @@ void CommandBufferService::Flush(int32 put_offset) {
 void CommandBufferService::SetGetBuffer(int32 transfer_buffer_id) {
   DCHECK_EQ(-1, ring_buffer_id_);
   DCHECK_EQ(put_offset_, get_offset_);  // Only if it's empty.
+  // If the buffer is invalid we handle it gracefully.
+  // This means ring_buffer_ can be NULL.
   ring_buffer_ = GetTransferBuffer(transfer_buffer_id);
-  DCHECK(ring_buffer_);
   ring_buffer_id_ = transfer_buffer_id;
-  num_entries_ = ring_buffer_->size() / sizeof(CommandBufferEntry);
+  int32 size = ring_buffer_ ? ring_buffer_->size() : 0;
+  num_entries_ = size / sizeof(CommandBufferEntry);
   put_offset_ = 0;
   SetGetOffset(0);
   if (!get_buffer_change_callback_.is_null()) {
