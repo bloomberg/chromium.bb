@@ -48,9 +48,9 @@ public:
         Image
     };
 
-    static PassRefPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, LayoutBox layoutBox)
+    static PassRefPtr<ShapeValue> createShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
     {
-        return adoptRef(new ShapeValue(shape, layoutBox));
+        return adoptRef(new ShapeValue(shape, cssBox));
     }
 
     static PassRefPtr<ShapeValue> createOutsideValue()
@@ -58,9 +58,9 @@ public:
         return adoptRef(new ShapeValue(Outside));
     }
 
-    static PassRefPtr<ShapeValue> createLayoutBoxValue(LayoutBox layoutBox)
+    static PassRefPtr<ShapeValue> createBoxShapeValue(CSSBoxType cssBox)
     {
-        return adoptRef(new ShapeValue(layoutBox));
+        return adoptRef(new ShapeValue(cssBox));
     }
 
     static PassRefPtr<ShapeValue> createImageValue(PassRefPtr<StyleImage> image)
@@ -79,32 +79,31 @@ public:
         if (m_image != image)
             m_image = image;
     }
-    LayoutBox layoutBox() const { return m_layoutBox; }
-    void setLayoutBox(LayoutBox layoutBox) { m_layoutBox = layoutBox; }
+    CSSBoxType cssBox() const { return m_cssBox; }
 
     bool operator==(const ShapeValue& other) const;
 
 private:
-    ShapeValue(PassRefPtr<BasicShape> shape, LayoutBox layoutBox)
+    ShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
         : m_type(Shape)
         , m_shape(shape)
-        , m_layoutBox(layoutBox)
+        , m_cssBox(cssBox)
     {
     }
     ShapeValue(ShapeValueType type)
         : m_type(type)
-        , m_layoutBox(BoxMissing)
+        , m_cssBox(BoxMissing)
     {
     }
     ShapeValue(PassRefPtr<StyleImage> image)
         : m_type(Image)
         , m_image(image)
-        , m_layoutBox(ContentBox)
+        , m_cssBox(ContentBox)
     {
     }
-    ShapeValue(LayoutBox layoutBox)
+    ShapeValue(CSSBoxType cssBox)
         : m_type(Box)
-        , m_layoutBox(layoutBox)
+        , m_cssBox(cssBox)
     {
     }
 
@@ -112,7 +111,7 @@ private:
     ShapeValueType m_type;
     RefPtr<BasicShape> m_shape;
     RefPtr<StyleImage> m_image;
-    LayoutBox m_layoutBox;
+    CSSBoxType m_cssBox;
 };
 
 inline bool ShapeValue::operator==(const ShapeValue& other) const
@@ -122,9 +121,9 @@ inline bool ShapeValue::operator==(const ShapeValue& other) const
 
     switch (type()) {
     case Shape:
-        return shape() == other.shape() && layoutBox() == other.layoutBox();
+        return shape() == other.shape() && cssBox() == other.cssBox();
     case Box:
-        return layoutBox() == other.layoutBox();
+        return cssBox() == other.cssBox();
     case Outside:
         return true;
     case Image:

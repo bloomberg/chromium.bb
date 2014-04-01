@@ -52,14 +52,14 @@ public:
     virtual String cssText() const = 0;
     virtual bool equals(const CSSBasicShape&) const = 0;
 
-    CSSPrimitiveValue* layoutBox() const { return m_layoutBox.get(); }
-    void setLayoutBox(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> layoutBox) { m_layoutBox = layoutBox; }
+    CSSPrimitiveValue* referenceBox() const { return m_referenceBox.get(); }
+    void setReferenceBox(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> referenceBox) { m_referenceBox = referenceBox; }
 
-    virtual void trace(Visitor* visitor) { visitor->trace(m_layoutBox); }
+    virtual void trace(Visitor* visitor) { visitor->trace(m_referenceBox); }
 
 protected:
     CSSBasicShape() { }
-    RefPtrWillBeMember<CSSPrimitiveValue> m_layoutBox;
+    RefPtrWillBeMember<CSSPrimitiveValue> m_referenceBox;
 };
 
 class CSSBasicShapeCircle FINAL : public CSSBasicShape {

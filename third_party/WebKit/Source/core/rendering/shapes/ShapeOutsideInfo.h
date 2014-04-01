@@ -55,11 +55,11 @@ public:
     }
 
 protected:
-    virtual LayoutBox referenceBox() const OVERRIDE
+    virtual CSSBoxType referenceBox() const OVERRIDE
     {
-        if (shapeValue()->layoutBox() == BoxMissing)
+        if (shapeValue()->cssBox() == BoxMissing)
             return MarginBox;
-        return shapeValue()->layoutBox();
+        return shapeValue()->cssBox();
     }
     virtual LayoutRect computedShapeLogicalBoundingBox() const OVERRIDE { return computedShape().shapeMarginLogicalBoundingBox(); }
     virtual ShapeValue* shapeValue() const OVERRIDE;

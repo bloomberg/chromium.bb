@@ -133,7 +133,7 @@ const Shape& ShapeInfo<RenderType>::computedShape() const
     }
     case ShapeValue::Box: {
         const RoundedRect& shapeRect = m_renderer.style()->getRoundedBorderFor(LayoutRect(LayoutPoint(), m_referenceBoxLogicalSize), m_renderer.view());
-        m_shape = Shape::createLayoutBoxShape(shapeRect, writingMode, margin, padding);
+        m_shape = Shape::createBoxShape(shapeRect, writingMode, margin, padding);
         break;
     }
     case ShapeValue::Outside:

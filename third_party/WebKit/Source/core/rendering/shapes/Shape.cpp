@@ -217,7 +217,7 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
     return rasterShape.release();
 }
 
-PassOwnPtr<Shape> Shape::createLayoutBoxShape(const RoundedRect& roundedRect, WritingMode writingMode, const Length& margin, const Length& padding)
+PassOwnPtr<Shape> Shape::createBoxShape(const RoundedRect& roundedRect, WritingMode writingMode, const Length& margin, const Length& padding)
 {
     FloatRect rect(0, 0, roundedRect.rect().width(), roundedRect.rect().height());
     FloatRoundedRect bounds(rect, roundedRect.radii());

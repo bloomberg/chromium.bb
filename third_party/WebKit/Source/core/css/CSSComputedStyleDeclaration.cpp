@@ -1438,7 +1438,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, 
     if (shapeValue->type() == ShapeValue::Outside)
         return cssValuePool().createIdentifierValue(CSSValueOutsideShape);
     if (shapeValue->type() == ShapeValue::Box)
-        return cssValuePool().createValue(shapeValue->layoutBox());
+        return cssValuePool().createValue(shapeValue->cssBox());
     if (shapeValue->type() == ShapeValue::Image) {
         if (shapeValue->image())
             return shapeValue->image()->cssValue();
@@ -1449,8 +1449,8 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForShape(const RenderStyle& style, 
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     list->append(valueForBasicShape(style, shapeValue->shape()));
-    if (shapeValue->layoutBox() != BoxMissing)
-        list->append(cssValuePool().createValue(shapeValue->layoutBox()));
+    if (shapeValue->cssBox() != BoxMissing)
+        list->append(cssValuePool().createValue(shapeValue->cssBox()));
     return list.release();
 }
 

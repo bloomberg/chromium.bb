@@ -39,7 +39,7 @@ bool AnimatableShapeValue::usesDefaultInterpolationWith(const AnimatableValue* v
 
     if (m_shape->type() != ShapeValue::Shape
         || shapeValue->m_shape->type() != ShapeValue::Shape
-        || m_shape->layoutBox() != shapeValue->m_shape->layoutBox())
+        || m_shape->cssBox() != shapeValue->m_shape->cssBox())
         return true;
 
     const BasicShape* fromShape = this->m_shape->shape();
@@ -56,7 +56,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableShapeValue::interpolateTo(cons
     const AnimatableShapeValue* shapeValue = toAnimatableShapeValue(value);
     const BasicShape* fromShape = this->m_shape->shape();
     const BasicShape* toShape = shapeValue->m_shape->shape();
-    return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction), shapeValue->m_shape->layoutBox()).get());
+    return AnimatableShapeValue::create(ShapeValue::createShapeValue(toShape->blend(fromShape, fraction), shapeValue->m_shape->cssBox()).get());
 }
 
 bool AnimatableShapeValue::equalTo(const AnimatableValue* value) const

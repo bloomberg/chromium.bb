@@ -4706,11 +4706,11 @@ template<> inline CSSPrimitiveValue::operator TouchActionDelay() const
     return TouchActionDelayNone;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LayoutBox layoutBox)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(CSSBoxType cssBox)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
-    switch (layoutBox) {
+    switch (cssBox) {
     case MarginBox:
         m_value.valueID = CSSValueMarginBox;
         break;
@@ -4729,7 +4729,7 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LayoutBox layoutBox)
     }
 }
 
-template<> inline CSSPrimitiveValue::operator LayoutBox() const
+template<> inline CSSPrimitiveValue::operator CSSBoxType() const
 {
     switch (getValueID()) {
     case CSSValueMarginBox:

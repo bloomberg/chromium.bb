@@ -96,7 +96,7 @@ protected:
 
     const Shape& computedShape() const;
 
-    virtual LayoutBox referenceBox() const = 0;
+    virtual CSSBoxType referenceBox() const = 0;
     virtual LayoutRect computedShapeLogicalBoundingBox() const = 0;
     virtual ShapeValue* shapeValue() const = 0;
     virtual void getIntervals(LayoutUnit, LayoutUnit, SegmentList&) const = 0;

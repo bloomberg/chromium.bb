@@ -43,7 +43,7 @@ protected:
 
     PassOwnPtr<Shape> createBoxShape(const RoundedRect& bounds, float shapeMargin, float shapePadding)
     {
-        return Shape::createLayoutBoxShape(bounds, TopToBottomWritingMode, Length(shapeMargin, Fixed), Length(shapePadding, Fixed));
+        return Shape::createBoxShape(bounds, TopToBottomWritingMode, Length(shapeMargin, Fixed), Length(shapePadding, Fixed));
     }
 };
 
