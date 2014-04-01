@@ -2080,7 +2080,6 @@ _release.add_config('wolf-release',
 
 _release.add_config('zako-release',
   boards=['zako'],
-  vm_tests=[],
 )
 
 ### Arm release configs.
