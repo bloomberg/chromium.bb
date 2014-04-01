@@ -989,3 +989,5 @@ crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.htm
 crbug.com/355489 media/activation-behavior.html [ Pass Failure Timeout ]
 
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
+
+crbug.com/351696 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
