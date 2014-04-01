@@ -850,11 +850,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Called when the "pinned to left/right edge" state needs to be updated.
   void UpdateScrollState(blink::WebFrame* frame);
 
-  void EvaluateScript(const base::string16& frame_xpath,
-                      const base::string16& jscript,
-                      int id,
-                      bool notify_result);
-
   // IPC message handlers ------------------------------------------------------
   //
   // The documentation for these functions should be in
@@ -918,10 +913,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnResetPageEncodingToDefault();
-  void OnScriptEvalRequest(const base::string16& frame_xpath,
-                           const base::string16& jscript,
-                           int id,
-                           bool notify_result);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
   void OnSetBackground(const SkBitmap& background);

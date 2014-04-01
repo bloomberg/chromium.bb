@@ -1090,7 +1090,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
-    IPC_MESSAGE_HANDLER(ViewMsg_ScriptEvalRequest, OnScriptEvalRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_PostMessageEvent, OnPostMessageEvent)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(DragMsg_TargetDragOver, OnDragTargetDragOver)
@@ -3032,56 +3031,6 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   return false;
 }
 
-void RenderViewImpl::EvaluateScript(const base::string16& frame_xpath,
-                                    const base::string16& jscript,
-                                    int id,
-                                    bool notify_result) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Value> result;
-
-  WebFrame* web_frame;
-  if (frame_xpath.empty()) {
-    web_frame = webview()->mainFrame();
-  } else {
-    // The |frame_xpath| string can represent a frame deep down the tree (across
-    // multiple frame DOMs).
-    //
-    // For example,
-    //     /html/body/table/tbody/tr/td/iframe\n/frameset/frame[0]
-    // should break into 2 xpaths:
-    //     /html/body/table/tbody/tr/td/iframe
-    //     /frameset/frame[0]
-    std::vector<base::string16> xpaths;
-    base::SplitString(frame_xpath, '\n', &xpaths);
-
-    WebFrame* frame = webview()->mainFrame();
-    for (std::vector<base::string16>::const_iterator i = xpaths.begin();
-         frame && i != xpaths.end(); ++i) {
-      frame = frame->findChildByExpression(*i);
-    }
-
-    web_frame = frame;
-  }
-
-  if (web_frame)
-    result = web_frame->executeScriptAndReturnValue(WebScriptSource(jscript));
-  if (notify_result) {
-    base::ListValue list;
-    if (!result.IsEmpty() && web_frame) {
-      v8::Local<v8::Context> context = web_frame->mainWorldScriptContext();
-      v8::Context::Scope context_scope(context);
-      V8ValueConverterImpl converter;
-      converter.SetDateAllowed(true);
-      converter.SetRegExpAllowed(true);
-      base::Value* result_value = converter.FromV8Value(result, context);
-      list.Set(0, result_value ? result_value : base::Value::CreateNullValue());
-    } else {
-      list.Set(0, base::Value::CreateNullValue());
-    }
-    Send(new ViewHostMsg_ScriptEvalResponse(routing_id_, id, list));
-  }
-}
-
 bool RenderViewImpl::ShouldDisplayScrollbars(int width, int height) const {
   return (!send_preferred_size_changes_ ||
           (disable_scrollbars_size_limit_.width() <= width ||
@@ -3423,15 +3372,6 @@ void RenderViewImpl::OnSetPageEncoding(const std::string& encoding_name) {
 void RenderViewImpl::OnResetPageEncodingToDefault() {
   WebString no_encoding;
   webview()->setPageEncoding(no_encoding);
-}
-
-void RenderViewImpl::OnScriptEvalRequest(const base::string16& frame_xpath,
-                                         const base::string16& jscript,
-                                         int id,
-                                         bool notify_result) {
-  TRACE_EVENT_INSTANT0("test_tracing", "OnScriptEvalRequest",
-                       TRACE_EVENT_SCOPE_THREAD);
-  EvaluateScript(frame_xpath, jscript, id, notify_result);
 }
 
 void RenderViewImpl::OnPostMessageEvent(

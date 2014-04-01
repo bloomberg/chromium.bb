@@ -1017,11 +1017,9 @@ void TestingAutomationProvider::ExecuteJavascriptInRenderViewFrame(
   // This routing id needs to be remembered for the reverse
   // communication while sending back the response of
   // this javascript execution.
-  render_view_host->ExecuteJavascriptInWebFrame(
-      frame_xpath,
-      base::ASCIIToUTF16("window.domAutomationController.setAutomationId(0);"));
-  render_view_host->ExecuteJavascriptInWebFrame(
-      frame_xpath, script);
+
+  // Automation is dead. http://crbug.com/316203
+  NOTREACHED() << "Automation is dead.";
 }
 
 void TestingAutomationProvider::ExecuteJavascript(

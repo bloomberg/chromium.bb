@@ -200,13 +200,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
       const blink::WebMediaPlayerAction& action) OVERRIDE;
-  virtual void ExecuteJavascriptInWebFrame(
-      const base::string16& frame_xpath,
-      const base::string16& jscript) OVERRIDE;
-  virtual void ExecuteJavascriptInWebFrameCallbackResult(
-      const base::string16& frame_xpath,
-      const base::string16& jscript,
-      const JavascriptResultCallback& callback) OVERRIDE;
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const blink::WebPluginAction& action) OVERRIDE;
@@ -572,7 +565,6 @@ class CONTENT_EXPORT RenderViewHostImpl
       const std::vector<AccessibilityHostMsg_EventParams>& params);
   void OnAccessibilityLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
-  void OnScriptEvalResponse(int id, const base::ListValue& result);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
   void OnRequestDesktopNotificationPermission(const GURL& origin,
                                               int callback_id);
@@ -678,11 +670,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool unload_ack_is_for_cross_site_transition_;
 
   bool are_javascript_messages_suppressed_;
-
-  // The mapping of pending javascript calls created by
-  // ExecuteJavascriptInWebFrameCallbackResult and their corresponding
-  // callbacks.
-  std::map<int, JavascriptResultCallback> javascript_callbacks_;
 
   // Accessibility callback for testing.
   base::Callback<void(ui::AXEvent)> accessibility_testing_callback_;

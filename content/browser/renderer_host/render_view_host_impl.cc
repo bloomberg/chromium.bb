@@ -852,24 +852,6 @@ void RenderViewHostImpl::DesktopNotificationPostClick(int notification_id) {
   Send(new DesktopNotificationMsg_PostClick(GetRoutingID(), notification_id));
 }
 
-void RenderViewHostImpl::ExecuteJavascriptInWebFrame(
-    const base::string16& frame_xpath,
-    const base::string16& jscript) {
-  Send(new ViewMsg_ScriptEvalRequest(GetRoutingID(), frame_xpath, jscript,
-                                     0, false));
-}
-
-void RenderViewHostImpl::ExecuteJavascriptInWebFrameCallbackResult(
-     const base::string16& frame_xpath,
-     const base::string16& jscript,
-     const JavascriptResultCallback& callback) {
-  static int next_id = 1;
-  int key = next_id++;
-  Send(new ViewMsg_ScriptEvalRequest(GetRoutingID(), frame_xpath, jscript,
-                                     key, true));
-  javascript_callbacks_.insert(std::make_pair(key, callback));
-}
-
 void RenderViewHostImpl::JavaScriptDialogClosed(
     IPC::Message* reply_msg,
     bool success,
@@ -1126,7 +1108,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionRootBoundsChanged,
                         OnSelectionRootBoundsChanged)
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
@@ -1787,26 +1768,6 @@ void RenderViewHostImpl::OnAccessibilityLocationChanges(
         manager->OnLocationChanges(params);
     }
     // TODO(aboxhall): send location change events to web contents observers too
-  }
-}
-
-void RenderViewHostImpl::OnScriptEvalResponse(int id,
-                                              const base::ListValue& result) {
-  const base::Value* result_value;
-  if (!result.Get(0, &result_value)) {
-    // Programming error or rogue renderer.
-    NOTREACHED() << "Got bad arguments for OnScriptEvalResponse";
-    return;
-  }
-
-  std::map<int, JavascriptResultCallback>::iterator it =
-      javascript_callbacks_.find(id);
-  if (it != javascript_callbacks_.end()) {
-    // ExecuteJavascriptInWebFrameCallbackResult was used; do callback.
-    it->second.Run(result_value);
-    javascript_callbacks_.erase(it);
-  } else {
-    NOTREACHED() << "Received script response for unknown request";
   }
 }
 

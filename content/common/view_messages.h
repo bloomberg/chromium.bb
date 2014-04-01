@@ -696,35 +696,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
                     gfx::Point, /* location */
                     blink::WebPluginAction)
 
-// Request for the renderer to evaluate an xpath to a frame and execute a
-// javascript: url in that frame's context. The message is completely
-// asynchronous and no corresponding response message is sent back.
-//
-// frame_xpath contains the modified xpath notation to identify an inner
-// subframe (starting from the root frame). It is a concatenation of
-// number of smaller xpaths delimited by '\n'. Each chunk in the string can
-// be evaluated to a frame in its parent-frame's context.
-//
-// Example: /html/body/iframe/\n/html/body/div/iframe/\n/frameset/frame[0]
-// can be broken into 3 xpaths
-// /html/body/iframe evaluates to an iframe within the root frame
-// /html/body/div/iframe evaluates to an iframe within the level-1 iframe
-// /frameset/frame[0] evaluates to first frame within the level-2 iframe
-//
-// jscript_url is the string containing the javascript: url to be executed
-// in the target frame's context. The string should start with "javascript:"
-// and continue with a valid JS text.
-//
-// If the fourth parameter is true the result is sent back to the renderer
-// using the message ViewHostMsg_ScriptEvalResponse.
-// ViewHostMsg_ScriptEvalResponse is passed the ID parameter so that the
-// client can uniquely identify the request.
-IPC_MESSAGE_ROUTED4(ViewMsg_ScriptEvalRequest,
-                    base::string16,  /* frame_xpath */
-                    base::string16,  /* jscript_url */
-                    int,  /* ID */
-                    bool  /* If true, result is sent back. */)
-
 // Posts a message from a frame in another process to the current renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_PostMessageEvent,
                     ViewMsg_PostMessage_Params)
@@ -1173,14 +1144,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,
                     ViewHostMsg_ShowPopup_Params)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_HidePopup)
 #endif
-
-// Response from ViewMsg_ScriptEvalRequest. The ID is the parameter supplied
-// to ViewMsg_ScriptEvalRequest. The result has the value returned by the
-// script as its only element, one of Null, Boolean, Integer, Real, Date, or
-// String.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_ScriptEvalResponse,
-                    int  /* id */,
-                    base::ListValue  /* result */)
 
 // Result of string search in the page.
 // Response to ViewMsg_Find with the results of the requested find-in-page
