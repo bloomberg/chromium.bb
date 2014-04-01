@@ -164,10 +164,17 @@ void LegacyFrameProcessor::FilterWithAppendWindow(
     // because we can only resume decoding at keyframes.
     base::TimeDelta presentation_timestamp = (*itr)->timestamp();
 
-    // TODO(acolwell): Change |frame_end_timestamp| value to
+    // TODO(acolwell): Change |frame_end_timestamp| value to always be
     // |presentation_timestamp + (*itr)->duration()|, like the spec
     // requires, once frame durations are actually present in all buffers.
+    // See http://crbug.com/351166.
     base::TimeDelta frame_end_timestamp = presentation_timestamp;
+    base::TimeDelta frame_duration = (*itr)->duration();
+    if (frame_duration > base::TimeDelta()) {
+      DCHECK(frame_duration != kNoTimestamp());
+      frame_end_timestamp += frame_duration;
+    }
+
     if (presentation_timestamp < append_window_start ||
         frame_end_timestamp > append_window_end) {
       DVLOG(1) << "Dropping buffer outside append window."
@@ -206,7 +213,11 @@ bool LegacyFrameProcessor::AppendAndUpdateDuration(
   if (!stream || !stream->Append(buffers))
     return false;
 
-  increase_duration_cb_.Run(buffers.back()->timestamp(), stream);
+  // Approximate spec's "highest presentation end timestamp".
+  base::TimeDelta highest_end_timestamp = stream->GetBufferedDuration();
+  DCHECK(highest_end_timestamp > base::TimeDelta());
+
+  increase_duration_cb_.Run(highest_end_timestamp);
   return true;
 }
 

@@ -1559,18 +1559,16 @@ void ChunkDemuxer::UpdateDuration(TimeDelta new_duration) {
   host_->SetDuration(new_duration);
 }
 
-void ChunkDemuxer::IncreaseDurationIfNecessary(
-    TimeDelta last_appended_buffer_timestamp,
-    ChunkDemuxerStream* stream) {
-  DCHECK(last_appended_buffer_timestamp != kNoTimestamp());
-  if (last_appended_buffer_timestamp <= duration_)
+void ChunkDemuxer::IncreaseDurationIfNecessary(TimeDelta new_duration) {
+  DCHECK(new_duration != kNoTimestamp());
+
+  if (new_duration <= duration_)
     return;
 
-  TimeDelta stream_duration = stream->GetBufferedDuration();
-  DCHECK(stream_duration > TimeDelta());
+  DVLOG(2) << __FUNCTION__ << ": Increasing duration: "
+           << duration_.InSecondsF() << " -> " << new_duration.InSecondsF();
 
-  if (stream_duration > duration_)
-    UpdateDuration(stream_duration);
+  UpdateDuration(new_duration);
 }
 
 void ChunkDemuxer::DecreaseDurationIfNecessary() {

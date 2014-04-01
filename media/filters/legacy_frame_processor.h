@@ -17,10 +17,9 @@ namespace media {
 // algorithm.
 class MEDIA_EXPORT LegacyFrameProcessor : public FrameProcessorBase {
  public:
-  // Callback signature used to notify ChunkDemuxer of timestamps that may cause
-  // the duration to be updated.
-  typedef base::Callback<void(
-      base::TimeDelta, ChunkDemuxerStream*)> IncreaseDurationCB;
+  // Callback signature used to notify ChunkDemuxer of an end timestamp that may
+  // cause the duration to be updated.
+  typedef base::Callback<void(base::TimeDelta)> IncreaseDurationCB;
 
   explicit LegacyFrameProcessor(const IncreaseDurationCB& increase_duration_cb);
   virtual ~LegacyFrameProcessor();

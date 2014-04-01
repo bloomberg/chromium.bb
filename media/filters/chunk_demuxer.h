@@ -295,12 +295,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Returns true if |source_id| is valid, false otherwise.
   bool IsValidId(const std::string& source_id) const;
 
-  // Increases |duration_| if |last_appended_buffer_timestamp| exceeds the
-  // current  |duration_|. The |duration_| is set to the end buffered timestamp
-  // of |stream|.
-  void IncreaseDurationIfNecessary(
-      base::TimeDelta last_appended_buffer_timestamp,
-      ChunkDemuxerStream* stream);
+  // Increases |duration_| to |new_duration|, if |new_duration| is higher.
+  void IncreaseDurationIfNecessary(base::TimeDelta new_duration);
 
   // Decreases |duration_| if the buffered region is less than |duration_| when
   // EndOfStream() is called.

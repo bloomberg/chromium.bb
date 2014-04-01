@@ -556,6 +556,7 @@ class ChunkDemuxerTest : public testing::Test {
     scoped_refptr<DecoderBuffer> bear2 = ReadTestDataFile("bear-640x360.webm");
 
     EXPECT_CALL(*this, DemuxerOpened());
+
     demuxer_->Initialize(
         &host_, CreateInitDoneCB(base::TimeDelta::FromMilliseconds(2744),
                                  PIPELINE_OK), true);
@@ -564,6 +565,11 @@ class ChunkDemuxerTest : public testing::Test {
       return false;
 
     // Append the whole bear1 file.
+    // TODO(wolenetz/acolwell): Remove this extra SetDuration expectation once
+    // the files are fixed to have the correct duration in their init segments,
+    // and the CreateInitDoneCB() call, above, is fixed to used that duration.
+    // See http://crbug.com/354284.
+    EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
     AppendData(bear1->data(), bear1->data_size());
     // Last audio frame has timestamp 2721 and duration 24 (estimated from max
     // seen so far for audio track).
@@ -685,14 +691,12 @@ class ChunkDemuxerTest : public testing::Test {
     cb.SetClusterTimecode(timecode);
 
     // Create simple blocks for everything except the last block.
-    for (int i = 0; timecode < (end_timecode - block_duration); i++) {
+    while (timecode < (end_timecode - block_duration)) {
       cb.AddSimpleBlock(track_number, timecode, kWebMFlagKeyframe,
                         &data[0], data.size());
       timecode += block_duration;
     }
 
-    // Make the last block a BlockGroup so that it doesn't get delayed by the
-    // block duration calculation logic.
     if (track_number == kVideoTrackNum) {
       AddVideoBlockGroup(&cb, track_number, timecode, block_duration,
                          kWebMFlagKeyframe);
@@ -700,6 +704,7 @@ class ChunkDemuxerTest : public testing::Test {
       cb.AddBlockGroup(track_number, timecode, block_duration,
                        kWebMFlagKeyframe, &data[0], data.size());
     }
+
     return cb.Finish();
   }
 
@@ -1580,19 +1585,19 @@ TEST_F(ChunkDemuxerTest, EndOfStreamRangeChanges) {
       .WillOnce(SaveArg<0>(&text_stream));
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO | HAS_TEXT));
 
-  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0K 30");
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0K 33");
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "0K 23K");
 
   // Check expected ranges and verify that an empty text track does not
   // affect the expected ranges.
   CheckExpectedRanges(kSourceId, "{ [0,46) }");
 
-  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(60)));
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(66)));
   MarkEndOfStream(PIPELINE_OK);
 
   // Check expected ranges and verify that an empty text track does not
   // affect the expected ranges.
-  CheckExpectedRanges(kSourceId, "{ [0,60) }");
+  CheckExpectedRanges(kSourceId, "{ [0,66) }");
 
   // Unmark end of stream state and verify that the ranges return to
   // their pre-"end of stream" values.
@@ -1654,6 +1659,11 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
     {kSkip, kSkip},
   };
 
+  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
+  // ParseWebMFile() call's expected duration, below, once the file is fixed to
+  // have the correct duration in the init segment. See http://crbug.com/354284.
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
+
   ASSERT_TRUE(ParseWebMFile("bear-320x240.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744)));
 }
@@ -1682,6 +1692,11 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioOnly) {
     {kSkip, kSkip},
   };
 
+  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
+  // ParseWebMFile() call's expected duration, below, once the file is fixed to
+  // have the correct duration in the init segment. See http://crbug.com/354284.
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
+
   ASSERT_TRUE(ParseWebMFile("bear-320x240-audio-only.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2744),
                             HAS_AUDIO));
@@ -1697,6 +1712,11 @@ TEST_F(ChunkDemuxerTest, WebMFile_VideoOnly) {
     {kSkip, kSkip},
   };
 
+  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
+  // ParseWebMFile() call's expected duration, below, once the file is fixed to
+  // have the correct duration in the init segment. See http://crbug.com/354284.
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2736)));
+
   ASSERT_TRUE(ParseWebMFile("bear-320x240-video-only.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2703),
                             HAS_VIDEO));
@@ -1711,6 +1731,11 @@ TEST_F(ChunkDemuxerTest, WebMFile_AltRefFrames) {
     {100, 12},
     {kSkip, kSkip},
   };
+
+  // TODO(wolenetz/acolwell): Remove this SetDuration expectation and update the
+  // ParseWebMFile() call's expected duration, below, once the file is fixed to
+  // have the correct duration in the init segment. See http://crbug.com/354284.
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(2768)));
 
   ASSERT_TRUE(ParseWebMFile("bear-320x240-altref.webm", buffer_timestamps,
                             base::TimeDelta::FromMilliseconds(2767)));
@@ -2727,22 +2752,34 @@ TEST_F(ChunkDemuxerTest, DurationChange) {
 
   CheckExpectedRanges(kSourceId, "{ [201191,201224) }");
 
-  // Add data at the currently set duration. The duration should not increase.
+  // Add data beginning at the currently set duration and expect a new duration
+  // to be signaled. Note that the last video block will have a higher end
+  // timestamp than the last audio block.
+  // TODO(wolenetz): Compliant coded frame processor will emit a max of one
+  // duration change per each ProcessFrames(). Remove the first expectation here
+  // once compliant coded frame processor is used. See http://crbug.com/249422.
+  const int kNewStreamDurationAudio = kStreamDuration + kAudioBlockDuration;
+  EXPECT_CALL(host_, SetDuration(
+      base::TimeDelta::FromMilliseconds(kNewStreamDurationAudio)));
+  const int kNewStreamDurationVideo = kStreamDuration + kVideoBlockDuration;
+  EXPECT_CALL(host_, SetDuration(
+      base::TimeDelta::FromMilliseconds(kNewStreamDurationVideo)));
   AppendCluster(GenerateCluster(kDefaultDuration().InMilliseconds(), 2));
 
-  // Range should not be affected.
-  CheckExpectedRanges(kSourceId, "{ [201191,201224) }");
+  CheckExpectedRanges(kSourceId, "{ [201191,201247) }");
 
-  // Now add data past the duration and expect a new duration to be signalled.
-  const int kNewStreamDuration = kStreamDuration + kAudioBlockDuration * 2;
+  // Add more data to the end of each media type. Note that the last audio block
+  // will have a higher end timestamp than the last video block.
+  const int kFinalStreamDuration = kStreamDuration + kAudioBlockDuration * 3;
   EXPECT_CALL(host_, SetDuration(
-      base::TimeDelta::FromMilliseconds(kNewStreamDuration)));
+      base::TimeDelta::FromMilliseconds(kFinalStreamDuration)));
   AppendCluster(GenerateCluster(kStreamDuration + kAudioBlockDuration,
                                 kStreamDuration + kVideoBlockDuration,
-                                2));
+                                3));
 
-  // See that the range has increased appropriately.
-  CheckExpectedRanges(kSourceId, "{ [201191,201270) }");
+  // See that the range has increased appropriately (but not to the full
+  // duration of 201293, since there is not enough video appended for that).
+  CheckExpectedRanges(kSourceId, "{ [201191,201290) }");
 }
 
 TEST_F(ChunkDemuxerTest, DurationChangeTimestampOffset) {
@@ -2750,9 +2787,15 @@ TEST_F(ChunkDemuxerTest, DurationChangeTimestampOffset) {
 
   ASSERT_TRUE(SetTimestampOffset(kSourceId, kDefaultDuration()));
 
+  // TODO(wolenetz): Compliant coded frame processor will emit a max of one
+  // duration change per each ProcessFrames(). Remove the first expectation here
+  // once compliant coded frame processor is used. See http://crbug.com/249422.
   EXPECT_CALL(host_, SetDuration(
       kDefaultDuration() + base::TimeDelta::FromMilliseconds(
           kAudioBlockDuration * 2)));
+  EXPECT_CALL(host_, SetDuration(
+      kDefaultDuration() + base::TimeDelta::FromMilliseconds(
+          kVideoBlockDuration * 2)));
   AppendCluster(GenerateCluster(0, 4));
 }
 
@@ -2817,7 +2860,7 @@ TEST_F(ChunkDemuxerTest, ReadAfterAudioDisabled) {
   EXPECT_TRUE(audio_read_done);
 }
 
-// Verifies that signalling end of stream while stalled at a gap
+// Verifies that signaling end of stream while stalled at a gap
 // boundary does not trigger end of stream buffers to be returned.
 TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
@@ -2825,7 +2868,6 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
   AppendCluster(0, 10);
   AppendCluster(300, 10);
   CheckExpectedRanges(kSourceId, "{ [0,132) [300,432) }");
-
 
   GenerateExpectedReads(0, 10);
 
@@ -2851,18 +2893,18 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
 
   demuxer_->UnmarkEndOfStream();
 
-  AppendCluster(138, 24);
+  AppendCluster(138, 22);
 
   message_loop_.RunUntilIdle();
 
-  CheckExpectedRanges(kSourceId, "{ [0,438) }");
+  CheckExpectedRanges(kSourceId, "{ [0,435) }");
 
   // Verify that the reads have completed.
   EXPECT_TRUE(audio_read_done);
   EXPECT_TRUE(video_read_done);
 
   // Read the rest of the buffers.
-  GenerateExpectedReads(161, 171, 22);
+  GenerateExpectedReads(161, 171, 20);
 
   // Verify that reads block because the append cleared the end of stream state.
   audio_read_done = false;
@@ -2876,6 +2918,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
   EXPECT_FALSE(audio_read_done);
   EXPECT_FALSE(video_read_done);
 
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(437)));
   MarkEndOfStream(PIPELINE_OK);
 
   EXPECT_TRUE(audio_read_done);
@@ -2964,9 +3007,9 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Video) {
 
   // Verify that GOPs that start outside the window are not included
   // in the buffer. Also verify that buffers that start inside the
-  // window and extend beyond the end of the window are included.
-  CheckExpectedRanges(kSourceId, "{ [120,300) }");
-  CheckExpectedBuffers(stream, "120 150 180 210 240 270");
+  // window and extend beyond the end of the window are not included.
+  CheckExpectedRanges(kSourceId, "{ [120,270) }");
+  CheckExpectedBuffers(stream, "120 150 180 210 240");
 
   // Extend the append window to [20,650).
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(650);
@@ -2975,7 +3018,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Video) {
   // keyframe.
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
                             "360 390 420K 450 480 510 540K 570 600 630K");
-  CheckExpectedRanges(kSourceId, "{ [120,300) [420,660) }");
+  CheckExpectedRanges(kSourceId, "{ [120,270) [420,630) }");
 }
 
 TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
@@ -2993,9 +3036,9 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
 
   // Verify that frames that start outside the window are not included
   // in the buffer. Also verify that buffers that start inside the
-  // window and extend beyond the end of the window are included.
-  CheckExpectedRanges(kSourceId, "{ [30,300) }");
-  CheckExpectedBuffers(stream, "30 60 90 120 150 180 210 240 270");
+  // window and extend beyond the end of the window are not included.
+  CheckExpectedRanges(kSourceId, "{ [30,270) }");
+  CheckExpectedBuffers(stream, "30 60 90 120 150 180 210 240");
 
   // Extend the append window to [20,650).
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(650);
@@ -3004,7 +3047,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
   AppendSingleStreamCluster(
       kSourceId, kAudioTrackNum,
       "360K 390K 420K 450K 480K 510K 540K 570K 600K 630K");
-  CheckExpectedRanges(kSourceId, "{ [30,300) [360,660) }");
+  CheckExpectedRanges(kSourceId, "{ [30,270) [360,630) }");
 }
 
 TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
@@ -3026,10 +3069,10 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
 
   // Verify that text cues that start outside the window are not included
   // in the buffer. Also verify that cues that extend beyond the
-  // window are included.
-  CheckExpectedRanges(kSourceId, "{ [120,300) }");
-  CheckExpectedBuffers(video_stream, "120 150 180 210 240 270");
-  CheckExpectedBuffers(text_stream, "100 200");
+  // window are not included.
+  CheckExpectedRanges(kSourceId, "{ [120,270) }");
+  CheckExpectedBuffers(video_stream, "120 150 180 210 240");
+  CheckExpectedBuffers(text_stream, "100");
 
   // Extend the append window to [20,650).
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(650);
@@ -3038,12 +3081,12 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
                             "360 390 420K 450 480 510 540K 570 600 630K");
   AppendSingleStreamCluster(kSourceId, kTextTrackNum, "400K 500K 600K 700K");
-  CheckExpectedRanges(kSourceId, "{ [120,300) [420,660) }");
+  CheckExpectedRanges(kSourceId, "{ [120,270) [420,630) }");
 
   // Seek to the new range and verify that the expected buffers are returned.
   Seek(base::TimeDelta::FromMilliseconds(420));
-  CheckExpectedBuffers(video_stream, "420 450 480 510 540 570 600 630");
-  CheckExpectedBuffers(text_stream, "400 500 600");
+  CheckExpectedBuffers(video_stream, "420 450 480 510 540 570 600");
+  CheckExpectedBuffers(text_stream, "400 500");
 }
 
 TEST_F(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {
@@ -3147,7 +3190,7 @@ TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   // to the pending read initiated above.
   CheckExpectedBuffers(text_stream, "175 225");
 
-  // Verify that audio & video streams contiue to return expected values.
+  // Verify that audio & video streams continue to return expected values.
   CheckExpectedBuffers(audio_stream, "160 180");
   CheckExpectedBuffers(video_stream, "180 210");
 }

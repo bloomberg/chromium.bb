@@ -62,14 +62,14 @@ const int kAppendTimeMs = kAppendTimeSec * 1000;
 const int k320WebMFileDurationMs = 2736;
 const int k640WebMFileDurationMs = 2762;
 const int kOpusEndTrimmingWebMFileDurationMs = 2771;
-const int kVP9WebMFileDurationMs = 2703;
-const int kVP8AWebMFileDurationMs = 2700;
+const int kVP9WebMFileDurationMs = 2736;
+const int kVP8AWebMFileDurationMs = 2734;
 
 #if defined(USE_PROPRIETARY_CODECS)
 const int k640IsoFileDurationMs = 2737;
 const int k640IsoCencFileDurationMs = 2736;
 const int k1280IsoFileDurationMs = 2736;
-const int k1280IsoAVC3FileDurationMs = 2735;
+const int k1280IsoAVC3FileDurationMs = 2736;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Note: Tests using this class only exercise the DecryptingDemuxerStream path.
@@ -575,7 +575,11 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
+  // TODO(acolwell/wolenetz): Drop the "+ 1" once WebM stream parser always
+  // emits frames with valid durations (see http://crbug.com/351166) and
+  // compliant coded frame processor's "highest presentation end timestamp" is
+  // used to update duration (see http://crbug.com/249422).
+  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs + 1,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
   Play();
 
@@ -594,7 +598,11 @@ TEST_F(PipelineIntegrationTest, DISABLED_MediaSource_Opus_Seeking_WebM) {
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
+  // TODO(acolwell/wolenetz): Drop the "+ 1" once WebM stream parser always
+  // emits frames with valid durations (see http://crbug.com/351166) and
+  // compliant coded frame processor's "highest presentation end timestamp" is
+  // used to update duration (see http://crbug.com/249422).
+  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs + 1,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   base::TimeDelta start_seek_time = base::TimeDelta::FromMilliseconds(1000);
