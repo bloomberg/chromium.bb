@@ -56,6 +56,23 @@ void EmptyStatusCallback(SyncStatusCode status) {}
 
 }  // namespace
 
+SyncEngine::TaskManagerClient::TaskManagerClient(
+    const base::WeakPtr<SyncEngine>& sync_engine,
+    base::SequencedTaskRunner* task_runner)
+    : sync_engine_(sync_engine),
+      task_runner_(task_runner) {}
+
+SyncEngine::TaskManagerClient::~TaskManagerClient() {}
+
+void SyncEngine::TaskManagerClient::MaybeScheduleNextTask() {
+  sync_engine_->MaybeScheduleNextTask();
+}
+
+void SyncEngine::TaskManagerClient::NotifyLastOperationStatus(
+    SyncStatusCode sync_status, bool used_network) {
+  sync_engine_->NotifyLastOperationStatus(sync_status, used_network);
+}
+
 scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
     content::BrowserContext* context) {
   GURL base_drive_url(
@@ -132,8 +149,9 @@ SyncEngine::~SyncEngine() {
 
 void SyncEngine::Initialize() {
   DCHECK(!task_manager_);
+
   task_manager_.reset(new SyncTaskManager(
-      weak_ptr_factory_.GetWeakPtr(),
+      task_manager_client_->AsWeakPtr(),
       0 /* maximum_background_task */));
   task_manager_->Initialize(SYNC_STATUS_OK);
 
@@ -478,6 +496,8 @@ SyncEngine::SyncEngine(const base::FilePath& base_dir,
                                      drive_uploader.Pass(),
                                      task_runner)),
       weak_ptr_factory_(this) {
+  task_manager_client_.reset(new TaskManagerClient(
+      weak_ptr_factory_.GetWeakPtr(), task_runner));
 }
 
 void SyncEngine::DoDisableApp(const std::string& app_id,

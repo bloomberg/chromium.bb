@@ -45,12 +45,30 @@ class SyncEngineInitializer;
 
 class SyncEngine : public RemoteFileSyncService,
                    public LocalChangeProcessor,
-                   public SyncTaskManager::Client,
                    public drive::DriveNotificationObserver,
                    public drive::DriveServiceObserver,
                    public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   typedef Observer SyncServiceObserver;
+
+  class TaskManagerClient : public SyncTaskManager::Client,
+                            public base::SupportsWeakPtr<TaskManagerClient> {
+   public:
+    TaskManagerClient(const base::WeakPtr<SyncEngine>& sync_engine,
+                      base::SequencedTaskRunner* task_runner);
+    virtual ~TaskManagerClient();
+
+    // SyncTaskManager::Client overrides
+    virtual void MaybeScheduleNextTask() OVERRIDE;
+    virtual void NotifyLastOperationStatus(
+        SyncStatusCode sync_status, bool used_network) OVERRIDE;
+
+   private:
+    base::WeakPtr<SyncEngine> sync_engine_;
+    scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(TaskManagerClient);
+  };
 
   static scoped_ptr<SyncEngine> CreateForBrowserContext(
       content::BrowserContext* context);
@@ -113,11 +131,6 @@ class SyncEngine : public RemoteFileSyncService,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback) OVERRIDE;
 
-  // SyncTaskManager::Client overrides.
-  virtual void MaybeScheduleNextTask() OVERRIDE;
-  virtual void NotifyLastOperationStatus(SyncStatusCode sync_status,
-                                         bool used_network) OVERRIDE;
-
   // drive::DriveNotificationObserver overrides.
   virtual void OnNotificationReceived() OVERRIDE;
   virtual void OnPushNotificationEnabled(bool enabled) OVERRIDE;
@@ -174,6 +187,9 @@ class SyncEngine : public RemoteFileSyncService,
                           const std::string& description);
   void UpdateRegisteredApps();
 
+  void MaybeScheduleNextTask();
+  void NotifyLastOperationStatus(SyncStatusCode sync_status, bool used_network);
+
   base::FilePath base_dir_;
   base::FilePath temporary_file_dir_;
 
@@ -204,8 +220,9 @@ class SyncEngine : public RemoteFileSyncService,
   scoped_ptr<SyncTaskManager> task_manager_;
 
   scoped_ptr<SyncEngineContext> context_;
-  base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
+  scoped_ptr<TaskManagerClient> task_manager_client_;
 
+  base::WeakPtrFactory<SyncEngine> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);
 };
 
