@@ -10,6 +10,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/time/time.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/h264_parser.h"
@@ -29,6 +30,9 @@ struct Packet {
 
   // Size of the packet.
   size_t size;
+
+  // Timestamp of the packet.
+  base::TimeDelta pts;
 };
 
 // Compute the size of each packet assuming packets are given in stream order
@@ -118,18 +122,13 @@ class EsParserH264Test : public testing::Test {
  public:
   EsParserH264Test() : buffer_count_(0) {
   }
+  virtual ~EsParserH264Test() {}
 
+ protected:
   void LoadStream(const char* filename);
-  void ProcessPesPackets(const std::vector<Packet>& pes_packets);
-
-  void EmitBuffer(scoped_refptr<StreamParserBuffer> buffer) {
-    buffer_count_++;
-  }
-
-  void NewVideoConfig(const VideoDecoderConfig& config) {
-  }
-
-  size_t buffer_count() const { return buffer_count_; }
+  void GetPesTimestamps(std::vector<Packet>& pes_packets);
+  void ProcessPesPackets(const std::vector<Packet>& pes_packets,
+                         bool force_timing);
 
   // Stream with AUD NALUs.
   std::vector<uint8> stream_;
@@ -137,8 +136,16 @@ class EsParserH264Test : public testing::Test {
   // Access units of the stream with AUD NALUs.
   std::vector<Packet> access_units_;
 
- protected:
+  // Number of buffers generated while parsing the H264 stream.
   size_t buffer_count_;
+
+ private:
+  void EmitBuffer(scoped_refptr<StreamParserBuffer> buffer);
+
+  void NewVideoConfig(const VideoDecoderConfig& config) {
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(EsParserH264Test);
 };
 
 void EsParserH264Test::LoadStream(const char* filename) {
@@ -155,34 +162,53 @@ void EsParserH264Test::LoadStream(const char* filename) {
   AppendAUD(stream_without_aud.data(), stream_without_aud.length(),
             access_units_without_aud,
             stream_, access_units_);
+
+  // Generate some timestamps based on a 25fps stream.
+  for (size_t k = 0; k < access_units_.size(); k++)
+    access_units_[k].pts = base::TimeDelta::FromMilliseconds(k * 40u);
+}
+
+void EsParserH264Test::GetPesTimestamps(std::vector<Packet>& pes_packets) {
+  // Default: set to a negative timestamp to be able to differentiate from
+  // real timestamps.
+  // Note: we don't use kNoTimestamp() here since this one has already
+  // a special meaning in EsParserH264. The negative timestamps should be
+  // ultimately discarded by the H264 parser since not relevant.
+  for (size_t k = 0; k < pes_packets.size(); k++) {
+    pes_packets[k].pts = base::TimeDelta::FromMilliseconds(-1);
+  }
+
+  // Set a valid timestamp for PES packets which include the start
+  // of an H264 access unit.
+  size_t pes_idx = 0;
+  for (size_t k = 0; k < access_units_.size(); k++) {
+    for (; pes_idx < pes_packets.size(); pes_idx++) {
+      size_t pes_start = pes_packets[pes_idx].offset;
+      size_t pes_end = pes_packets[pes_idx].offset + pes_packets[pes_idx].size;
+      if (pes_start <= access_units_[k].offset &&
+          pes_end > access_units_[k].offset) {
+        pes_packets[pes_idx].pts = access_units_[k].pts;
+        break;
+      }
+    }
+  }
 }
 
 void EsParserH264Test::ProcessPesPackets(
-    const std::vector<Packet>& pes_packets) {
+    const std::vector<Packet>& pes_packets,
+    bool force_timing) {
   EsParserH264 es_parser(
       base::Bind(&EsParserH264Test::NewVideoConfig, base::Unretained(this)),
       base::Bind(&EsParserH264Test::EmitBuffer, base::Unretained(this)));
 
-  size_t au_idx = 0;
   for (size_t k = 0; k < pes_packets.size(); k++) {
     size_t cur_pes_offset = pes_packets[k].offset;
     size_t cur_pes_size = pes_packets[k].size;
 
-    // Update the access unit the PES belongs to from a timing point of view.
-    while (au_idx < access_units_.size() - 1 &&
-           cur_pes_offset <= access_units_[au_idx + 1].offset &&
-           cur_pes_offset + cur_pes_size > access_units_[au_idx + 1].offset) {
-      au_idx++;
-    }
-
-    // Check whether the PES packet includes the start of an access unit.
-    // The timings are relevant only in this case.
     base::TimeDelta pts = kNoTimestamp();
     base::TimeDelta dts = kNoTimestamp();
-    if (cur_pes_offset <= access_units_[au_idx].offset &&
-        cur_pes_offset + cur_pes_size > access_units_[au_idx].offset) {
-      pts = base::TimeDelta::FromMilliseconds(au_idx * 40u);
-    }
+    if (pes_packets[k].pts >= base::TimeDelta() || force_timing)
+      pts = pes_packets[k].pts;
 
     ASSERT_TRUE(
         es_parser.Parse(&stream_[cur_pes_offset], cur_pes_size, pts, dts));
@@ -190,16 +216,22 @@ void EsParserH264Test::ProcessPesPackets(
   es_parser.Flush();
 }
 
+void EsParserH264Test::EmitBuffer(scoped_refptr<StreamParserBuffer> buffer) {
+  ASSERT_LT(buffer_count_, access_units_.size());
+  EXPECT_EQ(buffer->timestamp(), access_units_[buffer_count_].pts);
+  buffer_count_++;
+}
 
 TEST_F(EsParserH264Test, OneAccessUnitPerPes) {
   LoadStream("bear.h264");
 
   // One to one equivalence between PES packets and access units.
   std::vector<Packet> pes_packets(access_units_);
+  GetPesTimestamps(pes_packets);
 
   // Process each PES packet.
-  ProcessPesPackets(pes_packets);
-  ASSERT_EQ(buffer_count(), access_units_.size());
+  ProcessPesPackets(pes_packets, false);
+  EXPECT_EQ(buffer_count_, access_units_.size());
 }
 
 TEST_F(EsParserH264Test, NonAlignedPesPacket) {
@@ -220,10 +252,11 @@ TEST_F(EsParserH264Test, NonAlignedPesPacket) {
         std::min<size_t>(487u, access_units_[k].size);
   }
   ComputePacketSize(pes_packets, stream_.size());
+  GetPesTimestamps(pes_packets);
 
   // Process each PES packet.
-  ProcessPesPackets(pes_packets);
-  ASSERT_EQ(buffer_count(), access_units_.size());
+  ProcessPesPackets(pes_packets, false);
+  EXPECT_EQ(buffer_count_, access_units_.size());
 }
 
 TEST_F(EsParserH264Test, SeveralPesPerAccessUnit) {
@@ -250,10 +283,16 @@ TEST_F(EsParserH264Test, SeveralPesPerAccessUnit) {
     cur_pes_packet.offset += pes_size;
   }
   ComputePacketSize(pes_packets, stream_.size());
+  GetPesTimestamps(pes_packets);
 
   // Process each PES packet.
-  ProcessPesPackets(pes_packets);
-  ASSERT_EQ(buffer_count(), access_units_.size());
+  ProcessPesPackets(pes_packets, false);
+  EXPECT_EQ(buffer_count_, access_units_.size());
+
+  // Process PES packets forcing timings for each PES packet.
+  buffer_count_ = 0;
+  ProcessPesPackets(pes_packets, true);
+  EXPECT_EQ(buffer_count_, access_units_.size());
 }
 
 }  // namespace mp2t
