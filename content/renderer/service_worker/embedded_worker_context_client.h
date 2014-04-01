@@ -61,6 +61,8 @@ class EmbeddedWorkerContextClient
   virtual void workerContextFailedToStart();
   virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
   virtual void workerContextDestroyed();
+  virtual void didHandleActivateEvent(int request_id,
+                                      blink::WebServiceWorkerEventResult);
   virtual void didHandleInstallEvent(int request_id,
                                      blink::WebServiceWorkerEventResult result);
   virtual void didHandleFetchEvent(int request_id);

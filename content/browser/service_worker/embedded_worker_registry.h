@@ -54,6 +54,8 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // ServiceWorkerDispatcherHost.
   void OnWorkerStarted(int process_id, int thread_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
+  // FIXME(dominicc): Rename this. The name leads to confusion that
+  // this sends a message to the browser itself.
   void OnSendMessageToBrowser(int embedded_worker_id,
                               int request_id,
                               const IPC::Message& message);

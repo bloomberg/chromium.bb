@@ -153,6 +153,13 @@ void EmbeddedWorkerContextClient::workerContextDestroyed() {
                  embedded_worker_id_));
 }
 
+void EmbeddedWorkerContextClient::didHandleActivateEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
+  DCHECK(script_context_);
+  script_context_->DidHandleActivateEvent(request_id, result);
+}
+
 void EmbeddedWorkerContextClient::didHandleInstallEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {

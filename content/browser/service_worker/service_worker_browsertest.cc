@@ -259,6 +259,23 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_EQ(SERVICE_WORKER_OK, status);
   }
 
+  void ActivateTestHelper(
+      const std::string& worker_url,
+      ServiceWorkerStatusCode expected_status) {
+    RunOnIOThread(
+        base::Bind(&self::SetUpRegistrationOnIOThread, this, worker_url));
+    version_->SetStatus(ServiceWorkerVersion::INSTALLED);
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    base::RunLoop run_loop;
+    BrowserThread::PostTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(
+            &self::ActivateOnIOThread, this, run_loop.QuitClosure(), &status));
+    run_loop.Run();
+    ASSERT_EQ(expected_status, status);
+  }
+
   void FetchTestHelper(const std::string& worker_url,
                        ServiceWorkerFetchEventResult* result,
                        ServiceWorkerResponse* response) {
@@ -304,6 +321,14 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->DispatchInstallEvent(
         -1, CreateReceiver(BrowserThread::UI, done, result));
+  }
+
+  void ActivateOnIOThread(const base::Closure& done,
+                          ServiceWorkerStatusCode* result) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    version_->SetStatus(ServiceWorkerVersion::INSTALLED);
+    version_->DispatchActivateEvent(
+        CreateReceiver(BrowserThread::UI, done, result));
   }
 
   void FetchOnIOThread(const base::Closure& done, FetchResult* result) {
@@ -397,6 +422,17 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithWaitUntil_Fulfilled) {
   InstallTestHelper("/service_worker/worker_install_fulfilled.js",
                     SERVICE_WORKER_OK);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       Activate_NoEventListener) {
+  ActivateTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
+  ASSERT_EQ(ServiceWorkerVersion::ACTIVE, version_->status());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Activate_Rejected) {
+  ActivateTestHelper("/service_worker/worker_activate_rejected.js",
+                     SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,

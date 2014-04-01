@@ -38,6 +38,8 @@ class ServiceWorkerScriptContext {
 
   void OnMessageReceived(int request_id, const IPC::Message& message);
 
+  void DidHandleActivateEvent(int request_id,
+                              blink::WebServiceWorkerEventResult);
   void DidHandleInstallEvent(int request_id,
                              blink::WebServiceWorkerEventResult result);
   void DidHandleFetchEvent(int request_id,
@@ -48,6 +50,7 @@ class ServiceWorkerScriptContext {
   // Send message back to the browser.
   void Send(int request_id, const IPC::Message& message);
 
+  void OnActivateEvent();
   void OnInstallEvent(int active_version_id);
   void OnFetchEvent(const ServiceWorkerFetchRequest& request);
   void OnPostMessage(const base::string16& message,

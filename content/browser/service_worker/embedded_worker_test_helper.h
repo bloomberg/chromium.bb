@@ -32,10 +32,8 @@ struct ServiceWorkerFetchRequest;
 // for StartWorker and StopWorker requests. The default implementation
 // also returns success for event messages (e.g. InstallEvent, FetchEvent).
 //
-// Alternatively consumers can subclass this helper and override
-// OnStartWorker(), OnStopWorker(), OnSendMessageToWorker(),
-// OnInstallEvent(), OnFetchEvent() etc to add their own
-// logic/verification code.
+// Alternatively consumers can subclass this helper and override On*()
+// methods to add their own logic/verification code.
 //
 // See embedded_worker_instance_unittest.cc for example usages.
 //
@@ -67,9 +65,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // Called when StartWorker, StopWorker and SendMessageToWorker message
   // is sent to the embedded worker. Override if necessary. By default
   // they verify given parameters and:
-  // - call SimulateWorkerStarted for OnStartWorker
-  // - call SimulateWorkerStoped for OnStopWorker
-  // - call OnFooEvent handlers for known events for OnSendMessageToWorker
+  // - OnStartWorker calls SimulateWorkerStarted
+  // - OnStopWorker calls SimulateWorkerStoped
+  // - OnSendMessageToWorker calls the message's respective On*Event handler
   virtual void OnStartWorker(int embedded_worker_id,
                              int64 service_worker_version_id,
                              const GURL& script_url);
@@ -79,10 +77,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                                      int request_id,
                                      const IPC::Message& message);
 
-  // Called when InstallEvent, FetchEvent message is sent to the embedded
-  // worker. These are called via OnSendMessageToWorker()'s default
-  // implementation. By default they just return success via
+  // On*Event handlers. Called by the default implementation of
+  // OnSendMessageToWorker when events are sent to the embedded
+  // worker. By default they just return success via
   // SimulateSendMessageToBrowser.
+  virtual void OnActivateEvent(int embedded_worker_id, int request_id);
   virtual void OnInstallEvent(int embedded_worker_id,
                               int request_id,
                               int active_version_id);
@@ -107,6 +106,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  int embedded_worker_id,
                                  int request_id,
                                  const IPC::Message& message);
+  void OnActivateEventStub();
   void OnInstallEventStub(int active_version_id);
   void OnFetchEventStub(const ServiceWorkerFetchRequest& request);
 
