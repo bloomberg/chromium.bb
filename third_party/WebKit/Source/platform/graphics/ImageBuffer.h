@@ -55,6 +55,7 @@ namespace WebCore {
 
 class DrawingBuffer;
 class Image;
+class ImageBufferClient;
 class IntPoint;
 class IntRect;
 
@@ -81,8 +82,12 @@ public:
 
     ~ImageBuffer();
 
+    void setClient(ImageBufferClient* client) { m_client = client; }
+
     const IntSize& size() const { return m_surface->size(); }
     bool isAccelerated() const { return m_surface->isAccelerated(); }
+    bool isSurfaceValid() const;
+    bool restoreSurface() const;
 
     void setIsHidden(bool hidden) { m_surface->setIsHidden(hidden); }
 
@@ -117,9 +122,10 @@ public:
 
     void flush();
 
+    void notifySurfaceInvalid();
+
 private:
     ImageBuffer(PassOwnPtr<ImageBufferSurface>);
-    bool isValid() const;
 
     void draw(GraphicsContext*, const FloatRect&, const FloatRect& = FloatRect(0, 0, -1, -1), CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
     void drawPattern(GraphicsContext*, const FloatRect&, const FloatSize&, const FloatPoint&, CompositeOperator, const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing = IntSize());
@@ -133,6 +139,7 @@ private:
 
     OwnPtr<ImageBufferSurface> m_surface;
     OwnPtr<GraphicsContext> m_context;
+    ImageBufferClient* m_client;
 };
 
 struct ImageDataBuffer {

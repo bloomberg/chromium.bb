@@ -358,6 +358,12 @@ void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
     m_didFailToCreateImageBuffer = false;
     discardImageBuffer();
     clearCopiedImage();
+    if (m_context && m_context->is2d()) {
+        CanvasRenderingContext2D* context2d = toCanvasRenderingContext2D(m_context.get());
+        if (context2d->isContextLost()) {
+            context2d->restoreContext();
+        }
+    }
 }
 
 String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
@@ -450,6 +456,13 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
 
 void HTMLCanvasElement::createImageBuffer()
 {
+    createImageBufferInternal();
+    if (m_didFailToCreateImageBuffer && m_context && m_context->is2d())
+        toCanvasRenderingContext2D(m_context.get())->loseContext();
+}
+
+void HTMLCanvasElement::createImageBufferInternal()
+{
     ASSERT(!m_imageBuffer);
     ASSERT(!m_contextStateSaver);
 
@@ -470,7 +483,9 @@ void HTMLCanvasElement::createImageBuffer()
     OwnPtr<ImageBufferSurface> surface = createImageBufferSurface(deviceSize, &msaaSampleCount);
     if (!surface->isValid())
         return;
+
     m_imageBuffer = ImageBuffer::create(surface.release());
+    m_imageBuffer->setClient(this);
 
     m_didFailToCreateImageBuffer = false;
 
@@ -481,6 +496,7 @@ void HTMLCanvasElement::createImageBuffer()
         return;
     }
 
+    m_imageBuffer->setClient(this);
     m_imageBuffer->context()->setShouldClampToSourceRect(false);
     m_imageBuffer->context()->setImageInterpolationQuality(CanvasDefaultInterpolationQuality);
     // Enabling MSAA overrides a request to disable antialiasing. This is true regardless of whether the
@@ -497,6 +513,15 @@ void HTMLCanvasElement::createImageBuffer()
     // Recalculate compositing requirements if acceleration state changed.
     if (m_context)
         scheduleLayerUpdate();
+    return;
+}
+
+void HTMLCanvasElement::notifySurfaceInvalid()
+{
+    if (m_context && m_context->is2d()) {
+        CanvasRenderingContext2D* context2d = toCanvasRenderingContext2D(m_context.get());
+        context2d->loseContext();
+    }
 }
 
 void HTMLCanvasElement::updateExternallyAllocatedMemory() const
@@ -586,6 +611,11 @@ void HTMLCanvasElement::discardImageBuffer()
     m_contextStateSaver.clear(); // uses context owned by m_imageBuffer
     m_imageBuffer.clear();
     updateExternallyAllocatedMemory();
+}
+
+bool HTMLCanvasElement::hasValidImageBuffer() const
+{
+    return m_imageBuffer && m_imageBuffer->isSurfaceValid();
 }
 
 void HTMLCanvasElement::clearCopiedImage()

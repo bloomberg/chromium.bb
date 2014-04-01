@@ -50,7 +50,9 @@ compositionstart
 compositionupdate
 connect
 connecting
+contextlost
 contextmenu
+contextrestored
 copy
 cuechange
 cut

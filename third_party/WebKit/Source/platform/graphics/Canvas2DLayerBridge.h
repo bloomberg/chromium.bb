@@ -49,6 +49,8 @@ class Canvas2DLayerBridgeTest;
 
 namespace WebCore {
 
+class ImageBuffer;
+
 class PLATFORM_EXPORT Canvas2DLayerBridge : public blink::WebExternalTextureLayerClient, public SkDeferredCanvas::NotificationClient, public DoublyLinkedListNode<Canvas2DLayerBridge>, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
@@ -70,12 +72,13 @@ public:
     // ImageBufferSurface implementation
     void willUse();
     SkCanvas* canvas() const { return m_canvas.get(); }
-    bool surfaceIsValid();
-    bool recoverSurface();
+    bool checkSurfaceValid();
+    bool restoreSurface();
     blink::WebLayer* layer() const;
     Platform3DObject getBackingTexture();
     bool isAccelerated() const { return true; }
     void setIsHidden(bool);
+    void setImageBuffer(ImageBuffer* imageBuffer) { m_imageBuffer = imageBuffer; }
 
     // Methods used by Canvas2DLayerManager
     virtual size_t freeMemoryIfPossible(size_t); // virtual for mocking
@@ -99,10 +102,11 @@ protected:
     OwnPtr<SkDeferredCanvas> m_canvas;
     OwnPtr<blink::WebExternalTextureLayer> m_layer;
     OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
+    ImageBuffer* m_imageBuffer;
     int m_msaaSampleCount;
     size_t m_bytesAllocated;
     bool m_didRecordDrawCommand;
-    bool m_surfaceIsValid;
+    bool m_isSurfaceValid;
     int m_framesPending;
     int m_framesSinceMailboxRelease;
     bool m_destructionInProgress;

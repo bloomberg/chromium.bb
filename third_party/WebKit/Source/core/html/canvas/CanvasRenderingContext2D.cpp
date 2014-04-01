@@ -76,11 +76,25 @@ namespace WebCore {
 static const int defaultFontSize = 10;
 static const char defaultFontFamily[] = "sans-serif";
 static const char defaultFont[] = "10px sans-serif";
+static const double TryRestoreContextInterval = 0.5;
+static const unsigned MaxTryRestoreContextAttempts = 4;
+
+static bool contextLostRestoredEventsEnabled()
+{
+    return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+}
 
 CanvasRenderingContext2D::CanvasRenderingContext2D(HTMLCanvasElement* canvas, const Canvas2DContextAttributes* attrs, bool usesCSSCompatibilityParseMode)
     : CanvasRenderingContext(canvas)
     , m_usesCSSCompatibilityParseMode(usesCSSCompatibilityParseMode)
     , m_hasAlpha(!attrs || attrs->alpha())
+    , m_isContextLost(false)
+    , m_contextRestorable(true)
+    , m_storageMode(!attrs ? PersistentStorage : attrs->parsedStorage())
+    , m_tryRestoreContextAttemptCount(0)
+    , m_dispatchContextLostEventTimer(this, &CanvasRenderingContext2D::dispatchContextLostEvent)
+    , m_dispatchContextRestoredEventTimer(this, &CanvasRenderingContext2D::dispatchContextRestoredEvent)
+    , m_tryRestoreContextEventTimer(this, &CanvasRenderingContext2D::tryRestoreContextEvent)
 {
     m_stateStack.append(adoptPtrWillBeNoop(new State()));
     ScriptWrappable::init(this);
@@ -112,6 +126,91 @@ bool CanvasRenderingContext2D::isAccelerated() const
         return false;
     GraphicsContext* context = drawingContext();
     return context && context->isAccelerated();
+}
+
+bool CanvasRenderingContext2D::isContextLost() const
+{
+    return m_isContextLost;
+}
+
+void CanvasRenderingContext2D::loseContext()
+{
+    if (m_isContextLost)
+        return;
+    m_isContextLost = true;
+    m_dispatchContextLostEventTimer.startOneShot(0, FROM_HERE);
+}
+
+void CanvasRenderingContext2D::restoreContext()
+{
+    if (!m_contextRestorable)
+        return;
+    // This code path is for restoring from an eviction
+    // Restoring from surface failure is handled internally
+    ASSERT(m_isContextLost && !canvas()->hasImageBuffer());
+
+    if (canvas()->buffer()) {
+        if (contextLostRestoredEventsEnabled()) {
+            m_dispatchContextRestoredEventTimer.startOneShot(0, FROM_HERE);
+        } else {
+            // legacy synchronous context restoration.
+            reset();
+            m_isContextLost = false;
+        }
+    }
+}
+
+void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)
+{
+    if (contextLostRestoredEventsEnabled()) {
+        RefPtr<Event> event(Event::createCancelable(EventTypeNames::contextlost));
+        canvas()->dispatchEvent(event);
+        if (event->defaultPrevented()) {
+            m_contextRestorable = false;
+        }
+    }
+
+    // If an image buffer is present, it means the context was not lost due to
+    // an eviction, but rather due to a surface failure (gpu context lost?)
+    if (m_contextRestorable && canvas()->hasImageBuffer()) {
+        m_tryRestoreContextAttemptCount = 0;
+        m_tryRestoreContextEventTimer.startRepeating(TryRestoreContextInterval, FROM_HERE);
+    }
+}
+
+void CanvasRenderingContext2D::tryRestoreContextEvent(Timer<CanvasRenderingContext2D>* timer)
+{
+    if (!m_isContextLost) {
+        // Canvas was already restored (possibly thanks to a resize), so stop trying.
+        m_tryRestoreContextEventTimer.stop();
+        return;
+    }
+    if (canvas()->hasImageBuffer() && canvas()->buffer()->restoreSurface()) {
+        m_tryRestoreContextEventTimer.stop();
+        dispatchContextRestoredEvent(0);
+    }
+
+    if (++m_tryRestoreContextAttemptCount > MaxTryRestoreContextAttempts)
+        canvas()->discardImageBuffer();
+
+    if (!canvas()->hasImageBuffer()) {
+        // final attempt: allocate a brand new image buffer instead of restoring
+        timer->stop();
+        if (canvas()->buffer())
+            dispatchContextRestoredEvent(0);
+    }
+}
+
+void CanvasRenderingContext2D::dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*)
+{
+    if (!m_isContextLost)
+        return;
+    reset();
+    m_isContextLost = false;
+    if (contextLostRestoredEventsEnabled()) {
+        RefPtr<Event> event(Event::create(EventTypeNames::contextrestored));
+        canvas()->dispatchEvent(event);
+    }
 }
 
 void CanvasRenderingContext2D::reset()
@@ -1708,6 +1807,8 @@ void CanvasRenderingContext2D::didDraw(const FloatRect& dirtyRect)
 
 GraphicsContext* CanvasRenderingContext2D::drawingContext() const
 {
+    if (isContextLost())
+        return 0;
     return canvas()->drawingContext();
 }
 
@@ -1793,7 +1894,7 @@ PassRefPtrWillBeRawPtr<ImageData> CanvasRenderingContext2D::getImageData(float s
 
     IntRect imageDataRect = enclosingIntRect(logicalRect);
     ImageBuffer* buffer = canvas()->buffer();
-    if (!buffer)
+    if (!buffer || isContextLost())
         return createEmptyImageData(imageDataRect.size());
 
     RefPtr<Uint8ClampedArray> byteArray = buffer->getUnmultipliedImageData(imageDataRect);

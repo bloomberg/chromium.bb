@@ -33,6 +33,11 @@
 
 namespace WebCore {
 
+enum Canvas2DContextStorage {
+    PersistentStorage,
+    DiscardableStorage
+};
+
 class Canvas2DContextAttributes : public CanvasContextAttributes, public ScriptWrappable {
 public:
     virtual ~Canvas2DContextAttributes();
@@ -44,10 +49,15 @@ public:
     bool alpha() const;
     void setAlpha(bool);
 
+    String storage() const;
+    void setStorage(const String&);
+    Canvas2DContextStorage parsedStorage() const;
+
 protected:
     Canvas2DContextAttributes();
 
     bool m_alpha;
+    Canvas2DContextStorage m_storage;
 };
 
 } // namespace WebCore

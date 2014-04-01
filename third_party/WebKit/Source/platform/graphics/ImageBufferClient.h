@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Google Inc. All rights reserved.
+ * Copyright (c) 2014, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,46 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#include "platform/graphics/ImageBufferSurface.h"
-
-#include "platform/graphics/ImageBuffer.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDevice.h"
+#ifndef ImageBufferClient_h
+#define ImageBufferClient_h
 
 namespace WebCore {
 
-ImageBufferSurface::ImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
-    : m_opacityMode(opacityMode)
-    , m_size(size)
-{
-    setIsHidden(false);
+class ImageBufferClient {
+public:
+    virtual ~ImageBufferClient() { }
+    virtual void notifySurfaceInvalid() = 0;
+};
+
 }
 
-void ImageBufferSurface::clear()
-{
-    // Clear the background transparent or opaque, as required. It would be nice if this wasn't
-    // required, but the canvas is currently filled with the magic transparency
-    // color. Can we have another way to manage this?
-    if (isValid()) {
-        if (m_opacityMode == Opaque)
-            canvas()->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
-        else
-            canvas()->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
-    }
-}
+#endif
 
-const SkBitmap& ImageBufferSurface::bitmap() const
-{
-    ASSERT(canvas());
-    return canvas()->getTopDevice()->accessBitmap(false);
-}
-
-const SkBitmap& ImageBufferSurface::cachedBitmap() const
-{
-    DEFINE_STATIC_LOCAL(SkBitmap, nullBitmap, ());
-    return nullBitmap;
-}
-
-} // namespace WebCore

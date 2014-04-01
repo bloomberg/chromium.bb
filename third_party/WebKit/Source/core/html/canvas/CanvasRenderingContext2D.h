@@ -112,6 +112,8 @@ public:
     float globalAlpha() const;
     void setGlobalAlpha(float);
 
+    bool isContextLost() const;
+
     String globalCompositeOperation() const;
     void setGlobalCompositeOperation(const String&);
 
@@ -230,6 +232,9 @@ public:
     void drawFocusIfNeeded(Element*);
     bool drawCustomFocusRing(Element*);
 
+    void loseContext();
+    void restoreContext();
+
 private:
     class State FINAL : public CSSFontSelectorClient {
     public:
@@ -285,6 +290,10 @@ private:
     void applyShadow();
     bool shouldDrawShadows() const;
 
+    void dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*);
+    void dispatchContextRestoredEvent(Timer<CanvasRenderingContext2D>*);
+    void tryRestoreContextEvent(Timer<CanvasRenderingContext2D>*);
+
     bool computeDirtyRect(const FloatRect& localBounds, FloatRect*);
     bool computeDirtyRect(const FloatRect& localBounds, const FloatRect& transformedClipBounds, FloatRect*);
     void didDraw(const FloatRect&);
@@ -339,7 +348,14 @@ private:
     WillBePersistentHeapVector<OwnPtrWillBeMember<State> > m_stateStack;
     bool m_usesCSSCompatibilityParseMode;
     bool m_hasAlpha;
+    bool m_isContextLost;
+    bool m_contextRestorable;
+    Canvas2DContextStorage m_storageMode;
     MutableStylePropertyMap m_fetchedFonts;
+    unsigned m_tryRestoreContextAttemptCount;
+    Timer<CanvasRenderingContext2D> m_dispatchContextLostEventTimer;
+    Timer<CanvasRenderingContext2D> m_dispatchContextRestoredEventTimer;
+    Timer<CanvasRenderingContext2D> m_tryRestoreContextEventTimer;
 };
 
 DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context, context->is2d(), context.is2d());

@@ -100,6 +100,10 @@ interface CanvasRenderingContext2D {
 
     TextMetrics measureText(DOMString text);
 
+    // Context state
+    // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental
+    [RuntimeEnabled=ExperimentalCanvasFeatures] boolean isContextLost();
+
     // other
 
     void setAlpha(float alpha);

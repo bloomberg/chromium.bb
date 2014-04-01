@@ -38,6 +38,7 @@
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "platform/graphics/ImageBufferClient.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
@@ -76,7 +77,9 @@ PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opa
 
 ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)
     : m_surface(surface)
+    , m_client(0)
 {
+    m_surface->setImageBuffer(this);
     if (m_surface->canvas()) {
         m_context = adoptPtr(new GraphicsContext(m_surface->canvas()));
         m_context->setCertainlyOpaque(m_surface->opacityMode() == Opaque);
@@ -90,6 +93,8 @@ ImageBuffer::~ImageBuffer()
 
 GraphicsContext* ImageBuffer::context() const
 {
+    if (!isSurfaceValid())
+        return 0;
     m_surface->willUse();
     ASSERT(m_context.get());
     return m_context.get();
@@ -101,9 +106,20 @@ const SkBitmap& ImageBuffer::bitmap() const
     return m_surface->bitmap();
 }
 
-bool ImageBuffer::isValid() const
+bool ImageBuffer::isSurfaceValid() const
 {
     return m_surface->isValid();
+}
+
+bool ImageBuffer::restoreSurface() const
+{
+    return m_surface->isValid() || m_surface->restore();
+}
+
+void ImageBuffer::notifySurfaceInvalid()
+{
+    if (m_client)
+        m_client->notifySurfaceInvalid();
 }
 
 static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
@@ -117,7 +133,7 @@ static SkBitmap deepSkBitmapCopy(const SkBitmap& bitmap)
 
 PassRefPtr<Image> ImageBuffer::copyImage(BackingStoreCopy copyBehavior, ScaleBehavior) const
 {
-    if (!isValid())
+    if (!isSurfaceValid())
         return BitmapImage::create(NativeImageSkia::create());
 
     const SkBitmap& bitmap = m_surface->bitmap();
@@ -136,7 +152,7 @@ blink::WebLayer* ImageBuffer::platformLayer() const
 
 bool ImageBuffer::copyToPlatformTexture(blink::WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
-    if (!m_surface->isAccelerated() || !platformLayer() || !isValid())
+    if (!m_surface->isAccelerated() || !platformLayer() || !isSurfaceValid())
         return false;
 
     if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(internalFormat, destType, level))
@@ -217,13 +233,13 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 
 void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator op, blink::WebBlendMode blendMode)
 {
-    if (!isValid())
+    if (!isSurfaceValid())
         return;
 
     SkBitmap bitmap = m_surface->bitmap();
     // For ImageBufferSurface that enables cachedBitmap, Use the cached Bitmap for CPU side usage
     // if it is available, otherwise generate and use it.
-    if (!context->isAccelerated() && m_surface->isAccelerated() && m_surface->cachedBitmapEnabled() && m_surface->isValid()) {
+    if (!context->isAccelerated() && m_surface->isAccelerated() && m_surface->cachedBitmapEnabled() && isSurfaceValid()) {
         m_surface->updateCachedBitmapIfNeeded();
         bitmap = m_surface->cachedBitmap();
     }
@@ -243,7 +259,7 @@ void ImageBuffer::flush()
 void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
     const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect, blink::WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
-    if (!isValid())
+    if (!isSurfaceValid())
         return;
 
     const SkBitmap& bitmap = m_surface->bitmap();
@@ -258,7 +274,7 @@ void ImageBuffer::transformColorSpace(ColorSpace srcColorSpace, ColorSpace dstCo
         return;
 
     // FIXME: Disable color space conversions on accelerated canvases (for now).
-    if (context()->isAccelerated() || !isValid())
+    if (context()->isAccelerated() || !isSurfaceValid())
         return;
 
     const SkBitmap& bitmap = m_surface->bitmap();
@@ -315,21 +331,21 @@ PassRefPtr<Uint8ClampedArray> getImageData(const IntRect& rect, GraphicsContext*
 
 PassRefPtr<Uint8ClampedArray> ImageBuffer::getUnmultipliedImageData(const IntRect& rect) const
 {
-    if (!isValid())
+    if (!isSurfaceValid())
         return Uint8ClampedArray::create(rect.width() * rect.height() * 4);
     return getImageData<Unmultiplied>(rect, context(), m_surface->size());
 }
 
 PassRefPtr<Uint8ClampedArray> ImageBuffer::getPremultipliedImageData(const IntRect& rect) const
 {
-    if (!isValid())
+    if (!isSurfaceValid())
         return Uint8ClampedArray::create(rect.width() * rect.height() * 4);
     return getImageData<Premultiplied>(rect, context(), m_surface->size());
 }
 
 void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, const IntSize& sourceSize, const IntRect& sourceRect, const IntPoint& destPoint)
 {
-    if (!isValid())
+    if (!isSurfaceValid())
         return;
 
     ASSERT(sourceRect.width() > 0);
@@ -388,7 +404,7 @@ String ImageBuffer::toDataURL(const String& mimeType, const double* quality) con
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 
     Vector<char> encodedImage;
-    if (!isValid() || !encodeImage(m_surface->bitmap(), mimeType, quality, &encodedImage))
+    if (!isSurfaceValid() || !encodeImage(m_surface->bitmap(), mimeType, quality, &encodedImage))
         return "data:,";
     Vector<char> base64Data;
     base64Encode(encodedImage, base64Data);

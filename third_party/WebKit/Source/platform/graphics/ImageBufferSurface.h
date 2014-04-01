@@ -44,6 +44,8 @@ namespace blink { class WebLayer; }
 
 namespace WebCore {
 
+class ImageBuffer;
+
 enum OpacityMode {
     NonOpaque,
     Opaque,
@@ -58,6 +60,7 @@ public:
     virtual const SkBitmap& bitmap() const;
     virtual void willUse() { } // Called by ImageBuffer before reading or writing to the surface.
     virtual bool isValid() const = 0;
+    virtual bool restore() { return false; };
     virtual blink::WebLayer* layer() const { return 0; };
     virtual bool isAccelerated() const { return false; }
     virtual Platform3DObject getBackingTexture() const { return 0; }
@@ -66,19 +69,15 @@ public:
     virtual void invalidateCachedBitmap() { }
     virtual void updateCachedBitmapIfNeeded() { }
     virtual void setIsHidden(bool) { }
+    virtual void setImageBuffer(ImageBuffer*) { }
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }
+    void notifyIsValidChanged(bool isValid) const;
 
 protected:
+    ImageBufferSurface(const IntSize&, OpacityMode);
     void clear();
-
-    ImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
-        : m_opacityMode(opacityMode)
-        , m_size(size)
-    {
-        setIsHidden(false);
-    }
 
 private:
     OpacityMode m_opacityMode;

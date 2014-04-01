@@ -28,10 +28,13 @@
 
 #include "Canvas2DContextAttributes.h"
 
+#include "wtf/text/WTFString.h"
+
 namespace WebCore {
 
 Canvas2DContextAttributes::Canvas2DContextAttributes()
     : m_alpha(true)
+    , m_storage(PersistentStorage)
 {
     ScriptWrappable::init(this);
 }
@@ -53,6 +56,24 @@ bool Canvas2DContextAttributes::alpha() const
 void Canvas2DContextAttributes::setAlpha(bool alpha)
 {
     m_alpha = alpha;
+}
+
+String Canvas2DContextAttributes::storage() const
+{
+    return m_storage == PersistentStorage ? "persistent" : "discardable";
+}
+
+void Canvas2DContextAttributes::setStorage(const String& storage)
+{
+    if (storage == "persistent")
+        m_storage = PersistentStorage;
+    else if (storage == "discardable")
+        m_storage = DiscardableStorage;
+}
+
+Canvas2DContextStorage Canvas2DContextAttributes::parsedStorage() const
+{
+    return m_storage;
 }
 
 } // namespace WebCore
