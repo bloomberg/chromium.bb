@@ -171,6 +171,7 @@ class RenderWidget::ScreenMetricsEmulator {
   gfx::Point offset() { return offset_; }
   gfx::Rect widget_rect() const { return widget_rect_; }
   gfx::Rect original_screen_rect() const { return original_view_screen_rect_; }
+  const WebScreenInfo& original_screen_info() { return original_screen_info_; }
 
   void ChangeEmulationParams(
       const gfx::Rect& device_rect,
@@ -571,6 +572,8 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
   popup_screen_origin_for_emulation_ = gfx::Point(
       emulator->original_screen_rect().origin().x() + emulator->offset().x(),
       emulator->original_screen_rect().origin().y() + emulator->offset().y());
+  screen_info_ = emulator->original_screen_info();
+  device_scale_factor_ = screen_info_.deviceScaleFactor;
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
