@@ -8,13 +8,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/browser/extension_error_test_util.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -43,6 +47,81 @@ class ErrorConsoleUnitTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   ErrorConsole* error_console_;
 };
+
+// Test that the error console is enabled/disabled appropriately.
+TEST_F(ErrorConsoleUnitTest, EnableAndDisableErrorConsole) {
+  // Start in Dev Channel, without the feature switch.
+  scoped_ptr<ScopedCurrentChannel> channel_override(
+      new ScopedCurrentChannel(chrome::VersionInfo::CHANNEL_DEV));
+  ASSERT_EQ(chrome::VersionInfo::CHANNEL_DEV, GetCurrentChannel());
+  FeatureSwitch::error_console()->SetOverrideValue(
+      FeatureSwitch::OVERRIDE_DISABLED);
+
+  // At the start, the error console should be enabled, and specifically
+  // enabled for the chrome:extensions page.
+  EXPECT_TRUE(error_console_->enabled());
+  EXPECT_TRUE(error_console_->IsEnabledForChromeExtensionsPage());
+  EXPECT_FALSE(error_console_->IsEnabledForAppsDeveloperTools());
+
+  // If we disable developer mode, we should disable error console.
+  profile_->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, false);
+  EXPECT_FALSE(error_console_->enabled());
+  EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());
+  EXPECT_FALSE(error_console_->IsEnabledForAppsDeveloperTools());
+
+  // Similarly, if we change the current to less fun than Dev, ErrorConsole
+  // should be disabled.
+  channel_override.reset();
+  channel_override.reset(
+      new ScopedCurrentChannel(chrome::VersionInfo::CHANNEL_BETA));
+  profile_->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  EXPECT_FALSE(error_console_->enabled());
+  EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());
+  EXPECT_FALSE(error_console_->IsEnabledForAppsDeveloperTools());
+
+  // But if we add the feature switch, that should override the channel.
+  FeatureSwitch::error_console()->SetOverrideValue(
+      FeatureSwitch::OVERRIDE_ENABLED);
+  ASSERT_TRUE(FeatureSwitch::error_console()->IsEnabled());
+  // We use a pref mod to "poke" the ErrorConsole, because it needs an
+  // indication that something changed (FeatureSwitches don't change in a real
+  // environment, so ErrorConsole doesn't listen for them).
+  profile_->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, false);
+  profile_->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode, true);
+  EXPECT_TRUE(error_console_->enabled());
+  EXPECT_TRUE(error_console_->IsEnabledForChromeExtensionsPage());
+  EXPECT_FALSE(error_console_->IsEnabledForAppsDeveloperTools());
+
+  // Next, remove the feature switch (turning error console off), and install
+  // the Apps Developer Tools. If we have Apps Developer Tools, Error Console
+  // should be enabled by default.
+  FeatureSwitch::error_console()->SetOverrideValue(
+      FeatureSwitch::OVERRIDE_DISABLED);
+  const char kAppsDeveloperToolsExtensionId[] =
+      "ohmmkhmmmpcnpikjeljgnaoabkaalbgc";
+  scoped_refptr<Extension> adt =
+      ExtensionBuilder()
+          .SetManifest(
+              DictionaryBuilder().Set("name", "apps dev tools")
+                                 .Set("version", "0.2.0")
+                                 .Set("manifest_version", 2)
+                                 .Build())
+          .SetID(kAppsDeveloperToolsExtensionId)
+          .Build();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  registry->AddEnabled(adt);
+  registry->TriggerOnLoaded(adt);
+  EXPECT_TRUE(error_console_->enabled());
+  EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());
+  EXPECT_TRUE(error_console_->IsEnabledForAppsDeveloperTools());
+
+  // Unloading the Apps Developer Tools should disable error console.
+  registry->RemoveEnabled(adt->id());
+  registry->TriggerOnUnloaded(adt);
+  EXPECT_FALSE(error_console_->enabled());
+  EXPECT_FALSE(error_console_->IsEnabledForChromeExtensionsPage());
+  EXPECT_FALSE(error_console_->IsEnabledForAppsDeveloperTools());
+}
 
 // Test that errors are successfully reported. This is a simple test, since it
 // is tested more thoroughly in extensions/browser/error_map_unittest.cc

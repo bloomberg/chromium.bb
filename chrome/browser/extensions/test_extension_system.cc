@@ -39,7 +39,7 @@ TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       value_store_(NULL),
       info_map_(new InfoMap()),
-      error_console_(new ErrorConsole(profile, NULL)),
+      error_console_(new ErrorConsole(profile)),
       quota_service_(new QuotaService()) {}
 
 TestExtensionSystem::~TestExtensionSystem() {

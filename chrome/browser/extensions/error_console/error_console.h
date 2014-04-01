@@ -8,16 +8,17 @@
 #include <deque>
 #include <map>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/error_map.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace content {
 class NotificationDetails;
@@ -38,7 +39,8 @@ class Extension;
 // errors can be viewed at chrome://extensions in developer mode.
 // This class is owned by ExtensionSystem, making it, in effect, a
 // BrowserContext-keyed service.
-class ErrorConsole : public content::NotificationObserver {
+class ErrorConsole : public content::NotificationObserver,
+                     public ExtensionRegistryObserver {
  public:
   class Observer {
    public:
@@ -50,7 +52,7 @@ class ErrorConsole : public content::NotificationObserver {
     virtual void OnErrorConsoleDestroyed();
   };
 
-  explicit ErrorConsole(Profile* profile, ExtensionService* extension_service);
+  explicit ErrorConsole(Profile* profile);
   virtual ~ErrorConsole();
 
   // Convenience method to return the ErrorConsole for a given profile.
@@ -78,6 +80,16 @@ class ErrorConsole : public content::NotificationObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns whether or not the ErrorConsole is enabled for the
+  // chrome:extensions page or the Chrome Apps Developer Tools.
+  //
+  // TODO(rdevlin.cronin): These have different answers - ErrorConsole is
+  // enabled by default in ADT, but only Dev Channel for chrome:extensions (or
+  // with the commandline switch). Once we do a full launch, clean all this up.
+  bool IsEnabledForChromeExtensionsPage() const;
+  bool IsEnabledForAppsDeveloperTools() const;
+
+  // Return whether or not the ErrorConsole is enabled.
   bool enabled() const { return enabled_; }
 
   // Return the number of entries (extensions) in the error map.
@@ -94,9 +106,13 @@ class ErrorConsole : public content::NotificationObserver {
   // is no entry in the map, it signals that the |default_mask_| should be used.
   typedef std::map<std::string, int32> ErrorPreferenceMap;
 
+  // Checks whether or not the ErrorConsole should be enabled or disabled. If it
+  // is in the wrong state, enables or disables it appropriately.
+  void CheckEnabled();
+
   // Enable the error console for error collection and retention. This involves
   // subscribing to the appropriate notifications and fetching manifest errors.
-  void Enable(ExtensionService* extension_service);
+  void Enable();
 
   // Disable the error console, removing the subscriptions to notifications and
   // removing all current errors.
@@ -107,6 +123,11 @@ class ErrorConsole : public content::NotificationObserver {
   // not.
   void OnPrefChanged();
 
+  // ExtensionRegistry implementation. If the Apps Developer Tools app is
+  // installed or uninstalled, we may need to turn the ErrorConsole on/off.
+  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
+  virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE;
+
   // Add manifest errors from an extension's install warnings.
   void AddManifestErrorsForExtension(const Extension* extension);
 
@@ -115,9 +136,11 @@ class ErrorConsole : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Whether or not the error console is enabled; it is enabled if the
-  // FeatureSwitch (FeatureSwitch::error_console) is enabled and the user is
-  // in Developer Mode.
+  // Whether or not the error console should record errors. This is true if
+  // the user is in developer mode, and at least one of the following is true:
+  // - The Chrome Apps Developer Tools are installed.
+  // - FeatureSwitch::error_console() is enabled.
+  // - This is a Dev Channel release.
   bool enabled_;
 
   // Needed because ObserverList is not thread-safe.
@@ -142,6 +165,9 @@ class ErrorConsole : public content::NotificationObserver {
 
   content::NotificationRegistrar notification_registrar_;
   PrefChangeRegistrar pref_registrar_;
+
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorConsole);
 };

@@ -216,7 +216,7 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       new ExtensionWarningBadgeService(profile_));
   extension_warning_service_->AddObserver(
       extension_warning_badge_service_.get());
-  error_console_.reset(new ErrorConsole(profile_, extension_service_.get()));
+  error_console_.reset(new ErrorConsole(profile_));
   quota_service_.reset(new QuotaService);
 
   if (extensions_enabled) {

@@ -203,7 +203,8 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
     ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
 
     // We need to enable the ErrorConsole FeatureSwitch in order to collect
-    // errors.
+    // errors. This should be enabled on any channel <= Dev, but let's make
+    // sure (in case a test is running on, e.g., a beta channel).
     FeatureSwitch::error_console()->SetOverrideValue(
         FeatureSwitch::OVERRIDE_ENABLED);
   }

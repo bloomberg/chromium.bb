@@ -365,7 +365,7 @@ DeveloperPrivateGetItemsInfoFunction::CreateItemInfo(const Extension& item,
     // them to the list. Otherwise, use the install warnings (using both is
     // redundant).
     ErrorConsole* error_console = ErrorConsole::Get(GetProfile());
-    if (error_console->enabled()) {
+    if (error_console->IsEnabledForAppsDeveloperTools()) {
       const ErrorList& errors = error_console->GetErrorsForExtension(item.id());
       if (!errors.empty()) {
         for (ErrorList::const_iterator iter = errors.begin();

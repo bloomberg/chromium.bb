@@ -16,10 +16,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -29,6 +32,7 @@
 namespace extensions {
 
 namespace {
+
 // The key into the Extension prefs for an Extension's specific reporting
 // settings.
 const char kStoreExtensionErrorsPref[] = "store_extension_errors";
@@ -36,32 +40,33 @@ const char kStoreExtensionErrorsPref[] = "store_extension_errors";
 // The default mask (for the time being) is to report everything.
 const int32 kDefaultMask = (1 << ExtensionError::MANIFEST_ERROR) |
                            (1 << ExtensionError::RUNTIME_ERROR);
-}
+
+const char kAppsDeveloperToolsExtensionId[] =
+    "ohmmkhmmmpcnpikjeljgnaoabkaalbgc";
+
+}  // namespace
 
 void ErrorConsole::Observer::OnErrorConsoleDestroyed() {
 }
 
-ErrorConsole::ErrorConsole(Profile* profile,
-                           ExtensionService* extension_service)
-     : enabled_(false), default_mask_(kDefaultMask), profile_(profile) {
+ErrorConsole::ErrorConsole(Profile* profile)
+     : enabled_(false),
+       default_mask_(kDefaultMask),
+       profile_(profile),
+       registry_observer_(this) {
 // TODO(rdevlin.cronin): Remove once crbug.com/159265 is fixed.
 #if !defined(ENABLE_EXTENSIONS)
   return;
 #endif
-
-  // If we don't have the necessary FeatureSwitch enabled, then return
-  // immediately. Since we never register for any notifications, this ensures
-  // the ErrorConsole will never be enabled.
-  if (!FeatureSwitch::error_console()->IsEnabled())
-    return;
 
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(prefs::kExtensionsUIDeveloperMode,
                       base::Bind(&ErrorConsole::OnPrefChanged,
                                  base::Unretained(this)));
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode))
-    Enable(extension_service);
+  registry_observer_.Add(ExtensionRegistry::Get(profile_));
+
+  CheckEnabled();
 }
 
 ErrorConsole::~ErrorConsole() {
@@ -143,17 +148,27 @@ void ErrorConsole::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void ErrorConsole::OnPrefChanged() {
-  bool developer_mode =
-      profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+bool ErrorConsole::IsEnabledForChromeExtensionsPage() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
+         (FeatureSwitch::error_console()->IsEnabled() ||
+          GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV);
+}
 
-  if (developer_mode && !enabled_)
-    Enable(ExtensionSystem::Get(profile_)->extension_service());
-  else if (!developer_mode && enabled_)
+bool ErrorConsole::IsEnabledForAppsDeveloperTools() const {
+  return ExtensionRegistry::Get(profile_)->enabled_extensions()
+      .Contains(kAppsDeveloperToolsExtensionId);
+}
+
+void ErrorConsole::CheckEnabled() {
+  bool should_be_enabled = IsEnabledForChromeExtensionsPage() ||
+                           IsEnabledForAppsDeveloperTools();
+  if (should_be_enabled && !enabled_)
+    Enable();
+  if (!should_be_enabled && enabled_)
     Disable();
 }
 
-void ErrorConsole::Enable(ExtensionService* extension_service) {
+void ErrorConsole::Enable() {
   enabled_ = true;
 
   notification_registrar_.Add(
@@ -169,19 +184,19 @@ void ErrorConsole::Enable(ExtensionService* extension_service) {
       chrome::NOTIFICATION_EXTENSION_INSTALLED,
       content::Source<Profile>(profile_));
 
-  if (extension_service) {
-    const ExtensionSet* extensions = extension_service->extensions();
-    ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
-    for (ExtensionSet::const_iterator iter = extensions->begin();
-         iter != extensions->end(); ++iter) {
-      int mask = 0;
-      if (prefs->ReadPrefAsInteger(iter->get()->id(),
-                                   kStoreExtensionErrorsPref,
-                                   &mask)) {
-        pref_map_[iter->get()->id()] = mask;
-      }
-      AddManifestErrorsForExtension(iter->get());
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(profile_)->enabled_extensions();
+  for (ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end();
+       ++iter) {
+    int mask = 0;
+    if (prefs->ReadPrefAsInteger(iter->get()->id(),
+                                 kStoreExtensionErrorsPref,
+                                 &mask)) {
+      pref_map_[iter->get()->id()] = mask;
     }
+    AddManifestErrorsForExtension(iter->get());
   }
 }
 
@@ -189,6 +204,18 @@ void ErrorConsole::Disable() {
   notification_registrar_.RemoveAll();
   errors_.RemoveAllErrors();
   enabled_ = false;
+}
+
+void ErrorConsole::OnPrefChanged() {
+  CheckEnabled();
+}
+
+void ErrorConsole::OnExtensionUnloaded(const Extension* extension) {
+  CheckEnabled();
+}
+
+void ErrorConsole::OnExtensionLoaded(const Extension* extension) {
+  CheckEnabled();
 }
 
 void ErrorConsole::AddManifestErrorsForExtension(const Extension* extension) {

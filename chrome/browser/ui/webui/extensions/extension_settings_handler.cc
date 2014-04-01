@@ -339,7 +339,7 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   // redundant).
   ErrorConsole* error_console =
       ErrorConsole::Get(extension_service_->profile());
-  if (error_console->enabled()) {
+  if (error_console->IsEnabledForChromeExtensionsPage()) {
     const ErrorList& errors =
         error_console->GetErrorsForExtension(extension->id());
     if (!errors.empty()) {
