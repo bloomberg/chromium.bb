@@ -387,11 +387,6 @@ def SetUpArgumentBits(env):
     raise UserError("pnacl_generate_pexe and use_sandboxed_translator"
                     " don't make sense without bitcode")
 
-  # Sandboxed translator only accepts stable bitcode. Hence we must disallow
-  # nonstable bitcodes.
-  if env.Bit('use_sandboxed_translator'):
-    env.SetBits('skip_nonstable_bitcode')
-
 def CheckArguments():
   for key in ARGUMENTS:
     if key not in ACCEPTABLE_ARGUMENTS:
@@ -2833,15 +2828,24 @@ def UnderWindowsCoverage(env):
 
 nacl_env.AddMethod(UnderWindowsCoverage)
 
-def AllowNonStableBitcode(env):
+def AllowNonStableBitcode(env, allow_sb_translator=False):
   """ This modifies the environment to allow features that aren't part
       of PNaCl's stable ABI.  If tests using these features should be
       skipped entirely, this returns False.  Otherwise, on success, it
       returns True.
   """
-  if env.Bit('bitcode'):
-    env.SetBits('nonstable_bitcode')
-  return not env.Bit('skip_nonstable_bitcode')
+  if env.Bit('bitcode') and env.Bit('skip_nonstable_bitcode'):
+    return False
+  # The PNaCl sandboxed translator (for the most part) only accepts stable
+  # bitcode, so in most cases we skip building non-stable tests.
+  # However, there are some limited cases like debug information which
+  # we support but do not guarantee stability. Tests targeting such cases
+  # can opt-in to testing w/ allow_sb_translator=True.
+  if env.Bit('use_sandboxed_translator') and not allow_sb_translator:
+    return False
+  # Change environment to skip finalization step.
+  env.SetBits('nonstable_bitcode')
+  return True
 
 nacl_env.AddMethod(AllowNonStableBitcode)
 

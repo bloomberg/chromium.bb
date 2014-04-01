@@ -38,14 +38,17 @@ if env.Bit('target_arm') or env.Bit('target_mips32'):
     if env.Bit('tests_use_irt'):
       Return()
 
+# Disable finalization (which would strip debug metadata), but allow
+# the sandbox translator where it makes sense.
+if not env.AllowNonStableBitcode(allow_sb_translator=True):
+  Return()
+
 # We need -O0 to make stepping predictable and read local variables/function
 # arguments that may otherwise be optimized out.
 env.Append(CCFLAGS=['-O0', '-g', '-fno-omit-frame-pointer'])
 # We need to disable PNaCl's link time optimizations so that functions
 # do not get inlined, so that we can set breakpoints on these
 # functions.  Also make translation optimizaton level -O0.
-if not env.AllowNonStableBitcode():
-  Return()
 if env.Bit('bitcode'):
   env.Append(LINKFLAGS=['-O0'])
   env.Append(TRANSLATEFLAGS=['-O0'])
