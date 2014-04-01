@@ -98,7 +98,6 @@ TEST SUCCEEDED: The value was the string 'get'. [tested HTMLFormElement.method]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLFormElement.name]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLFormElement.target]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLFrameElement.location]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLFrameElement.frameBorder]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLFrameElement.longDesc]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLFrameElement.marginHeight]

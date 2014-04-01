@@ -166,13 +166,6 @@ void HTMLFrameElementBase::attach(const AttachContext& context)
     }
 }
 
-KURL HTMLFrameElementBase::location() const
-{
-    if (fastHasAttribute(srcdocAttr))
-        return KURL(ParsedURLString, "about:srcdoc");
-    return document().completeURL(getAttribute(srcAttr));
-}
-
 void HTMLFrameElementBase::setLocation(const String& str)
 {
     m_URL = AtomicString(str);

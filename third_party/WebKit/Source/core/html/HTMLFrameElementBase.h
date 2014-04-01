@@ -31,9 +31,6 @@ namespace WebCore {
 
 class HTMLFrameElementBase : public HTMLFrameOwnerElement {
 public:
-    KURL location() const;
-    void setLocation(const String&);
-
     virtual ScrollbarMode scrollingMode() const OVERRIDE FINAL { return m_scrolling; }
 
     int marginWidth() const { return m_marginWidth; }
@@ -64,6 +61,7 @@ private:
 
     virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
 
+    void setLocation(const String&);
     void setNameAndOpenURL();
     void openURL(bool lockBackForwardList = true);
 

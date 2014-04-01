@@ -265,9 +265,6 @@
                     type: 'HTMLFrameElement',
                     elementToUse: document.createElement('frame'),
                     attributes: [
-                        // location is a non-standard attribute, which reflects the src content
-                        // attribute when getting, and must therefore be tested before src.
-                        {name: 'location', expectedNull: ''},
                         {name: 'frameBorder', expectedNull: 'null'},
                         {name: 'longDesc', expectedNull: 'null', isUrl: true},
                         {name: 'marginHeight', expectedNull: ''},

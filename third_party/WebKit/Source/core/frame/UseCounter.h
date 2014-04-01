@@ -220,7 +220,6 @@ public:
         SVGInstanceRoot = 194,
         ShowModalDialog = 195,
         PrefixedPageVisibility = 196,
-        HTMLFrameElementLocation = 197,
         CSSStyleSheetInsertRuleOptionalArg = 198, // Inconsistent with the specification and other browsers.
         DocumentBeforeUnloadRegistered = 200,
         DocumentBeforeUnloadFired = 201,
