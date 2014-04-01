@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
-#include "mojo/public/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"

@@ -7,7 +7,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "mojo/public/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 

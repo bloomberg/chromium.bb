@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_ARRAY_H_
-#define MOJO_PUBLIC_BINDINGS_ARRAY_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_
 
 #include <string.h>
 
@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "mojo/public/bindings/lib/array_internal.h"
-#include "mojo/public/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 
@@ -154,4 +154,4 @@ class TypeConverter<Array<T>, std::vector<E> > {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_ARRAY_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_ARRAY_H_

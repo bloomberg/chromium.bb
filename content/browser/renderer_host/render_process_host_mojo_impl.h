@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "content/common/mojo/render_process.mojom.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 
 namespace content {
 

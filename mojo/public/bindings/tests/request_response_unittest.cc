@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/allocation_scope.h"
-#include "mojo/public/bindings/remote_ptr.h"
 #include "mojo/public/bindings/tests/sample_import.mojom.h"
 #include "mojo/public/bindings/tests/sample_interfaces.mojom.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/cpp/utility/run_loop.h"

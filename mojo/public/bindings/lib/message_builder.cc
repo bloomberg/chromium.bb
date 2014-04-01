@@ -4,7 +4,7 @@
 
 #include "mojo/public/bindings/lib/message_builder.h"
 
-#include "mojo/public/bindings/message.h"
+#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 namespace internal {

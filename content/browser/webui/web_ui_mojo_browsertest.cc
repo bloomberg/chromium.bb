@@ -23,7 +23,7 @@
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "grit/content_resources.h"
 #include "mojo/public/bindings/js/constants.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 
 namespace content {
 namespace {

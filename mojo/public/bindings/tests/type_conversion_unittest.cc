@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/tests/test_structs.mojom.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

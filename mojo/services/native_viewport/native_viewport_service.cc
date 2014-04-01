@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
-#include "mojo/public/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/gles2/command_buffer_impl.h"
 #include "mojo/services/native_viewport/geometry_conversions.h"

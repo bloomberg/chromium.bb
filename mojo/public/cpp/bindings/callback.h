@@ -8,8 +8,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_CALLBACK_H_
-#define MOJO_PUBLIC_BINDINGS_CALLBACK_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
 
 #include "mojo/public/bindings/lib/callback_internal.h"
 #include "mojo/public/bindings/lib/shared_ptr.h"
@@ -458,4 +458,4 @@ class Callback<void(A1, A2, A3, A4, A5, A6, A7)> {
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_CALLBACK_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_

@@ -6,8 +6,8 @@
 #include <string>
 
 #include "mojo/examples/sample_app/gles2_client_impl.h"
-#include "mojo/public/bindings/allocation_scope.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/shell/application.h"

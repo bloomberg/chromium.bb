@@ -9,9 +9,9 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/public/bindings/allocation_scope.h"
-#include "mojo/public/bindings/error_handler.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {

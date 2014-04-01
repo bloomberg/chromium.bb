@@ -4,10 +4,10 @@
 
 #include <limits>
 
-#include "mojo/public/bindings/buffer.h"
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/fixed_buffer.h"
 #include "mojo/public/bindings/lib/scratch_buffer.h"
+#include "mojo/public/cpp/bindings/buffer.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

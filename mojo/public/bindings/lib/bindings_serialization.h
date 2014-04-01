@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "mojo/public/bindings/buffer.h"
-#include "mojo/public/bindings/message.h"
+#include "mojo/public/cpp/bindings/buffer.h"
+#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 namespace internal {

@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/aura_demo/demo_screen.h"
 #include "mojo/examples/aura_demo/window_tree_host_mojo.h"
-#include "mojo/public/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"

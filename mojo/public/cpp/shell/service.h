@@ -7,8 +7,8 @@
 
 #include <vector>
 
-#include "mojo/public/bindings/error_handler.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 

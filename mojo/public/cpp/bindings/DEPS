@@ -1,0 +1,4 @@
+include_rules = [
+  # TODO(vtl): Temporary, until we move lib here.
+  "+mojo/public/bindings/lib",
+]

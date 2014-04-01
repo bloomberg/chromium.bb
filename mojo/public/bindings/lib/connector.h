@@ -6,7 +6,7 @@
 #define MOJO_PUBLIC_BINDINGS_LIB_CONNECTOR_H_
 
 #include "mojo/public/bindings/lib/message_queue.h"
-#include "mojo/public/bindings/message.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/environment/default_async_waiter.h"
 #include "mojo/public/cpp/system/core.h"
 

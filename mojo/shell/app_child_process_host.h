@@ -6,7 +6,7 @@
 #define MOJO_SHELL_APP_CHILD_PROCESS_HOST_H_
 
 #include "base/macros.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/shell/app_child_process.mojom.h"
 #include "mojo/shell/child_process_host.h"
 

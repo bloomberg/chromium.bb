@@ -7,10 +7,10 @@
 
 #include <new>
 
-#include "mojo/public/bindings/buffer.h"
 #include "mojo/public/bindings/lib/bindings_internal.h"
 #include "mojo/public/bindings/lib/bindings_serialization.h"
-#include "mojo/public/bindings/passable.h"
+#include "mojo/public/cpp/bindings/buffer.h"
+#include "mojo/public/cpp/bindings/passable.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {

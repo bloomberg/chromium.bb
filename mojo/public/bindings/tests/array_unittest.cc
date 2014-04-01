@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/allocation_scope.h"
-#include "mojo/public/bindings/array.h"
 #include "mojo/public/bindings/lib/fixed_buffer.h"
 #include "mojo/public/bindings/lib/scratch_buffer.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

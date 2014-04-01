@@ -8,8 +8,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "mojo/common/mojo_common_export.h"
-#include "mojo/public/bindings/array.h"
-#include "mojo/public/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
 

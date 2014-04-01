@@ -9,7 +9,7 @@
 #include "content/common/mojo/render_process.mojom.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/public/bindings/remote_ptr.h"
+#include "mojo/public/cpp/bindings/remote_ptr.h"
 
 namespace mojo {
 namespace embedder{

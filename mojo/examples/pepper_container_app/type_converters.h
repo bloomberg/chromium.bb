@@ -5,7 +5,7 @@
 #ifndef MOJO_EXAMPLES_PEPPER_CONTAINER_APP_TYPE_CONVERTERS_H_
 #define MOJO_EXAMPLES_PEPPER_CONTAINER_APP_TYPE_CONVERTERS_H_
 
-#include "mojo/public/bindings/type_converter.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ppapi/c/pp_point.h"
 #include "ppapi/c/pp_rect.h"

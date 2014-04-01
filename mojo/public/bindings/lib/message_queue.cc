@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "mojo/public/bindings/message.h"
+#include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 namespace internal {

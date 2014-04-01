@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_
 #define MOJO_PUBLIC_BINDINGS_LIB_FIXED_BUFFER_H_
 
-#include "mojo/public/bindings/buffer.h"
+#include "mojo/public/cpp/bindings/buffer.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {

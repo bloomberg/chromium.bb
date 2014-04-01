@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "mojo/public/bindings/allocation_scope.h"
-#include "mojo/public/bindings/sync_dispatcher.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/bindings/sync_dispatcher.h"
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
 
 namespace mojo {

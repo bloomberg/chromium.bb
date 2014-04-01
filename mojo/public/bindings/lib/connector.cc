@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "mojo/public/bindings/error_handler.h"
+#include "mojo/public/cpp/bindings/error_handler.h"
 
 namespace mojo {
 namespace internal {
