@@ -1,0 +1,16 @@
+include_rules = [
+  # Real DEPS go in subdirectories, for example apps/shell/browser/DEPS.
+  # Temporary exceptions for app_shell bring-up go here.
+  # TODO(jamescook): Remove these. http://crbug.com/305404
+  "!chrome/browser/extensions/extension_protocols.h",
+  "!chrome/browser/extensions/extension_resource_protocols.h",
+  "!chrome/common/extensions/api/generated_api.h",
+  "!chrome/common/extensions/api/generated_schemas.h",
+  "!chrome/common/extensions/api/sockets/sockets_manifest_handler.h",
+  "!chrome/common/extensions/extension_file_util.h",
+  "!chrome/common/extensions/features/base_feature_provider.h",
+  "!chrome/common/extensions/features/base_feature_provider.h",
+  "!chrome/common/extensions/permissions/chrome_api_permissions.h",
+  "!chrome/renderer/extensions/dispatcher.h",
+  "!chrome/renderer/extensions/extension_helper.h",
+]
