@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/owner_key_util.h"
 #include "chrome/browser/chromeos/status/data_promo_notification.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -714,7 +715,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   if (ui::ShouldDefaultToNaturalScroll()) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         chromeos::switches::kNaturalScrollDefault);
-    ui::SetNaturalScroll(true);
+    system::InputDeviceSettings::Get()->SetTapToClick(true);
   }
 
   ChromeBrowserMainPartsLinux::PreBrowserStart();

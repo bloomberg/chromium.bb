@@ -151,6 +151,7 @@ class InputDeviceSettingsImpl : public InputDeviceSettings {
   virtual void SetTapToClick(bool enabled) OVERRIDE;
   virtual void SetThreeFingerClick(bool enabled) OVERRIDE;
   virtual void SetTapDragging(bool enabled) OVERRIDE;
+  virtual void SetNaturalScroll(bool enabled) OVERRIDE;
   virtual void MouseExists(const DeviceExistsCallback& callback) OVERRIDE;
   virtual void UpdateMouseSettings(const MouseSettings& update) OVERRIDE;
   virtual void SetMouseSensitivity(int value) OVERRIDE;
@@ -183,6 +184,12 @@ void InputDeviceSettingsImpl::UpdateTouchpadSettings(
 void InputDeviceSettingsImpl::SetTouchpadSensitivity(int value) {
   TouchpadSettings settings;
   settings.SetSensitivity(value);
+  UpdateTouchpadSettings(settings);
+}
+
+void InputDeviceSettingsImpl::SetNaturalScroll(bool enabled) {
+  TouchpadSettings settings;
+  settings.SetNaturalScroll(enabled);
   UpdateTouchpadSettings(settings);
 }
 
@@ -276,6 +283,7 @@ TouchpadSettings& TouchpadSettings::operator=(const TouchpadSettings& other) {
     tap_to_click_ = other.tap_to_click_;
     three_finger_click_ = other.three_finger_click_;
     tap_dragging_ = other.tap_dragging_;
+    natural_scroll_ = other.natural_scroll_;
   }
   return *this;
 }
@@ -294,6 +302,14 @@ void TouchpadSettings::SetTapToClick(bool enabled) {
 
 bool TouchpadSettings::GetTapToClick() const {
   return tap_to_click_.value();
+}
+
+void TouchpadSettings::SetNaturalScroll(bool enabled) {
+  natural_scroll_.Set(enabled);
+}
+
+bool TouchpadSettings::GetNaturalScroll() const {
+  return natural_scroll_.value();
 }
 
 void TouchpadSettings::SetThreeFingerClick(bool enabled) {
@@ -338,6 +354,12 @@ bool TouchpadSettings::Update(const TouchpadSettings& settings,
     updated = true;
     if (argv)
       AddTPControlArguments("tapdrag", tap_dragging_.value(), argv);
+  }
+  if (natural_scroll_.Update(settings.natural_scroll_)) {
+    updated = true;
+    if (argv)
+      AddTPControlArguments("australian_scrolling", natural_scroll_.value(),
+                            argv);
   }
   return updated;
 }

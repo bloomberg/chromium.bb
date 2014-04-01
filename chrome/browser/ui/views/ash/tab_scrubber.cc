@@ -109,8 +109,6 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
   event->StopPropagation();
 
   float x_offset = event->x_offset();
-  if (!ui::IsNaturalScrollEnabled())
-    x_offset = -x_offset;
   int last_tab_index = highlighted_tab_ == -1 ?
       browser->tab_strip_model()->active_index() : highlighted_tab_;
   if (!scrubbing_) {

@@ -30,6 +30,8 @@ class FakeInputDeviceSettings : public InputDeviceSettings {
   virtual void UpdateMouseSettings(const MouseSettings& settings) OVERRIDE;
   virtual void SetMouseSensitivity(int value) OVERRIDE;
   virtual void SetPrimaryButtonRight(bool right) OVERRIDE;
+  virtual void SetNaturalScroll(bool enabled) OVERRIDE;
+
   virtual bool ForceKeyboardDrivenUINavigation() OVERRIDE;
   virtual void ReapplyTouchpadSettings() OVERRIDE;
   virtual void ReapplyMouseSettings() OVERRIDE;
