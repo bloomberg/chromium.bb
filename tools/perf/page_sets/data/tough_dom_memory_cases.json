@@ -1,0 +1,15 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "tough_dom_memory_cases_000.wpr": [
+            "http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/", 
+            "http://en.blog.wordpress.com/2012/09/06/new-themes-gridspace-and-ascetica/", 
+            "http://en.blog.wordpress.com/2012/09/20/new-themes-gigawatt-and-pinboard/", 
+            "http://en.blog.wordpress.com/2012/10/01/freshly-pressed-editors-picks-for-september-2012/", 
+            "https://twitter.com/katyperry", 
+            "https://twitter.com/justinbieber", 
+            "https://twitter.com/BarackObama", 
+            "https://twitter.com/ladygaga"
+        ]
+    }
+}

@@ -20,3 +20,8 @@ class Reload2012Q3(test.Test):
   tag = 'reload'
   test = memory.Memory
   page_set = 'page_sets/2012Q3.json'
+
+
+class MemoryToughDomMemoryCases(test.Test):
+  test = memory.Memory
+  page_set = 'page_sets/tough_dom_memory_cases.json'
