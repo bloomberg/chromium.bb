@@ -1,6 +1,8 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import sys
+
 from measurements import smoothness
 from telemetry.core import wpr_modes
 from telemetry.page import page
@@ -55,10 +57,16 @@ class SmoothnessUnitTest(
         'benchmark',
         'webkit.console'
     ]
-    self.assertEquals(expected_category_filter,
-                      sorted(tab.browser.category_filter.split(',')))
-  def setUp(self):
+    actual_category_filter = tab.browser.category_filter.split(',')
+    actual_category_filter.sort()
+    if expected_category_filter != actual_category_filter:
+      sys.stderr.write("Expected category filter: %s\n" %
+                       repr(expected_category_filter))
+      sys.stderr.write("Actual category filter filter: %s\n" %
+                       repr(actual_category_filter))
+    self.assertEquals(expected_category_filter, actual_category_filter)
 
+  def setUp(self):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
 
