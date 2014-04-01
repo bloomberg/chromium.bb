@@ -4,6 +4,7 @@
 
 #include "apps/ui/views/app_window_frame_view.h"
 
+#include "apps/ui/native_app_window.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/draggable_region.h"
 #include "grit/theme_resources.h"
@@ -39,7 +40,7 @@ const char AppWindowFrameView::kViewClassName[] =
 
 AppWindowFrameView::AppWindowFrameView()
     : widget_(NULL),
-      draggable_region_(NULL),
+      window_(NULL),
       close_button_(NULL),
       maximize_button_(NULL),
       restore_button_(NULL),
@@ -51,17 +52,17 @@ AppWindowFrameView::AppWindowFrameView()
 AppWindowFrameView::~AppWindowFrameView() {}
 
 void AppWindowFrameView::Init(views::Widget* widget,
+                              NativeAppWindow* window,
                               bool draw_frame,
                               const SkColor& frame_color,
-                              const SkRegion* draggable_region,
                               int resize_inside_bounds_size,
                               int resize_outside_bounds_size,
                               int resize_outside_scale_for_touch,
                               int resize_area_corner_size) {
   widget_ = widget;
+  window_ = window;
   draw_frame_ = draw_frame;
   frame_color_ = frame_color;
-  draggable_region_ = draggable_region;
   resize_inside_bounds_size_ = resize_inside_bounds_size;
   resize_outside_bounds_size_ = resize_outside_bounds_size;
   resize_area_corner_size_ = resize_area_corner_size;
@@ -201,7 +202,8 @@ int AppWindowFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // Check for possible draggable region in the client area for the frameless
   // window.
-  if (draggable_region_ && draggable_region_->contains(point.x(), point.y()))
+  SkRegion* draggable_region = window_->GetDraggableRegion();
+  if (draggable_region && draggable_region->contains(point.x(), point.y()))
     return HTCAPTION;
 
   int client_component = widget_->client_view()->NonClientHitTest(point);

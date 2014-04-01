@@ -32,6 +32,8 @@ class Widget;
 
 namespace apps {
 
+class NativeAppWindow;
+
 // A frameless or non-Ash, non-panel NonClientFrameView for app windows.
 class AppWindowFrameView : public views::NonClientFrameView,
                            public views::ButtonListener {
@@ -45,11 +47,11 @@ class AppWindowFrameView : public views::NonClientFrameView,
   // is interpreted as a resize for the inner and outer border of the window
   // and the lower-right corner resize handle. If |draw_frame|, the view draws
   // its own window title area and controls, using |frame_color| (otherwise
-  // |frame_color| is ignored). |draggable_region| may be NULL.
+  // |frame_color| is ignored).
   void Init(views::Widget* widget,
+            NativeAppWindow* window,
             bool draw_frame,
             const SkColor& frame_color,
-            const SkRegion* draggable_region,
             int resize_inside_bounds_size,
             int resize_outside_bounds_size,
             int resize_outside_scale_for_touch,
@@ -80,9 +82,9 @@ class AppWindowFrameView : public views::NonClientFrameView,
                              const ui::Event& event) OVERRIDE;
 
   views::Widget* widget_;
+  NativeAppWindow* window_;
   bool draw_frame_;
   SkColor frame_color_;
-  const SkRegion* draggable_region_;
   views::ImageButton* close_button_;
   views::ImageButton* maximize_button_;
   views::ImageButton* restore_button_;

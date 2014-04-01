@@ -358,9 +358,9 @@ ChromeNativeAppWindowViews::CreateAppWindowFrameView() {
 #endif
   apps::AppWindowFrameView* frame_view = new apps::AppWindowFrameView();
   frame_view->Init(widget(),
+                   this,
                    has_frame_color_,
                    frame_color_,
-                   GetDraggableRegion(),
                    resize_inside_bounds_size,
                    resize_outside_bounds_size,
                    resize_outside_scale_for_touch,
