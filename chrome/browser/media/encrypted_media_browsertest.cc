@@ -603,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException_Prefixed) {
 
 // TODO(jrummell): http://crbug.com/349181
 // The parent key system cannot be used when creating MediaKeys.
-IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, DISABLED_ParentThrowsException) {
+IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, ParentThrowsException) {
   RunEncryptedMediaTest("encrypted_media_player.html",
                         "bear-a-enc_a.webm",
                         kWebMAudioOnly,

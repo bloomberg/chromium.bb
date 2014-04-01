@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/cdm_session_adapter.h"
+#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -44,6 +45,10 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
     return NULL;
   }
 
+  std::string key_system_ascii = base::UTF16ToASCII(key_system);
+  if (!IsConcreteSupportedKeySystem(key_system_ascii))
+    return NULL;
+
   scoped_refptr<CdmSessionAdapter> adapter(new CdmSessionAdapter());
   GURL security_origin_as_gurl(security_origin.toString());
 
@@ -51,7 +56,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
 #if defined(ENABLE_PEPPER_CDMS)
           base::Bind(&PepperCdmWrapperImpl::Create, frame),
 #endif
-          base::UTF16ToASCII(key_system),
+          key_system_ascii,
           security_origin_as_gurl)) {
     return NULL;
   }

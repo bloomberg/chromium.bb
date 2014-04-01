@@ -297,8 +297,14 @@ function loadEncryptedMedia(video, mediaFile, keySystem, key, useMSE,
     video.src = mediaFile;
   }
   if (!usePrefixedEME) {
-    mediaKeys = new MediaKeys(keySystem);
-    video.setMediaKeys(mediaKeys);
+    try {
+      mediaKeys = new MediaKeys(keySystem);
+      video.setMediaKeys(mediaKeys);
+    }
+    catch(error) {
+      console.log(error.message, error);
+      setResultInTitle(error.name);
+    }
   }
 }
 
