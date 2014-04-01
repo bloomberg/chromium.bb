@@ -1486,7 +1486,7 @@ TEST_F(WebViewTest, AddFrameInCloseURLUnload)
     CreateChildCounterFrameClient frameClient;
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("add_frame_in_unload.html"));
     m_webViewHelper.initializeAndLoad(m_baseURL + "add_frame_in_unload.html", true, &frameClient);
-    m_webViewHelper.webViewImpl()->dispatchUnloadEvent();
+    m_webViewHelper.webViewImpl()->mainFrame()->dispatchUnloadEvent();
     EXPECT_EQ(0, frameClient.count());
     m_webViewHelper.reset();
 }

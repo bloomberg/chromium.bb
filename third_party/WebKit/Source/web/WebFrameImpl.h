@@ -115,6 +115,7 @@ public:
     virtual WebDocument document() const OVERRIDE;
     virtual WebPerformance performance() const OVERRIDE;
     virtual bool dispatchBeforeUnloadEvent() OVERRIDE;
+    virtual void dispatchUnloadEvent() OVERRIDE;
     virtual NPObject* windowObject() const OVERRIDE;
     virtual void bindToWindowObject(const WebString& name, NPObject*) OVERRIDE;
     virtual void bindToWindowObject(const WebString& name, NPObject*, void*) OVERRIDE;

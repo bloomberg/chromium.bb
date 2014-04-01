@@ -2403,8 +2403,12 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
 
 void WebViewImpl::dispatchUnloadEvent()
 {
+    WebFrame* frame = mainFrame();
+    if (!frame)
+        return;
+
     // Run unload handlers.
-    m_page->mainFrame()->loader().closeURL();
+    frame->dispatchUnloadEvent();
 }
 
 WebFrame* WebViewImpl::mainFrame()

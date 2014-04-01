@@ -752,6 +752,13 @@ bool WebFrameImpl::dispatchBeforeUnloadEvent()
     return frame()->loader().shouldClose();
 }
 
+void WebFrameImpl::dispatchUnloadEvent()
+{
+    if (!frame())
+        return;
+    frame()->loader().closeURL();
+}
+
 NPObject* WebFrameImpl::windowObject() const
 {
     if (!frame())

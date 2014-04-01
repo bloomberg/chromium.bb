@@ -151,6 +151,7 @@ public:
     // Closing -------------------------------------------------------------
 
     // Runs unload handlers for the current page.
+    // OBSOLETE; DO NOT USE. Call it on WebFrame instead.
     virtual void dispatchUnloadEvent() = 0;
 
 

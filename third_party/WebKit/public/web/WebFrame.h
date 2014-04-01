@@ -247,6 +247,9 @@ public:
     // handler suppressed unloading.
     virtual bool dispatchBeforeUnloadEvent() = 0;
 
+    // Runs unload handlers for this frame.
+    virtual void dispatchUnloadEvent() = 0;
+
 
     // Scripting ----------------------------------------------------------
 
