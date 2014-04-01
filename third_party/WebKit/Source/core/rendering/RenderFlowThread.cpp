@@ -126,13 +126,11 @@ void RenderFlowThread::validateRegions()
         m_regionsHaveUniformLogicalHeight = true;
 
         if (hasRegions()) {
-            LayoutUnit previousRegionLogicalWidth = 0;
             LayoutUnit previousRegionLogicalHeight = 0;
             bool firstRegionVisited = false;
 
             for (RenderRegionList::iterator iter = m_regionList.begin(); iter != m_regionList.end(); ++iter) {
                 RenderRegion* region = *iter;
-                LayoutUnit regionLogicalWidth = region->pageLogicalWidth();
                 LayoutUnit regionLogicalHeight = region->pageLogicalHeight();
 
                 if (!firstRegionVisited) {
@@ -142,7 +140,7 @@ void RenderFlowThread::validateRegions()
                         m_regionsHaveUniformLogicalHeight = false;
                 }
 
-                previousRegionLogicalWidth = regionLogicalWidth;
+                previousRegionLogicalHeight = regionLogicalHeight;
             }
         }
     }
