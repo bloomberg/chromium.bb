@@ -132,12 +132,17 @@ void ManagePasswordItemView::Refresh() {
     label_2_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     label_2_->SetEnabled(true);
+    label_2_->SetFocusable(true);
 
     if (delete_button_)
       delete_button_->SetVisible(false);
   } else {
     // The user clicked the "undo" button after deleting a password, so:
-    //
+
+    // Move focus to the parent in order to get the focus ring off the link
+    // that the user just clicked.
+    parent()->RequestFocus();
+
     // Change the username string back to the username.
     label_1_->SetText(password_form_.username_value);
 
@@ -146,6 +151,7 @@ void ManagePasswordItemView::Refresh() {
     label_2_->SetText(GetPasswordDisplayString(password_form_.password_value));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_2_->SetEnabled(false);
+    label_2_->SetFocusable(false);
 
     if (delete_button_)
       delete_button_->SetVisible(true);

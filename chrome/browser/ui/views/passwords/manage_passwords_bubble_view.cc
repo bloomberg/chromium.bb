@@ -162,6 +162,7 @@ void ManagePasswordsBubbleView::Init() {
   using views::GridLayout;
 
   GridLayout* layout = new GridLayout(this);
+  SetFocusable(true);
   SetLayoutManager(layout);
 
   // This calculates the necessary widths for credential columns in the bubble.
