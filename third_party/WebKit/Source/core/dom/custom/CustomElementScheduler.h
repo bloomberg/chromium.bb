@@ -32,6 +32,7 @@
 #define CustomElementScheduler_h
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
+#include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -40,17 +41,14 @@
 namespace WebCore {
 
 class CustomElementDescriptor;
-class CustomElementLifecycleCallbacks;
 class CustomElementMicrotaskImportStep;
 class Element;
 class HTMLImportChild;
 
 class CustomElementScheduler {
 public:
-    static void scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
+    static void scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, CustomElementLifecycleCallbacks::CallbackType);
     static void scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-    static void scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
-    static void scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks>, PassRefPtr<Element>);
 
     static void resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
     static CustomElementMicrotaskImportStep* scheduleImport(HTMLImportChild*);

@@ -98,7 +98,7 @@ void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition>
 
     case Element::WaitingForUpgrade:
         element->setCustomElementDefinition(definition);
-        CustomElementScheduler::scheduleCreatedCallback(definition->callbacks(), element);
+        CustomElementScheduler::scheduleCallback(definition->callbacks(), element, CustomElementLifecycleCallbacks::Created);
         break;
     }
 }
@@ -114,7 +114,7 @@ void CustomElement::didEnterDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
-    CustomElementScheduler::scheduleAttachedCallback(element->customElementDefinition()->callbacks(), element);
+    CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, CustomElementLifecycleCallbacks::Attached);
 }
 
 void CustomElement::didLeaveDocument(Element* element, const Document& document)
@@ -122,7 +122,7 @@ void CustomElement::didLeaveDocument(Element* element, const Document& document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document.domWindow())
         return;
-    CustomElementScheduler::scheduleDetachedCallback(element->customElementDefinition()->callbacks(), element);
+    CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, CustomElementLifecycleCallbacks::Detached);
 }
 
 void CustomElement::wasDestroyed(Element* element)

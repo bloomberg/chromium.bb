@@ -46,37 +46,24 @@ namespace WebCore {
 
 class HTMLImport;
 
-void CustomElementScheduler::scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
+void CustomElementScheduler::scheduleCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, CustomElementLifecycleCallbacks::CallbackType type)
 {
+    ASSERT(type != CustomElementLifecycleCallbacks::AttributeChanged);
+
+    if (!callbacks->hasCallback(type))
+        return;
+
     CustomElementCallbackQueue& queue = instance().schedule(element);
-    queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
+    queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, type));
 }
 
 void CustomElementScheduler::scheduleAttributeChangedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    if (!callbacks->hasAttributeChangedCallback())
+    if (!callbacks->hasCallback(CustomElementLifecycleCallbacks::AttributeChanged))
         return;
 
     CustomElementCallbackQueue& queue = instance().schedule(element);
     queue.append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
-}
-
-void CustomElementScheduler::scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-{
-    if (!callbacks->hasAttachedCallback())
-        return;
-
-    CustomElementCallbackQueue& queue = instance().schedule(element);
-    queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Attached));
-}
-
-void CustomElementScheduler::scheduleDetachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-{
-    if (!callbacks->hasDetachedCallback())
-        return;
-
-    CustomElementCallbackQueue& queue = instance().schedule(element);
-    queue.append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Detached));
 }
 
 void CustomElementScheduler::resolveOrScheduleResolution(PassRefPtr<CustomElementRegistrationContext> context, PassRefPtr<Element> element, const CustomElementDescriptor& descriptor)

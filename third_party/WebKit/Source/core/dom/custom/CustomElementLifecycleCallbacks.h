@@ -42,18 +42,6 @@ class CustomElementLifecycleCallbacks : public RefCounted<CustomElementLifecycle
 public:
     virtual ~CustomElementLifecycleCallbacks() { }
 
-    bool hasCreatedCallback() const { return m_which & Created; }
-    virtual void created(Element*) = 0;
-
-    bool hasAttachedCallback() const { return m_which & Attached; }
-    virtual void attached(Element*) = 0;
-
-    bool hasDetachedCallback() const { return m_which & Detached; }
-    virtual void detached(Element*) = 0;
-
-    bool hasAttributeChangedCallback() const { return m_which & AttributeChanged; }
-    virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
-
     enum CallbackType {
         None             = 0,
         Created          = 1 << 0,
@@ -61,6 +49,13 @@ public:
         Detached         = 1 << 2,
         AttributeChanged = 1 << 3
     };
+
+    bool hasCallback(CallbackType type) const { return m_which & type; }
+
+    virtual void created(Element*) = 0;
+    virtual void attached(Element*) = 0;
+    virtual void detached(Element*) = 0;
+    virtual void attributeChanged(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue) = 0;
 
 protected:
     CustomElementLifecycleCallbacks(CallbackType which) : m_which(which) { }
