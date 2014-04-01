@@ -116,7 +116,6 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual void OnMouseEvent(ui::MouseEvent* event) = 0;
   virtual void OnMouseCaptureLost() = 0;
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) = 0;
   virtual void OnScrollEvent(ui::ScrollEvent* event) = 0;
   virtual void OnGestureEvent(ui::GestureEvent* event) = 0;
 

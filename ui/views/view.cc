@@ -1048,6 +1048,7 @@ void View::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void View::OnTouchEvent(ui::TouchEvent* event) {
+  NOTREACHED() << "Views should not receive touch events.";
 }
 
 void View::OnGestureEvent(ui::GestureEvent* event) {

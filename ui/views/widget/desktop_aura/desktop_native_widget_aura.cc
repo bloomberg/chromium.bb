@@ -1033,10 +1033,6 @@ void DesktopNativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
   }
 }
 
-void DesktopNativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
-  native_widget_delegate_->OnTouchEvent(event);
-}
-
 void DesktopNativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
   native_widget_delegate_->OnGestureEvent(event);
 }

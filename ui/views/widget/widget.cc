@@ -1219,10 +1219,6 @@ void Widget::OnMouseCaptureLost() {
   is_mouse_button_pressed_ = false;
 }
 
-void Widget::OnTouchEvent(ui::TouchEvent* event) {
-  SendEventToProcessor(event);
-}
-
 void Widget::OnScrollEvent(ui::ScrollEvent* event) {
   SendEventToProcessor(event);
 }

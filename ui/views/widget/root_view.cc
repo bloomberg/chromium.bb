@@ -108,7 +108,6 @@ RootView::RootView(Widget* widget)
       last_mouse_event_flags_(0),
       last_mouse_event_x_(-1),
       last_mouse_event_y_(-1),
-      touch_pressed_handler_(NULL),
       gesture_handler_(NULL),
       scroll_gesture_handler_(NULL),
       pre_dispatch_handler_(new internal::PreEventDispatchHandler(this)),
@@ -208,7 +207,7 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
   else if (event->IsScrollEvent())
     DispatchScrollEvent(static_cast<ui::ScrollEvent*>(event));
   else if (event->IsTouchEvent())
-    DispatchTouchEvent(static_cast<ui::TouchEvent*>(event));
+    NOTREACHED() << "Touch events should not be sent to RootView.";
   else if (event->IsGestureEvent())
     DispatchGestureEvent(static_cast<ui::GestureEvent*>(event));
   else if (event->IsMouseEvent())
@@ -649,8 +648,6 @@ void RootView::ViewHierarchyChanged(
       mouse_pressed_handler_ = NULL;
     if (mouse_move_handler_ == details.child)
       mouse_move_handler_ = NULL;
-    if (touch_pressed_handler_ == details.child)
-      touch_pressed_handler_ = NULL;
     if (gesture_handler_ == details.child)
       gesture_handler_ = NULL;
     if (scroll_gesture_handler_ == details.child)
@@ -670,7 +667,6 @@ void RootView::VisibilityChanged(View* /*starting_from*/, bool is_visible) {
     explicit_mouse_handler_ = false;
     mouse_pressed_handler_ = NULL;
     mouse_move_handler_ = NULL;
-    touch_pressed_handler_ = NULL;
     gesture_handler_ = NULL;
     scroll_gesture_handler_ = NULL;
     event_dispatch_target_ = NULL;
@@ -727,75 +723,6 @@ void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
   ui::MouseWheelEvent wheel(*event);
   if (OnMouseWheel(wheel))
     event->SetHandled();
-}
-
-void RootView::DispatchTouchEvent(ui::TouchEvent* event) {
-  // TODO: this looks all wrong. On a TOUCH_PRESSED we should figure out the
-  // view and target that view with all touches with the same id until the
-  // release (or keep it if captured).
-
-  // If touch_pressed_handler_ is non null, we are currently processing
-  // a touch down on the screen situation. In that case we send the
-  // event to touch_pressed_handler_
-
-  if (touch_pressed_handler_) {
-    ui::TouchEvent touch_event(*event, static_cast<View*>(this),
-                               touch_pressed_handler_);
-    ui::EventDispatchDetails dispatch_details =
-        DispatchEvent(touch_pressed_handler_, &touch_event);
-    if (touch_event.handled())
-      event->SetHandled();
-    if (touch_event.stopped_propagation())
-      event->StopPropagation();
-    if (dispatch_details.dispatcher_destroyed)
-      return;
-    return;
-  }
-
-  // Walk up the tree until we find a view that wants the touch event.
-  for (touch_pressed_handler_ = GetEventHandlerForPoint(event->location());
-       touch_pressed_handler_ && (touch_pressed_handler_ != this);
-       touch_pressed_handler_ = touch_pressed_handler_->parent()) {
-    if (!touch_pressed_handler_->enabled()) {
-      // Disabled views eat events but are treated as not handled.
-      break;
-    }
-
-    // See if this view wants to handle the touch
-    ui::TouchEvent touch_event(*event, static_cast<View*>(this),
-                               touch_pressed_handler_);
-    ui::EventDispatchDetails dispatch_details =
-        DispatchEvent(touch_pressed_handler_, &touch_event);
-    if (touch_event.handled())
-      event->SetHandled();
-    if (touch_event.stopped_propagation())
-      event->StopPropagation();
-    if (dispatch_details.dispatcher_destroyed)
-      return;
-
-    // The view could have removed itself from the tree when handling
-    // OnTouchEvent(). So handle as per OnMousePressed. NB: we
-    // assume that the RootView itself cannot be so removed.
-    if (!touch_pressed_handler_)
-      break;
-
-    // The touch event wasn't processed. Go up the view hierarchy and dispatch
-    // the touch event.
-    if (!event->handled())
-      continue;
-
-    // If a View consumed the event, that means future touch-events should go to
-    // that View. If the event wasn't consumed, then reset the handler.
-    if (!event->stopped_propagation())
-      touch_pressed_handler_ = NULL;
-
-    return;
-  }
-
-  // Reset touch_pressed_handler_ to indicate that no processing is occurring.
-  touch_pressed_handler_ = NULL;
-
-  return;
 }
 
 void RootView::UpdateCursor(const ui::MouseEvent& event) {

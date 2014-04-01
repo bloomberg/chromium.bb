@@ -71,9 +71,6 @@ class EventCountView : public View {
   virtual void OnScrollEvent(ui::ScrollEvent* event) OVERRIDE {
     RecordEvent(*event);
   }
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
-    RecordEvent(*event);
-  }
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
     RecordEvent(*event);
   }
@@ -1463,16 +1460,6 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   widget->SetBounds(gfx::Rect(0, 0, 100, 100));
   widget->Show();
 
-  ui::TouchEvent pressed(ui::ET_TOUCH_PRESSED,
-                         gfx::Point(10, 10),
-                         0, 0,
-                         ui::EventTimeForNow(),
-                         1.0, 0.0, 1.0, 0.0);
-  widget->OnTouchEvent(&pressed);
-  EXPECT_EQ(1, h1.GetEventCount(ui::ET_TOUCH_PRESSED));
-  EXPECT_EQ(1, view->GetEventCount(ui::ET_TOUCH_PRESSED));
-  EXPECT_EQ(1, h2.GetEventCount(ui::ET_TOUCH_PRESSED));
-
   ui::GestureEvent begin(ui::ET_GESTURE_BEGIN,
       5, 5, 0, ui::EventTimeForNow(),
       ui::GestureEventDetails(ui::ET_GESTURE_BEGIN, 0, 0), 1);
@@ -1483,16 +1470,6 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_BEGIN));
   EXPECT_EQ(1, view->GetEventCount(ui::ET_GESTURE_BEGIN));
   EXPECT_EQ(1, h2.GetEventCount(ui::ET_GESTURE_BEGIN));
-
-  ui::TouchEvent released(ui::ET_TOUCH_RELEASED,
-                          gfx::Point(10, 10),
-                          0, 0,
-                          ui::EventTimeForNow(),
-                          1.0, 0.0, 1.0, 0.0);
-  widget->OnTouchEvent(&released);
-  EXPECT_EQ(1, h1.GetEventCount(ui::ET_TOUCH_RELEASED));
-  EXPECT_EQ(1, view->GetEventCount(ui::ET_TOUCH_RELEASED));
-  EXPECT_EQ(1, h2.GetEventCount(ui::ET_TOUCH_RELEASED));
 
   widget->OnGestureEvent(&end);
   EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_END));

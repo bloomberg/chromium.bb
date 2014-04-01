@@ -203,7 +203,7 @@ typedef ViewsTestBase ViewTest;
 // A derived class for testing purpose.
 class TestView : public View {
  public:
-  TestView() : View(), delete_on_pressed_(false), in_touch_sequence_(false) {}
+  TestView() : View(), delete_on_pressed_(false) {}
   virtual ~TestView() {}
 
   // Reset all test state
@@ -213,8 +213,6 @@ class TestView : public View {
     location_.SetPoint(0, 0);
     received_mouse_enter_ = false;
     received_mouse_exit_ = false;
-    last_touch_event_type_ = 0;
-    last_touch_event_was_handled_ = false;
     last_gesture_event_type_ = 0;
     last_gesture_event_was_handled_ = false;
     last_clip_.setEmpty();
@@ -239,7 +237,6 @@ class TestView : public View {
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
 
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
   // Ignores GestureEvent by default.
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
@@ -265,26 +262,11 @@ class TestView : public View {
   int last_gesture_event_type_;
   bool last_gesture_event_was_handled_;
 
-  // TouchEvent.
-  int last_touch_event_type_;
-  bool last_touch_event_was_handled_;
-  bool in_touch_sequence_;
-
   // Painting.
   SkRect last_clip_;
 
   // Accelerators.
   std::map<ui::Accelerator, int> accelerator_count_map_;
-};
-
-// A view subclass that ignores all touch events for testing purposes.
-class TestViewIgnoreTouch : public TestView {
- public:
-  TestViewIgnoreTouch() : TestView() {}
-  virtual ~TestViewIgnoreTouch() {}
-
- private:
-  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE;
 };
 
 // A view subclass that consumes all Gesture events for testing purposes.
@@ -480,141 +462,8 @@ TEST_F(ViewTest, DeleteOnPressed) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TouchEvent
+// GestureEvent
 ////////////////////////////////////////////////////////////////////////////////
-void TestView::OnTouchEvent(ui::TouchEvent* event) {
-  last_touch_event_type_ = event->type();
-  location_.SetPoint(event->x(), event->y());
-  if (!in_touch_sequence_) {
-    if (event->type() == ui::ET_TOUCH_PRESSED) {
-      in_touch_sequence_ = true;
-      event->StopPropagation();
-      return;
-    }
-  } else {
-    if (event->type() == ui::ET_TOUCH_RELEASED) {
-      in_touch_sequence_ = false;
-      event->SetHandled();
-      return;
-    }
-    event->StopPropagation();
-    return;
-  }
-
-  if (last_touch_event_was_handled_)
-   event->StopPropagation();
-}
-
-void TestViewIgnoreTouch::OnTouchEvent(ui::TouchEvent* event) {
-}
-
-TEST_F(ViewTest, TouchEvent) {
-  TestView* v1 = new TestView();
-  v1->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
-
-  TestView* v2 = new TestView();
-  v2->SetBoundsRect(gfx::Rect(100, 100, 100, 100));
-
-  TestView* v3 = new TestViewIgnoreTouch();
-  v3->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
-
-  scoped_ptr<Widget> widget(new Widget());
-  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget->Init(params);
-  internal::RootView* root =
-      static_cast<internal::RootView*>(widget->GetRootView());
-  ui::EventDispatchDetails details;
-
-  root->AddChildView(v1);
-  v1->AddChildView(v2);
-  v2->AddChildView(v3);
-
-  // |v3| completely obscures |v2|, but all the touch events on |v3| should
-  // reach |v2| because |v3| doesn't process any touch events.
-
-  // Make sure if none of the views handle the touch event, the gesture manager
-  // does.
-  v1->Reset();
-  v2->Reset();
-
-  ui::TouchEvent unhandled(ui::ET_TOUCH_MOVED,
-                           gfx::Point(400, 400),
-                           0, /* no flags */
-                           0, /* first finger touch */
-                           base::TimeDelta(),
-                           1.0, 0.0, 1.0, 0.0);
-  details = root->OnEventFromSource(&unhandled);
-  EXPECT_FALSE(details.dispatcher_destroyed);
-  EXPECT_FALSE(details.target_destroyed);
-
-  EXPECT_EQ(v1->last_touch_event_type_, 0);
-  EXPECT_EQ(v2->last_touch_event_type_, 0);
-
-  // Test press, drag, release touch sequence.
-  v1->Reset();
-  v2->Reset();
-
-  ui::TouchEvent pressed(ui::ET_TOUCH_PRESSED,
-                         gfx::Point(110, 120),
-                         0, /* no flags */
-                         0, /* first finger touch */
-                         base::TimeDelta(),
-                         1.0, 0.0, 1.0, 0.0);
-  v2->last_touch_event_was_handled_ = true;
-  details = root->OnEventFromSource(&pressed);
-  EXPECT_FALSE(details.dispatcher_destroyed);
-  EXPECT_FALSE(details.target_destroyed);
-
-  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_PRESSED);
-  EXPECT_EQ(v2->location_.x(), 10);
-  EXPECT_EQ(v2->location_.y(), 20);
-  // Make sure v1 did not receive the event
-  EXPECT_EQ(v1->last_touch_event_type_, 0);
-
-  // Drag event out of bounds. Should still go to v2
-  v1->Reset();
-  v2->Reset();
-  ui::TouchEvent dragged(ui::ET_TOUCH_MOVED,
-                         gfx::Point(50, 40),
-                         0, /* no flags */
-                         0, /* first finger touch */
-                         base::TimeDelta(),
-                         1.0, 0.0, 1.0, 0.0);
-
-  details = root->OnEventFromSource(&dragged);
-  EXPECT_FALSE(details.dispatcher_destroyed);
-  EXPECT_FALSE(details.target_destroyed);
-
-  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_MOVED);
-  EXPECT_EQ(v2->location_.x(), -50);
-  EXPECT_EQ(v2->location_.y(), -60);
-  // Make sure v1 did not receive the event
-  EXPECT_EQ(v1->last_touch_event_type_, 0);
-
-  // Released event out of bounds. Should still go to v2
-  v1->Reset();
-  v2->Reset();
-  ui::TouchEvent released(ui::ET_TOUCH_RELEASED, gfx::Point(),
-                          0, /* no flags */
-                          0, /* first finger */
-                          base::TimeDelta(),
-                          1.0, 0.0, 1.0, 0.0);
-  v2->last_touch_event_was_handled_ = true;
-
-  details = root->OnEventFromSource(&released);
-  EXPECT_FALSE(details.dispatcher_destroyed);
-  EXPECT_FALSE(details.target_destroyed);
-
-  EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_RELEASED);
-  EXPECT_EQ(v2->location_.x(), -100);
-  EXPECT_EQ(v2->location_.y(), -100);
-  // Make sure v1 did not receive the event
-  EXPECT_EQ(v1->last_touch_event_type_, 0);
-
-  widget->CloseNow();
-}
 
 void TestView::OnGestureEvent(ui::GestureEvent* event) {
 }
