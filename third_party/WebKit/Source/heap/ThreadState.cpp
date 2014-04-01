@@ -181,6 +181,7 @@ public:
     void doEnterSafePoint(ThreadState* state, intptr_t* stackEnd)
     {
         state->recordStackEnd(stackEnd);
+        state->copyStackUntilSafePointScope();
         // m_unparkedThreadCount tracks amount of unparked threads. It is
         // positive if and only if we have requested other threads to park
         // at safe-points in preparation for GC. The last thread to park
@@ -193,7 +194,6 @@ public:
             MutexLocker locker(m_mutex);
             m_parked.signal(); // Safe point reached.
         }
-        state->copyStackUntilSafePointScope();
     }
 
     void enterSafePoint(ThreadState* state)
