@@ -31,6 +31,7 @@
 #include <string>
 #include <map>
 
+#include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 
 namespace google_breakpad {
@@ -81,7 +82,7 @@ class GoogleCrashdumpUploader {
  private:
   bool CheckRequiredParametersArePresent();
 
-  LibcurlWrapper* http_layer_;
+  scoped_ptr<LibcurlWrapper> http_layer_;
   string product_;
   string version_;
   string guid_;
