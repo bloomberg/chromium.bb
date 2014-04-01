@@ -37,6 +37,9 @@ class SyncInternalsMessageHandler
   // Forwards requests to the JsController.
   void ForwardToJsController(const std::string& name, const base::ListValue*);
 
+  // Sets up observers to receive events and forward them to the UI.
+  void HandleRegisterForEvents(const base::ListValue* args);
+
   // Fires an event to send updated info back to the page.
   void HandleRequestUpdatedAboutInfo(const base::ListValue* args);
 

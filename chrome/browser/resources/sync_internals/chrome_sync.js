@@ -83,6 +83,14 @@ cr.define('chrome.sync', function() {
   };
 
   /**
+   * Registers to receive a stream of events through
+   * chrome.sync.dispatchEvent().
+   */
+  var registerForEvents = function() {
+    chrome.send('registerForEvents');
+  };
+
+  /**
    * Asks the browser to refresh our snapshot of sync state.  Should result
    * in an onAboutInfoUpdated event being emitted.
    */
@@ -103,6 +111,7 @@ cr.define('chrome.sync', function() {
     dispatchEvent: dispatchEvent,
     events: new cr.EventTarget(),
 
+    registerForEvents: registerForEvents,
     requestUpdatedAboutInfo: requestUpdatedAboutInfo,
     requestListOfTypes: requestListOfTypes,
   };

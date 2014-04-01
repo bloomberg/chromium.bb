@@ -8,13 +8,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 
 // An event representing a configure GetUpdates request to the server.
-class ConfigureGetUpdatesRequestEvent : public ProtocolEvent {
+class SYNC_EXPORT_PRIVATE ConfigureGetUpdatesRequestEvent
+    : public ProtocolEvent {
  public:
   ConfigureGetUpdatesRequestEvent(
       base::Time timestamp,

@@ -192,8 +192,14 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // Fetches the DeviceInfo tracker.
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const = 0;
 
-  // Sets whether or not the frontend will be notified of network events.
-  virtual void SetForwardProtocolEvents(bool forward) = 0;
+  // Requests that the backend forward to the fronent any protocol events in
+  // its buffer and begin forwarding automatically from now on.  Repeated calls
+  // to this function may result in the same events being emitted several
+  // times.
+  virtual void RequestBufferedProtocolEventsAndEnableForwarding() = 0;
+
+  // Disables protocol event forwarding.
+  virtual void DisableProtocolEventForwarding() = 0;
 
   virtual base::MessageLoop* GetSyncLoopForTesting() = 0;
 

@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "sync/base/sync_export.h"
@@ -353,6 +354,9 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
 
   // Ask the SyncManager to fetch updates for the given types.
   virtual void RefreshTypes(ModelTypeSet types) = 0;
+
+  // Returns any buffered protocol events.  Does not clear the buffer.
+  virtual ScopedVector<syncer::ProtocolEvent> GetBufferedProtocolEvents() = 0;
 };
 
 }  // namespace syncer

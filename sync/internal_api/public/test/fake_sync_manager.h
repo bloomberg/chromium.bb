@@ -124,6 +124,8 @@ class FakeSyncManager : public SyncManager {
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
+  virtual ScopedVector<syncer::ProtocolEvent>
+      GetBufferedProtocolEvents() OVERRIDE;
   virtual void RefreshTypes(ModelTypeSet types) OVERRIDE;
 
  private:

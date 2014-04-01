@@ -239,6 +239,11 @@ SyncEncryptionHandler* FakeSyncManager::GetEncryptionHandler() {
   return fake_encryption_handler_.get();
 }
 
+ScopedVector<syncer::ProtocolEvent>
+FakeSyncManager::GetBufferedProtocolEvents() {
+  return ScopedVector<syncer::ProtocolEvent>();
+}
+
 void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
   last_refresh_request_types_ = types;
 }

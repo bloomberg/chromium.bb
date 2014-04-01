@@ -946,6 +946,7 @@ void SyncManagerImpl::OnMigrationRequested(ModelTypeSet types) {
 }
 
 void SyncManagerImpl::OnProtocolEvent(const ProtocolEvent& event) {
+  protocol_event_buffer_.RecordProtocolEvent(event);
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnProtocolEvent(event));
 }
@@ -1159,6 +1160,11 @@ bool SyncManagerImpl::HasUnsyncedItems() {
 
 SyncEncryptionHandler* SyncManagerImpl::GetEncryptionHandler() {
   return sync_encryption_handler_.get();
+}
+
+ScopedVector<syncer::ProtocolEvent>
+    SyncManagerImpl::GetBufferedProtocolEvents() {
+  return protocol_event_buffer_.GetBufferedProtocolEvents();
 }
 
 // static.

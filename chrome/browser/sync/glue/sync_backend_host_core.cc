@@ -104,6 +104,7 @@ SyncBackendHostCore::SyncBackendHostCore(
       sync_loop_(NULL),
       registrar_(NULL),
       has_sync_setup_completed_(has_sync_setup_completed),
+      forward_protocol_events_(false),
       weak_ptr_factory_(this) {
   DCHECK(backend.get());
 }
@@ -605,9 +606,30 @@ void SyncBackendHostCore::DoRetryConfiguration(
              retry_callback);
 }
 
-void SyncBackendHostCore::SetForwardProtocolEvents(bool enabled) {
+void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  forward_protocol_events_ = enabled;
+  forward_protocol_events_ = true;
+
+  if (sync_manager_) {
+    // Grab our own copy of the buffered events.
+    // The buffer is not modified by this operation.
+    std::vector<syncer::ProtocolEvent*> buffered_events;
+    sync_manager_->GetBufferedProtocolEvents().release(&buffered_events);
+
+    // Send them all over the fence to the host.
+    for (std::vector<syncer::ProtocolEvent*>::iterator it =
+         buffered_events.begin(); it != buffered_events.end(); ++it) {
+      // TODO(rlarocque): Make it explicit that host_ takes ownership.
+      host_.Call(
+          FROM_HERE,
+          &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop,
+          *it);
+    }
+  }
+}
+
+void SyncBackendHostCore::DisableProtocolEventForwarding() {
+  forward_protocol_events_ = false;
 }
 
 void SyncBackendHostCore::DeleteSyncDataFolder() {

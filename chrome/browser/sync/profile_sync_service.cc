@@ -936,7 +936,7 @@ void ProfileSyncService::OnBackendInitialized(
   debug_info_listener_ = debug_info_listener;
 
   if (protocol_event_observers_.might_have_observers()) {
-    backend_->SetForwardProtocolEvents(true);
+    backend_->RequestBufferedProtocolEventsAndEnableForwarding();
   }
 
   // If we have a cached passphrase use it to decrypt/encrypt data now that the
@@ -2067,17 +2067,15 @@ void ProfileSyncService::AddProtocolEventObserver(
     browser_sync::ProtocolEventObserver* observer) {
   protocol_event_observers_.AddObserver(observer);
   if (backend_) {
-    backend_->SetForwardProtocolEvents(
-        protocol_event_observers_.might_have_observers());
+    backend_->RequestBufferedProtocolEventsAndEnableForwarding();
   }
 }
 
 void ProfileSyncService::RemoveProtocolEventObserver(
     browser_sync::ProtocolEventObserver* observer) {
   protocol_event_observers_.RemoveObserver(observer);
-  if (backend_) {
-    backend_->SetForwardProtocolEvents(
-        protocol_event_observers_.might_have_observers());
+  if (backend_ && !protocol_event_observers_.might_have_observers()) {
+    backend_->DisableProtocolEventForwarding();
   }
 }
 

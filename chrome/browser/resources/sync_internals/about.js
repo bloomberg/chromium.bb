@@ -19,12 +19,23 @@ cr.define('chrome.sync.about_tab', function() {
   /** Container for accumulated sync protocol events. */
   var protocolEvents = [];
 
+  /** We may receive re-delivered events.  Keep a record of ones we've seen. */
+  var knownEventTimestamps = {};
+
   /**
    * Callback for incoming protocol events.
    * @param {Event} e The protocol event.
    */
   function onReceivedProtocolEvent(e) {
     var details = e.details;
+
+    // Return early if we've seen this event before.  Assumes that timestamps
+    // are sufficiently high resolution to uniquely identify an event.
+    if (knownEventTimestamps.hasOwnProperty(details.time)) {
+      return;
+    }
+
+    knownEventTimestamps[details.time] = true;
     protocolEvents.push(details);
 
     var context = new JsEvalContext({ events: protocolEvents });
@@ -43,28 +54,10 @@ cr.define('chrome.sync.about_tab', function() {
   }
 
   /**
-   * Toggles the given traffic event entry div's "expanded" state.
-   * @param {HTMLElement} element the element to toggle.
+   * Initializes listeners for status dump and import UI.
    */
-  function expandListener(element) {
-    element.target.classList.toggle('traffic-event-entry-expanded');
-  }
-
-  /**
-   * Attaches a listener to the given traffic event entry div.
-   * @param {HTMLElement} element the element to attach the listener to.
-   */
-  function addExpandListener(element) {
-    element.addEventListener('click', expandListener, false);
-  }
-
-  function onLoad() {
+  function initStatusDumpButton() {
     $('status-data').hidden = true;
-
-    chrome.sync.events.addEventListener(
-        'onAboutInfoUpdated',
-        onAboutInfoUpdatedEvent);
-    chrome.sync.requestUpdatedAboutInfo();
 
     var dumpStatusButton = $('dump-status');
     dumpStatusButton.addEventListener('click', function(event) {
@@ -111,8 +104,37 @@ cr.define('chrome.sync.about_tab', function() {
       var aboutInfo = JSON.parse(data);
       refreshAboutInfo(aboutInfo);
     });
+  }
 
+  /**
+   * Toggles the given traffic event entry div's "expanded" state.
+   * @param {HTMLElement} element the element to toggle.
+   */
+  function expandListener(element) {
+    element.target.classList.toggle('traffic-event-entry-expanded');
+  }
+
+  /**
+   * Attaches a listener to the given traffic event entry div.
+   * @param {HTMLElement} element the element to attach the listener to.
+   */
+  function addExpandListener(element) {
+    element.addEventListener('click', expandListener, false);
+  }
+
+  function onLoad() {
+    initStatusDumpButton();
     initProtocolEventLog();
+
+    chrome.sync.events.addEventListener(
+        'onAboutInfoUpdated',
+        onAboutInfoUpdatedEvent);
+
+    // Register to receive a stream of event notifications.
+    chrome.sync.registerForEvents();
+
+    // Request an about info update event to initialize the page.
+    chrome.sync.requestUpdatedAboutInfo();
   }
 
   return {

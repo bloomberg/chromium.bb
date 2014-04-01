@@ -475,12 +475,22 @@ SyncedDeviceTracker* SyncBackendHostImpl::GetSyncedDeviceTracker() const {
   return core_->synced_device_tracker();
 }
 
-void SyncBackendHostImpl::SetForwardProtocolEvents(bool forward) {
+void SyncBackendHostImpl::RequestBufferedProtocolEventsAndEnableForwarding() {
   DCHECK(initialized());
   registrar_->sync_thread()->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&SyncBackendHostCore::SetForwardProtocolEvents,
-                 core_, forward));
+      base::Bind(
+          &SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding,
+          core_));
+}
+
+void SyncBackendHostImpl::DisableProtocolEventForwarding() {
+  DCHECK(initialized());
+  registrar_->sync_thread()->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &SyncBackendHostCore::DisableProtocolEventForwarding,
+          core_));
 }
 
 void SyncBackendHostImpl::InitCore(scoped_ptr<DoInitializeOptions> options) {

@@ -19,6 +19,7 @@
 #include "sync/internal_api/js_mutation_event_observer.h"
 #include "sync/internal_api/js_sync_encryption_handler_observer.h"
 #include "sync/internal_api/js_sync_manager_observer.h"
+#include "sync/internal_api/protocol_event_buffer.h"
 #include "sync/internal_api/public/sync_manager.h"
 #include "sync/internal_api/public/user_share.h"
 #include "sync/internal_api/sync_encryption_handler_impl.h"
@@ -115,6 +116,8 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   virtual bool ReceivedExperiment(Experiments* experiments) OVERRIDE;
   virtual bool HasUnsyncedItems() OVERRIDE;
   virtual SyncEncryptionHandler* GetEncryptionHandler() OVERRIDE;
+  virtual ScopedVector<syncer::ProtocolEvent>
+      GetBufferedProtocolEvents() OVERRIDE;
 
   // SyncEncryptionHandler::Observer implementation.
   virtual void OnPassphraseRequired(
@@ -358,6 +361,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   // This is for keeping track of client events to send to the server.
   DebugInfoEventListener debug_info_event_listener_;
 
+  ProtocolEventBuffer protocol_event_buffer_;
   TrafficRecorder traffic_recorder_;
 
   Encryptor* encryptor_;

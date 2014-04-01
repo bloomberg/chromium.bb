@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/protocol/sync.pb.h"
@@ -19,7 +20,7 @@ class NudgeTracker;
 }  // namespace sessions
 
 // An event representing a 'normal mode' GetUpdate request to the server.
-class NormalGetUpdatesRequestEvent : public ProtocolEvent {
+class SYNC_EXPORT_PRIVATE NormalGetUpdatesRequestEvent : public ProtocolEvent {
  public:
   NormalGetUpdatesRequestEvent(
       base::Time timestamp,

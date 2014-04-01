@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync.pb.h"
@@ -17,7 +18,7 @@
 namespace syncer {
 
 // An event representing a commit response event from the server.
-class CommitResponseEvent : public ProtocolEvent {
+class SYNC_EXPORT_PRIVATE CommitResponseEvent : public ProtocolEvent {
  public:
   CommitResponseEvent(
       base::Time timestamp,

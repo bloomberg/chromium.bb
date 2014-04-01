@@ -41,6 +41,8 @@
     'internal_api/js_sync_manager_observer.cc',
     'internal_api/js_sync_manager_observer.h',
     'internal_api/non_blocking_type_processor.cc',
+    'internal_api/protocol_event_buffer.cc',
+    'internal_api/protocol_event_buffer.h',
     'internal_api/public/base/ack_handle.cc',
     'internal_api/public/base/ack_handle.h',
     'internal_api/public/base/cancelation_observer.cc',

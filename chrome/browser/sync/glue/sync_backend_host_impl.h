@@ -124,7 +124,8 @@ class SyncBackendHostImpl
   virtual void GetModelSafeRoutingInfo(
       syncer::ModelSafeRoutingInfo* out) const OVERRIDE;
   virtual SyncedDeviceTracker* GetSyncedDeviceTracker() const OVERRIDE;
-  virtual void SetForwardProtocolEvents(bool forward) OVERRIDE;
+  virtual void RequestBufferedProtocolEventsAndEnableForwarding() OVERRIDE;
+  virtual void DisableProtocolEventForwarding() OVERRIDE;
   virtual base::MessageLoop* GetSyncLoopForTesting() OVERRIDE;
 
  protected:

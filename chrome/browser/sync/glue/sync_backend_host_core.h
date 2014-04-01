@@ -209,7 +209,8 @@ class SyncBackendHostCore
     return synced_device_tracker_.get();
   }
 
-  void SetForwardProtocolEvents(bool forward);
+  void SendBufferedProtocolEventsAndEnableForwarding();
+  void DisableProtocolEventForwarding();
 
   // Delete the sync data folder to cleanup backend data.  Happens the first
   // time sync is enabled for a user (to prevent accidentally reusing old

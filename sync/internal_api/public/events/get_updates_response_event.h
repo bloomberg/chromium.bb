@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "sync/base/sync_export.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/protocol/sync.pb.h"
@@ -18,7 +19,7 @@ namespace syncer {
 //
 // Unlike the events for the request message, the response events are generic
 // and do not vary for each type of GetUpdate cycle.
-class GetUpdatesResponseEvent : public ProtocolEvent {
+class SYNC_EXPORT_PRIVATE GetUpdatesResponseEvent : public ProtocolEvent {
  public:
   GetUpdatesResponseEvent(
       base::Time timestamp,

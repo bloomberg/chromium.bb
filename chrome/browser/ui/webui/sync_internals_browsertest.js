@@ -227,6 +227,20 @@ HARD_CODED_ABOUT_INFO = {
   "unrecoverable_error_detected": false
 };
 
+NETWORK_EVENT_DETAILS_1 = {
+  "details":"Notified types: Bookmarks, Autofill",
+  "proto":{},
+  "time":1395874542192.407,
+  "type":"Normal GetUpdate request"
+};
+
+NETWORK_EVENT_DETAILS_2 = {
+  "details":"Received error: SYNC_AUTH_ERROR",
+  "proto":{},
+  "time":1395874542192.837,
+  "type":"GetUpdates Response"
+};
+
 TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
   expectTrue(this.hasInDetails(true, 'Username', ''));
@@ -244,6 +258,22 @@ TEST_F('SyncInternalsWebUITest', 'LoadPastedAboutInfo', function() {
   $('import-status').click();
 
   expectTrue(this.hasInDetails(true, 'Summary', 'Sync service initialized'));
+});
+
+TEST_F('SyncInternalsWebUITest', 'NetworkEventsTest', function() {
+  networkEvent1 = new Event('onProtocolEvent');
+  networkEvent1.details = NETWORK_EVENT_DETAILS_1;
+  networkEvent2 = new Event('onProtocolEvent');
+  networkEvent2.details = NETWORK_EVENT_DETAILS_2;
+
+  chrome.sync.events.dispatchEvent(networkEvent1);
+  chrome.sync.events.dispatchEvent(networkEvent2);
+
+  expectEquals(2, $('traffic-event-container').children.length);
+
+  // Test that repeated events are not re-displayed.
+  chrome.sync.events.dispatchEvent(networkEvent1);
+  expectEquals(2, $('traffic-event-container').children.length);
 });
 
 TEST_F('SyncInternalsWebUITest', 'SearchTabDoesntChangeOnItemSelect',

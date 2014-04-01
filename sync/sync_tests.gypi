@@ -417,6 +417,7 @@
           'internal_api/js_mutation_event_observer_unittest.cc',
           'internal_api/js_sync_encryption_handler_observer_unittest.cc',
           'internal_api/js_sync_manager_observer_unittest.cc',
+          'internal_api/protocol_event_buffer_unittest.cc',
           'internal_api/public/change_record_unittest.cc',
           'internal_api/public/sessions/sync_session_snapshot_unittest.cc',
           'internal_api/sync_core_proxy_unittest.cc',
