@@ -1084,7 +1084,7 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     // the style to impose the stacking rules. Note that this is also
     // done in StyleResolver::adjustRenderStyle().
     RenderStyle* style = state.style();
-    if (style->hasAutoZIndex() && (style->opacity() < 1.0f || style->hasTransform()))
+    if (style->hasAutoZIndex() && (style->opacity() < 1.0f || style->hasTransformRelatedProperty()))
         style->setZIndex(0);
 
     // Start loading resources used by animations.

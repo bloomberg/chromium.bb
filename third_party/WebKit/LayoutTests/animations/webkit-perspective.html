@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<style>
+#perspective {
+  -webkit-animation: anim 1s infinite;
+}
+@-webkit-keyframes anim {
+  0% { -webkit-perspective: 35px; }
+  100% { -webkit-perspective: 35px; }
+}
+#transform {
+  width: 100px;
+  height: 100px;
+  background: blue;
+  -webkit-transform: rotateY(45deg);
+}
+</style>
+<div id="perspective">
+  <div id="transform">
+  </div>
+</div>
