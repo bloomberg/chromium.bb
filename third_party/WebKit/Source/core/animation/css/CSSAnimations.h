@@ -73,10 +73,11 @@ public:
         m_animationsWithPauseToggled.append(name);
     }
 
-    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, PassRefPtr<InertAnimation> animation)
+    void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtr<InertAnimation> animation)
     {
         NewTransition newTransition;
         newTransition.id = id;
+        newTransition.eventId = eventId;
         newTransition.from = from;
         newTransition.to = to;
         newTransition.animation = animation;
@@ -104,6 +105,7 @@ public:
         }
 
         CSSPropertyID id;
+        CSSPropertyID eventId;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
         RefPtr<InertAnimation> animation;

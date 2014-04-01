@@ -457,7 +457,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromFillLayers<CSSPropertyWebkitMaskPositionY>(style.maskLayers(), style);
     case CSSPropertyWebkitMaskSize:
         return createFromFillLayers<CSSPropertyWebkitMaskSize>(style.maskLayers(), style);
-    case CSSPropertyWebkitPerspective:
+    case CSSPropertyPerspective:
         return createFromDouble(style.perspective());
     case CSSPropertyWebkitPerspectiveOriginX:
         return createFromLength(style.perspectiveOriginX(), style);

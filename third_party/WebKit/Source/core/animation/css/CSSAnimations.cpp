@@ -72,6 +72,17 @@ bool isLaterPhase(TimedItem::Phase target, TimedItem::Phase reference)
     return target > reference;
 }
 
+CSSPropertyID propertyForAnimation(CSSPropertyID property)
+{
+    switch (property) {
+    case CSSPropertyWebkitPerspective:
+        return CSSPropertyPerspective;
+    default:
+        break;
+    }
+    return property;
+}
+
 static void resolveKeyframes(StyleResolver* resolver, Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
     KeyframeEffectModel::KeyframeVector& keyframes)
 {
@@ -86,7 +97,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
         return;
 
     // Construct and populate the style for each keyframe
-    PropertySet specifiedProperties;
+    PropertySet specifiedPropertiesForUseCounter;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
         // It's OK to pass a null element here.
@@ -98,12 +109,13 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
         keyframe->setEasing(defaultTimingFunction);
         const StylePropertySet& properties = styleKeyframe->properties();
         for (unsigned j = 0; j < properties.propertyCount(); j++) {
-            CSSPropertyID property = properties.propertyAt(j).id();
-            specifiedProperties.add(property);
-            if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction)
+            specifiedPropertiesForUseCounter.add(properties.propertyAt(j).id());
+            CSSPropertyID property = propertyForAnimation(properties.propertyAt(j).id());
+            if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction) {
                 keyframe->setEasing(KeyframeValue::timingFunction(*keyframeStyle));
-            else if (CSSAnimations::isAnimatableProperty(property))
+            } else if (CSSAnimations::isAnimatableProperty(property)) {
                 keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, *keyframeStyle).get());
+            }
         }
         keyframes.append(keyframe);
         // The last keyframe specified at a given offset is used.
@@ -113,7 +125,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
     }
     ASSERT(!keyframes.isEmpty());
 
-    for (PropertySet::const_iterator iter = specifiedProperties.begin(); iter != specifiedProperties.end(); ++iter) {
+    for (PropertySet::const_iterator iter = specifiedPropertiesForUseCounter.begin(); iter != specifiedPropertiesForUseCounter.end(); ++iter) {
         const CSSPropertyID property = *iter;
         ASSERT(property != CSSPropertyInvalid);
         blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
@@ -397,7 +409,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
         CSSPropertyID id = newTransition.id;
         InertAnimation* inertAnimation = newTransition.animation.get();
-        OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, id));
+        OwnPtr<TransitionEventDelegate> eventDelegate = adoptPtr(new TransitionEventDelegate(element, newTransition.eventId));
 
         RefPtrWillBeRawPtr<AnimationEffect> effect = inertAnimation->effect();
 
@@ -480,7 +492,8 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
 
     RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
 
-    update->startTransition(id, from.get(), to.get(), InertAnimation::create(effect, timing, isPaused));
+    CSSPropertyID eventId = anim->animationMode() == CSSAnimationData::AnimateAll ? id : anim->property();
+    update->startTransition(id, eventId, from.get(), to.get(), InertAnimation::create(effect, timing, isPaused));
     ASSERT(!element->activeAnimations() || !element->activeAnimations()->isAnimationStyleChange());
 }
 
@@ -522,6 +535,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
                 CSSPropertyID id = propertyList.length() ? propertyList.properties()[j] : anim->property();
 
                 if (!animateAll) {
+                    id = propertyForAnimation(id);
                     if (CSSAnimations::isAnimatableProperty(id))
                         listedProperties.set(id);
                     else
@@ -766,7 +780,7 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
     case CSSPropertyWebkitMaskSize:
-    case CSSPropertyWebkitPerspective:
+    case CSSPropertyPerspective:
     case CSSPropertyWebkitPerspectiveOriginX:
     case CSSPropertyWebkitPerspectiveOriginY:
     case CSSPropertyShapeOutside:

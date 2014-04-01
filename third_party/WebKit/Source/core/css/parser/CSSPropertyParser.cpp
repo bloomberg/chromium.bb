@@ -1138,19 +1138,21 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         }
         return false;
     }
-    case CSSPropertyWebkitPerspective:
-        if (id == CSSValueNone)
+    case CSSPropertyPerspective:
+        if (id == CSSValueNone) {
             validPrimitive = true;
-        else {
+        } else if (validUnit(value, FLength | FNonNeg)) {
+            addProperty(propId, createPrimitiveNumericValue(value), important);
+            return true;
+        }
+        break;
+    case CSSPropertyWebkitPerspective:
+        if (id == CSSValueNone) {
+            validPrimitive = true;
+        } else if (validUnit(value, FNumber | FLength | FNonNeg)) {
             // Accepting valueless numbers is a quirk of the -webkit prefixed version of the property.
-            if (validUnit(value, FNumber | FLength | FNonNeg)) {
-                RefPtrWillBeRawPtr<CSSValue> val = createPrimitiveNumericValue(value);
-                if (val) {
-                    addProperty(propId, val.release(), important);
-                    return true;
-                }
-                return false;
-            }
+            addProperty(propId, createPrimitiveNumericValue(value), important);
+            return true;
         }
         break;
     case CSSPropertyWebkitPerspectiveOrigin:
@@ -1610,7 +1612,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         validPrimitive = false;
         break;
     // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-    case CSSPropertyPerspective:
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransform:
     case CSSPropertyTransformOrigin:

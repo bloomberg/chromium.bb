@@ -296,6 +296,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitMaskRepeat,
     CSSPropertyWebkitMaskSize,
     CSSPropertyOrder,
+    CSSPropertyPerspective,
     CSSPropertyWebkitPerspective,
     CSSPropertyWebkitPerspectiveOrigin,
     CSSPropertyWebkitPrintColorAdjust,
@@ -2502,6 +2503,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyWebkitMarginTopCollapse:
         case CSSPropertyWebkitMarginBeforeCollapse:
             return cssValuePool().createValue(style->marginBeforeCollapse());
+        case CSSPropertyPerspective:
         case CSSPropertyWebkitPerspective:
             if (!style->hasPerspective())
                 return cssValuePool().createIdentifierValue(CSSValueNone);
@@ -2765,7 +2767,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             break;
 
         // FIXME: crbug.com/154772 Unimplemented css-transforms properties
-        case CSSPropertyPerspective:
         case CSSPropertyPerspectiveOrigin:
         case CSSPropertyTransform:
         case CSSPropertyTransformOrigin:

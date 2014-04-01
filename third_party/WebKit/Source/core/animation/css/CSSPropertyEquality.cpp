@@ -272,7 +272,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
         return fillLayersEqual<CSSPropertyWebkitMaskPositionY>(a.maskLayers(), b.maskLayers());
     case CSSPropertyWebkitMaskSize:
         return fillLayersEqual<CSSPropertyWebkitMaskSize>(a.maskLayers(), b.maskLayers());
-    case CSSPropertyWebkitPerspective:
+    case CSSPropertyPerspective:
         return a.perspective() == b.perspective();
     case CSSPropertyWebkitPerspectiveOriginX:
         return a.perspectiveOriginX() == b.perspectiveOriginX();
