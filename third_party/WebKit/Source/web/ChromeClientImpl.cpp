@@ -365,11 +365,24 @@ void ChromeClientImpl::setResizable(bool value)
 
 bool ChromeClientImpl::shouldReportDetailedMessageForSource(const String& url)
 {
-    return m_webView->client() && m_webView->client()->shouldReportDetailedMessageForSource(url);
+    WebFrameImpl* webframe = m_webView->mainFrameImpl();
+    // TODO(mkosiba): remove once Chrome side is updated.
+    bool shouldReport = m_webView->client() && m_webView->client()->shouldReportDetailedMessageForSource(url);
+    shouldReport &= webframe->client() && webframe->client()->shouldReportDetailedMessageForSource(url);
+    return shouldReport;
 }
 
 void ChromeClientImpl::addMessageToConsole(MessageSource source, MessageLevel level, const String& message, unsigned lineNumber, const String& sourceID, const String& stackTrace)
 {
+    WebFrameImpl* webframe = m_webView->mainFrameImpl();
+    if (webframe->client()) {
+        webframe->client()->didAddMessageToConsole(
+            WebConsoleMessage(static_cast<WebConsoleMessage::Level>(level), message),
+            sourceID,
+            lineNumber,
+            stackTrace);
+    }
+    // TODO(mkosiba): remove once Chrome side is updated.
     if (m_webView->client()) {
         m_webView->client()->didAddMessageToConsole(
             WebConsoleMessage(static_cast<WebConsoleMessage::Level>(level), message),
