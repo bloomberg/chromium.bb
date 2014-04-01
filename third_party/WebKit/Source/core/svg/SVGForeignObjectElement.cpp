@@ -22,6 +22,7 @@
 #include "core/svg/SVGForeignObjectElement.h"
 
 #include "XLinkNames.h"
+#include "core/frame/UseCounter.h"
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
@@ -43,6 +44,8 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
+
+    UseCounter::count(document, UseCounter::SVGForeignObjectElement);
 }
 
 PassRefPtr<SVGForeignObjectElement> SVGForeignObjectElement::create(Document& document)
