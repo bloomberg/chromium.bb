@@ -37,7 +37,7 @@ namespace WebCore {
 
 enum AnimatedPropertyID {
     AnimatedPropertyInvalid,
-    AnimatedPropertyWebkitTransform,
+    AnimatedPropertyTransform,
     AnimatedPropertyOpacity,
     AnimatedPropertyBackgroundColor,
     AnimatedPropertyWebkitFilter

@@ -167,6 +167,7 @@ static bool hasWillChangeThatCreatesStackingContext(const RenderStyle* style, El
     for (size_t i = 0; i < style->willChangeProperties().size(); ++i) {
         switch (style->willChangeProperties()[i]) {
         case CSSPropertyOpacity:
+        case CSSPropertyTransform:
         case CSSPropertyWebkitTransform:
         case CSSPropertyTransformStyle:
         case CSSPropertyWebkitTransformStyle:
@@ -238,7 +239,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
 
     // will-change:transform should result in the same rendering behavior as having a transform,
     // including the creation of a containing block for fixed position descendants.
-    if (!style->hasTransform() && style->willChangeProperties().contains(CSSPropertyWebkitTransform)) {
+    if (!style->hasTransform() && (style->willChangeProperties().contains(CSSPropertyWebkitTransform) || style->willChangeProperties().contains(CSSPropertyTransform))) {
         bool makeIdentity = true;
         style->setTransform(TransformOperations(makeIdentity));
     }

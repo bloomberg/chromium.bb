@@ -77,6 +77,8 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
     switch (property) {
     case CSSPropertyWebkitPerspective:
         return CSSPropertyPerspective;
+    case CSSPropertyWebkitTransform:
+        return CSSPropertyTransform;
     default:
         break;
     }
@@ -787,10 +789,10 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyShapeMargin:
     case CSSPropertyShapeImageThreshold:
     case CSSPropertyWebkitTextStrokeColor:
-    case CSSPropertyWebkitTransform:
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitTransformOriginZ:
+    case CSSPropertyTransform:
     case CSSPropertyWidows:
     case CSSPropertyWidth:
     case CSSPropertyWordSpacing:

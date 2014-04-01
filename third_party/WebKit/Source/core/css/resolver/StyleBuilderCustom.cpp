@@ -1422,6 +1422,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         state.style()->setTextStrokeWidth(width);
         return;
     }
+    case CSSPropertyTransform:
     case CSSPropertyWebkitTransform: {
         HANDLE_INHERIT_AND_INITIAL(transform, Transform);
         TransformOperations operations;
@@ -1743,7 +1744,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
 
     // FIXME: crbug.com/154772 Unimplemented css-transforms properties
     case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyTransform:
     case CSSPropertyTransformOrigin:
         return;
     // These properties are aliased and we already applied the property on the prefixed version.

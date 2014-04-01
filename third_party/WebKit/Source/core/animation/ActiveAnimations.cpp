@@ -43,7 +43,7 @@ bool shouldCompositeForActiveAnimations(const RenderObject& renderer)
     const Element* element = toElement(renderer.node());
     if (const ActiveAnimations* activeAnimations = element->activeAnimations()) {
         if (activeAnimations->hasActiveAnimations(CSSPropertyOpacity)
-            || activeAnimations->hasActiveAnimations(CSSPropertyWebkitTransform)
+            || activeAnimations->hasActiveAnimations(CSSPropertyTransform)
             || activeAnimations->hasActiveAnimations(CSSPropertyWebkitFilter))
             return true;
     }

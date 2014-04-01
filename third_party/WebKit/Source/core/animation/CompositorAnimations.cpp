@@ -150,8 +150,8 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
             switch (*it) {
             case CSSPropertyOpacity:
                 continue;
-            case CSSPropertyWebkitTransform:
-                if (toAnimatableTransform(frames[i]->propertyValue(CSSPropertyWebkitTransform))->transformOperations().dependsOnBoxSize())
+            case CSSPropertyTransform:
+                if (toAnimatableTransform(frames[i]->propertyValue(CSSPropertyTransform))->transformOperations().dependsOnBoxSize())
                     return false;
                 continue;
             case CSSPropertyWebkitFilter: {
@@ -475,7 +475,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, co
             curve = adoptPtr(filterCurve);
             break;
         }
-        case CSSPropertyWebkitTransform: {
+        case CSSPropertyTransform: {
             targetProperty = blink::WebAnimation::TargetPropertyTransform;
             blink::WebTransformAnimationCurve* transformCurve = blink::Platform::current()->compositorSupport()->createTransformAnimationCurve();
             addKeyframesToCurve(*transformCurve, values, compositorTiming.reverse);

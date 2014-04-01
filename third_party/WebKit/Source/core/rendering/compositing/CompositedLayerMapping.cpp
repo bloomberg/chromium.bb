@@ -667,7 +667,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
 
     // Set transform property, if it is not animating. We have to do this here because the transform
     // is affected by the layer dimensions.
-    if (!hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyWebkitTransform))
+    if (!hasActiveAnimationsOnCompositor(*renderer(), CSSPropertyTransform))
         updateTransform(renderer()->style());
 
     // Set opacity, if it is not animating.

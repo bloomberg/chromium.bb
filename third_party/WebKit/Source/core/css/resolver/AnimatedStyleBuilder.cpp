@@ -575,7 +575,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTextStrokeColor(toAnimatableColor(value)->color());
         style->setVisitedLinkTextStrokeColor(toAnimatableColor(value)->visitedLinkColor());
         return;
-    case CSSPropertyWebkitTransform: {
+    case CSSPropertyTransform: {
         const TransformOperations& operations = toAnimatableTransform(value)->transformOperations();
         // FIXME: This normalization (handling of 'none') should be performed at input in AnimatableValueFactory.
         style->setTransform(operations.size() ? operations : TransformOperations(true));

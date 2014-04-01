@@ -32,7 +32,7 @@
 
 // Perspective
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'perspective(400px)',
   to: 'perspective(500px)'
 }, [
@@ -44,7 +44,7 @@ assertInterpolation({
   {at: 2, is: 'perspective(600px)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'skewX(10rad) perspective(400px)',
   to: 'skewX(20rad) perspective(500px)'
 }, [
@@ -56,7 +56,7 @@ assertInterpolation({
   {at: 2, is: 'skewX(30rad) perspective(600px)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scaleZ(1) perspective(400px)',
   to: 'scaleZ(2) perspective(500px)'
 }, [
@@ -70,7 +70,7 @@ assertInterpolation({
 
 // Rotate
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotate(30deg)',
   to: 'rotate(330deg)'
 }, [
@@ -82,7 +82,7 @@ assertInterpolation({
   {at: 2, is: 'rotate(630deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotateX(0deg)',
   to: 'rotateX(700deg)'
 }, [
@@ -94,7 +94,7 @@ assertInterpolation({
   {at: 2, is: 'rotateX(1400deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotateY(0deg)',
   to: 'rotateY(800deg)'
 }, [
@@ -106,7 +106,7 @@ assertInterpolation({
   {at: 2, is: 'rotateY(1600deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotateZ(0deg)',
   to: 'rotateZ(900deg)'
 }, [
@@ -118,7 +118,7 @@ assertInterpolation({
   {at: 2, is: 'rotateZ(1800deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotate3d(7, 8, 9, 100deg)',
   to: 'rotate3d(7, 8, 9, 260deg)'
 }, [
@@ -130,7 +130,7 @@ assertInterpolation({
   {at: 2, is: 'rotate3d(7, 8, 9, 420deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'none',
   to: 'rotate(90deg)'
 }, [
@@ -142,7 +142,7 @@ assertInterpolation({
   {at: 2, is: 'rotate(180deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotate(90deg)',
   to: 'none'
 }, [
@@ -154,7 +154,7 @@ assertInterpolation({
   {at: 2, is: 'rotate(-90deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)',
   to: 'rotateX(700deg) rotateY(800deg) rotateZ(900deg)'
 }, [
@@ -168,7 +168,7 @@ assertInterpolation({
 
 // Scale
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scale(10, 5)',
   to: 'scale(20, 9)'
 }, [
@@ -180,7 +180,7 @@ assertInterpolation({
   {at: 2, is: 'scale(30, 13)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scaleX(10)',
   to: 'scaleX(20)'
 }, [
@@ -192,7 +192,7 @@ assertInterpolation({
   {at: 2, is: 'scaleX(30)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scaleY(5)',
   to: 'scaleY(9)'
 }, [
@@ -204,7 +204,7 @@ assertInterpolation({
   {at: 2, is: 'scaleY(13)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scaleZ(1)',
   to: 'scaleZ(2)'
 }, [
@@ -216,7 +216,7 @@ assertInterpolation({
   {at: 2, is: 'scaleZ(3)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scale3d(10, 0.5, 1)',
   to: 'scale3d(20, 1, 2)'
 }, [
@@ -228,7 +228,7 @@ assertInterpolation({
   {at: 2, is: 'scale3d(30, 1.5, 3)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'none',
   to: 'scale3d(2, 3, 5)'
 }, [
@@ -240,7 +240,7 @@ assertInterpolation({
   {at: 2, is: 'scale3d(3, 5, 9)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scale3d(2, 3, 5)',
   to: 'none'
 }, [
@@ -252,7 +252,7 @@ assertInterpolation({
   {at: 2, is: 'scale3d(0, -1, -3)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scaleX(10) scaleY(0.5) scaleZ(1)',
   to: 'scaleX(20) scaleY(1) scaleZ(2)'
 }, [
@@ -264,7 +264,7 @@ assertInterpolation({
   {at: 2, is: 'scaleX(30) scaleY(1.5) scaleZ(3)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'skewX(10rad) scaleZ(1)',
   to: 'skewX(20rad) scaleZ(2)'
 }, [
@@ -276,7 +276,7 @@ assertInterpolation({
   {at: 2, is: 'skewX(30rad) scaleZ(3)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'skewX(10rad)',
   to: 'skewX(20rad) scaleZ(2)'
 }, [
@@ -288,7 +288,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(1, 0, 0, 0, 3.825961060990398, 1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'scaleZ(3) perspective(400px)',
   to: 'scaleZ(4) skewX(1rad) perspective(500px)'
 }, [
@@ -300,7 +300,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(1, 0, 0, 0, 3.1148154493098046, 1, 0, 0, 0, 0, 5, -0.0008333333333333337, 0, 0, 0, 1)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translateY(70%) scaleZ(1)',
   to: 'translateY(90%) scaleZ(2)'
 }, [
@@ -312,7 +312,7 @@ assertInterpolation({
   {at: 2, is: 'translateY(110%) scaleZ(3)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translateY(70%)',
   to: 'translateY(90%) scaleZ(2)'
 }, [
@@ -326,7 +326,7 @@ assertInterpolation({
 
 // Skew
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'skewX(10rad)',
   to: 'skewX(20rad)'
 }, [
@@ -338,7 +338,7 @@ assertInterpolation({
   {at: 2, is: 'skewX(30rad)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'skewY(10rad)',
   to: 'skewY(20rad)'
 }, [
@@ -352,7 +352,7 @@ assertInterpolation({
 
 // Translate
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translate(12px, 70%)',
   to: 'translate(13px, 90%)'
 }, [
@@ -364,7 +364,7 @@ assertInterpolation({
   {at: 2, is: 'translate(14px, 110%)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translateX(12px)',
   to: 'translateX(13px)'
 }, [
@@ -376,7 +376,7 @@ assertInterpolation({
   {at: 2, is: 'translateX(14px)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translateY(70%)',
   to: 'translateY(90%)'
 }, [
@@ -388,7 +388,7 @@ assertInterpolation({
   {at: 2, is: 'translateY(110%)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translateZ(2em)',
   to: 'translateZ(3em)'
 }, [
@@ -400,7 +400,7 @@ assertInterpolation({
   {at: 2, is: 'translateZ(4em)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translate3d(12px, 70%, 2em)',
   to: 'translate3d(13px, 90%, 3em)'
 }, [
@@ -412,7 +412,7 @@ assertInterpolation({
   {at: 2, is: 'translate3d(14px, 110%, 4em)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translateX(12px) translateY(70%) translateZ(2em)',
   to: 'translateX(13px) translateY(90%) translateZ(3em)'
 }, [
@@ -424,7 +424,7 @@ assertInterpolation({
   {at: 2, is: 'translateX(14px) translateY(110%) translateZ(4em)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'skewX(10rad) translateY(70%)',
   to: 'skewX(20rad) translateY(90%)'
 }, [
@@ -436,7 +436,7 @@ assertInterpolation({
   {at: 2, is: 'skewX(30rad) translateY(110%)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'skewX(1rad)',
   to: 'translate3d(8px, -4px, 12px) skewX(2rad)'
 }, [
@@ -448,7 +448,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(1, 0, 0, 0, -5.9274874511779405, 1, 0, 0, 0, 0, 1, 0, 16, -8, 24, 1)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translate3d(8px, -4px, 12px) skewX(1rad) perspective(400px)',
   to: 'scaleY(2) skewX(2rad) perspective(500px)'
 }, [
@@ -460,7 +460,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(1, 0, 0, 0, -11.227342763749263, 3, 0, 0, 0.021237113402061854, -0.010618556701030927, 1.03, -0.0014653608247422677, -8, 4, -12, 0.9861443298969074)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translate3d(8px, -4px, 12px) skewX(1rad) perspective(400px)',
   to: 'translate3d(4px, -12px, 8px) scaleY(2) perspective(500px)'
 }, [
@@ -472,7 +472,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(1, 0, 0, 0, -4.672223173964706, 3, 0, 0, 0.0043496773112061, 0.038394267035453865, 0.998, -0.0014847456206520829, 0, -20, 4, 0.9956416059005954)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'translate3d(8px, -4px, 12px) skewX(1rad) perspective(400px)',
   to: 'translate3d(4px, -12px, 8px) skewX(2rad) scaleY(2)'
 }, [
@@ -486,7 +486,7 @@ assertInterpolation({
 
 // Matrix
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'matrix(5, 6, 10, 7, 21, 23)',
   to: 'matrix(8, 4, 9, 11, 24, 22)'
 }, [
@@ -498,7 +498,7 @@ assertInterpolation({
   {at: 2, is: 'matrix(-16.45196668627737, -19.74236002353284, -18.81066272622538, 0.5900238929654478, 27, 21)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'matrix(43.30127018922194, 30, -17.5, 36.373066958946424, 31, 33)',
   to: 'matrix(36, 31.17691453623979, -76.2102355330306, 22, 34, 32)'
 }, [
@@ -510,7 +510,7 @@ assertInterpolation({
   {at: 2, is: 'matrix(28.9236870855142, 31.34124716880554, -160.89841710117557, -36.69885507392111, 37, 31)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'none',
   to: 'matrix3d(1.0806046117362795, 0, -1.682941969615793, 0, 0, 3, 0, 0, 3.365883939231586, 0, 2.161209223472559, 0, 0, 0, 0, 1)'
 }, [
@@ -522,7 +522,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(-1.2484405096414273, 0, -2.727892280477045, 0, 0, 5, 0, 0, 6.365081987779772, 0, -2.9130278558299967, 0, 0, 0, 0, 1)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'matrix3d(1.0806046117362795, 0, -1.682941969615793, 0, 0, 3, 0, 0, 3.365883939231586, 0, 2.161209223472559, 0, 0, 0, 0, 1)',
   to: 'none'
 }, [
@@ -534,7 +534,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(0, 0, 0, 0, 0, -1, 0, 0, 1.682941969615793, 0, -1.0806046117362795, 0, 0, 0, 0, 1)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'matrix3d(2.3505561943, 0.0, 0.0, 0.0, 0.0, 2.6068943664, 0.0, 0.0, 0.0, 0.0, 2.6591082592, 0.0, 20.3339914256, 20.6709033765, 20.9147808456, 1.0)',
   to: 'matrix3d(2.7133590938, 0.0, 0.0, 0.0, 0.0, 2.4645137761, 0.0, 0.0, 0.0, 0.0, 2.801687476, 0.0, 20.4335882254, 20.2330661998, 20.4583968206, 1.0)'
 }, [
@@ -546,7 +546,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(3.0761619932999995, 0.0, 0.0, 0.0, 0.0, 2.3221331858, 0.0, 0.0, 0.0, 0.0, 2.9442666928000003, 0.0, 20.5331850252, 19.7952290231, 20.002012795600002, 1.0)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'none',
   to: 'matrix3d(0, 0.6875, -0.625, 0.3125, -0.6666666666666665, -1, 0.8333333333333334, 0.125, -0.6666666666666665, 0, 0.5, 1.0625, -1.1875, -0.0625, 1.3125, 1)'
 }, [
@@ -558,7 +558,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(-0.5844534449366048, -0.42278005999296053, -0.4650580659922564, -0.6817595809063256, 0.9156938760088464, 0.3851647027225889, 0.9244443507516923, 0.7218225020358241, -0.0803568793574344, 0.1719974850210706, -0.49676609633513097, -0.25968177786904373, -2.375, -0.125, 2.625, 5.340768914473685)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'matrix3d(0, 0.6875, -0.625, 0.3125, -0.6666666666666665, -1, 0.8333333333333334, 0.125, -0.6666666666666665, 0, 0.5, 1.0625, -1.1875, -0.0625, 1.3125, 1)',
   to: 'matrix3d(0.571428571428571, -0.625, -0.8333333333333346, -0.66666666666669, 0.5, -0.1875, -0.8125, 0.3125, 0.34375, -1, 0.8333333333333327, 1.34375, -1.34375, 1, -0.9375, 1)'
 }, [
@@ -570,7 +570,7 @@ assertInterpolation({
   {at: 2, is: 'matrix3d(-1.1789992641434441, -0.7109729379601547, -0.4455746537954199, -21.703089533128907, -0.11137581475421703, -0.08822983871000473, -0.05695380894007451, -2.22667264132605, -3.1443917136741506, 1.8952588096345078, 2.426615889772007, -21.697523130750138, -1.5, 2.0625, -3.1875, -5.901513951904121)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'matrix3d(0.571428571428571, -0.625, -0.8333333333333346, -0.66666666666669, 0.5, -0.1875, -0.8125, 0.3125, 0.34375, -1, 0.8333333333333327, 1.34375, -1.34375, 1, -0.9375, 1)',
   to: 'none'
 }, [
@@ -584,7 +584,7 @@ assertInterpolation({
 
 // Mismatched interpolation with an empty list should not use decomposition.
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'none',
   to: 'rotate(180deg)'
 }, [
@@ -596,7 +596,7 @@ assertInterpolation({
   {at: 2, is: 'rotate(360deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'rotate(180deg)',
   to: 'none'
 }, [
@@ -608,7 +608,7 @@ assertInterpolation({
   {at: 2, is: 'rotate(-180deg)'},
 ]);
 assertInterpolation({
-  property: 'transform',
+  property: '-webkit-transform',
   from: 'none',
   to: 'rotate(360deg)'
 }, [

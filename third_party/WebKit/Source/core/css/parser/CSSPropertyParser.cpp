@@ -1108,11 +1108,12 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         else
             validPrimitive = validUnit(value, FTime | FInteger | FNonNeg);
         break;
+    case CSSPropertyTransform:
     case CSSPropertyWebkitTransform:
         if (id == CSSValueNone)
             validPrimitive = true;
         else {
-            RefPtrWillBeRawPtr<CSSValue> transformValue = parseTransform();
+            RefPtrWillBeRawPtr<CSSValue> transformValue = parseTransform(propId);
             if (transformValue) {
                 addProperty(propId, transformValue.release(), important);
                 return true;
@@ -1613,7 +1614,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID propId, bool important)
         break;
     // FIXME: crbug.com/154772 Unimplemented css-transforms properties
     case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyTransform:
     case CSSPropertyTransformOrigin:
         return false;
     default:

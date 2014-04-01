@@ -1653,7 +1653,7 @@ bool RenderLayerCompositor::isRunningAcceleratedTransformAnimation(RenderObject*
 {
     if (!m_compositingReasonFinder.hasAnimationTrigger())
         return false;
-    return hasActiveAnimations(*renderer, CSSPropertyWebkitTransform);
+    return hasActiveAnimations(*renderer, CSSPropertyTransform);
 }
 
 // If an element has negative z-index children, those children render in front of the

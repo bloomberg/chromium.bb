@@ -971,7 +971,7 @@ static PassRefPtrWillBeRawPtr<CSSValueList> parseTranslateTransformList(CharType
 
 static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
 {
-    if (propertyID != CSSPropertyWebkitTransform)
+    if (propertyID != CSSPropertyTransform && propertyID != CSSPropertyWebkitTransform)
         return false;
     if (string.isEmpty())
         return false;
@@ -989,7 +989,7 @@ static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSProp
         if (!transformList)
             return false;
     }
-    properties->addParsedProperty(CSSProperty(CSSPropertyWebkitTransform, transformList.release(), important));
+    properties->addParsedProperty(CSSProperty(propertyID, transformList.release(), important));
     return true;
 }
 
@@ -1418,14 +1418,14 @@ private:
     CSSPropertyParser::Units m_unit;
 };
 
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform()
+PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform(CSSPropertyID propId)
 {
     if (!m_valueList)
         return nullptr;
 
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
     for (CSSParserValue* value = m_valueList->current(); value; value = m_valueList->next()) {
-        RefPtrWillBeRawPtr<CSSValue> parsedTransformValue = parseTransformValue(value);
+        RefPtrWillBeRawPtr<CSSValue> parsedTransformValue = parseTransformValue(propId, value);
         if (!parsedTransformValue)
             return nullptr;
 
@@ -1435,7 +1435,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::parseTransform()
     return list.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSParserValue *value)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSPropertyID propId, CSSParserValue *value)
 {
     if (value->unit != CSSParserValue::Function || !value->function)
         return nullptr;
@@ -1479,7 +1479,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseTransformValue(CSSParse
                 return nullptr;
         } else if (info.type() == CSSTransformValue::PerspectiveTransformOperation && !argNumber) {
             // 1st param of perspective() must be a non-negative number (deprecated) or length.
-            if (!validUnit(a, FNumber | FLength | FNonNeg, HTMLStandardMode))
+            if ((propId == CSSPropertyWebkitTransform && !validUnit(a, FNumber | FLength | FNonNeg, HTMLStandardMode))
+                || (propId == CSSPropertyTransform && !validUnit(a, FLength | FNonNeg, HTMLStandardMode)))
                 return nullptr;
         } else if (!validUnit(a, unit, HTMLStandardMode)) {
             return nullptr;

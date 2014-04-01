@@ -237,10 +237,10 @@ private:
     static bool isBlendMode(CSSValueID);
     static bool isCompositeOperator(CSSValueID);
 
-    PassRefPtrWillBeRawPtr<CSSValueList> parseTransform();
-    PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(CSSParserValue*);
     bool parseTransformOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, CSSPropertyID& propId3, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
     bool parsePerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,  RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
+    PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(CSSPropertyID);
+    PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(CSSPropertyID, CSSParserValue*);
 
     bool parseTextEmphasisStyle(bool important);
 

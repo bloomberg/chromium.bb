@@ -471,7 +471,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromDouble(style.shapeImageThreshold());
     case CSSPropertyWebkitTextStrokeColor:
         return createFromColor(property, style);
-    case CSSPropertyWebkitTransform:
+    case CSSPropertyTransform:
         return AnimatableTransform::create(style.transform());
     case CSSPropertyWebkitTransformOriginX:
         return createFromLength(style.transformOriginX(), style);

@@ -151,7 +151,7 @@ public:
     PassRefPtrWillBeRawPtr<Keyframe> createDefaultKeyframe(CSSPropertyID id, AnimationEffect::CompositeOperation op, double offset = 0)
     {
         RefPtrWillBeRawPtr<AnimatableValue> value = nullptr;
-        if (id == CSSPropertyWebkitTransform)
+        if (id == CSSPropertyTransform)
             value = AnimatableTransform::create(TransformOperations());
         else
             value = AnimatableDouble::create(10.0);
@@ -218,11 +218,11 @@ public:
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeMultipleCSSProperties)
 {
     RefPtrWillBeRawPtr<Keyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace);
-    keyframeGoodMultiple->setPropertyValue(CSSPropertyWebkitTransform, AnimatableTransform::create(TransformOperations()).get());
+    keyframeGoodMultiple->setPropertyValue(CSSPropertyTransform, AnimatableTransform::create(TransformOperations()).get());
     EXPECT_TRUE(isCandidateHelperForSingleKeyframe(keyframeGoodMultiple.get()));
 
     RefPtrWillBeRawPtr<Keyframe> keyframeBadMultipleOp = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd);
-    keyframeBadMultipleOp->setPropertyValue(CSSPropertyWebkitTransform, AnimatableDouble::create(10.0).get());
+    keyframeBadMultipleOp->setPropertyValue(CSSPropertyTransform, AnimatableDouble::create(10.0).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleOp.get()));
 
     RefPtrWillBeRawPtr<Keyframe> keyframeBadMultipleID = createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace);
@@ -234,17 +234,17 @@ TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTr
 {
     TransformOperations ops;
     ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
-    RefPtrWillBeRawPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
+    RefPtrWillBeRawPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_TRUE(isCandidateHelperForSingleKeyframe(goodKeyframe.get()));
 
     ops.operations().append(TranslateTransformOperation::create(Length(50, WebCore::Percent), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
-    RefPtrWillBeRawPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
+    RefPtrWillBeRawPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe.get()));
 
     TransformOperations ops2;
     Length calcLength = Length(100, WebCore::Percent).blend(Length(100, WebCore::Fixed), 0.5, WebCore::ValueRangeAll);
     ops2.operations().append(TranslateTransformOperation::create(calcLength, Length(0, WebCore::Fixed), TransformOperation::TranslateX));
-    RefPtrWillBeRawPtr<Keyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops2).get());
+    RefPtrWillBeRawPtr<Keyframe> badKeyframe2 = createReplaceOpKeyframe(CSSPropertyTransform, AnimatableTransform::create(ops2).get());
     EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe2.get()));
 }
 
@@ -257,7 +257,7 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKey
 
     KeyframeEffectModel::KeyframeVector framesMixed;
     framesMixed.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
-    framesMixed.append(createDefaultKeyframe(CSSPropertyWebkitTransform, AnimationEffect::CompositeReplace, 1.0).get());
+    framesMixed.append(createDefaultKeyframe(CSSPropertyTransform, AnimationEffect::CompositeReplace, 1.0).get());
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *KeyframeEffectModel::create(framesMixed).get()));
 }
 

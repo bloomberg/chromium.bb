@@ -838,6 +838,7 @@ bool RenderStyle::hasWillChangeCompositingHint() const
     for (size_t i = 0; i < rareNonInheritedData->m_willChange->m_properties.size(); ++i) {
         switch (rareNonInheritedData->m_willChange->m_properties[i]) {
         case CSSPropertyOpacity:
+        case CSSPropertyTransform:
         case CSSPropertyWebkitTransform:
         case CSSPropertyLeft:
         case CSSPropertyTop:
