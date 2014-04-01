@@ -107,7 +107,8 @@ def Clobber():
 
 def FetchAndBuild_gcc_libs():
   tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
-  toolchain_main.PackageBuilder(toolchain_build.PACKAGES, tc_args).Main()
+  # TODO(dyen): Fill in PACKAGE_TARGETS for bionic.
+  toolchain_main.PackageBuilder(toolchain_build.PACKAGES, {}, tc_args).Main()
 
 
 def FetchBionicSources():

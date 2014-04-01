@@ -575,6 +575,8 @@ if __name__ == '__main__':
     packages.update(pnacl_targetlibs.NativeLibsUnsandboxed('x86-32-linux'))
   packages.update(Metadata())
 
+  # TODO(dyen): Fill in PACKAGE_TARGETS for pnacl.
   tb = toolchain_main.PackageBuilder(packages,
+                                     {},
                                      leftover_args)
   tb.Main()

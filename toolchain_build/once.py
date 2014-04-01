@@ -71,7 +71,7 @@ class Once(object):
     )
     self._use_cached_results = use_cached_results
     self._cache_results = cache_results
-    self._cached_dir_items = []
+    self._cached_dir_items = {}
     self._print_url = print_url
     self._system_summary = system_summary
 
@@ -118,14 +118,15 @@ class Once(object):
       return None
     return dir_item
 
-  def _ProcessCachedDir(self, dir_item):
+  def _ProcessCachedDir(self, package, dir_item):
     """Processes cached directory storage items.
 
     Args:
+      package: Package name for the cached directory item.
       dir_item: DirectoryStorageItem returned from directory_storage.
     """
     # Store the cached URL as a tuple for book keeping.
-    self._cached_dir_items.append(dir_item)
+    self._cached_dir_items[package] = dir_item
 
     # If a print URL function has been specified, print the URL now.
     if self._print_url is not None:
@@ -165,7 +166,7 @@ class Once(object):
       # Upload an entry mapping from computation input to output hash.
       self._storage.PutData(
           out_hash, self.KeyForBuildSignature(build_signature))
-      self._ProcessCachedDir(dir_item)
+      self._ProcessCachedDir(package, dir_item)
     except pynacl.gsd_storage.GSDStorageError:
       logging.info('Failed to cache result.')
       raise
@@ -189,13 +190,17 @@ class Once(object):
         dir_item = self.WriteOutputFromHash(package, out_hash, output)
         if dir_item is not None:
           logging.info('Retrieved cached result.')
-          self._ProcessCachedDir(dir_item)
+          self._ProcessCachedDir(package, dir_item)
           return True
     return False
 
   def GetCachedDirItems(self):
     """Returns the complete list of all cached directory items for this run."""
-    return self._cached_dir_items
+    return self._cached_dir_items.values()
+
+  def GetCachedDirItemForPackage(self, package):
+    """Returns cached directory item for package or None if not processed."""
+    return self._cached_dir_items.get(package, None)
 
   def Run(self, package, inputs, output, commands,
           working_dir=None, memoize=True, signature_file=None, subdir=None):

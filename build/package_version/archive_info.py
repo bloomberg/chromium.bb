@@ -83,19 +83,20 @@ class ArchiveInfo(object):
     self._archive_tuple = ArchiveInfoTuple(**archive_json)
 
   def SaveArchiveInfoFile(self, archive_info_file):
-    """Saves this object as a serialized JSON file.
+    """Saves this object as a serialized JSON file if the object is valid.
 
     Args:
       archive_info_file: File path where JSON file will be saved.
     """
-    archive_json = self.DumpArchiveJson()
-    with open(archive_info_file, 'wt') as f:
-      json.dump(archive_json, f, sort_keys=True,
-                indent=2, separators=(',', ': '))
+    if self._archive_tuple and self._archive_tuple.hash:
+      archive_json = self.DumpArchiveJson()
+      with open(archive_info_file, 'wt') as f:
+        json.dump(archive_json, f, sort_keys=True,
+                  indent=2, separators=(',', ': '))
 
   def DumpArchiveJson(self):
     """Returns a dict representation of this object for JSON."""
-    if self._archive_tuple is None:
+    if self._archive_tuple is None or not self._archive_tuple.hash:
       return {}
 
     return dict(self._archive_tuple._asdict())

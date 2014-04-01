@@ -17,12 +17,16 @@ import pynacl.gsd_storage
 import pynacl.log_tools
 import pynacl.local_storage_cache
 
-import once
-
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 ROOT_DIR = os.path.dirname(NACL_DIR)
+BUILD_DIR = os.path.join(NACL_DIR, 'build')
+PKG_VER_DIR = os.path.join(BUILD_DIR, 'package_version')
+sys.path.append(PKG_VER_DIR)
+import archive_info
+import package_info
+
+import once
 
 DEFAULT_CACHE_DIR = os.path.join(SCRIPT_DIR, 'cache')
 DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
@@ -51,7 +55,7 @@ def PrintAnnotatorURL(url):
 class PackageBuilder(object):
   """Module to build a setup of packages."""
 
-  def __init__(self, packages, args):
+  def __init__(self, packages, package_targets, args):
     """Constructor.
 
     Args:
@@ -81,7 +85,7 @@ class PackageBuilder(object):
                 convenience for commands, which may refer to the inputs by their
                 key name>},
            },
-           '<package name>': {
+          '<package name>': {
             'type': 'build',
                 # Build packages are memoized, and will build only if their
                 # inputs have changed. Their inputs consist of the output of
@@ -103,9 +107,26 @@ class PackageBuilder(object):
               # the working directory is empty.
           },
         }
+      package_targets: A dictionary with the following format. This is a
+                       description of output package targets the packages are
+                       built for. Each output package should contain a list of
+                       <package_name> referenced in the previous "packages"
+                       dictionary. This list of targets is expected to stay
+                       the same from build to build, so it should include
+                       package names even if they aren't being built. A package
+                       target is usually the platform, such as "$OS_$ARCH",
+                       while the output package is usually the toolchain name,
+                       such as "nacl_arm_newlib".
+        {
+          '<package_target>': {
+            '<output_package>':
+              [<list of package names included in output package>]
+          }
+        }
       args: sys.argv[1:] or equivalent.
     """
     self._packages = packages
+    self._package_targets = package_targets
     self.DecodeArgs(packages, args)
     self._build_once = once.Once(
         use_cached_results=self._options.use_cached_results,
@@ -127,6 +148,7 @@ class PackageBuilder(object):
                                   open(os.path.join(self._options.output,
                                                    'toolchain_build.log'), 'w'))
     self.BuildAll()
+    self.OutputPackagesInformation()
 
   def GetOutputDir(self, package, use_subdir):
     # The output dir of source packages is in the source directory, and can be
@@ -261,6 +283,44 @@ class PackageBuilder(object):
     for target in self._targets:
       self.BuildPackage(target)
 
+  def OutputPackagesInformation(self):
+    """Outputs packages information for the built data."""
+    packages_dir = os.path.join(self._options.output, 'packages')
+    pynacl.file_tools.RemoveDirectoryIfPresent(packages_dir)
+    os.makedirs(packages_dir)
+
+    built_packages = []
+    for target, target_dict in self._package_targets.iteritems():
+      target_dir = os.path.join(packages_dir, target)
+      pynacl.file_tools.MakeDirectoryIfAbsent(target_dir)
+      for output_package, components in target_dict.iteritems():
+        package_desc = package_info.PackageInfo()
+
+        include_package = False
+        for component in components:
+          cache_item = self._build_once.GetCachedDirItemForPackage(component)
+          if cache_item is None:
+            archive_desc = archive_info.ArchiveInfo(name=component)
+          else:
+            include_package = True
+            archive_desc = archive_info.ArchiveInfo(cache_item.name,
+                                                    cache_item.hash,
+                                                    url=cache_item.url)
+
+          package_desc.AppendArchive(archive_desc)
+
+        # Only output package file if an archive was actually included.
+        if include_package:
+          package_file = os.path.join(target_dir, output_package + '.json')
+          package_desc.SavePackageFile(package_file)
+
+          built_packages.append(package_file)
+
+    if self._options.packages_file:
+      pynacl.file_tools.MakeParentDirectoryIfAbsent(self._options.packages_file)
+      with open(self._options.packages_file, 'wt') as f:
+        f.writelines(built_packages)
+
   def DecodeArgs(self, packages, args):
     """Decode command line arguments to this build.
 
@@ -294,6 +354,10 @@ class PackageBuilder(object):
         '-o', '--output', dest='output',
         default=DEFAULT_OUT_DIR,
         help='Select directory containing build output.')
+    parser.add_option(
+        '--packages-file', dest='packages_file',
+        default=None,
+        help='Output packages file describing list of package files built.')
     parser.add_option(
         '--no-use-cached-results', dest='use_cached_results',
         default=True, action='store_false',
