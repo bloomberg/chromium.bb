@@ -84,6 +84,50 @@ struct CSSPropertyInfo {
     CSSPropertyID propID;
 };
 
+static CSSPropertyID cssResolvedPropertyID(const String& propertyName)
+{
+    unsigned length = propertyName.length();
+    if (!length)
+        return CSSPropertyInvalid;
+
+    StringBuilder builder;
+    builder.reserveCapacity(length);
+
+    unsigned i = 0;
+    bool hasSeenDash = false;
+
+    if (hasCSSPropertyNamePrefix(propertyName, "css"))
+        i += 3;
+    else if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
+        builder.append('-');
+    else if (isASCIIUpper(propertyName[0]))
+        return CSSPropertyInvalid;
+
+    bool hasSeenUpper = isASCIIUpper(propertyName[i]);
+
+    builder.append(toASCIILower(propertyName[i++]));
+
+    for (; i < length; ++i) {
+        UChar c = propertyName[i];
+        if (!isASCIIUpper(c)) {
+            if (c == '-')
+                hasSeenDash = true;
+            builder.append(c);
+        } else {
+            hasSeenUpper = true;
+            builder.append('-');
+            builder.append(toASCIILower(c));
+        }
+    }
+
+    // Reject names containing both dashes and upper-case characters, such as "border-rightColor".
+    if (hasSeenDash && hasSeenUpper)
+        return CSSPropertyInvalid;
+
+    String propName = builder.toString();
+    return cssPropertyID(propName);
+}
+
 // When getting properties on CSSStyleDeclarations, the name used from
 // Javascript and the actual name of the property are not the same, so
 // we have to do the following translation. The translation turns upper
@@ -100,54 +144,13 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
     DEFINE_STATIC_LOCAL(CSSPropertyInfoMap, map, ());
     CSSPropertyInfo* propInfo = map.get(propertyName);
     if (!propInfo) {
-        unsigned length = propertyName.length();
-        if (!length)
-            return 0;
-
-        StringBuilder builder;
-        builder.reserveCapacity(length);
-
-        unsigned i = 0;
-        bool hasSeenDash = false;
-
-        if (hasCSSPropertyNamePrefix(propertyName, "css"))
-            i += 3;
-        else if (hasCSSPropertyNamePrefix(propertyName, "webkit"))
-            builder.append('-');
-        else if (isASCIIUpper(propertyName[0]))
-            return 0;
-
-        bool hasSeenUpper = isASCIIUpper(propertyName[i]);
-
-        builder.append(toASCIILower(propertyName[i++]));
-
-        for (; i < length; ++i) {
-            UChar c = propertyName[i];
-            if (!isASCIIUpper(c)) {
-                if (c == '-')
-                    hasSeenDash = true;
-                builder.append(c);
-            }
-            else {
-                hasSeenUpper = true;
-                builder.append('-');
-                builder.append(toASCIILower(c));
-            }
-        }
-
-        // Reject names containing both dashes and upper-case characters, such as "border-rightColor".
-        if (hasSeenDash && hasSeenUpper)
-            return 0;
-
-        String propName = builder.toString();
-        CSSPropertyID propertyID = cssPropertyID(propName);
-        if (propertyID && RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID)) {
-            propInfo = new CSSPropertyInfo();
-            propInfo->propID = propertyID;
-            map.add(propertyName, propInfo);
-        }
+        propInfo = new CSSPropertyInfo();
+        propInfo->propID = cssResolvedPropertyID(propertyName);
+        map.add(propertyName, propInfo);
     }
-    return propInfo;
+    if (propInfo->propID && RuntimeCSSEnabled::isCSSPropertyEnabled(propInfo->propID))
+        return propInfo;
+    return 0;
 }
 
 void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCallbackInfo<v8::Array>& info)
