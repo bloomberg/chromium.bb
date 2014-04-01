@@ -68,7 +68,7 @@ class JavaChecker(object):
     with codecs.open(filepath, encoding='utf-8') as f:
       short_class_name, _ = os.path.splitext(os.path.basename(filepath))
       for line in f:
-        for package in re.findall('^package ([\w\.]+);', line):
+        for package in re.findall('^package\s+([\w\.]+);', line):
           full_class_name = package + '.' + short_class_name
           if full_class_name in self._classmap:
             print 'WARNING: multiple definitions of %s:' % full_class_name
