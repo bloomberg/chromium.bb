@@ -230,9 +230,6 @@ public:
     // Returns the child frame identified by the given name.
     virtual WebFrame* findChildByName(const WebString& name) const = 0;
 
-    // Returns the child frame identified by the given xpath expression.
-    virtual WebFrame* findChildByExpression(const WebString& xpath) const = 0;
-
 
     // Content ------------------------------------------------------------
 

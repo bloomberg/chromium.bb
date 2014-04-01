@@ -3048,7 +3048,7 @@ TEST_F(WebFrameTest, GetContentAsPlainText)
     runPendingTasks();
 
     // Load something into the subframe.
-    WebFrame* subframe = frame->findChildByExpression(WebString::fromUTF8("/html/body/iframe"));
+    WebFrame* subframe = frame->firstChild();
     ASSERT_TRUE(subframe);
     subframe->loadHTMLString("sub<p>text", testURL);
     runPendingTasks();
@@ -3538,7 +3538,7 @@ TEST_F(WebFrameTest, SelectRangeInIframe)
     FrameTestHelpers::WebViewHelper webViewHelper;
     initializeTextSelectionWebView(m_baseURL + "select_range_iframe.html", &webViewHelper);
     frame = webViewHelper.webView()->mainFrame();
-    WebFrame* subframe = frame->findChildByExpression(WebString::fromUTF8("/html/body/iframe"));
+    WebFrame* subframe = frame->firstChild();
     EXPECT_EQ("Some test text for testing.", selectionAsString(subframe));
     webViewHelper.webView()->selectionBounds(startWebRect, endWebRect);
     subframe->executeCommand(WebString::fromUTF8("Unselect"));

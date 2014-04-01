@@ -162,8 +162,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "core/timing/Performance.h"
-#include "core/xml/DocumentXPathEvaluator.h"
-#include "core/xml/XPathResult.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/clipboard/ClipboardUtilities.h"
@@ -711,24 +709,6 @@ WebFrame* WebFrameImpl::findChildByName(const WebString& name) const
     if (!frame())
         return 0;
     return fromFrame(frame()->tree().child(name));
-}
-
-WebFrame* WebFrameImpl::findChildByExpression(const WebString& xpath) const
-{
-    if (xpath.isEmpty())
-        return 0;
-
-    Document* document = frame()->document();
-    ASSERT(document);
-
-    RefPtrWillBeRawPtr<XPathResult> xpathResult = DocumentXPathEvaluator::evaluate(*document, xpath, document, nullptr, XPathResult::ORDERED_NODE_ITERATOR_TYPE, 0, IGNORE_EXCEPTION);
-    if (!xpathResult)
-        return 0;
-
-    Node* node = xpathResult->iterateNext(IGNORE_EXCEPTION);
-    if (!node || !node->isFrameOwnerElement())
-        return 0;
-    return fromFrame(toLocalFrame(toHTMLFrameOwnerElement(node)->contentFrame()));
 }
 
 WebDocument WebFrameImpl::document() const

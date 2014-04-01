@@ -111,7 +111,6 @@ public:
     virtual WebFrame* traversePrevious(bool wrap) const OVERRIDE;
     virtual WebFrame* traverseNext(bool wrap) const OVERRIDE;
     virtual WebFrame* findChildByName(const WebString&) const OVERRIDE;
-    virtual WebFrame* findChildByExpression(const WebString&) const OVERRIDE;
     virtual WebDocument document() const OVERRIDE;
     virtual WebPerformance performance() const OVERRIDE;
     virtual bool dispatchBeforeUnloadEvent() OVERRIDE;
