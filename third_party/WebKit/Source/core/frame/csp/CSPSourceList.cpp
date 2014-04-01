@@ -187,25 +187,23 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
         return true;
     }
 
-    if (m_policy->experimentalFeaturesEnabled()) {
-        String nonce;
-        if (!parseNonce(begin, end, nonce))
-            return false;
+    String nonce;
+    if (!parseNonce(begin, end, nonce))
+        return false;
 
-        if (!nonce.isNull()) {
-            addSourceNonce(nonce);
-            return true;
-        }
+    if (!nonce.isNull()) {
+        addSourceNonce(nonce);
+        return true;
+    }
 
-        DigestValue hash;
-        ContentSecurityPolicyHashAlgorithm algorithm = ContentSecurityPolicyHashAlgorithmNone;
-        if (!parseHash(begin, end, hash, algorithm))
-            return false;
+    DigestValue hash;
+    ContentSecurityPolicyHashAlgorithm algorithm = ContentSecurityPolicyHashAlgorithmNone;
+    if (!parseHash(begin, end, hash, algorithm))
+        return false;
 
-        if (hash.size() > 0) {
-            addSourceHash(algorithm, hash);
-            return true;
-        }
+    if (hash.size() > 0) {
+        addSourceHash(algorithm, hash);
+        return true;
     }
 
     const UChar* position = begin;

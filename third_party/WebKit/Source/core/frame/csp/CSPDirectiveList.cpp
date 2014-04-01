@@ -635,6 +635,8 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
         m_policy->usesScriptHashAlgorithms(m_scriptSrc->hashAlgorithmsUsed());
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::ObjectSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_objectSrc);
+    } else if (equalIgnoringCase(name, ContentSecurityPolicy::FrameAncestors)) {
+        setCSPDirective<SourceListDirective>(name, value, m_frameAncestors);
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::FrameSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_frameSrc);
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::ImgSrc)) {
@@ -659,8 +661,6 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
             setCSPDirective<SourceListDirective>(name, value, m_childSrc);
         else if (equalIgnoringCase(name, ContentSecurityPolicy::FormAction))
             setCSPDirective<SourceListDirective>(name, value, m_formAction);
-        else if (equalIgnoringCase(name, ContentSecurityPolicy::FrameAncestors))
-            setCSPDirective<SourceListDirective>(name, value, m_frameAncestors);
         else if (equalIgnoringCase(name, ContentSecurityPolicy::PluginTypes))
             setCSPDirective<MediaListDirective>(name, value, m_pluginTypes);
         else if (equalIgnoringCase(name, ContentSecurityPolicy::ReflectedXSS))
