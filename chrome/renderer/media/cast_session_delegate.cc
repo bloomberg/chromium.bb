@@ -52,13 +52,15 @@ CastSessionDelegate::CastSessionDelegate()
 CastSessionDelegate::~CastSessionDelegate() {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
-  if (audio_event_subscriber_.get()) {
-    cast_environment_->Logging()->RemoveRawEventSubscriber(
-        audio_event_subscriber_.get());
-  }
-  if (video_event_subscriber_.get()) {
-    cast_environment_->Logging()->RemoveRawEventSubscriber(
-        video_event_subscriber_.get());
+  if (cast_environment_.get()) {
+    if (audio_event_subscriber_.get()) {
+      cast_environment_->Logging()->RemoveRawEventSubscriber(
+          audio_event_subscriber_.get());
+    }
+    if (video_event_subscriber_.get()) {
+      cast_environment_->Logging()->RemoveRawEventSubscriber(
+          video_event_subscriber_.get());
+    }
   }
 }
 
@@ -141,6 +143,8 @@ void CastSessionDelegate::StartUDP(const net::IPEndPoint& remote_endpoint) {
 
 void CastSessionDelegate::ToggleLogging(bool is_audio, bool enable) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
+  if (!cast_environment_.get())
+    return;
   if (enable) {
     if (is_audio) {
       if (!audio_event_subscriber_.get()) {
