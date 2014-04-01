@@ -19,8 +19,13 @@ CLANG_DIR="${LLVM_DIR}/tools/clang"
 CLANG_TOOLS_EXTRA_DIR="${CLANG_DIR}/tools/extra"
 COMPILER_RT_DIR="${LLVM_DIR}/projects/compiler-rt"
 LIBCXX_DIR="${LLVM_DIR}/projects/libcxx"
+LIBCXXABI_DIR="${LLVM_DIR}/projects/libcxxabi"
 ANDROID_NDK_DIR="${LLVM_DIR}/../android_tools/ndk"
 STAMP_FILE="${LLVM_BUILD_DIR}/cr_build_revision"
+
+ABS_LIBCXX_DIR="${PWD}/${LIBCXX_DIR}"
+ABS_LIBCXXABI_DIR="${PWD}/${LIBCXXABI_DIR}"
+
 
 # Use both the clang revision and the plugin revisions to test for updates.
 BLINKGCPLUGIN_REVISION=\
@@ -274,6 +279,14 @@ if [ "${OS}" = "Darwin" ]; then
   echo Getting libc++ r"${CLANG_REVISION}" in "${LIBCXX_DIR}"
   svn co --force "${LLVM_REPO_URL}/libcxx/trunk@${CLANG_REVISION}" \
                  "${LIBCXX_DIR}"
+fi
+
+# While we're bundling our own libc++ on OS X, we need to compile libc++abi
+# into it too (since OS X 10.6 doesn't have libc++abi.dylib either).
+if [ "${OS}" = "Darwin" ]; then
+  echo Getting libc++abi r"${CLANG_REVISION}" in "${LIBCXXABI_DIR}"
+  svn co --force "${LLVM_REPO_URL}/libcxxabi/trunk@${CLANG_REVISION}" \
+                 "${LIBCXXABI_DIR}"
 fi
 
 # Apply patch for test failing with --disable-pthreads (llvm.org/PR11974)
@@ -957,12 +970,15 @@ export CXXFLAGS=""
 # needed, on OS X it requires libc++. clang only automatically links to libc++
 # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run on
 # OS X versions as old as 10.7.
-# TODO(thakis): Enable this once all bots are on 10.7, and remove the
-# --disable-compiler-version-checks flags below, and change all
-# MACOSX_DEPLOYMENT_TARGET values to 10.7.
+# TODO(thakis): Some bots are still on 10.6, so for now bundle libc++.dylib.
+# Remove this once all bots are on 10.7+, then use --enable-libcpp=yes and
+# change all MACOSX_DEPLOYMENT_TARGET values to 10.7.
 if [ "${OS}" = "Darwin" ]; then
-  #CXXFLAGS="-stdlib=libc++"
-  CXXFLAGS="-std=gnu++98"
+  # When building on 10.9, /usr/include usually doesn't exist, and while
+  # Xcode's clang automatically sets a sysroot, self-built clangs don't.
+  export CFLAGS="-isysroot $(xcrun --show-sdk-path)"
+  export CPPFLAGS="${CFLAGS}"
+  export CXXFLAGS="-stdlib=libc++ -nostdinc++ -I${ABS_LIBCXX_DIR}/include ${CFLAGS}"
 fi
 
 # Build bootstrap clang if requested.
@@ -977,7 +993,6 @@ if [[ -n "${bootstrap}" ]]; then
     # compiler should be as similar to the final compiler as possible, so do
     # keep --disable-threads & co.
     ../llvm/configure \
-        --disable-compiler-version-checks \
         --enable-optimized \
         --enable-targets=host-only \
         --enable-libedit=no \
@@ -988,12 +1003,12 @@ if [[ -n "${bootstrap}" ]]; then
         --prefix="${ABS_INSTALL_DIR}"
   fi
 
-  MACOSX_DEPLOYMENT_TARGET=10.5 ${MAKE} -j"${NUM_JOBS}"
+  ${MAKE} -j"${NUM_JOBS}"
   if [[ -n "${run_tests}" ]]; then
     ${MAKE} check-all
   fi
 
-  MACOSX_DEPLOYMENT_TARGET=10.5 ${MAKE} install
+  ${MAKE} install
   if [[ -n "${gcc_toolchain}" ]]; then
     # Copy that gcc's stdlibc++.so.6 to the build dir, so the bootstrap
     # compiler can start.
@@ -1019,10 +1034,39 @@ fi
 # The clang bots have this path hardcoded in built/scripts/slave/compile.py,
 # so if you change it you also need to change these links.
 mkdir -p "${LLVM_BUILD_DIR}"
-cd "${LLVM_BUILD_DIR}"
+pushd "${LLVM_BUILD_DIR}"
+
+# Build libc++.dylib while some bots are still on OS X 10.6.
+if [ "${OS}" = "Darwin" ]; then
+  rm -rf libcxxbuild
+  LIBCXXFLAGS="-O3 -std=c++11 -fstrict-aliasing"
+
+  # libcxx and libcxxabi both have a file stdexcept.cpp, so put their .o files
+  # into different subdirectories.
+  mkdir -p libcxxbuild/libcxx
+  pushd libcxxbuild/libcxx
+  c++ -c ${CXXFLAGS} ${LIBCXXFLAGS} "${ABS_LIBCXX_DIR}"/src/*.cpp
+  popd
+
+  mkdir -p libcxxbuild/libcxxabi
+  pushd libcxxbuild/libcxxabi
+  c++ -c ${CXXFLAGS} ${LIBCXXFLAGS} "${ABS_LIBCXXABI_DIR}"/src/*.cpp -I"${ABS_LIBCXXABI_DIR}/include"
+  popd
+
+  pushd libcxxbuild
+  cc libcxx/*.o libcxxabi/*.o -o libc++.1.dylib -dynamiclib -nodefaultlibs \
+    -current_version 1 -compatibility_version 1 \
+    -lSystem -install_name @executable_path/libc++.dylib \
+    -Wl,-unexported_symbols_list,${ABS_LIBCXX_DIR}/lib/libc++unexp.exp \
+    -Wl,-force_symbols_not_weak_list,${ABS_LIBCXX_DIR}/lib/notweak.exp \
+    -Wl,-force_symbols_weak_list,${ABS_LIBCXX_DIR}/lib/weak.exp
+  ln -sf libc++.1.dylib libc++.dylib
+  popd
+  export LDFLAGS+="-stdlib=libc++ -L${PWD}/libcxxbuild"
+fi
+
 if [[ ! -f ./config.status ]]; then
   ../llvm/configure \
-      --disable-compiler-version-checks \
       --enable-optimized \
       --enable-libedit=no \
       --disable-threads \
@@ -1042,9 +1086,11 @@ STRIP_FLAGS=
 if [ "${OS}" = "Darwin" ]; then
   # See http://crbug.com/256342
   STRIP_FLAGS=-x
+
+  cp libcxxbuild/libc++.1.dylib Release+Asserts/bin
 fi
 strip ${STRIP_FLAGS} Release+Asserts/bin/clang
-cd -
+popd
 
 if [[ -n "${with_android}" ]]; then
   # Make a standalone Android toolchain.

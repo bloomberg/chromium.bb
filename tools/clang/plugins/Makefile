@@ -15,5 +15,5 @@ SHARED_LIBRARY = 1
 include $(CLANG_LEVEL)/Makefile
 
 ifeq ($(OS),Darwin)
-  LDFLAGS=-Wl,-undefined,dynamic_lookup
+  LDFLAGS+=-Wl,-undefined,dynamic_lookup
 endif
