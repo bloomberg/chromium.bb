@@ -675,6 +675,7 @@ html.apps-v2.scrollable {
 
 #session-client-plugin {
   display: block;
+  flex-shrink: 0;
 }
 
 .session-client-inactive {
