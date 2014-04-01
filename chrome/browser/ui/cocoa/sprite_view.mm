@@ -128,6 +128,13 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
     [animation setToValue:@(-height)];
     [animation setDuration:kFrameDuration * height];
 
+    // Don't remove on completion to prevent the presentation layer from
+    // snapping back to the model layer's value.
+    // It will instead be removed when we add the return animation because they
+    // have the same key.
+    [animation setRemovedOnCompletion:NO];
+    [animation setFillMode:kCAFillModeForwards];
+
     [CATransaction begin];
     [CATransaction setCompletionBlock:^{
         // At the end of the animation, change to the new image and animate
@@ -139,9 +146,9 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
         [reverseAnimation setFromValue:[animation toValue]];
         [reverseAnimation setToValue:[animation fromValue]];
         [reverseAnimation setDuration:[animation duration]];
-        [layer addAnimation:reverseAnimation forKey:nil];
+        [layer addAnimation:reverseAnimation forKey:@"position"];
     }];
-    [layer addAnimation:animation forKey:nil];
+    [layer addAnimation:animation forKey:@"position"];
     [CATransaction commit];
   }
 }
