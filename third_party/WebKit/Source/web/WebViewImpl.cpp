@@ -3738,7 +3738,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         if (m_pageOverlays)
             m_pageOverlays->update();
 
-        m_client->didActivateCompositor(0);
+        m_client->didActivateCompositor();
     } else {
         TRACE_EVENT0("webkit", "WebViewImpl::setIsAcceleratedCompositingActive(true)");
 
@@ -3759,7 +3759,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
                 m_layerTreeView->setOverhangBitmap(overhangImage->nativeImageForCurrentFrame()->bitmap());
 #endif
             updateLayerTreeViewport();
-            m_client->didActivateCompositor(0);
+            m_client->didActivateCompositor();
             m_isAcceleratedCompositingActive = true;
             m_compositorCreationFailed = false;
             if (m_pageOverlays)

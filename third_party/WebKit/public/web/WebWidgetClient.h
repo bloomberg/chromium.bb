@@ -62,7 +62,8 @@ public:
     // The parameter to didActivateCompositor() is meaningless.
     // FIXME: The older definiton of didActivateCompositor (i.e with arguments)
     // and all its corresponding call is to removed once the dependent chromium
-    // side patch https://codereview.chromium.org/137893025/ lands.
+    // side patch https://codereview.chromium.org/137893025/ lands and all overrides
+    // of older definition are removed from chromium side.
     virtual void didActivateCompositor() { }
     virtual void didActivateCompositor(int deprecated) { }
     virtual void didDeactivateCompositor() { }

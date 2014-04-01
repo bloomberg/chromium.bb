@@ -264,7 +264,7 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter)
         m_widgetClient->didDeactivateCompositor();
     } else if (m_layerTreeView) {
         m_isAcceleratedCompositingActive = true;
-        m_widgetClient->didActivateCompositor(0);
+        m_widgetClient->didActivateCompositor();
     } else {
         TRACE_EVENT0("webkit", "WebPagePopupImpl::setIsAcceleratedCompositingActive(true)");
 
@@ -272,7 +272,7 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter)
         m_layerTreeView = m_widgetClient->layerTreeView();
         if (m_layerTreeView) {
             m_layerTreeView->setVisible(true);
-            m_widgetClient->didActivateCompositor(0);
+            m_widgetClient->didActivateCompositor();
             m_isAcceleratedCompositingActive = true;
             m_layerTreeView->setDeviceScaleFactor(m_widgetClient->deviceScaleFactor());
         } else {

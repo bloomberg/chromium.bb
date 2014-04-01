@@ -214,7 +214,7 @@ void WebPopupMenuImpl::enterForceCompositingMode(bool enter)
         m_client->didDeactivateCompositor();
     } else if (m_layerTreeView) {
         m_isAcceleratedCompositingActive = true;
-        m_client->didActivateCompositor(0);
+        m_client->didActivateCompositor();
     } else {
         TRACE_EVENT0("webkit", "WebPopupMenuImpl::enterForceCompositingMode(true)");
 
@@ -222,7 +222,7 @@ void WebPopupMenuImpl::enterForceCompositingMode(bool enter)
         m_layerTreeView = m_client->layerTreeView();
         if (m_layerTreeView) {
             m_layerTreeView->setVisible(true);
-            m_client->didActivateCompositor(0);
+            m_client->didActivateCompositor();
             m_isAcceleratedCompositingActive = true;
             m_layerTreeView->setDeviceScaleFactor(m_client->deviceScaleFactor());
             m_rootLayer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(this));
