@@ -25,11 +25,11 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
       : NativeViewGLSurfaceEGL(ozone_surface->GetEGLNativeWindow()),
         ozone_surface_(ozone_surface.Pass()) {}
 
+ private:
   virtual ~GLSurfaceOzoneEGL() {
     Destroy();  // EGL surface must be destroyed before SurfaceOzone
   }
 
- private:
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   scoped_ptr<SurfaceOzone> ozone_surface_;
 
