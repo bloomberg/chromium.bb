@@ -1079,7 +1079,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(ViewMsg_Stop, OnStop)
-    IPC_MESSAGE_HANDLER(ViewMsg_ReloadFrame, OnReloadFrame)
     IPC_MESSAGE_HANDLER(ViewMsg_SetName, OnSetName)
     IPC_MESSAGE_HANDLER(ViewMsg_CopyImageAt, OnCopyImageAt)
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
@@ -1222,17 +1221,6 @@ void RenderViewImpl::OnStop() {
     webview()->mainFrame()->stopLoading();
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnStop());
   main_render_frame_->OnStop();
-}
-
-// Reload current focused frame.
-// E.g. called by right-clicking on the frame and picking "reload this frame".
-void RenderViewImpl::OnReloadFrame() {
-  if (webview() && webview()->focusedFrame()) {
-    // We always obey the cache (ignore_cache=false) here.
-    // TODO(evanm): perhaps we could allow shift-clicking the menu item to do
-    // a cache-ignoring reload of the frame.
-    webview()->focusedFrame()->reload(false);
-  }
 }
 
 void RenderViewImpl::OnCopyImageAt(int x, int y) {

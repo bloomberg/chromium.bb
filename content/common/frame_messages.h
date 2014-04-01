@@ -334,6 +334,11 @@ IPC_MESSAGE_ROUTED2(FrameMsg_ExtendSelectionAndDelete,
                     int /* before */,
                     int /* after */)
 
+// Tells the renderer to reload the frame, optionally ignoring the cache while
+// doing so.
+IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
+                    bool /* ignore_cache */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

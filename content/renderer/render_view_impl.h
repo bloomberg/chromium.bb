@@ -917,7 +917,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnMoveOrResizeStarted();
   void OnPostMessageEvent(const ViewMsg_PostMessage_Params& params);
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
-  void OnReloadFrame();
   void OnResetPageEncodingToDefault();
   void OnScriptEvalRequest(const base::string16& frame_xpath,
                            const base::string16& jscript,

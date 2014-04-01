@@ -663,9 +663,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ShowContextMenu,
 
 IPC_MESSAGE_ROUTED0(ViewMsg_Stop)
 
-// Tells the renderer to reload the current focused frame
-IPC_MESSAGE_ROUTED0(ViewMsg_ReloadFrame)
-
 // Sent when the user wants to search for a word on the page (find in page).
 IPC_MESSAGE_ROUTED3(ViewMsg_Find,
                     int /* request_id */,

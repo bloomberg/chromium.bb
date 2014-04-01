@@ -328,7 +328,12 @@ class WebContents : public PageNavigator,
   // heap-allocated pointer is owned by the caller.
   virtual WebContents* Clone() = 0;
 
+  // Actions on the focused frame ----------------------------------------------
+
+  virtual void ReloadFocusedFrame(bool ignore_cache) = 0;
+
   // Views and focus -----------------------------------------------------------
+
   // Focuses the first (last if |reverse| is true) element in the page.
   // Invoked when this tab is getting the focus through tab traversal (|reverse|
   // is true when using Shift-Tab).

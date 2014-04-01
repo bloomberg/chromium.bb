@@ -147,7 +147,7 @@ void OpenUsingReader(WebContents* web_contents,
       web_contents->GetMainFrame()->GetRoutingID(),
       web_contents->GetURL(),
       reader_plugin);
-  web_contents->GetRenderViewHost()->ReloadFrame();
+  web_contents->ReloadFocusedFrame(false);
 
   PDFTabHelper* pdf_tab_helper = PDFTabHelper::FromWebContents(web_contents);
   if (delegate)

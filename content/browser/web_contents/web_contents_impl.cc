@@ -1774,6 +1774,10 @@ void WebContentsImpl::SetHistoryLengthAndPrune(
                                             minimum_page_id));
 }
 
+void WebContentsImpl::ReloadFocusedFrame(bool ignore_cache) {
+  Send(new FrameMsg_Reload(GetFocusedFrame()->GetRoutingID(), ignore_cache));
+}
+
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
   if (ShowingInterstitialPage()) {
     GetRenderManager()->interstitial_page()->FocusThroughTabTraversal(reverse);

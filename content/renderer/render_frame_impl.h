@@ -398,6 +398,7 @@ class CONTENT_EXPORT RenderFrameImpl
       int start, int end,
       const std::vector<blink::WebCompositionUnderline>& underlines);
   void OnExtendSelectionAndDelete(int before, int after);
+  void OnReload(bool ignore_cache);
 #if defined(OS_MACOSX)
   void OnCopyToFindPboard();
 #endif

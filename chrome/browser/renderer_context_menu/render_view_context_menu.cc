@@ -1454,7 +1454,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
   RecordUsedItem(id);
 
-  RenderViewHost* rvh = source_web_contents_->GetRenderViewHost();
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_id_, render_frame_id_);
 
@@ -1778,7 +1777,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
-      rvh->ReloadFrame();
+      // We always obey the cache here.
+      // TODO(evanm): Perhaps we could allow shift-clicking the menu item to do
+      // a cache-ignoring reload of the frame.
+      source_web_contents_->ReloadFocusedFrame(false);
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:

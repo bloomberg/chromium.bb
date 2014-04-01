@@ -219,7 +219,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual SiteInstance* GetSiteInstance() const OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
-  virtual void ReloadFrame() OVERRIDE;
   virtual void SetWebUIProperty(const std::string& name,
                                 const std::string& value) OVERRIDE;
   virtual void Zoom(PageZoom zoom) OVERRIDE;

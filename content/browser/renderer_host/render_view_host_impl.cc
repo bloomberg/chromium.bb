@@ -1694,10 +1694,6 @@ void RenderViewHostImpl::Zoom(PageZoom zoom) {
   Send(new ViewMsg_Zoom(GetRoutingID(), zoom));
 }
 
-void RenderViewHostImpl::ReloadFrame() {
-  Send(new ViewMsg_ReloadFrame(GetRoutingID()));
-}
-
 void RenderViewHostImpl::DisableScrollbarsForThreshold(const gfx::Size& size) {
   Send(new ViewMsg_DisableScrollbarsForSmallWindows(GetRoutingID(), size));
 }
