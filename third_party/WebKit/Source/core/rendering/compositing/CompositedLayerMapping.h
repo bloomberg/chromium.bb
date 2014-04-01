@@ -355,7 +355,20 @@ private:
     OwnPtr<GraphicsLayer> m_layerForVerticalScrollbar;
     OwnPtr<GraphicsLayer> m_layerForScrollCorner;
 
-    OwnPtr<GraphicsLayer> m_squashingContainmentLayer; // Only used if any squashed layers exist, to contain the squashed layers as siblings to the rest of the GraphicsLayer tree chunk.
+    // A squashing CLM has two possible squashing-related structures.
+    //
+    // If m_clippingAncestorLayer is present:
+    //
+    // m_clippingAncestorLayer
+    //   + m_graphicsLayer
+    //   + m_squashingLayer
+    //
+    // If not:
+    //
+    // m_squashingContainmentLayer
+    //   + m_graphicsLayer
+    //   + m_squashingLayer
+    OwnPtr<GraphicsLayer> m_squashingContainmentLayer; // Only used if any squashed layers exist and m_squashingContainmentLayer is not present, to contain the squashed layers as siblings to the rest of the GraphicsLayer tree chunk.
     OwnPtr<GraphicsLayer> m_squashingLayer; // Only used if any squashed layers exist, this is the backing that squashed layers paint into.
     Vector<GraphicsLayerPaintInfo> m_squashedLayers;
 
