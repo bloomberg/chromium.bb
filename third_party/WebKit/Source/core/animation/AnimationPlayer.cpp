@@ -238,6 +238,20 @@ void AnimationPlayer::finish(ExceptionState& exceptionState)
     ASSERT(finished());
 }
 
+const AtomicString& AnimationPlayer::interfaceName() const
+{
+    return EventTargetNames::AnimationPlayer;
+}
+
+ExecutionContext* AnimationPlayer::executionContext() const
+{
+    if (m_timeline) {
+        if (Document* document = m_timeline->document())
+            return document->contextDocument().get();
+    }
+    return 0;
+}
+
 void AnimationPlayer::setPlaybackRate(double playbackRate)
 {
     if (!std::isfinite(playbackRate))

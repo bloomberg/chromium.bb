@@ -8,6 +8,7 @@ AnalyserNode
 Animation
 AnimationEvent
 AnimationPlayer
+AnimationPlayerEvent
 ApplicationCache
 ApplicationCacheErrorEvent
 Array

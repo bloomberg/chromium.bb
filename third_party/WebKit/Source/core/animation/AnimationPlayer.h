@@ -32,6 +32,7 @@
 #define AnimationPlayer_h
 
 #include "core/animation/TimedItem.h"
+#include "core/events/EventTarget.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -39,8 +40,8 @@ namespace WebCore {
 class DocumentTimeline;
 class ExceptionState;
 
-class AnimationPlayer FINAL : public RefCounted<AnimationPlayer> {
-
+class AnimationPlayer FINAL : public RefCounted<AnimationPlayer>, public EventTargetWithInlineData {
+    REFCOUNTED_EVENT_TARGET(AnimationPlayer);
 public:
     ~AnimationPlayer();
     static PassRefPtr<AnimationPlayer> create(DocumentTimeline&, TimedItem*);
@@ -65,6 +66,11 @@ public:
     void reverse();
     void finish(ExceptionState&);
     bool finished() { return limited(currentTime()); }
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(finish);
+
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ExecutionContext* executionContext() const OVERRIDE;
 
     double playbackRate() const { return m_playbackRate; }
     void setPlaybackRate(double);

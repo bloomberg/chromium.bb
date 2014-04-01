@@ -78,6 +78,7 @@ enter
 error
 exit
 fetch
+finish
 focus
 focusin
 focusout

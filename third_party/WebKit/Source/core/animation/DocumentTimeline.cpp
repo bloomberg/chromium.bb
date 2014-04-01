@@ -79,6 +79,8 @@ AnimationPlayer* DocumentTimeline::createAnimationPlayer(TimedItem* child)
 
 AnimationPlayer* DocumentTimeline::play(TimedItem* child)
 {
+    if (!m_document)
+        return 0;
     AnimationPlayer* player = createAnimationPlayer(child);
     player->setStartTime(effectiveTime());
     return player;
@@ -200,6 +202,7 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
 }
 
 void DocumentTimeline::detachFromDocument() {
+    // FIXME: DocumentTimeline should keep Document alive.
     m_document = 0;
 }
 

@@ -30,7 +30,7 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
-] interface AnimationPlayer {
+] interface AnimationPlayer : EventTarget {
              attribute TimedItem? source;
              attribute double     startTime;
              attribute double     currentTime;
@@ -43,4 +43,6 @@
     void play();
     void pause();
     void reverse();
+
+    attribute EventHandler onfinish;
 };
