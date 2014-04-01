@@ -61,11 +61,6 @@ class StartupBrowserCreator {
       const base::FilePath& cur_dir,
       const base::FilePath& startup_profile_dir);
 
-  template <class AutomationProviderClass>
-  static bool CreateAutomationProvider(const std::string& channel_id,
-                                       Profile* profile,
-                                       size_t expected_tabs);
-
   // Returns true if we're launching a profile synchronously. In that case, the
   // opened window should not cause a session restore.
   static bool InSynchronousProfileLaunch();
