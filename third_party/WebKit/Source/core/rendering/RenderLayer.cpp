@@ -3926,10 +3926,10 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
 void RenderLayer::styleChanged(StyleDifference diff, const RenderStyle* oldStyle)
 {
     m_stackingNode->updateIsNormalFlowOnly();
+    m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
     if (m_scrollableArea)
         m_scrollableArea->updateAfterStyleChange(oldStyle);
-    m_stackingNode->updateStackingNodesAfterStyleChange(oldStyle);
 
     if (!oldStyle || oldStyle->visibility() != renderer()->style()->visibility()) {
         ASSERT(!oldStyle || diff >= StyleDifferenceRepaint);

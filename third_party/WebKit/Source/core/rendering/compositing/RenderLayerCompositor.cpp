@@ -818,13 +818,8 @@ RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::com
 // See crbug.com/339892 for a list of tests that fail if this method is removed.
 void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(RenderLayer* layer, CompositingStateTransitionType compositedLayerUpdate)
 {
-    // See if we need content or clipping layers. Methods called here should assume
-    // that the compositing state of descendant layers has not been updated yet.
-    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate))
-        setCompositingLayersNeedRebuild();
-
     if (compositedLayerUpdate != NoCompositingStateChange)
-        allocateOrClearCompositedLayerMapping(layer, computeCompositedLayerUpdate(layer));
+        allocateOrClearCompositedLayerMapping(layer, compositedLayerUpdate);
 }
 
 void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, UpdateLayerCompositingStateOptions options)
