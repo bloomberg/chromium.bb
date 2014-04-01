@@ -60,6 +60,9 @@ class NetworkScreenHandler : public NetworkScreenActor,
   // Registers the preference for derelict state.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Reloads localized contents.
+  void ReloadLocalizedContent();
+
  private:
   // Handles moving off the screen.
   void HandleOnExit();
@@ -124,10 +127,16 @@ class NetworkScreenHandler : public NetworkScreenActor,
 
   // Timeout to detect if the machine is in a derelict state.
   base::TimeDelta derelict_detection_timeout_;
+
   // Timeout before showing our demo app if the machine is in a derelict state.
   base::TimeDelta derelict_idle_timeout_;
+
   // Time between updating our total time on oobe.
   base::TimeDelta oobe_timer_update_interval_;
+
+  // True if should reinitialize language and keyboard list once the page
+  // is ready.
+  bool should_reinitialize_language_keyboard_list_;
 
   base::WeakPtrFactory<NetworkScreenHandler> weak_ptr_factory_;
 

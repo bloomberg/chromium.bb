@@ -84,6 +84,7 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
       core_oobe_actor_(core_oobe_actor),
       is_continue_enabled_(false),
       show_on_init_(false),
+      should_reinitialize_language_keyboard_list_(false),
       weak_ptr_factory_(this) {
   DCHECK(core_oobe_actor_);
   SetupTimeouts();
@@ -144,13 +145,6 @@ void NetworkScreenHandler::ClearErrors() {
 void NetworkScreenHandler::ShowConnectingStatus(
     bool connecting,
     const base::string16& network_id) {
-  // base::string16 connecting_label =
-  //     l10n_util::GetStringFUTF16(IDS_NETWORK_SELECTION_CONNECTING,
-  //                                network_id);
-  // CallJS("cr.ui.Oobe.showConnectingStatus",
-  //        base::FundamentalValue(connecting),
-  //        base::StringValue(network_id),
-  //        base::StringValue(connecting_label_value));
 }
 
 void NetworkScreenHandler::EnableContinue(bool enabled) {
@@ -191,6 +185,11 @@ void NetworkScreenHandler::Initialize() {
   if (show_on_init_) {
     show_on_init_ = false;
     Show();
+  }
+
+  if (should_reinitialize_language_keyboard_list_) {
+    should_reinitialize_language_keyboard_list_ = false;
+    ReloadLocalizedContent();
   }
 
   timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
@@ -248,14 +247,7 @@ void NetworkScreenHandler::OnLanguageChangedCallback(
     return;
 
   NetworkScreenHandler* const self = context->handler_.get();
-
-  base::DictionaryValue localized_strings;
-  static_cast<OobeUI*>(self->web_ui()->GetController())
-      ->GetLocalizedStrings(&localized_strings);
-  self->core_oobe_actor_->ReloadContent(localized_strings);
-
-  // Buttons are recreated, updated "Continue" button state.
-  self->EnableContinue(self->is_continue_enabled_);
+  self->ReloadLocalizedContent();
 
   AccessibilityManager::Get()->OnLocaleChanged();
 }
@@ -448,11 +440,20 @@ void NetworkScreenHandler::OnImeComponentExtensionInitialized() {
 
   // Refreshes the language and keyboard list once the component extension
   // IMEs are initialized.
+  if (page_is_ready())
+    ReloadLocalizedContent();
+  else
+    should_reinitialize_language_keyboard_list_ = true;
+}
+
+void NetworkScreenHandler::ReloadLocalizedContent() {
   base::DictionaryValue localized_strings;
-  static_cast<OobeUI*>(this->web_ui()->GetController())
+  static_cast<OobeUI*>(web_ui()->GetController())
       ->GetLocalizedStrings(&localized_strings);
-  this->core_oobe_actor_->ReloadContent(localized_strings);
-  this->EnableContinue(this->is_continue_enabled_);
+  core_oobe_actor_->ReloadContent(localized_strings);
+
+  // Buttons are recreated, updated "Continue" button state.
+  EnableContinue(is_continue_enabled_);
 }
 
 // static
