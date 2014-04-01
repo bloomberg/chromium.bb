@@ -59,6 +59,7 @@ void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvali
 {
     invalidationSet.getClasses(m_invalidationClasses);
     invalidationSet.getAttributes(m_invalidationAttributes);
+    m_invalidateCustomPseudo = invalidationSet.customPseudoInvalid();
     m_foundInvalidationSet = true;
 }
 
@@ -77,6 +78,8 @@ bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& el
                 return true;
         }
     }
+    if (m_invalidateCustomPseudo && element.shadowPseudoId() != nullAtom)
+        return true;
 
     return false;
 }

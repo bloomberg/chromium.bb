@@ -38,6 +38,7 @@ namespace WebCore {
 
 DescendantInvalidationSet::DescendantInvalidationSet()
     : m_allDescendantsMightBeInvalid(false)
+    , m_customPseudoInvalid(false)
 {
 }
 
@@ -51,6 +52,9 @@ void DescendantInvalidationSet::combine(const DescendantInvalidationSet& other)
         setWholeSubtreeInvalid();
         return;
     }
+
+    if (other.customPseudoInvalid())
+        setCustomPseudoInvalid();
 
     if (other.m_classes) {
         HashSet<AtomicString>::const_iterator end = other.m_classes->end();

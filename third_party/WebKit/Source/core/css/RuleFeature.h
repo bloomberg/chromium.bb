@@ -141,10 +141,12 @@ private:
     InvalidationSetMode updateInvalidationSets(const CSSSelector&);
 
     struct InvalidationSetFeatures {
+        InvalidationSetFeatures() : customPseudoElement(false) { }
         Vector<AtomicString> classes;
         Vector<AtomicString> attributes;
         AtomicString id;
         AtomicString tagName;
+        bool customPseudoElement;
     };
 
     static void extractInvalidationSetFeature(const CSSSelector&, InvalidationSetFeatures&);

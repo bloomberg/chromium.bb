@@ -54,7 +54,7 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
         case CSSSelector::PseudoShadow:
             return true;
         default:
-            return false;
+            return selector.isCustomPseudoElement();
         }
     }
     if (selector.m_match != CSSSelector::PseudoClass)
@@ -110,7 +110,7 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
 
         // FIXME: next up: Tag and Id.
-        if (component->m_match == CSSSelector::Class || component->isAttributeSelector()) {
+        if (component->m_match == CSSSelector::Class || component->isAttributeSelector() || component->isCustomPseudoElement()) {
             if (!foundDescendantRelation)
                 foundIdent = true;
         } else if (component->pseudoType() == CSSSelector::PseudoHost || component->pseudoType() == CSSSelector::PseudoAny) {
@@ -152,6 +152,8 @@ void RuleFeatureSet::extractInvalidationSetFeature(const CSSSelector& selector, 
         features.classes.append(selector.value());
     else if (selector.isAttributeSelector())
         features.attributes.append(selector.attribute().localName());
+    else if (selector.isCustomPseudoElement())
+        features.customPseudoElement = true;
 }
 
 RuleFeatureSet::RuleFeatureSet()
@@ -216,6 +218,8 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
                 invalidationSet->addClass(*it);
             for (Vector<AtomicString>::const_iterator it = features.attributes.begin(); it != features.attributes.end(); ++it)
                 invalidationSet->addAttribute(*it);
+            if (features.customPseudoElement)
+                invalidationSet->setCustomPseudoInvalid();
         } else if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))

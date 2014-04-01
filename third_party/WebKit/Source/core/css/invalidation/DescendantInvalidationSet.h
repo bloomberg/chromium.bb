@@ -66,6 +66,10 @@ public:
 
     void setWholeSubtreeInvalid();
     bool wholeSubtreeInvalid() const { return m_allDescendantsMightBeInvalid; }
+
+    void setCustomPseudoInvalid() { m_customPseudoInvalid = true; }
+    bool customPseudoInvalid() const { return m_customPseudoInvalid; }
+
 private:
     DescendantInvalidationSet();
 
@@ -76,6 +80,9 @@ private:
 
     // If true, all descendants might be invalidated, so a full subtree recalc is required.
     bool m_allDescendantsMightBeInvalid;
+
+    // If true, all descendants which are custom pseudo elements must be invalidated.
+    bool m_customPseudoInvalid;
 
     // FIXME: optimize this if it becomes a memory issue.
     OwnPtr<HashSet<AtomicString> > m_classes;
