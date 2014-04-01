@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chromeos/memory/low_memory_listener_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -24,7 +23,7 @@ class GURL;
 
 namespace chromeos {
 
-class LowMemoryListener;
+class LowMemoryObserver;
 
 // The OomPriorityManager periodically checks (see
 // ADJUSTMENT_INTERVAL_SECONDS in the source) the status of renderers
@@ -35,8 +34,7 @@ class LowMemoryListener;
 //
 // The algorithm used favors killing tabs that are not selected, not pinned,
 // and have been idle for longest, in that order of priority.
-class OomPriorityManager : public content::NotificationObserver,
-                           public LowMemoryListenerDelegate {
+class OomPriorityManager : public content::NotificationObserver {
  public:
   OomPriorityManager();
   virtual ~OomPriorityManager();
@@ -123,13 +121,9 @@ class OomPriorityManager : public content::NotificationObserver,
 
   static bool CompareTabStats(TabStats first, TabStats second);
 
-  // NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // LowMemoryListenerDelegate overrides:
-  virtual void OnMemoryLow() OVERRIDE;
 
   base::RepeatingTimer<OomPriorityManager> timer_;
   base::OneShotTimer<OomPriorityManager> focus_tab_score_adjust_timer_;
@@ -143,8 +137,9 @@ class OomPriorityManager : public content::NotificationObserver,
   ProcessScoreMap pid_to_oom_score_;
   base::ProcessHandle focused_tab_pid_;
 
-  // Observer for the kernel low memory signal.
-  scoped_ptr<LowMemoryListener> low_memory_listener_;
+  // Observer for the kernel low memory signal.  NULL if tab discarding is
+  // disabled.
+  scoped_ptr<LowMemoryObserver> low_memory_observer_;
 
   // Wall-clock time when the priority manager started running.
   base::TimeTicks start_time_;

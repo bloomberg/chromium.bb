@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/memory/low_memory_observer.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -38,7 +39,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/memory/low_memory_listener.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -172,7 +172,7 @@ OomPriorityManager::TabStats::~TabStats() {
 
 OomPriorityManager::OomPriorityManager()
     : focused_tab_pid_(0),
-      low_memory_listener_(new LowMemoryListener(this)),
+      low_memory_observer_(new LowMemoryObserver),
       discard_count_(0),
       recent_tab_discard_(false) {
   registrar_.Add(this,
@@ -204,16 +204,16 @@ void OomPriorityManager::Start() {
         this,
         &OomPriorityManager::RecordRecentTabDiscard);
   }
-  if (low_memory_listener_.get())
-    low_memory_listener_->Start();
+  if (low_memory_observer_.get())
+    low_memory_observer_->Start();
   start_time_ = TimeTicks::Now();
 }
 
 void OomPriorityManager::Stop() {
   timer_.Stop();
   recent_tab_discard_timer_.Stop();
-  if (low_memory_listener_.get())
-    low_memory_listener_->Stop();
+  if (low_memory_observer_.get())
+    low_memory_observer_->Stop();
 }
 
 std::vector<base::string16> OomPriorityManager::GetTabTitles() {
@@ -648,11 +648,6 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
     }
     priority += priority_increment;
   }
-}
-
-void OomPriorityManager::OnMemoryLow() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LogMemoryAndDiscardTab();
 }
 
 }  // namespace chromeos

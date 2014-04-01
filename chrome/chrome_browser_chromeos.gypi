@@ -44,7 +44,6 @@
         '../breakpad/breakpad.gyp:breakpad_client',
         '../build/linux/system.gyp:dbus',
         '../chromeos/chromeos.gyp:chromeos',
-        '../chromeos/chromeos.gyp:chromeos_memory',
         # browser_chromeos #includes signed_secret.pb.h directly.
         '../chromeos/chromeos.gyp:cryptohome_signkey_proto',
         # browser_chromeos #includes power_supply_properties.pb.h directly.
@@ -664,6 +663,8 @@
         'browser/chromeos/login/webui_screen_locker.h',
         'browser/chromeos/login/wizard_controller.cc',
         'browser/chromeos/login/wizard_controller.h',
+        'browser/chromeos/memory/low_memory_observer.cc',
+        'browser/chromeos/memory/low_memory_observer.h',
         'browser/chromeos/memory/oom_priority_manager.cc',
         'browser/chromeos/memory/oom_priority_manager.h',
         'browser/chromeos/mobile/mobile_activator.cc',
