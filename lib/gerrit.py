@@ -214,6 +214,10 @@ class GerritHelper(object):
       # Use commit:sha1 for accurate query results (crbug.com/358381).
       kwargs['commit'] = change
       change = None
+    elif change and cros_patch.IsChangeID(change, strict=True):
+      # Use change:change-id for accurate query results (crbug.com/358758).
+      kwargs['change'] = change
+      change = None
 
     if change and query_kwds.get('change'):
       raise GerritException('Bad query params: provided a change-id-like query,'
