@@ -403,7 +403,7 @@ void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
 }
 
 void AppListServiceWin::SetAppListNextPaintCallback(void (*callback)()) {
-  app_list::AppListView::SetNextPaintCallback(callback);
+  app_list::AppListView::SetNextPaintCallback(base::Bind(callback));
 }
 
 void AppListServiceWin::HandleFirstRun() {
