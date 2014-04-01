@@ -51,7 +51,7 @@
 #endif
 #if defined(__arm__)
 #define HAS_ARM_SUPPORT
-#elif defined(__arm64__)
+#elif defined(__aarch64__)
 #define HAS_ARM64_SUPPORT
 #elif defined(__i386__) || defined(__x86_64__)
   #define HAS_X86_SUPPORT
@@ -207,7 +207,7 @@ class MinidumpGenerator {
 
   // CPU type of the task being dumped.
   cpu_type_t cpu_type_;
-  
+
   // System information
   static char build_string_[16];
   static int os_major_version_;
