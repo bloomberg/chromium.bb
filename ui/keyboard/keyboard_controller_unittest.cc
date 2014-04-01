@@ -399,12 +399,11 @@ TEST_F(KeyboardControllerTest, KeyboardResizingFromContents) {
   keyboard_container->SetBounds(gfx::Rect(800, 600));
   keyboard_container->AddChild(keyboard_window);
 
-  // Default keyboard size.
-  EXPECT_EQ(180, keyboard_window->bounds().height());
+  int original_height = keyboard_window->bounds().height();
 
   // Resizes from contents when flag is unset.
   keyboard_window->SetBounds(gfx::Rect(100, 80));
-  EXPECT_EQ(180, keyboard_window->bounds().height());
+  EXPECT_EQ(original_height, keyboard_window->bounds().height());
 
   // Resizes from contents when flag is set.
   proxy()->set_resizing_from_contents(true);
@@ -418,7 +417,7 @@ TEST_F(KeyboardControllerTest, KeyboardResizingFromContents) {
   // Resizes from container when flag is unset.
   proxy()->set_resizing_from_contents(false);
   keyboard_container->SetBounds(gfx::Rect(800, 600));
-  EXPECT_EQ(180, keyboard_window->bounds().height());
+  EXPECT_EQ(original_height, keyboard_window->bounds().height());
 }
 
 class KeyboardControllerAnimationTest : public KeyboardControllerTest,
