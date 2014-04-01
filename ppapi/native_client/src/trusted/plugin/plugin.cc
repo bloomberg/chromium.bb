@@ -728,16 +728,8 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
     }
     return;
   }
-  int32_t file_desc_ok_to_close = DUP(info.get_desc());
-  if (file_desc_ok_to_close == NACL_NO_FILE_DESC) {
-    error_info.SetReport(PP_NACL_ERROR_NEXE_FH_DUP,
-                         "could not duplicate loaded file handle.");
-    ReportLoadError(error_info);
-    return;
-  }
   struct stat stat_buf;
-  if (0 != fstat(file_desc_ok_to_close, &stat_buf)) {
-    CLOSE(file_desc_ok_to_close);
+  if (0 != fstat(info.get_desc(), &stat_buf)) {
     error_info.SetReport(PP_NACL_ERROR_NEXE_STAT, "could not stat nexe file.");
     ReportLoadError(error_info);
     return;
@@ -760,7 +752,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
 
   load_start_ = NaClGetTimeOfDayMicroseconds();
   nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory()->MakeFileDesc(file_desc_ok_to_close, O_RDONLY));
+      wrapper(wrapper_factory()->MakeFileDesc(info.Release().desc, O_RDONLY));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   LoadNaClModule(
       wrapper.release(),
