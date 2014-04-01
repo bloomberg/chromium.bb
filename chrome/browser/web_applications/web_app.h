@@ -8,11 +8,14 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/web_application_info.h"
+
+class Profile;
 
 namespace extensions {
 class Extension;
@@ -30,6 +33,20 @@ enum ShortcutCreationReason {
   SHORTCUT_CREATION_BY_USER,
   SHORTCUT_CREATION_AUTOMATED,
 };
+
+typedef base::Callback<void(const ShellIntegration::ShortcutInfo&)>
+    ShortcutInfoCallback;
+
+ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
+    const extensions::Extension* app,
+    Profile* profile);
+
+// Fetches the icon for |extension| and calls |callback| with shortcut info
+// filled out as by UpdateShortcutInfoForApp.
+void UpdateShortcutInfoAndIconForApp(
+    const extensions::Extension* extension,
+    Profile* profile,
+    const ShortcutInfoCallback& callback);
 
 // Gets the user data directory for given web app. The path for the directory is
 // based on |extension_id|. If |extension_id| is empty then |url| is used

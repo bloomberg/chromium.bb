@@ -26,7 +26,6 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -98,7 +97,7 @@ bool AddGfxImageToIconFamily(IconFamilyHandle icon_family,
                              const gfx::Image& image) {
   // When called via ShowCreateChromeAppShortcutsDialog the ImageFamily will
   // have all the representations desired here for mac, from the kDesiredSizes
-  // array in web_app_ui.cc.
+  // array in web_app.cc.
   SkBitmap bitmap = image.AsBitmap();
   if (bitmap.config() != SkBitmap::kARGB_8888_Config ||
       bitmap.width() != bitmap.height()) {

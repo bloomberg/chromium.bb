@@ -8,20 +8,52 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
+#include "ui/gfx/image/image_skia.h"
+
+#if defined(OS_WIN)
+#include "ui/gfx/icon_util.h"
+#endif
 
 using content::BrowserThread;
 
 namespace {
+
+#if defined(OS_MACOSX)
+const int kDesiredSizes[] = {16, 32, 128, 256, 512};
+const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
+#elif defined(OS_LINUX)
+// Linux supports icons of any size. FreeDesktop Icon Theme Specification states
+// that "Minimally you should install a 48x48 icon in the hicolor theme."
+const int kDesiredSizes[] = {16, 32, 48, 128, 256, 512};
+const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
+#elif defined(OS_WIN)
+const int* kDesiredSizes = IconUtil::kIconDimensions;
+const size_t kNumDesiredSizes = IconUtil::kNumIconDimensions;
+#else
+const int kDesiredSizes[] = {32};
+const size_t kNumDesiredSizes = arraysize(kDesiredSizes);
+#endif
 
 #if defined(TOOLKIT_VIEWS)
 // Predicator for sorting images from largest to smallest.
@@ -52,6 +84,30 @@ void UpdateShortcutsOnFileThread(
       shortcut_data_dir, old_app_title, shortcut_info);
 }
 
+void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
+                   web_app::ShortcutInfoCallback callback,
+                   const gfx::ImageFamily& image_family) {
+  // If the image failed to load (e.g. if the resource being loaded was empty)
+  // use the standard application icon.
+  if (image_family.empty()) {
+    gfx::Image default_icon =
+        ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
+    int size = kDesiredSizes[kNumDesiredSizes - 1];
+    SkBitmap bmp = skia::ImageOperations::Resize(
+          *default_icon.ToSkBitmap(), skia::ImageOperations::RESIZE_BEST,
+          size, size);
+    gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bmp);
+    // We are on the UI thread, and this image is needed from the FILE thread,
+    // for creating shortcut icon files.
+    image_skia.MakeThreadSafe();
+    shortcut_info.favicon.Add(gfx::Image(image_skia));
+  } else {
+    shortcut_info.favicon = image_family;
+  }
+
+  callback.Run(shortcut_info);
+}
+
 }  // namespace
 
 namespace web_app {
@@ -77,6 +133,73 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 }
 
 }  // namespace internals
+
+ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
+    const extensions::Extension* app, Profile* profile) {
+  ShellIntegration::ShortcutInfo shortcut_info;
+  shortcut_info.extension_id = app->id();
+  shortcut_info.is_platform_app = app->is_platform_app();
+  shortcut_info.url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
+  shortcut_info.title = base::UTF8ToUTF16(app->name());
+  shortcut_info.description = base::UTF8ToUTF16(app->description());
+  shortcut_info.extension_path = app->path();
+  shortcut_info.profile_path = profile->GetPath();
+  shortcut_info.profile_name =
+      profile->GetPrefs()->GetString(prefs::kProfileName);
+  return shortcut_info;
+}
+
+void UpdateShortcutInfoAndIconForApp(
+    const extensions::Extension* extension,
+    Profile* profile,
+    const web_app::ShortcutInfoCallback& callback) {
+  ShellIntegration::ShortcutInfo shortcut_info =
+      ShortcutInfoForExtensionAndProfile(extension, profile);
+
+  std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
+  for (size_t i = 0; i < kNumDesiredSizes; ++i) {
+    int size = kDesiredSizes[i];
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            extension, size, ExtensionIconSet::MATCH_EXACTLY);
+    if (!resource.empty()) {
+      info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+          resource,
+          extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+          gfx::Size(size, size),
+          ui::SCALE_FACTOR_100P));
+    }
+  }
+
+  if (info_list.empty()) {
+    size_t i = kNumDesiredSizes - 1;
+    int size = kDesiredSizes[i];
+
+    // If there is no icon at the desired sizes, we will resize what we can get.
+    // Making a large icon smaller is preferred to making a small icon larger,
+    // so look for a larger icon first:
+    extensions::ExtensionResource resource =
+        extensions::IconsInfo::GetIconResource(
+            extension, size, ExtensionIconSet::MATCH_BIGGER);
+    if (resource.empty()) {
+      resource = extensions::IconsInfo::GetIconResource(
+          extension, size, ExtensionIconSet::MATCH_SMALLER);
+    }
+    info_list.push_back(extensions::ImageLoader::ImageRepresentation(
+        resource,
+        extensions::ImageLoader::ImageRepresentation::ALWAYS_RESIZE,
+        gfx::Size(size, size),
+        ui::SCALE_FACTOR_100P));
+  }
+
+  // |info_list| may still be empty at this point, in which case
+  // LoadImageFamilyAsync will call the OnImageLoaded callback with an empty
+  // image and exit immediately.
+  extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
+      extension,
+      info_list,
+      base::Bind(&OnImageLoaded, shortcut_info, callback));
+}
 
 base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
                                       const std::string& extension_id,
