@@ -73,109 +73,6 @@ bool FEColorMatrix::setValues(const Vector<float> &values)
     return true;
 }
 
-inline void matrix(float& red, float& green, float& blue, float& alpha, const Vector<float>& values)
-{
-    float r = values[0] * red + values[1] * green + values[2] * blue + values[3] * alpha + values[4] * 255;
-    float g = values[5] * red + values[6] * green + values[7] * blue + values[8] * alpha + values[9] * 255;
-    float b = values[10] * red + values[11] * green + values[12] * blue + values[13] * alpha + values[14] * 255;
-    float a = values[15] * red + values[16] * green + values[17] * blue + values[18] * alpha + values[19] * 255;
-
-    red = r;
-    green = g;
-    blue = b;
-    alpha = a;
-}
-
-inline void saturateAndHueRotate(float& red, float& green, float& blue, const float* components)
-{
-    float r = red * components[0] + green * components[1] + blue * components[2];
-    float g = red * components[3] + green * components[4] + blue * components[5];
-    float b = red * components[6] + green * components[7] + blue * components[8];
-
-    red = r;
-    green = g;
-    blue = b;
-}
-
-inline void luminance(float& red, float& green, float& blue, float& alpha)
-{
-    alpha = 0.2125 * red + 0.7154 * green + 0.0721 * blue;
-    red = 0;
-    green = 0;
-    blue = 0;
-}
-
-template<ColorMatrixType filterType>
-void effectType(Uint8ClampedArray* pixelArray, const Vector<float>& values)
-{
-    unsigned pixelArrayLength = pixelArray->length();
-    float components[9];
-
-    if (filterType == FECOLORMATRIX_TYPE_SATURATE)
-        FEColorMatrix::calculateSaturateComponents(components, values[0]);
-    else if (filterType == FECOLORMATRIX_TYPE_HUEROTATE)
-        FEColorMatrix::calculateHueRotateComponents(components, values[0]);
-
-    for (unsigned pixelByteOffset = 0; pixelByteOffset < pixelArrayLength; pixelByteOffset += 4) {
-        float red = pixelArray->item(pixelByteOffset);
-        float green = pixelArray->item(pixelByteOffset + 1);
-        float blue = pixelArray->item(pixelByteOffset + 2);
-        float alpha = pixelArray->item(pixelByteOffset + 3);
-
-        switch (filterType) {
-        case FECOLORMATRIX_TYPE_MATRIX:
-            matrix(red, green, blue, alpha, values);
-            break;
-        case FECOLORMATRIX_TYPE_SATURATE:
-        case FECOLORMATRIX_TYPE_HUEROTATE:
-            saturateAndHueRotate(red, green, blue, components);
-            break;
-        case FECOLORMATRIX_TYPE_LUMINANCETOALPHA:
-            luminance(red, green, blue, alpha);
-            break;
-        }
-
-        pixelArray->set(pixelByteOffset, red);
-        pixelArray->set(pixelByteOffset + 1, green);
-        pixelArray->set(pixelByteOffset + 2, blue);
-        pixelArray->set(pixelByteOffset + 3, alpha);
-    }
-}
-
-void FEColorMatrix::applySoftware()
-{
-    FilterEffect* in = inputEffect(0);
-
-    ImageBuffer* resultImage = createImageBufferResult();
-    if (!resultImage)
-        return;
-
-    resultImage->context()->drawImageBuffer(in->asImageBuffer(), drawingRegionOfInputImage(in->absolutePaintRect()));
-
-    IntRect imageRect(IntPoint(), absolutePaintRect().size());
-    RefPtr<Uint8ClampedArray> pixelArray = resultImage->getUnmultipliedImageData(imageRect);
-
-    switch (m_type) {
-    case FECOLORMATRIX_TYPE_UNKNOWN:
-        break;
-    case FECOLORMATRIX_TYPE_MATRIX:
-        effectType<FECOLORMATRIX_TYPE_MATRIX>(pixelArray.get(), m_values);
-        break;
-    case FECOLORMATRIX_TYPE_SATURATE:
-        effectType<FECOLORMATRIX_TYPE_SATURATE>(pixelArray.get(), m_values);
-        break;
-    case FECOLORMATRIX_TYPE_HUEROTATE:
-        effectType<FECOLORMATRIX_TYPE_HUEROTATE>(pixelArray.get(), m_values);
-        break;
-    case FECOLORMATRIX_TYPE_LUMINANCETOALPHA:
-        effectType<FECOLORMATRIX_TYPE_LUMINANCETOALPHA>(pixelArray.get(), m_values);
-        setIsAlphaImage(true);
-        break;
-    }
-
-    resultImage->putByteArray(Unmultiplied, pixelArray.get(), imageRect.size(), imageRect, IntPoint());
-}
-
 static void saturateMatrix(float s, SkScalar matrix[20])
 {
     matrix[0] = 0.213f + 0.787f * s;
@@ -252,11 +149,11 @@ static SkColorFilter* createColorFilter(ColorMatrixType type, const float* value
     return new SkColorMatrixFilter(matrix);
 }
 
-bool FEColorMatrix::applySkia()
+void FEColorMatrix::applySoftware()
 {
     ImageBuffer* resultImage = createImageBufferResult();
     if (!resultImage)
-        return false;
+        return;
 
     FilterEffect* in = inputEffect(0);
 
@@ -267,7 +164,7 @@ bool FEColorMatrix::applySkia()
     RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
     RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
     if (!nativeImage)
-        return false;
+        return;
 
     SkPaint paint;
     paint.setColorFilter(filter);
@@ -279,7 +176,7 @@ bool FEColorMatrix::applySkia()
         resultImage->context()->clipOut(drawingRegion);
         resultImage->context()->fillRect(fullRect, Color(m_values[4], m_values[9], m_values[14], m_values[19]));
     }
-    return true;
+    return;
 }
 
 bool FEColorMatrix::affectsTransparentPixels()
