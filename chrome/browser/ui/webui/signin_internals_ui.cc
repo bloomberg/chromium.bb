@@ -6,9 +6,9 @@
 
 #include "base/hash.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/about_signin_internals.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/common/url_constants.h"
+#include "components/signin/core/browser/about_signin_internals.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/signin_internals_resources.h"

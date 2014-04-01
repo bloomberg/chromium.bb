@@ -48,6 +48,11 @@ class ChromeSigninClient : public SigninClient,
   virtual bool CanRevokeCredentials() OVERRIDE;
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
   virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
+
+  // Returns a string describing the chrome version environment. Version format:
+  // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
+  // If version information is unavailable, returns "invalid."
+  virtual std::string GetProductVersion() OVERRIDE;
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) OVERRIDE;
 

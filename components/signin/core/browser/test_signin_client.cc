@@ -29,6 +29,8 @@ net::URLRequestContextGetter* TestSigninClient::GetURLRequestContext() {
   return request_context_;
 }
 
+std::string TestSigninClient::GetProductVersion() { return ""; }
+
 void TestSigninClient::LoadDatabase() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");

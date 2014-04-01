@@ -33,6 +33,9 @@ class TestSigninClient : public SigninClient {
   // Returns true.
   virtual bool CanRevokeCredentials() OVERRIDE;
 
+  // Returns the empty string.
+  virtual std::string GetProductVersion() OVERRIDE;
+
   // Returns a TestURLRequestContextGetter.
   virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
 

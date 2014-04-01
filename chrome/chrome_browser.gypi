@@ -2128,8 +2128,6 @@
         'browser/shell_integration_linux.h',
         'browser/shell_integration_mac.mm',
         'browser/shell_integration_win.cc',
-        'browser/signin/about_signin_internals.cc',
-        'browser/signin/about_signin_internals.h',
         'browser/signin/about_signin_internals_factory.cc',
         'browser/signin/about_signin_internals_factory.h',
         'browser/signin/account_reconcilor.cc',

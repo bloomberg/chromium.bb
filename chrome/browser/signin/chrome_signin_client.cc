@@ -7,6 +7,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
@@ -128,6 +129,13 @@ bool ChromeSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
   // credentials should be merge into the cookie jar.
   return !switches::IsEnableWebBasedSignin() &&
          !switches::IsNewProfileManagement();
+}
+
+std::string ChromeSigninClient::GetProductVersion() {
+  chrome::VersionInfo chrome_version;
+  if (!chrome_version.is_valid())
+    return "invalid";
+  return chrome_version.CreateVersionString();
 }
 
 void ChromeSigninClient::GoogleSigninSucceeded(const std::string& username,

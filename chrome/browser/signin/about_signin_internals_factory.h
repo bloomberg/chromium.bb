@@ -34,7 +34,7 @@ class AboutSigninInternalsFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory
   virtual KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_ABOUT_SIGNIN_INTERNALS_FACTORY_H_

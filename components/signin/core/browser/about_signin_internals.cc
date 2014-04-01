@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/about_signin_internals.h"
+#include "components/signin/core/browser/about_signin_internals.h"
 
 #include "base/debug/trace_event.h"
 #include "base/hash.h"
@@ -11,10 +11,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/common/chrome_version_info.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -60,8 +58,7 @@ std::string SigninStatusFieldToLabel(UntimedSigninStatusField field) {
   return std::string();
 }
 
-TimedSigninStatusValue SigninStatusFieldToLabel(
-    TimedSigninStatusField field) {
+TimedSigninStatusValue SigninStatusFieldToLabel(TimedSigninStatusField field) {
   switch (field) {
     case SIGNIN_TYPE:
       return TimedSigninStatusValue("Type", "Time");
@@ -89,23 +86,16 @@ TimedSigninStatusValue SigninStatusFieldToLabel(
   return TimedSigninStatusValue("Error", std::string());
 }
 
-// Returns a string describing the chrome version environment. Version format:
-// <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
-// If version information is unavailable, returns "invalid."
-std::string GetVersionString() {
-  chrome::VersionInfo chrome_version;
-  if (!chrome_version.is_valid())
-    return "invalid";
-  return chrome_version.CreateVersionString();
-}
-
 }  // anonymous namespace
 
-AboutSigninInternals::AboutSigninInternals() : profile_(NULL) {
-}
+AboutSigninInternals::AboutSigninInternals(
+    ProfileOAuth2TokenService* token_service,
+    SigninManagerBase* signin_manager)
+    : token_service_(token_service),
+      signin_manager_(signin_manager),
+      client_(NULL) {}
 
-AboutSigninInternals::~AboutSigninInternals() {
-}
+AboutSigninInternals::~AboutSigninInternals() {}
 
 void AboutSigninInternals::AddSigninObserver(
     AboutSigninInternals::Observer* observer) {
@@ -128,7 +118,7 @@ void AboutSigninInternals::NotifySigninValueChanged(
 
   // Also persist these values in the prefs.
   const std::string pref_path = SigninStatusFieldToString(field);
-  profile_->GetPrefs()->SetString(pref_path.c_str(), value);
+  client_->GetPrefs()->SetString(pref_path.c_str(), value);
 
   NotifyObservers();
 }
@@ -150,18 +140,18 @@ void AboutSigninInternals::NotifySigninValueChanged(
   // Also persist these values in the prefs.
   const std::string value_pref = SigninStatusFieldToString(field) + ".value";
   const std::string time_pref = SigninStatusFieldToString(field) + ".time";
-  profile_->GetPrefs()->SetString(value_pref.c_str(), value);
-  profile_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
+  client_->GetPrefs()->SetString(value_pref.c_str(), value);
+  client_->GetPrefs()->SetString(time_pref.c_str(), time_as_str);
 
   NotifyObservers();
 }
 
 void AboutSigninInternals::RefreshSigninPrefs() {
-  // Return if no profile exists. Can occur in unit tests.
-  if (!profile_)
+  // Return if no client exists. Can occur in unit tests.
+  if (!client_)
     return;
 
-  PrefService* pref_service = profile_->GetPrefs();
+  PrefService* pref_service = client_->GetPrefs();
   for (int i = UNTIMED_FIELDS_BEGIN; i < UNTIMED_FIELDS_END; ++i) {
     const std::string pref_path =
         SigninStatusFieldToString(static_cast<UntimedSigninStatusField>(i));
@@ -169,11 +159,13 @@ void AboutSigninInternals::RefreshSigninPrefs() {
     signin_status_.untimed_signin_fields[i - UNTIMED_FIELDS_BEGIN] =
         pref_service->GetString(pref_path.c_str());
   }
-  for (int i = TIMED_FIELDS_BEGIN ; i < TIMED_FIELDS_END; ++i) {
-    const std::string value_pref = SigninStatusFieldToString(
-        static_cast<TimedSigninStatusField>(i)) + ".value";
-    const std::string time_pref = SigninStatusFieldToString(
-        static_cast<TimedSigninStatusField>(i)) + ".time";
+  for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
+    const std::string value_pref =
+        SigninStatusFieldToString(static_cast<TimedSigninStatusField>(i)) +
+        ".value";
+    const std::string time_pref =
+        SigninStatusFieldToString(static_cast<TimedSigninStatusField>(i)) +
+        ".time";
 
     TimedSigninStatusValue value(pref_service->GetString(value_pref.c_str()),
                                  pref_service->GetString(time_pref.c_str()));
@@ -185,34 +177,30 @@ void AboutSigninInternals::RefreshSigninPrefs() {
   NotifyObservers();
 }
 
-void AboutSigninInternals::Initialize(Profile* profile) {
-  DCHECK(!profile_);
-  profile_ = profile;
+void AboutSigninInternals::Initialize(SigninClient* client) {
+  DCHECK(!client_);
+  client_ = client;
 
   RefreshSigninPrefs();
 
-  SigninManagerFactory::GetForProfile(profile)->
-      AddSigninDiagnosticsObserver(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-      AddDiagnosticsObserver(this);
+  signin_manager_->AddSigninDiagnosticsObserver(this);
+  token_service_->AddDiagnosticsObserver(this);
 }
 
 void AboutSigninInternals::Shutdown() {
-  SigninManagerFactory::GetForProfile(profile_)->
-      RemoveSigninDiagnosticsObserver(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      RemoveDiagnosticsObserver(this);
-
+  signin_manager_->RemoveSigninDiagnosticsObserver(this);
+  token_service_->RemoveDiagnosticsObserver(this);
 }
 
 void AboutSigninInternals::NotifyObservers() {
   FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
                     signin_observers_,
-                    OnSigninStateChanged(signin_status_.ToValue()));
+                    OnSigninStateChanged(
+                        signin_status_.ToValue(client_->GetProductVersion())));
 }
 
 scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
-  return signin_status_.ToValue().Pass();
+  return signin_status_.ToValue(client_->GetProductVersion()).Pass();
 }
 
 void AboutSigninInternals::OnAccessTokenRequested(
@@ -253,7 +241,7 @@ void AboutSigninInternals::OnTokenRemoved(
     const std::string& account_id,
     const OAuth2TokenService::ScopeSet& scopes) {
   for (size_t i = 0; i < signin_status_.token_info_map[account_id].size();
-      ++i) {
+       ++i) {
     TokenInfo* token = signin_status_.token_info_map[account_id][i];
     if (token->scopes == scopes)
       token->Invalidate();
@@ -268,8 +256,7 @@ AboutSigninInternals::TokenInfo::TokenInfo(
       scopes(scopes),
       request_time(base::Time::Now()),
       error(GoogleServiceAuthError::AuthErrorNone()),
-      removed_(false) {
-}
+      removed_(false) {}
 
 AboutSigninInternals::TokenInfo::~TokenInfo() {}
 
@@ -278,9 +265,7 @@ bool AboutSigninInternals::TokenInfo::LessThan(const TokenInfo* a,
   return a->consumer_id < b->consumer_id || a->scopes < b->scopes;
 }
 
-void AboutSigninInternals::TokenInfo::Invalidate() {
-  removed_ = true;
-}
+void AboutSigninInternals::TokenInfo::Invalidate() { removed_ = true; }
 
 base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
   scoped_ptr<base::DictionaryValue> token_info(new base::DictionaryValue());
@@ -288,7 +273,8 @@ base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
 
   std::string scopes_str;
   for (OAuth2TokenService::ScopeSet::const_iterator it = scopes.begin();
-      it != scopes.end(); ++it) {
+       it != scopes.end();
+       ++it) {
     scopes_str += *it + "<br/>";
   }
   token_info->SetString("scopes", scopes_str);
@@ -322,24 +308,22 @@ base::DictionaryValue* AboutSigninInternals::TokenInfo::ToValue() const {
 }
 
 AboutSigninInternals::SigninStatus::SigninStatus()
-    :untimed_signin_fields(UNTIMED_FIELDS_COUNT),
-     timed_signin_fields(TIMED_FIELDS_COUNT) {
-}
+    : untimed_signin_fields(UNTIMED_FIELDS_COUNT),
+      timed_signin_fields(TIMED_FIELDS_COUNT) {}
 
 AboutSigninInternals::SigninStatus::~SigninStatus() {
   for (TokenInfoMap::iterator it = token_info_map.begin();
-      it != token_info_map.end(); ++it) {
+       it != token_info_map.end();
+       ++it) {
     STLDeleteElements(&it->second);
   }
 }
 
-AboutSigninInternals::TokenInfo*
-AboutSigninInternals::SigninStatus::FindToken(
+AboutSigninInternals::TokenInfo* AboutSigninInternals::SigninStatus::FindToken(
     const std::string& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
-  for (size_t i = 0; i < token_info_map[account_id].size();
-      ++i) {
+  for (size_t i = 0; i < token_info_map[account_id].size(); ++i) {
     TokenInfo* tmp = token_info_map[account_id][i];
     if (tmp->consumer_id == consumer_id && tmp->scopes == scopes)
       return tmp;
@@ -347,8 +331,8 @@ AboutSigninInternals::SigninStatus::FindToken(
   return NULL;
 }
 
-scoped_ptr<base::DictionaryValue>
-AboutSigninInternals::SigninStatus::ToValue() {
+scoped_ptr<base::DictionaryValue> AboutSigninInternals::SigninStatus::ToValue(
+    std::string product_version) {
   scoped_ptr<base::DictionaryValue> signin_status(new base::DictionaryValue());
   base::ListValue* signin_info = new base::ListValue();
   signin_status->Set("signin_info", signin_info);
@@ -356,31 +340,33 @@ AboutSigninInternals::SigninStatus::ToValue() {
   // A summary of signin related info first.
   base::ListValue* basic_info = AddSection(signin_info, "Basic Information");
   const std::string signin_status_string =
-      untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN].empty() ?
-      "Not Signed In" : "Signed In";
-  AddSectionEntry(basic_info, "Chrome Version", GetVersionString());
+      untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN].empty()
+          ? "Not Signed In"
+          : "Signed In";
+  AddSectionEntry(basic_info, "Chrome Version", product_version);
   AddSectionEntry(basic_info, "Signin Status", signin_status_string);
 
   // Only add username.  SID and LSID have moved to tokens section.
   const std::string field =
       SigninStatusFieldToLabel(static_cast<UntimedSigninStatusField>(USERNAME));
-  AddSectionEntry(
-      basic_info,
-      field,
-      untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN]);
+  AddSectionEntry(basic_info,
+                  field,
+                  untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN]);
 
   // Time and status information of the possible sign in types.
-  base::ListValue* detailed_info = AddSection(signin_info,
-                                              "Last Signin Details");
+  base::ListValue* detailed_info =
+      AddSection(signin_info, "Last Signin Details");
   for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
     const std::string value_field =
         SigninStatusFieldToLabel(static_cast<TimedSigninStatusField>(i)).first;
     const std::string time_field =
         SigninStatusFieldToLabel(static_cast<TimedSigninStatusField>(i)).second;
 
-    AddSectionEntry(detailed_info, value_field,
+    AddSectionEntry(detailed_info,
+                    value_field,
                     timed_signin_fields[i - TIMED_FIELDS_BEGIN].first);
-    AddSectionEntry(detailed_info, time_field,
+    AddSectionEntry(detailed_info,
+                    time_field,
                     timed_signin_fields[i - TIMED_FIELDS_BEGIN].second);
   }
 
@@ -388,7 +374,8 @@ AboutSigninInternals::SigninStatus::ToValue() {
   base::ListValue* token_info = new base::ListValue();
   signin_status->Set("token_info", token_info);
   for (TokenInfoMap::iterator it = token_info_map.begin();
-      it != token_info_map.end(); ++it) {
+       it != token_info_map.end();
+       ++it) {
     base::ListValue* token_details = AddSection(token_info, it->first);
 
     std::sort(it->second.begin(), it->second.end(), TokenInfo::LessThan);
@@ -401,4 +388,3 @@ AboutSigninInternals::SigninStatus::ToValue() {
 
   return signin_status.Pass();
 }
-

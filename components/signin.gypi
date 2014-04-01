@@ -37,6 +37,8 @@
         '..',
       ],
       'sources': [
+        'signin/core/browser/about_signin_internals.cc',
+        'signin/core/browser/about_signin_internals.h',
         'signin/core/browser/mutable_profile_oauth2_token_service.cc',
         'signin/core/browser/mutable_profile_oauth2_token_service.h',
         'signin/core/browser/profile_oauth2_token_service.cc',

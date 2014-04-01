@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SIGNIN_ABOUT_SIGNIN_INTERNALS_H_
-#define CHROME_BROWSER_SIGNIN_ABOUT_SIGNIN_INTERNALS_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ABOUT_SIGNIN_INTERNALS_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_ABOUT_SIGNIN_INTERNALS_H_
 
 #include <map>
 #include <string>
@@ -11,13 +11,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-class Profile;
+class ProfileOAuth2TokenService;
+class SigninClient;
+class SigninManagerBase;
 
 // Many values in SigninStatus are also associated with a timestamp.
 // This makes it easier to keep values and their associated times together.
@@ -38,7 +39,8 @@ class AboutSigninInternals
         scoped_ptr<base::DictionaryValue> info) = 0;
   };
 
-  AboutSigninInternals();
+  AboutSigninInternals(ProfileOAuth2TokenService* token_service,
+                       SigninManagerBase* signin_manager);
   virtual ~AboutSigninInternals();
 
   // Each instance of SigninInternalsUI adds itself as an observer to be
@@ -58,7 +60,7 @@ class AboutSigninInternals
       const signin_internals_util::TimedSigninStatusField& field,
       const std::string& value) OVERRIDE;
 
-  void Initialize(Profile* profile);
+  void Initialize(SigninClient* client);
 
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -90,9 +92,9 @@ class AboutSigninInternals
       const OAuth2TokenService::ScopeSet& scopes,
       GoogleServiceAuthError error,
       base::Time expiration_time) OVERRIDE;
-  virtual void OnTokenRemoved(
-      const std::string& account_id,
-      const OAuth2TokenService::ScopeSet& scopes) OVERRIDE;
+  virtual void OnTokenRemoved(const std::string& account_id,
+                              const OAuth2TokenService::ScopeSet& scopes)
+      OVERRIDE;
 
  private:
   // Encapsulates diagnostic information about tokens for different services.
@@ -151,13 +153,19 @@ class AboutSigninInternals
     //                           "status" : request status} elems]
     //       }],
     //  }
-    scoped_ptr<base::DictionaryValue> ToValue();
+    scoped_ptr<base::DictionaryValue> ToValue(std::string product_version);
   };
 
   void NotifyObservers();
 
-  // Weak pointer to parent profile.
-  Profile* profile_;
+  // Weak pointer to the token service.
+  ProfileOAuth2TokenService* token_service_;
+
+  // Weak pointer to the signin manager.
+  SigninManagerBase* signin_manager_;
+
+  // Weak pointer to the client.
+  SigninClient* client_;
 
   // Encapsulates the actual signin and token related values.
   // Most of the values are mirrored in the prefs for persistence.
@@ -168,4 +176,4 @@ class AboutSigninInternals
   DISALLOW_COPY_AND_ASSIGN(AboutSigninInternals);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_ABOUT_SIGNIN_INTERNALS_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_ABOUT_SIGNIN_INTERNALS_H_

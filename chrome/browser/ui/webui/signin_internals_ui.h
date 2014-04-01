@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/signin/about_signin_internals.h"
+#include "components/signin/core/browser/about_signin_internals.h"
 #include "content/public/browser/web_ui_controller.h"
 
 // The implementation for the chrome://signin-internals page.

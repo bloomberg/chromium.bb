@@ -37,6 +37,10 @@ class SigninClient {
   // jar on signin completion.
   virtual bool ShouldMergeSigninCredentialsIntoCookieJar() = 0;
 
+  // Returns a string containing the version info of the product in which the
+  // Signin component is being used.
+  virtual std::string GetProductVersion() = 0;
+
   // Called when Google signin has succeeded.
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) {}
