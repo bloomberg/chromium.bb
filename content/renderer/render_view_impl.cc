@@ -4635,7 +4635,7 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
     return NULL;
   }
 
-  scoped_ptr<StreamTextureFactory> stream_texture_factory;
+  scoped_refptr<StreamTextureFactory> stream_texture_factory;
   if (UsingSynchronousRendererCompositor()) {
     SynchronousCompositorFactory* factory =
         SynchronousCompositorFactory::GetInstance();
@@ -4649,8 +4649,8 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
       return NULL;
     }
 
-    stream_texture_factory.reset(new StreamTextureFactoryImpl(
-        context_provider, gpu_channel_host, routing_id_));
+    stream_texture_factory = StreamTextureFactoryImpl::Create(
+        context_provider, gpu_channel_host, routing_id_);
   }
 
   return new WebMediaPlayerAndroid(
@@ -4658,7 +4658,7 @@ WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
       client,
       AsWeakPtr(),
       media_player_manager_,
-      stream_texture_factory.release(),
+      stream_texture_factory,
       RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy(),
       new RenderMediaLog());
 }

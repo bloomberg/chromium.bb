@@ -77,6 +77,14 @@ void StreamTextureProxyImpl::OnMatrixChanged(const float matrix[16]) {
 
 }  // namespace
 
+// static
+scoped_refptr<StreamTextureFactoryImpl> StreamTextureFactoryImpl::Create(
+    const scoped_refptr<cc::ContextProvider>& context_provider,
+    GpuChannelHost* channel,
+    int view_id) {
+  return new StreamTextureFactoryImpl(context_provider, channel, view_id);
+}
+
 StreamTextureFactoryImpl::StreamTextureFactoryImpl(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     GpuChannelHost* channel,
@@ -104,8 +112,7 @@ void StreamTextureFactoryImpl::EstablishPeer(int32 stream_id, int player_id) {
 unsigned StreamTextureFactoryImpl::CreateStreamTexture(
     unsigned texture_target,
     unsigned* texture_id,
-    gpu::Mailbox* texture_mailbox,
-    unsigned* texture_mailbox_sync_point) {
+    gpu::Mailbox* texture_mailbox) {
   GLuint stream_id = 0;
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   gl->GenTextures(1, texture_id);
@@ -115,16 +122,7 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(
   gl->GenMailboxCHROMIUM(texture_mailbox->name);
   gl->BindTexture(texture_target, *texture_id);
   gl->ProduceTextureCHROMIUM(texture_target, texture_mailbox->name);
-
-  gl->Flush();
-  *texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
   return stream_id;
-}
-
-void StreamTextureFactoryImpl::DestroyStreamTexture(unsigned texture_id) {
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  gl->DeleteTextures(1, &texture_id);
-  gl->Flush();
 }
 
 void StreamTextureFactoryImpl::SetStreamTextureSize(

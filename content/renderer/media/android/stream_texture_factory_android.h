@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/video_frame_provider.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -45,10 +46,8 @@ typedef scoped_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
     ScopedStreamTextureProxy;
 
 // Factory class for managing stream textures.
-class StreamTextureFactory {
+class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
  public:
-  virtual ~StreamTextureFactory() {}
-
   // Create the StreamTextureProxy object.
   virtual StreamTextureProxy* CreateProxy() = 0;
 
@@ -60,23 +59,20 @@ class StreamTextureFactory {
 
   // Create the streamTexture and return the stream Id and create a client-side
   // texture id to refer to the streamTexture. The texture id is produced into
-  // a mailbox so it can be used to ship in a VideoFrame, with a sync point for
-  // when the mailbox can be accessed.
-  virtual unsigned CreateStreamTexture(
-      unsigned texture_target,
-      unsigned* texture_id,
-      gpu::Mailbox* texture_mailbox,
-      unsigned* texture_mailbox_sync_point) = 0;
-
-  // Destroy the streamTexture for the given texture id, as well as the
-  // client side texture.
-  virtual void DestroyStreamTexture(unsigned texture_id) = 0;
+  // a mailbox so it can be used to ship in a VideoFrame.
+  virtual unsigned CreateStreamTexture(unsigned texture_target,
+                                       unsigned* texture_id,
+                                       gpu::Mailbox* texture_mailbox) = 0;
 
   // Set the streamTexture size for the given stream Id.
   virtual void SetStreamTextureSize(int32 texture_id,
                                     const gfx::Size& size) = 0;
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
+
+ protected:
+  friend class base::RefCounted<StreamTextureFactory>;
+  virtual ~StreamTextureFactory() {}
 };
 
 }  // namespace content

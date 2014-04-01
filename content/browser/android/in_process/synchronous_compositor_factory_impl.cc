@@ -188,15 +188,15 @@ scoped_refptr<cc::ContextProvider> SynchronousCompositorFactoryImpl::
       "Compositor-Onscreen");
 }
 
-scoped_ptr<StreamTextureFactory>
+scoped_refptr<StreamTextureFactory>
 SynchronousCompositorFactoryImpl::CreateStreamTextureFactory(int view_id) {
-  scoped_ptr<StreamTextureFactorySynchronousImpl> factory(
-      new StreamTextureFactorySynchronousImpl(
-          base::Bind(&SynchronousCompositorFactoryImpl::
-                          TryCreateStreamTextureFactory,
-                     base::Unretained(this)),
+  scoped_refptr<StreamTextureFactorySynchronousImpl> factory(
+      StreamTextureFactorySynchronousImpl::Create(
+          base::Bind(
+              &SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory,
+              base::Unretained(this)),
           view_id));
-  return factory.PassAs<StreamTextureFactory>();
+  return factory;
 }
 
 void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw() {

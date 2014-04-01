@@ -51,7 +51,7 @@ class SynchronousCompositorFactory {
       GetOffscreenContextProviderForMainThread() = 0;
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() = 0;
-  virtual scoped_ptr<StreamTextureFactory> CreateStreamTextureFactory(
+  virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) = 0;
 
  protected:

@@ -65,6 +65,17 @@ using media::VideoFrame;
 namespace {
 // Prefix for histograms related to Encrypted Media Extensions.
 const char* kMediaEme = "Media.EME.";
+
+// File-static function is to allow it to run even after WMPA is deleted.
+void OnReleaseTexture(
+    const scoped_refptr<content::StreamTextureFactory>& factories,
+    uint32 texture_id,
+    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
+  GLES2Interface* gl = factories->ContextGL();
+  if (mailbox_holder->sync_point)
+    gl->WaitSyncPointCHROMIUM(mailbox_holder->sync_point);
+  gl->DeleteTextures(1, &texture_id);
+}
 }  // namespace
 
 namespace content {
@@ -74,7 +85,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     blink::WebMediaPlayerClient* client,
     base::WeakPtr<WebMediaPlayerDelegate> delegate,
     RendererMediaPlayerManager* manager,
-    StreamTextureFactory* factory,
+    scoped_refptr<StreamTextureFactory> factory,
     const scoped_refptr<base::MessageLoopProxy>& media_loop,
     media::MediaLog* media_log)
     : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
@@ -90,9 +101,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       manager_(manager),
       network_state_(WebMediaPlayer::NetworkStateEmpty),
       ready_state_(WebMediaPlayer::ReadyStateHaveNothing),
-      remote_playback_texture_id_(0),
       texture_id_(0),
-      texture_mailbox_sync_point_(0),
       stream_id_(0),
       is_playing_(false),
       playing_started_(false),
@@ -134,12 +143,17 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     manager_->UnregisterMediaPlayer(player_id_);
   }
 
-  if (stream_id_)
-    stream_texture_factory_->DestroyStreamTexture(texture_id_);
+  if (stream_id_) {
+    GLES2Interface* gl = stream_texture_factory_->ContextGL();
+    gl->DeleteTextures(1, &texture_id_);
+    texture_id_ = 0;
+    texture_mailbox_ = gpu::Mailbox();
+    stream_id_ = 0;
+  }
 
-  if (remote_playback_texture_id_) {
-    stream_texture_factory_->ContextGL()->
-        DeleteTextures(1, &remote_playback_texture_id_);
+  {
+    base::AutoLock auto_lock(current_frame_lock_);
+    current_frame_ = NULL;
   }
 
   if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE && delegate_)
@@ -447,13 +461,10 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
   if (!video_frame ||
       video_frame->format() != media::VideoFrame::NATIVE_TEXTURE)
     return false;
-  DCHECK((!is_remote_ && texture_id_) ||
-         (is_remote_ && remote_playback_texture_id_));
   gpu::MailboxHolder* mailbox_holder = video_frame->mailbox_holder();
-  DCHECK((texture_id_ &&
+  DCHECK((!is_remote_ &&
           mailbox_holder->texture_target == GL_TEXTURE_EXTERNAL_OES) ||
-         (remote_playback_texture_id_ &&
-          mailbox_holder->texture_target == GL_TEXTURE_2D));
+         (is_remote_ && mailbox_holder->texture_target == GL_TEXTURE_2D));
 
   // For hidden video element (with style "display:none"), ensure the texture
   // size is set.
@@ -848,7 +859,10 @@ void WebMediaPlayerAndroid::OnDestruct() {
 
 void WebMediaPlayerAndroid::Detach() {
   if (stream_id_) {
-    stream_texture_factory_->DestroyStreamTexture(texture_id_);
+    GLES2Interface* gl = stream_texture_factory_->ContextGL();
+    gl->DeleteTextures(1, &texture_id_);
+    texture_id_ = 0;
+    texture_mailbox_ = gpu::Mailbox();
     stream_id_ = 0;
   }
 
@@ -949,11 +963,10 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
       paint);
 
   GLES2Interface* gl = stream_texture_factory_->ContextGL();
-
-  if (!remote_playback_texture_id_)
-    gl->GenTextures(1, &remote_playback_texture_id_);
+  GLuint remote_playback_texture_id = 0;
+  gl->GenTextures(1, &remote_playback_texture_id);
   GLuint texture_target = GL_TEXTURE_2D;
-  gl->BindTexture(texture_target, remote_playback_texture_id_);
+  gl->BindTexture(texture_target, remote_playback_texture_id);
   gl->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   gl->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -981,9 +994,9 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
   scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new gpu::MailboxHolder(
           texture_mailbox, texture_target, texture_mailbox_sync_point)),
-      media::BindToCurrentLoop(
-          base::Bind(&WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture,
-                     weak_factory_.GetWeakPtr())),
+      media::BindToCurrentLoop(base::Bind(&OnReleaseTexture,
+                                          stream_texture_factory_,
+                                          remote_playback_texture_id)),
       canvas_size /* coded_size */,
       gfx::Rect(canvas_size) /* visible_rect */,
       canvas_size /* natural_size */,
@@ -1007,11 +1020,20 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     NOTIMPLEMENTED() << "Hole punching not supported without VIDEO_HOLE flag";
 #endif  // defined(VIDEO_HOLE)
   } else if (!is_remote_ && texture_id_) {
+    GLES2Interface* gl = stream_texture_factory_->ContextGL();
+    GLuint texture_id_ref = 0;
+    gl->GenTextures(1, &texture_id_ref);
+    GLuint texture_target = kGLTextureExternalOES;
+    gl->BindTexture(texture_target, texture_id_ref);
+    gl->ConsumeTextureCHROMIUM(texture_target, texture_mailbox_.name);
+    gl->Flush();
+    GLuint texture_mailbox_sync_point = gl->InsertSyncPointCHROMIUM();
+
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-        make_scoped_ptr(new gpu::MailboxHolder(texture_mailbox_,
-                                               kGLTextureExternalOES,
-                                               texture_mailbox_sync_point_)),
-        media::VideoFrame::ReleaseMailboxCB(),
+        make_scoped_ptr(new gpu::MailboxHolder(
+            texture_mailbox_, texture_target, texture_mailbox_sync_point)),
+        media::BindToCurrentLoop(base::Bind(
+            &OnReleaseTexture, stream_texture_factory_, texture_id_ref)),
         natural_size_,
         gfx::Rect(natural_size_),
         natural_size_,
@@ -1095,12 +1117,8 @@ void WebMediaPlayerAndroid::EstablishSurfaceTexturePeer() {
 void WebMediaPlayerAndroid::DoCreateStreamTexture() {
   DCHECK(!stream_id_);
   DCHECK(!texture_id_);
-  DCHECK(!texture_mailbox_sync_point_);
   stream_id_ = stream_texture_factory_->CreateStreamTexture(
-      kGLTextureExternalOES,
-      &texture_id_,
-      &texture_mailbox_,
-      &texture_mailbox_sync_point_);
+      kGLTextureExternalOES, &texture_id_, &texture_mailbox_);
 }
 
 void WebMediaPlayerAndroid::SetNeedsEstablishPeer(bool needs_establish_peer) {
@@ -1505,19 +1523,6 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
   }
 
   decryptor_ready_cb_ = decryptor_ready_cb;
-}
-
-void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(
-    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(remote_playback_texture_id_);
-
-  GLES2Interface* gl = stream_texture_factory_->ContextGL();
-
-  if (mailbox_holder->sync_point)
-    gl->WaitSyncPointCHROMIUM(mailbox_holder->sync_point);
-  gl->DeleteTextures(1, &remote_playback_texture_id_);
-  remote_playback_texture_id_ = 0;
 }
 
 void WebMediaPlayerAndroid::enterFullscreen() {

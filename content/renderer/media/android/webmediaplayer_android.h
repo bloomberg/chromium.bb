@@ -76,7 +76,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
                         blink::WebMediaPlayerClient* client,
                         base::WeakPtr<WebMediaPlayerDelegate> delegate,
                         RendererMediaPlayerManager* manager,
-                        StreamTextureFactory* factory,
+                        scoped_refptr<StreamTextureFactory> factory,
                         const scoped_refptr<base::MessageLoopProxy>& media_loop,
                         media::MediaLog* media_log);
   virtual ~WebMediaPlayerAndroid();
@@ -258,9 +258,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   void ReallocateVideoFrame();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
   void DidLoadMediaInfo(MediaInfoLoader::Status status);
-  void DoReleaseRemotePlaybackTexture(
-      scoped_ptr<gpu::MailboxHolder> mailbox_holder);
-
   bool IsKeySystemSupported(const std::string& key_system);
 
   // Actually do the work for generateKeyRequest/addKey so they can easily
@@ -346,16 +343,12 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   blink::WebMediaPlayer::NetworkState network_state_;
   blink::WebMediaPlayer::ReadyState ready_state_;
 
-  // GL texture ID used to show the remote playback icon.
-  unsigned int remote_playback_texture_id_;
-
   // GL texture ID allocated to the video.
   unsigned int texture_id_;
 
   // GL texture mailbox for texture_id_ to provide in the VideoFrame, and sync
   // point for when the mailbox was produced.
   gpu::Mailbox texture_mailbox_;
-  unsigned int texture_mailbox_sync_point_;
 
   // Stream texture ID allocated to the video.
   unsigned int stream_id_;
@@ -380,7 +373,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   bool has_media_info_;
 
   // Object for allocating stream textures.
-  scoped_ptr<StreamTextureFactory> stream_texture_factory_;
+  scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 
   // Object for calling back the compositor thread to repaint the video when a
   // frame available. It should be initialized on the compositor thread.

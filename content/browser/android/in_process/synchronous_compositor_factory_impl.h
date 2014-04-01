@@ -49,7 +49,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // any thread and is lightweight.
   virtual scoped_refptr<cc::ContextProvider>
       GetOffscreenContextProviderForCompositorThread() OVERRIDE;
-  virtual scoped_ptr<StreamTextureFactory> CreateStreamTextureFactory(
+  virtual scoped_refptr<StreamTextureFactory> CreateStreamTextureFactory(
       int view_id) OVERRIDE;
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
