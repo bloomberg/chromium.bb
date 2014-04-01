@@ -3489,7 +3489,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
     size_t rowCount = 0;
     size_t columnCount = 0;
     bool trailingIdentWasAdded = false;
-    RefPtr<CSSValueList> templateRows = CSSValueList::createSpaceSeparated();
+    RefPtrWillBeRawPtr<CSSValueList> templateRows = CSSValueList::createSpaceSeparated();
 
     // At least template-areas strings must be defined.
     if (!m_valueList->current())
@@ -3513,7 +3513,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
 
         // Handle template-rows's track-size.
         if (m_valueList->current() && m_valueList->current()->unit != CSSParserValue::ValueList && m_valueList->current()->unit != CSSPrimitiveValue::CSS_STRING) {
-            RefPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
+            RefPtrWillBeRawPtr<CSSValue> value = parseGridTrackSize(*m_valueList);
             if (!value)
                 return false;
             templateRows->append(value);
@@ -3536,7 +3536,7 @@ bool CSSPropertyParser::parseGridTemplateRowsAndAreas(PassRefPtrWillBeRawPtr<CSS
         addProperty(CSSPropertyGridTemplateColumns,  cssValuePool().createIdentifierValue(CSSValueNone), important);
 
     // [<line-names>? <string> [<track-size> <line-names>]? ]+
-    RefPtr<CSSValue> templateAreas = CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
+    RefPtrWillBeRawPtr<CSSValue> templateAreas = CSSGridTemplateAreasValue::create(gridAreaMap, rowCount, columnCount);
     addProperty(CSSPropertyGridTemplateAreas, templateAreas.release(), important);
     addProperty(CSSPropertyGridTemplateRows, templateRows.release(), important);
 
@@ -3567,14 +3567,19 @@ bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
     }
 
     unsigned index = 0;
-    RefPtr<CSSValue> columnsValue = firstValueIsNone ? cssValuePool().createIdentifierValue(CSSValueNone) : parseGridTrackList(important);
+    RefPtrWillBeRawPtr<CSSValue> columnsValue = nullptr;
+    if (firstValueIsNone) {
+        columnsValue = cssValuePool().createIdentifierValue(CSSValueNone);
+    } else {
+        columnsValue = parseGridTrackList(important);
+    }
 
     // 2- <grid-template-columns> / <grid-template-columns> syntax.
     if (columnsValue) {
         if (!(m_valueList->current() && isForwardSlashOperator(m_valueList->current()) && m_valueList->next()))
             return false;
         index = m_valueList->currentIndex();
-        if (RefPtr<CSSValue> rowsValue = parseGridTrackList(important)) {
+        if (RefPtrWillBeRawPtr<CSSValue> rowsValue = parseGridTrackList(important)) {
             if (m_valueList->current())
                 return false;
             addProperty(CSSPropertyGridTemplateColumns, columnsValue, important);
@@ -3662,7 +3667,9 @@ void CSSPropertyParser::parseGridLineNames(CSSParserValueList& inputList, CSSVal
     // Need to ensure the identList is at the heading index, since the parserList might have been rewound.
     identList->setCurrentIndex(0);
 
-    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = previousNamedAreaTrailingLineNames ? previousNamedAreaTrailingLineNames : CSSGridLineNamesValue::create();
+    RefPtrWillBeRawPtr<CSSGridLineNamesValue> lineNames = previousNamedAreaTrailingLineNames;
+    if (!lineNames)
+        lineNames = CSSGridLineNamesValue::create();
     while (CSSParserValue* identValue = identList->current()) {
         ASSERT(identValue->unit == CSSPrimitiveValue::CSS_IDENT);
         RefPtrWillBeRawPtr<CSSPrimitiveValue> lineName = createPrimitiveStringValue(identValue);
