@@ -109,7 +109,7 @@ BisonCSSParser::BisonCSSParser(const CSSParserContext& context)
     : m_context(context)
     , m_important(false)
     , m_id(CSSPropertyInvalid)
-    , m_styleSheet(0)
+    , m_styleSheet(nullptr)
     , m_supportsCondition(false)
     , m_selectorListForParseSelector(0)
     , m_numParsedPropertiesBeforeMarginBox(INVALID_NUM_PARSED_PROPERTIES)
@@ -129,7 +129,6 @@ BisonCSSParser::BisonCSSParser(const CSSParserContext& context)
 #if YYDEBUG > 0
     cssyydebug = 1;
 #endif
-    CSSPropertySourceData::init();
 }
 
 BisonCSSParser::~BisonCSSParser()
@@ -1696,7 +1695,7 @@ StyleRuleBase* BisonCSSParser::createSupportsRule(bool conditionIsSupported, Rul
 {
     m_allowImportRules = m_allowNamespaceDeclarations = false;
 
-    RefPtr<CSSRuleSourceData> data = popSupportsRuleData();
+    RefPtrWillBeRawPtr<CSSRuleSourceData> data = popSupportsRuleData();
     RefPtrWillBeRawPtr<StyleRuleSupports> rule = nullptr;
     String conditionText;
     unsigned conditionOffset = data->ruleHeaderRange.start + 9;
@@ -1723,9 +1722,9 @@ StyleRuleBase* BisonCSSParser::createSupportsRule(bool conditionIsSupported, Rul
 void BisonCSSParser::markSupportsRuleHeaderStart()
 {
     if (!m_supportsRuleDataStack)
-        m_supportsRuleDataStack = adoptPtr(new RuleSourceDataList());
+        m_supportsRuleDataStack = adoptPtrWillBeNoop(new RuleSourceDataList());
 
-    RefPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(CSSRuleSourceData::SUPPORTS_RULE);
+    RefPtrWillBeRawPtr<CSSRuleSourceData> data = CSSRuleSourceData::create(CSSRuleSourceData::SUPPORTS_RULE);
     data->ruleHeaderRange.start = m_tokenizer.tokenStartOffset();
     m_supportsRuleDataStack->append(data);
 }
@@ -1740,10 +1739,10 @@ void BisonCSSParser::markSupportsRuleHeaderEnd()
         m_supportsRuleDataStack->last()->ruleHeaderRange.end = m_tokenizer.tokenStart<UChar>() - m_tokenizer.m_dataStart16.get();
 }
 
-PassRefPtr<CSSRuleSourceData> BisonCSSParser::popSupportsRuleData()
+PassRefPtrWillBeRawPtr<CSSRuleSourceData> BisonCSSParser::popSupportsRuleData()
 {
     ASSERT(m_supportsRuleDataStack && !m_supportsRuleDataStack->isEmpty());
-    RefPtr<CSSRuleSourceData> data = m_supportsRuleDataStack->last();
+    RefPtrWillBeRawPtr<CSSRuleSourceData> data = m_supportsRuleDataStack->last();
     m_supportsRuleDataStack->removeLast();
     return data.release();
 }

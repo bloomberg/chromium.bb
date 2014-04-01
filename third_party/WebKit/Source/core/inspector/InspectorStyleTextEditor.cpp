@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-InspectorStyleTextEditor::InspectorStyleTextEditor(Vector<InspectorStyleProperty>* allProperties, const String& styleText, const NewLineAndWhitespace& format)
+InspectorStyleTextEditor::InspectorStyleTextEditor(WillBeHeapVector<InspectorStyleProperty>* allProperties, const String& styleText, const NewLineAndWhitespace& format)
     : m_allProperties(allProperties)
     , m_styleText(styleText)
     , m_format(format)
@@ -108,11 +108,6 @@ void InspectorStyleTextEditor::replaceProperty(unsigned index, const String& new
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_allProperties->size());
     internalReplaceProperty(m_allProperties->at(index), newText);
-}
-
-void InspectorStyleTextEditor::removeProperty(unsigned index)
-{
-    replaceProperty(index, "");
 }
 
 void InspectorStyleTextEditor::internalReplaceProperty(const InspectorStyleProperty& property, const String& newText)

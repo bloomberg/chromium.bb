@@ -102,6 +102,8 @@ private:
 };
 
 struct InspectorStyleProperty {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     explicit InspectorStyleProperty(CSSPropertySourceData sourceData)
         : sourceData(sourceData)
         , hasSource(true)
@@ -125,6 +127,8 @@ struct InspectorStyleProperty {
 
     bool hasRawText() const { return !rawText.isEmpty(); }
 
+    void trace(Visitor* visitor) { visitor->trace(sourceData); }
+
     CSSPropertySourceData sourceData;
     bool hasSource;
     String rawText;
@@ -144,9 +148,9 @@ private:
     InspectorStyle(const InspectorCSSId&, PassRefPtr<CSSStyleDeclaration>, InspectorStyleSheetBase* parentStyleSheet);
 
     bool verifyPropertyText(const String& propertyText, bool canOmitSemicolon);
-    void populateAllProperties(Vector<InspectorStyleProperty>& result) const;
+    void populateAllProperties(WillBeHeapVector<InspectorStyleProperty>& result) const;
     PassRefPtr<TypeBuilder::CSS::CSSStyle> styleWithProperties() const;
-    PassRefPtr<CSSRuleSourceData> extractSourceData() const;
+    PassRefPtrWillBeRawPtr<CSSRuleSourceData> extractSourceData() const;
     bool applyStyleText(const String&);
     String shorthandValue(const String& shorthandProperty) const;
     NewLineAndWhitespace& newLineAndWhitespaceDelimiters() const;
@@ -196,7 +200,7 @@ protected:
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) = 0;
 
     // Also accessed by friend class InspectorStyle.
-    virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const = 0;
+    virtual PassRefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const = 0;
     virtual bool ensureParsedDataReady() = 0;
 
 private:
@@ -239,7 +243,7 @@ protected:
     virtual PassRefPtr<InspectorStyle> inspectorStyleForId(const InspectorCSSId&) OVERRIDE;
 
     // Also accessed by friend class InspectorStyle.
-    virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const OVERRIDE;
     virtual bool ensureParsedDataReady() OVERRIDE;
 
 private:
@@ -288,16 +292,16 @@ protected:
 
     // Also accessed by friend class InspectorStyle.
     virtual bool ensureParsedDataReady() OVERRIDE;
-    virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const OVERRIDE { ASSERT_UNUSED(style, style == inlineStyle()); return m_ruleSourceData; }
+    virtual PassRefPtrWillBeRawPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const OVERRIDE { ASSERT_UNUSED(style, style == inlineStyle()); return m_ruleSourceData; }
 
 private:
     InspectorStyleSheetForInlineStyle(const String& id, PassRefPtr<Element>, Listener*);
     CSSStyleDeclaration* inlineStyle() const;
     const String& elementStyleText() const;
-    PassRefPtr<CSSRuleSourceData> getStyleAttributeData() const;
+    PassRefPtrWillBeRawPtr<CSSRuleSourceData> getStyleAttributeData() const;
 
     RefPtr<Element> m_element;
-    RefPtr<CSSRuleSourceData> m_ruleSourceData;
+    RefPtrWillBePersistent<CSSRuleSourceData> m_ruleSourceData;
     RefPtr<InspectorStyle> m_inspectorStyle;
 
     // Contains "style" attribute value.
@@ -308,4 +312,12 @@ private:
 
 } // namespace WebCore
 
+namespace WTF {
+
+template <> struct VectorTraits<WebCore::InspectorStyleProperty> : VectorTraitsBase<WebCore::InspectorStyleProperty> {
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+}
 #endif // !defined(InspectorStyleSheet_h)

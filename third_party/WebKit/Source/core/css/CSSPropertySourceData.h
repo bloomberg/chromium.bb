@@ -31,6 +31,7 @@
 #ifndef CSSPropertySourceData_h
 #define CSSPropertySourceData_h
 
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -41,23 +42,29 @@ namespace WebCore {
 class StyleRuleBase;
 
 struct SourceRange {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     SourceRange();
     SourceRange(unsigned start, unsigned end);
     unsigned length() const;
+
+    void trace(Visitor*) { }
 
     unsigned start;
     unsigned end;
 };
 
 struct CSSPropertySourceData {
-    static void init();
-
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     CSSPropertySourceData(const String& name, const String& value, bool important, bool disabled, bool parsedOk, const SourceRange& range);
     CSSPropertySourceData(const CSSPropertySourceData& other);
     CSSPropertySourceData();
 
     String toString() const;
     unsigned hash() const;
+
+    void trace(Visitor* visitor) { visitor->trace(range); }
 
     String name;
     String value;
@@ -67,24 +74,22 @@ struct CSSPropertySourceData {
     SourceRange range;
 };
 
-#ifndef CSSPROPERTYSOURCEDATA_HIDE_GLOBALS
-extern const CSSPropertySourceData emptyCSSPropertySourceData;
-#endif
-
-struct CSSStyleSourceData : public RefCounted<CSSStyleSourceData> {
-    static PassRefPtr<CSSStyleSourceData> create()
+struct CSSStyleSourceData : public RefCountedWillBeGarbageCollected<CSSStyleSourceData> {
+    static PassRefPtrWillBeRawPtr<CSSStyleSourceData> create()
     {
-        return adoptRef(new CSSStyleSourceData());
+        return adoptRefWillBeNoop(new CSSStyleSourceData());
     }
 
-    Vector<CSSPropertySourceData> propertyData;
+    void trace(Visitor* visitor) { visitor->trace(propertyData); }
+
+    WillBeHeapVector<CSSPropertySourceData> propertyData;
 };
 
 struct CSSRuleSourceData;
-typedef Vector<RefPtr<CSSRuleSourceData> > RuleSourceDataList;
-typedef Vector<SourceRange> SelectorRangeList;
+typedef WillBeHeapVector<RefPtrWillBeMember<CSSRuleSourceData> > RuleSourceDataList;
+typedef WillBeHeapVector<SourceRange> SelectorRangeList;
 
-struct CSSRuleSourceData : public RefCounted<CSSRuleSourceData> {
+struct CSSRuleSourceData : public RefCountedWillBeGarbageCollected<CSSRuleSourceData> {
     enum Type {
         UNKNOWN_RULE,
         STYLE_RULE,
@@ -99,14 +104,14 @@ struct CSSRuleSourceData : public RefCounted<CSSRuleSourceData> {
         FILTER_RULE
     };
 
-    static PassRefPtr<CSSRuleSourceData> create(Type type)
+    static PassRefPtrWillBeRawPtr<CSSRuleSourceData> create(Type type)
     {
-        return adoptRef(new CSSRuleSourceData(type));
+        return adoptRefWillBeNoop(new CSSRuleSourceData(type));
     }
 
-    static PassRefPtr<CSSRuleSourceData> createUnknown()
+    static PassRefPtrWillBeRawPtr<CSSRuleSourceData> createUnknown()
     {
-        return adoptRef(new CSSRuleSourceData(UNKNOWN_RULE));
+        return adoptRefWillBeNoop(new CSSRuleSourceData(UNKNOWN_RULE));
     }
 
     CSSRuleSourceData(Type type)
@@ -115,6 +120,8 @@ struct CSSRuleSourceData : public RefCounted<CSSRuleSourceData> {
         if (type == STYLE_RULE || type == FONT_FACE_RULE || type == PAGE_RULE)
             styleSourceData = CSSStyleSourceData::create();
     }
+
+    void trace(Visitor*);
 
     Type type;
 
@@ -128,12 +135,26 @@ struct CSSRuleSourceData : public RefCounted<CSSRuleSourceData> {
     SelectorRangeList selectorRanges;
 
     // Only for CSSStyleRules, CSSFontFaceRules, and CSSPageRules.
-    RefPtr<CSSStyleSourceData> styleSourceData;
+    RefPtrWillBeMember<CSSStyleSourceData> styleSourceData;
 
     // Only for CSSMediaRules.
     RuleSourceDataList childRules;
 };
 
 } // namespace WebCore
+
+namespace WTF {
+
+template <> struct VectorTraits<WebCore::SourceRange> : VectorTraitsBase<WebCore::SourceRange> {
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <> struct VectorTraits<WebCore::CSSPropertySourceData> : VectorTraitsBase<WebCore::CSSPropertySourceData> {
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+}
 
 #endif // CSSPropertySourceData_h
