@@ -497,7 +497,7 @@ MojoResult CoreImpl::MapBuffer(MojoHandle buffer_handle,
   if (!VerifyUserPointer<void*>(buffer, 1))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  scoped_ptr<RawSharedBuffer::Mapping> mapping;
+  scoped_ptr<RawSharedBufferMapping> mapping;
   MojoResult result = dispatcher->MapBuffer(offset, num_bytes, flags, &mapping);
   if (result != MOJO_RESULT_OK)
     return result;

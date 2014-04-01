@@ -30,13 +30,6 @@ COMPILE_ASSERT(sizeof(off_t) <= sizeof(uint64_t), off_t_too_big);
 namespace mojo {
 namespace system {
 
-// RawSharedBuffer::Mapping ----------------------------------------------------
-
-void RawSharedBuffer::Mapping::Unmap() {
-  int result = munmap(real_base_, real_length_);
-  PLOG_IF(ERROR, result != 0) << "munmap";
-}
-
 // RawSharedBuffer -------------------------------------------------------------
 
 bool RawSharedBuffer::InitNoLock() {
@@ -89,7 +82,7 @@ bool RawSharedBuffer::InitNoLock() {
   return true;
 }
 
-scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::MapImplNoLock(
+scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImplNoLock(
     size_t offset,
     size_t length) {
   lock_.AssertAcquired();
@@ -109,11 +102,19 @@ scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::MapImplNoLock(
   // return null either.
   if (real_base == MAP_FAILED || !real_base) {
     PLOG(ERROR) << "mmap";
-    return scoped_ptr<Mapping>();
+    return scoped_ptr<RawSharedBufferMapping>();
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
-  return make_scoped_ptr(new Mapping(base, length, real_base, real_length));
+  return make_scoped_ptr(
+      new RawSharedBufferMapping(base, length, real_base, real_length));
+}
+
+// RawSharedBufferMapping ------------------------------------------------------
+
+void RawSharedBufferMapping::Unmap() {
+  int result = munmap(real_base_, real_length_);
+  PLOG_IF(ERROR, result != 0) << "munmap";
 }
 
 }  // namespace system

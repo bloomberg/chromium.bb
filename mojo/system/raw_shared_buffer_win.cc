@@ -16,13 +16,6 @@
 namespace mojo {
 namespace system {
 
-// RawSharedBuffer::Mapping ----------------------------------------------------
-
-void RawSharedBuffer::Mapping::Unmap() {
-  BOOL result = UnmapViewOfFile(real_base_);
-  PLOG_IF(ERROR, !result) << "UnmapViewOfFile";
-}
-
 // RawSharedBuffer -------------------------------------------------------------
 
 bool RawSharedBuffer::InitNoLock() {
@@ -51,7 +44,7 @@ bool RawSharedBuffer::InitNoLock() {
   return true;
 }
 
-scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::MapImplNoLock(
+scoped_ptr<RawSharedBufferMapping> RawSharedBuffer::MapImplNoLock(
     size_t offset,
     size_t length) {
   lock_.AssertAcquired();
@@ -70,11 +63,19 @@ scoped_ptr<RawSharedBuffer::Mapping> RawSharedBuffer::MapImplNoLock(
       static_cast<DWORD>(real_offset), real_length);
   if (!real_base) {
     PLOG(ERROR) << "MapViewOfFile";
-    return scoped_ptr<Mapping>();
+    return scoped_ptr<RawSharedBufferMapping>();
   }
 
   void* base = static_cast<char*>(real_base) + offset_rounding;
-  return make_scoped_ptr(new Mapping(base, length, real_base, real_length));
+  return make_scoped_ptr(
+      new RawSharedBufferMapping(base, length, real_base, real_length));
+}
+
+// RawSharedBufferMapping ------------------------------------------------------
+
+void RawSharedBufferMapping::Unmap() {
+  BOOL result = UnmapViewOfFile(real_base_);
+  PLOG_IF(ERROR, !result) << "UnmapViewOfFile";
 }
 
 }  // namespace system

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/memory.h"
+#include "mojo/system/raw_shared_buffer.h"
 
 namespace mojo {
 namespace system {
@@ -106,7 +107,7 @@ MojoResult SharedBufferDispatcher::MapBufferImplNoLock(
     uint64_t offset,
     uint64_t num_bytes,
     MojoMapBufferFlags flags,
-    scoped_ptr<RawSharedBuffer::Mapping>* mapping) {
+    scoped_ptr<RawSharedBufferMapping>* mapping) {
   DCHECK(shared_buffer_);
 
   if (offset > static_cast<uint64_t>(std::numeric_limits<size_t>::max()))

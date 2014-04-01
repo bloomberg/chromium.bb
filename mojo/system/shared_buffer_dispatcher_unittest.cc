@@ -101,7 +101,7 @@ TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
   EXPECT_EQ(Dispatcher::kTypeSharedBuffer, dispatcher->GetType());
 
   // Make a couple of mappings.
-  scoped_ptr<RawSharedBuffer::Mapping> mapping1;
+  scoped_ptr<RawSharedBufferMapping> mapping1;
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher->MapBuffer(0, 100, MOJO_MAP_BUFFER_FLAG_NONE,
                                   &mapping1));
@@ -111,7 +111,7 @@ TEST(SharedBufferDispatcherTest, CreateAndMapBuffer) {
   // Write something.
   static_cast<char*>(mapping1->base())[50] = 'x';
 
-  scoped_ptr<RawSharedBuffer::Mapping> mapping2;
+  scoped_ptr<RawSharedBufferMapping> mapping2;
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher->MapBuffer(50, 50, MOJO_MAP_BUFFER_FLAG_NONE,
                                   &mapping2));
@@ -140,7 +140,7 @@ TEST(SharedBufferDispatcher, DuplicateBufferHandle) {
                                            &dispatcher1));
 
   // Map and write something.
-  scoped_ptr<RawSharedBuffer::Mapping> mapping;
+  scoped_ptr<RawSharedBufferMapping> mapping;
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher1->MapBuffer(0, 100, MOJO_MAP_BUFFER_FLAG_NONE,
                                    &mapping));
@@ -198,7 +198,7 @@ TEST(SharedBufferDispatcherTest, MapBufferInvalidArguments) {
             SharedBufferDispatcher::Create(validated_options, 100,
                                            &dispatcher));
 
-  scoped_ptr<RawSharedBuffer::Mapping> mapping;
+  scoped_ptr<RawSharedBufferMapping> mapping;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             dispatcher->MapBuffer(0, 101, MOJO_MAP_BUFFER_FLAG_NONE, &mapping));
   EXPECT_FALSE(mapping);

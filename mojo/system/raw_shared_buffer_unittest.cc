@@ -28,7 +28,7 @@ TEST(RawSharedBufferTest, Basic) {
   // Map it all, scribble some stuff, and then unmap it.
   {
     EXPECT_TRUE(buffer->IsValidMap(0, kNumBytes));
-    scoped_ptr<RawSharedBuffer::Mapping> mapping(buffer->Map(0, kNumBytes));
+    scoped_ptr<RawSharedBufferMapping> mapping(buffer->Map(0, kNumBytes));
     ASSERT_TRUE(mapping);
     ASSERT_TRUE(mapping->base());
     int* stuff = static_cast<int*>(mapping->base());
@@ -43,7 +43,7 @@ TEST(RawSharedBufferTest, Basic) {
   {
     ASSERT_TRUE(buffer->IsValidMap(0, kNumBytes));
     // Use |MapNoCheck()| this time.
-    scoped_ptr<RawSharedBuffer::Mapping> mapping1(
+    scoped_ptr<RawSharedBufferMapping> mapping1(
         buffer->MapNoCheck(0, kNumBytes));
     ASSERT_TRUE(mapping1);
     ASSERT_TRUE(mapping1->base());
@@ -51,7 +51,7 @@ TEST(RawSharedBufferTest, Basic) {
     for (size_t i = 0; i < kNumInts; i++)
       EXPECT_EQ(static_cast<int>(i) + kFudge, stuff1[i]) << i;
 
-    scoped_ptr<RawSharedBuffer::Mapping> mapping2(
+    scoped_ptr<RawSharedBufferMapping> mapping2(
         buffer->Map((kNumInts / 2) * sizeof(int), 2 * sizeof(int)));
     ASSERT_TRUE(mapping2);
     ASSERT_TRUE(mapping2->base());
@@ -75,7 +75,7 @@ TEST(RawSharedBufferTest, Basic) {
   // it to be.
   {
     EXPECT_TRUE(buffer->IsValidMap(sizeof(int), kNumBytes - sizeof(int)));
-    scoped_ptr<RawSharedBuffer::Mapping> mapping(
+    scoped_ptr<RawSharedBufferMapping> mapping(
         buffer->Map(sizeof(int), kNumBytes - sizeof(int)));
     ASSERT_TRUE(mapping);
     ASSERT_TRUE(mapping->base());
@@ -140,8 +140,8 @@ TEST(RawSharedBufferTest, TooBig) {
 // using the address as the key for unmapping.
 TEST(RawSharedBufferTest, MappingsDistinct) {
   scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));
-  scoped_ptr<RawSharedBuffer::Mapping> mapping1(buffer->Map(0, 100));
-  scoped_ptr<RawSharedBuffer::Mapping> mapping2(buffer->Map(0, 100));
+  scoped_ptr<RawSharedBufferMapping> mapping1(buffer->Map(0, 100));
+  scoped_ptr<RawSharedBufferMapping> mapping2(buffer->Map(0, 100));
   EXPECT_NE(mapping1->base(), mapping2->base());
 }
 
@@ -149,7 +149,7 @@ TEST(RawSharedBufferTest, BufferZeroInitialized) {
   static const size_t kSizes[] = { 10, 100, 1000, 10000, 100000 };
   for (size_t i = 0; i < arraysize(kSizes); i++) {
     scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(kSizes[i]));
-    scoped_ptr<RawSharedBuffer::Mapping> mapping(buffer->Map(0, kSizes[i]));
+    scoped_ptr<RawSharedBufferMapping> mapping(buffer->Map(0, kSizes[i]));
     for (size_t j = 0; j < kSizes[i]; j++) {
       // "Assert" instead of "expect" so we don't spam the output with thousands
       // of failures if we fail.
@@ -160,8 +160,8 @@ TEST(RawSharedBufferTest, BufferZeroInitialized) {
 }
 
 TEST(RawSharedBufferTest, MappingsOutliveBuffer) {
-  scoped_ptr<RawSharedBuffer::Mapping> mapping1;
-  scoped_ptr<RawSharedBuffer::Mapping> mapping2;
+  scoped_ptr<RawSharedBufferMapping> mapping1;
+  scoped_ptr<RawSharedBufferMapping> mapping2;
 
   {
     scoped_refptr<RawSharedBuffer> buffer(RawSharedBuffer::Create(100));

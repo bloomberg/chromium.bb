@@ -191,7 +191,7 @@ MojoResult Dispatcher::MapBuffer(
     uint64_t offset,
     uint64_t num_bytes,
     MojoMapBufferFlags flags,
-    scoped_ptr<RawSharedBuffer::Mapping>* mapping) {
+    scoped_ptr<RawSharedBufferMapping>* mapping) {
   base::AutoLock locker(lock_);
   if (is_closed_)
     return MOJO_RESULT_INVALID_ARGUMENT;
@@ -327,7 +327,7 @@ MojoResult Dispatcher::MapBufferImplNoLock(
     uint64_t /*offset*/,
     uint64_t /*num_bytes*/,
     MojoMapBufferFlags /*flags*/,
-    scoped_ptr<RawSharedBuffer::Mapping>* /*mapping*/) {
+    scoped_ptr<RawSharedBufferMapping>* /*mapping*/) {
   lock_.AssertAcquired();
   DCHECK(!is_closed_);
   // By default, not supported. Only needed for buffer dispatchers.

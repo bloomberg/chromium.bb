@@ -17,12 +17,14 @@
 namespace mojo {
 namespace system {
 
+class RawSharedBufferMapping;
+
 // |RawSharedBuffer| is a thread-safe, ref-counted wrapper around OS-specific
 // shared memory. It has the following features:
 //   - A |RawSharedBuffer| simply represents a piece of shared memory that *may*
 //     be mapped and *may* be shared to another process.
 //   - A single |RawSharedBuffer| may be mapped multiple times. The lifetime of
-//     the mapping (owned by |RawSharedBuffer::Mapping|) is separate from the
+//     the mapping (owned by |RawSharedBufferMapping|) is separate from the
 //     lifetime of the |RawSharedBuffer|.
 //   - Sizes/offsets (of the shared memory and mappings) are arbitrary, and not
 //     restricted by page size. However, more memory may actually be mapped than
@@ -35,34 +37,6 @@ namespace system {
 class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
     : public base::RefCountedThreadSafe<RawSharedBuffer> {
  public:
-  // A mapping of a |RawSharedBuffer| (compararable to a "file view" in
-  // Windows); see above. Created by |RawSharedBuffer::Map()|. Automatically
-  // unmaps memory on destruction.
-  //
-  // Mappings are NOT thread-safe.
-  class MOJO_SYSTEM_IMPL_EXPORT Mapping {
-   public:
-    ~Mapping() { Unmap(); }
-
-    void* base() const { return base_; }
-    size_t length() const { return length_; }
-
-   private:
-    friend class RawSharedBuffer;
-
-    Mapping(void* base, size_t length, void* real_base, size_t real_length)
-        : base_(base), length_(length),
-          real_base_(real_base), real_length_(real_length) {}
-    void Unmap();
-
-    void* const base_;
-    const size_t length_;
-
-    void* const real_base_;
-    const size_t real_length_;
-
-    DISALLOW_COPY_AND_ASSIGN(Mapping);
-  };
 
   // Creates a shared buffer of size |num_bytes| bytes (initially zero-filled).
   // |num_bytes| must be nonzero. Returns null on failure.
@@ -71,14 +45,14 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
   // Maps (some) of the shared buffer into memory; [|offset|, |offset + length|]
   // must be contained in [0, |num_bytes|], and |length| must be at least 1.
   // Returns null on failure.
-  scoped_ptr<Mapping> Map(size_t offset, size_t length);
+  scoped_ptr<RawSharedBufferMapping> Map(size_t offset, size_t length);
 
   // Checks if |offset| and |length| are valid arguments.
   bool IsValidMap(size_t offset, size_t length);
 
   // Like |Map()|, but doesn't check its arguments (which should have been
   // preflighted using |IsValidMap()|).
-  scoped_ptr<Mapping> MapNoCheck(size_t offset, size_t length);
+  scoped_ptr<RawSharedBufferMapping> MapNoCheck(size_t offset, size_t length);
 
   size_t num_bytes() const { return num_bytes_; }
 
@@ -94,7 +68,8 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
 
   // The platform-dependent part of |Map()|; doesn't check arguments. Called
   // under |lock_|.
-  scoped_ptr<Mapping> MapImplNoLock(size_t offset, size_t length);
+  scoped_ptr<RawSharedBufferMapping> MapImplNoLock(size_t offset,
+                                                   size_t length);
 
   const size_t num_bytes_;
 
@@ -102,6 +77,41 @@ class MOJO_SYSTEM_IMPL_EXPORT RawSharedBuffer
   embedder::ScopedPlatformHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(RawSharedBuffer);
+};
+
+// A mapping of a |RawSharedBuffer| (compararable to a "file view" in Windows);
+// see above. Created by |RawSharedBuffer::Map()|. Automatically unmaps memory
+// on destruction.
+//
+// Mappings are NOT thread-safe.
+//
+// Note: This is an entirely separate class (instead of
+// |RawSharedBuffer::Mapping|) so that it can be forward-declared.
+class MOJO_SYSTEM_IMPL_EXPORT RawSharedBufferMapping {
+ public:
+  ~RawSharedBufferMapping() { Unmap(); }
+
+  void* base() const { return base_; }
+  size_t length() const { return length_; }
+
+ private:
+  friend class RawSharedBuffer;
+
+  RawSharedBufferMapping(void* base,
+                         size_t length,
+                         void* real_base,
+                         size_t real_length)
+      : base_(base), length_(length),
+        real_base_(real_base), real_length_(real_length) {}
+  void Unmap();
+
+  void* const base_;
+  const size_t length_;
+
+  void* const real_base_;
+  const size_t real_length_;
+
+  DISALLOW_COPY_AND_ASSIGN(RawSharedBufferMapping);
 };
 
 }  // namespace system

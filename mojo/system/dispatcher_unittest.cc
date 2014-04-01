@@ -9,6 +9,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
+#include "mojo/system/raw_shared_buffer.h"
 #include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -183,7 +184,7 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       }
       case MAP_BUFFER: {
-        scoped_ptr<RawSharedBuffer::Mapping> unused;
+        scoped_ptr<RawSharedBufferMapping> unused;
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
                   dispatcher_->MapBuffer(0u, 0u, MOJO_MAP_BUFFER_FLAG_NONE,
                                          &unused));

@@ -51,7 +51,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher : public SimpleDispatcher {
       uint64_t offset,
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
-      scoped_ptr<RawSharedBuffer::Mapping>* mapping) OVERRIDE;
+      scoped_ptr<RawSharedBufferMapping>* mapping) OVERRIDE;
 
   // |SimpleDispatcher| methods:
   virtual MojoWaitFlags SatisfiedFlagsNoLock() const OVERRIDE;
