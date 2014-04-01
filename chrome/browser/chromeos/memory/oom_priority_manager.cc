@@ -623,7 +623,7 @@ void OomPriorityManager::AdjustOomPrioritiesOnFileThread(
     if (iterator->renderer_handle == 0)
       continue;
 
-    if (already_seen.insert(iterator->renderer_handle).second)
+    if (!already_seen.insert(iterator->renderer_handle).second)
       continue;
 
     process_handles.push_back(iterator->renderer_handle);
