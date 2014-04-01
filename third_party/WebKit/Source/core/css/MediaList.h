@@ -46,6 +46,7 @@ public:
         return adoptRefWillBeNoop(new MediaQuerySet());
     }
     static PassRefPtrWillBeRawPtr<MediaQuerySet> create(const String& mediaString);
+    static PassRefPtrWillBeRawPtr<MediaQuerySet> createOffMainThread(const String& mediaString);
 
     bool set(const String&);
     bool add(const String&);

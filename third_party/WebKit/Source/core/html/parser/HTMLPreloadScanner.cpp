@@ -95,7 +95,7 @@ static String initiatorFor(const StringImpl* tagImpl)
 
 static bool mediaAttributeMatches(const MediaValues& mediaValues, const String& attributeValue)
 {
-    RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::create(attributeValue);
+    RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::createOffMainThread(attributeValue);
     MediaQueryEvaluator mediaQueryEvaluator("screen", mediaValues);
     return mediaQueryEvaluator.eval(mediaQueries.get());
 }

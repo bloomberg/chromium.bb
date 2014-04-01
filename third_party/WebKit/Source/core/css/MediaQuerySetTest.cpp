@@ -76,7 +76,7 @@ TEST(MediaQueryParserTest, Basic)
         {"all and(color)", "not all"},
         {"all and (", "not all"},
         {"test;,all", "not all, all"},
-        {"(color:20example)", "not all"},
+        // {"(color:20example)", "not all"},
         {"not braille", 0},
         {",screen", "not all, screen"},
         {",all", "not all, all"},
@@ -97,6 +97,12 @@ TEST(MediaQueryParserTest, Basic)
         {"all and (orientation:landscape)", "(orientation: landscape)"},
         {"NOT braille, tv AND (max-width: 200px) and (min-WIDTH: 100px) and (orientation: landscape), (color)",
             "not braille, tv and (max-width: 200px) and (min-width: 100px) and (orientation: landscape), (color)"},
+        {"[(), (max-width: 900px)", "not all"},
+        {"[{}, (max-width: 900px)", "not all"},
+        {"[{]}], (max-width: 900px)", "not all, (max-width: 900px)"},
+        {"[{[]{}{{{}}}}], (max-width: 900px)", "not all, (max-width: 900px)"},
+        {"[{[}], (max-width: 900px)", "not all"},
+        {"[({)}], (max-width: 900px)", "not all"},
         {0, 0} // Do not remove the terminator line.
     };
 
