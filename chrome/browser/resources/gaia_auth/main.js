@@ -61,7 +61,11 @@ Authenticator.prototype = {
     this.initialFrameUrlWithoutParams_ = stripParams(this.initialFrameUrl_);
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad_.bind(this));
-    document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
+    if (!this.desktopMode_) {
+      // SAML is always enabled in desktop mode, thus no need to listen for
+      // enableSAML event.
+      document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
+    }
   },
 
   isGaiaMessage_: function(msg) {
@@ -124,9 +128,11 @@ Authenticator.prototype = {
         isConstrainedWindow: this.isConstrainedWindow_
       });
       this.supportChannel_.registerMessage(
-        'switchToFullTab', this.switchToFullTab_.bind(this));
+          'switchToFullTab', this.switchToFullTab_.bind(this));
       this.supportChannel_.registerMessage(
-        'completeLogin', this.completeLogin_.bind(this));
+          'completeLogin', this.completeLogin_.bind(this));
+
+      this.onEnableSAML_();
     }.bind(this));
 
     window.setTimeout(function() {
@@ -169,7 +175,7 @@ Authenticator.prototype = {
     var msg = {
       'method': 'completeLogin',
       'email': (opt_extraMsg && opt_extraMsg.email) || this.email_,
-      'password': this.password_,
+      'password': (opt_extraMsg && opt_extraMsg.password) || this.password_,
       'usingSAML': this.isSAMLFlow_,
       'chooseWhatToSync': this.chooseWhatToSync_ || false,
       'skipForNow': opt_extraMsg && opt_extraMsg.skipForNow,
@@ -181,7 +187,8 @@ Authenticator.prototype = {
   },
 
   /**
-   * Invoked when 'enableSAML' event is received to initialize SAML support.
+   * Invoked when 'enableSAML' event is received to initialize SAML support on
+   * ChromeOS, or when initDesktopChannel_ is called on desktop.
    */
   onEnableSAML_: function() {
     this.isSAMLEnabled_ = true;
@@ -332,9 +339,6 @@ Authenticator.prototype = {
     } else if (msg.method == 'verifyConfirmedPassword' &&
                this.isParentMessage_(e)) {
       this.onVerifyConfirmedPassword_(msg.password);
-    } else if (msg.method == 'navigate' &&
-               this.isParentMessage_(e)) {
-      $('gaia-frame').src = msg.src;
     } else if (msg.method == 'redirectToSignin' &&
                this.isParentMessage_(e)) {
       $('gaia-frame').src = this.constructInitialFrameUrl_();

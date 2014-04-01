@@ -31,7 +31,6 @@
   ],
   "permissions": [
     "<all_urls>",
-    "background",
     "webRequest",
     "webRequestBlocking"
   ]
