@@ -1055,9 +1055,9 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     system::InputDeviceSettings::Get()->SetTapToClick(
         prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
   }
-  system::InputDeviceSettings::Get()->SetNaturalScroll(
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNaturalScrollDefault));
+
+  ui::SetNaturalScroll(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNaturalScrollDefault));
 
   gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
 

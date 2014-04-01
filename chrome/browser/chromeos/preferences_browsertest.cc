@@ -89,6 +89,8 @@ class PreferencesTest : public LoginManagerTest {
     EXPECT_EQ(prefs->GetBoolean(prefs::kEnableTouchpadThreeFingerClick),
               input_settings_->current_touchpad_settings()
                   .GetThreeFingerClick());
+    EXPECT_EQ(prefs->GetBoolean(prefs::kNaturalScroll),
+              ui::IsNaturalScrollEnabled());
     EXPECT_EQ(prefs->GetInteger(prefs::kMouseSensitivity),
               input_settings_->current_mouse_settings().GetSensitivity());
     EXPECT_EQ(prefs->GetInteger(prefs::kTouchpadSensitivity),

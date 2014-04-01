@@ -46,12 +46,6 @@ void FakeInputDeviceSettings::SetTapDragging(bool enabled) {
   UpdateTouchpadSettings(settings);
 }
 
-void FakeInputDeviceSettings::SetNaturalScroll(bool enabled) {
-  TouchpadSettings settings;
-  settings.SetNaturalScroll(enabled);
-  UpdateTouchpadSettings(settings);
-}
-
 void FakeInputDeviceSettings::MouseExists(
     const DeviceExistsCallback& callback) {
   callback.Run(false);
