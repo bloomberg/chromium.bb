@@ -1349,6 +1349,9 @@
     # Set to 1 to compile with the hole punching for the protected video.
     'video_hole%': 0,
 
+    # Set to 1 to compile with MSE support for MPEG2 TS
+    'enable_mpeg2ts_stream_parser%': 0,
+
     'conditions': [
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {

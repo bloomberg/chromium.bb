@@ -875,6 +875,13 @@
             'formats/mpeg/mpeg_audio_stream_parser_base.cc',
             'formats/mpeg/mpeg_audio_stream_parser_base.h',
           ],
+          'conditions': [
+            ['enable_mpeg2ts_stream_parser==1', {
+              'defines': [
+                'ENABLE_MPEG2TS_STREAM_PARSER',
+              ],
+            }],
+          ],
         }],
         ['toolkit_uses_gtk==1', {
           'dependencies': [
