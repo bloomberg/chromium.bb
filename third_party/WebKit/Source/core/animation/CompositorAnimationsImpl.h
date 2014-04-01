@@ -41,8 +41,7 @@ typedef KeyframeEffectModel::PropertySpecificKeyframeVector KeyframeVector;
 class CompositorAnimationsImpl {
 private:
     struct CompositorTiming {
-        bool reverse;
-        bool alternate;
+        Timing::PlaybackDirection direction;
         double scaledDuration;
         double scaledTimeOffset;
         int adjustedIterationCount;
@@ -52,7 +51,7 @@ private:
 
     static void getAnimationOnCompositor(const Timing&, const KeyframeEffectModel&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
-    static void addKeyframesToCurve(blink::WebAnimationCurve&, const KeyframeVector&, bool reverse);
+    static void addKeyframesToCurve(blink::WebAnimationCurve&, const KeyframeVector&);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;

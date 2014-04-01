@@ -33,6 +33,8 @@
 #include "wtf/Forward.h"
 #endif
 
+#define WEB_ANIMATION_SUPPORTS_FULL_DIRECTION 1
+
 namespace WebCore {
 class CCActiveAnimation;
 }
@@ -48,6 +50,13 @@ public:
         TargetPropertyTransform = 0,
         TargetPropertyOpacity,
         TargetPropertyFilter
+    };
+
+    enum Direction {
+        DirectionNormal = 0,
+        DirectionReverse,
+        DirectionAlternate,
+        DirectionAlternateReverse
     };
 
     virtual ~WebAnimation() { }
@@ -70,8 +79,8 @@ public:
     virtual void setTimeOffset(double monotonicTime) = 0;
 
     // If alternatesDirection is true, on odd numbered iterations we reverse the curve.
-    virtual bool alternatesDirection() const = 0;
-    virtual void setAlternatesDirection(bool) = 0;
+    virtual Direction direction() const = 0;
+    virtual void setDirection(Direction) = 0;
 };
 
 } // namespace blink

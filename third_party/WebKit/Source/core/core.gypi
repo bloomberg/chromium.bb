@@ -3279,7 +3279,6 @@
             'animation/AnimationTranslationUtilTest.cpp',
             'animation/CompositorAnimationsTest.cpp',
             'animation/CompositorAnimationsTestHelper.h',
-            'animation/CompositorAnimationsTimingFunctionReverserTest.cpp',
             'animation/DocumentTimelineTest.cpp',
             'animation/InterpolableValueTest.cpp',
             'animation/InterpolationEffectTest.cpp',
