@@ -58,7 +58,10 @@ public:
 
     int repeat() const { return m_repeat; }
 
-    virtual void trace(Visitor* visitor) { }
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        Event::trace(visitor);
+    }
 
 protected:
     RepeatEvent(const AtomicString& type, bool canBubble, bool cancelable, int repeat = -1)
