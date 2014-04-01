@@ -57,11 +57,6 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
     CloudPolicyRefreshScheduler* scheduler =
         new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_);
     scheduler->SetRefreshDelay(kPolicyRefreshRate);
-    // If the store has policy, run the wait-for-invalidations timeout task.
-    if (store_.has_policy()) {
-      EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
-      task_runner_->RunPendingTasks();
-    }
     return scheduler;
   }
 
@@ -219,22 +214,13 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsAvailable) {
       new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
   scheduler->SetRefreshDelay(kPolicyRefreshRate);
 
-  // The scheduler is currently waiting for the invalidations service to
-  // initialize.
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
-
-  // Signal that invalidations are available. The scheduler is currently
-  // waiting for any pending invalidations to be received.
-  scheduler->SetInvalidationServiceAvailability(true);
+  // The scheduler has scheduled refreshes at the initial refresh rate.
   EXPECT_EQ(2u, task_runner_->GetPendingTasks().size());
 
-  // Run the invalidation service timeout task.
-  EXPECT_CALL(client_, FetchPolicy()).Times(0);
-  task_runner_->RunPendingTasks();
-  Mock::VerifyAndClearExpectations(&client_);
+  // Signal that invalidations are available.
+  scheduler->SetInvalidationServiceAvailability(true);
+  EXPECT_EQ(3u, task_runner_->GetPendingTasks().size());
 
-  // The initial refresh is scheduled.
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
   CheckInitialRefresh(true);
 
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
@@ -255,21 +241,12 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsNotAvailable) {
       new CloudPolicyRefreshScheduler(&client_, &store_, task_runner_));
   scheduler->SetRefreshDelay(kPolicyRefreshRate);
 
-  // The scheduler is currently waiting for the invalidations service to
-  // initialize.
-  EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
-
-  // Signal that invalidations are not available. The scheduler will keep
-  // waiting for us.
+  // Signal that invalidations are not available. The scheduler will not
+  // schedule refreshes since the available state is not changed.
   for (int i = 0; i < 10; ++i) {
     scheduler->SetInvalidationServiceAvailability(false);
-    EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
+    EXPECT_EQ(2u, task_runner_->GetPendingTasks().size());
   }
-
-  // Run the timeout task.
-  EXPECT_CALL(client_, FetchPolicy()).Times(0);
-  task_runner_->RunPendingTasks();
-  Mock::VerifyAndClearExpectations(&client_);
 
   // This scheduled the initial refresh.
   CheckInitialRefresh(false);
@@ -301,21 +278,13 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsOffAndOn) {
   client_.NotifyPolicyFetched();
 
   // The next refresh has been scheduled using a lower refresh rate.
-  // Flush that task.
   CheckTiming(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs);
-  EXPECT_CALL(client_, FetchPolicy()).Times(1);
-  task_runner_->RunPendingTasks();
-  Mock::VerifyAndClearExpectations(&client_);
 
   // If the service goes down and comes back up before the timeout then a
   // refresh is rescheduled at the lower rate again; after executing all
   // pending tasks only 1 fetch is performed.
-  EXPECT_CALL(client_, FetchPolicy()).Times(0);
   scheduler->SetInvalidationServiceAvailability(false);
   scheduler->SetInvalidationServiceAvailability(true);
-  // Run the invalidation service timeout task.
-  task_runner_->RunPendingTasks();
-  Mock::VerifyAndClearExpectations(&client_);
   // The next refresh has been scheduled using a lower refresh rate.
   EXPECT_CALL(client_, FetchPolicy()).Times(1);
   CheckTiming(CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs);
@@ -343,12 +312,8 @@ TEST_F(CloudPolicyRefreshSchedulerTest, InvalidationsDisconnected) {
   Mock::VerifyAndClearExpectations(&client_);
 
   // If the service goes down then the refresh scheduler falls back on the
-  // default polling rate after a timeout.
-  EXPECT_CALL(client_, FetchPolicy()).Times(0);
+  // default polling rate.
   scheduler->SetInvalidationServiceAvailability(false);
-  task_runner_->RunPendingTasks();
-  Mock::VerifyAndClearExpectations(&client_);
-  // The next refresh has been scheduled at the normal rate.
   CheckTiming(kPolicyRefreshRate);
 }
 
