@@ -41,10 +41,10 @@ StyleInvalidator::InvalidationList& StyleInvalidator::ensurePendingInvalidationL
 
 void StyleInvalidator::clearInvalidation(Node& node)
 {
+    if (node.isElementNode() && node.needsStyleInvalidation())
+        m_pendingInvalidationMap.remove(toElement(&node));
     node.clearChildNeedsStyleInvalidation();
     node.clearNeedsStyleInvalidation();
-    if (node.isElementNode())
-        m_pendingInvalidationMap.remove(toElement(&node));
 }
 
 void StyleInvalidator::clearPendingInvalidations()
