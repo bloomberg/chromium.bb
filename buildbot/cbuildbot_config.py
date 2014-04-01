@@ -1757,7 +1757,6 @@ internal_brillo_paladin.add_config('duck-paladin',
 internal_brillo_paladin.add_config('gizmo-paladin',
   boards=['gizmo'],
   paladin_builder_name='gizmo paladin',
-  important=False,
   trybot_list=True,
 )
 
