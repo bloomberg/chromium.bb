@@ -11,6 +11,10 @@
 
 class JavaScriptAppModalDialog;
 
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+class JavascriptAppModalEventBlockerX11;
+#endif
+
 namespace views {
 class MessageBoxView;
 }
@@ -54,6 +58,11 @@ class JavaScriptAppModalDialogViews : public NativeAppModalDialog,
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  // Blocks events to other browser windows while the dialog is open.
+  scoped_ptr<JavascriptAppModalEventBlockerX11> event_blocker_x11_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(JavaScriptAppModalDialogViews);
 };
