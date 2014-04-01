@@ -32,6 +32,12 @@ OptInManager.HOTWORD_EXTENSION_ID_ = 'bepbmhgboaologfdajaanbcjmnhjmhfn';
 
 
 /**
+ * @const {string}
+ * @private
+ */
+OptInManager.RESET_HOTWORD_PREF_ = 'resetHotwordPref';
+
+/**
  * Commands sent from this helper extension to the hotword extension.
  * @enum {string}
  */
@@ -111,35 +117,6 @@ OptInManager.prototype.injectTab_ = function(tab, hotwordStatus) {
 
 
 /**
- * Handles changes in the enabled state of the hotword feature in the
- * Chrome settings page.
- * @private
- */
-OptInManager.prototype.handleEnabledChange_ = function() {
-  if (chrome.hotwordPrivate && chrome.hotwordPrivate.getStatus)
-    chrome.hotwordPrivate.getStatus(this.updateEnabled_.bind(this));
-};
-
-
-/**
- * Sends a message to the hotword extension to update it about Chrome settings.
- * @param {HotwordStatus} hotwordStatus Status of the hotword extension.
- * @private
- */
-OptInManager.prototype.updateEnabled_ = function(hotwordStatus) {
-  if (hotwordStatus.enabled) {
-    chrome.runtime.sendMessage(
-        OptInManager.HOTWORD_EXTENSION_ID_,
-        {'cmd': OptInManager.CommandFromHelper.ENABLE});
-  } else {
-    chrome.runtime.sendMessage(
-        OptInManager.HOTWORD_EXTENSION_ID_,
-        {'cmd': OptInManager.CommandFromHelper.DISABLE});
-  }
-};
-
-
-/**
  * Handles messages from the helper content script.
  * @param {*} request Message from the sender.
  * @param {MessageSender} sender Information about the sender.
@@ -185,6 +162,23 @@ OptInManager.prototype.handleMessage_ = function(
 
 
 /**
+ * Sets a flag to indicate that the hotword preference has been reset
+ * to disabled. See crbug.com/357845.
+ * @param {HotwordStatus} hotwordStatus Status of the hotword extension.
+ * @private
+ */
+OptInManager.prototype.resetHotwordPref_ = function(hotwordStatus) {
+  if (hotwordStatus.enabledSet &&
+      !localStorage.getItem(OptInManager.RESET_HOTWORD_PREF_) &&
+      chrome.hotwordPrivate && chrome.hotwordPrivate.setEnabled) {
+    chrome.hotwordPrivate.setEnabled(false);
+  }
+  localStorage.setItem(OptInManager.RESET_HOTWORD_PREF_, 'true');
+};
+
+
+
+/**
  * Determines if a URL is eligible for hotwording. For now, the
  * valid pages are the Google HP and SERP (this will include the NTP).
  * @param {string} url Url to check.
@@ -224,10 +218,10 @@ OptInManager.prototype.initialize = function() {
   chrome.tabs.onUpdated.addListener(this.handleUpdatedTab_.bind(this));
   chrome.runtime.onMessage.addListener(this.handleMessage_.bind(this));
 
-  if (chrome.hotwordPrivate && chrome.hotwordPrivate.onEnabledChanged) {
-    chrome.hotwordPrivate.onEnabledChanged.addListener(
-        this.handleEnabledChange_.bind(this));
-  }
+  // Reset the preference to deal with crbug.com/357845.
+  // TODO(rlp): remove this reset once we hit M36. See crbug.com/358392.
+  if (chrome.hotwordPrivate && chrome.hotwordPrivate.getStatus)
+    chrome.hotwordPrivate.getStatus(this.resetHotwordPref_.bind(this));
 };
 
 
