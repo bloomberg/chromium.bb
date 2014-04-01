@@ -97,7 +97,6 @@ private:
     virtual void cancelAnimations() OVERRIDE;
     virtual void setIsActive() OVERRIDE;
 
-    virtual void notifyPositionChanged(const FloatSize& delta) OVERRIDE;
     virtual void contentAreaWillPaint() const OVERRIDE;
     virtual void mouseEnteredContentArea() const OVERRIDE;
     virtual void mouseExitedContentArea() const OVERRIDE;

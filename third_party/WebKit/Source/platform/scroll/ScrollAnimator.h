@@ -104,7 +104,7 @@ public:
 protected:
     explicit ScrollAnimator(ScrollableArea*);
 
-    virtual void notifyPositionChanged(const FloatSize& delta);
+    virtual void notifyPositionChanged();
 
     ScrollableArea* m_scrollableArea;
     float m_currentPosX; // We avoid using a FloatPoint in order to reduce

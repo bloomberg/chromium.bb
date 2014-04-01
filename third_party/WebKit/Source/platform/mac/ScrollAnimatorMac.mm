@@ -705,7 +705,8 @@ void ScrollAnimatorMac::immediateScrollTo(const FloatPoint& newPosition)
 
     m_currentPosX = adjustedPosition.x();
     m_currentPosY = adjustedPosition.y();
-    notifyPositionChanged(delta);
+    notifyContentAreaScrolled(delta);
+    notifyPositionChanged();
 }
 
 bool ScrollAnimatorMac::isRubberBandInProgress() const
@@ -721,12 +722,6 @@ void ScrollAnimatorMac::immediateScrollToPointForScrollAnimation(const FloatPoin
 {
     ASSERT(m_scrollAnimationHelper);
     immediateScrollTo(newPosition);
-}
-
-void ScrollAnimatorMac::notifyPositionChanged(const FloatSize& delta)
-{
-    notifyContentAreaScrolled(delta);
-    ScrollAnimator::notifyPositionChanged(delta);
 }
 
 void ScrollAnimatorMac::contentAreaWillPaint() const
@@ -1141,7 +1136,8 @@ void ScrollAnimatorMac::immediateScrollBy(const FloatSize& delta)
 
     m_currentPosX = newPos.x();
     m_currentPosY = newPos.y();
-    notifyPositionChanged(adjustedDelta);
+    notifyContentAreaScrolled(adjustedDelta);
+    notifyPositionChanged();
 }
 
 void ScrollAnimatorMac::startSnapRubberbandTimer()
