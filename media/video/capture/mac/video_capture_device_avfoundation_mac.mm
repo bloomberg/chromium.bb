@@ -20,8 +20,9 @@
   // library is loaded and initialised, by the device monitoring.
   NSArray* devices = [AVCaptureDeviceGlue devices];
   for (CrAVCaptureDevice* device in devices) {
-    if ([device hasMediaType:AVFoundationGlue::AVMediaTypeVideo()] ||
-        [device hasMediaType:AVFoundationGlue::AVMediaTypeMuxed()]) {
+    if (([device hasMediaType:AVFoundationGlue::AVMediaTypeVideo()] ||
+         [device hasMediaType:AVFoundationGlue::AVMediaTypeMuxed()]) &&
+        ![device isSuspended]) {
       [deviceNames setObject:[device localizedName]
                       forKey:[device uniqueID]];
     }
