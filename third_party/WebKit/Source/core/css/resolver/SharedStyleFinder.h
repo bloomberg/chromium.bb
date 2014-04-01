@@ -36,6 +36,7 @@ class SpaceSplitString;
 class StyleResolver;
 
 class SharedStyleFinder {
+    STACK_ALLOCATED();
 public:
     // RuleSets are passed non-const as the act of matching against them can cause them
     // to be compacted. :(
@@ -72,8 +73,8 @@ private:
 
     bool m_elementAffectedByClassRules;
     const RuleFeatureSet& m_features;
-    RuleSet* m_siblingRuleSet;
-    RuleSet* m_uncommonAttributeRuleSet;
+    RawPtrWillBeMember<RuleSet> m_siblingRuleSet;
+    RawPtrWillBeMember<RuleSet> m_uncommonAttributeRuleSet;
     StyleResolver& m_styleResolver;
     const ElementResolveContext& m_context;
 };

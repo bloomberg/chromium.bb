@@ -34,6 +34,7 @@ class RenderStyle;
 
 // ElementResolveContext is immutable and serves as an input to the style resolve process.
 class ElementResolveContext {
+    STACK_ALLOCATED();
 public:
     ElementResolveContext()
         : m_element(0)
