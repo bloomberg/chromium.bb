@@ -283,6 +283,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
             && a.visitedLinkTextStrokeColor().resolve(a.color()) == b.visitedLinkTextStrokeColor().resolve(b.color());
     case CSSPropertyTransform:
         return a.transform() == b.transform();
+    case CSSPropertyTransformOrigin:
+        return a.transformOriginX() == b.transformOriginX() && a.transformOriginY() == b.transformOriginY() && a.transformOriginZ() == b.transformOriginZ();
     case CSSPropertyWebkitTransformOriginX:
         return a.transformOriginX() == b.transformOriginX();
     case CSSPropertyWebkitTransformOriginY:

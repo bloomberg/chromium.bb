@@ -318,6 +318,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitTextStrokeWidth,
     CSSPropertyTransform,
     CSSPropertyWebkitTransform,
+    CSSPropertyTransformOrigin,
     CSSPropertyWebkitTransformOrigin,
     CSSPropertyTransformStyle,
     CSSPropertyWebkitTransformStyle,
@@ -1495,6 +1496,7 @@ static bool isLayoutDependent(CSSPropertyID propertyID, PassRefPtr<RenderStyle> 
     case CSSPropertyWebkitPerspectiveOrigin:
     case CSSPropertyTransform:
     case CSSPropertyWebkitTransform:
+    case CSSPropertyTransformOrigin:
     case CSSPropertyWebkitTransformOrigin:
     case CSSPropertyWidth:
     case CSSPropertyWebkitFilter:
@@ -2558,6 +2560,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
         case CSSPropertyTransform:
         case CSSPropertyWebkitTransform:
             return computedTransform(renderer, *style);
+        case CSSPropertyTransformOrigin:
         case CSSPropertyWebkitTransformOrigin: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
             if (renderer) {
@@ -2771,7 +2774,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
 
         // FIXME: crbug.com/154772 Unimplemented css-transforms properties
         case CSSPropertyPerspectiveOrigin:
-        case CSSPropertyTransformOrigin:
             break;
 
         /* Unimplemented @font-face properties */

@@ -582,6 +582,66 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
         state.style()->setTextIndentLine(TextIndentFirstLine);
 }
 
+void StyleBuilderFunctions::applyInitialCSSPropertyTransformOrigin(StyleResolverState& state)
+{
+    applyInitialCSSPropertyWebkitTransformOriginX(state);
+    applyInitialCSSPropertyWebkitTransformOriginY(state);
+    applyInitialCSSPropertyWebkitTransformOriginZ(state);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyTransformOrigin(StyleResolverState& state)
+{
+    applyInheritCSSPropertyWebkitTransformOriginX(state);
+    applyInheritCSSPropertyWebkitTransformOriginY(state);
+    applyInheritCSSPropertyWebkitTransformOriginZ(state);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyTransformOrigin(StyleResolverState& state, CSSValue* value)
+{
+    CSSValueList* list = toCSSValueList(value);
+    ASSERT(list->length() == 3);
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(list->item(0));
+    if (primitiveValue->isValueID()) {
+        switch (primitiveValue->getValueID()) {
+        case CSSValueLeft:
+            state.style()->setTransformOriginX(Length(0, Percent));
+            break;
+        case CSSValueRight:
+            state.style()->setTransformOriginX(Length(100, Percent));
+            break;
+        case CSSValueCenter:
+            state.style()->setTransformOriginX(Length(50, Percent));
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    } else {
+        state.style()->setTransformOriginX(StyleBuilderConverter::convertLength(state, primitiveValue));
+    }
+
+    primitiveValue = toCSSPrimitiveValue(list->item(1));
+    if (primitiveValue->isValueID()) {
+        switch (primitiveValue->getValueID()) {
+        case CSSValueTop:
+            state.style()->setTransformOriginY(Length(0, Percent));
+            break;
+        case CSSValueBottom:
+            state.style()->setTransformOriginY(Length(100, Percent));
+            break;
+        case CSSValueCenter:
+            state.style()->setTransformOriginY(Length(50, Percent));
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+    } else {
+        state.style()->setTransformOriginY(StyleBuilderConverter::convertLength(state, primitiveValue));
+    }
+
+    primitiveValue = toCSSPrimitiveValue(list->item(2));
+    state.style()->setTransformOriginZ(StyleBuilderConverter::convertComputedLength<float>(state, primitiveValue));
+}
+
 void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())
@@ -1744,7 +1804,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
 
     // FIXME: crbug.com/154772 Unimplemented css-transforms properties
     case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyTransformOrigin:
         return;
     // These properties are aliased and we already applied the property on the prefixed version.
     case CSSPropertyAnimationDelay:
@@ -1967,6 +2026,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitTransformOriginX:
     case CSSPropertyWebkitTransformOriginY:
     case CSSPropertyWebkitTransformOriginZ:
+    case CSSPropertyTransformOrigin:
     case CSSPropertyTransformStyle:
     case CSSPropertyWebkitTransformStyle:
     case CSSPropertyWebkitTransitionDelay:

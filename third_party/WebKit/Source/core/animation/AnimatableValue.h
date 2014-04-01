@@ -70,6 +70,7 @@ public:
     bool isLengthBox() const { return type() == TypeLengthBox; }
     bool isLengthBoxAndBool() const { return type() == TypeLengthBoxAndBool; }
     bool isLengthPoint() const { return type() == TypeLengthPoint; }
+    bool isLengthPoint3D() const { return type() == TypeLengthPoint3D; }
     bool isLengthSize() const { return type() == TypeLengthSize; }
     bool isNeutral() const { return type() == TypeNeutral; }
     bool isRepeatable() const { return type() == TypeRepeatable; }
@@ -101,6 +102,7 @@ protected:
         TypeLengthBox,
         TypeLengthBoxAndBool,
         TypeLengthPoint,
+        TypeLengthPoint3D,
         TypeLengthSize,
         TypeNeutral,
         TypeRepeatable,

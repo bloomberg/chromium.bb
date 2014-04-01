@@ -40,6 +40,7 @@
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthBoxAndBool.h"
 #include "core/animation/AnimatableLengthPoint.h"
+#include "core/animation/AnimatableLengthPoint3D.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -581,13 +582,24 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setTransform(operations.size() ? operations : TransformOperations(true));
         return;
     }
+    case CSSPropertyTransformOrigin: {
+        ASSERT(RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
+        const AnimatableLengthPoint3D* animatableLengthPoint3D = toAnimatableLengthPoint3D(value);
+        style->setTransformOriginX(animatableValueToLength(animatableLengthPoint3D->x(), state));
+        style->setTransformOriginY(animatableValueToLength(animatableLengthPoint3D->y(), state));
+        style->setTransformOriginZ(clampTo<float>(toAnimatableDouble(animatableLengthPoint3D->z())->toDouble()));
+        return;
+    }
     case CSSPropertyWebkitTransformOriginX:
+        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         style->setTransformOriginX(animatableValueToLength(value, state));
         return;
     case CSSPropertyWebkitTransformOriginY:
+        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         style->setTransformOriginY(animatableValueToLength(value, state));
         return;
     case CSSPropertyWebkitTransformOriginZ:
+        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         style->setTransformOriginZ(toAnimatableDouble(value)->toDouble());
         return;
     case CSSPropertyWidows:

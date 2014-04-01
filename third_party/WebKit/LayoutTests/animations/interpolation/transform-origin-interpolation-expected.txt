@@ -1,16 +1,16 @@
 CSS Animations:
-PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [-30% 20%] at -0.3
-PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [0% 50%] at 0
-PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [30% 80%] at 0.3
-PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [60% 110%] at 0.6
-PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [100% 150%] at 1
-PASS: -webkit-transform-origin from [0% 50%] to [100% 150%] was [150% 200%] at 1.5
+PASS: transform-origin from [0% 50% 5px] to [100% 150% 0px] was [-30% 20% 6.5px] at -0.3
+PASS: transform-origin from [0% 50% 5px] to [100% 150% 0px] was [0% 50% 5px] at 0
+PASS: transform-origin from [0% 50% 5px] to [100% 150% 0px] was [30% 80% 3.5px] at 0.3
+PASS: transform-origin from [0% 50% 5px] to [100% 150% 0px] was [60% 110% 2px] at 0.6
+PASS: transform-origin from [0% 50% 5px] to [100% 150% 0px] was [100% 150% 0px] at 1
+PASS: transform-origin from [0% 50% 5px] to [100% 150% 0px] was [150% 200% -2.5px] at 1.5
 
 Web Animations API:
-FAIL: webkitTransformOrigin from [0% 50%] to [100% 150%] was [25px 25px] at -0.3, expected [-30% 20%] (parsed as [-15px 10px])
-FAIL: webkitTransformOrigin from [0% 50%] to [100% 150%] was [25px 25px] at 0, expected [0% 50%] (parsed as [0px 25px])
-FAIL: webkitTransformOrigin from [0% 50%] to [100% 150%] was [25px 25px] at 0.3, expected [30% 80%] (parsed as [15px 40px])
-FAIL: webkitTransformOrigin from [0% 50%] to [100% 150%] was [25px 25px] at 0.6, expected [60% 110%] (parsed as [30px 55px])
-FAIL: webkitTransformOrigin from [0% 50%] to [100% 150%] was [25px 25px] at 1, expected [100% 150%] (parsed as [50px 75px])
-FAIL: webkitTransformOrigin from [0% 50%] to [100% 150%] was [25px 25px] at 1.5, expected [150% 200%] (parsed as [75px 100px])
+PASS: transformOrigin from [0% 50% 5px] to [100% 150% 0px] was [-30% 20% 6.5px] at -0.3
+PASS: transformOrigin from [0% 50% 5px] to [100% 150% 0px] was [0% 50% 5px] at 0
+PASS: transformOrigin from [0% 50% 5px] to [100% 150% 0px] was [30% 80% 3.5px] at 0.3
+PASS: transformOrigin from [0% 50% 5px] to [100% 150% 0px] was [60% 110% 2px] at 0.6
+PASS: transformOrigin from [0% 50% 5px] to [100% 150% 0px] was [100% 150% 0px] at 1
+PASS: transformOrigin from [0% 50% 5px] to [100% 150% 0px] was [150% 200% -2.5px] at 1.5
 

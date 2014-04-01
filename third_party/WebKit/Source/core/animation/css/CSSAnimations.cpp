@@ -79,6 +79,12 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
         return CSSPropertyPerspective;
     case CSSPropertyWebkitTransform:
         return CSSPropertyTransform;
+    case CSSPropertyWebkitTransformOriginX:
+    case CSSPropertyWebkitTransformOriginY:
+    case CSSPropertyWebkitTransformOriginZ:
+        if (RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled())
+            return CSSPropertyTransformOrigin;
+        break;
     default:
         break;
     }
@@ -789,9 +795,6 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyShapeMargin:
     case CSSPropertyShapeImageThreshold:
     case CSSPropertyWebkitTextStrokeColor:
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ:
     case CSSPropertyTransform:
     case CSSPropertyWidows:
     case CSSPropertyWidth:
@@ -799,6 +802,12 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyZIndex:
     case CSSPropertyZoom:
         return true;
+    case CSSPropertyTransformOrigin:
+        return RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled();
+    case CSSPropertyWebkitTransformOriginX:
+    case CSSPropertyWebkitTransformOriginY:
+    case CSSPropertyWebkitTransformOriginZ:
+        return !RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled();
     default:
         return false;
     }

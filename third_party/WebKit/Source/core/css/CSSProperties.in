@@ -228,6 +228,7 @@ column-fill type_name=ColumnFill
 -webkit-text-security
 -webkit-text-stroke-color custom_all
 text-underline-position custom_value
+transform-origin custom_all
 -webkit-transform-origin-x type_name=Length, converter=convertLength
 -webkit-transform-origin-y type_name=Length, converter=convertLength
 -webkit-transform-origin-z type_name=float, converter=convertComputedLength<float>

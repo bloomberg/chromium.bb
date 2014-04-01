@@ -41,6 +41,7 @@
 #include "core/animation/AnimatableLengthBox.h"
 #include "core/animation/AnimatableLengthBoxAndBool.h"
 #include "core/animation/AnimatableLengthPoint.h"
+#include "core/animation/AnimatableLengthPoint3D.h"
 #include "core/animation/AnimatableLengthSize.h"
 #include "core/animation/AnimatableRepeatable.h"
 #include "core/animation/AnimatableSVGLength.h"
@@ -473,11 +474,20 @@ PassRefPtrWillBeRawPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPro
         return createFromColor(property, style);
     case CSSPropertyTransform:
         return AnimatableTransform::create(style.transform());
+    case CSSPropertyTransformOrigin:
+        ASSERT(RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
+        return AnimatableLengthPoint3D::create(
+            createFromLength(style.transformOriginX(), style),
+            createFromLength(style.transformOriginY(), style),
+            createFromDouble(style.transformOriginZ()));
     case CSSPropertyWebkitTransformOriginX:
+        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         return createFromLength(style.transformOriginX(), style);
     case CSSPropertyWebkitTransformOriginY:
+        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         return createFromLength(style.transformOriginY(), style);
     case CSSPropertyWebkitTransformOriginZ:
+        ASSERT(!RuntimeEnabledFeatures::cssTransformsUnprefixedEnabled());
         return createFromDouble(style.transformOriginZ());
     case CSSPropertyWidows:
         return createFromDouble(style.widows());

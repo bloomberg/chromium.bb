@@ -137,7 +137,7 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationProperty(AnimationParseContext&);
     PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunction();
 
-    bool parseTransformOriginShorthand(RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
+    bool parseWebkitTransformOriginShorthand(RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
     bool parseCubicBezierTimingFunctionValue(CSSParserValueList*& args, double& result);
     bool parseAnimationProperty(CSSPropertyID, RefPtrWillBeRawPtr<CSSValue>&, AnimationParseContext&);
     bool parseTransitionShorthand(CSSPropertyID, bool important);
@@ -237,10 +237,11 @@ private:
     static bool isBlendMode(CSSValueID);
     static bool isCompositeOperator(CSSValueID);
 
-    bool parseTransformOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, CSSPropertyID& propId3, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
     bool parsePerspectiveOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2,  RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
+    PassRefPtrWillBeRawPtr<CSSValueList> parseTransformOrigin();
     PassRefPtrWillBeRawPtr<CSSValueList> parseTransform(CSSPropertyID);
     PassRefPtrWillBeRawPtr<CSSValue> parseTransformValue(CSSPropertyID, CSSParserValue*);
+    bool parseWebkitTransformOrigin(CSSPropertyID propId, CSSPropertyID& propId1, CSSPropertyID& propId2, CSSPropertyID& propId3, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&, RefPtrWillBeRawPtr<CSSValue>&);
 
     bool parseTextEmphasisStyle(bool important);
 
