@@ -109,11 +109,3 @@ config("incremental_linking") {
 config("no_incremental_linking") {
   ldflags = [ "/INCREMENTAL:NO" ]
 }
-
-# Disable unused variable warning ----------------------------------------------
-
-# Sometimes third-party code wants to disable this warning under MSVC, so this
-# config makes it easy to do so.
-config("disable_unused_variable_warning") {
-  cflags = [ "/wd4800" ]
-}

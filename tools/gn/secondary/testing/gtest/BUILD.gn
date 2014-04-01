@@ -14,6 +14,10 @@ config("gtest_config") {
   # Gtest headers need to be able to find themselves.
   include_dirs = [ "include" ]
 
+  if (is_win) {
+    cflags = [ "/wd4800" ]  # Unused variable warning.
+  }
+
   if (is_posix) {
     defines += [
       # gtest isn't able to figure out when RTTI is disabled for gcc
@@ -74,11 +78,6 @@ static_library("gtest") {
   include_dirs = [ "." ]
 
   all_dependent_configs = [ ":gtest_config" ]
-  if (is_win) {
-    all_dependent_configs += [
-      "//build/config/win:disable_unused_variable_warning",
-    ]
-  }
 
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
