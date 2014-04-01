@@ -1375,7 +1375,7 @@ class BisectPerformanceMetrics(object):
         return True
       raise IOError('Missing extracted folder %s ' % output_dir)
     except e:
-      print 'Something went wrong while extracting archive file: %s' % e
+      print 'Somewthing went wrong while extracting archive file: %s' % e
       self.BackupOrRestoreOutputdirectory(restore=True)
       # Cleanup any leftovers from unzipping.
       if os.path.exists(output_dir):
@@ -2788,61 +2788,35 @@ class BisectPerformanceMetrics(object):
     return other_regressions
 
   def _CalculateConfidence(self, working_means, broken_means):
-    """Calculates the confidence percentage.
-
-    This is calculated based on how distinct the values are before and after
-    the last broken revision, and how noisy the results are.
-
-    Args:
-      working_means: A list of lists of "good" result numbers.
-      broken means: A list of lists of "bad" result numbers.
-
-    Returns:
-      A number between in the range [0, 100].
-    """
-    bounds_working = self._CalculateBounds(working_means)
-    bounds_broken = self._CalculateBounds(broken_means)
+    bounds_working = []
+    bounds_broken = []
+    for m in working_means:
+      current_mean = CalculateTruncatedMean(m, 0)
+      if bounds_working:
+        bounds_working[0] = min(current_mean, bounds_working[0])
+        bounds_working[1] = max(current_mean, bounds_working[0])
+      else:
+        bounds_working = [current_mean, current_mean]
+    for m in broken_means:
+      current_mean = CalculateTruncatedMean(m, 0)
+      if bounds_broken:
+        bounds_broken[0] = min(current_mean, bounds_broken[0])
+        bounds_broken[1] = max(current_mean, bounds_broken[0])
+      else:
+        bounds_broken = [current_mean, current_mean]
     dist_between_groups = min(math.fabs(bounds_broken[1] - bounds_working[0]),
-                              math.fabs(bounds_broken[0] - bounds_working[1]))
+        math.fabs(bounds_broken[0] - bounds_working[1]))
     working_mean = sum(working_means, [])
     broken_mean = sum(broken_means, [])
     len_working_group = CalculateStandardDeviation(working_mean)
     len_broken_group = CalculateStandardDeviation(broken_mean)
-    confidence = (dist_between_groups /
-                  (max(0.0001, (len_broken_group + len_working_group))))
+
+    confidence = (dist_between_groups / (
+        max(0.0001, (len_broken_group + len_working_group ))))
     confidence = int(min(1.0, max(confidence, 0.0)) * 100.0)
     return confidence
 
-  def _CalculateBounds(self, values_list):
-    """Returns the lower/upper bounds for the means of the given value lists.
-
-    Args:
-      values_list: A non-empty list of lists of numbers.
-
-    Returns:
-      A (lower, upper) pair of bounds.
-    """
-    bounds = None
-    for values in values_list:
-      mean = CalculateTruncatedMean(values, 0)
-      if bounds:
-        bounds[0] = min(mean, bounds[0])
-        bounds[1] = max(mean, bounds[1])
-      else:
-        bounds = (mean, mean)
-    return bounds
-
   def _GetResultsDict(self, revision_data, revision_data_sorted):
-    """Makes and returns a dictionary of overall results from the bisect.
-
-    Args:
-      revision_data: The revisions_data dict as returned by the Run method.
-      revision_data_sorted: A list of pairs from the above dictionary, sorted
-          in order of commits.
-
-    Returns:
-      A dictionary containing results from the bisect.
-    """
     # Find range where it possibly broke.
     first_working_revision = None
     first_working_revision_index = -1
