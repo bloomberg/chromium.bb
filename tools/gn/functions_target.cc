@@ -71,6 +71,8 @@ Value ExecuteGenericTarget(const char* target_type,
     "  respectively.\n"
 
 const char kAction[] = "action";
+const char kAction_HelpShort[] =
+    "action: Declare a target that runs a script a single time.";
 const char kAction_Help[] =
     "action: Declare a target that runs a script a single time.\n"
     "\n"
@@ -130,8 +132,10 @@ Value RunAction(Scope* scope,
 // action_foreach --------------------------------------------------------------
 
 const char kActionForEach[] = "action_foreach";
+const char kActionForEach_HelpShort[] =
+    "action_foreach: Declare a target that runs a script over a set of files.";
 const char kActionForEach_Help[] =
-    "action_foreach: Run a script over a set of input files.\n"
+    "action_foreach: Declare a target that runs a script over a set of files.\n"
     "\n"
     "  This target type allows you to run a script once-per-file over a set\n"
     "  of sources. If you want to run a script once that takes many files as\n"
@@ -197,6 +201,8 @@ Value RunActionForEach(Scope* scope,
 // component -------------------------------------------------------------------
 
 const char kComponent[] = "component";
+const char kComponent_HelpShort[] =
+    "component: Declare a component target.";
 const char kComponent_Help[] =
     "component: Declare a component target.\n"
     "\n"
@@ -259,6 +265,8 @@ Value RunComponent(Scope* scope,
 // copy ------------------------------------------------------------------------
 
 const char kCopy[] = "copy";
+const char kCopy_HelpShort[] =
+    "copy: Declare a target that copies files.";
 const char kCopy_Help[] =
     "copy: Declare a target that copies files.\n"
     "\n"
@@ -312,6 +320,8 @@ Value RunCopy(const FunctionCallNode* function,
 // executable ------------------------------------------------------------------
 
 const char kExecutable[] = "executable";
+const char kExecutable_HelpShort[] =
+    "executable: Declare an executable target.";
 const char kExecutable_Help[] =
     "executable: Declare an executable target.\n"
     "\n"
@@ -334,6 +344,8 @@ Value RunExecutable(Scope* scope,
 // group -----------------------------------------------------------------------
 
 const char kGroup[] = "group";
+const char kGroup_HelpShort[] =
+    "group: Declare a named group of targets.";
 const char kGroup_Help[] =
     "group: Declare a named group of targets.\n"
     "\n"
@@ -372,6 +384,8 @@ Value RunGroup(Scope* scope,
 // shared_library --------------------------------------------------------------
 
 const char kSharedLibrary[] = "shared_library";
+const char kSharedLibrary_HelpShort[] =
+    "shared_library: Declare a shared library target.";
 const char kSharedLibrary_Help[] =
     "shared_library: Declare a shared library target.\n"
     "\n"
@@ -399,6 +413,8 @@ Value RunSharedLibrary(Scope* scope,
 // source_set ------------------------------------------------------------------
 
 extern const char kSourceSet[] = "source_set";
+extern const char kSourceSet_HelpShort[] =
+    "source_set: Declare a source set target.";
 extern const char kSourceSet_Help[] =
     "source_set: Declare a source set target.\n"
     "\n"
@@ -444,6 +460,8 @@ Value RunSourceSet(Scope* scope,
 // static_library --------------------------------------------------------------
 
 const char kStaticLibrary[] = "static_library";
+const char kStaticLibrary_HelpShort[] =
+    "static_library: Declare a static library target.";
 const char kStaticLibrary_Help[] =
     "static_library: Declare a static library target.\n"
     "\n"
@@ -472,6 +490,8 @@ Value RunStaticLibrary(Scope* scope,
 // test ------------------------------------------------------------------------
 
 const char kTest[] = "test";
+const char kTest_HelpShort[] =
+    "test: Declares a test target.";
 const char kTest_Help[] =
     "test: Declares a test target.\n"
     "\n"

@@ -9,6 +9,8 @@
 namespace functions {
 
 const char kProcessFileTemplate[] = "process_file_template";
+const char kProcessFileTemplate_HelpShort[] =
+    "process_file_template: Do template expansion over a list of files.";
 const char kProcessFileTemplate_Help[] =
     "process_file_template: Do template expansion over a list of files.\n"
     "\n"

@@ -37,6 +37,8 @@ bool ReadString(Scope& scope, const char* var, std::string* dest, Err* err) {
 // toolchain -------------------------------------------------------------------
 
 const char kToolchain[] = "toolchain";
+const char kToolchain_HelpShort[] =
+    "toolchain: Defines a toolchain.";
 const char kToolchain_Help[] =
     "toolchain: Defines a toolchain.\n"
     "\n"
@@ -123,6 +125,8 @@ Value RunToolchain(Scope* scope,
 // tool ------------------------------------------------------------------------
 
 const char kTool[] = "tool";
+const char kTool_HelpShort[] =
+    "tool: Specify arguments to a toolchain tool.";
 const char kTool_Help[] =
     "tool: Specify arguments to a toolchain tool.\n"
     "\n"
@@ -229,6 +233,8 @@ Value RunTool(Scope* scope,
 // toolchain_args --------------------------------------------------------------
 
 extern const char kToolchainArgs[] = "toolchain_args";
+extern const char kToolchainArgs_HelpShort[] =
+    "toolchain_args: Set build arguments for toolchain build setup.";
 extern const char kToolchainArgs_Help[] =
     "toolchain_args: Set build arguments for toolchain build setup.\n"
     "\n"

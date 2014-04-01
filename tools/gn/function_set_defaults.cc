@@ -10,6 +10,8 @@
 namespace functions {
 
 const char kSetDefaults[] = "set_defaults";
+const char kSetDefaults_HelpShort[] =
+    "set_defaults: Set default values for a target type.";
 const char kSetDefaults_Help[] =
     "set_defaults: Set default values for a target type.\n"
     "\n"

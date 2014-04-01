@@ -17,6 +17,8 @@
 namespace functions {
 
 const char kReadFile[] = "read_file";
+const char kReadFile_HelpShort[] =
+    "read_file: Read a file into a variable.";
 const char kReadFile_Help[] =
     "read_file: Read a file into a variable.\n"
     "\n"

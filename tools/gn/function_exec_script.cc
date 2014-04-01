@@ -233,6 +233,8 @@ bool ExecProcess(const CommandLine& cmdline,
 }  // namespace
 
 const char kExecScript[] = "exec_script";
+const char kExecScript_HelpShort[] =
+    "exec_script: Synchronously run a script and return the output.";
 const char kExecScript_Help[] =
     "exec_script: Synchronously run a script and return the output.\n"
     "\n"

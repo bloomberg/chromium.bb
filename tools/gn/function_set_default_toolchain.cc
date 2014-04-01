@@ -12,6 +12,8 @@
 namespace functions {
 
 const char kSetDefaultToolchain[] = "set_default_toolchain";
+const char kSetDefaultToolchain_HelpShort[] =
+    "set_default_toolchain: Sets the default toolchain name.";
 const char kSetDefaultToolchain_Help[] =
     "set_default_toolchain: Sets the default toolchain name.\n"
     "\n"

@@ -126,6 +126,8 @@ Value ConvertOnePath(const Scope* scope,
 }  // namespace
 
 const char kRebasePath[] = "rebase_path";
+const char kRebasePath_HelpShort[] =
+    "rebase_path: Rebase a file or directory to another location.";
 const char kRebasePath_Help[] =
     "rebase_path: Rebase a file or directory to another location.\n"
     "\n"

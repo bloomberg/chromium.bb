@@ -18,6 +18,8 @@
 namespace functions {
 
 const char kWriteFile[] = "write_file";
+const char kWriteFile_HelpShort[] =
+    "write_file: Write a file to disk.";
 const char kWriteFile_Help[] =
     "write_file: Write a file to disk.\n"
     "\n"
