@@ -886,6 +886,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         json_->Write("lbl", lbl);
         json_->Write("kind", kind);
         json_->Write("loc", loc);
+        json_->Write("ptr",
+                     !Parent() ? "val" :
+                     Parent()->IsRawPtr() ? "raw" :
+                     Parent()->IsRefPtr() ? "ref" :
+                     Parent()->IsOwnPtr() ? "own" :
+                     (Parent()->IsMember() ||
+                      Parent()->IsWeakMember()) ? "mem" :
+                     "val");
         json_->CloseObject();
       }
 

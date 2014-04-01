@@ -14,23 +14,31 @@ parser.add_argument(
   help='Read JSON graph files from stdin')
 
 parser.add_argument(
+  '-c', '--detect-cycles', action='store_true',
+  help='Detect cycles containing GC roots')
+
+parser.add_argument(
+  '-s', '--print-stats', action='store_true',
+  help='Statistics about ref-counted and traced objects')
+
+parser.add_argument(
   '-v', '--verbose', action='store_true',
   help='Verbose output')
 
 parser.add_argument(
-  '-c', '--detect-cycles', action='store_true', default=True,
-  help='Detect cycles containing GC roots')
-
-parser.add_argument(
-  '-i', '--ignored-cycles', default=None,
+  '--ignore-cycles', default=None, metavar='FILE',
   help='File with cycles to ignore')
 
 parser.add_argument(
-  '-p', '--pickle-graph', default=None,
+  '--ignore-classes', nargs='*', default=[], metavar='CLASS',
+  help='Classes to ignore when detecting cycles')
+
+parser.add_argument(
+  '--pickle-graph', default=None, metavar='FILE',
   help='File to read/save the graph from/to')
 
 parser.add_argument(
-  'files', metavar='FILE', nargs='*', default=[],
+  'files', metavar='FILE_OR_DIR', nargs='*', default=[],
   help='JSON graph files or directories containing them')
 
 # Command line args after parsing.
@@ -67,6 +75,18 @@ def inc_copy():
 def get_node(name):
   return graph.setdefault(name, Node(name))
 
+ptr_types = ('raw', 'ref', 'mem')
+
+def inc_ptr(dst, ptr):
+  if ptr in ptr_types:
+    node = graph.get(dst)
+    if not node: return
+    node.counts[ptr] += 1
+
+def add_counts(s1, s2):
+  for (k, v) in s2.iteritems():
+    s1[k] += s2[k]
+
 # Representation of graph nodes. Basically a map of directed edges.
 class Node:
   def __init__(self, name):
@@ -88,10 +108,18 @@ class Node:
       self.edges[new_edge.key] = new_edge
   def super_edges(self):
     return [ e for e in self.edges.itervalues() if e.is_super() ]
+  def subclass_edges(self):
+    return [ e for e in self.edges.itervalues() if e.is_subclass() ]
   def reset(self):
     self.cost = sys.maxint
     self.visited = False
     self.path = None
+    self.counts = {}
+    for ptr in ptr_types:
+      self.counts[ptr] = 0
+  def update_counts(self):
+    for e in self.edges.itervalues():
+      inc_ptr(e.dst, e.ptr)
 
 # Representation of directed graph edges.
 class Edge:
@@ -99,6 +127,7 @@ class Edge:
     self.src = decl['src']
     self.dst = decl['dst']
     self.lbl = decl['lbl']
+    self.ptr = decl['ptr']
     self.kind = decl['kind'] # 0 = weak, 1 = strong, 2 = root
     self.loc = decl['loc']
     # The label does not uniquely determine an edge from a node. We
@@ -108,13 +137,6 @@ class Edge:
     # has type HashMap<WeakMember<B>, Member<B>> we will have a
     # strong edge with key m_f#B from A to B.
     self.key = '%s#%s' % (self.lbl, self.dst)
-  def copy(self):
-    return Edge(
-      lbl = self.lbl,
-      kind = self.kind,
-      src = self.src,
-      dst = self.dst,
-      loc = self.loc)
   def __repr__(self):
     return '%s (%s) => %s' % (self.src, self.lbl, self.dst)
   def is_root(self):
@@ -177,16 +199,24 @@ def copy_super_edges(edge):
   sub_node = graph[edge.src]
   for e in super_node.edges.itervalues():
     if e.keeps_alive() and not e.is_subclass():
-      new_edge = e.copy()
-      new_edge.src = sub_node.name
-      new_edge.lbl = '%s <: %s' % (super_node.name, e.lbl)
+      new_edge = Edge(
+        src = super_node.name,
+        dst = e.dst,
+        lbl = '%s <: %s' % (super_node.name, e.lbl),
+        ptr = e.ptr,
+        kind = e.kind,
+        loc = e.loc,
+      )
       sub_node.edges[new_edge.key] = new_edge
   # Add a strong sub-class edge.
-  sub_edge = edge.copy()
-  sub_edge.kind = 1
-  sub_edge.lbl = '<subclass>'
-  sub_edge.src = super_node.name
-  sub_edge.dst = sub_node.name
+  sub_edge = Edge(
+    src = super_node.name,
+    dst = sub_node.name,
+    lbl = '<subclass>',
+    ptr = edge.ptr,
+    kind = 1,
+    loc = edge.loc,
+  )
   super_node.edges[sub_edge.key] = sub_edge
 
 def complete_graph():
@@ -225,8 +255,16 @@ def shortest_path(start, end):
 def detect_cycles():
   for root_edge in roots:
     reset_graph()
+    # Mark ignored classes as already visited
+    for ignore in args.ignore_classes:
+      name = ignore.find("::") > 0 and ignore or ("WebCore::" + ignore)
+      node = graph.get(name)
+      if node:
+        node.visited = True
     src = graph[root_edge.src]
     dst = graph.get(root_edge.dst)
+    if src.visited:
+      continue
     if root_edge.dst == "WTF::String":
       continue
     if dst is None:
@@ -290,13 +328,13 @@ def save_graph():
 
 def read_ignored_cycles():
   global ignored_cycles
-  if not args.ignored_cycles:
+  if not args.ignore_cycles:
     return
-  log("Reading ignored cycles from file: " + args.ignored_cycles)
+  log("Reading ignored cycles from file: " + args.ignore_cycles)
   block = []
-  for l in open(args.ignored_cycles):
+  for l in open(args.ignore_cycles):
     line = l.strip()
-    if not line:
+    if not line or line.startswith('Found'):
       if len(block) > 0:
         ignored_cycles.append(block)
       block = []
@@ -305,10 +343,85 @@ def read_ignored_cycles():
   if len(block) > 0:
     ignored_cycles.append(block)
 
+gc_bases = (
+  'WebCore::GarbageCollected',
+  'WebCore::GarbageCollectedFinalized',
+  'WebCore::GarbageCollectedMixin',
+)
+ref_bases = (
+  'WTF::RefCounted',
+  'WTF::ThreadSafeRefCounted',
+)
+gcref_bases = (
+  'WebCore::RefCountedGarbageCollected',
+  'WebCore::ThreadSafeRefCountedGarbageCollected',
+)
+ref_mixins = (
+  'WebCore::EventTarget',
+  'WebCore::EventTargetWithInlineData',
+  'WebCore::ActiveDOMObject',
+)
+
+def print_stats():
+  gcref_managed = []
+  ref_managed = []
+  gc_managed = []
+  hierarchies = []
+
+  for node in graph.itervalues():
+    node.update_counts()
+    for sup in node.super_edges():
+      if sup.dst in gcref_bases:
+        gcref_managed.append(node)
+      elif sup.dst in ref_bases:
+        ref_managed.append(node)
+      elif sup.dst in gc_bases:
+        gc_managed.append(node)
+
+  groups = [("GC manged   ", gc_managed),
+            ("ref counted ", ref_managed),
+            ("in transition", gcref_managed)]
+  total = sum([len(g) for (s,g) in groups])
+  for (s, g) in groups:
+    percent = len(g) * 100 / total
+    print "%2d%% is %s (%d hierarchies)" % (percent, s, len(g))
+
+  for base in gcref_managed:
+    stats = dict({ 'classes': 0, 'ref-mixins': 0 })
+    for ptr in ptr_types: stats[ptr] = 0
+    hierarchy_stats(base, stats)
+    hierarchies.append((base, stats))
+
+  print "\nHierarchies in transition (RefCountedGarbageCollected):"
+  hierarchies.sort(key=lambda (n,s): -s['classes'])
+  for (node, stats) in hierarchies:
+    total = stats['mem'] + stats['ref'] + stats['raw']
+    print (
+      "%s %3d%% of %-30s: %3d cls, %3d mem, %3d ref, %3d raw, %3d ref-mixins" %
+      (stats['ref'] == 0 and stats['ref-mixins'] == 0 and "*" or " ",
+       total == 0 and 100 or stats['mem'] * 100 / total,
+       node.name.replace('WebCore::', ''),
+       stats['classes'],
+       stats['mem'],
+       stats['ref'],
+       stats['raw'],
+       stats['ref-mixins'],
+     ))
+
+def hierarchy_stats(node, stats):
+  if not node: return
+  stats['classes'] += 1
+  add_counts(stats, node.counts)
+  for edge in node.super_edges():
+    if edge.dst in ref_mixins:
+      stats['ref-mixins'] += 1
+  for edge in node.subclass_edges():
+    hierarchy_stats(graph.get(edge.dst), stats)
+
 def main():
   global args
   args = parser.parse_args()
-  if not args.detect_cycles:
+  if not (args.detect_cycles or args.print_stats):
     print "Please select an operation to perform (eg, -c to detect cycles)"
     parser.print_help()
     return 1
@@ -340,6 +453,9 @@ def main():
     read_ignored_cycles()
     log("Detecting cycles containg GC roots")
     detect_cycles()
+  if args.print_stats:
+    log("Printing statistics")
+    print_stats()
   if reported_error():
     return 1
   return 0
