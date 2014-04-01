@@ -250,6 +250,7 @@
             '../content/content.gyp:content_utility',
             '../media/media.gyp:media',
             '../skia/skia.gyp:skia',
+            '../third_party/libexif/libexif.gyp:libexif',
             '../third_party/libxml/libxml.gyp:libxml',
             'common',
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
@@ -296,6 +297,8 @@
             'utility/importer/nss_decryptor_win.h',
             'utility/importer/safari_importer.h',
             'utility/importer/safari_importer.mm',
+            'utility/media_galleries/image_metadata_extractor.cc',
+            'utility/media_galleries/image_metadata_extractor.h',
             'utility/media_galleries/ipc_data_source.cc',
             'utility/media_galleries/ipc_data_source.h',
             'utility/media_galleries/itunes_pref_parser_win.cc',
@@ -356,6 +359,9 @@
               ],
             }],
             ['OS=="android"', {
+              'dependencies!': [
+                '../third_party/libexif/libexif.gyp:libexif',
+              ],
               'sources/': [
                 ['exclude', '^utility/importer/'],
                 ['exclude', '^utility/media_galleries/'],

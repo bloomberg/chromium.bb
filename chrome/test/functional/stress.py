@@ -107,6 +107,7 @@ class StressTest(pyauto.PyUITest):
                           'crash_inspector',
                           'crash_report_sender',
                           'ffmpegsumo.so',
+                          'libexif.dylib',
                           'libplugin_carbon_interpose.dylib'])
       index = 0
       symbol_files = ['%s-%s-i386.breakpad' % (sym_file, self.chrome_version) \
