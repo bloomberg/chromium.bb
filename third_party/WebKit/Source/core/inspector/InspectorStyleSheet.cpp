@@ -859,7 +859,7 @@ void InspectorStyleSheetBase::fireStyleSheetChanged()
 
 PassRefPtr<TypeBuilder::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForStyle(CSSStyleDeclaration* style)
 {
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = nullptr;
     if (ensureParsedDataReady())
         sourceData = ruleSourceDataFor(style);
 
@@ -1137,7 +1137,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > InspectorStyleSheet:
 
 PassRefPtr<TypeBuilder::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule)
 {
-    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData;
+    RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = nullptr;
     if (ensureParsedDataReady())
         sourceData = ruleSourceDataFor(rule->style());
     RefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector> > selectors;
