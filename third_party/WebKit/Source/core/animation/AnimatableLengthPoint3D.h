@@ -38,9 +38,9 @@ namespace WebCore {
 class AnimatableLengthPoint3D FINAL : public AnimatableValue {
 public:
     virtual ~AnimatableLengthPoint3D() { }
-    static PassRefPtr<AnimatableLengthPoint3D> create(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y, PassRefPtr<AnimatableValue> z)
+    static PassRefPtrWillBeRawPtr<AnimatableLengthPoint3D> create(PassRefPtrWillBeRawPtr<AnimatableValue> x, PassRefPtrWillBeRawPtr<AnimatableValue> y, PassRefPtrWillBeRawPtr<AnimatableValue> z)
     {
-        return adoptRef(new AnimatableLengthPoint3D(x, y, z));
+        return adoptRefWillBeNoop(new AnimatableLengthPoint3D(x, y, z));
     }
     const AnimatableValue* x() const { return m_x.get(); }
     const AnimatableValue* y() const { return m_y.get(); }
@@ -49,11 +49,11 @@ public:
     virtual void trace(Visitor*) OVERRIDE;
 
 protected:
-    virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
-    virtual PassRefPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<AnimatableValue> addWith(const AnimatableValue*) const OVERRIDE;
 
 private:
-    AnimatableLengthPoint3D(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y, PassRefPtr<AnimatableValue> z)
+    AnimatableLengthPoint3D(PassRefPtrWillBeRawPtr<AnimatableValue> x, PassRefPtrWillBeRawPtr<AnimatableValue> y, PassRefPtrWillBeRawPtr<AnimatableValue> z)
         : m_x(x)
         , m_y(y)
         , m_z(z)
