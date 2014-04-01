@@ -97,6 +97,3 @@ blob_env.Alias('irt_core', irt_core_library)
 blob_env.ComponentProgramAlias(irt_core_library)
 
 env.SDKInstallBin('irt_core.nexe', irt_core_library)
-
-# TODO(mcgrathr): this should be installed, but scons is a mystery
-#env.AddHeaderToSdk(['irt.h'])

@@ -10,7 +10,8 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-#include "native_client/src/untrusted/irt/irt.h"
+/* Use relative path so that irt_dev.h can be installed as a system header. */
+#include "irt.h"
 
 struct dirent;
 struct stat;
