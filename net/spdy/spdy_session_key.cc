@@ -8,7 +8,7 @@
 
 namespace net {
 
-SpdySessionKey::SpdySessionKey() : privacy_mode_(kPrivacyModeDisabled) {
+SpdySessionKey::SpdySessionKey() : privacy_mode_(PRIVACY_MODE_DISABLED) {
 }
 
 SpdySessionKey::SpdySessionKey(const HostPortPair& host_port_pair,

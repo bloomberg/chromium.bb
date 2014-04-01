@@ -69,7 +69,7 @@ void PreconnectOnIOThread(
 
   net::NetworkDelegate* delegate = context->network_delegate();
   if (delegate->CanEnablePrivacyMode(url, first_party_for_cookies))
-    request_info.privacy_mode = net::kPrivacyModeEnabled;
+    request_info.privacy_mode = net::PRIVACY_MODE_ENABLED;
 
   // It almost doesn't matter whether we use net::LOWEST or net::HIGHEST
   // priority here, as we won't make a request, and will surrender the created

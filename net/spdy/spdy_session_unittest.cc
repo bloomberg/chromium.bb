@@ -107,7 +107,7 @@ class SpdySessionTest : public PlatformTest,
         test_url_(kTestUrl),
         test_host_port_pair_(kTestHost, kTestPort),
         key_(test_host_port_pair_, ProxyServer::Direct(),
-             kPrivacyModeDisabled) {
+             PRIVACY_MODE_DISABLED) {
   }
 
   virtual ~SpdySessionTest() {
@@ -2719,7 +2719,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnection) {
 
   // Create an idle SPDY session.
   SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
+                      PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> session1 =
       CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
   EXPECT_FALSE(pool->IsStalled());
@@ -2779,14 +2779,14 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
 
   // Create an idle SPDY session.
   SpdySessionKey key1(HostPortPair("1.com", 80), ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
+                      PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> session1 =
       CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
   EXPECT_FALSE(pool->IsStalled());
 
   // Set up an alias for the idle SPDY session, increasing its ref count to 2.
   SpdySessionKey key2(HostPortPair("2.com", 80), ProxyServer::Direct(),
-                      kPrivacyModeDisabled);
+                      PRIVACY_MODE_DISABLED);
   HostResolver::RequestInfo info(key2.host_port_pair());
   AddressList addresses;
   // Pre-populate the DNS cache, since a synchronous resolution is required in
@@ -2867,7 +2867,7 @@ TEST_P(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   // Create a SPDY session.
   GURL url1(kDefaultURL);
   SpdySessionKey key1(HostPortPair(url1.host(), 80),
-                      ProxyServer::Direct(), kPrivacyModeDisabled);
+                      ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> session1 =
       CreateInsecureSpdySession(http_session_, key1, BoundNetLog());
   EXPECT_FALSE(pool->IsStalled());
@@ -2928,9 +2928,9 @@ TEST_P(SpdySessionTest, SpdySessionKeyPrivacyMode) {
 
   HostPortPair host_port_pair("www.google.com", 443);
   SpdySessionKey key_privacy_enabled(host_port_pair, ProxyServer::Direct(),
-                                     kPrivacyModeEnabled);
+                                     PRIVACY_MODE_ENABLED);
   SpdySessionKey key_privacy_disabled(host_port_pair, ProxyServer::Direct(),
-                                     kPrivacyModeDisabled);
+                                     PRIVACY_MODE_DISABLED);
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));

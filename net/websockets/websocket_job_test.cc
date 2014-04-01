@@ -286,7 +286,7 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
     host_port_pair_.set_port(80);
     spdy_session_key_ = SpdySessionKey(host_port_pair_,
                                             ProxyServer::Direct(),
-                                            kPrivacyModeDisabled);
+                                            PRIVACY_MODE_DISABLED);
     session_ = CreateInsecureSpdySession(
         http_session_, spdy_session_key_, BoundNetLog());
   }

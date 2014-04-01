@@ -323,7 +323,7 @@ const SpdySessionKey& SpdySessionPool::NormalizeListKey(
     HostPortPair single_domain = HostPortPair("singledomain.com", 80);
     single_domain_key = new SpdySessionKey(single_domain,
                                            ProxyServer::Direct(),
-                                           kPrivacyModeDisabled);
+                                           PRIVACY_MODE_DISABLED);
   }
   return *single_domain_key;
 }

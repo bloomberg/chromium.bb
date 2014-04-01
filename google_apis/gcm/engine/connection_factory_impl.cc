@@ -376,7 +376,7 @@ void ConnectionFactoryImpl::OnProxyResolveDone(int status) {
       proxy_info_,
       ssl_config,
       ssl_config,
-      net::kPrivacyModeDisabled,
+      net::PRIVACY_MODE_DISABLED,
       bound_net_log_,
       &socket_handle_,
       base::Bind(&ConnectionFactoryImpl::OnConnectDone,

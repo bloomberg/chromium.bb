@@ -201,7 +201,7 @@ class SpdyWebSocketStreamTest
     host_port_pair_.set_port(80);
     spdy_session_key_ = SpdySessionKey(host_port_pair_,
                                        ProxyServer::Direct(),
-                                       kPrivacyModeDisabled);
+                                       PRIVACY_MODE_DISABLED);
 
     spdy_settings_to_send_[spdy_settings_id_to_set_] =
         SettingsFlagsAndValue(

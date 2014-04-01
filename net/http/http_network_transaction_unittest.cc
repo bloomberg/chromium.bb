@@ -9218,7 +9218,7 @@ TEST_P(HttpNetworkTransactionTest,
   // Set up an initial SpdySession in the pool to reuse.
   HostPortPair host_port_pair("www.google.com", 443);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     kPrivacyModeDisabled);
+                     PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> spdy_session =
       CreateSecureSpdySession(session, key, BoundNetLog());
 
@@ -10377,7 +10377,7 @@ TEST_P(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   // Set up an initial SpdySession in the pool to reuse.
   HostPortPair host_port_pair("www.google.com", 443);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     kPrivacyModeDisabled);
+                     PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> spdy_session =
       CreateInsecureSpdySession(session, key, BoundNetLog());
 
@@ -11735,7 +11735,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
 
   HostPortPair host_port_pair_a("www.a.com", 443);
   SpdySessionKey spdy_session_key_a(
-      host_port_pair_a, ProxyServer::Direct(), kPrivacyModeDisabled);
+      host_port_pair_a, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
 
@@ -11767,7 +11767,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
 
   HostPortPair host_port_pair_b("www.b.com", 443);
   SpdySessionKey spdy_session_key_b(
-      host_port_pair_b, ProxyServer::Direct(), kPrivacyModeDisabled);
+      host_port_pair_b, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_b));
   HttpRequestInfo request2;
@@ -11795,7 +11795,7 @@ TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
 
   HostPortPair host_port_pair_a1("www.a.com", 80);
   SpdySessionKey spdy_session_key_a1(
-      host_port_pair_a1, ProxyServer::Direct(), kPrivacyModeDisabled);
+      host_port_pair_a1, ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a1));
   HttpRequestInfo request3;
