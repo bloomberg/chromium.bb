@@ -21,12 +21,14 @@
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/threading/thread_local.h"
+#include "content/child/blink_platform_impl.h"
 #include "content/child/child_process.h"
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/plugin_lib.h"
 #include "content/common/plugin_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/plugin/content_plugin_client.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "ipc/ipc_channel_handle.h"
 
 #if defined(TOOLKIT_GTK)
@@ -124,6 +126,10 @@ PluginThread::PluginThread()
       plugin.get() ? plugin->plugin_info().name : base::string16());
 
   channel()->AddFilter(new EnsureTerminateMessageFilter());
+
+  // This is needed because we call some code which uses WebKit strings.
+  webkit_platform_support_.reset(new BlinkPlatformImpl);
+  blink::initialize(webkit_platform_support_.get());
 }
 
 PluginThread::~PluginThread() {

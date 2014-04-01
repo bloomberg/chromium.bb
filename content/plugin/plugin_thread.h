@@ -17,6 +17,7 @@
 #endif
 
 namespace content {
+class BlinkPlatformImpl;
 
 // The PluginThread class represents a background thread where plugin instances
 // live.  Communication occurs between WebPluginDelegateProxy in the renderer
@@ -50,6 +51,8 @@ class PluginThread : public ChildThread {
   base::NativeLibrary preloaded_plugin_module_;
 
   bool forcefully_terminate_plugin_process_;
+
+  scoped_ptr<BlinkPlatformImpl> webkit_platform_support_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginThread);
 };

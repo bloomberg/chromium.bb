@@ -5,6 +5,7 @@
 #include "content/child/npapi/plugin_instance.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,6 +19,7 @@
 #include "content/child/npapi/webplugin_delegate.h"
 #include "content/child/npapi/webplugin_resource_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/escape.h"
 
 #if defined(OS_MACOSX)
@@ -557,10 +559,18 @@ void PluginInstance::RequestRead(NPStream* stream, NPByteRange* range_list) {
       // is called on it.
       plugin_stream->set_seekable(true);
 
-      pending_range_requests_[++next_range_request_id_] = plugin_stream;
-      webplugin_->InitiateHTTPRangeRequest(
-          stream->url, range_info.c_str(), next_range_request_id_);
-      return;
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableDirectNPAPIRequests)) {
+        pending_range_requests_[++next_range_request_id_] = plugin_stream;
+        webplugin_->InitiateHTTPRangeRequest(
+            stream->url, range_info.c_str(), next_range_request_id_);
+        return;
+      } else {
+        PluginStreamUrl* plugin_stream_url =
+            static_cast<PluginStreamUrl*>(plugin_stream);
+        plugin_stream_url->FetchRange(range_info);
+        return;
+      }
     }
   }
   NOTREACHED();
