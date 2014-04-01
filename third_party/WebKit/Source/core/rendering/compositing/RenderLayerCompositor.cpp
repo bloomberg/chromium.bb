@@ -368,6 +368,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         break;
     case CompositingUpdateAfterStyleChange:
         m_needsToRecomputeCompositingRequirements = true;
+        m_needsToUpdateLayerTreeGeometry = true;
         break;
     case CompositingUpdateAfterLayout:
         m_needsToRecomputeCompositingRequirements = true;
@@ -819,12 +820,8 @@ void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(Rend
 {
     // See if we need content or clipping layers. Methods called here should assume
     // that the compositing state of descendant layers has not been updated yet.
-    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate)) {
+    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration(GraphicsLayerUpdater::ForceUpdate))
         setCompositingLayersNeedRebuild();
-    } else if (compositedLayerUpdate == NoCompositingStateChange) {
-        if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor)
-            setCompositingLayersNeedRebuild();
-    }
 
     if (compositedLayerUpdate != NoCompositingStateChange)
         allocateOrClearCompositedLayerMapping(layer, computeCompositedLayerUpdate(layer));
