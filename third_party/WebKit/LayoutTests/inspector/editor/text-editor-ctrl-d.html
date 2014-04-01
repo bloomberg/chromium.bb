@@ -1,0 +1,213 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="editor-test.js"></script>
+<script>
+function codeSnippet() {
+    return document.getElementById("codeSnippet").textContent;
+}
+
+function test()
+{
+    var textEditor = InspectorTest.createTestEditor();
+    textEditor.setMimeType("text/javascript");
+    textEditor.setReadOnly(false);
+    textEditor.element.focus();
+    InspectorTest.evaluateInPage("codeSnippet();", onCodeSnippet);
+
+    function onCodeSnippet(result)
+    {
+        var codeLines = result.value;
+        textEditor.setText(codeLines);
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+    function nextOccurrence(times)
+    {
+        for (var i = 0; i < times; ++i)
+            textEditor._selectNextOccurrenceController.selectNextOccurrence();
+    }
+
+    function lineSelection(line, from, to)
+    {
+        if (typeof to !== "number")
+            to = from;
+        lineSelections([
+            { line: line, from: from, to: to }
+        ]);
+    }
+
+    function lineSelections(selections)
+    {
+        var coords = [];
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            if (selection.column) {
+                selection.from = selection.column;
+                selection.to = selection.column;
+            }
+            coords.push(new WebInspector.TextRange(selection.line, selection.from, selection.line, selection.to));
+        }
+        textEditor.setSelections(coords);
+    }
+
+    function dumpSelectionStats()
+    {
+        var listHashMap = {};
+        var sortedKeys = [];
+        var selections = textEditor.selections();
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var text = textEditor.copyRange(selection);
+            if (!listHashMap[text]) {
+                listHashMap[text] = 1;
+                sortedKeys.push(text);
+            } else {
+                ++listHashMap[text];
+            }
+        }
+        for (var i = 0; i < sortedKeys.length; ++i) {
+            var keyName = sortedKeys[i];
+            if (!keyName.length)
+                keyName = "<Empty string>";
+            else
+                keyName = "'" + keyName + "'";
+            InspectorTest.addResult(keyName + ": " + listHashMap[sortedKeys[i]]);
+        }
+    }
+
+    var testSuite = [
+        function testNextFullWord(next)
+        {
+            lineSelection(0, 3);
+            nextOccurrence(3);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testOccurrencesOnTheSameLine(next)
+        {
+            lineSelection(2, 13);
+            nextOccurrence(3);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testTwoCloseWords(next)
+        {
+            lineSelection(17, 45);
+            nextOccurrence(5);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testCursorInTheWordStart(next)
+        {
+            lineSelection(8, 0);
+            nextOccurrence(1);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testCursorInTheWordEnd(next)
+        {
+            lineSelection(8, 8);
+            nextOccurrence(1);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testNonWordSelection(next)
+        {
+            lineSelection(18, 12, 14);
+            nextOccurrence(8);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testNonWordSelection2(next)
+        {
+            lineSelection(17, 30, 33);
+            nextOccurrence(8);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testNonWordSelection3(next)
+        {
+            lineSelections([
+                { line: 14, from: 15, to: 25 },
+                { line: 16, column: 21 },
+                { line: 17, from: 42, to: 47 },
+            ]);
+            var selections = textEditor.selections();
+            nextOccurrence(3);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testNonWordSelection4(next)
+        {
+            lineSelections([
+                { line: 14, from: 15, to: 25 },
+                { line: 16, from: 21, to: 23 },
+                { line: 17, from: 42, to: 47 },
+            ]);
+            var selections = textEditor.selections();
+            nextOccurrence(3);
+            dumpSelectionStats();
+            next();
+        },
+
+        function testTriggerWordSearchInMixedCase(next)
+        {
+            lineSelections([
+                { line: 9, from: 10, to: 25 },
+                { line: 14, column: 33 }
+            ]);
+            nextOccurrence(5);
+            dumpSelectionStats();
+            next();
+        },
+
+    ];
+}
+
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+This test verifies Ctrl-D functionality, which selects next occurrence of word.
+</p>
+
+<pre id="codeSnippet">
+function wordData() {
+    return {
+        original: $(".entry.original > .input").text(),
+        translation: $(".entry.translation > .input").text(),
+        tags: $(".active-tags > .tagcloud > .tag").toArray().map(function(value) { return value.textContent; })
+    };
+}
+
+function submitWord(url) {
+    var stub = new App.Stub($(".content"));
+    $.post(url, wordData())
+    .done(function() {
+        var callback = $("meta[data-callback]").attr("data-callback");
+        if (callback) {
+            window.location = callback;
+        } else {
+            stub.success();
+            $(".entry.original > .input").text("").focus();
+            $(".entry.translation > .input").text("");
+        }
+    })
+    .fail(function(obj, err, errDescr) {
+        stub.failure("Error: " + errDescr);
+    })
+}
+</pre>
+
+</body>
+</html>
