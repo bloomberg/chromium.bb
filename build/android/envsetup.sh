@@ -72,9 +72,6 @@ if [[ -n "$CHROME_ANDROID_OFFICIAL_BUILD" ]]; then
   export CHROME_BUILD_TYPE="_official"
 fi
 
-# Source a bunch of helper functions
-. ${CHROME_SRC}/build/android/adb_device_functions.sh
-
 # Performs a gyp_chromium run to convert gyp->Makefile for android code.
 android_gyp() {
   # This is just a simple wrapper of gyp_chromium, please don't add anything
