@@ -254,7 +254,10 @@ void FindBarView::OnPaint(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(find_text_->GetBackgroundColor());
   canvas->DrawRoundRect(background_bounds, kBorderCornerRadius, paint);
+  canvas->Save();
+  canvas->ClipRect(gfx::Rect(0, 0, find_previous_button_->x(), height()));
   views::Painter::PaintPainterAt(canvas, find_text_border_.get(), text_bounds);
+  canvas->Restore();
 
   // Draw the background of the match text. We want to make sure the red
   // "no-match" background almost completely fills up the amount of vertical
