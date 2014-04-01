@@ -48,8 +48,6 @@ class CC_EXPORT Animation {
     TargetPropertyEnumSize
   };
 
-  enum Direction { Normal, Reverse, Alternate, AlternateReverse };
-
   static scoped_ptr<Animation> Create(scoped_ptr<AnimationCurve> curve,
                                       int animation_id,
                                       int group_id,
@@ -80,8 +78,12 @@ class CC_EXPORT Animation {
   void Suspend(double monotonic_time);
   void Resume(double monotonic_time);
 
-  Direction direction() { return direction_; }
-  void set_direction(Direction direction) { direction_ = direction; }
+  // If alternates_direction is true, on odd numbered iterations we reverse the
+  // curve.
+  bool alternates_direction() const { return alternates_direction_; }
+  void set_alternates_direction(bool alternates) {
+    alternates_direction_ = alternates;
+  }
 
   bool IsFinishedAt(double monotonic_time) const;
   bool is_finished() const {
@@ -148,7 +150,7 @@ class CC_EXPORT Animation {
   RunState run_state_;
   int iterations_;
   double start_time_;
-  Direction direction_;
+  bool alternates_direction_;
 
   // The time offset effectively pushes the start of the animation back in time.
   // This is used for resuming paused animations -- an animation is added with a

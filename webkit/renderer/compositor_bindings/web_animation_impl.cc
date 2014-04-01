@@ -95,48 +95,13 @@ void WebAnimationImpl::setTimeOffset(double monotonic_time) {
   animation_->set_time_offset(monotonic_time);
 }
 
-#if WEB_ANIMATION_SUPPORTS_FULL_DIRECTION
-blink::WebAnimation::Direction WebAnimationImpl::direction() const {
-  switch (animation_->direction()) {
-    case cc::Animation::Normal:
-      return DirectionNormal;
-    case cc::Animation::Reverse:
-      return DirectionReverse;
-    case cc::Animation::Alternate:
-      return DirectionAlternate;
-    case cc::Animation::AlternateReverse:
-      return DirectionAlternateReverse;
-    default:
-      NOTREACHED();
-  }
-  return DirectionNormal;
-}
-
-void WebAnimationImpl::setDirection(Direction direction) {
-  switch (direction) {
-    case DirectionNormal:
-      animation_->set_direction(cc::Animation::Normal);
-      break;
-    case DirectionReverse:
-      animation_->set_direction(cc::Animation::Reverse);
-      break;
-    case DirectionAlternate:
-      animation_->set_direction(cc::Animation::Alternate);
-      break;
-    case DirectionAlternateReverse:
-      animation_->set_direction(cc::Animation::AlternateReverse);
-      break;
-  }
-}
-#else
 bool WebAnimationImpl::alternatesDirection() const {
-  return animation_->direction() == cc::Animation::Alternate;
+  return animation_->alternates_direction();
 }
 
 void WebAnimationImpl::setAlternatesDirection(bool alternates) {
-  return animation_->set_direction(cc::Animation::Alternate);
+  animation_->set_alternates_direction(alternates);
 }
-#endif
 
 scoped_ptr<cc::Animation> WebAnimationImpl::PassAnimation() {
   animation_->set_needs_synchronized_start_time(true);
