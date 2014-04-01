@@ -25,12 +25,12 @@
     <include src="elements/kb-shift-key.html">
     <include src="elements/kb-key-sequence.html">
     <include src="elements/kb-key-import.html">
-    <!-- New layouts are dynamically loaded on demand. The link elements are
-      -- inserted here.
-      -->
   </head>
   <body>
     <kb-keyboard id="keyboard" touch-action="none">
+      <include src="layouts/numeric.html">
+      <include src="layouts/qwerty.html">
+      <include src="layouts/system-qwerty.html">
     </kb-keyboard>
   </body>
 </html>

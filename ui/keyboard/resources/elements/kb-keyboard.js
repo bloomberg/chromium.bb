@@ -813,38 +813,10 @@ Polymer('kb-keyboard', {
   layoutChanged: function() {
     this.stale = true;
     if (!this.selectDefaultKeyset()) {
-      this.fire('stateChange', {state: 'loadingKeyset'});
-
-      // Keyset selection fails if the keysets have not been loaded yet.
-      var keysets = document.querySelector('#' + this.layout);
-      if (keysets && keysets.content) {
-        var content = flattenKeysets(keysets.content);
-        this.appendChild(content);
-        this.selectDefaultKeyset();
-      } else {
-        // Add link for the keysets if missing from the document. Force
-        // a layout change after resolving the import of the link.
-        var query = 'link[id=' + this.layout + ']';
-        if (!document.querySelector(query)) {
-          // Layout has not beeen loaded yet.
-          var link = document.createElement('link');
-          link.id = this.layout;
-          link.setAttribute('rel', 'import');
-          link.setAttribute('href', 'layouts/' + this.layout + '.html');
-          document.head.appendChild(link);
-
-          // Load content for the new link element.
-          var self = this;
-          HTMLImports.importer.load(document, function() {
-            HTMLImports.parser.parseLink(link);
-            self.layoutChanged();
-          });
-        }
-      }
-    // New keyset has already been loaded, can show immediately.
-    } else {
-      this.activeKeyset.show();
+      console.error('No default keyset found for layout: ' + this.layout);
+      return;
     }
+    this.activeKeyset.show();
   },
 
   /**

@@ -232,50 +232,6 @@
   };
 
   /**
-   * Keeps track of number of loaded keysets.
-   * @param {number} n The number of keysets.
-   * @param {function()} fn Callback function on completion.
-   */
-  var Counter = function(n, fn) {
-    this.count = 0;
-    this.nKeysets = n;
-    this.callback = fn;
-  }
-
-  Counter.prototype = {
-    tick: function() {
-      this.count++;
-      if (this.count == this.nKeysets)
-        this.callback();
-    }
-  }
-
-  /**
-   * Keeps track of keysets loaded and triggers a realign when all are ready.
-   * @type {Counter}
-   */
-  var alignmentCounter = undefined;
-
-  /**
-   * Request realignment for a new keyset that was just loaded.
-   */
-  function requestRealign () {
-    var keyboard = $('keyboard');
-    if (!keyboard.stale)
-      return;
-    if (!alignmentCounter) {
-      var layout = keyboard.layout;
-      var length =
-          keyboard.querySelectorAll('kb-keyset[id^=' + layout + ']').length;
-      alignmentCounter = new Counter(length, function(){
-        realign(false);
-        alignmentCounter = undefined;
-      });
-    }
-    alignmentCounter.tick();
-  }
-
-  /**
    * Updates a specific key to the position specified.
    * @param {Object} key The key to update.
    * @param {number} width The new width of the key.
@@ -608,13 +564,13 @@
       heightOffset += (rowHeight + params.pitchY);
     }
   }
-  window.addEventListener('realign', requestRealign);
 
   addEventListener('resize', onResize);
   addEventListener('load', onResize);
 
   exports.getKeyboardBounds = getKeyboardBounds_;
   exports.binarySearch = binarySearch_;
+  exports.realignAll = realignAll;
 })(this);
 
 /**
@@ -636,37 +592,21 @@ function importHTML(content) {
 }
 
 /**
- * Replace all kb-key-sequence elements with generated kb-key elements.
- * @param {!DocumentFragment} importedContent The imported dom structure.
- */
-function expandHTML(importedContent) {
-  var keySequences = importedContent.querySelectorAll('kb-key-sequence');
-  if (keySequences.length != 0) {
-    keySequences.array().forEach(function(element) {
-      var generatedDom = element.generateDom();
-      element.parentNode.replaceChild(generatedDom, element);
+  * Flatten the keysets which represents a keyboard layout.
+  */
+function flattenKeysets() {
+  var keysets = $('keyboard').querySelectorAll('kb-keyset');
+  if (keysets.length > 0) {
+    keysets.array().forEach(function(element) {
+      element.flattenKeyset();
     });
   }
 }
 
-/**
-  * Flatten the keysets which represents a keyboard layout. It has two steps:
-  * 1) Replace all kb-key-import elements with imported document that associated
-  *   with linkid.
-  * 2) Replace all kb-key-sequence elements with generated DOM structures.
-  * @param {!Document} content Document to process.
-  */
-function flattenKeysets(content) {
-  var importedContent = importHTML(content);
-  expandHTML(importedContent);
-  resolveAudio(importedContent);
-  return importedContent;
-}
-
-function resolveAudio(content) {
+function resolveAudio() {
   var keyboard = $('keyboard');
   keyboard.addSound(Sound.DEFAULT);
-  var nodes = content.querySelectorAll('[sound]').array();
+  var nodes = keyboard.querySelectorAll('[sound]').array();
   // Get id's of all unique sounds.
   for (var i = 0; i < nodes.length; i++) {
     var id = nodes[i].getAttribute('sound');
@@ -679,3 +619,11 @@ function resolveAudio(content) {
 addEventListener('touchstart', function(e) { e.preventDefault() });
 addEventListener('touchend', function(e) { e.preventDefault() });
 addEventListener('touchmove', function(e) { e.preventDefault() });
+addEventListener('polymer-ready', function(e) {
+  flattenKeysets();
+  resolveAudio();
+  realignAll();
+  var keyset = $('keyboard').activeKeyset;
+  if (keyset)
+    keyset.show();
+});
