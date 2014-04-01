@@ -490,8 +490,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   window_tree_client_.reset(
       new DesktopNativeWidgetAuraWindowTreeClient(host_->window()));
-  drop_helper_.reset(new DropHelper(
-      static_cast<internal::RootView*>(GetWidget()->GetRootView())));
+  drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
   aura::client::SetDragDropDelegate(content_window_, this);
 
   tooltip_manager_.reset(new TooltipManagerAura(GetWidget()));
@@ -591,6 +590,8 @@ void DesktopNativeWidgetAura::ReorderNativeViews() {
 }
 
 void DesktopNativeWidgetAura::ViewRemoved(View* view) {
+  DCHECK(drop_helper_.get() != NULL);
+  drop_helper_->ResetTargetViewIfEquals(view);
 }
 
 void DesktopNativeWidgetAura::SetNativeWindowProperty(const char* name,
