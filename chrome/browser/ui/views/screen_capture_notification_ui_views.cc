@@ -40,7 +40,7 @@ const int kPaddingHorizontal = 10;
 namespace {
 
 // A ClientView that overrides NonClientHitTest() so that the whole window area
-// acts as a window caption, except a rect specified using SetClientRect().
+// acts as a window caption, except a rect specified using set_client_rect().
 // ScreenCaptureNotificationUIViews uses this class to make the notification bar
 // draggable.
 class NotificationBarClientView : public views::ClientView {
@@ -50,9 +50,7 @@ class NotificationBarClientView : public views::ClientView {
   }
   virtual ~NotificationBarClientView() {}
 
-  void SetClientRect(const gfx::Rect& rect) {
-    rect_ = rect;
-  }
+  void set_client_rect(const gfx::Rect& rect) { rect_ = rect; }
 
   // views::ClientView overrides.
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE  {
@@ -134,9 +132,6 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
       hide_link_(NULL) {
   set_owned_by_client();
 
-  set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
-      GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
-
   gripper_ = new views::ImageView();
   gripper_->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -197,6 +192,9 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   widget->Init(params);
   widget->SetAlwaysOnTop(true);
 
+  set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
+      GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
+
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   // TODO(sergeyu): Move the notification to the display being captured when
   // per-display screen capture is supported.
@@ -256,7 +254,7 @@ void ScreenCaptureNotificationUIViews::Layout() {
   label_rect.set_height(bounds().height());
   label_->SetBoundsRect(label_rect);
 
-  client_view_->SetClientRect(gfx::Rect(
+  client_view_->set_client_rect(gfx::Rect(
       stop_button_rect.x(), stop_button_rect.y(),
       stop_button_rect.width() + kHorizontalMargin + hide_link_rect.width(),
       std::max(stop_button_rect.height(), hide_link_rect.height())));
