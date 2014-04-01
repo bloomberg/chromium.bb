@@ -179,8 +179,6 @@ InspectorTest.getPageMetrics = function(callback)
 
 InspectorTest.applyEmulationAndReload = function(width, height, deviceScaleFactor, viewport, callback)
 {
-    width *= deviceScaleFactor;
-    height *= deviceScaleFactor;
     InspectorTest.addSniffer(WebInspector.overridesSupport, "_deviceMetricsOverrideAppliedForTest", emulateCallback);
     WebInspector.overridesSupport.emulateDevice(width + "x" + height + "x" + deviceScaleFactor + "x0x0", "");
 
