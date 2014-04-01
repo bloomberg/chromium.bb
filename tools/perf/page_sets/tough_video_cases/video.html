@@ -40,7 +40,8 @@
     function getMediaSRC() {
       var mediaSRC = qsParams['src']
       if (qsParams['net'])
-        return getNetsimURL(qsParams['net']) + '&f=' + mediaSRC;
+        return getNetsimURL(qsParams['net']) + '&new_port=True' + '&f=' +
+               mediaSRC;
       return mediaSRC;
     }
 
