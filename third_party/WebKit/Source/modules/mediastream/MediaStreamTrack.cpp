@@ -47,6 +47,7 @@ PassRefPtr<MediaStreamTrack> MediaStreamTrack::create(ExecutionContext* context,
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context, MediaStreamComponent* component)
     : ActiveDOMObject(context)
+    , m_readyState(MediaStreamSource::ReadyStateLive)
     , m_isIteratingObservers(false)
     , m_stopped(false)
     , m_component(component)
@@ -93,20 +94,21 @@ bool MediaStreamTrack::enabled() const
 
 void MediaStreamTrack::setEnabled(bool enabled)
 {
-    if (m_stopped || enabled == m_component->enabled())
+    if (enabled == m_component->enabled())
         return;
 
     m_component->setEnabled(enabled);
 
-    MediaStreamCenter::instance().didSetMediaStreamTrackEnabled(m_component.get());
+    if (!ended())
+        MediaStreamCenter::instance().didSetMediaStreamTrackEnabled(m_component.get());
 }
 
 String MediaStreamTrack::readyState() const
 {
-    if (m_stopped)
+    if (ended())
         return "ended";
 
-    switch (m_component->source()->readyState()) {
+    switch (m_readyState) {
     case MediaStreamSource::ReadyStateLive:
         return "live";
     case MediaStreamSource::ReadyStateMuted:
@@ -131,7 +133,10 @@ void MediaStreamTrack::stopTrack(ExceptionState& exceptionState)
     if (ended())
         return;
 
+    m_readyState = MediaStreamSource::ReadyStateEnded;
     MediaStreamCenter::instance().didStopMediaStreamTrack(component());
+    dispatchEvent(Event::create(EventTypeNames::ended));
+    propagateTrackEnded();
 }
 
 PassRefPtr<MediaStreamTrack> MediaStreamTrack::clone(ExecutionContext* context)
@@ -144,15 +149,16 @@ PassRefPtr<MediaStreamTrack> MediaStreamTrack::clone(ExecutionContext* context)
 
 bool MediaStreamTrack::ended() const
 {
-    return m_stopped || (m_component->source()->readyState() == MediaStreamSource::ReadyStateEnded);
+    return m_stopped || (m_readyState == MediaStreamSource::ReadyStateEnded);
 }
 
 void MediaStreamTrack::sourceChangedState()
 {
-    if (m_stopped)
+    if (ended())
         return;
 
-    switch (m_component->source()->readyState()) {
+    m_readyState = m_component->source()->readyState();
+    switch (m_readyState) {
     case MediaStreamSource::ReadyStateLive:
         dispatchEvent(Event::create(EventTypeNames::unmute));
         break;

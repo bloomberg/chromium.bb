@@ -92,6 +92,8 @@ public:
 private:
     MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
 
+    MediaStreamSource::ReadyState m_readyState;
+
     // MediaStreamSourceObserver
     virtual void sourceChangedState() OVERRIDE;
 
