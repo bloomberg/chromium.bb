@@ -29,18 +29,22 @@
 
 namespace {
 
-// Updates either the biggest possible width for the username field in the
-// manage passwords bubble or the biggest possible width for the password field.
-void UpdateBiggestWidth(const autofill::PasswordForm& password_form,
-                        bool username,
-                        int* biggest_width) {
+// Upper limit on the length of fields displayed in the manage passwords bubble.
+const int kMaxDisplayableStringWidth = 22;
+
+// Returns the width of |password_form|'s |type| field, clamped to the maximum
+// displayable string width.
+int GetFieldWidth(const autofill::PasswordForm& password_form,
+                  ManagePasswordsBubbleView::FieldType type) {
   const gfx::FontList font_list;
-  base::string16 display_string(username ?
-      password_form.username_value :
-      ManagePasswordItemView::GetPasswordDisplayString(
-          password_form.password_value));
-  *biggest_width = std::max(gfx::GetStringWidth(display_string, font_list),
-                            *biggest_width);
+  base::string16 display_string(
+      type == ManagePasswordsBubbleView::USERNAME_FIELD
+          ? password_form.username_value
+          : ManagePasswordItemView::GetPasswordDisplayString(
+                password_form.password_value));
+  return std::min(
+      gfx::FontList().GetExpectedTextWidth(kMaxDisplayableStringWidth),
+      gfx::GetStringWidth(display_string, font_list));
 }
 
 }  // namespace
@@ -115,9 +119,8 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {}
 
-int ManagePasswordsBubbleView::GetMaximumUsernameOrPasswordWidth(
-    bool username) {
-  int biggest_width = 0;
+int ManagePasswordsBubbleView::GetMaximumFieldWidth(FieldType type) {
+  int maximum = 0;
   if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
       ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED) {
     // If we are in the PASSWORD_TO_BE_SAVED state we only display the
@@ -125,14 +128,16 @@ int ManagePasswordsBubbleView::GetMaximumUsernameOrPasswordWidth(
     for (autofill::PasswordFormMap::const_iterator i(
              manage_passwords_bubble_model_->best_matches().begin());
          i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
-      UpdateBiggestWidth((*i->second), username, &biggest_width);
+      maximum = std::max(maximum, GetFieldWidth((*i->second), type));
     }
   }
   if (manage_passwords_bubble_model_->password_submitted()) {
-    UpdateBiggestWidth(manage_passwords_bubble_model_->pending_credentials(),
-                       username, &biggest_width);
+    maximum = std::max(
+        GetFieldWidth(manage_passwords_bubble_model_->pending_credentials(),
+                      type),
+        maximum);
   }
-  return biggest_width;
+  return maximum;
 }
 
 void ManagePasswordsBubbleView::AdjustForFullscreen(
@@ -159,23 +164,18 @@ void ManagePasswordsBubbleView::Init() {
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
-  // This calculates the necessary widths for the list of credentials in the
-  // bubble. We do not need to clamp the password field width because
-  // ManagePasswordItemView::GetPasswordFisplayString() does this.
-
-  const int predefined_username_field_max_width =
-      gfx::FontList().GetExpectedTextWidth(22);
-  const int max_username_or_password_width =
-      std::min(GetMaximumUsernameOrPasswordWidth(true),
-               predefined_username_field_max_width);
-  const int first_field_width = std::max(max_username_or_password_width,
-      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED)).
-          GetPreferredSize().width());
+  // This calculates the necessary widths for credential columns in the bubble.
+  const int first_field_width = std::max(
+      GetMaximumFieldWidth(USERNAME_FIELD),
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED))
+          .GetPreferredSize()
+          .width());
 
   const int second_field_width = std::max(
-      GetMaximumUsernameOrPasswordWidth(false),
-      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO)).
-          GetPreferredSize().width());
+      GetMaximumFieldWidth(PASSWORD_FIELD),
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO))
+          .GetPreferredSize()
+          .width());
 
   const int kSingleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);

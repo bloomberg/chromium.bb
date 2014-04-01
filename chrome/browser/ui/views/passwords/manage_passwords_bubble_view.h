@@ -27,6 +27,8 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
                                   public views::ButtonListener,
                                   public views::LinkListener {
  public:
+  enum FieldType { USERNAME_FIELD, PASSWORD_FIELD };
+
   // Shows the bubble.
   static void ShowBubble(content::WebContents* web_contents,
                          ManagePasswordsIconView* icon_view);
@@ -43,10 +45,9 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
                             ManagePasswordsIconView* icon_view);
   virtual ~ManagePasswordsBubbleView();
 
-  // Returns the maximum width needed for the username (if |username| is set) or
-  // password field, based on the actual usernames and passwords that need to be
-  // shown.
-  int GetMaximumUsernameOrPasswordWidth(bool username);
+  // Returns the maximum width needed to display the longest value in the
+  // |type| field.
+  int GetMaximumFieldWidth(FieldType type);
 
   // If the bubble is not anchored to a view, places the bubble in the top
   // right (left in RTL) of the |screen_bounds| that contain |web_contents_|'s
