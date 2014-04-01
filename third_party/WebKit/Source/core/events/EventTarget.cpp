@@ -102,6 +102,7 @@ bool EventTarget::removeEventListener(const AtomicString& eventType, EventListen
 
     size_t indexOfRemovedListener;
 
+    RefPtr<EventListener> protect(listener);
     if (!d->eventListenerMap.remove(eventType, listener, useCapture, indexOfRemovedListener))
         return false;
     InspectorInstrumentation::didRemoveEventListener(this, eventType, listener, useCapture);
