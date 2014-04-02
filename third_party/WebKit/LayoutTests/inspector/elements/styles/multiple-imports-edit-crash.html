@@ -14,7 +14,6 @@
 
 function test()
 {
-    WebInspector.inspectorView.showPanel("elements");
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, this);
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
     InspectorTest.nodeWithId("inspected", nodeFound);
@@ -29,15 +28,9 @@ function test()
     function matchedStylesCallback(styles)
     {
         styleSheetId = styles.matchedCSSRules[1].id.styleSheetId;
+        InspectorTest.addResult("Setting stylesheet text...");
         CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(resources/multiple-imports-edit-crash-1.css);\n@import url(resources/multiple-imports-edit-crash-2.css);\n#inspected { color: black }\n");
-    }
-
-    function modifiedCallback()
-    {
-        WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, this);
-        WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, this);
-        InspectorTest.completeTest();
     }
 
     var addsExpected = 2;
@@ -53,6 +46,7 @@ function test()
             added.sort();
             InspectorTest.addResult("Added:");
             InspectorTest.addResult(added.join("\n"));
+            InspectorTest.completeTest();
         }
     }
 
@@ -64,7 +58,6 @@ function test()
             removed.sort();
             InspectorTest.addResult("Removed:");
             InspectorTest.addResult(removed.join("\n"));
-            InspectorTest.completeTest();
         }
     }
 

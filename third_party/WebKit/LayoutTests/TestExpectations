@@ -1,7 +1,4 @@
 
-# This test can't just be rebaselined because it has absolute file paths in the output.
-crbug.com/257132 http/tests/inspector/network/network-xhr-replay.html [ Failure ]
-
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
@@ -26,12 +23,6 @@ crbug.com/233124 http/tests/inspector/network/network-content-replacement-embed.
 crbug.com/233124 http/tests/inspector/network/network-size.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-chunked.html [ Skip ]
 crbug.com/233124 http/tests/inspector/network/network-size-sync.html [ Skip ]
-
-crbug.com/336925 inspector/elements/styles/styles-add-blank-property.html [ Pass Failure ]
-
-crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]
-crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
-crbug.com/344238 virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 
 # -----------------------------------------------------------------
 # Plugin tests
@@ -480,7 +471,6 @@ crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 crbug.com/278497 [ SnowLeopard Debug ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Failure Pass  ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass ]
-crbug.com/280698 inspector/elements/styles/multiple-imports-edit-crash.html [ Failure Pass ]
 crbug.com/282081 [ Debug ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Crash Pass ]
 crbug.com/282081 [ Win Release ] http/tests/security/contentSecurityPolicy/report-only-from-header.php [ Pass Timeout ]
 crbug.com/282086 [ XP Release ] virtual/gpu/fast/canvas/webgl/gl-uniform-arrays.html [ Pass Timeout ]
@@ -623,7 +613,6 @@ crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout ]
 
-crbug.com/308952 [ XP ] inspector/editor/text-editor-reveal-line.html [ Failure ]
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
@@ -678,7 +667,6 @@ crbug.com/313219 traversal/tree-walker-005.html [ Crash Pass ]
 crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass Timeout ]
-crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
 
 crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 
@@ -777,11 +765,6 @@ crbug.com/349552 [ Android ] compositing/animation/animated-composited-inside-hi
 
 crbug.com/356834 fast/repaint/shift-relative-positioned-container-with-image-addition.html [ Failure Pass ]
 
-crbug.com/333882 [ Win ] inspector/editor/text-editor-selection-to-search.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/elements/edit-trimmed-attribute-value.html [ Pass Failure ]
-crbug.com/333882 [ Win7 ] inspector/elements/styles/styles-change-node-while-editing.html [ Pass Failure ]
-crbug.com/333882 [ Win ] inspector/elements/styles/undo-add-rule-crash.html [ Pass Timeout ]
-
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure ]
 
 crbug.com/345649 fast/repaint/delete-into-nested-block.html [ Pass Failure ]
@@ -824,7 +807,6 @@ crbug.com/338475 [ Android ] svg/batik/text/textAnchor3.svg [ Failure ]
 crbug.com/340150 [ Mac Debug ] plugins/plugin-document-back-forward.html [ Pass Failure ]
 
 crbug.com/339174 fast/writing-mode/Kusa-Makura-background-canvas.html [ Pass Failure ]
-crbug.com/339252 inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/339259 fast/flexbox/box-orient-button.html [ Pass Failure ]
 crbug.com/339394 [ Win Debug ] virtual/threaded/animations/animation-matrix-negative-scale-unmatrix.html [ Pass Failure ]
 crbug.com/339592 media/track/opera/interfaces/TextTrackList/onaddtrack.html [ Pass Crash ]
@@ -834,7 +816,6 @@ crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Ti
 crbug.com/339373 http/tests/websocket/close-before-handshake-response.html [ Failure ]
 crbug.com/339373 http/tests/websocket/multiple-connections.html [ Timeout ]
 crbug.com/347109 http/tests/websocket/useragent-in-openinghandshake.html [ Failure ]
-crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Failure ]
 
 # Tests of functionality not implemented in the new WebSocket
 # implementation. These tests will be removed when the old implementation is
@@ -876,7 +857,6 @@ crbug.com/350011 [ Debug ] svg/W3C-SVG-1.1/animate-elem-41-t.svg [ ImageOnlyFail
 
 crbug.com/349523 [ Win ] webaudio/dynamicscompressor-simple.html [ Failure ]
 crbug.com/349523 [ Win ] webaudio/realtimeanalyser-fft-scaling.html [ Failure ]
-crbug.com/352466 [ Linux Win ] inspector/jump-to-previous-editing-location.html [ Pass Timeout ]
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
 crbug.com/349528 [ Debug ] fast/mediastream/RTCPeerConnection-lifetime.html [ Crash Pass ]
 
@@ -976,4 +956,3 @@ crbug.com/355489 media/activation-behavior.html [ Pass Failure Timeout ]
 
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
 
-crbug.com/351696 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
