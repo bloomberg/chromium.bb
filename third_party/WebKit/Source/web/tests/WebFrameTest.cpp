@@ -5303,7 +5303,7 @@ TEST_F(WebFrameTest, CreateChildFrameFailure)
     EXPECT_EQ(1, client.callCount());
 }
 
-TEST_F(WebFrameTest, sizeChangeRepaint)
+TEST_F(WebFrameTest, DISABLED_sizeChangeRepaint)
 {
     const char* kTests[] = {
         "repaint/size-change-repaint1.html",
