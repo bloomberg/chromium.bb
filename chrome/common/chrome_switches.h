@@ -85,7 +85,6 @@ extern const char kDisableComponentExtensionsWithBackgroundPages[];
 extern const char kDisableComponentUpdate[];
 extern const char kDisableCRLSets[];
 extern const char kDisableCreateExistingManagedUsers[];
-extern const char kDisableCustomJumpList[];
 extern const char kDisableDefaultApps[];
 extern const char kDisableDeviceDiscovery[];
 extern const char kDisableDeviceDiscoveryNotifications[];

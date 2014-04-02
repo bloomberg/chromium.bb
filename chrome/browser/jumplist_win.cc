@@ -189,9 +189,7 @@ JumpList::~JumpList() {
 
 // static
 bool JumpList::Enabled() {
-  return (JumpListUpdater::IsEnabled() &&
-          !CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableCustomJumpList));
+  return JumpListUpdater::IsEnabled();
 }
 
 bool JumpList::AddObserver(Profile* profile) {

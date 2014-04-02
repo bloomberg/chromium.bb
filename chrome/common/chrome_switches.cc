@@ -276,9 +276,6 @@ const char kDisableCRLSets[]                = "disable-crl-sets";
 const char kDisableCreateExistingManagedUsers[] =
     "disable-create-exsting-managed-users";
 
-// Disables the custom JumpList on Windows 7.
-const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
-
 // Disables installation of default apps on first run. This is used during
 // automated testing.
 const char kDisableDefaultApps[]            = "disable-default-apps";
