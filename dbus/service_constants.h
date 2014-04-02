@@ -197,6 +197,8 @@ const char kSessionManagerHandleLockScreenDismissed[] =
     "HandleLockScreenDismissed";
 const char kSessionManagerHandleLivenessConfirmed[] = "HandleLivenessConfirmed";
 const char kSessionManagerSetFlagsForUser[] = "SetFlagsForUser";
+const char kSessionManagerGetServerBackedStateKeys[] =
+    "GetServerBackedStateKeys";
 // Signals
 const char kLoginPromptVisibleSignal[] = "LoginPromptVisible";
 const char kSessionStateChangedSignal[] = "SessionStateChanged";
