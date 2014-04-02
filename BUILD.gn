@@ -26,7 +26,7 @@ group("root") {
     #"//components/translate:translate_core_common",
     #"//crypto",
     #"//device/usb:device_usb",
-    #"//ipc",
+    "//ipc",
     #"//net",
     #"//net/third_party/nss:ssl",
     #"//sdch",

@@ -56,11 +56,12 @@ component("ipc") {
     "unix_domain_socket_util.h",
   ]
 
-  #if (!is_untrusted_nacl) {
+  if (!is_nacl) {
     sources -= [
       "ipc_channel_nacl.cc",
       "ipc_channel_nacl.h",
     ]
+  }
 
   if (is_win || is_ios) {
     sources -= [
@@ -99,9 +100,13 @@ test("ipc_tests") {
   if (is_win || is_ios) {
     sources -= [ "unix_domain_socket_util_unittest.cc" ]
   }
+
+  # TODO(brettw) hook up Android testing.
   #if (is_android && gtest_target_type == "shared_library") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"
   #}
+
+  # TODO(brettw) hook up tcmalloc to this target.
   #if (is_posix && !is_mac && !is_android) {
   #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
   #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
@@ -127,9 +132,12 @@ test("ipc_perftests") {
     "ipc_test_base.h",
   ]
 
+  # TODO(brettw) hook up Android testing.
   #if (is_android && gtest_target_type == "shared_library") {
   #  deps += "/testing/android/native_test.gyp:native_testNative_code"
   #}
+
+  # TODO(brettw) hook up tcmalloc to this target.
   #if (is_posix && !is_mac && !is_android) {
   #  # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
   #  if ((use_allocator!="none" && use_allocator!="see_use_tcmalloc") || (use_allocator=="see_use_tcmalloc" && linux_use_tcmalloc)) {
