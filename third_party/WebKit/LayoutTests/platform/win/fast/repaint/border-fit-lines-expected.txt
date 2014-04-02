@@ -1,10 +1,10 @@
 This should be a 100×100px green square with a black border:
  (repaint rects
-  (rect 10 30 10 10)
-  (rect 10 30 100 10)
-  (rect 8 28 784 104)
-  (rect 8 28 104 104)
   (rect 8 28 14 104)
   (rect 8 28 104 104)
+  (rect 10 30 10 10)
+  (rect 10 30 100 10)
+  (rect 8 48 784 2)
+  (rect 8 48 104 2)
 )
 

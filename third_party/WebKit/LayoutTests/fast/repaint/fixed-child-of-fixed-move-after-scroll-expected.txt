@@ -1,6 +1,6 @@
 You should see a yellow rect on the left, and a green one on the right. No red pixels.
 (repaint rects
-  (rect 10 70 100 100)
+  (rect 10 -130 100 100)
   (rect 150 70 100 100)
 )
 

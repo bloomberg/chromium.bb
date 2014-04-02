@@ -2,7 +2,7 @@ This test checks that shifting an abspos container will properly repaint its des
 The images below should be correctly repainted.
   
 (repaint rects
-  (rect 0 0 1500 236)
-  (rect -250 0 1500 236)
+  (rect 0 0 1500 237)
+  (rect -250 0 1500 237)
 )
 

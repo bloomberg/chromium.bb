@@ -4,13 +4,13 @@ This tests for a repaint bug. The old caret position should be invalidated when 
 
 
 (repaint rects
-  (rect 8 42 784 36)
-  (rect 3 37 794 46)
   (rect 8 8 784 584)
   (rect 3 8 794 584)
-  (rect 8 78 784 18)
+  (rect 8 42 784 36)
+  (rect 3 37 794 46)
   (rect 3 83 794 18)
   (rect 3 78 794 5)
+  (rect 8 78 784 18)
   (rect 7 59 3 20)
   (rect 7 77 3 20)
 )
