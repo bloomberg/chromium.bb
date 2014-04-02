@@ -5,29 +5,4 @@ include_rules = [
   "+net",
   "+sync",
   "+third_party/leveldatabase",
-
-  # Temporarily allowed includes as part of the app shell/extensions refactor.
-  #
-  # NOTE: Please do not add includes without talking to the app shell team;
-  # see OWNERS for this directory.
-  #
-  # TODO(jamescook): Remove these. http://crbug.com/162530
-  "+chrome/browser/chrome_notification_types.h",
-  "+chrome/browser/extensions/api/content_settings/content_settings_store.h",
-  "+chrome/browser/extensions/api/runtime/runtime_api.h",
-  "+chrome/browser/renderer_host/chrome_render_message_filter.h",
-  "+chrome/common/extensions/features/feature_channel.h",
-  "+grit/generated_resources.h",
 ]
-
-specific_include_rules = {
-  "(.*test|.*test_util)\.(cc|h)": [
-    # Temporarily allowed testing includes.  See above.
-    # TODO(jamescook): Remove these. http://crbug.com/162530
-    "+chrome/browser/extensions/extension_api_unittest.h",
-    "+chrome/browser/extensions/extension_service_unittest.h",
-    "+chrome/browser/extensions/test_extension_system.h",
-    "+chrome/common/chrome_paths.h",
-    "+chrome/test/base/testing_profile.h",
-  ],
-}
