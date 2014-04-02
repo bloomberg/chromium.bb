@@ -253,10 +253,6 @@ blink::WebPoint WebLayerImpl::scrollPosition() const {
   return gfx::PointAtOffsetFromOrigin(layer_->scroll_offset());
 }
 
-WebSize WebLayerImpl::maxScrollPosition() const {
-  return layer_->MaxScrollOffset();
-}
-
 void WebLayerImpl::setScrollClipLayer(WebLayer* clip_layer) {
   if (!clip_layer) {
     layer_->SetScrollClipLayerId(Layer::INVALID_ID);
