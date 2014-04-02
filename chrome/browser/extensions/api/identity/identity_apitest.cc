@@ -144,6 +144,16 @@ class AsyncExtensionBrowserTest : public ExtensionBrowserTest {
   scoped_ptr<SendResponseDelegate> response_delegate_;
 };
 
+class TestHangOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
+ public:
+  TestHangOAuth2MintTokenFlow()
+      : OAuth2MintTokenFlow(NULL, NULL, OAuth2MintTokenFlow::Parameters()) {}
+
+  virtual void Start() OVERRIDE {
+    // Do nothing, simulating a hanging network call.
+  }
+};
+
 class TestOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
  public:
   enum ResultType {
@@ -878,6 +888,54 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueueShutdown) {
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(extension.get());
+
+  // Create a fake request to block the queue.
+  MockQueuedMintRequest queued_request;
+  IdentityMintRequestQueue::MintType type =
+      IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
+
+  EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
+  QueueRequestStart(type, &queued_request);
+
+  // The real request will start processing, but wait in the queue behind
+  // the blocker.
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
+      TestOAuth2MintTokenFlow::ISSUE_ADVICE_SUCCESS, func.get());
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow1));
+  RunFunctionAsync(func.get(), "[{\"interactive\": true}]");
+  // Verify that we have fetched the login token and run the first flow.
+  testing::Mock::VerifyAndClearExpectations(func.get());
+  EXPECT_FALSE(func->scope_ui_shown());
+
+  // After the request is canceled, the function will complete.
+  func->OnShutdown();
+  EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+
+  QueueRequestComplete(type, &queued_request);
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveShutdown) {
+  scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
+  scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
+  func->set_extension(extension.get());
+
+  EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
+  TestHangOAuth2MintTokenFlow* flow = new TestHangOAuth2MintTokenFlow();
+  EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
+  RunFunctionAsync(func.get(), "[{\"interactive\": false}]");
+
+  // After the request is canceled, the function will complete.
+  func->OnShutdown();
+  EXPECT_EQ(std::string(errors::kCanceled), WaitForError(func.get()));
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,

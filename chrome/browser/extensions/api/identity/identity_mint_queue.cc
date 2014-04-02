@@ -50,6 +50,13 @@ void IdentityMintRequestQueue::RequestComplete(
     request_queue.front()->StartMintToken(type);
 }
 
+void IdentityMintRequestQueue::RequestCancel(
+    const ExtensionTokenKey& key,
+    IdentityMintRequestQueue::Request* request) {
+  GetRequestQueueMap(MINT_TYPE_INTERACTIVE)[key].remove(request);
+  GetRequestQueueMap(MINT_TYPE_NONINTERACTIVE)[key].remove(request);
+}
+
 bool IdentityMintRequestQueue::empty(IdentityMintRequestQueue::MintType type,
                                      const ExtensionTokenKey& key) {
   RequestQueueMap& request_queue_map = GetRequestQueueMap(type);

@@ -13,6 +13,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/extensions/api/identity/account_tracker.h"
 #include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
@@ -48,7 +49,97 @@ extern const char kInteractionRequired[];
 extern const char kInvalidRedirect[];
 extern const char kOffTheRecord[];
 extern const char kPageLoadFailure[];
+extern const char kCanceled[];
 }  // namespace identity_constants
+
+class IdentityTokenCacheValue {
+ public:
+  IdentityTokenCacheValue();
+  explicit IdentityTokenCacheValue(const IssueAdviceInfo& issue_advice);
+  IdentityTokenCacheValue(const std::string& token,
+                          base::TimeDelta time_to_live);
+  ~IdentityTokenCacheValue();
+
+  // Order of these entries is used to determine whether or not new
+  // entries supercede older ones in SetCachedToken.
+  enum CacheValueStatus {
+    CACHE_STATUS_NOTFOUND,
+    CACHE_STATUS_ADVICE,
+    CACHE_STATUS_TOKEN
+  };
+
+  CacheValueStatus status() const;
+  const IssueAdviceInfo& issue_advice() const;
+  const std::string& token() const;
+  const base::Time& expiration_time() const;
+
+ private:
+  bool is_expired() const;
+
+  CacheValueStatus status_;
+  IssueAdviceInfo issue_advice_;
+  std::string token_;
+  base::Time expiration_time_;
+};
+
+class IdentityAPI : public BrowserContextKeyedAPI,
+                    public AccountTracker::Observer {
+ public:
+  typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
+
+  class ShutdownObserver {
+   public:
+    virtual void OnShutdown() = 0;
+  };
+
+  explicit IdentityAPI(content::BrowserContext* context);
+  virtual ~IdentityAPI();
+
+  // Request serialization queue for getAuthToken.
+  IdentityMintRequestQueue* mint_queue();
+
+  // Token cache
+  void SetCachedToken(const ExtensionTokenKey& key,
+                      const IdentityTokenCacheValue& token_data);
+  void EraseCachedToken(const std::string& extension_id,
+                        const std::string& token);
+  void EraseAllCachedTokens();
+  const IdentityTokenCacheValue& GetCachedToken(const ExtensionTokenKey& key);
+
+  const CachedTokens& GetAllCachedTokens();
+
+  void ReportAuthError(const GoogleServiceAuthError& error);
+  GoogleServiceAuthError GetAuthStatusForTest() const;
+
+  // BrowserContextKeyedAPI implementation.
+  virtual void Shutdown() OVERRIDE;
+  static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
+
+  // AccountTracker::Observer implementation:
+  virtual void OnAccountAdded(const AccountIds& ids) OVERRIDE;
+  virtual void OnAccountRemoved(const AccountIds& ids) OVERRIDE;
+  virtual void OnAccountSignInChanged(const AccountIds& ids,
+                                      bool is_signed_in) OVERRIDE;
+
+  void AddShutdownObserver(ShutdownObserver* observer);
+  void RemoveShutdownObserver(ShutdownObserver* observer);
+
+ private:
+  friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "IdentityAPI"; }
+  static const bool kServiceIsNULLWhileTesting = true;
+
+  content::BrowserContext* browser_context_;
+  IdentityMintRequestQueue mint_queue_;
+  CachedTokens token_cache_;
+  AccountTracker account_tracker_;
+  ObserverList<ShutdownObserver> shutdown_observer_list_;
+};
+
+template <>
+void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies();
 
 // identity.getAuthToken fetches an OAuth 2 function for the
 // caller. The request has three sub-flows: non-interactive,
@@ -72,7 +163,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                      public IdentityMintRequestQueue::Request,
                                      public OAuth2MintTokenFlow::Delegate,
                                      public IdentitySigninFlow::Delegate,
-                                     public OAuth2TokenService::Consumer {
+                                     public OAuth2TokenService::Consumer,
+                                     public IdentityAPI::ShutdownObserver {
  public:
   DECLARE_EXTENSION_FUNCTION("identity.getAuthToken",
                              EXPERIMENTAL_IDENTITY_GETAUTHTOKEN);
@@ -87,12 +179,16 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                            ComponentWithChromeClientId);
   FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest,
                            ComponentWithNormalClientId);
+  FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, InteractiveQueueShutdown);
+  FRIEND_TEST_ALL_PREFIXES(GetAuthTokenFunctionTest, NoninteractiveShutdown);
   friend class MockGetAuthTokenFunction;
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 
   // Helpers to report async function results to the caller.
+  void StartAsyncRun();
+  void CompleteAsyncRun(bool success);
   void CompleteFunctionWithResult(const std::string& access_token);
   void CompleteFunctionWithError(const std::string& error);
 
@@ -129,6 +225,9 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                  const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) OVERRIDE;
+
+  // IdentityAPI::ShutdownObserver implementation:
+  virtual void OnShutdown() OVERRIDE;
 
   // Starts a login access token request.
   virtual void StartLoginAccessTokenRequest();
@@ -214,88 +313,6 @@ class IdentityLaunchWebAuthFlowFunction : public ChromeAsyncExtensionFunction,
   scoped_ptr<WebAuthFlow> auth_flow_;
   GURL final_url_prefix_;
 };
-
-class IdentityTokenCacheValue {
- public:
-  IdentityTokenCacheValue();
-  explicit IdentityTokenCacheValue(const IssueAdviceInfo& issue_advice);
-  IdentityTokenCacheValue(const std::string& token,
-                          base::TimeDelta time_to_live);
-  ~IdentityTokenCacheValue();
-
-  // Order of these entries is used to determine whether or not new
-  // entries supercede older ones in SetCachedToken.
-  enum CacheValueStatus {
-    CACHE_STATUS_NOTFOUND,
-    CACHE_STATUS_ADVICE,
-    CACHE_STATUS_TOKEN
-  };
-
-  CacheValueStatus status() const;
-  const IssueAdviceInfo& issue_advice() const;
-  const std::string& token() const;
-  const base::Time& expiration_time() const;
-
- private:
-  bool is_expired() const;
-
-  CacheValueStatus status_;
-  IssueAdviceInfo issue_advice_;
-  std::string token_;
-  base::Time expiration_time_;
-};
-
-class IdentityAPI : public BrowserContextKeyedAPI,
-                    public AccountTracker::Observer {
- public:
-  typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
-
-  explicit IdentityAPI(content::BrowserContext* context);
-  virtual ~IdentityAPI();
-
-  // Request serialization queue for getAuthToken.
-  IdentityMintRequestQueue* mint_queue();
-
-  // Token cache
-  void SetCachedToken(const ExtensionTokenKey& key,
-                      const IdentityTokenCacheValue& token_data);
-  void EraseCachedToken(const std::string& extension_id,
-                        const std::string& token);
-  void EraseAllCachedTokens();
-  const IdentityTokenCacheValue& GetCachedToken(const ExtensionTokenKey& key);
-
-  const CachedTokens& GetAllCachedTokens();
-
-  void ReportAuthError(const GoogleServiceAuthError& error);
-  GoogleServiceAuthError GetAuthStatusForTest() const;
-
-  // BrowserContextKeyedAPI implementation.
-  virtual void Shutdown() OVERRIDE;
-  static BrowserContextKeyedAPIFactory<IdentityAPI>* GetFactoryInstance();
-
-  // AccountTracker::Observer implementation:
-  virtual void OnAccountAdded(const AccountIds& ids) OVERRIDE;
-  virtual void OnAccountRemoved(const AccountIds& ids) OVERRIDE;
-  virtual void OnAccountSignInChanged(const AccountIds& ids, bool is_signed_in)
-      OVERRIDE;
-
- private:
-  friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
-
-  // BrowserContextKeyedAPI implementation.
-  static const char* service_name() {
-    return "IdentityAPI";
-  }
-  static const bool kServiceIsNULLWhileTesting = true;
-
-  content::BrowserContext* browser_context_;
-  IdentityMintRequestQueue mint_queue_;
-  CachedTokens token_cache_;
-  AccountTracker account_tracker_;
-};
-
-template <>
-void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies();
 
 }  // namespace extensions
 

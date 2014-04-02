@@ -112,3 +112,28 @@ TEST(IdentityMintQueueTest, Empty) {
   queue.RequestComplete(type, *key, &request1);
   EXPECT_TRUE(queue.empty(type, *key));
 }
+
+TEST(IdentityMintQueueTest, Cancel) {
+  IdentityMintRequestQueue::MintType type =
+      IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE;
+  IdentityMintRequestQueue queue;
+  scoped_ptr<ExtensionTokenKey> key(ExtensionIdToKey("ext_id"));
+  MockRequest request1;
+  MockRequest request2;
+  MockRequest request3;
+  MockRequest request4;
+
+  EXPECT_CALL(request1, StartMintToken(type)).Times(1);
+  queue.RequestStart(type, *key, &request1);
+  queue.RequestStart(type, *key, &request2);
+  queue.RequestStart(type, *key, &request3);
+
+  // request1: cancel the running head
+  // request3: cancel a request that is not the head
+  // request2: cancel the last request
+  // request4: cancel a request that is not in the queue at all
+  queue.RequestCancel(*key, &request1);
+  queue.RequestCancel(*key, &request3);
+  queue.RequestCancel(*key, &request2);
+  queue.RequestCancel(*key, &request4);
+}

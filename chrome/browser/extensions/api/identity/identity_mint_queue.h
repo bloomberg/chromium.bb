@@ -22,7 +22,8 @@ namespace extensions {
 // head of the line.
 //
 // The queue does not own Requests. Request pointers must be valid
-// until they are removed from the queue with RequestComplete.
+// until they are removed from the queue with RequestComplete or
+// RequestCancel.
 class IdentityMintRequestQueue {
  public:
   enum MintType {
@@ -47,6 +48,11 @@ class IdentityMintRequestQueue {
   void RequestComplete(IdentityMintRequestQueue::MintType type,
                        const ExtensionTokenKey& key,
                        IdentityMintRequestQueue::Request* request);
+  // Cancels a request. OK to call if |request| is not queued.
+  // Does *not* start a new request, even if the canceled request is at
+  // the head of the queue.
+  void RequestCancel(const ExtensionTokenKey& key,
+                     IdentityMintRequestQueue::Request* request);
   bool empty(IdentityMintRequestQueue::MintType type,
              const ExtensionTokenKey& key);
 
