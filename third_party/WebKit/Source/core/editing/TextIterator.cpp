@@ -668,7 +668,7 @@ void TextIterator::handleTextBox()
         InlineTextBox* firstTextBox = renderer->containsReversedText() ? (m_sortedTextBoxes.isEmpty() ? 0 : m_sortedTextBoxes[0]) : renderer->firstTextBox();
         bool needSpace = m_lastTextNodeEndedWithCollapsedSpace
             || (m_textBox == firstTextBox && textBoxStart == runStart && runStart > 0);
-        if (needSpace && !isCollapsibleWhitespace(m_lastCharacter) && m_lastCharacter) {
+        if (needSpace && !renderer->style()->isCollapsibleWhiteSpace(m_lastCharacter) && m_lastCharacter) {
             if (m_lastTextNode == m_node && runStart > 0 && str[runStart - 1] == ' ') {
                 unsigned spaceRunStart = runStart - 1;
                 while (spaceRunStart > 0 && str[spaceRunStart - 1] == ' ')

@@ -245,6 +245,12 @@ inline bool isWhitespace(UChar c)
     return c == noBreakSpace || c == ' ' || c == '\n' || c == '\t';
 }
 
+// FIXME: Can't really answer this question correctly without knowing the white-space mode.
+inline bool isCollapsibleWhitespace(UChar c)
+{
+    return c == ' ' || c == '\n';
+}
+
 inline bool isAmbiguousBoundaryCharacter(UChar character)
 {
     // These are characters that can behave as word boundaries, but can appear within words.

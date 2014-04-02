@@ -3,7 +3,7 @@ Specification link: 3.4 How groups are rendered
 pservers-pattern-01-b ← index → script-handle-01-b
 render-groups-01-b
 
-SVG Image	 PNG Image
+SVG Image	PNG Image
 	
 Verifies implicit rendering order (paragraph 3.3) and grouping mechanism (paragraphs 3.4). It also validates basic Shape, Image and text rendering.
 This test renders 3 elements: a text string "SVG", then a shape, then an image. Because of their definition order and coordinates, the image should be on top of the rectangle and the rectangle on top of the text. The test validates that groups are conceptually rendered offscreen before being rendered on the canvas. This is done by grouping the same overlapping objects and rendering the group at half opacity. The background pattern (vertical stripes) should show throw all the group elements. However, none of the "SVG" should show through the rectangle and none of the rectangle should show through the image.

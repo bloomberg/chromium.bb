@@ -27,7 +27,7 @@
 #include "core/editing/HTMLInterchange.h"
 
 #include "core/dom/Text.h"
-#include "core/editing/TextIterator.h"
+#include "core/editing/htmlediting.h"
 #include "core/rendering/RenderObject.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
