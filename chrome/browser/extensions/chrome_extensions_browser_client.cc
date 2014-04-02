@@ -37,6 +37,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #endif
 
 namespace extensions {
@@ -114,6 +115,14 @@ bool ChromeExtensionsBrowserClient::CanExtensionCrossIncognito(
 PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(
     content::BrowserContext* context) {
   return static_cast<Profile*>(context)->GetPrefs();
+}
+
+void ChromeExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
+    content::BrowserContext* context,
+    std::vector<ExtensionPrefsObserver*>* observers) const {
+#if defined(ENABLE_EXTENSIONS)
+  observers->push_back(ContentSettingsService::Get(context));
+#endif
 }
 
 bool ChromeExtensionsBrowserClient::DeferLoadingBackgroundHosts(

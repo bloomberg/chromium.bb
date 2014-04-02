@@ -23,6 +23,7 @@
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_pattern.h"
@@ -120,7 +121,7 @@ void HostContentSettingsMap::RegisterExtensionService(
 
   content_settings::ObservableProvider* custom_extension_provider =
       new content_settings::CustomExtensionProvider(
-          extensions::ExtensionPrefs::Get(
+          extensions::ContentSettingsService::Get(
               extension_service->GetBrowserContext())->content_settings_store(),
           is_off_the_record_);
   custom_extension_provider->AddObserver(this);

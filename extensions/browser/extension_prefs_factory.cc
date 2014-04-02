@@ -44,13 +44,15 @@ ExtensionPrefsFactory::~ExtensionPrefsFactory() {
 KeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
+  std::vector<ExtensionPrefsObserver*> prefs_observers;
+  client->GetEarlyExtensionPrefsObservers(context, &prefs_observers);
   return ExtensionPrefs::Create(
       client->GetPrefServiceForContext(context),
       context->GetPath().AppendASCII(extensions::kInstallDirectoryName),
       ExtensionPrefValueMapFactory::GetForBrowserContext(context),
       client->CreateAppSorting().Pass(),
-      client->AreExtensionsDisabled(
-          *CommandLine::ForCurrentProcess(), context));
+      client->AreExtensionsDisabled(*CommandLine::ForCurrentProcess(), context),
+      prefs_observers);
 }
 
 content::BrowserContext* ExtensionPrefsFactory::GetBrowserContextToUse(

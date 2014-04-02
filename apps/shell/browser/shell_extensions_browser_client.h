@@ -44,6 +44,9 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual PrefService* GetPrefServiceForContext(
       content::BrowserContext* context) OVERRIDE;
+  virtual void GetEarlyExtensionPrefsObservers(
+      content::BrowserContext* context,
+      std::vector<ExtensionPrefsObserver*>* observers) const OVERRIDE;
   virtual bool DeferLoadingBackgroundHosts(content::BrowserContext* context)
       const OVERRIDE;
   virtual bool IsBackgroundPageAllowed(content::BrowserContext* context)

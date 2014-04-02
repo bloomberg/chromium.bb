@@ -73,7 +73,8 @@ ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
       install_directory,
       ExtensionPrefValueMapFactory::GetForBrowserContext(profile_),
       ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
-      extensions_disabled);
+      extensions_disabled,
+      std::vector<ExtensionPrefsObserver*>());
     ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
         profile_,
         extension_prefs);

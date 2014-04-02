@@ -154,6 +154,10 @@ PrefService* ShellExtensionsBrowserClient::GetPrefServiceForContext(
   return prefs_.get();
 }
 
+void ShellExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
+    content::BrowserContext* context,
+    std::vector<ExtensionPrefsObserver*>* observers) const {}
+
 bool ShellExtensionsBrowserClient::DeferLoadingBackgroundHosts(
     BrowserContext* context) const {
   return false;

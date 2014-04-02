@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -86,6 +87,7 @@ class PreferenceAPIBase {
   // Virtual for testing.
   virtual ExtensionPrefs* extension_prefs() = 0;
   virtual ExtensionPrefValueMap* extension_pref_value_map() = 0;
+  virtual scoped_refptr<ContentSettingsStore> content_settings_store() = 0;
 };
 
 class PreferenceAPI : public PreferenceAPIBase,
@@ -121,6 +123,7 @@ class PreferenceAPI : public PreferenceAPIBase,
   // PreferenceAPIBase implementation.
   virtual ExtensionPrefs* extension_prefs() OVERRIDE;
   virtual ExtensionPrefValueMap* extension_pref_value_map() OVERRIDE;
+  virtual scoped_refptr<ContentSettingsStore> content_settings_store() OVERRIDE;
 
   Profile* profile_;
 

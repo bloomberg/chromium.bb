@@ -12,13 +12,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/value_conversions.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "extensions/browser/admin_policy.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_prefs_factory.h"
+#include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
@@ -258,53 +258,6 @@ void LoadExtensionControlledPrefs(ExtensionPrefs* prefs,
   }
 }
 
-void InitExtensionControlledPrefs(ExtensionPrefs* prefs,
-                                  ExtensionPrefValueMap* value_map) {
-  ExtensionIdList extension_ids;
-  prefs->GetExtensions(&extension_ids);
-
-  for (ExtensionIdList::iterator extension_id = extension_ids.begin();
-       extension_id != extension_ids.end();
-       ++extension_id) {
-    base::Time install_time = prefs->GetInstallTime(*extension_id);
-    bool is_enabled = !prefs->IsExtensionDisabled(*extension_id);
-    bool is_incognito_enabled = prefs->IsIncognitoEnabled(*extension_id);
-    value_map->RegisterExtension(
-        *extension_id, install_time, is_enabled, is_incognito_enabled);
-    prefs->content_settings_store()->RegisterExtension(
-        *extension_id, install_time, is_enabled);
-
-    // Set regular extension controlled prefs.
-    LoadExtensionControlledPrefs(
-        prefs, value_map, *extension_id, kExtensionPrefsScopeRegular);
-    // Set incognito extension controlled prefs.
-    LoadExtensionControlledPrefs(prefs,
-                                 value_map,
-                                 *extension_id,
-                                 kExtensionPrefsScopeIncognitoPersistent);
-    // Set regular-only extension controlled prefs.
-    LoadExtensionControlledPrefs(
-        prefs, value_map, *extension_id, kExtensionPrefsScopeRegularOnly);
-
-    // Set content settings.
-    const base::ListValue* content_settings = NULL;
-    if (prefs->ReadPrefAsList(*extension_id,
-                              pref_names::kPrefContentSettings,
-                              &content_settings)) {
-      prefs->content_settings_store()->SetExtensionContentSettingFromList(
-          *extension_id, content_settings, kExtensionPrefsScopeRegular);
-    }
-    if (prefs->ReadPrefAsList(*extension_id,
-                              pref_names::kPrefIncognitoContentSettings,
-                              &content_settings)) {
-      prefs->content_settings_store()->SetExtensionContentSettingFromList(
-          *extension_id,
-          content_settings,
-          kExtensionPrefsScopeIncognitoPersistent);
-    }
-  }
-}
-
 }  // namespace
 
 //
@@ -389,12 +342,14 @@ ExtensionPrefs* ExtensionPrefs::Create(
     const base::FilePath& root_dir,
     ExtensionPrefValueMap* extension_pref_value_map,
     scoped_ptr<AppSorting> app_sorting,
-    bool extensions_disabled) {
+    bool extensions_disabled,
+    const std::vector<ExtensionPrefsObserver*>& early_observers) {
   return ExtensionPrefs::Create(prefs,
                                 root_dir,
                                 extension_pref_value_map,
                                 app_sorting.Pass(),
                                 extensions_disabled,
+                                early_observers,
                                 make_scoped_ptr(new TimeProvider()));
 }
 
@@ -405,13 +360,15 @@ ExtensionPrefs* ExtensionPrefs::Create(
     ExtensionPrefValueMap* extension_pref_value_map,
     scoped_ptr<AppSorting> app_sorting,
     bool extensions_disabled,
+    const std::vector<ExtensionPrefsObserver*>& early_observers,
     scoped_ptr<TimeProvider> time_provider) {
   return new ExtensionPrefs(pref_service,
                             root_dir,
                             extension_pref_value_map,
                             app_sorting.Pass(),
                             time_provider.Pass(),
-                            extensions_disabled);
+                            extensions_disabled,
+                            early_observers);
 }
 
 ExtensionPrefs::~ExtensionPrefs() {
@@ -510,7 +467,9 @@ void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
 
 void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
   extension_pref_value_map_->UnregisterExtension(extension_id);
-  content_settings_store_->UnregisterExtension(extension_id);
+  FOR_EACH_OBSERVER(ExtensionPrefsObserver,
+                    observer_list_,
+                    OnExtensionPrefsDeleted(extension_id));
   DictionaryPrefUpdate update(prefs_, pref_names::kExtensions);
   base::DictionaryValue* dict = update.Get();
   dict->Remove(extension_id, NULL);
@@ -857,7 +816,7 @@ void ExtensionPrefs::ModifyDisableReason(const std::string& extension_id,
                         new base::FundamentalValue(new_value));
   }
 
-  FOR_EACH_OBSERVER(Observer,
+  FOR_EACH_OBSERVER(ExtensionPrefsObserver,
                     observer_list_,
                     OnExtensionDisableReasonsChanged(extension_id, new_value));
 }
@@ -1257,7 +1216,9 @@ void ExtensionPrefs::OnExtensionUninstalled(const std::string& extension_id,
                         new base::FundamentalValue(
                             Extension::EXTERNAL_EXTENSION_UNINSTALLED));
     extension_pref_value_map_->SetExtensionState(extension_id, false);
-    content_settings_store_->SetExtensionState(extension_id, false);
+    FOR_EACH_OBSERVER(ExtensionPrefsObserver,
+                      observer_list_,
+                      OnExtensionStateChanged(extension_id, false));
   } else {
     int creation_flags = GetCreationFlags(extension_id);
     if (creation_flags & Extension::IS_EPHEMERAL) {
@@ -1276,7 +1237,9 @@ void ExtensionPrefs::SetExtensionState(const std::string& extension_id,
                       new base::FundamentalValue(state));
   bool enabled = (state == Extension::ENABLED);
   extension_pref_value_map_->SetExtensionState(extension_id, enabled);
-  content_settings_store_->SetExtensionState(extension_id, enabled);
+  FOR_EACH_OBSERVER(ExtensionPrefsObserver,
+                    observer_list_,
+                    OnExtensionStateChanged(extension_id, enabled));
 }
 
 void ExtensionPrefs::SetExtensionBlacklistState(const std::string& extension_id,
@@ -1775,11 +1738,11 @@ ExtensionIdList ExtensionPrefs::GetExtensionsFrom(
   return result;
 }
 
-void ExtensionPrefs::AddObserver(Observer* observer) {
+void ExtensionPrefs::AddObserver(ExtensionPrefsObserver* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void ExtensionPrefs::RemoveObserver(Observer* observer) {
+void ExtensionPrefs::RemoveObserver(ExtensionPrefsObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
@@ -1826,7 +1789,7 @@ void ExtensionPrefs::InitPrefStore() {
   MigrateDisableReasons(extension_ids);
   app_sorting_->Initialize(extension_ids);
 
-  InitExtensionControlledPrefs(this, extension_pref_value_map_);
+  InitExtensionControlledPrefs(extension_pref_value_map_);
 
   extension_pref_value_map_->NotifyInitializationCompleted();
 }
@@ -1920,16 +1883,25 @@ ExtensionPrefs::ExtensionPrefs(
     ExtensionPrefValueMap* extension_pref_value_map,
     scoped_ptr<AppSorting> app_sorting,
     scoped_ptr<TimeProvider> time_provider,
-    bool extensions_disabled)
+    bool extensions_disabled,
+    const std::vector<ExtensionPrefsObserver*>& early_observers)
     : prefs_(prefs),
       install_directory_(root_dir),
       extension_pref_value_map_(extension_pref_value_map),
       app_sorting_(app_sorting.Pass()),
-      content_settings_store_(new ContentSettingsStore()),
       time_provider_(time_provider.Pass()),
       extensions_disabled_(extensions_disabled) {
   app_sorting_->SetExtensionScopedPrefs(this);
   MakePathsRelative();
+
+  // Ensure that any early observers are watching before prefs are initialized.
+  for (std::vector<ExtensionPrefsObserver*>::const_iterator iter =
+           early_observers.begin();
+       iter != early_observers.end();
+       ++iter) {
+    AddObserver(*iter);
+  }
+
   InitPrefStore();
 }
 
@@ -2091,6 +2063,43 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   }
 }
 
+void ExtensionPrefs::InitExtensionControlledPrefs(
+    ExtensionPrefValueMap* value_map) {
+  ExtensionIdList extension_ids;
+  GetExtensions(&extension_ids);
+
+  for (ExtensionIdList::iterator extension_id = extension_ids.begin();
+       extension_id != extension_ids.end();
+       ++extension_id) {
+    base::Time install_time = GetInstallTime(*extension_id);
+    bool is_enabled = !IsExtensionDisabled(*extension_id);
+    bool is_incognito_enabled = IsIncognitoEnabled(*extension_id);
+    value_map->RegisterExtension(
+        *extension_id, install_time, is_enabled, is_incognito_enabled);
+
+    FOR_EACH_OBSERVER(
+        ExtensionPrefsObserver,
+        observer_list_,
+        OnExtensionRegistered(*extension_id, install_time, is_enabled));
+
+    // Set regular extension controlled prefs.
+    LoadExtensionControlledPrefs(
+        this, value_map, *extension_id, kExtensionPrefsScopeRegular);
+    // Set incognito extension controlled prefs.
+    LoadExtensionControlledPrefs(this,
+                                 value_map,
+                                 *extension_id,
+                                 kExtensionPrefsScopeIncognitoPersistent);
+    // Set regular-only extension controlled prefs.
+    LoadExtensionControlledPrefs(
+        this, value_map, *extension_id, kExtensionPrefsScopeRegularOnly);
+
+    FOR_EACH_OBSERVER(ExtensionPrefsObserver,
+                      observer_list_,
+                      OnExtensionPrefsLoaded(*extension_id, this));
+  }
+}
+
 void ExtensionPrefs::FinishExtensionInfoPrefs(
     const std::string& extension_id,
     const base::Time install_time,
@@ -2132,7 +2141,7 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
   extension_dict->Remove(kPrefEvictedEphemeralApp, NULL);
 
   // FYI, all code below here races on sudden shutdown because |extension_dict|,
-  // |app_sorting_|, |extension_pref_value_map_|, and |content_settings_store_|
+  // |app_sorting_|, |extension_pref_value_map_|, and (potentially) observers
   // are updated non-transactionally. This is probably not fixable without
   // nested transactional updates to pref dictionaries.
   if (needs_sort_ordinal)
@@ -2147,8 +2156,11 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   extension_pref_value_map_->RegisterExtension(
       extension_id, install_time, is_enabled, is_incognito_enabled);
-  content_settings_store_->RegisterExtension(extension_id, install_time,
-                                             is_enabled);
+
+  FOR_EACH_OBSERVER(
+      ExtensionPrefsObserver,
+      observer_list_,
+      OnExtensionRegistered(extension_id, install_time, is_enabled));
 }
 
 }  // namespace extensions

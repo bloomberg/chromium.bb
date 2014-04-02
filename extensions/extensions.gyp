@@ -287,6 +287,7 @@
         'browser/extension_prefs.h',
         'browser/extension_prefs_factory.cc',
         'browser/extension_prefs_factory.h',
+        'browser/extension_prefs_observer.h',
         'browser/extension_prefs_scope.h',
         'browser/extension_registry.cc',
         'browser/extension_registry.h',

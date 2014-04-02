@@ -9,6 +9,7 @@
 #include "base/prefs/mock_pref_change_callback.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/./extension_prefs_unittest.h"
+#include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -40,9 +41,12 @@ const char kDefaultPref4[] = "default pref 4";
 // profile (which we don't create in unittests).
 class TestPreferenceAPI : public PreferenceAPIBase {
  public:
-  explicit TestPreferenceAPI(TestExtensionPrefs* test_extension_prefs)
-      : test_extension_prefs_(test_extension_prefs) { }
-  ~TestPreferenceAPI() { }
+  explicit TestPreferenceAPI(TestExtensionPrefs* test_extension_prefs,
+                             ContentSettingsService* content_settings)
+      : test_extension_prefs_(test_extension_prefs),
+        content_settings_(content_settings) {}
+  ~TestPreferenceAPI() {}
+
  private:
   // PreferenceAPIBase implementation.
   virtual ExtensionPrefs* extension_prefs() OVERRIDE {
@@ -51,8 +55,13 @@ class TestPreferenceAPI : public PreferenceAPIBase {
   virtual ExtensionPrefValueMap* extension_pref_value_map() OVERRIDE {
     return test_extension_prefs_->extension_pref_value_map();
   }
+  virtual scoped_refptr<ContentSettingsStore> content_settings_store()
+      OVERRIDE {
+    return content_settings_->content_settings_store();
+  }
 
   TestExtensionPrefs* test_extension_prefs_;
+  ContentSettingsService* content_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPreferenceAPI);
 };
@@ -77,16 +86,24 @@ class ExtensionControlledPrefsTest : public PrefsPrepopulatedTestBase {
   void InstallExtension(Extension* extension);
   void UninstallExtension(const std::string& extension_id);
 
+  scoped_refptr<ContentSettingsStore> content_settings_store() {
+    return content_settings_->content_settings_store();
+  }
+
  protected:
   void EnsureExtensionInstalled(Extension* extension);
   void EnsureExtensionUninstalled(const std::string& extension_id);
 
+  TestingProfile profile_;
+  ContentSettingsService* content_settings_;
   TestPreferenceAPI test_preference_api_;
 };
 
 ExtensionControlledPrefsTest::ExtensionControlledPrefsTest()
     : PrefsPrepopulatedTestBase(),
-      test_preference_api_(&prefs_) {
+      content_settings_(ContentSettingsService::Get(&profile_)),
+      test_preference_api_(&prefs_, content_settings_) {
+  prefs_.prefs()->AddObserver(content_settings_);
 }
 
 ExtensionControlledPrefsTest::~ExtensionControlledPrefsTest() {
@@ -260,7 +277,7 @@ class ControlledPrefsUninstallExtension : public ExtensionControlledPrefsTest {
         extension1(), kPref1, new base::StringValue("val1"));
     InstallExtensionControlledPref(
         extension1(), kPref2, new base::StringValue("val2"));
-    ContentSettingsStore* store = prefs()->content_settings_store();
+    scoped_refptr<ContentSettingsStore> store = content_settings_store();
     ContentSettingsPattern pattern =
         ContentSettingsPattern::FromString("http://[*.]example.com");
     store->SetExtensionContentSetting(extension1()->id(),

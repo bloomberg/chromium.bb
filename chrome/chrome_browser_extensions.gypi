@@ -193,6 +193,8 @@
         'browser/extensions/api/content_settings/content_settings_api_constants.h',
         'browser/extensions/api/content_settings/content_settings_helpers.cc',
         'browser/extensions/api/content_settings/content_settings_helpers.h',
+        'browser/extensions/api/content_settings/content_settings_service.cc',
+        'browser/extensions/api/content_settings/content_settings_service.h',
         'browser/extensions/api/content_settings/content_settings_store.cc',
         'browser/extensions/api/content_settings/content_settings_store.h',
         'browser/extensions/api/commands/commands.cc',

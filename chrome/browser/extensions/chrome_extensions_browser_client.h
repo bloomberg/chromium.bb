@@ -23,6 +23,7 @@ class BrowserContext;
 namespace extensions {
 
 class ChromeExtensionsAPIClient;
+class ContentSettingsPrefsObserver;
 
 // Implementation of extensions::BrowserClient for Chrome, which includes
 // knowledge of Profiles, BrowserContexts and incognito.
@@ -57,6 +58,9 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual PrefService* GetPrefServiceForContext(
       content::BrowserContext* context) OVERRIDE;
+  virtual void GetEarlyExtensionPrefsObservers(
+      content::BrowserContext* context,
+      std::vector<ExtensionPrefsObserver*>* observers) const OVERRIDE;
   virtual bool DeferLoadingBackgroundHosts(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool IsBackgroundPageAllowed(

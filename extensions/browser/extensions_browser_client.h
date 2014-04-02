@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "extensions/browser/extension_prefs_observer.h"
 
 class ExtensionFunctionRegistry;
 class PrefService;
@@ -28,6 +29,7 @@ class ApiActivityMonitor;
 class AppSorting;
 class Extension;
 class ExtensionHostDelegate;
+class ExtensionPrefsObserver;
 class ExtensionSystem;
 class ExtensionSystemProvider;
 
@@ -89,6 +91,13 @@ class ExtensionsBrowserClient {
   // Returns the PrefService associated with |context|.
   virtual PrefService* GetPrefServiceForContext(
       content::BrowserContext* context) = 0;
+
+  // Populates a list of ExtensionPrefs observers to be attached to each
+  // BrowserContext's ExtensionPrefs upon construction. These observers
+  // are not owned by ExtensionPrefs.
+  virtual void GetEarlyExtensionPrefsObservers(
+      content::BrowserContext* context,
+      std::vector<ExtensionPrefsObserver*>* observers) const = 0;
 
   // Returns true if loading background pages should be deferred.
   virtual bool DeferLoadingBackgroundHosts(

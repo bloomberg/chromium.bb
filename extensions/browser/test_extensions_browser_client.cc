@@ -88,6 +88,10 @@ PrefService* TestExtensionsBrowserClient::GetPrefServiceForContext(
   return NULL;
 }
 
+void TestExtensionsBrowserClient::GetEarlyExtensionPrefsObservers(
+    content::BrowserContext* context,
+    std::vector<ExtensionPrefsObserver*>* observers) const {}
+
 bool TestExtensionsBrowserClient::DeferLoadingBackgroundHosts(
     BrowserContext* context) const {
   return false;
