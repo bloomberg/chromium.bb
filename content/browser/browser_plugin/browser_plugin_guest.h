@@ -204,6 +204,10 @@ class CONTENT_EXPORT BrowserPluginGuest
                                    double progress) OVERRIDE;
   virtual void CloseContents(WebContents* source) OVERRIDE;
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager() OVERRIDE;
+  virtual ColorChooser* OpenColorChooser(
+      WebContents* web_contents,
+      SkColor color,
+      const std::vector<ColorSuggestion>& suggestions) OVERRIDE;
   virtual bool HandleContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void HandleKeyboardEvent(
       WebContents* source,

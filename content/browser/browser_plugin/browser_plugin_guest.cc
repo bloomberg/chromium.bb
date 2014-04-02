@@ -794,6 +794,16 @@ JavaScriptDialogManager* BrowserPluginGuest::GetJavaScriptDialogManager() {
   return this;
 }
 
+ColorChooser* BrowserPluginGuest::OpenColorChooser(
+    WebContents* web_contents,
+    SkColor color,
+    const std::vector<ColorSuggestion>& suggestions) {
+  if (!embedder_web_contents_ || !embedder_web_contents_->GetDelegate())
+    return NULL;
+  return embedder_web_contents_->GetDelegate()->OpenColorChooser(
+      web_contents, color, suggestions);
+}
+
 bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
   // TODO(fsamuel): We show the regular page context menu handler for now until
   // we implement the Apps Context Menu API for Browser Plugin (see
