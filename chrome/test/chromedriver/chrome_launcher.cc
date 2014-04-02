@@ -102,7 +102,6 @@ Status PrepareCommandLine(int port,
   switches.SetSwitch("disable-hang-monitor");
   switches.SetSwitch("disable-prompt-on-repost");
   switches.SetSwitch("disable-sync");
-  switches.SetSwitch("full-memory-crash-report");
   switches.SetSwitch("no-first-run");
   switches.SetSwitch("disable-background-networking");
   switches.SetSwitch("disable-web-resources");
