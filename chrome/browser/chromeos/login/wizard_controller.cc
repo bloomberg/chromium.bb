@@ -714,13 +714,6 @@ void WizardController::SetStatusAreaVisible(bool visible) {
   host_->SetStatusAreaVisible(visible);
 }
 
-void WizardController::AdvanceToScreenWithParams(
-    const std::string& screen_name,
-    base::DictionaryValue* screen_parameters) {
-  screen_parameters_.reset(screen_parameters);
-  AdvanceToScreen(screen_name);
-}
-
 void WizardController::AdvanceToScreen(const std::string& screen_name) {
   if (screen_name == kNetworkScreenName) {
     ShowNetworkScreen();

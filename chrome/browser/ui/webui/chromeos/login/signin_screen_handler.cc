@@ -1754,7 +1754,6 @@ void SigninScreenHandler::OnShowAddUser(const std::string& email) {
     cookies_cleared_ = true;
     ShowSigninScreenIfReady();
   } else {
-    LOG(ERROR) << "OnShowAddUser 2";
     StartClearingDnsCache();
     StartClearingCookies(base::Bind(
         &SigninScreenHandler::ShowSigninScreenIfReady,

@@ -104,11 +104,6 @@ class WizardController : public ScreenObserver {
   // Advances to screen defined by |screen_name| and shows it.
   void AdvanceToScreen(const std::string& screen_name);
 
-  // Advances to screen defined by |screen_name| and shows it.
-  // Takes ownership of |screen_parameters|.
-  void AdvanceToScreenWithParams(const std::string& first_screen_name,
-                                 base::DictionaryValue* screen_parameters);
-
   // Advances to login screen. Should be used in for testing only.
   void SkipToLoginForTesting(const LoginScreenContext& context);
 
