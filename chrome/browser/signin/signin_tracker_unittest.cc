@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/testing_profile.h"
@@ -65,7 +66,8 @@ class SigninTrackerTest : public testing::Test {
     mock_signin_manager_ = static_cast<FakeSigninManagerForTesting*>(
         SigninManagerFactory::GetForProfile(profile_.get()));
 
-    tracker_.reset(new SigninTracker(profile_.get(), &observer_));
+    tracker_ =
+        SigninTrackerFactory::CreateForProfile(profile_.get(), &observer_);
   }
   virtual void TearDown() OVERRIDE {
     tracker_.reset();

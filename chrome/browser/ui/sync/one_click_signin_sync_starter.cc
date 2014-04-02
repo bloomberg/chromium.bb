@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -94,7 +95,7 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
     desktop_type_ = chrome::GetActiveDesktop();
   }
 
-  signin_tracker_.reset(new SigninTracker(profile_, this));
+  signin_tracker_ = SigninTrackerFactory::CreateForProfile(profile_, this);
 
   // Let the sync service know that setup is in progress so it doesn't start
   // syncing until the user has finished any configuration.

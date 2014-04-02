@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/signin/core/browser/signin_manager_base.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/merge_session_helper.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-class Profile;
+class AccountReconcilor;
+class ProfileOAuth2TokenService;
+class SigninClient;
 
 // The signin flow logic is spread across several classes with varying
 // responsibilities:
@@ -64,9 +66,15 @@ class SigninTracker : public SigninManagerBase::Observer,
   };
 
   // Creates a SigninTracker that tracks the signin status on the passed
-  // |profile|, and notifies the |observer| on status changes. |observer| must
-  // be non-null and must outlive the SigninTracker.
-  SigninTracker(Profile* profile, Observer* observer);
+  // classes, and notifies the |observer| on status changes. All of the
+  // instances with the exception of |account_reconcilor| must be non-null and
+  // must outlive the SigninTracker. |account_reconcilor| will be used if it is
+  // non-null.
+  SigninTracker(ProfileOAuth2TokenService* token_service,
+                SigninManagerBase* signin_manager,
+                AccountReconcilor* account_reconcilor,
+                SigninClient* client,
+                Observer* observer);
   virtual ~SigninTracker();
 
   // SigninManagerBase::Observer implementation.
@@ -85,8 +93,13 @@ class SigninTracker : public SigninManagerBase::Observer,
       const std::string& account_id,
       const GoogleServiceAuthError& error) OVERRIDE;
 
-  // The profile whose signin status we are tracking.
-  Profile* profile_;
+  // The classes whose collective signin status we are tracking.
+  ProfileOAuth2TokenService* token_service_;
+  SigninManagerBase* signin_manager_;
+  AccountReconcilor* account_reconcilor_;
+
+  // The client associated with this instance.
+  SigninClient* client_;
 
   // Weak pointer to the observer we call when the signin state changes.
   Observer* observer_;

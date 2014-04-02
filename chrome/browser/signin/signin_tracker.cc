@@ -4,51 +4,42 @@
 
 #include "chrome/browser/signin/signin_tracker.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/account_reconcilor_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/profile_management_switches.h"
+#include "chrome/browser/signin/account_reconcilor.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_constants.h"
 
-#if !defined(OS_CHROMEOS)
-#include "components/signin/core/browser/signin_manager.h"
-#endif
-
-SigninTracker::SigninTracker(Profile* profile, Observer* observer)
-    : profile_(profile), observer_(observer) {
-  DCHECK(profile_);
+SigninTracker::SigninTracker(ProfileOAuth2TokenService* token_service,
+                             SigninManagerBase* signin_manager,
+                             AccountReconcilor* account_reconcilor,
+                             SigninClient* client,
+                             Observer* observer)
+    : token_service_(token_service),
+      signin_manager_(signin_manager),
+      account_reconcilor_(account_reconcilor),
+      client_(client),
+      observer_(observer) {
   Initialize();
 }
 
 SigninTracker::~SigninTracker() {
-  SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      RemoveObserver(this);
+  signin_manager_->RemoveObserver(this);
+  token_service_->RemoveObserver(this);
 
-  if (!switches::IsEnableWebBasedSignin()) {
-    if (switches::IsNewProfileManagement()) {
-        AccountReconcilorFactory::GetForProfile(profile_)->
-            RemoveMergeSessionObserver(this);
+  if (account_reconcilor_) {
+    account_reconcilor_->RemoveMergeSessionObserver(this);
 #if !defined(OS_CHROMEOS)
-    } else {
-        SigninManagerFactory::GetForProfile(profile_)->
-            RemoveMergeSessionObserver(this);
+  } else if (client_->ShouldMergeSigninCredentialsIntoCookieJar()) {
+    SigninManager* manager = static_cast<SigninManager*>(signin_manager_);
+    manager->RemoveMergeSessionObserver(this);
 #endif
-    }
   }
 }
 
 void SigninTracker::Initialize() {
   DCHECK(observer_);
-
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  signin_manager->AddObserver(this);
-  OAuth2TokenService* token_service =
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  token_service->AddObserver(this);
+  signin_manager_->AddObserver(this);
+  token_service_->AddObserver(this);
 }
 
 void SigninTracker::GoogleSigninFailed(const GoogleServiceAuthError& error) {
@@ -58,16 +49,13 @@ void SigninTracker::GoogleSigninFailed(const GoogleServiceAuthError& error) {
 void SigninTracker::OnRefreshTokenAvailable(const std::string& account_id) {
   // TODO: when OAuth2TokenService handles multi-login, this should check
   // that |account_id| is the primary account before signalling success.
-  if (!switches::IsEnableWebBasedSignin()) {
-    if (switches::IsNewProfileManagement()) {
-      AccountReconcilorFactory::GetForProfile(profile_)->
-          AddMergeSessionObserver(this);
+  if (account_reconcilor_) {
+    account_reconcilor_->AddMergeSessionObserver(this);
 #if !defined(OS_CHROMEOS)
-    } else {
-      SigninManagerFactory::GetForProfile(profile_)->
-          AddMergeSessionObserver(this);
+  } else if (client_->ShouldMergeSigninCredentialsIntoCookieJar()) {
+    SigninManager* manager = static_cast<SigninManager*>(signin_manager_);
+    manager->AddMergeSessionObserver(this);
 #endif
-    }
   }
 
   observer_->SigninSuccess();

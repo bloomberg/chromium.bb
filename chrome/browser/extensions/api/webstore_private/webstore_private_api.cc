@@ -23,6 +23,7 @@
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_tracker_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -394,7 +395,8 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
       signin_manager &&
       signin_manager->GetAuthenticatedUsername().empty() &&
       signin_manager->AuthInProgress()) {
-    signin_tracker_.reset(new SigninTracker(GetProfile(), this));
+    signin_tracker_ =
+        SigninTrackerFactory::CreateForProfile(GetProfile(), this);
     return;
   }
 
