@@ -1094,6 +1094,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   TRACE_EVENT1("renderer", "RenderWidget::OnHandleInputEvent",
                "event", event_name);
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
+  TRACE_EVENT_FLOW_STEP0(
+      "input",
+      "LatencyInfo.Flow",
+      TRACE_ID_DONT_MANGLE(latency_info.trace_id),
+      "HanldeInputEventMain");
 
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);

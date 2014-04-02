@@ -1466,6 +1466,13 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   }
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
   active_tree()->FinishSwapPromises(&metadata);
+  for (size_t i = 0; i < metadata.latency_info.size(); i++) {
+    TRACE_EVENT_FLOW_STEP0(
+        "input",
+        "LatencyInfo.Flow",
+        TRACE_ID_DONT_MANGLE(metadata.latency_info[i].trace_id),
+        "SwapBuffers");
+  }
   renderer_->SwapBuffers(metadata);
   return true;
 }
