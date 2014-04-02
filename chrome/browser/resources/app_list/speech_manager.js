@@ -175,7 +175,7 @@ cr.define('speech', function() {
           this.onHotwordRecognizerReady_.bind(this),
           this.onHotwordRecognized_.bind(this));
       pluginManager.scheduleInitialize(
-          this.audioManager_.getSampleRate(), 'chrome://app-list/hotword.data');
+          this.audioManager_.sampleRate, 'chrome://app-list/hotword.data');
     } else {
       if (!recognizer)
         return;

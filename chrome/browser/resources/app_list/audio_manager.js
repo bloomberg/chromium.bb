@@ -24,8 +24,11 @@ cr.define('speech', function() {
    * @extends {cr.EventTarget}
    */
   function AudioManager() {
-    this.audioContext_ = new window.webkitAudioContext();
+    var audioContext = new window.webkitAudioContext();
+    this.sampleRate = audioContext.sampleRate;
     this.audioProc_ = null;
+    this.audioIn_ = null;
+    this.stream_ = null;
     this.state = AudioState.STOPPED;
   };
 
@@ -54,22 +57,16 @@ cr.define('speech', function() {
    * @private
    */
   AudioManager.prototype.onAudioReady_ = function(stream) {
-    var audioIn = this.audioContext_.createMediaStreamSource(stream);
-    this.audioProc_ = this.audioContext_.createScriptProcessor(
+    var audioContext = new window.webkitAudioContext();
+    this.stream_ = stream;
+    this.audioIn_ = audioContext.createMediaStreamSource(stream);
+    this.audioProc_ = audioContext.createScriptProcessor(
         4096 /* buffer size */, 1 /* channels */, 1 /* channels */);
     this.audioProc_.onaudioprocess = this.onAudioProcess_.bind(this);
 
-    audioIn.connect(this.audioProc_);
-    this.audioProc_.connect(this.audioContext_.destination);
+    this.audioIn_.connect(this.audioProc_);
+    this.audioProc_.connect(audioContext.destination);
     this.state = AudioState.LISTENING;
-  };
-
-  /**
-   * Returns the sampling rate of the current audio context.
-   * @return {number} The sampling rate.
-   */
-  AudioManager.prototype.getSampleRate = function() {
-    return this.audioContext_.sampleRate;
   };
 
   /**
@@ -78,12 +75,6 @@ cr.define('speech', function() {
   AudioManager.prototype.start = function() {
     if (this.state == AudioState.LISTENING)
       return;
-
-    if (this.audioProc_) {
-      this.audioProc_.connect(this.audioContext_.destination);
-      this.state = AudioState.LISTENING;
-      return;
-    }
 
     navigator.webkitGetUserMedia(
         {audio: true},
@@ -98,6 +89,14 @@ cr.define('speech', function() {
     if (this.state != AudioState.LISTENING)
       return;
     this.audioProc_.disconnect();
+    this.audioIn_.disconnect();
+    var audioTracks = this.stream_.getAudioTracks();
+    for (var i = 0; i < audioTracks.length; ++i) {
+      audioTracks[i].stop();
+    }
+    this.audioProc_ = null;
+    this.audioIn_ = null;
+    this.stream_ = null;
     this.state = AudioState.STOPPED;
   };
 
