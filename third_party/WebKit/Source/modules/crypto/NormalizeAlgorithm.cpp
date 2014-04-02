@@ -38,65 +38,62 @@
 #include "public/platform/WebString.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
-#include "wtf/HashMap.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Uint8Array.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/StringHash.h"
+#include <algorithm>
 
 namespace WebCore {
 
 namespace {
 
 struct AlgorithmNameMapping {
+    // Must be an upper case ASCII string.
     const char* const algorithmName;
+    // Must be strlen(algorithmName).
+    unsigned char algorithmNameLength;
     blink::WebCryptoAlgorithmId algorithmId;
+
+#if ASSERT_ENABLED
+    bool operator<(const AlgorithmNameMapping&) const;
+#endif
 };
-
-// Indicates that the algorithm doesn't support the specified operation.
-const int UnsupportedOp = -1;
-
-// Either UnsupportedOp, or a value from blink::WebCryptoAlgorithmParamsType
-typedef int AlgorithmParamsForOperation;
 
 struct OperationParamsMapping {
     blink::WebCryptoAlgorithmId algorithmId;
     AlgorithmOperation operation;
-    AlgorithmParamsForOperation params;
+    blink::WebCryptoAlgorithmParamsType params;
+
+    bool operator<(const OperationParamsMapping&) const;
 };
 
+// Must be sorted by length, and then by reverse string.
+// Also all names must be upper case ASCII.
 const AlgorithmNameMapping algorithmNameMappings[] = {
-    {"AES-CBC", blink::WebCryptoAlgorithmIdAesCbc},
-    {"AES-CTR", blink::WebCryptoAlgorithmIdAesCtr},
-    {"AES-GCM", blink::WebCryptoAlgorithmIdAesGcm},
-    {"HMAC", blink::WebCryptoAlgorithmIdHmac},
-    {"RSASSA-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
-    {"RSAES-PKCS1-v1_5", blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
-    {"SHA-1", blink::WebCryptoAlgorithmIdSha1},
-    {"SHA-256", blink::WebCryptoAlgorithmIdSha256},
-    {"SHA-384", blink::WebCryptoAlgorithmIdSha384},
-    {"SHA-512", blink::WebCryptoAlgorithmIdSha512},
-    {"AES-KW", blink::WebCryptoAlgorithmIdAesKw},
+    {"HMAC", 4, blink::WebCryptoAlgorithmIdHmac},
+    {"SHA-1", 5, blink::WebCryptoAlgorithmIdSha1},
+    {"AES-KW", 6, blink::WebCryptoAlgorithmIdAesKw},
+    {"SHA-512", 7, blink::WebCryptoAlgorithmIdSha512},
+    {"SHA-384", 7, blink::WebCryptoAlgorithmIdSha384},
+    {"SHA-256", 7, blink::WebCryptoAlgorithmIdSha256},
+    {"AES-CBC", 7, blink::WebCryptoAlgorithmIdAesCbc},
+    {"AES-GCM", 7, blink::WebCryptoAlgorithmIdAesGcm},
+    {"AES-CTR", 7, blink::WebCryptoAlgorithmIdAesCtr},
+    {"RSAES-PKCS1-V1_5", 16, blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5},
+    {"RSASSA-PKCS1-V1_5", 17, blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5},
 };
 
 // What operations each algorithm supports, and what parameters it expects.
+// Must be sorted by algorithm id and then operation.
 const OperationParamsMapping operationParamsMappings[] = {
     // AES-CBC
-    {blink::WebCryptoAlgorithmIdAesCbc, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {blink::WebCryptoAlgorithmIdAesCbc, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
+    {blink::WebCryptoAlgorithmIdAesCbc, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {blink::WebCryptoAlgorithmIdAesCbc, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
     {blink::WebCryptoAlgorithmIdAesCbc, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
-    {blink::WebCryptoAlgorithmIdAesCbc, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {blink::WebCryptoAlgorithmIdAesCbc, WrapKey, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
-
-    // AES-CTR
-    {blink::WebCryptoAlgorithmIdAesCtr, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
-    {blink::WebCryptoAlgorithmIdAesCtr, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
-    {blink::WebCryptoAlgorithmIdAesCtr, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
-    {blink::WebCryptoAlgorithmIdAesCtr, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
-    {blink::WebCryptoAlgorithmIdAesCtr, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
-    {blink::WebCryptoAlgorithmIdAesCtr, WrapKey, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
+    {blink::WebCryptoAlgorithmIdAesCbc, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeAesCbcParams},
 
     // HMAC
     {blink::WebCryptoAlgorithmIdHmac, Sign, blink::WebCryptoAlgorithmParamsTypeNone},
@@ -124,89 +121,162 @@ const OperationParamsMapping operationParamsMappings[] = {
     {blink::WebCryptoAlgorithmIdSha384, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdSha512, Digest, blink::WebCryptoAlgorithmParamsTypeNone},
 
+    // AES-GCM
+    {blink::WebCryptoAlgorithmIdAesGcm, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdAesGcm, WrapKey, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+    {blink::WebCryptoAlgorithmIdAesGcm, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+
+    // AES-CTR
+    {blink::WebCryptoAlgorithmIdAesCtr, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
+    {blink::WebCryptoAlgorithmIdAesCtr, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
+    {blink::WebCryptoAlgorithmIdAesCtr, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
+    {blink::WebCryptoAlgorithmIdAesCtr, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
+    {blink::WebCryptoAlgorithmIdAesCtr, WrapKey, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
+    {blink::WebCryptoAlgorithmIdAesCtr, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeAesCtrParams},
+
     // AES-KW
     {blink::WebCryptoAlgorithmIdAesKw, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
     {blink::WebCryptoAlgorithmIdAesKw, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
-    {blink::WebCryptoAlgorithmIdAesKw, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeNone},
     {blink::WebCryptoAlgorithmIdAesKw, WrapKey, blink::WebCryptoAlgorithmParamsTypeNone},
-
-    // AES-GCM
-    {blink::WebCryptoAlgorithmIdAesGcm, GenerateKey, blink::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
-    {blink::WebCryptoAlgorithmIdAesGcm, ImportKey, blink::WebCryptoAlgorithmParamsTypeNone},
-    {blink::WebCryptoAlgorithmIdAesGcm, Encrypt, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
-    {blink::WebCryptoAlgorithmIdAesGcm, Decrypt, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
-    {blink::WebCryptoAlgorithmIdAesGcm, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
-    {blink::WebCryptoAlgorithmIdAesGcm, WrapKey, blink::WebCryptoAlgorithmParamsTypeAesGcmParams},
+    {blink::WebCryptoAlgorithmIdAesKw, UnwrapKey, blink::WebCryptoAlgorithmParamsTypeNone},
 };
 
-// This structure describes an algorithm and its supported operations.
-struct AlgorithmInfo {
-    AlgorithmInfo()
-        : algorithmName(0)
-    {
-        for (size_t i = 0; i < WTF_ARRAY_LENGTH(paramsForOperation); ++i)
-            paramsForOperation[i] = UnsupportedOp;
+#if ASSERT_ENABLED
+
+// Essentially std::is_sorted() (however that function is new to C++11).
+template <typename Iterator>
+bool isSorted(Iterator begin, Iterator end)
+{
+    if (begin == end)
+        return true;
+
+    Iterator prev = begin;
+    Iterator cur = begin + 1;
+
+    while (cur != end) {
+        if (*cur < *prev)
+            return false;
+        cur++;
+        prev++;
     }
 
-    blink::WebCryptoAlgorithmId algorithmId;
-    const char* algorithmName;
-    AlgorithmParamsForOperation paramsForOperation[LastAlgorithmOperation + 1];
-};
-
-// AlgorithmRegistry enumerates each of the different algorithms and its
-// parameters. This describes the same information as the static tables above,
-// but in a more convenient runtime form.
-class AlgorithmRegistry {
-public:
-    static AlgorithmRegistry& instance();
-
-    const AlgorithmInfo* lookupAlgorithmByName(const String&) const;
-    const AlgorithmInfo* lookupAlgorithmById(blink::WebCryptoAlgorithmId) const;
-
-private:
-    AlgorithmRegistry();
-
-    // Algorithm name to ID.
-    typedef HashMap<String, blink::WebCryptoAlgorithmId, CaseFoldingHash> AlgorithmNameToIdMap;
-    AlgorithmNameToIdMap m_algorithmNameToId;
-
-    // Algorithm ID to information.
-    AlgorithmInfo m_algorithms[blink::WebCryptoAlgorithmIdLast + 1];
-};
-
-AlgorithmRegistry& AlgorithmRegistry::instance()
-{
-    DEFINE_STATIC_LOCAL(AlgorithmRegistry, registry, ());
-    return registry;
+    return true;
 }
 
-const AlgorithmInfo* AlgorithmRegistry::lookupAlgorithmByName(const String& algorithmName) const
+bool AlgorithmNameMapping::operator<(const AlgorithmNameMapping& o) const
 {
-    AlgorithmNameToIdMap::const_iterator it = m_algorithmNameToId.find(algorithmName);
-    if (it == m_algorithmNameToId.end())
-        return 0;
-    return lookupAlgorithmById(it->value);
-}
+    if (algorithmNameLength < o.algorithmNameLength)
+        return true;
+    if (algorithmNameLength > o.algorithmNameLength)
+        return false;
 
-const AlgorithmInfo* AlgorithmRegistry::lookupAlgorithmById(blink::WebCryptoAlgorithmId algorithmId) const
-{
-    ASSERT(algorithmId >= 0 && algorithmId < WTF_ARRAY_LENGTH(m_algorithms));
-    return &m_algorithms[algorithmId];
-}
+    for (size_t i = 0; i < algorithmNameLength; ++i) {
+        size_t reverseIndex = algorithmNameLength - i - 1;
+        char c1 = algorithmName[reverseIndex];
+        char c2 = o.algorithmName[reverseIndex];
 
-AlgorithmRegistry::AlgorithmRegistry()
-{
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(algorithmNameMappings); ++i) {
-        const AlgorithmNameMapping& mapping = algorithmNameMappings[i];
-        m_algorithmNameToId.add(mapping.algorithmName, mapping.algorithmId);
-        m_algorithms[mapping.algorithmId].algorithmName = mapping.algorithmName;
-        m_algorithms[mapping.algorithmId].algorithmId = mapping.algorithmId;
+        if (c1 < c2)
+            return true;
+        if (c1 > c2)
+            return false;
     }
 
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(operationParamsMappings); ++i) {
-        const OperationParamsMapping& mapping = operationParamsMappings[i];
-        m_algorithms[mapping.algorithmId].paramsForOperation[mapping.operation] = mapping.params;
+    return false;
+}
+
+bool verifyAlgorithmNameMappings(const AlgorithmNameMapping* begin, const AlgorithmNameMapping* end)
+{
+    for (const AlgorithmNameMapping* it = begin; it != end; ++it) {
+        if (it->algorithmNameLength != strlen(it->algorithmName))
+            return false;
+        String str(it->algorithmName, it->algorithmNameLength);
+        if (!str.containsOnlyASCII())
+            return false;
+        if (str.upper() != str)
+            return false;
     }
+
+    return isSorted(begin, end);
+}
+#endif
+
+bool OperationParamsMapping::operator<(const OperationParamsMapping& o) const
+{
+    if (algorithmId < o.algorithmId)
+        return true;
+    if (algorithmId > o.algorithmId)
+        return false;
+    return operation < o.operation;
+}
+
+template <typename CharType>
+bool algorithmNameComparator(const AlgorithmNameMapping& a, StringImpl* b)
+{
+    if (a.algorithmNameLength < b->length())
+        return true;
+    if (a.algorithmNameLength > b->length())
+        return false;
+
+    // Because the algorithm names contain many common prefixes, it is better
+    // to compare starting at the end of the string.
+    for (size_t i = 0; i < a.algorithmNameLength; ++i) {
+        size_t reverseIndex = a.algorithmNameLength - i - 1;
+        CharType c1 = a.algorithmName[reverseIndex];
+        CharType c2 = b->getCharacters<CharType>()[reverseIndex];
+        if (!isASCII(c2))
+            return false;
+        c2 = toASCIIUpper(c2);
+
+        if (c1 < c2)
+            return true;
+        if (c1 > c2)
+            return false;
+    }
+
+    return false;
+}
+
+bool lookupAlgorithmIdByName(const String& algorithmName, blink::WebCryptoAlgorithmId& id)
+{
+    const AlgorithmNameMapping* begin = algorithmNameMappings;
+    const AlgorithmNameMapping* end = algorithmNameMappings + WTF_ARRAY_LENGTH(algorithmNameMappings);
+
+    ASSERT(verifyAlgorithmNameMappings(begin, end));
+
+    const AlgorithmNameMapping* it;
+    if (algorithmName.impl()->is8Bit())
+        it = std::lower_bound(begin, end, algorithmName.impl(), &algorithmNameComparator<LChar>);
+    else
+        it = std::lower_bound(begin, end, algorithmName.impl(), &algorithmNameComparator<UChar>);
+
+    if (it == end)
+        return false;
+
+    if (it->algorithmNameLength != algorithmName.length() || !equalIgnoringCase(algorithmName, it->algorithmName))
+        return false;
+
+    id = it->algorithmId;
+    return true;
+}
+
+bool lookupAlgorithmParamsType(blink::WebCryptoAlgorithmId id, AlgorithmOperation op, blink::WebCryptoAlgorithmParamsType& paramsType)
+{
+    const OperationParamsMapping* begin = operationParamsMappings;
+    const OperationParamsMapping* end = operationParamsMappings + WTF_ARRAY_LENGTH(operationParamsMappings);
+
+    ASSERT(isSorted(begin, end));
+
+    OperationParamsMapping search = { id, op };
+    const OperationParamsMapping* it = std::lower_bound(begin, end, search);
+    if (it == end)
+        return false;
+    if (it->algorithmId != id || it->operation != op)
+        return false;
+    paramsType = it->params;
+    return true;
 }
 
 // ErrorContext holds a stack of string literals which describe what was
@@ -667,25 +737,25 @@ bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryp
         return false;
     }
 
-    const AlgorithmInfo* info = AlgorithmRegistry::instance().lookupAlgorithmByName(algorithmName);
-    if (!info) {
+    blink::WebCryptoAlgorithmId algorithmId;
+    if (!lookupAlgorithmIdByName(algorithmName, algorithmId)) {
         errorDetails = context.toString("Unrecognized algorithm name");
         return false;
     }
 
-    context.add(info->algorithmName);
+    context.add(algorithmIdToName(algorithmId));
 
-    if (info->paramsForOperation[op] == UnsupportedOp) {
+    blink::WebCryptoAlgorithmParamsType paramsType;
+    if (!lookupAlgorithmParamsType(algorithmId, op, paramsType)) {
         errorDetails = context.toString("Unsupported operation");
         return false;
     }
 
-    blink::WebCryptoAlgorithmParamsType paramsType = static_cast<blink::WebCryptoAlgorithmParamsType>(info->paramsForOperation[op]);
     OwnPtr<blink::WebCryptoAlgorithmParams> params;
     if (!parseAlgorithmParams(raw, paramsType, params, context, errorDetails))
         return false;
 
-    algorithm = blink::WebCryptoAlgorithm(info->algorithmId, params.release());
+    algorithm = blink::WebCryptoAlgorithm(algorithmId, params.release());
     return true;
 }
 
@@ -703,7 +773,33 @@ bool parseAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryp
 
 const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)
 {
-    return AlgorithmRegistry::instance().lookupAlgorithmById(id)->algorithmName;
+    switch (id) {
+    case blink::WebCryptoAlgorithmIdAesCbc:
+        return "AES-CBC";
+    case blink::WebCryptoAlgorithmIdAesCtr:
+        return "AES-CTR";
+    case blink::WebCryptoAlgorithmIdAesGcm:
+        return "AES-GCM";
+    case blink::WebCryptoAlgorithmIdHmac:
+        return "HMAC";
+    case blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
+        return "RSASSA-PKCS1-v1_5";
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5:
+        return "RSAES-PKCS1-v1_5";
+    case blink::WebCryptoAlgorithmIdSha1:
+        return "SHA-1";
+    case blink::WebCryptoAlgorithmIdSha256:
+        return "SHA-256";
+    case blink::WebCryptoAlgorithmIdSha384:
+        return "SHA-384";
+    case blink::WebCryptoAlgorithmIdSha512:
+        return "SHA-512";
+    case blink::WebCryptoAlgorithmIdAesKw:
+        return "AES-KW";
+    case blink::WebCryptoAlgorithmIdRsaOaep:
+        return "RSA-OAEP";
+    }
+    return 0;
 }
 
 } // namespace WebCore
