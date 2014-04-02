@@ -430,27 +430,6 @@ void CompositedLayerMapping::updateCompositingReasons()
 
 void CompositedLayerMapping::updateAfterLayout(bool needsFullRepaint, bool isUpdateRoot)
 {
-    RenderLayerCompositor* layerCompositor = compositor();
-    if (!layerCompositor->compositingLayersNeedRebuild()) {
-        // Calling updateGraphicsLayerGeometry() here gives incorrect results, because the
-        // position of this layer's GraphicsLayer depends on the position of our compositing
-        // ancestor's GraphicsLayer. That cannot be determined until all the descendant
-        // RenderLayers of that ancestor have been processed via updateLayerPositions().
-        //
-        // The solution is to update compositing children of this layer here,
-        // via updateCompositingChildrenGeometry().
-        updateCompositedBounds(GraphicsLayerUpdater::ForceUpdate);
-        layerCompositor->updateCompositingDescendantGeometry(m_owningLayer.stackingNode(), &m_owningLayer);
-
-        if (isUpdateRoot) {
-            updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
-            layerCompositor->updateRootLayerPosition();
-            RenderLayerStackingNode* stackingContainer = m_owningLayer.stackingNode()->enclosingStackingContainerNode();
-            if (!layerCompositor->compositingLayersNeedRebuild() && stackingContainer && (stackingContainer != m_owningLayer.stackingNode()))
-                layerCompositor->updateCompositingDescendantGeometry(stackingContainer, stackingContainer->layer());
-        }
-    }
-
     if (needsFullRepaint && !paintsIntoCompositedAncestor())
         setContentsNeedDisplay();
 }

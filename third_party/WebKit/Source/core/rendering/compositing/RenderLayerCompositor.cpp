@@ -372,6 +372,7 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         break;
     case CompositingUpdateAfterLayout:
         m_needsToRecomputeCompositingRequirements = true;
+        m_needsToUpdateLayerTreeGeometry = true;
         break;
     case CompositingUpdateOnScroll:
         m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
@@ -1404,40 +1405,6 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
         hostingLayer->addChild(rootLayer);
     }
     return true;
-}
-
-// Recurs down the RenderLayer tree until its finds the compositing descendants of compositingAncestor and updates their geometry.
-void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer* layer)
-{
-    if (layer->stackingNode() != compositingAncestor) {
-        if (layer->hasCompositedLayerMapping()) {
-            CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
-            compositedLayerMapping->updateCompositedBounds(GraphicsLayerUpdater::ForceUpdate);
-
-            if (layer->reflectionInfo()) {
-                RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-                if (reflectionLayer->hasCompositedLayerMapping())
-                    reflectionLayer->compositedLayerMapping()->updateCompositedBounds(GraphicsLayerUpdater::ForceUpdate);
-            }
-
-            compositedLayerMapping->updateGraphicsLayerGeometry(GraphicsLayerUpdater::ForceUpdate);
-            return;
-        }
-    }
-
-    if (layer->reflectionInfo())
-        updateCompositingDescendantGeometry(compositingAncestor, layer->reflectionInfo()->reflectionLayer());
-
-    if (!layer->hasCompositingDescendant())
-        return;
-
-#if !ASSERT_DISABLED
-    LayerListMutationDetector mutationChecker(layer->stackingNode());
-#endif
-
-    RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), AllChildren);
-    while (RenderLayerStackingNode* curNode = iterator.next())
-        updateCompositingDescendantGeometry(compositingAncestor, curNode->layer());
 }
 
 void RenderLayerCompositor::repaintCompositedLayers()

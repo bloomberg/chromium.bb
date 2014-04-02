@@ -112,9 +112,6 @@ public:
     // (At the moment, it also has some legacy compatibility hacks.)
     void updateLayerCompositingState(RenderLayer*, UpdateLayerCompositingStateOptions = Normal);
 
-    // Update the geometry for compositing children of compositingAncestor.
-    void updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer*);
-
     // Whether layer's compositedLayerMapping needs a GraphicsLayer to do clipping by an ancestor (non-stacking-context parent with overflow).
     bool clippedByAncestor(const RenderLayer*) const;
     // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given RenderLayer.
