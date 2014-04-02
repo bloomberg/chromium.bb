@@ -298,9 +298,11 @@ content::ResourceDispatcherHostLoginDelegate*
   return new AwLoginDelegate(auth_info, request);
 }
 
-bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(const GURL& url,
-                                                              int child_id,
-                                                              int route_id) {
+bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(
+    const GURL& url,
+    int child_id,
+    int route_id,
+    bool initiated_by_user_gesture) {
   // The AwURLRequestJobFactory implementation should ensure this method never
   // gets called.
   NOTREACHED();

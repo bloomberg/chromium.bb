@@ -375,8 +375,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
   if (violation_error.empty()) {
     scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
 
-    // See crbug.com/39178.
-    ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();
     NotifyApiFunctionCalled(
         extension->id(), params.name, args.Pass(), browser_context_);
     function->Run();
