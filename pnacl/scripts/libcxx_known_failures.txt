@@ -161,7 +161,6 @@ libc++::localization/locales/locale/locale.members/name.pass.cpp
 libc++::localization/locales/locale/locale.operators/eq.pass.cpp
 libc++::localization/locales/locale/locale.statics/classic.pass.cpp
 libc++::localization/locales/locale/locale.statics/global.pass.cpp
-libc++::re/re.alg/re.alg.match/awk.pass.cpp
 libc++::re/re.alg/re.alg.match/basic.pass.cpp
 libc++::re/re.alg/re.alg.match/ecma.pass.cpp
 libc++::re/re.alg/re.alg.match/extended.pass.cpp
