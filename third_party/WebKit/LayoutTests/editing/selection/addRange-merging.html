@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Range merging with Selection.addRange()</title>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Selection.addRange() should properly merge intersecting (and don\'t merge discrete) ranges.');
+
+var selection = window.getSelection();
+
+// Utility functions:
+function createPosition(container, offset)
+{
+    return {'container': container, 'offset': offset};
+}
+
+function createRange(startPosition, endPosition)
+{
+    var range = new Range();
+    range.setStart(startPosition.container, startPosition.offset);
+    range.setEnd(endPosition.container, endPosition.offset);
+    return range;
+}
+
+function nodeToString(node)
+{
+    switch (node.nodeType) {
+    case Node.ELEMENT_NODE:
+        return '[<' + node.tagName + '>: #' + node.id + ']';
+    case Node.TEXT_NODE:
+        return '[Text: ' + node.data + ']';
+    default:
+        return node.toString();
+    }
+}
+
+function positionToString(position)
+{
+    return '(' + nodeToString(position.container) + ', ' + position.offset + ')';
+}
+
+function selectionShouldBe(expectedStartPosition, expectedEndPosition)
+{
+    var range = selection.getRangeAt(0);
+    var actualStartPosition = createPosition(range.startContainer, range.startOffset);
+    var actualEndPosition = createPosition(range.endContainer, range.endOffset);
+    if (actualStartPosition.container === expectedStartPosition.container
+        && actualStartPosition.offset === expectedStartPosition.offset
+        && actualEndPosition.container === expectedEndPosition.container
+        && actualEndPosition.offset === expectedEndPosition.offset) {
+        testPassed('Selection was: start = ' + positionToString(expectedStartPosition) + ', end = ' + positionToString(expectedEndPosition));
+    } else {
+        testFailed('Selection should be: start = ' + positionToString(expectedStartPosition) + ', end = ' + positionToString(expectedEndPosition) + '\nbut was: start = ' + positionToString(actualStartPosition) + ', end = ' + positionToString(actualEndPosition));
+    }
+}
+
+function runSingleTest(testFunction, initializePositionsFunction, containerIsEditable)
+{
+    selection.removeAllRanges();
+    var container = document.createElement('div');
+    container.id = 'container';
+    if (containerIsEditable)
+        container.contentEditable = true;
+    document.body.appendChild(container);
+    var positions = initializePositionsFunction(container);
+    debug('Running: ' + testFunction.name + ' (initializePositionsFunction = ' + initializePositionsFunction.name + ', containerIsEditable = ' + containerIsEditable + ')');
+    testFunction(positions);
+    document.body.removeChild(container);
+}
+
+// Actual tests:
+
+// To have better coverage over the possible code paths, each test is parametarized over four document positions;
+// these positions are guaranteed to be ordered in the document order, but each position may vary in each test run.
+//
+// You can assume the selection is cleared before each test run.
+
+function testExpandLeftToRight(positions)
+{
+    selection.addRange(createRange(positions[0], positions[2]));
+    selection.addRange(createRange(positions[1], positions[3]));
+    selectionShouldBe(positions[0], positions[3]);
+}
+
+function testExpandRightToLeft(positions)
+{
+    selection.addRange(createRange(positions[1], positions[3]));
+    selection.addRange(createRange(positions[0], positions[2]));
+    selectionShouldBe(positions[0], positions[3]);
+}
+
+function testExpandLeftToRightAdjacent(positions)
+{
+    selection.addRange(createRange(positions[1], positions[2]));
+    selection.addRange(createRange(positions[2], positions[3]));
+    selectionShouldBe(positions[1], positions[3]);
+}
+
+function testExpandRightToLeftAdjacent(positions)
+{
+    selection.addRange(createRange(positions[1], positions[2]));
+    selection.addRange(createRange(positions[0], positions[1]));
+    selectionShouldBe(positions[0], positions[2]);
+}
+
+function testExpandBothEnds(positions)
+{
+    selection.addRange(createRange(positions[1], positions[2]));
+    selection.addRange(createRange(positions[0], positions[3]));
+    selectionShouldBe(positions[0], positions[3]);
+}
+
+function testDontExpand(positions)
+{
+    selection.addRange(createRange(positions[0], positions[3]));
+    selection.addRange(createRange(positions[1], positions[2]));
+    selectionShouldBe(positions[0], positions[3]);
+}
+
+function testAddSameRange(positions)
+{
+    selection.addRange(createRange(positions[1], positions[2]));
+    selection.addRange(createRange(positions[1], positions[2]));
+    selectionShouldBe(positions[1], positions[2]);
+}
+
+function testRejectDistantRangeAtRight(positions)
+{
+    selection.addRange(createRange(positions[0], positions[1]));
+    selection.addRange(createRange(positions[2], positions[3]));
+    selectionShouldBe(positions[0], positions[1]);
+}
+
+function testRejectDistantRangeAtLeft(positions)
+{
+    selection.addRange(createRange(positions[2], positions[3]));
+    selection.addRange(createRange(positions[0], positions[1]));
+    selectionShouldBe(positions[2], positions[3]);
+}
+
+function testRejectDistantCollapsedRangeAtRight(positions)
+{
+    selection.addRange(createRange(positions[0], positions[1]));
+    selection.addRange(createRange(positions[2], positions[2]));
+    selectionShouldBe(positions[0], positions[1]);
+}
+
+function testRejectDistantCollapsedRangeAtLeft(positions)
+{
+    selection.addRange(createRange(positions[2], positions[3]));
+    selection.addRange(createRange(positions[1], positions[1]));
+    selectionShouldBe(positions[2], positions[3]);
+}
+
+// Position initializers:
+
+// Each initializer function takes an argument |container| which denotes the root element which can be filled with
+// arbitrary contents. This element is created and added to the document before each test run, and removed from
+// the document after each test run.
+
+function initializeTextPositions(container)
+{
+    container.innerHTML = '12345';
+    var text = container.firstChild;
+    return [createPosition(text, 1), createPosition(text, 2), createPosition(text, 3), createPosition(text, 4)];
+}
+
+function initializeOuterElementPositions(container)
+{
+    container.innerHTML = '<span id="a">1</span><span id="b">2</span><span id="c">3</span><span id="d">4</span><span id="e">5</span>';
+    return [createPosition(container, 1), createPosition(container, 2), createPosition(container, 3), createPosition(container, 4)];
+}
+
+function initializeInnerElementPositions(container)
+{
+    container.innerHTML = '<span id="a">1</span><span id="b">2</span><span id="c">3</span><span id="d">4</span><span id="e">5</span>';
+    return [createPosition(container.childNodes[1], 0), createPosition(container.childNodes[2], 0), createPosition(container.childNodes[3], 0), createPosition(container.childNodes[4], 0)];
+}
+
+function initializeVisiblyEquivalentPositionsBeforeNodes(container)
+{
+    container.innerHTML = '<span id="a"><span id="b"><span id="c"></span></span></span>';
+    return [createPosition(container, 0), createPosition(container.firstChild, 0), createPosition(container.firstChild.firstChild, 0), createPosition(container.firstChild.firstChild.firstChild, 0)];
+}
+
+function initializeVisiblyEquivalentPositionsAfterNodes(container)
+{
+    container.innerHTML = '<span id="a"><span id="b"><span id="c"></span></span></span>';
+    return [createPosition(container.firstChild.firstChild.firstChild, 0), createPosition(container.firstChild.firstChild, 1), createPosition(container.firstChild, 1), createPosition(container, 1)];
+}
+
+var tests = [
+    testExpandLeftToRight,
+    testExpandRightToLeft,
+    testExpandLeftToRightAdjacent,
+    testExpandRightToLeftAdjacent,
+    testExpandBothEnds,
+    testDontExpand,
+    testAddSameRange,
+    testRejectDistantRangeAtRight,
+    testRejectDistantRangeAtLeft,
+    testRejectDistantCollapsedRangeAtRight,
+    testRejectDistantCollapsedRangeAtLeft
+];
+var positionInitializers = [
+    initializeTextPositions,
+    initializeOuterElementPositions,
+    initializeInnerElementPositions,
+    initializeVisiblyEquivalentPositionsBeforeNodes,
+    initializeVisiblyEquivalentPositionsAfterNodes
+];
+
+tests.forEach(function (testFunction) {
+    positionInitializers.forEach(function (initializePositionsFunction) {
+        [false, true].forEach(function (containerIsEditable) {
+            runSingleTest(testFunction, initializePositionsFunction, containerIsEditable);
+        });
+    });
+});
+</script>
+</body>
+</html>

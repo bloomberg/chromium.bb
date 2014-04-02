@@ -402,7 +402,7 @@ void DOMSelection::addRange(Range* newRange)
         return;
     }
 
-    RefPtr<Range> originalRange = selection.selection().toNormalizedRange();
+    RefPtr<Range> originalRange = selection.firstRange();
 
     if (originalRange->startContainer()->document() != newRange->startContainer()->document()) {
         addConsoleError("The given range does not belong to the current selection's document.");
@@ -413,30 +413,22 @@ void DOMSelection::addRange(Range* newRange)
         return;
     }
 
-    // FIXME: Emit a console error if the combined ranges would form a discontiguous selection.
-    if (newRange->compareBoundaryPoints(Range::START_TO_START, originalRange.get(), ASSERT_NO_EXCEPTION) == -1) {
-        // We don't support discontiguous selection. We don't do anything if newRange and originalRange don't intersect.
-        if (newRange->compareBoundaryPoints(Range::START_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) > -1) {
-            if (newRange->compareBoundaryPoints(Range::END_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) == -1) {
-                // The original originalRange and newRange intersect.
-                selection.setSelection(VisibleSelection(newRange->startPosition(), originalRange->endPosition(), DOWNSTREAM));
-            } else {
-                // newRange contains the original originalRange.
-                selection.setSelection(VisibleSelection(newRange));
-            }
-        }
-    } else {
-        // We don't support discontiguous selection. We don't do anything if newRange and originalRange don't intersect.
-        if (newRange->compareBoundaryPoints(Range::END_TO_START, originalRange.get(), ASSERT_NO_EXCEPTION) < 1) {
-            if (newRange->compareBoundaryPoints(Range::END_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) == -1) {
-                // The original range contains newRange.
-                selection.setSelection(VisibleSelection(originalRange.get()));
-            } else {
-                // The original range and r intersect.
-                selection.setSelection(VisibleSelection(originalRange->startPosition(), newRange->endPosition(), DOWNSTREAM));
-            }
-        }
+    if (originalRange->compareBoundaryPoints(Range::START_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0
+        || newRange->compareBoundaryPoints(Range::START_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) < 0) {
+        addConsoleError("Discontiguous selection is not supported.");
+        return;
     }
+
+    // FIXME: "Merge the ranges if they intersect" is Blink-specific behavior; other browsers supporting discontiguous
+    // selection (obviously) keep each Range added and return it in getRangeAt(). But it's unclear if we can really
+    // do the same, since we don't support discontiguous selection. Further discussions at
+    // <https://code.google.com/p/chromium/issues/detail?id=353069>.
+
+    Range* start = originalRange->compareBoundaryPoints(Range::START_TO_START, newRange, ASSERT_NO_EXCEPTION) < 0 ? originalRange.get() : newRange;
+    Range* end = originalRange->compareBoundaryPoints(Range::END_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0 ? newRange : originalRange.get();
+    RefPtr<Range> merged = Range::create(originalRange->startContainer()->document(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
+    EAffinity affinity = selection.selection().affinity();
+    selection.setSelectedRange(merged.get(), affinity);
 }
 
 void DOMSelection::deleteFromDocument()
