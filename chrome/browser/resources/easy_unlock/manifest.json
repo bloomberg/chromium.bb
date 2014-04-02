@@ -11,6 +11,7 @@
   },
 
   "permissions": [
+    "bluetoothPrivate",
     "screenlockPrivate",
     "storage",
     "identity",
@@ -23,7 +24,7 @@
     }
   },
 
-  "bluetooth" : { "profiles": ["0000AB34-0000-1000-8000-00805F9B34FB"] },
+  "bluetooth": { "uuids": ["0000AB34-0000-1000-8000-00805F9B34FB"] },
 
   "offline_enabled": true,
 
