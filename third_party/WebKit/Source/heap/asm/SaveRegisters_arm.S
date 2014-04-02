@@ -43,6 +43,7 @@
  * the THUMB/ARM interworking that appear in the component build.
  * When these issues are resolved this stub can be removed.
  */
+.align 2
 .code 16
 .thumb_func
 pushAllRegisters:
@@ -51,10 +52,13 @@ pushAllRegisters:
 
 .type pushAllRegistersARM, %function
 .hidden pushAllRegistersARM
+.align 4
 .code 32
 pushAllRegistersARM:
 #else
 /* ARM Mode */
+.align 4
+.code 32
 pushAllRegisters:
 #endif
         /* Push all callee-saved registers and save return address. */
