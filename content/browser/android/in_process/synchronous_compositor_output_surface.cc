@@ -73,7 +73,8 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       did_swap_buffer_(false),
       current_sw_canvas_(NULL),
       memory_policy_(0),
-      output_surface_client_(NULL) {
+      output_surface_client_(NULL),
+      weak_ptr_factory_(this) {
   capabilities_.deferred_gl_initialization = true;
   capabilities_.draw_and_swap_full_viewport_every_frame = true;
   capabilities_.adjust_deadline_for_parent = false;
@@ -139,12 +140,27 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
     DCHECK(context_provider_);
     context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   }
-  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
-  if (delegate)
-    delegate->UpdateFrameMetaData(frame->metadata);
+  UpdateFrameMetaData(frame->metadata);
 
   did_swap_buffer_ = true;
   DidSwapBuffers();
+}
+
+void SynchronousCompositorOutputSurface::UpdateFrameMetaData(
+    const cc::CompositorFrameMetadata& frame_info) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&SynchronousCompositorOutputSurface::UpdateFrameMetaData,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   frame_info));
+    return;
+  }
+
+  SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
+  if (delegate)
+    delegate->UpdateFrameMetaData(frame_info);
 }
 
 namespace {

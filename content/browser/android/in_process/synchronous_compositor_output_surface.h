@@ -88,6 +88,7 @@ class SynchronousCompositorOutputSurface
                        bool valid_for_tile_management);
   bool CalledOnValidThread() const;
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
+  void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
 
   int routing_id_;
   bool invoking_composite_;
@@ -103,6 +104,8 @@ class SynchronousCompositorOutputSurface
   cc::ManagedMemoryPolicy memory_policy_;
 
   cc::OutputSurfaceClient* output_surface_client_;
+
+  base::WeakPtrFactory<SynchronousCompositorOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurface);
 };
