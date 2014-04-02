@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/media_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -1909,6 +1910,20 @@ gfx::NativeWindow TabDragController::GetLocalProcessWindow(
     if (dragged_window)
       exclude.insert(dragged_window);
   }
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Exclude windows which are pending deletion via Browser::TabStripEmpty().
+  // These windows can be returned in the Linux Aura port because the browser
+  // window which was used for dragging is not hidden once all of its tabs are
+  // attached to another browser window in DragBrowserToNewTabStrip().
+  // TODO(pkotwicz): Fix this properly (crbug.com/358482)
+  BrowserList* browser_list = BrowserList::GetInstance(
+      chrome::HOST_DESKTOP_TYPE_NATIVE);
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end(); ++it) {
+    if ((*it)->tab_strip_model()->empty())
+      exclude.insert((*it)->window()->GetNativeWindow());
+  }
+#endif
   return GetLocalProcessWindowAtPoint(host_desktop_type_,
                                       screen_point,
                                       exclude);
