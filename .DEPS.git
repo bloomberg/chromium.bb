@@ -18,7 +18,7 @@ vars = {
 
 deps = {
     'src/breakpad/src':
-        Var('git_url') + '/external/google-breakpad/src.git@bc921c0751f44dba50fc46836e3902aa69e2f354',
+        Var('git_url') + '/external/google-breakpad/src.git@95074f700fcc32e4f43d5b936a52d3e96c84e21b',
     'src/chrome/browser/resources/pdf/html_office':
         Var('git_url') + '/chromium/html-office-public.git@9f76cc282c471ae4ff77415384db039fcab2faa8',
     'src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin':
