@@ -23,20 +23,21 @@
  */
 
 #include "config.h"
-
-#include <gtest/gtest.h>
-#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/Image.h"
+
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "public/platform/WebImageLayer.h"
 #include "wtf/PassOwnPtr.h"
+
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 
 namespace {
 
 class MockGraphicsLayerClient : public GraphicsLayerClient {
-  public:
+public:
     virtual void notifyAnimationStarted(const GraphicsLayer*, double monotonicTime) OVERRIDE { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) OVERRIDE { }
     virtual String debugName(const GraphicsLayer*) OVERRIDE { return String(); }

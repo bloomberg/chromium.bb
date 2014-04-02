@@ -30,8 +30,8 @@
 #include "platform/graphics/filters/FEMerge.h"
 #include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/ReferenceFilter.h"
-#include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/filters/SourceGraphic.h"
 #include <gtest/gtest.h>
 
 using testing::Test;

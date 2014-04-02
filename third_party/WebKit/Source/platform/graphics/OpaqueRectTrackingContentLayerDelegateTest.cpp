@@ -29,9 +29,9 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "skia/ext/platform_canvas.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
+#include "skia/ext/platform_canvas.h"
 
 #include <gtest/gtest.h>
 
@@ -54,7 +54,7 @@ public:
         m_callback(context, contentRect);
     }
 
-  private:
+private:
     PaintCallback& m_callback;
 };
 

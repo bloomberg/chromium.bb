@@ -30,9 +30,6 @@
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
-#include "wtf/PassOwnPtr.h"
-
-#include <gtest/gtest.h>
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebFloatAnimationCurve.h"
@@ -40,6 +37,9 @@
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "wtf/PassOwnPtr.h"
+
+#include <gtest/gtest.h>
 
 using namespace WebCore;
 using namespace blink;
