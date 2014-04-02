@@ -777,7 +777,7 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
     PictureLayerTiling* tiling,
     WhichTree tree)
     : tiling_(tiling),
-      type_(VISIBLE),
+      type_(TilePriority::NOW),
       visible_rect_in_content_space_(
           tiling_->current_visible_rect_in_content_space_),
       skewport_in_content_space_(tiling_->current_skewport_),
@@ -805,11 +805,11 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
 PictureLayerTiling::TilingRasterTileIterator::~TilingRasterTileIterator() {}
 
 void PictureLayerTiling::TilingRasterTileIterator::AdvancePhase() {
-  DCHECK_LT(type_, EVENTUALLY);
+  DCHECK_LT(type_, TilePriority::EVENTUALLY);
 
   do {
-    type_ = static_cast<Type>(type_ + 1);
-    if (type_ == EVENTUALLY) {
+    type_ = static_cast<TilePriority::PriorityBin>(type_ + 1);
+    if (type_ == TilePriority::EVENTUALLY) {
       spiral_iterator_ = TilingData::SpiralDifferenceIterator(
           &tiling_->tiling_data_,
           eventually_rect_in_content_space_,
@@ -825,7 +825,7 @@ void PictureLayerTiling::TilingRasterTileIterator::AdvancePhase() {
       ++spiral_iterator_;
     }
 
-    if (!spiral_iterator_ && type_ == EVENTUALLY)
+    if (!spiral_iterator_ && type_ == TilePriority::EVENTUALLY)
       break;
   } while (!spiral_iterator_);
 }
@@ -837,7 +837,7 @@ operator++() {
   while (!current_tile_ || !TileNeedsRaster(current_tile_)) {
     std::pair<int, int> next_index;
     switch (type_) {
-      case VISIBLE:
+      case TilePriority::NOW:
         ++visible_iterator_;
         if (!visible_iterator_) {
           AdvancePhase();
@@ -845,7 +845,7 @@ operator++() {
         }
         next_index = visible_iterator_.index();
         break;
-      case SKEWPORT:
+      case TilePriority::SOON:
         ++spiral_iterator_;
         if (!spiral_iterator_) {
           AdvancePhase();
@@ -853,7 +853,7 @@ operator++() {
         }
         next_index = spiral_iterator_.index();
         break;
-      case EVENTUALLY:
+      case TilePriority::EVENTUALLY:
         ++spiral_iterator_;
         if (!spiral_iterator_)
           return *this;

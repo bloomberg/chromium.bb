@@ -47,8 +47,6 @@ class CC_EXPORT PictureLayerTiling {
  public:
   class CC_EXPORT TilingRasterTileIterator {
    public:
-    enum Type { VISIBLE, SKEWPORT, EVENTUALLY };
-
     TilingRasterTileIterator();
     TilingRasterTileIterator(PictureLayerTiling* tiling, WhichTree tree);
     ~TilingRasterTileIterator();
@@ -57,13 +55,13 @@ class CC_EXPORT PictureLayerTiling {
       return current_tile_ && TileNeedsRaster(current_tile_);
     }
     Tile* operator*() { return current_tile_; }
-    Type get_type() const { return type_; }
+    TilePriority::PriorityBin get_type() const { return type_; }
 
     TilingRasterTileIterator& operator++();
 
     gfx::Rect TileBounds() const {
       DCHECK(*this);
-      if (type_ == VISIBLE) {
+      if (type_ == TilePriority::NOW) {
         return tiling_->tiling_data_.TileBounds(visible_iterator_.index_x(),
                                                 visible_iterator_.index_y());
       }
@@ -80,7 +78,7 @@ class CC_EXPORT PictureLayerTiling {
 
     PictureLayerTiling* tiling_;
 
-    Type type_;
+    TilePriority::PriorityBin type_;
     gfx::Rect visible_rect_in_content_space_;
     gfx::Rect skewport_in_content_space_;
     gfx::Rect eventually_rect_in_content_space_;

@@ -45,7 +45,7 @@ class CC_EXPORT PictureLayerImpl
 
     struct IterationStage {
       IteratorType iterator_type;
-      PictureLayerTiling::TilingRasterTileIterator::Type tile_type;
+      TilePriority::PriorityBin tile_type;
     };
 
     int current_stage_;
