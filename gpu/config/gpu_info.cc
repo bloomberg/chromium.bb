@@ -11,6 +11,7 @@ void EnumerateGPUDevice(gpu::GPUInfo::Enumerator* enumerator,
   enumerator->BeginGPUDevice();
   enumerator->AddInt("vendorId", device.vendor_id);
   enumerator->AddInt("deviceId", device.device_id);
+  enumerator->AddBool("active", device.active);
   enumerator->AddString("vendorString", device.vendor_string);
   enumerator->AddString("deviceString", device.device_string);
   enumerator->EndGPUDevice();
@@ -22,7 +23,8 @@ namespace gpu {
 
 GPUInfo::GPUDevice::GPUDevice()
     : vendor_id(0),
-      device_id(0) {
+      device_id(0),
+      active(false) {
 }
 
 GPUInfo::GPUDevice::~GPUDevice() { }

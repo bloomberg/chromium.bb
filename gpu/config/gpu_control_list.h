@@ -348,8 +348,13 @@ class GPU_EXPORT GpuControlList {
     };
 
     enum MultiGpuCategory {
+      // This entry applies if this is the primary GPU on the system.
       kMultiGpuCategoryPrimary,
+      // This entry applies if this is a secondary GPU on the system.
       kMultiGpuCategorySecondary,
+      // This entry applies if this is the active GPU on the system.
+      kMultiGpuCategoryActive,
+      // This entry applies if this is any of the GPUs on the system.
       kMultiGpuCategoryAny,
       kMultiGpuCategoryNone
     };

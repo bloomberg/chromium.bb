@@ -91,8 +91,8 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string device = base::StringPrintf("0x%04x", gpu.device_id);
   if (!gpu.device_string.empty())
     device += " [" + gpu.device_string + "]";
-  return base::StringPrintf(
-      "VENDOR = %s, DEVICE= %s", vendor.c_str(), device.c_str());
+  return base::StringPrintf("VENDOR = %s, DEVICE= %s%s",
+      vendor.c_str(), device.c_str(), gpu.active ? " *ACTIVE*" : "");
 }
 
 base::DictionaryValue* GpuInfoAsDictionaryValue() {

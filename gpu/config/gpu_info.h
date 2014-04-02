@@ -33,6 +33,10 @@ struct GPU_EXPORT GPUInfo {
     // Device ids are unique to vendor, not to one another.
     uint32 device_id;
 
+    // Whether this GPU is the currently used one.
+    // Currently this field is only supported and meaningful on OS X.
+    bool active;
+
     // The strings that describe the GPU.
     // In Linux these strings are obtained through libpci.
     // In Win/MacOSX, these two strings are not filled at the moment.

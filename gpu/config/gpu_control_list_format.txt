@@ -26,7 +26,8 @@
 // 5. "multi_gpu_style" is a string, valid values include "optimus", and
 //    "amd_switchable".
 // 6. "multi_gpu_category" is a string, valid values include "any", "primary",
-//    and "secondary".  If unspecified, the default value is "primary".
+//    "secondary", and "active". If unspecified, the default value is "primary".
+//    See gpu_control_list.h for more details on the meanings of the strings.
 // 7. "driver_vendor" is a STRING structure (defined below).
 // 8. "driver_version" is a VERSION structure (defined below).
 // 9. "driver_date" is a VERSION structure (defined below).

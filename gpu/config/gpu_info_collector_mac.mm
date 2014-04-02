@@ -64,6 +64,7 @@ GPUInfo::GPUDevice GetActiveGPU() {
 // Scan IO registry for PCI video cards.
 bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
   DCHECK(gpu_info);
+  GPUInfo::GPUDevice active_gpu = GetActiveGPU();
 
   // Collect all GPUs' info.
   // match_dictionary will be consumed by IOServiceGetMatchingServices, no need
@@ -83,8 +84,13 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
       }
       gpu.vendor_id = GetEntryProperty(entry, CFSTR("vendor-id"));
       gpu.device_id = GetEntryProperty(entry, CFSTR("device-id"));
-      if (gpu.vendor_id && gpu.device_id)
+      if (gpu.vendor_id && gpu.device_id) {
+        if (gpu.vendor_id == active_gpu.vendor_id &&
+            gpu.device_id == active_gpu.device_id) {
+          gpu.active = true;
+        }
         gpu_list.push_back(gpu);
+      }
     }
     IOObjectRelease(entry_iterator);
   }
@@ -128,15 +134,11 @@ bool CollectPCIVideoCardInfo(GPUInfo* gpu_info) {
       }
     default:
       {
-        GPUInfo::GPUDevice active_gpu = GetActiveGPU();
         size_t current = gpu_list.size();
-        if (active_gpu.vendor_id && active_gpu.device_id) {
-          for (size_t i = 0; i < gpu_list.size(); ++i) {
-            if (gpu_list[i].vendor_id == active_gpu.vendor_id &&
-                gpu_list[i].device_id == active_gpu.device_id) {
-              current = i;
-              break;
-            }
+        for (size_t i = 0; i < gpu_list.size(); ++i) {
+          if (gpu_list[i].active) {
+            current = i;
+            break;
           }
         }
         if (current == gpu_list.size()) {
@@ -170,15 +172,13 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
 
 GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
   DCHECK(vendor_id && device_id);
-  *vendor_id = 0;
-  *device_id = 0;
 
-  GPUInfo gpu_info;
-  if (CollectPCIVideoCardInfo(&gpu_info)) {
-    *vendor_id = gpu_info.gpu.vendor_id;
-    *device_id = gpu_info.gpu.device_id;
+  GPUInfo::GPUDevice gpu = GetActiveGPU();
+  *vendor_id = gpu.vendor_id;
+  *device_id = gpu.device_id;
+
+  if (*vendor_id != 0 && *device_id != 0)
     return kGpuIDSuccess;
-  }
   return kGpuIDFailure;
 }
 

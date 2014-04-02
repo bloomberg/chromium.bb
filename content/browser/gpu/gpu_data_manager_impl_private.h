@@ -181,6 +181,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
                       const std::string& gpu_driver_bug_list_json,
                       const gpu::GPUInfo& gpu_info);
 
+  void UpdateGpuInfoHelper();
+
   void UpdateBlacklistedFeatures(const std::set<int>& features);
 
   // This should only be called once at initialization time, when preliminary
