@@ -87,10 +87,6 @@ class MEDIA_EXPORT DecoderStream {
   // behavior.
   bool CanReadWithoutStalling() const;
 
-  // TODO(rileya): Remove this once channel_layout/bits_per_channel/etc getters
-  // have been removed from AudioDecoder and plumbed elsewhere.
-  Decoder* decoder() { return decoder_.get(); }
-
   // Allows callers to register for notification of splice buffers from the
   // demuxer.  I.e., DecoderBuffer::splice_timestamp() is not kNoTimestamp().
   typedef base::Callback<void(base::TimeDelta)> SpliceObserverCB;
