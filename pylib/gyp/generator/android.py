@@ -337,13 +337,10 @@ class AndroidMkWriter(object):
     """
     if len(rules) == 0:
       return
-    rule_trigger = '%s_rule_trigger' % self.android_module
 
-    did_write_rule = False
     for rule in rules:
       if len(rule.get('rule_sources', [])) == 0:
         continue
-      did_write_rule = True
       name = make.StringToMakefileVariable('%s_%s' % (self.relative_target,
                                                       rule['rule_name']))
       self.WriteLn('\n### Generated for rule "%s":' % name)
@@ -412,13 +409,9 @@ class AndroidMkWriter(object):
           # Make each output depend on the main output, with an empty command
           # to force make to notice that the mtime has changed.
           self.WriteLn('%s: %s ;' % (output, main_output))
-        self.WriteLn('.PHONY: %s' % (rule_trigger))
-        self.WriteLn('%s: %s' % (rule_trigger, main_output))
-        self.WriteLn('')
-    if did_write_rule:
-      extra_sources.append(rule_trigger)  # Force all rules to run.
-      self.WriteLn('### Finished generating for all rules')
-      self.WriteLn('')
+        self.WriteLn()
+
+    self.WriteLn()
 
 
   def WriteCopies(self, copies, extra_outputs):
