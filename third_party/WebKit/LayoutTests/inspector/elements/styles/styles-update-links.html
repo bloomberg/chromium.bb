@@ -1,0 +1,184 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    function flattenRuleRanges(rule)
+    {
+        var ranges = [];
+        var medias = rule.media || [];
+        for (var i = 0; i < medias.length; ++i) {
+            var media = medias[i];
+            if (!media.range)
+                continue;
+            ranges.push({
+                range: media.range,
+                name: "media #" + i
+            });
+        }
+        for (var i = 0; i < rule.selectors.length; ++i) {
+            var selector = rule.selectors[i];
+            if (!selector.range)
+                continue;
+            ranges.push({
+                range: selector.range,
+                name: "selector #" + i
+            });
+        }
+        if (rule.style.range) {
+            ranges.push({
+                range: rule.style.range,
+                name: "style range"
+            });
+        }
+        var properties = rule.style.allProperties;
+        for (var i = 0; i < properties.length; ++i) {
+            var property = properties[i];
+            if (!property.range)
+                continue;
+            ranges.push({
+                range: property.range,
+                name: "property >>" + property.text + "<<"
+            });
+        }
+        return ranges;
+    }
+
+    function compareRuleRanges(lazyRule, originalRule)
+    {
+        if (lazyRule.selectorText !== originalRule.selectorText) {
+            InspectorTest.addResult("Error: rule selectors are not equal: " + lazyRule.selectorText + " != " + originalRule.selectorText);
+            return false;
+        }
+        var flattenLazy = flattenRuleRanges(lazyRule);
+        var flattenOriginal = flattenRuleRanges(originalRule);
+        if (flattenLazy.length !== flattenOriginal.length) {
+            InspectorTest.addResult("Error: rule range amount is not equal: " + flattenLazy.length + " != " + flattenOriginal.length);
+            return false
+        }
+        for (var i = 0; i < flattenLazy.length; ++i) {
+            var lazyRange = flattenLazy[i];
+            var originalRange = flattenOriginal[i];
+            if (lazyRange.name !== originalRange.name) {
+                InspectorTest.addResult("Error: rule names are not equal: " + lazyRange.name + " != " + originalRange.name);
+                return false;
+            }
+            if (!lazyRange.range.equal(originalRange.range)) {
+                InspectorTest.addResult("Error: ranges '" + lazyRange.name + "' are not equal: " + lazyRange.range.toString() + " != " + originalRange.range.toString());
+                return false;
+            }
+        }
+        InspectorTest.addResult(flattenLazy.length + " rule ranges are equal.");
+        return true;
+    }
+
+    function validateRuleRanges(rules, callback)
+    {
+        InspectorTest.selectNodeAndWaitForStyles("other", onOtherSelected);
+
+        function onOtherSelected()
+        {
+            InspectorTest.selectNodeAndWaitForStyles("container", onContainerSelected);
+        }
+
+        function onContainerSelected()
+        {
+            var fetchedRules = getMatchedRules();
+            if (fetchedRules.length !== rules.length) {
+                InspectorTest.addResult("Error: rules sizes are not equal!");
+                InspectorTest.completeTest();
+                return;
+            }
+            for (var i = 0; i < fetchedRules.length; ++i) {
+                if (!compareRuleRanges(rules[i], fetchedRules[i])) {
+                    InspectorTest.completeTest();
+                    return;
+                }
+            }
+            callback();
+        }
+    }
+
+    function getMatchedRules()
+    {
+        var matchedStyleSections = WebInspector.panels.elements.sidebarPanes.styles.sections[0];
+        var rules = [];
+        for (var i = 1; i < matchedStyleSections.length; ++i) {
+            var rule = matchedStyleSections[i].rule;
+            if (rule)
+                rules.push(rule);
+        }
+        return rules;
+    }
+
+    function insertProperty()
+    {
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
+        var treeElement = treeItem.section().addNewBlankProperty(1);
+        treeElement.applyStyleText("PROPERTY: INSERTED;", true, true);
+        InspectorTest.runAfterPendingDispatches(onPropertyInserted);
+    }
+
+    function onPropertyInserted()
+    {
+        InspectorTest.addResult("\n\n#### AFTER PROPERTY INSERTION ####\n\n");
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        var rules = getMatchedRules();
+        validateRuleRanges(rules, editSelector);
+    }
+
+    function editSelector()
+    {
+        var section = WebInspector.panels.elements.sidebarPanes.styles.sections[0][4];
+        section.startEditingSelector();
+        section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
+        section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        InspectorTest.runAfterPendingDispatches(onSelectorEdited);
+    }
+
+    function onSelectorEdited()
+    {
+        InspectorTest.addResult("\n\n#### AFTER SELECTOR EDIT ####\n\n");
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        var rules = getMatchedRules();
+        validateRuleRanges(rules, disableProperty);
+    }
+
+    function disableProperty()
+    {
+        var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("border");
+        treeItem.toggleEnabled({ target: { checked: false }, consume: function() { } });
+        InspectorTest.runAfterPendingDispatches(onPropertyDisabled);
+    }
+
+    function onPropertyDisabled()
+    {
+        InspectorTest.addResult("\n\n#### AFTER PROPERTY DISABLED ####\n\n");
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        var rules = getMatchedRules();
+        validateRuleRanges(rules, InspectorTest.completeTest.bind(InspectorTest));
+    }
+
+    InspectorTest.selectNodeAndWaitForStyles("container", insertProperty);
+}
+</script>
+<link rel="stylesheet" href="resources/styles-update-links.css"></link>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that removal of property following its disabling works.
+</p>
+
+<div id="container" class="left-intact should-change">
+Red text here.
+</div>
+
+<div id="other"></div>
+
+</body>
+</html>
