@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.8",
+  "version": "4.9",
   "entries": [
     {
       "id": 1,
@@ -877,7 +877,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 66,
-      "description": "Force glFinish() after compositing on older OS X",
+      "description": "Force glFinish() after compositing on older OS X on Intel GPU",
       "cr_bugs": [123409],
       "os": {
         "type": "macosx",
@@ -887,14 +887,14 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
         }
       },
       "vendor_id": "0x8086",
-      "multi_gpu_category": "any",
+      "multi_gpu_category": "active",
       "features": [
         "force_gl_finish_after_compositing"
       ]
     },
     {
       "id": 67,
-      "description": "Force glFinish() after compositing on Mavericks with Retina MacBook Pro",
+      "description": "Force glFinish() after compositing on Mavericks on Intel GPU",
       // TODO(ccameron): Get rid of this when we move to CoreAnimation.
       "cr_bugs": [318877],
       "os": {
@@ -904,7 +904,8 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "10.9"
         }
       },
-      "multi_gpu_style": "optimus",
+      "vendor_id": "0x8086",
+      "multi_gpu_category": "active",
       "features": [
         "force_gl_finish_after_compositing"
       ]
