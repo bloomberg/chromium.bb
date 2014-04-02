@@ -48,10 +48,8 @@ const int kMaxIOMessageDelayMs = 400;
 // considering it delayed.
 const int kMaxMessageProcessingMs = 100;
 
-#if defined(OS_WIN)
 // TODO(brettw) Consider making this a pref.
 const bool kPlaySounds = false;
-#endif
 
 //------------------------------------------------------------------------------
 // Provide a special watchdog to make it easy to set the breakpoint on this
@@ -164,10 +162,8 @@ void JankObserverHelper::StartProcessingTimers(const TimeDelta& queueing_time) {
   if (queueing_time_ > max_message_delay_) {
     // Message is too delayed.
     queueing_delay_counter_.Increment();
-#if defined(OS_WIN)
     if (kPlaySounds)
       MessageBeep(MB_ICONASTERISK);
-#endif
   }
 }
 
@@ -187,10 +183,8 @@ void JankObserverHelper::EndProcessingTimers() {
       TimeDelta::FromMilliseconds(kMaxMessageProcessingMs)) {
     // Message took too long to process.
     slow_processing_counter_.Increment();
-#if defined(OS_WIN)
     if (kPlaySounds)
       MessageBeep(MB_ICONHAND);
-#endif
   }
 
   // Reset message specific times.
@@ -304,7 +298,6 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
     helper_.EndProcessingTimers();
   }
 
-#if defined(OS_WIN)
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
     if (!helper_.MessageWillBeMeasured())
@@ -330,30 +323,6 @@ class UIJankObserver : public base::RefCountedThreadSafe<UIJankObserver>,
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
     helper_.EndProcessingTimers();
   }
-#elif defined(USE_AURA)
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
-    return base::EVENT_CONTINUE;
-  }
-
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
-  }
-#elif defined(TOOLKIT_GTK)
-  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
-    if (!helper_.MessageWillBeMeasured())
-      return;
-    // TODO(evanm): we want to set queueing_time_ using
-    // gdk_event_get_time, but how do you convert that info
-    // into a delta?
-    // guint event_time = gdk_event_get_time(event);
-    base::TimeDelta queueing_time = base::TimeDelta::FromMilliseconds(0);
-    helper_.StartProcessingTimers(queueing_time);
-  }
-
-  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
-    helper_.EndProcessingTimers();
-  }
-#endif
 
  private:
   friend class base::RefCountedThreadSafe<UIJankObserver>;

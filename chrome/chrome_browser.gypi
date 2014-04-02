@@ -972,10 +972,9 @@
         'browser/invalidation/ticl_invalidation_service.h',
         'browser/io_thread.cc',
         'browser/io_thread.h',
-        'browser/jankometer.cc',
         'browser/jankometer.h',
-        'browser/jankometer_android.cc',
-        'browser/jankometer_mac.cc',
+        'browser/jankometer_stub.cc',
+        'browser/jankometer_win.cc',
         'browser/jumplist_updater_win.cc',
         'browser/jumplist_updater_win.h',
         'browser/jumplist_win.cc',
@@ -3294,7 +3293,6 @@
             'browser/bookmarks/bookmark_html_writer.cc',
             'browser/ssl/ssl_add_certificate.cc',
 
-            'browser/jankometer.cc',
             'browser/sync/sync_global_error.cc',
             'browser/sync/sync_global_error.h',
 
@@ -3407,7 +3405,6 @@
           'sources!': [
             'browser/automation/automation_provider_list_generic.cc',
             'browser/first_run/upgrade_util.cc',
-            'browser/jankometer.cc',
             'browser/lifetime/application_lifetime_stub.cc',
             'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
           ],
@@ -3472,6 +3469,7 @@
           ],
           'sources!': [
             'browser/first_run/first_run_dialog.h',
+            'browser/jankometer_stub.cc',
             'browser/lifetime/application_lifetime_stub.cc',
             'browser/metrics/machine_id_provider_stub.cc',
             'browser/prefs/tracked/pref_hash_calculator_helper_stub.cc',
