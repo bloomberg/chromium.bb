@@ -14,11 +14,16 @@ import subprocess
 import sys
 import urlparse
 
+from download_from_google_storage import Gsutil
 import gclient_utils
 import subcommand
 
 
 GIT_EXECUTABLE = 'git.bat' if sys.platform.startswith('win') else 'git'
+BOOTSTRAP_BUCKET = 'chromium-git-cache'
+GSUTIL_DEFAULT_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    'third_party', 'gsutil', 'gsutil')
 
 
 def UrlToCacheDir(url):
@@ -151,6 +156,40 @@ def CMDexists(parser, args):
   return 1
 
 
+@subcommand.usage('[url of repo to create a bootstrap zip file]')
+def CMDupdate_bootstrap(parser, args):
+  """Create and uploads a bootstrap tarball."""
+  # Lets just assert we can't do this on Windows.
+  if sys.platform.startswith('win'):
+    print >> sys.stderr, 'Sorry, update bootstrap will not work on Windows.'
+    return 1
+
+  # First, we need to ensure the cache is populated.
+  populate_args = args[:]
+  populate_args.append('--no_bootstrap')
+  CMDpopulate(parser, populate_args)
+
+  # Get the repo directory.
+  options, args = parser.parse_args(args)
+  url = args[0]
+  repo_dir = os.path.join(options.cache_dir, UrlToCacheDir(url))
+
+  # The files are named <git number>.zip
+  gen_number = subprocess.check_output(['git', 'number', 'master'],
+                                       cwd=repo_dir).strip()
+  RunGit(['gc'], cwd=repo_dir)  # Run Garbage Collect to compress packfile.
+  # Creating a temp file and then deleting it ensures we can use this name.
+  _, tmp_zipfile = tempfile.mkstemp(suffix='.zip')
+  os.remove(tmp_zipfile)
+  subprocess.call(['zip', '-r', tmp_zipfile, '.'], cwd=repo_dir)
+  gsutil = Gsutil(path=GSUTIL_DEFAULT_PATH, boto_path=None)
+  dest_name = 'gs://%s/%s/%s.zip' % (BOOTSTRAP_BUCKET,
+                                     UrlToCacheDir(url),
+                                     gen_number)
+  gsutil.call('cp', tmp_zipfile, dest_name)
+  os.remove(tmp_zipfile)
+
+
 @subcommand.usage('[url of repo to add to or update in cache]')
 def CMDpopulate(parser, args):
   """Ensure that the cache has all up-to-date objects for the given repo."""
@@ -160,6 +199,9 @@ def CMDpopulate(parser, args):
                     help='Only cache 10000 commits of history')
   parser.add_option('--ref', action='append',
                     help='Specify additional refs to be fetched')
+  parser.add_option('--no_bootstrap', action='store_true',
+                    help='Don\'t bootstrap from Google Storage')
+
   options, args = parser.parse_args(args)
   if options.shallow and not options.depth:
     options.depth = 10000
@@ -179,6 +221,75 @@ def CMDpopulate(parser, args):
   d = []
   if options.depth:
     d = ['--depth', '%d' % options.depth]
+
+  def _find(executable):
+    """This mimics the "which" utility."""
+    path_folders = os.environ.get('PATH').split(os.pathsep)
+
+    for path_folder in path_folders:
+      target = os.path.join(path_folder, executable)
+      # Just incase we have some ~/blah paths.
+      target = os.path.abspath(os.path.expanduser(target))
+      if os.path.isfile(target) and os.access(target, os.X_OK):
+        return target
+    return False
+
+  def _maybe_bootstrap_repo(directory):
+    """Bootstrap the repo from Google Stroage if possible.
+
+    Requires 7z on Windows and Unzip on Linux/Mac.
+    """
+    if options.no_bootstrap:
+      return False
+    if sys.platform.startswith('win'):
+      if not _find('7z'):
+        print 'Cannot find 7z in the path.'
+        print 'If you want git cache to be able to bootstrap from '
+        print 'Google Storage, please install 7z from:'
+        print 'http://www.7-zip.org/download.html'
+        return False
+    else:
+      if not _find('unzip'):
+        print 'Cannot find unzip in the path.'
+        print 'If you want git cache to be able to bootstrap from '
+        print 'Google Storage, please ensure unzip is present on your system.'
+        return False
+
+    folder = UrlToCacheDir(url)
+    gs_folder = 'gs://%s/%s' % (BOOTSTRAP_BUCKET, folder)
+    gsutil = Gsutil(GSUTIL_DEFAULT_PATH, boto_path=os.devnull,
+                    bypass_prodaccess=True)
+    # Get the most recent version of the zipfile.
+    _, ls_out, _ = gsutil.check_call('ls', gs_folder)
+    ls_out_sorted = sorted(ls_out.splitlines())
+    if not ls_out_sorted:
+      # This repo is not on Google Storage.
+      return False
+    latest_checkout = ls_out_sorted[-1]
+
+    # Download zip file to a temporary directory.
+    tempdir = tempfile.mkdtemp()
+    print 'Downloading %s...' % latest_checkout
+    code, out, err = gsutil.check_call('cp', latest_checkout, tempdir)
+    if code:
+      print '%s\n%s' % (out, err)
+      return False
+    filename = os.path.join(tempdir, latest_checkout.split('/')[-1])
+
+    # Unpack the file with 7z on Windows, or unzip everywhere else.
+    if sys.platform.startswith('win'):
+      cmd = ['7z', 'x', '-o%s' % directory, '-tzip', filename]
+    else:
+      cmd = ['unzip', filename, '-d', directory]
+    retcode = subprocess.call(cmd)
+
+    # Clean up the downloaded zipfile.
+    gclient_utils.rmtree(tempdir)
+    if retcode:
+      print 'Extracting bootstrap zipfile %s failed.' % filename
+      print 'Resuming normal operations'
+      return False
+    return True
 
   def _config(directory):
     RunGit(['config', 'core.deltaBaseCacheLimit',
@@ -203,7 +314,9 @@ def CMDpopulate(parser, args):
       gclient_utils.rmtree(repo_dir)
       tempdir = tempfile.mkdtemp(suffix=UrlToCacheDir(url),
                                  dir=options.cache_dir)
-      RunGit(['init', '--bare'], cwd=tempdir)
+      bootstrapped = _maybe_bootstrap_repo(tempdir)
+      if not bootstrapped:
+        RunGit(['init', '--bare'], cwd=tempdir)
       _config(tempdir)
       fetch_cmd = ['fetch'] + v + d + ['origin']
       RunGit(fetch_cmd, filter_fn=filter_fn, cwd=tempdir, retry=True)
@@ -263,7 +376,7 @@ def CMDunlock(parser, args):
       unlocked = True
 
     if unlocked:
-      unlocked.append(repo_dir)      
+      unlocked.append(repo_dir)
     else:
       untouched.append(repo_dir)
 
