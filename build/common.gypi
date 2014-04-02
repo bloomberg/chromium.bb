@@ -864,7 +864,7 @@
           'enable_printing%': 0,
         }],
 
-        ['OS=="win" or OS=="linux"', {
+        ['OS=="win" or OS=="linux" or OS=="mac"', {
           'use_mojo%': 1,
         }],
 
