@@ -75,7 +75,7 @@ const ScriptObject& InjectedScriptBase::injectedScriptObject() const
 ScriptValue InjectedScriptBase::callFunctionWithEvalEnabled(ScriptFunctionCall& function, bool& hadException) const
 {
     ExecutionContext* executionContext = m_injectedScriptObject.scriptState()->executionContext();
-    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(executionContext, name(), 1);
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willCallFunction(executionContext, 0, name(), 1);
 
     ScriptState* scriptState = m_injectedScriptObject.scriptState();
     bool evalIsDisabled = false;

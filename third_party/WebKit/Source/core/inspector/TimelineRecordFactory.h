@@ -52,7 +52,7 @@ public:
     static PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data);
 
     static PassRefPtr<JSONObject> createGCEventData(size_t usedHeapSizeDelta);
-    static PassRefPtr<JSONObject> createFunctionCallData(const String& scriptName, int scriptLine);
+    static PassRefPtr<JSONObject> createFunctionCallData(int scriptId, const String& scriptName, int scriptLine);
     static PassRefPtr<JSONObject> createEventDispatchData(const Event&);
     static PassRefPtr<JSONObject> createGenericTimerData(int timerId);
     static PassRefPtr<JSONObject> createTimerInstallData(int timerId, int timeout, bool singleShot);

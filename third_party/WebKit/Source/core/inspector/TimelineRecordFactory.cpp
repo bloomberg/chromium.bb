@@ -77,9 +77,10 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createGCEventData(size_t usedHeapS
     return data.release();
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createFunctionCallData(const String& scriptName, int scriptLine)
+PassRefPtr<JSONObject> TimelineRecordFactory::createFunctionCallData(int scriptId, const String& scriptName, int scriptLine)
 {
     RefPtr<JSONObject> data = JSONObject::create();
+    data->setString("scriptId", String::number(scriptId));
     data->setString("scriptName", scriptName);
     data->setNumber("scriptLine", scriptLine);
     return data.release();

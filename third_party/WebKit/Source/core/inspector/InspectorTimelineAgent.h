@@ -137,7 +137,7 @@ public:
     void didCommitLoad();
 
     // Methods called from WebCore.
-    bool willCallFunction(ExecutionContext*, const String& scriptName, int scriptLine);
+    bool willCallFunction(ExecutionContext*, int scriptId, const String& scriptName, int scriptLine);
     void didCallFunction();
 
     bool willDispatchEvent(Document* document, const Event& event, DOMWindow* window, Node* node, const EventPath& eventPath);

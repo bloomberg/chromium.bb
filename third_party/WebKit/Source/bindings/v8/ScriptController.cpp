@@ -165,7 +165,7 @@ v8::Local<v8::Value> ScriptController::callFunction(ExecutionContext* context, v
         int lineNumber;
         if (!resourceInfo(getBoundFunction(function), resourceName, lineNumber))
             return v8::Local<v8::Value>();
-        cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
+        cookie = InspectorInstrumentation::willCallFunction(context, function->ScriptId(), resourceName, lineNumber);
     }
 
     v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, context, receiver, argc, info, isolate);

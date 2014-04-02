@@ -78,6 +78,7 @@ FunctionCall Properties:
     children : <object>
     counters : <object>
     data : {
+        scriptId : <string>
         scriptLine : <number>
         scriptName : <string>
     }
@@ -91,6 +92,7 @@ FunctionCall Properties:
     children : <object>
     counters : <object>
     data : {
+        scriptId : <string>
         scriptLine : <number>
         scriptName : <string>
     }
@@ -104,6 +106,7 @@ FunctionCall Properties:
     children : <object>
     counters : <object>
     data : {
+        scriptId : <string>
         scriptLine : <number>
         scriptName : <string>
     }
@@ -117,6 +120,7 @@ FunctionCall Properties:
     children : <object>
     counters : <object>
     data : {
+        scriptId : <string>
         scriptLine : <number>
         scriptName : <string>
     }

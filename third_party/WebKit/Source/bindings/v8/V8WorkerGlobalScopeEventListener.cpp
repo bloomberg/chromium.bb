@@ -96,7 +96,7 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
             resourceName = stringResourceName;
             lineNumber = originalFunction->GetScriptLineNumber() + 1;
         }
-        cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
+        cookie = InspectorInstrumentation::willCallFunction(context, originalFunction->ScriptId(), resourceName, lineNumber);
     }
 
     v8::Isolate* isolate = toIsolate(context);
