@@ -10,6 +10,8 @@ namespace content {
 // Perform any necessary Mojo initialization.
 void InitializeMojo();
 
+void ShutdownMojo();
+
 }  // namespace content
 
 #endif  // CONTENT_COMMON_MOJO_MOJO_INIT_H_

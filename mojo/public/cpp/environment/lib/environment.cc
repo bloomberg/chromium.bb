@@ -9,7 +9,7 @@
 
 namespace mojo {
 
-Environment::Environment() {
+Environment::Environment() : data_(NULL) {
   internal::SetUpCurrentBuffer();
   RunLoop::SetUp();
 }

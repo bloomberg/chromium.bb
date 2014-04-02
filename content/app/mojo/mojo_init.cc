@@ -4,31 +4,29 @@
 
 #include "content/app/mojo/mojo_init.h"
 
-#include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "mojo/embedder/embedder.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/service_manager/service_manager.h"
 
 namespace content {
 
 namespace {
 
-struct Initializer {
-  Initializer() {
-    // TODO(davemoore): Configuration goes here. For now just create the shared
-    // instance of the ServiceManager.
-    mojo::ServiceManager::GetInstance();
-    mojo::embedder::Init();
-  }
-};
-
-static base::LazyInstance<Initializer>::Leaky initializer =
-    LAZY_INSTANCE_INITIALIZER;
+mojo::Environment* environment = NULL;
 
 }  // namespace
 
-// Initializes mojo. Use a lazy instance to ensure we only do this once.
 void InitializeMojo() {
-  initializer.Get();
+  DCHECK(!environment);
+  environment = new mojo::Environment;
+  mojo::embedder::Init();
+  mojo::ServiceManager::GetInstance();
+}
+
+void ShutdownMojo() {
+  delete environment;
+  environment = NULL;
 }
 
 }  // namespace content

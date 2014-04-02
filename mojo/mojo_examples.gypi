@@ -89,6 +89,7 @@
         '../gpu/gpu.gyp:command_buffer_common',
         '../ppapi/ppapi.gyp:ppapi_c',
         '../ppapi/ppapi_internal.gyp:ppapi_example_gles2_spinning_cube',
+        'mojo_common_lib',
         'mojo_environment_chromium',
         'mojo_gles2',
         'mojo_native_viewport_bindings',

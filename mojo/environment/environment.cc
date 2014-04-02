@@ -4,17 +4,32 @@
 
 #include "mojo/public/cpp/environment/environment.h"
 
+#include "mojo/common/environment_data.h"
+
 namespace mojo {
 
-// These methods do nothing as we rely on LazyInstance<T> to instantiate all of
-// our global state in this implementation of the environment library.
+class Environment::Data {
+ public:
+  Data();
+  ~Data();
 
-Environment::Environment() {
-  // no-op
+ private:
+  common::EnvironmentData data_;
+
+  DISALLOW_COPY_AND_ASSIGN(Data);
+};
+
+Environment::Data::Data() {
+}
+
+Environment::Data::~Data() {
+}
+
+Environment::Environment() : data_(new Environment::Data) {
 }
 
 Environment::~Environment() {
-  // no-op
+  delete data_;
 }
 
 }  // namespace mojo

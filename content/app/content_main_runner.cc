@@ -812,6 +812,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       delegate_->ProcessExiting(process_type);
     }
 
+#if defined(USE_MOJO)
+    ShutdownMojo();
+#endif
+
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
     _CrtDumpMemoryLeaks();
