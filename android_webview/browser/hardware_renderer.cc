@@ -50,7 +50,8 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
 
   gl_surface_ = new AwGLSurface;
   bool success =
-      shared_renderer_state_->CompositorInitializeHwDraw(gl_surface_);
+      shared_renderer_state_->GetCompositor()->
+          InitializeHwDraw(gl_surface_);
   DCHECK(success);
 }
 
@@ -62,7 +63,7 @@ HardwareRenderer::~HardwareRenderer() {
       ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
   internal::ScopedAllowGL allow_gl;
 
-  shared_renderer_state_->CompositorReleaseHwDraw();
+  shared_renderer_state_->GetCompositor()->ReleaseHwDraw();
   gl_surface_ = NULL;
 }
 
@@ -112,12 +113,13 @@ bool HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info, DrawGLResult* result) {
                       draw_info->clip_right - draw_info->clip_left,
                       draw_info->clip_bottom - draw_info->clip_top);
 
-  bool did_draw = shared_renderer_state_->CompositorDemandDrawHw(
-      gfx::Size(draw_info->width, draw_info->height),
-      transform,
-      clip_rect,  // viewport
-      clip_rect,
-      state_restore.stencil_enabled());
+  bool did_draw = shared_renderer_state_->GetCompositor()->
+      DemandDrawHw(
+          gfx::Size(draw_info->width, draw_info->height),
+          transform,
+          clip_rect,  // viewport
+          clip_rect,
+          state_restore.stencil_enabled());
   gl_surface_->ResetBackingFrameBufferObject();
 
   if (did_draw) {
@@ -176,7 +178,8 @@ void HardwareRenderer::SetMemoryPolicy(
     return;
 
   memory_policy_ = new_policy;
-  shared_renderer_state_->CompositorSetMemoryPolicy(memory_policy_);
+  shared_renderer_state_->GetCompositor()->
+      SetMemoryPolicy(memory_policy_);
 }
 
 // static

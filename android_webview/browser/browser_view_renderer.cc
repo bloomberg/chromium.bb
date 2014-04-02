@@ -330,7 +330,8 @@ void BrowserViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
   }
 
   if (has_compositor_)
-    shared_renderer_state_->CompositorDidChangeRootLayerScrollOffset();
+    shared_renderer_state_->GetCompositor()->
+        DidChangeRootLayerScrollOffset();
 }
 
 void BrowserViewRenderer::DidUpdateContent() {
@@ -549,7 +550,8 @@ void BrowserViewRenderer::ForceFakeCompositeSW() {
 
 bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
   DCHECK(has_compositor_);
-  bool result = shared_renderer_state_->CompositorDemandDrawSw(canvas);
+  bool result = shared_renderer_state_->GetCompositor()->
+      DemandDrawSw(canvas);
   DidComposite(false);
   return result;
 }

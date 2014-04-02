@@ -8,19 +8,11 @@
 #include "base/bind.h"
 #include "base/location.h"
 
-using base::AutoLock;
-
 namespace android_webview {
 
 DrawGLInput::DrawGLInput() : frame_id(0) {}
 
 DrawGLResult::DrawGLResult() : frame_id(0), clip_contains_visible_rect(false) {}
-
-namespace internal {
-
-BothThreads::BothThreads() : compositor(NULL) {}
-
-}  // namespace internal
 
 SharedRendererState::SharedRendererState(
     scoped_refptr<base::MessageLoopProxy> ui_loop,
@@ -55,73 +47,21 @@ void SharedRendererState::ClientRequestDrawGLOnUIThread() {
 
 void SharedRendererState::SetCompositorOnUiThread(
     content::SynchronousCompositor* compositor) {
-  AutoLock lock(lock_);
   DCHECK(ui_loop_->BelongsToCurrentThread());
-  both().compositor = compositor;
+  compositor_ = compositor;
 }
 
-bool SharedRendererState::CompositorInitializeHwDraw(
-    scoped_refptr<gfx::GLSurface> surface) {
-  AutoLock lock(lock_);
-  DCHECK(both().compositor);
-  return both().compositor->InitializeHwDraw(surface);
-}
-
-void SharedRendererState::CompositorReleaseHwDraw() {
-  AutoLock lock(lock_);
-  DCHECK(both().compositor);
-  both().compositor->ReleaseHwDraw();
-}
-
-bool SharedRendererState::CompositorDemandDrawHw(
-    gfx::Size surface_size,
-    const gfx::Transform& transform,
-    gfx::Rect viewport,
-    gfx::Rect clip,
-    bool stencil_enabled) {
-  AutoLock lock(lock_);
-  DCHECK(both().compositor);
-  return both().compositor->DemandDrawHw(
-      surface_size, transform, viewport, clip, stencil_enabled);
-}
-
-bool SharedRendererState::CompositorDemandDrawSw(SkCanvas* canvas) {
-  AutoLock lock(lock_);
-  DCHECK(both().compositor);
-  return both().compositor->DemandDrawSw(canvas);
-}
-
-void SharedRendererState::CompositorSetMemoryPolicy(
-    const content::SynchronousCompositorMemoryPolicy& policy) {
-  AutoLock lock(lock_);
-  DCHECK(both().compositor);
-  return both().compositor->SetMemoryPolicy(policy);
-}
-
-void SharedRendererState::CompositorDidChangeRootLayerScrollOffset() {
-  AutoLock lock(lock_);
-  DCHECK(both().compositor);
-  both().compositor->DidChangeRootLayerScrollOffset();
+content::SynchronousCompositor* SharedRendererState::GetCompositor() {
+  DCHECK(compositor_);
+  return compositor_;
 }
 
 void SharedRendererState::SetDrawGLInput(const DrawGLInput& input) {
-  AutoLock lock(lock_);
-  both().draw_gl_input = input;
+  draw_gl_input_ = input;
 }
 
 DrawGLInput SharedRendererState::GetDrawGLInput() const {
-  AutoLock lock(lock_);
-  return both().draw_gl_input;
-}
-
-internal::BothThreads& SharedRendererState::both() {
-  lock_.AssertAcquired();
-  return both_threads_;
-}
-
-const internal::BothThreads& SharedRendererState::both() const {
-  lock_.AssertAcquired();
-  return both_threads_;
+  return draw_gl_input_;
 }
 
 }  // namespace android_webview
