@@ -1314,4 +1314,52 @@ TEST_F(InputRouterImplTest, TrackpadPinchUpdate) {
   EXPECT_EQ(0, client_->in_flight_event_count());
 }
 
+// Test proper handling of trackpad Gesture{Pinch,Scroll}Update sequences.
+TEST_F(InputRouterImplTest, TrackpadPinchAndScrollUpdate) {
+  // The first scroll should be sent immediately.
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  // Subsequent scroll and pinch events should remain queued, coalescing as
+  // more trackpad events arrive.
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  // Ack'ing the first scroll should trigger both the coalesced scroll and the
+  // coalesced pinch events.  However, the GesturePinchUpdate should be ack'ed
+  // immediately without going to the renderer.
+  // TODO(rbyers): Update for wheel event behavior - crbug.com/289887.
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(1, client_->in_flight_event_count());
+
+  // Ack the second scroll.
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+  EXPECT_EQ(0, client_->in_flight_event_count());
+}
+
 }  // namespace content

@@ -147,6 +147,7 @@ bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
                  const WebGestureEvent& event) {
   return event.type == event_to_coalesce.type &&
          event.type == WebInputEvent::GestureScrollUpdate &&
+         event.sourceDevice == event_to_coalesce.sourceDevice &&
          event.modifiers == event_to_coalesce.modifiers;
 }
 

@@ -229,6 +229,7 @@ TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
   WebGestureEvent merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(2U, GestureEventQueueSize());
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Coalesced.
   SimulateGestureScrollUpdateEvent(8, -6, 0);
@@ -239,6 +240,7 @@ TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
   EXPECT_EQ(0, merged_event.modifiers);
   EXPECT_EQ(16, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-11, merged_event.data.scrollUpdate.deltaY);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Enqueued.
   SimulateGestureScrollUpdateEvent(8, -7, 1);
@@ -247,6 +249,7 @@ TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
   merged_event = GestureEventLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Different.
   SimulateGestureEvent(WebInputEvent::GestureScrollEnd,
@@ -284,6 +287,54 @@ TEST_F(GestureEventQueueTest, CoalescesScrollGestureEvents) {
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
 }
 
+TEST_F(GestureEventQueueTest,
+       DoesNotCoalesceScrollGestureEventsFromDifferentDevices) {
+  // Turn off debounce handling for test isolation.
+  DisableDebounce();
+
+  // Test that GestureScrollUpdate events from Touchscreen and Touchpad do not
+  // coalesce.
+
+  // Sent.
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+
+  // Enqueued.
+  SimulateGestureScrollUpdateEvent(8, -5, 0);
+
+  // Make sure that the queue contains what we think it should.
+  EXPECT_EQ(2U, GestureEventQueueSize());
+  EXPECT_EQ(WebGestureEvent::Touchscreen,
+            GestureEventLastQueueEvent().sourceDevice);
+
+  // Coalesced.
+  SimulateGestureScrollUpdateEvent(8, -6, 0);
+  EXPECT_EQ(2U, GestureEventQueueSize());
+  EXPECT_EQ(WebGestureEvent::Touchscreen,
+            GestureEventLastQueueEvent().sourceDevice);
+
+  // Enqueued.
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(3U, GestureEventQueueSize());
+  EXPECT_EQ(WebGestureEvent::Touchpad,
+            GestureEventLastQueueEvent().sourceDevice);
+
+  // Coalesced.
+  SimulateGestureEvent(WebInputEvent::GestureScrollUpdate,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(3U, GestureEventQueueSize());
+  EXPECT_EQ(WebGestureEvent::Touchpad,
+            GestureEventLastQueueEvent().sourceDevice);
+
+  // Enqueued.
+  SimulateGestureScrollUpdateEvent(8, -7, 0);
+  EXPECT_EQ(4U, GestureEventQueueSize());
+  EXPECT_EQ(WebGestureEvent::Touchscreen,
+            GestureEventLastQueueEvent().sourceDevice);
+}
+
 TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   // Turn off debounce handling for test isolation.
   DisableDebounce();
@@ -315,11 +366,13 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(8, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-4, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Enqueued.
   SimulateGestureScrollUpdateEvent(6, -3, 1);
@@ -330,11 +383,13 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(1.5, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(12, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-6, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Enqueued.
   SimulateGesturePinchUpdateEvent(2, 60, 60, 1);
@@ -345,11 +400,13 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(3, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(12, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-6, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Enqueued.
   SimulateGesturePinchUpdateEvent(2, 60, 60, 1);
@@ -360,11 +417,13 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(6, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(12, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-6, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Check that only the first event was sent.
   EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
@@ -384,11 +443,13 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(6, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(13, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-7, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // At this point ACKs shouldn't be getting ignored.
   EXPECT_FALSE(WillIgnoreNextACK());
@@ -412,10 +473,12 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(1, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-1, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(6, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Enqueued.
   SimulateGestureScrollUpdateEvent(2, -2, 1);
@@ -427,10 +490,12 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(3, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-3, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(6, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Enqueued.
   SimulateGesturePinchUpdateEvent(0.5, 60, 60, 1);
@@ -441,11 +506,13 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(0.5, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GestureScrollUpdate, merged_event.type);
   EXPECT_EQ(3, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-3, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Check that the ACK gets ignored.
   SendInputEventACK(WebInputEvent::GestureScrollUpdate,
@@ -466,10 +533,12 @@ TEST_F(GestureEventQueueTest, CoalescesScrollAndPinchEvents) {
   EXPECT_EQ(2, merged_event.data.scrollUpdate.deltaX);
   EXPECT_EQ(-2, merged_event.data.scrollUpdate.deltaY);
   EXPECT_EQ(2, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
   merged_event = GestureEventSecondFromLastQueueEvent();
   EXPECT_EQ(WebInputEvent::GesturePinchUpdate, merged_event.type);
   EXPECT_EQ(0.5, merged_event.data.pinchUpdate.scale);
   EXPECT_EQ(1, merged_event.modifiers);
+  EXPECT_EQ(WebGestureEvent::Touchscreen, merged_event.sourceDevice);
 
   // Check that the ACK sends the next scroll pinch pair.
   SendInputEventACK(WebInputEvent::GesturePinchUpdate,

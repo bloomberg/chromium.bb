@@ -179,13 +179,24 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
     return;
   }
 
+  // It's possible that the ack for the second event in an in-flight, coalesced
+  // Gesture{Scroll,Pinch}Update pair is received prior to the first event ack.
+  // TODO(jdduke): Unify GSU/GPU pairs into a single event, crbug.com/359115.
+  size_t event_index = 0;
+  if (ignore_next_ack_ &&
+      coalesced_gesture_events_.size() > 1 &&
+      coalesced_gesture_events_[0].event.type != type &&
+      coalesced_gesture_events_[1].event.type == type) {
+    event_index = 1;
+  }
+  GestureEventWithLatencyInfo event_with_latency =
+      coalesced_gesture_events_[event_index];
+  DCHECK_EQ(event_with_latency.event.type, type);
+  event_with_latency.latency.AddNewLatencyFrom(latency);
+
   // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
-  GestureEventWithLatencyInfo event_with_latency =
-      coalesced_gesture_events_.front();
-  DCHECK_EQ(event_with_latency.event.type, type);
-  event_with_latency.latency.AddNewLatencyFrom(latency);
   client_->OnGestureEventAck(event_with_latency, ack_result);
 
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
@@ -195,7 +206,9 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
     else
       touchpad_tap_suppression_controller_->GestureFlingCancelAck(processed);
   }
-  coalesced_gesture_events_.pop_front();
+  DCHECK_LT(event_index, coalesced_gesture_events_.size());
+  coalesced_gesture_events_.erase(coalesced_gesture_events_.begin() +
+                                  event_index);
 
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
@@ -208,8 +221,7 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   const GestureEventWithLatencyInfo& first_gesture_event =
       coalesced_gesture_events_.front();
 
-  // TODO(yusufo): Introduce GesturePanScroll so that these can be combined
-  // into one gesture and kept inside the queue that way.
+  // TODO(jdduke): Unify GSU/GPU pairs into a single event, crbug.com/359115.
   // Check for the coupled GesturePinchUpdate before sending either event,
   // handling the case where the first GestureScrollUpdate ack is synchronous.
   GestureEventWithLatencyInfo second_gesture_event;
@@ -273,7 +285,7 @@ void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
   }
   GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
   if (last_event->CanCoalesceWith(gesture_event)) {
-    last_event->CoalesceWith(gesture_event);
+      last_event->CoalesceWith(gesture_event);
     if (!combined_scroll_pinch_.IsIdentity()) {
       combined_scroll_pinch_.ConcatTransform(
           GetTransformForEvent(gesture_event));
@@ -289,6 +301,7 @@ void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
   GestureEventWithLatencyInfo scroll_event;
   GestureEventWithLatencyInfo pinch_event;
   scroll_event.event.modifiers |= gesture_event.event.modifiers;
+  scroll_event.event.sourceDevice = gesture_event.event.sourceDevice;
   scroll_event.event.timeStampSeconds = gesture_event.event.timeStampSeconds;
   // Keep the oldest LatencyInfo.
   DCHECK_LE(last_event->latency.trace_id, gesture_event.latency.trace_id);
@@ -345,7 +358,8 @@ bool GestureEventQueue::ShouldTryMerging(
           << "Event time not monotonic?\n";
   return (event_in_queue.event.type == WebInputEvent::GestureScrollUpdate ||
       event_in_queue.event.type == WebInputEvent::GesturePinchUpdate) &&
-      event_in_queue.event.modifiers == new_event.event.modifiers;
+      event_in_queue.event.modifiers == new_event.event.modifiers &&
+      event_in_queue.event.sourceDevice == new_event.event.sourceDevice;
 }
 
 gfx::Transform GestureEventQueue::GetTransformForEvent(
