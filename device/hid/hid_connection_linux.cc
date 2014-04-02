@@ -60,9 +60,7 @@ HidConnectionLinux::HidConnectionLinux(HidDeviceInfo device_info,
 
   int flags = base::File::FLAG_OPEN |
               base::File::FLAG_READ |
-              base::File::FLAG_WRITE |
-              base::File::FLAG_EXCLUSIVE_READ |
-              base::File::FLAG_EXCLUSIVE_WRITE;
+              base::File::FLAG_WRITE;
 
   base::File device_file(base::FilePath(dev_node), flags);
   if (!device_file.IsValid()) {
