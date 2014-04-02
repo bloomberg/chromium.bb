@@ -47,7 +47,7 @@ template <typename T> void V8_USE(T) { }
 static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("namedItem", "TestSpecialOperations", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwArityTypeErrorForMethod("namedItem", "TestSpecialOperations", 1, info.Length(), info.GetIsolate());
         return;
     }
     TestSpecialOperations* impl = V8TestSpecialOperations::toNative(info.Holder());

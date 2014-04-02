@@ -67,7 +67,7 @@ static void V8TestInterfaceNamedConstructor2ConstructorCallback(const v8::Functi
     toV8(document, info.Holder(), info.GetIsolate());
 
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceNamedConstructor2", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwArityTypeErrorForConstructor("TestInterfaceNamedConstructor2", 1, info.Length(), info.GetIsolate());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);

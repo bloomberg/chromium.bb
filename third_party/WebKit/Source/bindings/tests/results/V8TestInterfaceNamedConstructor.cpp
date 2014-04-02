@@ -92,8 +92,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-        exceptionState.throwIfNeeded();
+        throwArityTypeError(exceptionState, 1, info.Length());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);

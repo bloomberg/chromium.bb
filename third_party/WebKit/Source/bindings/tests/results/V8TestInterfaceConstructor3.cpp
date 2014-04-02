@@ -47,7 +47,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor3", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwArityTypeErrorForConstructor("TestInterfaceConstructor3", 1, info.Length(), info.GetIsolate());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);

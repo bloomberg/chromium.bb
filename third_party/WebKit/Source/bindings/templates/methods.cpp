@@ -9,9 +9,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% endif %}
     {% if method.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
-        {{throw_type_error(method,
-              'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
-                  method.number_of_required_arguments) | indent(8)}}
+        {{throw_arity_type_error(method, method.number_of_required_arguments)}};
         return;
     }
     {% endif %}
@@ -258,6 +256,18 @@ throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interfac
 {% endmacro %}
 
 
+{######################################}
+{% macro throw_arity_type_error(method, number_of_required_arguments) %}
+{% if method.has_exception_state %}
+throwArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length())
+{%- elif method.is_constructor %}
+throwArityTypeErrorForConstructor("{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
+{%- else %}
+throwArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
+{%- endif %}
+{% endmacro %}
+
+
 {##############################################################################}
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -271,9 +281,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% if overloads.minimum_number_of_required_arguments %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {
-        {{throw_type_error(overloads,
-              'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
-              overloads.minimum_number_of_required_arguments) | indent(8)}}
+        {{throw_arity_type_error(overloads, overloads.minimum_number_of_required_arguments)}};
         return;
     }
     {% endif %}
@@ -371,9 +379,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {% if interface_length and not constructor.overload_index %}
     {# FIXME: remove UNLIKELY: constructors are expensive, so no difference. #}
     if (UNLIKELY(info.Length() < {{interface_length}})) {
-        {{throw_type_error(constructor,
-            'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
-                interface_length) | indent(8)}}
+        {{throw_arity_type_error(constructor, interface_length)}};
         return;
     }
     {% endif %}
@@ -429,9 +435,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     {% endif %}
     {% if constructor.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
-        {{throw_type_error(constructor,
-              'ExceptionMessages::notEnoughArguments(%s, info.Length())' %
-                  constructor.number_of_required_arguments) | indent(8)}}
+        {{throw_arity_type_error(constructor, constructor.number_of_required_arguments)}};
         return;
     }
     {% endif %}

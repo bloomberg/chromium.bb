@@ -68,6 +68,11 @@ v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate*);
 // A helper for throwing JavaScript TypeError.
 v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
 
+// Helpers for throwing JavaScript TypeErrors for arity mismatches.
+void throwArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+void throwArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+void throwArityTypeError(ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
+
 v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
 inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& info, int index)

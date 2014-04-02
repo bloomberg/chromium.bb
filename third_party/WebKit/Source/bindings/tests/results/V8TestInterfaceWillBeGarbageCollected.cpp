@@ -75,7 +75,7 @@ static void attr1AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Va
 static void funcMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("func", "TestInterfaceWillBeGarbageCollected", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwArityTypeErrorForMethod("func", "TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }
     TestInterfaceWillBeGarbageCollected* impl = V8TestInterfaceWillBeGarbageCollected::toNative(info.Holder());
@@ -94,7 +94,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceWillBeGarbageCollected", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwArityTypeErrorForConstructor("TestInterfaceWillBeGarbageCollected", 1, info.Length(), info.GetIsolate());
         return;
     }
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, info[0]);
