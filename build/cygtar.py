@@ -329,6 +329,10 @@ class CygTar(object):
 
   def Close(self):
     self.tar.close()
+    if self.read_file is not None:
+      self.read_file.close()
+      self.read_file = None
+      self.read_filesize = 0
 
 
 def Main(args):
