@@ -31,7 +31,7 @@ class ListChangesTask : public SyncTask {
   explicit ListChangesTask(SyncEngineContext* sync_context);
   virtual ~ListChangesTask();
 
-  virtual void Run(scoped_ptr<SyncTaskToken> token) OVERRIDE;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE;
 
  private:
   void DidListChanges(scoped_ptr<SyncTaskToken> token,

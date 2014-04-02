@@ -17,13 +17,13 @@ namespace drive_backend {
 
 namespace {
 
-class SyncTaskAdapter : public SyncTask {
+class SyncTaskAdapter : public ExclusiveTask {
  public:
   explicit SyncTaskAdapter(const SyncTaskManager::Task& task) : task_(task) {}
   virtual ~SyncTaskAdapter() {}
 
-  virtual void Run(scoped_ptr<SyncTaskToken> token) OVERRIDE {
-    task_.Run(SyncTaskToken::WrapToCallback(token.Pass()));
+  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE {
+    task_.Run(callback);
   }
 
  private:
@@ -251,7 +251,7 @@ void SyncTaskManager::RunTask(scoped_ptr<SyncTaskToken> token,
                               scoped_ptr<SyncTask> task) {
   DCHECK(!running_task_);
   running_task_ = task.Pass();
-  running_task_->Run(token.Pass());
+  running_task_->RunPreflight(token.Pass());
 }
 
 void SyncTaskManager::StartNextTask() {

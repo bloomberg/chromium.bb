@@ -34,7 +34,7 @@ UninstallAppTask::UninstallAppTask(SyncEngineContext* sync_context,
 UninstallAppTask::~UninstallAppTask() {
 }
 
-void UninstallAppTask::RunSequential(const SyncStatusCallback& callback) {
+void UninstallAppTask::RunExclusive(const SyncStatusCallback& callback) {
   if (!IsContextReady()) {
     RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
     return;

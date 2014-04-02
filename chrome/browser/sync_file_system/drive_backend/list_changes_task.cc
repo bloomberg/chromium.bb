@@ -47,7 +47,7 @@ ListChangesTask::ListChangesTask(SyncEngineContext* sync_context)
 ListChangesTask::~ListChangesTask() {
 }
 
-void ListChangesTask::Run(scoped_ptr<SyncTaskToken> token) {
+void ListChangesTask::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Changes] Start.");
 
   if (!IsContextReady()) {

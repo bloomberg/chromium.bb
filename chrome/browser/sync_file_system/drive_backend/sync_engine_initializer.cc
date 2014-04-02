@@ -95,7 +95,7 @@ SyncEngineInitializer::~SyncEngineInitializer() {
     cancel_callback_.Run();
 }
 
-void SyncEngineInitializer::Run(scoped_ptr<SyncTaskToken> token) {
+void SyncEngineInitializer::RunPreflight(scoped_ptr<SyncTaskToken> token) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Initialize] Start.");
   DCHECK(sync_context_);
   DCHECK(sync_context_->GetDriveService());

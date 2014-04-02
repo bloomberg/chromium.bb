@@ -120,7 +120,7 @@ class TaskManagerClient
   DISALLOW_COPY_AND_ASSIGN(TaskManagerClient);
 };
 
-class MultihopSyncTask : public SequentialSyncTask {
+class MultihopSyncTask : public ExclusiveTask {
  public:
   MultihopSyncTask(bool* task_started,
                    bool* task_completed)
@@ -133,7 +133,7 @@ class MultihopSyncTask : public SequentialSyncTask {
 
   virtual ~MultihopSyncTask() {}
 
-  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE {
     DCHECK(!*task_started_);
     *task_started_ = true;
     base::MessageLoop::current()->PostTask(
@@ -181,7 +181,7 @@ class BackgroundTask : public SyncTask {
   virtual ~BackgroundTask() {
   }
 
-  virtual void Run(scoped_ptr<SyncTaskToken> token) OVERRIDE {
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE {
     scoped_ptr<BlockingFactor> blocking_factor(new BlockingFactor);
     blocking_factor->app_id = app_id_;
     blocking_factor->paths.push_back(path_);

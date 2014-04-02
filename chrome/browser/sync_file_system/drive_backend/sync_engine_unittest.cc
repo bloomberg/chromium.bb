@@ -36,14 +36,14 @@ void EmptyTask(SyncStatusCode status, const SyncStatusCallback& callback) {
 
 }  // namespace
 
-class MockSyncTask : public SequentialSyncTask {
+class MockSyncTask : public ExclusiveTask {
  public:
   explicit MockSyncTask(bool used_network) {
     set_used_network(used_network);
   }
   virtual ~MockSyncTask() {}
 
-  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void RunExclusive(const SyncStatusCallback& callback) OVERRIDE {
     callback.Run(SYNC_STATUS_OK);
   }
 

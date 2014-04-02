@@ -74,7 +74,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
 LocalToRemoteSyncer::~LocalToRemoteSyncer() {
 }
 
-void LocalToRemoteSyncer::RunSequential(const SyncStatusCallback& callback) {
+void LocalToRemoteSyncer::RunExclusive(const SyncStatusCallback& callback) {
   if (!IsContextReady()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Local -> Remote] Context not ready.");

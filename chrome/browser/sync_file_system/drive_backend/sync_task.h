@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 
 namespace sync_file_system {
@@ -17,7 +18,7 @@ class SyncTask {
  public:
   SyncTask() : used_network_(false) {}
   virtual ~SyncTask() {}
-  virtual void Run(scoped_ptr<SyncTaskToken> token) = 0;
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) = 0;
 
   bool used_network() { return used_network_; }
 
@@ -32,10 +33,18 @@ class SyncTask {
   DISALLOW_COPY_AND_ASSIGN(SyncTask);
 };
 
-class SequentialSyncTask : public SyncTask {
+class ExclusiveTask : public SyncTask {
  public:
-  virtual void Run(scoped_ptr<SyncTaskToken> token) OVERRIDE FINAL;
-  virtual void RunSequential(const SyncStatusCallback& callback) = 0;
+  ExclusiveTask();
+  virtual ~ExclusiveTask();
+
+  virtual void RunPreflight(scoped_ptr<SyncTaskToken> token) OVERRIDE FINAL;
+  virtual void RunExclusive(const SyncStatusCallback& callback) = 0;
+
+ private:
+  base::WeakPtrFactory<ExclusiveTask> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExclusiveTask);
 };
 
 }  // namespace drive_backend

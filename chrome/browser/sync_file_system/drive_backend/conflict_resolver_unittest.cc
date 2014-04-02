@@ -190,7 +190,7 @@ class ConflictResolverTest : public testing::Test {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<RemoteToLocalSyncer> syncer(
         new RemoteToLocalSyncer(context_.get()));
-    syncer->RunSequential(CreateResultReceiver(&status));
+    syncer->RunExclusive(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }
@@ -206,7 +206,7 @@ class ConflictResolverTest : public testing::Test {
         context_.get(),
         SyncFileMetadata(file_change.file_type(), 0, base::Time()),
         file_change, local_path, url));
-    syncer->RunSequential(CreateResultReceiver(&status));
+    syncer->RunExclusive(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     if (status == SYNC_STATUS_OK)
       fake_remote_change_processor_->ClearLocalChanges(url);
@@ -222,7 +222,7 @@ class ConflictResolverTest : public testing::Test {
   SyncStatusCode RunConflictResolver() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     ConflictResolver resolver(context_.get());
-    resolver.RunSequential(CreateResultReceiver(&status));
+    resolver.RunExclusive(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }
