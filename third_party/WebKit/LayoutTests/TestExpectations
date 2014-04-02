@@ -726,7 +726,7 @@ crbug.com/245556 virtual/softwarecompositing/transitions/transform-on-large-laye
 crbug.com/321787 [ Win ] virtual/gpu/fast/canvas/webgl/premultiplyalpha-test.html [ Pass Failure ]
 crbug.com/321793 [ Win ] fast/frames/sandboxed-iframe-navigation-windowopen.html [ Pass Timeout ]
 crbug.com/321857 [ Win7 Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Pass Failure ]
-crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Timeout ]
+crbug.com/323858 fast/workers/storage/interrupt-database.html [ Pass Timeout ]
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
 
