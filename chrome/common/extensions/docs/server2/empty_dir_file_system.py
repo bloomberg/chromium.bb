@@ -11,10 +11,11 @@ class EmptyDirFileSystem(FileSystem):
   '''A FileSystem with empty directories. Useful to inject places to disable
   features such as samples.
   '''
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     result = {}
     for path in paths:
       if not IsDirectory(path):
+        if skip_not_found: continue
         raise FileNotFoundError('EmptyDirFileSystem cannot read %s' % path)
       result[path] = []
     return Future(value=result)

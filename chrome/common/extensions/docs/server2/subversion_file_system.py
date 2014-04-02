@@ -95,7 +95,7 @@ def _CreateStatInfo(html):
 
   return StatInfo(parent_version, child_versions)
 
-def _GetAsyncFetchCallback(paths, fetcher, args=None):
+def _GetAsyncFetchCallback(paths, fetcher, args=None, skip_not_found=False):
   def apply_args(path):
     return path if args is None else '%s?%s' % (path, args)
 
@@ -115,10 +115,12 @@ def _GetAsyncFetchCallback(paths, fetcher, args=None):
       try:
         result = future.Get()
       except Exception as e:
+        if skip_not_found and IsDownloadError(e): continue
         exc_type = FileNotFoundError if IsDownloadError(e) else FileSystemError
         raise exc_type('%s fetching %s for Get: %s' %
                        (type(e).__name__, path, traceback.format_exc()))
       if result.status_code == 404:
+        if skip_not_found: continue
         raise FileNotFoundError('Got 404 when fetching %s for Get, content %s' %
             (path, result.content))
       if result.status_code != 200:
@@ -153,14 +155,16 @@ class SubversionFileSystem(FileSystem):
     self._svn_path = svn_path
     self._revision = revision
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     args = None
     if self._revision is not None:
       # |fetcher| gets from svn.chromium.org which uses p= for version.
       args = 'p=%s' % self._revision
-    return Future(callback=_GetAsyncFetchCallback(paths,
-                                                  self._file_fetcher,
-                                                  args=args))
+    return Future(callback=_GetAsyncFetchCallback(
+        paths,
+        self._file_fetcher,
+        args=args,
+        skip_not_found=skip_not_found))
 
   def Refresh(self):
     return Future(value=())

@@ -59,7 +59,7 @@ class CachingFileSystem(FileSystem):
 
     return stat_info
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     '''Reads a list of files. If a file is in memcache and it is not out of
     date, it is returned. Otherwise, the file is retrieved from the file system.
     '''
@@ -73,6 +73,9 @@ class CachingFileSystem(FileSystem):
         # TODO(cduvall): do a concurrent Stat with the missing stat values.
         try:
           stat_value = self.Stat(path)
+        except FileNotFoundError:
+          if skip_not_found: continue
+          return Future(exc_info=sys.exc_info())
         except:
           return Future(exc_info=sys.exc_info())
       read_value = read_values.get(path)
@@ -88,7 +91,8 @@ class CachingFileSystem(FileSystem):
     if not uncached:
       return Future(value=results)
 
-    uncached_read_futures = self._file_system.Read(uncached.keys())
+    uncached_read_futures = self._file_system.Read(
+        uncached.keys(), skip_not_found=skip_not_found)
     def resolve():
       new_results = uncached_read_futures.Get()
       # Update the cached data in the object store. This is a path -> (read,

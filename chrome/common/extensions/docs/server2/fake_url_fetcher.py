@@ -25,8 +25,13 @@ class FakeUrlFetcher(object):
     self._async_resolve_count = 0
 
   def _ReadFile(self, filename):
-    with open(os.path.join(self._base_path, filename), 'r') as f:
-      return f.read()
+    # Fake DownloadError, the error that appengine usually raises.
+    class DownloadError(Exception): pass
+    try:
+      with open(os.path.join(self._base_path, filename), 'r') as f:
+        return f.read()
+    except IOError as e:
+      raise DownloadError(e)
 
   def _ListDir(self, directory):
     # In some tests, we need to test listing a directory from the HTML returned

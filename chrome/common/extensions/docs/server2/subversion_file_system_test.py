@@ -130,5 +130,12 @@ class SubversionFileSystemTest(unittest.TestCase):
     self.assertEqual('193838', dir_stat.version)
     self.assertEqual({}, dir_stat.child_versions)
 
+  def testSkipNotFound(self):
+    file_system, _ = _CreateSubversionFileSystem(
+        _SUBVERSION_FILE_SYSTEM_TEST_DATA)
+    self.assertEqual({}, file_system.Read(('fakefile',),
+                                          skip_not_found=True).Get())
+
+
 if __name__ == '__main__':
   unittest.main()

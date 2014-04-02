@@ -76,7 +76,7 @@ class LocalFileSystem(FileSystem):
   def Create(*path):
     return LocalFileSystem(ChromiumPath(*path))
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     def resolve():
       result = {}
       for path in paths:

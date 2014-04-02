@@ -219,5 +219,21 @@ class CachingFileSystemTest(unittest.TestCase):
     test_fs.IncrementStat()
     run_expecting_stat('1')
 
+  def testSkipNotFound(self):
+    caching_fs = self._CreateCachingFileSystem(TestFileSystem({
+      'bob': {
+        'bob0': 'bob/bob0 contents',
+        'bob1': 'bob/bob1 contents'
+      }
+    }))
+    def read_skip_not_found(paths):
+      return caching_fs.Read(paths, skip_not_found=True).Get()
+    self.assertEqual({}, read_skip_not_found(('grub',)))
+    self.assertEqual({}, read_skip_not_found(('bob/bob2',)))
+    self.assertEqual({
+      'bob/bob0': 'bob/bob0 contents',
+    }, read_skip_not_found(('bob/bob0', 'bob/bob2')))
+
+
 if __name__ == '__main__':
   unittest.main()

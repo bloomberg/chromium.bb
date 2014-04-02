@@ -240,7 +240,7 @@ class GithubFileSystem(FileSystem):
   def Refresh(self):
     return self.ReadSingle('')
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     '''Returns a directory mapping |paths| to the contents of the file at each
     path. If path ends with a '/', it is treated as a directory and is mapped to
     a list of filenames in that directory.

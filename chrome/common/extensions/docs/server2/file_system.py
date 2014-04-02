@@ -66,15 +66,19 @@ class StatInfo(object):
 class FileSystem(object):
   '''A FileSystem interface that can read files and directories.
   '''
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     '''Reads each file in paths and returns a dictionary mapping the path to the
     contents. If a path in paths ends with a '/', it is assumed to be a
     directory, and a list of files in the directory is mapped to the path.
 
     The contents will be a str.
 
-    If any path cannot be found, raises a FileNotFoundError. This is guaranteed
-    to only happen once the Future has been resolved (Get() called).
+    If any path cannot be found:
+      - If |skip_not_found| is True, the resulting object will not contain any
+        mapping for that path.
+      - Otherwise, and by default, a FileNotFoundError is raised. This is
+        guaranteed to only happen once the Future has been resolved (Get()
+        called).
 
     For any other failure, raises a FileSystemError.
     '''
@@ -82,7 +86,7 @@ class FileSystem(object):
 
   def ReadSingle(self, path):
     '''Reads a single file from the FileSystem. Returns a Future with the same
-    rules as Read().
+    rules as Read(). If |path| is not found raise a FileNotFoundError on Get().
     '''
     AssertIsValid(path)
     read_single = self.Read([path])

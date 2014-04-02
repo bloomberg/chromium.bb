@@ -39,7 +39,7 @@ class PatchedFileSystem(FileSystem):
     self._base_file_system = base_file_system
     self._patcher = patcher
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     patched_files = set()
     added, deleted, modified = self._patcher.GetPatchedFiles()
     if set(paths) & set(deleted):
@@ -52,7 +52,8 @@ class PatchedFileSystem(FileSystem):
     patched_paths = file_paths & patched_files
     unpatched_paths = file_paths - patched_files
     return Future(callback=_GetAsyncFetchCallback(
-        self._base_file_system.Read(unpatched_paths),
+        self._base_file_system.Read(unpatched_paths,
+                                    skip_not_found=skip_not_found),
         self._patcher.Apply(patched_paths, self._base_file_system),
         self._TryReadDirectory(dir_paths),
         self))

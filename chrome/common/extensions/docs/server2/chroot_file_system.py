@@ -23,7 +23,7 @@ class ChrootFileSystem(FileSystem):
     self._file_system = file_system
     self._root = root.strip('/')
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     # Maintain reverse mapping so the result can be mapped to the original
     # paths given (the result from |file_system| will include |root| in the
     # result, which would be wrong).
@@ -33,7 +33,8 @@ class ChrootFileSystem(FileSystem):
       prefixed_paths[prefixed] = path
       return prefixed
     future_result = self._file_system.Read(
-        tuple(prefix(path) for path in paths))
+        tuple(prefix(path) for path in paths),
+        skip_not_found=skip_not_found)
     def resolve():
       return dict((prefixed_paths[path], content)
                   for path, content in future_result.Get().iteritems())

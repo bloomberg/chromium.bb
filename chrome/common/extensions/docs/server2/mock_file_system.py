@@ -37,12 +37,12 @@ class MockFileSystem(FileSystem):
   # FileSystem implementation.
   #
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     '''Reads |paths| from |_file_system|, then applies the most recent update
     from |_updates|, if any.
     '''
     self._read_count += 1
-    future_result = self._file_system.Read(paths)
+    future_result = self._file_system.Read(paths, skip_not_found=skip_not_found)
     def resolve():
       self._read_resolve_count += 1
       result = future_result.Get()

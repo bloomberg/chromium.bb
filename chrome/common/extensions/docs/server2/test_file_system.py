@@ -114,9 +114,10 @@ class TestFileSystem(FileSystem):
   # FileSystem implementation.
   #
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     for path in paths:
       if path not in self._path_values:
+        if skip_not_found: continue
         return FileNotFoundError.RaiseInFuture(
             '%s not in %s' % (path, '\n'.join(self._path_values)))
     return Future(value=dict((k, v) for k, v in self._path_values.iteritems()

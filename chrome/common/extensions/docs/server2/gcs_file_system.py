@@ -79,7 +79,7 @@ class CloudStorageFileSystem(FileSystem):
       self._bucket = debug_bucket_prefix + self._bucket
     AssertIsValid(self._bucket)
 
-  def Read(self, paths):
+  def Read(self, paths, skip_not_found=False):
     def resolve():
       try:
         result = {}
