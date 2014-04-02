@@ -70,6 +70,49 @@ static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_
     return glyph;
 }
 
+// Minimum size, in pixels, at which anti alias is enabled for certain
+// scripts. Only applies to the Direct Write backend for now.
+static unsigned minSizeForAntiAlias(UScriptCode script)
+{
+    switch (script) {
+    case USCRIPT_TRADITIONAL_HAN:
+        return 24;
+    case USCRIPT_SIMPLIFIED_HAN:
+    case USCRIPT_HIRAGANA:
+    case USCRIPT_KATAKANA:
+    case USCRIPT_KATAKANA_OR_HIRAGANA:
+    case USCRIPT_HANGUL:
+    case USCRIPT_BENGALI:
+        return 16;
+    case USCRIPT_THAI:
+    case USCRIPT_HEBREW:
+    case USCRIPT_ARABIC:
+    case USCRIPT_DEVANAGARI:
+    case USCRIPT_GURMUKHI:
+    case USCRIPT_GUJARATI:
+    case USCRIPT_TAMIL:
+    case USCRIPT_TELUGU:
+    case USCRIPT_KANNADA:
+    case USCRIPT_GEORGIAN:
+    case USCRIPT_ARMENIAN:
+    case USCRIPT_THAANA:
+    case USCRIPT_CANADIAN_ABORIGINAL:
+    case USCRIPT_CHEROKEE:
+    case USCRIPT_MONGOLIAN:
+    default:
+        return 0;
+    }
+}
+
+static bool fontRequiresFullHinting(const AtomicString& familyName)
+{
+    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New", AtomicString::ConstructFromLiteral));
+    if (equalIgnoringCase(familyName, courierNew))
+        return true;
+
+    return false;
+}
+
 // Given the desired base font, this will create a SimpleFontData for a specific
 // font that can be used to render the given range of characters.
 PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDescription& fontDescription, UChar32 character, const SimpleFontData*)
@@ -149,8 +192,11 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
     // last font in the array covers the character, |i| will be numFonts.
     // So, we have to use '<=" rather than '<' to see if we found a font
     // covering the character.
-    if (i <= numFonts)
+    if (i <= numFonts) {
+        if (s_useDirectWrite)
+            data->setMinSizeForAntiAlias(minSizeForAntiAlias(script));
         return fontDataFromFontPlatformData(data, DoNotRetain);
+    }
 
     return nullptr;
 }
@@ -185,49 +231,6 @@ static bool typefacesMatchesFamily(const SkTypeface* tf, const AtomicString& fam
     }
 
     return matchesRequestedFamily;
-}
-
-// Minimum size, in pixels, at which anti alias is enabled for certain
-// scripts. Only applies to the Direct Write backend for now.
-static unsigned minSizeForAntiAlias(UScriptCode script)
-{
-    switch (script) {
-    case USCRIPT_TRADITIONAL_HAN:
-        return 24;
-    case USCRIPT_SIMPLIFIED_HAN:
-    case USCRIPT_HIRAGANA:
-    case USCRIPT_KATAKANA:
-    case USCRIPT_KATAKANA_OR_HIRAGANA:
-    case USCRIPT_HANGUL:
-    case USCRIPT_BENGALI:
-        return 16;
-    case USCRIPT_THAI:
-    case USCRIPT_HEBREW:
-    case USCRIPT_ARABIC:
-    case USCRIPT_DEVANAGARI:
-    case USCRIPT_GURMUKHI:
-    case USCRIPT_GUJARATI:
-    case USCRIPT_TAMIL:
-    case USCRIPT_TELUGU:
-    case USCRIPT_KANNADA:
-    case USCRIPT_GEORGIAN:
-    case USCRIPT_ARMENIAN:
-    case USCRIPT_THAANA:
-    case USCRIPT_CANADIAN_ABORIGINAL:
-    case USCRIPT_CHEROKEE:
-    case USCRIPT_MONGOLIAN:
-    default:
-        return 0;
-    }
-}
-
-static bool fontRequiresFullHinting(const AtomicString& familyName)
-{
-    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New", AtomicString::ConstructFromLiteral));
-    if (equalIgnoringCase(familyName, courierNew))
-        return true;
-
-    return false;
 }
 
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
