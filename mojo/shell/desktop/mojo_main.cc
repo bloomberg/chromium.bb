@@ -8,6 +8,7 @@
 #include "base/macros.h"  // TODO(vtl): Remove.
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/message_pump_mojo.h"  // TODO(vtl): Remove.
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/shell/child_process.h"
 #include "mojo/shell/child_process_host.h"  // TODO(vtl): Remove.
 #include "mojo/shell/context.h"
@@ -36,6 +37,7 @@ class TestChildProcessHostDelegate
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
+  mojo::Environment env;
   CommandLine::Init(argc, argv);
   mojo::shell::InitializeLogging();
 
