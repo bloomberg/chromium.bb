@@ -627,7 +627,7 @@ void LinkStyle::process()
             return;
         if (!document().contentSecurityPolicy()->allowImageFromSource(builder.url()))
             return;
-        if (document().frame())
+        if (document().frame() && document().frame()->loader().client())
             document().frame()->loader().client()->dispatchDidChangeIcons(m_owner->relAttribute().iconType());
     }
 
