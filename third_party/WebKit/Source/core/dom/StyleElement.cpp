@@ -60,6 +60,7 @@ void StyleElement::processStyleSheet(Document& document, Element* element)
 {
     TRACE_EVENT0("webkit", "StyleElement::processStyleSheet");
     ASSERT(element);
+    ASSERT(element->inDocument());
 
     m_registeredAsCandidate = true;
     document.styleEngine()->addStyleSheetCandidateNode(element, m_createdByParser);
@@ -78,20 +79,17 @@ void StyleElement::removedFromDocument(Document& document, Element* element, Con
 {
     ASSERT(element);
 
-    if (!m_registeredAsCandidate) {
-        ASSERT(!m_sheet);
-        return;
+    if (m_registeredAsCandidate) {
+        document.styleEngine()->removeStyleSheetCandidateNode(element, scopingNode, treeScope);
+        m_registeredAsCandidate = false;
     }
-
-    document.styleEngine()->removeStyleSheetCandidateNode(element, scopingNode, treeScope);
-    m_registeredAsCandidate = false;
 
     RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet.get();
 
     if (m_sheet)
         clearSheet(element);
-
-    document.removedStyleSheet(removedSheet.get(), RecalcStyleDeferred, AnalyzedStyleUpdate);
+    if (removedSheet)
+        document.removedStyleSheet(removedSheet.get(), RecalcStyleDeferred, AnalyzedStyleUpdate);
 }
 
 void StyleElement::clearDocumentData(Document& document, Element* element)
