@@ -1,18 +1,13 @@
 <html manifest="does-not-exist.manifest">
+<script src="/js-test-resources/js-test.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText()
-    testRunner.waitUntilDone();
-}
-
-function log(message)
-{
-    document.getElementById("result").innerHTML += message + "<br>";
-}
+var jsTestIsAsync = true;
+description("Test that subresources can be loaded if manifest is not available.");
 
 function unexpectedEvent(name)
 {
-    log("FAILURE: Unexpected " + name + " event.");
+    testFailed("Unexpected " + name + " event.");
+    finishJSTest();
 }
 
 applicationCache.addEventListener('noupdate', function() { unexpectedEvent("noupdate") }, false);
@@ -22,38 +17,34 @@ applicationCache.addEventListener('updateready', function() { unexpectedEvent("u
 applicationCache.addEventListener('cached', function() { unexpectedEvent("cached") }, false);
 applicationCache.addEventListener('obsolete', function() { unexpectedEvent("obsolete") }, false);
 
-function test()
+function test(e)
 {
-    if (!gotCheckingEvent)
-        log("FAILURE: Did not get a checking event");
-    if (window.applicationCache.status)
-        log("FAILURE: Cache status is not UNCACHED, " + window.applicationCache.status);
+    shouldBeTrue("gotCheckingEvent");
+    shouldBe("window.applicationCache.status", "applicationCache.UNCACHED");
+
+    event = e;
+    shouldBeEqualToString("event.reason", "manifest");
+    shouldBeEqualToString("event.url", "http://127.0.0.1:8000/appcache/does-not-exist.manifest");
+    shouldBe("event.status", "404");
+    shouldBeTrue("'message' in event");
 
     // The manifest failed to load, so there should be no cache, and subresources should be loaded normally.
     try {
-        var req = new XMLHttpRequest();
+        req = new XMLHttpRequest();
         req.open("GET", "resources/simple.txt", false);
         req.send();
 
-        if (req.responseText == 'Hello, World!')
-            log("SUCCESS");
-        else
-            log("FAILURE: Did not get expected response data.");
+        shouldBeEqualToString("req.responseText", 'Hello, World!');
     } catch (e) {
-        log("FAILURE: Could not load data.");
+        testFailed("Could not load data.");
     }
 
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishJSTest();
 }
 
 var gotCheckingEvent = false;
 applicationCache.addEventListener('checking', function() { gotCheckingEvent = true; }, false);
-
-applicationCache.addEventListener('error', function() { test() }, false);
+applicationCache.addEventListener('error', test, false);
 
 </script>
-<p>Test that subresources can be loaded if manifest is not available. Should say SUCCESS.</p>
-
-<div id=result></div>
 </html>

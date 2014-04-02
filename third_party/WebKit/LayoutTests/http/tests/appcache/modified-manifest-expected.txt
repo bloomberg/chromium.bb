@@ -1,10 +1,12 @@
-Test that a manifest served with a wrong signature isn't treated as such.
+Test that a manifest that changes during an update fails.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS gotCheckingEvent is true
+PASS gotDownloadingEvent is true
 PASS window.applicationCache.status is applicationCache.UNCACHED
-PASS event.reason is "signature"
+PASS event.reason is "changed"
 PASS event.url is ""
 PASS event.status is 0
 PASS 'message' in event is true

@@ -1,8 +1,8 @@
-<html manifest="resources/resource-redirect.manifest">
+<html manifest="resources/404-resource-cross-origin.manifest">
 <script src="/js-test-resources/js-test.js"></script>
 <script>
 var jsTestIsAsync = true;
-description("Test that a redirect makes resource caching fail.");
+description("Test that a missing cross-origin resource failure doesn't leak details.");
 
 function unexpectedCallback(eventName)
 {
@@ -12,13 +12,13 @@ function unexpectedCallback(eventName)
 
 function test(e)
 {
-    shouldBe("window.applicationCache.status", "window.applicationCache.UNCACHED");
+    shouldBe("applicationCache.status", "applicationCache.UNCACHED");
 
     event = e;
     shouldBeEqualToString("event.reason", "resource");
-    shouldBeEqualToString("event.url", "http://127.0.0.1:8000/appcache/resources/resource-redirect.php");
-    shouldBe("event.status", "307");
-    shouldBeTrue("'message' in event");
+    shouldBeEqualToString("event.url", "http://127.0.0.1/does-not-exist.txt");
+    shouldBe("event.status", "0");
+    shouldBeEqualToString("event.message", "");
 
     finishJSTest();
 }
@@ -28,5 +28,4 @@ applicationCache.addEventListener('noupdate', function() { unexpectedCallback("n
 applicationCache.addEventListener('error', test, false);
 
 </script>
-</body>
 </html>

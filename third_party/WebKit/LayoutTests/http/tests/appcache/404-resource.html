@@ -1,39 +1,31 @@
 <html manifest="resources/404-resource.manifest">
-<body>
-<p>Test that a missing explicit resource makes caching fail.</p>
-<p>Should say SUCCESS:</p>
-<div id=result></div>
+<script src="/js-test-resources/js-test.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText()
-    testRunner.waitUntilDone();
-}
-
-function log(message)
-{
-    document.getElementById("result").innerHTML += message + "<br>";
-}
+var jsTestIsAsync = true;
+description("Test that a missing explicit resource makes caching fail.");
 
 function unexpectedCallback(eventName)
 {
-    log("FAIL: An unexpected " + eventName + " event was dispatched on window.applicationCache.");
+    testFailed("An unexpected " + eventName + " event was dispatched on window.applicationCache.");
+    finishJSTest();
 }
 
-function test()
+function test(e)
 {
-    if (applicationCache.status == applicationCache.UNCACHED)
-        log("SUCCESS");
-    else
-        log("FAILURE: cache status is not uncached: " + applicationCache.status);
+    shouldBe("applicationCache.status", "applicationCache.UNCACHED");
 
-    if (window.testRunner)
-        testRunner.notifyDone();
+    event = e;
+    shouldBeEqualToString("event.reason", "resource");
+    shouldBeEqualToString("event.url", "http://127.0.0.1:8000/appcache/resources/does-not-exist.txt");
+    shouldBe("event.status", "404");
+    shouldBeTrue("'message' in event");
+
+    finishJSTest();
 }
 
-applicationCache.addEventListener('cached', function() { unexpectedCallback("cached"); cacheCallback() }, false);
-applicationCache.addEventListener('noupdate', function() { unexpectedCallback("noupdate"); cacheCallback() }, false);
+applicationCache.addEventListener('cached', function() { unexpectedCallback("cached"); }, false);
+applicationCache.addEventListener('noupdate', function() { unexpectedCallback("noupdate"); }, false);
 applicationCache.addEventListener('error', test, false);
 
 </script>
-</body>
 </html>
