@@ -1235,6 +1235,10 @@ void FrameView::adjustMediaTypeForPrinting(bool printing)
 
 bool FrameView::useSlowRepaints(bool considerOverlap) const
 {
+    // FIXME: It is incorrect to determine blit-scrolling eligibility using dirty compositing state.
+    // https://code.google.com/p/chromium/issues/detail?id=357345
+    DisableCompositingQueryAsserts disabler;
+
     if (m_slowRepaintObjectCount > 0)
         return true;
 
