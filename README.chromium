@@ -8,6 +8,7 @@ Security Critical: yes
 Description:
 This consists of three components:
 * A partial copy of libjpeg-turbo 1.2.80 (r856);
+* Revision r1188 cherry-picked from upstream trunk;
 * A build file (libjpeg.gyp), and;
 * Patched header files used by Chromium.
 
