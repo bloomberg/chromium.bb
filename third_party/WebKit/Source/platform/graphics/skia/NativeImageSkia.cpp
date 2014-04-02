@@ -332,9 +332,33 @@ SkBitmap NativeImageSkia::resizedBitmap(const SkISize& scaledImageSize, const Sk
     return resizedSubset;
 }
 
-static bool hasNon90rotation(GraphicsContext* context)
+static bool shouldDrawAntiAliased(GraphicsContext* context, const SkRect& destRect)
 {
-    return !context->getTotalMatrix().rectStaysRect();
+    if (!context->shouldAntialias())
+        return false;
+    const SkMatrix totalMatrix = context->getTotalMatrix();
+    // Don't disable anti-aliasing if we're rotated or skewed.
+    if (!totalMatrix.rectStaysRect())
+        return true;
+    // Disable anti-aliasing for scales or n*90 degree rotations.
+    // Allow to opt out of the optimization though for "hairline" geometry
+    // images - using the shouldAntialiasHairlineImages() GraphicsContext flag.
+    if (!context->shouldAntialiasHairlineImages())
+        return false;
+    // Check if the dimensions of the destination are "small" (less than one
+    // device pixel). To prevent sudden drop-outs. Since we know that
+    // kRectStaysRect_Mask is set, the matrix either has scale and no skew or
+    // vice versa. We can query the kAffine_Mask flag to determine which case
+    // it is.
+    // FIXME: This queries the CTM while drawing, which is generally
+    // discouraged. Always drawing with AA can negatively impact performance
+    // though - that's why it's not always on.
+    SkScalar widthExpansion, heightExpansion;
+    if (totalMatrix.getType() & SkMatrix::kAffine_Mask)
+        widthExpansion = totalMatrix[SkMatrix::kMSkewY], heightExpansion = totalMatrix[SkMatrix::kMSkewX];
+    else
+        widthExpansion = totalMatrix[SkMatrix::kMScaleX], heightExpansion = totalMatrix[SkMatrix::kMScaleY];
+    return destRect.width() * fabs(widthExpansion) < 1 || destRect.height() * fabs(heightExpansion) < 1;
 }
 
 void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, const SkRect& destRect, PassRefPtr<SkXfermode> compOp) const
@@ -345,8 +369,7 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     paint.setColorFilter(context->colorFilter());
     paint.setAlpha(context->getNormalizedAlpha());
     paint.setLooper(context->drawLooper());
-    // only antialias if we're rotated or skewed
-    paint.setAntiAlias(hasNon90rotation(context));
+    paint.setAntiAlias(shouldDrawAntiAliased(context, destRect));
 
     ResamplingMode resampling;
     if (context->isAccelerated()) {

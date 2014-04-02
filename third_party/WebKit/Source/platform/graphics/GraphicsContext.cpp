@@ -130,6 +130,7 @@ GraphicsContext::GraphicsContext(SkCanvas* canvas)
     , m_accelerated(false)
     , m_isCertainlyOpaque(true)
     , m_printing(false)
+    , m_antialiasHairlineImages(false)
 {
     // FIXME: Do some tests to determine how many states are typically used, and allocate
     // several here.

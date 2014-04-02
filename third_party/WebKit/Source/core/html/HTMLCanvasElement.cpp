@@ -498,6 +498,7 @@ void HTMLCanvasElement::createImageBufferInternal()
 
     m_imageBuffer->setClient(this);
     m_imageBuffer->context()->setShouldClampToSourceRect(false);
+    m_imageBuffer->context()->disableAntialiasingOptimizationForHairlineImages();
     m_imageBuffer->context()->setImageInterpolationQuality(CanvasDefaultInterpolationQuality);
     // Enabling MSAA overrides a request to disable antialiasing. This is true regardless of whether the
     // rendering mode is accelerated or not. For consistency, we don't want to apply AA in accelerated

@@ -136,6 +136,13 @@ public:
     void setShouldAntialias(bool antialias) { mutableState()->setShouldAntialias(antialias); }
     bool shouldAntialias() const { return immutableState()->shouldAntialias(); }
 
+    // Disable the anti-aliasing optimization for scales/multiple-of-90-degrees
+    // rotations of thin ("hairline") images.
+    // Note: This will only be reliable when the device pixel scale/ratio is
+    // fixed (e.g. when drawing to context backed by an ImageBuffer).
+    void disableAntialiasingOptimizationForHairlineImages() { ASSERT(!isRecording()); m_antialiasHairlineImages = true; }
+    bool shouldAntialiasHairlineImages() const { return m_antialiasHairlineImages; }
+
     void setShouldClampToSourceRect(bool clampToSourceRect) { mutableState()->setShouldClampToSourceRect(clampToSourceRect); }
     bool shouldClampToSourceRect() const { return immutableState()->shouldClampToSourceRect(); }
 
@@ -504,6 +511,7 @@ private:
     bool m_accelerated : 1;
     bool m_isCertainlyOpaque : 1;
     bool m_printing : 1;
+    bool m_antialiasHairlineImages : 1;
 };
 
 } // namespace WebCore
