@@ -20,7 +20,7 @@ namespace ui {
 // an accessibility tree will be sent over an IPC before being
 // consumed.
 template<typename AXNodeSource>
-class AXTreeSource {
+class AX_EXPORT AXTreeSource {
  public:
   virtual ~AXTreeSource() {}
 
