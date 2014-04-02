@@ -25,7 +25,6 @@
 
 [
     SetWrapperReferenceFrom=owner,
-    RuntimeEnabled=VideoTrack,
 ] interface TextTrackList : EventTarget {
     readonly attribute unsigned long length;
     getter TextTrack item(unsigned long index);
