@@ -20,7 +20,6 @@
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/texture_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/copy_output_request.h"
@@ -69,24 +68,6 @@ namespace {
 
 const int kUndefinedOutputSurfaceId = -1;
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
-
-void InsertSyncPointAndAckForCompositor(
-    int renderer_host_id,
-    uint32 output_surface_id,
-    int route_id,
-    const gpu::Mailbox& return_mailbox,
-    const gfx::Size return_size) {
-  cc::CompositorFrameAck ack;
-  ack.gl_frame_data.reset(new cc::GLFrameData());
-  if (!return_mailbox.IsZero()) {
-    ack.gl_frame_data->mailbox = return_mailbox;
-    ack.gl_frame_data->size = return_size;
-    ack.gl_frame_data->sync_point =
-        ImageTransportFactoryAndroid::GetInstance()->InsertSyncPoint();
-  }
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      route_id, output_surface_id, renderer_host_id, ack);
-}
 
 // Sends an acknowledgement to the renderer of a processed IME event.
 void SendImeEventAck(RenderWidgetHostImpl* host) {
@@ -141,7 +122,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(NULL),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
-      texture_id_in_layer_(0),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
       weak_ptr_factory_(this),
       overscroll_effect_enabled_(!CommandLine::ForCurrentProcess()->HasSwitch(
@@ -153,14 +133,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                                         widget_host->GetProcess()->GetID(),
                                         widget_host->GetRoutingID()) != NULL),
       frame_evictor_(new DelegatedFrameEvictor(this)),
-      using_delegated_renderer_(IsDelegatedRendererEnabled()),
       locks_on_frame_count_(0),
       root_window_destroyed_(false) {
-  if (!using_delegated_renderer_) {
-    texture_layer_ = cc::TextureLayer::Create(NULL);
-    layer_ = texture_layer_;
-  }
-
   host_->SetView(this);
   SetContentViewCore(content_view_core);
   ImageTransportFactoryAndroid::AddObserver(this);
@@ -170,14 +144,6 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   ImageTransportFactoryAndroid::RemoveObserver(this);
   SetContentViewCore(NULL);
   DCHECK(ack_callbacks_.empty());
-  if (texture_id_in_layer_) {
-    ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
-        texture_id_in_layer_);
-  }
-
-  if (texture_layer_.get())
-    texture_layer_->ClearClient();
-
   if (resource_collection_.get())
     resource_collection_->SetClient(NULL);
 }
@@ -295,14 +261,6 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
 
   if (!frame_evictor_->HasFrame())
     return false;
-
-  if (using_delegated_renderer_) {
-    if (!delegated_renderer_layer_.get())
-      return false;
-  } else {
-    if (texture_id_in_layer_ == 0)
-      return false;
-  }
 
   return true;
 }
@@ -660,40 +618,30 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
   scoped_ptr<cc::CopyOutputRequest> request;
   scoped_refptr<cc::Layer> readback_layer;
-  if (using_delegated_renderer_) {
-    DCHECK(content_view_core_);
-    DCHECK(content_view_core_->GetWindowAndroid());
-    ui::WindowAndroidCompositor* compositor =
-        content_view_core_->GetWindowAndroid()->GetCompositor();
-    DCHECK(compositor);
-    DCHECK(frame_provider_);
-    scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
-        cc::DelegatedRendererLayer::Create(frame_provider_);
-    delegated_layer->SetDisplaySize(texture_size_in_layer_);
-    delegated_layer->SetBounds(content_size_in_layer_);
-    delegated_layer->SetHideLayerAndSubtree(true);
-    delegated_layer->SetIsDrawable(true);
-    delegated_layer->SetContentsOpaque(true);
-    compositor->AttachLayerForReadback(delegated_layer);
+  DCHECK(content_view_core_);
+  DCHECK(content_view_core_->GetWindowAndroid());
+  ui::WindowAndroidCompositor* compositor =
+      content_view_core_->GetWindowAndroid()->GetCompositor();
+  DCHECK(compositor);
+  DCHECK(frame_provider_);
+  scoped_refptr<cc::DelegatedRendererLayer> delegated_layer =
+      cc::DelegatedRendererLayer::Create(frame_provider_);
+  delegated_layer->SetDisplaySize(texture_size_in_layer_);
+  delegated_layer->SetBounds(content_size_in_layer_);
+  delegated_layer->SetHideLayerAndSubtree(true);
+  delegated_layer->SetIsDrawable(true);
+  delegated_layer->SetContentsOpaque(true);
+  compositor->AttachLayerForReadback(delegated_layer);
 
-    readback_layer = delegated_layer;
-    request = cc::CopyOutputRequest::CreateRequest(
-        base::Bind(&RenderWidgetHostViewAndroid::
-                       PrepareTextureCopyOutputResultForDelegatedReadback,
-                   dst_size_in_pixel,
-                   bitmap_config,
-                   start_time,
-                   readback_layer,
-                   callback));
-  } else {
-    readback_layer = layer_;
-    request = cc::CopyOutputRequest::CreateRequest(
-        base::Bind(&RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult,
-                   dst_size_in_pixel,
-                   bitmap_config,
-                   start_time,
-                   callback));
-  }
+  readback_layer = delegated_layer;
+  request = cc::CopyOutputRequest::CreateRequest(
+      base::Bind(&RenderWidgetHostViewAndroid::
+                     PrepareTextureCopyOutputResultForDelegatedReadback,
+                 dst_size_in_pixel,
+                 bitmap_config,
+                 start_time,
+                 readback_layer,
+                 callback));
   request->set_area(src_subrect_in_pixel);
   readback_layer->RequestCopyOfOutput(request.Pass());
 }
@@ -763,7 +711,6 @@ void RenderWidgetHostViewAndroid::UnusedResourcesAreAvailable() {
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
   RemoveLayers();
   frame_provider_ = NULL;
-  delegated_renderer_layer_ = NULL;
   layer_ = NULL;
 }
 
@@ -799,21 +746,19 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
       RemoveLayers();
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
-      delegated_renderer_layer_ =
-          cc::DelegatedRendererLayer::Create(frame_provider_);
-      layer_ = delegated_renderer_layer_;
+      layer_ = cc::DelegatedRendererLayer::Create(frame_provider_);
       AttachLayers();
     } else {
       frame_provider_->SetFrameData(frame_data.Pass());
     }
   }
 
-  if (delegated_renderer_layer_.get()) {
-    delegated_renderer_layer_->SetDisplaySize(texture_size_in_layer_);
-    delegated_renderer_layer_->SetIsDrawable(true);
-    delegated_renderer_layer_->SetContentsOpaque(true);
-    delegated_renderer_layer_->SetBounds(content_size_in_layer_);
-    delegated_renderer_layer_->SetNeedsDisplay();
+  if (layer_.get()) {
+    layer_->SetDisplaySize(texture_size_in_layer_);
+    layer_->SetIsDrawable(true);
+    layer_->SetContentsOpaque(true);
+    layer_->SetBounds(content_size_in_layer_);
+    layer_->SetNeedsDisplay();
   }
 
   base::Closure ack_callback =
@@ -844,6 +789,11 @@ void RenderWidgetHostViewAndroid::ComputeContentsSize(
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::CompositorFrame> frame) {
+  if (!frame->delegated_frame_data) {
+    LOG(ERROR) << "Non-delegated renderer path no longer supported";
+    return;
+  }
+
   if (locks_on_frame_count_ > 0) {
     DCHECK(HasValidFrame());
     RetainFrame(output_surface_id, frame.Pass());
@@ -862,45 +812,14 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     }
   }
 
-  if (frame->delegated_frame_data) {
-    DCHECK(using_delegated_renderer_);
+  DCHECK(!frame->delegated_frame_data->render_pass_list.empty());
 
-    DCHECK(frame->delegated_frame_data);
-    DCHECK(!frame->delegated_frame_data->render_pass_list.empty());
-
-    cc::RenderPass* root_pass =
-        frame->delegated_frame_data->render_pass_list.back();
-    texture_size_in_layer_ = root_pass->output_rect.size();
-    ComputeContentsSize(frame->metadata);
-
-    SwapDelegatedFrame(output_surface_id, frame->delegated_frame_data.Pass());
-    frame_evictor_->SwappedFrame(!host_->is_hidden());
-    return;
-  }
-
-  DCHECK(!using_delegated_renderer_);
-
-  if (!frame->gl_frame_data || frame->gl_frame_data->mailbox.IsZero())
-    return;
-
-  if (output_surface_id != last_output_surface_id_) {
-    current_mailbox_ = gpu::Mailbox();
-    last_output_surface_id_ = kUndefinedOutputSurfaceId;
-  }
-
-  base::Closure callback = base::Bind(&InsertSyncPointAndAckForCompositor,
-                                      host_->GetProcess()->GetID(),
-                                      output_surface_id,
-                                      host_->GetRoutingID(),
-                                      current_mailbox_,
-                                      texture_size_in_layer_);
-  ImageTransportFactoryAndroid::GetInstance()->WaitSyncPoint(
-      frame->gl_frame_data->sync_point);
-
-  texture_size_in_layer_ = frame->gl_frame_data->size;
+  cc::RenderPass* root_pass =
+      frame->delegated_frame_data->render_pass_list.back();
+  texture_size_in_layer_ = root_pass->output_rect.size();
   ComputeContentsSize(frame->metadata);
 
-  BuffersSwapped(frame->gl_frame_data->mailbox, output_surface_id, callback);
+  SwapDelegatedFrame(output_surface_id, frame->delegated_frame_data.Pass());
   frame_evictor_->SwappedFrame(!host_->is_hidden());
 }
 
@@ -1010,31 +929,6 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
   NOTREACHED() << "Need --composite-to-mailbox or --enable-delegated-renderer";
 }
 
-void RenderWidgetHostViewAndroid::BuffersSwapped(
-    const gpu::Mailbox& mailbox,
-    uint32_t output_surface_id,
-    const base::Closure& ack_callback) {
-  ImageTransportFactoryAndroid* factory =
-      ImageTransportFactoryAndroid::GetInstance();
-
-  if (!texture_id_in_layer_) {
-    texture_id_in_layer_ = factory->CreateTexture();
-    texture_layer_->SetTextureId(texture_id_in_layer_);
-    texture_layer_->SetIsDrawable(true);
-    texture_layer_->SetContentsOpaque(true);
-  }
-
-  ImageTransportFactoryAndroid::GetInstance()->AcquireTexture(
-      texture_id_in_layer_, mailbox.name);
-
-  current_mailbox_ = mailbox;
-  last_output_surface_id_ = output_surface_id;
-
-  ack_callbacks_.push(ack_callback);
-  if (host_->is_hidden())
-    RunAckCallbacks();
-}
-
 void RenderWidgetHostViewAndroid::AttachLayers() {
   if (!content_view_core_)
     return;
@@ -1088,16 +982,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
 }
 
 void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
-  if (texture_id_in_layer_) {
-    texture_layer_->SetTextureId(0);
-    texture_layer_->SetIsDrawable(false);
-    ImageTransportFactoryAndroid::GetInstance()->DeleteTexture(
-        texture_id_in_layer_);
-    texture_id_in_layer_ = 0;
-    current_mailbox_ = gpu::Mailbox();
-    last_output_surface_id_ = kUndefinedOutputSurfaceId;
-  }
-  if (delegated_renderer_layer_.get())
+  if (layer_.get())
     DestroyDelegatedContent();
   frame_evictor_->DiscardedFrame();
 }
@@ -1384,11 +1269,8 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
   ReleaseLocksOnSurface();
-  if (texture_layer_.get())
-    texture_layer_->SetIsDrawable(false);
-  if (delegated_renderer_layer_.get())
+  if (layer_.get())
     DestroyDelegatedContent();
-  texture_id_in_layer_ = 0;
   DCHECK(ack_callbacks_.empty());
 }
 

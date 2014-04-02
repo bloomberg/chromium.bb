@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
-#include "cc/layers/texture_layer_client.h"
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
@@ -39,8 +38,6 @@ class CopyOutputResult;
 class DelegatedFrameProvider;
 class DelegatedRendererLayer;
 class Layer;
-class SingleReleaseCallback;
-class TextureLayer;
 }
 
 namespace blink {
@@ -246,10 +243,6 @@ class RenderWidgetHostViewAndroid
   void SetOverlayVideoMode(bool enabled);
 
  private:
-  void BuffersSwapped(const gpu::Mailbox& mailbox,
-                      uint32_t output_surface_id,
-                      const base::Closure& ack_callback);
-
   void RunAckCallbacks();
 
   void DestroyDelegatedContent();
@@ -323,29 +316,15 @@ class RenderWidgetHostViewAndroid
   // Body background color of the underlying document.
   SkColor cached_background_color_;
 
-  // The texture layer for this view when using browser-side compositing.
-  scoped_refptr<cc::TextureLayer> texture_layer_;
-
   scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
   scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
-  scoped_refptr<cc::DelegatedRendererLayer> delegated_renderer_layer_;
-
-  // The layer used for rendering the contents of this view.
-  // It is either owned by texture_layer_ or surface_texture_transport_
-  // depending on the mode.
-  scoped_refptr<cc::Layer> layer_;
-
-  // The most recent texture id that was pushed to the texture layer.
-  unsigned int texture_id_in_layer_;
+  scoped_refptr<cc::DelegatedRendererLayer> layer_;
 
   // The most recent texture size that was pushed to the texture layer.
   gfx::Size texture_size_in_layer_;
 
   // The most recent content size that was pushed to the texture layer.
   gfx::Size content_size_in_layer_;
-
-  // The mailbox of the previously received frame.
-  gpu::Mailbox current_mailbox_;
 
   // The output surface id of the last received frame.
   uint32_t last_output_surface_id_;
@@ -369,8 +348,6 @@ class RenderWidgetHostViewAndroid
   const bool using_synchronous_compositor_;
 
   scoped_ptr<DelegatedFrameEvictor> frame_evictor_;
-
-  bool using_delegated_renderer_;
 
   size_t locks_on_frame_count_;
   bool root_window_destroyed_;
