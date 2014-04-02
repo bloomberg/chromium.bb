@@ -161,7 +161,8 @@
     'media_queries': {
         'filepath': 'Source/core/css/CSSMediaRule' \
                     '|Source/core/css/MediaList' \
-                    '|Source/core/css/MediaQuery'
+                    '|Source/core/css/MediaQuery' \
+                    '|Source/core/css/parser/MediaQuery'
     },
     'navigator_content_utils': {
       'filepath': 'Source/modules/navigatorcontentutils' \
@@ -346,7 +347,8 @@
     'prerender': [ 'gavinp+prerender@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
     'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com', 'eric.carlson@apple.com' ],
-    'media_queries': [ 'kenneth.christiansen@gmail.com' ],
+    'media_queries': [ 'kenneth.christiansen@gmail.com',
+                       'yoav@yoav.ws' ],
     'fileapi': [ 'kinuko@chromium.org',
                  'tzik@chromium.org',
                  'nhiroki@chromium.org' ],
