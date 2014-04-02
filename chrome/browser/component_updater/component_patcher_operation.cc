@@ -228,6 +228,10 @@ bool DeltaUpdateOp::InProcess() {
   return in_process_;
 }
 
+scoped_refptr<base::SequencedTaskRunner> DeltaUpdateOp::GetTaskRunner() {
+  return task_runner_;
+}
+
 DeltaUpdateOpCopy::DeltaUpdateOpCopy() {}
 
 DeltaUpdateOpCopy::~DeltaUpdateOpCopy() {}
@@ -279,7 +283,9 @@ void DeltaUpdateOpCreate::DoRun(const ComponentUnpacker::Callback& callback) {
 }
 
 DeltaUpdateOpPatchHost::DeltaUpdateOpPatchHost(
-    scoped_refptr<DeltaUpdateOpPatch> patcher) : patcher_(patcher) {
+    scoped_refptr<DeltaUpdateOpPatch> patcher,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : patcher_(patcher), task_runner_(task_runner) {
 }
 
 DeltaUpdateOpPatchHost::~DeltaUpdateOpPatchHost() {
@@ -307,18 +313,33 @@ bool DeltaUpdateOpPatchHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DeltaUpdateOpPatchHost::OnPatchSucceeded() {
-  patcher_->DonePatching(ComponentUnpacker::kNone, 0);
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&DeltaUpdateOpPatch::DonePatching,
+                                    patcher_,
+                                    ComponentUnpacker::kNone,
+                                    0));
+  task_runner_ = NULL;
   patcher_ = NULL;
 }
 
 void DeltaUpdateOpPatchHost::OnPatchFailed(int error_code) {
-  patcher_->DonePatching(ComponentUnpacker::kDeltaOperationFailure, error_code);
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&DeltaUpdateOpPatch::DonePatching,
+                                    patcher_,
+                                    ComponentUnpacker::kDeltaOperationFailure,
+                                    error_code));
+  task_runner_ = NULL;
   patcher_ = NULL;
 }
 
 void DeltaUpdateOpPatchHost::OnProcessCrashed(int exit_code) {
-  patcher_->DonePatching(ComponentUnpacker::kDeltaPatchProcessFailure,
-                        exit_code);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&DeltaUpdateOpPatch::DonePatching,
+                 patcher_,
+                 ComponentUnpacker::kDeltaPatchProcessFailure,
+                 exit_code));
+  task_runner_ = NULL;
   patcher_ = NULL;
 }
 
@@ -352,7 +373,8 @@ ComponentUnpacker::Error DeltaUpdateOpPatch::DoParseArguments(
 void DeltaUpdateOpPatch::DoRun(const ComponentUnpacker::Callback& callback) {
   callback_ = callback;
   if (!InProcess()) {
-    host_ = new DeltaUpdateOpPatchHost(scoped_refptr<DeltaUpdateOpPatch>(this));
+    host_ = new DeltaUpdateOpPatchHost(scoped_refptr<DeltaUpdateOpPatch>(this),
+                                       GetTaskRunner());
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
         FROM_HERE,

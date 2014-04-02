@@ -43,6 +43,8 @@ class DeltaUpdateOp : public base::RefCountedThreadSafe<DeltaUpdateOp> {
 
   bool InProcess();
 
+  scoped_refptr<base::SequencedTaskRunner> GetTaskRunner();
+
   std::string output_sha256_;
   base::FilePath output_abs_path_;
 
@@ -151,7 +153,8 @@ class DeltaUpdateOpPatch;
 
 class DeltaUpdateOpPatchHost : public content::UtilityProcessHostClient {
  public:
-  explicit DeltaUpdateOpPatchHost(scoped_refptr<DeltaUpdateOpPatch> patcher);
+  DeltaUpdateOpPatchHost(scoped_refptr<DeltaUpdateOpPatch> patcher,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void StartProcess(scoped_ptr<IPC::Message> message);
 
@@ -168,6 +171,7 @@ class DeltaUpdateOpPatchHost : public content::UtilityProcessHostClient {
   virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   scoped_refptr<DeltaUpdateOpPatch> patcher_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 // Both 'bsdiff' and 'courgette' operations take an existing file on disk,
