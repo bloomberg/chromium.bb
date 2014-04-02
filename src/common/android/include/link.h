@@ -30,16 +30,13 @@
 #ifndef GOOGLE_BREAKPAD_ANDROID_INCLUDE_LINK_H
 #define GOOGLE_BREAKPAD_ANDROID_INCLUDE_LINK_H
 
-/* Android doesn't provide <link.h>. Provide custom version here */
-#include <elf.h>
+/* Android doesn't provide all the data-structures required in its <link.h>.
+   Provide custom version here. */
+#include_next <link.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-#define ElfW(type)      _ElfW (Elf, ELFSIZE, type)
-#define _ElfW(e,w,t)    _ElfW_1 (e, w, _##t)
-#define _ElfW_1(e,w,t)  e##w##t
 
 struct r_debug {
   int              r_version;

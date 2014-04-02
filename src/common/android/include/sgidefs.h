@@ -32,19 +32,9 @@
 
 #ifdef __mips__
 
-#define _MIPS_SIM_ABI32  1
-#define _MIPS_SIM_NABI32 2
-#define _MIPS_SIM_ABI64  3
-
-// The following should always be defined by the compiler,
-// Verified for Android with GCC 4.6 and Clang 3.1.
-#ifndef _MIPS_SIM
-#error "Toolchain should define _MIPS_SIM"
-#endif
-
-#ifndef _MIPS_SZPTR
-#error "Toolchain should define _MIPS_PTR"
-#endif
+// Android doesn't contain sgidefs.h, but does have <asm/sgidefs.h> which
+// contains what we need.
+#include <asm/sgidefs.h>
 
 #endif  // __mips__
 
