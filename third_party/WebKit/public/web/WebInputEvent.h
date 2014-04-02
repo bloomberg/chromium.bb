@@ -58,15 +58,6 @@ namespace blink {
 
 class WebInputEvent {
 public:
-    WebInputEvent(unsigned sizeParam = sizeof(WebInputEvent))
-    {
-        memset(this, 0, sizeParam);
-        timeStampSeconds = 0.0;
-        size = sizeParam;
-        type = Undefined;
-        modifiers = 0;
-    }
-
     // When we use an input method (or an input method editor), we receive
     // two events for a keypress. The former event is a keydown, which
     // provides a keycode, and the latter is a textinput, which provides
@@ -224,6 +215,16 @@ public:
     {
         return GestureTypeFirst <= type && type <= GestureTypeLast;
     }
+
+protected:
+    explicit WebInputEvent(unsigned sizeParam)
+    {
+        memset(this, 0, sizeParam);
+        timeStampSeconds = 0.0;
+        size = sizeParam;
+        type = Undefined;
+        modifiers = 0;
+    }
 };
 
 // WebKeyboardEvent -----------------------------------------------------------
@@ -274,8 +275,8 @@ public:
     // This is a string identifying the key pressed.
     char keyIdentifier[keyIdentifierLengthCap];
 
-    WebKeyboardEvent(unsigned sizeParam = sizeof(WebKeyboardEvent))
-        : WebInputEvent(sizeParam)
+    WebKeyboardEvent()
+        : WebInputEvent(sizeof(WebKeyboardEvent))
         , windowsKeyCode(0)
         , nativeKeyCode(0)
         , isSystemKey(false)
@@ -315,7 +316,23 @@ public:
     int movementY;
     int clickCount;
 
-    WebMouseEvent(unsigned sizeParam = sizeof(WebMouseEvent))
+    WebMouseEvent()
+        : WebInputEvent(sizeof(WebMouseEvent))
+        , button(ButtonNone)
+        , x(0)
+        , y(0)
+        , windowX(0)
+        , windowY(0)
+        , globalX(0)
+        , globalY(0)
+        , movementX(0)
+        , movementY(0)
+        , clickCount(0)
+    {
+    }
+
+protected:
+    explicit WebMouseEvent(unsigned sizeParam)
         : WebInputEvent(sizeParam)
         , button(ButtonNone)
         , x(0)
@@ -379,8 +396,8 @@ public:
     int canRubberbandLeft;
     int canRubberbandRight;
 
-    WebMouseWheelEvent(unsigned sizeParam = sizeof(WebMouseWheelEvent))
-        : WebMouseEvent(sizeParam)
+    WebMouseWheelEvent()
+        : WebMouseEvent(sizeof(WebMouseWheelEvent))
         , deltaX(0.0f)
         , deltaY(0.0f)
         , wheelTicksX(0.0f)
@@ -465,8 +482,8 @@ public:
         } pinchUpdate;
     } data;
 
-    WebGestureEvent(unsigned sizeParam = sizeof(WebGestureEvent))
-        : WebInputEvent(sizeParam)
+    WebGestureEvent()
+        : WebInputEvent(sizeof(WebGestureEvent))
         , x(0)
         , y(0)
         , globalX(0)
@@ -496,8 +513,8 @@ public:
     // List of all touches which are currently down and are targeting the event recipient.
     WebTouchPoint targetTouches[touchesLengthCap];
 
-    WebTouchEvent(unsigned sizeParam = sizeof(WebTouchEvent))
-        : WebInputEvent(sizeParam)
+    WebTouchEvent()
+        : WebInputEvent(sizeof(WebTouchEvent))
         , touchesLength(0)
         , changedTouchesLength(0)
         , targetTouchesLength(0)
