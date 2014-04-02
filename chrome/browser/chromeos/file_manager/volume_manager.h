@@ -49,6 +49,7 @@ enum VolumeType {
   VOLUME_TYPE_MOUNTED_ARCHIVE_FILE,
   VOLUME_TYPE_CLOUD_DEVICE,
   VOLUME_TYPE_PROVIDED,  // File system provided by the FileSystemProvider API.
+  VOLUME_TYPE_MTP,
   VOLUME_TYPE_TESTING
 };
 

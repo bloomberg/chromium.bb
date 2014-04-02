@@ -255,6 +255,7 @@ volumeManagerUtil.volumeListOrder_ = [
   util.VolumeType.DOWNLOADS,
   util.VolumeType.ARCHIVE,
   util.VolumeType.REMOVABLE,
+  util.VolumeType.MTP,
   util.VolumeType.CLOUD_DEVICE
 ];
 
@@ -722,6 +723,9 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         break;
       case util.VolumeType.CLOUD_DEVICE:
         rootType = RootType.CLOUD_DEVICE;
+        break;
+      case util.VolumeType.MTP:
+        rootType = RootType.MTP;
         break;
       default:
         // Programming error, throw an exception.

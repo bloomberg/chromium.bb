@@ -162,6 +162,9 @@ void VolumeInfoToVolumeMetadata(
     case VOLUME_TYPE_PROVIDED:
       volume_metadata->volume_type = file_browser_private::VOLUME_TYPE_PROVIDED;
       break;
+    case VOLUME_TYPE_MTP:
+      volume_metadata->volume_type = file_browser_private::VOLUME_TYPE_MTP;
+      break;
     case VOLUME_TYPE_TESTING:
       volume_metadata->volume_type =
           file_browser_private::VOLUME_TYPE_TESTING;

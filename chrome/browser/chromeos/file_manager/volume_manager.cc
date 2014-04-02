@@ -106,6 +106,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "testing";
     case VOLUME_TYPE_PROVIDED:
       return "provided";
+    case VOLUME_TYPE_MTP:
+      return "mtp";
   }
   NOTREACHED();
   return "";

@@ -25,6 +25,9 @@ var RootType = Object.freeze({
   // Root for privet storage volume.
   CLOUD_DEVICE: 'cloud_device',
 
+  // Root for MTP device.
+  MTP: 'mtp',
+
   // Root for entries that is not located under RootType.DRIVE. e.g. shared
   // files.
   DRIVE_OTHER: 'drive_other',
