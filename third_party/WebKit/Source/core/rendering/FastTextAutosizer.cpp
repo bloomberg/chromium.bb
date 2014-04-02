@@ -412,6 +412,9 @@ void FastTextAutosizer::inflate(RenderBlock* block)
                 multiplier = cluster->m_autosize ? clusterMultiplier(cluster) : 1.0f;
             applyMultiplier(descendant, multiplier);
             applyMultiplier(descendant->parent(), multiplier); // Parent handles line spacing.
+            // FIXME: Investigate why MarkOnlyThis is sufficient.
+            if (descendant->parent()->isRenderInline())
+                descendant->setPreferredLogicalWidthsDirty(MarkOnlyThis);
         }
         descendant = descendant->nextInPreOrder(block);
     }
