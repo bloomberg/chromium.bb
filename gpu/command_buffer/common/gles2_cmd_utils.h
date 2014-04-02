@@ -199,6 +199,7 @@ class GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool share_resources_;
   bool bind_generates_resource_;
   bool fail_if_major_perf_caveat_;
+  bool lose_context_when_out_of_memory_;
 };
 
 }  // namespace gles2

@@ -53,6 +53,8 @@ class GLManager {
     GLManager* virtual_manager;
     // Whether or not glBindXXX generates a resource.
     bool bind_generates_resource;
+    // Whether or not the context is auto-lost when GL_OUT_OF_MEMORY occurs.
+    bool lose_context_when_out_of_memory;
     // Whether or not it's ok to lose the context.
     bool context_lost_allowed;
     // Image manager to be used.

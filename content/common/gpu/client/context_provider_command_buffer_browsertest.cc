@@ -30,6 +30,7 @@ class ContextProviderCommandBufferBrowserTest : public ContentBrowserTest {
   }
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext3d() {
+    bool lose_context_when_out_of_memory = false;
     scoped_refptr<GpuChannelHost> gpu_channel_host(
         GetFactory()->EstablishGpuChannelSync(
             CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
@@ -37,6 +38,7 @@ class ContextProviderCommandBufferBrowserTest : public ContentBrowserTest {
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             gpu_channel_host.get(),
             blink::WebGraphicsContext3D::Attributes(),
+            lose_context_when_out_of_memory,
             GURL("chrome://gpu/ContextProviderCommandBufferTest"),
             WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
             NULL));

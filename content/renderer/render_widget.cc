@@ -919,25 +919,8 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (!use_software) {
-    // Explicitly disable antialiasing for the compositor. As of the time of
-    // this writing, the only platform that supported antialiasing for the
-    // compositor was Mac OS X, because the on-screen OpenGL context creation
-    // code paths on Windows and Linux didn't yet have multisampling support.
-    // Mac OS X essentially always behaves as though it's rendering offscreen.
-    // Multisampling has a heavy cost especially on devices with relatively low
-    // fill rate like most notebooks, and the Mac implementation would need to
-    // be optimized to resolve directly into the IOSurface shared between the
-    // GPU and browser processes. For these reasons and to avoid platform
-    // disparities we explicitly disable antialiasing.
-    blink::WebGraphicsContext3D::Attributes attributes;
-    attributes.antialias = false;
-    attributes.shareResources = true;
-    attributes.noAutomaticFlushes = true;
-    attributes.depth = false;
-    attributes.stencil = false;
     context_provider = ContextProviderCommandBuffer::Create(
-        CreateGraphicsContext3D(attributes),
-        "RenderCompositor");
+        CreateGraphicsContext3D(), "RenderCompositor");
     if (!context_provider.get()) {
       // Cause the compositor to wait and try again.
       return scoped_ptr<cc::OutputSurface>();
@@ -2842,8 +2825,7 @@ bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-RenderWidget::CreateGraphicsContext3D(
-    const blink::WebGraphicsContext3D::Attributes& attributes) {
+RenderWidget::CreateGraphicsContext3D() {
   if (!webwidget_)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -2858,6 +2840,24 @@ RenderWidget::CreateGraphicsContext3D(
   if (!gpu_channel_host)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
 
+  // Explicitly disable antialiasing for the compositor. As of the time of
+  // this writing, the only platform that supported antialiasing for the
+  // compositor was Mac OS X, because the on-screen OpenGL context creation
+  // code paths on Windows and Linux didn't yet have multisampling support.
+  // Mac OS X essentially always behaves as though it's rendering offscreen.
+  // Multisampling has a heavy cost especially on devices with relatively low
+  // fill rate like most notebooks, and the Mac implementation would need to
+  // be optimized to resolve directly into the IOSurface shared between the
+  // GPU and browser processes. For these reasons and to avoid platform
+  // disparities we explicitly disable antialiasing.
+  blink::WebGraphicsContext3D::Attributes attributes;
+  attributes.antialias = false;
+  attributes.shareResources = true;
+  attributes.noAutomaticFlushes = true;
+  attributes.depth = false;
+  attributes.stencil = false;
+  bool bind_generates_resources = false;
+  bool lose_context_when_out_of_memory = true;
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 #if defined(OS_ANDROID)
   // If we raster too fast we become upload bound, and pending
@@ -2883,14 +2883,14 @@ RenderWidget::CreateGraphicsContext3D(
 #endif
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-      new WebGraphicsContext3DCommandBufferImpl(
-          surface_id(),
-          GetURLForGraphicsContext3D(),
-          gpu_channel_host.get(),
-          attributes,
-          false /* bind generates resources */,
-          limits,
-          NULL));
+      new WebGraphicsContext3DCommandBufferImpl(surface_id(),
+                                                GetURLForGraphicsContext3D(),
+                                                gpu_channel_host.get(),
+                                                attributes,
+                                                bind_generates_resources,
+                                                lose_context_when_out_of_memory,
+                                                limits,
+                                                NULL));
   return context.Pass();
 }
 

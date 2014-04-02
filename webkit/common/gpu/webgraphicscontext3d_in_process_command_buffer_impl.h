@@ -52,11 +52,13 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
       CreateViewContext(
           const blink::WebGraphicsContext3D::Attributes& attributes,
+          bool lose_context_when_out_of_memory,
           gfx::AcceleratedWidget window);
 
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
       CreateOffscreenContext(
-          const blink::WebGraphicsContext3D::Attributes& attributes);
+          const blink::WebGraphicsContext3D::Attributes& attributes,
+          bool lose_context_when_out_of_memory);
 
   static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
       WrapContext(
@@ -571,6 +573,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   WebGraphicsContext3DInProcessCommandBufferImpl(
       scoped_ptr< ::gpu::GLInProcessContext> context,
       const blink::WebGraphicsContext3D::Attributes& attributes,
+      bool lose_context_when_out_of_memory,
       bool is_offscreen,
       gfx::AcceleratedWidget window);
 
@@ -598,6 +601,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
   WGC3Denum context_lost_reason_;
 
   blink::WebGraphicsContext3D::Attributes attributes_;
+  bool lose_context_when_out_of_memory_;
 
   // Errors raised by synthesizeGLError().
   std::vector<WGC3Denum> synthetic_errors_;

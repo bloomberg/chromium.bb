@@ -6,6 +6,8 @@
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
 
+#include <limits>
+
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include "base/compiler_specific.h"
@@ -390,7 +392,9 @@ class GLES2ImplementationTest : public testing::Test {
    public:
     TestContext() : commands_(NULL), token_(0) {}
 
-    void Initialize(ShareGroup* share_group, bool bind_generates_resource) {
+    void Initialize(ShareGroup* share_group,
+                    bool bind_generates_resource,
+                    bool lose_context_when_out_of_memory) {
       command_buffer_.reset(new StrictMock<MockClientCommandBuffer>());
       ASSERT_TRUE(command_buffer_->Initialize());
 
@@ -439,12 +443,12 @@ class GLES2ImplementationTest : public testing::Test {
             .RetiresOnSaturation();
         GetNextToken();  // eat the token that starting up will use.
 
-        gl_.reset(
-            new GLES2Implementation(helper_.get(),
-                                    share_group,
-                                    transfer_buffer_.get(),
-                                    bind_generates_resource,
-                                    gpu_control_.get()));
+        gl_.reset(new GLES2Implementation(helper_.get(),
+                                          share_group,
+                                          transfer_buffer_.get(),
+                                          bind_generates_resource,
+                                          lose_context_when_out_of_memory,
+                                          gpu_control_.get()));
         ASSERT_TRUE(gl_->Initialize(kTransferBufferSize,
                                     kTransferBufferSize,
                                     kTransferBufferSize,
@@ -514,11 +518,14 @@ class GLES2ImplementationTest : public testing::Test {
     return gl_->query_tracker_->GetQuery(id);
   }
 
-  void Initialize(bool bind_generates_resource) {
+  void Initialize(bool bind_generates_resource,
+                  bool lose_context_when_out_of_memory) {
     share_group_ = new ShareGroup(bind_generates_resource);
 
     for (int i = 0; i < kNumTestContexts; i++)
-      test_contexts_[i].Initialize(share_group_.get(), bind_generates_resource);
+      test_contexts_[i].Initialize(share_group_.get(),
+                                   bind_generates_resource,
+                                   lose_context_when_out_of_memory);
 
     // Default to test context 0.
     gpu_control_ = test_contexts_[0].gpu_control_.get();
@@ -585,13 +592,20 @@ class GLES2ImplementationTest : public testing::Test {
 };
 
 void GLES2ImplementationTest::SetUp() {
-  Initialize(true);
+  bool bind_generates_resource = true;
+  bool lose_context_when_out_of_memory = false;
+  Initialize(bind_generates_resource, lose_context_when_out_of_memory);
 }
 
 void GLES2ImplementationTest::TearDown() {
   for (int i = 0; i < kNumTestContexts; i++)
     test_contexts_[i].TearDown();
 }
+
+class GLES2ImplementationManualInitTest : public GLES2ImplementationTest {
+ protected:
+  virtual void SetUp() OVERRIDE {}
+};
 
 class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
  protected:
@@ -683,7 +697,9 @@ class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
 };
 
 void GLES2ImplementationStrictSharedTest::SetUp() {
-  Initialize(false);
+  bool bind_generates_resource = false;
+  bool lose_context_when_out_of_memory = false;
+  Initialize(bind_generates_resource, lose_context_when_out_of_memory);
 }
 
 // GCC requires these declarations, but MSVC requires they not be present
@@ -3098,6 +3114,42 @@ TEST_F(GLES2ImplementationTest, ProduceTextureCHROMIUM) {
   expected.cmd.Init(GL_TEXTURE_2D, mailbox.name);
   gl_->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationManualInitTest, LoseContextOnOOM) {
+  bool bind_generates_resource = false;
+  bool lose_context_when_out_of_memory = true;
+  Initialize(bind_generates_resource, lose_context_when_out_of_memory);
+
+  struct Cmds {
+    cmds::LoseContextCHROMIUM cmd;
+  };
+
+  GLsizei max = std::numeric_limits<GLsizei>::max();
+  EXPECT_CALL(*gpu_control_, CreateGpuMemoryBuffer(max, max, _, _))
+      .WillOnce(Return(static_cast<gfx::GpuMemoryBuffer*>(NULL)));
+  gl_->CreateImageCHROMIUM(max, max, 0);
+  // The context should be lost.
+  Cmds expected;
+  expected.cmd.Init(GL_GUILTY_CONTEXT_RESET_ARB, GL_UNKNOWN_CONTEXT_RESET_ARB);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationManualInitTest, NoLoseContextOnOOM) {
+  bool bind_generates_resource = false;
+  bool lose_context_when_out_of_memory = false;
+  Initialize(bind_generates_resource, lose_context_when_out_of_memory);
+
+  struct Cmds {
+    cmds::LoseContextCHROMIUM cmd;
+  };
+
+  GLsizei max = std::numeric_limits<GLsizei>::max();
+  EXPECT_CALL(*gpu_control_, CreateGpuMemoryBuffer(max, max, _, _))
+      .WillOnce(Return(static_cast<gfx::GpuMemoryBuffer*>(NULL)));
+  gl_->CreateImageCHROMIUM(max, max, 0);
+  // The context should not be lost.
+  EXPECT_TRUE(NoCommandsWritten());
 }
 
 #include "gpu/command_buffer/client/gles2_implementation_unittest_autogen.h"

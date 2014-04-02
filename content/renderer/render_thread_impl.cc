@@ -984,11 +984,14 @@ RenderThreadImpl::GetGpuFactories() {
         gpu_channel_host = EstablishGpuChannelSync(
             CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE);
       }
+      blink::WebGraphicsContext3D::Attributes attributes;
+      bool lose_context_when_out_of_memory = false;
       gpu_va_context_provider_ = ContextProviderCommandBuffer::Create(
           make_scoped_ptr(
               WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
                   gpu_channel_host.get(),
-                  blink::WebGraphicsContext3D::Attributes(),
+                  attributes,
+                  lose_context_when_out_of_memory,
                   GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"),
                   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
                   NULL)),
@@ -1010,6 +1013,7 @@ RenderThreadImpl::CreateOffscreenContext3d() {
   attributes.stencil = false;
   attributes.antialias = false;
   attributes.noAutomaticFlushes = true;
+  bool lose_context_when_out_of_memory = true;
 
   scoped_refptr<GpuChannelHost> gpu_channel_host(EstablishGpuChannelSync(
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
@@ -1017,6 +1021,7 @@ RenderThreadImpl::CreateOffscreenContext3d() {
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           gpu_channel_host.get(),
           attributes,
+          lose_context_when_out_of_memory,
           GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
           WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
           NULL));

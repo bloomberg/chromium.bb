@@ -29,11 +29,12 @@ scoped_ptr<cc::OutputSurface> InProcessContextFactory::CreateOutputSurface(
   attrs.stencil = false;
   attrs.antialias = false;
   attrs.shareResources = true;
+  bool lose_context_when_out_of_memory = true;
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
   scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-          attrs, compositor->widget()));
+          attrs, lose_context_when_out_of_memory, compositor->widget()));
   CHECK(context3d);
 
   using webkit::gpu::ContextProviderInProcess;
@@ -56,8 +57,10 @@ scoped_refptr<cc::ContextProvider>
 InProcessContextFactory::OffscreenCompositorContextProvider() {
   if (!offscreen_compositor_contexts_.get() ||
       !offscreen_compositor_contexts_->DestroyedOnMainThread()) {
+    bool lose_context_when_out_of_memory = true;
     offscreen_compositor_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
+        webkit::gpu::ContextProviderInProcess::CreateOffscreen(
+            lose_context_when_out_of_memory);
   }
   return offscreen_compositor_contexts_;
 }
@@ -69,8 +72,10 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
     return shared_main_thread_contexts_;
 
   if (ui::Compositor::WasInitializedWithThread()) {
+    bool lose_context_when_out_of_memory = false;
     shared_main_thread_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
+        webkit::gpu::ContextProviderInProcess::CreateOffscreen(
+            lose_context_when_out_of_memory);
   } else {
     shared_main_thread_contexts_ =
         static_cast<webkit::gpu::ContextProviderInProcess*>(

@@ -124,6 +124,7 @@ class WebGraphicsContext3DCommandBufferImpl
       GpuChannelHost* host,
       const Attributes& attributes,
       bool bind_generates_resources,
+      bool lose_context_when_out_of_memory,
       const SharedMemoryLimits& limits,
       WebGraphicsContext3DCommandBufferImpl* share_context);
 
@@ -149,6 +150,7 @@ class WebGraphicsContext3DCommandBufferImpl
       CreateOffscreenContext(
           GpuChannelHost* host,
           const WebGraphicsContext3D::Attributes& attributes,
+          bool lose_context_when_out_of_memory,
           const GURL& active_url,
           const SharedMemoryLimits& limits,
           WebGraphicsContext3DCommandBufferImpl* share_context);
@@ -687,20 +689,21 @@ class WebGraphicsContext3DCommandBufferImpl
   // gpu/command_buffer/common/gles2_cmd_utils.cc and to
   // gpu/command_buffer/client/gl_in_process_context.cc
   enum Attribute {
-    ALPHA_SIZE                = 0x3021,
-    BLUE_SIZE                 = 0x3022,
-    GREEN_SIZE                = 0x3023,
-    RED_SIZE                  = 0x3024,
-    DEPTH_SIZE                = 0x3025,
-    STENCIL_SIZE              = 0x3026,
-    SAMPLES                   = 0x3031,
-    SAMPLE_BUFFERS            = 0x3032,
-    HEIGHT                    = 0x3056,
-    WIDTH                     = 0x3057,
-    NONE                      = 0x3038,  // Attrib list = terminator
-    SHARE_RESOURCES           = 0x10000,
-    BIND_GENERATES_RESOURCES  = 0x10001,
-    FAIL_IF_MAJOR_PERF_CAVEAT = 0x10002
+    ALPHA_SIZE = 0x3021,
+    BLUE_SIZE = 0x3022,
+    GREEN_SIZE = 0x3023,
+    RED_SIZE = 0x3024,
+    DEPTH_SIZE = 0x3025,
+    STENCIL_SIZE = 0x3026,
+    SAMPLES = 0x3031,
+    SAMPLE_BUFFERS = 0x3032,
+    HEIGHT = 0x3056,
+    WIDTH = 0x3057,
+    NONE = 0x3038,  // Attrib list = terminator
+    SHARE_RESOURCES = 0x10000,
+    BIND_GENERATES_RESOURCES = 0x10001,
+    FAIL_IF_MAJOR_PERF_CAVEAT = 0x10002,
+    LOSE_CONTEXT_WHEN_OUT_OF_MEMORY = 0x10003,
   };
   friend class WebGraphicsContext3DErrorMessageCallback;
 
@@ -767,6 +770,7 @@ class WebGraphicsContext3DCommandBufferImpl
   scoped_ptr<gpu::gles2::GLES2Interface> trace_gl_;
   Error last_error_;
   bool bind_generates_resources_;
+  bool lose_context_when_out_of_memory_;
   SharedMemoryLimits mem_limits_;
 
   uint32_t flush_id_;

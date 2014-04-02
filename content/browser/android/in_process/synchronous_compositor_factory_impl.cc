@@ -44,12 +44,10 @@ scoped_ptr<gpu::GLInProcessContext> CreateContext(
   gpu::GLInProcessContextAttribs in_process_attribs;
   WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
       GetDefaultAttribs(), &in_process_attribs);
+  in_process_attribs.lose_context_when_out_of_memory = 1;
   scoped_ptr<gpu::GLInProcessContext> context(
-      gpu::GLInProcessContext::CreateWithSurface(surface,
-                                                 service,
-                                                 share_context,
-                                                 in_process_attribs,
-                                                 gpu_preference));
+      gpu::GLInProcessContext::CreateWithSurface(
+          surface, service, share_context, in_process_attribs, gpu_preference));
   return context.Pass();
 }
 

@@ -48,7 +48,8 @@ scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
 
 // static
 scoped_refptr<ContextProviderInProcess>
-ContextProviderInProcess::CreateOffscreen() {
+ContextProviderInProcess::CreateOffscreen(
+    bool lose_context_when_out_of_memory) {
   blink::WebGraphicsContext3D::Attributes attributes;
   attributes.depth = false;
   attributes.stencil = true;
@@ -58,7 +59,8 @@ ContextProviderInProcess::CreateOffscreen() {
 
   return Create(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          attributes), "Offscreen");
+          attributes, lose_context_when_out_of_memory),
+      "Offscreen");
 }
 
 ContextProviderInProcess::ContextProviderInProcess(
