@@ -336,7 +336,7 @@
       {
         "name": "executeScript",
         "type": "function",
-        "description": "<p>Injects JavaScript code into the guest page.</p><p>The following sample code uses script injection to set the guest page's background color to red:</p><pre>webview.executeScript({ code: \"document.body.bgColor = 'red'\" });</pre>",
+        "description": "<p>Injects JavaScript code into the guest page.</p><p>The following sample code uses script injection to set the guest page's background color to red:</p><pre>webview.executeScript({ code: \"document.body.style.backgroundColor = 'red'\" });</pre>",
         "parameters": [
           {
             "$ref": "InjectDetails",
