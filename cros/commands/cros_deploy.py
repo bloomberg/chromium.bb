@@ -190,6 +190,7 @@ For more information of cros build usage:
         'PORTAGE_CONFIGROOT': '/usr/local',
         'PORTAGE_TMPDIR': portage_tmpdir,
         'PORTDIR': device.work_dir,
+        'CONFIG_PROTECT': '-*',
     }
     cmd = ['emerge', '--usepkg', pkg_path]
     cmd.append('--root=%s' % root)
