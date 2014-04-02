@@ -329,7 +329,7 @@ static inline bool parseSimpleLength(const CharacterType* characters, unsigned l
 static bool parseSimpleLengthValue(MutableStylePropertySet* declaration, CSSPropertyID propertyId, const String& string, bool important, CSSParserMode cssParserMode)
 {
     ASSERT(!string.isEmpty());
-    bool acceptsNegativeNumbers;
+    bool acceptsNegativeNumbers = false;
 
     // In @viewport, width and height are shorthands, not simple length values.
     if (isCSSViewportParsingEnabledForMode(cssParserMode) || !isSimpleLengthPropertyID(propertyId, acceptsNegativeNumbers))
