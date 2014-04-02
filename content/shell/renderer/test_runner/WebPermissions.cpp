@@ -25,23 +25,17 @@ WebPermissions::~WebPermissions()
 
 bool WebPermissions::allowImage(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& imageURL)
 {
-    bool allowed = enabledPerSettings && m_imagesAllowed;
-    if (m_dumpCallbacks && m_delegate)
-        m_delegate->printMessage(std::string("PERMISSION CLIENT: allowImage(") + normalizeLayoutTestURL(imageURL.spec()) + "): " + (allowed ? "true" : "false") + "\n");
-    return allowed;
+    return allowImage(enabledPerSettings, imageURL);
 }
 
 bool WebPermissions::allowScriptFromSource(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& scriptURL)
 {
-    bool allowed = enabledPerSettings && m_scriptsAllowed;
-    if (m_dumpCallbacks && m_delegate)
-        m_delegate->printMessage(std::string("PERMISSION CLIENT: allowScriptFromSource(") + normalizeLayoutTestURL(scriptURL.spec()) + "): " + (allowed ? "true" : "false") + "\n");
-    return allowed;
+    return allowScriptFromSource(enabledPerSettings, scriptURL);
 }
 
-bool WebPermissions::allowStorage(blink::WebFrame*, bool)
+bool WebPermissions::allowStorage(blink::WebFrame*, bool temp)
 {
-    return m_storageAllowed;
+    return allowStorage(temp);
 }
 
 bool WebPermissions::allowPlugins(blink::WebFrame*, bool enabledPerSettings)
@@ -49,12 +43,48 @@ bool WebPermissions::allowPlugins(blink::WebFrame*, bool enabledPerSettings)
     return enabledPerSettings && m_pluginsAllowed;
 }
 
-bool WebPermissions::allowDisplayingInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&)
+bool WebPermissions::allowDisplayingInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin& temp1, const blink::WebURL& temp2)
+{
+    return allowDisplayingInsecureContent(enabledPerSettings, temp1, temp2);
+}
+
+bool WebPermissions::allowRunningInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin& temp1, const blink::WebURL& temp2)
+{
+    return allowRunningInsecureContent(enabledPerSettings, temp1, temp2);
+}
+
+bool WebPermissions::allowImage(bool enabledPerSettings, const blink::WebURL& imageURL)
+{
+    bool allowed = enabledPerSettings && m_imagesAllowed;
+    if (m_dumpCallbacks && m_delegate)
+        m_delegate->printMessage(std::string("PERMISSION CLIENT: allowImage(") + normalizeLayoutTestURL(imageURL.spec()) + "): " + (allowed ? "true" : "false") + "\n");
+    return allowed;
+}
+
+bool WebPermissions::allowScriptFromSource(bool enabledPerSettings, const blink::WebURL& scriptURL)
+{
+    bool allowed = enabledPerSettings && m_scriptsAllowed;
+    if (m_dumpCallbacks && m_delegate)
+        m_delegate->printMessage(std::string("PERMISSION CLIENT: allowScriptFromSource(") + normalizeLayoutTestURL(scriptURL.spec()) + "): " + (allowed ? "true" : "false") + "\n");
+    return allowed;
+}
+
+bool WebPermissions::allowStorage(bool)
+{
+    return m_storageAllowed;
+}
+
+bool WebPermissions::allowPlugins(bool enabledPerSettings)
+{
+    return enabledPerSettings && m_pluginsAllowed;
+}
+
+bool WebPermissions::allowDisplayingInsecureContent(bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&)
 {
     return enabledPerSettings || m_displayingInsecureContentAllowed;
 }
 
-bool WebPermissions::allowRunningInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&)
+bool WebPermissions::allowRunningInsecureContent(bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&)
 {
     return enabledPerSettings || m_runningInsecureContentAllowed;
 }

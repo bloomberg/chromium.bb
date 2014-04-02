@@ -49,6 +49,7 @@ class ContentSettingsObserver
   void DidBlockContentType(ContentSettingsType settings_type);
 
   // blink::WebPermissionClient implementation.
+  // TODO(jam): remove all these methods after Blink rolls.
   virtual bool allowDatabase(blink::WebFrame* frame,
                              const blink::WebString& name,
                              const blink::WebString& display_name,
@@ -85,6 +86,35 @@ class ContentSettingsObserver
       const blink::WebURL& url);
   virtual bool allowRunningInsecureContent(
       blink::WebFrame* frame,
+      bool allowed_per_settings,
+      const blink::WebSecurityOrigin& context,
+      const blink::WebURL& url);
+
+  virtual bool allowDatabase(const blink::WebString& name,
+                             const blink::WebString& display_name,
+                             unsigned long estimated_size);
+  virtual bool allowFileSystem();
+  virtual bool allowImage(bool enabled_per_settings,
+                          const blink::WebURL& image_url);
+  virtual bool allowIndexedDB(const blink::WebString& name,
+                              const blink::WebSecurityOrigin& origin);
+  virtual bool allowPlugins(bool enabled_per_settings);
+  virtual bool allowScript(bool enabled_per_settings);
+  virtual bool allowScriptFromSource(bool enabled_per_settings,
+                                     const blink::WebURL& script_url);
+  virtual bool allowStorage(bool local);
+  virtual bool allowReadFromClipboard(bool default_value);
+  virtual bool allowWriteToClipboard(bool default_value);
+  virtual bool allowWebComponents(bool default_value);
+  virtual bool allowMutationEvents(bool default_value);
+  virtual bool allowPushState();
+  virtual void didNotAllowPlugins();
+  virtual void didNotAllowScript();
+  virtual bool allowDisplayingInsecureContent(
+      bool allowed_per_settings,
+      const blink::WebSecurityOrigin& context,
+      const blink::WebURL& url);
+  virtual bool allowRunningInsecureContent(
       bool allowed_per_settings,
       const blink::WebSecurityOrigin& context,
       const blink::WebURL& url);

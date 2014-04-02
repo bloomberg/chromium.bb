@@ -37,11 +37,25 @@ bool AwPermissionClient::allowDisplayingInsecureContent(
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& url) {
-  return enabled_per_settings ? true : AllowMixedContent(url);
+  return allowDisplayingInsecureContent(enabled_per_settings, origin, url);
 }
 
 bool AwPermissionClient::allowRunningInsecureContent(
       blink::WebFrame* frame,
+      bool enabled_per_settings,
+      const blink::WebSecurityOrigin& origin,
+      const blink::WebURL& url) {
+  return allowRunningInsecureContent(enabled_per_settings, origin, url);
+}
+
+bool AwPermissionClient::allowDisplayingInsecureContent(
+      bool enabled_per_settings,
+      const blink::WebSecurityOrigin& origin,
+      const blink::WebURL& url) {
+  return enabled_per_settings ? true : AllowMixedContent(url);
+}
+
+bool AwPermissionClient::allowRunningInsecureContent(
       bool enabled_per_settings,
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& url) {

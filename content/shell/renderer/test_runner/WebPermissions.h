@@ -18,12 +18,20 @@ public:
     virtual ~WebPermissions();
 
     // Override WebPermissionClient methods.
+    // TODO(jam): remove all these methods after Blink rolls.
     virtual bool allowImage(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& imageURL);
     virtual bool allowScriptFromSource(blink::WebFrame*, bool enabledPerSettings, const blink::WebURL& scriptURL);
     virtual bool allowStorage(blink::WebFrame*, bool local);
     virtual bool allowPlugins(blink::WebFrame*, bool enabledPerSettings);
     virtual bool allowDisplayingInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
     virtual bool allowRunningInsecureContent(blink::WebFrame*, bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
+
+    virtual bool allowImage(bool enabledPerSettings, const blink::WebURL& imageURL);
+    virtual bool allowScriptFromSource(bool enabledPerSettings, const blink::WebURL& scriptURL);
+    virtual bool allowStorage(bool local);
+    virtual bool allowPlugins(bool enabledPerSettings);
+    virtual bool allowDisplayingInsecureContent(bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
+    virtual bool allowRunningInsecureContent(bool enabledPerSettings, const blink::WebSecurityOrigin&, const blink::WebURL&);
 
     // Hooks to set the different policies.
     void setImagesAllowed(bool);
