@@ -320,6 +320,10 @@ void ClearGLBindingsGL() {
     delete g_trace_gl;
     g_trace_gl = NULL;
   }
+  if (g_no_context_gl) {
+    delete g_no_context_gl;
+    g_no_context_gl = NULL;
+  }
   g_gl = NULL;
   g_driver_gl.ClearBindings();
   if (g_current_gl_context_tls) {
