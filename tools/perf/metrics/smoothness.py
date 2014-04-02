@@ -27,7 +27,7 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
         stats.mouse_wheel_scroll_latency)
       results.Add('mean_mouse_wheel_scroll_latency', 'ms',
                   round(mean_mouse_wheel_scroll_latency, 3))
-      results.Add('mouse_wheel_scroll_latency_discrepancy', '',
+      results.Add('mouse_wheel_scroll_latency_discrepancy', 'ms',
                   round(mouse_wheel_scroll_latency_discrepancy, 4))
 
     if stats.touch_scroll_latency:
@@ -37,7 +37,7 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
         stats.touch_scroll_latency)
       results.Add('mean_touch_scroll_latency', 'ms',
                   round(mean_touch_scroll_latency, 3))
-      results.Add('touch_scroll_latency_discrepancy', '',
+      results.Add('touch_scroll_latency_discrepancy', 'ms',
                   round(touch_scroll_latency_discrepancy, 4))
 
     if stats.js_touch_scroll_latency:
@@ -47,7 +47,7 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
         stats.js_touch_scroll_latency)
       results.Add('mean_js_touch_scroll_latency', 'ms',
                   round(mean_js_touch_scroll_latency, 3))
-      results.Add('js_touch_scroll_latency_discrepancy', '',
+      results.Add('js_touch_scroll_latency_discrepancy', 'ms',
                   round(js_touch_scroll_latency_discrepancy, 4))
 
     # List of raw frame times.
