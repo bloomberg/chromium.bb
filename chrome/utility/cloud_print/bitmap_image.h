@@ -6,7 +6,6 @@
 #define CHROME_UTILITY_CLOUD_PRINT_BITMAP_IMAGE_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
 namespace cloud_print {
@@ -28,8 +27,6 @@ class BitmapImage {
 
   const uint8* pixel_data() const { return data_.get(); }
   uint8* pixel_data() { return data_.get(); }
-
-  const uint8* GetPixel(const gfx::Point& point) const;
 
  private:
   gfx::Size size_;

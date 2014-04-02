@@ -13,45 +13,20 @@ namespace cloud_print {
 
 class BitmapImage;
 
-struct PwgHeaderInfo {
-  PwgHeaderInfo()
-      : dpi(300),
-        total_pages(1),
-        flipx(false),
-        flipy(false),
-        color_space(SRGB),
-        duplex(false),
-        tumble(false) {}
-  enum ColorSpace { SGRAY = 18, SRGB = 19 };
-  uint32 dpi;
-  uint32 total_pages;
-  bool flipx;
-  bool flipy;
-  ColorSpace color_space;
-  bool duplex;
-  bool tumble;
-};
-
 class PwgEncoder {
  public:
   PwgEncoder();
 
   void EncodeDocumentHeader(std::string *output) const;
-  bool EncodePage(const BitmapImage* image,
-                  const PwgHeaderInfo& pwg_header_info,
-                  std::string* output) const;
+  bool EncodePage(const BitmapImage& image, const uint32 dpi,
+                  const uint32 total_pages, std::string* output) const;
 
  private:
-  void EncodePageHeader(const BitmapImage* image,
-                        const PwgHeaderInfo& pwg_header_info,
-                        std::string* output) const;
-
-  template <class RandomAccessIterator>
-  void EncodeRow(RandomAccessIterator pos,
-                 RandomAccessIterator row_end,
-                 void (*pixel_encoder)(const void*, std::string*),
-                 std::string* output) const;
-  const uint8* GetRow(const BitmapImage* image, int row, bool flipy) const;
+  void EncodePageHeader(const BitmapImage& image, const uint32 dpi,
+                        const uint32 total_pages, std::string* output) const;
+  bool EncodeRowFrom32Bit(const uint8* row, const int width,
+                          const int color_space, std::string* output) const;
+  const uint8* GetRow(const BitmapImage& image, int row) const;
 };
 
 }  // namespace cloud_print
