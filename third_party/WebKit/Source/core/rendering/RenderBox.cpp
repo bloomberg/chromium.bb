@@ -2310,7 +2310,7 @@ LayoutUnit RenderBox::computeLogicalWidthUsing(SizeType widthType, Length logica
     if (shrinkToAvoidFloats() && cb->containsFloats())
         logicalWidthResult = min(logicalWidthResult, shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toRenderBlockFlow(cb)));
 
-    if (widthType == MainOrPreferredSize && sizesLogicalWidthToFitContent(widthType))
+    if (widthType == MainOrPreferredSize && sizesLogicalWidthToFitContent(logicalWidth))
         return max(minPreferredLogicalWidth(), min(maxPreferredLogicalWidth(), logicalWidthResult));
     return logicalWidthResult;
 }
@@ -2338,16 +2338,13 @@ static bool isStretchingColumnFlexItem(const RenderObject* flexitem)
     return false;
 }
 
-bool RenderBox::sizesLogicalWidthToFitContent(SizeType widthType) const
+bool RenderBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
 {
     // Marquees in WinIE are like a mixture of blocks and inline-blocks.  They size as though they're blocks,
     // but they allow text to sit on the same line as the marquee.
     if (isFloating() || (isInlineBlockOrInlineTable() && !isMarquee()))
         return true;
 
-    // This code may look a bit strange.  Basically width:intrinsic should clamp the size when testing both
-    // min-width and width.  max-width is only clamped if it is also intrinsic.
-    Length logicalWidth = (widthType == MaxSize) ? style()->logicalMaxWidth() : style()->logicalWidth();
     if (logicalWidth.type() == Intrinsic)
         return true;
 
@@ -2384,7 +2381,7 @@ bool RenderBox::sizesLogicalWidthToFitContent(SizeType widthType) const
     // stretching column flexbox.
     // FIXME: Think about block-flow here.
     // https://bugs.webkit.org/show_bug.cgi?id=46473
-    if (logicalWidth.type() == Auto && !isStretchingColumnFlexItem(this) && autoWidthShouldFitContent())
+    if (logicalWidth.isAuto() && !isStretchingColumnFlexItem(this) && autoWidthShouldFitContent())
         return true;
 
     if (isHorizontalWritingMode() != containingBlock()->isHorizontalWritingMode())
