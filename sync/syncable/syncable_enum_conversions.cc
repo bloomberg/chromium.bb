@@ -160,6 +160,20 @@ const char* GetUniquePositionFieldString(UniquePositionField position_field) {
   return "";
 }
 
+const char* GetAttachmentMetadataFieldString(
+    AttachmentMetadataField attachment_metadata_field) {
+  ASSERT_ENUM_BOUNDS(ATTACHMENT_METADATA,
+                     ATTACHMENT_METADATA,
+                     ATTACHMENT_METADATA_FIELDS_BEGIN,
+                     ATTACHMENT_METADATA_FIELDS_END - 1);
+  switch(attachment_metadata_field) {
+    ENUM_CASE(ATTACHMENT_METADATA);
+    case ATTACHMENT_METADATA_FIELDS_END: break;
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* GetBitTempString(BitTemp bit_temp) {
   ASSERT_ENUM_BOUNDS(SYNCING, SYNCING,
                      BIT_TEMPS_BEGIN, BIT_TEMPS_END - 1);

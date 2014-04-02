@@ -20,3 +20,8 @@ message AttachmentIdProto {
   // are considered equivalent.
   optional string unique_id = 1;
 }
+
+// A collection of attachment metadata. This proto is part of EntryKernel's "on
+// disk" representation. Private to sync.
+message AttachmentMetadata {
+}

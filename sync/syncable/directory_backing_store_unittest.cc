@@ -74,9 +74,10 @@ class MigrationTest : public testing::TestWithParam<int> {
   void SetUpVersion84Database(sql::Connection* connection);
   void SetUpVersion85Database(sql::Connection* connection);
   void SetUpVersion86Database(sql::Connection* connection);
+  void SetUpVersion87Database(sql::Connection* connection);
 
   void SetUpCurrentDatabaseAndCheckVersion(sql::Connection* connection) {
-    SetUpVersion86Database(connection);  // Prepopulates data.
+    SetUpVersion87Database(connection);  // Prepopulates data.
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), connection));
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
@@ -2534,6 +2535,121 @@ void MigrationTest::SetUpVersion86Database(sql::Connection* connection) {
   ASSERT_TRUE(connection->CommitTransaction());
 }
 
+void MigrationTest::SetUpVersion87Database(sql::Connection* connection) {
+  ASSERT_TRUE(connection->is_open());
+  ASSERT_TRUE(connection->BeginTransaction());
+  ASSERT_TRUE(connection->Execute(
+      "CREATE TABLE share_version (id VARCHAR(128) primary key, data INT);"
+      "INSERT INTO 'share_version' VALUES('nick@chromium.org',87);"
+      "CREATE TABLE models (model_id BLOB primary key, progress_marker BLOB, tr"
+         "ansaction_version BIGINT default 0);"
+      "INSERT INTO 'models' VALUES(X'C2881000',X'0888810218B605',1);"
+      "CREATE TABLE 'metas'(metahandle bigint primary key ON CONFLICT FAIL,base"
+         "_version bigint default -1,server_version bigint default 0,local_exte"
+         "rnal_id bigint default 0,transaction_version bigint default 0,mtime b"
+         "igint default 0,server_mtime bigint default 0,ctime bigint default 0,"
+         "server_ctime bigint default 0,id varchar(255) default 'r',parent_id v"
+         "archar(255) default 'r',server_parent_id varchar(255) default 'r',is_"
+         "unsynced bit default 0,is_unapplied_update bit default 0,is_del bit d"
+         "efault 0,is_dir bit default 0,server_is_dir bit default 0,server_is_d"
+         "el bit default 0,non_unique_name varchar,server_non_unique_name varch"
+         "ar(255),unique_server_tag varchar,unique_client_tag varchar,unique_bo"
+         "okmark_tag varchar,specifics blob,server_specifics blob,base_server_s"
+         "pecifics blob,server_unique_position blob,unique_position blob,attach"
+         "ment_metadata blob);"
+      "INSERT INTO 'metas' VALUES(1,-1,0,0,0,"
+         META_PROTO_TIMES_VALS(1)
+         ",'r','r','r',0,0,0,1,0,0,NULL,NULL,NULL,NULL,X''"
+         ",X'',X'',NULL,X'2200',X'2200',NULL);"
+      "INSERT INTO 'metas' VALUES(6,694,694,6,0,"
+         META_PROTO_TIMES_VALS(6)
+         ",'s_ID_6','s_ID_9','s_ID_9',0,0,0,1,1,0,'The "
+         "Internet','The Internet',NULL,NULL,X'6754307476346749735A5734654D6532"
+         "73625336557753582F77673D',X'C2881000',X'C2881000',NULL,X'22247FFFFFFF"
+         "FFC000006754307476346749735A5734654D653273625336557753582F77673D',X'2"
+         "2247FFFFFFFFFC000006754307476346749735A5734654D653273625336557753582F"
+         "77673D',NULL);"
+      "INSERT INTO 'metas' VALUES(7,663,663,0,0,"
+         META_PROTO_TIMES_VALS(7)
+         ",'s_ID_7','r','r',0,0,0,1,1,0,'Google Chrome'"
+         ",'Google Chrome','google_chrome',NULL,X'',NULL,NULL,NULL,X'2200',X'22"
+         "00',NULL);"
+      "INSERT INTO 'metas' VALUES(8,664,664,0,0,"
+         META_PROTO_TIMES_VALS(8)
+         ",'s_ID_8','s_ID_7','s_ID_7',0,0,0,1,1,0,'Book"
+         "marks','Bookmarks','google_chrome_bookmarks',NULL,X'',X'C2881000',X'C"
+         "2881000',NULL,X'2200',X'2200',NULL);"
+      "INSERT INTO 'metas' VALUES(9,665,665,1,0,"
+         META_PROTO_TIMES_VALS(9)
+         ",'s_ID_9','s_ID_8','s_ID_8',0,0,0,1,1,0,'Book"
+         "mark Bar','Bookmark Bar','bookmark_bar',NULL,X'',X'C2881000',X'C28810"
+         "00',NULL,X'2200',X'2200',NULL);"
+      "INSERT INTO 'metas' VALUES(10,666,666,2,0,"
+         META_PROTO_TIMES_VALS(10)
+         ",'s_ID_10','s_ID_8','s_ID_8',0,0,0,1,1,0,'Ot"
+         "her Bookmarks','Other Bookmarks','other_bookmarks',NULL,X'',X'C288100"
+         "0',X'C2881000',NULL,X'2200',X'2200',NULL);"
+      "INSERT INTO 'metas' VALUES(11,683,683,8,0,"
+         META_PROTO_TIMES_VALS(11)
+         ",'s_ID_11','s_ID_6','s_ID_6',0,0,0,0,0,0,'Ho"
+         "me (The Chromium Projects)','Home (The Chromium Projects)',NULL,NULL,"
+         "X'50514C784A456D623579366267644237646A7A2B62314130346E493D',X'C288102"
+         "20A18687474703A2F2F6465762E6368726F6D69756D2E6F72672F1206414741545741"
+         "',X'C28810290A1D687474703A2F2F6465762E6368726F6D69756D2E6F72672F6F746"
+         "8657212084146414756415346',NULL,X'22247FFFFFFFFFF0000050514C784A456D6"
+         "23579366267644237646A7A2B62314130346E493D',X'22247FFFFFFFFFF000005051"
+         "4C784A456D623579366267644237646A7A2B62314130346E493D',NULL);"
+      "INSERT INTO 'metas' VALUES(12,685,685,9,0,"
+         META_PROTO_TIMES_VALS(12)
+         ",'s_ID_12','s_ID_6','s_ID_6',0,0,0,1,1,0,'Ex"
+         "tra Bookmarks','Extra Bookmarks',NULL,NULL,X'7867626A704A646134635A6F"
+         "616C376A49513338734B46324837773D',X'C2881000',X'C2881000',NULL,X'2224"
+         "80000000000000007867626A704A646134635A6F616C376A49513338734B463248377"
+         "73D',X'222480000000000000007867626A704A646134635A6F616C376A4951333873"
+         "4B46324837773D',NULL);"
+      "INSERT INTO 'metas' VALUES(13,687,687,10,0,"
+         META_PROTO_TIMES_VALS(13)
+         ",'s_ID_13','s_ID_6','s_ID_6',0,0,0,0,0,0,'I"
+         "CANN | Internet Corporation for Assigned Names and Numbers','ICANN | "
+         "Internet Corporation for Assigned Names and Numbers',NULL,NULL,X'3142"
+         "756B572F7741766956504179672B304A614A514B3452384A413D',X'C28810240A156"
+         "87474703A2F2F7777772E6963616E6E2E636F6D2F120B504E474158463041414646',"
+         "X'C28810200A15687474703A2F2F7777772E6963616E6E2E636F6D2F1207444141464"
+         "15346',NULL,X'22247FFFFFFFFFF200003142756B572F7741766956504179672B304"
+         "A614A514B3452384A413D',X'22247FFFFFFFFFF200003142756B572F774176695650"
+         "4179672B304A614A514B3452384A413D',NULL);"
+      "INSERT INTO 'metas' VALUES(14,692,692,11,0,"
+         META_PROTO_TIMES_VALS(14)
+         ",'s_ID_14','s_ID_6','s_ID_6',0,0,0,0,0,0,'T"
+         "he WebKit Open Source Project','The WebKit Open Source Project',NULL,"
+         "NULL,X'5A5678314E7976364579524D3177494F7236563159552F6E644C553D',X'C2"
+         "88101A0A12687474703A2F2F7765626B69742E6F72672F1204504E4758',X'C288101"
+         "C0A13687474703A2F2F7765626B69742E6F72672F781205504E473259',NULL,X'222"
+         "480000000001000005A5678314E7976364579524D3177494F7236563159552F6E644C"
+         "553D',X'222480000000001000005A5678314E7976364579524D3177494F723656315"
+         "9552F6E644C553D',NULL);"
+      "CREATE TABLE deleted_metas (metahandle bigint primary key ON CONFLICT FA"
+         "IL,base_version bigint default -1,server_version bigint default 0,loc"
+         "al_external_id bigint default 0,transaction_version bigint default 0,"
+         "mtime bigint default 0,server_mtime bigint default 0,ctime bigint def"
+         "ault 0,server_ctime bigint default 0,id varchar(255) default 'r',pare"
+         "nt_id varchar(255) default 'r',server_parent_id varchar(255) default "
+         "'r',is_unsynced bit default 0,is_unapplied_update bit default 0,is_de"
+         "l bit default 0,is_dir bit default 0,server_is_dir bit default 0,serv"
+         "er_is_del bit default 0,non_unique_name varchar,server_non_unique_nam"
+         "e varchar(255),unique_server_tag varchar,unique_client_tag varchar,un"
+         "ique_bookmark_tag varchar,specifics blob,server_specifics blob,base_s"
+         "erver_specifics blob,server_unique_position blob,unique_position blob"
+         ",attachment_metadata blob);"
+      "CREATE TABLE 'share_info' (id TEXT primary key, name TEXT, store_birthda"
+         "y TEXT, db_create_version TEXT, db_create_time INT, next_id INT defau"
+         "lt -2, cache_guid TEXT, notification_state BLOB, bag_of_chips BLOB);"
+      "INSERT INTO 'share_info' VALUES('nick@chromium.org','nick@chromium.org',"
+         "'c27e9f59-08ca-46f8-b0cc-f16a2ed778bb','Unknown',1263522064,-131078,'"
+         "9010788312004066376x-6609234393368420856x',NULL,NULL);"));
+  ASSERT_TRUE(connection->CommitTransaction());
+}
+
 TEST_F(DirectoryBackingStoreTest, MigrateVersion67To68) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
@@ -2998,6 +3114,20 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion85To86) {
   ASSERT_TRUE(dbs->needs_column_refresh_);
 }
 
+TEST_F(DirectoryBackingStoreTest, MigrateVersion86To87) {
+  sql::Connection connection;
+  EXPECT_TRUE(connection.OpenInMemory());
+  SetUpVersion86Database(&connection);
+  EXPECT_FALSE(connection.DoesColumnExist("metas", "attachment_metadata"));
+
+  scoped_ptr<TestDirectoryBackingStore> dbs(
+      new TestDirectoryBackingStore(GetUsername(), &connection));
+  EXPECT_TRUE(dbs->MigrateVersion86To87());
+  EXPECT_EQ(87, dbs->GetVersion());
+  EXPECT_TRUE(connection.DoesColumnExist("metas", "attachment_metadata"));
+  EXPECT_TRUE(dbs->needs_column_refresh_);
+}
+
 // The purpose of this test case is to make it easier to get a dump of the
 // database so you can implement a SetUpVersionYDatabase method.  Here's what
 // you should do:
@@ -3019,13 +3149,13 @@ TEST_F(DirectoryBackingStoreTest, MigrateToLatestAndDump) {
   {
     sql::Connection connection;
     ASSERT_TRUE(connection.Open(GetDatabasePath()));
-    SetUpVersion85Database(&connection);  // Update this.
+    SetUpVersion86Database(&connection);  // Update this.
 
     scoped_ptr<TestDirectoryBackingStore> dbs(
         new TestDirectoryBackingStore(GetUsername(), &connection));
-    ASSERT_TRUE(dbs->MigrateVersion85To86());  // Update this.
+    ASSERT_TRUE(dbs->MigrateVersion86To87());  // Update this.
     ASSERT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
-    EXPECT_EQ(86, dbs->GetVersion());  // Update this.
+    EXPECT_EQ(87, dbs->GetVersion());  // Update this.
     ASSERT_FALSE(dbs->needs_column_refresh_);
   }
   // Set breakpoint here.
@@ -3121,6 +3251,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
     case 86:
       SetUpVersion86Database(&connection);
       break;
+    case 87:
+      SetUpVersion87Database(&connection);
+      break;
     default:
       // If you see this error, it may mean that you've increased the
       // database version number but you haven't finished adding unit tests
@@ -3207,6 +3340,9 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   ASSERT_FALSE(connection.DoesColumnExist("metas", "prev_id"));
   ASSERT_FALSE(connection.DoesColumnExist("metas", "server_ordinal_in_parent"));
 
+  // Column added in version 87.
+  ASSERT_TRUE(connection.DoesColumnExist("metas", "attachment_metadata"));
+
   // Check download_progress state (v75 migration)
   ASSERT_EQ(694,
       dir_info.kernel_info.download_progress[BOOKMARKS]
@@ -3242,6 +3378,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   // Items 2, 4, and 5 were deleted.
   it = handles_map.find(2);
@@ -3263,6 +3400,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(7);
   ASSERT_EQ(7, it->second->ref(META_HANDLE));
@@ -3273,6 +3411,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(8);
   ASSERT_EQ(8, it->second->ref(META_HANDLE));
@@ -3284,6 +3423,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(9);
   ASSERT_EQ(9, it->second->ref(META_HANDLE));
@@ -3294,6 +3434,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(10);
   ASSERT_EQ(10, it->second->ref(META_HANDLE));
@@ -3308,10 +3449,12 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_EQ("Other Bookmarks", it->second->ref(NON_UNIQUE_NAME));
   EXPECT_EQ("Other Bookmarks", it->second->ref(SERVER_NON_UNIQUE_NAME));
   ASSERT_EQ(it->second->ref(ID).value(), "s_ID_10");
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
   // Make sure we didn't assign positions to server-created folders, either.
   EXPECT_FALSE(it->second->ref(UNIQUE_POSITION).IsValid());
   EXPECT_FALSE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_TRUE(it->second->ref(UNIQUE_BOOKMARK_TAG).empty());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(11);
   ASSERT_EQ(11, it->second->ref(META_HANDLE));
@@ -3333,6 +3476,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(12);
   ASSERT_EQ(12, it->second->ref(META_HANDLE));
@@ -3350,6 +3494,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(13);
   ASSERT_EQ(13, it->second->ref(META_HANDLE));
@@ -3357,6 +3502,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   it = handles_map.find(14);
   ASSERT_EQ(14, it->second->ref(META_HANDLE));
@@ -3364,6 +3510,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   EXPECT_TRUE(it->second->ref(SERVER_UNIQUE_POSITION).IsValid());
   EXPECT_EQ(UniquePosition::kSuffixLength,
             it->second->ref(UNIQUE_BOOKMARK_TAG).length());
+  EXPECT_TRUE(it->second->ref(ATTACHMENT_METADATA).IsInitialized());
 
   ASSERT_EQ(static_cast<size_t>(10), handles_map.size());
 

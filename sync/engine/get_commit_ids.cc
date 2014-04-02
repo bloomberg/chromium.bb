@@ -105,6 +105,15 @@ bool IsEntryInConflict(const syncable::Entry& entry) {
   return false;
 }
 
+// Return true if this entry has any attachments that haven't yet been uploaded
+// to the server.
+bool HasAttachmentNotOnServer(const syncable::Entry& entry) {
+  // TODO(maniscalco): Once AttachmentMetadata is fleshed out, implement this
+  // function to return true if any of the attachments haven't been uploaded to
+  // the server. Add test case (bug 356266).
+  return false;
+}
+
 // An entry is not considered ready for commit if any are true:
 // 1. It's in conflict.
 // 2. It requires encryption (either the type is encrypted but a passphrase
@@ -161,6 +170,13 @@ bool IsEntryReadyForCommit(ModelTypeSet requested_types,
     return false;
   }
 
+  if (HasAttachmentNotOnServer(entry)) {
+    // This entry is not ready to be sent to the server because it has one or
+    // more attachments that have not yet been uploaded to the server.  The idea
+    // here is avoid propagating an entry with dangling attachment references.
+    return false;
+  }
+
   DVLOG(2) << "Entry is ready for commit: " << entry;
   return true;
 }
@@ -177,6 +193,11 @@ void FilterUnreadyEntries(
   for (syncable::Directory::Metahandles::const_iterator iter =
        unsynced_handles.begin(); iter != unsynced_handles.end(); ++iter) {
     syncable::Entry entry(trans, syncable::GET_BY_HANDLE, *iter);
+    // TODO(maniscalco): While we check if entry is ready to be committed, we
+    // also need to check that all of its ancestors (parents, transitive) are
+    // ready to be committed.  Once attachments can prevent an entry from being
+    // committable, this method must ensure all ancestors are ready for commit
+    // (bug 356273).
     if (IsEntryReadyForCommit(requested_types,
                               encrypted_types,
                               passphrase_missing,

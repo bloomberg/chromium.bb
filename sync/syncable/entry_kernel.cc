@@ -129,6 +129,11 @@ base::StringValue* UniquePositionToValue(const UniquePosition& pos) {
   return new base::StringValue(pos.ToDebugString());
 }
 
+base::StringValue* AttachmentMetadataToValue(
+    const sync_pb::AttachmentMetadata& a) {
+  return new base::StringValue(a.SerializeAsString());
+}
+
 }  // namespace
 
 base::DictionaryValue* EntryKernel::ToValue(
@@ -185,6 +190,14 @@ base::DictionaryValue* EntryKernel::ToValue(
   SetFieldValues(*this, kernel_info,
                  &GetUniquePositionFieldString, &UniquePositionToValue,
                  UNIQUE_POSITION_FIELDS_BEGIN, UNIQUE_POSITION_FIELDS_END - 1);
+
+  // AttachmentMetadata fields
+  SetFieldValues(*this,
+                 kernel_info,
+                 &GetAttachmentMetadataFieldString,
+                 &AttachmentMetadataToValue,
+                 ATTACHMENT_METADATA_FIELDS_BEGIN,
+                 ATTACHMENT_METADATA_FIELDS_END - 1);
 
   // Bit temps.
   SetFieldValues(*this, kernel_info,

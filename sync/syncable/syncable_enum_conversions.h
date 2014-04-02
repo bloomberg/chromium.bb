@@ -44,6 +44,9 @@ SYNC_EXPORT_PRIVATE const char* GetProtoFieldString(ProtoField proto_field);
 SYNC_EXPORT_PRIVATE const char* GetUniquePositionFieldString(
     UniquePositionField position_field);
 
+SYNC_EXPORT_PRIVATE const char* GetAttachmentMetadataFieldString(
+    AttachmentMetadataField attachment_metadata_field);
+
 SYNC_EXPORT_PRIVATE const char* GetBitTempString(BitTemp bit_temp);
 
 }  // namespace syncable

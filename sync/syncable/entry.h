@@ -196,6 +196,11 @@ class SYNC_EXPORT Entry {
     return kernel_->ref(UNIQUE_POSITION);
   }
 
+  const sync_pb::AttachmentMetadata& GetAttachmentMetadata() const {
+    DCHECK(kernel_);
+    return kernel_->ref(ATTACHMENT_METADATA);
+  }
+
   bool GetSyncing() const {
     DCHECK(kernel_);
     return kernel_->ref(SYNCING);

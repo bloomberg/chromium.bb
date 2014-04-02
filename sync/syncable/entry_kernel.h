@@ -13,6 +13,7 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/base/unique_position.h"
 #include "sync/internal_api/public/util/immutable.h"
+#include "sync/protocol/attachments.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/metahandle_set.h"
 #include "sync/syncable/syncable_id.h"
@@ -31,6 +32,8 @@ namespace syncable {
 //  - EntryKernel::EntryKernel(), EntryKernel::ToValue() in entry_kernel.cc
 //  - operator<< in Entry.cc
 //  - BindFields() and UnpackEntry() in directory_backing_store.cc
+//  - kCurrentDBVersion, DirectoryBackingStore::InitializeTables in
+//    directory_backing_store.cc
 //  - TestSimpleFieldsPreservedDuringSaveChanges in syncable_unittest.cc
 
 static const int64 kInvalidMetaHandle = 0;
@@ -156,9 +159,20 @@ enum UniquePositionField {
 enum {
   UNIQUE_POSITION_FIELDS_COUNT =
       UNIQUE_POSITION_FIELDS_END - UNIQUE_POSITION_FIELDS_BEGIN,
-  FIELD_COUNT = UNIQUE_POSITION_FIELDS_END - BEGIN_FIELDS,
+  ATTACHMENT_METADATA_FIELDS_BEGIN = UNIQUE_POSITION_FIELDS_END
+};
+
+enum AttachmentMetadataField {
+  ATTACHMENT_METADATA = ATTACHMENT_METADATA_FIELDS_BEGIN,
+  ATTACHMENT_METADATA_FIELDS_END
+};
+
+enum {
+  ATTACHMENT_METADATA_FIELDS_COUNT =
+      ATTACHMENT_METADATA_FIELDS_END - ATTACHMENT_METADATA_FIELDS_BEGIN,
+  FIELD_COUNT = ATTACHMENT_METADATA_FIELDS_END - BEGIN_FIELDS,
   // Past this point we have temporaries, stored in memory only.
-  BEGIN_TEMPS = UNIQUE_POSITION_FIELDS_END,
+  BEGIN_TEMPS = ATTACHMENT_METADATA_FIELDS_END,
   BIT_TEMPS_BEGIN = BEGIN_TEMPS,
 };
 
@@ -183,6 +197,8 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   base::Time time_fields[TIME_FIELDS_COUNT];
   Id id_fields[ID_FIELDS_COUNT];
   UniquePosition unique_position_fields[UNIQUE_POSITION_FIELDS_COUNT];
+  sync_pb::AttachmentMetadata
+      attachment_metadata_fields[ATTACHMENT_METADATA_FIELDS_COUNT];
   std::bitset<BIT_FIELDS_COUNT> bit_fields;
   std::bitset<BIT_TEMPS_COUNT> bit_temps;
 
@@ -253,6 +269,11 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   inline void put(UniquePositionField field, const UniquePosition& value) {
     unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN] = value;
   }
+  inline void put(AttachmentMetadataField field,
+                  const sync_pb::AttachmentMetadata& value) {
+    attachment_metadata_fields[field - ATTACHMENT_METADATA_FIELDS_BEGIN] =
+        value;
+  }
   inline void put(BitTemp field, bool value) {
     bit_temps[field - BIT_TEMPS_BEGIN] = value;
   }
@@ -290,6 +311,10 @@ struct SYNC_EXPORT_PRIVATE EntryKernel {
   }
   inline const UniquePosition& ref(UniquePositionField field) const {
     return unique_position_fields[field - UNIQUE_POSITION_FIELDS_BEGIN];
+  }
+  inline const sync_pb::AttachmentMetadata& ref(
+      AttachmentMetadataField field) const {
+    return attachment_metadata_fields[field - ATTACHMENT_METADATA_FIELDS_BEGIN];
   }
   inline bool ref(BitTemp field) const {
     return bit_temps[field - BIT_TEMPS_BEGIN];

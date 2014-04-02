@@ -157,6 +157,13 @@ std::ostream& operator<<(std::ostream& os, const Entry& entry) {
        << kernel->ref(static_cast<UniquePositionField>(i)).ToDebugString()
        << ", ";
   }
+  for ( ; i < ATTACHMENT_METADATA_FIELDS_END; ++i) {
+    std::string escaped_str = base::EscapeBytesAsInvalidJSONString(
+        kernel->ref(static_cast<AttachmentMetadataField>(i))
+            .SerializeAsString(),
+        false);
+    os << g_metas_columns[i].name << ": " << escaped_str << ", ";
+  }
   os << "TempFlags: ";
   for ( ; i < BIT_TEMPS_END; ++i) {
     if (kernel->ref(static_cast<BitTemp>(i)))

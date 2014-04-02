@@ -61,6 +61,13 @@ static const ColumnSpec g_metas_columns[] = {
   // Blobs (positions).
   {"server_unique_position", "blob"},
   {"unique_position", "blob"},
+  //////////////////////////////////////
+  // AttachmentMetadata is a proto that contains all the metadata associated
+  // with an entry's attachments.  Each entry has only one AttachmentMetadata
+  // proto.  We store a single proto per entry (as opposed to one for each
+  // attachment) because it simplifies the database schema and implementation of
+  // DirectoryBackingStore.
+  {"attachment_metadata", "blob"}
 };
 
 // At least enforce that there are equal number of column names and fields.
