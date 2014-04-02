@@ -40658,6 +40658,9 @@ other types of suffix sets.
   <int value="40" label="kErrorCodeOmahaUpdateDeferredForBackoff"/>
   <int value="41" label="kErrorCodePostinstallPowerwashError"/>
   <int value="42" label="kErrorCodeUpdateCanceledByChannelChange"/>
+  <int value="43" label="kErrorCodePostinstallFirmwareRONotUpdatable"/>
+  <int value="44" label="kErrorCodeUnsupportedMajorPayloadVersion"/>
+  <int value="45" label="kErrorCodeUnsupportedMinorPayloadVersion"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource" type="int">
