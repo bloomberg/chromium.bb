@@ -50,7 +50,6 @@ namespace ui {
 class Compositor;
 class CompositorVSyncManager;
 class Layer;
-class PostedSwapQueue;
 class Reflector;
 class Texture;
 struct LatencyInfo;
@@ -311,9 +310,6 @@ class COMPOSITOR_EXPORT Compositor
   // The manager of vsync parameters for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager_;
 
-  // Used to verify that we have at most one draw swap in flight.
-  scoped_ptr<PostedSwapQueue> posted_swaps_;
-
   // The device scale factor of the monitor that this compositor is compositing
   // layers on.
   float device_scale_factor_;
@@ -333,6 +329,8 @@ class COMPOSITOR_EXPORT Compositor
   // Used to prevent Draw()s while a composite is in progress.
   bool waiting_on_compositing_end_;
   bool draw_on_compositing_end_;
+  enum SwapState { SWAP_NONE, SWAP_POSTED, SWAP_COMPLETED };
+  SwapState swap_state_;
 
   base::WeakPtrFactory<Compositor> schedule_draw_factory_;
 

@@ -39,10 +39,6 @@ namespace {
 const double kDefaultRefreshRate = 60.0;
 const double kTestRefreshRate = 200.0;
 
-enum SwapType {
-  DRAW_SWAP,
-};
-
 bool g_compositor_initialized = false;
 base::Thread* g_compositor_thread = NULL;
 cc::SharedBitmapManager* g_shared_bitmap_manager;
@@ -50,24 +46,6 @@ cc::SharedBitmapManager* g_shared_bitmap_manager;
 ui::ContextFactory* g_context_factory = NULL;
 
 const int kCompositorLockTimeoutMs = 67;
-
-class PendingSwap {
- public:
-  PendingSwap(SwapType type, ui::PostedSwapQueue* posted_swaps);
-  ~PendingSwap();
-
-  SwapType type() const { return type_; }
-  bool posted() const { return posted_; }
-
- private:
-  friend class ui::PostedSwapQueue;
-
-  SwapType type_;
-  bool posted_;
-  ui::PostedSwapQueue* posted_swaps_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingSwap);
-};
 
 }  // namespace
 
@@ -117,67 +95,9 @@ void CompositorLock::CancelLock() {
   compositor_ = NULL;
 }
 
-class PostedSwapQueue {
- public:
-  PostedSwapQueue() : pending_swap_(NULL) {
-  }
-
-  ~PostedSwapQueue() {
-    DCHECK(!pending_swap_);
-  }
-
-  SwapType NextPostedSwap() const {
-    return queue_.front();
-  }
-
-  bool AreSwapsPosted() const {
-    return !queue_.empty();
-  }
-
-  int NumSwapsPosted(SwapType type) const {
-    int count = 0;
-    for (std::deque<SwapType>::const_iterator it = queue_.begin();
-         it != queue_.end(); ++it) {
-      if (*it == type)
-        count++;
-    }
-    return count;
-  }
-
-  void PostSwap() {
-    DCHECK(pending_swap_);
-    queue_.push_back(pending_swap_->type());
-    pending_swap_->posted_ = true;
-  }
-
-  void EndSwap() {
-    queue_.pop_front();
-  }
-
- private:
-  friend class ::PendingSwap;
-
-  PendingSwap* pending_swap_;
-  std::deque<SwapType> queue_;
-
-  DISALLOW_COPY_AND_ASSIGN(PostedSwapQueue);
-};
-
 }  // namespace ui
 
 namespace {
-
-PendingSwap::PendingSwap(SwapType type, ui::PostedSwapQueue* posted_swaps)
-    : type_(type), posted_(false), posted_swaps_(posted_swaps) {
-  // Only one pending swap in flight.
-  DCHECK_EQ(static_cast<PendingSwap*>(NULL), posted_swaps_->pending_swap_);
-  posted_swaps_->pending_swap_ = this;
-}
-
-PendingSwap::~PendingSwap() {
-  DCHECK_EQ(this, posted_swaps_->pending_swap_);
-  posted_swaps_->pending_swap_ = NULL;
-}
 
 }  // namespace
 
@@ -187,7 +107,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
     : root_layer_(NULL),
       widget_(widget),
       vsync_manager_(new CompositorVSyncManager()),
-      posted_swaps_(new PostedSwapQueue()),
       device_scale_factor_(0.0f),
       last_started_frame_(0),
       last_ended_frame_(0),
@@ -197,6 +116,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       defer_draw_scheduling_(false),
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
+      swap_state_(SWAP_NONE),
       schedule_draw_factory_(this) {
   DCHECK(g_compositor_initialized)
       << "Compositor::Initialize must be called before creating a Compositor.";
@@ -376,8 +296,10 @@ void Compositor::Draw() {
   if (!root_layer_)
     return;
 
+  DCHECK_NE(swap_state_, SWAP_POSTED);
+  swap_state_ = SWAP_NONE;
+
   last_started_frame_++;
-  PendingSwap pending_swap(DRAW_SWAP, posted_swaps_.get());
   if (!IsLocked()) {
     // TODO(nduca): Temporary while compositor calls
     // compositeImmediately() directly.
@@ -396,7 +318,7 @@ void Compositor::Draw() {
 #endif
 
   }
-  if (!pending_swap.posted())
+  if (swap_state_ == SWAP_NONE)
     NotifyEnd();
 }
 
@@ -482,11 +404,9 @@ void Compositor::DidCompleteSwapBuffers() {
   if (g_compositor_thread) {
     NotifyEnd();
   } else {
-    DCHECK(posted_swaps_->AreSwapsPosted());
-    DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
-    if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
-      NotifyEnd();
-    posted_swaps_->EndSwap();
+    DCHECK_EQ(swap_state_, SWAP_POSTED);
+    NotifyEnd();
+    swap_state_ = SWAP_COMPLETED;
   }
 }
 
@@ -505,18 +425,15 @@ void Compositor::ScheduleAnimation() {
 
 void Compositor::DidPostSwapBuffers() {
   DCHECK(!g_compositor_thread);
-  posted_swaps_->PostSwap();
+  DCHECK_EQ(swap_state_, SWAP_NONE);
+  swap_state_ = SWAP_POSTED;
 }
 
 void Compositor::DidAbortSwapBuffers() {
   if (!g_compositor_thread) {
-    DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
-
-    // We've just lost the context, so unwind all posted_swaps.
-    while (posted_swaps_->AreSwapsPosted()) {
-      if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
-        NotifyEnd();
-      posted_swaps_->EndSwap();
+    if (swap_state_ == SWAP_POSTED) {
+      NotifyEnd();
+      swap_state_ = SWAP_COMPLETED;
     }
   }
 
