@@ -1003,6 +1003,11 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
   if (raster_source_scale_was_animating_ && !animating_transform_to_screen)
     return true;
 
+  if (animating_transform_to_screen &&
+      raster_contents_scale_ != ideal_contents_scale_ &&
+      ShouldUseGpuRasterization())
+    return true;
+
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   if (is_pinching && raster_page_scale_) {
     // We change our raster scale when it is:
@@ -1067,10 +1072,9 @@ void PictureLayerImpl::RecalculateRasterScales(
   raster_contents_scale_ =
       std::max(raster_contents_scale_, MinimumContentsScale());
 
-  // Don't allow animating CSS scales to drop below 1.  This is needed because
-  // changes in raster source scale aren't handled.  See the comment in
-  // ShouldAdjustRasterScale.
-  if (animating_transform_to_screen) {
+  // Don't allow animating CSS scales to drop below 1 if we're not
+  // re-rasterizing during the animation.
+  if (animating_transform_to_screen && !ShouldUseGpuRasterization()) {
     raster_contents_scale_ = std::max(
         raster_contents_scale_, 1.f * ideal_page_scale_ * ideal_device_scale_);
   }
