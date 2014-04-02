@@ -597,7 +597,7 @@ TEST_F(AudioRendererAlgorithmTest, FullAndDecimatedSearch) {
                                       exclude_interval));
 }
 
-TEST_F(AudioRendererAlgorithmTest, CubicInterpolation) {
+TEST_F(AudioRendererAlgorithmTest, QuadraticInterpolation) {
   // Arbitrary coefficients.
   const float kA = 0.7f;
   const float kB = 1.2f;
@@ -611,13 +611,28 @@ TEST_F(AudioRendererAlgorithmTest, CubicInterpolation) {
   float extremum;
   float extremum_value;
 
-  internal::CubicInterpolation(y_values, &extremum, &extremum_value);
+  internal::QuadraticInterpolation(y_values, &extremum, &extremum_value);
 
   float x_star = -kB / (2.f * kA);
   float y_star = kA * x_star * x_star + kB * x_star + kC;
 
   EXPECT_FLOAT_EQ(x_star, extremum);
   EXPECT_FLOAT_EQ(y_star, extremum_value);
+}
+
+TEST_F(AudioRendererAlgorithmTest, QuadraticInterpolation_Colinear) {
+  float y_values[3];
+  y_values[0] = 1.0;
+  y_values[1] = 1.0;
+  y_values[2] = 1.0;
+
+  float extremum;
+  float extremum_value;
+
+  internal::QuadraticInterpolation(y_values, &extremum, &extremum_value);
+
+  EXPECT_FLOAT_EQ(extremum, 0.0);
+  EXPECT_FLOAT_EQ(extremum_value, 1.0);
 }
 
 TEST_F(AudioRendererAlgorithmTest, WsolaSlowdown) {

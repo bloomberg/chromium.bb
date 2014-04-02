@@ -84,19 +84,25 @@ void MultiChannelMovingBlockEnergies(const AudioBus* input,
 }
 
 // Fit the curve f(x) = a * x^2 + b * x + c such that
-// f(-1) = |y[0]|
-// f(0) = |y[1]|
-// f(1) = |y[2]|.
-void CubicInterpolation(const float* y_values,
-                        float* extremum,
-                        float* extremum_value) {
+//   f(-1) = y[0]
+//   f(0) = y[1]
+//   f(1) = y[2]
+// and return the maximum, assuming that y[0] <= y[1] >= y[2].
+void QuadraticInterpolation(const float* y_values,
+                            float* extremum,
+                            float* extremum_value) {
   float a = 0.5f * (y_values[2] + y_values[0]) - y_values[1];
   float b = 0.5f * (y_values[2] - y_values[0]);
   float c = y_values[1];
 
-  DCHECK_NE(a, 0);
-  *extremum = -b / (2.f * a);
-  *extremum_value = a * (*extremum) * (*extremum) + b * (*extremum) + c;
+  if (a == 0.f) {
+    // The coordinates are colinear (within floating-point error).
+    *extremum = 0;
+    *extremum_value = y_values[1];
+  } else {
+    *extremum = -b / (2.f * a);
+    *extremum_value = a * (*extremum) * (*extremum) + b * (*extremum) + c;
+  }
 }
 
 int DecimatedSearch(int decimation,
@@ -154,8 +160,8 @@ int DecimatedSearch(int decimation,
       // estimate of candidate maximum.
       float normalized_candidate_index;
       float candidate_similarity;
-      CubicInterpolation(similarity, &normalized_candidate_index,
-                         &candidate_similarity);
+      QuadraticInterpolation(similarity, &normalized_candidate_index,
+                             &candidate_similarity);
 
       int candidate_index = n - decimation + static_cast<int>(
           normalized_candidate_index * decimation +  0.5f);

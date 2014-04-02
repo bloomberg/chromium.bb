@@ -38,19 +38,13 @@ MEDIA_EXPORT void MultiChannelMovingBlockEnergies(const AudioBus* input,
                                                   float* energy);
 
 // Fit the curve f(x) = a * x^2 + b * x + c such that
-//
-// f(-1) = |y[0]|
-// f(0) = |y[1]|
-// f(1) = |y[2]|.
-//
-// Then compute the |extremum| point -b / (2*a) and |extremum_value|
-// b^2 / (4*a) - b^2 / (2*a) + c.
-//
-// It is not expected that this function is called with
-// y[0] == y[1] == y[2].
-MEDIA_EXPORT void CubicInterpolation(const float* y_values,
-                                     float* extremum,
-                                     float* extremum_value);
+//   f(-1) = y[0]
+//   f(0) = y[1]
+//   f(1) = y[2]
+// and return the maximum, assuming that y[0] <= y[1] >= y[2].
+MEDIA_EXPORT void QuadraticInterpolation(const float* y_values,
+                                         float* extremum,
+                                         float* extremum_value);
 
 // Search a subset of all candid blocks. The search is performed every
 // |decimation| frames. This reduces complexity by a factor of about
