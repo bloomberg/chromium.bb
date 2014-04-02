@@ -1681,4 +1681,26 @@ const char kActiveInputNodeChanged[] = "ActiveInputNodeChanged";
 const char kNumberOfActiveStreamsChanged[] = "NumberOfActiveStreamsChanged";
 }  // namespace cras
 
+namespace lorgnette {
+const char kManagerServiceInterface[] = "org.chromium.lorgnette.Manager";
+const char kManagerServicePath[] = "/org/chromium/lorgnette/Manager";
+const char kManagerServiceError[] = "org.chromium.lorgnette.Error";
+
+// Methods.
+const char kListScannersMethod[] = "ListScanners";
+const char kScanImageMethod[] = "ScanImage";
+
+// Attributes of scanners returned from "ListScanners".
+const char kScannerPropertyManufacturer[] = "Manufacturer";
+const char kScannerPropertyModel[] = "Model";
+const char kScannerPropertyType[] = "Type";
+
+// Parameters supplied to a "ScanImage" request.
+const char kScanPropertyMode[] = "Mode";
+const char kScanPropertyModeColor[] = "Color";
+const char kScanPropertyModeGray[] = "Gray";
+const char kScanPropertyModeLineart[] = "Lineart";
+const char kScanPropertyResolution[] = "Resolution";
+}  // namespace lorgnette
+
 #endif  // DBUS_SERVICE_CONSTANTS_H_
