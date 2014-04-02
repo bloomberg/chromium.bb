@@ -1584,11 +1584,15 @@ bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
     m_imageSourceFormat = SK_B32_SHIFT ? DataFormatRGBA8 : DataFormatBGRA8;
     m_imageWidth = m_skiaImage->bitmap().width();
     m_imageHeight = m_skiaImage->bitmap().height();
-    if (!m_imageWidth || !m_imageHeight)
+    if (!m_imageWidth || !m_imageHeight) {
+        m_skiaImage.clear();
         return false;
+    }
     // Fail if the image was downsampled because of memory limits.
-    if (m_imageWidth != (unsigned)m_image->size().width() || m_imageHeight != (unsigned)m_image->size().height())
+    if (m_imageWidth != (unsigned)m_image->size().width() || m_imageHeight != (unsigned)m_image->size().height()) {
+        m_skiaImage.clear();
         return false;
+    }
     m_imageSourceUnpackAlignment = 0;
     m_skiaImage->bitmap().lockPixels();
     m_imagePixelData = m_skiaImage->bitmap().getPixels();

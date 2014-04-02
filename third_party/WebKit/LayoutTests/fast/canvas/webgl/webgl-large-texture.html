@@ -28,31 +28,41 @@ function init()
     runTest();
 }
 
-function generateImageData(width, height)
-{
-  var srcCanvas = document.createElement('canvas');
-  srcCanvas.width = width;
-  srcCanvas.height = height;
-  var ctx = srcCanvas.getContext('2d');
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, srcCanvas.width, srcCanvas.height);
-  return srcCanvas.toDataURL('image/jpeg');
+function andPixels(pixels32) {
+  var pixelsAnd = 0xffffffff;
+  for (var i = 0; i < pixels32.length; ++i) {
+    pixelsAnd &= pixels32[i];
+  }
+  return pixelsAnd;
 }
 
 function runTest() {
+  var width = 3900;
+  var height = 3900;
+
   var canvas = document.getElementById('canvas');
   var gl = canvas.getContext('webgl');
 
+  gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
+
   var texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
   var image = new Image();
   image.onerror = function (e) {
     testFailed('Image failed to load');
   }
   image.onload = function () {
-    var width = image.width;
-    var height = image.height;
-    debug('Image width and height: ' + width + ', ' + height);
-    var pixels = new Uint8Array(width * height * 4);
+    debug('Image width and height: ' + image.width + ', ' + image.height);
+
+    if (image.width !== width || image.height !== height) {
+      testFailed('Image did not have expected dimensions.');
+      return;
+    }
+
+    var pixels = new ArrayBuffer(width * height * 4);
+    var pixels8 = new Uint8Array(pixels);
+    var pixels32 = new Uint32Array(pixels);
 
     if (width > gl.getParameter(gl.MAX_TEXTURE_SIZE) ||
         width > gl.getParameter(gl.MAX_RENDERBUFFER_SIZE)) {
@@ -61,8 +71,7 @@ function runTest() {
       return;
     }
 
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
     if (gl.getError() != gl.NO_ERROR) {
       // Loading the texture is allowed to fail due to resource constraints.
       finishJSTest();
@@ -71,18 +80,16 @@ function runTest() {
     var fb = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels8);
 
-    for (var i = 0; i < pixels.length; ++i) {
-      // The image is filled with white, 254 to account for decoding rounding differences.
-      if (pixels[i] < 254) {
-        testFailed('Texture was not loaded correctly.');
-        return;
-      }
+    // The image is filled with white, ignore last bit of each subpixel to account for decoding rounding differences.
+    if ((andPixels(pixels32) & 0xfefefefe) !== (0xfefefefe | 0)) {
+      testFailed('Texture was not loaded correctly.');
     }
+
     finishJSTest();
   }
-  image.src = generateImageData(3900, 3900);
+  image.src = 'resources/white3900x3900.jpg';
 }
 
 init();
