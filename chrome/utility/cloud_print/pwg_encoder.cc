@@ -40,6 +40,10 @@ const int kPwgMaxPackedRows = 256;
 
 const int kPwgMaxPackedPixels = 128;
 
+inline int FlipIfNeeded(bool flip, int current, int total) {
+  return flip ? total - current : current;
+}
+
 }  // namespace
 
 PwgEncoder::PwgEncoder() {}
@@ -158,7 +162,8 @@ inline const uint8* PwgEncoder::GetRow(const BitmapImage& image,
 bool PwgEncoder::EncodePage(const BitmapImage& image,
                             const uint32 dpi,
                             const uint32 total_pages,
-                            std::string* output) const {
+                            std::string* output,
+                            bool rotate) const {
   // For now only some 4-channel colorspaces are supported.
   if (image.channels() != 4) {
     LOG(ERROR) << "Unsupported colorspace.";
@@ -168,19 +173,31 @@ bool PwgEncoder::EncodePage(const BitmapImage& image,
   EncodePageHeader(image, dpi, total_pages, output);
 
   int row_size = image.size().width() * image.channels();
+  scoped_ptr<uint8[]> current_row_cpy(new uint8[row_size]);
 
   int row_number = 0;
-  while (row_number < image.size().height()) {
-    const uint8* current_row = GetRow(image, row_number++);
+  int total_rows = image.size().height();
+  while (row_number < total_rows) {
+    const uint8* current_row =
+        GetRow(image, FlipIfNeeded(rotate, row_number++, total_rows));
     int num_identical_rows = 1;
     // We count how many times the current row is repeated.
-    while (num_identical_rows < kPwgMaxPackedRows
-           && row_number < image.size().height()
-           && !memcmp(current_row, GetRow(image, row_number), row_size)) {
+    while (num_identical_rows < kPwgMaxPackedRows &&
+           row_number < image.size().height() &&
+           !memcmp(current_row,
+                   GetRow(image, FlipIfNeeded(rotate, row_number, total_rows)),
+                   row_size)) {
       num_identical_rows++;
       row_number++;
     }
     output->push_back(static_cast<char>(num_identical_rows - 1));
+
+    if (rotate) {
+      memcpy(current_row_cpy.get(), current_row, row_size);
+      std::reverse(reinterpret_cast<uint32*>(current_row_cpy.get()),
+                   reinterpret_cast<uint32*>(current_row_cpy.get() + row_size));
+      current_row = current_row_cpy.get();
+    }
 
     // Both supported colorspaces have a 32-bit pixels information.
     if (!EncodeRowFrom32Bit(

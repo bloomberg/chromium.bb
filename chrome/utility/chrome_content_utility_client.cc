@@ -720,6 +720,14 @@ bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
       page_number = total_page_count - 1 - page_number;
     }
 
+    bool rotate = false;
+
+    // Transform odd pages.
+    if (page_number % 2) {
+      rotate =
+          (bitmap_settings.odd_page_transform != printing::TRANSFORM_NORMAL);
+    }
+
     if (!g_pdf_lib.Get().RenderPDFPageToBitmap(data.data(),
                                                data.size(),
                                                page_number,
@@ -732,7 +740,8 @@ bool ChromeContentUtilityClient::RenderPDFPagesToPWGRaster(
       return false;
     }
     std::string pwg_page;
-    if (!encoder.EncodePage(image, settings.dpi(), total_page_count, &pwg_page))
+    if (!encoder.EncodePage(
+            image, settings.dpi(), total_page_count, &pwg_page, rotate))
       return false;
     bytes_written = base::WritePlatformFileAtCurrentPos(bitmap_file,
                                                         pwg_page.data(),

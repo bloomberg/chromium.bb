@@ -63,16 +63,16 @@ scoped_ptr<BitmapImage> MakeSampleBitmap() {
 
 }  // namespace
 
+// TODO(noamsml): Add tests for rotated cases.
 TEST(PwgRasterTest, CompareWithMaster) {
   std::string output;
   PwgEncoder encoder;
   scoped_ptr<BitmapImage> image = MakeSampleBitmap();
 
   encoder.EncodeDocumentHeader(&output);
-  encoder.EncodePage(*image, kRasterDPI, 1, &output);
+  encoder.EncodePage(*image, kRasterDPI, 1, &output, false);
 
   EXPECT_EQ(kPWGFileSha1, base::SHA1HashString(output));
 }
 
 }  // namespace cloud_print
-

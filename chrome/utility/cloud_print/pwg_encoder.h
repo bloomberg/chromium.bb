@@ -18,14 +18,19 @@ class PwgEncoder {
   PwgEncoder();
 
   void EncodeDocumentHeader(std::string *output) const;
-  bool EncodePage(const BitmapImage& image, const uint32 dpi,
-                  const uint32 total_pages, std::string* output) const;
+  bool EncodePage(const BitmapImage& image,
+                  const uint32 dpi,
+                  const uint32 total_pages,
+                  std::string* output,
+                  bool rotate) const;
 
  private:
   void EncodePageHeader(const BitmapImage& image, const uint32 dpi,
                         const uint32 total_pages, std::string* output) const;
-  bool EncodeRowFrom32Bit(const uint8* row, const int width,
-                          const int color_space, std::string* output) const;
+  bool EncodeRowFrom32Bit(const uint8* row,
+                          const int width,
+                          const int color_space,
+                          std::string* output) const;
   const uint8* GetRow(const BitmapImage& image, int row) const;
 };
 
