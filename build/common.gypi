@@ -4310,6 +4310,12 @@
 
                 # TODO(thakis): Remove, http://crbug.com/341352
                 '-Wno-absolute-value',
+
+                # This warns on selectors from Cocoa headers (-length, -set).
+                # cfe-dev is currently discussing the merits of this warning.
+                # TODO(thakis): Reevaluate what to do with this, based one
+                # cfe-dev discussion.
+                '-Wno-selector-type-mismatch',
               ],
 
               'conditions': [
