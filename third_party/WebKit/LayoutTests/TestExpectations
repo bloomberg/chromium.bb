@@ -359,6 +359,7 @@ crbug.com/248938 [ Linux ] virtual/threaded/animations/missing-keyframe-properti
 crbug.com/248938 virtual/threaded/animations/negative-delay.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/opacity-transform-animation.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/play-state-initially-paused.html [ Pass Failure ]
+crbug.com/248938 animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/state-at-end-event.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/timing-functions.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/timing-model.html [ Pass Failure ]
