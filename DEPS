@@ -469,19 +469,6 @@ deps_os = {
     "src/third_party/gold":
       "/trunk/deps/third_party/gold@228995",
 
-    "src/third_party/libmtp":
-      "/trunk/deps/third_party/libmtp@206535",
-
-    # Used on Linux only. CrOS already has a copy.
-    "src/third_party/mtpd/source":
-      Var("chromiumos_git") + "/platform/mtpd.git" +
-      "@f9759da3a7cd95080414a7da0d899c47cad794f2",
-
-    # Used on Linux only. CrOS already has a copy.
-    "src/third_party/cros_dbus_cplusplus/source":
-      Var("chromiumos_git") + "/third_party/dbus-cplusplus.git" +
-      "@f78453e0ba9f3d1584e8873aa3c7437cec861ce0",
-
     # For Linux and Chromium OS.
     "src/third_party/cros_system_api":
       Var("chromiumos_git") + "/platform/system_api.git" +

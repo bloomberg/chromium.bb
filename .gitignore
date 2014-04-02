@@ -227,7 +227,6 @@ v8.log
 !/third_party/clang_format/bin/*/*.sha1
 /third_party/cld_2/src
 /third_party/cros
-/third_party/cros_dbus_cplusplus/source
 /third_party/cros_system_api
 /third_party/cygwin
 /third_party/directxsdk
@@ -265,7 +264,6 @@ v8.log
 /third_party/libjingle/source_internal
 /third_party/libjpeg_turbo
 /third_party/liblouis/src
-/third_party/libmtp/
 /third_party/libphonenumber/libphonenumber.xml
 /third_party/libphonenumber/libphonenumber_without_metadata.xml
 /third_party/libphonenumber/src
@@ -282,7 +280,6 @@ v8.log
 /third_party/mingw-w64
 /third_party/mkl
 /third_party/mt19937ar
-/third_party/mtpd/source/
 /third_party/nacl_sdk_binaries/
 /third_party/nss
 /third_party/openmax_dl/
