@@ -23,8 +23,12 @@ enum MediaQueryTokenType {
     CommaToken = 9,
     LeftParenthesisToken = 10,
     RightParenthesisToken = 11,
-    EOFToken = 12,
-    CommentToken = 13,
+    LeftBracketToken = 12,
+    RightBracketToken = 13,
+    LeftBraceToken = 14,
+    RightBraceToken = 15,
+    EOFToken = 16,
+    CommentToken = 17,
 };
 
 enum NumericValueType {

@@ -28,6 +28,10 @@ const unsigned codePointsNumber = {array_size};
 def token_type(i):
     codepoints = {'(': 'leftParenthesis',
                   ')': 'rightParenthesis',
+                  '[': 'leftBracket',
+                  ']': 'rightBracket',
+                  '{': 'leftBrace',
+                  '}': 'rightBrace',
                   '+': 'plusOrFullStop',
                   '.': 'plusOrFullStop',
                   '-': 'hyphenMinus',

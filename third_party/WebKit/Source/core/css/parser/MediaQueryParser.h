@@ -58,6 +58,24 @@ private:
 
     typedef Vector<MediaQueryToken>::iterator TokenIterator;
 
+    enum BlockType {
+        ParenthesisBlock,
+        BracketsBlock,
+        BracesBlock
+    };
+
+    enum StateChange {
+        ModifyState,
+        DoNotModifyState
+    };
+
+    struct BlockParameters {
+        MediaQueryTokenType leftToken;
+        MediaQueryTokenType rightToken;
+        BlockType blockType;
+        StateChange stateChange;
+    };
+
     void processToken(TokenIterator&);
 
     void readRestrictor(MediaQueryTokenType, TokenIterator&);
@@ -69,17 +87,21 @@ private:
     void readFeatureValue(MediaQueryTokenType, TokenIterator&);
     void readFeatureEnd(MediaQueryTokenType, TokenIterator&);
     void skipUntilComma(MediaQueryTokenType, TokenIterator&);
-    void skipUntilParenthesis(MediaQueryTokenType, TokenIterator&);
+    void skipUntilBlockEnd(MediaQueryTokenType, TokenIterator&);
     void done(MediaQueryTokenType, TokenIterator&);
 
     typedef void (MediaQueryParser::*State)(MediaQueryTokenType, TokenIterator&);
 
     void setStateAndRestrict(State, MediaQuery::Restrictor);
+    bool observeBlock(BlockParameters&, MediaQueryTokenType);
+    void observeBlocks(MediaQueryTokenType);
+    static void popIfBlockMatches(Vector<MediaQueryParser::BlockType>& blockStack, BlockType);
 
     State m_state;
     Vector<MediaQueryToken> m_tokens;
     MediaQueryData m_mediaQueryData;
     RefPtrWillBeMember<MediaQuerySet> m_querySet;
+    Vector<BlockType> m_blockStack;
 
     const static State ReadRestrictor;
     const static State ReadMediaType;
@@ -90,7 +112,7 @@ private:
     const static State ReadFeatureValue;
     const static State ReadFeatureEnd;
     const static State SkipUntilComma;
-    const static State SkipUntilParenthesis;
+    const static State SkipUntilBlockEnd;
     const static State Done;
 
 };

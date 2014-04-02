@@ -51,6 +51,10 @@ private:
     MediaQueryToken whiteSpace(UChar);
     MediaQueryToken leftParenthesis(UChar);
     MediaQueryToken rightParenthesis(UChar);
+    MediaQueryToken leftBracket(UChar);
+    MediaQueryToken rightBracket(UChar);
+    MediaQueryToken leftBrace(UChar);
+    MediaQueryToken rightBrace(UChar);
     MediaQueryToken plusOrFullStop(UChar);
     MediaQueryToken comma(UChar);
     MediaQueryToken hyphenMinus(UChar);

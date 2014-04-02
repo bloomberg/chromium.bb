@@ -66,6 +66,14 @@ TEST(MediaQueryTokenizerCodepointsTest, Basic)
             testToken(c, LeftParenthesisToken);
         else if (c == ')')
             testToken(c, RightParenthesisToken);
+        else if (c == '[')
+            testToken(c, LeftBracketToken);
+        else if (c == ']')
+            testToken(c, RightBracketToken);
+        else if (c == '{')
+            testToken(c, LeftBraceToken);
+        else if (c == '}')
+            testToken(c, RightBraceToken);
         else if (c == '.' || c == '+' || c == '-' || c == '/' || c == '\\')
             testToken(c, DelimiterToken);
         else if (c == ',')

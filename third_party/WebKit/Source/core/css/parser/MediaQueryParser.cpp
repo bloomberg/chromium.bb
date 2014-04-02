@@ -25,7 +25,7 @@ const MediaQueryParser::State MediaQueryParser::ReadFeatureColon = &MediaQueryPa
 const MediaQueryParser::State MediaQueryParser::ReadFeatureValue = &MediaQueryParser::readFeatureValue;
 const MediaQueryParser::State MediaQueryParser::ReadFeatureEnd = &MediaQueryParser::readFeatureEnd;
 const MediaQueryParser::State MediaQueryParser::SkipUntilComma = &MediaQueryParser::skipUntilComma;
-const MediaQueryParser::State MediaQueryParser::SkipUntilParenthesis = &MediaQueryParser::skipUntilParenthesis;
+const MediaQueryParser::State MediaQueryParser::SkipUntilBlockEnd = &MediaQueryParser::skipUntilBlockEnd;
 const MediaQueryParser::State MediaQueryParser::Done = &MediaQueryParser::done;
 
 // FIXME: Replace the MediaQueryTokenizer with a generic CSSTokenizer, once there is one,
@@ -111,7 +111,7 @@ void MediaQueryParser::readFeatureColon(MediaQueryTokenType type, TokenIterator&
         --token;
         m_state = ReadFeatureEnd;
     } else {
-        m_state = SkipUntilParenthesis;
+        m_state = SkipUntilBlockEnd;
     }
 }
 
@@ -136,7 +136,7 @@ void MediaQueryParser::readFeatureEnd(MediaQueryTokenType type, TokenIterator& t
         m_mediaQueryData.addParserValue(type, *token);
         m_state = ReadFeatureValue;
     } else {
-        m_state = SkipUntilParenthesis;
+        m_state = SkipUntilBlockEnd;
     }
 }
 
@@ -149,17 +149,54 @@ void MediaQueryParser::skipUntilComma(MediaQueryTokenType type, TokenIterator& t
     }
 }
 
-void MediaQueryParser::skipUntilParenthesis(MediaQueryTokenType type, TokenIterator& token)
+void MediaQueryParser::skipUntilBlockEnd(MediaQueryTokenType type, TokenIterator& token)
 {
-    if (type == RightParenthesisToken)
+    if (m_blockStack.isEmpty())
         m_state = SkipUntilComma;
 }
 
 void MediaQueryParser::done(MediaQueryTokenType type, TokenIterator& token) { }
 
+void MediaQueryParser::popIfBlockMatches(Vector<BlockType>& blockStack, BlockType type)
+{
+    if (!blockStack.isEmpty() && blockStack.last() == type)
+        blockStack.removeLast();
+}
+
+bool MediaQueryParser::observeBlock(BlockParameters& parameters, MediaQueryTokenType type)
+{
+    if (type == parameters.leftToken) {
+        if (parameters.stateChange == ModifyState)
+            m_state = SkipUntilBlockEnd;
+        m_blockStack.append(parameters.blockType);
+    } else if (type == parameters.rightToken) {
+        popIfBlockMatches(m_blockStack, parameters.blockType);
+    } else {
+        return false;
+    }
+    return true;
+}
+
+void MediaQueryParser::observeBlocks(MediaQueryTokenType type)
+{
+    const unsigned blockParametersNumber = 3;
+    BlockParameters blockParameterSet[blockParametersNumber] = {
+        { LeftParenthesisToken, RightParenthesisToken, ParenthesisBlock, DoNotModifyState },
+        { LeftBracketToken, RightBracketToken, BracketsBlock, ModifyState },
+        { LeftBraceToken, RightBraceToken, BracesBlock, ModifyState }
+    };
+
+    for (unsigned i = 0; i < blockParametersNumber; ++i) {
+        if (observeBlock(blockParameterSet[i], type))
+            break;
+    }
+}
+
 void MediaQueryParser::processToken(TokenIterator& token)
 {
     MediaQueryTokenType type = token->type();
+
+    observeBlocks(type);
 
     // Call the function that handles current state
     if (type != WhitespaceToken && type != CommentToken)

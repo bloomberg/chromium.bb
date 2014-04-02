@@ -77,6 +77,26 @@ MediaQueryToken MediaQueryTokenizer::rightParenthesis(UChar cc)
     return MediaQueryToken(RightParenthesisToken);
 }
 
+MediaQueryToken MediaQueryTokenizer::leftBracket(UChar cc)
+{
+    return MediaQueryToken(LeftBracketToken);
+}
+
+MediaQueryToken MediaQueryTokenizer::rightBracket(UChar cc)
+{
+    return MediaQueryToken(RightBracketToken);
+}
+
+MediaQueryToken MediaQueryTokenizer::leftBrace(UChar cc)
+{
+    return MediaQueryToken(LeftBraceToken);
+}
+
+MediaQueryToken MediaQueryTokenizer::rightBrace(UChar cc)
+{
+    return MediaQueryToken(RightBraceToken);
+}
+
 MediaQueryToken MediaQueryTokenizer::plusOrFullStop(UChar cc)
 {
     if (nextCharsAreNumber()) {
