@@ -241,24 +241,32 @@ bool KeywordTable::MigrateToVersion(int version,
   return true;
 }
 
-bool KeywordTable::AddKeyword(const TemplateURLData& data) {
-  DCHECK(data.id);
-  std::string query("INSERT INTO keywords (" + GetKeywordColumns() + ") "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
-                    "        ?)");
-  sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query.c_str()));
-  BindURLToStatement(data, &s, 0, 1);
+bool KeywordTable::PerformOperations(const Operations& operations) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
 
-  return s.Run();
-}
+  for (Operations::const_iterator i(operations.begin()); i != operations.end();
+       ++i) {
+    switch (i->first) {
+      case ADD:
+        if (!AddKeyword(i->second))
+          return false;
+        break;
 
-bool KeywordTable::RemoveKeyword(TemplateURLID id) {
-  DCHECK(id);
-  sql::Statement s(db_->GetCachedStatement(
-      SQL_FROM_HERE, "DELETE FROM keywords WHERE id = ?"));
-  s.BindInt64(0, id);
+      case REMOVE:
+        if (!RemoveKeyword(i->second.id))
+          return false;
+        break;
 
-  return s.Run();
+      case UPDATE:
+        if (!UpdateKeyword(i->second))
+          return false;
+        break;
+    }
+  }
+
+  return transaction.Commit();
 }
 
 bool KeywordTable::GetKeywords(Keywords* keywords) {
@@ -279,23 +287,6 @@ bool KeywordTable::GetKeywords(Keywords* keywords) {
        i != bad_entries.end(); ++i)
     succeeded &= RemoveKeyword(*i);
   return succeeded;
-}
-
-bool KeywordTable::UpdateKeyword(const TemplateURLData& data) {
-  DCHECK(data.id);
-  sql::Statement s(db_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "UPDATE keywords SET short_name=?, keyword=?, favicon_url=?, url=?, "
-      "safe_for_autoreplace=?, originating_url=?, date_created=?, "
-      "usage_count=?, input_encodings=?, show_in_default_list=?, "
-      "suggest_url=?, prepopulate_id=?, created_by_policy=?, instant_url=?, "
-      "last_modified=?, sync_guid=?, alternate_urls=?, "
-      "search_terms_replacement_key=?, image_url=?, search_url_post_params=?, "
-      "suggest_url_post_params=?, instant_url_post_params=?, "
-      "image_url_post_params=?, new_tab_url=? WHERE id=?"));
-  BindURLToStatement(data, &s, 24, 0);  // "24" binds id() as the last item.
-
-  return s.Run();
 }
 
 bool KeywordTable::SetDefaultSearchProviderID(int64 id) {
@@ -511,6 +502,43 @@ bool KeywordTable::GetKeywordDataFromStatement(const sql::Statement& s,
   data->search_terms_replacement_key = s.ColumnString(18);
 
   return true;
+}
+
+bool KeywordTable::AddKeyword(const TemplateURLData& data) {
+  DCHECK(data.id);
+  std::string query("INSERT INTO keywords (" + GetKeywordColumns() + ") "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+                    "        ?)");
+  sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query.c_str()));
+  BindURLToStatement(data, &s, 0, 1);
+
+  return s.Run();
+}
+
+bool KeywordTable::RemoveKeyword(TemplateURLID id) {
+  DCHECK(id);
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE, "DELETE FROM keywords WHERE id = ?"));
+  s.BindInt64(0, id);
+
+  return s.Run();
+}
+
+bool KeywordTable::UpdateKeyword(const TemplateURLData& data) {
+  DCHECK(data.id);
+  sql::Statement s(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE keywords SET short_name=?, keyword=?, favicon_url=?, url=?, "
+      "safe_for_autoreplace=?, originating_url=?, date_created=?, "
+      "usage_count=?, input_encodings=?, show_in_default_list=?, "
+      "suggest_url=?, prepopulate_id=?, created_by_policy=?, instant_url=?, "
+      "last_modified=?, sync_guid=?, alternate_urls=?, "
+      "search_terms_replacement_key=?, image_url=?, search_url_post_params=?, "
+      "suggest_url_post_params=?, instant_url_post_params=?, "
+      "image_url_post_params=?, new_tab_url=? WHERE id=?"));
+  BindURLToStatement(data, &s, 24, 0);  // "24" binds id() as the last item.
+
+  return s.Run();
 }
 
 bool KeywordTable::GetKeywordAsString(TemplateURLID id,

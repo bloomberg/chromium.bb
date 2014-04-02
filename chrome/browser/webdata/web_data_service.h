@@ -93,6 +93,27 @@ class WebDataServiceConsumer;
 
 class WebDataService : public WebDataServiceBase {
  public:
+  // Instantiate this to turn on keyword batch mode on the provided |service|
+  // until the scoper is destroyed.  When batch mode is on, calls to any of the
+  // three keyword table modification functions below will result in locally
+  // queueing the operation; on setting this back to false, all the
+  // modifications will be performed at once.  This is a performance
+  // optimization; see comments on KeywordTable::PerformOperations().
+  //
+  // If multiple scopers are in-scope simultaneously, batch mode will only be
+  // exited when all are destroyed.  If |service| is NULL, the object will do
+  // nothing.
+  class KeywordBatchModeScoper {
+   public:
+    explicit KeywordBatchModeScoper(WebDataService* service);
+    ~KeywordBatchModeScoper();
+
+   private:
+    WebDataService* service_;
+
+    DISALLOW_COPY_AND_ASSIGN(KeywordBatchModeScoper);
+  };
+
   // Retrieve a WebDataService for the given context.
   static scoped_refptr<WebDataService> FromBrowserContext(
       content::BrowserContext* context);
@@ -176,6 +197,9 @@ class WebDataService : public WebDataServiceBase {
   virtual ~WebDataService();
 
  private:
+  // Called by the KeywordBatchModeScoper (see comments there).
+  void AdjustKeywordBatchModeLevel(bool entering_batch_mode);
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // The following methods are only invoked on the DB thread.
@@ -187,12 +211,9 @@ class WebDataService : public WebDataServiceBase {
   // Keywords.
   //
   //////////////////////////////////////////////////////////////////////////////
-  WebDatabase::State AddKeywordImpl(const TemplateURLData& data,
-                                    WebDatabase* db);
-  WebDatabase::State RemoveKeywordImpl(TemplateURLID id,
-                                       WebDatabase* db);
-  WebDatabase::State UpdateKeywordImpl(const TemplateURLData& data,
-                                       WebDatabase* db);
+  WebDatabase::State PerformKeywordOperationsImpl(
+      const KeywordTable::Operations& operations,
+      WebDatabase* db);
   scoped_ptr<WDTypedResult> GetKeywordsImpl(WebDatabase* db);
   WebDatabase::State SetDefaultSearchProviderIDImpl(TemplateURLID id,
                                                     WebDatabase* db);
@@ -251,6 +272,9 @@ class WebDataService : public WebDataServiceBase {
   scoped_ptr<WDTypedResult> GetIE7LoginImpl(
       const IE7PasswordInfo& info, WebDatabase* db);
 #endif  // defined(OS_WIN)
+
+  size_t keyword_batch_mode_level_;
+  KeywordTable::Operations queued_keyword_operations_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataService);
 };
