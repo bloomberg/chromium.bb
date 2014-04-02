@@ -722,7 +722,7 @@ bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(
     if (!m_webFrame->client())
         return false;
 
-    WebFrame* source = 0;
+    WebLocalFrame* source = 0;
     if (event && event->source() && event->source()->toDOMWindow() && event->source()->toDOMWindow()->document())
         source = WebFrameImpl::fromFrame(event->source()->toDOMWindow()->document()->frame());
     return m_webFrame->client()->willCheckAndDispatchMessageEvent(

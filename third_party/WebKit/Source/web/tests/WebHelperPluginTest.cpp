@@ -30,7 +30,7 @@ public:
     WebHelperPluginFrameClient() : m_createPlaceholder(false) { }
     virtual ~WebHelperPluginFrameClient() { }
 
-    virtual WebPlugin* createPlugin(WebFrame* frame, const WebPluginParams& params) OVERRIDE
+    virtual WebPlugin* createPlugin(WebLocalFrame* frame, const WebPluginParams& params) OVERRIDE
     {
         return m_createPlaceholder ? new FakePlaceholderWebPlugin(frame, params) : new FakeWebPlugin(frame, params);
     }
@@ -63,7 +63,7 @@ protected:
 
 TEST_F(WebHelperPluginTest, CreateAndDestroyAfterWebViewDestruction)
 {
-    m_plugin = adoptPtr(WebHelperPlugin::create("hello", m_helper.webView()->mainFrame()));
+    m_plugin = adoptPtr(WebHelperPlugin::create("hello", m_helper.webView()->mainFrame()->toWebLocalFrame()));
     EXPECT_TRUE(m_plugin);
     EXPECT_TRUE(m_plugin->getPlugin());
 
@@ -73,7 +73,7 @@ TEST_F(WebHelperPluginTest, CreateAndDestroyAfterWebViewDestruction)
 
 TEST_F(WebHelperPluginTest, CreateAndDestroyBeforeWebViewDestruction)
 {
-    m_plugin = adoptPtr(WebHelperPlugin::create("hello", m_helper.webView()->mainFrame()));
+    m_plugin = adoptPtr(WebHelperPlugin::create("hello", m_helper.webView()->mainFrame()->toWebLocalFrame()));
     EXPECT_TRUE(m_plugin);
     EXPECT_TRUE(m_plugin->getPlugin());
 
@@ -85,7 +85,7 @@ TEST_F(WebHelperPluginTest, CreateFailsWithPlaceholder)
 {
     m_frameClient.setCreatePlaceholder(true);
 
-    m_plugin = adoptPtr(WebHelperPlugin::create("hello", m_helper.webView()->mainFrame()));
+    m_plugin = adoptPtr(WebHelperPlugin::create("hello", m_helper.webView()->mainFrame()->toWebLocalFrame()));
     EXPECT_EQ(0, m_plugin.get());
 }
 

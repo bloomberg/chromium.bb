@@ -141,7 +141,7 @@ public:
 
     // This frame is about to be closed. This is called after frameDetached,
     // when the document is being unloaded, due to new one committing.
-    virtual void willClose(WebLocalFrame*) { }
+    virtual void willClose(WebFrame*) { }
 
     // This frame's name has changed.
     virtual void didChangeName(WebLocalFrame*, const WebString&) { }
@@ -294,7 +294,7 @@ public:
         WebLocalFrame*, unsigned identifier, const blink::WebURLRequest::Priority&) { }
 
     virtual void didChangeResourcePriority(
-        WebFrame* webFrame, unsigned identifier, const blink::WebURLRequest::Priority& priority, int) { didChangeResourcePriority(webFrame, identifier, priority); }
+        WebLocalFrame* webFrame, unsigned identifier, const blink::WebURLRequest::Priority& priority, int) { didChangeResourcePriority(webFrame, identifier, priority); }
 
     // The resource request given by identifier succeeded.
     virtual void didFinishResourceLoad(

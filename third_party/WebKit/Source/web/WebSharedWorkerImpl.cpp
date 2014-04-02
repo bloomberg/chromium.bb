@@ -205,14 +205,14 @@ void WebSharedWorkerImpl::initializeLoader(const WebURL& url)
     webFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(url), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
-WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebFrame*, WebApplicationCacheHostClient* appcacheHostClient)
+WebApplicationCacheHost* WebSharedWorkerImpl::createApplicationCacheHost(WebLocalFrame*, WebApplicationCacheHostClient* appcacheHostClient)
 {
     if (client())
         return client()->createApplicationCacheHost(appcacheHostClient);
     return 0;
 }
 
-void WebSharedWorkerImpl::didFinishDocumentLoad(WebFrame* frame)
+void WebSharedWorkerImpl::didFinishDocumentLoad(WebLocalFrame* frame)
 {
     ASSERT(!m_loadingDocument);
     ASSERT(!m_mainScriptLoader);

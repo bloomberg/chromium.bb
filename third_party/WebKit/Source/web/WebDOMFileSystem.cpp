@@ -57,7 +57,7 @@ WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Handle<v8::Value> value)
 }
 
 WebDOMFileSystem WebDOMFileSystem::create(
-    WebFrame* frame,
+    WebLocalFrame* frame,
     WebFileSystemType type,
     const WebString& name,
     const WebURL& rootURL,

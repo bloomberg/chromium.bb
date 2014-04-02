@@ -32,13 +32,13 @@
 
 namespace blink {
 
-void WebTestingSupport::injectInternalsObject(WebFrame* frame)
+void WebTestingSupport::injectInternalsObject(WebLocalFrame* frame)
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     WebCoreTestSupport::injectInternalsObject(frame->mainWorldScriptContext());
 }
 
-void WebTestingSupport::resetInternalsObject(WebFrame* frame)
+void WebTestingSupport::resetInternalsObject(WebLocalFrame* frame)
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
     WebCoreTestSupport::resetInternalsObject(frame->mainWorldScriptContext());

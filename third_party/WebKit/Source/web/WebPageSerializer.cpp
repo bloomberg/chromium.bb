@@ -194,7 +194,7 @@ WebCString WebPageSerializer::serializeToMHTMLUsingBinaryEncoding(WebView* view)
     return WebCString(mhtml->data(), mhtml->size());
 }
 
-bool WebPageSerializer::serialize(WebFrame* frame,
+bool WebPageSerializer::serialize(WebLocalFrame* frame,
                                   bool recursive,
                                   WebPageSerializerClient* client,
                                   const WebVector<WebURL>& links,

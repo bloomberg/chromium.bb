@@ -409,7 +409,7 @@ TEST_F(WebPageNewSerializeTest, NamespaceElementsDontCrash)
     // We just want to make sure nothing crazy happens, namely that no
     // assertions are hit. As a sanity check, we also make sure that some data
     // was returned.
-    WebPageSerializer::serialize(webView()->mainFrame(), true, &client, localLinks, localPaths, WebString(""));
+    WebPageSerializer::serialize(webView()->mainFrame()->toWebLocalFrame(), true, &client, localLinks, localPaths, WebString(""));
 
     EXPECT_GT(counter, 0U);
 }

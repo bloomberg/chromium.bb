@@ -145,7 +145,7 @@ void WebViewHelper::reset()
     }
 }
 
-WebFrame* TestWebFrameClient::createChildFrame(WebFrame* parent, const WebString& frameName)
+WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName)
 {
     WebFrame* frame = WebFrame::create(this);
     parent->appendChild(frame);

@@ -1626,7 +1626,7 @@ WebString WebFrameImpl::layerTreeAsText(bool showDebugInfo) const
 
 // WebFrameImpl public ---------------------------------------------------------
 
-WebFrame* WebFrame::create(WebFrameClient* client)
+WebLocalFrame* WebFrame::create(WebFrameClient* client)
 {
     return WebFrameImpl::create(client);
 }

@@ -114,7 +114,7 @@ WebRange WebRange::expandedToParagraph() const
 }
 
 // static
-WebRange WebRange::fromDocumentRange(WebFrame* frame, int start, int length)
+WebRange WebRange::fromDocumentRange(WebLocalFrame* frame, int start, int length)
 {
     WebCore::LocalFrame* webFrame = toWebFrameImpl(frame)->frame();
     Element* selectionRoot = webFrame->selection().rootEditableElement();

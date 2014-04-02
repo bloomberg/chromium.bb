@@ -77,7 +77,7 @@ void numberOfDOMObjects(blink::WebFrame *frame, unsigned* numberOfLiveDocuments,
 
 namespace blink {
 
-void WebLeakDetector::collectGarbargeAndGetDOMCounts(WebFrame* frame, unsigned* numberOfLiveDocuments, unsigned* numberOfLiveNodes)
+void WebLeakDetector::collectGarbargeAndGetDOMCounts(WebLocalFrame* frame, unsigned* numberOfLiveDocuments, unsigned* numberOfLiveNodes)
 {
     // FIXME: Count other DOM objects using WTF::dumpRefCountedInstanceCounts.
     cleanUpDOMObjects(frame);

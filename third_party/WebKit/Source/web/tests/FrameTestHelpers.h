@@ -75,7 +75,7 @@ private:
 // frames and need further specialization of WebFrameClient behavior should subclass this.
 class TestWebFrameClient : public WebFrameClient {
 public:
-    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) OVERRIDE;
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) OVERRIDE;
     virtual void frameDetached(WebFrame*) OVERRIDE;
 };
 

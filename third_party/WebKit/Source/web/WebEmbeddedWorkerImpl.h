@@ -69,9 +69,9 @@ private:
 
     // WebFrameClient overrides.
     virtual void willSendRequest(
-        WebFrame*, unsigned identifier, WebURLRequest&,
+        WebLocalFrame*, unsigned identifier, WebURLRequest&,
         const WebURLResponse& redirectResponse) OVERRIDE;
-    virtual void didFinishDocumentLoad(WebFrame*) OVERRIDE;
+    virtual void didFinishDocumentLoad(WebLocalFrame*) OVERRIDE;
 
     void onScriptLoaderFinished();
 

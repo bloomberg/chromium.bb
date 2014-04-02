@@ -44,7 +44,7 @@ namespace blink {
 
 DEFINE_TYPE_CASTS(WebHelperPluginImpl, WebHelperPlugin, plugin, true, true);
 
-WebHelperPlugin* WebHelperPlugin::create(const WebString& pluginType, WebFrame* frame)
+WebHelperPlugin* WebHelperPlugin::create(const WebString& pluginType, WebLocalFrame* frame)
 {
     OwnPtr<WebHelperPlugin> plugin = adoptPtr<WebHelperPlugin>(new WebHelperPluginImpl());
     if (!toWebHelperPluginImpl(plugin.get())->initialize(pluginType, toWebFrameImpl(frame)))

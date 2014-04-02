@@ -353,13 +353,13 @@ TEST_F(WebFrameTest, LocationSetEmptyPort)
 class CSSCallbackWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CSSCallbackWebFrameClient() : m_updateCount(0) { }
-    virtual void didMatchCSS(WebFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) OVERRIDE;
+    virtual void didMatchCSS(WebLocalFrame*, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors) OVERRIDE;
 
-    std::map<WebFrame*, std::set<std::string> > m_matchedSelectors;
+    std::map<WebLocalFrame*, std::set<std::string> > m_matchedSelectors;
     int m_updateCount;
 };
 
-void CSSCallbackWebFrameClient::didMatchCSS(WebFrame* frame, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors)
+void CSSCallbackWebFrameClient::didMatchCSS(WebLocalFrame* frame, const WebVector<WebString>& newlyMatchingSelectors, const WebVector<WebString>& stoppedMatchingSelectors)
 {
     ++m_updateCount;
     std::set<std::string>& frameSelectors = m_matchedSelectors[frame];
@@ -380,7 +380,7 @@ protected:
     WebFrameCSSCallbackTest()
     {
 
-        m_frame = m_helper.initializeAndLoad("about:blank", true, &m_client)->mainFrame();
+        m_frame = m_helper.initializeAndLoad("about:blank", true, &m_client)->mainFrame()->toWebLocalFrame();
     }
 
     ~WebFrameCSSCallbackTest()
@@ -418,7 +418,7 @@ protected:
 
     CSSCallbackWebFrameClient m_client;
     FrameTestHelpers::WebViewHelper m_helper;
-    WebFrame* m_frame;
+    WebLocalFrame* m_frame;
 };
 
 TEST_F(WebFrameCSSCallbackTest, AuthorStyleSheet)
@@ -2665,7 +2665,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest)
 class TestReloadDoesntRedirectWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     virtual WebNavigationPolicy decidePolicyForNavigation(
-        WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
+        WebLocalFrame*, WebDataSource::ExtraData*, const WebURLRequest&, WebNavigationType,
         WebNavigationPolicy defaultPolicy, bool isRedirect) OVERRIDE
     {
         EXPECT_FALSE(isRedirect);
@@ -2803,7 +2803,7 @@ class ContextLifetimeTestWebFrameClient : public FrameTestHelpers::TestWebFrameC
 public:
     struct Notification {
     public:
-        Notification(WebFrame* frame, v8::Handle<v8::Context> context, int worldId)
+        Notification(WebLocalFrame* frame, v8::Handle<v8::Context> context, int worldId)
             : frame(frame)
             , context(context->GetIsolate(), context)
             , worldId(worldId)
@@ -2820,7 +2820,7 @@ public:
             return other && frame == other->frame && context == other->context && worldId == other->worldId;
         }
 
-        WebFrame* frame;
+        WebLocalFrame* frame;
         v8::Persistent<v8::Context> context;
         int worldId;
     };
@@ -2846,12 +2846,12 @@ public:
     std::vector<Notification*> releaseNotifications;
 
  private:
-    virtual void didCreateScriptContext(WebFrame* frame, v8::Handle<v8::Context> context, int extensionGroup, int worldId) OVERRIDE
+    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Handle<v8::Context> context, int extensionGroup, int worldId) OVERRIDE
     {
         createNotifications.push_back(new Notification(frame, context, worldId));
     }
 
-    virtual void willReleaseScriptContext(WebFrame* frame, v8::Handle<v8::Context> context, int worldId) OVERRIDE
+    virtual void willReleaseScriptContext(WebLocalFrame* frame, v8::Handle<v8::Context> context, int worldId) OVERRIDE
     {
         releaseNotifications.push_back(new Notification(frame, context, worldId));
     }
@@ -3120,7 +3120,7 @@ TEST_F(WebFrameTest, GetFullHtmlOfPage)
 
 class TestExecuteScriptDuringDidCreateScriptContext : public FrameTestHelpers::TestWebFrameClient {
 public:
-    virtual void didCreateScriptContext(WebFrame* frame, v8::Handle<v8::Context> context, int extensionGroup, int worldId) OVERRIDE
+    virtual void didCreateScriptContext(WebLocalFrame* frame, v8::Handle<v8::Context> context, int extensionGroup, int worldId) OVERRIDE
     {
         frame->executeScript(WebScriptSource("window.history = 'replaced';"));
     }
@@ -4067,13 +4067,13 @@ public:
     {
     }
 
-    virtual void didFailProvisionalLoad(WebFrame* frame, const WebURLError& error)
+    virtual void didFailProvisionalLoad(WebLocalFrame* frame, const WebURLError& error)
     {
         frame->loadHTMLString("This should appear", toKURL("data:text/html,chromewebdata"), error.unreachableURL, true);
         runPendingTasks();
     }
 
-    virtual void didCommitProvisionalLoad(WebFrame* frame, bool)
+    virtual void didCommitProvisionalLoad(WebLocalFrame* frame, bool)
     {
         if (frame->dataSource()->response().url() != WebURL(URLTestHelpers::toKURL("about:blank")))
             m_commitCalled = true;
@@ -4125,18 +4125,18 @@ public:
     {
     }
 
-    virtual void didCommitProvisionalLoad(WebFrame*, bool) OVERRIDE
+    virtual void didCommitProvisionalLoad(WebLocalFrame*, bool) OVERRIDE
     {
         m_numBodies = 0;
         m_didLoad = true;
     }
 
-    virtual void didCreateDocumentElement(WebFrame*) OVERRIDE
+    virtual void didCreateDocumentElement(WebLocalFrame*) OVERRIDE
     {
         EXPECT_EQ(0, m_numBodies);
     }
 
-    virtual void willInsertBody(WebFrame*) OVERRIDE
+    virtual void willInsertBody(WebLocalFrame*) OVERRIDE
     {
         m_numBodies++;
     }
@@ -4461,7 +4461,7 @@ public:
     {
     }
 
-    virtual void didAccessInitialDocument(WebFrame* frame)
+    virtual void didAccessInitialDocument(WebLocalFrame* frame)
     {
         EXPECT_TRUE(!m_didAccessInitialDocument);
         m_didAccessInitialDocument = true;
@@ -4619,7 +4619,7 @@ public:
     bool wasProgrammaticScroll() const { return m_didScrollMainFrame && m_wasProgrammaticScroll; }
 
     // WebFrameClient:
-    virtual void didChangeScrollOffset(WebFrame* frame) OVERRIDE
+    virtual void didChangeScrollOffset(WebLocalFrame* frame) OVERRIDE
     {
         if (frame->parent())
             return;
@@ -4742,7 +4742,7 @@ TEST_F(WebFrameTest, FirstPartyForCookiesForRedirect)
 class TestNavigationPolicyWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
 
-    virtual void didNavigateWithinPage(WebFrame*, bool)
+    virtual void didNavigateWithinPage(WebLocalFrame*, bool)
     {
         EXPECT_TRUE(false);
     }
@@ -4768,7 +4768,7 @@ TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick)
 
 class TestNewWindowWebViewClient : public WebViewClient {
 public:
-    virtual WebView* createView(WebFrame*, const WebURLRequest&, const WebWindowFeatures&,
+    virtual WebView* createView(WebLocalFrame*, const WebURLRequest&, const WebWindowFeatures&,
         const WebString&, WebNavigationPolicy, bool) OVERRIDE
     {
         EXPECT_TRUE(false);
@@ -4783,7 +4783,7 @@ public:
     {
     }
 
-    virtual WebNavigationPolicy decidePolicyForNavigation(WebFrame*, WebDataSource::ExtraData*, const WebURLRequest&,
+    virtual WebNavigationPolicy decidePolicyForNavigation(WebLocalFrame*, WebDataSource::ExtraData*, const WebURLRequest&,
         WebNavigationType, WebNavigationPolicy policy, bool) OVERRIDE
     {
         m_decidePolicyCallCount++;
@@ -4927,7 +4927,7 @@ public:
     int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
     int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
-    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString&)
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString&)
     {
         m_childFrameCreationCount++;
         WebFrame* frame = WebFrame::create(m_client);
@@ -4942,7 +4942,7 @@ public:
         frame->close();
     }
 
-    virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&) OVERRIDE
+    virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest& request, const WebURLResponse&) OVERRIDE
     {
         m_policy = request.cachePolicy();
         m_willSendRequestCallCount++;
@@ -5008,7 +5008,7 @@ public:
     {
     }
 
-    virtual void willSendRequest(WebFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
+    virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
     {
         if (toWebFrameImpl(frame)->frame()->loader().loadType() == WebCore::FrameLoadTypeSame)
             m_frameLoadTypeSameSeen = true;
@@ -5113,7 +5113,7 @@ public:
         m_replacesCurrentHistoryItem = false;
         m_frame = 0;
     }
-    void didStartProvisionalLoad(WebFrame* frame)
+    void didStartProvisionalLoad(WebLocalFrame* frame)
     {
         WebDataSource* ds = frame->provisionalDataSource();
         m_replacesCurrentHistoryItem = ds->replacesCurrentHistoryItem();
@@ -5275,7 +5275,7 @@ class FailCreateChildFrame : public WebFrameClient {
 public:
     FailCreateChildFrame() : m_callCount(0) { }
 
-    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) OVERRIDE
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) OVERRIDE
     {
         ++m_callCount;
         return 0;

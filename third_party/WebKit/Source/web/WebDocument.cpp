@@ -102,7 +102,7 @@ WebURL WebDocument::openSearchDescriptionURL() const
     return const_cast<Document*>(constUnwrap<Document>())->openSearchDescriptionURL();
 }
 
-WebFrame* WebDocument::frame() const
+WebLocalFrame* WebDocument::frame() const
 {
     return WebFrameImpl::fromFrame(constUnwrap<Document>()->frame());
 }

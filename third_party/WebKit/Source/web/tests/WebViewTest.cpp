@@ -1273,7 +1273,7 @@ public:
     }
 
     // WebViewClient methods
-    virtual WebView* createView(WebFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) OVERRIDE
+    virtual WebView* createView(WebLocalFrame*, const WebURLRequest&, const WebWindowFeatures&, const WebString& name, WebNavigationPolicy, bool) OVERRIDE
     {
         return m_webViewHelper.initialize(true, 0, 0);
     }
@@ -1458,7 +1458,7 @@ TEST_F(WebViewTest, SmartClipData)
 class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CreateChildCounterFrameClient() : m_count(0) { }
-    virtual WebFrame* createChildFrame(WebFrame* parent, const WebString& frameName) OVERRIDE;
+    virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) OVERRIDE;
 
     int count() const { return m_count; }
 
@@ -1466,7 +1466,7 @@ private:
     int m_count;
 };
 
-WebFrame* CreateChildCounterFrameClient::createChildFrame(WebFrame* parent, const WebString& frameName)
+WebFrame* CreateChildCounterFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName)
 {
     ++m_count;
     return TestWebFrameClient::createChildFrame(parent, frameName);
