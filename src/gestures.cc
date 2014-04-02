@@ -7,8 +7,6 @@
 #include <cstring>
 #include <sys/time.h>
 
-#include <base/strings/stringprintf.h>
-
 #include "gestures/include/accel_filter_interpreter.h"
 #include "gestures/include/box_filter_interpreter.h"
 #include "gestures/include/click_wiggle_filter_interpreter.h"
@@ -32,6 +30,7 @@
 #include "gestures/include/cr48_profile_sensor_filter_interpreter.h"
 #include "gestures/include/sensor_jump_filter_interpreter.h"
 #include "gestures/include/split_correcting_filter_interpreter.h"
+#include "gestures/include/string_util.h"
 #include "gestures/include/stuck_button_inhibitor_filter_interpreter.h"
 #include "gestures/include/t5r2_correcting_filter_interpreter.h"
 #include "gestures/include/trace_marker.h"
@@ -39,9 +38,10 @@
 #include "gestures/include/trend_classifying_filter_interpreter.h"
 #include "gestures/include/util.h"
 
-using base::StringPrintf;
 using std::string;
 using std::min;
+using gestures::StringPrintf;
+using gestures::StartsWithASCII;
 
 // C API:
 

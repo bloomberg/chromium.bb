@@ -14,11 +14,11 @@
 #include <base/file_util.h>
 #include <base/files/file_path.h>
 #include <base/json/json_writer.h>
-#include <base/strings/stringprintf.h>
 #include <base/values.h>
 
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
+#include "gestures/include/string_util.h"
 
 // This should be set by build system:
 #ifndef VCSID
@@ -327,7 +327,7 @@ Value* ActivityLog::EncodeGesture(const Gesture& gesture) {
   }
   if (!handled)
     ret->Set(kKeyGestureType,
-             new StringValue(base::StringPrintf("Unhandled %d", gesture.type)));
+             new StringValue(StringPrintf("Unhandled %d", gesture.type)));
   return ret;
 }
 

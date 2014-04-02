@@ -7,7 +7,6 @@
 #include <set>
 #include <string>
 
-#include <base/strings/string_util.h>
 #include <base/values.h>
 
 #include "gestures/include/activity_log.h"

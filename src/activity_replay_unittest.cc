@@ -9,13 +9,13 @@
 #include <base/command_line.h>
 #include <base/file_util.h>
 #include <base/logging.h>
-#include <base/strings/string_split.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/gestures.h"
+#include "gestures/include/string_util.h"
 
 using std::string;
 
@@ -43,7 +43,7 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
     ActivityReplay replay(prop_reg);
     std::vector<string> honor_props;
     if (cl->GetSwitchValueASCII("only_honor")[0])
-      base::SplitString(cl->GetSwitchValueASCII("only_honor"),
+      SplitString(cl->GetSwitchValueASCII("only_honor"),
                         ',', &honor_props);
     std::set<string> honor_props_set(honor_props.begin(), honor_props.end());
     replay.Parse(log_contents, honor_props_set);

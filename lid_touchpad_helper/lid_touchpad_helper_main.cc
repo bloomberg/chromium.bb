@@ -15,8 +15,6 @@
 #include <unistd.h>
 
 #include <base/memory/scoped_ptr.h>
-#include <base/strings/string_number_conversions.h>
-#include <base/strings/string_split.h>
 #include <gflags/gflags.h>
 #include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput.h>

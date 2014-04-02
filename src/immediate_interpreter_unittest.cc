@@ -5,17 +5,16 @@
 #include <vector>
 
 #include <base/logging.h>
-#include <base/strings/stringprintf.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/immediate_interpreter.h"
+#include "gestures/include/string_util.h"
 #include "gestures/include/unittest_util.h"
 #include "gestures/include/util.h"
 
 namespace gestures {
 
-using base::StringPrintf;
 using std::string;
 
 class ImmediateInterpreterTest : public ::testing::Test {};
