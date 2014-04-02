@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+PASS MediaKeys lifetime 
+PASS MediaKeys lifetime with session 
+PASS Multiple MediaKeys lifetime 
+Harness: the test ran to completion.
+
