@@ -69,6 +69,7 @@ LangAttributeAwareFormControlUI
 PrefixedEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable
+MediaQueryParser status=test
 MediaSource status=stable
 MediaSourceExperimental depends_on=MediaSource, status=experimental
 MediaStream status=stable
