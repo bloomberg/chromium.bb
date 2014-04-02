@@ -18,27 +18,28 @@
 #include "base/memory/scoped_vector.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/merge_session_helper.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-struct ChromeCookieDetails;
 class GaiaAuthFetcher;
 class Profile;
+class SigninClient;
 class SigninOAuthHelper;
 
+namespace net {
+class CanonicalCookie;
+}
+
 class AccountReconcilor : public KeyedService,
-                          public content::NotificationObserver,
                           public GaiaAuthConsumer,
                           public MergeSessionHelper::Observer,
                           public OAuth2TokenService::Consumer,
                           public OAuth2TokenService::Observer,
                           public SigninManagerBase::Observer {
  public:
-  explicit AccountReconcilor(Profile* profile);
+  explicit AccountReconcilor(Profile* profile, SigninClient* client);
   virtual ~AccountReconcilor();
 
   void Initialize(bool start_reconcile_if_tokens_available);
@@ -123,8 +124,8 @@ class AccountReconcilor : public KeyedService,
                            StartReconcileWithSessionInfoExpiredDefault);
 
   // Register and unregister with dependent services.
-  void RegisterWithCookieMonster();
-  void UnregisterWithCookieMonster();
+  void RegisterForCookieChanges();
+  void UnregisterForCookieChanges();
   void RegisterWithSigninManager();
   void UnregisterWithSigninManager();
   void RegisterWithTokenService();
@@ -170,12 +171,7 @@ class AccountReconcilor : public KeyedService,
       const std::vector<std::pair<std::string, bool> >& accounts);
   void ValidateAccountsFromTokenService();
 
-  void OnCookieChanged(ChromeCookieDetails* details);
-
-  // Overriden from content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  void OnCookieChanged(const net::CanonicalCookie* cookie);
 
   // Overriden from GaiaAuthConsumer.
   virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
@@ -208,7 +204,10 @@ class AccountReconcilor : public KeyedService,
 
   // The profile that this reconcilor belongs to.
   Profile* profile_;
-  content::NotificationRegistrar registrar_;
+
+  // The SigninClient associated with this reconcilor.
+  SigninClient* client_;
+
   base::RepeatingTimer<AccountReconcilor> reconciliation_timer_;
   MergeSessionHelper merge_session_helper_;
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;

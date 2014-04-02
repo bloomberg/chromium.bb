@@ -13,15 +13,12 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_oauth_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
+#include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -176,9 +173,10 @@ void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
   reconcilor_->HandleFailedAccountIdCheck(account_id_);
 }
 
-AccountReconcilor::AccountReconcilor(Profile* profile)
+AccountReconcilor::AccountReconcilor(Profile* profile, SigninClient* client)
     : OAuth2TokenService::Consumer("account_reconcilor"),
       profile_(profile),
+      client_(client),
       merge_session_helper_(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           profile->GetRequestContext(),
@@ -194,7 +192,6 @@ AccountReconcilor::~AccountReconcilor() {
   VLOG(1) << "AccountReconcilor::~AccountReconcilor";
   // Make sure shutdown was called first.
   DCHECK(!registered_with_token_service_);
-  DCHECK(registrar_.IsEmpty());
   DCHECK(!reconciliation_timer_.IsRunning());
   DCHECK(!requests_);
   DCHECK_EQ(0u, user_id_fetchers_.size());
@@ -208,7 +205,7 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   // If this profile is not connected, the reconcilor should do nothing but
   // wait for the connection.
   if (IsProfileConnected()) {
-    RegisterWithCookieMonster();
+    RegisterForCookieChanges();
     RegisterWithTokenService();
     StartPeriodicReconciliation();
 
@@ -230,7 +227,7 @@ void AccountReconcilor::Shutdown() {
   DeleteFetchers();
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
-  UnregisterWithCookieMonster();
+  UnregisterForCookieChanges();
   StopPeriodicReconciliation();
 }
 
@@ -257,20 +254,16 @@ bool AccountReconcilor::AreAllRefreshTokensChecked() const {
       (valid_chrome_accounts_.size() + invalid_chrome_accounts_.size());
 }
 
-void AccountReconcilor::RegisterWithCookieMonster() {
-  content::Source<Profile> source(profile_);
-  if (!registrar_.IsRegistered(this, chrome::NOTIFICATION_COOKIE_CHANGED,
-                               source)) {
-    registrar_.Add(this, chrome::NOTIFICATION_COOKIE_CHANGED, source);
-  }
+void AccountReconcilor::RegisterForCookieChanges() {
+  // First clear any existing registration to avoid DCHECKs that can otherwise
+  // go off in some embedders on reauth (e.g., ChromeSigninClient).
+  UnregisterForCookieChanges();
+  client_->SetCookieChangedCallback(
+      base::Bind(&AccountReconcilor::OnCookieChanged, base::Unretained(this)));
 }
 
-void AccountReconcilor::UnregisterWithCookieMonster() {
-  content::Source<Profile> source(profile_);
-  if (registrar_.IsRegistered(this, chrome::NOTIFICATION_COOKIE_CHANGED,
-                              source)) {
-    registrar_.Remove(this, chrome::NOTIFICATION_COOKIE_CHANGED, source);
-  }
+void AccountReconcilor::UnregisterForCookieChanges() {
+  client_->SetCookieChangedCallback(SigninClient::CookieChangedCallback());
 }
 
 void AccountReconcilor::RegisterWithSigninManager() {
@@ -334,24 +327,10 @@ void AccountReconcilor::PeriodicReconciliation() {
   StartReconcile();
 }
 
-void AccountReconcilor::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_COOKIE_CHANGED:
-      OnCookieChanged(content::Details<ChromeCookieDetails>(details).ptr());
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void AccountReconcilor::OnCookieChanged(ChromeCookieDetails* details) {
-  if (details->cookie->Name() == "LSID" &&
-      details->cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
-      details->cookie->IsSecure() &&
-      details->cookie->IsHttpOnly()) {
+void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie* cookie) {
+  if (cookie->Name() == "LSID" &&
+      cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
+      cookie->IsSecure() && cookie->IsHttpOnly()) {
     VLOG(1) << "AccountReconcilor::OnCookieChanged: LSID changed";
 #ifdef OS_CHROMEOS
     // On Chrome OS it is possible that O2RT is not available at this moment
@@ -383,7 +362,7 @@ void AccountReconcilor::OnRefreshTokensLoaded() {}
 void AccountReconcilor::GoogleSigninSucceeded(
     const std::string& username, const std::string& password) {
   VLOG(1) << "AccountReconcilor::GoogleSigninSucceeded: signed in";
-  RegisterWithCookieMonster();
+  RegisterForCookieChanges();
   RegisterWithTokenService();
   StartPeriodicReconciliation();
 }
@@ -391,7 +370,7 @@ void AccountReconcilor::GoogleSigninSucceeded(
 void AccountReconcilor::GoogleSignedOut(const std::string& username) {
   VLOG(1) << "AccountReconcilor::GoogleSignedOut: signed out";
   UnregisterWithTokenService();
-  UnregisterWithCookieMonster();
+  UnregisterForCookieChanges();
   StopPeriodicReconciliation();
 }
 

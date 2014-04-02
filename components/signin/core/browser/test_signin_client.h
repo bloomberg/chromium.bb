@@ -42,6 +42,10 @@ class TestSigninClient : public SigninClient {
   // Returns true.
   virtual bool ShouldMergeSigninCredentialsIntoCookieJar() OVERRIDE;
 
+  // Does nothing.
+  virtual void SetCookieChangedCallback(const CookieChangedCallback& callback)
+      OVERRIDE;
+
  private:
   // Loads the token database.
   void LoadDatabase();

@@ -50,3 +50,6 @@ void TestSigninClient::LoadDatabase() {
 bool TestSigninClient::ShouldMergeSigninCredentialsIntoCookieJar() {
   return true;
 }
+
+void TestSigninClient::SetCookieChangedCallback(
+    const CookieChangedCallback& callback) {}

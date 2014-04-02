@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
 
+#include "base/callback.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 
 class PrefService;
@@ -12,6 +13,7 @@ class SigninManagerBase;
 class TokenWebData;
 
 namespace net {
+class CanonicalCookie;
 class URLRequestContextGetter;
 }
 
@@ -19,6 +21,9 @@ class URLRequestContextGetter;
 // embedder.
 class SigninClient {
  public:
+  typedef base::Callback<void(const net::CanonicalCookie* cookie)>
+      CookieChangedCallback;
+
   virtual ~SigninClient() {}
 
   // Gets the preferences associated with the client.
@@ -40,6 +45,14 @@ class SigninClient {
   // Returns a string containing the version info of the product in which the
   // Signin component is being used.
   virtual std::string GetProductVersion() = 0;
+
+  // Sets the callback that should be called when a cookie changes. The
+  // callback will be called only if it is not empty.
+  // TODO(blundell): Eliminate this interface in favor of having core signin
+  // code observe cookie changes once //chrome/browser/net has been
+  // componentized.
+  virtual void SetCookieChangedCallback(
+      const CookieChangedCallback& callback) = 0;
 
   // Called when Google signin has succeeded.
   virtual void GoogleSigninSucceeded(const std::string& username,

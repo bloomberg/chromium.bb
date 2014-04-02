@@ -9,6 +9,8 @@
 #include "base/compiler_specific.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 class CookieSettings;
@@ -16,6 +18,7 @@ class Profile;
 
 class ChromeSigninClient : public SigninClient,
                            public KeyedService,
+                           public content::NotificationObserver,
                            public content::RenderProcessHostObserver {
  public:
   explicit ChromeSigninClient(Profile* profile);
@@ -53,11 +56,26 @@ class ChromeSigninClient : public SigninClient,
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
   // If version information is unavailable, returns "invalid."
   virtual std::string GetProductVersion() OVERRIDE;
+  virtual void SetCookieChangedCallback(const CookieChangedCallback& callback)
+      OVERRIDE;
   virtual void GoogleSigninSucceeded(const std::string& username,
                                      const std::string& password) OVERRIDE;
 
+  // content::NotificationObserver implementation.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
  private:
+  void RegisterForCookieChangedNotification();
+  void UnregisterForCookieChangedNotification();
+
   Profile* profile_;
+  content::NotificationRegistrar registrar_;
+
+  // The callback that if non-empty will be called when notifications about
+  // cookie changes are received.
+  CookieChangedCallback callback_;
 
   // See SetSigninProcess. Tracks the currently active signin process
   // by ID, if there is one.

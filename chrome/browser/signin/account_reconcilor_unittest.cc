@@ -7,6 +7,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/signin/account_reconcilor.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
@@ -27,9 +28,9 @@ const char kTestEmail[] = "user@gmail.com";
 
 class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
  public:
-  static KeyedService* Build(content::BrowserContext* profile);
+  static KeyedService* Build(content::BrowserContext* context);
 
-  explicit MockAccountReconcilor(Profile* profile);
+  explicit MockAccountReconcilor(Profile* profile, SigninClient* client);
   virtual ~MockAccountReconcilor() {}
 
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
@@ -45,15 +46,17 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
 };
 
 // static
-KeyedService* MockAccountReconcilor::Build(content::BrowserContext* profile) {
-  AccountReconcilor* reconcilor =
-      new MockAccountReconcilor(static_cast<Profile*>(profile));
+KeyedService* MockAccountReconcilor::Build(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  AccountReconcilor* reconcilor = new MockAccountReconcilor(
+      profile, ChromeSigninClientFactory::GetForProfile(profile));
   reconcilor->Initialize(false /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }
 
-MockAccountReconcilor::MockAccountReconcilor(Profile* profile)
-    : testing::StrictMock<AccountReconcilor>(profile) {}
+MockAccountReconcilor::MockAccountReconcilor(Profile* profile,
+                                             SigninClient* client)
+    : testing::StrictMock<AccountReconcilor>(profile, client) {}
 
 }  // namespace
 
