@@ -33,7 +33,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListElement.h"
-#include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMeterElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -763,10 +762,9 @@ bool RenderTheme::isSpinUpButtonPartPressed(const RenderObject* o) const
 bool RenderTheme::isReadOnlyControl(const RenderObject* o) const
 {
     Node* node = o->node();
-    if (!node || !node->isElementNode() || !toElement(node)->isFormControlElement())
+    if (!node || !node->isElementNode())
         return false;
-    HTMLFormControlElement* element = toHTMLFormControlElement(node);
-    return element->isReadOnly();
+    return toElement(node)->matchesReadOnlyPseudoClass();
 }
 
 bool RenderTheme::isHovered(const RenderObject* o) const
