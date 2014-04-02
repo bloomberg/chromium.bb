@@ -7,10 +7,12 @@
 
 #include <map>
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/bluetooth.h"
+#include "chrome/common/extensions/api/bluetooth_private.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -31,16 +33,13 @@ class BluetoothProfile;
 
 namespace extensions {
 
-// Foward declarations of internal structs.
-struct ExtensionBluetoothSocketRecord;
-struct ExtensionBluetoothProfileRecord;
+class BluetoothApiPairingDelegate;
 
-class ExtensionBluetoothEventRouter
-    : public device::BluetoothAdapter::Observer,
-      public content::NotificationObserver {
+class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
+                             public content::NotificationObserver {
  public:
-  explicit ExtensionBluetoothEventRouter(content::BrowserContext* context);
-  virtual ~ExtensionBluetoothEventRouter();
+  explicit BluetoothEventRouter(content::BrowserContext* context);
+  virtual ~BluetoothEventRouter();
 
   // Returns true if adapter_ has been initialized for testing or bluetooth
   // adapter is available for the current platform.
@@ -48,12 +47,6 @@ class ExtensionBluetoothEventRouter
 
   void GetAdapter(
       const device::BluetoothAdapterFactory::AdapterCallback& callback);
-
-  // Called when a bluetooth event listener is added.
-  void OnListenerAdded();
-
-  // Called when a bluetooth event listener is removed.
-  void OnListenerRemoved();
 
   // Register the BluetoothSocket |socket| for use by the extensions system.
   // This class will hold onto the socket for its lifetime until
@@ -115,7 +108,29 @@ class ExtensionBluetoothEventRouter
                                const device::BluetoothDevice* device,
                                scoped_refptr<device::BluetoothSocket> socket);
 
-  // Override from device::BluetoothAdapter::Observer
+  // Called when a bluetooth event listener is added.
+  void OnListenerAdded();
+
+  // Called when a bluetooth event listener is removed.
+  void OnListenerRemoved();
+
+  // Adds a pairing delegate for an extension.
+  void AddPairingDelegate(const std::string& extension_id);
+
+  // Removes the pairing delegate for an extension.
+  void RemovePairingDelegate(const std::string& extension_id);
+
+  // Returns the pairing delegate for an extension or NULL if it doesn't have a
+  // pairing delegate.
+  BluetoothApiPairingDelegate* GetPairingDelegate(
+      const std::string& extension_id);
+
+  // Exposed for testing.
+  void SetAdapterForTest(device::BluetoothAdapter* adapter) {
+    adapter_ = adapter;
+  }
+
+  // Override from device::BluetoothAdapter::Observer.
   virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
                                      bool present) OVERRIDE;
   virtual void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
@@ -129,24 +144,29 @@ class ExtensionBluetoothEventRouter
   virtual void DeviceRemoved(device::BluetoothAdapter* adapter,
                              device::BluetoothDevice* device) OVERRIDE;
 
-  // Overridden from content::NotificationObserver
+  // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Exposed for testing.
-  void SetAdapterForTest(device::BluetoothAdapter* adapter) {
-    adapter_ = adapter;
-  }
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "BluetoothEventRouter"; }
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsNULLWhileTesting = true;
 
  private:
-  void InitializeAdapterIfNeeded();
-  void InitializeAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
+  // Forward declarations of internal structs.
+  struct ExtensionBluetoothSocketRecord;
+  struct ExtensionBluetoothProfileRecord;
+
+  void OnAdapterInitialized(const base::Closure& callback,
+                            scoped_refptr<device::BluetoothAdapter> adapter);
   void MaybeReleaseAdapter();
   void DispatchAdapterStateEvent();
   void DispatchDeviceEvent(const std::string& event_name,
                            device::BluetoothDevice* device);
   void CleanUpForExtension(const std::string& extension_id);
+  void CleanUpAllExtensions();
   void OnStartDiscoverySession(
       const std::string& extension_id,
       const base::Closure& callback,
@@ -165,7 +185,8 @@ class ExtensionBluetoothEventRouter
   typedef std::map<int, ExtensionBluetoothSocketRecord> SocketMap;
   SocketMap socket_map_;
 
-  // A map that maps uuids to ExtensionBluetoothProfileRecord.
+  // Maps uuids to a struct containing a Bluetooth profile and its
+  // associated extension id.
   typedef std::map<std::string, ExtensionBluetoothProfileRecord>
       BluetoothProfileMap;
   BluetoothProfileMap bluetooth_profile_map_;
@@ -175,11 +196,16 @@ class ExtensionBluetoothEventRouter
       DiscoverySessionMap;
   DiscoverySessionMap discovery_session_map_;
 
+  // Maps an extension id to its pairing delegate.
+  typedef std::map<std::string, BluetoothApiPairingDelegate*>
+      PairingDelegateMap;
+  PairingDelegateMap pairing_delegate_map_;
+
   content::NotificationRegistrar registrar_;
 
-  base::WeakPtrFactory<ExtensionBluetoothEventRouter> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothEventRouter> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionBluetoothEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothEventRouter);
 };
 
 }  // namespace extensions

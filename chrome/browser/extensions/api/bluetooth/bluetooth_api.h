@@ -32,7 +32,7 @@ struct BluetoothOutOfBandPairingData;
 
 namespace extensions {
 
-class ExtensionBluetoothEventRouter;
+class BluetoothEventRouter;
 
 // The profile-keyed service that manages the bluetooth extension API.
 class BluetoothAPI : public BrowserContextKeyedAPI,
@@ -46,7 +46,7 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
   explicit BluetoothAPI(content::BrowserContext* context);
   virtual ~BluetoothAPI();
 
-  ExtensionBluetoothEventRouter* bluetooth_event_router();
+  BluetoothEventRouter* bluetooth_event_router();
 
   // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
@@ -66,7 +66,7 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* browser_context_;
 
   // Created lazily on first access.
-  scoped_ptr<ExtensionBluetoothEventRouter> bluetooth_event_router_;
+  scoped_ptr<BluetoothEventRouter> bluetooth_event_router_;
 };
 
 namespace api {

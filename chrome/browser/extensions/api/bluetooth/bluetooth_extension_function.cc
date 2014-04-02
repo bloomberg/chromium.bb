@@ -15,7 +15,7 @@ namespace {
 const char kPlatformNotSupported[] =
     "This operation is not supported on your platform";
 
-extensions::ExtensionBluetoothEventRouter* GetEventRouter(
+extensions::BluetoothEventRouter* GetEventRouter(
     content::BrowserContext* context) {
   return extensions::BluetoothAPI::Get(context)->bluetooth_event_router();
 }

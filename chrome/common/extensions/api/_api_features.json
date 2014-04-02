@@ -107,6 +107,10 @@
     "dependencies": ["manifest:bluetooth"],
     "contexts": ["blessed_extension"]
   },
+  "bluetoothPrivate": {
+    "dependencies": ["permission:bluetoothPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "bookmarkManagerPrivate": {
     "dependencies": ["permission:bookmarkManagerPrivate"],
     "contexts": ["blessed_extension"]

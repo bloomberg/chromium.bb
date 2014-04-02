@@ -102,7 +102,7 @@ class BluetoothApiTest : public ExtensionApiTest {
   scoped_ptr<testing::NiceMock<MockBluetoothProfile> > profile1_;
   scoped_ptr<testing::NiceMock<MockBluetoothProfile> > profile2_;
 
-  extensions::ExtensionBluetoothEventRouter* event_router() {
+  extensions::BluetoothEventRouter* event_router() {
     return extensions::BluetoothAPI::Get(browser()->profile())
         ->bluetooth_event_router();
   }

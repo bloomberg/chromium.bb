@@ -34,8 +34,7 @@ using device::BluetoothSocket;
 
 namespace {
 
-extensions::ExtensionBluetoothEventRouter* GetEventRouter(
-    BrowserContext* context) {
+extensions::BluetoothEventRouter* GetEventRouter(BrowserContext* context) {
   return extensions::BluetoothAPI::Get(context)->bluetooth_event_router();
 }
 
@@ -104,10 +103,9 @@ BluetoothAPI::BluetoothAPI(BrowserContext* context)
 BluetoothAPI::~BluetoothAPI() {
 }
 
-ExtensionBluetoothEventRouter* BluetoothAPI::bluetooth_event_router() {
+BluetoothEventRouter* BluetoothAPI::bluetooth_event_router() {
   if (!bluetooth_event_router_)
-    bluetooth_event_router_.reset(
-        new ExtensionBluetoothEventRouter(browser_context_));
+    bluetooth_event_router_.reset(new BluetoothEventRouter(browser_context_));
 
   return bluetooth_event_router_.get();
 }
@@ -205,7 +203,7 @@ void BluetoothAddProfileFunction::OnProfileRegistered(
   }
 
   bluetooth_profile->SetConnectionCallback(
-      base::Bind(&ExtensionBluetoothEventRouter::DispatchConnectionEvent,
+      base::Bind(&BluetoothEventRouter::DispatchConnectionEvent,
                  base::Unretained(GetEventRouter(browser_context())),
                  extension_id(),
                  uuid_));

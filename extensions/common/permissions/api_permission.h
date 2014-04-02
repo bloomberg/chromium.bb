@@ -47,6 +47,7 @@ class APIPermission {
     kAutomation,
     kAutoTestPrivate,
     kBackground,
+    kBluetoothPrivate,
     kBookmark,
     kBookmarkManagerPrivate,
     kBrailleDisplayPrivate,

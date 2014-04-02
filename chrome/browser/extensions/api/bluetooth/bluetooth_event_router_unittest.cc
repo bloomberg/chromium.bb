@@ -84,9 +84,9 @@ namespace extensions {
 
 namespace bluetooth = api::bluetooth;
 
-class ExtensionBluetoothEventRouterTest : public testing::Test {
+class BluetoothEventRouterTest : public testing::Test {
  public:
-  ExtensionBluetoothEventRouterTest()
+  BluetoothEventRouterTest()
       : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()),
         test_profile_(new TestingProfile()),
         router_(test_profile_.get()),
@@ -108,18 +108,18 @@ class ExtensionBluetoothEventRouterTest : public testing::Test {
   testing::NiceMock<device::MockBluetoothProfile> mock_audio_profile_;
   testing::NiceMock<device::MockBluetoothProfile> mock_health_profile_;
   scoped_ptr<TestingProfile> test_profile_;
-  ExtensionBluetoothEventRouter router_;
+  BluetoothEventRouter router_;
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
 };
 
-TEST_F(ExtensionBluetoothEventRouterTest, BluetoothEventListener) {
+TEST_F(BluetoothEventRouterTest, BluetoothEventListener) {
   router_.OnListenerAdded();
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
   router_.OnListenerRemoved();
 }
 
-TEST_F(ExtensionBluetoothEventRouterTest, MultipleBluetoothEventListeners) {
+TEST_F(BluetoothEventRouterTest, MultipleBluetoothEventListeners) {
   router_.OnListenerAdded();
   router_.OnListenerAdded();
   router_.OnListenerAdded();
@@ -129,7 +129,7 @@ TEST_F(ExtensionBluetoothEventRouterTest, MultipleBluetoothEventListeners) {
   router_.OnListenerRemoved();
 }
 
-TEST_F(ExtensionBluetoothEventRouterTest, Profiles) {
+TEST_F(BluetoothEventRouterTest, Profiles) {
   EXPECT_FALSE(router_.HasProfile(kAudioProfileUuid));
   EXPECT_FALSE(router_.HasProfile(kHealthProfileUuid));
 
@@ -150,7 +150,7 @@ TEST_F(ExtensionBluetoothEventRouterTest, Profiles) {
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
 }
 
-TEST_F(ExtensionBluetoothEventRouterTest, UnloadExtension) {
+TEST_F(BluetoothEventRouterTest, UnloadExtension) {
   scoped_refptr<const extensions::Extension> extension =
       extensions::ExtensionBuilder()
           .SetManifest(extensions::DictionaryBuilder()
@@ -184,7 +184,7 @@ TEST_F(ExtensionBluetoothEventRouterTest, UnloadExtension) {
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
 }
 
-TEST_F(ExtensionBluetoothEventRouterTest, DispatchConnectionEvent) {
+TEST_F(BluetoothEventRouterTest, DispatchConnectionEvent) {
   router_.AddProfile(
       kAudioProfileUuid, kTestExtensionId, &mock_audio_profile_);
 
@@ -227,7 +227,7 @@ TEST_F(ExtensionBluetoothEventRouterTest, DispatchConnectionEvent) {
   router_.ReleaseSocket(socket_id);
 }
 
-TEST_F(ExtensionBluetoothEventRouterTest, DoNotDispatchConnectionEvent) {
+TEST_F(BluetoothEventRouterTest, DoNotDispatchConnectionEvent) {
   FakeExtensionSystem* fake_extension_system =
       static_cast<FakeExtensionSystem*>(ExtensionSystemFactory::GetInstance()->
           SetTestingFactoryAndUse(test_profile_.get(),
