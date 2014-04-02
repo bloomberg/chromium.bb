@@ -74,14 +74,8 @@ TEST(LinuxCoreDumperTest, VerifyDumpWithMultipleThreads) {
   const unsigned kCrashThread = 1;
   const int kCrashSignal = SIGABRT;
   pid_t child_pid;
-  // TODO(benchan): Revert to use ASSERT_TRUE once the flakiness in
-  // CrashGenerator is identified and fixed.
-  if (!crash_generator.CreateChildCrash(kNumOfThreads, kCrashThread,
-                                        kCrashSignal, &child_pid)) {
-    fprintf(stderr, "LinuxCoreDumperTest.VerifyDumpWithMultipleThreads test "
-            "is skipped due to no core dump generated\n");
-    return;
-  }
+  ASSERT_TRUE(crash_generator.CreateChildCrash(kNumOfThreads, kCrashThread,
+                                               kCrashSignal, &child_pid));
 
   const string core_file = crash_generator.GetCoreFilePath();
   const string procfs_path = crash_generator.GetDirectoryOfProcFilesCopy();
