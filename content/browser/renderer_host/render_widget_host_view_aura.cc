@@ -94,7 +94,7 @@
 #include "ui/gfx/win/dpi.h"
 #endif
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
 #include "content/common/input_messages.h"
 #include "ui/events/x/text_edit_command_x11.h"
 #include "ui/events/x/text_edit_key_bindings_delegate_x11.h"
@@ -3577,7 +3577,7 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
 
 void RenderWidgetHostViewAura::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
   ui::TextEditKeyBindingsDelegateX11* keybinding_delegate =
       ui::GetTextEditKeyBindingsDelegate();
   std::vector<ui::TextEditCommandX11> commands;
