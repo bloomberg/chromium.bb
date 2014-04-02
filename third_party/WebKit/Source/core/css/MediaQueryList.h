@@ -47,7 +47,7 @@ public:
     void addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
     void removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>);
 
-    void evaluate(MediaQueryEvaluator*, bool& notificationNeeded);
+    bool evaluate(MediaQueryEvaluator*);
 
     void trace(Visitor*);
 

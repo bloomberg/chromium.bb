@@ -64,11 +64,11 @@ void MediaQueryList::removeListener(PassRefPtrWillBeRawPtr<MediaQueryListListene
     m_matcher->removeListener(listener.get(), this);
 }
 
-void MediaQueryList::evaluate(MediaQueryEvaluator* evaluator, bool& notificationNeeded)
+bool MediaQueryList::evaluate(MediaQueryEvaluator* evaluator)
 {
     if (m_evaluationRound != m_matcher->evaluationRound() && evaluator)
         setMatches(evaluator->eval(m_media.get()));
-    notificationNeeded = m_changeRound == m_matcher->evaluationRound();
+    return m_changeRound == m_matcher->evaluationRound();
 }
 
 void MediaQueryList::setMatches(bool newValue)
