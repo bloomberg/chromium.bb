@@ -40,6 +40,12 @@
 #include "base/win/win_util.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "base/strings/utf_string_conversions.h"
+#include "ui/events/x/text_edit_command_x11.h"
+#include "ui/events/x/text_edit_key_bindings_delegate_x11.h"
+#endif
+
 namespace views {
 
 namespace {
@@ -128,6 +134,92 @@ int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
   }
   return kNoCommand;
 }
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+int GetViewsCommand(const ui::TextEditCommandX11& command, bool rtl) {
+  const bool select = command.extend_selection();
+  switch (command.command_id()) {
+    case ui::TextEditCommandX11::COPY:
+      return IDS_APP_COPY;
+    case ui::TextEditCommandX11::CUT:
+      return IDS_APP_CUT;
+    case ui::TextEditCommandX11::DELETE_BACKWARD:
+      return IDS_DELETE_BACKWARD;
+    case ui::TextEditCommandX11::DELETE_FORWARD:
+      return IDS_DELETE_FORWARD;
+    case ui::TextEditCommandX11::DELETE_TO_BEGINING_OF_LINE:
+    case ui::TextEditCommandX11::DELETE_TO_BEGINING_OF_PARAGRAPH:
+      return IDS_DELETE_TO_BEGINNING_OF_LINE;
+    case ui::TextEditCommandX11::DELETE_TO_END_OF_LINE:
+    case ui::TextEditCommandX11::DELETE_TO_END_OF_PARAGRAPH:
+      return IDS_DELETE_TO_END_OF_LINE;
+    case ui::TextEditCommandX11::DELETE_WORD_BACKWARD:
+      return IDS_DELETE_WORD_BACKWARD;
+    case ui::TextEditCommandX11::DELETE_WORD_FORWARD:
+      return IDS_DELETE_WORD_FORWARD;
+    case ui::TextEditCommandX11::INSERT_TEXT:
+      return kNoCommand;
+    case ui::TextEditCommandX11::MOVE_BACKWARD:
+      if (rtl)
+        return select ? IDS_MOVE_RIGHT_AND_MODIFY_SELECTION : IDS_MOVE_RIGHT;
+      return select ? IDS_MOVE_LEFT_AND_MODIFY_SELECTION : IDS_MOVE_LEFT;
+    case ui::TextEditCommandX11::MOVE_DOWN:
+      return IDS_MOVE_DOWN;
+    case ui::TextEditCommandX11::MOVE_FORWARD:
+      if (rtl)
+        return select ? IDS_MOVE_LEFT_AND_MODIFY_SELECTION : IDS_MOVE_LEFT;
+      return select ? IDS_MOVE_RIGHT_AND_MODIFY_SELECTION : IDS_MOVE_RIGHT;
+    case ui::TextEditCommandX11::MOVE_LEFT:
+      return select ? IDS_MOVE_LEFT_AND_MODIFY_SELECTION : IDS_MOVE_LEFT;
+    case ui::TextEditCommandX11::MOVE_PAGE_DOWN:
+    case ui::TextEditCommandX11::MOVE_PAGE_UP:
+      return kNoCommand;
+    case ui::TextEditCommandX11::MOVE_RIGHT:
+      return select ? IDS_MOVE_RIGHT_AND_MODIFY_SELECTION : IDS_MOVE_RIGHT;
+    case ui::TextEditCommandX11::MOVE_TO_BEGINING_OF_DOCUMENT:
+    case ui::TextEditCommandX11::MOVE_TO_BEGINING_OF_LINE:
+    case ui::TextEditCommandX11::MOVE_TO_BEGINING_OF_PARAGRAPH:
+      return select ? IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION :
+                      IDS_MOVE_TO_BEGINNING_OF_LINE;
+    case ui::TextEditCommandX11::MOVE_TO_END_OF_DOCUMENT:
+    case ui::TextEditCommandX11::MOVE_TO_END_OF_LINE:
+    case ui::TextEditCommandX11::MOVE_TO_END_OF_PARAGRAPH:
+      return select ? IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION :
+                      IDS_MOVE_TO_END_OF_LINE;
+    case ui::TextEditCommandX11::MOVE_UP:
+      return IDS_MOVE_UP;
+    case ui::TextEditCommandX11::MOVE_WORD_BACKWARD:
+      if (rtl) {
+        return select ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
+                        IDS_MOVE_WORD_RIGHT;
+      }
+      return select ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
+                      IDS_MOVE_WORD_LEFT;
+    case ui::TextEditCommandX11::MOVE_WORD_FORWARD:
+      if (rtl) {
+        return select ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
+                        IDS_MOVE_WORD_LEFT;
+      }
+      return select ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
+                      IDS_MOVE_WORD_RIGHT;
+    case ui::TextEditCommandX11::MOVE_WORD_LEFT:
+      return select ? IDS_MOVE_WORD_LEFT_AND_MODIFY_SELECTION :
+                      IDS_MOVE_WORD_LEFT;
+    case ui::TextEditCommandX11::MOVE_WORD_RIGHT:
+      return select ? IDS_MOVE_WORD_RIGHT_AND_MODIFY_SELECTION :
+                      IDS_MOVE_WORD_RIGHT;
+    case ui::TextEditCommandX11::PASTE:
+      return IDS_APP_PASTE;
+    case ui::TextEditCommandX11::SELECT_ALL:
+      return IDS_APP_SELECT_ALL;
+    case ui::TextEditCommandX11::SET_MARK:
+    case ui::TextEditCommandX11::UNSELECT:
+    case ui::TextEditCommandX11::INVALID_COMMAND:
+      return kNoCommand;
+  }
+  return kNoCommand;
+}
+#endif
 
 }  // namespace
 
@@ -493,10 +585,29 @@ void Textfield::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool Textfield::OnKeyPressed(const ui::KeyEvent& event) {
-  const bool handled = controller_ && controller_->HandleKeyEvent(this, event);
+  bool handled = controller_ && controller_->HandleKeyEvent(this, event);
   touch_selection_controller_.reset();
   if (handled)
     return true;
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  ui::TextEditKeyBindingsDelegateX11* delegate =
+      ui::GetTextEditKeyBindingsDelegate();
+  std::vector<ui::TextEditCommandX11> commands;
+  if (delegate) {
+    if (!delegate->MatchEvent(event, &commands))
+      return false;
+    const bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
+    for (size_t i = 0; i < commands.size(); ++i) {
+      int command = GetViewsCommand(commands[i], rtl);
+      if (IsCommandIdEnabled(command)) {
+        ExecuteCommand(command);
+        handled = true;
+      }
+    }
+    return handled;
+  }
+#endif
 
   const int command = GetCommandForKeyEvent(event, HasSelection());
   if (IsCommandIdEnabled(command)) {
@@ -595,10 +706,23 @@ void Textfield::AboutToRequestFocusFromTabTraversal(bool reverse) {
   SelectAll(false);
 }
 
-bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
+bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // Skip any accelerator handling that conflicts with custom keybindings.
+  ui::TextEditKeyBindingsDelegateX11* delegate =
+      ui::GetTextEditKeyBindingsDelegate();
+  std::vector<ui::TextEditCommandX11> commands;
+  if (delegate && delegate->MatchEvent(event, &commands)) {
+    const bool rtl = GetTextDirection() == base::i18n::RIGHT_TO_LEFT;
+    for (size_t i = 0; i < commands.size(); ++i)
+      if (IsCommandIdEnabled(GetViewsCommand(commands[i], rtl)))
+        return true;
+  }
+#endif
+
   // Skip any accelerator handling of backspace; textfields handle this key.
   // Also skip processing Windows [Alt]+<num-pad digit> Unicode alt-codes.
-  return e.key_code() == ui::VKEY_BACK || e.IsUnicodeKeyCode();
+  return event.key_code() == ui::VKEY_BACK || event.IsUnicodeKeyCode();
 }
 
 bool Textfield::GetDropFormats(

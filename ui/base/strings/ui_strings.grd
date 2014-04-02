@@ -1918,6 +1918,9 @@ need to be translated for each locale.-->
       <message name="IDS_DELETE_WORD_FORWARD" desc="A command to delete forward by a word.">
         Delete Word Forward
       </message>
+      <message name="IDS_MOVE_DOWN" desc="A command to move the cursor down.">
+        Move Down
+      </message>
       <message name="IDS_MOVE_LEFT" desc="A command to move the cursor left.">
         Move Left
       </message>
@@ -1953,6 +1956,9 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION" desc="A command to move the cursor to the end of the line and modify the selection.">
         Move To End Of Line And Modify Selection
+      </message>
+      <message name="IDS_MOVE_UP" desc="A command to move the cursor up.">
+        Move Up
       </message>
       <message name="IDS_APP_REDO" desc="A command to redo an action.">
         Redo

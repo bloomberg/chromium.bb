@@ -189,7 +189,8 @@ class VIEWS_EXPORT Textfield : public View,
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
-  virtual bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) OVERRIDE;
+  virtual bool SkipDefaultKeyEventProcessing(
+      const ui::KeyEvent& event) OVERRIDE;
   virtual bool GetDropFormats(
       int* formats,
       std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;

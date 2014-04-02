@@ -755,7 +755,8 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
     return !read_only() && model()->CanPasteAndGo(GetClipboardText());
   if (command_id == IDS_SHOW_URL)
     return controller()->GetToolbarModel()->WouldReplaceURL();
-  return Textfield::IsCommandIdEnabled(command_id) ||
+  return command_id == IDS_MOVE_DOWN || command_id == IDS_MOVE_UP ||
+         Textfield::IsCommandIdEnabled(command_id) ||
          command_updater()->IsCommandEnabled(command_id);
 }
 
@@ -781,6 +782,10 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
       break;
     case IDC_EDIT_SEARCH_ENGINES:
       command_updater()->ExecuteCommand(command_id);
+      break;
+    case IDS_MOVE_DOWN:
+    case IDS_MOVE_UP:
+      model()->OnUpOrDownKeyPressed(command_id == IDS_MOVE_DOWN ? 1 : -1);
       break;
 
     default:
