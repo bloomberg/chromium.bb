@@ -284,6 +284,8 @@ public:
     virtual void getQueryivEXT(GLenum, GLenum, GLint*) { }
     virtual void getQueryObjectuivEXT(WebGLId, GLenum, GLuint*) { }
 
+    virtual WebString getTranslatedShaderSourceANGLE(WebGLId) { return WebString(); }
+
 protected:
     unsigned m_nextTextureId;
     Attributes m_attrs;
