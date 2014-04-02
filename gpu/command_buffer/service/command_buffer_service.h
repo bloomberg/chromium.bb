@@ -79,22 +79,19 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   virtual void SetParseErrorCallback(const base::Closure& callback);
 
   // Setup the shared memory that shared state should be copied into.
-  bool SetSharedStateBuffer(scoped_ptr<base::SharedMemory> shared_state_shm);
+  void SetSharedStateBuffer(scoped_ptr<BufferBacking> shared_state_buffer);
 
   // Copy the current state into the shared state transfer buffer.
   void UpdateState();
 
-  // Register an existing shared memory object and get an ID that can be used
-  // to identify it in the command buffer. Callee dups the handle until
-  // DestroyTransferBuffer is called.
-  bool RegisterTransferBuffer(int32 id,
-                              scoped_ptr<base::SharedMemory> shared_memory,
-                              size_t size);
+  // Registers an existing shared memory object and get an ID that can be used
+  // to identify it in the command buffer.
+  bool RegisterTransferBuffer(int32 id, scoped_ptr<BufferBacking> buffer);
 
  private:
   int32 ring_buffer_id_;
   scoped_refptr<Buffer> ring_buffer_;
-  scoped_ptr<base::SharedMemory> shared_state_shm_;
+  scoped_ptr<BufferBacking> shared_state_buffer_;
   CommandBufferSharedState* shared_state_;
   int32 num_entries_;
   int32 get_offset_;

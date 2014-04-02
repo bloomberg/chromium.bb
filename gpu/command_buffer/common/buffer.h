@@ -17,12 +17,34 @@ namespace base {
 
 namespace gpu {
 
+class GPU_EXPORT BufferBacking {
+ public:
+  virtual ~BufferBacking() {}
+  virtual void* GetMemory() const = 0;
+  virtual size_t GetSize() const = 0;
+};
+
+class GPU_EXPORT SharedMemoryBufferBacking : public BufferBacking {
+ public:
+  SharedMemoryBufferBacking(scoped_ptr<base::SharedMemory> shared_memory,
+                            size_t size);
+  virtual ~SharedMemoryBufferBacking();
+  virtual void* GetMemory() const OVERRIDE;
+  virtual size_t GetSize() const OVERRIDE;
+  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
+
+ private:
+  scoped_ptr<base::SharedMemory> shared_memory_;
+  size_t size_;
+  DISALLOW_COPY_AND_ASSIGN(SharedMemoryBufferBacking);
+};
+
 // Buffer owns a piece of shared-memory of a certain size.
 class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
  public:
-  Buffer(scoped_ptr<base::SharedMemory> shared_memory, size_t size);
+  explicit Buffer(scoped_ptr<BufferBacking> backing);
 
-  base::SharedMemory* shared_memory() const { return shared_memory_.get(); }
+  BufferBacking* backing() const { return backing_.get(); }
   void* memory() const { return memory_; }
   size_t size() const { return size_; }
 
@@ -33,12 +55,25 @@ class GPU_EXPORT Buffer : public base::RefCountedThreadSafe<Buffer> {
   friend class base::RefCountedThreadSafe<Buffer>;
   ~Buffer();
 
-  scoped_ptr<base::SharedMemory> shared_memory_;
+  scoped_ptr<BufferBacking> backing_;
   void* memory_;
   size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
+
+static inline scoped_ptr<BufferBacking> MakeBackingFromSharedMemory(
+    scoped_ptr<base::SharedMemory> shared_memory,
+    size_t size) {
+  return scoped_ptr<BufferBacking>(
+      new SharedMemoryBufferBacking(shared_memory.Pass(), size));
+}
+
+static inline scoped_refptr<Buffer> MakeBufferFromSharedMemory(
+    scoped_ptr<base::SharedMemory> shared_memory,
+    size_t size) {
+  return new Buffer(MakeBackingFromSharedMemory(shared_memory.Pass(), size));
+}
 
 }  // namespace gpu
 

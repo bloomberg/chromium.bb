@@ -1411,7 +1411,7 @@ MockCommandBufferEngine() {
 
   scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
   shm->CreateAndMapAnonymous(kSharedBufferSize);
-  valid_buffer_ = new gpu::Buffer(shm.Pass(), kSharedBufferSize);
+  valid_buffer_ = MakeBufferFromSharedMemory(shm.Pass(), kSharedBufferSize);
 
   ClearSharedMemory();
 }

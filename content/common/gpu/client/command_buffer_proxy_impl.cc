@@ -286,8 +286,8 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
   }
 
   *id = new_id;
-  scoped_refptr<gpu::Buffer> buffer =
-      new gpu::Buffer(shared_memory.Pass(), size);
+  scoped_refptr<gpu::Buffer> buffer(
+      gpu::MakeBufferFromSharedMemory(shared_memory.Pass(), size));
   return buffer;
 }
 

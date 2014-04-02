@@ -40,8 +40,7 @@ bool TransferBufferManager::Initialize() {
 
 bool TransferBufferManager::RegisterTransferBuffer(
     int32 id,
-    scoped_ptr<base::SharedMemory> shared_memory,
-    size_t size) {
+    scoped_ptr<BufferBacking> buffer_backing) {
   if (id <= 0) {
     DVLOG(0) << "Cannot register transfer buffer with non-positive ID.";
     return false;
@@ -54,13 +53,13 @@ bool TransferBufferManager::RegisterTransferBuffer(
   }
 
   // Register the shared memory with the ID.
-  scoped_refptr<Buffer> buffer = new gpu::Buffer(shared_memory.Pass(), size);
+  scoped_refptr<Buffer> buffer(new gpu::Buffer(buffer_backing.Pass()));
 
   // Check buffer alignment is sane.
   DCHECK(!(reinterpret_cast<uintptr_t>(buffer->memory()) &
            (kCommandBufferEntrySize - 1)));
 
-  shared_memory_bytes_allocated_ += size;
+  shared_memory_bytes_allocated_ += buffer->size();
   TRACE_COUNTER_ID1(
       "gpu", "GpuTransferBufferMemory", this, shared_memory_bytes_allocated_);
 

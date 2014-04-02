@@ -136,9 +136,7 @@ scoped_refptr<gpu::Buffer> PpapiCommandBufferProxy::CreateTransferBuffer(
     }
   }
 
-  scoped_refptr<gpu::Buffer> buffer =
-      new gpu::Buffer(shared_memory.Pass(), handle.size());
-  return buffer;
+  return gpu::MakeBufferFromSharedMemory(shared_memory.Pass(), handle.size());
 }
 
 void PpapiCommandBufferProxy::DestroyTransferBuffer(int32 id) {

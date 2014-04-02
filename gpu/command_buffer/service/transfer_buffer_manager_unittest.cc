@@ -41,20 +41,34 @@ TEST_F(TransferBufferManagerTest, CanRegisterTransferBuffer) {
   scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
   shm->CreateAndMapAnonymous(kBufferSize);
   base::SharedMemory* shm_raw_pointer = shm.get();
+  scoped_ptr<SharedMemoryBufferBacking> backing(
+      new SharedMemoryBufferBacking(shm.Pass(), kBufferSize));
+  SharedMemoryBufferBacking* backing_raw_ptr = backing.get();
+
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, shm.Pass(), kBufferSize));
+      1, backing.PassAs<BufferBacking>()));
   scoped_refptr<Buffer> registered =
       transfer_buffer_manager_->GetTransferBuffer(1);
 
   // Shared-memory ownership is transfered. It should be the same memory.
-  EXPECT_EQ(shm_raw_pointer, registered->shared_memory());
+  EXPECT_EQ(backing_raw_ptr, registered->backing());
+  EXPECT_EQ(shm_raw_pointer, backing_raw_ptr->shared_memory());
 }
 
+class FakeBufferBacking : public BufferBacking {
+ public:
+  virtual void* GetMemory() const OVERRIDE {
+    return reinterpret_cast<void*>(0xBADF00D0);
+  }
+  virtual size_t GetSize() const OVERRIDE { return 42; }
+  static scoped_ptr<BufferBacking> Make() {
+    return scoped_ptr<BufferBacking>(new FakeBufferBacking);
+  }
+};
+
 TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
-  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  shm->CreateAndMapAnonymous(kBufferSize);
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, shm.Pass(), kBufferSize));
+      1, scoped_ptr<BufferBacking>(new FakeBufferBacking)));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
   scoped_refptr<Buffer> registered =
       transfer_buffer_manager_->GetTransferBuffer(1);
@@ -64,31 +78,20 @@ TEST_F(TransferBufferManagerTest, CanDestroyTransferBuffer) {
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegregisterTransferBufferId) {
-  scoped_ptr<base::SharedMemory> shm1(new base::SharedMemory());
-  scoped_ptr<base::SharedMemory> shm2(new base::SharedMemory());
-  scoped_ptr<base::SharedMemory> shm3(new base::SharedMemory());
-  shm1->CreateAndMapAnonymous(kBufferSize);
-  shm2->CreateAndMapAnonymous(kBufferSize);
-  shm3->CreateAndMapAnonymous(kBufferSize);
-
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, shm1.Pass(), kBufferSize));
+      1, FakeBufferBacking::Make()));
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, shm2.Pass(), kBufferSize));
+      1, FakeBufferBacking::Make()));
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, shm3.Pass(), kBufferSize));
+      1, FakeBufferBacking::Make()));
 }
 
 TEST_F(TransferBufferManagerTest, CanReuseTransferBufferIdAfterDestroying) {
-  scoped_ptr<base::SharedMemory> shm1(new base::SharedMemory());
-  scoped_ptr<base::SharedMemory> shm2(new base::SharedMemory());
-  shm1->CreateAndMapAnonymous(kBufferSize);
-  shm2->CreateAndMapAnonymous(kBufferSize);
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, shm1.Pass(), kBufferSize));
+      1, FakeBufferBacking::Make()));
   transfer_buffer_manager_->DestroyTransferBuffer(1);
   EXPECT_TRUE(transfer_buffer_manager_->RegisterTransferBuffer(
-      1, shm2.Pass(), kBufferSize));
+      1, FakeBufferBacking::Make()));
 }
 
 TEST_F(TransferBufferManagerTest, DestroyUnusedTransferBufferIdDoesNotCrash) {
@@ -96,17 +99,15 @@ TEST_F(TransferBufferManagerTest, DestroyUnusedTransferBufferIdDoesNotCrash) {
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegisterNullTransferBuffer) {
-  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  shm->CreateAndMapAnonymous(kBufferSize);
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      0, shm.Pass(), kBufferSize));
+      0, FakeBufferBacking::Make()));
 }
 
 TEST_F(TransferBufferManagerTest, CannotRegisterNegativeTransferBufferId) {
   scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
   shm->CreateAndMapAnonymous(kBufferSize);
   EXPECT_FALSE(transfer_buffer_manager_->RegisterTransferBuffer(
-      -1, shm.Pass(), kBufferSize));
+      -1, FakeBufferBacking::Make()));
 }
 
 }  // namespace gpu

@@ -75,7 +75,8 @@ scoped_refptr<gpu::Buffer> MockCommandBufferBase::CreateTransferBuffer(
     int32 ndx = *id - kTransferBufferBaseId;
     scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(size);
-    transfer_buffer_buffers_[ndx] = new gpu::Buffer(shared_memory.Pass(), size);
+    transfer_buffer_buffers_[ndx] =
+        MakeBufferFromSharedMemory(shared_memory.Pass(), size);
   }
   return GetTransferBuffer(*id);
 }

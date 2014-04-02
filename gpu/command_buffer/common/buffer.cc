@@ -9,11 +9,23 @@
 #include "base/numerics/safe_math.h"
 
 namespace gpu {
+SharedMemoryBufferBacking::SharedMemoryBufferBacking(
+    scoped_ptr<base::SharedMemory> shared_memory,
+    size_t size)
+    : shared_memory_(shared_memory.Pass()), size_(size) {}
 
-Buffer::Buffer(scoped_ptr<base::SharedMemory> shared_memory, size_t size)
-    : shared_memory_(shared_memory.Pass()),
-      memory_(shared_memory_->memory()),
-      size_(size) {
+SharedMemoryBufferBacking::~SharedMemoryBufferBacking() {}
+
+void* SharedMemoryBufferBacking::GetMemory() const {
+  return shared_memory_->memory();
+}
+
+size_t SharedMemoryBufferBacking::GetSize() const { return size_; }
+
+Buffer::Buffer(scoped_ptr<BufferBacking> backing)
+    : backing_(backing.Pass()),
+      memory_(backing_->GetMemory()),
+      size_(backing_->GetSize()) {
   DCHECK(memory_) << "The memory must be mapped to create a Buffer";
 }
 

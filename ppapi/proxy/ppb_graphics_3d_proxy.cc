@@ -297,9 +297,11 @@ void PPB_Graphics3D_Proxy::OnMsgCreateTransferBuffer(
         enter.object()->CreateTransferBuffer(size, id);
     if (!buffer)
       return;
-    DCHECK(buffer->shared_memory());
+    gpu::SharedMemoryBufferBacking* backing =
+        static_cast<gpu::SharedMemoryBufferBacking*>(buffer->backing());
+    DCHECK(backing && backing->shared_memory());
     transfer_buffer->set_shmem(
-        TransportSHMHandle(dispatcher(), buffer->shared_memory()),
+        TransportSHMHandle(dispatcher(), backing->shared_memory()),
         buffer->size());
   } else {
     *id = -1;

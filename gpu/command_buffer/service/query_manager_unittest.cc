@@ -93,7 +93,8 @@ class QueryManagerTest : public testing::Test {
     MockCommandBufferEngine() {
       scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
       shared_memory->CreateAndMapAnonymous(kSharedBufferSize);
-      valid_buffer_ = new gpu::Buffer(shared_memory.Pass(), kSharedBufferSize);
+      valid_buffer_ =
+          MakeBufferFromSharedMemory(shared_memory.Pass(), kSharedBufferSize);
       data_ = static_cast<uint8*>(valid_buffer_->memory());
       ClearSharedMemory();
     }

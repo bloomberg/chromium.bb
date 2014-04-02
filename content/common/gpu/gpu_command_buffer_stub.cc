@@ -542,11 +542,14 @@ void GpuCommandBufferStub::OnInitialize(
                    base::Unretained(this)));
   }
 
-  if (!command_buffer_->SetSharedStateBuffer(shared_state_shm.Pass())) {
-    DLOG(ERROR) << "Failed to map shared stae buffer.";
+  const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
+  if (!shared_state_shm->Map(kSharedStateSize)) {
+    DLOG(ERROR) << "Failed to map shared state buffer.";
     OnInitializeFailed(reply_message);
     return;
   }
+  command_buffer_->SetSharedStateBuffer(gpu::MakeBackingFromSharedMemory(
+      shared_state_shm.Pass(), kSharedStateSize));
 
   GpuCommandBufferMsg_Initialize::WriteReplyParams(
       reply_message, true, gpu_control_->GetCapabilities());
@@ -694,8 +697,10 @@ void GpuCommandBufferStub::OnRegisterTransferBuffer(
     return;
   }
 
-  if (command_buffer_)
-    command_buffer_->RegisterTransferBuffer(id, shared_memory.Pass(), size);
+  if (command_buffer_) {
+    command_buffer_->RegisterTransferBuffer(
+        id, gpu::MakeBackingFromSharedMemory(shared_memory.Pass(), size));
+  }
 }
 
 void GpuCommandBufferStub::OnDestroyTransferBuffer(int32 id) {

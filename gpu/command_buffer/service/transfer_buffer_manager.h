@@ -20,10 +20,8 @@ class GPU_EXPORT TransferBufferManagerInterface {
  public:
   virtual ~TransferBufferManagerInterface();
 
-  virtual bool RegisterTransferBuffer(
-      int32 id,
-      scoped_ptr<base::SharedMemory> shared_memory,
-      size_t size) = 0;
+  virtual bool RegisterTransferBuffer(int32 id,
+                                      scoped_ptr<BufferBacking> buffer) = 0;
   virtual void DestroyTransferBuffer(int32 id) = 0;
   virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) = 0;
 };
@@ -34,10 +32,9 @@ class GPU_EXPORT TransferBufferManager
   TransferBufferManager();
 
   bool Initialize();
-  virtual bool RegisterTransferBuffer(
-      int32 id,
-      scoped_ptr<base::SharedMemory> shared_memory,
-      size_t size) OVERRIDE;
+  virtual bool RegisterTransferBuffer(int32 id,
+                                      scoped_ptr<BufferBacking> buffer_backing)
+      OVERRIDE;
   virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
   virtual scoped_refptr<Buffer> GetTransferBuffer(int32 id) OVERRIDE;
 

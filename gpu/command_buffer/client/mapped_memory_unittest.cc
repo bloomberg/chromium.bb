@@ -102,7 +102,7 @@ class MemoryChunkTest : public MappedMemoryTestBase {
     MappedMemoryTestBase::SetUp();
     scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
     shared_memory->CreateAndMapAnonymous(kBufferSize);
-    buffer_ = new gpu::Buffer(shared_memory.Pass(), kBufferSize);
+    buffer_ = MakeBufferFromSharedMemory(shared_memory.Pass(), kBufferSize);
     chunk_.reset(new MemoryChunk(kShmId,
                                  buffer_,
                                  helper_.get(),

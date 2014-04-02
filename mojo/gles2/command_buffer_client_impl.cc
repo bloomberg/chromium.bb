@@ -125,7 +125,7 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
       *id, handle, static_cast<uint32_t>(size));
 
   scoped_refptr<gpu::Buffer> buffer =
-      new gpu::Buffer(shared_memory.Pass(), size);
+      gpu::MakeBufferFromSharedMemory(shared_memory.Pass(), size);
   return buffer;
 }
 

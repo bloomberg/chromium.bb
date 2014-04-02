@@ -37,7 +37,7 @@ class GpuSchedulerTest : public testing::Test {
     shared_memory->CreateAndMapAnonymous(kRingBufferSize);
     buffer_ = static_cast<int32*>(shared_memory->memory());
     shared_memory_buffer_ =
-        new gpu::Buffer(shared_memory.Pass(), kRingBufferSize);
+        MakeBufferFromSharedMemory(shared_memory.Pass(), kRingBufferSize);
     memset(buffer_, 0, kRingBufferSize);
 
     command_buffer_.reset(new MockCommandBuffer);
