@@ -45,6 +45,7 @@
 #include <windows.h>
 #include <objidl.h>
 #include <mlang.h>
+struct IDWriteFactory;
 #endif
 
 #if OS(ANDROID)
@@ -100,6 +101,7 @@ public:
     bool useSubpixelPositioning() const { return s_useSubpixelPositioning; }
     SkFontMgr* fontManager() { return m_fontManager.get(); }
     static void setUseDirectWrite(bool useDirectWrite) { s_useDirectWrite = useDirectWrite; }
+    static void setDirectWriteFactory(IDWriteFactory* factory) { s_directWriteFactory = factory; }
     static void setUseSubpixelPositioning(bool useSubpixelPositioning) { s_useSubpixelPositioning = useSubpixelPositioning; }
 #endif
 
@@ -150,6 +152,7 @@ private:
 #if OS(WIN)
     OwnPtr<SkFontMgr> m_fontManager;
     static bool s_useDirectWrite;
+    static IDWriteFactory* s_directWriteFactory;
     static bool s_useSubpixelPositioning;
 #endif
 

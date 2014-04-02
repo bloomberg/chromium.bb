@@ -16,6 +16,12 @@ void WebFontRendering::setUseDirectWrite(bool useDirectWrite)
 }
 
 // static
+void WebFontRendering::setDirectWriteFactory(IDWriteFactory* factory)
+{
+    WebCore::FontCache::setDirectWriteFactory(factory);
+}
+
+// static
 void WebFontRendering::setUseSubpixelPositioning(bool useSubpixelPositioning)
 {
     WebCore::FontCache::setUseSubpixelPositioning(useSubpixelPositioning);

@@ -7,11 +7,14 @@
 
 #include "public/platform/WebCommon.h"
 
+struct IDWriteFactory;
+
 namespace blink {
 
 class WebFontRendering {
 public:
     BLINK_EXPORT static void setUseDirectWrite(bool);
+    BLINK_EXPORT static void setDirectWriteFactory(IDWriteFactory*);
     BLINK_EXPORT static void setUseSubpixelPositioning(bool);
 };
 
