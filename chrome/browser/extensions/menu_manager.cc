@@ -812,6 +812,8 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
 
   MenuItem::List items = MenuItemsFromValue(extension_id, value.get());
   for (size_t i = 0; i < items.size(); ++i) {
+    bool added = false;
+
     if (items[i]->parent_id()) {
       // Parent IDs are stored in the parent_id field for convenience, but
       // they have not yet been validated. Separate them out here.
@@ -819,10 +821,13 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
       // precede children, so we should already know about any parent items.
       scoped_ptr<MenuItem::Id> parent_id;
       parent_id.swap(items[i]->parent_id_);
-      AddChildItem(*parent_id, items[i]);
+      added = AddChildItem(*parent_id, items[i]);
     } else {
-      AddContextItem(extension, items[i]);
+      added = AddContextItem(extension, items[i]);
     }
+
+    if (!added)
+      delete items[i];
   }
 }
 
