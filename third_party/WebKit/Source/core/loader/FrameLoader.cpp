@@ -912,6 +912,8 @@ FrameLoadType FrameLoader::loadType() const
 // If you're thinking of using it elsewhere, stop right now and reconsider your life.
 static bool isDocumentDoneLoading(Document* document)
 {
+    if (!document->loader())
+        return true;
     if (document->loader()->isLoadingMainResource())
         return false;
     if (!document->loadEventFinished()) {
