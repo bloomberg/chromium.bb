@@ -202,11 +202,9 @@ void ChromeRenderMessageFilter::OnFPS(int routing_id, float fps) {
     return;
   }
 
-  base::ProcessId renderer_id = peer_pid();
-
 #if defined(ENABLE_TASK_MANAGER)
   TaskManager::GetInstance()->model()->NotifyFPS(
-      renderer_id, routing_id, fps);
+      peer_pid(), routing_id, fps);
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
