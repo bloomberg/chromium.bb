@@ -132,7 +132,7 @@ TEST_F(AnimationDocumentTimelineTest, HasStarted)
 
 TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 {
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector());
+    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
     RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
 
     timeline->play(anim.get());
@@ -149,7 +149,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 
 TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
 {
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector());
+    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
     timing.fillMode = Timing::FillModeForwards;
     RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
 
@@ -193,8 +193,8 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
     timing.fillMode = Timing::FillModeForwards;
-    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
-    RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
+    RefPtr<Animation> anim1 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
+    RefPtr<Animation> anim2  = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
     AnimationPlayer* player1 = timeline->play(anim1.get());
     AnimationPlayer* player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
@@ -226,11 +226,11 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
     Timing timingAutoFill;
     timingAutoFill.iterationDuration = 2;
 
-    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingForwardFill);
-    RefPtr<Animation> anim2 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingNoFill);
-    RefPtr<Animation> anim3 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingBackwardFillDelay);
-    RefPtr<Animation> anim4 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingNoFillDelay);
-    RefPtr<Animation> anim5 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timingAutoFill);
+    RefPtr<Animation> anim1 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingForwardFill);
+    RefPtr<Animation> anim2 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFill);
+    RefPtr<Animation> anim3 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingBackwardFillDelay);
+    RefPtr<Animation> anim4 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFillDelay);
+    RefPtr<Animation> anim5 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingAutoFill);
 
     timeline->play(anim1.get());
     timeline->play(anim2.get());
