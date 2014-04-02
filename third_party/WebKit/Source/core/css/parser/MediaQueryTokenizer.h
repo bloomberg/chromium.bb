@@ -40,7 +40,7 @@ private:
     String consumeName();
     UChar consumeEscape();
 
-    bool nextTwoCharsAreValidEscape();
+    bool nextTwoCharsAreValidEscape(unsigned offset);
     bool nextCharsAreNumber();
     bool nextCharsAreIdentifier();
 

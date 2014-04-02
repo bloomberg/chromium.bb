@@ -19,6 +19,7 @@ TEST(MediaQueryTokenizerTest, Basic)
 {
     TestCase testCases[] = {
         { "(max-width: 50px)", "(max-width: 50px)" },
+        { "(max-width: 50\\70\\78)", "(max-width: 50px)" },
         { "(max-width: /* comment */50px)", "(max-width: 50px)" },
         { "(max-width: /** *commen*t */60px)", "(max-width: 60px)" },
         { "(max-width: /** *commen*t **/70px)", "(max-width: 70px)" },

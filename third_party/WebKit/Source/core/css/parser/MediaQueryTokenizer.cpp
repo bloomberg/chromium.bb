@@ -353,20 +353,19 @@ String MediaQueryTokenizer::consumeName()
 {
     // FIXME: Is this as efficient as it can be?
     // The possibility of escape chars mandates a copy AFAICT.
-    Vector<UChar> result;
+    StringBuilder result;
     while (true) {
-        if (isNameChar(m_input.currentInputChar())) {
-            result.append(consume());
+        UChar cc = consume();
+        if (isNameChar(cc)) {
+            result.append(cc);
             continue;
         }
-        if (nextTwoCharsAreValidEscape()) {
-            // "consume()" fixes a spec bug.
-            // The first code point should be consumed before consuming the escaped code point.
-            consume();
+        if (twoCharsAreValidEscape(cc, m_input.currentInputChar())) {
             result.append(consumeEscape());
             continue;
         }
-        return String(result);
+        reconsume(cc);
+        return result.toString();
     }
 }
 
@@ -377,14 +376,15 @@ UChar MediaQueryTokenizer::consumeEscape()
     ASSERT(cc != '\n');
     if (isASCIIHexDigit(cc)) {
         unsigned consumedHexDigits = 1;
-        String hexChars;
-        do {
-            hexChars.append(cc);
+        StringBuilder hexChars;
+        hexChars.append(cc);
+        while (consumedHexDigits < 6 && isASCIIHexDigit(m_input.currentInputChar())) {
             cc = consume();
+            hexChars.append(cc);
             consumedHexDigits++;
-        } while (consumedHexDigits < 6 && isASCIIHexDigit(cc));
+        };
         bool ok = false;
-        UChar codePoint = hexChars.toUIntStrict(&ok, 16);
+        UChar codePoint = hexChars.toString().toUIntStrict(&ok, 16);
         if (!ok)
             return WTF::Unicode::replacementCharacter;
         return codePoint;
@@ -396,11 +396,11 @@ UChar MediaQueryTokenizer::consumeEscape()
     return cc;
 }
 
-bool MediaQueryTokenizer::nextTwoCharsAreValidEscape()
+bool MediaQueryTokenizer::nextTwoCharsAreValidEscape(unsigned offset)
 {
-    if (m_input.leftChars() < 2)
+    if (m_input.leftChars() < offset + 1)
         return false;
-    return twoCharsAreValidEscape(m_input.peek(1), m_input.peek(2));
+    return twoCharsAreValidEscape(m_input.peek(offset), m_input.peek(offset + 1));
 }
 
 // http://www.w3.org/TR/css3-syntax/#starts-with-a-number
@@ -421,13 +421,13 @@ bool MediaQueryTokenizer::nextCharsAreNumber()
 bool MediaQueryTokenizer::nextCharsAreIdentifier()
 {
     UChar firstChar = m_input.currentInputChar();
-    if (isNameStart(firstChar) || nextTwoCharsAreValidEscape())
+    if (isNameStart(firstChar) || nextTwoCharsAreValidEscape(0))
         return true;
 
     if (firstChar == '-') {
         if (isNameStart(m_input.peek(1)))
             return true;
-        return nextTwoCharsAreValidEscape();
+        return nextTwoCharsAreValidEscape(1);
     }
 
     return false;
