@@ -748,6 +748,11 @@ void Resource::revalidationFailed()
     clearResourceToRevalidate();
 }
 
+bool Resource::hasOneHandle() const
+{
+    return m_handleCount == 1 || (memoryCache()->contains(this) && m_handleCount == 2);
+}
+
 void Resource::registerHandle(ResourcePtrBase* h)
 {
     assertAlive();

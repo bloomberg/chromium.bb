@@ -198,7 +198,8 @@ public:
     CachedMetadata* cachedMetadata(unsigned dataTypeID) const;
 
     bool canDelete() const { return !hasClients() && !m_loader && !m_preloadCount && !m_handleCount && !m_protectorCount && !m_resourceToRevalidate && !m_proxyResource; }
-    bool hasOneHandle() const { return m_handleCount == 1; }
+
+    bool hasOneHandle() const;
 
     // List of acceptable MIME types separated by ",".
     // A MIME type may contain a wildcard, e.g. "text/*".
