@@ -202,7 +202,6 @@ RenderLayerCompositor::RenderLayerCompositor(RenderView& renderView)
     , m_hasAcceleratedCompositing(true)
     , m_showRepaintCounter(false)
     , m_needsToRecomputeCompositingRequirements(false)
-    , m_needsToUpdateLayerTreeGeometry(false)
     , m_compositing(false)
     , m_compositingLayersNeedRebuild(false)
     , m_forceCompositingMode(false)
@@ -368,21 +367,15 @@ void RenderLayerCompositor::setNeedsCompositingUpdate(CompositingUpdateType upda
         break;
     case CompositingUpdateAfterStyleChange:
         m_needsToRecomputeCompositingRequirements = true;
-        m_needsToUpdateLayerTreeGeometry = true;
         break;
     case CompositingUpdateAfterLayout:
         m_needsToRecomputeCompositingRequirements = true;
-        m_needsToUpdateLayerTreeGeometry = true;
         break;
     case CompositingUpdateOnScroll:
         m_needsToRecomputeCompositingRequirements = true; // Overlap can change with scrolling, so need to check for hierarchy updates.
-        m_needsToUpdateLayerTreeGeometry = true;
         break;
     case CompositingUpdateOnCompositedScroll:
-        m_needsToUpdateLayerTreeGeometry = true;
-        break;
     case CompositingUpdateAfterCanvasContextChange:
-        m_needsToUpdateLayerTreeGeometry = true;
         break;
     }
 
@@ -439,7 +432,7 @@ void RenderLayerCompositor::scheduleAnimationIfNeeded()
 
 bool RenderLayerCompositor::hasUnresolvedDirtyBits()
 {
-    return m_needsToRecomputeCompositingRequirements || m_compositingLayersNeedRebuild || m_needsToUpdateLayerTreeGeometry || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType > CompositingUpdateNone;
+    return m_needsToRecomputeCompositingRequirements || m_compositingLayersNeedRebuild || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType > CompositingUpdateNone;
 }
 
 void RenderLayerCompositor::updateCompositingLayersInternal()
@@ -457,10 +450,9 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
 
     bool needCompositingRequirementsUpdate = m_needsToRecomputeCompositingRequirements;
     bool needHierarchyAndGeometryUpdate = m_compositingLayersNeedRebuild;
-    bool needGeometryUpdate = m_needsToUpdateLayerTreeGeometry;
     bool needsToUpdateScrollingCoordinator = scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
 
-    if (!needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needGeometryUpdate && !needsToUpdateScrollingCoordinator)
+    if (updateType == CompositingUpdateNone && !needCompositingRequirementsUpdate && !needHierarchyAndGeometryUpdate && !needsToUpdateScrollingCoordinator)
         return;
 
     m_pendingUpdateType = CompositingUpdateNone;
@@ -476,7 +468,6 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
 
     // Only clear the flags if we're updating the entire hierarchy.
     m_compositingLayersNeedRebuild = false;
-    m_needsToUpdateLayerTreeGeometry = false;
     m_needsToRecomputeCompositingRequirements = false;
 
     RenderLayer* updateRoot = rootRenderLayer();
@@ -527,7 +518,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
             needHierarchyAndGeometryUpdate = true;
     }
 
-    if (needGeometryUpdate || needHierarchyAndGeometryUpdate) {
+    if (updateType >= CompositingUpdateAfterStyleChange || needHierarchyAndGeometryUpdate) {
         TRACE_EVENT0("blink_rendering", "GraphicsLayerUpdater::updateRecursive");
         GraphicsLayerUpdater().update(*updateRoot, graphicsLayerUpdateType);
 #if !ASSERT_DISABLED

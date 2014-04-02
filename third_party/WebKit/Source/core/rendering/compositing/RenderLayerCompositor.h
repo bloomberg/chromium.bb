@@ -325,7 +325,6 @@ private:
     bool m_showRepaintCounter;
 
     bool m_needsToRecomputeCompositingRequirements;
-    bool m_needsToUpdateLayerTreeGeometry;
 
     bool m_compositing;
     bool m_compositingLayersNeedRebuild;
