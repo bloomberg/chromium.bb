@@ -38,7 +38,7 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
         ".word " NACL_TO_STRING(NACL_INSTR_ARM_ABORT_NOW) "\n"
         ".popsection\n");
 #elif defined(__mips__)
-__asm__(".pushsection .text, \"ax\", %progbits\n"
+__asm__(".pushsection .text, \"ax\", @progbits\n"
         "fault_addr:\n"
         ".word 0x0000000d\n" /* Break instruction on MIPS. */
         ".popsection\n");

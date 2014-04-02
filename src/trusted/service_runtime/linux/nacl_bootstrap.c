@@ -681,7 +681,7 @@ asm(".pushsection \".text\",\"ax\",%progbits\n"
     ".popsection"
     );
 #elif defined(__mips__)
-asm(".pushsection \".text\",\"ax\",%progbits\n"
+asm(".pushsection \".text\",\"ax\",@progbits\n"
     ".globl _start\n"
     ".type _start,@function\n"
     "_start:\n"

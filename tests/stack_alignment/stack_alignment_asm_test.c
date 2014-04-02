@@ -63,7 +63,7 @@ static const int kStackPadBelowAlign = 0;
 #elif defined(__mips__)
 
 __asm__(
-    ".pushsection .text, \"ax\", %progbits\n"
+    ".pushsection .text, \"ax\", @progbits\n"
     ".set noreorder\n"
     ".global ThreadStartWrapper\n"
     "ThreadStartWrapper:\n"

@@ -91,7 +91,7 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
         "str r0, [r0]\n"
         ".popsection\n");
 #elif defined(__mips__)
-__asm__(".pushsection .text, \"ax\", %progbits\n"
+__asm__(".pushsection .text, \"ax\", @progbits\n"
         ".p2align 4\n"
         ".global crash_at_known_address\n"
         "crash_at_known_address:\n"

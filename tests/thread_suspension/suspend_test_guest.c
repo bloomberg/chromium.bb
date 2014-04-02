@@ -216,7 +216,7 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
         "bx r4\n"
         ".popsection\n");
 #elif defined(__mips__)
-__asm__(".pushsection .text, \"ax\", %progbits\n"
+__asm__(".pushsection .text, \"ax\", @progbits\n"
         ".p2align 4\n"
         ".global SyscallReturnAddress\n"
         "SyscallReturnAddress:\n"

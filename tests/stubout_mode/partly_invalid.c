@@ -15,9 +15,11 @@ __asm__("unfixed_code: ret\n");
  * We need to mark unfixed_code as global, otherwise linker can not resolve pic
  * CALL16 relocation against local symbol unfixed_code.
  */
-__asm__(".global unfixed_code\n"
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        ".global unfixed_code\n"
         "unfixed_code: jr $ra\n"
-                      "nop\n");
+                      "nop\n"
+        ".popsection\n");
 #else
 # error "Unsupported architecture"
 #endif
@@ -40,10 +42,12 @@ __asm__(".p2align 5\n"
         ".fill 1000, 2, 0x050f\n"
         ".p2align 5\n");
 #elif defined(__mips__)
-__asm__(".p2align 4\n"
+__asm__(".pushsection .text, \"ax\", @progbits\n"
+        ".p2align 4\n"
         /* "0xc" disassembles to "syscall". */
         ".fill 1000, 4, 0x0000000c\n"
-        ".p2align 4\n");
+        ".p2align 4\n"
+        ".popsection\n");
 #else
 # error "Unsupported architecture"
 #endif
