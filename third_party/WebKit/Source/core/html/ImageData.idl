@@ -30,10 +30,10 @@
     Constructor(Uint8ClampedArray data, unsigned long width, [Default=Undefined] optional unsigned long height),
     Constructor(unsigned long width, unsigned long height),
     Custom=Wrap,
+    GlobalContext=Window&WorkerGlobalScope,
     RaisesException=Constructor,
     WillBeGarbageCollected,
 ] interface ImageData {
     readonly attribute long width;
     readonly attribute long height;
 };
-

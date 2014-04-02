@@ -32,6 +32,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] IDBRequest
 [Worker] IDBTransaction
 [Worker] IDBVersionChangeEvent
+[Worker] ImageData
 [Worker] Int16Array
 [Worker] Int32Array
 [Worker] Int8Array
