@@ -248,7 +248,8 @@ void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
   // BookmarkModel to indicate what changed.
   bookmarks::OnChanged::ChangeInfo change_info;
   change_info.title = base::UTF16ToUTF8(node->GetTitle());
-  change_info.url.reset(new std::string(node->url().spec()));
+  if (node->is_url())
+    change_info.url.reset(new std::string(node->url().spec()));
 
   DispatchEvent(bookmarks::OnChanged::kEventName,
                 bookmarks::OnChanged::Create(base::Int64ToString(node->id()),

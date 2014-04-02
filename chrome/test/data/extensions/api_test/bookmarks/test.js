@@ -504,6 +504,24 @@ chrome.test.runTests([
       chrome.test.assertTrue(compareNode(node3, results[0]));
       chrome.test.assertTrue(compareNode(node2, results[1]));
     }));
+  },
+
+  function updateFolder() {
+    chrome.bookmarks.create({title: 'folder'}, function(folder) {
+      var newTitle = 'changedFolder';
+      chrome.test.listenOnce(chrome.bookmarks.onChanged, pass(
+          function(id, changes) {
+        chrome.test.assertEq(folder.id, id);
+        chrome.test.assertEq(newTitle, changes.title);
+        chrome.test.assertFalse('url' in changes);
+      }));
+
+      chrome.bookmarks.update(folder.id, {title: newTitle}, pass(
+          function(result) {
+        chrome.test.assertEq(newTitle, result.title);
+        chrome.test.assertFalse('url' in result)
+      }));
+    });
   }
 ]);
 }
