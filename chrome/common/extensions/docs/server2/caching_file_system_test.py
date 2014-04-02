@@ -87,9 +87,9 @@ class CachingFileSystemTest(unittest.TestCase):
     # The stat/read should happen before resolving the Future, and resolving
     # the future shouldn't do any additional work.
     get_future = file_system.ReadSingle('bob/bob0')
-    self.assertTrue(*mock_fs.CheckAndReset(read_count=1, stat_count=1))
+    self.assertTrue(*mock_fs.CheckAndReset(read_count=1))
     self.assertEqual('bob/bob0 contents', get_future.Get())
-    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=1))
+    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=1, stat_count=1))
 
     # Resource has been cached, so test resource is not re-fetched.
     self.assertEqual('bob/bob0 contents',
@@ -118,10 +118,10 @@ class CachingFileSystemTest(unittest.TestCase):
     test_fs.IncrementStat();
     futures = (file_system.ReadSingle('bob/bob1'),
                file_system.ReadSingle('bob/bob0'))
-    self.assertTrue(*mock_fs.CheckAndReset(read_count=2, stat_count=1))
+    self.assertTrue(*mock_fs.CheckAndReset(read_count=2))
     self.assertEqual(('bob/bob1 contents', 'bob/bob0 contents'),
                      tuple(future.Get() for future in futures))
-    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=2))
+    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=2, stat_count=1))
     self.assertEqual('bob/bob1 contents',
                      file_system.ReadSingle('bob/bob1').Get())
     self.assertTrue(*mock_fs.CheckAndReset())
@@ -133,11 +133,11 @@ class CachingFileSystemTest(unittest.TestCase):
     futures = (file_system.ReadSingle('bob/bob1'),
                file_system.ReadSingle('bob/bob2'),
                file_system.ReadSingle('bob/bob3'))
-    self.assertTrue(*mock_fs.CheckAndReset(read_count=3, stat_count=1))
+    self.assertTrue(*mock_fs.CheckAndReset(read_count=3))
     self.assertEqual(
         ('bob/bob1 contents', 'bob/bob2 contents', 'bob/bob3 contents'),
         tuple(future.Get() for future in futures))
-    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=3))
+    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=3, stat_count=1))
 
     test_fs.IncrementStat(path='bob/bob0')
     file_system = create_empty_caching_fs()
@@ -152,9 +152,9 @@ class CachingFileSystemTest(unittest.TestCase):
     file_system = create_empty_caching_fs()
     file_system._stat_object_store.Del('bob/bob0')
     future = file_system.ReadSingle('bob/bob0')
-    self.assertTrue(*mock_fs.CheckAndReset(read_count=1, stat_count=1))
+    self.assertTrue(*mock_fs.CheckAndReset(read_count=1))
     self.assertEqual('bob/bob0 contents', future.Get())
-    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=1))
+    self.assertTrue(*mock_fs.CheckAndReset(read_resolve_count=1, stat_count=1))
     self.assertEqual('bob/bob0 contents',
                      file_system.ReadSingle('bob/bob0').Get())
     self.assertTrue(*mock_fs.CheckAndReset())
@@ -219,20 +219,20 @@ class CachingFileSystemTest(unittest.TestCase):
     test_fs.IncrementStat()
     run_expecting_stat('1')
 
-  def testSkipNotFound(self):
-    caching_fs = self._CreateCachingFileSystem(TestFileSystem({
-      'bob': {
-        'bob0': 'bob/bob0 contents',
-        'bob1': 'bob/bob1 contents'
-      }
-    }))
-    def read_skip_not_found(paths):
-      return caching_fs.Read(paths, skip_not_found=True).Get()
-    self.assertEqual({}, read_skip_not_found(('grub',)))
-    self.assertEqual({}, read_skip_not_found(('bob/bob2',)))
-    self.assertEqual({
-      'bob/bob0': 'bob/bob0 contents',
-    }, read_skip_not_found(('bob/bob0', 'bob/bob2')))
+    def testSkipNotFound(self):
+      caching_fs = self._CreateCachingFileSystem(TestFileSystem({
+        'bob': {
+          'bob0': 'bob/bob0 contents',
+          'bob1': 'bob/bob1 contents'
+        }
+      }))
+      def read_skip_not_found(paths):
+        return caching_fs.Read(paths, skip_not_found=True).Get()
+      self.assertEqual({}, read_skip_not_found(('grub',)))
+      self.assertEqual({}, read_skip_not_found(('bob/bob2',)))
+      self.assertEqual({
+        'bob/bob0': 'bob/bob0 contents',
+      }, read_skip_not_found(('bob/bob0', 'bob/bob2')))
 
 
 if __name__ == '__main__':

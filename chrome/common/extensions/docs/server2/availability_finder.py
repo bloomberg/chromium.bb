@@ -81,11 +81,9 @@ class AvailabilityFinder(object):
       # API schema filenames switch format to unix_hacker_style.
       api_name = UnixName(api_name)
 
-    futures = [(path, file_system.ReadSingle(path))
-               for path in API_PATHS]
-    for path, future in futures:
+    found_files = file_system.Read(API_PATHS, skip_not_found=True)
+    for path, filenames in found_files.Get().iteritems():
       try:
-        filenames = future.Get()
         for ext in ('json', 'idl'):
           filename = '%s.%s' % (api_name, ext)
           if filename in filenames:

@@ -170,34 +170,41 @@ class SubversionFileSystem(FileSystem):
     return Future(value=())
 
   def Stat(self, path):
+    return self.StatAsync(path).Get()
+
+  def StatAsync(self, path):
     directory, filename = posixpath.split(path)
     if self._revision is not None:
       # |stat_fetch| uses viewvc which uses pathrev= for version.
       directory += '?pathrev=%s' % self._revision
 
-    try:
-      result = self._stat_fetcher.Fetch(directory)
-    except Exception as e:
-      exc_type = FileNotFoundError if IsDownloadError(e) else FileSystemError
-      raise exc_type('%s fetching %s for Stat: %s' %
-                     (type(e).__name__, path, traceback.format_exc()))
+    result_future = self._stat_fetcher.FetchAsync(directory)
+    def resolve():
+      try:
+        result = result_future.Get()
+      except Exception as e:
+        exc_type = FileNotFoundError if IsDownloadError(e) else FileSystemError
+        raise exc_type('%s fetching %s for Stat: %s' %
+                       (type(e).__name__, path, traceback.format_exc()))
 
-    if result.status_code == 404:
-      raise FileNotFoundError('Got 404 when fetching %s for Stat, content %s' %
-          (path, result.content))
-    if result.status_code != 200:
-      raise FileNotFoundError('Got %s when fetching %s for Stat, content %s' %
-          (result.status_code, path, result.content))
+      if result.status_code == 404:
+        raise FileNotFoundError('Got 404 when fetching %s for Stat, '
+                                'content %s' % (path, result.content))
+      if result.status_code != 200:
+        raise FileNotFoundError('Got %s when fetching %s for Stat, content %s' %
+                                (result.status_code, path, result.content))
 
-    stat_info = _CreateStatInfo(result.content)
-    if stat_info.version is None:
-      raise FileSystemError('Failed to find version of dir %s' % directory)
-    if path == '' or path.endswith('/'):
-      return stat_info
-    if filename not in stat_info.child_versions:
-      raise FileNotFoundError(
-          '%s from %s was not in child versions for Stat' % (filename, path))
-    return StatInfo(stat_info.child_versions[filename])
+      stat_info = _CreateStatInfo(result.content)
+      if stat_info.version is None:
+        raise FileSystemError('Failed to find version of dir %s' % directory)
+      if path == '' or path.endswith('/'):
+        return stat_info
+      if filename not in stat_info.child_versions:
+        raise FileNotFoundError(
+            '%s from %s was not in child versions for Stat' % (filename, path))
+      return StatInfo(stat_info.child_versions[filename])
+
+    return Future(callback=resolve)
 
   def GetIdentity(self):
     # NOTE: no revision here, since it would mess up the caching of reads. It

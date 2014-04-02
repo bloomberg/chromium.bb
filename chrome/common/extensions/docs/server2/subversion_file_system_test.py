@@ -60,7 +60,8 @@ class SubversionFileSystemTest(unittest.TestCase):
     file_system, fetcher = _CreateSubversionFileSystem(
         _SHARED_FILE_SYSTEM_TEST_DATA)
     stat_info = file_system.Stat('stat/')
-    self.assertTrue(*fetcher.CheckAndReset(sync_count=1))
+    self.assertTrue(*fetcher.CheckAndReset(async_count=1,
+                                           async_resolve_count=1))
     expected = StatInfo(
       '151113',
       child_versions=json.loads(ReadFile(
@@ -71,7 +72,8 @@ class SubversionFileSystemTest(unittest.TestCase):
     file_system, fetcher = _CreateSubversionFileSystem(
         _SHARED_FILE_SYSTEM_TEST_DATA)
     stat_info = file_system.Stat('stat/extension_api.h')
-    self.assertTrue(*fetcher.CheckAndReset(sync_count=1))
+    self.assertTrue(*fetcher.CheckAndReset(async_count=1,
+                                           async_resolve_count=1))
     self.assertEqual(StatInfo('146163'), stat_info)
 
   def testRevisions(self):
@@ -130,11 +132,11 @@ class SubversionFileSystemTest(unittest.TestCase):
     self.assertEqual('193838', dir_stat.version)
     self.assertEqual({}, dir_stat.child_versions)
 
-  def testSkipNotFound(self):
-    file_system, _ = _CreateSubversionFileSystem(
-        _SUBVERSION_FILE_SYSTEM_TEST_DATA)
-    self.assertEqual({}, file_system.Read(('fakefile',),
-                                          skip_not_found=True).Get())
+    def testSkipNotFound(self):
+      file_system, _ = _CreateSubversionFileSystem(
+          _SUBVERSION_FILE_SYSTEM_TEST_DATA)
+      self.assertEqual({}, file_system.Read(('fakefile',),
+                                            skip_not_found=True).Get())
 
 
 if __name__ == '__main__':

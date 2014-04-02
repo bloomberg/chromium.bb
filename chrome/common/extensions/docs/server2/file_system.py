@@ -131,6 +131,12 @@ class FileSystem(object):
     '''
     raise NotImplementedError(self.__class__)
 
+  def StatAsync(self, path):
+    '''Bandaid for a lack of an async Stat function. Stat() should be async
+    by default but for now just let implementations override this if they like.
+    '''
+    return Future(callback=lambda: self.Stat(path))
+
   def GetIdentity(self):
     '''The identity of the file system, exposed for caching classes to
     namespace their caches. this will usually depend on the configuration of
