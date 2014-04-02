@@ -3171,6 +3171,16 @@ static void Pnacl_M25_PPB_NaCl_Private_ReportLoadError(PP_Instance instance, PP_
   iface->ReportLoadError(instance, error, error_message, console_message);
 }
 
+static void Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort(PP_Instance instance) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->ReportLoadAbort(instance);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_ReportDeadNexe(PP_Instance instance, int64_t crash_time) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->ReportDeadNexe(instance, crash_time);
+}
+
 static void Pnacl_M25_PPB_NaCl_Private_InstanceCreated(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->InstanceCreated(instance);
@@ -3206,11 +3216,6 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetNexeErrorReported(PP_Instance insta
   return iface->GetNexeErrorReported(instance);
 }
 
-static void Pnacl_M25_PPB_NaCl_Private_SetNexeErrorReported(PP_Instance instance, PP_Bool error_reported) {
-  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
-  iface->SetNexeErrorReported(instance, error_reported);
-}
-
 static PP_NaClReadyState Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState(PP_Instance instance) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   return iface->GetNaClReadyState(instance);
@@ -3229,6 +3234,16 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_GetIsInstalled(PP_Instance instance) {
 static void Pnacl_M25_PPB_NaCl_Private_SetIsInstalled(PP_Instance instance, PP_Bool is_installed) {
   const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
   iface->SetIsInstalled(instance, is_installed);
+}
+
+static int64_t Pnacl_M25_PPB_NaCl_Private_GetReadyTime(PP_Instance instance) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->GetReadyTime(instance);
+}
+
+static void Pnacl_M25_PPB_NaCl_Private_SetReadyTime(PP_Instance instance, int64_t ready_time) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->SetReadyTime(instance, ready_time);
 }
 
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
@@ -5125,6 +5140,8 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty,
     .ReportLoadSuccess = (void (*)(PP_Instance instance, const char* url, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_ReportLoadSuccess,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, const char* error_message, const char* console_message))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
+    .ReportLoadAbort = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_ReportLoadAbort,
+    .ReportDeadNexe = (void (*)(PP_Instance instance, int64_t crash_time))&Pnacl_M25_PPB_NaCl_Private_ReportDeadNexe,
     .InstanceCreated = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceCreated,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
     .NaClDebugEnabledForURL = (PP_Bool (*)(const char* alleged_nmf_url))&Pnacl_M25_PPB_NaCl_Private_NaClDebugEnabledForURL,
@@ -5132,11 +5149,12 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .GetUrlScheme = (PP_UrlSchemeType (*)(struct PP_Var url))&Pnacl_M25_PPB_NaCl_Private_GetUrlScheme,
     .LogToConsole = (void (*)(PP_Instance instance, const char* message))&Pnacl_M25_PPB_NaCl_Private_LogToConsole,
     .GetNexeErrorReported = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNexeErrorReported,
-    .SetNexeErrorReported = (void (*)(PP_Instance instance, PP_Bool error_reported))&Pnacl_M25_PPB_NaCl_Private_SetNexeErrorReported,
     .GetNaClReadyState = (PP_NaClReadyState (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetNaClReadyState,
     .SetNaClReadyState = (void (*)(PP_Instance instance, PP_NaClReadyState ready_state))&Pnacl_M25_PPB_NaCl_Private_SetNaClReadyState,
     .GetIsInstalled = (PP_Bool (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetIsInstalled,
-    .SetIsInstalled = (void (*)(PP_Instance instance, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_SetIsInstalled
+    .SetIsInstalled = (void (*)(PP_Instance instance, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_SetIsInstalled,
+    .GetReadyTime = (int64_t (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_GetReadyTime,
+    .SetReadyTime = (void (*)(PP_Instance instance, int64_t ready_time))&Pnacl_M25_PPB_NaCl_Private_SetReadyTime
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

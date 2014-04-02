@@ -24,7 +24,9 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
+#include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/web/WebDOMResourceProgressEvent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -58,6 +60,20 @@ void HistogramEnumerateLoadStatus(PP_NaClError error_code,
       "NaCl.LoadStatus.Plugin.InstalledApp" :
       "NaCl.LoadStatus.Plugin.NotInstalledApp";
   HistogramEnumerate(name, error_code, PP_NACL_ERROR_MAX);
+}
+
+// Records values up to 3 minutes, 20 seconds.
+// These constants MUST match those in
+// ppapi/native_client/src/trusted/plugin/plugin.cc
+void HistogramTimeMedium(const std::string& name, int64_t sample) {
+  base::HistogramBase* counter = base::Histogram::FactoryTimeGet(
+      name,
+      base::TimeDelta::FromMilliseconds(10),
+      base::TimeDelta::FromMilliseconds(200000),
+      100,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (counter)
+    counter->AddTime(base::TimeDelta::FromMilliseconds(sample));
 }
 
 blink::WebString EventTypeToString(PP_NaClEventType event_type) {
@@ -102,6 +118,7 @@ NexeLoadManager::NexeLoadManager(
       nexe_error_reported_(false),
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
       weak_factory_(this) {
+  SetLastError("");
 }
 
 NexeLoadManager::~NexeLoadManager() {
@@ -155,9 +172,7 @@ void NexeLoadManager::ReportLoadError(PP_NaClError error,
   // event handler runs, the properties reflect the current load state.
   std::string error_string = std::string("NaCl module load failed: ") +
       std::string(error_message);
-  plugin_instance_->SetEmbedProperty(
-      ppapi::StringVar::StringToPPVar("lastError"),
-      ppapi::StringVar::StringToPPVar(error_string));
+  SetLastError(error_string);
 
   // Inform JavaScript that loading encountered an error and is complete.
   ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
@@ -172,14 +187,60 @@ void NexeLoadManager::ReportLoadError(PP_NaClError error,
                  weak_factory_.GetWeakPtr(),
                  ProgressEvent(PP_NACL_EVENT_LOADEND)));
 
-  HistogramEnumerate("NaCl.LoadStatus.Plugin", error,
-                     PP_NACL_ERROR_MAX);
-  std::string uma_name = is_installed_ ?
-                         "NaCl.LoadStatus.Plugin.InstalledApp" :
-                         "NaCl.LoadStatus.Plugin.NotInstalledApp";
-  HistogramEnumerate(uma_name, error, PP_NACL_ERROR_MAX);
-
+  HistogramEnumerateLoadStatus(error, is_installed_);
   LogToConsole(console_message);
+}
+
+void NexeLoadManager::ReportLoadAbort() {
+  // Check that we are on the main renderer thread.
+  DCHECK(content::RenderThread::Get());
+
+  // Set the readyState attribute to indicate we need to start over.
+  set_nacl_ready_state(PP_NACL_READY_STATE_DONE);
+  nexe_error_reported_ = true;
+
+  // Report an error in lastError and on the JavaScript console.
+  std::string error_string("NaCl module load failed: user aborted");
+  SetLastError(error_string);
+
+  // Inform JavaScript that loading was aborted and is complete.
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_ABORT)));
+
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_LOADEND)));
+
+  HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_ABORTED, is_installed_);
+  LogToConsole(error_string);
+}
+
+void NexeLoadManager::ReportDeadNexe(int64_t crash_time) {
+  if (nacl_ready_state_ == PP_NACL_READY_STATE_DONE &&  // After loadEnd
+      !nexe_error_reported_) {
+    // Crashes will be more likely near startup, so use a medium histogram
+    // instead of a large one.
+    HistogramTimeMedium(
+        "NaCl.ModuleUptime.Crash", (crash_time - ready_time_) / 1000);
+
+    std::string message("NaCl module crashed");
+    SetLastError(message);
+    LogToConsole(message);
+
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(&NexeLoadManager::DispatchEvent,
+                   weak_factory_.GetWeakPtr(),
+                   ProgressEvent(PP_NACL_EVENT_CRASH)));
+    nexe_error_reported_ = true;
+  }
+  // else ReportLoadError() and ReportLoadAbort() will be used by loading code
+  // to provide error handling.
 }
 
 void NexeLoadManager::DispatchEvent(const ProgressEvent &event) {
@@ -228,18 +289,26 @@ bool NexeLoadManager::nexe_error_reported() {
   return nexe_error_reported_;
 }
 
-void NexeLoadManager::set_nexe_error_reported(bool error_reported) {
-  nexe_error_reported_ = error_reported;
-}
-
 PP_NaClReadyState NexeLoadManager::nacl_ready_state() {
   return nacl_ready_state_;
 }
 
 void NexeLoadManager::set_nacl_ready_state(PP_NaClReadyState ready_state) {
   nacl_ready_state_ = ready_state;
-  SetReadOnlyProperty(ppapi::StringVar::StringToPPVar("readyState"),
-                      PP_MakeInt32(ready_state));
+  ppapi::ScopedPPVar ready_state_name(
+      ppapi::ScopedPPVar::PassRef(),
+      ppapi::StringVar::StringToPPVar("readyState"));
+  SetReadOnlyProperty(ready_state_name.get(), PP_MakeInt32(ready_state));
+}
+
+void NexeLoadManager::SetLastError(const std::string& error) {
+  ppapi::ScopedPPVar error_name_var(
+      ppapi::ScopedPPVar::PassRef(),
+      ppapi::StringVar::StringToPPVar("lastError"));
+  ppapi::ScopedPPVar error_var(
+      ppapi::ScopedPPVar::PassRef(),
+      ppapi::StringVar::StringToPPVar(error));
+  SetReadOnlyProperty(error_name_var.get(), error_var.get());
 }
 
 void NexeLoadManager::SetReadOnlyProperty(PP_Var key, PP_Var value) {

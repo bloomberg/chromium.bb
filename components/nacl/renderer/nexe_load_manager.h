@@ -34,6 +34,8 @@ class NexeLoadManager {
   void ReportLoadError(PP_NaClError error,
                        const std::string& error_message,
                        const std::string& console_message);
+  void ReportLoadAbort();
+  void ReportDeadNexe(int64_t crash_time);
 
   // TODO(dmichael): Everything below this comment should eventually be made
   // private, when ppb_nacl_private_impl.cc is no longer using them directly.
@@ -68,16 +70,19 @@ class NexeLoadManager {
   void set_trusted_plugin_channel(scoped_ptr<TrustedPluginChannel> channel);
 
   bool nexe_error_reported();
-  void set_nexe_error_reported(bool error_reported);
 
   PP_NaClReadyState nacl_ready_state();
   void set_nacl_ready_state(PP_NaClReadyState ready_state);
 
   void SetReadOnlyProperty(PP_Var key, PP_Var value);
+  void SetLastError(const std::string& error);
   void LogToConsole(const std::string& message);
 
-  bool is_installed() { return is_installed_; }
+  bool is_installed() const { return is_installed_; }
   void set_is_installed(bool installed) { is_installed_ = installed; }
+
+  int64_t ready_time() const { return ready_time_; }
+  void set_ready_time(int64_t ready_time) { ready_time_ = ready_time; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
@@ -96,6 +101,9 @@ class NexeLoadManager {
   // page.  As such, the flag actually means "our best guess, based on the URLs
   // for NaCl resources that we have seen so far".
   bool is_installed_;
+
+  // Time of a successful nexe load, in microseconds since the epoch.
+  int64_t ready_time_;
 
   // Non-owning.
   content::PepperPluginInstance* plugin_instance_;

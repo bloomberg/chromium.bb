@@ -458,6 +458,18 @@ void ReportLoadError(PP_Instance instance,
     load_manager->ReportLoadError(error, error_message, console_message);
 }
 
+void ReportLoadAbort(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    load_manager->ReportLoadAbort();
+}
+
+void ReportDeadNexe(PP_Instance instance, int64_t crash_time) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (load_manager)
+    load_manager->ReportDeadNexe(crash_time);
+}
+
 void InstanceCreated(PP_Instance instance) {
   scoped_ptr<nacl::NexeLoadManager> new_load_manager(
       new nacl::NexeLoadManager(instance));
@@ -518,13 +530,6 @@ PP_Bool GetNexeErrorReported(PP_Instance instance) {
   return PP_FALSE;
 }
 
-void SetNexeErrorReported(PP_Instance instance, PP_Bool error_reported) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    load_manager->set_nexe_error_reported(PP_ToBool(error_reported));
-}
-
 PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -555,6 +560,21 @@ void SetIsInstalled(PP_Instance instance, PP_Bool installed) {
     load_manager->set_is_installed(PP_ToBool(installed));
 }
 
+int64_t GetReadyTime(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    return load_manager->ready_time();
+  return 0;
+}
+
+void SetReadyTime(PP_Instance instance, int64_t ready_time) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    load_manager->set_ready_time(ready_time);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -572,6 +592,8 @@ const PPB_NaCl_Private nacl_interface = {
   &SetReadOnlyProperty,
   &ReportLoadSuccess,
   &ReportLoadError,
+  &ReportLoadAbort,
+  &ReportDeadNexe,
   &InstanceCreated,
   &InstanceDestroyed,
   &NaClDebugEnabledForURL,
@@ -579,11 +601,12 @@ const PPB_NaCl_Private nacl_interface = {
   &GetUrlScheme,
   &LogToConsole,
   &GetNexeErrorReported,
-  &SetNexeErrorReported,
   &GetNaClReadyState,
   &SetNaClReadyState,
   &GetIsInstalled,
-  &SetIsInstalled
+  &SetIsInstalled,
+  &GetReadyTime,
+  &SetReadyTime
 };
 
 }  // namespace

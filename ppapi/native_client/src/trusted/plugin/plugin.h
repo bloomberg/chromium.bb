@@ -189,8 +189,6 @@ class Plugin : public pp::Instance {
   // document to request the URL using CORS even if this function returns false.
   bool DocumentCanRequest(const std::string& url);
 
-  void set_last_error_string(const nacl::string& error);
-
   // The MIME type used to instantiate this instance of the NaCl plugin.
   // Typically, the MIME type will be application/x-nacl.  However, if the NEXE
   // is being used as a content type handler for another content type (such as
@@ -412,7 +410,6 @@ class Plugin : public pp::Instance {
   int64_t load_start_;
 
   int64_t init_time_;
-  int64_t ready_time_;
   size_t nexe_size_;
 
   // Callback to receive .nexe and .dso download progress notifications.

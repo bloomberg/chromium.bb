@@ -230,18 +230,6 @@ void Plugin::HistogramEnumerateOsArch(const std::string& sandbox_isa) {
   HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
 }
 
-void Plugin::HistogramEnumerateLoadStatus(PP_NaClError error_code) {
-  HistogramEnumerate("NaCl.LoadStatus.Plugin", error_code, PP_NACL_ERROR_MAX,
-                     PP_NACL_ERROR_UNKNOWN);
-
-  // Gather data to see if being installed changes load outcomes.
-  const char* name = nacl_interface_->GetIsInstalled(pp_instance()) ?
-      "NaCl.LoadStatus.Plugin.InstalledApp" :
-      "NaCl.LoadStatus.Plugin.NotInstalledApp";
-  HistogramEnumerate(name, error_code, PP_NACL_ERROR_MAX,
-                     PP_NACL_ERROR_UNKNOWN);
-}
-
 void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
   HistogramEnumerate("NaCl.LoadStatus.SelLdr", error_code,
                      NACL_ERROR_CODE_MAX, LOAD_STATUS_UNKNOWN);
@@ -592,7 +580,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       wrapper_factory_(NULL),
       enable_dev_interfaces_(false),
       init_time_(0),
-      ready_time_(0),
       nexe_size_(0),
       time_of_last_progress_event_(0),
       exit_status_(-1),
@@ -608,7 +595,6 @@ Plugin::Plugin(PP_Instance pp_instance)
   // Notify PPB_NaCl_Private that the instance is created before altering any
   // state that it tracks.
   nacl_interface_->InstanceCreated(pp_instance);
-  set_last_error_string("");
   // We call set_exit_status() here to ensure that the 'exitStatus' property is
   // set. This can only be called when nacl_interface_ is not NULL.
   set_exit_status(-1);
@@ -623,10 +609,11 @@ Plugin::~Plugin() {
   // Destroy the coordinator while the rest of the data is still there
   pnacl_coordinator_.reset(NULL);
 
+  int64_t ready_time = nacl_interface_->GetReadyTime(pp_instance());
   if (!nacl_interface_->GetNexeErrorReported(pp_instance())) {
     HistogramTimeLarge(
         "NaCl.ModuleUptime.Normal",
-        (shutdown_start - ready_time_) / NACL_MICROS_PER_MILLI);
+        (shutdown_start - ready_time) / NACL_MICROS_PER_MILLI);
   }
 
   for (std::map<nacl::string, NaClFileInfoAutoCloser*>::iterator it =
@@ -776,13 +763,14 @@ void Plugin::NexeFileDidOpenContinuation(int32_t pp_error) {
   if (was_successful) {
     NaClLog(4, "NexeFileDidOpenContinuation: success;"
             " setting histograms\n");
-    ready_time_ = NaClGetTimeOfDayMicroseconds();
+    int64_t ready_time = NaClGetTimeOfDayMicroseconds();
+    nacl_interface_->SetReadyTime(pp_instance(), ready_time);
     HistogramStartupTimeSmall(
         "NaCl.Perf.StartupTime.LoadModule",
-        static_cast<float>(ready_time_ - load_start_) / NACL_MICROS_PER_MILLI);
+        static_cast<float>(ready_time - load_start_) / NACL_MICROS_PER_MILLI);
     HistogramStartupTimeMedium(
         "NaCl.Perf.StartupTime.Total",
-        static_cast<float>(ready_time_ - init_time_) / NACL_MICROS_PER_MILLI);
+        static_cast<float>(ready_time - init_time_) / NACL_MICROS_PER_MILLI);
 
     ReportLoadSuccess(nexe_size_, nexe_size_);
   } else {
@@ -901,28 +889,8 @@ void Plugin::BitcodeDidTranslateContinuation(int32_t pp_error) {
 }
 
 void Plugin::ReportDeadNexe() {
-  PLUGIN_PRINTF(("Plugin::ReportDeadNexe\n"));
-
-  PP_NaClReadyState ready_state =
-      nacl_interface_->GetNaClReadyState(pp_instance());
-  if (ready_state == PP_NACL_READY_STATE_DONE &&  // After loadEnd
-      !nacl_interface_->GetNexeErrorReported(pp_instance())) {
-    int64_t crash_time = NaClGetTimeOfDayMicroseconds();
-    // Crashes will be more likely near startup, so use a medium histogram
-    // instead of a large one.
-    HistogramTimeMedium(
-        "NaCl.ModuleUptime.Crash",
-        (crash_time - ready_time_) / NACL_MICROS_PER_MILLI);
-
-    nacl::string message = nacl::string("NaCl module crashed");
-    set_last_error_string(message);
-    nacl_interface()->LogToConsole(pp_instance(), message.c_str());
-
-    EnqueueProgressEvent(PP_NACL_EVENT_CRASH);
-    nacl_interface_->SetNexeErrorReported(pp_instance(), PP_TRUE);
-  }
-  // else ReportLoadError() and ReportAbortError() will be used by loading code
-  // to provide error handling.
+  nacl_interface_->ReportDeadNexe(
+      pp_instance(), NaClGetTimeOfDayMicroseconds());
 }
 
 void Plugin::NaClManifestBufferReady(int32_t pp_error) {
@@ -1262,20 +1230,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
 
 
 void Plugin::ReportLoadAbort() {
-  PLUGIN_PRINTF(("Plugin::ReportLoadAbort\n"));
-  // Set the readyState attribute to indicate we need to start over.
-  nacl_interface()->SetNaClReadyState(pp_instance(), PP_NACL_READY_STATE_DONE);
-  nacl_interface()->SetNexeErrorReported(pp_instance(), PP_TRUE);
-  // Report an error in lastError and on the JavaScript console.
-  nacl::string error_string("NaCl module load failed: user aborted");
-  set_last_error_string(error_string);
-  nacl_interface()->LogToConsole(pp_instance(), error_string.c_str());
-  // Inform JavaScript that loading was aborted and is complete.
-  EnqueueProgressEvent(PP_NACL_EVENT_ABORT);
-  EnqueueProgressEvent(PP_NACL_EVENT_LOADEND);
-
-  // UMA
-  HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_ABORTED);
+  nacl_interface_->ReportLoadAbort(pp_instance());
 }
 
 void Plugin::UpdateDownloadProgress(
@@ -1399,13 +1354,6 @@ bool Plugin::OpenURLFast(const nacl::string& url,
 bool Plugin::DocumentCanRequest(const std::string& url) {
   CHECK(url_util_ != NULL);
   return url_util_->DocumentCanRequest(this, pp::Var(url));
-}
-
-void Plugin::set_last_error_string(const nacl::string& error) {
-  DCHECK(nacl_interface_);
-  nacl_interface_->SetReadOnlyProperty(pp_instance(),
-                                       pp::Var("lastError").pp_var(),
-                                       pp::Var(error).pp_var());
 }
 
 void Plugin::set_exit_status(int exit_status) {
