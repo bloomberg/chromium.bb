@@ -44,14 +44,12 @@ InternalComponentsFactoryImpl::BuildContext(
     ExtensionsActivity* extensions_activity,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
-    TrafficRecorder* traffic_recorder,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidation_client_id) {
   return scoped_ptr<sessions::SyncSessionContext>(
       new sessions::SyncSessionContext(
           connection_manager, directory, extensions_activity,
           listeners, debug_info_getter,
-          traffic_recorder,
           model_type_registry,
           switches_.encryption_method == ENCRYPTION_KEYSTORE,
           switches_.pre_commit_updates_policy ==

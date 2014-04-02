@@ -57,7 +57,6 @@ void SyncInternalsMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 
   RegisterJsControllerCallback("getAllNodes");
-  RegisterJsControllerCallback("getClientServerTraffic");
 }
 
 void SyncInternalsMessageHandler::HandleRegisterForEvents(

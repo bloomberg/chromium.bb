@@ -28,7 +28,6 @@
 #include "sync/engine/sync_scheduler_impl.h"
 #include "sync/engine/syncer.h"
 #include "sync/engine/syncer_proto_util.h"
-#include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
@@ -118,8 +117,7 @@ class SyncerTest : public testing::Test,
       : extensions_activity_(new ExtensionsActivity),
         syncer_(NULL),
         saw_syncer_event_(false),
-        last_client_invalidation_hint_buffer_size_(10),
-        traffic_recorder_(0, 0) {
+        last_client_invalidation_hint_buffer_size_(10) {
 }
 
   // SyncSession::Delegate implementation.
@@ -231,7 +229,7 @@ class SyncerTest : public testing::Test,
         new SyncSessionContext(
             mock_server_.get(), directory(),
             extensions_activity_,
-            listeners, debug_info_getter_.get(), &traffic_recorder_,
+            listeners, debug_info_getter_.get(),
             model_type_registry_.get(),
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance experiment
@@ -511,7 +509,6 @@ class SyncerTest : public testing::Test,
   std::vector<scoped_refptr<ModelSafeWorker> > workers_;
 
   ModelTypeSet enabled_datatypes_;
-  TrafficRecorder traffic_recorder_;
   sessions::NudgeTracker nudge_tracker_;
   scoped_ptr<MockDebugInfoGetter> debug_info_getter_;
 

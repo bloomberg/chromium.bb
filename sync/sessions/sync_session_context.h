@@ -19,7 +19,6 @@
 
 #include "sync/base/sync_export.h"
 #include "sync/engine/sync_engine_event_listener.h"
-#include "sync/engine/traffic_recorder.h"
 #include "sync/sessions/debug_info_getter.h"
 #include "sync/sessions/model_type_registry.h"
 
@@ -47,7 +46,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
       ExtensionsActivity* extensions_activity,
       const std::vector<SyncEngineEventListener*>& listeners,
       DebugInfoGetter* debug_info_getter,
-      TrafficRecorder* traffic_recorder,
       ModelTypeRegistry* model_type_registry,
       bool keystore_encryption_enabled,
       bool client_enabled_pre_commit_update_avoidance,
@@ -94,10 +92,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
 
   ObserverList<SyncEngineEventListener>* listeners() {
     return &listeners_;
-  }
-
-  TrafficRecorder* traffic_recorder() {
-    return traffic_recorder_;
   }
 
   bool keystore_encryption_enabled() const {
@@ -157,8 +151,6 @@ class SYNC_EXPORT_PRIVATE SyncSessionContext {
   // We use this to get debug info to send to the server for debugging
   // client behavior on server side.
   DebugInfoGetter* const debug_info_getter_;
-
-  TrafficRecorder* traffic_recorder_;
 
   ModelTypeRegistry* model_type_registry_;
 

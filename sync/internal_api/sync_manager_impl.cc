@@ -65,10 +65,6 @@ static const int kPreferencesNudgeDelayMilliseconds = 2000;
 static const int kSyncRefreshDelayMsec = 500;
 static const int kSyncSchedulerDelayMsec = 250;
 
-// Maximum count and size for traffic recorder.
-static const unsigned int kMaxMessagesToRecord = 100;
-static const unsigned int kMaxMessageSizeToRecord = 50 * 1024;
-
 GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
     ConfigureReason reason) {
   switch (reason) {
@@ -172,7 +168,6 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
       initialized_(false),
       observing_network_connectivity_changes_(false),
       invalidator_state_(DEFAULT_INVALIDATION_ERROR),
-      traffic_recorder_(kMaxMessagesToRecord, kMaxMessageSizeToRecord),
       encryptor_(NULL),
       report_unrecoverable_error_function_(NULL),
       weak_ptr_factory_(this) {
@@ -186,9 +181,6 @@ SyncManagerImpl::SyncManagerImpl(const std::string& name)
   BindJsMessageHandler(
       "getAllNodes",
       &SyncManagerImpl::GetAllNodes);
-  BindJsMessageHandler(
-      "getClientServerTraffic",
-      &SyncManagerImpl::GetClientServerTraffic);
 }
 
 SyncManagerImpl::~SyncManagerImpl() {
@@ -424,7 +416,6 @@ void SyncManagerImpl::Init(
       extensions_activity,
       listeners,
       &debug_info_event_listener_,
-      &traffic_recorder_,
       model_type_registry_.get(),
       invalidator_client_id).Pass();
   session_context_->set_account_name(credentials.email);
@@ -989,15 +980,6 @@ void SyncManagerImpl::BindJsMessageHandler(
     UnboundJsMessageHandler unbound_message_handler) {
   js_message_handlers_[name] =
       base::Bind(unbound_message_handler, base::Unretained(this));
-}
-
-JsArgList SyncManagerImpl::GetClientServerTraffic(
-    const JsArgList& args) {
-  base::ListValue return_args;
-  base::ListValue* value = traffic_recorder_.ToValue();
-  if (value != NULL)
-    return_args.Append(value);
-  return JsArgList(&return_args);
 }
 
 JsArgList SyncManagerImpl::GetAllNodes(const JsArgList& args) {

@@ -36,7 +36,6 @@ class TestInternalComponentsFactory : public InternalComponentsFactory {
       ExtensionsActivity* monitor,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
-      TrafficRecorder* traffic_recorder,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) OVERRIDE;
 

@@ -13,7 +13,6 @@
 #include "sync/engine/all_status.h"
 #include "sync/engine/net/server_connection_manager.h"
 #include "sync/engine/sync_engine_event_listener.h"
-#include "sync/engine/traffic_recorder.h"
 #include "sync/internal_api/change_reorder_buffer.h"
 #include "sync/internal_api/debug_info_event_listener.h"
 #include "sync/internal_api/js_mutation_event_observer.h"
@@ -276,7 +275,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   JsArgList GetNodeSummariesById(const JsArgList& args);
   JsArgList GetNodeDetailsById(const JsArgList& args);
   JsArgList GetChildNodeIds(const JsArgList& args);
-  JsArgList GetClientServerTraffic(const JsArgList& args);
 
   syncable::Directory* directory();
 
@@ -362,7 +360,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   DebugInfoEventListener debug_info_event_listener_;
 
   ProtocolEventBuffer protocol_event_buffer_;
-  TrafficRecorder traffic_recorder_;
 
   Encryptor* encryptor_;
   scoped_ptr<UnrecoverableErrorHandler> unrecoverable_error_handler_;

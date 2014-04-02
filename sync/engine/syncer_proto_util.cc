@@ -358,7 +358,6 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   syncable::Directory* dir = session->context()->directory();
 
   LogClientToServerMessage(*msg);
-  session->context()->traffic_recorder()->RecordClientToServerMessage(*msg);
   if (!PostAndProcessHeaders(session->context()->connection_manager(), session,
                              *msg, response)) {
     // There was an error establishing communication with the server.
@@ -371,10 +370,7 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
 
     return ServerConnectionErrorAsSyncerError(server_status);
   }
-
   LogClientToServerResponse(*response);
-  session->context()->traffic_recorder()->RecordClientToServerResponse(
-      *response);
 
   // Persist a bag of chips if it has been sent by the server.
   PersistBagOfChips(dir, *response);

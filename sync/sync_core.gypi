@@ -87,8 +87,6 @@
     'engine/sync_scheduler_impl.h',
     'engine/traffic_logger.cc',
     'engine/traffic_logger.h',
-    'engine/traffic_recorder.cc',
-    'engine/traffic_recorder.h',
     'engine/update_applicator.cc',
     'engine/update_applicator.h',
     'engine/update_handler.cc',

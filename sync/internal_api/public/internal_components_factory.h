@@ -24,7 +24,6 @@ class ModelTypeRegistry;
 class ServerConnectionManager;
 class SyncEngineEventListener;
 class SyncScheduler;
-class TrafficRecorder;
 
 namespace sessions {
 class DebugInfoGetter;
@@ -86,7 +85,6 @@ class SYNC_EXPORT InternalComponentsFactory {
       ExtensionsActivity* extensions_activity,
       const std::vector<SyncEngineEventListener*>& listeners,
       sessions::DebugInfoGetter* debug_info_getter,
-      TrafficRecorder* traffic_recorder,
       ModelTypeRegistry* model_type_registry,
       const std::string& invalidator_client_id) = 0;
 

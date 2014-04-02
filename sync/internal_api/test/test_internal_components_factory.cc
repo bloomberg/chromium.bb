@@ -35,7 +35,6 @@ TestInternalComponentsFactory::BuildContext(
     ExtensionsActivity* monitor,
     const std::vector<SyncEngineEventListener*>& listeners,
     sessions::DebugInfoGetter* debug_info_getter,
-    TrafficRecorder* traffic_recorder,
     ModelTypeRegistry* model_type_registry,
     const std::string& invalidator_client_id) {
 
@@ -45,7 +44,6 @@ TestInternalComponentsFactory::BuildContext(
       new sessions::SyncSessionContext(
           connection_manager, directory, monitor,
           empty_listeners, debug_info_getter,
-          traffic_recorder,
           model_type_registry,
           switches_.encryption_method == ENCRYPTION_KEYSTORE,
           switches_.pre_commit_updates_policy ==

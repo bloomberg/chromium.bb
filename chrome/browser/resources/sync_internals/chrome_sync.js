@@ -34,9 +34,6 @@ cr.define('chrome.sync', function() {
   }
 
   var syncFunctions = [
-    // Client server communication logging functions.
-    'getClientServerTraffic',
-
     // Get an array containing a JSON representations of all known sync nodes.
     'getAllNodes',
   ];

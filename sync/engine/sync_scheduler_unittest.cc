@@ -135,7 +135,7 @@ class SyncSchedulerTest : public testing::Test {
     context_.reset(new SyncSessionContext(
             connection_.get(), directory(),
             extensions_activity_.get(),
-            std::vector<SyncEngineEventListener*>(), NULL, NULL,
+            std::vector<SyncEngineEventListener*>(), NULL,
             model_type_registry_.get(),
             true,  // enable keystore encryption
             false,  // force enable pre-commit GU avoidance
