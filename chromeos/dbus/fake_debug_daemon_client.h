@@ -46,6 +46,7 @@ class FakeDebugDaemonClient : public DebugDaemonClient {
       const std::string& ip_address,
       const std::map<std::string, std::string>& options,
       const TestICMPCallback& callback) OVERRIDE;
+  virtual void UploadCrashes() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/* Id for tracking automatic refresh of crash list.  */
+var refreshCrashListId = undefined;
+
 /**
  * Requests the list of crashes from the backend.
  */
@@ -12,10 +15,11 @@ function requestCrashes() {
 /**
  * Callback from backend with the list of crashes. Builds the UI.
  * @param {boolean} enabled Whether or not crash reporting is enabled.
+ * @param {boolean} dynamicBackend Whether the crash backend is dynamic.
  * @param {array} crashes The list of crashes.
  * @param {string} version The browser version.
  */
-function updateCrashList(enabled, crashes, version) {
+function updateCrashList(enabled, dynamicBackend, crashes, version) {
   $('countBanner').textContent = loadTimeData.getStringF('crashCountFormat',
                                                          crashes.length);
 
@@ -23,6 +27,7 @@ function updateCrashList(enabled, crashes, version) {
 
   $('enabledMode').hidden = !enabled;
   $('disabledMode').hidden = enabled;
+  $('crashUploadStatus').hidden = !enabled || !dynamicBackend;
 
   if (!enabled)
     return;
@@ -83,4 +88,20 @@ function updateCrashList(enabled, crashes, version) {
   $('noCrashes').hidden = crashes.length != 0;
 }
 
-document.addEventListener('DOMContentLoaded', requestCrashes);
+/**
+ * Request crashes get uploaded in the background.
+ */
+function requestCrashUpload() {
+  // Don't need locking with this call because the system crash reporter
+  // has locking built into itself.
+  chrome.send('requestCrashUpload');
+
+  // Trigger a refresh in 5 seconds.  Clear any previous requests.
+  clearTimeout(refreshCrashListId);
+  refreshCrashListId = setTimeout(requestCrashes, 5000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  $('uploadCrashes').onclick = requestCrashUpload;
+  requestCrashes();
+});

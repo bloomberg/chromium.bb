@@ -140,6 +140,9 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
       const std::map<std::string, std::string>& options,
       const TestICMPCallback& callback) = 0;
 
+  // Trigger uploading of crashes.
+  virtual void UploadCrashes() = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static DebugDaemonClient* Create();

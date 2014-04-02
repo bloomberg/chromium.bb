@@ -113,4 +113,7 @@ void FakeDebugDaemonClient::TestICMPWithOptions(
                                          base::Bind(callback, false, ""));
 }
 
+void FakeDebugDaemonClient::UploadCrashes() {
+}
+
 }  // namespace chromeos

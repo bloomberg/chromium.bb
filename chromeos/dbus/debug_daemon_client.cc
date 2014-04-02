@@ -313,7 +313,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call,
         dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&DebugDaemonClientImpl::OnStartSystemTracing,
+        base::Bind(&DebugDaemonClientImpl::OnStartMethod,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -398,6 +398,16 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         base::Bind(&DebugDaemonClientImpl::OnTestICMP,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
+  }
+
+  virtual void UploadCrashes() OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kUploadCrashes);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnStartMethod,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  protected:
@@ -553,10 +563,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     return OnGetAllLogs(callback, response);
   }
 
-  // Called when a response for StartSystemTracing() is received.
-  void OnStartSystemTracing(dbus::Response* response) {
+  // Called when a response for a simple start is received.
+  void OnStartMethod(dbus::Response* response) {
     if (!response) {
-      LOG(ERROR) << "Failed to request systrace start";
+      LOG(ERROR) << "Failed to request start";
       return;
     }
   }

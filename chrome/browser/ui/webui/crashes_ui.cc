@@ -28,6 +28,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon_client.h"
+#endif
+
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -49,6 +54,8 @@ content::WebUIDataSource* CreateCrashesUIHTMLSource() {
                              IDS_CRASHES_NO_CRASHES_MESSAGE);
   source->AddLocalizedString("disabledHeader", IDS_CRASHES_DISABLED_HEADER);
   source->AddLocalizedString("disabledMessage", IDS_CRASHES_DISABLED_MESSAGE);
+  source->AddLocalizedString("uploadCrashesLinkText",
+                             IDS_CRASHES_UPLOAD_MESSAGE);
   source->SetJsonPath("strings.js");
   source->AddResourcePath("crashes.js", IDR_CRASHES_JS);
   source->SetDefaultResource(IDR_CRASHES_HTML);
@@ -78,6 +85,11 @@ class CrashesDOMHandler : public WebUIMessageHandler,
   // Asynchronously fetches the list of crashes. Called from JS.
   void HandleRequestCrashes(const base::ListValue* args);
 
+#if defined(OS_CHROMEOS)
+  // Asynchronously triggers crash uploading. Called from JS.
+  void HandleRequestUploads(const base::ListValue* args);
+#endif
+
   // Sends the recent crashes list JS.
   void UpdateUI();
 
@@ -102,6 +114,12 @@ void CrashesDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestCrashList",
       base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
                  base::Unretained(this)));
+
+#if defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback("requestCrashUpload",
+      base::Bind(&CrashesDOMHandler::HandleRequestUploads,
+                 base::Unretained(this)));
+#endif
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
@@ -115,6 +133,16 @@ void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
   }
 }
 
+#if defined(OS_CHROMEOS)
+void CrashesDOMHandler::HandleRequestUploads(const base::ListValue* args) {
+  chromeos::DebugDaemonClient* debugd_client =
+      chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+  DCHECK(debugd_client);
+
+  debugd_client->UploadCrashes();
+}
+#endif
+
 void CrashesDOMHandler::OnUploadListAvailable() {
   list_available_ = true;
   if (!first_load_)
@@ -125,6 +153,12 @@ void CrashesDOMHandler::UpdateUI() {
   bool crash_reporting_enabled =
       MetricsServiceHelper::IsCrashReportingEnabled();
   base::ListValue crash_list;
+  bool system_crash_reporter = false;
+
+#if defined(OS_CHROMEOS)
+  // Chrome OS has a system crash reporter.
+  system_crash_reporter = true;
+#endif
 
   if (crash_reporting_enabled) {
     std::vector<CrashUploadList::UploadInfo> crashes;
@@ -140,12 +174,13 @@ void CrashesDOMHandler::UpdateUI() {
   }
 
   base::FundamentalValue enabled(crash_reporting_enabled);
+  base::FundamentalValue dynamic_backend(system_crash_reporter);
 
   const chrome::VersionInfo version_info;
   base::StringValue version(version_info.Version());
 
-  web_ui()->CallJavascriptFunction("updateCrashList", enabled, crash_list,
-                                   version);
+  web_ui()->CallJavascriptFunction("updateCrashList", enabled, dynamic_backend,
+                                   crash_list, version);
 }
 
 }  // namespace
