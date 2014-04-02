@@ -2,14 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("navigation_metrics") {
+component("onc") {
   sources = [
-    "navigation_metrics.cc",
-    "navigation_metrics.h",
+    "onc_constants.cc",
+    "onc_constants.h",
+    "onc_export.h",
   ]
+
+  defines = [ "ONC_IMPLEMENTATION" ]
 
   deps = [
     "//base",
-    "//url",
   ]
 }

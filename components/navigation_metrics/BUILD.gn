@@ -2,13 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("startup_metric_utils") {
+source_set("navigation_metrics") {
   sources = [
-    "startup_metric_utils.cc",
-    "startup_metric_utils.h",
+    "navigation_metrics.cc",
+    "navigation_metrics.h",
   ]
 
   deps = [
     "//base",
+    "//url",
   ]
 }

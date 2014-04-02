@@ -2,14 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-component("onc_component") {
+source_set("startup_metric_utils") {
   sources = [
-    "onc_constants.cc",
-    "onc_constants.h",
-    "onc_export.h",
+    "startup_metric_utils.cc",
+    "startup_metric_utils.h",
   ]
-
-  defines = [ "ONC_IMPLEMENTATION" ]
 
   deps = [
     "//base",

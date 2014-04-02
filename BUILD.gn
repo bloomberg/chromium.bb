@@ -18,10 +18,10 @@ group("root") {
     #"//base(//build/toolchain/nacl:x86_newlib)",
 
     #"//chrome",
-    #"//components/language_usage_metrics",
-    #"//components/navigation_metrics",
-    #"//components/onc:onc_component",
-    #"//components/startup_metric_utils",
+    "//components/language_usage_metrics",
+    "//components/navigation_metrics",
+    "//components/onc",
+    "//components/startup_metric_utils",
     #"//components/translate:translate_core_browser",
     #"//components/translate:translate_core_common",
     #"//crypto",
@@ -38,6 +38,6 @@ group("root") {
     #"//third_party/zlib",
     #"//skia",
     "//tools/gn",
-    #"//url",
+    "//url",
   ]
 }
