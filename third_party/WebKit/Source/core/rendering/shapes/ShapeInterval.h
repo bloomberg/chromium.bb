@@ -207,6 +207,16 @@ public:
     bool operator==(const ShapeInterval<T>& other) const { return x1() == other.x1() && x2() == other.x2(); }
     bool operator!=(const ShapeInterval<T>& other) const { return !operator==(other); }
 
+    void unite(const ShapeInterval<T>& interval)
+    {
+        if (interval.isEmpty())
+            return;
+        if (isEmpty())
+            set(interval.x1(), interval.x2());
+        else
+            set(std::min<T>(x1(), interval.x1()), std::max<T>(x2(), interval.x2()));
+    }
+
 private:
     T m_x1;
     T m_x2;
