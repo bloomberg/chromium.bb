@@ -36,6 +36,7 @@
 
 namespace blink {
 class WebString;
+struct WebDeviceEmulationParams;
 struct WebDevToolsMessageData;
 struct WebRect;
 struct WebSize;
@@ -98,6 +99,9 @@ public:
     virtual void enableDeviceEmulation(
         const WebRect& screenRect, const WebRect& viewRect,
         float deviceScaleFactor, bool fitToView) { }
+
+    // Enables device emulation as specified in params.
+    virtual void enableDeviceEmulation(const WebDeviceEmulationParams& params) { }
 
     // Cancel emulation started via |enableDeviceEmulation| call.
     virtual void disableDeviceEmulation() { }
