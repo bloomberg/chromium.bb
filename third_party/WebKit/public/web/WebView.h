@@ -148,13 +148,6 @@ public:
     virtual void setWindowFeatures(const WebWindowFeatures&) = 0;
 
 
-    // Closing -------------------------------------------------------------
-
-    // Runs unload handlers for the current page.
-    // OBSOLETE; DO NOT USE. Call it on WebFrame instead.
-    virtual void dispatchUnloadEvent() = 0;
-
-
     // Frames --------------------------------------------------------------
 
     virtual WebFrame* mainFrame() = 0;
