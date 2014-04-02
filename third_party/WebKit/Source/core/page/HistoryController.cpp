@@ -83,6 +83,10 @@ HistoryNode::HistoryNode(HistoryEntry* entry, HistoryItem* value, int64_t frameI
 void HistoryNode::removeChildren()
 {
     // FIXME: This is inefficient. Figure out a cleaner way to ensure this HistoryNode isn't cached anywhere.
+    // We need these vectors because you can't remove things from
+    // collections you are iterating over.
+    Vector<uint64_t, 10> framesToRemove;
+    Vector<String, 10> uniqueNamesToRemove;
     for (unsigned i = 0; i < m_children.size(); i++) {
         m_children[i]->removeChildren();
 
@@ -90,13 +94,17 @@ void HistoryNode::removeChildren()
         HashMap<String, HistoryNode*>::iterator uniqueNamesEnd = m_entry->m_uniqueNamesToItems.end();
         for (HashMap<uint64_t, HistoryNode*>::iterator it = m_entry->m_framesToItems.begin(); it != framesEnd; ++it) {
             if (it->value == m_children[i])
-                m_entry->m_framesToItems.remove(it);
+                framesToRemove.append(it->key);
         }
         for (HashMap<String, HistoryNode*>::iterator it = m_entry->m_uniqueNamesToItems.begin(); it != uniqueNamesEnd; ++it) {
             if (it->value == m_children[i])
-                m_entry->m_uniqueNamesToItems.remove(it);
+                uniqueNamesToRemove.append(it->key);
         }
     }
+    for (unsigned i = 0; i < framesToRemove.size(); i++)
+        m_entry->m_framesToItems.remove(framesToRemove[i]);
+    for (unsigned i = 0; i < uniqueNamesToRemove.size(); i++)
+        m_entry->m_uniqueNamesToItems.remove(uniqueNamesToRemove[i]);
     m_children.clear();
 }
 

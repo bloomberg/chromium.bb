@@ -85,15 +85,34 @@ namespace WTF {
                 ++m_position;
         }
 
-        HashTableConstIterator(PointerType position, PointerType endPosition)
-            : m_position(position), m_endPosition(endPosition)
+        HashTableConstIterator(PointerType position, PointerType endPosition, const HashTableType* container)
+            : m_position(position)
+            , m_endPosition(endPosition)
+#ifdef ASSERT_ENABLED
+            , m_container(container)
+            , m_containerModifications(container->modifications())
+#endif
         {
             skipEmptyBuckets();
         }
 
-        HashTableConstIterator(PointerType position, PointerType endPosition, HashItemKnownGoodTag)
-            : m_position(position), m_endPosition(endPosition)
+        HashTableConstIterator(PointerType position, PointerType endPosition, const HashTableType* container, HashItemKnownGoodTag)
+            : m_position(position)
+            , m_endPosition(endPosition)
+#ifdef ASSERT_ENABLED
+            , m_container(container)
+            , m_containerModifications(container->modifications())
+#endif
         {
+        }
+
+        void checkModifications() const
+        {
+            // HashTable and collections that build on it do not support
+            // modifications while there is an iterator in use. The exception
+            // is ListHashSet, which has its own iterators that tolerate
+            // modification of the underlying set.
+            ASSERT(m_containerModifications == m_container->modifications());
         }
 
     public:
@@ -103,6 +122,7 @@ namespace WTF {
 
         GetType get() const
         {
+            checkModifications();
             return m_position;
         }
         typename Traits::IteratorConstReferenceType operator*() const { return Traits::getToReferenceConstConversion(get()); }
@@ -111,6 +131,7 @@ namespace WTF {
         const_iterator& operator++()
         {
             ASSERT(m_position != m_endPosition);
+            checkModifications();
             ++m_position;
             skipEmptyBuckets();
             return *this;
@@ -139,11 +160,16 @@ namespace WTF {
     private:
         PointerType m_position;
         PointerType m_endPosition;
+#ifdef ASSERT_ENABLED
+        const HashTableType* m_container;
+        int64_t m_containerModifications;
+#endif
     };
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     class HashTableIterator {
     private:
+        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
         typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
         typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
         typedef Value ValueType;
@@ -152,8 +178,8 @@ namespace WTF {
 
         friend class HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>;
 
-        HashTableIterator(PointerType pos, PointerType end) : m_iterator(pos, end) { }
-        HashTableIterator(PointerType pos, PointerType end, HashItemKnownGoodTag tag) : m_iterator(pos, end, tag) { }
+        HashTableIterator(PointerType pos, PointerType end, const HashTableType* container) : m_iterator(pos, end, container) { }
+        HashTableIterator(PointerType pos, PointerType end, const HashTableType* container, HashItemKnownGoodTag tag) : m_iterator(pos, end, container, tag) { }
 
     public:
         HashTableIterator() { }
@@ -351,6 +377,14 @@ namespace WTF {
 
         void trace(typename Allocator::Visitor*);
 
+#ifdef ASSERT_ENABLED
+        int64_t modifications() const { return m_modifications; }
+        void registerModification() { m_modifications++; }
+#else
+        int64_t modifications() const { return 0; }
+        void registerModification() { }
+#endif
+
     private:
         static ValueType* allocateTable(unsigned size);
         static void deleteAllBucketsAndDeallocate(ValueType* table, unsigned size);
@@ -379,10 +413,10 @@ namespace WTF {
         FullLookupType makeLookupResult(ValueType* position, bool found, unsigned hash)
             { return FullLookupType(LookupType(position, found), hash); }
 
-        iterator makeIterator(ValueType* pos) { return iterator(pos, m_table + m_tableSize); }
-        const_iterator makeConstIterator(ValueType* pos) const { return const_iterator(pos, m_table + m_tableSize); }
-        iterator makeKnownGoodIterator(ValueType* pos) { return iterator(pos, m_table + m_tableSize, HashItemKnownGood); }
-        const_iterator makeKnownGoodConstIterator(ValueType* pos) const { return const_iterator(pos, m_table + m_tableSize, HashItemKnownGood); }
+        iterator makeIterator(ValueType* pos) { return iterator(pos, m_table + m_tableSize, this); }
+        const_iterator makeConstIterator(ValueType* pos) const { return const_iterator(pos, m_table + m_tableSize, this); }
+        iterator makeKnownGoodIterator(ValueType* pos) { return iterator(pos, m_table + m_tableSize, this, HashItemKnownGood); }
+        const_iterator makeKnownGoodConstIterator(ValueType* pos) const { return const_iterator(pos, m_table + m_tableSize, this, HashItemKnownGood); }
 
         static const unsigned m_maxLoad = 2;
         static const unsigned m_minLoad = 6;
@@ -392,6 +426,9 @@ namespace WTF {
         unsigned m_tableSizeMask;
         unsigned m_keyCount;
         unsigned m_deletedCount;
+#ifdef ASSERT_ENABLED
+        unsigned m_modifications;
+#endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
     public:
@@ -446,6 +483,9 @@ namespace WTF {
         , m_tableSizeMask(0)
         , m_keyCount(0)
         , m_deletedCount(0)
+#ifdef ASSERT_ENABLED
+        , m_modifications(0)
+#endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         , m_stats(adoptPtr(new Stats))
 #endif
@@ -731,6 +771,8 @@ namespace WTF {
             i = (i + k) & sizeMask;
         }
 
+        registerModification();
+
         if (deletedEntry) {
             initializeBucket(*deletedEntry);
             entry = deletedEntry;
@@ -763,6 +805,8 @@ namespace WTF {
         if (found)
             return AddResult(entry, false);
 
+        registerModification();
+
         if (isDeletedBucket(*entry)) {
             initializeBucket(*entry);
             --m_deletedCount;
@@ -780,6 +824,7 @@ namespace WTF {
     Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::reinsert(ValueType& entry)
     {
         ASSERT(m_table);
+        registerModification();
         ASSERT(!lookupForWriting(Extractor::extract(entry)).second);
         ASSERT(!isDeletedBucket(*(lookupForWriting(Extractor::extract(entry)).first)));
 #if DUMP_HASHTABLE_STATS
@@ -826,6 +871,7 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::remove(ValueType* pos)
     {
+        registerModification();
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numRemoves);
 #endif
@@ -967,6 +1013,7 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::clear()
     {
+        registerModification();
         if (!m_table)
             return;
 
@@ -984,6 +1031,9 @@ namespace WTF {
         , m_tableSizeMask(0)
         , m_keyCount(0)
         , m_deletedCount(0)
+#ifdef ASSERT_ENABLED
+        , m_modifications(0)
+#endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         , m_stats(adoptPtr(new Stats(*other.m_stats)))
 #endif
@@ -1003,6 +1053,10 @@ namespace WTF {
         std::swap(m_tableSizeMask, other.m_tableSizeMask);
         std::swap(m_keyCount, other.m_keyCount);
         std::swap(m_deletedCount, other.m_deletedCount);
+
+#ifdef ASSERT_ENABLED
+        std::swap(m_modifications, other.m_modifications);
+#endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         m_stats.swap(other.m_stats);
@@ -1041,6 +1095,7 @@ namespace WTF {
                 for (typename HashTableType::ValueType* element = table->m_table + table->m_tableSize - 1; element >= table->m_table; element--) {
                     if (!HashTableType::isEmptyOrDeletedBucket(*element)) {
                         if (Allocator::hasDeadMember(visitor, *element)) {
+                            table->registerModification();
                             HashTableType::deleteBucket(*element); // Also calls the destructor.
                             table->m_deletedCount++;
                             table->m_keyCount--;
