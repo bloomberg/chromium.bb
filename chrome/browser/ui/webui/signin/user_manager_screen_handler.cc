@@ -27,8 +27,10 @@
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image_util.h"
 
@@ -98,10 +100,18 @@ std::string GetAvatarImageAtIndex(
       info_cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
       info_cache.GetGAIAPictureOfProfileAtIndex(index);
 
-  gfx::Image icon = profiles::GetSizedAvatarIconWithBorder(
-      info_cache.GetAvatarIconOfProfileAtIndex(index),
-      is_gaia_picture, kAvatarIconSize, kAvatarIconSize);
-  return webui::GetBitmapDataUrl(icon.AsBitmap());
+  // If the avatar is too small (i.e. the old-style low resolution avatar),
+  // it will be pixelated when displayed in the User Manager, so we should
+  // return the placeholder avatar instead.
+  gfx::Image avatar_image = info_cache.GetAvatarIconOfProfileAtIndex(index);
+  if (avatar_image.Width() <= profiles::kAvatarIconWidth ||
+      avatar_image.Height() <= profiles::kAvatarIconHeight ) {
+    avatar_image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_USER_MANAGER_DEFAULT_AVATAR);
+  }
+  gfx::Image resized_image = profiles::GetSizedAvatarIconWithBorder(
+      avatar_image, is_gaia_picture, kAvatarIconSize, kAvatarIconSize);
+  return webui::GetBitmapDataUrl(resized_image.AsBitmap());
 }
 
 size_t GetIndexOfProfileWithEmailAndName(const ProfileInfoCache& info_cache,
