@@ -97,7 +97,10 @@ elif env.Bit('target_x86'):
         # non-determinism in the upper bound, perhaps due to ASLR).
         high_thread_count_nthreads = 1100
     elif trusted_env.Bit('windows'):
-      high_thread_count_nthreads = 900
+      if trusted_env.Bit('target_x86_32'):
+        high_thread_count_nthreads = 700
+      else:
+        high_thread_count_nthreads = 900
     else:
       raise SCons.Errors.UserError('Unknown host OS: threading limit unknown')
 else:
