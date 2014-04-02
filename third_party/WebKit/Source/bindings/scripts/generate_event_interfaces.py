@@ -41,7 +41,6 @@ The .in format is documented in build/scripts/in_file.py.
 """
 
 from optparse import OptionParser
-import cPickle as pickle
 import os
 import posixpath
 import sys
@@ -59,15 +58,15 @@ source_dir = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
 
 def parse_options():
     parser = OptionParser()
+    parser.add_option('--event-idl-files-list', help='file listing event IDL files')
     parser.add_option('--event-interfaces-file', help='output file')
-    parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
     options, args = parser.parse_args()
+    if options.event_idl_files_list is None:
+        parser.error('Must specify a file listing event IDL files using --event-idl-files-list.')
     if options.event_interfaces_file is None:
         parser.error('Must specify an output file using --event-interfaces-file.')
-    if options.interfaces_info_file is None:
-        parser.error('Must specify an input file using --interfaces-info-file.')
     if options.write_file_only_if_changed is None:
         parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
     options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
@@ -76,23 +75,13 @@ def parse_options():
     return options
 
 
-def write_event_interfaces_file(interfaces_info, destination_filename, only_if_changed):
-    # Event interfaces are interfaces that inherit from Event, and Event itself
-    event_interfaces = set(
-        interface_name
-        for interface_name, interface_info in interfaces_info.iteritems()
-        if (interface_name == 'Event' or
-            (interface_info['ancestors'] and
-             interface_info['ancestors'][-1] == 'Event')))
-
+def write_event_interfaces_file(event_idl_files, destination_filename, only_if_changed):
     def extended_attribute_string(name, value):
         if name == 'RuntimeEnabled':
             value += 'Enabled'
         return name + '=' + value
 
-    def interface_line(interface_name):
-        full_path = interfaces_info[interface_name]['full_path']
-
+    def interface_line(full_path):
         relative_path_local, _ = os.path.splitext(os.path.relpath(full_path, source_dir))
         relative_path_posix = relative_path_local.replace(os.sep, posixpath.sep)
 
@@ -108,8 +97,8 @@ def write_event_interfaces_file(interfaces_info, destination_filename, only_if_c
 
     lines = ['namespace="Event"\n',
              '\n']
-    interface_lines = [interface_line(interface_name)
-                       for interface_name in event_interfaces]
+    interface_lines = [interface_line(event_idl_file)
+                       for event_idl_file in event_idl_files]
     interface_lines.sort()
     lines.extend(interface_lines)
     write_file(''.join(lines), destination_filename, only_if_changed)
@@ -119,9 +108,9 @@ def write_event_interfaces_file(interfaces_info, destination_filename, only_if_c
 
 def main():
     options = parse_options()
-    with open(options.interfaces_info_file) as interfaces_info_file:
-        interfaces_info = pickle.load(interfaces_info_file)
-    write_event_interfaces_file(interfaces_info,
+    with open(options.event_idl_files_list) as event_idl_files_list:
+        event_idl_files = [line.rstrip('\n') for line in event_idl_files_list]
+    write_event_interfaces_file(event_idl_files,
                                 options.event_interfaces_file,
                                 options.write_file_only_if_changed)
 

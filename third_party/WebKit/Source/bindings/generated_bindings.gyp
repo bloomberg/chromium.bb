@@ -35,12 +35,9 @@
 
 {
   'includes': [
-    '../build/scripts/scripts.gypi',
-    '../build/win/precompile.gypi',
-    '../build/scripts/scripts.gypi',
+    'bindings.gypi',
     '../core/core.gypi',
     '../modules/modules.gypi',
-    'bindings.gypi',
   ],
 
   'variables': {
@@ -105,19 +102,19 @@
     ],
 
     'generated_global_constructors_idl_files': [
-      '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
-      '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
+      '<(blink_output_dir)/WindowConstructors.idl',
+      '<(blink_output_dir)/WorkerGlobalScopeConstructors.idl',
+      '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.idl',
+      '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.idl',
+      '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.idl',
     ],
 
     'generated_global_constructors_header_files': [
-      '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.h',
-      '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.h',
-      '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.h',
+      '<(blink_output_dir)/WindowConstructors.h',
+      '<(blink_output_dir)/WorkerGlobalScopeConstructors.h',
+      '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.h',
+      '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.h',
+      '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.h',
     ],
 
 
@@ -167,23 +164,6 @@
       'templates/interface.h',
       'templates/methods.cpp',
     ],
-
-
-    'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
-
-    'conditions': [
-      # The bindings generator can skip writing generated files if they are
-      # identical to the already existing file, which avoids recompilation.
-      # However, a dependency (earlier build step) having a newer timestamp than
-      # an output (later build step) confuses some build systems, so only use
-      # this on ninja, which explicitly supports this use case (gyp turns all
-      # actions into ninja restat rules).
-      ['"<(GENERATOR)"=="ninja"', {
-        'write_file_only_if_changed': '--write-file-only-if-changed 1',
-      }, {
-        'write_file_only_if_changed': '--write-file-only-if-changed 0',
-      }],
-    ],
   },
 
   'targets': [
@@ -210,18 +190,19 @@
         'scripts/generate_global_constructors.py',
         '--idl-files-list',
         '<(main_interface_idl_files_list)',
-        '<@(write_file_only_if_changed)',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
         '--',
         'Window',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/WindowConstructors.idl',
+        '<(blink_output_dir)/WindowConstructors.idl',
         'WorkerGlobalScope',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/WorkerGlobalScopeConstructors.idl',
+        '<(blink_output_dir)/WorkerGlobalScopeConstructors.idl',
         'SharedWorkerGlobalScope',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/SharedWorkerGlobalScopeConstructors.idl',
+        '<(blink_output_dir)/SharedWorkerGlobalScopeConstructors.idl',
         'DedicatedWorkerGlobalScope',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/DedicatedWorkerGlobalScopeConstructors.idl',
+        '<(blink_output_dir)/DedicatedWorkerGlobalScopeConstructors.idl',
         'ServiceWorkerGlobalScope',
-        '<(SHARED_INTERMEDIATE_DIR)/ServiceWorkerGlobalScopeConstructors.idl',
+        '<(blink_output_dir)/ServiceWorkerGlobalScopeConstructors.idl',
        ],
        'message': 'Generating IDL files for constructors on global objects',
       }]
@@ -245,7 +226,7 @@
         '<@(generated_idl_files)',
       ],
       'outputs': [
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        '<(blink_output_dir)/InterfacesInfo.pickle',
       ],
       'action': [
         'python',
@@ -253,42 +234,14 @@
         '--idl-files-list',
         '<(static_idl_files_list)',
         '--interfaces-info-file',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-        '<@(write_file_only_if_changed)',
+        '<(blink_output_dir)/InterfacesInfo.pickle',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
         '--',
         # Generated files must be passed at command line
         '<@(generated_idl_files)',
       ],
       'message': 'Computing global information about IDL files',
-      }]
-  },
-################################################################################
-  {
-    'target_name': 'event_interfaces',
-    'type': 'none',
-    'dependencies': [
-      'interfaces_info',
-    ],
-    'actions': [{
-      'action_name': 'generate_event_interfaces',
-      'inputs': [
-        'scripts/generate_event_interfaces.py',
-        'scripts/utilities.py',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-      ],
-      'outputs': [
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
-      ],
-      'action': [
-        'python',
-        'scripts/generate_event_interfaces.py',
-        '--interfaces-info-file',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-        '--event-interfaces-file',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
-        '<@(write_file_only_if_changed)',
-      ],
-      'message': 'Generating list of Event interfaces',
       }]
   },
 ################################################################################
@@ -374,7 +327,7 @@
         # [ImplementedAs]) changes, we rebuild all files, since we're not
         # computing dependencies file-by-file in the build.
         # This data is generally stable.
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
+        '<(blink_output_dir)/InterfacesInfo.pickle',
         # Further, if any dependency (partial interface or implemented
         # interface) changes, rebuild everything, since every IDL potentially
         # depends on them, because we're not computing dependencies
@@ -397,8 +350,9 @@
         '--output-dir',
         '<(bindings_output_dir)',
         '--interfaces-info',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
-        '<@(write_file_only_if_changed)',
+        '<(blink_output_dir)/InterfacesInfo.pickle',
+        '--write-file-only-if-changed',
+        '<(write_file_only_if_changed)',
         '<(RULE_INPUT_PATH)',
       ],
       'message': 'Generating binding from <(RULE_INPUT_PATH)',
@@ -435,7 +389,6 @@
     'type': 'none',
     'dependencies': [
       'aggregate_generated_bindings',
-      'event_interfaces',
       'individual_generated_bindings',
     ],
   },

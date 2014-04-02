@@ -95,6 +95,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'generated_testing_idls',
+        '../bindings/core_bindings_generated.gyp:core_bindings_generated',
         '../config.gyp:config',
       ],
       'sources': [

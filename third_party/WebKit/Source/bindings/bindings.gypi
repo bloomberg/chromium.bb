@@ -1,6 +1,8 @@
 {
     'variables': {
-        'bindings_dir': ['.'],
+        'bindings_v8_dir': 'v8',
+        'blink_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink',
+        'bindings_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings',
         'bindings_files': [
             'v8/ActiveDOMCallback.cpp',
             'v8/ActiveDOMCallback.h',
@@ -248,32 +250,46 @@
         ],
         'conditions': [
             ['OS=="win" and buildtype=="Official"', {
-                # On windows official release builds, we try to preserve symbol space.
+                # On Windows Official release builds, we try to preserve symbol
+                # space.
                 'aggregate_generated_bindings_files': [
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings.cpp',
                 ],
             }, {
                 'aggregate_generated_bindings_files': [
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings01.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings02.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings03.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings04.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings05.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings06.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings07.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings08.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings09.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings10.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings11.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings12.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings13.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings14.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings15.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings16.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings17.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings18.cpp',
-                    '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/V8GeneratedBindings19.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings01.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings02.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings03.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings04.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings05.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings06.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings07.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings08.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings09.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings10.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings11.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings12.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings13.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings14.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings15.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings16.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings17.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings18.cpp',
+                    '<(bindings_output_dir)/V8GeneratedBindings19.cpp',
                 ],
+            }],
+
+            # The bindings generator can skip writing generated files if they
+            # are identical to the already existing file, which avoids
+            # recompilation.  However, a dependency (earlier build step) having
+            # a newer timestamp than an output (later build step) confuses some
+            # build systems, so only use this on ninja, which explicitly
+            # supports this use case (gyp turns all actions into ninja restat
+            # rules).
+            ['"<(GENERATOR)"=="ninja"', {
+              'write_file_only_if_changed': '1',
+            }, {
+              'write_file_only_if_changed': '0',
             }],
         ],
     },
