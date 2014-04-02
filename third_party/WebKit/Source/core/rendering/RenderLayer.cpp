@@ -313,11 +313,6 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     if (m_reflectionInfo)
         m_reflectionInfo->reflection()->layout();
 
-    // Clear the IsCompositingUpdateRoot flag once we've found the first compositing layer in this update.
-    bool isUpdateRoot = (flags & IsCompositingUpdateRoot);
-    if (hasCompositedLayerMapping())
-        flags &= ~IsCompositingUpdateRoot;
-
     if (useRegionBasedColumns() && renderer()->isInFlowRenderFlowThread()) {
         updatePagination();
         flags |= UpdatePagination;
@@ -329,8 +324,8 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->updateLayerPositions(geometryMap, flags);
 
-    if ((flags & UpdateCompositingLayers) && hasCompositedLayerMapping())
-        compositedLayerMapping()->updateAfterLayout(flags & NeedsFullRepaintInBacking, isUpdateRoot);
+    if ((flags & NeedsFullRepaintInBacking) && hasCompositedLayerMapping() && !compositedLayerMapping()->paintsIntoCompositedAncestor())
+        compositedLayerMapping()->setContentsNeedDisplay();
 
     if (geometryMap)
         geometryMap->popMappingsToAncestor(parent());

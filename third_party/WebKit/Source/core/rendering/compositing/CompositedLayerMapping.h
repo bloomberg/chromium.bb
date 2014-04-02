@@ -85,8 +85,6 @@ public:
 
     RenderLayer& owningLayer() const { return m_owningLayer; }
 
-    void updateAfterLayout(bool needsFullRepaint, bool isUpdateRoot);
-
     // Returns true if layer configuration changed.
     bool updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType);
     // Update graphics layer position and bounds.

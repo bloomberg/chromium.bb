@@ -428,12 +428,6 @@ void CompositedLayerMapping::updateCompositingReasons()
     m_graphicsLayer->setCompositingReasons(m_owningLayer.compositingReasons());
 }
 
-void CompositedLayerMapping::updateAfterLayout(bool needsFullRepaint, bool isUpdateRoot)
-{
-    if (needsFullRepaint && !paintsIntoCompositedAncestor())
-        setContentsNeedDisplay();
-}
-
 bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdater::UpdateType updateType)
 {
     if (!shouldUpdateGraphicsLayer(updateType))
