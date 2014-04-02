@@ -605,11 +605,6 @@ int NotificationView::GetMessageLineLimit(int width) {
   return message_line_limit;
 }
 
-int NotificationView::GetMessageLines(int width, int limit) {
-  return message_view_ ?
-         message_view_->GetLinesForWidthAndLimit(width, limit) : 0;
-}
-
 int NotificationView::GetMessageHeight(int width, int limit) {
   return message_view_ ?
          message_view_->GetSizeForWidthAndLines(width, limit).height() : 0;

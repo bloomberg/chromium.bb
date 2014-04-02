@@ -70,7 +70,6 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
 
  private:
   int GetMessageLineLimit(int width);
-  int GetMessageLines(int width, int limit);
   int GetMessageHeight(int width, int limit);
 
   MessageCenterController* controller_;  // Weak, lives longer then views.

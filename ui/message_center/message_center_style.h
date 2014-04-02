@@ -112,9 +112,9 @@ const SkColor kProgressBarBackgroundColor = SkColorSetRGB(216, 216, 216);
 const SkColor kProgressBarSliceColor = SkColorSetRGB(120, 120, 120);
 
 // Line limits.
-const int kTitleLineLimit = 3;
+const int kTitleLineLimit = 1;
 const int kMessageCollapsedLineLimit = 2;
-const int kMessageExpandedLineLimit = 7;
+const int kMessageExpandedLineLimit = 5;
 const int kContextMessageLineLimit = 1;
 
 // Around notifications ////////////////////////////////////////////////////////
