@@ -49,7 +49,7 @@ const int kBufferAudioData = 2;
 CastRtpPayloadParams DefaultOpusPayload() {
   CastRtpPayloadParams payload;
   payload.ssrc = 1;
-  payload.feedback_ssrc = 1;
+  payload.feedback_ssrc = 2;
   payload.payload_type = 127;
   payload.codec_name = kCodecNameOpus;
   payload.clock_rate = 48000;
@@ -76,9 +76,11 @@ CastRtpPayloadParams DefaultVp8Payload() {
 
 CastRtpPayloadParams DefaultH264Payload() {
   CastRtpPayloadParams payload;
+  // TODO(hshi): set different ssrc/rtpPayloadType values for H264 and VP8
+  // once b/13696137 is fixed.
   payload.ssrc = 11;
   payload.feedback_ssrc = 12;
-  payload.payload_type = 120;
+  payload.payload_type = 96;
   payload.codec_name = kCodecNameH264;
   payload.clock_rate = 90000;
   payload.width = 1280;
