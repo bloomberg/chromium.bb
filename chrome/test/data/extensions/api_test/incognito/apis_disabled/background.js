@@ -24,7 +24,10 @@ chrome.test.runTests([
       assertTrue(!tab.incognito);
     });
 
-    chrome.test.createIncognitoTab("about:blank");
-    chrome.tabs.create({url: "about:blank"}, pass());
+    chrome.test.sendMessage("createIncognitoTab", function(response) {
+      if (response == "created") {
+        chrome.tabs.create({url: "about:blank"}, pass());
+      }
+    });
   },
 ]);

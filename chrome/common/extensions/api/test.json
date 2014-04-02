@@ -109,14 +109,6 @@
         ]
       },
       {
-        "name": "createIncognitoTab",
-        "type": "function",
-        "description": "Creates an incognito tab during internal testing. Succeeds even if the extension is not enabled in incognito mode.",
-        "parameters": [
-          {"type": "string", "name": "url"}
-        ]
-      },
-      {
         "name": "sendMessage",
         "type": "function",
         "description": "Sends a string message to the browser process, generating a Notification that C++ test code can wait for.",

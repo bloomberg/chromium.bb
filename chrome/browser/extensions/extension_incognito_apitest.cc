@@ -170,6 +170,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   ResultCatcher catcher;
+  ExtensionTestMessageListener listener("createIncognitoTab", true);
 
   // Open incognito window and navigate to test page.
   ui_test_utils::OpenURLOffTheRecord(
@@ -178,6 +179,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
 
   ASSERT_TRUE(LoadExtension(test_data_dir_
       .AppendASCII("incognito").AppendASCII("apis_disabled")));
+
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
+                                     GURL("about:blank"));
+  listener.Reply("created");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

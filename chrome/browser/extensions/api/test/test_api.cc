@@ -9,11 +9,9 @@
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/test.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/quota_service.h"
@@ -33,7 +31,6 @@ const char kNotTestProcessError[] =
 
 namespace extensions {
 
-namespace CreateIncognitoTab = api::test::CreateIncognitoTab;
 namespace Log = api::test::Log;
 namespace NotifyFail = api::test::NotifyFail;
 namespace PassMessage = api::test::PassMessage;
@@ -84,21 +81,10 @@ bool TestLogFunction::RunImpl() {
 TestResetQuotaFunction::~TestResetQuotaFunction() {}
 
 bool TestResetQuotaFunction::RunImpl() {
-  QuotaService* quota = ExtensionSystem::Get(GetProfile())->quota_service();
+  QuotaService* quota =
+      ExtensionSystem::Get(browser_context())->quota_service();
   quota->Purge();
   quota->violation_errors_.clear();
-  return true;
-}
-
-TestCreateIncognitoTabFunction::
-   ~TestCreateIncognitoTabFunction() {}
-
-bool TestCreateIncognitoTabFunction::RunImpl() {
-  scoped_ptr<CreateIncognitoTab::Params> params(
-      CreateIncognitoTab::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-  chrome::OpenURLOffTheRecord(
-      GetProfile(), GURL(params->url), chrome::GetActiveDesktop());
   return true;
 }
 
