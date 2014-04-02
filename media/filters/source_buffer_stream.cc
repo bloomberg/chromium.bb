@@ -1615,7 +1615,10 @@ void SourceBufferStream::GenerateSpliceFrame(const BufferQueue& new_buffers) {
   // If there are gaps in the timeline, it's possible that we only find buffers
   // after the splice point but within the splice range.  For simplicity, we do
   // not generate splice frames in this case.
-  if (pre_splice_buffers.front()->timestamp() > splice_timestamp)
+  //
+  // We also do not want to generate splices if the first new buffer replaces an
+  // existing buffer exactly.
+  if (pre_splice_buffers.front()->timestamp() >= splice_timestamp)
     return;
 
   // Sanitize |pre_splice_buffers| so that there are no recursive splices.

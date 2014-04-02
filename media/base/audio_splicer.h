@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/audio/audio_parameters.h"
+#include "media/base/buffers.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -75,8 +76,14 @@ class MEDIA_EXPORT AudioSplicer {
   void CrossfadePostSplice(scoped_ptr<AudioBus> pre_splice_bus,
                            scoped_refptr<AudioBuffer> crossfade_buffer);
 
+  // Reset the splice and splice end timestamps.
+  void reset_splice_timestamps() {
+    splice_timestamp_ = max_splice_end_timestamp_ = kNoTimestamp();
+  }
+
   const base::TimeDelta max_crossfade_duration_;
   base::TimeDelta splice_timestamp_;
+  base::TimeDelta max_splice_end_timestamp_;
 
   // The various sanitizers for each stage of the crossfade process.  Buffers in
   // |output_sanitizer_| are immediately available for consumption by external

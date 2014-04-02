@@ -3630,16 +3630,12 @@ TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_Basic) {
   CheckNoNextBuffer();
 }
 
-TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_DoubleSpliceExactOverlap) {
+TEST_F(SourceBufferStreamTest, Audio_SpliceFrame_NoExactSplices) {
   SetAudioStream();
   Seek(0);
   NewSegmentAppend("0K 2K 4K 6K 8K 10K 12K");
-  NewSegmentAppend("10K 13K 15K 17K");
-
-  // Create a splice on top of the first splice.
-  NewSegmentAppend("10K");
-
-  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 13K C 10K 15K 17K");
+  NewSegmentAppend("10K 14K");
+  CheckExpectedBuffers("0K 2K 4K 6K 8K 10K 14K");
   CheckNoNextBuffer();
 }
 

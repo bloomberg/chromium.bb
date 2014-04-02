@@ -12,7 +12,6 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
-#include "media/base/buffers.h"
 #include "media/base/vector_math.h"
 
 namespace media {
@@ -262,6 +261,7 @@ AudioSplicer::AudioSplicer(int samples_per_second)
     : max_crossfade_duration_(
           base::TimeDelta::FromMilliseconds(kCrossfadeDurationInMilliseconds)),
       splice_timestamp_(kNoTimestamp()),
+      max_splice_end_timestamp_(kNoTimestamp()),
       output_sanitizer_(new AudioStreamSanitizer(samples_per_second)),
       pre_splice_sanitizer_(new AudioStreamSanitizer(samples_per_second)),
       post_splice_sanitizer_(new AudioStreamSanitizer(samples_per_second)) {}
@@ -272,7 +272,7 @@ void AudioSplicer::Reset() {
   output_sanitizer_->Reset();
   pre_splice_sanitizer_->Reset();
   post_splice_sanitizer_->Reset();
-  splice_timestamp_ = kNoTimestamp();
+  reset_splice_timestamps();
 }
 
 bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
@@ -283,10 +283,20 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
     return output_sanitizer_->AddInput(input);
   }
 
-  // If we're still receiving buffers before the splice point figure out which
-  // sanitizer (if any) to put them in.
+  const AudioTimestampHelper& output_ts_helper =
+      output_sanitizer_->timestamp_helper();
+
   if (!post_splice_sanitizer_->HasNextBuffer()) {
-    DCHECK(!input->end_of_stream());
+    // Due to inaccurate demuxer timestamps a splice may have been incorrectly
+    // marked such that the "pre splice buffers" were all entirely before the
+    // splice point.  Here we check for end of stream or buffers which couldn't
+    // possibly be part of the splice.
+    if (input->end_of_stream() ||
+        input->timestamp() >= max_splice_end_timestamp_) {
+      CHECK(pre_splice_sanitizer_->DrainInto(output_sanitizer_.get()));
+      reset_splice_timestamps();
+      return output_sanitizer_->AddInput(input);
+    }
 
     // If the provided buffer is entirely before the splice point it can also be
     // added to the output queue.
@@ -301,35 +311,25 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
     // to calculating crossfade.
     if (!pre_splice_sanitizer_->HasNextBuffer()) {
       pre_splice_sanitizer_->ResetTimestampState(
-          output_sanitizer_->timestamp_helper().frame_count(),
-          output_sanitizer_->timestamp_helper().base_timestamp());
+          output_ts_helper.frame_count(), output_ts_helper.base_timestamp());
     }
 
-    // If we're processing a splice and the input buffer does not overlap any of
-    // the existing buffers append it to the |pre_splice_sanitizer_|.
-    //
     // The first overlapping buffer is expected to have a timestamp of exactly
-    // |splice_timestamp_|.  It's not sufficient to check this though, since in
-    // the case of a perfect overlap, the first pre-splice buffer may have the
-    // same timestamp.
-    //
-    // It's also not sufficient to check if the input timestamp is after the
-    // current expected timestamp from |pre_splice_sanitizer_| since the decoder
-    // may have fuzzed the timestamps slightly.
+    // |splice_timestamp_|.  Until that timestamp is seen, all buffers go into
+    // |pre_splice_sanitizer_|.
     if (!pre_splice_sanitizer_->HasNextBuffer() ||
         input->timestamp() != splice_timestamp_) {
       return pre_splice_sanitizer_->AddInput(input);
     }
 
     // We've received the first overlapping buffer.
-  } else {
-    // TODO(dalecurtis): The pre splice assignment process still leaves the
-    // unlikely case that the decoder fuzzes a later pre splice buffer's
-    // timestamp such that it matches |splice_timestamp_|.
-    //
-    // Watch for these crashes in the field to see if we need a more complicated
-    // assignment process.
-    CHECK(input->timestamp() != splice_timestamp_);
+  } else if (!input->end_of_stream() &&
+             input->timestamp() == splice_timestamp_) {
+    // In this case we accidentally put a pre splice buffer in the post splice
+    // sanitizer, so we need to recover by transferring all current post splice
+    // buffers into the pre splice sanitizer and continuing with the splice.
+    post_splice_sanitizer_->DrainInto(pre_splice_sanitizer_.get());
+    post_splice_sanitizer_->Reset();
   }
 
   // At this point we have all the fade out preroll buffers from the decoder.
@@ -338,23 +338,30 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   if (!post_splice_sanitizer_->AddInput(input))
     return false;
 
-  if (!input->end_of_stream() &&
-      post_splice_sanitizer_->GetDuration() < max_crossfade_duration_) {
-    return true;
+  // Ensure |output_sanitizer_| has a valid base timestamp so we can use it for
+  // timestamp calculations.
+  if (output_ts_helper.base_timestamp() == kNoTimestamp()) {
+    output_sanitizer_->ResetTimestampState(
+        0, pre_splice_sanitizer_->timestamp_helper().base_timestamp());
   }
 
   // If a splice frame was incorrectly marked due to poor demuxed timestamps, we
-  // may not actually have a splice frame.  In this case, just transfer all data
-  // to the output sanitizer.
-  if (pre_splice_sanitizer_->timestamp_helper().GetTimestamp() ==
-      post_splice_sanitizer_->timestamp_helper().base_timestamp()) {
+  // may not actually have a splice.  Here we check if any frames exist before
+  // the splice.  In this case, just transfer all data to the output sanitizer.
+  if (pre_splice_sanitizer_->GetFrameCount() <=
+      output_ts_helper.GetFramesToTarget(splice_timestamp_)) {
     CHECK(pre_splice_sanitizer_->DrainInto(output_sanitizer_.get()));
     CHECK(post_splice_sanitizer_->DrainInto(output_sanitizer_.get()));
-    splice_timestamp_ = kNoTimestamp();
-    pre_splice_sanitizer_->Reset();
-    post_splice_sanitizer_->Reset();
+    reset_splice_timestamps();
     return true;
   }
+
+  // Since it's possible that a pre splice buffer after the first might have its
+  // timestamp fuzzed to be |splice_timestamp_| we need to always wait until we
+  // have seen all possible post splice buffers to ensure we didn't mistakenly
+  // put a pre splice buffer into the post splice sanitizer.
+  if (!input->end_of_stream() && input->timestamp() < max_splice_end_timestamp_)
+    return true;
 
   scoped_refptr<AudioBuffer> crossfade_buffer;
   scoped_ptr<AudioBus> pre_splice =
@@ -365,7 +372,7 @@ bool AudioSplicer::AddInput(const scoped_refptr<AudioBuffer>& input) {
   CrossfadePostSplice(pre_splice.Pass(), crossfade_buffer);
 
   // Clear the splice timestamp so new splices can be accepted.
-  splice_timestamp_ = kNoTimestamp();
+  reset_splice_timestamps();
   return true;
 }
 
@@ -388,6 +395,9 @@ void AudioSplicer::SetSpliceTimestamp(base::TimeDelta splice_timestamp) {
   // this case is possible.
   CHECK(splice_timestamp_ == kNoTimestamp());
   splice_timestamp_ = splice_timestamp;
+  max_splice_end_timestamp_ = splice_timestamp_ + max_crossfade_duration_;
+  pre_splice_sanitizer_->Reset();
+  post_splice_sanitizer_->Reset();
 }
 
 scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
@@ -396,21 +406,13 @@ scoped_ptr<AudioBus> AudioSplicer::ExtractCrossfadeFromPreSplice(
   const AudioTimestampHelper& output_ts_helper =
       output_sanitizer_->timestamp_helper();
 
-  // Ensure |output_sanitizer_| has a valid base timestamp so we can use it for
-  // timestamp calculations.
-  if (output_ts_helper.base_timestamp() == kNoTimestamp()) {
-    output_sanitizer_->ResetTimestampState(
-        0, pre_splice_sanitizer_->timestamp_helper().base_timestamp());
-  }
-
   int frames_before_splice =
       output_ts_helper.GetFramesToTarget(splice_timestamp_);
 
   // Determine crossfade frame count based on available frames in each splicer
   // and capping to the maximum crossfade duration.
   const int max_crossfade_frame_count =
-      output_ts_helper.GetFramesToTarget(splice_timestamp_ +
-                                         max_crossfade_duration_) -
+      output_ts_helper.GetFramesToTarget(max_splice_end_timestamp_) -
       frames_before_splice;
   const int frames_to_crossfade = std::min(
       max_crossfade_frame_count,
