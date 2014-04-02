@@ -23,7 +23,11 @@ Packet::~Packet() {}
 
 PacketPipe::PacketPipe() {}
 PacketPipe::~PacketPipe() {}
-void PacketPipe::InitOnIOThread() {}
+void PacketPipe::InitOnIOThread() {
+  if (pipe_) {
+    pipe_->InitOnIOThread();
+  }
+}
 void PacketPipe::AppendToPipe(scoped_ptr<PacketPipe> pipe) {
   if (pipe_) {
     pipe_->AppendToPipe(pipe.Pass());
@@ -188,6 +192,7 @@ class RandomSortedDelay : public PacketPipe {
     }
   }
   virtual void InitOnIOThread() OVERRIDE {
+    PacketPipe::InitOnIOThread();
     // As we start the stream, assume that we are in a random
     // place between two extra delays, thus multiplier = 1.0;
     ScheduleExtraDelay(1.0);
@@ -269,6 +274,7 @@ class NetworkGlitchPipe : public PacketPipe {
   }
 
   virtual void InitOnIOThread() OVERRIDE {
+    PacketPipe::InitOnIOThread();
     Flip();
   }
 
