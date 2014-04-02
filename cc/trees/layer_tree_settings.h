@@ -48,7 +48,6 @@ class CC_EXPORT LayerTreeSettings {
   int scrollbar_linear_fade_length_ms;
   SkColor solid_color_scrollbar_color;
   bool calculate_top_controls_position;
-  bool use_memory_management;
   bool timeout_and_draw_when_animation_checkerboards;
   int maximum_number_of_failed_draws_before_draw_is_forced_;
   bool layer_transforms_should_scale_layer_contents;

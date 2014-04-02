@@ -385,7 +385,6 @@ void CompositorImpl::SetVisible(bool visible) {
     settings.allow_antialiasing = false;
     settings.calculate_top_controls_position = false;
     settings.top_controls_height = 0.f;
-    settings.use_memory_management = false;
     settings.highp_threshold_min = 2048;
 
     CommandLine* command_line = CommandLine::ForCurrentProcess();
