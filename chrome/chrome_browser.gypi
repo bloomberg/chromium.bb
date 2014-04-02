@@ -3506,13 +3506,6 @@
                 ['include', '^browser/printing/print_dialog_cloud.h'],
               ],
             }],
-            ['gcc_version == 45', {
-              # Avoid gcc 4.5 miscompilation of template_url.cc
-              # as per http://crbug.com/41887
-              'cflags': [
-                '-fno-ipa-cp',
-              ],
-            }],
           ],
         }],
         ['OS=="linux"', {
