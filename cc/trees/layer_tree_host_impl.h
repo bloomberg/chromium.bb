@@ -123,8 +123,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void OnRootLayerDelegatedScrollOffsetChanged() OVERRIDE;
   virtual void ScrollEnd() OVERRIDE;
   virtual InputHandler::ScrollStatus FlingScrollBegin() OVERRIDE;
-  virtual void NotifyCurrentFlingVelocity(
-      const gfx::Vector2dF& velocity) OVERRIDE;
   virtual void MouseMoveAt(const gfx::Point& viewport_point) OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,
@@ -383,9 +381,6 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Vector2dF accumulated_root_overscroll() const {
     return accumulated_root_overscroll_;
   }
-  gfx::Vector2dF current_fling_velocity() const {
-    return current_fling_velocity_;
-  }
 
   bool pinch_gesture_active() const { return pinch_gesture_active_; }
 
@@ -574,7 +569,6 @@ class CC_EXPORT LayerTreeHostImpl
   ManagedMemoryPolicy cached_managed_memory_policy_;
 
   gfx::Vector2dF accumulated_root_overscroll_;
-  gfx::Vector2dF current_fling_velocity_;
 
   bool pinch_gesture_active_;
   bool pinch_gesture_end_should_clear_scrolling_layer_;

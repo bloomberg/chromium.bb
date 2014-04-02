@@ -16,7 +16,6 @@
 
 namespace cc {
 class InputHandler;
-struct DidOverscrollParams;
 }
 
 namespace blink {
@@ -25,6 +24,7 @@ class WebInputEvent;
 
 namespace content {
 class InputHandlerManager;
+struct DidOverscrollParams;
 
 // The purpose of this class is to act as the intermediary between the various
 // components that make up the 'synchronous compositor mode' implementation and
@@ -85,7 +85,7 @@ class SynchronousCompositorImpl
   virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) OVERRIDE;
 
   void SetInputHandler(cc::InputHandler* input_handler);
-  void DidOverscroll(const cc::DidOverscrollParams& params);
+  void DidOverscroll(const DidOverscrollParams& params);
   void DidStopFlinging();
 
  private:

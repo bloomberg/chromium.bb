@@ -46,11 +46,13 @@ class CONTENT_EXPORT InputHandlerProxy
   virtual void WillShutdown() OVERRIDE;
   virtual void Animate(base::TimeTicks time) OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE;
-  virtual void DidOverscroll(const cc::DidOverscrollParams& params) OVERRIDE;
+  virtual void DidOverscroll(const gfx::Vector2dF& accumulated_overscroll,
+                             const gfx::Vector2dF& latest_overscroll_delta)
+      OVERRIDE;
 
   // blink::WebGestureCurveTarget implementation.
-  virtual void scrollBy(const blink::WebFloatSize& offset);
-  virtual void notifyCurrentFlingVelocity(const blink::WebFloatSize& velocity);
+  virtual bool scrollBy(const blink::WebFloatSize& offset,
+                        const blink::WebFloatSize& velocity);
 
   bool gesture_scroll_on_impl_thread_for_testing() const {
     return gesture_scroll_on_impl_thread_;
@@ -87,6 +89,9 @@ class CONTENT_EXPORT InputHandlerProxy
   // will be disabled.
   bool disallow_horizontal_fling_scroll_;
   bool disallow_vertical_fling_scroll_;
+
+  // Non-zero only within the scope of |scrollBy|.
+  gfx::Vector2dF current_fling_velocity_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };

@@ -63,6 +63,18 @@ TEST_F(ScrollerTest, Scroll) {
   EXPECT_GT(0.f, scroller.GetCurrVelocityY() * kDefaultDeltaY);
   EXPECT_TRUE(scroller.IsScrollingInDirection(kDefaultDeltaX, kDefaultDeltaY));
 
+  // Repeated offset computations at the same timestamp should yield identical
+  // results.
+  float curr_x = scroller.GetCurrX();
+  float curr_y = scroller.GetCurrY();
+  float curr_velocity_x = scroller.GetCurrVelocityX();
+  float curr_velocity_y = scroller.GetCurrVelocityY();
+  scroller.ComputeScrollOffset(start_time + scroll_duration / 2);
+  EXPECT_EQ(curr_x, scroller.GetCurrX());
+  EXPECT_EQ(curr_y, scroller.GetCurrY());
+  EXPECT_EQ(curr_velocity_x, scroller.GetCurrVelocityX());
+  EXPECT_EQ(curr_velocity_y, scroller.GetCurrVelocityY());
+
   // Advance to the end.
   scroller.ComputeScrollOffset(start_time + scroll_duration);
   EXPECT_EQ(scroller.GetFinalX(), scroller.GetCurrX());
@@ -122,6 +134,18 @@ TEST_F(ScrollerTest, Fling) {
   EXPECT_LT(0.f, scroller.GetCurrVelocityY() * kDefaultVelocityY);
   EXPECT_TRUE(
       scroller.IsScrollingInDirection(kDefaultVelocityX, kDefaultVelocityY));
+
+  // Repeated offset computations at the same timestamp should yield identical
+  // results.
+  float curr_x = scroller.GetCurrX();
+  float curr_y = scroller.GetCurrY();
+  float curr_velocity_x = scroller.GetCurrVelocityX();
+  float curr_velocity_y = scroller.GetCurrVelocityY();
+  scroller.ComputeScrollOffset(start_time + scroll_duration / 2);
+  EXPECT_EQ(curr_x, scroller.GetCurrX());
+  EXPECT_EQ(curr_y, scroller.GetCurrY());
+  EXPECT_EQ(curr_velocity_x, scroller.GetCurrVelocityX());
+  EXPECT_EQ(curr_velocity_y, scroller.GetCurrVelocityY());
 
   // Advance to the end.
   scroller.ComputeScrollOffset(start_time + scroll_duration);

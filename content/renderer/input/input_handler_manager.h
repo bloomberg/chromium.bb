@@ -17,7 +17,6 @@ class MessageLoopProxy;
 
 namespace cc {
 class InputHandler;
-struct DidOverscrollParams;
 }
 
 namespace blink {
@@ -28,6 +27,7 @@ namespace content {
 
 class InputHandlerWrapper;
 class InputHandlerManagerClient;
+struct DidOverscrollParams;
 
 // InputHandlerManager class manages InputHandlerProxy instances for
 // the WebViews in this renderer.
@@ -55,7 +55,7 @@ class InputHandlerManager {
                                       ui::LatencyInfo* latency_info);
 
   // Called from the compositor's thread.
-  void DidOverscroll(int routing_id, const cc::DidOverscrollParams& params);
+  void DidOverscroll(int routing_id, const DidOverscrollParams& params);
 
   // Called from the compositor's thread.
   void DidStopFlinging(int routing_id);
