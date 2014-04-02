@@ -46,12 +46,10 @@ class TryChangeUnittest(TryChangeTestsBase):
   """General trychange.py tests."""
   def testMembersChanged(self):
     members = [
-      'DieWithError', 'EPILOG', 'Escape', 'GIT', 'GIT_PATCH_DIR_BASENAME',
-      'GetMungedDiff', 'GuessVCS', 'GIT_BRANCH_FILE',
+      'DieWithError', 'EPILOG', 'Escape', 'GIT', 'GetMungedDiff', 'GuessVCS',
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'OptionParser',
       'PrintSuccess',
-      'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'contextlib',
-      'breakpad',
+      'RunCommand', 'RunGit', 'SCM', 'SVN', 'TryChange', 'USAGE', 'breakpad',
       'datetime', 'errno', 'fix_encoding', 'gcl', 'gclient_utils', 'gen_parser',
       'getpass', 'itertools', 'json', 'logging', 'optparse', 'os', 'posixpath',
       're', 'scm', 'shutil', 'subprocess2', 'sys', 'tempfile', 'urllib',

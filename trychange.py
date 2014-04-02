@@ -4,11 +4,10 @@
 # found in the LICENSE file.
 
 """Client-side script to send a try job to the try server. It communicates to
-the try server by either writting to a svn/git repository or by directly
-connecting to the server by HTTP.
+the try server by either writting to a svn repository or by directly connecting
+to the server by HTTP.
 """
 
-import contextlib
 import datetime
 import errno
 import getpass
@@ -71,9 +70,6 @@ Examples:
             -f include/b.h
 """
 
-GIT_PATCH_DIR_BASENAME = os.path.join('git-try', 'patches-git')
-GIT_BRANCH_FILE = 'ref'
-_GIT_PUSH_ATTEMPTS = 3
 
 def DieWithError(message):
   print >> sys.stderr, message
@@ -168,10 +164,7 @@ class SCM(object):
       'port': self.GetCodeReviewSetting('TRYSERVER_HTTP_PORT'),
       'host': self.GetCodeReviewSetting('TRYSERVER_HTTP_HOST'),
       'svn_repo': self.GetCodeReviewSetting('TRYSERVER_SVN_URL'),
-      'git_repo': self.GetCodeReviewSetting('TRYSERVER_GIT_URL'),
       'project': self.GetCodeReviewSetting('TRYSERVER_PROJECT'),
-      # Primarily for revision=auto
-      'revision': self.GetCodeReviewSetting('TRYSERVER_REVISION'),
       'root': self.GetCodeReviewSetting('TRYSERVER_ROOT'),
       'patchlevel': self.GetCodeReviewSetting('TRYSERVER_PATCHLEVEL'),
     }
@@ -417,9 +410,7 @@ def _GenTSBotSpec(checkouts, change, changed_files, options):
 
 
 def _ParseSendChangeOptions(bot_spec, options):
-  """Parse common options passed to _SendChangeHTTP, _SendChangeSVN and
-  _SendChangeGit.
-  """
+  """Parse common options passed to _SendChangeHTTP and _SendChangeSVN."""
   values = [
     ('user', options.user),
     ('name', options.name),
@@ -490,44 +481,6 @@ def _SendChangeHTTP(bot_spec, options):
     raise NoTryServerAccess('%s is unaccessible. Got:\n%s' % (url, response))
 
 
-@contextlib.contextmanager
-def _TempFilename(name, contents=None):
-  """Create a temporary directory, append the specified name and yield.
-
-  In contrast to NamedTemporaryFile, does not keep the file open.
-  Deletes the file on __exit__.
-  """
-  temp_dir = tempfile.mkdtemp(prefix=name)
-  try:
-    path = os.path.join(temp_dir, name)
-    if contents:
-      with open(path, 'w') as f:
-        f.write(contents)
-    yield path
-  finally:
-    shutil.rmtree(temp_dir, True)
-
-
-@contextlib.contextmanager
-def _PrepareDescriptionAndPatchFiles(description, options):
-  """Creates temporary files with description and patch.
-
-  __enter__ called on the return value returns a tuple of patch_filename and
-  description_filename.
-
-  Args:
-    description: contents of description file.
-    options: patchset options object. Must have attributes: user,
-        name (of patch) and diff (contents of patch).
-  """
-  current_time = str(datetime.datetime.now()).replace(':', '.')
-  patch_basename = '%s.%s.%s.diff' % (Escape(options.user),
-                                      Escape(options.name), current_time)
-  with _TempFilename('description', description) as description_filename:
-    with _TempFilename(patch_basename, options.diff) as patch_filename:
-      yield patch_filename, description_filename
-
-
 def _SendChangeSVN(bot_spec, options):
   """Send a change to the try server by committing a diff file on a subversion
   server."""
@@ -544,141 +497,45 @@ def _SendChangeSVN(bot_spec, options):
   if options.dry_run:
     return
 
-  with _PrepareDescriptionAndPatchFiles(description, options) as (
-       patch_filename, description_filename):
-    if sys.platform == "cygwin":
-      # Small chromium-specific issue here:
-      # git-try uses /usr/bin/python on cygwin but svn.bat will be used
-      # instead of /usr/bin/svn by default. That causes bad things(tm) since
-      # Windows' svn.exe has no clue about cygwin paths. Hence force to use
-      # the cygwin version in this particular context.
-      exe = "/usr/bin/svn"
-    else:
-      exe = "svn"
-    patch_dir = os.path.dirname(patch_filename)
-    command = [exe, 'import', '-q', patch_dir, options.svn_repo, '--file',
-               description_filename]
-    if scm.SVN.AssertVersion("1.5")[0]:
-      command.append('--no-ignore')
-
+  # Create a temporary directory, put a uniquely named file in it with the diff
+  # content and svn import that.
+  temp_dir = tempfile.mkdtemp()
+  temp_file = tempfile.NamedTemporaryFile()
+  try:
     try:
+      # Description
+      temp_file.write(description)
+      temp_file.flush()
+
+      # Diff file
+      current_time = str(datetime.datetime.now()).replace(':', '.')
+      file_name = (Escape(options.user) + '.' + Escape(options.name) +
+                   '.%s.diff' % current_time)
+      full_path = os.path.join(temp_dir, file_name)
+      with open(full_path, 'wb') as f:
+        f.write(options.diff)
+
+      # Committing it will trigger a try job.
+      if sys.platform == "cygwin":
+        # Small chromium-specific issue here:
+        # git-try uses /usr/bin/python on cygwin but svn.bat will be used
+        # instead of /usr/bin/svn by default. That causes bad things(tm) since
+        # Windows' svn.exe has no clue about cygwin paths. Hence force to use
+        # the cygwin version in this particular context.
+        exe = "/usr/bin/svn"
+      else:
+        exe = "svn"
+      command = [exe, 'import', '-q', temp_dir, options.svn_repo, '--file',
+                 temp_file.name]
+      if scm.SVN.AssertVersion("1.5")[0]:
+        command.append('--no-ignore')
+
       subprocess2.check_call(command)
     except subprocess2.CalledProcessError, e:
       raise NoTryServerAccess(str(e))
-
-
-def _GetPatchGitRepo(git_url):
-  """Gets a path to a Git repo with patches.
-
-  Stores patches in .git/git-try/patches-git directory, a git repo. If it
-  doesn't exist yet or its origin URL is different, cleans up and clones it.
-  If it existed before, then pulls changes.
-
-  Does not support SVN repo.
-
-  Returns a path to the directory with patches.
-  """
-  git_dir = scm.GIT.GetGitDir(os.getcwd())
-  patch_dir = os.path.join(git_dir, GIT_PATCH_DIR_BASENAME)
-
-  logging.info('Looking for git repo for patches')
-  # Is there already a repo with the expected url or should we clone?
-  clone = True
-  if os.path.exists(patch_dir) and scm.GIT.IsInsideWorkTree(patch_dir):
-    existing_url = scm.GIT.Capture(
-        ['config', '--local', 'remote.origin.url'],
-        cwd=patch_dir)
-    clone = existing_url != git_url
-
-  if clone:
-    if os.path.exists(patch_dir):
-      logging.info('Cleaning up')
-      shutil.rmtree(patch_dir, True)
-    logging.info('Cloning patch repo')
-    scm.GIT.Capture(['clone', git_url, GIT_PATCH_DIR_BASENAME], cwd=git_dir)
-    email = scm.GIT.GetEmail(cwd=os.getcwd())
-    scm.GIT.Capture(['config', '--local', 'user.email', email], cwd=patch_dir)
-  else:
-    if scm.GIT.IsWorkTreeDirty(patch_dir):
-      logging.info('Work dir is dirty: hard reset!')
-      scm.GIT.Capture(['reset', '--hard'], cwd=patch_dir)
-    logging.info('Updating patch repo')
-    scm.GIT.Capture(['pull', 'origin', 'master'], cwd=patch_dir)
-
-  return os.path.abspath(patch_dir)
-
-
-def _SendChangeGit(bot_spec, options):
-  """Send a change to the try server by committing a diff file to a GIT repo"""
-  if not options.git_repo:
-    raise NoTryServerAccess('Please use the --git_repo option to specify the '
-                            'try server git repository to connect to.')
-
-  values = _ParseSendChangeOptions(bot_spec, options)
-  comment_subject = '%s.%s' % (options.user, options.name)
-  comment_body = ''.join("%s=%s\n" % (k, v) for k, v in values)
-  description = '%s\n\n%s' % (comment_subject, comment_body)
-  logging.info('Sending by GIT')
-  logging.info(description)
-  logging.info(options.git_repo)
-  logging.info(options.diff)
-  if options.dry_run:
-    return
-
-  patch_dir = _GetPatchGitRepo(options.git_repo)
-  def patch_git(*args):
-    return scm.GIT.Capture(list(args), cwd=patch_dir)
-  def add_and_commit(filename, comment_filename):
-    patch_git('add', filename)
-    patch_git('commit', '-F', comment_filename)
-
-  assert scm.GIT.IsInsideWorkTree(patch_dir)
-  assert not scm.GIT.IsWorkTreeDirty(patch_dir)
-
-  with _PrepareDescriptionAndPatchFiles(description, options) as (
-       patch_filename, description_filename):
-    logging.info('Committing patch')
-    target_branch = ('refs/patches/' +
-                     os.path.basename(patch_filename).replace(' ','-'))
-    target_filename = os.path.join(patch_dir, 'patch.diff')
-    branch_file = os.path.join(patch_dir, GIT_BRANCH_FILE)
-    try:
-      # Crete a new branch and put the patch there
-      patch_git('checkout', '--orphan', target_branch)
-      patch_git('reset')
-      patch_git('clean', '-f')
-      shutil.copyfile(patch_filename, target_filename)
-      add_and_commit(target_filename, description_filename)
-      assert not scm.GIT.IsWorkTreeDirty(patch_dir)
-
-      # Update the branch file in the master
-      patch_git('checkout', 'master')
-
-      def update_branch():
-        with open(branch_file, 'w') as f:
-          f.write(target_branch)
-        add_and_commit(branch_file, description_filename)
-
-      update_branch()
-
-      # Push master and target_branch to origin.
-      logging.info('Pushing patch')
-      for attempt in xrange(_GIT_PUSH_ATTEMPTS):
-        try:
-          patch_git('push', 'origin', 'master', target_branch)
-        except subprocess2.CalledProcessError as e:
-          is_last = attempt == _GIT_PUSH_ATTEMPTS - 1
-          if is_last:
-            raise NoTryServerAccess(str(e))
-          # Fetch, reset, update branch file again.
-          patch_git('fetch', 'origin')
-          patch_git('reset', '--hard', 'origin/master')
-          update_branch()
-    except subprocess2.CalledProcessError, e:
-      # Restore state.
-      patch_git('checkout', 'master')
-      patch_git('reset', '--hard', 'origin/master')
-      raise
+  finally:
+    temp_file.close()
+    shutil.rmtree(temp_dir, True)
 
 
 def PrintSuccess(bot_spec, options):
@@ -794,9 +651,7 @@ def gen_parser(prog):
                          " and exit.  Do not send patch.  Like --dry_run"
                          " but less verbose.")
   group.add_option("-r", "--revision",
-                    help="Revision to use for the try job. If 'auto' is "
-                         "specified, it is resolved to the revision a patch is "
-                         "generated against (Git only). Default: the "
+                    help="Revision to use for the try job; default: the "
                          "revision will be determined by the try server; see "
                          "its waterfall for more info")
   group.add_option("-c", "--clobber", action="store_true",
@@ -882,18 +737,6 @@ def gen_parser(prog):
                    help="SVN url to use to write the changes in; --use_svn is "
                         "implied when using --svn_repo")
   parser.add_option_group(group)
-
-  group = optparse.OptionGroup(parser, "Access the try server with Git")
-  group.add_option("--use_git",
-                   action="store_const",
-                   const=_SendChangeGit,
-                   dest="send_patch",
-                   help="Use GIT to talk to the try server")
-  group.add_option("-G", "--git_repo",
-                   metavar="GIT_URL",
-                   help="GIT url to use to write the changes in; --use_git is "
-                        "implied when using --git_repo")
-  parser.add_option_group(group)
   return parser
 
 
@@ -962,6 +805,7 @@ def TryChange(argv,
   try:
     changed_files = None
     # Always include os.getcwd() in the checkout settings.
+    checkouts = []
     path = os.getcwd()
 
     file_list = []
@@ -975,29 +819,12 @@ def TryChange(argv,
       # Clear file list so that the correct list will be retrieved from the
       # upstream branch.
       file_list = []
-
-    current_vcs = GuessVCS(options, path, file_list)
-    current_vcs.AutomagicalSettings()
-    options = current_vcs.options
-    vcs_is_git = type(current_vcs) is GIT
-
-    # So far, git_repo doesn't work with SVN
-    if options.git_repo and not vcs_is_git:
-      parser.error('--git_repo option is supported only for GIT repositories')
-
-    # If revision==auto, resolve it
-    if options.revision and options.revision.lower() == 'auto':
-      if not vcs_is_git:
-        parser.error('--revision=auto is supported only for GIT repositories')
-      options.revision = scm.GIT.Capture(
-          ['rev-parse', current_vcs.diff_against],
-          cwd=path)
-
-    checkouts = [current_vcs]
+    checkouts.append(GuessVCS(options, path, file_list))
+    checkouts[0].AutomagicalSettings()
     for item in options.sub_rep:
       # Pass file_list=None because we don't know the sub repo's file list.
       checkout = GuessVCS(options,
-                          os.path.join(current_vcs.checkout_root, item),
+                          os.path.join(checkouts[0].checkout_root, item),
                           None)
       if checkout.checkout_root in [c.checkout_root for c in checkouts]:
         parser.error('Specified the root %s two times.' %
@@ -1006,10 +833,9 @@ def TryChange(argv,
 
     can_http = options.port and options.host
     can_svn = options.svn_repo
-    can_git = options.git_repo
     # If there was no transport selected yet, now we must have enough data to
     # select one.
-    if not options.send_patch and not (can_http or can_svn or can_git):
+    if not options.send_patch and not (can_http or can_svn):
       parser.error('Please specify an access method.')
 
     # Convert options.diff into the content of the diff.
@@ -1087,30 +913,23 @@ def TryChange(argv,
           print '  %s' % (bot[0])
       return 0
 
-    # Determine sending protocol
+    # Send the patch.
     if options.send_patch:
       # If forced.
-      senders = [options.send_patch]
-    else:
-      # Try sending patch using avaialble protocols
-      all_senders = [
-        (_SendChangeHTTP, can_http),
-        (_SendChangeSVN, can_svn),
-        (_SendChangeGit, can_git)
-      ]
-      senders = [sender for sender, can in all_senders if can]
-
-    # Send the patch.
-    for sender in senders:
-      try:
-        sender(bot_spec, options)
+      options.send_patch(bot_spec, options)
+      PrintSuccess(bot_spec, options)
+      return 0
+    try:
+      if can_http:
+        _SendChangeHTTP(bot_spec, options)
         PrintSuccess(bot_spec, options)
         return 0
-      except NoTryServerAccess:
-        is_last = sender == senders[-1]
-        if is_last:
-          raise
-    assert False, "Unreachable code"
+    except NoTryServerAccess:
+      if not can_svn:
+        raise
+    _SendChangeSVN(bot_spec, options)
+    PrintSuccess(bot_spec, options)
+    return 0
   except (InvalidScript, NoTryServerAccess), e:
     if swallow_exception:
       return 1

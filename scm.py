@@ -141,10 +141,6 @@ class GIT(object):
     return results
 
   @staticmethod
-  def IsWorkTreeDirty(cwd):
-    return GIT.Capture(['status', '-s'], cwd=cwd) != ''
-
-  @staticmethod
   def GetEmail(cwd):
     """Retrieves the user email address if known."""
     # We could want to look at the svn cred when it has a svn remote but it
@@ -392,17 +388,6 @@ class GIT(object):
     """
     root = GIT.Capture(['rev-parse', '--show-cdup'], cwd=cwd)
     return os.path.abspath(os.path.join(cwd, root))
-
-  @staticmethod
-  def GetGitDir(cwd):
-    return os.path.abspath(GIT.Capture(['rev-parse', '--git-dir'], cwd=cwd))
-
-  @staticmethod
-  def IsInsideWorkTree(cwd):
-    try:
-      return GIT.Capture(['rev-parse', '--is-inside-work-tree'], cwd=cwd)
-    except (OSError, subprocess2.CalledProcessError):
-      return False
 
   @staticmethod
   def GetGitSvnHeadRev(cwd):
