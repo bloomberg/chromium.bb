@@ -30,6 +30,9 @@ def process_deps(path, project, new_rev, is_dry_run):
   A bit hacky, could it be made better?
   """
   content = open(path).read()
+  # Hack for Blink to get the AutoRollBot running again.
+  if project == "blink":
+    project = "webkit"
   old_line = r'(\s+)"%s_revision": "(\d+)",' % project
   new_line = r'\1"%s_revision": "%d",' % (project, new_rev)
   new_content = re.sub(old_line, new_line, content, 1)
