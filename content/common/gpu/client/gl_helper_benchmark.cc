@@ -62,8 +62,9 @@ class GLHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
     WebGraphicsContext3D::Attributes attributes;
+    bool lose_context_when_out_of_memory = false;
     context_ = webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl::
-        CreateOffscreenContext(attributes);
+        CreateOffscreenContext(attributes, lose_context_when_out_of_memory);
     context_->makeContextCurrent();
 
     helper_.reset(

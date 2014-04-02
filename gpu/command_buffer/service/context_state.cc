@@ -87,12 +87,14 @@ TextureUnit::TextureUnit()
 TextureUnit::~TextureUnit() {
 }
 
-ContextState::ContextState(FeatureInfo* feature_info, Logger* logger)
+ContextState::ContextState(FeatureInfo* feature_info,
+                           ErrorStateClient* error_state_client,
+                           Logger* logger)
     : active_texture_unit(0),
       pack_reverse_row_order(false),
       fbo_binding_for_scissor_workaround_dirty_(false),
       feature_info_(feature_info),
-      error_state_(ErrorState::Create(logger)) {
+      error_state_(ErrorState::Create(error_state_client, logger)) {
   Initialize();
 }
 

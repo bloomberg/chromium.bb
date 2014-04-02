@@ -42,6 +42,7 @@ struct GLES2_IMPL_EXPORT GLInProcessContextAttribs {
   int32 samples;
   int32 sample_buffers;
   int32 fail_if_major_perf_caveat;
+  int32 lose_context_when_out_of_memory;
 };
 
 class GLES2_IMPL_EXPORT GLInProcessContext {

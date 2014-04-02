@@ -56,8 +56,10 @@ DemoContextFactory::OffscreenCompositorContextProvider() {
     // to leak the context provider when we shutdown to avoid destroying the
     // contexts on the wrong thread.
     DCHECK(!ui::Compositor::WasInitializedWithThread());
+    bool lose_context_when_out_of_memory = true;
     offscreen_compositor_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
+        webkit::gpu::ContextProviderInProcess::CreateOffscreen(
+            lose_context_when_out_of_memory);
   }
   return offscreen_compositor_contexts_;
 }
@@ -66,8 +68,10 @@ scoped_refptr<cc::ContextProvider>
 DemoContextFactory::SharedMainThreadContextProvider() {
   if (!shared_main_thread_contexts_ ||
       shared_main_thread_contexts_->DestroyedOnMainThread()) {
+    bool lose_context_when_out_of_memory = false;
     shared_main_thread_contexts_ =
-        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
+        webkit::gpu::ContextProviderInProcess::CreateOffscreen(
+            lose_context_when_out_of_memory);
     if (shared_main_thread_contexts_ &&
         !shared_main_thread_contexts_->BindToCurrentThread())
       shared_main_thread_contexts_ = NULL;

@@ -26,9 +26,9 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
       scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d,
       const std::string& debug_name);
 
-  // Calls Create() with a default factory method for creating an offscreen
-  // context.
-  static scoped_refptr<ContextProviderInProcess> CreateOffscreen();
+  // Uses default attributes for creating an offscreen context.
+  static scoped_refptr<ContextProviderInProcess> CreateOffscreen(
+      bool lose_context_when_out_of_memory);
 
   virtual blink::WebGraphicsContext3D* WebContext3D() OVERRIDE;
 

@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -150,28 +151,24 @@ class GLES2DecoderTestBase : public testing::Test {
     memory_tracker_ = memory_tracker;
   }
 
-  void InitDecoder(
-      const char* extensions,
-      const char* gl_version,
-      bool has_alpha,
-      bool has_depth,
-      bool has_stencil,
-      bool request_alpha,
-      bool request_depth,
-      bool request_stencil,
-      bool bind_generates_resource);
+  struct InitState {
+    InitState();
 
-  void InitDecoderWithCommandLine(
-      const char* extensions,
-      const char* gl_version,
-      bool has_alpha,
-      bool has_depth,
-      bool has_stencil,
-      bool request_alpha,
-      bool request_depth,
-      bool request_stencil,
-      bool bind_generates_resource,
-      const base::CommandLine* command_line);
+    std::string extensions;
+    std::string gl_version;
+    bool has_alpha;
+    bool has_depth;
+    bool has_stencil;
+    bool request_alpha;
+    bool request_depth;
+    bool request_stencil;
+    bool bind_generates_resource;
+    bool lose_context_when_out_of_memory;
+  };
+
+  void InitDecoder(const InitState& init);
+  void InitDecoderWithCommandLine(const InitState& init,
+                                  const base::CommandLine* command_line);
 
   void ResetDecoder();
 
@@ -489,7 +486,7 @@ class GLES2DecoderTestBase : public testing::Test {
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   scoped_refptr<gfx::GLSurfaceStub> surface_;
   scoped_refptr<gfx::GLContextStubWithExtensions> context_;
-  scoped_ptr<GLES2Decoder> mock_decoder_;
+  scoped_ptr<MockGLES2Decoder> mock_decoder_;
   scoped_ptr<GLES2Decoder> decoder_;
   MemoryTracker* memory_tracker_;
 

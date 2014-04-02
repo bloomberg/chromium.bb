@@ -180,12 +180,12 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   // Number of swap buffers allowed before waiting.
   static const size_t kMaxSwapBuffers = 2;
 
-  GLES2Implementation(
-      GLES2CmdHelper* helper,
-      ShareGroup* share_group,
-      TransferBufferInterface* transfer_buffer,
-      bool bind_generates_resource,
-      GpuControl* gpu_control);
+  GLES2Implementation(GLES2CmdHelper* helper,
+                      ShareGroup* share_group,
+                      TransferBufferInterface* transfer_buffer,
+                      bool bind_generates_resource,
+                      bool lose_context_when_out_of_memory,
+                      GpuControl* gpu_control);
 
   virtual ~GLES2Implementation();
 
@@ -592,11 +592,6 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   void FinishHelper();
 
-  // Asserts that the context is lost.
-  // NOTE: This is an expensive call and should only be called
-  // for error checking.
-  bool MustBeContextLost();
-
   void RunIfContextNotLost(const base::Closure& callback);
 
   void OnSwapBuffersComplete();
@@ -728,6 +723,9 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   // Whether or not to print debugging info.
   bool debug_;
+
+  // When true, the context is lost when a GL_OUT_OF_MEMORY error occurs.
+  bool lose_context_when_out_of_memory_;
 
   // Used to check for single threaded access.
   int use_count_;

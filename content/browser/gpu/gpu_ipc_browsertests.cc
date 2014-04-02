@@ -35,12 +35,14 @@ class ContextTestBase : public content::ContentBrowserTest {
     content::BrowserGpuChannelHostFactory* factory =
         content::BrowserGpuChannelHostFactory::instance();
     CHECK(factory);
+    bool lose_context_when_out_of_memory = false;
     scoped_refptr<content::GpuChannelHost> gpu_channel_host(
         factory->EstablishGpuChannelSync(kInitCause));
     context_.reset(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             gpu_channel_host.get(),
             blink::WebGraphicsContext3D::Attributes(),
+            lose_context_when_out_of_memory,
             GURL(),
             WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
             NULL));
@@ -115,10 +117,12 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
   }
 
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContext() {
+    bool lose_context_when_out_of_memory = false;
     return make_scoped_ptr(
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             GetGpuChannel(),
             blink::WebGraphicsContext3D::Attributes(),
+            lose_context_when_out_of_memory,
             GURL(),
             WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
             NULL));
