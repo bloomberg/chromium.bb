@@ -1263,16 +1263,15 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   // true, so that case needs to be explicitly checked for.
   // TODO(tburkard): Figure out how to cancel prerendering in the opposite
   // case, when a new tab is added to a process used for prerendering.
-  // On Android we do reuse processes as we have a limited number of them and we
-  // still want the benefits of prerendering even when several tabs are open.
-#if !defined(OS_ANDROID)
+  // TODO(ppi): Check whether there are usually enough render processes
+  // available on Android. If not, kill an existing renderers so that we can
+  // create a new one.
   if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
           profile_, url) &&
       !content::RenderProcessHost::run_renderer_in_process()) {
     RecordFinalStatus(origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
     return NULL;
   }
-#endif
 
   // Check if enough time has passed since the last prerender.
   if (!DoesRateLimitAllowPrerender(origin)) {
