@@ -10,7 +10,6 @@
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_session.h"
 
 namespace net {
 
@@ -128,7 +127,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           crypto_config_->FillInchoateClientHello(
               server_id_,
               session()->connection()->supported_versions().front(),
-              cached, &crypto_negotiated_params_, &out);
+              cached,
+              &crypto_negotiated_params_,
+              &out);
           // Pad the inchoate client hello to fill up a packet.
           const size_t kFramingOverhead = 50;  // A rough estimate.
           const size_t max_packet_size =
@@ -252,10 +253,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
             DVLOG(1) << "Doing VerifyProof";
             return;
           case ProofVerifier::FAILURE:
-            delete proof_verify_callback;
             break;
           case ProofVerifier::SUCCESS:
-            delete proof_verify_callback;
             verify_ok_ = true;
             break;
         }

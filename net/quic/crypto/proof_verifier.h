@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
 namespace net {
