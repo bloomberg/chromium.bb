@@ -46,7 +46,7 @@ deps = {
     "http://protobuf.googlecode.com/svn/trunk@407",
 
   # GYP project generator.
-  "src/src/tools/gyp": "http://gyp.googlecode.com/svn/trunk@1472",
+  "src/src/tools/gyp": "http://gyp.googlecode.com/svn/trunk@1886",
 
   # Linux syscall support.
   "src/src/third_party/lss":
@@ -59,7 +59,7 @@ hooks = [
     # --no-circular-check.
     "pattern": ".",
     "action": ["python",
-               "src/src/tools/gyp/gyp",
+               "src/src/tools/gyp/gyp_main.py",
                "--no-circular-check",
                "src/src/client/windows/breakpad_client.gyp"],
   },
