@@ -179,12 +179,7 @@ struct OffHeapCollectionTraceTrait;
 
 template<typename T>
 struct ObjectAliveTrait {
-    static bool isAlive(Visitor*, T);
-};
-
-template<typename T>
-struct ObjectAliveTrait<Member<T> > {
-    static bool isAlive(Visitor*, const Member<T>&);
+    static bool isAlive(Visitor*, T*);
 };
 
 // Visitor is used to traverse the Blink object graph. Used for the
@@ -366,7 +361,10 @@ public:
 
     virtual bool isMarked(const void*) = 0;
 
-    template<typename T> inline bool isAlive(T obj) { return ObjectAliveTrait<T>::isAlive(this, obj); }
+    template<typename T> inline bool isAlive(T* obj)
+    {
+        return ObjectAliveTrait<T>::isAlive(this, obj);
+    }
     template<typename T> inline bool isAlive(const Member<T>& member)
     {
         return isAlive(member.get());
@@ -525,7 +523,7 @@ template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultObjectAli
 template<typename T>
 class DefaultObjectAliveTrait<T, false> {
 public:
-    static bool isAlive(Visitor* visitor, T obj)
+    static bool isAlive(Visitor* visitor, T* obj)
     {
         return visitor->isMarked(obj);
     }
@@ -534,19 +532,15 @@ public:
 template<typename T>
 class DefaultObjectAliveTrait<T, true> {
 public:
-    static bool isAlive(Visitor* visitor, T obj)
+    static bool isAlive(Visitor* visitor, T* obj)
     {
         return obj->isAlive(visitor);
     }
 };
 
-template<typename T> bool ObjectAliveTrait<T>::isAlive(Visitor* visitor, T obj)
+template<typename T> bool ObjectAliveTrait<T>::isAlive(Visitor* visitor, T* obj)
 {
     return DefaultObjectAliveTrait<T>::isAlive(visitor, obj);
-}
-template<typename T> bool ObjectAliveTrait<Member<T> >::isAlive(Visitor* visitor, const Member<T>& obj)
-{
-    return visitor->isMarked(obj.get());
 }
 
 // The GarbageCollectedMixin interface and helper macro

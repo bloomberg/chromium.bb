@@ -175,6 +175,13 @@ public:
     static SimpleObject* create() { return new SimpleObject(); }
     void trace(Visitor*) { }
     char getPayload(int i) { return payload[i]; }
+    // This virtual method is unused but it is here to make sure
+    // that this object has a vtable. This object is used
+    // as the super class for objects that also have garbage
+    // collected mixins and having a virtual here makes sure
+    // that adjustment is needed both for marking and for isAlive
+    // checks.
+    virtual void virtualMethod() { }
 protected:
     SimpleObject() { }
     char payload[64];
@@ -1137,10 +1144,9 @@ class Mixin : public GarbageCollectedMixin {
 public:
     virtual void trace(Visitor* visitor) { }
 
-    char getPayload(int i) { return m_padding[i]; }
+    virtual char getPayload(int i) { return m_padding[i]; }
 
 protected:
-    // This is to force ptr diff for SimpleObject, Mixin, and UseMixin.
     int m_padding[8];
 };
 
@@ -2983,20 +2989,25 @@ TEST(HeapTest, CollectionNesting)
     EXPECT_EQ(1, IntWrapper::s_destructorCalls);
 }
 
-TEST(heap, GarbageCollectedMixin)
+TEST(HeapTest, GarbageCollectedMixin)
 {
     HeapStats initialHeapStats;
     clearOutOldGarbage(&initialHeapStats);
 
     Persistent<UseMixin> usemixin = UseMixin::create();
-    ASSERT_EQ(0, UseMixin::s_traceCount);
+    EXPECT_EQ(0, UseMixin::s_traceCount);
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    ASSERT_EQ(1, UseMixin::s_traceCount);
+    EXPECT_EQ(1, UseMixin::s_traceCount);
 
     Persistent<Mixin> mixin = usemixin;
     usemixin = nullptr;
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
-    ASSERT_EQ(2, UseMixin::s_traceCount);
+    EXPECT_EQ(2, UseMixin::s_traceCount);
+
+    PersistentHeapHashSet<WeakMember<Mixin> > weakMap;
+    weakMap.add(UseMixin::create());
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0u, weakMap.size());
 }
 
 TEST(HeapTest, CollectionNesting2)
