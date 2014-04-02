@@ -3195,7 +3195,7 @@ class PaygenStage(ArchivingStage):
     assert version, "We can't generate payloads without a release_tag."
     logging.info("Generating payloads for: %s, %s", board, version)
 
-    with parallel.BackgroundTaskRunner(_RunPaygenInProcess) as per_channel:
+    with parallel.BackgroundTaskRunner(self._RunPaygenInProcess) as per_channel:
       if self.channels:
         logging.info("Using explicit channels: %s", self.channels)
         # If we have an explicit list of channels, use it.
@@ -3218,59 +3218,59 @@ class PaygenStage(ArchivingStage):
           per_channel.put((channel, board, version, self._run.debug,
                            self._run.config.perform_paygen_testing))
 
+  def _RunPaygenInProcess(self, channel, board, version, debug, test_payloads):
+    """Helper for PaygenStage that invokes payload generation.
 
-def _RunPaygenInProcess(channel, board, version, debug, test_payloads):
-  """Helper for PaygenStage that invokes payload generation.
+    This method is intended to be safe to invoke inside a process.
 
-  This method is intended to be safe to invoke inside a process.
+    Args:
+      channel: Channel of payloads to generate ('stable', 'beta', etc)
+      board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
+      version: Version of payloads to generate.
+      debug: Flag telling if this is a real run, or a test run.
+      test_payloads: Generate test payloads, and schedule auto testing.
+    """
+    # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
+    # These modules are imported here because they aren't always available at
+    # cbuildbot startup.
+    # pylint: disable=F0401
+    from crostools.lib import gspaths
+    from crostools.lib import paygen_build_lib
 
-  Args:
-    channel: Channel of payloads to generate ('stable', 'beta', etc)
-    board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
-    version: Version of payloads to generate.
-    debug: Flag telling if this is a real run, or a test run.
-    test_payloads: Generate test payloads, and schedule auto testing.
-  """
-  # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
-  # These modules are imported here because they aren't always available at
-  # cbuildbot startup.
-  # pylint: disable=F0401
-  from crostools.lib import gspaths
-  from crostools.lib import paygen_build_lib
+    # Convert to release tools naming for channels.
+    if not channel.endswith('-channel'):
+      channel += '-channel'
 
-  # Convert to release tools naming for channels.
-  if not channel.endswith('-channel'):
-    channel += '-channel'
+    # Convert to release tools naming for boards.
+    board = board.replace('_', '-')
 
-  # Convert to release tools naming for boards.
-  board = board.replace('_', '-')
+    with osutils.TempDir(sudo_rm=True) as tempdir:
+      # Create the definition of the build to generate payloads for.
+      build = gspaths.Build(channel=channel,
+                            board=board,
+                            version=version)
 
-  with osutils.TempDir(sudo_rm=True) as tempdir:
-    # Create the definition of the build to generate payloads for.
-    build = gspaths.Build(channel=channel,
-                          board=board,
-                          version=version)
-
-    try:
-      # Generate the payloads.
-      paygen_build_lib.CreatePayloads(build,
-                                      work_dir=tempdir,
-                                      dry_run=debug,
-                                      run_parallel=True,
-                                      run_on_builder=True,
-                                      skip_test_payloads=not test_payloads,
-                                      skip_autotest=not test_payloads)
-    except (paygen_build_lib.BuildFinished,
-            paygen_build_lib.BuildLocked,
-            paygen_build_lib.BuildSkip) as e:
-      # These errors are normal if it's possible for another process to
-      # work on the same build. This process could be a Paygen server, or
-      # another builder (perhaps by a trybot generating payloads on request).
-      #
-      # This means the build was finished by the other process, is already
-      # being processed (so the build is locked), or that it's been marked
-      # to skip (probably done manually).
-      cros_build_lib.Info('Paygen skipped because: %s', e)
+      try:
+        # Generate the payloads.
+        self._PrintLoudly('Starting %s, %s, %s' % (channel, version, board))
+        paygen_build_lib.CreatePayloads(build,
+                                        work_dir=tempdir,
+                                        dry_run=debug,
+                                        run_parallel=True,
+                                        run_on_builder=True,
+                                        skip_test_payloads=not test_payloads,
+                                        skip_autotest=not test_payloads)
+      except (paygen_build_lib.BuildFinished,
+              paygen_build_lib.BuildLocked,
+              paygen_build_lib.BuildSkip) as e:
+        # These errors are normal if it's possible for another process to
+        # work on the same build. This process could be a Paygen server, or
+        # another builder (perhaps by a trybot generating payloads on request).
+        #
+        # This means the build was finished by the other process, is already
+        # being processed (so the build is locked), or that it's been marked
+        # to skip (probably done manually).
+        cros_build_lib.Info('Paygen skipped because: %s', e)
 
 
 class AUTestStage(HWTestStage):

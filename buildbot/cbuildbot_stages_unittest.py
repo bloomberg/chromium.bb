@@ -1410,7 +1410,8 @@ class PaygenStageTest(StageTest):
     """Test that SignerResultsStage works when signing works."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Call the method under test.
-      stages._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False, True)
+      stage = self.ConstructStage()
+      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False, True)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -1430,8 +1431,9 @@ class PaygenStageTest(StageTest):
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Call the method under test.
       # Use release tools channel naming, and a board name including a variant.
-      stages._RunPaygenInProcess('foo-channel', 'foo-board_variant',
-                                 'foo-version', True, False)
+      stage = self.ConstructStage()
+      stage._RunPaygenInProcess('foo-channel', 'foo-board_variant',
+                                'foo-version', True, False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(
