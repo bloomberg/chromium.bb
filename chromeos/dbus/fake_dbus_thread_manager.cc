@@ -16,6 +16,7 @@
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_characteristic_client.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_descriptor_client.h"
+#include "chromeos/dbus/fake_bluetooth_gatt_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
@@ -67,6 +68,8 @@ void FakeDBusThreadManager::SetFakeClients() {
           new FakeBluetoothGattCharacteristicClient));
   SetBluetoothGattDescriptorClient(scoped_ptr<BluetoothGattDescriptorClient>(
       new FakeBluetoothGattDescriptorClient));
+  SetBluetoothGattManagerClient(scoped_ptr<BluetoothGattManagerClient>(
+      new FakeBluetoothGattManagerClient));
   SetBluetoothGattServiceClient(scoped_ptr<BluetoothGattServiceClient>(
       new FakeBluetoothGattServiceClient));
   SetBluetoothInputClient(
@@ -157,6 +160,11 @@ void FakeDBusThreadManager::SetBluetoothGattCharacteristicClient(
 void FakeDBusThreadManager::SetBluetoothGattDescriptorClient(
     scoped_ptr<BluetoothGattDescriptorClient> client) {
   bluetooth_gatt_descriptor_client_ = client.Pass();
+}
+
+void FakeDBusThreadManager::SetBluetoothGattManagerClient(
+    scoped_ptr<BluetoothGattManagerClient> client) {
+  bluetooth_gatt_manager_client_ = client.Pass();
 }
 
 void FakeDBusThreadManager::SetBluetoothGattServiceClient(
@@ -337,6 +345,11 @@ BluetoothGattCharacteristicClient*
 BluetoothGattDescriptorClient*
     FakeDBusThreadManager::GetBluetoothGattDescriptorClient() {
   return bluetooth_gatt_descriptor_client_.get();
+}
+
+BluetoothGattManagerClient*
+    FakeDBusThreadManager::GetBluetoothGattManagerClient() {
+  return bluetooth_gatt_manager_client_.get();
 }
 
 BluetoothGattServiceClient*

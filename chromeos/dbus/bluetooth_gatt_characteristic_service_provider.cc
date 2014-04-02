@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "chromeos/dbus/fake_bluetooth_gatt_characteristic_service_provider.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -467,7 +468,8 @@ BluetoothGattCharacteristicServiceProvider::Create(
     return new BluetoothGattCharacteristicServiceProviderImpl(
         bus, object_path, delegate, uuid, flags, permissions, service_path);
   }
-  return NULL;  // TODO(armansito): Return fake here.
+  return new FakeBluetoothGattCharacteristicServiceProvider(
+      object_path, delegate, uuid, flags, permissions, service_path);
 }
 
 }  // namespace chromeos

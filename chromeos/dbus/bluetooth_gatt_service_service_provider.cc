@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "chromeos/dbus/fake_bluetooth_gatt_service_service_provider.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -272,7 +273,8 @@ BluetoothGattServiceServiceProvider::Create(
     return new BluetoothGattServiceServiceProviderImpl(
         bus, object_path, uuid, includes);
   }
-  return NULL;  // TODO(armansito): Return fake here.
+  return new FakeBluetoothGattServiceServiceProvider(
+      object_path, uuid, includes);
 }
 
 }  // namespace chromeos

@@ -45,6 +45,8 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
       scoped_ptr<BluetoothGattCharacteristicClient> client);
   void SetBluetoothGattDescriptorClient(
       scoped_ptr<BluetoothGattDescriptorClient> client);
+  void SetBluetoothGattManagerClient(
+      scoped_ptr<BluetoothGattManagerClient> client);
   void SetBluetoothGattServiceClient(
       scoped_ptr<BluetoothGattServiceClient> client);
   void SetBluetoothInputClient(scoped_ptr<BluetoothInputClient> client);
@@ -88,6 +90,7 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
       GetBluetoothGattCharacteristicClient() OVERRIDE;
   virtual BluetoothGattDescriptorClient*
       GetBluetoothGattDescriptorClient() OVERRIDE;
+  virtual BluetoothGattManagerClient* GetBluetoothGattManagerClient() OVERRIDE;
   virtual BluetoothGattServiceClient* GetBluetoothGattServiceClient() OVERRIDE;
   virtual BluetoothInputClient* GetBluetoothInputClient() OVERRIDE;
   virtual BluetoothProfileManagerClient*
@@ -130,6 +133,7 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
       bluetooth_gatt_characteristic_client_;
   scoped_ptr<BluetoothGattDescriptorClient>
       bluetooth_gatt_descriptor_client_;
+  scoped_ptr<BluetoothGattManagerClient> bluetooth_gatt_manager_client_;
   scoped_ptr<BluetoothGattServiceClient> bluetooth_gatt_service_client_;
   scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
   scoped_ptr<BluetoothProfileManagerClient> bluetooth_profile_manager_client_;

@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
+#include "chromeos/dbus/fake_bluetooth_gatt_descriptor_service_provider.h"
 #include "dbus/exported_object.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -463,7 +464,8 @@ BluetoothGattDescriptorServiceProvider::Create(
     return new BluetoothGattDescriptorServiceProviderImpl(
         bus, object_path, delegate, uuid, permissions, characteristic_path);
   }
-  return NULL;  // TODO(armansito): Return fake here.
+  return new FakeBluetoothGattDescriptorServiceProvider(
+      object_path, delegate, uuid, permissions, characteristic_path);
 }
 
 }  // namespace chromeos
