@@ -249,6 +249,7 @@ CollectTimingInfo() {
 timed-test-spec() {
   if ${BUILD_PLATFORM_MAC} ; then
     echo "Timed-test-spec is not currently supported on MacOS"
+    echo "Namely, /usr/bin/time -f is not supported."
     exit -1
   fi
   if [ "$#" -lt "3" ]; then

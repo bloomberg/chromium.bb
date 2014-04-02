@@ -331,6 +331,23 @@ SetupPnaclTranslatorFastX8664Opt() {
 }
 
 
+#@
+#@ SetupPnaclTranslator1ThreadX8664Opt
+#@    use pnacl x8664 translator (with lto). Compile w/ 1 thread.
+SetupPnaclTranslator1ThreadX8664Opt() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl_translator_1thread.opt.x8664
+}
+
+#@
+#@ SetupPnaclTranslatorFast1ThreadX8664Opt
+#@    use pnacl x8664 translator fast mode (with lto). Compile w/ 1 thread.
+SetupPnaclTranslatorFast1ThreadX8664Opt() {
+  SetupPnaclX8664Common
+  SUFFIX=pnacl_translator_fast_1thread.opt.x8664
+}
+
+
 SetupPnaclX8632Common() {
   SetupSelLdr x86-32
 }
@@ -374,6 +391,22 @@ SetupPnaclTranslatorX8632Opt() {
 SetupPnaclTranslatorFastX8632Opt() {
   SetupPnaclX8632Common
   SUFFIX=pnacl_translator_fast.opt.x8632
+}
+
+#@
+#@ SetupPnaclTranslator1ThreadX8632Opt
+#@    use pnacl x8632 translator (with lto). Compile w/ 1 thread.
+SetupPnaclTranslator1ThreadX8632Opt() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl_translator_1thread.opt.x8632
+}
+
+#@
+#@ SetupPnaclTranslatorFast1ThreadX8632Opt
+#@    use pnacl x8632 translator fast mode (with lto). Compile w/ 1 thread.
+SetupPnaclTranslatorFast1ThreadX8632Opt() {
+  SetupPnaclX8632Common
+  SUFFIX=pnacl_translator_fast_1thread.opt.x8632
 }
 
 
@@ -484,6 +517,25 @@ SetupPnaclTranslatorFastArmOptHW() {
   SUFFIX=pnacl_translator_fast.opt.hw.arm
 }
 
+#@
+#@ SetupPnaclTranslator1ThreadArmOptHW
+#@    use pnacl arm translator (with lto) -- run on ARM hardware.
+#@    compile with 1 thread.
+SetupPnaclTranslator1ThreadArmOptHW() {
+  SetupPnaclArmCommonHW
+  SUFFIX=pnacl_translator_1thread.opt.hw.arm
+}
+
+#@
+#@ SetupPnaclTranslatorFast1ThreadArmOptHW
+#@    use pnacl arm translator fast mode (with lto) -- run on ARM hardware
+#@    compile with 1 thread.
+SetupPnaclTranslatorFast1ThreadArmOptHW() {
+  SetupPnaclArmCommonHW
+  SUFFIX=pnacl_translator_fast_1thread.opt.hw.arm
+}
+
+
 
 ConfigInfo() {
   SubBanner "Config Info"
@@ -569,10 +621,11 @@ SetupSelLdr() {
 
   local staging="${SCONS_OUT}/opt-${SCONS_BUILD_PLATFORM}-${arch}/staging"
   SEL_LDR="${staging}/sel_ldr"
-  SEL_LDR_BOOTSTRAP="${staging}/nacl_helper_bootstrap"
   CheckFileBuilt "sel_ldr" "${SEL_LDR}"
-  CheckFileBuilt "bootstrap" "${SEL_LDR_BOOTSTRAP}"
-
+  if [[ ${SCONS_BUILD_PLATFORM} = "linux" ]]; then
+    SEL_LDR_BOOTSTRAP="${staging}/nacl_helper_bootstrap"
+    CheckFileBuilt "bootstrap" "${SEL_LDR_BOOTSTRAP}"
+  fi
   IRT_IMAGE="${SCONS_OUT}/nacl_irt-${arch}/staging/irt_core.nexe"
   CheckFileBuilt "IRT image" "${IRT_IMAGE}"
 
@@ -584,11 +637,16 @@ SetupSelLdr() {
   # We don't CheckFileBuilt for VALIDATOR because we currently don't build
   # or use it on x86
 
-  TEMPLATE_DIGITS="XXXXXXXXXXXXXXXX"
-  PREFIX="${prefix} ${SEL_LDR_BOOTSTRAP} \
+  if [[ ${SCONS_BUILD_PLATFORM} = "linux" ]]; then
+    TEMPLATE_DIGITS="XXXXXXXXXXXXXXXX"
+    PREFIX="${prefix} ${SEL_LDR_BOOTSTRAP} \
 ${SEL_LDR} --r_debug=0x${TEMPLATE_DIGITS} \
 --reserved_at_zero=0x${TEMPLATE_DIGITS} -B ${IRT_IMAGE} \
 -a ${extra_flags} -f ${preload}"
+  else
+    PREFIX="${prefix} ${SEL_LDR} -B ${IRT_IMAGE} -a ${extra_flags} \
+-f ${preload}"
+  fi
   DASHDASH="--"
 }
 
