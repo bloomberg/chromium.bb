@@ -40,6 +40,9 @@
 #include "net/base/net_log.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
+#include "net/http/transport_security_state.h"
+#include "net/ssl/ssl_config_service.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using base::TimeDelta;
@@ -269,10 +272,13 @@ Predictor::Predictor(bool preconnect_enabled)
       max_dns_queue_delay_(
           TimeDelta::FromMilliseconds(g_max_queueing_delay_ms)),
       host_resolver_(NULL),
+      transport_security_state_(NULL),
+      ssl_config_service_(NULL),
       preconnect_enabled_(preconnect_enabled),
       consecutive_omnibox_preconnect_count_(0),
       next_trim_time_(base::TimeTicks::Now() +
-                      TimeDelta::FromHours(kDurationBetweenTrimmingsHours)) {
+                      TimeDelta::FromHours(kDurationBetweenTrimmingsHours)),
+      observer_(NULL) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -809,6 +815,11 @@ void Predictor::FinalizeInitializationOnIOThread(
   host_resolver_ = io_thread->globals()->host_resolver.get();
   preconnect_usage_.reset(new PreconnectUsage());
 
+  net::URLRequestContext* context =
+      url_request_context_getter_->GetURLRequestContext();
+  transport_security_state_ = context->transport_security_state();
+  ssl_config_service_ = context->ssl_config_service();
+
   // base::WeakPtrFactory instances need to be created and destroyed
   // on the same thread. The predictor lives on the IO thread and will die
   // from there so now that we're on the IO thread we need to properly
@@ -984,14 +995,22 @@ void Predictor::PreconnectUrl(const GURL& url,
 }
 
 void Predictor::PreconnectUrlOnIOThread(
-    const GURL& url,
+    const GURL& original_url,
     const GURL& first_party_for_cookies,
     UrlInfo::ResolutionMotivation motivation,
     int count) {
+  // Skip the HSTS redirect.
+  GURL url = GetHSTSRedirectOnIOThread(original_url);
+
   if (motivation == UrlInfo::MOUSE_OVER_MOTIVATED)
     RecordPreconnectTrigger(url);
 
   AdviseProxy(url, motivation, true /* is_preconnect */);
+
+  if (observer_) {
+    observer_->OnPreconnectUrl(
+        url, first_party_for_cookies, motivation, count);
+  }
 
   PreconnectOnIOThread(url,
                        first_party_for_cookies,
@@ -1068,8 +1087,12 @@ enum SubresourceValue {
   SUBRESOURCE_VALUE_MAX
 };
 
-void Predictor::PrepareFrameSubresources(const GURL& url,
+void Predictor::PrepareFrameSubresources(const GURL& original_url,
                                          const GURL& first_party_for_cookies) {
+  // Apply HSTS redirect early so it is taken into account when looking up
+  // subresources.
+  GURL url = GetHSTSRedirectOnIOThread(original_url);
+
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(url.GetWithEmptyPath(), url);
   Referrers::iterator it = referrers_.find(url);
@@ -1287,6 +1310,30 @@ void Predictor::AdviseProxyOnIOThread(const GURL& url,
     return;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   proxy_advisor_->Advise(url, motivation, is_preconnect);
+}
+
+GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  if (!transport_security_state_)
+    return url;
+  if (!url.SchemeIs("http"))
+    return url;
+  net::TransportSecurityState::DomainState domain_state;
+  if (!transport_security_state_->GetDomainState(
+          url.host(),
+          net::SSLConfigService::IsSNIAvailable(ssl_config_service_),
+          &domain_state)) {
+    return url;
+  }
+  if (!domain_state.ShouldUpgradeToSSL())
+    return url;
+
+  url_canon::Replacements<char> replacements;
+  const char kNewScheme[] = "https";
+  replacements.SetScheme(kNewScheme,
+                         url_parse::Component(0, strlen(kNewScheme)));
+  return url.ReplaceComponents(replacements);
 }
 
 // ---------------------- End IO methods. -------------------------------------

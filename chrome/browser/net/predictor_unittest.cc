@@ -21,6 +21,7 @@
 #include "net/base/address_list.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/transport_security_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -693,6 +694,72 @@ TEST_F(PredictorTest, DiscardPredictorResults) {
   predictor.DiscardAllResults();
   predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(1U, referral_list.GetSize());
+
+  predictor.Shutdown();
+}
+
+class TestPredictorObserver : public PredictorObserver {
+ public:
+  // PredictorObserver implementation:
+  virtual void OnPreconnectUrl(const GURL& url,
+                               const GURL& first_party_for_cookies,
+                               UrlInfo::ResolutionMotivation motivation,
+                               int count) OVERRIDE {
+    preconnected_urls_.push_back(url);
+  }
+
+  std::vector<GURL> preconnected_urls_;
+};
+
+// Tests that preconnects apply the HSTS list.
+TEST_F(PredictorTest, HSTSRedirect) {
+  const GURL kHttpUrl("http://example.com");
+  const GURL kHttpsUrl("https://example.com");
+
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  net::TransportSecurityState state;
+  state.AddHSTS(kHttpUrl.host(), expiry, false);
+
+  Predictor predictor(true);
+  TestPredictorObserver observer;
+  predictor.SetObserver(&observer);
+  predictor.SetTransportSecurityState(&state);
+
+  predictor.PreconnectUrl(kHttpUrl, GURL(), UrlInfo::OMNIBOX_MOTIVATED, 2);
+  ASSERT_EQ(1u, observer.preconnected_urls_.size());
+  EXPECT_EQ(kHttpsUrl, observer.preconnected_urls_[0]);
+
+  predictor.Shutdown();
+}
+
+// Tests that preconnecting a URL on the HSTS list preconnects the subresources
+// for the SSL version.
+TEST_F(PredictorTest, HSTSRedirectSubresources) {
+  const GURL kHttpUrl("http://example.com");
+  const GURL kHttpsUrl("https://example.com");
+  const GURL kSubresourceUrl("https://images.example.com");
+  const double kUseRate = 23.4;
+
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  net::TransportSecurityState state;
+  state.AddHSTS(kHttpUrl.host(), expiry, false);
+
+  Predictor predictor(true);
+  TestPredictorObserver observer;
+  predictor.SetObserver(&observer);
+  predictor.SetTransportSecurityState(&state);
+
+  scoped_ptr<base::ListValue> referral_list(NewEmptySerializationList());
+  AddToSerializedList(
+      kHttpsUrl, kSubresourceUrl, kUseRate, referral_list.get());
+  predictor.DeserializeReferrers(*referral_list.get());
+
+  predictor.PreconnectUrlAndSubresources(kHttpUrl, GURL());
+  ASSERT_EQ(2u, observer.preconnected_urls_.size());
+  EXPECT_EQ(kHttpsUrl, observer.preconnected_urls_[0]);
+  EXPECT_EQ(kSubresourceUrl, observer.preconnected_urls_[1]);
 
   predictor.Shutdown();
 }
