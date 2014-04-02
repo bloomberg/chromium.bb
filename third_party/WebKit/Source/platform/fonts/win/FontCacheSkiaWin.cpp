@@ -221,6 +221,15 @@ static unsigned minSizeForAntiAlias(UScriptCode script)
     }
 }
 
+static bool fontRequiresFullHinting(const AtomicString& familyName)
+{
+    DEFINE_STATIC_LOCAL(AtomicString, courierNew, ("Courier New", AtomicString::ConstructFromLiteral));
+    if (equalIgnoringCase(familyName, courierNew))
+        return true;
+
+    return false;
+}
+
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
     CString name;
@@ -245,9 +254,13 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontDescription.orientation(),
         s_useSubpixelPositioning);
 
+    // FIXME: It might be sufficient to set the "full hinting" flag for
+    // CJK instead of forcing aliased rendering.
     if (s_useDirectWrite) {
         result->setMinSizeForAntiAlias(
             minSizeForAntiAlias(fontDescription.script()));
+        if (fontRequiresFullHinting(family))
+            result->setHinting(SkPaint::kFull_Hinting);
     }
 
     return result;

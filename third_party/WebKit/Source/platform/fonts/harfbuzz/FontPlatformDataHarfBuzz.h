@@ -85,6 +85,11 @@ public:
 #if OS(WIN)
     void setMinSizeForAntiAlias(unsigned size) { m_minSizeForAntiAlias = size; }
     unsigned minSizeForAntiAlias() const { return m_minSizeForAntiAlias; }
+    void setHinting(SkPaint::Hinting style)
+    {
+        m_style.useAutoHint = 0;
+        m_style.hintStyle = style;
+    }
 #endif
 
 #if ENABLE(OPENTYPE_VERTICAL)
