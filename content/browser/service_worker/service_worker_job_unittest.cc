@@ -75,7 +75,7 @@ void SaveUnregistrationCallback(ServiceWorkerStatusCode expected_status,
   *called = true;
 }
 
-ServiceWorkerRegisterJob::UnregistrationCallback SaveUnregistration(
+ServiceWorkerUnregisterJob::UnregistrationCallback SaveUnregistration(
     ServiceWorkerStatusCode expected_status,
     bool* called) {
   *called = false;

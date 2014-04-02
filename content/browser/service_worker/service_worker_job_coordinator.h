@@ -8,20 +8,18 @@
 #include <deque>
 #include <map>
 
-#include "base/bind.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
-#include "content/browser/service_worker/service_worker_registration_status.h"
-#include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_unregister_job.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class ServiceWorkerRegistration;
 class EmbeddedWorkerRegistry;
+class ServiceWorkerRegistration;
+class ServiceWorkerStorage;
 
-// This class manages all in-flight jobs. Any asynchronous
-// operations are run through instances of ServiceWorkerRegisterJob.
+// This class manages all in-flight registration or unregistration jobs.
 class CONTENT_EXPORT ServiceWorkerJobCoordinator {
  public:
   explicit ServiceWorkerJobCoordinator(ServiceWorkerStorage* storage,
@@ -36,44 +34,37 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
   void Unregister(
       const GURL& pattern,
       int source_process_id,
-      const ServiceWorkerRegisterJob::UnregistrationCallback& callback);
+      const ServiceWorkerUnregisterJob::UnregistrationCallback& callback);
 
   // Jobs are removed whenever they are finished or canceled.
-  void FinishJob(const GURL& pattern, ServiceWorkerRegisterJob* job);
+  void FinishJob(const GURL& pattern, ServiceWorkerRegisterJobBase* job);
 
  private:
-  friend class ServiceWorkerRegisterJob;
-
   class JobQueue {
    public:
     JobQueue();
     ~JobQueue();
 
-    void Push(scoped_ptr<ServiceWorkerRegisterJob> job,
-              int source_process_id,
-              const ServiceWorkerRegisterJob::RegistrationCallback& callback);
+    // Adds a job to the queue. If an identical job is already in the queue, no
+    // new job is added. Returns the job in the queue, regardless of whether it
+    // was newly added.
+    ServiceWorkerRegisterJobBase* Push(
+        scoped_ptr<ServiceWorkerRegisterJobBase> job);
 
-    void Pop(ServiceWorkerRegisterJob* job);
+    // Removes a job from the queue.
+    void Pop(ServiceWorkerRegisterJobBase* job);
 
     bool empty() { return jobs_.empty(); }
 
    private:
-    std::deque<ServiceWorkerRegisterJob*> jobs_;
+    std::deque<ServiceWorkerRegisterJobBase*> jobs_;
   };
 
   typedef std::map<GURL, JobQueue> RegistrationJobMap;
 
-  // Called at ServiceWorkerRegisterJob completion.
-  void UnregisterComplete(
-      const ServiceWorkerRegisterJob::UnregistrationCallback& callback,
-      ServiceWorkerStatusCode status,
-      const scoped_refptr<ServiceWorkerRegistration>& registration);
-
-  // The ServiceWorkerStorage object should always outlive this
+  // The ServiceWorkerStorage object should always outlive this.
   ServiceWorkerStorage* storage_;
   EmbeddedWorkerRegistry* worker_registry_;
-  base::WeakPtrFactory<ServiceWorkerJobCoordinator> weak_factory_;
-
   RegistrationJobMap jobs_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerJobCoordinator);

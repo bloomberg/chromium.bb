@@ -6,40 +6,35 @@
 
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "url/gurl.h"
+#include "content/browser/service_worker/service_worker_storage.h"
 
 namespace content {
 
-static void RunSoon(const base::Closure& closure) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
-}
+typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     ServiceWorkerStorage* storage,
     EmbeddedWorkerRegistry* worker_registry,
     ServiceWorkerJobCoordinator* coordinator,
     const GURL& pattern,
-    const GURL& script_url,
-    RegistrationType type)
+    const GURL& script_url)
     : storage_(storage),
       worker_registry_(worker_registry),
       coordinator_(coordinator),
       pattern_(pattern),
       script_url_(script_url),
-      type_(type),
       weak_factory_(this) {}
 
 ServiceWorkerRegisterJob::~ServiceWorkerRegisterJob() {}
 
 void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,
                                            int process_id) {
-  // if we've created a pending version, associate source_provider it with
-  // that, otherwise queue it up
+  // If we've created a pending version, associate source_provider it with
+  // that, otherwise queue it up.
   callbacks_.push_back(callback);
-  DCHECK(process_id != -1);
+  DCHECK_NE(-1, process_id);
   if (pending_version_) {
     pending_version_->AddProcessToWorker(process_id);
   } else {
@@ -48,65 +43,82 @@ void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,
 }
 
 void ServiceWorkerRegisterJob::Start() {
-  if (type_ == REGISTER)
-    StartRegister();
-  else
-    StartUnregister();
+  storage_->FindRegistrationForPattern(
+      pattern_,
+      base::Bind(
+          &ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue,
+          weak_factory_.GetWeakPtr()));
 }
 
-bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJob* job) {
-  return job->type_ == type_ &&
-         (type_ == ServiceWorkerRegisterJob::UNREGISTER ||
-          job->script_url_ == script_url_);
+bool ServiceWorkerRegisterJob::Equals(ServiceWorkerRegisterJobBase* job) {
+  if (job->GetType() != GetType())
+    return false;
+  ServiceWorkerRegisterJob* register_job =
+      static_cast<ServiceWorkerRegisterJob*>(job);
+  return register_job->pattern_ == pattern_ &&
+         register_job->script_url_ == script_url_;
 }
 
-void ServiceWorkerRegisterJob::StartRegister() {
-  // Set up a chain of callbacks, in reverse order. Each of these
-  // callbacks may be called asynchronously by the previous callback.
-  StatusCallback finish_registration(base::Bind(
-      &ServiceWorkerRegisterJob::Complete, weak_factory_.GetWeakPtr()));
+RegistrationJobType ServiceWorkerRegisterJob::GetType() {
+  return REGISTER;
+}
 
-  StatusCallback start_worker(
+void ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue(
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+    // A previous registration does not exist.
+    RegisterAndContinue(SERVICE_WORKER_OK);
+    return;
+  }
+
+  if (status != SERVICE_WORKER_OK) {
+    // Abort this registration job.
+    Complete(status);
+    return;
+  }
+
+  if (registration->script_url() != script_url_) {
+    // Script URL mismatch: delete the existing registration and register a new
+    // one.
+    registration->Shutdown();
+    storage_->DeleteRegistration(
+        pattern_,
+        base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
+                   weak_factory_.GetWeakPtr()));
+    return;
+  }
+
+  // Reuse the existing registration.
+  registration_ = registration;
+  StartWorkerAndContinue(SERVICE_WORKER_OK);
+}
+
+void ServiceWorkerRegisterJob::RegisterAndContinue(
+    ServiceWorkerStatusCode status) {
+  DCHECK(!registration_);
+  if (status != SERVICE_WORKER_OK) {
+    // Abort this registration job.
+    Complete(status);
+    return;
+  }
+
+  registration_ = new ServiceWorkerRegistration(
+      pattern_, script_url_, storage_->NewRegistrationId());
+  storage_->StoreRegistration(
+      registration_.get(),
       base::Bind(&ServiceWorkerRegisterJob::StartWorkerAndContinue,
-                 weak_factory_.GetWeakPtr(),
-                 finish_registration));
-
-  StatusCallback register_new(
-      base::Bind(&ServiceWorkerRegisterJob::RegisterPatternAndContinue,
-                 weak_factory_.GetWeakPtr(),
-                 start_worker));
-
-  ServiceWorkerStorage::FindRegistrationCallback unregister_old(
-      base::Bind(&ServiceWorkerRegisterJob::UnregisterPatternAndContinue,
-                 weak_factory_.GetWeakPtr(),
-                 register_new));
-
-  storage_->FindRegistrationForPattern(pattern_, unregister_old);
-}
-
-void ServiceWorkerRegisterJob::StartUnregister() {
-  // Set up a chain of callbacks, in reverse order. Each of these
-  // callbacks may be called asynchronously by the previous callback.
-  StatusCallback finish_unregistration(
-      base::Bind(&ServiceWorkerRegisterJob::Complete,
                  weak_factory_.GetWeakPtr()));
-
-  ServiceWorkerStorage::FindRegistrationCallback unregister(
-      base::Bind(&ServiceWorkerRegisterJob::UnregisterPatternAndContinue,
-                 weak_factory_.GetWeakPtr(),
-                 finish_unregistration));
-
-  storage_->FindRegistrationForPattern(pattern_, unregister);
 }
 
 void ServiceWorkerRegisterJob::StartWorkerAndContinue(
-    const StatusCallback& callback,
     ServiceWorkerStatusCode status) {
+  // TODO(falken): Handle the case where status is an error code.
   DCHECK(registration_);
   if (registration_->active_version()) {
     // We have an active version, so we can complete immediately, even
     // if the service worker isn't running.
-    callback.Run(SERVICE_WORKER_OK);
+    Complete(SERVICE_WORKER_OK);
     return;
   }
 
@@ -122,64 +134,13 @@ void ServiceWorkerRegisterJob::StartWorkerAndContinue(
   // the worker is up and running, just before the install event is
   // dispatched. The job will continue to run even though the main
   // callback has executed.
-  pending_version_->StartWorker(callback);
+  pending_version_->StartWorker(base::Bind(&ServiceWorkerRegisterJob::Complete,
+                                           weak_factory_.GetWeakPtr()));
 
-  // TODO(alecflett): Don't set the active version until just before
+  // TODO(falken): Don't set the active version until just before
   // the activate event is dispatched.
   pending_version_->SetStatus(ServiceWorkerVersion::ACTIVE);
   registration_->set_active_version(pending_version_);
-}
-
-void ServiceWorkerRegisterJob::RegisterPatternAndContinue(
-    const StatusCallback& callback,
-    ServiceWorkerStatusCode previous_status) {
-  if (previous_status == SERVICE_WORKER_ERROR_EXISTS) {
-    // Registration already exists, call to the next step.
-    RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
-    return;
-  }
-
-  if (previous_status != SERVICE_WORKER_OK) {
-    // Failure case.
-    registration_ = NULL;
-    Complete(previous_status);
-    return;
-  }
-
-  DCHECK(!registration_);
-  registration_ = new ServiceWorkerRegistration(pattern_, script_url_,
-                                                storage_->NewRegistrationId());
-  storage_->StoreRegistration(registration_.get(), callback);
-}
-
-void ServiceWorkerRegisterJob::UnregisterPatternAndContinue(
-    const StatusCallback& callback,
-    ServiceWorkerStatusCode previous_status,
-    const scoped_refptr<ServiceWorkerRegistration>& previous_registration) {
-  if (previous_status == SERVICE_WORKER_OK &&
-      (type_ == UNREGISTER ||
-       previous_registration->script_url() != script_url_)) {
-    // It's unregister, or we have conflicting registration.
-    // Unregister it and continue to the next step.
-    previous_registration->Shutdown();
-    storage_->DeleteRegistration(pattern_, callback);
-    return;
-  }
-
-  if (previous_status == SERVICE_WORKER_ERROR_NOT_FOUND) {
-    // The previous registration does not exist, which is ok.
-    RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
-    return;
-  }
-
-  if (previous_status == SERVICE_WORKER_OK) {
-    // We have an existing registration.
-    registration_ = previous_registration;
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_EXISTS));
-    return;
-  }
-
-  RunSoon(base::Bind(callback, previous_status));
 }
 
 void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
