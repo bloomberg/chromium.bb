@@ -84,12 +84,9 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Launches the url for the given tab. Returns true if an attempt to handle
   // the url was made, e.g. by launching an app. Note that this does not
   // guarantee that the app successfully handled it.
-  // Some external protocol handlers only run in the context of a user gesture,
-  // so initiated_by_user_gesture should be passed accordingly.
   virtual bool HandleExternalProtocol(const GURL& url,
                                       int child_id,
-                                      int route_id,
-                                      bool initiated_by_user_gesture);
+                                      int route_id);
 
   // Returns true if we should force the given resource to be downloaded.
   // Otherwise, the content layer decides.
