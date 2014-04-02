@@ -291,7 +291,7 @@ void FastTextAutosizer::prepareClusterStack(const RenderObject* renderer)
 
 void FastTextAutosizer::beginLayout(RenderBlock* block)
 {
-    ASSERT(enabled() && m_pageNeedsAutosizing && !m_updatePageInfoDeferred);
+    ASSERT(enabled() && shouldHandleLayout());
 #ifndef NDEBUG
     m_blocksThatHaveBegunLayout.add(block);
 #endif
@@ -317,7 +317,7 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 
 void FastTextAutosizer::inflateListItem(RenderListItem* listItem, RenderListMarker* listItemMarker)
 {
-    if (!enabled() || !m_pageNeedsAutosizing)
+    if (!enabled() || !shouldHandleLayout())
         return;
     ASSERT(listItem && listItemMarker);
 #ifndef NDEBUG
@@ -380,7 +380,7 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
 
 void FastTextAutosizer::endLayout(RenderBlock* block)
 {
-    ASSERT(enabled() && m_pageNeedsAutosizing);
+    ASSERT(enabled() && shouldHandleLayout());
 
     if (block == m_firstBlock) {
         m_firstBlock = 0;
@@ -417,7 +417,7 @@ void FastTextAutosizer::inflate(RenderBlock* block)
     }
 }
 
-bool FastTextAutosizer::enabled()
+bool FastTextAutosizer::enabled() const
 {
     if (!m_document->settings() || !m_document->page() || m_document->printing())
         return false;
@@ -425,12 +425,14 @@ bool FastTextAutosizer::enabled()
     return m_document->settings()->textAutosizingEnabled();
 }
 
+bool FastTextAutosizer::shouldHandleLayout() const
+{
+    return m_pageNeedsAutosizing && !m_updatePageInfoDeferred;
+}
+
 void FastTextAutosizer::updatePageInfoInAllFrames()
 {
-    if (!enabled())
-        return;
-
-    ASSERT(m_document->frame()->isMainFrame());
+    ASSERT(!enabled() || m_document->frame()->isMainFrame());
 
     for (LocalFrame* frame = m_document->frame(); frame; frame = frame->tree().traverseNext()) {
         if (FastTextAutosizer* textAutosizer = frame->document()->fastTextAutosizer())
@@ -440,7 +442,13 @@ void FastTextAutosizer::updatePageInfoInAllFrames()
 
 void FastTextAutosizer::updatePageInfo()
 {
-    if (!enabled() || m_updatePageInfoDeferred)
+    if (!enabled()) {
+        if (m_previouslyAutosized)
+            resetMultipliers();
+        return;
+    }
+
+    if (m_updatePageInfoDeferred)
         return;
 
     int previousFrameWidth = m_frameWidth;
@@ -976,7 +984,7 @@ FastTextAutosizer::LayoutScope::LayoutScope(RenderBlock* block)
     if (!m_textAutosizer)
         return;
 
-    if (m_textAutosizer->enabled() && m_textAutosizer->m_pageNeedsAutosizing)
+    if (m_textAutosizer->enabled() && m_textAutosizer->shouldHandleLayout())
         m_textAutosizer->beginLayout(m_block);
     else
         m_textAutosizer = 0;

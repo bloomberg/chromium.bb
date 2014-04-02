@@ -198,7 +198,8 @@ private:
     void endLayout(RenderBlock*);
     void inflateTable(RenderTable*);
     void inflate(RenderBlock*);
-    bool enabled();
+    bool enabled() const;
+    bool shouldHandleLayout() const;
     void setAllTextNeedsLayout();
     void resetMultipliers();
     void prepareClusterStack(const RenderObject*);
