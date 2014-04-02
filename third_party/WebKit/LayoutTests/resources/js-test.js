@@ -657,6 +657,30 @@ function shouldHaveHadError(message)
     testFailed("expectError() not called before shouldHaveHadError()");
 }
 
+// With Oilpan tests that rely on garbage collection need to go through
+// the event loop in order to get precise garbage collections. Oilpan
+// uses conservative stack scanning when not at the event loop and that
+// can artificially keep objects alive. Therefore, tests that need to check
+// that something is dead need to use this asynchronous collectGarbage
+// function.
+function collectGarbage(callback) {
+    // Perform multiple GCs to break sequences of Oilpan Persistent handles
+    // or RefPtrs that will keep objects alive until the next GC.
+    // FIXME: Oilpan: Once everything is moved to the oilpan heap we can
+    // reduce the number of garbage collections.
+    GCController.collect();
+    setTimeout(function() {
+        GCController.collect();
+        setTimeout(function() {
+            GCController.collect();
+            setTimeout(function() {
+                GCController.collect();
+                setTimeout(callback, 0);
+            }, 0);
+        }, 0);
+    }, 0);
+}
+
 function gc() {
     if (typeof GCController !== "undefined")
         GCController.collectAll();

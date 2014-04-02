@@ -235,6 +235,7 @@ ThreadState::ThreadState()
     , m_atSafePoint(false)
     , m_interruptors()
     , m_gcRequested(false)
+    , m_forcePreciseGCForTesting(false)
     , m_sweepRequested(0)
     , m_sweepInProgress(false)
     , m_noAllocationCount(0)
@@ -497,6 +498,26 @@ void ThreadState::clearGCRequested()
     m_gcRequested = false;
 }
 
+void ThreadState::performPendingGC(StackState stackState)
+{
+    if (stackState == NoHeapPointersOnStack && (gcRequested() || forcePreciseGCForTesting())) {
+        setForcedForTesting(false);
+        Heap::collectGarbage(NoHeapPointersOnStack);
+    }
+}
+
+void ThreadState::setForcedForTesting(bool value)
+{
+    checkThread();
+    m_forcePreciseGCForTesting = value;
+}
+
+bool ThreadState::forcePreciseGCForTesting()
+{
+    checkThread();
+    return m_forcePreciseGCForTesting;
+}
+
 bool ThreadState::isConsistentForGC()
 {
     for (int i = 0; i < NumberOfHeaps; i++) {
@@ -589,8 +610,7 @@ void ThreadState::resumeThreads()
 void ThreadState::safePoint(StackState stackState)
 {
     checkThread();
-    if (stackState == NoHeapPointersOnStack && gcRequested())
-        Heap::collectGarbage(NoHeapPointersOnStack);
+    performPendingGC(stackState);
     m_stackState = stackState;
     s_safePointBarrier->checkAndPark(this);
     m_stackState = HeapPointersOnStack;
@@ -628,8 +648,7 @@ void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
         scopeMarker = adjustScopeMarkerForAdressSanitizer(scopeMarker);
 #endif
     ASSERT(stackState == NoHeapPointersOnStack || scopeMarker);
-    if (stackState == NoHeapPointersOnStack && gcRequested())
-        Heap::collectGarbage(NoHeapPointersOnStack);
+    performPendingGC(stackState);
     checkThread();
     ASSERT(!m_atSafePoint);
     m_atSafePoint = true;

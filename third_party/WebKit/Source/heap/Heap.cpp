@@ -1305,6 +1305,8 @@ void Heap::prepareForGC()
 
 void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
 {
+    if (gcType == ForcedForTesting && stackState != ThreadState::NoHeapPointersOnStack)
+        ThreadState::current()->setForcedForTesting(true);
     ThreadState::current()->clearGCRequested();
     GCScope gcScope(stackState);
 

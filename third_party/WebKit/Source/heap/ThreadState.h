@@ -278,6 +278,15 @@ public:
     void setGCRequested();
     void clearGCRequested();
 
+    // Was the last GC forced for testing? This is set when garbage collection
+    // is forced for testing and there are pointers on the stack. It remains
+    // set until a garbage collection is triggered with no pointers on the stack.
+    // This is used for layout tests that trigger GCs and check if objects are
+    // dead at a given point in time. That only reliably works when we get
+    // precise GCs with no conservative stack scanning.
+    void setForcedForTesting(bool);
+    bool forcePreciseGCForTesting();
+
     bool sweepRequested();
     void setSweepRequested();
     void clearSweepRequested();
@@ -497,6 +506,8 @@ private:
         m_safePointScopeMarker = 0;
     }
 
+    void performPendingGC(StackState);
+
     // Finds the Blink HeapPage in this thread-specific heap
     // corresponding to a given address. Return 0 if the address is
     // not contained in any of the pages. This does not consider
@@ -540,6 +551,7 @@ private:
     bool m_atSafePoint;
     Vector<Interruptor*> m_interruptors;
     bool m_gcRequested;
+    bool m_forcePreciseGCForTesting;
     volatile int m_sweepRequested;
     bool m_sweepInProgress;
     size_t m_noAllocationCount;
