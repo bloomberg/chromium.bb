@@ -101,19 +101,11 @@ int32_t WebRtcAudioDeviceNotImpl::WaveOutVolume(
   return 0;
 }
 
-int32_t WebRtcAudioDeviceNotImpl::SpeakerIsAvailable(bool* available) {
-  return 0;
-}
-
 int32_t WebRtcAudioDeviceNotImpl::InitSpeaker() {
   return 0;
 }
 
 bool WebRtcAudioDeviceNotImpl::SpeakerIsInitialized() const {
-  return 0;
-}
-
-int32_t WebRtcAudioDeviceNotImpl::MicrophoneIsAvailable(bool* available) {
   return 0;
 }
 
