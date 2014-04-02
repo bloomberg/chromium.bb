@@ -41,7 +41,7 @@ class KeywordTableTest : public testing::Test {
     EXPECT_TRUE(table_->AddKeyword(keyword));
   }
 
-  TemplateURLData CreateAndAddKeyword(TemplateURLID id) const {
+  TemplateURLData CreateAndAddKeyword() const {
     TemplateURLData keyword;
     keyword.short_name = ASCIIToUTF16("short_name");
     keyword.SetKeyword(ASCIIToUTF16("keyword"));
@@ -58,7 +58,7 @@ class KeywordTableTest : public testing::Test {
     keyword.safe_for_autoreplace = true;
     keyword.input_encodings.push_back("UTF-8");
     keyword.input_encodings.push_back("UTF-16");
-    keyword.id = id;
+    keyword.id = 1;
     keyword.date_created = base::Time::UnixEpoch();
     keyword.last_modified = base::Time::UnixEpoch();
     keyword.created_by_policy = true;
@@ -97,13 +97,6 @@ class KeywordTableTest : public testing::Test {
     EXPECT_EQ(11, table_->GetBuiltinKeywordVersion());
   }
 
-  void CheckTableContents(const std::string& expected_contents) const {
-    std::string table_contents;
-    EXPECT_TRUE(table_->GetTableContents(
-        "keywords", WebDatabase::kCurrentVersionNumber, &table_contents));
-    EXPECT_EQ(expected_contents, table_contents);
-  }
-
   void GetStatement(const char* sql, sql::Statement* statement) const {
     statement->Assign(table_->db_->GetUniqueStatement(sql));
   }
@@ -119,7 +112,7 @@ class KeywordTableTest : public testing::Test {
 
 
 TEST_F(KeywordTableTest, Keywords) {
-  TemplateURLData keyword(CreateAndAddKeyword(1));
+  TemplateURLData keyword(CreateAndAddKeyword());
 
   KeywordTable::Keywords keywords(GetKeywords());
   EXPECT_EQ(1U, keywords.size());
@@ -156,62 +149,8 @@ TEST_F(KeywordTableTest, KeywordMisc) {
   KeywordMiscTest();
 }
 
-TEST_F(KeywordTableTest, GetTableContents) {
-  TemplateURLData keyword(CreateAndAddKeyword(1));
-
-  keyword.SetKeyword(ASCIIToUTF16("url"));
-  keyword.instant_url = "http://instant2/";
-  keyword.image_url.clear();
-  keyword.new_tab_url.clear();
-  keyword.originating_url = GURL("http://originating.url/");
-  keyword.input_encodings.push_back("Shift_JIS");
-  keyword.id = 2;
-  keyword.prepopulate_id = 5;
-  keyword.sync_guid = "FEDC-BA09-8765-4321";
-  keyword.alternate_urls.clear();
-  keyword.search_terms_replacement_key.clear();
-  AddKeyword(keyword);
-
-  const char kTestContents[] = "1short_namekeywordhttp://favicon.url/"
-      "http://url/1http://google.com/032UTF-8;UTF-161url2101http://instant/"
-      "01234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]espv"
-      "http://image-search-url/ie=utf-8,oe=utf-8name=1,value=2"
-      "http://new-tab-url/2short_nameurlhttp://favicon.url/http://url/1"
-      "http://originating.url/032UTF-8;UTF-16;Shift_JIS1url251"
-      "http://instant2/0FEDC-BA09-8765-4321[]ie=utf-8,oe=utf-8name=1,value=2";
-  CheckTableContents(kTestContents);
-}
-
-TEST_F(KeywordTableTest, GetTableContentsOrdering) {
-  TemplateURLData keyword(CreateAndAddKeyword(2));
-
-  keyword.SetKeyword(ASCIIToUTF16("url"));
-  keyword.instant_url = "http://instant2/";
-  keyword.originating_url = GURL("http://originating.url/");
-  keyword.input_encodings.push_back("Shift_JIS");
-  keyword.id = 1;
-  keyword.prepopulate_id = 5;
-  keyword.sync_guid = "FEDC-BA09-8765-4321";
-  keyword.alternate_urls.clear();
-  keyword.search_terms_replacement_key.clear();
-  keyword.image_url.clear();
-  keyword.search_url_post_params.clear();
-  keyword.image_url_post_params.clear();
-  keyword.new_tab_url.clear();
-  AddKeyword(keyword);
-
-  const char kTestContents[] = "1short_nameurlhttp://favicon.url/"
-      "http://url/1http://originating.url/032UTF-8;UTF-16;Shift_JIS1url251"
-      "http://instant2/0FEDC-BA09-8765-4321[]2short_namekeyword"
-      "http://favicon.url/http://url/1http://google.com/032UTF-8;UTF-161url2101"
-      "http://instant/01234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]espv"
-      "http://image-search-url/ie=utf-8,oe=utf-8name=1,value=2"
-      "http://new-tab-url/";
-  CheckTableContents(kTestContents);
-}
-
 TEST_F(KeywordTableTest, UpdateKeyword) {
-  TemplateURLData keyword(CreateAndAddKeyword(1));
+  TemplateURLData keyword(CreateAndAddKeyword());
 
   keyword.SetKeyword(ASCIIToUTF16("url"));
   keyword.instant_url = "http://instant2/";

@@ -154,12 +154,6 @@ class KeywordTable : public WebDatabaseTable {
   static bool GetKeywordDataFromStatement(const sql::Statement& s,
                                           TemplateURLData* data);
 
-  // Returns contents of selected table as a string in |contents| parameter.
-  // Returns true on success, false otherwise.
-  bool GetTableContents(const char* table_name,
-                        int table_version,
-                        std::string* contents);
-
   // Gets a string representation for keyword with id specified.
   // Used to store its result in |meta| table or to compare with another
   // keyword. Returns true on success, false otherwise.
