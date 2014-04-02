@@ -16,7 +16,28 @@ namespace WebCore {
 typedef struct {
     const char* input;
     const char* output;
+    bool shouldWorkOnOldParser;
 } TestCase;
+
+static void testMediaQuery(TestCase test, MediaQuerySet& querySet, bool oldParser)
+{
+    StringBuilder output;
+    size_t j = 0;
+    while (j < querySet.queryVector().size()) {
+        String queryText = querySet.queryVector()[j]->cssText();
+        output.append(queryText);
+        ++j;
+        if (j >= querySet.queryVector().size())
+            break;
+        output.append(", ");
+    }
+    if (!oldParser || test.shouldWorkOnOldParser) {
+        if (test.output)
+            ASSERT_STREQ(test.output, output.toString().ascii().data());
+        else
+            ASSERT_STREQ(test.input, output.toString().ascii().data());
+    }
+}
 
 TEST(MediaQueryParserTest, Basic)
 {
@@ -24,123 +45,114 @@ TEST(MediaQueryParserTest, Basic)
     // The second string represents the output string, if present.
     // Otherwise, the output string is identical to the first string.
     TestCase testCases[] = {
-        {"screen", 0},
-        {"screen and (color)", 0},
-        {"all and (min-width:500px)", "(min-width: 500px)"},
-        {"all and (min-width:/*bla*/500px)", "(min-width: 500px)"},
-        {"(min-width:500px)", "(min-width: 500px)"},
-        {"screen and (color), projection and (color)", 0},
-        {"not screen and (color)", 0},
-        {"only screen and (color)", 0},
-        {"screen and (color), projection and (color)", 0},
-        {"aural and (device-aspect-ratio: 16/9)", 0},
-        {"speech and (min-device-width: 800px)", 0},
-        {"example", 0},
-        {"screen and (max-weight: 3kg) and (color), (monochrome)", "not all, (monochrome)"},
-        {"(min-width: -100px)", "not all"},
-        {"(example, all,), speech", "not all, speech"},
-        {"&test, screen", "not all, screen"},
-        {"print and (min-width: 25cm)", 0},
-        {"screen and (min-width: 400px) and (max-width: 700px)", "screen and (max-width: 700px) and (min-width: 400px)"},
-        {"screen and (device-width: 800px)", 0},
-        {"screen and (device-height: 60em)", 0},
-        {"screen and (device-aspect-ratio: 16/9)", 0},
-        {"(device-aspect-ratio: 16.0/9.0)", "not all"},
-        {"(device-aspect-ratio: 16/ 9)", "(device-aspect-ratio: 16/9)"},
-        {"(device-aspect-ratio: 16/\r9)", "(device-aspect-ratio: 16/9)"},
-        {"all and (color)", "(color)"},
-        {"all and (min-color: 1)", "(min-color: 1)"},
-        {"all and (min-color: 1.0)", "not all"},
-        {"all and (min-color: 2)", "(min-color: 2)"},
-        {"all and (color-index)", "(color-index)"},
-        {"all and (min-color-index: 1)", "(min-color-index: 1)"},
-        {"all and (monochrome)", "(monochrome)"},
-        {"all and (min-monochrome: 1)", "(min-monochrome: 1)"},
-        {"all and (min-monochrome: 2)", "(min-monochrome: 2)"},
-        {"print and (monochrome)", 0},
-        {"handheld and (grid) and (max-width: 15em)", 0},
-        {"handheld and (grid) and (max-device-height: 7em)", 0},
-        {"screen and (max-width: 50%)", "not all"},
-        {"screen and (max-WIDTH: 500px)", "screen and (max-width: 500px)"},
-        {"screen and (max-width: 24.4em)", 0},
-        {"screen and (max-width: 24.4EM)", "screen and (max-width: 24.4em)"},
-        {"screen and (max-width: blabla)", "not all"},
-        {"screen and (max-width: 1)", "not all"},
-        {"screen and (max-width: 0)", 0},
-        {"screen and (max-width: 1deg)", "not all"},
-        {"handheld and (min-width: 20em), \nscreen and (min-width: 20em)", "handheld and (min-width: 20em), screen and (min-width: 20em)"},
-        {"print and (min-resolution: 300dpi)", 0},
-        {"print and (min-resolution: 118dpcm)", 0},
-        {"(resolution: 0.83333333333333333333dppx)", "(resolution: 0.8333333333333334dppx)"},
-        {"(resolution: 2.4dppx)", 0},
-        {"all and(color)", "not all"},
-        {"all and (", "not all"},
-        {"test;,all", "not all, all"},
-        // {"(color:20example)", "not all"},
-        {"not braille", 0},
-        {",screen", "not all, screen"},
-        {",all", "not all, all"},
-        {",,all,,", "not all, not all, all, not all, not all"},
-        {",,all,, ", "not all, not all, all, not all, not all"},
-        {",screen,,&invalid,,", "not all, screen, not all, not all, not all, not all"},
-        {",screen,,(invalid,),,", "not all, screen, not all, not all, not all, not all"},
-        {",(all,),,", "not all, not all, not all, not all"},
-        {",", "not all, not all"},
-        {"  ", ""},
-        {"(color", "(color)"},
-        {"(min-color: 2", "(min-color: 2)"},
-        {"(orientation: portrait)", 0},
-        {"tv and (scan: progressive)", 0},
-        {"(pointer: coarse)", 0},
-        {"(min-orientation:portrait)", "not all"},
-        {"all and (orientation:portrait)", "(orientation: portrait)"},
-        {"all and (orientation:landscape)", "(orientation: landscape)"},
+        {"screen", 0, true},
+        {"screen and (color)", 0, true},
+        {"all and (min-width:500px)", "(min-width: 500px)", true},
+        {"all and (min-width:/*bla*/500px)", "(min-width: 500px)", true},
+        {"(min-width:500px)", "(min-width: 500px)", true},
+        {"screen and (color), projection and (color)", 0, true},
+        {"not screen and (color)", 0, true},
+        {"only screen and (color)", 0, true},
+        {"screen and (color), projection and (color)", 0, true},
+        {"aural and (device-aspect-ratio: 16/9)", 0, true},
+        {"speech and (min-device-width: 800px)", 0, true},
+        {"example", 0, true},
+        {"screen and (max-weight: 3kg) and (color), (monochrome)", "not all, (monochrome)", true},
+        {"(min-width: -100px)", "not all", true},
+        {"(example, all,), speech", "not all, speech", true},
+        {"&test, screen", "not all, screen", true},
+        {"print and (min-width: 25cm)", 0, true},
+        {"screen and (min-width: 400px) and (max-width: 700px)", "screen and (max-width: 700px) and (min-width: 400px)", true},
+        {"screen and (device-width: 800px)", 0, true},
+        {"screen and (device-height: 60em)", 0, true},
+        {"screen and (device-aspect-ratio: 16/9)", 0, true},
+        {"(device-aspect-ratio: 16.0/9.0)", "not all", true},
+        {"(device-aspect-ratio: 16/ 9)", "(device-aspect-ratio: 16/9)", true},
+        {"(device-aspect-ratio: 16/\r9)", "(device-aspect-ratio: 16/9)", true},
+        {"all and (color)", "(color)", true},
+        {"all and (min-color: 1)", "(min-color: 1)", true},
+        {"all and (min-color: 1.0)", "not all", true},
+        {"all and (min-color: 2)", "(min-color: 2)", true},
+        {"all and (color-index)", "(color-index)", true},
+        {"all and (min-color-index: 1)", "(min-color-index: 1)", true},
+        {"all and (monochrome)", "(monochrome)", true},
+        {"all and (min-monochrome: 1)", "(min-monochrome: 1)", true},
+        {"all and (min-monochrome: 2)", "(min-monochrome: 2)", true},
+        {"print and (monochrome)", 0, true},
+        {"handheld and (grid) and (max-width: 15em)", 0, true},
+        {"handheld and (grid) and (max-device-height: 7em)", 0, true},
+        {"screen and (max-width: 50%)", "not all", true},
+        {"screen and (max-WIDTH: 500px)", "screen and (max-width: 500px)", true},
+        {"screen and (max-width: 24.4em)", 0, true},
+        {"screen and (max-width: 24.4EM)", "screen and (max-width: 24.4em)", true},
+        {"screen and (max-width: blabla)", "not all", true},
+        {"screen and (max-width: 1)", "not all", true},
+        {"screen and (max-width: 0)", 0, true},
+        {"screen and (max-width: 1deg)", "not all", true},
+        {"handheld and (min-width: 20em), \nscreen and (min-width: 20em)", "handheld and (min-width: 20em), screen and (min-width: 20em)", true},
+        {"print and (min-resolution: 300dpi)", 0, true},
+        {"print and (min-resolution: 118dpcm)", 0, true},
+        {"(resolution: 0.83333333333333333333dppx)", "(resolution: 0.8333333333333334dppx)", true},
+        {"(resolution: 2.4dppx)", 0, true},
+        {"all and(color)", "not all", true},
+        {"all and (", "not all", true},
+        {"test;,all", "not all, all", true},
+        {"(color:20example)", "not all", false},
+        {"not braille", 0, true},
+        {",screen", "not all, screen", true},
+        {",all", "not all, all", true},
+        {",,all,,", "not all, not all, all, not all, not all", true},
+        {",,all,, ", "not all, not all, all, not all, not all", true},
+        {",screen,,&invalid,,", "not all, screen, not all, not all, not all, not all", true},
+        {",screen,,(invalid,),,", "not all, screen, not all, not all, not all, not all", true},
+        {",(all,),,", "not all, not all, not all, not all", true},
+        {",", "not all, not all", true},
+        {"  ", "", true},
+        {"(color", "(color)", true},
+        {"(min-color: 2", "(min-color: 2)", true},
+        {"(orientation: portrait)", 0, true},
+        {"tv and (scan: progressive)", 0, true},
+        {"(pointer: coarse)", 0, true},
+        {"(min-orientation:portrait)", "not all", true},
+        {"all and (orientation:portrait)", "(orientation: portrait)", true},
+        {"all and (orientation:landscape)", "(orientation: landscape)", true},
         {"NOT braille, tv AND (max-width: 200px) and (min-WIDTH: 100px) and (orientation: landscape), (color)",
-            "not braille, tv and (max-width: 200px) and (min-width: 100px) and (orientation: landscape), (color)"},
-        {"(max-width: 700px), (max-width: 700px)", "(max-width: 700px), (max-width: 700px)"},
-        {"(max-width: 800px()), (max-width: 800px)", "not all, (max-width: 800px)"},
-        {"(max-width: 900px(()), (max-width: 900px)", "not all"},
-        {"(max-width: 600px(())))), (max-width: 600px)", "not all, (max-width: 600px)"},
-        {"(max-width: 500px(((((((((())))), (max-width: 500px)", "not all"},
-        {"(max-width: 800px[]), (max-width: 800px)", "not all, (max-width: 800px)"},
-        {"(max-width: 900px[[]), (max-width: 900px)", "not all"},
-        {"(max-width: 600px[[]]]]), (max-width: 600px)", "not all, (max-width: 600px)"},
-        {"(max-width: 500px[[[[[[[[[[]]]]), (max-width: 500px)", "not all"},
-        {"(max-width: 800px{}), (max-width: 800px)", "not all, (max-width: 800px)"},
-        {"(max-width: 900px{{}), (max-width: 900px)", "not all"},
-        {"(max-width: 600px{{}}}}), (max-width: 600px)", "not all, (max-width: 600px)"},
-        {"(max-width: 500px{{{{{{{{{{}}}}), (max-width: 500px)", "not all"},
-        {"[(), (max-width: 900px)", "not all"},
-        {"[{}, (max-width: 900px)", "not all"},
-        {"[{]}], (max-width: 900px)", "not all, (max-width: 900px)"},
-        {"[{[]{}{{{}}}}], (max-width: 900px)", "not all, (max-width: 900px)"},
-        {"[{[}], (max-width: 900px)", "not all"},
-        {"[({)}], (max-width: 900px)", "not all"},
-        {"[]((), (max-width: 900px)", "not all"},
-        {"[](()), (max-width: 900px)", "not all, (max-width: 900px)"},
-        {"all an[isdfs bla())()]icalc(i)(()), (max-width: 900px)", "not all, (max-width: 900px)"},
-        {"all an[isdfs bla())(]icalc(i)(()), (max-width: 900px)", "not all"},
-        {"all an[isdfs bla())(]icalc(i)(())), (max-width: 900px)", "not all"},
-        {"all an[isdfs bla())(]icalc(i)(()))], (max-width: 900px)", "not all, (max-width: 900px)"},
+            "not braille, tv and (max-width: 200px) and (min-width: 100px) and (orientation: landscape), (color)", true},
+        {"(max-width: 700px), (max-width: 700px)", "(max-width: 700px), (max-width: 700px)", true},
+        {"(max-width: 800px()), (max-width: 800px)", "not all, (max-width: 800px)", true},
+        {"(max-width: 900px(()), (max-width: 900px)", "not all", true},
+        {"(max-width: 600px(())))), (max-width: 600px)", "not all, (max-width: 600px)", true},
+        {"(max-width: 500px(((((((((())))), (max-width: 500px)", "not all", true},
+        {"(max-width: 800px[]), (max-width: 800px)", "not all, (max-width: 800px)", true},
+        {"(max-width: 900px[[]), (max-width: 900px)", "not all", true},
+        {"(max-width: 600px[[]]]]), (max-width: 600px)", "not all, (max-width: 600px)", true},
+        {"(max-width: 500px[[[[[[[[[[]]]]), (max-width: 500px)", "not all", true},
+        {"(max-width: 800px{}), (max-width: 800px)", "not all, (max-width: 800px)", true},
+        {"(max-width: 900px{{}), (max-width: 900px)", "not all", true},
+        {"(max-width: 600px{{}}}}), (max-width: 600px)", "not all, (max-width: 600px)", true},
+        {"(max-width: 500px{{{{{{{{{{}}}}), (max-width: 500px)", "not all", true},
+        {"[(), (max-width: 400px)", "not all", true},
+        {"[{}, (max-width: 500px)", "not all", true},
+        {"[{]}], (max-width: 900px)", "not all, (max-width: 900px)", true},
+        {"[{[]{}{{{}}}}], (max-width: 900px)", "not all, (max-width: 900px)", true},
+        {"[{[}], (max-width: 900px)", "not all", true},
+        {"[({)}], (max-width: 900px)", "not all", true},
+        {"[]((), (max-width: 900px)", "not all", true},
+        {"((), (max-width: 900px)", "not all", true},
+        {"(foo(), (max-width: 900px)", "not all", true},
+        {"[](()), (max-width: 900px)", "not all, (max-width: 900px)", true},
+        {"all an[isdfs bla())()]icalc(i)(()), (max-width: 400px)", "not all, (max-width: 400px)", true},
+        {"all an[isdfs bla())(]icalc(i)(()), (max-width: 500px)", "not all", true},
+        {"all an[isdfs bla())(]icalc(i)(())), (max-width: 600px)", "not all", true},
+        {"all an[isdfs bla())(]icalc(i)(()))], (max-width: 800px)", "not all, (max-width: 800px)", true},
         {0, 0} // Do not remove the terminator line.
     };
 
     for (unsigned i = 0; testCases[i].input; ++i) {
-        RefPtrWillBeRawPtr<MediaQuerySet> querySet = MediaQuerySet::create(testCases[i].input);
-        StringBuilder output;
-        size_t j = 0;
-        while (j < querySet->queryVector().size()) {
-            String queryText = querySet->queryVector()[j]->cssText();
-            output.append(queryText);
-            ++j;
-            if (j >= querySet->queryVector().size())
-                break;
-            output.append(", ");
-        }
-        if (testCases[i].output)
-            ASSERT_STREQ(testCases[i].output, output.toString().ascii().data());
-        else
-            ASSERT_STREQ(testCases[i].input, output.toString().ascii().data());
+        RefPtrWillBeRawPtr<MediaQuerySet> oldParserQuerySet = MediaQuerySet::create(testCases[i].input);
+        RefPtrWillBeRawPtr<MediaQuerySet> threadSafeQuerySet = MediaQuerySet::createOffMainThread(testCases[i].input);
+        testMediaQuery(testCases[i], *oldParserQuerySet, true);
+        testMediaQuery(testCases[i], *threadSafeQuerySet, false);
     }
 }
 

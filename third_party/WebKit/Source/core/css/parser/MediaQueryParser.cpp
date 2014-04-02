@@ -142,7 +142,7 @@ void MediaQueryParser::readFeatureEnd(MediaQueryTokenType type, TokenIterator& t
 
 void MediaQueryParser::skipUntilComma(MediaQueryTokenType type, TokenIterator& token)
 {
-    if (type == CommaToken || type == EOFToken) {
+    if ((type == CommaToken && m_blockStack.isEmpty()) || type == EOFToken) {
         m_state = ReadRestrictor;
         m_mediaQueryData.clear();
         m_querySet->addMediaQuery(MediaQuery::createNotAll());
@@ -179,14 +179,15 @@ bool MediaQueryParser::observeBlock(BlockParameters& parameters, MediaQueryToken
 
 void MediaQueryParser::observeBlocks(MediaQueryTokenType type)
 {
-    const unsigned blockParametersNumber = 3;
-    BlockParameters blockParameterSet[blockParametersNumber] = {
+    enum { BlockParametersCount = 4 };
+    BlockParameters blockParameterSet[BlockParametersCount] = {
         { LeftParenthesisToken, RightParenthesisToken, ParenthesisBlock, DoNotModifyState },
+        { FunctionToken, RightParenthesisToken, ParenthesisBlock, ModifyState },
         { LeftBracketToken, RightBracketToken, BracketsBlock, ModifyState },
         { LeftBraceToken, RightBraceToken, BracesBlock, ModifyState }
     };
 
-    for (unsigned i = 0; i < blockParametersNumber; ++i) {
+    for (unsigned i = 0; i < BlockParametersCount; ++i) {
         if (observeBlock(blockParameterSet[i], type))
             break;
     }
