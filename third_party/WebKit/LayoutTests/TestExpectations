@@ -956,3 +956,6 @@ crbug.com/355489 media/activation-behavior.html [ Pass Failure Timeout ]
 
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
 
+crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]
+crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
+crbug.com/344238 virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
