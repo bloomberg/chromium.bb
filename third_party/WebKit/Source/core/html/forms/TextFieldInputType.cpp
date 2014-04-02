@@ -208,7 +208,7 @@ void TextFieldInputType::handleKeydownEventForSpinButton(KeyboardEvent* event)
     const String& key = event->keyIdentifier();
     if (key == "Up")
         spinButtonStepUp();
-    else if (key == "Down")
+    else if (key == "Down" && !event->altKey())
         spinButtonStepDown();
     else
         return;

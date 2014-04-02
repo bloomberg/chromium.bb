@@ -25,6 +25,10 @@ debug('Press the down arrow key:');
 eventSender.keyDown('downArrow');
 shouldBe('input.value', '"123"');
 
+debug('Press the down and alt arrow key, should not decrement value:');
+eventSender.keyDown('downArrow', ['altKey']);
+shouldBeEqualToString('input.value', '123');
+
 debug('Disable input element:');
 input.disabled = true;
 eventSender.keyDown('upArrow');
