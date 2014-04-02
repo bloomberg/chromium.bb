@@ -249,6 +249,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
       AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
       AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
+    timer.Advance()
     renderer_main.EndSlice(timer.Get())
 
     # Create 5 main and impl rendering stats events not within any action.
@@ -269,6 +270,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
       AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
       AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
+    timer.Advance()
     renderer_main.EndSlice(timer.Get())
 
     # Create 10 main and impl rendering stats events for Action A.
@@ -281,6 +283,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
       AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
       AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
+    timer.Advance()
     renderer_main.EndSlice(timer.Get())
 
     browser.FinalizeImport()
@@ -330,6 +333,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
                            renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'TouchMove', browser_main,
                            renderer_main, ref_latency_stats)
+    timer.Advance()
     renderer_main.EndSlice(timer.Get())
 
     # Create 5 input latency stats events not within any action.
@@ -351,6 +355,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
                            renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'TouchMove', browser_main,
                            renderer_main, ref_latency_stats)
+    timer.Advance()
     renderer_main.EndSlice(timer.Get())
 
     # Create 10 input latency stats events for Action A.
@@ -363,6 +368,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
                                   renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'TouchMove', browser_main,
                                   renderer_main, ref_latency_stats)
+    timer.Advance()
     renderer_main.EndSlice(timer.Get())
 
     browser.FinalizeImport()
