@@ -17,6 +17,14 @@
           'FC_CACHEDIR="/var/cache/fontconfig"',
           'FONTCONFIG_PATH="/etc/fonts"',
       ],
+      'conditions': [
+        ['clang==1', {
+          # Work around a null-conversion warning. See crbug.com/358852.
+          'cflags': [
+            '-Wno-non-literal-null-conversion',
+          ],
+        }],
+      ],
       'sources': [
         'src/src/fcarch.h',
         'src/src/fcatomic.c',
