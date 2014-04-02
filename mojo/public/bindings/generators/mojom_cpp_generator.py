@@ -12,21 +12,22 @@ from generate.template_expander import UseJinja
 
 
 _kind_to_cpp_type = {
-  mojom.BOOL:    "bool",
-  mojom.INT8:    "int8_t",
-  mojom.UINT8:   "uint8_t",
-  mojom.INT16:   "int16_t",
-  mojom.UINT16:  "uint16_t",
-  mojom.INT32:   "int32_t",
-  mojom.UINT32:  "uint32_t",
-  mojom.FLOAT:   "float",
-  mojom.HANDLE:  "mojo::Handle",
-  mojom.DCPIPE:  "mojo::DataPipeConsumerHandle",
-  mojom.DPPIPE:  "mojo::DataPipeProducerHandle",
-  mojom.MSGPIPE: "mojo::MessagePipeHandle",
-  mojom.INT64:   "int64_t",
-  mojom.UINT64:  "uint64_t",
-  mojom.DOUBLE:  "double",
+  mojom.BOOL:         "bool",
+  mojom.INT8:         "int8_t",
+  mojom.UINT8:        "uint8_t",
+  mojom.INT16:        "int16_t",
+  mojom.UINT16:       "uint16_t",
+  mojom.INT32:        "int32_t",
+  mojom.UINT32:       "uint32_t",
+  mojom.FLOAT:        "float",
+  mojom.HANDLE:       "mojo::Handle",
+  mojom.DCPIPE:       "mojo::DataPipeConsumerHandle",
+  mojom.DPPIPE:       "mojo::DataPipeProducerHandle",
+  mojom.MSGPIPE:      "mojo::MessagePipeHandle",
+  mojom.SHAREDBUFFER: "mojo::SharedBufferHandle",
+  mojom.INT64:        "int64_t",
+  mojom.UINT64:       "uint64_t",
+  mojom.DOUBLE:       "double",
 }
 
 
@@ -82,6 +83,8 @@ def GetCppResultWrapperType(kind):
     return "mojo::ScopedDataPipeProducerHandle"
   if kind.spec == 'h:m':
     return "mojo::ScopedMessagePipeHandle"
+  if kind.spec == 'h:s':
+    return "mojo::ScopedSharedBufferHandle"
   return _kind_to_cpp_type[kind]
 
 def GetCppWrapperType(kind):
@@ -116,6 +119,8 @@ def GetCppConstWrapperType(kind):
     return "mojo::ScopedDataPipeProducerHandle"
   if kind.spec == 'h:m':
     return "mojo::ScopedMessagePipeHandle"
+  if kind.spec == 'h:s':
+    return "mojo::ScopedSharedBufferHandle"
   if not kind in _kind_to_cpp_type:
     print "missing:", kind.spec
   return _kind_to_cpp_type[kind]

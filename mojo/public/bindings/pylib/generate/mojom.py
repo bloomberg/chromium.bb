@@ -18,22 +18,23 @@ class Kind(object):
     self.parent_kind = None
 
 # Initialize the set of primitive types. These can be accessed by clients.
-BOOL    = Kind('b')
-INT8    = Kind('i8')
-INT16   = Kind('i16')
-INT32   = Kind('i32')
-INT64   = Kind('i64')
-UINT8   = Kind('u8')
-UINT16  = Kind('u16')
-UINT32  = Kind('u32')
-UINT64  = Kind('u64')
-FLOAT   = Kind('f')
-DOUBLE  = Kind('d')
-STRING  = Kind('s')
-HANDLE  = Kind('h')
-DCPIPE  = Kind('h:d:c')
-DPPIPE  = Kind('h:d:p')
-MSGPIPE = Kind('h:m')
+BOOL         = Kind('b')
+INT8         = Kind('i8')
+INT16        = Kind('i16')
+INT32        = Kind('i32')
+INT64        = Kind('i64')
+UINT8        = Kind('u8')
+UINT16       = Kind('u16')
+UINT32       = Kind('u32')
+UINT64       = Kind('u64')
+FLOAT        = Kind('f')
+DOUBLE       = Kind('d')
+STRING       = Kind('s')
+HANDLE       = Kind('h')
+DCPIPE       = Kind('h:d:c')
+DPPIPE       = Kind('h:d:p')
+MSGPIPE      = Kind('h:m')
+SHAREDBUFFER = Kind('h:s')
 
 
 # Collection of all Primitive types
@@ -53,7 +54,8 @@ PRIMITIVES = (
   HANDLE,
   DCPIPE,
   DPPIPE,
-  MSGPIPE
+  MSGPIPE,
+  SHAREDBUFFER
 )
 
 

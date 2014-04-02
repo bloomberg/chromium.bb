@@ -55,6 +55,7 @@ class Lexer(object):
     'DATA_PIPE_CONSUMER',
     'DATA_PIPE_PRODUCER',
     'MESSAGE_PIPE',
+    'SHARED_BUFFER',
 
     'IMPORT',
     'MODULE',

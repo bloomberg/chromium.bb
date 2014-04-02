@@ -194,7 +194,8 @@ class Parser(object):
   def p_specializedhandlename(self, p):
     """specializedhandlename : DATA_PIPE_CONSUMER
                              | DATA_PIPE_PRODUCER
-                             | MESSAGE_PIPE"""
+                             | MESSAGE_PIPE
+                             | SHARED_BUFFER"""
     p[0] = p[1]
 
   def p_array(self, p):

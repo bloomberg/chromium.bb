@@ -31,7 +31,8 @@ def MapKind(kind):
                   'handle': 'h',
                   'handle<data_pipe_consumer>': 'h:d:c',
                   'handle<data_pipe_producer>': 'h:d:p',
-                  'handle<message_pipe>': 'h:m'}
+                  'handle<message_pipe>': 'h:m',
+                  'handle<shared_buffer>': 'h:s'}
   if kind.endswith('[]'):
     return 'a:' + MapKind(kind[0:len(kind)-2])
   if kind in map_to_kind:
