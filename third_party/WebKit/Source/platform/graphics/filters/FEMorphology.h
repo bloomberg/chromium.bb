@@ -70,15 +70,10 @@ public:
         PaintingData* paintingData;
     };
 
-    static void platformApplyWorker(PlatformApplyParameters*);
-
-    inline void platformApply(PaintingData*);
-    inline void platformApplyGeneric(PaintingData*, const int yStart, const int yEnd);
 private:
     FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
 
     virtual void applySoftware() OVERRIDE;
-    virtual bool applySkia() OVERRIDE;
 
     MorphologyOperatorType m_type;
     float m_radiusX;

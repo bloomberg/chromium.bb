@@ -96,135 +96,11 @@ bool FEMorphology::setRadiusY(float radiusY)
     return true;
 }
 
-void FEMorphology::platformApplyGeneric(PaintingData* paintingData, int yStart, int yEnd)
-{
-    Uint8ClampedArray* srcPixelArray = paintingData->srcPixelArray;
-    Uint8ClampedArray* dstPixelArray = paintingData->dstPixelArray;
-    const int width = paintingData->width;
-    const int height = paintingData->height;
-    const int effectWidth = width * 4;
-    const int radiusX = paintingData->radiusX;
-    const int radiusY = paintingData->radiusY;
-
-    Vector<unsigned char> extrema;
-    for (int y = yStart; y < yEnd; ++y) {
-        int extremaStartY = max(0, y - radiusY);
-        int extremaEndY = min(height - 1, y + radiusY);
-        for (unsigned clrChannel = 0; clrChannel < 4; ++clrChannel) {
-            extrema.clear();
-            // Compute extremas for each columns
-            for (int x = 0; x <= radiusX; ++x) {
-                unsigned char columnExtrema = srcPixelArray->item(extremaStartY * effectWidth + 4 * x + clrChannel);
-                for (int eY = extremaStartY + 1; eY < extremaEndY; ++eY) {
-                    unsigned char pixel = srcPixelArray->item(eY * effectWidth + 4 * x + clrChannel);
-                    if ((m_type == FEMORPHOLOGY_OPERATOR_ERODE && pixel <= columnExtrema)
-                        || (m_type == FEMORPHOLOGY_OPERATOR_DILATE && pixel >= columnExtrema)) {
-                        columnExtrema = pixel;
-                    }
-                }
-
-                extrema.append(columnExtrema);
-            }
-
-            // Kernel is filled, get extrema of next column
-            for (int x = 0; x < width; ++x) {
-                const int endX = min(x + radiusX, width - 1);
-                unsigned char columnExtrema = srcPixelArray->item(extremaStartY * effectWidth + endX * 4 + clrChannel);
-                for (int i = extremaStartY + 1; i <= extremaEndY; ++i) {
-                    unsigned char pixel = srcPixelArray->item(i * effectWidth + endX * 4 + clrChannel);
-                    if ((m_type == FEMORPHOLOGY_OPERATOR_ERODE && pixel <= columnExtrema)
-                        || (m_type == FEMORPHOLOGY_OPERATOR_DILATE && pixel >= columnExtrema))
-                        columnExtrema = pixel;
-                }
-                if (x - radiusX >= 0)
-                    extrema.remove(0);
-                if (x + radiusX <= width)
-                    extrema.append(columnExtrema);
-
-                unsigned char entireExtrema = extrema[0];
-                for (unsigned kernelIndex = 1; kernelIndex < extrema.size(); ++kernelIndex) {
-                    if ((m_type == FEMORPHOLOGY_OPERATOR_ERODE && extrema[kernelIndex] <= entireExtrema)
-                        || (m_type == FEMORPHOLOGY_OPERATOR_DILATE && extrema[kernelIndex] >= entireExtrema))
-                        entireExtrema = extrema[kernelIndex];
-                }
-                dstPixelArray->set(y * effectWidth + 4 * x + clrChannel, entireExtrema);
-            }
-        }
-    }
-}
-
-void FEMorphology::platformApplyWorker(PlatformApplyParameters* param)
-{
-    param->filter->platformApplyGeneric(param->paintingData, param->startY, param->endY);
-}
-
-void FEMorphology::platformApply(PaintingData* paintingData)
-{
-    int optimalThreadNumber = (paintingData->width * paintingData->height) / s_minimalArea;
-    if (optimalThreadNumber > 1) {
-        ParallelJobs<PlatformApplyParameters> parallelJobs(&WebCore::FEMorphology::platformApplyWorker, optimalThreadNumber);
-        int numOfThreads = parallelJobs.numberOfJobs();
-        if (numOfThreads > 1) {
-            // Split the job into "jobSize"-sized jobs but there a few jobs that need to be slightly larger since
-            // jobSize * jobs < total size. These extras are handled by the remainder "jobsWithExtra".
-            const int jobSize = paintingData->height / numOfThreads;
-            const int jobsWithExtra = paintingData->height % numOfThreads;
-            int currentY = 0;
-            for (int job = numOfThreads - 1; job >= 0; --job) {
-                PlatformApplyParameters& param = parallelJobs.parameter(job);
-                param.filter = this;
-                param.startY = currentY;
-                currentY += job < jobsWithExtra ? jobSize + 1 : jobSize;
-                param.endY = currentY;
-                param.paintingData = paintingData;
-            }
-            parallelJobs.execute();
-            return;
-        }
-        // Fallback to single thread model
-    }
-
-    platformApplyGeneric(paintingData, 0, paintingData->height);
-}
-
-
 void FEMorphology::applySoftware()
-{
-    FilterEffect* in = inputEffect(0);
-
-    Uint8ClampedArray* dstPixelArray = createPremultipliedImageResult();
-    if (!dstPixelArray)
-        return;
-
-    setIsAlphaImage(in->isAlphaImage());
-    if (m_radiusX <= 0 || m_radiusY <= 0) {
-        dstPixelArray->zeroFill();
-        return;
-    }
-
-    Filter* filter = this->filter();
-    int radiusX = static_cast<int>(floorf(filter->applyHorizontalScale(m_radiusX)));
-    int radiusY = static_cast<int>(floorf(filter->applyVerticalScale(m_radiusY)));
-
-    IntRect effectDrawingRect = requestedRegionOfInputImageData(in->absolutePaintRect());
-    RefPtr<Uint8ClampedArray> srcPixelArray = in->asPremultipliedImage(effectDrawingRect);
-
-    PaintingData paintingData;
-    paintingData.srcPixelArray = srcPixelArray.get();
-    paintingData.dstPixelArray = dstPixelArray;
-    paintingData.width = effectDrawingRect.width();
-    paintingData.height = effectDrawingRect.height();
-    paintingData.radiusX = min(effectDrawingRect.width() - 1, radiusX);
-    paintingData.radiusY = min(effectDrawingRect.height() - 1, radiusY);
-
-    platformApply(&paintingData);
-}
-
-bool FEMorphology::applySkia()
 {
     ImageBuffer* resultImage = createImageBufferResult();
     if (!resultImage)
-        return false;
+        return;
 
     FilterEffect* in = inputEffect(0);
 
@@ -248,7 +124,6 @@ bool FEMorphology::applySkia()
     dstContext->saveLayer(&bounds, &paint);
     dstContext->drawImage(image.get(), drawingRegion.location(), CompositeCopy);
     dstContext->restoreLayer();
-    return true;
 }
 
 PassRefPtr<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder* builder)
