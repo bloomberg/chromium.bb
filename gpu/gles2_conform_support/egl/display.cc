@@ -229,15 +229,13 @@ EGLContext Display::CreateContext(EGLConfig config,
   DCHECK(transfer_buffer_.get());
 
   bool bind_generates_resources = true;
-  bool lose_context_when_out_of_memory = false;
 
-  context_.reset(
-      new gpu::gles2::GLES2Implementation(gles2_cmd_helper_.get(),
-                                          NULL,
-                                          transfer_buffer_.get(),
-                                          bind_generates_resources,
-                                          lose_context_when_out_of_memory,
-                                          gpu_control_.get()));
+  context_.reset(new gpu::gles2::GLES2Implementation(
+      gles2_cmd_helper_.get(),
+      NULL,
+      transfer_buffer_.get(),
+      bind_generates_resources,
+      gpu_control_.get()));
 
   if (!context_->Initialize(
       kTransferBufferSize,

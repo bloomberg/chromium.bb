@@ -73,29 +73,20 @@ static base::LazyInstance<GLES2Initializer> g_gles2_initializer =
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
     const blink::WebGraphicsContext3D::Attributes& attributes,
-    bool lose_context_when_out_of_memory,
     gfx::AcceleratedWidget window) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
-  bool is_offscreen = false;
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
-      scoped_ptr< ::gpu::GLInProcessContext>(),
-      attributes,
-      lose_context_when_out_of_memory,
-      is_offscreen,
-      window));
+      scoped_ptr< ::gpu::GLInProcessContext>(), attributes, false, window));
 }
 
 // static
 scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    bool lose_context_when_out_of_memory) {
-  bool is_offscreen = true;
+    const blink::WebGraphicsContext3D::Attributes& attributes) {
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
       scoped_ptr< ::gpu::GLInProcessContext>(),
       attributes,
-      lose_context_when_out_of_memory,
-      is_offscreen,
+      true,
       gfx::kNullAcceleratedWidget));
 }
 
@@ -103,13 +94,10 @@ scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
     scoped_ptr< ::gpu::GLInProcessContext> context,
     const blink::WebGraphicsContext3D::Attributes& attributes) {
-  bool lose_context_when_out_of_memory = false;  // Not used.
-  bool is_offscreen = true;                      // Not used.
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
       context.Pass(),
       attributes,
-      lose_context_when_out_of_memory,
-      is_offscreen,
+      true /* is_offscreen. Not used. */,
       gfx::kNullAcceleratedWidget /* window. Not used. */));
 }
 
@@ -117,7 +105,6 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
     WebGraphicsContext3DInProcessCommandBufferImpl(
         scoped_ptr< ::gpu::GLInProcessContext> context,
         const blink::WebGraphicsContext3D::Attributes& attributes,
-        bool lose_context_when_out_of_memory,
         bool is_offscreen,
         gfx::AcceleratedWidget window)
     : is_offscreen_(is_offscreen),
@@ -129,8 +116,8 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
       context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
       attributes_(attributes),
-      lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
-      flush_id_(0) {}
+      flush_id_(0) {
+}
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
     ~WebGraphicsContext3DInProcessCommandBufferImpl() {
@@ -168,9 +155,7 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {
     gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
 
     ::gpu::GLInProcessContextAttribs attrib_struct;
-    ConvertAttributes(attributes_, &attrib_struct);
-    attrib_struct.lose_context_when_out_of_memory =
-        lose_context_when_out_of_memory_;
+    ConvertAttributes(attributes_, &attrib_struct),
 
     context_.reset(GLInProcessContext::CreateContext(
         is_offscreen_,

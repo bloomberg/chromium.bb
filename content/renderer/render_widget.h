@@ -530,7 +530,8 @@ class CONTENT_EXPORT RenderWidget
 #endif
 
   // Creates a 3D context associated with this view.
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D();
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
+      const blink::WebGraphicsContext3D::Attributes& attributes);
 
   bool OnSnapshotHelper(const gfx::Rect& src_subrect, SkBitmap* bitmap);
 

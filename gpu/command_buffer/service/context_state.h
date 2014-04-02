@@ -22,7 +22,6 @@ namespace gles2 {
 
 class Buffer;
 class ErrorState;
-class ErrorStateClient;
 class FeatureInfo;
 class Framebuffer;
 class Program;
@@ -94,9 +93,7 @@ struct Vec4 {
 };
 
 struct GPU_EXPORT ContextState {
-  ContextState(FeatureInfo* feature_info,
-               ErrorStateClient* error_state_client,
-               Logger* logger);
+  ContextState(FeatureInfo* feature_info, Logger* logger);
   ~ContextState();
 
   void Initialize();

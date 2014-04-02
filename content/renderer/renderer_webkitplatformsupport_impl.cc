@@ -1005,11 +1005,10 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
       limits.command_buffer_size = buffer_size_kb * 1024;
     }
   }
-  bool lose_context_when_out_of_memory = false;
+
   return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
       gpu_channel_host.get(),
       attributes,
-      lose_context_when_out_of_memory,
       GURL(attributes.topDocumentURL),
       limits,
       static_cast<WebGraphicsContext3DCommandBufferImpl*>(share_context));

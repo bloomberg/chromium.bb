@@ -428,8 +428,6 @@ GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
   attrs.stencil = false;
   attrs.antialias = false;
   attrs.noAutomaticFlushes = true;
-  bool bind_generates_resources = false;
-  bool lose_context_when_out_of_memory = true;
   CauseForGpuLaunch cause =
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
@@ -445,8 +443,7 @@ GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
           url,
           gpu_channel_host.get(),
           attrs,
-          bind_generates_resources,
-          lose_context_when_out_of_memory,
+          false,
           WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
           NULL));
   return context.Pass();

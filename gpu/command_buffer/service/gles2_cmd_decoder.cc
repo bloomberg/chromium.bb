@@ -566,8 +566,7 @@ void GLES2Decoder::EndDecoding() {}
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder,
-                         public FramebufferManager::TextureDetachObserver,
-                         public ErrorStateClient {
+                         public FramebufferManager::TextureDetachObserver {
  public:
   explicit GLES2DecoderImpl(ContextGroup* group);
   virtual ~GLES2DecoderImpl();
@@ -694,9 +693,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Overridden from FramebufferManager::TextureDetachObserver:
   virtual void OnTextureRefDetachedFromFramebuffer(
       TextureRef* texture) OVERRIDE;
-
-  // Overriden from ErrorStateClient.
-  virtual void OnOutOfMemoryError() OVERRIDE;
 
   // Helpers to facilitate calling into compatible extensions.
   static void RenderbufferStorageMultisampleHelper(
@@ -1756,9 +1752,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   bool compile_shader_always_succeeds_;
 
-  // An optional behaviour to lose the context and group when OOM.
-  bool lose_context_when_out_of_memory_;
-
   // Log extra info.
   bool service_logging_;
 
@@ -2224,7 +2217,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(),
       group_(group),
       logger_(&debug_marker_manager_),
-      state_(group_->feature_info(), this, &logger_),
+      state_(group_->feature_info(), &logger_),
       unpack_flip_y_(false),
       unpack_premultiply_alpha_(false),
       unpack_unpremultiply_alpha_(false),
@@ -2257,7 +2250,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       frag_depth_explicitly_enabled_(false),
       draw_buffers_explicitly_enabled_(false),
       compile_shader_always_succeeds_(false),
-      lose_context_when_out_of_memory_(false),
       service_logging_(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGPUServiceLoggingGPU)),
       viewport_max_width_(0),
@@ -2330,10 +2322,6 @@ bool GLES2DecoderImpl::Initialize(
   ContextCreationAttribHelper attrib_parser;
   if (!attrib_parser.Parse(attribs))
     return false;
-
-  // Save the loseContextWhenOutOfMemory context creation attribute.
-  lose_context_when_out_of_memory_ =
-      attrib_parser.lose_context_when_out_of_memory_;
 
   // If the failIfMajorPerformanceCaveat context creation attribute was true
   // and we are using a software renderer, fail.
@@ -10669,13 +10657,6 @@ void GLES2DecoderImpl::OnTextureRefDetachedFromFramebuffer(
     TextureRef* texture_ref) {
   Texture* texture = texture_ref->texture();
   DoDidUseTexImageIfNeeded(texture, texture->target());
-}
-
-void GLES2DecoderImpl::OnOutOfMemoryError() {
-  if (lose_context_when_out_of_memory_) {
-    group_->LoseContexts(GL_UNKNOWN_CONTEXT_RESET_ARB);
-    LoseContext(GL_GUILTY_CONTEXT_RESET_ARB);
-  }
 }
 
 // Include the auto-generated part of this file. We split this because it means

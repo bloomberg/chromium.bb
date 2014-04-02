@@ -147,7 +147,6 @@ bool GLInProcessContextImpl::Initialize(
 
   // Chromium-specific attributes
   const int32 FAIL_IF_MAJOR_PERF_CAVEAT = 0x10002;
-  const int32 LOSE_CONTEXT_WHEN_OUT_OF_MEMORY = 0x10003;
 
   std::vector<int32> attrib_vector;
   if (attribs.alpha_size >= 0) {
@@ -185,10 +184,6 @@ bool GLInProcessContextImpl::Initialize(
   if (attribs.fail_if_major_perf_caveat > 0) {
     attrib_vector.push_back(FAIL_IF_MAJOR_PERF_CAVEAT);
     attrib_vector.push_back(attribs.fail_if_major_perf_caveat);
-  }
-  if (attribs.lose_context_when_out_of_memory > 0) {
-    attrib_vector.push_back(LOSE_CONTEXT_WHEN_OUT_OF_MEMORY);
-    attrib_vector.push_back(attribs.lose_context_when_out_of_memory);
   }
   attrib_vector.push_back(NONE);
 
@@ -255,7 +250,6 @@ bool GLInProcessContextImpl::Initialize(
       share_group,
       transfer_buffer_.get(),
       bind_generates_resources,
-      attribs.lose_context_when_out_of_memory > 0,
       command_buffer_.get()));
 
   if (use_global_share_group) {
@@ -308,9 +302,7 @@ GLInProcessContextAttribs::GLInProcessContextAttribs()
       depth_size(-1),
       stencil_size(-1),
       samples(-1),
-      sample_buffers(-1),
-      fail_if_major_perf_caveat(-1),
-      lose_context_when_out_of_memory(-1) {}
+      sample_buffers(-1) {}
 
 // static
 GLInProcessContext* GLInProcessContext::CreateContext(

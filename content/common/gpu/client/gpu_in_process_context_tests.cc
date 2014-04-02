@@ -20,10 +20,8 @@ class ContextTestBase : public testing::Test {
  public:
   virtual void SetUp() {
     blink::WebGraphicsContext3D::Attributes attributes;
-    bool lose_context_when_out_of_memory = false;
-    typedef WebGraphicsContext3DInProcessCommandBufferImpl WGC3DIPCBI;
-    context_ = WGC3DIPCBI::CreateOffscreenContext(
-        attributes, lose_context_when_out_of_memory);
+    context_ = WebGraphicsContext3DInProcessCommandBufferImpl::
+        CreateOffscreenContext(attributes);
     context_->makeContextCurrent();
     context_support_ = context_->GetContextSupport();
   }

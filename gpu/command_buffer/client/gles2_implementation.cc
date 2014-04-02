@@ -83,12 +83,11 @@ GLES2Implementation::SingleThreadChecker::~SingleThreadChecker() {
 }
 
 GLES2Implementation::GLES2Implementation(
-    GLES2CmdHelper* helper,
-    ShareGroup* share_group,
-    TransferBufferInterface* transfer_buffer,
-    bool bind_generates_resource,
-    bool lose_context_when_out_of_memory,
-    GpuControl* gpu_control)
+      GLES2CmdHelper* helper,
+      ShareGroup* share_group,
+      TransferBufferInterface* transfer_buffer,
+      bool bind_generates_resource,
+      GpuControl* gpu_control)
     : helper_(helper),
       transfer_buffer_(transfer_buffer),
       angle_pack_reverse_row_order_status_(kUnknownExtensionStatus),
@@ -114,7 +113,6 @@ GLES2Implementation::GLES2Implementation(
       async_upload_sync_shm_offset_(0),
       error_bits_(0),
       debug_(false),
-      lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       use_count_(0),
       error_message_callback_(NULL),
       gpu_control_(gpu_control),
@@ -506,11 +504,6 @@ void GLES2Implementation::SetGLError(
     error_message_callback_->OnErrorMessage(temp.c_str(), 0);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
-
-  if (error == GL_OUT_OF_MEMORY && lose_context_when_out_of_memory_) {
-    helper_->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                 GL_UNKNOWN_CONTEXT_RESET_ARB);
-  }
 }
 
 void GLES2Implementation::SetGLErrorInvalidEnum(
@@ -896,6 +889,16 @@ void GLES2Implementation::ShallowFinishCHROMIUM() {
   // Flush our command buffer (tell the service to execute up to the flush cmd
   // and don't return until it completes).
   helper_->CommandBufferHelper::Finish();
+}
+
+bool GLES2Implementation::MustBeContextLost() {
+  bool context_lost = helper_->IsContextLost();
+  if (!context_lost) {
+    WaitForCmd();
+    context_lost = helper_->IsContextLost();
+  }
+  CHECK(context_lost);
+  return context_lost;
 }
 
 void GLES2Implementation::FinishHelper() {
@@ -3327,9 +3330,7 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
   if (!query) {
     query = query_tracker_->CreateQuery(id, target);
     if (!query) {
-      SetGLError(GL_OUT_OF_MEMORY,
-                 "glBeginQueryEXT",
-                 "transfer buffer allocation failed");
+      MustBeContextLost();
       return;
     }
   } else if (query->target() != target) {

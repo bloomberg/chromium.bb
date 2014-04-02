@@ -26,9 +26,7 @@ TestContextProviderFactory::~TestContextProviderFactory() {}
 scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_.get() || main_thread_->DestroyedOnMainThread()) {
-    bool lose_context_when_out_of_memory = false;
-    main_thread_ = webkit::gpu::ContextProviderInProcess::CreateOffscreen(
-        lose_context_when_out_of_memory);
+    main_thread_ = webkit::gpu::ContextProviderInProcess::CreateOffscreen();
     if (main_thread_.get() && !main_thread_->BindToCurrentThread())
       main_thread_ = NULL;
   }

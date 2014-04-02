@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
@@ -60,14 +61,16 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
 GLES2DecoderTestBase::~GLES2DecoderTestBase() {}
 
 void GLES2DecoderTestBase::SetUp() {
-  InitState init;
-  init.gl_version = "3.0";
-  init.has_alpha = true;
-  init.has_depth = true;
-  init.request_alpha = true;
-  init.request_depth = true;
-  init.bind_generates_resource = true;
-  InitDecoder(init);
+  InitDecoder(
+      "",      // extensions
+      "3.0",   // gl version
+      true,    // has alpha
+      true,    // has depth
+      false,   // has stencil
+      true,    // request alpha
+      true,    // request depth
+      false,   // request stencil
+      true);   // bind generates resource
 }
 
 void GLES2DecoderTestBase::AddExpectationsForVertexAttribManager() {
@@ -78,22 +81,38 @@ void GLES2DecoderTestBase::AddExpectationsForVertexAttribManager() {
   }
 }
 
-GLES2DecoderTestBase::InitState::InitState()
-    : has_alpha(false),
-      has_depth(false),
-      has_stencil(false),
-      request_alpha(false),
-      request_depth(false),
-      request_stencil(false),
-      bind_generates_resource(false),
-      lose_context_when_out_of_memory(false) {}
-
-void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
-  InitDecoderWithCommandLine(init, NULL);
+void GLES2DecoderTestBase::InitDecoder(
+    const char* extensions,
+    const char* gl_version,
+    bool has_alpha,
+    bool has_depth,
+    bool has_stencil,
+    bool request_alpha,
+    bool request_depth,
+    bool request_stencil,
+    bool bind_generates_resource) {
+  InitDecoderWithCommandLine(extensions,
+                             gl_version,
+                             has_alpha,
+                             has_depth,
+                             has_stencil,
+                             request_alpha,
+                             request_depth,
+                             request_stencil,
+                             bind_generates_resource,
+                             NULL);
 }
 
 void GLES2DecoderTestBase::InitDecoderWithCommandLine(
-    const InitState& init,
+    const char* extensions,
+    const char* gl_version,
+    bool has_alpha,
+    bool has_depth,
+    bool has_stencil,
+    bool request_alpha,
+    bool request_depth,
+    bool request_stencil,
+    bool bind_generates_resource,
     const base::CommandLine* command_line) {
   Framebuffer::ClearFramebufferCompleteComboMap();
 
@@ -105,16 +124,16 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   // Only create stream texture manager if extension is requested.
   std::vector<std::string> list;
-  base::SplitString(init.extensions, ' ', &list);
+  base::SplitString(std::string(extensions), ' ', &list);
   scoped_refptr<FeatureInfo> feature_info;
   if (command_line)
     feature_info = new FeatureInfo(*command_line);
-  group_ = scoped_refptr<ContextGroup>(
-      new ContextGroup(NULL,
-                       NULL,
-                       memory_tracker_,
-                       feature_info.get(),
-                       init.bind_generates_resource));
+  group_ = scoped_refptr<ContextGroup>(new ContextGroup(
+      NULL,
+      NULL,
+      memory_tracker_,
+      feature_info.get(),
+      bind_generates_resource));
 
   InSequence sequence;
 
@@ -125,16 +144,14 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   // in turn initialize FeatureInfo, which needs a context to determine
   // extension support.
   context_ = new gfx::GLContextStubWithExtensions;
-  context_->AddExtensionsString(init.extensions.c_str());
-  context_->SetGLVersionString(init.gl_version.c_str());
+  context_->AddExtensionsString(extensions);
+  context_->SetGLVersionString(gl_version);
 
   context_->MakeCurrent(surface_.get());
   gfx::GLSurface::InitializeDynamicMockBindingsForTests(context_);
 
   TestHelper::SetupContextGroupInitExpectations(gl_.get(),
-                                                DisallowedFeatures(),
-                                                init.extensions.c_str(),
-                                                init.gl_version.c_str());
+      DisallowedFeatures(), extensions, gl_version);
 
   // We initialize the ContextGroup with a MockGLES2Decoder so that
   // we can use the ContextGroup to figure out how the real GLES2Decoder
@@ -211,14 +228,14 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(init.has_alpha ? 8 : 0))
-      .RetiresOnSaturation();
+       .WillOnce(SetArgumentPointee<1>(has_alpha ? 8 : 0))
+       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetIntegerv(GL_DEPTH_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(init.has_depth ? 24 : 0))
-      .RetiresOnSaturation();
+       .WillOnce(SetArgumentPointee<1>(has_depth ? 24 : 0))
+       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetIntegerv(GL_STENCIL_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(init.has_stencil ? 8 : 0))
-      .RetiresOnSaturation();
+       .WillOnce(SetArgumentPointee<1>(has_stencil ? 8 : 0))
+       .RetiresOnSaturation();
 
   EXPECT_CALL(*gl_, Enable(GL_VERTEX_PROGRAM_POINT_SIZE))
       .Times(1)
@@ -275,16 +292,11 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   shared_memory_id_ = kSharedMemoryId;
   shared_memory_base_ = buffer->memory();
 
-  static const int32 kLoseContextWhenOutOfMemory = 0x10003;
-
-  int32 attributes[] = {EGL_ALPHA_SIZE,
-                        init.request_alpha ? 8 : 0,
-                        EGL_DEPTH_SIZE,
-                        init.request_depth ? 24 : 0,
-                        EGL_STENCIL_SIZE,
-                        init.request_stencil ? 8 : 0,
-                        kLoseContextWhenOutOfMemory,
-                        init.lose_context_when_out_of_memory ? 1 : 0, };
+  int32 attributes[] = {
+    EGL_ALPHA_SIZE, request_alpha ? 8 : 0,
+    EGL_DEPTH_SIZE, request_depth ? 24 : 0,
+    EGL_STENCIL_SIZE, request_stencil ? 8 : 0,
+  };
   std::vector<int32> attribs(attributes, attributes + arraysize(attributes));
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));

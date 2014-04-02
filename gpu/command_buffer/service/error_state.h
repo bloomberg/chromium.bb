@@ -55,17 +55,12 @@ class Logger;
 #define ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state, function_name) \
     error_state->ClearRealGLErrors(__FILE__, __LINE__, function_name)
 
-class GPU_EXPORT ErrorStateClient {
- public:
-  // GL_OUT_OF_MEMORY can cause side effects such as losing the context.
-  virtual void OnOutOfMemoryError() = 0;
-};
 
 class GPU_EXPORT ErrorState {
  public:
   virtual ~ErrorState();
 
-  static ErrorState* Create(ErrorStateClient* client, Logger* logger);
+  static ErrorState* Create(Logger* logger);
 
   virtual uint32 GetGLError() = 0;
 

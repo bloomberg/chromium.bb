@@ -16,7 +16,7 @@ namespace gles2 {
 
 class ErrorStateImpl : public ErrorState {
  public:
-  explicit ErrorStateImpl(ErrorStateClient* client, Logger* logger);
+  explicit ErrorStateImpl(Logger* logger);
   virtual ~ErrorStateImpl();
 
   virtual uint32 GetGLError() OVERRIDE;
@@ -63,7 +63,6 @@ class ErrorStateImpl : public ErrorState {
   // Current GL error bits.
   uint32 error_bits_;
 
-  ErrorStateClient* client_;
   Logger* logger_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorStateImpl);
@@ -73,12 +72,13 @@ ErrorState::ErrorState() {}
 
 ErrorState::~ErrorState() {}
 
-ErrorState* ErrorState::Create(ErrorStateClient* client, Logger* logger) {
-  return new ErrorStateImpl(client, logger);
+ErrorState* ErrorState::Create(Logger* logger) {
+  return new ErrorStateImpl(logger);
 }
 
-ErrorStateImpl::ErrorStateImpl(ErrorStateClient* client, Logger* logger)
-    : error_bits_(0), client_(client), logger_(logger) {}
+ErrorStateImpl::ErrorStateImpl(Logger* logger)
+    : error_bits_(0),
+      logger_(logger) {}
 
 ErrorStateImpl::~ErrorStateImpl() {}
 
@@ -125,8 +125,6 @@ void ErrorStateImpl::SetGLError(
         function_name + ": " + msg);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
-  if (error == GL_OUT_OF_MEMORY)
-    client_->OnOutOfMemoryError();
 }
 
 void ErrorStateImpl::SetGLErrorInvalidEnum(

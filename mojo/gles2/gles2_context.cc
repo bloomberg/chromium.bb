@@ -40,16 +40,11 @@ bool GLES2Context::Initialize() {
     return false;
   gles2_helper_->SetAutomaticFlushes(false);
   transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
-  bool bind_generates_resource = true;
-  // TODO(piman): Some contexts (such as compositor) want this to be true, so
-  // this needs to be a public parameter.
-  bool lose_context_when_out_of_memory = false;
   implementation_.reset(
       new gpu::gles2::GLES2Implementation(gles2_helper_.get(),
                                           NULL,
                                           transfer_buffer_.get(),
-                                          bind_generates_resource,
-                                          lose_context_when_out_of_memory,
+                                          true,
                                           &command_buffer_));
   return implementation_->Initialize(kDefaultStartTransferBufferSize,
                                      kDefaultMinTransferBufferSize,
