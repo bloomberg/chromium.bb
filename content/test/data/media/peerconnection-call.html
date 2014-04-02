@@ -348,7 +348,9 @@
       }, 500);
 
       setTimeout(function() {
-        gatherAudioLevelSamples(gSecondConnection, 100, 50, function(samples) {
+        // Sample for four seconds here; it can take a bit of time for audio to
+        // get back up after the unmute.
+        gatherAudioLevelSamples(gSecondConnection, 200, 50, function(samples) {
           verifyAudioIsPlaying(samples);
           reportTestSuccess();
         });
