@@ -153,38 +153,14 @@ static void gamma(unsigned char* values, const ComponentTransferFunction& transf
 void FEComponentTransfer::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
-
-    Uint8ClampedArray* pixelArray = createUnmultipliedImageResult();
-    if (!pixelArray)
-        return;
-
-    unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
-    getValues(rValues, gValues, bValues, aValues);
-    unsigned char* tables[] = { rValues, gValues, bValues, aValues };
-
-    IntRect drawingRect = requestedRegionOfInputImageData(in->absolutePaintRect());
-    in->copyUnmultipliedImage(pixelArray, drawingRect);
-
-    unsigned pixelArrayLength = pixelArray->length();
-    for (unsigned pixelOffset = 0; pixelOffset < pixelArrayLength; pixelOffset += 4) {
-        for (unsigned channel = 0; channel < 4; ++channel) {
-            unsigned char c = pixelArray->item(pixelOffset + channel);
-            pixelArray->set(pixelOffset + channel, tables[channel][c]);
-        }
-    }
-}
-
-bool FEComponentTransfer::applySkia()
-{
-    FilterEffect* in = inputEffect(0);
     ImageBuffer* resultImage = createImageBufferResult();
     if (!resultImage)
-        return false;
+        return;
 
     RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
     RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
     if (!nativeImage)
-        return false;
+        return;
 
     unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
     getValues(rValues, gValues, bValues, aValues);
@@ -200,8 +176,6 @@ bool FEComponentTransfer::applySkia()
         resultImage->context()->clipOut(destRect);
         resultImage->context()->fillRect(fullRect, Color(rValues[0], gValues[0], bValues[0], aValues[0]));
     }
-
-    return true;
 }
 
 bool FEComponentTransfer::affectsTransparentPixels()

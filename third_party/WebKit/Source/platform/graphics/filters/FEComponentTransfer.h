@@ -86,7 +86,6 @@ private:
         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);
 
     virtual void applySoftware() OVERRIDE;
-    virtual bool applySkia() OVERRIDE;
 
     virtual bool affectsTransparentPixels() OVERRIDE;
 
