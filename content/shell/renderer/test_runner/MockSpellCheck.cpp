@@ -147,7 +147,7 @@ bool MockSpellCheck::initializeIfNeeded()
         "XXxxx",
         "Textx",
         "blockquoted",
-        "asdf",
+        "asd",
         "Lorem",
         "Nunc",
         "Curabitur",
