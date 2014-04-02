@@ -9690,6 +9690,51 @@ TEST_F(LayerTreeHostCommonTest, ScrollCompensationWithRounding) {
                          .screen_space_transform.To2dTranslation(),
                      container_offset - rounded_scroll_delta);
   }
+
+  // Scale is applied earlier in the tree.
+  {
+    gfx::Transform scaled_container_transform = container_transform;
+    scaled_container_transform.Scale3d(3.0, 3.0, 1.0);
+    container_layer->SetTransform(scaled_container_transform);
+
+    gfx::Vector2dF scroll_delta(4.5f, 8.5f);
+    scroll_layer->SetScrollDelta(scroll_delta);
+
+    LayerImplList render_surface_layer_list;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root.get(), root->bounds(), &render_surface_layer_list);
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+    EXPECT_TRANSFORMATION_MATRIX_EQ(
+        container_layer->draw_properties().screen_space_transform,
+        fixed_layer->draw_properties().screen_space_transform);
+    EXPECT_VECTOR_EQ(
+        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
+        container_offset);
+
+    container_layer->SetTransform(container_transform);
+  }
+
+  // Scale is applied on the scroll layer itself.
+  {
+    gfx::Transform scale_transform;
+    scale_transform.Scale3d(3.0, 3.0, 1.0);
+    scroll_layer->SetTransform(scale_transform);
+
+    gfx::Vector2dF scroll_delta(4.5f, 8.5f);
+    scroll_layer->SetScrollDelta(scroll_delta);
+
+    LayerImplList render_surface_layer_list;
+    LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+        root.get(), root->bounds(), &render_surface_layer_list);
+    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+    EXPECT_VECTOR_EQ(
+        fixed_layer->draw_properties().screen_space_transform.To2dTranslation(),
+        container_offset);
+
+    scroll_layer->SetTransform(identity_transform);
+  }
 }
 
 }  // namespace

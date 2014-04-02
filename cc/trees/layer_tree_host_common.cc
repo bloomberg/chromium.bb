@@ -1529,8 +1529,17 @@ static void CalculateDrawPropertiesInternal(
     gfx::Vector2dF current_translation = combined_transform.To2dTranslation();
 
     // This rounding changes the scroll delta, and so must be included
-    // in the scroll compensation matrix.
-    effective_scroll_delta -= current_translation - previous_translation;
+    // in the scroll compensation matrix.  The scaling converts from physical
+    // coordinates to the scroll delta's CSS coordinates (using the parent
+    // matrix instead of combined transform since scrolling is applied before
+    // the layer's transform).  For example, if we have a total scale factor of
+    // 3.0, then 1 physical pixel is only 1/3 of a CSS pixel.
+    gfx::Vector2dF parent_scales = MathUtil::ComputeTransform2dScaleComponents(
+        data_from_ancestor.parent_matrix, 1.f);
+    effective_scroll_delta -=
+        gfx::ScaleVector2d(current_translation - previous_translation,
+                           1.f / parent_scales.x(),
+                           1.f / parent_scales.y());
   }
 
   // Apply adjustment from position constraints.
