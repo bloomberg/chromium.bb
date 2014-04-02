@@ -53,6 +53,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings, InspectorController* inspec
     , m_deferredImageDecodingEnabled(false)
     , m_doubleTapToZoomEnabled(false)
     , m_supportDeprecatedTargetDensityDPI(false)
+    , m_shrinksViewportContentToFit(false)
     , m_viewportMetaLayoutSizeQuirk(false)
     , m_viewportMetaNonUserScalableQuirk(false)
     , m_clobberUserAgentInitialScaleQuirk(false)
@@ -256,6 +257,11 @@ void WebSettingsImpl::setNeedsSiteSpecificQuirks(bool enabled)
 void WebSettingsImpl::setShrinksStandaloneImagesToFit(bool shrinkImages)
 {
     m_settings->setShrinksStandaloneImagesToFit(shrinkImages);
+}
+
+void WebSettingsImpl::setShrinksViewportContentToFit(bool shrinkViewportContent)
+{
+    m_shrinksViewportContentToFit = shrinkViewportContent;
 }
 
 void WebSettingsImpl::setSpatialNavigationEnabled(bool enabled)
@@ -646,6 +652,11 @@ bool WebSettingsImpl::viewportMetaEnabled() const
 bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const
 {
     return m_mainFrameResizesAreOrientationChanges;
+}
+
+bool WebSettingsImpl::shrinksViewportContentToFit() const
+{
+    return m_shrinksViewportContentToFit;
 }
 
 void WebSettingsImpl::setShouldRespectImageOrientation(bool enabled)

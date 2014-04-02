@@ -53,6 +53,7 @@ public:
     };
 
     virtual bool mainFrameResizesAreOrientationChanges() const = 0;
+    virtual bool shrinksViewportContentToFit() const = 0;
     virtual bool scrollAnimatorEnabled() const = 0;
     virtual bool touchEditingEnabled() const = 0;
     virtual bool viewportEnabled() const = 0;
@@ -158,6 +159,7 @@ public:
     virtual void setShowFPSCounter(bool) = 0;
     virtual void setShowPaintRects(bool) = 0;
     virtual void setShrinksStandaloneImagesToFit(bool) = 0;
+    virtual void setShrinksViewportContentToFit(bool) = 0;
     virtual void setSmartInsertDeleteEnabled(bool) = 0;
     // Spatial navigation feature, when enabled, improves the experience
     // of keyboard-controlling the web pages which originally were not designed

@@ -46,6 +46,7 @@ public:
     virtual ~WebSettingsImpl() { }
 
     virtual bool mainFrameResizesAreOrientationChanges() const OVERRIDE;
+    virtual bool shrinksViewportContentToFit() const OVERRIDE;
     virtual bool scrollAnimatorEnabled() const OVERRIDE;
     virtual bool touchEditingEnabled() const OVERRIDE;
     virtual bool viewportEnabled() const OVERRIDE;
@@ -148,6 +149,7 @@ public:
     virtual void setShowFPSCounter(bool) OVERRIDE;
     virtual void setShowPaintRects(bool) OVERRIDE;
     virtual void setShrinksStandaloneImagesToFit(bool) OVERRIDE;
+    virtual void setShrinksViewportContentToFit(bool) OVERRIDE;
     virtual void setSmartInsertDeleteEnabled(bool) OVERRIDE;
     virtual void setSpatialNavigationEnabled(bool) OVERRIDE;
     virtual void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) OVERRIDE;
@@ -206,6 +208,7 @@ private:
     bool m_doubleTapToZoomEnabled;
     bool m_perTilePaintingEnabled;
     bool m_supportDeprecatedTargetDensityDPI;
+    bool m_shrinksViewportContentToFit;
     // This quirk is to maintain compatibility with Android apps built on
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/277369.
