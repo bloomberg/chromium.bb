@@ -212,15 +212,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
     if (candidate.isLink() != element().isLink())
         return false;
-    if (candidate.hovered() != element().hovered())
-        return false;
-    if (candidate.active() != element().active())
-        return false;
-    if (candidate.focused() != element().focused())
-        return false;
     if (candidate.shadowPseudoId() != element().shadowPseudoId())
-        return false;
-    if (candidate == document().cssTarget())
         return false;
     if (!sharingCandidateHasIdenticalStyleAffectingAttributes(candidate))
         return false;
