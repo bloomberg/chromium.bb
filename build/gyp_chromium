@@ -283,6 +283,8 @@ if __name__ == '__main__':
           gyp_vars_dict.get('OS') in ['android', 'ios'],
           'GYP_CROSSCOMPILE' not in os.environ)):
     os.environ['GYP_CROSSCOMPILE'] = '1'
+  if gyp_vars_dict.get('OS') == 'android':
+    args.append('--check')
 
   args.extend(
       ['-I' + i for i in additional_include_files(supplemental_includes, args)])

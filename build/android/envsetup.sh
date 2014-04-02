@@ -14,21 +14,6 @@ fi
 
 SCRIPT_DIR="$(dirname "${BASH_SOURCE:-$0}")"
 
-# Get host architecture, and abort if it is 32-bit.
-host_arch=$(uname -m)
-case "${host_arch}" in
-  x86_64)  # pass
-    ;;
-  i?86)
-    echo "ERROR: Android build requires a 64-bit host build machine."
-    return 1
-    ;;
-  *)
-    echo "ERROR: Unsupported host architecture (${host_arch})."
-    echo "Try running this script on a Linux/x86_64 machine instead."
-    return 1
-esac
-
 CURRENT_DIR="$(readlink -f "${SCRIPT_DIR}/../../")"
 if [[ -z "${CHROME_SRC}" ]]; then
   # If $CHROME_SRC was not set, assume current directory is CHROME_SRC.
@@ -72,9 +57,7 @@ if [[ -n "$CHROME_ANDROID_OFFICIAL_BUILD" ]]; then
   export CHROME_BUILD_TYPE="_official"
 fi
 
-# Performs a gyp_chromium run to convert gyp->Makefile for android code.
 android_gyp() {
-  # This is just a simple wrapper of gyp_chromium, please don't add anything
-  # in this function.
+  echo "Please call build/gyp_chromium instead. android_gyp is going away."
   "${CHROME_SRC}/build/gyp_chromium" --depth="${CHROME_SRC}" --check "$@"
 }
