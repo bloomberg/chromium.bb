@@ -9,7 +9,6 @@
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
@@ -45,8 +44,6 @@ namespace errors = extensions::manifest_errors;
 
 namespace {
 
-const base::FilePath::CharType kTempDirectoryName[] = FILE_PATH_LITERAL("Temp");
-
 // Add the image paths contained in the |icon_set| to |image_paths|.
 void AddPathsFromIconSet(const ExtensionIconSet& icon_set,
                          std::set<base::FilePath>* image_paths) {
@@ -61,6 +58,8 @@ void AddPathsFromIconSet(const ExtensionIconSet& icon_set,
 }  // namespace
 
 namespace extension_file_util {
+
+const base::FilePath::CharType kTempDirectoryName[] = FILE_PATH_LITERAL("Temp");
 
 base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
                                 const std::string& id,
@@ -122,7 +121,7 @@ void UninstallExtension(const base::FilePath& extensions_dir,
                         const std::string& id) {
   // We don't care about the return value. If this fails (and it can, due to
   // plugins that aren't unloaded yet), it will get cleaned up by
-  // ExtensionService::GarbageCollectExtensions.
+  // ExtensionGarbageCollector::GarbageCollectExtensions.
   base::DeleteFile(extensions_dir.AppendASCII(id), true);  // recursive.
 }
 
@@ -321,85 +320,6 @@ std::set<base::FilePath> GetBrowserImagePaths(const Extension* extension) {
     AddPathsFromIconSet(browser_action->default_icon, &image_paths);
 
   return image_paths;
-}
-
-void GarbageCollectExtensions(
-    const base::FilePath& install_directory,
-    const std::multimap<std::string, base::FilePath>& extension_paths,
-    bool clean_temp_dir) {
-  // Nothing to clean up if it doesn't exist.
-  if (!base::DirectoryExists(install_directory))
-    return;
-
-  DVLOG(1) << "Garbage collecting extensions...";
-  base::FileEnumerator enumerator(install_directory,
-                                  false,  // Not recursive.
-                                  base::FileEnumerator::DIRECTORIES);
-  base::FilePath extension_path;
-  for (extension_path = enumerator.Next(); !extension_path.value().empty();
-       extension_path = enumerator.Next()) {
-    std::string extension_id;
-
-    base::FilePath basename = extension_path.BaseName();
-    // Clean up temporary files left if Chrome crashed or quit in the middle
-    // of an extension install.
-    if (basename.value() == kTempDirectoryName) {
-      if (clean_temp_dir)
-        base::DeleteFile(extension_path, true);  // Recursive
-      continue;
-    }
-
-    // Parse directory name as a potential extension ID.
-    if (IsStringASCII(basename.value())) {
-      extension_id = base::UTF16ToASCII(basename.LossyDisplayName());
-      if (!Extension::IdIsValid(extension_id))
-        extension_id.clear();
-    }
-
-    // Delete directories that aren't valid IDs.
-    if (extension_id.empty()) {
-      DLOG(WARNING) << "Invalid extension ID encountered in extensions "
-                       "directory: " << basename.value();
-      DVLOG(1) << "Deleting invalid extension directory "
-               << extension_path.value() << ".";
-      base::DeleteFile(extension_path, true);  // Recursive.
-      continue;
-    }
-
-    typedef std::multimap<std::string, base::FilePath>::const_iterator Iter;
-    std::pair<Iter, Iter> iter_pair = extension_paths.equal_range(extension_id);
-
-    // If there is no entry in the prefs file, just delete the directory and
-    // move on. This can legitimately happen when an uninstall does not
-    // complete, for example, when a plugin is in use at uninstall time.
-    if (iter_pair.first == iter_pair.second) {
-      DVLOG(1) << "Deleting unreferenced install for directory "
-               << extension_path.LossyDisplayName() << ".";
-      base::DeleteFile(extension_path, true);  // Recursive.
-      continue;
-    }
-
-    // Clean up old version directories.
-    base::FileEnumerator versions_enumerator(
-        extension_path,
-        false,  // Not recursive.
-        base::FileEnumerator::DIRECTORIES);
-    for (base::FilePath version_dir = versions_enumerator.Next();
-         !version_dir.value().empty();
-         version_dir = versions_enumerator.Next()) {
-      bool knownVersion = false;
-      for (Iter it = iter_pair.first; it != iter_pair.second; ++it)
-        if (version_dir.BaseName() == it->second.BaseName()) {
-          knownVersion = true;
-          break;
-        }
-      if (!knownVersion) {
-        DVLOG(1) << "Deleting old version for directory "
-                 << version_dir.LossyDisplayName() << ".";
-        base::DeleteFile(version_dir, true);  // Recursive.
-      }
-    }
-  }
 }
 
 extensions::MessageBundle* LoadMessageBundle(

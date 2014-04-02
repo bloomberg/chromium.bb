@@ -5,9 +5,11 @@
 #include "extensions/common/one_shot_event.h"
 
 #include "base/callback.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
+#include "base/time/time.h"
 
 using base::TaskRunner;
 
@@ -17,13 +19,15 @@ struct OneShotEvent::TaskInfo {
   TaskInfo() {}
   TaskInfo(const tracked_objects::Location& from_here,
            const scoped_refptr<TaskRunner>& runner,
-           const base::Closure& task)
-      : from_here(from_here), runner(runner), task(task) {
+           const base::Closure& task,
+           const base::TimeDelta& delay)
+      : from_here(from_here), runner(runner), task(task), delay(delay) {
     CHECK(runner.get());  // Detect mistakes with a decent stack frame.
   }
   tracked_objects::Location from_here;
   scoped_refptr<TaskRunner> runner;
   base::Closure task;
+  base::TimeDelta delay;
 };
 
 OneShotEvent::OneShotEvent() : signaled_(false) {
@@ -38,19 +42,20 @@ OneShotEvent::~OneShotEvent() {}
 
 void OneShotEvent::Post(const tracked_objects::Location& from_here,
                         const base::Closure& task) const {
-  Post(from_here, task, base::MessageLoopProxy::current());
+  PostImpl(
+      from_here, task, base::MessageLoopProxy::current(), base::TimeDelta());
 }
 
 void OneShotEvent::Post(const tracked_objects::Location& from_here,
                         const base::Closure& task,
                         const scoped_refptr<TaskRunner>& runner) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  PostImpl(from_here, task, runner, base::TimeDelta());
+}
 
-  if (is_signaled()) {
-    runner->PostTask(from_here, task);
-  } else {
-    tasks_.push_back(TaskInfo(from_here, runner, task));
-  }
+void OneShotEvent::PostDelayed(const tracked_objects::Location& from_here,
+                               const base::Closure& task,
+                               const base::TimeDelta& delay) const {
+  PostImpl(from_here, task, base::MessageLoopProxy::current(), delay);
 }
 
 void OneShotEvent::Signal() {
@@ -66,7 +71,27 @@ void OneShotEvent::Signal() {
   // We could randomize tasks_ in debug mode in order to check that
   // the order doesn't matter...
   for (size_t i = 0; i < tasks_.size(); ++i) {
-    tasks_[i].runner->PostTask(tasks_[i].from_here, tasks_[i].task);
+    const TaskInfo& task = tasks_[i];
+    if (task.delay != base::TimeDelta())
+      task.runner->PostDelayedTask(task.from_here, task.task, task.delay);
+    else
+      task.runner->PostTask(task.from_here, task.task);
+  }
+}
+
+void OneShotEvent::PostImpl(const tracked_objects::Location& from_here,
+                            const base::Closure& task,
+                            const scoped_refptr<TaskRunner>& runner,
+                            const base::TimeDelta& delay) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (is_signaled()) {
+    if (delay != base::TimeDelta())
+      runner->PostDelayedTask(from_here, task, delay);
+    else
+      runner->PostTask(from_here, task);
+  } else {
+    tasks_.push_back(TaskInfo(from_here, runner, task, delay));
   }
 }
 

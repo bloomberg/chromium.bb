@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "extensions/common/manifest.h"
@@ -27,6 +28,8 @@ struct InstallWarning;
 
 // Utilities for manipulating the on-disk storage of extensions.
 namespace extension_file_util {
+
+extern const base::FilePath::CharType kTempDirectoryName[];
 
 // Copies |unpacked_source_dir| into the right location under |extensions_dir|.
 // The destination directory is returned on success, or empty path is returned
@@ -90,23 +93,6 @@ std::set<base::FilePath> GetBrowserImagePaths(
 // Returns a list of files that contain private keys inside |extension_dir|.
 std::vector<base::FilePath> FindPrivateKeyFiles(
     const base::FilePath& extension_dir);
-
-// Cleans up the extension install directory. It can end up with garbage in it
-// if extensions can't initially be removed when they are uninstalled (eg if a
-// file is in use).
-//
-// |extensions_dir| is the install directory to look in. |extension_paths| is a
-// map from extension id to full installation path.
-//
-// Obsolete version directories are removed, as are directories that aren't
-// found in |extension_paths|.
-//
-// The "Temp" directory that is used during extension installation only gets
-// removed if |clean_temp_dir| is true.
-void GarbageCollectExtensions(
-    const base::FilePath& extensions_dir,
-    const std::multimap<std::string, base::FilePath>& extension_paths,
-    bool clean_temp_dir);
 
 // Loads extension message catalogs and returns message bundle.
 // Returns NULL on error, or if extension is not localized.

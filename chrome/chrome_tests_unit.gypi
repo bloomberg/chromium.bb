@@ -939,6 +939,7 @@
         'browser/extensions/extension_creator_filter_unittest.cc',
         'browser/extensions/extension_function_test_utils.cc',
         'browser/extensions/extension_function_test_utils.h',
+        'browser/extensions/extension_garbage_collector_unittest.cc',
         'browser/extensions/extension_icon_image_unittest.cc',
         'browser/extensions/extension_icon_manager_unittest.cc',
         'browser/extensions/extension_message_bubble_controller_unittest.cc',
