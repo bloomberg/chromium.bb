@@ -33186,6 +33186,35 @@ other types of suffix sets.
   <int value="283" label="PrefixedWindowURL"/>
   <int value="284" label="PrefixedWorkerURL"/>
   <int value="285" label="WindowOrientation"/>
+  <int value="286" label="DOMStringListContains"/>
+  <int value="287" label="DocumentCaptureEvents"/>
+  <int value="288" label="DocumentReleaseEvents"/>
+  <int value="289" label="WindowCaptureEvents"/>
+  <int value="290" label="WindowReleaseEvents"/>
+  <int value="291" label="PrefixedGamepad"/>
+  <int value="292" label="ElementAnimateKeyframeListEffectObjectTiming"/>
+  <int value="293" label="ElementAnimateKeyframeListEffectDoubleTiming"/>
+  <int value="294" label="ElementAnimateKeyframeListEffectNoTiming"/>
+  <int value="295" label="DocumentXPathCreateExpression"/>
+  <int value="296" label="DocumentXPathCreateNSResolver"/>
+  <int value="297" label="DocumentXPathEvaluate"/>
+  <int value="298" label="AttrGetValue"/>
+  <int value="299" label="AttrSetValue"/>
+  <int value="300" label="AnimationConstructorKeyframeListEffectObjectTiming"/>
+  <int value="301" label="AnimationConstructorKeyframeListEffectDoubleTiming"/>
+  <int value="302" label="AnimationConstructorKeyframeListEffectNoTiming"/>
+  <int value="303" label="AttrSetValueWithElement"/>
+  <int value="304" label="PrefixedCancelAnimationFrame"/>
+  <int value="305" label="PrefixedCancelRequestAnimationFrame"/>
+  <int value="306" label="NamedNodeMapGetNamedItem"/>
+  <int value="307" label="NamedNodeMapSetNamedItem"/>
+  <int value="308" label="NamedNodeMapRemoveNamedItem"/>
+  <int value="309" label="NamedNodeMapItem"/>
+  <int value="310" label="NamedNodeMapGetNamedItemNS"/>
+  <int value="311" label="NamedNodeMapSetNamedItemNS"/>
+  <int value="312" label="NamedNodeMapRemoveNamedItemNS"/>
+  <int value="313" label="OpenWebDatabaseInWorker"/>
+  <int value="314" label="OpenWebDatabaseSyncInWorker"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
