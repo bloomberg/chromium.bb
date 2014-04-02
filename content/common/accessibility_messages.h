@@ -15,6 +15,7 @@
 #include "ipc/param_traits_macros.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -45,10 +46,14 @@ IPC_STRUCT_TRAITS_BEGIN(ui::AXNodeData)
   IPC_STRUCT_TRAITS_MEMBER(child_ids)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(ui::AXTreeUpdate)
+  IPC_STRUCT_TRAITS_MEMBER(node_id_to_clear)
+  IPC_STRUCT_TRAITS_MEMBER(nodes)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
-  // Vector of nodes in the tree that need to be updated before
-  // sending the event.
-  IPC_STRUCT_MEMBER(std::vector<ui::AXNodeData>, nodes)
+  // The tree update.
+  IPC_STRUCT_MEMBER(ui::AXTreeUpdate, update)
 
   // Type of event.
   IPC_STRUCT_MEMBER(ui::AXEvent, event_type)

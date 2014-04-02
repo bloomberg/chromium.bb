@@ -235,7 +235,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   text2.SetName("old text");
   AccessibilityHostMsg_EventParams param;
   param.event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  param.nodes.push_back(text2);
+  param.update.nodes.push_back(text2);
   param.id = text2.id;
   std::vector<AccessibilityHostMsg_EventParams> events;
   events.push_back(param);
@@ -307,7 +307,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChangeNoLeaks) {
   root.child_ids.clear();
   AccessibilityHostMsg_EventParams param;
   param.event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  param.nodes.push_back(root);
+  param.update.nodes.push_back(root);
   param.id = root.id;
   std::vector<AccessibilityHostMsg_EventParams> events;
   events.push_back(param);
@@ -637,8 +637,8 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   params.push_back(AccessibilityHostMsg_EventParams());
   AccessibilityHostMsg_EventParams* msg = &params[0];
   msg->event_type = ui::AX_EVENT_LOAD_COMPLETE;
-  msg->nodes.push_back(tree1_1);
-  msg->nodes.push_back(tree1_2);
+  msg->update.nodes.push_back(tree1_1);
+  msg->update.nodes.push_back(tree1_2);
   msg->id = tree1_1.id;
   manager->OnAccessibilityEvents(params);
 
@@ -662,9 +662,9 @@ TEST_F(BrowserAccessibilityTest, TestCreateEmptyDocument) {
   tree2_2.id = 3;
   tree2_2.role = ui::AX_ROLE_BUTTON;
 
-  msg->nodes.clear();
-  msg->nodes.push_back(tree2_1);
-  msg->nodes.push_back(tree2_2);
+  msg->update.nodes.clear();
+  msg->update.nodes.push_back(tree2_1);
+  msg->update.nodes.push_back(tree2_2);
   msg->id = tree2_1.id;
 
   // Fire another load complete.

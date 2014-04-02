@@ -131,7 +131,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   // Process all changes to the accessibility tree first.
   for (uint32 index = 0; index < params.size(); index++) {
     const AccessibilityHostMsg_EventParams& param = params[index];
-    if (!UpdateNodes(param.nodes))
+    if (!UpdateNodes(param.update.nodes))
       return;
 
     // Set initial focus when a page is loaded.

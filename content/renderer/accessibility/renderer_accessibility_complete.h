@@ -11,10 +11,12 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
+#include "content/renderer/accessibility/blink_ax_tree_source.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_serializer.h"
 
 namespace blink {
 class WebDocument;
@@ -50,20 +52,6 @@ class CONTENT_EXPORT RendererAccessibilityComplete
 
   void HandleAXEvent(const blink::WebAXObject& obj, ui::AXEvent event);
 
-  // In order to keep track of what nodes the browser knows about, we keep a
-  // representation of the browser tree - just IDs and parent/child
-  // relationships.
-  struct CONTENT_EXPORT BrowserTreeNode {
-    BrowserTreeNode();
-    virtual ~BrowserTreeNode();
-    int32 id;
-    gfx::Rect location;
-    BrowserTreeNode* parent;
-    std::vector<BrowserTreeNode*> children;
-  };
-
-  virtual BrowserTreeNode* CreateBrowserTreeNode();
-
  protected:
   // Send queued events from the renderer to the browser.
   void SendPendingAccessibilityEvents();
@@ -74,19 +62,6 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   void SendLocationChanges();
 
  private:
-  // Serialize the given accessibility object |obj| and append it to
-  // |dst|, and then recursively also serialize any *new* children of
-  // |obj|, based on what object ids we know the browser already has.
-  // The set of ids serialized is added to |ids_serialized|, and any
-  // ids previously in that set are not serialized again.
-  void SerializeChangedNodes(const blink::WebAXObject& obj,
-                             std::vector<ui::AXNodeData>* dst,
-                             std::set<int>* ids_serialized);
-
-  // Clear the given node and recursively delete all of its descendants
-  // from the browser tree. (Does not delete |browser_node|).
-  void ClearBrowserTreeNode(BrowserTreeNode* browser_node);
-
   // Handlers for messages from the browser to the renderer.
   void OnDoDefaultAction(int acc_obj_id);
   void OnEventsAck();
@@ -107,13 +82,6 @@ class CONTENT_EXPORT RendererAccessibilityComplete
       const blink::WebAXObject& src,
       ui::AXNodeData* dst);
 
-  // Build a tree of serializable ui::AXNodeData nodes to send to the
-  // browser process, given a WebAXObject node from Blink.
-  // Modifies |dst| in-place, it's assumed to be empty.
-  void BuildAccessibilityTree(const blink::WebAXObject& src,
-                              bool include_children,
-                              ui::AXNodeData* dst);
-
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RendererAccessibilityComplete> weak_factory_;
 
@@ -121,11 +89,14 @@ class CONTENT_EXPORT RendererAccessibilityComplete
   // sent to the browser.
   std::vector<AccessibilityHostMsg_EventParams> pending_events_;
 
-  // Our representation of the browser tree.
-  BrowserTreeNode* browser_root_;
+  // The adapter that exposes Blink's accessibility tree to AXTreeSerializer.
+  BlinkAXTreeSource tree_source_;
 
-  // A map from IDs to nodes in the browser tree.
-  base::hash_map<int32, BrowserTreeNode*> browser_id_map_;
+  // The serializer that sends accessibility messages to the browser process.
+  ui::AXTreeSerializer<blink::WebAXObject> serializer_;
+
+  // Current location of every object, so we can detect when it moves.
+  base::hash_map<int, gfx::Rect> locations_;
 
   // The most recently observed scroll offset of the root document element.
   // TODO(dmazzoni): remove once https://bugs.webkit.org/show_bug.cgi?id=73460

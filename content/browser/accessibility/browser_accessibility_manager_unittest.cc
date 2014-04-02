@@ -267,8 +267,8 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
   params.push_back(AccessibilityHostMsg_EventParams());
   AccessibilityHostMsg_EventParams* msg = &params[0];
   msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  msg->nodes.push_back(tree2_root);
-  msg->nodes.push_back(tree2_child0);
+  msg->update.nodes.push_back(tree2_root);
+  msg->update.nodes.push_back(tree2_child0);
   msg->id = tree2_root.id;
   manager->OnAccessibilityEvents(params);
 
@@ -444,9 +444,9 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
   params.push_back(AccessibilityHostMsg_EventParams());
   AccessibilityHostMsg_EventParams* msg = &params[0];
   msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  msg->nodes.push_back(tree2_container);
-  msg->nodes.push_back(tree2_child0);
-  msg->nodes.push_back(tree2_grandchild0);
+  msg->update.nodes.push_back(tree2_container);
+  msg->update.nodes.push_back(tree2_child0);
+  msg->update.nodes.push_back(tree2_grandchild0);
   msg->id = tree2_container.id;
   manager->OnAccessibilityEvents(params);
 
@@ -551,10 +551,10 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
   params.push_back(AccessibilityHostMsg_EventParams());
   AccessibilityHostMsg_EventParams* msg = &params[0];
   msg->event_type = ui::AX_EVENT_CHILDREN_CHANGED;
-  msg->nodes.push_back(tree2_1);
-  msg->nodes.push_back(tree2_4);
-  msg->nodes.push_back(tree2_5);
-  msg->nodes.push_back(tree2_6);
+  msg->update.nodes.push_back(tree2_1);
+  msg->update.nodes.push_back(tree2_4);
+  msg->update.nodes.push_back(tree2_5);
+  msg->update.nodes.push_back(tree2_6);
   msg->id = tree2_1.id;
   manager->OnAccessibilityEvents(params);
 
