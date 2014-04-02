@@ -66,6 +66,7 @@ class OomPriorityManager : public content::NotificationObserver {
   friend class OomMemoryDetails;
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
   FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, IsReloadableUI);
+  FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, GetProcessHandles);
 
   struct TabStats {
     TabStats();
@@ -109,6 +110,12 @@ class OomPriorityManager : public content::NotificationObserver {
 
   // Called when the timer fires, sets oom_adjust_score for all renderers.
   void AdjustOomPriorities();
+
+  // Returns a list of unique process handles from |stats_list|. If multiple
+  // tabs use the same process, returns the first process handle. This implies
+  // that the processes are selected based on their "most important" tab.
+  static std::vector<base::ProcessHandle> GetProcessHandles(
+      const TabStatsList& stats_list);
 
   // Called by AdjustOomPriorities.
   void AdjustOomPrioritiesOnFileThread(TabStatsList stats_list);

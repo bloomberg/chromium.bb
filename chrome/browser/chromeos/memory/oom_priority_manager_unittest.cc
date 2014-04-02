@@ -142,4 +142,46 @@ TEST_F(OomPriorityManagerTest, IsReloadableUI) {
       GURL("chrome://settings/fakeSetting")));
 }
 
+TEST_F(OomPriorityManagerTest, GetProcessHandles) {
+  OomPriorityManager::TabStats stats;
+  std::vector<base::ProcessHandle> handles;
+
+  // Empty stats list gives empty handles list.
+  OomPriorityManager::TabStatsList empty_list;
+  handles = OomPriorityManager::GetProcessHandles(empty_list);
+  EXPECT_EQ(0u, handles.size());
+
+  // Two tabs in two different processes generates two handles out.
+  OomPriorityManager::TabStatsList two_list;
+  stats.renderer_handle = 100;
+  two_list.push_back(stats);
+  stats.renderer_handle = 101;
+  two_list.push_back(stats);
+  handles = OomPriorityManager::GetProcessHandles(two_list);
+  EXPECT_EQ(2u, handles.size());
+  EXPECT_EQ(100, handles[0]);
+  EXPECT_EQ(101, handles[1]);
+
+  // Zero handles are removed.
+  OomPriorityManager::TabStatsList zero_handle_list;
+  stats.renderer_handle = 0;
+  zero_handle_list.push_back(stats);
+  handles = OomPriorityManager::GetProcessHandles(zero_handle_list);
+  EXPECT_EQ(0u, handles.size());
+
+  // Two tabs in the same process generates one handle out. When a duplicate
+  // occurs the later instance is dropped.
+  OomPriorityManager::TabStatsList same_process_list;
+  stats.renderer_handle = 100;
+  same_process_list.push_back(stats);
+  stats.renderer_handle = 101;
+  same_process_list.push_back(stats);
+  stats.renderer_handle = 100;  // Duplicate.
+  same_process_list.push_back(stats);
+  handles = OomPriorityManager::GetProcessHandles(same_process_list);
+  EXPECT_EQ(2u, handles.size());
+  EXPECT_EQ(100, handles[0]);
+  EXPECT_EQ(101, handles[1]);
+}
+
 }  // namespace chromeos
