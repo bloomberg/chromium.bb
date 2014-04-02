@@ -396,14 +396,19 @@ void NavigatorImpl::DidNavigate(
   }
 
   if (PageTransitionIsMainFrame(params.transition)) {
-    // When overscroll navigation gesture is enabled, a screenshot of the page
-    // in its current state is taken so that it can be used during the
-    // nav-gesture. It is necessary to take the screenshot here, before calling
-    // RenderFrameHostManager::DidNavigateMainFrame, because that can change
-    // WebContents::GetRenderViewHost to return the new host, instead of the one
-    // that may have just been swapped out.
-    if (delegate_ && delegate_->CanOverscrollContent())
-      controller_->TakeScreenshot();
+    if (delegate_) {
+      // When overscroll navigation gesture is enabled, a screenshot of the page
+      // in its current state is taken so that it can be used during the
+      // nav-gesture. It is necessary to take the screenshot here, before
+      // calling RenderFrameHostManager::DidNavigateMainFrame, because that can
+      // change WebContents::GetRenderViewHost to return the new host, instead
+      // of the one that may have just been swapped out.
+      if (delegate_->CanOverscrollContent())
+        controller_->TakeScreenshot();
+
+      // Run tasks that must execute just before the commit.
+      delegate_->DidNavigateMainFramePreCommit(params);
+    }
 
     if (!use_site_per_process)
       frame_tree->root()->render_manager()->DidNavigateFrame(render_frame_host);

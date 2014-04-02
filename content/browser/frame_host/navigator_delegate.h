@@ -59,6 +59,11 @@ class CONTENT_EXPORT NavigatorDelegate {
       const GURL& url,
       PageTransition transition_type) {}
 
+  // Handles post-navigation tasks in navigation BEFORE the entry has been
+  // committed to the NavigationController.
+  virtual void DidNavigateMainFramePreCommit(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {}
+
   // Handles post-navigation tasks in navigation AFTER the entry has been
   // committed to the NavigationController. Note that the NavigationEntry is
   // not provided since it may be invalid/changed after being committed. The

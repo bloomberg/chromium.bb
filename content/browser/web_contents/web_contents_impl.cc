@@ -2237,6 +2237,21 @@ void WebContentsImpl::DidCommitProvisionalLoad(
                                        render_view_host));
 }
 
+void WebContentsImpl::DidNavigateMainFramePreCommit(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
+  // Ensure fullscreen mode is exited before committing the navigation to a
+  // different page.  The next page will not start out assuming it is in
+  // fullscreen mode.
+  if (params.was_within_same_page) {
+    // No document change?  Then, the renderer shall decide whether to exit
+    // fullscreen.
+    return;
+  }
+  if (IsFullscreenForCurrentTab())
+    GetRenderViewHost()->ExitFullscreen();
+  DCHECK(!IsFullscreenForCurrentTab());
+}
+
 void WebContentsImpl::DidNavigateMainFramePostCommit(
     const LoadCommittedDetails& details,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
@@ -3052,19 +3067,8 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
 }
 
 void WebContentsImpl::SwappedOut(RenderFrameHost* rfh) {
-  // TODO(creis): Handle subframes that go fullscreen.
-  if (rfh->GetRenderViewHost() == GetRenderViewHost()) {
-    // Exit fullscreen mode before the current RVH is swapped out.  For numerous
-    // cases, there is no guarantee the renderer would/could initiate an exit.
-    // Example: http://crbug.com/347232
-    if (IsFullscreenForCurrentTab()) {
-      rfh->GetRenderViewHost()->ExitFullscreen();
-      DCHECK(!IsFullscreenForCurrentTab());
-    }
-
-    if (delegate_)
-      delegate_->SwappedOut(this);
-  }
+  if (delegate_ && rfh->GetRenderViewHost() == GetRenderViewHost())
+    delegate_->SwappedOut(this);
 }
 
 void WebContentsImpl::RequestMove(const gfx::Rect& new_bounds) {

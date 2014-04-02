@@ -1299,6 +1299,58 @@ TEST_F(WebContentsImplTest, NavigationExitsFullscreen) {
   contents()->SetDelegate(NULL);
 }
 
+// Tests that fullscreen is exited throughout the object hierarchy when
+// instructing NavigationController to GoBack() or GoForward().
+TEST_F(WebContentsImplTest, HistoryNavigationExitsFullscreen) {
+  FakeFullscreenDelegate fake_delegate;
+  contents()->SetDelegate(&fake_delegate);
+  TestRenderViewHost* const orig_rvh = test_rvh();
+
+  // Navigate to a site.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(url, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(orig_rvh, 1, url, PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
+
+  // Now, navigate to another page on the same site.
+  const GURL url2("http://www.google.com/search?q=kittens");
+  controller().LoadURL(url2, Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  contents()->TestDidNavigate(orig_rvh, 2, url2, PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
+
+  // Sanity-check: Confirm we're not starting out in fullscreen mode.
+  EXPECT_FALSE(orig_rvh->IsFullscreen());
+  EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
+  EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
+
+  for (int i = 0; i < 2; ++i) {
+    // Toggle fullscreen mode on (as if initiated via IPC from renderer).
+    orig_rvh->OnMessageReceived(
+        ViewHostMsg_ToggleFullscreen(orig_rvh->GetRoutingID(), true));
+    EXPECT_TRUE(orig_rvh->IsFullscreen());
+    EXPECT_TRUE(contents()->IsFullscreenForCurrentTab());
+    EXPECT_TRUE(fake_delegate.IsFullscreenForTabOrPending(contents()));
+
+    // Navigate backward (or forward).
+    if (i == 0)
+      controller().GoBack();
+    else
+      controller().GoForward();
+    EXPECT_FALSE(contents()->cross_navigation_pending());
+    EXPECT_EQ(orig_rvh, contents()->GetRenderViewHost());
+    contents()->TestDidNavigate(
+        orig_rvh, i + 1, url, PAGE_TRANSITION_FORWARD_BACK);
+
+    // Confirm fullscreen has exited.
+    EXPECT_FALSE(orig_rvh->IsFullscreen());
+    EXPECT_FALSE(contents()->IsFullscreenForCurrentTab());
+    EXPECT_FALSE(fake_delegate.IsFullscreenForTabOrPending(contents()));
+  }
+
+  contents()->SetDelegate(NULL);
+}
+
 // Tests that fullscreen is exited throughout the object hierarchy on a renderer
 // crash.
 TEST_F(WebContentsImplTest, CrashExitsFullscreen) {

@@ -455,6 +455,8 @@ class CONTENT_EXPORT WebContentsImpl
       bool is_main_frame,
       const GURL& url,
       PageTransition transition_type) OVERRIDE;
+  virtual void DidNavigateMainFramePreCommit(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;
   virtual void DidNavigateMainFramePostCommit(
       const LoadCommittedDetails& details,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params) OVERRIDE;
