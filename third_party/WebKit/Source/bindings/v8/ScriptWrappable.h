@@ -146,6 +146,9 @@ public:
 protected:
     ~ScriptWrappable()
     {
+        // We must not get deleted as long as we contain a wrapper. If this happens, we screwed up ref
+        // counting somewhere. Crash here instead of crashing during a later gc cycle.
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(!containsWrapper());
         ASSERT(m_wrapperOrTypeInfo);  // Assert initialization via init() even if not subsequently wrapped.
         m_wrapperOrTypeInfo = 0;      // Break UAF attempts to wrap.
     }
