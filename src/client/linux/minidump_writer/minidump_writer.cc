@@ -374,6 +374,19 @@ void CPUFillFromUContext(MDRawContextARM* out, const ucontext* uc,
   my_memset(&out->float_save.extra, 0, sizeof(out->float_save.extra));
 }
 
+#elif defined(__aarch64__)
+typedef MDRawContextARM64 RawContextCPU;
+
+void CPUFillFromThreadInfo(MDRawContextARM64* out,
+                           const google_breakpad::ThreadInfo& info) {
+  // TODO(rmcilroy): Implement for arm64.
+}
+
+void CPUFillFromUContext(MDRawContextARM64* out, const ucontext* uc,
+                         const struct _libc_fpstate* fpregs) {
+  // TODO(rmcilroy): Implement for arm64.
+}
+
 #elif defined(__mips__)
 typedef MDRawContextMIPS RawContextCPU;
 
@@ -470,7 +483,7 @@ class MinidumpWriter {
       : fd_(minidump_fd),
         path_(minidump_path),
         ucontext_(context ? &context->context : NULL),
-#if !defined(__ARM_EABI__) && !defined(__mips__)
+#if !defined(__ARM_EABI__) && !defined(__mips__) && !defined(__aarch64__)
         float_state_(context ? &context->float_state : NULL),
 #else
         // TODO: fix this after fixing ExceptionHandler
@@ -1271,6 +1284,18 @@ class MinidumpWriter {
   uintptr_t GetInstructionPointer(const ThreadInfo& info) {
     return info.regs.uregs[15];
   }
+#elif defined(__aarch64__)
+  uintptr_t GetStackPointer() {
+    return ucontext_->uc_mcontext.sp;
+  }
+
+  uintptr_t GetInstructionPointer() {
+    return ucontext_->uc_mcontext.pc;
+  }
+
+  uintptr_t GetInstructionPointer(const ThreadInfo& info) {
+    return info.regs.pc;
+  }
 #elif defined(__mips__)
   uintptr_t GetStackPointer() {
     return ucontext_->uc_mcontext.gregs[MD_CONTEXT_MIPS_REG_SP];
@@ -1580,6 +1605,11 @@ class MinidumpWriter {
     }
 
     return true;
+  }
+#elif defined(__aarch64__)
+  bool WriteCPUInformation(MDRawSystemInfo* sys_info) {
+    // TODO(rmcilroy): Implement for arm64.
+    return false;
   }
 #else
 #  error "Unsupported CPU"

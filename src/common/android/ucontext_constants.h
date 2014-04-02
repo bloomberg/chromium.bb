@@ -45,6 +45,11 @@
 #define  MCONTEXT_GREGS_OFFSET     32
 #define  UCONTEXT_SIGMASK_OFFSET   104
 
+#elif defined(__aarch64__)
+
+#define  MCONTEXT_GREGS_OFFSET     56
+#define  UCONTEXT_SIGMASK_OFFSET   40
+
 #elif defined(__i386__)
 
 #define  MCONTEXT_GREGS_OFFSET     20

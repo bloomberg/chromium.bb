@@ -398,8 +398,8 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
   CrashContext context;
   memcpy(&context.siginfo, info, sizeof(siginfo_t));
   memcpy(&context.context, uc, sizeof(struct ucontext));
-#if !defined(__ARM_EABI__) && !defined(__mips__)
-  // FP state is not part of user ABI on ARM Linux.
+#if !defined(__ARM_EABI__) && !defined(__aarch64__) && !defined(__mips__)
+  // FP state is not part of user ABI on ARM or ARM64 Linux.
   // In case of MIPS Linux FP state is already part of struct ucontext
   // and 'float_state' is not a member of CrashContext.
   struct ucontext *uc_ptr = (struct ucontext*)uc;
@@ -608,7 +608,7 @@ bool ExceptionHandler::WriteMinidump() {
   }
 #endif
 
-#if !defined(__ARM_EABI__) && !defined(__mips__)
+#if !defined(__ARM_EABI__) && !defined(__aarch64__) && !defined(__mips__)
   // FPU state is not part of ARM EABI ucontext_t.
   memcpy(&context.float_state, context.context.uc_mcontext.fpregs,
          sizeof(context.float_state));
@@ -627,6 +627,9 @@ bool ExceptionHandler::WriteMinidump() {
 #elif defined(__arm__)
   context.siginfo.si_addr =
       reinterpret_cast<void*>(context.context.uc_mcontext.arm_pc);
+#elif defined(__aarch64__)
+  context.siginfo.si_addr =
+      reinterpret_cast<void*>(context.context.uc_mcontext.pc);
 #elif defined(__mips__)
   context.siginfo.si_addr =
       reinterpret_cast<void*>(context.context.uc_mcontext.pc);

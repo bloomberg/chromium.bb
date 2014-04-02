@@ -44,7 +44,7 @@
 extern "C" {
 #endif  // __cplusplus
 
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(__aarch64__)
 typedef unsigned long long elf_greg_t;
 #else
 typedef unsigned long  elf_greg_t;
@@ -52,6 +52,8 @@ typedef unsigned long  elf_greg_t;
 
 #ifdef __arm__
 #define ELF_NGREG (sizeof(struct user_regs) / sizeof(elf_greg_t))
+#elif defined(__aarch64__)
+#define ELF_NGREG (sizeof(struct user_pt_regs) / sizeof(elf_greg_t))
 #else
 #define ELF_NGREG (sizeof(struct user_regs_struct) / sizeof(elf_greg_t))
 #endif

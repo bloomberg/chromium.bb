@@ -190,10 +190,10 @@ class ExceptionHandler {
     siginfo_t siginfo;
     pid_t tid;  // the crashing thread.
     struct ucontext context;
-#if !defined(__ARM_EABI__) && !defined(__mips__)
-    // #ifdef this out because FP state is not part of user ABI for Linux ARM.
-    // In case of MIPS Linux FP state is already part of struct ucontext
-    // so 'float_state' is not required.
+#if !defined(__ARM_EABI__) && !defined(__aarch64__) && !defined(__mips__)
+    // #ifdef this out because FP state is not part of user ABI for Linux ARM
+    // or ARM64. In case of MIPS Linux FP state is already part of struct
+    // ucontext so 'float_state' is not required.
     struct _libc_fpstate float_state;
 #endif
   };
@@ -259,7 +259,7 @@ class ExceptionHandler {
   // We need to explicitly enable ptrace of parent processes on some
   // kernels, but we need to know the PID of the cloned process before we
   // can do this. We create a pipe which we can use to block the
-  // cloned process after creating it, until we have explicitly enabled 
+  // cloned process after creating it, until we have explicitly enabled
   // ptrace. This is used to store the file descriptors for the pipe
   int fdes[2];
 

@@ -140,6 +140,10 @@ breakpad_getcontext:
 
   .size breakpad_getcontext, . - breakpad_getcontext
 
+#elif defined(__aarch64__)
+
+ // TODO(rmcilroy): Implement for arm64.
+
 #elif defined(__mips__)
 
 #if _MIPS_SIM != _ABIO32

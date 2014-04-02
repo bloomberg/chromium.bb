@@ -62,6 +62,19 @@ typedef struct ucontext {
   // Other fields are not used by Google Breakpad. Don't define them.
 } ucontext_t;
 
+#elif defined(__aarch64__)
+
+#include <asm/sigcontext.h>
+typedef struct sigcontext mcontext_t;
+
+typedef struct ucontext {
+  unsigned long uc_flags;
+  struct ucontext *uc_link;
+  stack_t uc_stack;
+  sigset_t uc_sigmask;
+  mcontext_t uc_mcontext;
+} ucontext_t;
+
 #elif defined(__i386__)
 
 /* 80-bit floating-point register */

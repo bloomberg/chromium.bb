@@ -75,6 +75,11 @@ struct user_vfpregs {
   unsigned long       fpscr;
 };
 
+#elif defined(__aarch64__)
+
+// aarch64 does not have user_regs definitions in <asm/user.h>, instead
+// use the definitions in <asm/ptrace.h>, which we don't need to redefine here.
+
 #elif defined(__i386__)
 
 #define _I386_USER_H 1  // Prevent <asm/user.h> conflicts
