@@ -141,7 +141,7 @@ class TabTarget : public TargetBase {
     if (!web_contents) {
       // The tab has been pushed out of memory, pull it back.
       TabAndroid* tab = model->GetTabAt(index);
-      tab->RestoreIfNeeded();
+      tab->LoadIfNeeded();
       web_contents = model->GetWebContentsAt(index);
       if (!web_contents)
         return NULL;

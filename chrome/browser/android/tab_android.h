@@ -80,8 +80,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Return the tab url.
   GURL GetURL() const;
 
-  // Restore the tab if it was unloaded from memory.
-  bool RestoreIfNeeded();
+  // Load the tab if it was unloaded from memory.
+  bool LoadIfNeeded();
 
   // Helper methods to make it easier to access objects from the associated
   // WebContents.  Can return NULL.

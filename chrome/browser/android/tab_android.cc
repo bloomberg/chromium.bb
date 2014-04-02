@@ -118,12 +118,12 @@ GURL TabAndroid::GetURL() const {
       Java_Tab_getUrl(env, obj.obj())));
 }
 
-bool TabAndroid::RestoreIfNeeded() {
+bool TabAndroid::LoadIfNeeded() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
   if (obj.is_null())
     return false;
-  return Java_Tab_restoreIfNeeded(env, obj.obj());
+  return Java_Tab_loadIfNeeded(env, obj.obj());
 }
 
 content::ContentViewCore* TabAndroid::GetContentViewCore() const {

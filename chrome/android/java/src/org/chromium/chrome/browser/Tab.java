@@ -879,11 +879,11 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * Restores the tab if it is frozen or crashed.
-     * @return true iff tab restore was triggered.
+     * Loads the tab if it's not loaded (e.g. because it was killed in background).
+     * @return true iff tab load was triggered
      */
     @CalledByNative
-    public boolean restoreIfNeeded() {
+    public boolean loadIfNeeded() {
         return false;
     }
 
