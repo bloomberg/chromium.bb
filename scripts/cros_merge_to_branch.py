@@ -213,7 +213,11 @@ def main(argv):
     parser.error('Not enough arguments specified')
 
   changes = args[0:-1]
-  patches = gerrit.GetGerritPatchInfo(changes)
+  try:
+    patches = gerrit.GetGerritPatchInfo(changes)
+  except ValueError as e:
+    logging.error('Invalid patch: %s', e)
+    cros_build_lib.Die('Did you swap the branch/gerrit number?')
   branch = args[-1]
 
   # Suppress all cros_build_lib info output unless we're running debug.
