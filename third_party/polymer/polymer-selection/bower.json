@@ -2,7 +2,7 @@
   "name": "polymer-selection",
   "private": true,
   "dependencies": {
-    "polymer": "Polymer/polymer#0.1.4"
+    "polymer": "Polymer/polymer#0.2.2"
   },
-  "version": "0.1.4"
+  "version": "0.2.2"
 }

@@ -38,6 +38,7 @@ license that can be found in the LICENSE file.
  *     </polymer-selector>
  *
  * @class polymer-selector
+ * @status stable
  */
 /**
  * Fired when an item's selection state is changed. This event is fired both
@@ -61,7 +62,7 @@ license that can be found in the LICENSE file.
 <link rel="import" href="../polymer-selection/polymer-selection.html">
 
 <polymer-element name="polymer-selector"
-    attributes="selected multi valueattr selectedClass selectedProperty selectedItem selectedModel selectedIndex notap target itemsSelector activateEvent">
+    attributes="selected multi valueattr selectedClass selectedProperty selectedAttribute selectedItem selectedModel selectedIndex notap target itemsSelector activateEvent">
   <template>
     <polymer-selection id="selection" multi="{{multi}}" on-polymer-select="{{selectionSelect}}"></polymer-selection>
     <content id="items" select="*"></content>
@@ -130,9 +131,18 @@ license that can be found in the LICENSE file.
        *
        * @attribute selectedProperty
        * @type string
+       * @default ''
+       */
+      selectedProperty: '',
+      /**
+       * Specifies the property to be used to set on the selected element
+       * to indicate its active state.
+       *
+       * @attribute selectedProperty
+       * @type string
        * @default 'active'
        */
-      selectedProperty: 'active',
+      selectedAttribute: 'active',
       /**
        * Returns the currently selected element. In multi-selection this returns
        * an array of selected elements.
@@ -307,6 +317,13 @@ license that can be found in the LICENSE file.
         }
         if (this.selectedProperty) {
           item[this.selectedProperty] = isSelected;
+        }
+        if (this.selectedAttribute && item.setAttribute) {
+          if (isSelected) {
+            item.setAttribute(this.selectedAttribute, '');
+          } else {
+            item.removeAttribute(this.selectedAttribute);
+          }
         }
       },
       // event fired from host
