@@ -119,6 +119,9 @@ ServiceWorkerContainer::ServiceWorkerContainer(ExecutionContext* executionContex
 {
     ScriptWrappable::init(this);
 
+    if (!executionContext)
+        return;
+
     if (ServiceWorkerContainerClient* client = ServiceWorkerContainerClient::from(executionContext)) {
         m_provider = client->provider();
         if (m_provider)

@@ -23,13 +23,13 @@ public:
     static NavigatorServiceWorker* toNavigatorServiceWorker(Navigator&);
     static const char* supplementName();
 
-    static ServiceWorkerContainer* serviceWorker(ExecutionContext*, Navigator&);
+    static ServiceWorkerContainer* serviceWorker(Navigator&);
 
     void trace(Visitor*) { }
 
 private:
     explicit NavigatorServiceWorker(Navigator&);
-    ServiceWorkerContainer* serviceWorker(ExecutionContext*);
+    ServiceWorkerContainer* serviceWorker();
 
     // DOMWindowProperty override.
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;

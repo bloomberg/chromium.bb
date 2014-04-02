@@ -5,6 +5,8 @@
 #include "config.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 
+#include "core/frame/DOMWindow.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
 
@@ -39,15 +41,17 @@ const char* NavigatorServiceWorker::supplementName()
     return "NavigatorServiceWorker";
 }
 
-ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(ExecutionContext* executionContext, Navigator& navigator)
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(Navigator& navigator)
 {
-    return NavigatorServiceWorker::from(navigator).serviceWorker(executionContext);
+    return NavigatorServiceWorker::from(navigator).serviceWorker();
 }
 
-ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(ExecutionContext* executionContext)
+ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker()
 {
-    if (!m_serviceWorker && frame())
-        m_serviceWorker = ServiceWorkerContainer::create(executionContext);
+    if (!m_serviceWorker && frame()) {
+        ASSERT(frame()->domWindow());
+        m_serviceWorker = ServiceWorkerContainer::create(frame()->domWindow()->executionContext());
+    }
     return m_serviceWorker.get();
 }
 

@@ -5,7 +5,7 @@
 #ifndef ServiceWorkerContainerClient_h
 #define ServiceWorkerContainerClient_h
 
-#include "core/page/Page.h"
+#include "core/dom/DocumentSupplementable.h"
 #include "core/workers/WorkerClients.h"
 #include "wtf/Forward.h"
 
@@ -18,9 +18,9 @@ namespace WebCore {
 class ExecutionContext;
 
 // This mainly exists to provide access to WebServiceWorkerProvider.
-// Owned by Page (or WorkerClients).
+// Owned by Document (or WorkerClients).
 class ServiceWorkerContainerClient FINAL :
-    public Supplement<Page>,
+    public DocumentSupplement,
     public Supplement<WorkerClients> {
     WTF_MAKE_NONCOPYABLE(ServiceWorkerContainerClient);
 public:
