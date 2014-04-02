@@ -94,6 +94,7 @@ class RecordInfo {
   bool IsStackAllocated();
   bool IsNonNewable();
   bool IsOnlyPlacementNewable();
+  bool IsTreeShared();
 
   bool RequiresTraceMethod();
   bool NeedsFinalization();

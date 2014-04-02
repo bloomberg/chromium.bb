@@ -102,6 +102,10 @@ class Config {
            IsGCMixinBase(name);
   }
 
+  static bool IsTreeSharedBase(const std::string& name) {
+    return name == "TreeShared";
+  }
+
   static bool IsAnnotated(clang::Decl* decl, const std::string& anno) {
     clang::AnnotateAttr* attr = decl->getAttr<clang::AnnotateAttr>();
     return attr && (attr->getAnnotation() == anno);

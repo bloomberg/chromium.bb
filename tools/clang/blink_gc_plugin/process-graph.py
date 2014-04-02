@@ -200,7 +200,7 @@ def copy_super_edges(edge):
   for e in super_node.edges.itervalues():
     if e.keeps_alive() and not e.is_subclass():
       new_edge = Edge(
-        src = super_node.name,
+        src = sub_node.name,
         dst = e.dst,
         lbl = '%s <: %s' % (super_node.name, e.lbl),
         ptr = e.ptr,

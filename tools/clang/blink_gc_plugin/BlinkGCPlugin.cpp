@@ -482,7 +482,9 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
       return;
 
     if (Parent()->IsOwnPtr() ||
-        (stack_allocated_host_ && Parent()->IsRawPtr())) {
+        (stack_allocated_host_ && Parent()->IsRawPtr() &&
+         // TODO: Remove this exception once the node hierarchy is moved.
+         !edge->value()->IsTreeShared())) {
       invalid_fields_.push_back(std::make_pair(current_, Parent()));
       return;
     }
@@ -685,9 +687,12 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     if (info->IsGCDerived()) {
       CheckDispatch(info);
 
-      CheckGCRootsVisitor visitor;
-      if (visitor.ContainsGCRoots(info))
-        ReportClassContainsGCRoots(info, &visitor.gc_roots());
+      // TODO: Remove this exception once TreeShared is properly traced.
+      if (!info->IsTreeShared()) {
+        CheckGCRootsVisitor visitor;
+        if (visitor.ContainsGCRoots(info))
+          ReportClassContainsGCRoots(info, &visitor.gc_roots());
+      }
 
       if (info->NeedsFinalization())
         CheckFinalization(info);
