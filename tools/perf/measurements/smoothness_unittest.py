@@ -12,6 +12,8 @@ from telemetry.unittest import options_for_unittests
 class FakePlatform(object):
   def IsRawDisplayFrameRateSupported(self):
     return False
+  def CanMonitorPowerAsync(self):
+    return False
 
 
 class FakeBrowser(object):
