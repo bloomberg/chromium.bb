@@ -235,8 +235,11 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 
 int ToolbarModelImpl::GetIcon() const {
   if (WouldPerformSearchTermReplacement(false)) {
+    // The secured version of the search icon is necessary if neither the search
+    // button nor origin chip are present to indicate the security state.
     return (chrome::GetDisplaySearchButtonConditions() ==
-        chrome::DISPLAY_SEARCH_BUTTON_NEVER) ?
+        chrome::DISPLAY_SEARCH_BUTTON_NEVER) &&
+        !chrome::ShouldDisplayOriginChipV2() ?
             IDR_OMNIBOX_SEARCH_SECURED : IDR_OMNIBOX_SEARCH;
   }
 
