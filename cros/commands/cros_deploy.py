@@ -66,8 +66,9 @@ For more information of cros build usage:
     parser.add_argument(
         'device', help='IP[:port] address of the target device.')
     parser.add_argument(
-        'packages', help='Packages to install. You can specify the package '
-        'name or the path to the binary package.', nargs='+')
+        'packages', help='Packages to install. You can specify '
+        '[category/]package[:slot] or the path to the binary package.',
+        nargs='+')
     parser.add_argument(
         '--board', default=None, help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '
@@ -98,50 +99,32 @@ For more information of cros build usage:
   def GetLatestPackage(self, board, pkg):
     """Returns the path to the latest |pkg| for |board|."""
     sysroot = cros_build_lib.GetSysroot(board=board)
-    cpv = portage_utilities.SplitCPV(pkg, strict=False)
+    matches = portage_utilities.FindPackageNameMatches(
+        pkg, board=board)
+    if not matches:
+      raise ValueError('Package %s is not installed!' % pkg)
 
-    category = cpv.category
-    package_name = cpv.package
-    version = cpv.version
-    if not category:
-      # If category is not given, find possible matches across all categories.
-      matches = portage_utilities.FindPackageNameMatches(
-          package_name, sysroot=sysroot)
-      if not matches:
-        raise ValueError('Package %s is not installed!' % pkg)
+    idx = 0
+    if len(matches) > 1:
+      # Ask user to pick among multiple matches.
+      idx = cros_build_lib.GetChoice(
+          'Multiple matches found for %s: ' % pkg,
+          [os.path.join(x.category, x.pv) for x in matches])
 
-      idx = 0
-      if len(matches) > 1:
-        # Ask user to pick among multiple matches.
-        idx = cros_build_lib.GetChoice(
-            'Multiple matches found for %s: ' % pkg,
-            [os.path.join(x.category, x.package) for x in matches])
-
-      category = matches[idx].category
-
-    if not version:
-      # If version is not given, pick the best visible binary package.
-      try:
-        bv_cpv = portage_utilities.BestVisible(
-            os.path.join(category, package_name),
-            board=board, pkg_type='binary')
-        version = bv_cpv.version
-      except cros_build_lib.RunCommandError:
-        raise ValueError('Package %s is not installed!' % pkg)
-
+    cpv = matches[idx]
     packages_dir = None
     if self.strip:
       try:
         cros_build_lib.RunCommand(
             ['strip_package', '--board', board,
-             os.path.join(category, '%s-%s' % (package_name, version))])
+             os.path.join(cpv.category, '%s' % (cpv.pv))])
         packages_dir = self.STRIPPED_PACKAGES_DIR
       except cros_build_lib.RunCommandError:
         logging.error('Cannot strip package %s', pkg)
         raise
 
     return portage_utilities.GetBinaryPackagePath(
-        category, package_name, version, sysroot=sysroot,
+        cpv.category, cpv.package, cpv.version, sysroot=sysroot,
         packages_dir=packages_dir)
 
   def _Emerge(self, device, board, pkg, root, extra_args=None):

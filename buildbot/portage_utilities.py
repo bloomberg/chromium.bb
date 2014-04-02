@@ -933,20 +933,27 @@ def IsPackageInstalled(package, sysroot='/'):
   return False
 
 
-def FindPackageNameMatches(package, sysroot='/'):
-  """Finds a list of installed packages matching |package|.
+def FindPackageNameMatches(pkg_str, board=None):
+  """Finds a list of installed packages matching |pkg_str|.
 
   Args:
-    package: The package name (e.g. $PN).
-    sysroot: The root being inspected.
+    pkg_str: The package name with optional category, version, and slot.
+    board: The board to insepct.
 
   Returns:
-    A list of CPV objects where P matches |package|.
+    A list of matched CPV objects.
   """
+  cmd = ['equery']
+  if board:
+    cmd = ['equery-%s' % board]
+
+  cmd += ['list', pkg_str]
+  result = cros_build_lib.RunCommand(
+      cmd, capture_output=True, error_code_ok=True)
+
   matches = []
-  for cp, v in ListInstalledPackages(sysroot):
-    if cp.split(os.path.sep)[-1] == package:
-      matches.append(SplitCPV('%s-%s' % (cp, v)))
+  if result.returncode == 0:
+    matches = [SplitCPV(x) for x in result.output.splitlines()]
 
   return matches
 
