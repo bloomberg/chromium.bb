@@ -6,8 +6,10 @@
 #define ASH_TEST_DISPLAY_MANAGER_TEST_API_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "ui/display/display_constants.h"
 
 namespace ash {
 namespace internal {
@@ -33,6 +35,11 @@ class DisplayManagerTestApi {
 
   // Don't update the display when the root window's size was changed.
   void DisableChangeDisplayUponHostResize();
+
+  // Sets the available color profiles for |display_id|.
+  void SetAvailableColorProfiles(
+      int64 display_id,
+      const std::vector<ui::ColorCalibrationProfile>& profiles);
 
  private:
   internal::DisplayManager* display_manager_;  // not owned

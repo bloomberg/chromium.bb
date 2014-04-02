@@ -514,7 +514,9 @@ void DisplayManager::SetColorCalibrationProfile(
 
   if (delegate_)
     delegate_->PreDisplayConfigurationChange(false);
-  if (Shell::GetInstance()->output_configurator()->SetColorCalibrationProfile(
+  // Just sets color profile if it's not running on ChromeOS (like tests).
+  if (!base::SysInfo::IsRunningOnChromeOS() ||
+      Shell::GetInstance()->output_configurator()->SetColorCalibrationProfile(
           display_id, profile)) {
     display_info_[display_id].SetColorProfile(profile);
     UMA_HISTOGRAM_ENUMERATION(

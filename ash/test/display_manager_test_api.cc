@@ -92,5 +92,12 @@ void DisplayManagerTestApi::DisableChangeDisplayUponHostResize() {
   display_manager_->set_change_display_upon_host_resize(false);
 }
 
+void DisplayManagerTestApi::SetAvailableColorProfiles(
+    int64 display_id,
+    const std::vector<ui::ColorCalibrationProfile>& profiles) {
+  display_manager_->display_info_[display_id].set_available_color_profiles(
+      profiles);
+}
+
 }  // namespace test
 }  // namespace ash

@@ -11,6 +11,7 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -126,6 +127,16 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     pref_data->Set(name, insets_value);
   }
 
+  void StoreColorProfile(int64 id, const std::string& profile) {
+    DictionaryPrefUpdate update(&local_state_, prefs::kDisplayProperties);
+    const std::string name = base::Int64ToString(id);
+
+    base::DictionaryValue* pref_data = update.Get();
+    base::DictionaryValue* property = new base::DictionaryValue();
+    property->SetString("color_profile_name", profile);
+    pref_data->Set(name, property);
+  }
+
   std::string GetRegisteredDisplayLayoutStr(int64 id1, int64 id2) {
     ash::DisplayIdPair pair;
     pair.first = id1;
@@ -189,6 +200,16 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
   int64 dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
+  std::vector<ui::ColorCalibrationProfile> profiles;
+  profiles.push_back(ui::COLOR_PROFILE_STANDARD);
+  profiles.push_back(ui::COLOR_PROFILE_DYNAMIC);
+  profiles.push_back(ui::COLOR_PROFILE_MOVIE);
+  profiles.push_back(ui::COLOR_PROFILE_READING);
+  ash::test::DisplayManagerTestApi test_api(display_manager);
+  // Allows only |id1|.
+  test_api.SetAvailableColorProfiles(id1, profiles);
+  display_manager->SetColorCalibrationProfile(id1, ui::COLOR_PROFILE_DYNAMIC);
+  display_manager->SetColorCalibrationProfile(id2, ui::COLOR_PROFILE_DYNAMIC);
 
   LoggedInAsUser();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
@@ -246,6 +267,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_EQ(12, bottom);
   EXPECT_EQ(13, right);
 
+  std::string color_profile;
+  EXPECT_TRUE(property->GetString("color_profile_name", &color_profile));
+  EXPECT_EQ("dynamic", color_profile);
+
   EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id2), &property));
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
@@ -256,6 +281,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("insets_left", &left));
   EXPECT_FALSE(property->GetInteger("insets_bottom", &bottom));
   EXPECT_FALSE(property->GetInteger("insets_right", &right));
+
+  // |id2| doesn't have the color_profile because it doesn't have 'dynamic' in
+  // its available list.
+  EXPECT_FALSE(property->GetString("color_profile_name", &color_profile));
 
   // Resolution is saved only when the resolution is set
   // by DisplayManager::SetDisplayResolution
@@ -457,6 +486,36 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
   EXPECT_EQ(layout.position, stored_layout.position);
   EXPECT_EQ(layout.offset, stored_layout.offset);
   EXPECT_EQ(id1, stored_layout.primary_id);
+}
+
+TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
+  ash::internal::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+
+  int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
+
+  StoreColorProfile(id1, "dynamic");
+
+  LoggedInAsUser();
+  LoadDisplayPreferences(false);
+
+  // id1's available color profiles list is empty, means somehow the color
+  // profile suport is temporary in trouble.
+  EXPECT_NE(ui::COLOR_PROFILE_DYNAMIC,
+            display_manager->GetDisplayInfo(id1).color_profile());
+
+  // Once the profile is supported, the color profile should be restored.
+  std::vector<ui::ColorCalibrationProfile> profiles;
+  profiles.push_back(ui::COLOR_PROFILE_STANDARD);
+  profiles.push_back(ui::COLOR_PROFILE_DYNAMIC);
+  profiles.push_back(ui::COLOR_PROFILE_MOVIE);
+  profiles.push_back(ui::COLOR_PROFILE_READING);
+  ash::test::DisplayManagerTestApi test_api(display_manager);
+  test_api.SetAvailableColorProfiles(id1, profiles);
+
+  LoadDisplayPreferences(false);
+  EXPECT_EQ(ui::COLOR_PROFILE_DYNAMIC,
+            display_manager->GetDisplayInfo(id1).color_profile());
 }
 
 TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
