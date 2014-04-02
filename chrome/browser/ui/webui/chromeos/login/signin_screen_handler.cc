@@ -108,7 +108,7 @@ const char kSourceAccountPicker[] = "account-picker";
 // The Task posted to PostTaskAndReply in StartClearingDnsCache on the IO
 // thread.
 void ClearDnsCache(IOThread* io_thread) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (browser_shutdown::IsTryingToQuit())
     return;
 
@@ -963,7 +963,7 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
 }
 
 void SigninScreenHandler::OnCookiesCleared(base::Closure on_clear_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cookies_cleared_ = true;
   on_clear_callback.Run();
 }
@@ -1007,7 +1007,7 @@ void SigninScreenHandler::Observe(int type,
 }
 
 void SigninScreenHandler::OnDnsCleared() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   dns_clear_task_running_ = false;
   dns_cleared_ = true;
   ShowSigninScreenIfReady();

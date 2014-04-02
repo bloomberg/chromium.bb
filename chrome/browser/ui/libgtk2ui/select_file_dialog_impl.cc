@@ -35,7 +35,7 @@ base::FilePath* SelectFileDialogImpl::last_opened_path_ = NULL;
 ui::SelectFileDialog* SelectFileDialogImpl::Create(
     ui::SelectFileDialog::Listener* listener,
     ui::SelectFilePolicy* policy) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (use_kde_ == UNKNOWN) {
     // Start out assumimg we are not going to use KDE.
     use_kde_ = NO_KDE;

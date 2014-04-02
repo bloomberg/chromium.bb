@@ -183,17 +183,17 @@ MemoryInternalsProxy::MemoryInternalsProxy()
           base::Bind(&MemoryInternalsProxy::OnRendererAvailable, this))) {}
 
 void MemoryInternalsProxy::Attach(MemoryInternalsHandler* handler) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   handler_ = handler;
 }
 
 void MemoryInternalsProxy::Detach() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   handler_ = NULL;
 }
 
 void MemoryInternalsProxy::StartFetch(const base::ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Clear previous information before fetching new information.
   information_->Clear();
@@ -337,7 +337,7 @@ void MemoryInternalsProxy::FinishCollection() {
 
 void MemoryInternalsProxy::CallJavaScriptFunctionOnUIThread(
     const std::string& function, const base::Value& args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<const base::Value*> args_vector(1, &args);
   base::string16 update =

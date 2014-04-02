@@ -45,7 +45,7 @@ int JavascriptAppModalDialogAndroid::GetAppModalDialogButtons() const {
 }
 
 void JavascriptAppModalDialogAndroid::ShowAppModalDialog() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = AttachCurrentThread();
   // Keep a strong ref to the parent window while we make the call to java to

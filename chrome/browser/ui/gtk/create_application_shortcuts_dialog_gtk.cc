@@ -75,7 +75,7 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
     favicon_pixbuf_(NULL),
     create_dialog_(NULL),
     error_dialog_(NULL) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Will be balanced by Release later.
   AddRef();
@@ -194,7 +194,7 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
 }
 
 CreateApplicationShortcutsDialogGtk::~CreateApplicationShortcutsDialogGtk() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   gtk_widget_destroy(create_dialog_);
 
@@ -206,7 +206,7 @@ CreateApplicationShortcutsDialogGtk::~CreateApplicationShortcutsDialogGtk() {
 
 void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
     GtkWidget* widget, int response) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (response == GTK_RESPONSE_ACCEPT) {
     ShellIntegration::ShortcutLocations creation_locations;
@@ -236,14 +236,14 @@ void CreateApplicationShortcutsDialogGtk::OnErrorDialogResponse(
 void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   ShellIntegrationLinux::CreateDesktopShortcut(shortcut_info,
                                                creation_locations);
   Release();
 }
 
 void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Hide the create dialog so that the user can no longer interact with it.
   gtk_widget_hide(create_dialog_);
@@ -355,7 +355,7 @@ void CreateChromeApplicationShortcutsDialogGtk::OnShortcutInfoLoaded(
 void CreateChromeApplicationShortcutsDialogGtk::CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   if (web_app::CreateShortcutsOnFileThread(
           shortcut_info, creation_locations,

@@ -39,7 +39,7 @@ SyncInternalsMessageHandler::~SyncInternalsMessageHandler() {
 }
 
 void SyncInternalsMessageHandler::RegisterMessages() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   web_ui()->RegisterMessageCallback(
       "registerForEvents",

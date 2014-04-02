@@ -243,7 +243,7 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
 
 void VersionUpdaterWin::GotInstalledVersion(const Version& version) {
   // This must be called on the UI thread so that callback_ can be called.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Make sure that the latest version is running and if not,
   // notify the user by setting the status to NEARLY_UPDATED.
@@ -287,7 +287,7 @@ BOOL CALLBACK WindowEnumeration(HWND window, LPARAM param) {
 
 HWND VersionUpdaterWin::GetElevationParent() {
   // Look for a visible window belonging to the UI thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   HWND window = NULL;
   EnumThreadWindows(GetCurrentThreadId(),
                     WindowEnumeration,

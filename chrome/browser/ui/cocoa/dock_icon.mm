@@ -218,7 +218,7 @@ const int64 kUpdateFrequencyMs = 200;
 }
 
 - (void)updateIcon {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static base::TimeDelta updateFrequency =
       base::TimeDelta::FromMilliseconds(kUpdateFrequencyMs);
 
@@ -236,7 +236,7 @@ const int64 kUpdateFrequencyMs = 200;
 }
 
 - (void)setDownloads:(int)downloads {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
   DockTileView* dockTileView = (DockTileView*)([dockTile contentView]);
 
@@ -247,7 +247,7 @@ const int64 kUpdateFrequencyMs = 200;
 }
 
 - (void)setIndeterminate:(BOOL)indeterminate {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
   DockTileView* dockTileView = (DockTileView*)([dockTile contentView]);
 
@@ -258,7 +258,7 @@ const int64 kUpdateFrequencyMs = 200;
 }
 
 - (void)setProgress:(float)progress {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   NSDockTile* dockTile = [[NSApplication sharedApplication] dockTile];
   DockTileView* dockTileView = (DockTileView*)([dockTile contentView]);
 

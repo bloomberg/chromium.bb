@@ -122,7 +122,7 @@ class NativeWebContentsModalDialogManagerGtk
 void NativeWebContentsModalDialogManagerGtk::OnHierarchyChanged(
     GtkWidget* sender,
     GtkWidget* previous_toplevel) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(sender)))
     return;
@@ -132,7 +132,7 @@ void NativeWebContentsModalDialogManagerGtk::OnHierarchyChanged(
 
 void NativeWebContentsModalDialogManagerGtk::OnDestroy(
     GtkWidget* sender) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (shown_widget_ == sender) {
     // The containing view may already be destroyed on tab shutdown.

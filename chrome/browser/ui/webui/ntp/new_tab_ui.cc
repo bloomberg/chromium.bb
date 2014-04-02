@@ -355,7 +355,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::map<std::string, std::pair<std::string, int> >::iterator it =
     resource_map_.find(path);

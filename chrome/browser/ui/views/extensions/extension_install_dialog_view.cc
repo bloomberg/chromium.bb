@@ -386,7 +386,7 @@ void ShowExtensionInstallDialogImpl(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CreateBrowserModalDialogViews(
       new ExtensionInstallDialogView(show_params.navigator, delegate, prompt),
       show_params.parent_window)->Show();

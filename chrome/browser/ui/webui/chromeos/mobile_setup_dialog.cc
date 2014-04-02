@@ -66,13 +66,13 @@ class MobileSetupDialogDelegate : public WebDialogDelegate {
 
 // static
 void MobileSetupDialog::Show(const std::string& service_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   MobileSetupDialogDelegate::GetInstance()->ShowDialog(service_path);
 }
 
 // static
 MobileSetupDialogDelegate* MobileSetupDialogDelegate::GetInstance() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return Singleton<MobileSetupDialogDelegate>::get();
 }
 

@@ -45,7 +45,7 @@ namespace {
 
 // Show the proxy config URL in the given tab.
 void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   scoped_ptr<base::Environment> env(base::Environment::Create());
   const char* name = base::nix::GetDesktopEnvironmentName(env.get());
   if (name)
@@ -62,7 +62,7 @@ void ShowLinuxProxyConfigUrl(int render_process_id, int render_view_id) {
 
 // Start the given proxy configuration utility.
 bool StartProxyConfigUtil(const char* command[]) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // base::LaunchProcess() returns true ("success") if the fork()
   // succeeds, but not necessarily the exec(). We'd like to be able to
   // use StartProxyConfigUtil() to search possible options and stop on
@@ -105,7 +105,7 @@ bool StartProxyConfigUtil(const char* command[]) {
 // failure to do so, show the Linux proxy config URL in a new tab instead.
 void DetectAndStartProxyConfigUtil(int render_process_id,
                                    int render_view_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   bool launched = false;

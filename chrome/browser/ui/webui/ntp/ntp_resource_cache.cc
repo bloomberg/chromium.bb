@@ -228,7 +228,7 @@ NTPResourceCache::WindowType NTPResourceCache::GetWindowType(
 }
 
 base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (win_type == GUEST) {
     if (!new_tab_guest_html_.get())
       CreateNewTabGuestHTML();
@@ -248,7 +248,7 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
 }
 
 base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(WindowType win_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (win_type == GUEST) {
     if (!new_tab_guest_css_.get())
       CreateNewTabGuestCSS();

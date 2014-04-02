@@ -783,7 +783,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
                                     CanOfferFor can_offer_for,
                                     const std::string& email,
                                     std::string* error_message) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     VLOG(1) << "OneClickSigninHelper::CanOffer";
 
   if (error_message)
@@ -1058,7 +1058,7 @@ void OneClickSigninHelper::ShowInfoBarUIThread(
     const GURL& continue_url,
     int child_id,
     int route_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents = tab_util::GetWebContentsByID(child_id,
                                                                     route_id);

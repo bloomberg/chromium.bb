@@ -299,7 +299,7 @@ class ExtensionLoadedNotificationObserver
 // Override -[BaseBubbleController showWindow:] to tweak bubble location and
 // set up UI elements.
 - (void)showWindow:(id)sender {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Load nib and calculate height based on messages to be shown.
   NSWindow* window = [self initializeWindow];

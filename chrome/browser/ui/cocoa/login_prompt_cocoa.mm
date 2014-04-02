@@ -46,7 +46,7 @@ class LoginHandlerMac : public LoginHandler,
   virtual void OnAutofillDataAvailable(
       const base::string16& username,
       const base::string16& password) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     [sheet_controller_ autofillLogin:base::SysUTF16ToNSString(username)
                             password:base::SysUTF16ToNSString(password)];
@@ -57,7 +57,7 @@ class LoginHandlerMac : public LoginHandler,
   virtual void BuildViewForPasswordManager(
       PasswordManager* manager,
       const base::string16& explanation) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     sheet_controller_.reset(
         [[LoginHandlerSheet alloc] initWithLoginHandler:this]);
@@ -92,7 +92,7 @@ class LoginHandlerMac : public LoginHandler,
   // Overridden from ConstrainedWindowMacDelegate:
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     SetModel(NULL);
     ReleaseSoon();
 
@@ -102,12 +102,12 @@ class LoginHandlerMac : public LoginHandler,
 
   void OnLoginPressed(const base::string16& username,
                       const base::string16& password) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     SetAuth(username, password);
   }
 
   void OnCancelPressed() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     CancelAuth();
   }
 

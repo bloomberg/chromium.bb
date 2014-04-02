@@ -397,7 +397,7 @@ void ShowSSLClientCertificateSelector(
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   (new SSLClientCertificateSelector(
       contents, network_session, cert_request_info, callback))->Show();
 }

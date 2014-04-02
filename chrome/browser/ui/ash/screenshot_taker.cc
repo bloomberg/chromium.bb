@@ -68,7 +68,7 @@ const char kImageClipboardFormatPrefix[] = "<img src='data:image/png;base64,";
 const char kImageClipboardFormatSuffix[] = "'>";
 
 void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::string encoded;
   base::Base64Encode(png_data->data(), &encoded);
@@ -445,7 +445,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
                      base::FilePath());
     return;
   }
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::FilePath screenshot_directory;
   if (!screenshot_directory_for_test_.empty()) {
@@ -510,7 +510,7 @@ Notification* ScreenshotTaker::CreateNotification(
 void ScreenshotTaker::ShowNotification(
     ScreenshotTakerObserver::Result screenshot_result,
     const base::FilePath& screenshot_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(OS_CHROMEOS)
   // Do not show a notification that a screenshot was taken while no user is
   // logged in, since it is confusing for the user to get a message about it

@@ -238,7 +238,7 @@ bool SelectFileDialogImplKDE::HasMultipleFileTypeChoicesImpl() {
 }
 
 std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::string filter_string;
   // We need a filter set because the same mime type can appear multiple times.
   std::set<std::string> filter_set;
@@ -265,7 +265,7 @@ std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
 }
 
 void SelectFileDialogImplKDE::CallKDialogOutput(const KDialogParams& params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   CommandLine::StringVector cmd_vector;
   cmd_vector.push_back(kKdialogBinary);
   CommandLine command_line(cmd_vector);
@@ -441,19 +441,19 @@ void SelectFileDialogImplKDE::SelectSingleFileHelper(const std::string& output,
 
 void SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse(
     const std::string& output, int exit_code, void* params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SelectSingleFileHelper(output, exit_code, params, false);
 }
 
 void SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse(
     const std::string& output, int exit_code, void* params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SelectSingleFileHelper(output, exit_code, params, true);
 }
 
 void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
     const std::string& output, int exit_code, void* params) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(1) << "[kdialog] MultiFileResponse: " << output;
 
   if (exit_code != 0 || output.empty()) {

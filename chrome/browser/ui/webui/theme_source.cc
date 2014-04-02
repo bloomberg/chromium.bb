@@ -70,7 +70,7 @@ void ThemeSource::StartDataRequest(
 
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     callback.Run(css_bytes_.get());
     return;
@@ -139,7 +139,7 @@ void ThemeSource::SendThemeBitmap(
     int resource_id,
     ui::ScaleFactor scale_factor) {
   if (ThemeProperties::IsThemeableImage(resource_id)) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
     DCHECK(tp);
 
@@ -147,7 +147,7 @@ void ThemeSource::SendThemeBitmap(
         resource_id, scale_factor));
     callback.Run(image_data.get());
   } else {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     callback.Run(rb.LoadDataResourceBytesForScale(resource_id, scale_factor));
   }

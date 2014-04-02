@@ -936,7 +936,7 @@ void BrowserOptionsHandler::CheckAutoLaunch(
     base::WeakPtr<BrowserOptionsHandler> weak_this,
     const base::FilePath& profile_path) {
 #if defined(OS_WIN)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Auto-launch is not supported for secondary profiles yet.
   if (profile_path.BaseName().value() !=
@@ -961,7 +961,7 @@ void BrowserOptionsHandler::CheckAutoLaunchCallback(
     bool is_in_auto_launch_group,
     bool will_launch_at_login) {
 #if defined(OS_WIN)
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (is_in_auto_launch_group) {
     web_ui()->RegisterMessageCallback("toggleAutoLaunch",

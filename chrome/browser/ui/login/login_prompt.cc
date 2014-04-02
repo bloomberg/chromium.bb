@@ -123,7 +123,7 @@ void LoginHandler::SetPasswordManager(PasswordManager* password_manager) {
 }
 
 WebContents* LoginHandler::GetWebContentsForLogin() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       render_process_host_id_, render_frame_id_);
@@ -132,7 +132,7 @@ WebContents* LoginHandler::GetWebContentsForLogin() const {
 
 void LoginHandler::SetAuth(const base::string16& username,
                            const base::string16& password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (TestAndSetAuthHandled())
     return;
@@ -185,7 +185,7 @@ void LoginHandler::CancelAuth() {
 void LoginHandler::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
          type == chrome::NOTIFICATION_AUTH_CANCELLED);
 
@@ -244,7 +244,7 @@ void LoginHandler::SetModel(LoginModel* model) {
 }
 
 void LoginHandler::NotifyAuthNeeded() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (WasAuthHandled())
     return;
 
@@ -282,7 +282,7 @@ void LoginHandler::ReleaseSoon() {
 }
 
 void LoginHandler::AddObservers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // This is probably OK; we need to listen to everything and we break out of
   // the Observe() if we aren't handling the same auth_info().
@@ -294,14 +294,14 @@ void LoginHandler::AddObservers() {
 }
 
 void LoginHandler::RemoveObservers() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   registrar_.reset();
 }
 
 void LoginHandler::NotifyAuthSupplied(const base::string16& username,
                                       const base::string16& password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(WasAuthHandled());
 
   WebContents* requesting_contents = GetWebContentsForLogin();
@@ -321,7 +321,7 @@ void LoginHandler::NotifyAuthSupplied(const base::string16& username,
 }
 
 void LoginHandler::NotifyAuthCancelled() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(WasAuthHandled());
 
   content::NotificationService* service =
@@ -350,7 +350,7 @@ bool LoginHandler::TestAndSetAuthHandled() {
 // Calls SetAuth from the IO loop.
 void LoginHandler::SetAuthDeferred(const base::string16& username,
                                    const base::string16& password) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (request_) {
     request_->SetAuth(net::AuthCredentials(username, password));
@@ -360,7 +360,7 @@ void LoginHandler::SetAuthDeferred(const base::string16& username,
 
 // Calls CancelAuth from the IO loop.
 void LoginHandler::CancelAuthDeferred() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (request_) {
     request_->CancelAuth();
@@ -372,7 +372,7 @@ void LoginHandler::CancelAuthDeferred() {
 
 // Closes the view_contents from the UI loop.
 void LoginHandler::CloseContentsDeferred() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   CloseDialog();
 }

@@ -51,7 +51,7 @@ class LoginHandlerGtk : public LoginHandler {
   virtual void OnAutofillDataAvailable(
       const base::string16& username,
       const base::string16& password) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // NOTE: Would be nice to use gtk_entry_get_text_length, but it is fairly
     // new and not always in our GTK version.
@@ -69,7 +69,7 @@ class LoginHandlerGtk : public LoginHandler {
   virtual void BuildViewForPasswordManager(
       PasswordManager* manager,
       const base::string16& explanation) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     root_.reset(gtk_vbox_new(FALSE, ui::kContentAreaBorder));
     g_object_ref_sink(root_.get());
@@ -175,7 +175,7 @@ void LoginHandlerGtk::OnCancelClicked(GtkWidget* sender) {
 
 void LoginHandlerGtk::OnPromptHierarchyChanged(GtkWidget* sender,
                                                GtkWidget* previous_toplevel) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(ok_)))
     return;
@@ -193,7 +193,7 @@ LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
 }
 
 void LoginHandlerGtk::OnDestroy(GtkWidget* widget) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The web contents modal dialog is going to delete itself; clear our pointer.
   dialog_ = NULL;

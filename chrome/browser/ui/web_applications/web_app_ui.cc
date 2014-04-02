@@ -144,7 +144,7 @@ void UpdateShortcutWorker::Observe(
 void UpdateShortcutWorker::DownloadIcon() {
   // FetchIcon must run on UI thread because it relies on WebContents
   // to download the icon.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (web_contents_ == NULL) {
     DeleteMe();  // We are done if underlying WebContents is gone.
@@ -202,7 +202,7 @@ void UpdateShortcutWorker::DidDownloadFavicon(
 }
 
 void UpdateShortcutWorker::CheckExistingShortcuts() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // Locations to check to shortcut_paths.
   struct {
@@ -249,7 +249,7 @@ void UpdateShortcutWorker::UpdateShortcuts() {
 }
 
 void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   base::FilePath web_app_path = web_app::GetWebAppDataDirectory(
       profile_path_, shortcut_info_.extension_id, shortcut_info_.url);
@@ -309,7 +309,7 @@ void UpdateShortcutWorker::DeleteMe() {
 }
 
 void UpdateShortcutWorker::DeleteMeOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delete this;
 }
 #endif  // defined(OS_WIN)

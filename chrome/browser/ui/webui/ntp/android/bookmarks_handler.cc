@@ -143,7 +143,7 @@ void BookmarksHandler::RegisterMessages() {
 }
 
 void BookmarksHandler::HandleGetBookmarks(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   bookmark_data_requested_ = true;
   if (!AreModelsLoaded())
@@ -157,7 +157,7 @@ void BookmarksHandler::HandleGetBookmarks(const base::ListValue* args) {
 }
 
 void BookmarksHandler::HandleDeleteBookmark(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!AreModelsLoaded())
     return;
 
@@ -184,7 +184,7 @@ void BookmarksHandler::HandleDeleteBookmark(const base::ListValue* args) {
 }
 
 void BookmarksHandler::HandleEditBookmark(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!AreModelsLoaded())
     return;
 
@@ -434,7 +434,7 @@ void BookmarksHandler::BookmarkModelChanged() {
 
 void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
     const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!AreModelsLoaded())
     return;
 

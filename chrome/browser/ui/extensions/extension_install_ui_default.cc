@@ -276,7 +276,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 
 void ExtensionInstallUIDefault::OnInstallFailure(
     const extensions::CrxInstallerError& error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (disable_failure_ui_for_tests() || skip_post_install_ui())
     return;
 

@@ -50,7 +50,7 @@ void CryptohomeWebUIHandler::OnPageLoaded(const base::ListValue* args) {
 
 void CryptohomeWebUIHandler::DidGetNSSUtilInfoOnUIThread(
     bool is_tpm_token_ready) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::FundamentalValue is_tpm_token_ready_value(is_tpm_token_ready);
   SetCryptohomeProperty("is-tpm-token-ready", is_tpm_token_ready_value);

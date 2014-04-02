@@ -90,7 +90,7 @@ void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
 
 void ChromeNativeAppWindowViewsWin::OnShortcutInfoLoaded(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   HWND hwnd = GetNativeAppWindowHWND();
 

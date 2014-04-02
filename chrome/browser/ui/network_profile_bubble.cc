@@ -1,4 +1,5 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.  // Use of this source code is governed by a BSD-style license that can be
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/network_profile_bubble.h"
@@ -90,7 +91,7 @@ bool NetworkProfileBubble::ShouldCheckNetworkProfile(Profile* profile) {
 // static
 void NetworkProfileBubble::CheckNetworkProfile(
     const base::FilePath& profile_folder) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   // On Windows notify the users if their profiles are located on a network
   // share as we don't officially support this setup yet.
   // However we don't want to bother users on Cytrix setups as those have no

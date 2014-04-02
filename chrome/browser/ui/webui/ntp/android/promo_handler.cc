@@ -146,7 +146,7 @@ void PromoHandler::Observe(int type,
 }
 
 void PromoHandler::HandlePromoSendEmail(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
   if (!profile)
@@ -209,7 +209,7 @@ void PromoHandler::HandleGetPromotions(const base::ListValue* /*args*/) {
 }
 
 void PromoHandler::HandleRecordImpression(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(args && !args->empty());
   RecordPromotionImpression(base::UTF16ToASCII(ExtractStringValue(args)));
 }

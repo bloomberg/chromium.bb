@@ -169,7 +169,7 @@ base::string16 DownloadDangerPromptViews::GetWindowTitle() const {
 }
 
 void DownloadDangerPromptViews::DeleteDelegate() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delete this;
 }
@@ -183,21 +183,21 @@ ui::ModalType DownloadDangerPromptViews::GetModalType() const {
 }
 
 bool DownloadDangerPromptViews::Cancel() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RunDone(CANCEL);
   return true;
 }
 
 bool DownloadDangerPromptViews::Accept() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RunDone(ACCEPT);
   return true;
 }
 
 bool DownloadDangerPromptViews::Close() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RunDone(DISMISS);
   return true;

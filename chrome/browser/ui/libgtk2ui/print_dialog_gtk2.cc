@@ -120,7 +120,7 @@ class GtkPrinterList {
 // static
 printing::PrintDialogGtkInterface* PrintDialogGtk2::CreatePrintDialog(
     PrintingContextLinux* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return new PrintDialogGtk2(context);
 }
 
@@ -133,7 +133,7 @@ PrintDialogGtk2::PrintDialogGtk2(PrintingContextLinux* context)
 }
 
 PrintDialogGtk2::~PrintDialogGtk2() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (dialog_) {
     gtk_widget_destroy(dialog_);
@@ -385,7 +385,7 @@ void PrintDialogGtk2::OnResponse(GtkWidget* dialog, int response_id) {
 
 void PrintDialogGtk2::SendDocumentToPrinter(
     const base::string16& document_name) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If |printer_| is NULL then somehow the GTK printer list changed out under
   // us. In which case, just bail out.

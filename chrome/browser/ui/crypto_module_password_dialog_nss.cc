@@ -60,11 +60,11 @@ SlotUnlocker::SlotUnlocker(const net::CryptoModuleList& modules,
       parent_(parent),
       callback_(callback),
       retry_(PR_FALSE) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void SlotUnlocker::Start() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (; current_ < modules_.size(); ++current_) {
     if (ShouldShowDialog(modules_[current_].get())) {
@@ -127,7 +127,7 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
                             const net::HostPortPair& server,
                             gfx::NativeWindow parent,
                             const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < modules.size(); ++i) {
     if (ShouldShowDialog(modules[i].get())) {
       (new SlotUnlocker(modules, reason, server, parent, callback))->Start();

@@ -469,7 +469,7 @@ void SimUnlockHandler::CancelDialog() {
 
 void SimUnlockHandler::EnterCode(const std::string& code,
                                  SimUnlockCode code_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   pending_pin_operation_ = true;
 
@@ -703,7 +703,7 @@ void SimUnlockHandler::HandleSimStatusInitialize(const base::ListValue* args) {
 }
 
 void SimUnlockHandler::InitializeSimStatus() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(armansito): For now, we're initializing the device path to the first
   // available cellular device. We should try to obtain a specific device here,
   // as there can be multiple cellular devices present.
@@ -718,7 +718,7 @@ void SimUnlockHandler::InitializeSimStatus() {
 }
 
 void SimUnlockHandler::ProceedToPukInput() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ProcessSimCardState(GetCellularDevice());
 }
 

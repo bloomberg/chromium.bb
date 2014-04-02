@@ -106,7 +106,7 @@ ShellIntegration::ShortcutInfo GetAppListShortcutInfo(
 }
 
 void CreateAppListShim(const base::FilePath& profile_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   WebApplicationInfo web_app_info;
   ShellIntegration::ShortcutInfo shortcut_info =
       GetAppListShortcutInfo(profile_path);

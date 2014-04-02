@@ -294,7 +294,7 @@ void WriteDebugLogToFileCompleted(const StoreDebugLogsCallback& callback,
                                   PassPlatformFile pass_platform_file,
                                   const base::FilePath& file_path,
                                   bool succeeded) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!succeeded) {
     bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
         base::Bind(&CloseAndDeleteDebugLogFile, pass_platform_file, file_path),
@@ -315,7 +315,7 @@ void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
                          bool created,
                          PlatformFileError error,
                          const base::FilePath& file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!created) {
     LOG(ERROR) <<
         "Can't create debug log file: " << file_path.AsUTF8Unsafe() << ", " <<
@@ -339,7 +339,7 @@ void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
 // failure) on the worker pool, prior to calling |callback|.
 void StoreDebugLogs(const base::FilePath& fileshelf,
                     const StoreDebugLogsCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
   DebugLogFileHelper* helper = new DebugLogFileHelper();
   bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
@@ -642,7 +642,7 @@ NetInternalsMessageHandler::~NetInternalsMessageHandler() {
 }
 
 void NetInternalsMessageHandler::RegisterMessages() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -807,7 +807,7 @@ void NetInternalsMessageHandler::SendJavascriptCommand(
     base::Value* arg) {
   scoped_ptr<base::Value> command_value(new base::StringValue(command));
   scoped_ptr<base::Value> value(arg);
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (value.get()) {
     web_ui()->CallJavascriptFunction("g_browser.receive",
                                      *command_value.get(),
@@ -833,7 +833,7 @@ void NetInternalsMessageHandler::OnClearBrowserCache(
 
 void NetInternalsMessageHandler::OnGetPrerenderInfo(
     const base::ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::DictionaryValue* value = NULL;
   prerender::PrerenderManager* prerender_manager = prerender_manager_.get();
@@ -849,7 +849,7 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(
 
 void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
     const base::ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Value* historic_network_info =
       ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue();
   SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
@@ -857,7 +857,7 @@ void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
 
 void NetInternalsMessageHandler::OnGetExtensionInfo(
     const base::ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::ListValue* extension_list = new base::ListValue();
   Profile* profile = Profile::FromWebUI(web_ui());
   extensions::ExtensionSystem* extension_system =
@@ -989,17 +989,17 @@ NetInternalsMessageHandler::IOThreadImpl::IOThreadImpl(
       io_thread_(io_thread),
       main_context_getter_(main_context_getter),
       was_webui_deleted_(false) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AddRequestContextGetter(main_context_getter);
 }
 
 NetInternalsMessageHandler::IOThreadImpl::~IOThreadImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::AddRequestContextGetter(
     net::URLRequestContextGetter* context_getter) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   context_getters_.push_back(context_getter);
 }
 
@@ -1007,7 +1007,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
     MessageHandler method,
     scoped_refptr<IOThreadImpl> io_thread,
     const base::ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // We need to make a copy of the value in order to pass it over to the IO
   // thread. |list_copy| will be deleted when the task is destroyed. The called
@@ -1021,7 +1021,7 @@ void NetInternalsMessageHandler::IOThreadImpl::CallbackHelper(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::Detach() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Unregister with network stack to observe events.
   if (net_log())
     net_log()->RemoveThreadSafeObserver(this);
@@ -1031,13 +1031,13 @@ void NetInternalsMessageHandler::IOThreadImpl::Detach() {
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnWebUIDeleted() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   was_webui_deleted_ = true;
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     const base::ListValue* list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If we have any pending entries, go ahead and get rid of them, so they won't
   // appear before the REQUEST_ALIVE events we add for currently active
@@ -1757,7 +1757,7 @@ void NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand(
 
 void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
     base::Value* entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!pending_entries_.get()) {
     pending_entries_.reset(new base::ListValue());
     BrowserThread::PostDelayedTask(
@@ -1769,7 +1769,7 @@ void NetInternalsMessageHandler::IOThreadImpl::AddEntryToQueue(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::PostPendingEntries() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (pending_entries_.get())
     SendJavascriptCommand("receivedLogEntries", pending_entries_.release());
 }

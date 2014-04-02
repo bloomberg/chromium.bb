@@ -154,7 +154,7 @@ void SetAsDefaultBrowserHandler::RegisterMessages() {
 void SetAsDefaultBrowserHandler::SetDefaultWebClientUIState(
     ShellIntegration::DefaultWebClientUIState state) {
   // The callback is expected to be invoked once the procedure has completed.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!set_default_returned_)
     return;
 
@@ -190,7 +190,7 @@ void SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow(
 
 void SetAsDefaultBrowserHandler::ConcludeInteraction(
     MakeChromeDefaultResult interaction_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (response_delegate_)
     response_delegate_->SetDialogInteractionResult(interaction_result);
@@ -387,7 +387,7 @@ void SetAsDefaultBrowserDialogImpl::OnBrowserRemoved(Browser* browser) {
 
 void SetAsDefaultBrowserDialogImpl::
     AttemptImmersiveFirstRunRestartOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   // If the sentinel was created for this launch, remove it before restarting
   // in immersive mode so that the user is taken through the full first-run
@@ -413,7 +413,7 @@ SetAsDefaultBrowserUI::SetAsDefaultBrowserUI(content::WebUI* web_ui)
 
 // static
 void SetAsDefaultBrowserUI::Show(Profile* profile, Browser* browser) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SetAsDefaultBrowserDialogImpl* dialog =
       new SetAsDefaultBrowserDialogImpl(profile, browser);
   dialog->ShowDialog();

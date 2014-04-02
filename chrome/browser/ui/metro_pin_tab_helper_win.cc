@@ -179,7 +179,7 @@ PinPageTaskRunner::PinPageTaskRunner(const base::string16& title,
       favicon_(favicon) {}
 
 void PinPageTaskRunner::Run() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::BrowserThread::PostTask(
       content::BrowserThread::FILE,
@@ -188,7 +188,7 @@ void PinPageTaskRunner::Run() {
 }
 
 void PinPageTaskRunner::RunOnFileThread() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   base::string16 tile_id = GenerateTileId(url_);
   base::FilePath logo_dir = GetTileImagesDir();
@@ -277,7 +277,7 @@ MetroPinTabHelper::FaviconChooser::FaviconChooser(
           best_candidate_(history_bitmap) {}
 
 void MetroPinTabHelper::FaviconChooser::UseChosenCandidate() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   scoped_refptr<PinPageTaskRunner> runner(
       new PinPageTaskRunner(title_, url_, best_candidate_));
   runner->Run();
@@ -290,7 +290,7 @@ void MetroPinTabHelper::FaviconChooser::UpdateCandidate(
     const std::vector<SkBitmap>& bitmaps) {
   const int kMaxIconSize = 32;
 
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::set<int>::iterator iter = in_progress_requests_.find(id);
   // Check that this request is one of ours.

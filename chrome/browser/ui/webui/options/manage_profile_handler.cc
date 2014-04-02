@@ -392,7 +392,7 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
 
 void ManageProfileHandler::RequestHasProfileShortcuts(
     const base::ListValue* args) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(ProfileShortcutManager::IsFeatureEnabled());
 
   base::FilePath profile_file_path;
@@ -443,7 +443,7 @@ void ManageProfileHandler::OnCreateManagedUserPrefChange() {
 }
 
 void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::FundamentalValue has_shortcuts_value(has_shortcuts);
   web_ui()->CallJavascriptFunction(

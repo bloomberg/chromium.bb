@@ -95,7 +95,7 @@ void AutoLoginPrompter::ShowInfoBarUIThread(Params params,
                                             const GURL& url,
                                             int child_id,
                                             int route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* web_contents = tab_util::GetWebContentsByID(child_id, route_id);
   if (!web_contents)
     return;

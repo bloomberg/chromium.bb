@@ -129,7 +129,7 @@ class ProfilerMessageHandler : public WebUIMessageHandler {
 };
 
 void ProfilerMessageHandler::RegisterMessages() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   web_ui()->RegisterMessageCallback("getData",
       base::Bind(&ProfilerMessageHandler::OnGetData, base::Unretained(this)));

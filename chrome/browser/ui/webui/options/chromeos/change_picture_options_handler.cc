@@ -220,7 +220,7 @@ void ChangePictureOptionsHandler::HandleDiscardPhoto(
 
 void ChangePictureOptionsHandler::HandlePhotoTaken(
     const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::string image_url;
   if (!args || args->GetSize() != 1 || !args->GetString(0, &image_url))
     NOTREACHED();

@@ -25,7 +25,7 @@ namespace {
 void GetFilePaths(const base::FilePath& profile_path,
                   base::string16* exec_path_out,
                   base::string16* profile_path_out) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
 
   base::FilePath executable_path = base::MakeAbsoluteFilePath(
       CommandLine::ForCurrentProcess()->GetProgram());
@@ -116,7 +116,7 @@ void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
 
 void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
                                     base::string16* profile_path_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::StringValue exec_path(*executable_path_data);
   base::StringValue profile_path(*profile_path_data);

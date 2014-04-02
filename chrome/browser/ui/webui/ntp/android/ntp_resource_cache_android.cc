@@ -53,7 +53,7 @@ NTPResourceCache::WindowType NTPResourceCache::GetWindowType(
 }
 
 base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Android uses same html/css for incognito NTP and normal NTP
   if (!new_tab_html_.get())
     CreateNewTabHTML();

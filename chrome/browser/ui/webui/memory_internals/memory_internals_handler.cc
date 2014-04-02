@@ -24,7 +24,7 @@ MemoryInternalsHandler::~MemoryInternalsHandler() {
 }
 
 void MemoryInternalsHandler::RegisterMessages() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   proxy_->Attach(this);
 
   // Set callback functions called by JavaScript messages.

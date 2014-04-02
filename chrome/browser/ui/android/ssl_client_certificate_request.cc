@@ -37,7 +37,7 @@ typedef net::OpenSSLClientKeyStore::ScopedEVP_PKEY ScopedEVP_PKEY;
 void RecordClientCertificateKey(
     const scoped_refptr<net::X509Certificate>& client_cert,
     ScopedEVP_PKEY private_key) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::OpenSSLClientKeyStore::GetInstance()->RecordClientCertPrivateKey(
       client_cert.get(), private_key.get());
 }
@@ -46,7 +46,7 @@ void StartClientCertificateRequest(
     const net::SSLCertRequestInfo* cert_request_info,
     ui::WindowAndroid* window,
     const chrome::SelectCertificateCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Ensure that callback(NULL) is posted as a task on the UI thread
   // in case of an error.
@@ -147,7 +147,7 @@ static void OnSystemRequestCompletion(
     jlong request_id,
     jobjectArray encoded_chain_ref,
     jobject private_key_ref) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Take back ownership of the request object.
   scoped_ptr<chrome::SelectCertificateCallback> callback(
@@ -234,7 +234,7 @@ void ShowSSLClientCertificateSelector(
   ui::WindowAndroid* window =
       WindowAndroidHelper::FromWebContents(contents)->GetWindowAndroid();
   DCHECK(window);
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   StartClientCertificateRequest(cert_request_info, window, callback);
 }
 

@@ -35,7 +35,7 @@ const char* kHotwordFilenames[] = {
 void LoadModelData(const base::FilePath& base_dir,
                    const std::string& path,
                    const content::WebUIDataSource::GotDataCallback& callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
   // Will be owned by |callback|.
   scoped_refptr<base::RefCountedString> data(new base::RefCountedString());
   base::ReadFileToString(base_dir.AppendASCII(path), &(data->data()));

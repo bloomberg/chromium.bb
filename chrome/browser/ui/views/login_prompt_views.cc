@@ -65,7 +65,7 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   virtual void WindowClosing() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     WebContents* tab = GetWebContentsForLogin();
     if (tab)
@@ -78,7 +78,7 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   virtual void DeleteDelegate() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // The widget is going to delete itself; clear our pointer.
     dialog_ = NULL;
@@ -96,14 +96,14 @@ class LoginHandlerViews : public LoginHandler,
   }
 
   virtual bool Cancel() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     CancelAuth();
     return true;
   }
 
   virtual bool Accept() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     SetAuth(login_view_->GetUsername(), login_view_->GetPassword());
     return true;
@@ -128,7 +128,7 @@ class LoginHandlerViews : public LoginHandler,
   virtual void BuildViewForPasswordManager(
       PasswordManager* manager,
       const base::string16& explanation) OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     // Create a new LoginView and set the model for it.  The model (password
     // manager) is owned by the WebContents, but the view is parented to the

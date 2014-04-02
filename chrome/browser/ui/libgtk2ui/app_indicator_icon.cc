@@ -262,7 +262,7 @@ void AppIndicatorIcon::RefreshPlatformContextMenu() {
 }
 
 void AppIndicatorIcon::SetImageFromFile(const base::FilePath& icon_file_path) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (icon_file_path.empty())
     return;
 

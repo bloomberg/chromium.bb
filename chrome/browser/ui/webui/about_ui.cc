@@ -242,7 +242,7 @@ class ChromeOSTermsHandler
   virtual ~ChromeOSTermsHandler() {}
 
   void StartOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (path_ == chrome::kOemEulaURLPath) {
       // Load local OEM EULA from the disk.
       BrowserThread::PostTask(
@@ -258,7 +258,7 @@ class ChromeOSTermsHandler
   }
 
   void OnOnlineEULAFetched(ChromeOSOnlineTermsHandler* loader) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     loader->GetResponseResult(&contents_);
     if (contents_.empty()) {
       // Load local ChromeOS terms from the file.
@@ -271,7 +271,7 @@ class ChromeOSTermsHandler
   }
 
   void LoadOemEulaFileOnFileThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
     const chromeos::StartupCustomizationDocument* customization =
         chromeos::StartupCustomizationDocument::GetInstance();
     if (customization->IsReady()) {
@@ -306,7 +306,7 @@ class ChromeOSTermsHandler
   }
 
   void ResponseOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // If we fail to load Chrome OS EULA from disk, load it from resources.
     // Do nothing if OEM EULA load failed.
     if (contents_.empty() && path_ != chrome::kOemEulaURLPath)
@@ -530,14 +530,14 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
                   const content::URLDataSource::GotDataCallback& callback)
       : profile_(profile),
         callback_(callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
   virtual ~AboutDnsHandler() {}
 
   // Calls FinishOnUIThread() on completion.
   void StartOnUIThread() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     chrome_browser_net::Predictor* predictor = profile_->GetNetworkPredictor();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -545,7 +545,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   }
 
   void StartOnIOThread(chrome_browser_net::Predictor* predictor) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     std::string data;
     AppendHeader(&data, 0, "About DNS");
@@ -559,7 +559,7 @@ class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
   }
 
   void FinishOnUIThread(const std::string& data) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     std::string data_copy(data);
     callback_.Run(base::RefCountedString::TakeString(&data_copy));
   }

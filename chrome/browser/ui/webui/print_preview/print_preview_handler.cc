@@ -260,7 +260,7 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
 // Callback that stores a PDF file on disk.
 void PrintToPdfCallback(printing::Metafile* metafile,
                         const base::FilePath& path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   metafile->SaveTo(path);
   // |metafile| must be deleted on the UI thread.
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, metafile);
@@ -268,7 +268,7 @@ void PrintToPdfCallback(printing::Metafile* metafile,
 
 std::string GetDefaultPrinterOnFileThread(
     scoped_refptr<printing::PrintBackend> print_backend) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   std::string default_printer = print_backend->GetDefaultPrinterName();
   VLOG(1) << "Default Printer: " << default_printer;
@@ -278,7 +278,7 @@ std::string GetDefaultPrinterOnFileThread(
 void EnumeratePrintersOnFileThread(
     scoped_refptr<printing::PrintBackend> print_backend,
     base::ListValue* printers) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   VLOG(1) << "Enumerate printers start";
   printing::PrinterList printer_list;
@@ -332,7 +332,7 @@ void GetPrinterCapabilitiesOnFileThread(
     const std::string& printer_name,
     const GetPrinterCapabilitiesSuccessCallback& success_cb,
     const GetPrinterCapabilitiesFailureCallback& failure_cb) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!printer_name.empty());
 
   VLOG(1) << "Get printer capabilities start for " << printer_name;

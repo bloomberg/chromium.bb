@@ -424,13 +424,13 @@ void PerformanceMonitorHandler::RegisterMessages() {
 
 void PerformanceMonitorHandler::ReturnResults(const std::string& function,
                                  const base::Value* results) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   web_ui()->CallJavascriptFunction(function, *results);
 }
 
 void PerformanceMonitorHandler::HandleGetActiveIntervals(
     const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(2u, args->GetSize());
   double double_time = 0.0;
   CHECK(args->GetDouble(0, &double_time));
@@ -449,7 +449,7 @@ void PerformanceMonitorHandler::HandleGetActiveIntervals(
 
 void PerformanceMonitorHandler::HandleGetFlagEnabled(
     const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(0u, args->GetSize());
   scoped_ptr<base::Value> value(base::Value::CreateBooleanValue(
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -459,7 +459,7 @@ void PerformanceMonitorHandler::HandleGetFlagEnabled(
 
 void PerformanceMonitorHandler::HandleGetAggregationTypes(
     const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(0u, args->GetSize());
   base::ListValue results;
   for (int i = 0; i < AGGREGATION_METHOD_NUMBER_OF_METHODS; ++i) {
@@ -473,7 +473,7 @@ void PerformanceMonitorHandler::HandleGetAggregationTypes(
 
 void PerformanceMonitorHandler::HandleGetEventTypes(
     const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(0u, args->GetSize());
   base::ListValue results;
   for (int i = 0; i < EVENT_CATEGORY_NUMBER_OF_CATEGORIES; ++i)
@@ -483,7 +483,7 @@ void PerformanceMonitorHandler::HandleGetEventTypes(
 }
 
 void PerformanceMonitorHandler::HandleGetEvents(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(3u, args->GetSize());
 
   const base::ListValue* event_type_list;
@@ -516,7 +516,7 @@ void PerformanceMonitorHandler::HandleGetEvents(const base::ListValue* args) {
 
 void PerformanceMonitorHandler::HandleGetMetricTypes(
     const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(0u, args->GetSize());
   base::ListValue results;
   for (int i = 0; i < METRIC_CATEGORY_NUMBER_OF_CATEGORIES; ++i)
@@ -526,7 +526,7 @@ void PerformanceMonitorHandler::HandleGetMetricTypes(
 }
 
 void PerformanceMonitorHandler::HandleGetMetrics(const base::ListValue* args) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK_EQ(5u, args->GetSize());
 
   const base::ListValue* metric_type_list;
