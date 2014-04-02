@@ -242,8 +242,12 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
             data.mediaFlags |= WebContextMenuData::MediaCanSave;
         if (mediaElement->hasAudio())
             data.mediaFlags |= WebContextMenuData::MediaHasAudio;
-        if (mediaElement->hasVideo())
-            data.mediaFlags |= WebContextMenuData::MediaHasVideo;
+        // Media controls can be toggled only for video player. If we toggle
+        // controls for audio then the player disappears, and there is no way to
+        // return it back. Don't set this bit for fullscreen video, since
+        // toggling is ignored in that case.
+        if (mediaElement->hasVideo() && !mediaElement->isFullscreen())
+            data.mediaFlags |= WebContextMenuData::MediaCanToggleControls;
         if (mediaElement->controls())
             data.mediaFlags |= WebContextMenuData::MediaControls;
     } else if (isHTMLObjectElement(*r.innerNonSharedNode()) || isHTMLEmbedElement(*r.innerNonSharedNode())) {
