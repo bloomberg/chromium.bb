@@ -90,7 +90,6 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual IconManager* icon_manager() OVERRIDE;
   virtual GLStringManager* gl_string_manager() OVERRIDE;
   virtual GpuModeManager* gpu_mode_manager() OVERRIDE;
-  virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
@@ -216,10 +215,6 @@ class BrowserProcessImpl : public BrowserProcess,
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
-
-#if defined(ENABLE_AUTOMATION)
-  scoped_ptr<AutomationProviderList> automation_provider_list_;
-#endif
 
   scoped_ptr<IntranetRedirectDetector> intranet_redirect_detector_;
 

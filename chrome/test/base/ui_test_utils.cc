@@ -71,7 +71,12 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_util.h"
+#include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/test/python_utils.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
@@ -414,6 +419,48 @@ Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers) {
       return *it;
   }
   return NULL;
+}
+
+namespace {
+
+void GetCookiesCallback(base::WaitableEvent* event,
+                        std::string* cookies,
+                        const std::string& cookie_line) {
+  *cookies = cookie_line;
+  event->Signal();
+}
+
+void GetCookiesOnIOThread(
+    const GURL& url,
+    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
+    base::WaitableEvent* event,
+    std::string* cookies) {
+  context_getter->GetURLRequestContext()->cookie_store()->
+      GetCookiesWithOptionsAsync(
+          url, net::CookieOptions(),
+          base::Bind(&GetCookiesCallback, event, cookies));
+}
+
+}  // namespace
+
+void GetCookies(const GURL& url,
+                WebContents* contents,
+                int* value_size,
+                std::string* value) {
+  *value_size = -1;
+  if (url.is_valid() && contents) {
+    scoped_refptr<net::URLRequestContextGetter> context_getter =
+        contents->GetBrowserContext()->GetRequestContextForRenderProcess(
+            contents->GetRenderProcessHost()->GetID());
+    base::WaitableEvent event(true /* manual reset */,
+                              false /* not initially signaled */);
+    CHECK(content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&GetCookiesOnIOThread, url, context_getter, &event, value)));
+    event.Wait();
+
+    *value_size = static_cast<int>(value->size());
+  }
 }
 
 WindowedTabAddedNotificationObserver::WindowedTabAddedNotificationObserver(

@@ -4,7 +4,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -103,8 +102,8 @@ class IsolatedAppTest : public ExtensionBrowserTest {
   bool WARN_UNUSED_RESULT HasCookie(WebContents* contents, std::string cookie) {
     int value_size;
     std::string actual_cookie;
-    automation_util::GetCookies(contents->GetURL(), contents, &value_size,
-                                &actual_cookie);
+    ui_test_utils::GetCookies(contents->GetURL(), contents, &value_size,
+                              &actual_cookie);
     return actual_cookie.find(cookie) != std::string::npos;
   }
 

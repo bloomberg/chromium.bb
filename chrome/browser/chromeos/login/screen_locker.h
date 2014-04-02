@@ -69,11 +69,6 @@ class ScreenLocker : public LoginStatusConsumer {
   // Authenticates the user with given |user_context|.
   void Authenticate(const UserContext& user_context);
 
-  // Authenticates the only user with given |password|.
-  // Works only if there is only one logged in user in system.
-  // DEPRECATED: used only by tests.
-  void AuthenticateByPassword(const std::string& password);
-
   // Close message bubble to clear error messages.
   void ClearErrors();
 

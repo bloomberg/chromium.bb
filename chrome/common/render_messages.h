@@ -44,20 +44,6 @@
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #define CHROME_COMMON_RENDER_MESSAGES_H_
 
-class SkBitmap;
-
-// Command values for the cmd parameter of the
-// ChromeViewMsg_JavaScriptStressTestControl message. For each command the
-// parameter passed has a different meaning:
-// For the command kJavaScriptStressTestSetStressRunType the parameter it the
-// type taken from the enumeration v8::Testing::StressType.
-// For the command kJavaScriptStressTestPrepareStressRun the parameter it the
-// number of the stress run about to take place.
-enum ViewHostMsg_JavaScriptStressTestControl_Commands {
-  kJavaScriptStressTestSetStressRunType = 0,
-  kJavaScriptStressTestPrepareStressRun = 1,
-};
-
 // This enum is inside a struct so that we can forward-declare the struct in
 // others headers without having to include this one.
 struct ChromeViewHostMsg_GetPluginInfo_Status {
@@ -425,12 +411,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(ChromeViewHostMsg_GetManagedAccounts,
 IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
 
 // JavaScript related messages -----------------------------------------------
-
-// Notify the JavaScript engine in the render to change its parameters
-// while performing stress testing.
-IPC_MESSAGE_ROUTED2(ChromeViewMsg_JavaScriptStressTestControl,
-                    int /* cmd */,
-                    int /* param */)
 
 // Asks the renderer to send back FPS.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_GetFPS)

@@ -237,11 +237,6 @@ message_center::MessageCenter* TestingBrowserProcess::message_center() {
 IntranetRedirectDetector* TestingBrowserProcess::intranet_redirect_detector() {
   return NULL;
 }
-
-AutomationProviderList* TestingBrowserProcess::GetAutomationProviderList() {
-  return NULL;
-}
-
 void TestingBrowserProcess::CreateDevToolsHttpProtocolHandler(
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,

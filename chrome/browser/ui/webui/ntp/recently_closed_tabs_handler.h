@@ -41,12 +41,6 @@ class RecentlyClosedTabsHandler : public content::WebUIMessageHandler,
   // is destroyed.
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
-  // Converts a list of TabRestoreService entries to the JSON format required
-  // by the NTP and adds them to the given list value.
-  static void CreateRecentlyClosedValues(
-      const TabRestoreService::Entries& entries,
-      base::ListValue* entry_list_value);
-
  private:
   // Construct and initialize tab_restore_service_ if it's NULL.
   // tab_restore_service_ may still be NULL, however, in incognito mode.

@@ -934,12 +934,6 @@ void TopSitesImpl::OnTopSitesAvailableFromHistory(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
   SetTopSites(pages);
-
-  // Used only in testing.
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TOP_SITES_UPDATED,
-      content::Source<TopSitesImpl>(this),
-      content::Details<CancelableRequestProvider::Handle>(&handle));
 }
 
 }  // namespace history

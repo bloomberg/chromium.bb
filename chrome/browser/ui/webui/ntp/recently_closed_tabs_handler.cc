@@ -134,29 +134,15 @@ void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
 
 void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
     TabRestoreService* service) {
-  base::ListValue list_value;
-  TabRestoreService::Entries entries = service->entries();
-  CreateRecentlyClosedValues(entries, &list_value);
-
-  web_ui()->CallJavascriptFunction("ntp.setRecentlyClosedTabs", list_value);
-}
-
-void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
-    TabRestoreService* service) {
-  tab_restore_service_ = NULL;
-}
-
-// static
-void RecentlyClosedTabsHandler::CreateRecentlyClosedValues(
-    const TabRestoreService::Entries& entries,
-    base::ListValue* entry_list_value) {
+  base::ListValue list_value;  
   const int max_count = 10;
   int added_count = 0;
   // We filter the list of recently closed to only show 'interesting' entries,
   // where an interesting entry is either a closed window or a closed tab
   // whose selected navigation is not the new tab ui.
-  for (TabRestoreService::Entries::const_iterator it = entries.begin();
-       it != entries.end() && added_count < max_count; ++it) {
+  for (TabRestoreService::Entries::const_iterator it =
+           service->entries().begin();
+       it != service->entries().end() && added_count < max_count; ++it) {
     TabRestoreService::Entry* entry = *it;
     scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
     if (entry->type == TabRestoreService::TAB) {
@@ -169,9 +155,16 @@ void RecentlyClosedTabsHandler::CreateRecentlyClosedValues(
     }
 
     entry_dict->SetInteger("sessionId", entry->id);
-    entry_list_value->Append(entry_dict.release());
+    list_value.Append(entry_dict.release());
     ++added_count;
   }
+
+  web_ui()->CallJavascriptFunction("ntp.setRecentlyClosedTabs", list_value);
+}
+
+void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
+    TabRestoreService* service) {
+  tab_restore_service_ = NULL;
 }
 
 void RecentlyClosedTabsHandler::EnsureTabRestoreService() {

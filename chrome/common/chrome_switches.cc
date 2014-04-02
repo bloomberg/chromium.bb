@@ -133,10 +133,6 @@ const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 // computer startup and not by some user action.
 const char kAutoLaunchAtStartup[]           = "auto-launch-at-startup";
 
-// The value of this switch tells the app to listen for and broadcast
-// automation-related messages on IPC channel with the given ID.
-const char kAutomationClientChannelID[]     = "automation-channel";
-
 // Certificate Transparency: Uses the provided log(s) for checking Signed
 // Certificate Timestamps provided with certificates.
 // The switch's value is:

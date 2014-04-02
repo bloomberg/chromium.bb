@@ -21,7 +21,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/apps/chrome_apps_client.h"
-#include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -200,17 +199,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
 void BrowserProcessImpl::StartTearDown() {
     TRACE_EVENT0("shutdown", "BrowserProcessImpl::StartTearDown");
-#if defined(ENABLE_AUTOMATION)
-  // Delete the AutomationProviderList before NotificationService,
-  // since it may try to unregister notifications
-  // Both NotificationService and AutomationProvider are singleton instances in
-  // the BrowserProcess. Since AutomationProvider may have some active
-  // notification observers, it is essential that it gets destroyed before the
-  // NotificationService. NotificationService won't be destroyed until after
-  // this destructor is run.
-  automation_provider_list_.reset();
-#endif
-
   // We need to shutdown the SdchDictionaryFetcher as it regularly holds
   // a pointer to a URLFetcher, and that URLFetcher (upon destruction) will do
   // a PostDelayedTask onto the IO thread.  This shutdown call will both discard
@@ -543,17 +531,6 @@ GpuModeManager* BrowserProcessImpl::gpu_mode_manager() {
   if (!gpu_mode_manager_.get())
     gpu_mode_manager_.reset(new GpuModeManager());
   return gpu_mode_manager_.get();
-}
-
-AutomationProviderList* BrowserProcessImpl::GetAutomationProviderList() {
-  DCHECK(CalledOnValidThread());
-#if defined(ENABLE_AUTOMATION)
-  if (automation_provider_list_.get() == NULL)
-    automation_provider_list_.reset(new AutomationProviderList());
-  return automation_provider_list_.get();
-#else
-  return NULL;
-#endif
 }
 
 void BrowserProcessImpl::CreateDevToolsHttpProtocolHandler(

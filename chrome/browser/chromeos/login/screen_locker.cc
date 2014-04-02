@@ -311,11 +311,6 @@ const User* ScreenLocker::FindUnlockUser(const std::string& user_id) {
   return unlock_user;
 }
 
-void ScreenLocker::AuthenticateByPassword(const std::string& password) {
-  LOG_ASSERT(users_.size() == 1);
-  Authenticate(UserContext(users_[0]->email(), password, ""));
-}
-
 void ScreenLocker::ClearErrors() {
   delegate_->ClearErrors();
 }

@@ -308,13 +308,6 @@ enum NotificationType {
   // details the TopSites.
   NOTIFICATION_TOP_SITES_LOADED,
 
-  // Sent by TopSites when it has finished updating its most visited URLs
-  // cache after querying the history service. The source is the TopSites and
-  // the details a CancelableRequestProvider::Handle from the history service
-  // query.
-  // Used only in testing.
-  NOTIFICATION_TOP_SITES_UPDATED,
-
   // Sent by TopSites when the either one of the most visited urls changed, or
   // one of the images changes. The source is the TopSites, the details not
   // used.
@@ -326,11 +319,6 @@ enum NotificationType {
   // source is the ID of the renderer process, and the details are a
   // V8HeapStatsDetails object.
   NOTIFICATION_RENDERER_V8_HEAP_STATS_COMPUTED,
-
-  // Sent when a renderer process is notified of a new FPS value. The source
-  // is the ID of the renderer process, and the details are an FPSDetails
-  // object.
-  NOTIFICATION_RENDERER_FPS_COMPUTED,
 
   // Non-history storage services --------------------------------------------
 
@@ -753,30 +741,13 @@ enum NotificationType {
   // all and the details are AuthenticationNotificationDetails.
   NOTIFICATION_LOGIN_AUTHENTICATION,
 
-  // Sent when GAIA iframe has been loaded. First paint event after this fires
-  // NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
-  // Possible scenarios:
-  // 1. Boot into device that has user pods display disabled or no users.
-  //    Note that booting with network not connected would first generate
-  //    NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN.
-  // 2. From the user pods list, open "Add User" for the second time
-  //    (see below).
-  // TODO(nkostylev): Send this notification any time "Add User" is activated
-  //                  even if it has been silently preloaded on boot.
-  // Not sent on "silent preload" i.e. when booting into login screen
-  // with user pods, GAIA frame is silently preloaded in the background.
-  // Activating it ("Add User") for the first time would not generate this
-  // notification.
-  NOTIFICATION_LOGIN_WEBUI_LOADED,
-
   // Sent when a network error message is displayed on the WebUI login screen.
   // First paint event of this fires NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE.
   NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
 
   // Sent when the specific part of login/lock WebUI is considered to be
   // visible. That moment is tracked as the first paint event after one of the:
-  // 1. NOTIFICATION_LOGIN_WEBUI_LOADED
-  // 2. NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN
+  // NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN
   //
   // Possible series of notifications:
   // 1. Boot into fresh OOBE
@@ -787,7 +758,6 @@ enum NotificationType {
   //    if no network is connected or flaky network
   //    (NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN +
   //     NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE)
-  //    NOTIFICATION_LOGIN_WEBUI_LOADED
   //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE
   // 4. Boot into retail mode
   //    NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE

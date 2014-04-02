@@ -1438,12 +1438,7 @@ void SigninScreenHandler::HandleWallpaperReady() {
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady() {
-  if (!gaia_silent_load_) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_LOGIN_WEBUI_LOADED,
-        content::NotificationService::AllSources(),
-        content::NotificationService::NoDetails());
-  } else {
+  if (gaia_silent_load_) {
     // As we could miss and window.onload could already be called, restore
     // focus to current pod (see crbug/175243).
     RefocusCurrentPod();

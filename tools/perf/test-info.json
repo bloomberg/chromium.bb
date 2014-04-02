@@ -89,12 +89,6 @@
   "kraken":{
     "description":"Score on [Mozilla's Kraken JavaScript benchmark](http://krakenbenchmark.mozilla.org/)"
   },
-  "mach_ports":{
-    "description":"This test spawns a new browser and counts the number of open Mach ports in the browser process. It navigates tabs and closes them, repeatedly measuring the number of open ports. This is used to protect against leaking Mach ports, which was the source of [bug 105513](http://crbug.com/105513).",
-    "code":[
-      "chrome/src/chrome/test/perf/mach_ports_test.cc"
-    ]
-  },
   "media.tough_video_cases":{
     "description":"Obtains media metrics for key user scenarios."
   },

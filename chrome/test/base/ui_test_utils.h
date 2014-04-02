@@ -160,6 +160,13 @@ void SendToOmniboxAndSubmit(LocationBar* location_bar,
 // Gets the first browser that is not in the specified set.
 Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers);
 
+// Gets the size and value of the cookie string for |url| in the given tab.
+// Can be called from any thread.
+void GetCookies(const GURL& url,
+                content::WebContents* contents,
+                int* value_size,
+                std::string* value);
+
 // A WindowedNotificationObserver hard-wired to observe
 // chrome::NOTIFICATION_TAB_ADDED.
 class WindowedTabAddedNotificationObserver

@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
-#include "chrome/browser/automation/automation_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
@@ -1173,29 +1172,29 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_CookieIsolation) {
   std::string cookie_value;
 
   // Test the regular browser context to ensure we have only one cookie.
-  automation_util::GetCookies(GURL("http://localhost"),
-                              browser()->tab_strip_model()->GetWebContentsAt(0),
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            browser()->tab_strip_model()->GetWebContentsAt(0),
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("testCookie=1", cookie_value);
 
   // The default behavior is to combine webview tags with no explicit partition
   // declaration into the same in-memory partition. Test the webview tags to
   // ensure we have properly set the cookies and we have both cookies in both
   // tags.
-  automation_util::GetCookies(GURL("http://localhost"),
-                              cookie_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            cookie_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("guest1=true; guest2=true", cookie_value);
 
-  automation_util::GetCookies(GURL("http://localhost"),
-                              cookie_contents2,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            cookie_contents2,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("guest1=true; guest2=true", cookie_value);
 
   // The third tag should not have any cookies as it is in a separate partition.
-  automation_util::GetCookies(GURL("http://localhost"),
-                              named_partition_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            named_partition_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("", cookie_value);
 }
 
@@ -1252,35 +1251,35 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
   std::string cookie_value;
 
   // Check that all in-memory partitions have a cookie set.
-  automation_util::GetCookies(GURL("http://localhost"),
-                              cookie_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            cookie_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("inmemory=true", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              cookie_contents2,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            cookie_contents2,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("inmemory=true", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              named_partition_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            named_partition_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("inmemory=true", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              named_partition_contents2,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            named_partition_contents2,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("inmemory=true", cookie_value);
 
   // Check that all persistent partitions kept their state.
-  automation_util::GetCookies(GURL("http://localhost"),
-                              persistent_partition_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            persistent_partition_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("persist1=true", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              persistent_partition_contents2,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            persistent_partition_contents2,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("persist1=true", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              persistent_partition_contents3,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            persistent_partition_contents3,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("persist2=true", cookie_value);
 }
 
@@ -1313,35 +1312,35 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_StoragePersistence) {
   std::string cookie_value;
 
   // Check that all in-memory partitions lost their state.
-  automation_util::GetCookies(GURL("http://localhost"),
-                              cookie_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            cookie_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              cookie_contents2,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            cookie_contents2,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              named_partition_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            named_partition_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              named_partition_contents2,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            named_partition_contents2,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("", cookie_value);
 
   // Check that all persistent partitions kept their state.
-  automation_util::GetCookies(GURL("http://localhost"),
-                              persistent_partition_contents1,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            persistent_partition_contents1,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("persist1=true", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              persistent_partition_contents2,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            persistent_partition_contents2,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("persist1=true", cookie_value);
-  automation_util::GetCookies(GURL("http://localhost"),
-                              persistent_partition_contents3,
-                              &cookie_size, &cookie_value);
+  ui_test_utils::GetCookies(GURL("http://localhost"),
+                            persistent_partition_contents3,
+                            &cookie_size, &cookie_value);
   EXPECT_EQ("persist2=true", cookie_value);
 }
 

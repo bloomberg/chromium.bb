@@ -83,7 +83,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
   virtual message_center::MessageCenter* message_center() OVERRIDE;
   virtual IntranetRedirectDetector* intranet_redirect_detector() OVERRIDE;
-  virtual AutomationProviderList* GetAutomationProviderList() OVERRIDE;
   virtual void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,

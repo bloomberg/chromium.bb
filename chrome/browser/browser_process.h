@@ -17,7 +17,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/ui/host_desktop.h"
 
-class AutomationProviderList;
 class BackgroundModeManager;
 class BookmarkPromptController;
 class ChromeNetLog;
@@ -147,8 +146,6 @@ class BrowserProcess {
   virtual GLStringManager* gl_string_manager() = 0;
 
   virtual GpuModeManager* gpu_mode_manager() = 0;
-
-  virtual AutomationProviderList* GetAutomationProviderList() = 0;
 
   virtual void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
