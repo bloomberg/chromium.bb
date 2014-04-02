@@ -14,7 +14,7 @@ class LocalRenderer(object):
   '''Renders pages fetched from the local file system.
   '''
   @staticmethod
-  def Render(path):
+  def Render(path, headers=None):
     assert not '\\' in path
-    return RenderServlet(Request.ForTest(path),
+    return RenderServlet(Request.ForTest(path, headers=headers),
                          _LocalRenderServletDelegate()).Get()

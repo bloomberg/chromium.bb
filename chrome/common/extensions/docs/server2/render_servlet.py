@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
 import logging
 import posixpath
 import traceback
@@ -15,12 +16,16 @@ from special_paths import SITE_VERIFICATION_FILE
 from third_party.handlebar import Handlebar
 
 
-def _MakeHeaders(content_type):
-  return {
-    'X-Frame-Options': 'sameorigin',
+def _MakeHeaders(content_type, etag=None):
+  headers = {
+    # See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.1.
+    'Cache-Control': 'public, max-age=0, no-cache',
     'Content-Type': content_type,
-    'Cache-Control': 'max-age=300',
+    'X-Frame-Options': 'sameorigin',
   }
+  if etag is not None:
+    headers['ETag'] = etag
+  return headers
 
 
 class RenderServlet(Servlet):
@@ -122,10 +127,28 @@ class RenderServlet(Servlet):
       if warnings:
         sep = '\n - '
         logging.warning('Rendering %s:%s%s' % (path, sep, sep.join(warnings)))
+      # Content was dynamic. The new etag is a hash of the content.
+      etag = None
+    elif content_and_type.version is not None:
+      # Content was static. The new etag is the version of the content.
+      etag = '"%s"' % content_and_type.version
+    else:
+      # Sometimes non-dynamic content does not have a version, for example
+      # .zip files. The new etag is a hash of the content.
+      etag = None
 
     content_type = content_and_type.content_type
     if isinstance(content, unicode):
       content = content.encode('utf-8')
       content_type += '; charset=utf-8'
 
-    return Response.Ok(content, headers=_MakeHeaders(content_type))
+    if etag is None:
+      # Note: we're using md5 as a convenient and fast-enough way to identify
+      # content. It's not intended to be cryptographic in any way, and this
+      # is *not* what etags is for. That's what SSL is for, this is unrelated.
+      etag = '"%s"' % hashlib.md5(content).hexdigest()
+
+    headers = _MakeHeaders(content_type, etag=etag)
+    if etag == self._request.headers.get('If-None-Match'):
+      return Response.NotModified('Not Modified', headers=headers)
+    return Response.Ok(content, headers=headers)

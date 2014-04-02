@@ -73,8 +73,9 @@ class PatchServletTest(unittest.TestCase):
     '''
     patched_response = self._RenderWithPatch(path, issue)
     unpatched_response = self._RenderWithoutPatch(path)
-    patched_response.headers.pop('cache-control', None)
-    unpatched_response.headers.pop('cache-control', None)
+    for header in ('Cache-Control', 'ETag'):
+      patched_response.headers.pop(header, None)
+      unpatched_response.headers.pop(header, None)
     unpatched_content = unpatched_response.content.ToString()
 
     # Check that all links in the patched content are qualified with

@@ -47,7 +47,8 @@ class _RequestHandler(BaseHTTPRequestHandler):
       '/favicon.ico': '../../server2/chrome-32.ico',
       '/apple-touch-icon-precomposed.png': '../../server2/chrome-128.png'
     }.get(self.path, self.path)
-    response = LocalRenderer.Render(self.path)
+    response = LocalRenderer.Render(self.path, headers=dict(self.headers))
+    self.protocol_version = 'HTTP/1.1'
     self.send_response(response.status)
     for k, v in response.headers.iteritems():
       self.send_header(k, v)

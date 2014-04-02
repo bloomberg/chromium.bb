@@ -27,9 +27,10 @@ class ContentAndType(object):
   '''Return value from ContentProvider.GetContentAndType.
   '''
 
-  def __init__(self, content, content_type):
+  def __init__(self, content, content_type, version):
     self.content = content
     self.content_type = content_type
+    self.version = version
 
 
 class ContentProvider(object):
@@ -100,7 +101,9 @@ class ContentProvider(object):
       content = ToUnicode(text)
     else:
       content = text
-    return ContentAndType(content, mimetype)
+    return ContentAndType(content,
+                          mimetype,
+                          self.file_system.Stat(path).version)
 
   def GetCanonicalPath(self, path):
     '''Gets the canonical location of |path|. This class is tolerant of
@@ -133,7 +136,7 @@ class ContentProvider(object):
     if self._directory_zipper and ext == '.zip':
       zip_future = self._directory_zipper.Zip(ToDirectory(base))
       return Future(callback=
-          lambda: ContentAndType(zip_future.Get(), 'application/zip'))
+          lambda: ContentAndType(zip_future.Get(), 'application/zip', None))
 
     # If there is no file extension, look for a file with one of the default
     # extensions.
