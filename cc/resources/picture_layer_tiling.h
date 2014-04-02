@@ -91,6 +91,30 @@ class CC_EXPORT PictureLayerTiling {
     TilingData::SpiralDifferenceIterator spiral_iterator_;
   };
 
+  class CC_EXPORT TilingEvictionTileIterator {
+   public:
+    TilingEvictionTileIterator();
+    TilingEvictionTileIterator(PictureLayerTiling* tiling, WhichTree tree);
+    ~TilingEvictionTileIterator();
+
+    operator bool();
+    Tile* operator*();
+    TilingEvictionTileIterator& operator++();
+    TilePriority::PriorityBin get_type() {
+      DCHECK(*this);
+      return (*tile_iterator_)->priority(tree_).priority_bin;
+    }
+
+   private:
+    void Initialize();
+    bool IsValid() const { return is_valid_; }
+
+    bool is_valid_;
+    PictureLayerTiling* tiling_;
+    WhichTree tree_;
+    std::vector<Tile*>::iterator tile_iterator_;
+  };
+
   ~PictureLayerTiling();
 
   // Create a tiling with no tiles.  CreateTiles must be called to add some.
@@ -232,7 +256,9 @@ class CC_EXPORT PictureLayerTiling {
   }
 
  protected:
+  friend class CoverageIterator;
   friend class TilingRasterTileIterator;
+  friend class TilingEvictionTileIterator;
 
   typedef std::pair<int, int> TileMapKey;
   typedef base::hash_map<TileMapKey, scoped_refptr<Tile> > TileMap;
@@ -250,6 +276,8 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect ComputeSkewport(double current_frame_time_in_seconds,
                             const gfx::Rect& visible_rect_in_content_space)
       const;
+
+  void UpdateEvictionCacheIfNeeded(WhichTree tree);
 
   // Given properties.
   float contents_scale_;
@@ -270,7 +298,8 @@ class CC_EXPORT PictureLayerTiling {
   gfx::Rect current_skewport_;
   gfx::Rect current_eventually_rect_;
 
-  friend class CoverageIterator;
+  std::vector<Tile*> eviction_tiles_cache_;
+  bool eviction_tiles_cache_valid_;
 
  private:
   DISALLOW_ASSIGN(PictureLayerTiling);

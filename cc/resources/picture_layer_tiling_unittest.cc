@@ -13,6 +13,7 @@
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/test_context_provider.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -922,6 +923,67 @@ TEST(PictureLayerTilingTest, TilingRasterTileIteratorMovingViewport) {
 static void TileExists(bool exists, Tile* tile,
                        const gfx::Rect& geometry_rect) {
   EXPECT_EQ(exists, tile != NULL) << geometry_rect.ToString();
+}
+
+TEST(PictureLayerTilingTest, TilingEvictionTileIteratorStaticViewport) {
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<FakeOutputSurface> output_surface = FakeOutputSurface::Create3d();
+  CHECK(output_surface->BindToClient(&output_surface_client));
+  TestSharedBitmapManager shared_bitmap_manager;
+  scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
+      output_surface.get(), &shared_bitmap_manager, 0, false, 1);
+
+  FakePictureLayerTilingClient client(resource_provider.get());
+  scoped_ptr<TestablePictureLayerTiling> tiling;
+
+  gfx::Rect viewport(50, 50, 100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  client.SetTileSize(gfx::Size(30, 30));
+
+  tiling = TestablePictureLayerTiling::Create(1.0f, layer_bounds, &client);
+  tiling->UpdateTilePriorities(ACTIVE_TREE, viewport, 1.0f, 1.0);
+
+  PictureLayerTiling::TilingRasterTileIterator empty_iterator;
+  EXPECT_FALSE(empty_iterator);
+
+  std::vector<Tile*> all_tiles = tiling->AllTilesForTesting();
+
+  PictureLayerTiling::TilingEvictionTileIterator it(tiling.get(), ACTIVE_TREE);
+
+  // Tiles don't have resources to evict.
+  EXPECT_FALSE(it);
+
+  // Sanity check.
+  EXPECT_EQ(64u, all_tiles.size());
+
+  client.tile_manager()->InitializeTilesWithResourcesForTesting(
+      all_tiles, resource_provider.get());
+
+  std::set<Tile*> all_tiles_set(all_tiles.begin(), all_tiles.end());
+
+  it =
+      PictureLayerTiling::TilingEvictionTileIterator(tiling.get(), ACTIVE_TREE);
+  EXPECT_TRUE(it);
+
+  std::set<Tile*> eviction_tiles;
+  Tile* last_tile = *it;
+  for (; it; ++it) {
+    Tile* tile = *it;
+    EXPECT_TRUE(tile);
+    EXPECT_LE(tile->priority(ACTIVE_TREE).priority_bin,
+              last_tile->priority(ACTIVE_TREE).priority_bin);
+    if (tile->priority(ACTIVE_TREE).priority_bin ==
+        last_tile->priority(ACTIVE_TREE).priority_bin) {
+      EXPECT_LE(tile->priority(ACTIVE_TREE).distance_to_visible,
+                last_tile->priority(ACTIVE_TREE).distance_to_visible);
+    }
+    last_tile = tile;
+    eviction_tiles.insert(tile);
+  }
+
+  EXPECT_GT(all_tiles_set.size(), 0u);
+  EXPECT_EQ(all_tiles_set, eviction_tiles);
 }
 
 TEST_F(PictureLayerTilingIteratorTest, TilesExist) {
