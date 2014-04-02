@@ -3732,7 +3732,7 @@ void RenderViewImpl::OnClosePage() {
   // revisited to avoid having two ways to close a page.  Having a single way
   // to close that can run onunload is also useful for fixing
   // http://b/issue?id=753080.
-  webview()->dispatchUnloadEvent();
+  webview()->mainFrame()->dispatchUnloadEvent();
 
   Send(new ViewHostMsg_ClosePage_ACK(routing_id_));
 }

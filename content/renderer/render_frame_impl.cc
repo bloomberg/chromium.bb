@@ -809,10 +809,10 @@ void RenderFrameImpl::OnSwapOut() {
     render_view_->SyncNavigationState();
 
     // Synchronously run the unload handler before sending the ACK.
-    // TODO(creis): Move WebView::dispatchUnloadEvent to WebFrame and call it
-    // here to support unload on subframes as well.
+    // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
+    // unload on subframes as well.
     if (!frame_->parent())
-      render_view_->webview()->dispatchUnloadEvent();
+      frame_->dispatchUnloadEvent();
 
     // Swap out and stop sending any IPC messages that are not ACKs.
     if (!frame_->parent())
