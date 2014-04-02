@@ -13,10 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/switches.h"
-
-using chrome::VersionInfo;
 
 namespace extensions {
 
@@ -43,33 +40,15 @@ struct Mappings {
     platforms["linux"] = Feature::LINUX_PLATFORM;
     platforms["mac"] = Feature::MACOSX_PLATFORM;
     platforms["win"] = Feature::WIN_PLATFORM;
-
-    channels["trunk"] = VersionInfo::CHANNEL_UNKNOWN;
-    channels["canary"] = VersionInfo::CHANNEL_CANARY;
-    channels["dev"] = VersionInfo::CHANNEL_DEV;
-    channels["beta"] = VersionInfo::CHANNEL_BETA;
-    channels["stable"] = VersionInfo::CHANNEL_STABLE;
   }
 
   std::map<std::string, Manifest::Type> extension_types;
   std::map<std::string, Feature::Context> contexts;
   std::map<std::string, Feature::Location> locations;
   std::map<std::string, Feature::Platform> platforms;
-  std::map<std::string, VersionInfo::Channel> channels;
 };
 
 base::LazyInstance<Mappings> g_mappings = LAZY_INSTANCE_INITIALIZER;
-
-std::string GetChannelName(VersionInfo::Channel channel) {
-  typedef std::map<std::string, VersionInfo::Channel> ChannelsMap;
-  ChannelsMap channels = g_mappings.Get().channels;
-  for (ChannelsMap::iterator i = channels.begin(); i != channels.end(); ++i) {
-    if (i->second == channel)
-      return i->first;
-  }
-  NOTREACHED();
-  return "unknown";
-}
 
 // TODO(aa): Can we replace all this manual parsing with JSON schema stuff?
 
@@ -236,43 +215,15 @@ std::string HashExtensionId(const std::string& extension_id) {
 }  // namespace
 
 SimpleFeature::SimpleFeature()
-  : location_(UNSPECIFIED_LOCATION),
-    min_manifest_version_(0),
-    max_manifest_version_(0),
-    channel_(VersionInfo::CHANNEL_UNKNOWN),
-    has_parent_(false),
-    channel_has_been_set_(false) {
-}
+    : location_(UNSPECIFIED_LOCATION),
+      min_manifest_version_(0),
+      max_manifest_version_(0),
+      has_parent_(false) {}
 
-SimpleFeature::SimpleFeature(const SimpleFeature& other)
-    : whitelist_(other.whitelist_),
-      extension_types_(other.extension_types_),
-      contexts_(other.contexts_),
-      matches_(other.matches_),
-      location_(other.location_),
-      platforms_(other.platforms_),
-      min_manifest_version_(other.min_manifest_version_),
-      max_manifest_version_(other.max_manifest_version_),
-      channel_(other.channel_),
-      has_parent_(other.has_parent_),
-      channel_has_been_set_(other.channel_has_been_set_) {
-}
+SimpleFeature::~SimpleFeature() {}
 
-SimpleFeature::~SimpleFeature() {
-}
-
-bool SimpleFeature::Equals(const SimpleFeature& other) const {
-  return whitelist_ == other.whitelist_ &&
-      extension_types_ == other.extension_types_ &&
-      contexts_ == other.contexts_ &&
-      matches_ == other.matches_ &&
-      location_ == other.location_ &&
-      platforms_ == other.platforms_ &&
-      min_manifest_version_ == other.min_manifest_version_ &&
-      max_manifest_version_ == other.max_manifest_version_ &&
-      channel_ == other.channel_ &&
-      has_parent_ == other.has_parent_ &&
-      channel_has_been_set_ == other.channel_has_been_set_;
+void SimpleFeature::AddFilter(scoped_ptr<SimpleFeatureFilter> filter) {
+  filters_.push_back(make_linked_ptr(filter.release()));
 }
 
 std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
@@ -289,22 +240,22 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* value) {
                          g_mappings.Get().platforms);
   value->GetInteger("min_manifest_version", &min_manifest_version_);
   value->GetInteger("max_manifest_version", &max_manifest_version_);
-  ParseEnum<VersionInfo::Channel>(
-      value, "channel", &channel_,
-      g_mappings.Get().channels);
 
   no_parent_ = false;
   value->GetBoolean("noparent", &no_parent_);
 
-  // The "trunk" channel uses VersionInfo::CHANNEL_UNKNOWN, so we need to keep
-  // track of whether the channel has been set or not separately.
-  channel_has_been_set_ |= value->HasKey("channel");
-  if (!channel_has_been_set_ && dependencies_.empty())
-    return name() + ": Must supply a value for channel or dependencies.";
-
   if (matches_.is_empty() && contexts_.count(WEB_PAGE_CONTEXT) != 0) {
     return name() + ": Allowing web_page contexts requires supplying a value " +
         "for matches.";
+  }
+
+  for (FilterList::iterator filter_iter = filters_.begin();
+       filter_iter != filters_.end();
+       ++filter_iter) {
+    std::string result = (*filter_iter)->Parse(value);
+    if (!result.empty()) {
+      return result;
+    }
   }
 
   return std::string();
@@ -360,8 +311,14 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return CreateAvailability(INVALID_MAX_MANIFEST_VERSION, type);
 
-  if (channel_has_been_set_ && channel_ < GetCurrentChannel())
-    return CreateAvailability(UNSUPPORTED_CHANNEL, type);
+  for (FilterList::const_iterator filter_iter = filters_.begin();
+       filter_iter != filters_.end();
+       ++filter_iter) {
+    Availability availability = (*filter_iter)->IsAvailableToManifest(
+        extension_id, type, location, manifest_version, platform);
+    if (!availability.is_available())
+      return availability;
+  }
 
   return CreateAvailability(IS_AVAILABLE, type);
 }
@@ -387,6 +344,15 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
 
   if (!matches_.is_empty() && !matches_.MatchesURL(url))
     return CreateAvailability(INVALID_URL, url);
+
+  for (FilterList::const_iterator filter_iter = filters_.begin();
+       filter_iter != filters_.end();
+       ++filter_iter) {
+    Availability availability =
+        (*filter_iter)->IsAvailableToContext(extension, context, url, platform);
+    if (!availability.is_available())
+      return availability;
+  }
 
   return CreateAvailability(IS_AVAILABLE);
 }
@@ -444,11 +410,8 @@ std::string SimpleFeature::GetAvailabilityMessage(
           name().c_str());
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
-          "'%s' requires Google Chrome %s channel or newer, but this is the "
-              "%s channel.",
-          name().c_str(),
-          GetChannelName(channel_).c_str(),
-          GetChannelName(GetCurrentChannel()).c_str());
+          "'%s' is unsupported in this version of the platform.",
+          name().c_str());
   }
 
   NOTREACHED();

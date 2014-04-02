@@ -40,6 +40,8 @@ class ShellExtensionsClient : public extensions::ExtensionsClient {
   virtual bool IsAPISchemaGenerated(const std::string& name) const OVERRIDE;
   virtual base::StringPiece GetAPISchema(const std::string& name) const
       OVERRIDE;
+  virtual void AddExtraFeatureFilters(extensions::SimpleFeature* feature) const
+      OVERRIDE;
 
  private:
   ScriptingWhitelist scripting_whitelist_;

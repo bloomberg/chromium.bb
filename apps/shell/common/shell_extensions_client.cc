@@ -173,4 +173,7 @@ base::StringPiece ShellExtensionsClient::GetAPISchema(
   return apps::api::GeneratedSchemas::Get(name);
 }
 
+void ShellExtensionsClient::AddExtraFeatureFilters(
+    extensions::SimpleFeature* feature) const {}
+
 }  // namespace apps

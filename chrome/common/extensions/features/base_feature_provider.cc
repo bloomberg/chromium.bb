@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/features/complex_feature.h"
 #include "chrome/common/extensions/features/manifest_feature.h"
 #include "chrome/common/extensions/features/permission_feature.h"
+#include "extensions/common/extensions_client.h"
 #include "grit/common_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -23,7 +24,9 @@ namespace {
 
 template<class FeatureClass>
 SimpleFeature* CreateFeature() {
-  return new FeatureClass();
+  SimpleFeature* feature = new FeatureClass();
+  ExtensionsClient::Get()->AddExtraFeatureFilters(feature);
+  return feature;
 }
 
 static BaseFeatureProvider* LoadProvider(

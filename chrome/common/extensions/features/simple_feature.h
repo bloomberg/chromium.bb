@@ -7,10 +7,13 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/features/simple_feature_filter.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/manifest.h"
@@ -22,20 +25,19 @@ class ComplexFeature;
 class SimpleFeature : public Feature {
  public:
   SimpleFeature();
-  SimpleFeature(const SimpleFeature& other);
   virtual ~SimpleFeature();
 
   std::set<std::string>* whitelist() { return &whitelist_; }
   std::set<Manifest::Type>* extension_types() { return &extension_types_; }
+
+  // Adds a filter to this feature. The feature takes ownership of the filter.
+  void AddFilter(scoped_ptr<SimpleFeatureFilter> filter);
 
   // Parses the JSON representation of a feature into the fields of this object.
   // Unspecified values in the JSON are not modified in the object. This allows
   // us to implement inheritance by parsing one value after another. Returns
   // the error found, or an empty string on success.
   virtual std::string Parse(const base::DictionaryValue* value);
-
-  // Returns true if the feature contains the same values as another.
-  bool Equals(const SimpleFeature& other) const;
 
   Location location() const { return location_; }
   void set_location(Location location) { location_ = location; }
@@ -115,11 +117,13 @@ class SimpleFeature : public Feature {
   std::set<Platform> platforms_;
   int min_manifest_version_;
   int max_manifest_version_;
-  chrome::VersionInfo::Channel channel_;
   bool has_parent_;
-  bool channel_has_been_set_;
+
+  typedef std::vector<linked_ptr<SimpleFeatureFilter> > FilterList;
+  FilterList filters_;
 
   FRIEND_TEST_ALL_PREFIXES(ExtensionSimpleFeatureTest, Context);
+  DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };
 
 }  // namespace extensions

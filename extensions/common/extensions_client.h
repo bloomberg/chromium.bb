@@ -22,6 +22,7 @@ class ManifestPermissionSet;
 class PermissionMessage;
 class PermissionMessageProvider;
 class PermissionsProvider;
+class SimpleFeature;
 class URLPatternSet;
 
 // Sets up global state for the extensions system. Should be Set() once in each
@@ -78,6 +79,9 @@ class ExtensionsClient {
 
   // Gets the API schema named |name|.
   virtual base::StringPiece GetAPISchema(const std::string& name) const = 0;
+
+  // Appends extra filters to any Features created by the features system.
+  virtual void AddExtraFeatureFilters(SimpleFeature* feature) const = 0;
 
   // Return the extensions client.
   static ExtensionsClient* Get();

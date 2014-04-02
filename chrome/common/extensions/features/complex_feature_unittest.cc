@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/features/complex_feature.h"
 
 #include "chrome/common/extensions/features/api_feature.h"
+#include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "extensions/common/test_util.h"
@@ -30,6 +31,13 @@ class ExtensionComplexFeatureTest : public testing::Test {
       : current_channel_(VersionInfo::CHANNEL_UNKNOWN) {}
   virtual ~ExtensionComplexFeatureTest() {}
 
+  SimpleFeature* CreateFeature() {
+    SimpleFeature* feature = new SimpleFeature();
+    feature->AddFilter(scoped_ptr<extensions::SimpleFeatureFilter>(
+        new extensions::ChromeChannelFeatureFilter(feature)));
+    return feature;
+  }
+
  private:
   ScopedCurrentChannel current_channel_;
 };
@@ -41,7 +49,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesWhitelist) {
       new ComplexFeature::FeatureList());
 
   // Rule: "extension", whitelist "foo".
-  scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature());
+  scoped_ptr<SimpleFeature> simple_feature(CreateFeature());
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("whitelist", ListBuilder().Append(kIdFoo))
@@ -51,7 +59,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesWhitelist) {
   features->push_back(simple_feature.release());
 
   // Rule: "legacy_packaged_app", whitelist "bar".
-  simple_feature.reset(new SimpleFeature());
+  simple_feature.reset(CreateFeature());
   rule = DictionaryBuilder()
       .Set("whitelist", ListBuilder().Append(kIdBar))
       .Set("extension_types", ListBuilder()
@@ -96,7 +104,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
       new ComplexFeature::FeatureList());
 
   // Rule: "extension", channel trunk.
-  scoped_ptr<SimpleFeature> simple_feature(new SimpleFeature());
+  scoped_ptr<SimpleFeature> simple_feature(CreateFeature());
   scoped_ptr<base::DictionaryValue> rule(
       DictionaryBuilder()
       .Set("channel", "trunk")
@@ -105,7 +113,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
   features->push_back(simple_feature.release());
 
   // Rule: "legacy_packaged_app", channel stable.
-  simple_feature.reset(new SimpleFeature());
+  simple_feature.reset(CreateFeature());
   rule = DictionaryBuilder()
       .Set("channel", "stable")
       .Set("extension_types", ListBuilder()

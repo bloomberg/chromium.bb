@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/features/base_feature_provider.h"
 
+#include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/features/permission_feature.h"
 #include "extensions/common/value_builder.h"
@@ -98,7 +99,10 @@ TEST(BaseFeatureProviderTest, PermissionFeatures) {
 }
 
 SimpleFeature* CreatePermissionFeature() {
-  return new PermissionFeature();
+  SimpleFeature* feature = new PermissionFeature();
+  feature->AddFilter(
+      scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
+  return feature;
 }
 
 TEST(BaseFeatureProviderTest, Validation) {

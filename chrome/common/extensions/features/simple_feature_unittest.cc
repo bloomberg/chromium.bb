@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/features/simple_feature.h"
 
+#include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -511,12 +512,19 @@ TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
   feature.set_min_manifest_version(1);
   feature.set_max_manifest_version(2);
 
-  SimpleFeature feature2 = feature;
-  EXPECT_TRUE(feature2.Equals(feature));
-
+  // Test additive parsing. Parsing an empty dictionary should result in no
+  // changes to a SimpleFeature.
   base::DictionaryValue definition;
-  feature2.Parse(&definition);
-  EXPECT_TRUE(feature2.Equals(feature));
+  feature.Parse(&definition);
+  EXPECT_EQ(1u, feature.whitelist()->size());
+  EXPECT_EQ(1u, feature.extension_types()->size());
+  EXPECT_EQ(1u, feature.GetContexts()->size());
+  EXPECT_EQ(1u, feature.whitelist()->count("foo"));
+  EXPECT_EQ(Feature::COMPONENT_LOCATION, feature.location());
+  EXPECT_EQ(1u, feature.platforms()->size());
+  EXPECT_EQ(1u, feature.platforms()->count(Feature::CHROMEOS_PLATFORM));
+  EXPECT_EQ(1, feature.min_manifest_version());
+  EXPECT_EQ(2, feature.max_manifest_version());
 
   base::ListValue* whitelist = new base::ListValue();
   base::ListValue* extension_types = new base::ListValue();
@@ -531,58 +539,16 @@ TEST_F(ExtensionSimpleFeatureTest, Inheritance) {
   definition.Set("min_manifest_version", new base::FundamentalValue(2));
   definition.Set("max_manifest_version", new base::FundamentalValue(3));
 
-  feature2.Parse(&definition);
-  EXPECT_FALSE(feature2.Equals(feature));
-  EXPECT_EQ(1u, feature2.whitelist()->size());
-  EXPECT_EQ(1u, feature2.extension_types()->size());
-  EXPECT_EQ(1u, feature2.GetContexts()->size());
-  EXPECT_EQ(1u, feature2.whitelist()->count("bar"));
-  EXPECT_EQ(1u, feature2.extension_types()->count(Manifest::TYPE_EXTENSION));
-  EXPECT_EQ(1u, feature2.GetContexts()->count(
-      Feature::UNBLESSED_EXTENSION_CONTEXT));
-  EXPECT_EQ(2, feature2.min_manifest_version());
-  EXPECT_EQ(3, feature2.max_manifest_version());
-}
-
-TEST_F(ExtensionSimpleFeatureTest, Equals) {
-  SimpleFeature feature;
-  feature.whitelist()->insert("foo");
-  feature.extension_types()->insert(Manifest::TYPE_THEME);
-  feature.GetContexts()->insert(Feature::UNBLESSED_EXTENSION_CONTEXT);
-  feature.set_location(Feature::COMPONENT_LOCATION);
-  feature.platforms()->insert(Feature::CHROMEOS_PLATFORM);
-  feature.set_min_manifest_version(18);
-  feature.set_max_manifest_version(25);
-
-  SimpleFeature feature2(feature);
-  EXPECT_TRUE(feature2.Equals(feature));
-
-  feature2.whitelist()->clear();
-  EXPECT_FALSE(feature2.Equals(feature));
-
-  feature2 = feature;
-  feature2.extension_types()->clear();
-  EXPECT_FALSE(feature2.Equals(feature));
-
-  feature2 = feature;
-  feature2.GetContexts()->clear();
-  EXPECT_FALSE(feature2.Equals(feature));
-
-  feature2 = feature;
-  feature2.set_location(Feature::UNSPECIFIED_LOCATION);
-  EXPECT_FALSE(feature2.Equals(feature));
-
-  feature2 = feature;
-  feature.platforms()->insert(Feature::UNSPECIFIED_PLATFORM);
-  EXPECT_FALSE(feature2.Equals(feature));
-
-  feature2 = feature;
-  feature2.set_min_manifest_version(0);
-  EXPECT_FALSE(feature2.Equals(feature));
-
-  feature2 = feature;
-  feature2.set_max_manifest_version(0);
-  EXPECT_FALSE(feature2.Equals(feature));
+  feature.Parse(&definition);
+  EXPECT_EQ(1u, feature.whitelist()->size());
+  EXPECT_EQ(1u, feature.extension_types()->size());
+  EXPECT_EQ(1u, feature.GetContexts()->size());
+  EXPECT_EQ(1u, feature.whitelist()->count("bar"));
+  EXPECT_EQ(1u, feature.extension_types()->count(Manifest::TYPE_EXTENSION));
+  EXPECT_EQ(1u,
+            feature.GetContexts()->count(Feature::UNBLESSED_EXTENSION_CONTEXT));
+  EXPECT_EQ(2, feature.min_manifest_version());
+  EXPECT_EQ(3, feature.max_manifest_version());
 }
 
 Feature::AvailabilityResult IsAvailableInChannel(
@@ -590,6 +556,8 @@ Feature::AvailabilityResult IsAvailableInChannel(
   ScopedCurrentChannel current_channel(channel_for_testing);
 
   SimpleFeature feature;
+  feature.AddFilter(scoped_ptr<extensions::SimpleFeatureFilter>(
+      new extensions::ChromeChannelFeatureFilter(&feature)));
   if (!channel.empty()) {
     base::DictionaryValue feature_value;
     feature_value.SetString("channel", channel);
