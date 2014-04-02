@@ -334,24 +334,25 @@ enum SpdySettingsFlags {
   SETTINGS_FLAG_PERSISTED = 0x2
 };
 
-// List of known settings.
+// List of known settings. Avoid changing these enum values, as persisted
+// settings are keyed on them, and they are also exposed in net-internals.
 enum SpdySettingsIds {
-  SETTINGS_UPLOAD_BANDWIDTH,
-  SETTINGS_DOWNLOAD_BANDWIDTH,
+  SETTINGS_UPLOAD_BANDWIDTH = 0x1,
+  SETTINGS_DOWNLOAD_BANDWIDTH = 0x2,
   // Network round trip time in milliseconds.
-  SETTINGS_ROUND_TRIP_TIME,
+  SETTINGS_ROUND_TRIP_TIME = 0x3,
   // The maximum number of simultaneous live streams in each direction.
-  SETTINGS_MAX_CONCURRENT_STREAMS,
+  SETTINGS_MAX_CONCURRENT_STREAMS = 0x4,
   // TCP congestion window in packets.
-  SETTINGS_CURRENT_CWND,
+  SETTINGS_CURRENT_CWND = 0x5,
   // Downstream byte retransmission rate in percentage.
-  SETTINGS_DOWNLOAD_RETRANS_RATE,
+  SETTINGS_DOWNLOAD_RETRANS_RATE = 0x6,
   // Initial window size in bytes
-  SETTINGS_INITIAL_WINDOW_SIZE,
+  SETTINGS_INITIAL_WINDOW_SIZE = 0x7,
   // HPACK header table maximum size.
-  SETTINGS_HEADER_TABLE_SIZE,
+  SETTINGS_HEADER_TABLE_SIZE = 0x8,
   // Whether or not server push (PUSH_PROMISE) is enabled.
-  SETTINGS_ENABLE_PUSH,
+  SETTINGS_ENABLE_PUSH = 0x9,
 };
 
 // Status codes for RST_STREAM frames.
