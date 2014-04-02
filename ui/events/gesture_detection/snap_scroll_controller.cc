@@ -96,11 +96,11 @@ float SnapScrollController::CalculateChannelDistance(const Config& config) {
   const float screen_size = std::abs(
       hypot((float)config.screen_width_pixels / config.device_scale_factor,
             (float)config.screen_height_pixels / config.device_scale_factor));
-  if (screen_size < 3.f) {
+  if (screen_size < 480.f) {
     channel_distance = 16.f;
-  } else if (screen_size < 5.f) {
+  } else if (screen_size < 800.f) {
     channel_distance = 22.f;
-  } else if (screen_size < 7.f) {
+  } else if (screen_size < 1120.f) {
     channel_distance = 28.f;
   } else {
     channel_distance = 34.f;
