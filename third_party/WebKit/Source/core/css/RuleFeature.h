@@ -129,7 +129,7 @@ private:
         UseSubtreeStyleChange
     };
 
-    static InvalidationSetMode supportsClassDescendantInvalidation(const CSSSelector&);
+    static InvalidationSetMode invalidationSetModeForSelector(const CSSSelector&);
 
     void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&, InvalidationSetMode);
     void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&, InvalidationSetMode);

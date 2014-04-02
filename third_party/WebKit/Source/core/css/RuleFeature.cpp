@@ -103,7 +103,7 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
 }
 
 // This method is somewhat conservative in what it accepts.
-RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInvalidation(const CSSSelector& selector)
+RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelector(const CSSSelector& selector)
 {
     bool foundDescendantRelation = false;
     bool foundIdent = false;
@@ -116,10 +116,10 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
         } else if (component->pseudoType() == CSSSelector::PseudoHost || component->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = component->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector)) {
-                    InvalidationSetMode hostMode = supportsClassDescendantInvalidation(*selector);
+                    InvalidationSetMode hostMode = invalidationSetModeForSelector(*selector);
                     if (hostMode == UseSubtreeStyleChange)
                         return foundDescendantRelation ? UseLocalStyleChange : UseSubtreeStyleChange;
-                    if (hostMode == AddFeatures)
+                    if (!foundDescendantRelation && hostMode == AddFeatures)
                         foundIdent = true;
                 }
             }
@@ -172,7 +172,7 @@ DescendantInvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSS
 
 RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateInvalidationSets(const CSSSelector& selector)
 {
-    InvalidationSetMode mode = supportsClassDescendantInvalidation(selector);
+    InvalidationSetMode mode = invalidationSetModeForSelector(selector);
     if (mode != AddFeatures)
         return mode;
 
