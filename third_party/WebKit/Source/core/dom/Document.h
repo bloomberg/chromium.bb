@@ -353,6 +353,8 @@ public:
     void setContent(const String&);
 
     String suggestedMIMEType() const;
+    void setMimeType(const AtomicString&);
+    AtomicString contentType() const; // DOM 4 document.contentType
 
     const AtomicString& contentLanguage() const { return m_contentLanguage; }
     void setContentLanguage(const AtomicString&);
@@ -1184,6 +1186,9 @@ private:
     KURL m_cookieURL; // The URL to use for cookie access.
 
     AtomicString m_baseTarget;
+
+    // Mime-type of the document in case it was cloned or created by XHR.
+    AtomicString m_mimeType;
 
     RefPtr<DocumentType> m_docType;
     OwnPtr<DOMImplementation> m_implementation;

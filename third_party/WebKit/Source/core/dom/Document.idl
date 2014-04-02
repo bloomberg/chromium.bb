@@ -89,6 +89,9 @@ typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
      CSSStyleDeclaration getOverrideStyle([Default=Undefined] optional Element element,
                                                         [Default=Undefined] optional DOMString pseudoElement);
 
+    // DOM 4
+    readonly attribute DOMString contentType;
+
     // Common extensions
     [CustomElementCallbacks]
     boolean            execCommand([Default=Undefined] optional DOMString command,

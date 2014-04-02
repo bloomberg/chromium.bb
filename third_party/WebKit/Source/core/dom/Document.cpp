@@ -1204,6 +1204,26 @@ String Document::suggestedMIMEType() const
     return String();
 }
 
+void Document::setMimeType(const AtomicString& mimeType)
+{
+    m_mimeType = mimeType;
+}
+
+AtomicString Document::contentType() const
+{
+    if (!m_mimeType.isEmpty())
+        return m_mimeType;
+
+    if (DocumentLoader* documentLoader = loader())
+        return documentLoader->mimeType();
+
+    String mimeType = suggestedMIMEType();
+    if (!mimeType.isEmpty())
+        return AtomicString(mimeType);
+
+    return AtomicString("application/xml");
+}
+
 Element* Document::elementFromPoint(int x, int y) const
 {
     if (!renderView())
@@ -3264,6 +3284,7 @@ void Document::cloneDataFromDocument(const Document& other)
     setEncodingData(other.m_encodingData);
     setContextFeatures(other.contextFeatures());
     setSecurityOrigin(other.securityOrigin()->isolatedCopy());
+    setMimeType(other.contentType());
 }
 
 StyleSheetList* Document::styleSheets()
