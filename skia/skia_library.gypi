@@ -34,8 +34,6 @@
 
     '../third_party/skia/src/opts/opts_check_SSE2.cpp',
 
-    '../third_party/skia/src/ports/SkPurgeableMemoryBlock_none.cpp',
-
     '../third_party/skia/src/ports/SkFontConfigInterface_android.cpp',
     '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
 
