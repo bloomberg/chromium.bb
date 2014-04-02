@@ -137,8 +137,12 @@ GLContext* GLContext::GetRealCurrent() {
 void GLContext::SetCurrent(GLSurface* surface) {
   current_context_.Pointer()->Set(surface ? this : NULL);
   GLSurface::SetCurrent(surface);
-  if (!surface)
+  // Leave the real GL api current so that unit tests work correctly.
+  // TODO(sievers): Remove this, but needs all gpu_unittest classes
+  // to create and make current a context.
+  if (!surface && GetGLImplementation() != kGLImplementationMockGL) {
     SetGLApiToNoContext();
+  }
 }
 
 GLStateRestorer* GLContext::GetGLStateRestorer() {
