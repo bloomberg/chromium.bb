@@ -598,6 +598,8 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || type == Resource::Raw);
 
+    TRACE_EVENT0("webkit", "ResourceFetcher::requestResource");
+
     KURL url = request.resourceRequest().url();
 
     WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), ResourceTypeName(type));
