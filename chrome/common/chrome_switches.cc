@@ -314,9 +314,6 @@ const char kDisableExtensionsResourceWhitelist[] =
 // a tab.  http://crbug.com/256870 and http://crbug.com/290403
 const char kDisableFullscreenWithinTab[] = "disable-fullscreen-within-tab";
 
-// Disables Google Now integration.
-const char kDisableGoogleNowIntegration[] = "disable-google-now-integration";
-
 // Disables improved SafeBrowsing download protection.
 const char kDisableImprovedDownloadProtection[] =
     "disable-improved-download-protection";
@@ -540,9 +537,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // running a tab's onunload js handler independently of the GUI -
 // crbug.com/142458 .
 const char kEnableFastUnload[]         = "enable-fast-unload";
-
-// Enables Google Now integration.
-const char kEnableGoogleNowIntegration[]    = "enable-google-now-integration";
 
 // Enable HTTP/2 draft 04. This is a temporary testing flag.
 const char kEnableHttp2Draft04[]            = "enable-http2-draft-04";

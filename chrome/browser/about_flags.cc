@@ -1309,17 +1309,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableGestureRequirementForMediaPlayback)
   },
 #endif
-#if defined(ENABLE_GOOGLE_NOW)
-  {
-    "enable-google-now",
-    IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_NAME,
-    IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_DESCRIPTION,
-    kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE(
-        switches::kEnableGoogleNowIntegration,
-        switches::kDisableGoogleNowIntegration)
-  },
-#endif
 #if defined(OS_CHROMEOS)
   {
     "enable-virtual-keyboard",

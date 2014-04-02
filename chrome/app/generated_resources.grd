@@ -14232,12 +14232,6 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_DESCRIPTION" desc="Description for the flag to enable the google profile information">
       Enables using Google information to populate the profile name and icon in the avatar menu.
     </message>
-    <message name="IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_NAME" desc="Name of about:flags option to turn on Google Now integration">
-      Google Now
-    </message>
-    <message name="IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_DESCRIPTION" desc="Description of about:flags option to turn on Google Now integration">
-      Enable Google Now notifications support.
-    </message>
     <message name="IDS_FLAGS_ENABLE_OFFLINE_MODE_NAME" desc="Name of the flag to make reads in offline mode come from the cache even if it's stale">
       Enable Offline Cache Mode
     </message>
