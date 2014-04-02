@@ -97,7 +97,7 @@ CSSPropertyID propertyForAnimation(CSSPropertyID property)
 }
 
 static void resolveKeyframes(StyleResolver* resolver, Element* element, const Element& parentElement, const RenderStyle& style, RenderStyle* parentStyle, const AtomicString& name, TimingFunction* defaultTimingFunction,
-    AnimatableValueKeyframeVector& keyframes)
+    KeyframeEffectModel::KeyframeVector& keyframes)
 {
     // When the element is null, use its parent for scoping purposes.
     const Element* elementForScoping = element ? element : &parentElement;
@@ -115,7 +115,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
         // It's OK to pass a null element here.
         RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, parentStyle, styleKeyframe, name);
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
+        RefPtrWillBeRawPtr<Keyframe> keyframe = Keyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
         keyframe->setOffset(offsets[0]);
@@ -133,7 +133,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
         keyframes.append(keyframe);
         // The last keyframe specified at a given offset is used.
         for (size_t j = 1; j < offsets.size(); ++j) {
-            keyframes.append(toAnimatableValueKeyframe(keyframe->cloneWithOffset(offsets[j]).get()));
+            keyframes.append(keyframe->cloneWithOffset(offsets[j]));
         }
     }
     ASSERT(!keyframes.isEmpty());
@@ -156,15 +156,15 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
     keyframes.shrink(targetIndex + 1);
 
     // Add 0% and 100% keyframes if absent.
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = keyframes[0];
+    RefPtrWillBeRawPtr<Keyframe> startKeyframe = keyframes[0];
     if (startKeyframe->offset()) {
-        startKeyframe = AnimatableValueKeyframe::create();
+        startKeyframe = Keyframe::create();
         startKeyframe->setOffset(0);
         keyframes.prepend(startKeyframe);
     }
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> endKeyframe = keyframes[keyframes.size() - 1];
+    RefPtrWillBeRawPtr<Keyframe> endKeyframe = keyframes[keyframes.size() - 1];
     if (endKeyframe->offset() != 1) {
-        endKeyframe = AnimatableValueKeyframe::create();
+        endKeyframe = Keyframe::create();
         endKeyframe->setOffset(1);
         keyframes.append(endKeyframe);
     }
@@ -341,11 +341,11 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
             Timing timing;
             bool isPaused;
             RefPtr<TimingFunction> keyframeTimingFunction = timingFromAnimationData(animationData, timing, isPaused);
-            AnimatableValueKeyframeVector resolvedKeyframes;
+            KeyframeEffectModel::KeyframeVector resolvedKeyframes;
             resolveKeyframes(resolver, element, parentElement, style, parentStyle, animationName, keyframeTimingFunction.get(), resolvedKeyframes);
             if (!resolvedKeyframes.isEmpty()) {
                 ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
-                update->startAnimation(animationName, InertAnimation::create(AnimatableValueKeyframeEffectModel::create(resolvedKeyframes), timing, isPaused));
+                update->startAnimation(animationName, InertAnimation::create(KeyframeEffectModel::create(resolvedKeyframes), timing, isPaused));
             }
         }
     }
@@ -432,16 +432,16 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             double oldStartTime = oldTransition.second;
             double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline().currentTime() - oldStartTime;
             oldAnimation->updateInheritedTime(inheritedTime);
-            AnimatableValueKeyframeEffectModel* oldEffect = toAnimatableValueKeyframeEffectModel(inertAnimation->effect());
-            const KeyframeVector& frames = oldEffect->getFrames();
-            AnimatableValueKeyframeVector newFrames;
-            newFrames.append(toAnimatableValueKeyframe(frames[0]->clone().get()));
+            KeyframeEffectModel* oldEffect = toKeyframeEffectModel(inertAnimation->effect());
+            const KeyframeEffectModel::KeyframeVector& frames = oldEffect->getFrames();
+            KeyframeEffectModel::KeyframeVector newFrames;
+            newFrames.append(frames[0]->clone());
             newFrames[0]->clearPropertyValue(id);
             ASSERT(oldAnimation->activeInterpolations().size() == 1);
-            RefPtr<AnimatableValue> value = toLegacyStyleInterpolation(oldAnimation->activeInterpolations()[0].get())->currentValue();
-            newFrames[0]->setPropertyValue(id, value.release());
-            newFrames.append(toAnimatableValueKeyframe(frames[1]->clone().get()));
-            effect = AnimatableValueKeyframeEffectModel::create(newFrames);
+            const AnimatableValue* value = toLegacyStyleInterpolation(oldAnimation->activeInterpolations()[0].get())->currentValue();
+            newFrames[0]->setPropertyValue(id, value);
+            newFrames.append(frames[1]->clone());
+            effect = KeyframeEffectModel::create(newFrames);
         }
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
@@ -490,20 +490,20 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     // Note that the backwards part is required for delay to work.
     timing.fillMode = Timing::FillModeBoth;
 
-    AnimatableValueKeyframeVector keyframes;
+    KeyframeEffectModel::KeyframeVector keyframes;
 
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = AnimatableValueKeyframe::create();
+    RefPtrWillBeRawPtr<Keyframe> startKeyframe = Keyframe::create();
     startKeyframe->setPropertyValue(id, from.get());
     startKeyframe->setOffset(0);
     startKeyframe->setEasing(timingFunction);
     keyframes.append(startKeyframe);
 
-    RefPtrWillBeRawPtr<AnimatableValueKeyframe> endKeyframe = AnimatableValueKeyframe::create();
+    RefPtrWillBeRawPtr<Keyframe> endKeyframe = Keyframe::create();
     endKeyframe->setPropertyValue(id, to.get());
     endKeyframe->setOffset(1);
     keyframes.append(endKeyframe);
 
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(keyframes);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(keyframes);
 
     CSSPropertyID eventId = anim->animationMode() == CSSAnimationData::AnimateAll ? id : anim->property();
     update->startTransition(id, eventId, from.get(), to.get(), InertAnimation::create(effect, timing, isPaused));

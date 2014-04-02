@@ -36,6 +36,8 @@
 
 namespace WebCore {
 
+typedef KeyframeEffectModel::PropertySpecificKeyframeVector KeyframeVector;
+
 class CompositorAnimationsImpl {
 private:
     struct CompositorTiming {
@@ -48,9 +50,9 @@ private:
 
     static bool convertTimingForCompositor(const Timing&, CompositorTiming& out);
 
-    static void getAnimationOnCompositor(const Timing&, const AnimatableValueKeyframeEffectModel&, Vector<OwnPtr<blink::WebAnimation> >& animations);
+    static void getAnimationOnCompositor(const Timing&, const KeyframeEffectModel&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
-    static void addKeyframesToCurve(blink::WebAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, bool reverse);
+    static void addKeyframesToCurve(blink::WebAnimationCurve&, const KeyframeVector&, bool reverse);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;

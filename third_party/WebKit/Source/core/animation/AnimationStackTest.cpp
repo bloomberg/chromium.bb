@@ -37,14 +37,14 @@ protected:
 
     PassRefPtrWillBeRawPtr<AnimationEffect> makeAnimationEffect(CSSPropertyID id, PassRefPtrWillBeRawPtr<AnimatableValue> value)
     {
-        AnimatableValueKeyframeVector keyframes(2);
-        keyframes[0] = AnimatableValueKeyframe::create();
+        KeyframeEffectModel::KeyframeVector keyframes(2);
+        keyframes[0] = Keyframe::create();
         keyframes[0]->setOffset(0.0);
         keyframes[0]->setPropertyValue(id, value.get());
-        keyframes[1] = AnimatableValueKeyframe::create();
+        keyframes[1] = Keyframe::create();
         keyframes[1]->setOffset(1.0);
         keyframes[1]->setPropertyValue(id, value.get());
-        return AnimatableValueKeyframeEffectModel::create(keyframes);
+        return KeyframeEffectModel::create(keyframes);
     }
 
     PassRefPtr<InertAnimation> makeInertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect)
@@ -63,7 +63,7 @@ protected:
 
     AnimatableValue* interpolationValue(Interpolation* interpolation)
     {
-        return toLegacyStyleInterpolation(interpolation)->currentValue().get();
+        return toLegacyStyleInterpolation(interpolation)->currentValue();
     }
 
     RefPtr<Document> document;

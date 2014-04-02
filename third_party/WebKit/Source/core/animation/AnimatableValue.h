@@ -136,7 +136,7 @@ private:
 
     virtual double distanceTo(const AnimatableValue*) const;
 
-    template <class Keyframe> friend class KeyframeEffectModel;
+    friend class KeyframeEffectModel;
 };
 
 #define DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(thisType, predicate) \

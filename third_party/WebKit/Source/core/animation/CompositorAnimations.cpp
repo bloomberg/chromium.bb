@@ -58,10 +58,10 @@ namespace WebCore {
 
 namespace {
 
-void getKeyframeValuesForProperty(const KeyframeEffectModelBase* effect, CSSPropertyID id, double scale, bool reverse, PropertySpecificKeyframeVector& values)
+void getKeyframeValuesForProperty(const KeyframeEffectModel* effect, CSSPropertyID id, double scale, bool reverse, KeyframeVector& values)
 {
     ASSERT(values.isEmpty());
-    const PropertySpecificKeyframeVector& group = effect->getPropertySpecificKeyframes(id);
+    const KeyframeVector& group = effect->getPropertySpecificKeyframes(id);
 
     if (reverse) {
         for (size_t i = group.size(); i--;) {
@@ -131,10 +131,10 @@ PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(c
 
 bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& timing, const AnimationEffect& effect)
 {
-    const AnimatableValueKeyframeEffectModel& keyframeEffect = *toAnimatableValueKeyframeEffectModel(&effect);
+    const KeyframeEffectModel& keyframeEffect = *toKeyframeEffectModel(&effect);
 
     // Are the keyframes convertible?
-    const KeyframeVector frames = keyframeEffect.getFrames();
+    const KeyframeEffectModel::KeyframeVector frames = keyframeEffect.getFrames();
     for (size_t i = 0; i < frames.size(); ++i) {
         // Only replace mode can be accelerated
         if (frames[i]->composite() != AnimationEffect::CompositeReplace)
@@ -146,18 +146,16 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         if (properties.isEmpty())
             return false;
 
-        AnimatableValueKeyframe* frame = toAnimatableValueKeyframe(frames[i].get());
-
         for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
             switch (*it) {
             case CSSPropertyOpacity:
                 continue;
             case CSSPropertyTransform:
-                if (toAnimatableTransform(frame->propertyValue(CSSPropertyTransform))->transformOperations().dependsOnBoxSize())
+                if (toAnimatableTransform(frames[i]->propertyValue(CSSPropertyTransform))->transformOperations().dependsOnBoxSize())
                     return false;
                 continue;
             case CSSPropertyWebkitFilter: {
-                const FilterOperations& operations = toAnimatableFilterOperations(frame->propertyValue(CSSPropertyWebkitFilter))->operations();
+                const FilterOperations& operations = toAnimatableFilterOperations(frames[i]->propertyValue(CSSPropertyWebkitFilter))->operations();
                 if (operations.hasFilterThatMovesPixels())
                     return false;
                 for (size_t i = 0; i < operations.size(); i++) {
@@ -203,8 +201,8 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         return false;
 
     // Search for any segments with StepsFunction.
-    WillBeHeapVector<RefPtrWillBeMember<Keyframe> >::const_iterator end = frames.end() - 1; // Ignore timing function of last frame.
-    for (WillBeHeapVector<RefPtrWillBeMember<Keyframe> >::const_iterator iter = frames.begin(); iter != end; ++iter) {
+    WillBeHeapVector<RefPtrWillBeMember<Keyframe> >::const_iterator end = keyframeEffect.getFrames().end() - 1; // Ignore timing function of last frame.
+    for (WillBeHeapVector<RefPtrWillBeMember<Keyframe> >::const_iterator iter = keyframeEffect.getFrames().begin(); iter != end; ++iter) {
         RELEASE_ASSERT((*iter)->easing());
         switch ((*iter)->easing()->type()) {
         case TimingFunction::LinearFunction:
@@ -233,7 +231,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, co
     ASSERT(isCandidateForAnimationOnCompositor(timing, effect));
     ASSERT(canStartAnimationOnCompositor(element));
 
-    const AnimatableValueKeyframeEffectModel& keyframeEffect = *toAnimatableValueKeyframeEffectModel(&effect);
+    const KeyframeEffectModel& keyframeEffect = *toKeyframeEffectModel(&effect);
 
     RenderLayer* layer = toRenderBoxModelObject(element.renderer())->layer();
     ASSERT(layer);
@@ -393,7 +391,7 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
 
 } // namespace anoymous
 
-void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, bool reverse)
+void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& curve, const KeyframeVector& keyframes, bool reverse)
 {
     for (size_t i = 0; i < keyframes.size(); i++) {
         RefPtr<TimingFunction> reversedTimingFunction;
@@ -407,7 +405,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
             }
         }
 
-        const AnimatableValue* value = toAnimatableValuePropertySpecificKeyframe(keyframes[i].get())->value();
+        const AnimatableValue* value = keyframes[i]->value();
 
         switch (curve.type()) {
         case blink::WebAnimationCurve::AnimationCurveTypeFilter: {
@@ -441,7 +439,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(blink::WebAnimationCurve& cur
     }
 }
 
-void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, const AnimatableValueKeyframeEffectModel& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
+void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, const KeyframeEffectModel& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
 {
     ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
@@ -456,7 +454,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, co
     ASSERT(!properties.isEmpty());
     for (PropertySet::iterator it = properties.begin(); it != properties.end(); ++it) {
 
-        PropertySpecificKeyframeVector values;
+        KeyframeVector values;
         getKeyframeValuesForProperty(&effect, *it, compositorTiming.scaledDuration, compositorTiming.reverse, values);
 
         blink::WebAnimation::TargetProperty targetProperty;
