@@ -492,7 +492,7 @@ inline void CSSTokenizer::parseIdentifier(CharacterType*& result, CSSParserStrin
     if (UNLIKELY(!parseIdentifierInternal(currentCharacter<CharacterType>(), result, hasEscape))) {
         // Found an escape we couldn't handle with 8 bits, copy what has been recognized and continue
         ASSERT(is8BitSource());
-        UChar* result16 = allocateStringBuffer16((result - start) + peekMaxIdentifierLen(result));
+        UChar* result16 = allocateStringBuffer16((result - start) + peekMaxIdentifierLen(currentCharacter<CharacterType>()));
         UChar* start16 = result16;
         int i = 0;
         for (; i < result - start; i++)
@@ -565,7 +565,7 @@ inline void CSSTokenizer::parseString(CharacterType*& result, CSSParserString& r
     if (UNLIKELY(!parseStringInternal(currentCharacter<CharacterType>(), result, quote))) {
         // Found an escape we couldn't handle with 8 bits, copy what has been recognized and continue
         ASSERT(is8BitSource());
-        UChar* result16 = allocateStringBuffer16((result - start) + peekMaxStringLen(result, quote));
+        UChar* result16 = allocateStringBuffer16((result - start) + peekMaxStringLen(currentCharacter<CharacterType>(), quote));
         UChar* start16 = result16;
         int i = 0;
         for (; i < result - start; i++)
@@ -675,9 +675,9 @@ inline void CSSTokenizer::parseURI(CSSParserString& string)
         // Reset the current character to the start of the URI and re-parse with
         // a 16-bit destination.
         ASSERT(is8BitSource());
-        UChar* result16 = allocateStringBuffer16(peekMaxURILen(uriStart, quote));
-        UChar* uriStart16 = result16;
         currentCharacter<CharacterType>() = uriStart;
+        UChar* result16 = allocateStringBuffer16(peekMaxURILen(currentCharacter<CharacterType>(), quote));
+        UChar* uriStart16 = result16;
         bool result = parseURIInternal(currentCharacter<CharacterType>(), result16, quote);
         ASSERT_UNUSED(result, result);
         string.init(uriStart16, result16 - uriStart16);
