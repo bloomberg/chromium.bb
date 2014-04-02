@@ -160,19 +160,23 @@ QuicClientSession::~QuicClientSession() {
   if (!going_away_)
     RecordUnexpectedNotGoingAway(DESTRUCTOR);
 
-  // The session must be closed before it is destroyed.
-  DCHECK(streams()->empty());
-  CloseAllStreams(ERR_UNEXPECTED);
-  DCHECK(observers_.empty());
-  CloseAllObservers(ERR_UNEXPECTED);
+  while (!streams()->empty() ||
+         !observers_.empty() ||
+         !stream_requests_.empty()) {
+    // The session must be closed before it is destroyed.
+    DCHECK(streams()->empty());
+    CloseAllStreams(ERR_UNEXPECTED);
+    DCHECK(observers_.empty());
+    CloseAllObservers(ERR_UNEXPECTED);
 
-  connection()->set_debug_visitor(NULL);
-  net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
+    connection()->set_debug_visitor(NULL);
+    net_log_.EndEvent(NetLog::TYPE_QUIC_SESSION);
 
-  while (!stream_requests_.empty()) {
-    StreamRequest* request = stream_requests_.front();
-    stream_requests_.pop_front();
-    request->OnRequestCompleteFailure(ERR_ABORTED);
+    while (!stream_requests_.empty()) {
+      StreamRequest* request = stream_requests_.front();
+      stream_requests_.pop_front();
+      request->OnRequestCompleteFailure(ERR_ABORTED);
+    }
   }
 
   if (IsEncryptionEstablished())
@@ -238,8 +242,11 @@ bool QuicClientSession::OnStreamFrames(
 }
 
 void QuicClientSession::AddObserver(Observer* observer) {
-  if (going_away_)
+  if (going_away_) {
     RecordUnexpectedObservers(ADD_OBSERVER);
+    observer->OnSessionClosed(ERR_UNEXPECTED);
+    return;
+  }
 
   DCHECK(!ContainsKey(observers_, observer));
   observers_.insert(observer);
