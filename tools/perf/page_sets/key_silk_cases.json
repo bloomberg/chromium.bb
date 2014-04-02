@@ -166,15 +166,25 @@
       ]
     },
     {
-      "url": "file://key_silk_cases/old_inbox_app.html?slide_drawer",
+      "url": "file://key_silk_cases/inbox_app.html?slide_drawer",
       "why": "",
       "navigate_steps" : [
         { "action": "navigate" },
-        { "action": "wait", "seconds": 2 }
+        { "action": "wait", "seconds": 2 },
+        { "action": "toggle_drawer" }
       ],
       "smoothness": {
         "action": "slide_drawer"
       },
+      "toggle_drawer": [
+        {
+          "action": "tap",
+          "selector": "#menu-button",
+          "wait_after": {
+            "javascript": "document.getElementById('nav-drawer').active"
+          }
+        }
+      ],
       "slide_drawer": [
         {
           "action": "swipe",
