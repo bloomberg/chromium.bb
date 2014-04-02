@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_export.h"
 
 namespace gpu {
 namespace gles2 {
@@ -29,8 +28,9 @@ bool SetNullDrawGLBindingsEnabledGL(bool enabled);
 void ClearGLBindingsGL();
 void SetGLToRealGLApi();
 void SetGLApi(GLApi* api);
+void SetGLApiToNoContext();
 
-class GL_EXPORT GLApiBase : public GLApi {
+class GLApiBase : public GLApi {
  public:
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -46,7 +46,7 @@ class GL_EXPORT GLApiBase : public GLApi {
 };
 
 // Implemenents the GL API by calling directly into the driver.
-class GL_EXPORT RealGLApi : public GLApiBase {
+class RealGLApi : public GLApiBase {
  public:
   RealGLApi();
   virtual ~RealGLApi();
@@ -54,7 +54,7 @@ class GL_EXPORT RealGLApi : public GLApiBase {
 };
 
 // Inserts a TRACE for every GL call.
-class GL_EXPORT TraceGLApi : public GLApi {
+class TraceGLApi : public GLApi {
  public:
   TraceGLApi(GLApi* gl_api) : gl_api_(gl_api) { }
   virtual ~TraceGLApi();
@@ -68,10 +68,22 @@ class GL_EXPORT TraceGLApi : public GLApi {
   GLApi* gl_api_;
 };
 
+// Catches incorrect usage when GL calls are made without a current context.
+class NoContextGLApi : public GLApi {
+ public:
+  NoContextGLApi();
+  virtual ~NoContextGLApi();
+
+  // Include the auto-generated part of this class. We split this because
+  // it means we can easily edit the non-auto generated parts right here in
+  // this file instead of having to edit some template or the code generator.
+  #include "gl_bindings_api_autogen_gl.h"
+};
+
 // Implementents the GL API using co-operative state restoring.
 // Assumes there is only one real GL context and that multiple virtual contexts
 // are implemented above it. Restores the needed state from the current context.
-class GL_EXPORT VirtualGLApi : public GLApiBase {
+class VirtualGLApi : public GLApiBase {
  public:
   VirtualGLApi();
   virtual ~VirtualGLApi();

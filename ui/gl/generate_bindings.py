@@ -1652,6 +1652,15 @@ namespace gfx {
 }
 """ % set_name.upper())
 
+  def MakeArgNames(arguments):
+    argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
+    argument_names = re.sub(
+        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
+    if argument_names == 'void' or argument_names == '':
+      argument_names = ''
+    return argument_names
+
   # Write GLApiBase functions
   for func in functions:
     function_name = func['known_as']
@@ -1660,12 +1669,7 @@ namespace gfx {
     file.write('\n')
     file.write('%s %sApiBase::%sFn(%s) {\n' %
         (return_type, set_name.upper(), function_name, arguments))
-    argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
-    argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
-    if argument_names == 'void' or argument_names == '':
-      argument_names = ''
+    argument_names = MakeArgNames(arguments)
     if return_type == 'void':
       file.write('  driver_->fn.%sFn(%s);\n' %
           (function_name, argument_names))
@@ -1682,12 +1686,7 @@ namespace gfx {
     file.write('\n')
     file.write('%s Trace%sApi::%sFn(%s) {\n' %
         (return_type, set_name.upper(), function_name, arguments))
-    argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', arguments)
-    argument_names = re.sub(
-        r'(const )?[a-zA-Z0-9_]+\** ([a-zA-Z0-9_]+)', r'\2', argument_names)
-    if argument_names == 'void' or argument_names == '':
-      argument_names = ''
+    argument_names = MakeArgNames(arguments)
     file.write('  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::%s")\n' %
                function_name)
     if return_type == 'void':
@@ -1697,6 +1696,37 @@ namespace gfx {
       file.write('  return %s_api_->%sFn(%s);\n' %
           (set_name.lower(), function_name, argument_names))
     file.write('}\n')
+
+  # Write NoContextGLApi functions
+  if set_name.upper() == "GL":
+    for func in functions:
+      function_name = func['known_as']
+      return_type = func['return_type']
+      arguments = func['arguments']
+      file.write('\n')
+      file.write('%s NoContextGLApi::%sFn(%s) {\n' %
+          (return_type, function_name, arguments))
+      argument_names = MakeArgNames(arguments)
+      no_context_error = "Trying to call %s() without current GL context" % function_name
+      file.write('  NOTREACHED() <<  "%s";\n' % no_context_error)
+      file.write('  LOG(ERROR) <<  "%s";\n' % no_context_error)
+      default_value = { 'GLenum': 'static_cast<GLenum>(0)',
+                        'GLuint': '0U',
+                        'GLint': '0',
+                        'GLboolean': 'GL_FALSE',
+                        'GLbyte': '0',
+                        'GLubyte': '0',
+                        'GLbutfield': '0',
+                        'GLushort': '0',
+                        'GLsizei': '0',
+                        'GLfloat': '0.0f',
+                        'GLdouble': '0.0',
+                        'GLsync': 'NULL'}
+      if return_type.endswith('*'):
+        file.write('  return NULL;\n')
+      elif return_type != 'void':
+        file.write('  return %s;\n' % default_value[return_type])
+      file.write('}\n')
 
   file.write('\n')
   file.write('}  // namespace gfx\n')

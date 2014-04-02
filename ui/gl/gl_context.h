@@ -117,6 +117,18 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
  protected:
   virtual ~GLContext();
 
+  // Will release the current context when going out of scope, unless canceled.
+  class ScopedReleaseCurrent {
+   public:
+    ScopedReleaseCurrent();
+    ~ScopedReleaseCurrent();
+
+    void Cancel();
+
+   private:
+    bool canceled_;
+  };
+
   // Sets the GL api to the real hardware API (vs the VirtualAPI)
   static void SetRealGLApi();
   virtual void SetCurrent(GLSurface* surface);

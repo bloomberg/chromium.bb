@@ -52,6 +52,7 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
 
   gfx::Size size = surface->GetSize();
 
+  ScopedReleaseCurrent release_current;
   if (!OSMesaMakeCurrent(context_,
                          surface->GetHandle(),
                          GL_UNSIGNED_BYTE,
@@ -70,7 +71,6 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
 
   SetCurrent(surface);
   if (!InitializeDynamicBindings()) {
-    ReleaseCurrent(surface);
     return false;
   }
 
@@ -79,6 +79,7 @@ bool GLContextOSMesa::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  release_current.Cancel();
   return true;
 }
 
@@ -87,6 +88,7 @@ void GLContextOSMesa::ReleaseCurrent(GLSurface* surface) {
     return;
 
   SetCurrent(NULL);
+  // TODO: Calling with NULL here does not work to release the context.
   OSMesaMakeCurrent(NULL, NULL, GL_UNSIGNED_BYTE, 0, 0);
 }
 

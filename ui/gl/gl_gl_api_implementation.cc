@@ -22,6 +22,9 @@ namespace gfx {
 static GLApi* g_gl;
 // A GL Api that calls directly into the driver.
 static RealGLApi* g_real_gl;
+// A GL Api that does nothing but warn about illegal GL calls without a context
+// current.
+static NoContextGLApi* g_no_context_gl;
 // A GL Api that calls TRACE and then calls another GL api.
 static TraceGLApi* g_trace_gl;
 // GL version used when initializing dynamic bindings.
@@ -258,6 +261,7 @@ void InitializeStaticGLBindingsGL() {
   if (!g_real_gl) {
     g_real_gl = new RealGLApi();
     g_trace_gl = new TraceGLApi(g_real_gl);
+    g_no_context_gl = new NoContextGLApi();
   }
   g_real_gl->Initialize(&g_driver_gl);
   g_gl = g_real_gl;
@@ -278,6 +282,10 @@ void SetGLApi(GLApi* api) {
 
 void SetGLToRealGLApi() {
   SetGLApi(g_gl);
+}
+
+void SetGLApiToNoContext() {
+  SetGLApi(g_no_context_gl);
 }
 
 void InitializeDynamicGLBindingsGL(GLContext* context) {
@@ -354,6 +362,12 @@ void RealGLApi::Initialize(DriverGL* driver) {
 }
 
 TraceGLApi::~TraceGLApi() {
+}
+
+NoContextGLApi::NoContextGLApi() {
+}
+
+NoContextGLApi::~NoContextGLApi() {
 }
 
 VirtualGLApi::VirtualGLApi()

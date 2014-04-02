@@ -6622,6 +6622,11 @@ void GLES2DecoderWithShaderTest::CheckRenderbufferChangesMarkFBOAsNotComplete(
   } else {
     EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
   }
+  // Cleanup
+  DoDeleteFramebuffer(
+      client_framebuffer_id_, kServiceFramebufferId,
+      bound_fbo, GL_FRAMEBUFFER, 0,
+      bound_fbo, GL_FRAMEBUFFER, 0);
 }
 
 TEST_F(GLES2DecoderWithShaderTest,
@@ -6711,6 +6716,11 @@ void GLES2DecoderWithShaderTest::CheckTextureChangesMarkFBOAsNotComplete(
   } else {
     EXPECT_TRUE(framebuffer_manager->IsComplete(framebuffer));
   }
+  // Cleanup
+  DoDeleteFramebuffer(
+      client_framebuffer_id_, kServiceFramebufferId,
+      bound_fbo, GL_FRAMEBUFFER, 0,
+      bound_fbo, GL_FRAMEBUFFER, 0);
 }
 
 TEST_F(GLES2DecoderWithShaderTest, TextureChangesMarkFBOAsNotCompleteBoundFBO) {

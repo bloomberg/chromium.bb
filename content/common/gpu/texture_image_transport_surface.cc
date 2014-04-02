@@ -30,8 +30,7 @@ namespace content {
 namespace {
 
 bool IsContextValid(ImageTransportHelper* helper) {
-  return helper->stub()->decoder()->GetGLContext()->IsCurrent(NULL) ||
-      helper->stub()->decoder()->WasContextLost();
+  return helper->stub()->decoder()->GetGLContext()->IsCurrent(NULL);
 }
 
 }  // namespace
@@ -175,19 +174,26 @@ void TextureImageTransportSurface::OnResize(gfx::Size size,
 }
 
 void TextureImageTransportSurface::OnWillDestroyStub() {
-  DCHECK(IsContextValid(helper_.get()));
+  bool have_context = IsContextValid(helper_.get());
   helper_->stub()->RemoveDestructionObserver(this);
 
   // We are losing the stub owning us, this is our last chance to clean up the
   // resources we allocated in the stub's context.
-  ReleaseBackTexture();
-  ReleaseFrontTexture();
+  if (have_context) {
+    ReleaseBackTexture();
+    ReleaseFrontTexture();
+  } else {
+    backbuffer_ = NULL;
+    back_mailbox_ = Mailbox();
+    frontbuffer_ = NULL;
+    front_mailbox_ = Mailbox();
+  }
 
-  if (fbo_id_) {
+  if (fbo_id_ && have_context) {
     glDeleteFramebuffersEXT(1, &fbo_id_);
     CHECK_GL_ERROR();
-    fbo_id_ = 0;
   }
+  fbo_id_ = 0;
 
   stub_destroyed_ = true;
 }

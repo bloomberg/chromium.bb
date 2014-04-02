@@ -98,6 +98,7 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
   if (IsCurrent(surface))
     return true;
 
+  ScopedReleaseCurrent release_current;
   TRACE_EVENT0("gpu", "GLContextGLX::MakeCurrent");
   if (!glXMakeContextCurrent(
       display_,
@@ -114,18 +115,17 @@ bool GLContextGLX::MakeCurrent(GLSurface* surface) {
 
   SetCurrent(surface);
   if (!InitializeDynamicBindings()) {
-    ReleaseCurrent(surface);
     Destroy();
     return false;
   }
 
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Could not make current.";
-    ReleaseCurrent(surface);
     Destroy();
     return false;
   }
 
+  release_current.Cancel();
   return true;
 }
 

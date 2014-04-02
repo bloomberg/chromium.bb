@@ -55,6 +55,7 @@ void GLContextNSView::Destroy() {
 }
 
 bool GLContextNSView::MakeCurrent(GLSurface* surface) {
+  ScopedReleaseCurrent release_current;
   TRACE_EVENT0("gpu", "GLContextNSView::MakeCurrent");
   AcceleratedWidget view =
       static_cast<AcceleratedWidget>(surface->GetHandle());
@@ -67,7 +68,6 @@ bool GLContextNSView::MakeCurrent(GLSurface* surface) {
   SetRealGLApi();
   SetCurrent(surface);
   if (!InitializeDynamicBindings()) {
-    ReleaseCurrent(surface);
     return false;
   }
 
@@ -76,6 +76,7 @@ bool GLContextNSView::MakeCurrent(GLSurface* surface) {
     return false;
   }
 
+  release_current.Cancel();
   return true;
 }
 

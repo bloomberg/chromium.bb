@@ -26,6 +26,18 @@ base::LazyInstance<base::ThreadLocalPointer<GLContext> >::Leaky
     current_real_context_ = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
 
+GLContext::ScopedReleaseCurrent::ScopedReleaseCurrent() : canceled_(false) {}
+
+GLContext::ScopedReleaseCurrent::~ScopedReleaseCurrent() {
+  if (!canceled_ && GetCurrent()) {
+    GetCurrent()->ReleaseCurrent(NULL);
+  }
+}
+
+void GLContext::ScopedReleaseCurrent::Cancel() {
+  canceled_ = true;
+}
+
 GLContext::GLContext(GLShareGroup* share_group) : share_group_(share_group) {
   if (!share_group_.get())
     share_group_ = new GLShareGroup;
@@ -125,6 +137,8 @@ GLContext* GLContext::GetRealCurrent() {
 void GLContext::SetCurrent(GLSurface* surface) {
   current_context_.Pointer()->Set(surface ? this : NULL);
   GLSurface::SetCurrent(surface);
+  if (!surface)
+    SetGLApiToNoContext();
 }
 
 GLStateRestorer* GLContext::GetGLStateRestorer() {
