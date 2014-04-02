@@ -2807,10 +2807,14 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
     if (!settings()->viewportEnabled() || !page() || (!m_size.width && !m_size.height))
         return;
 
+    Document* document = page()->mainFrame()->document();
+
+    Length defaultMinWidth = document->viewportDefaultMinWidth();
+    if (defaultMinWidth.isAuto())
+        defaultMinWidth = Length(ExtendToZoom);
+
     ViewportDescription adjustedDescription = description;
     if (settingsImpl()->viewportMetaLayoutSizeQuirk() && adjustedDescription.type == ViewportDescription::ViewportMeta) {
-        if (adjustedDescription.maxWidth.type() == ExtendToZoom)
-            adjustedDescription.maxWidth = Length(); // auto
         const int legacyWidthSnappingMagicNumber = 320;
         if (adjustedDescription.maxWidth.isFixed() && adjustedDescription.maxWidth.value() <= legacyWidthSnappingMagicNumber)
             adjustedDescription.maxWidth = Length(DeviceWidth);
@@ -2819,17 +2823,19 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
         adjustedDescription.minWidth = adjustedDescription.maxWidth;
         adjustedDescription.minHeight = adjustedDescription.maxHeight;
     }
+
     float oldInitialScale = m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale;
-    m_pageScaleConstraintsSet.updatePageDefinedConstraints(adjustedDescription, m_size);
+    m_pageScaleConstraintsSet.updatePageDefinedConstraints(adjustedDescription, m_size, defaultMinWidth);
 
     if (settingsImpl()->clobberUserAgentInitialScaleQuirk()
         && m_pageScaleConstraintsSet.userAgentConstraints().initialScale != -1
         && m_pageScaleConstraintsSet.userAgentConstraints().initialScale * deviceScaleFactor() <= 1) {
         if (description.maxWidth == Length(DeviceWidth)
-            || (description.maxWidth.type() == ExtendToZoom && m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale == 1.0f))
+            || (description.maxWidth.type() == Auto && m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale == 1.0f))
             setInitialPageScaleOverride(-1);
     }
-    m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode(), settingsImpl()->viewportMetaNonUserScalableQuirk());
+
+    m_pageScaleConstraintsSet.adjustForAndroidWebViewQuirks(adjustedDescription, m_size, defaultMinWidth.intValue(), deviceScaleFactor(), settingsImpl()->supportDeprecatedTargetDensityDPI(), page()->settings().wideViewportQuirkEnabled(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode(), settingsImpl()->viewportMetaNonUserScalableQuirk());
     float newInitialScale = m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale;
     if (oldInitialScale != newInitialScale && newInitialScale != -1) {
         m_pageScaleConstraintsSet.setNeedsReset(true);

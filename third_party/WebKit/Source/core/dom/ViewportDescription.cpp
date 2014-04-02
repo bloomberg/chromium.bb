@@ -70,11 +70,29 @@ float ViewportDescription::resolveViewportLength(const Length& length, const Flo
     return ViewportDescription::ValueAuto;
 }
 
-PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewportSize) const
+PageScaleConstraints ViewportDescription::resolve(const FloatSize& initialViewportSize, Length legacyFallbackWidth) const
 {
     float resultWidth = ValueAuto;
-    float resultMaxWidth = resolveViewportLength(maxWidth, initialViewportSize, Horizontal);
-    float resultMinWidth = resolveViewportLength(minWidth, initialViewportSize, Horizontal);
+
+    Length copyMaxWidth = maxWidth;
+    Length copyMinWidth = minWidth;
+    // In case the width (used for min- and max-width) is undefined.
+    if (isLegacyViewportType() && maxWidth.isAuto()) {
+        // The width viewport META property is translated into 'width' descriptors, setting
+        // the 'min' value to 'extend-to-zoom' and the 'max' value to the intended length.
+        // In case the UA-defines a min-width, use that as length.
+        if (zoom == ViewportDescription::ValueAuto) {
+            copyMinWidth = Length(ExtendToZoom);
+            copyMaxWidth = legacyFallbackWidth;
+        } else if (maxHeight.isAuto()) {
+            copyMinWidth = Length(ExtendToZoom);
+            copyMaxWidth = Length(ExtendToZoom);
+        }
+    }
+
+    float resultMaxWidth = resolveViewportLength(copyMaxWidth, initialViewportSize, Horizontal);
+    float resultMinWidth = resolveViewportLength(copyMinWidth, initialViewportSize, Horizontal);
+
     float resultHeight = ValueAuto;
     float resultMaxHeight = resolveViewportLength(maxHeight, initialViewportSize, Vertical);
     float resultMinHeight = resolveViewportLength(minHeight, initialViewportSize, Vertical);

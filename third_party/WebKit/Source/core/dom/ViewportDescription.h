@@ -70,7 +70,7 @@ struct ViewportDescription {
     }
 
     // All arguments are in CSS units.
-    PageScaleConstraints resolve(const FloatSize& initialViewportSize) const;
+    PageScaleConstraints resolve(const FloatSize& initialViewportSize, Length legacyFallbackWidth) const;
 
     Length minWidth;
     Length maxWidth;

@@ -40,6 +40,7 @@
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "URLTestHelpers.h"
+#include "UserAgentStyleSheets.h"
 #include "WebDataSource.h"
 #include "WebDocument.h"
 #include "WebFindOptions.h"
@@ -59,6 +60,8 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/clipboard/Clipboard.h"
+#include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Range.h"
@@ -155,6 +158,18 @@ protected:
     void registerMockedChromeURLLoad(const std::string& fileName)
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_chromeURL.c_str()), WebString::fromUTF8(fileName.c_str()));
+    }
+
+    void applyViewportStyleOverride(FrameTestHelpers::WebViewHelper* webViewHelper)
+    {
+        RefPtrWillBeRawPtr<WebCore::StyleSheetContents> styleSheet = WebCore::StyleSheetContents::create(WebCore::CSSParserContext(WebCore::UASheetMode, 0));
+        styleSheet->parseString(String(WebCore::viewportAndroidUserAgentStyleSheet, sizeof(WebCore::viewportAndroidUserAgentStyleSheet)));
+        OwnPtrWillBeRawPtr<WebCore::RuleSet> ruleSet = WebCore::RuleSet::create();
+        ruleSet->addRulesFromSheet(styleSheet.get(), WebCore::MediaQueryEvaluator("screen"));
+
+        Document* document = webViewHelper->webViewImpl()->page()->mainFrame()->document();
+        document->ensureStyleResolver().viewportStyleResolver()->collectViewportRules(ruleSet.get(), WebCore::ViewportStyleResolver::UserAgentOrigin);
+        document->ensureStyleResolver().viewportStyleResolver()->resolve();
     }
 
     static void configueCompositingWebView(WebSettings* settings)
@@ -882,6 +897,7 @@ TEST_F(WebFrameTest, DisablingFixedLayoutSizeSetsCorrectLayoutSize)
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "no_viewport_tag.html", true, 0, &client, enableViewportSettings);
+    applyViewportStyleOverride(&webViewHelper);
     webViewHelper.webView()->settings()->setSupportDeprecatedTargetDensityDPI(true);
     webViewHelper.webView()->settings()->setUseWideViewport(true);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -1137,6 +1153,7 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithoutViewportTag)
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "no_viewport_tag.html", true, 0, &client, enableViewportSettings);
+    applyViewportStyleOverride(&webViewHelper);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(true);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -1176,6 +1193,7 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth)
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "viewport-2x-initial-scale.html", true, 0, &client, enableViewportSettings);
+    applyViewportStyleOverride(&webViewHelper);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setUseWideViewport(true);
     webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
@@ -1215,6 +1233,7 @@ TEST_F(WebFrameTest, setInitialPageScaleFactorPermanently)
 
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initializeAndLoad(m_baseURL + "fixed_layout.html", true, 0, &client, enableViewportSettings);
+    applyViewportStyleOverride(&webViewHelper);
     webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
     webViewHelper.webView()->settings()->setLoadWithOverviewMode(false);
     webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
@@ -1298,6 +1317,7 @@ TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobbered)
         for (int quirkEnabled = 0; quirkEnabled <= 1; ++quirkEnabled) {
             FrameTestHelpers::WebViewHelper webViewHelper;
             webViewHelper.initializeAndLoad(m_baseURL + pages[i], true, 0, &client, enableViewportSettings);
+            applyViewportStyleOverride(&webViewHelper);
             webViewHelper.webView()->settings()->setClobberUserAgentInitialScaleQuirk(quirkEnabled);
             webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScaleFactor);
             webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));

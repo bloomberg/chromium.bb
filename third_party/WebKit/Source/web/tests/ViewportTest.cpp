@@ -37,12 +37,13 @@
 #include "WebScriptSource.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
-#include "core/dom/ViewportDescription.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/page/InjectedStyleSheets.h"
 #include "core/page/Page.h"
 #include "core/page/PageScaleConstraints.h"
 #include "core/frame/Settings.h"
+#include "platform/Length.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
@@ -127,9 +128,8 @@ static PageScaleConstraints runViewportTest(Page* page, int initialWidth, int in
 {
     IntSize initialViewportSize(initialWidth, initialHeight);
     page->mainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
-
     ViewportDescription description = page->viewportDescription();
-    PageScaleConstraints constraints = description.resolve(initialViewportSize);
+    PageScaleConstraints constraints = description.resolve(initialViewportSize, WebCore::Length(980, WebCore::Fixed));
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), initialWidth);
     return constraints;

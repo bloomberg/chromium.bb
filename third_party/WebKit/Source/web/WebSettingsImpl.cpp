@@ -558,11 +558,6 @@ void WebSettingsImpl::setLayerSquashingEnabled(bool enabled)
     m_settings->setLayerSquashingEnabled(enabled);
 }
 
-void WebSettingsImpl::setLayoutFallbackWidth(int width)
-{
-    m_settings->setLayoutFallbackWidth(width);
-}
-
 void WebSettingsImpl::setAsynchronousSpellCheckingEnabled(bool enabled)
 {
     m_settings->setAsynchronousSpellCheckingEnabled(enabled);

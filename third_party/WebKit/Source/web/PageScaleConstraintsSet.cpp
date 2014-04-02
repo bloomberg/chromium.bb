@@ -31,6 +31,7 @@
 #include "config.h"
 #include "PageScaleConstraintsSet.h"
 
+#include "platform/Length.h"
 #include "wtf/Assertions.h"
 
 using namespace WebCore;
@@ -53,9 +54,9 @@ PageScaleConstraints PageScaleConstraintsSet::defaultConstraints() const
     return PageScaleConstraints(-1, defaultMinimumScale, defaultMaximumScale);
 }
 
-void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescription& description, IntSize viewSize)
+void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescription& description, IntSize viewSize, Length legacyFallbackWidth)
 {
-    m_pageDefinedConstraints = description.resolve(viewSize);
+    m_pageDefinedConstraints = description.resolve(viewSize, legacyFallbackWidth);
 
     m_constraintsDirty = true;
 }

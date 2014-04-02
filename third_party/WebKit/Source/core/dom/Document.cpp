@@ -3055,6 +3055,10 @@ bool Document::shouldMergeWithLegacyDescription(ViewportDescription::Type origin
 
 void Document::setViewportDescription(const ViewportDescription& viewportDescription)
 {
+    // The UA-defined min-width is used by the processing of legacy meta tags.
+    if (!viewportDescription.isSpecifiedByAuthor())
+        m_viewportDefaultMinWidth = viewportDescription.minWidth;
+
     if (viewportDescription.isLegacyViewportType()) {
         if (settings() && !settings()->viewportMetaEnabled())
             return;

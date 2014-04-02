@@ -33,6 +33,7 @@
 
 #include "core/dom/ViewportDescription.h"
 #include "core/page/PageScaleConstraints.h"
+#include "platform/Length.h"
 #include "platform/geometry/IntSize.h"
 
 namespace blink {
@@ -48,7 +49,7 @@ public:
     // Settings defined in the website's viewport tag, if viewport tag support
     // is enabled.
     const WebCore::PageScaleConstraints& pageDefinedConstraints() const { return m_pageDefinedConstraints; }
-    void updatePageDefinedConstraints(const WebCore::ViewportDescription&, WebCore::IntSize viewSize);
+    void updatePageDefinedConstraints(const WebCore::ViewportDescription&, WebCore::IntSize viewSize, WebCore::Length legacyFallbackWidth);
     void adjustForAndroidWebViewQuirks(const WebCore::ViewportDescription&, WebCore::IntSize viewSize, int layoutFallbackWidth, float deviceScaleFactor, bool supportTargetDensityDPI, bool wideViewportQuirkEnabled, bool useWideViewport, bool loadWithOverviewMode, bool nonUserScalableQuirkEnabled);
 
     // Constraints may also be set from Chromium -- this overrides any

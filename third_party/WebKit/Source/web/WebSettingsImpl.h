@@ -114,7 +114,6 @@ public:
     virtual void setJavaScriptCanOpenWindowsAutomatically(bool) OVERRIDE;
     virtual void setJavaScriptEnabled(bool) OVERRIDE;
     virtual void setLayerSquashingEnabled(bool) OVERRIDE;
-    virtual void setLayoutFallbackWidth(int) OVERRIDE;
     virtual void setLoadsImagesAutomatically(bool) OVERRIDE;
     virtual void setLoadWithOverviewMode(bool) OVERRIDE;
     virtual void setLocalStorageEnabled(bool) OVERRIDE;

@@ -388,9 +388,6 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
 {
     ASSERT(!content.isNull());
 
-    if (!document().settings())
-        return;
-
     if (!document().shouldOverrideLegacyDescription(origin))
         return;
 
@@ -406,18 +403,6 @@ void HTMLMetaElement::processViewportContentAttribute(const String& content, Vie
     if (descriptionFromLegacyTag.maxZoom == ViewportDescription::ValueAuto) {
         descriptionFromLegacyTag.maxZoom = 5;
         descriptionFromLegacyTag.minZoom = std::min(descriptionFromLegacyTag.minZoom, float(5));
-    }
-
-    const Settings* settings = document().settings();
-
-    if (descriptionFromLegacyTag.maxWidth.isAuto()) {
-        if (descriptionFromLegacyTag.zoom == ViewportDescription::ValueAuto) {
-            descriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
-            descriptionFromLegacyTag.maxWidth = Length(settings->layoutFallbackWidth(), Fixed);
-        } else if (descriptionFromLegacyTag.maxHeight.isAuto()) {
-            descriptionFromLegacyTag.minWidth = Length(ExtendToZoom);
-            descriptionFromLegacyTag.maxWidth = Length(ExtendToZoom);
-        }
     }
 
     document().setViewportDescription(descriptionFromLegacyTag);

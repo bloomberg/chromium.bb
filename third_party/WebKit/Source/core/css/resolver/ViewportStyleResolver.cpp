@@ -45,8 +45,8 @@ namespace WebCore {
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
 
 ViewportStyleResolver::ViewportStyleResolver(Document* document)
-    : m_document(document),
-    m_hasAuthorStyle(false)
+    : m_document(document)
+    , m_hasAuthorStyle(false)
 {
     ASSERT(m_document);
 }
@@ -87,10 +87,8 @@ void ViewportStyleResolver::resolve()
     if (!m_document)
         return;
 
-    if (!m_propertySet || (!m_hasAuthorStyle && m_document->hasLegacyViewportTag())) {
-        ASSERT(!m_hasAuthorStyle);
-        m_propertySet = nullptr;
-        m_document->setViewportDescription(ViewportDescription());
+    if (!m_propertySet) {
+        m_document->setViewportDescription(ViewportDescription(ViewportDescription::UserAgentStyleSheet));
         return;
     }
 

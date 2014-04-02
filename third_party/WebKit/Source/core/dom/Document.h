@@ -50,6 +50,7 @@
 #include "core/page/PageVisibilityState.h"
 #include "core/rendering/HitTestRequest.h"
 #include "heap/Handle.h"
+#include "platform/Length.h"
 #include "platform/Timer.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
@@ -282,6 +283,8 @@ public:
     bool shouldOverrideLegacyDescription(ViewportDescription::Type);
     void setViewportDescription(const ViewportDescription&);
     const ViewportDescription& viewportDescription() const { return m_viewportDescription; }
+    Length viewportDefaultMinWidth() const { return m_viewportDefaultMinWidth; }
+
 #ifndef NDEBUG
     bool didDispatchViewportPropertiesChanged() const { return m_didDispatchViewportPropertiesChanged; }
 #endif
@@ -1314,6 +1317,7 @@ private:
 
     ViewportDescription m_viewportDescription;
     ViewportDescription m_legacyViewportDescription;
+    Length m_viewportDefaultMinWidth;
 
     bool m_didSetReferrerPolicy;
     ReferrerPolicy m_referrerPolicy;

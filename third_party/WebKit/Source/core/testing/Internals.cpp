@@ -942,7 +942,7 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
     document->page()->mainFrame()->view()->setFrameRect(IntRect(IntPoint::zero(), initialViewportSize));
 
     ViewportDescription description = page->viewportDescription();
-    PageScaleConstraints constraints = description.resolve(initialViewportSize);
+    PageScaleConstraints constraints = description.resolve(initialViewportSize, Length());
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), availableWidth);
 

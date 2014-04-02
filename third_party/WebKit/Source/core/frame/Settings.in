@@ -51,10 +51,6 @@ validationMessageTimerMagnification type=int, initial=50
 # draw canvas in software.
 minimumAccelerated2dCanvasSize type=int, initial=257*256
 
-# The layout width used with --enable-viewport when no viewport meta tag was defined.
-# FIXME: This should get the value from the @viewport UA sheet instead.
-layoutFallbackWidth type=int, initial=980
-
 minimumFontSize type=int, initial=0, invalidate=Style
 minimumLogicalFontSize type=int, initial=0, invalidate=Style
 defaultFontSize type=int, initial=0, invalidate=Style
