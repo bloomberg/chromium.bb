@@ -20,7 +20,9 @@ BitmapFetcher::BitmapFetcher(const GURL& url,
 BitmapFetcher::~BitmapFetcher() {}
 
 void BitmapFetcher::Start(Profile* profile) {
-  DCHECK(url_fetcher_ == NULL);
+  if (url_fetcher_ != NULL)
+    return;
+
   url_fetcher_.reset(net::URLFetcher::Create(url_, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(profile->GetRequestContext());
   url_fetcher_->Start();

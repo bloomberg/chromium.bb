@@ -31,7 +31,9 @@ class BitmapFetcher : public net::URLFetcherDelegate,
   const GURL& url() const { return url_; }
 
   // Start fetching the URL with the fetcher. The delegate is notified
-  // asynchronously when done.
+  // asynchronously when done.  Start may be called more than once in some
+  // cases.  If so, subsequent starts will be ignored since the operation is
+  // already in progress.
   void Start(Profile* profile);
 
   // Methods inherited from URLFetcherDelegate
