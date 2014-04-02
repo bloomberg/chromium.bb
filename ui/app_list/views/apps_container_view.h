@@ -58,6 +58,9 @@ class AppsContainerView : public views::View,
   // re-parenting a child item of |folder_item|.
   void ReparentFolderItemTransit(AppListFolderItem* folder_item);
 
+  // Returns true if it is currently showing an active folder page.
+  bool IsInFolderView() const;
+
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;

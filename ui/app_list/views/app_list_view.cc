@@ -16,8 +16,11 @@
 #include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
 #include "ui/app_list/views/app_list_background.h"
+#include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view_observer.h"
+#include "ui/app_list/views/apps_container_view.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/signin_view.h"
 #include "ui/app_list/views/speech_view.h"
@@ -385,6 +388,14 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_ESCAPE) {
     if (app_list_main_view_->search_box_view()->HasSearch()) {
       app_list_main_view_->search_box_view()->ClearSearch();
+    } else if (app_list_main_view_->contents_view()
+                   ->apps_container_view()
+                   ->IsInFolderView()) {
+      app_list_main_view_->contents_view()
+          ->apps_container_view()
+          ->app_list_folder_view()
+          ->CloseFolderPage();
+      return true;
     } else {
       GetWidget()->Deactivate();
       Close();

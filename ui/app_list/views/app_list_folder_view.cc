@@ -280,6 +280,12 @@ void AppListFolderView::HideViewImmediately() {
   hide_for_reparent_ = false;
 }
 
+void AppListFolderView::CloseFolderPage() {
+  if (items_grid_view()->dragging())
+    items_grid_view()->EndDrag(true);
+  container_view_->ShowApps(folder_item_);
+}
+
 bool AppListFolderView::IsOEMFolder() const {
   return folder_item_->folder_type() == AppListFolderItem::FOLDER_TYPE_OEM;
 }

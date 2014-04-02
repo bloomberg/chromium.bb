@@ -56,6 +56,9 @@ class AppListFolderView : public views::View,
   // Hides the view immediately without animation.
   void HideViewImmediately();
 
+  // Closes the folder page and goes back the top level page.
+  void CloseFolderPage();
+
   // views::View
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
