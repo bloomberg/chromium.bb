@@ -74,7 +74,7 @@ inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser
 
 PassRefPtr<SVGUseElement> SVGUseElement::create(Document& document, bool wasInsertedByParser)
 {
-    // Always build a #shadow-root for SVGUseElement.
+    // Always build a user agent #shadow-root for SVGUseElement.
     RefPtr<SVGUseElement> use = adoptRef(new SVGUseElement(document, wasInsertedByParser));
     use->ensureUserAgentShadowRoot();
     return use.release();
@@ -345,7 +345,7 @@ static bool subtreeContainsDisallowedElement(Node* start)
 
 void SVGUseElement::scheduleShadowTreeRecreation()
 {
-    if (!referencedDocument() || isInShadowTree())
+    if (!referencedDocument() || isInUserAgentShadowTree())
         return;
     m_needsShadowTreeRecreation = true;
     document().scheduleUseShadowTreeUpdate(*this);
@@ -370,7 +370,7 @@ void SVGUseElement::clearResourceReferences()
 
 void SVGUseElement::buildPendingResource()
 {
-    if (!referencedDocument() || isInShadowTree())
+    if (!referencedDocument() || isInUserAgentShadowTree())
         return;
     clearResourceReferences();
     if (!inDocument())
@@ -403,9 +403,10 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement* target)
 {
     ASSERT(!m_targetElementInstance);
 
-    // Do not build the shadow/instance tree for <use> elements living in a shadow tree.
-    // The will be expanded soon anyway - see expandUseElementsInShadowTree().
-    if (isInShadowTree())
+    // <use> creates a "user agent" shadow root. Do not build the shadow/instance tree for <use>
+    // elements living in a user agent shadow tree because they will get expanded in a second
+    // pass -- see expandUseElementsInShadowTree().
+    if (isInUserAgentShadowTree())
         return;
 
     // Do not allow self-referencing.
@@ -674,8 +675,8 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
     // Why expand the <use> elements in the shadow tree here, and not just
     // do this directly in buildShadowTree, if we encounter a <use> element?
     //
-    // Short answer: Because we may miss to expand some elements. Ie. if a <symbol>
-    // contains <use> tags, we'd miss them. So once we're done with settin' up the
+    // Short answer: Because we may miss to expand some elements. For example, if a <symbol>
+    // contains <use> tags, we'd miss them. So once we're done with setting up the
     // actual shadow tree (after the special case modification for svg/symbol) we have
     // to walk it completely and expand all <use> elements.
     if (isSVGUseElement(*element)) {
@@ -887,6 +888,13 @@ void SVGUseElement::transferUseAttributesToReplacedElement(SVGElement* from, SVG
     to->removeAttribute(SVGNames::widthAttr);
     to->removeAttribute(SVGNames::heightAttr);
     to->removeAttribute(XLinkNames::hrefAttr);
+}
+
+bool SVGUseElement::isInUserAgentShadowTree() const
+{
+    if (ShadowRoot* shadowRoot = containingShadowRoot())
+        return shadowRoot->type() == ShadowRoot::UserAgentShadowRoot;
+    return false;
 }
 
 bool SVGUseElement::selfHasRelativeLengths() const
