@@ -55,7 +55,7 @@ generator_additional_path_sections = []
 generator_extra_sources_for_rules = []
 
 
-SHARED_FOOTER = """\
+ALL_MODULES_FOOTER = """\
 # "gyp_all_modules" is a concatenation of the "gyp_all_modules" targets from
 # all the included sub-makefiles. This is just here to clarify.
 gyp_all_modules:
@@ -133,7 +133,7 @@ class AndroidMkWriter(object):
     self.android_top_dir = android_top_dir
 
   def Write(self, qualified_target, relative_target, base_path, output_filename,
-            spec, configs, part_of_all):
+            spec, configs, part_of_all, write_alias_target):
     """The main entry point: writes a .mk file for a single target.
 
     Arguments:
@@ -144,6 +144,8 @@ class AndroidMkWriter(object):
       output_filename: output .mk file name to write
       spec, configs: gyp info
       part_of_all: flag indicating this target is part of 'all'
+      write_alias_target: flag indicating whether to create short aliases for
+                          this target
     """
     gyp.common.EnsureDirExists(output_filename)
 
@@ -226,7 +228,8 @@ class AndroidMkWriter(object):
     if spec.get('sources', []) or extra_sources:
       self.WriteSources(spec, configs, extra_sources)
 
-    self.WriteTarget(spec, configs, deps, link_deps, part_of_all)
+    self.WriteTarget(spec, configs, deps, link_deps, part_of_all,
+                     write_alias_target)
 
     # Update global list of target outputs, used in dependency tracking.
     target_outputs[qualified_target] = ('path', self.output_binary)
@@ -812,12 +815,15 @@ class AndroidMkWriter(object):
                    'LOCAL_SHARED_LIBRARIES')
 
 
-  def WriteTarget(self, spec, configs, deps, link_deps, part_of_all):
+  def WriteTarget(self, spec, configs, deps, link_deps, part_of_all,
+                  write_alias_target):
     """Write Makefile code to produce the final target of the gyp spec.
 
     spec, configs: input from gyp.
     deps, link_deps: dependency lists; see ComputeDeps()
     part_of_all: flag indicating this target is part of 'all'
+    write_alias_target: flag indicating whether to create short aliases for this
+                        target
     """
     self.WriteLn('### Rules for final target.')
 
@@ -828,7 +834,7 @@ class AndroidMkWriter(object):
     # name 'gyp_all_modules' as the Android build system doesn't allow the use
     # of the Make target 'all' and because 'all_modules' is the equivalent of
     # the Make target 'all' on Android.
-    if part_of_all:
+    if part_of_all and write_alias_target:
       self.WriteLn('# Add target alias to "gyp_all_modules" target.')
       self.WriteLn('.PHONY: gyp_all_modules')
       self.WriteLn('gyp_all_modules: %s' % self.android_module)
@@ -837,7 +843,7 @@ class AndroidMkWriter(object):
     # Add an alias from the gyp target name to the Android module name. This
     # simplifies manual builds of the target, and is required by the test
     # framework.
-    if self.target != self.android_module:
+    if self.target != self.android_module and write_alias_target:
       self.WriteLn('# Alias gyp target name.')
       self.WriteLn('.PHONY: %s' % self.target)
       self.WriteLn('%s: %s' % (self.target, self.android_module))
@@ -942,6 +948,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   generator_flags = params.get('generator_flags', {})
   builddir_name = generator_flags.get('output_dir', 'out')
   limit_to_target_all = generator_flags.get('limit_to_target_all', False)
+  write_alias_targets = generator_flags.get('write_alias_targets', True)
   android_top_dir = os.environ.get('ANDROID_BUILD_TOP')
   assert android_top_dir, '$ANDROID_BUILD_TOP not set; you need to run lunch.'
 
@@ -1037,7 +1044,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     writer = AndroidMkWriter(android_top_dir)
     android_module = writer.Write(qualified_target, relative_target, base_path,
                                   output_file, spec, configs,
-                                  part_of_all=part_of_all)
+                                  part_of_all=part_of_all,
+                                  write_alias_target=write_alias_targets)
     if android_module in android_modules:
       print ('ERROR: Android module names must be unique. The following '
              'targets both generate Android module name %s.\n  %s\n  %s' %
@@ -1060,6 +1068,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     root_makefile.write('include $(LOCAL_PATH)/' + include_file + '\n')
   root_makefile.write('\n')
 
-  root_makefile.write(SHARED_FOOTER)
+  if write_alias_targets:
+    root_makefile.write(ALL_MODULES_FOOTER)
 
   root_makefile.close()
