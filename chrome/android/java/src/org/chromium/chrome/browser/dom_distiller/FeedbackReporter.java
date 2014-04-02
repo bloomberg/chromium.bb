@@ -22,7 +22,6 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
     private final Tab mTab;
     private ContentView mContentView;
     private FeedbackReportingView mFeedbackReportingView;
-    private String mOverlayUrl;
 
     /**
      * @return whether the DOM Distiller feature is enabled.
@@ -70,6 +69,7 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
     /**
      * Start showing the overlay.
      */
+    @CalledByNative
     private void showOverlay() {
         mFeedbackReportingView = FeedbackReportingView.create(mContentView, this);
     }
@@ -79,14 +79,10 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
      */
     @CalledByNative
     private void dismissOverlay() {
-        if (mFeedbackReportingView != null) mFeedbackReportingView.dismiss(true);
-        mOverlayUrl = null;
-        mFeedbackReportingView = null;
-    }
-
-    @CalledByNative
-    private String getCurrentOverlayUrl() {
-        return mOverlayUrl;
+        if (mFeedbackReportingView != null) {
+            mFeedbackReportingView.dismiss(true);
+            mFeedbackReportingView = null;
+        }
     }
 
     /**
@@ -117,17 +113,6 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
             }
 
             @Override
-            public void onUpdateUrl(Tab tab, String url) {
-                boolean reportable = nativeIsReportableUrl(url);
-                if (reportable) {
-                    mOverlayUrl = url;
-                    showOverlay();
-                } else {
-                    dismissOverlay();
-                }
-            }
-
-            @Override
             public void onDestroyed(Tab tab) {
                 nativeDestroy(mNativePointer);
                 mContentView = null;
@@ -136,8 +121,6 @@ public final class FeedbackReporter implements FeedbackReportingView.FeedbackObs
     }
 
     private static native boolean nativeIsEnabled();
-
-    private static native boolean nativeIsReportableUrl(String url);
 
     private static native void nativeReportQuality(boolean good);
 

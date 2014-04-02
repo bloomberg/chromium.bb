@@ -370,8 +370,8 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         MenuItem distillPageItem = menu.findItem(R.id.distill_page);
         if (CommandLine.getInstance().hasSwitch(ChromeShellSwitches.ENABLE_DOM_DISTILLER)) {
             String url = activeTab != null ? activeTab.getUrl() : null;
-            distillPageItem.setEnabled(!TextUtils.isEmpty(url) &&
-                    !url.startsWith(CHROME_DISTILLER_SCHEME));
+            distillPageItem.setEnabled(!DomDistillerUrlUtils.isUrlReportable(
+                    CHROME_DISTILLER_SCHEME, url));
             distillPageItem.setVisible(true);
         } else {
             distillPageItem.setVisible(false);

@@ -25,8 +25,11 @@ const GURL GetDistillerViewUrlFromUrl(const std::string& scheme,
 std::string GetValueForKeyInUrlPathQuery(const std::string& path,
                                          const std::string& key);
 
-// Return whether it should be possible to distill the given |url|.
+// Returns whether it should be possible to distill the given |url|.
 bool IsUrlDistillable(const GURL& url);
+
+// Returns whether it should be possible to report the given |url|.
+bool IsUrlReportable(const std::string& scheme, const GURL& url);
 
 }  // namespace url_utils
 

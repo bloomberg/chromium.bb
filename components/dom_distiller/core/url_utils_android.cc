@@ -34,6 +34,15 @@ jstring GetDistillerViewUrlFromUrl(JNIEnv* env,
   return base::android::ConvertUTF8ToJavaString(env, view_url.spec()).Release();
 }
 
+jboolean IsUrlReportable(JNIEnv* env,
+                         jclass clazz,
+                         jstring j_scheme,
+                         jstring j_url) {
+  std::string scheme(base::android::ConvertJavaStringToUTF8(env, j_scheme));
+  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
+  return dom_distiller::url_utils::IsUrlReportable(scheme, url);
+}
+
 bool RegisterUrlUtils(JNIEnv* env) { return RegisterNativesImpl(env); }
 
 }  // namespace android

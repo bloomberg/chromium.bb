@@ -36,8 +36,6 @@ class FeedbackReporterAndroid : content::WebContentsObserver {
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
 
-  static jboolean IsReportableUrl(JNIEnv* env, jclass clazz);
-
  private:
   // FeedbackReporterAndroid on the Java side.
   JavaObjectWeakGlobalRef weak_java_feedback_reporter_;

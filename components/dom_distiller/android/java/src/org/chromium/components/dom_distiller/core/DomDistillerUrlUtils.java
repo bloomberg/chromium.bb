@@ -26,5 +26,11 @@ public final class DomDistillerUrlUtils {
         return nativeGetDistillerViewUrlFromUrl(scheme, url);
     }
 
+    public static boolean isUrlReportable(String scheme, String url) {
+        return nativeIsUrlReportable(scheme, url);
+    }
+
     private static native String nativeGetDistillerViewUrlFromUrl(String scheme, String url);
+
+    private static native boolean nativeIsUrlReportable(String scheme, String url);
 }
