@@ -3,9 +3,6 @@ Test for https://bugs.webkit.org/show_bug.cgi?id=22088. The rotated box should b
 (repaint rects
   (rect 79 123 260 260)
   (rect 176 220 394 185)
-  (rect 79 123 260 260)
   (rect 76 120 266 266)
-  (rect 564 220 6 185)
-  (rect 176 405 388 18)
 )
 

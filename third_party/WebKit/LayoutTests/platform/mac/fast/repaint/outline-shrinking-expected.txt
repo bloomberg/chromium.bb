@@ -4,9 +4,9 @@ There should be a green square and no trace of red.
 
 (repaint rects
   (rect 4 108 108 108)
-  (rect 4 108 108 108)
-  (rect 8 112 100 100)
   (rect 4 16 788 200)
   (rect 8 16 784 196)
+  (rect 4 108 108 108)
+  (rect 8 112 100 100)
 )
 

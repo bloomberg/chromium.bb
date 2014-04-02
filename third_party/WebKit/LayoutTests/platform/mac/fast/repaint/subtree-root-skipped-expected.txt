@@ -1,9 +1,9 @@
 
 Selection is here
 (repaint rects
-  (rect 13 13 117 13)
   (rect 8 8 200 21)
-  (rect 8 298 10 10)
+  (rect 13 13 117 13)
+  (rect 16 16 114 10)
   (rect 8 288 10 20)
 )
 

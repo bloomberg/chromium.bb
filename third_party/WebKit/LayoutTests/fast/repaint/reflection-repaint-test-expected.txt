@@ -1,0 +1,7 @@
+PASS
+(repaint rects
+  (rect 40 50 208 118)
+  (rect 22 50 226 167)
+  (rect 57 50 191 71)
+)
+

@@ -3,7 +3,6 @@ Test for https://bugs.webkit.org/show_bug.cgi?id=17840. The rotated box should b
 Container
  (repaint rects
   (rect 118 228 202 202)
-  (rect 118 228 202 202)
   (rect 76 186 286 286)
 )
 

@@ -3,12 +3,12 @@ The test checks that removing a renderer correctly invalidate the existing shift
 
 
 (repaint rects
-  (rect 8 86 732 98)
-  (rect 8 86 769 98)
-  (rect 8 86 769 98)
-  (rect 0 735 785 98)
-  (rect 8 727 769 98)
-  (rect 8 184 769 641)
-  (rect 8 86 769 641)
+  (rect 8 92 732 98)
+  (rect 8 92 769 99)
+  (rect 8 92 769 99)
+  (rect 0 742 785 99)
+  (rect 8 734 769 99)
+  (rect 8 191 769 642)
+  (rect 8 92 769 642)
 )
 

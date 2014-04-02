@@ -4,10 +4,10 @@ There should be only one bullet, at the bottom left of the rectangle.
 
 
 (repaint rects
-  (rect 48 94 100 54)
-  (rect 48 94 100 100)
+  (rect 8 148 784 50)
   (rect 31 148 761 50)
   (rect 31 94 761 104)
-  (rect 8 148 784 50)
+  (rect 48 94 100 54)
+  (rect 48 94 100 100)
 )
 
