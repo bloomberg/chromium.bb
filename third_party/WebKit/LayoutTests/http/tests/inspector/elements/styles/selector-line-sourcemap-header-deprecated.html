@@ -15,7 +15,7 @@ function addStylesheet()
 function test()
 {
     WebInspector.settings.cssSourceMapsEnabled.get = function() { return true; }
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, step1, this);
+    InspectorTest.addSniffer(WebInspector.SASSSourceMapping.prototype, "_bindUISourceCode", step1);
     InspectorTest.evaluateInPage("addStylesheet()");
 
     function step1()
