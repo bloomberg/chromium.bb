@@ -5,6 +5,5 @@ PASS
 (repaint rects
   (rect 8 68 39 18)
   (rect 8 68 39 18)
-  (rect 8 68 39 18)
 )
 
