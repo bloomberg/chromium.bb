@@ -1,0 +1,22 @@
+Hi!
+(repaint rects
+  (rect 0 0 785 600)
+  (rect 0 -500 785 600)
+  (rect 0 -500 785 4021)
+  (rect 425 -20 360 90)
+)
+(GraphicsLayer
+  (bounds 785.00 4021.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 785.00 4021.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 425.00 480.00 360.00 590.00)
+        (rect 425.00 480.00 360.00 590.00)
+      )
+    )
+  )
+)
+

@@ -1748,7 +1748,7 @@ void FrameView::updateFixedElementRepaintRectsAfterScroll()
             || layer->viewportConstrainedNotCompositedReason() == RenderLayer::NotCompositedForNoVisibleContent)
             continue;
 
-        layer->repainter().computeRepaintRects(renderer->containerForRepaint());
+        layer->repainter().computeRepaintRectsIncludingDescendants();
     }
 }
 

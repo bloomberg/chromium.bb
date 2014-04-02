@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+
+<head>
+<script src="../../resources/run-after-display.js"></script>
+
+<style>
+  #fixed {
+    position: fixed;
+    bottom: 30px;
+    right: 0px;
+  }
+  #abs {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    height: 90px;
+    width: 360px;
+    background: yellow;
+  }
+</style>
+
+<script>
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+  }
+
+  if (window.internals) {
+    window.internals.settings.setAcceleratedCompositingForFixedPositionEnabled(false);
+    window.internals.settings.setForceCompositingMode(true);
+  }
+
+  window.onload = function() {
+    if (window.internals)
+      window.internals.startTrackingRepaints(document);
+
+    window.scrollTo(0, 500);
+
+    runAfterDisplay(function() {
+      window.scrollTo(0, 0);
+
+      runAfterDisplay(function() {
+        if (window.internals)
+          document.getElementById('layers').textContent = 
+            window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+
+        if (window.testRunner)
+            testRunner.notifyDone();
+      });
+    });
+  }
+</script>
+</head>
+
+<body style="height: 4000px;">
+  <div id="fixed">
+    <div id="abs">
+      Hi!
+    </div>
+  </div>
+  <pre id="layers"></pre>
+</body>
+
+</html>
