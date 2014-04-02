@@ -11,6 +11,7 @@ function test()
     function addMessageWithFixedTimestamp(messageText, timestamp)
     {
         var message = new WebInspector.ConsoleMessage(
+            WebInspector.console.target(),
             WebInspector.ConsoleMessage.MessageSource.Other, // source
             WebInspector.ConsoleMessage.MessageLevel.Log, // level
             messageText,
