@@ -98,11 +98,11 @@ cp buildlog.txt $PDIR/
 
 # Copy clang into pdir, symlink clang++ to it.
 cp "${LLVM_BIN_DIR}/clang" $PDIR/bin/
-(cd $PDIR/bin && ln -sf clang clang++ && cd -)
+(cd $PDIR/bin && ln -sf clang clang++)
 cp "${LLVM_BIN_DIR}/llvm-symbolizer" $PDIR/bin/
 if [ "$(uname -s)" = "Darwin" ]; then
   cp "${LLVM_BIN_DIR}/libc++.1.${SO_EXT}" $PDIR/bin/
-  (cd $PDIR/bin && ln -sf libc++.1.dylib libc++.dylib && cd -)
+  (cd $PDIR/bin && ln -sf libc++.1.dylib libc++.dylib)
 fi
 
 # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we

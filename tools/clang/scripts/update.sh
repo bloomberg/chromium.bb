@@ -149,31 +149,6 @@ if [[ -n "$if_needed" ]]; then
   fi
 fi
 
-# Xcode and clang don't get along when predictive compilation is enabled.
-# http://crbug.com/96315
-if [[ "${OS}" = "Darwin" ]] && xcodebuild -version | grep -q 'Xcode 3.2' ; then
-  XCONF=com.apple.Xcode
-  if [[ "${GYP_GENERATORS}" != "make" ]] && \
-     [ "$(defaults read "${XCONF}" EnablePredictiveCompilation)" != "0" ]; then
-    echo
-    echo "          HEARKEN!"
-    echo "You're using Xcode3 and you have 'Predictive Compilation' enabled."
-    echo "This does not work well with clang (http://crbug.com/96315)."
-    echo "Disable it in Preferences->Building (lower right), or run"
-    echo "    defaults write ${XCONF} EnablePredictiveCompilation -boolean NO"
-    echo "while Xcode is not running."
-    echo
-  fi
-
-  SUB_VERSION=$(xcodebuild -version | sed -Ene 's/Xcode 3\.2\.([0-9]+)/\1/p')
-  if [[ "${SUB_VERSION}" < 6 ]]; then
-    echo
-    echo "          YOUR LD IS BUGGY!"
-    echo "Please upgrade Xcode to at least 3.2.6."
-    echo
-  fi
-fi
-
 
 # Check if there's anything to be done, exit early if not.
 if [[ -f "${STAMP_FILE}" ]]; then
@@ -361,7 +336,7 @@ if [[ -n "${bootstrap}" ]]; then
   ABS_INSTALL_DIR="${PWD}/${LLVM_BOOTSTRAP_INSTALL_DIR}"
   echo "Building bootstrap compiler"
   mkdir -p "${LLVM_BOOTSTRAP_DIR}"
-  cd "${LLVM_BOOTSTRAP_DIR}"
+  pushd "${LLVM_BOOTSTRAP_DIR}"
   if [[ ! -f ./config.status ]]; then
     # The bootstrap compiler only needs to be able to build the real compiler,
     # so it needs no cross-compiler output support. In general, the host
@@ -391,7 +366,7 @@ if [[ -n "${bootstrap}" ]]; then
       "${ABS_INSTALL_DIR}/lib/"
   fi
 
-  cd -
+  popd
   export CC="${ABS_INSTALL_DIR}/bin/clang"
   export CXX="${ABS_INSTALL_DIR}/bin/clang++"
 
@@ -482,10 +457,10 @@ if [[ -n "${with_android}" ]]; then
   # Build ASan runtime for Android.
   # Note: LLVM_ANDROID_TOOLCHAIN_DIR is not relative to PWD, but to where we
   # build the runtime, i.e. third_party/llvm/projects/compiler-rt.
-  cd "${LLVM_BUILD_DIR}"
+  pushd "${LLVM_BUILD_DIR}"
   ${MAKE} -C tools/clang/runtime/ \
     LLVM_ANDROID_TOOLCHAIN_DIR="../../../llvm-build/android-toolchain"
-  cd -
+  popd
 fi
 
 # Build Chrome-specific clang tools. Paths in this list should be relative to
@@ -512,9 +487,9 @@ if [[ -n "$run_tests" ]]; then
       "${TOOL_SRC_DIR}/tests/test.sh" "${LLVM_BUILD_DIR}/Release+Asserts"
     fi
   done
-  cd "${LLVM_BUILD_DIR}"
+  pushd "${LLVM_BUILD_DIR}"
   ${MAKE} check-all
-  cd -
+  popd
 fi
 
 # After everything is done, log success for this revision.
