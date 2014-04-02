@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/path_service.h"
-#include "cc/base/switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/breakpad/app/breakpad_linux.h"
@@ -77,9 +76,6 @@ void ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
       "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:StartUiMsgLoop");
     base::MessageLoopForUI::current()->Start();
   }
-
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      cc::switches::kCompositeToMailbox);
 
   ChromeBrowserMainParts::PreEarlyInitialization();
 }
