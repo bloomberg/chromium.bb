@@ -653,6 +653,7 @@ public:
 
     void scheduleRenderTreeUpdate();
     bool hasPendingForcedStyleRecalc() const;
+    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending; }
 
     void registerNodeList(LiveNodeListBase*);
     void unregisterNodeList(LiveNodeListBase*);
@@ -1121,8 +1122,6 @@ private:
     void updateTitle(const String&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();
-
-    bool hasPendingStyleRecalc() const { return m_lifecycle.state() == DocumentLifecycle::StyleRecalcPending; }
 
     void executeScriptsWaitingForResourcesIfNeeded();
 

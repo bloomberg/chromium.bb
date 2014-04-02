@@ -654,7 +654,7 @@ void ContainerNode::childrenChanged(bool changedByParser, Node*, Node*, int chil
     if (!changedByParser && childCountDelta)
         document().updateRangesAfterChildrenChanged(this);
     invalidateNodeListCachesInAncestors();
-    if (childCountDelta > 0 && inActiveDocument()) {
+    if (childCountDelta > 0 && !childNeedsStyleRecalc()) {
         setChildNeedsStyleRecalc();
         markAncestorsWithChildNeedsStyleRecalc();
     }

@@ -744,6 +744,9 @@ void Node::markAncestorsWithChildNeedsStyleRecalc()
     for (ContainerNode* p = parentOrShadowHostNode(); p && !p->childNeedsStyleRecalc(); p = p->parentOrShadowHostNode())
         p->setChildNeedsStyleRecalc();
 
+    if (document().hasPendingStyleRecalc())
+        return;
+
     if (document().needsStyleRecalc() || document().childNeedsStyleRecalc())
         document().scheduleRenderTreeUpdate();
 }

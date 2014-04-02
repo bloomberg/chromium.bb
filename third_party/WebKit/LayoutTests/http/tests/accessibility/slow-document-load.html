@@ -31,6 +31,11 @@ if (window.testRunner && window.accessibilityController) {
         }
     });
 }
+
+setTimeout(function() {
+    // Cause an incremental layout.
+    document.body.offsetTop;
+}, 10);
 </script>
 
 <!-- This is a cgi script that waits 1 second before loading. -->
