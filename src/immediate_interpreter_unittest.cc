@@ -671,7 +671,7 @@ struct OneFatFingerScrollTestInputs {
 
 // Tests two scroll operations with data from actual logs from Ryan Tabone.
 TEST(ImmediateInterpreterTest, OneFatFingerScrollTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -838,7 +838,7 @@ struct NoLiftoffScrollTestInputs {
 // Tests that if one scrolls backwards a bit before lifting fingers off, we
 // don't scroll backwards. Based on an actual log
 TEST(ImmediateInterpreterTest, NoLiftoffScrollTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -974,7 +974,7 @@ struct HardwareStateAnScrollExpectations {
 };
 
 TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1074,7 +1074,7 @@ TEST(ImmediateInterpreterTest, DiagonalSnapTest) {
 }
 
 TEST(ImmediateInterpreterTest, RestingFingerTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -1649,7 +1649,7 @@ const unsigned kBM = GESTURES_BUTTON_MIDDLE;
 const unsigned kBR = GESTURES_BUTTON_RIGHT;
 
 TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2100,7 +2100,7 @@ struct TapToClickLowPressureBeginOrEndInputs {
 // location, it's still a tap. We see this happen on some hardware particularly
 // for right clicks. This is based on two logs from Ken Moore.
 TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge
@@ -2187,7 +2187,7 @@ TEST(ImmediateInterpreterTest, TapToClickLowPressureBeginOrEndTest) {
 
 // Does two tap gestures, one with keyboard interference.
 TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2261,7 +2261,7 @@ TEST(ImmediateInterpreterTest, TapToClickKeyboardTest) {
 }
 
 TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
 
   HardwareProperties hwprops = {
     0,  // left edge
@@ -2906,7 +2906,7 @@ struct AvoidAccidentalPinchTestInput {
 // These data are from real logs where a move with resting thumb was appempted,
 // but pinch code prevented it.
 TEST(ImmediateInterpreterTest, AvoidAccidentalPinchTest) {
-  scoped_ptr<ImmediateInterpreter> ii;
+  std::unique_ptr<ImmediateInterpreter> ii;
   HardwareProperties hwprops = {
     0,  // left edge
     0,  // top edge

@@ -77,7 +77,7 @@ class NonLinearityFilterInterpreter : public FilterInterpreter {
   // index corresponding to the point (x_index, y_index, p_index)
   unsigned int ErrorIndex(size_t x_index, size_t y_index, size_t p_index) const;
   // Find the two values in the range on either side of "value" to interpolate
-  Bounds FindBounds(float value, const scoped_ptr<double[]>& range,
+  Bounds FindBounds(float value, const std::unique_ptr<double[]>& range,
                            size_t len) const;
   // Given a point (x, y, p) calculate the non-linearity error that needs to be
   // compensated for at that point.
@@ -88,7 +88,7 @@ class NonLinearityFilterInterpreter : public FilterInterpreter {
   // Load nonlinearity data from disk and parse it
   void LoadData();
   // Parse only a range array from the binary data
-  bool LoadRange(scoped_ptr<double[]>& arr, size_t& len, FILE* fd);
+  bool LoadRange(std::unique_ptr<double[]>& arr, size_t& len, FILE* fd);
   int ReadObject(void* buf, size_t object_size, FILE* fd);
 
   BoolProperty enabled_;
@@ -96,10 +96,10 @@ class NonLinearityFilterInterpreter : public FilterInterpreter {
   // These three arrays define the points where the error was sampled.
   // There is a reading in err_ for each point formed by the cross product
   // of these arrays.
-  scoped_ptr<double[]> x_range_, y_range_, p_range_;
+  std::unique_ptr<double[]> x_range_, y_range_, p_range_;
   size_t x_range_len_, y_range_len_, p_range_len_;
   // A flattened 3-d array holding the actual sampled error values
-  scoped_ptr<Error[]> err_;
+  std::unique_ptr<Error[]> err_;
 };
 
 }  // namespace gestures

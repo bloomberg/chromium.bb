@@ -101,7 +101,7 @@ class ScrollEventBuffer {
   void GetSpeedSq(size_t num_events, float* dist_sq, float* dt) const;
 
  private:
-  scoped_ptr<ScrollEvent[]> buf_;
+  std::unique_ptr<ScrollEvent[]> buf_;
   size_t max_size_;
   size_t size_;
   size_t head_;
@@ -134,7 +134,7 @@ class HardwareStateBuffer {
   }
 
  private:
-  scoped_ptr<HardwareState[]> states_;
+  std::unique_ptr<HardwareState[]> states_;
   size_t newest_index_;
   size_t size_;
   size_t max_finger_cnt_;
@@ -634,7 +634,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   ScrollEventBuffer scroll_buffer_;
 
   FingerMetrics* finger_metrics_;
-  scoped_ptr<FingerMetrics> test_finger_metrics_;
+  std::unique_ptr<FingerMetrics> test_finger_metrics_;
 
   // When guessing a pinch gesture. Do we guess pinch (true) or no-pinch?
   bool pinch_guess_;

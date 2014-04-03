@@ -152,7 +152,7 @@ class Metrics {
   vector<FingerMetrics, kMaxFingers> fingers_;
 
   MetricsProperties* properties_;
-  scoped_ptr<MetricsProperties> own_properties_;
+  std::unique_ptr<MetricsProperties> own_properties_;
 };
 
 }  // namespace gestures

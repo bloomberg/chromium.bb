@@ -7,14 +7,15 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>
+#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <base/memory/scoped_ptr.h>
 #include <gflags/gflags.h>
 #include <X11/extensions/XI2.h>
 #include <X11/extensions/XInput.h>
@@ -310,7 +311,7 @@ class MainLoop {
 
  private:
   Display* display_;
-  scoped_ptr<XNotifier> notifier_;
+  std::unique_ptr<XNotifier> notifier_;
   int tp_id_;
   int lid_fd_;
   int x_fd_;

@@ -179,7 +179,7 @@ TEST(PalmClassifyingFilterInterpreterTest, StationaryPalmTest) {
 
 TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
   PalmClassifyingFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<PalmClassifyingFilterInterpreter> pci(
+  std::unique_ptr<PalmClassifyingFilterInterpreter> pci(
       new PalmClassifyingFilterInterpreter(NULL, NULL, NULL));
   HardwareProperties hwprops = {
     0,  // left edge

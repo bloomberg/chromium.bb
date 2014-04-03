@@ -214,7 +214,7 @@ class ActivityLog {
   // We allocate this to be number of entries * max fingers/entry, and
   // if buffer_[i] is a kHardwareState type, then the fingers for it are
   // at finger_states_[i * (max fingers/entry)].
-  scoped_ptr<FingerState[]> finger_states_;
+  std::unique_ptr<FingerState[]> finger_states_;
   size_t max_fingers_;
 
   HardwareProperties hwprops_;

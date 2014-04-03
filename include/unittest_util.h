@@ -30,8 +30,8 @@ class TestInterpreterWrapper : public GestureConsumer {
   const HardwareProperties* hwprops_;
   HardwareProperties dummy_;
   Gesture gesture_;
-  scoped_ptr<PropRegistry> prop_reg_;
-  scoped_ptr<MetricsProperties> mprops_;
+  std::unique_ptr<PropRegistry> prop_reg_;
+  std::unique_ptr<MetricsProperties> mprops_;
 };
 
 

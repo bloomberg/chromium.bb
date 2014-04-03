@@ -48,7 +48,7 @@ int NonLinearityFilterInterpreter::ReadObject(void* buf, size_t object_size,
   return objs_read;
 }
 
-bool NonLinearityFilterInterpreter::LoadRange(scoped_ptr<double[]>& arr,
+bool NonLinearityFilterInterpreter::LoadRange(std::unique_ptr<double[]>& arr,
                                               size_t& len, FILE* fd) {
   int tmp;
   if (!ReadObject(&tmp, kIntPackedSize, fd))
@@ -183,9 +183,10 @@ NonLinearityFilterInterpreter::GetError(float finger_x, float finger_y,
 }
 
 NonLinearityFilterInterpreter::Bounds
-NonLinearityFilterInterpreter::FindBounds(float value,
-                                          const scoped_ptr<double[]>& range,
-                                          size_t len) const {
+NonLinearityFilterInterpreter::FindBounds(
+    float value,
+    const std::unique_ptr<double[]>& range,
+    size_t len) const {
   Bounds bounds;
   bounds.lo = bounds.hi = -1;
 

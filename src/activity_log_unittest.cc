@@ -5,7 +5,6 @@
 #include <string>
 
 #include <base/logging.h>
-#include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_log.h"

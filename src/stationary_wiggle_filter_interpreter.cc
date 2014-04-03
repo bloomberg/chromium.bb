@@ -4,8 +4,6 @@
 
 #include "gestures/include/stationary_wiggle_filter_interpreter.h"
 
-#include <base/memory/scoped_ptr.h>
-
 #include "gestures/include/gestures.h"
 #include "gestures/include/interpreter.h"
 #include "gestures/include/map.h"

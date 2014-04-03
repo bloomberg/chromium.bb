@@ -65,9 +65,9 @@ class MemoryManager {
   }
 
  private:
-  scoped_ptr<T[]> buf_;
-  scoped_ptr<T*[]> free_slots_;
-  scoped_ptr<bool[]> used_mark_;
+  std::unique_ptr<T[]> buf_;
+  std::unique_ptr<T*[]> free_slots_;
+  std::unique_ptr<bool[]> used_mark_;
   size_t max_size_;
   size_t head_;
   DISALLOW_COPY_AND_ASSIGN(MemoryManager<T>);

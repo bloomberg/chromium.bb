@@ -90,7 +90,7 @@ class LookaheadFilterInterpreterTestInterpreter : public Interpreter {
 
 TEST(LookaheadFilterInterpreterTest, SimpleTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -356,7 +356,7 @@ TEST(LookaheadFilterInterpreterTest, NoTapSetTest) {
 // that remains.
 TEST(LookaheadFilterInterpreterTest, SpuriousCallbackTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -500,7 +500,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolateHwStateTest) {
 
 TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -579,7 +579,7 @@ TEST(LookaheadFilterInterpreterTest, InterpolateTest) {
 
 TEST(LookaheadFilterInterpreterTest, InterpolationOverdueTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0, 0, 10, 10,  // left, top, right, bottom
@@ -651,7 +651,7 @@ struct HardwareStateLastId {
 
 TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -725,7 +725,7 @@ TEST(LookaheadFilterInterpreterTest, DrumrollTest) {
 
 TEST(LookaheadFilterInterpreterTest, QuickMoveTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom
@@ -819,7 +819,7 @@ struct QuickSwipeTestInputs {
 // don't drumroll-separate the fingers.
 TEST(LookaheadFilterInterpreterTest, QuickSwipeTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0.000000,  // left edge
@@ -914,7 +914,7 @@ struct CyapaDrumrollTestInputs {
 // Doug Anderson.
 TEST(LookaheadFilterInterpreterTest, CyapaDrumrollTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties initial_hwprops = {
     0.000000,  // left edge
@@ -1184,7 +1184,7 @@ TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest) {
 
 TEST(LookaheadFilterInterpreterTest, SemiMtNoTrackingIdAssignmentTest) {
   LookaheadFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<LookaheadFilterInterpreter> interpreter;
+  std::unique_ptr<LookaheadFilterInterpreter> interpreter;
 
   HardwareProperties hwprops = {
     0, 0, 100, 100,  // left, top, right, bottom

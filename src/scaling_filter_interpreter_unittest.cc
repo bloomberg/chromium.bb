@@ -4,11 +4,11 @@
 
 #include <deque>
 #include <math.h>
+#include <memory>
 #include <vector>
 #include <utility>
 
 #include <base/logging.h>
-#include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
@@ -284,7 +284,7 @@ static void RunTouchMajorAndMinorTest(
 
   float orientation, touch_major, touch_minor, pressure;
 
-  scoped_ptr<bool[]> has_zero_area(new bool[n_fs]);
+  std::unique_ptr<bool[]> has_zero_area(new bool[n_fs]);
 
   for (size_t i = 0; i < n_fs; i++) {
     bool no_orientation = hwprops->orientation_maximum == 0;

@@ -66,7 +66,7 @@ struct HardwareStateAndExpectations {
 
 TEST(T5R2CorrectingFilterInterpreterTest, SimpleTest) {
   T5R2CorrectingFilterInterpreterTestInterpreter* base_interpreter = NULL;
-  scoped_ptr<T5R2CorrectingFilterInterpreter> interpreter;
+  std::unique_ptr<T5R2CorrectingFilterInterpreter> interpreter;
 
   HardwareProperties hwprops = {
     0, 0, 10, 10,  // left, top, right, bottom

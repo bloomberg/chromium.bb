@@ -4,8 +4,6 @@
 
 #include "gestures/include/box_filter_interpreter.h"
 
-#include <base/memory/scoped_ptr.h>
-
 #include "gestures/include/tracer.h"
 #include "gestures/include/util.h"
 

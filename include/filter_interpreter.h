@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <base/memory/scoped_ptr.h>
+#include <memory>
 #include <base/values.h>
 
 #include "gestures/include/interpreter.h"
@@ -42,7 +42,7 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
   virtual void SyncInterpretImpl(HardwareState* hwstate, stime_t* timeout);
   virtual void HandleTimerImpl(stime_t now, stime_t* timeout);
 
-  scoped_ptr<Interpreter> next_;
+  std::unique_ptr<Interpreter> next_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FilterInterpreter);

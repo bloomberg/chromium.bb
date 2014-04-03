@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <base/logging.h>
-#include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>
+#include <memory>
 
 #include "gestures/include/gestures.h"
 
@@ -160,7 +160,7 @@ TEST(GesturesTest, GestureEqTest) {
 
 TEST(GesturesTest, SimpleTest) {
   // Simple allocate/free test
-  scoped_ptr<GestureInterpreter> gs(NewGestureInterpreter());
+  std::unique_ptr<GestureInterpreter> gs(NewGestureInterpreter());
   EXPECT_NE(static_cast<GestureInterpreter*>(NULL), gs.get());
   EXPECT_EQ(static_cast<Interpreter*>(NULL), gs.get()->interpreter());
 }

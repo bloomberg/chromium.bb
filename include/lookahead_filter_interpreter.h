@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
 
-#include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>  // For FRIEND_TEST
 
 #include "gestures/include/filter_interpreter.h"
@@ -58,7 +58,7 @@ class LookaheadFilterInterpreter : public FilterInterpreter {
 
     HardwareState state_;
     unsigned short max_fingers_;
-    scoped_ptr<FingerState[]> fs_;
+    std::unique_ptr<FingerState[]> fs_;
     map<short, short, kMaxFingers> output_ids_;  // input tracking ids -> output
 
     stime_t due_;

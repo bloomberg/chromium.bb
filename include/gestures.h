@@ -13,7 +13,7 @@
 #include <string>
 
 #include <base/basictypes.h>
-#include <base/memory/scoped_ptr.h>
+#include <memory>
 
 extern "C" {
 #endif
@@ -500,17 +500,17 @@ struct GestureInterpreter {
   GestureReadyFunction callback_;
   void* callback_data_;
 
-  scoped_ptr<PropRegistry> prop_reg_;
-  scoped_ptr<Tracer> tracer_;
-  scoped_ptr<Interpreter> interpreter_;
-  scoped_ptr<MetricsProperties> mprops_;
+  std::unique_ptr<PropRegistry> prop_reg_;
+  std::unique_ptr<Tracer> tracer_;
+  std::unique_ptr<Interpreter> interpreter_;
+  std::unique_ptr<MetricsProperties> mprops_;
 
   GesturesTimerProvider* timer_provider_;
   void* timer_provider_data_;
   GesturesTimer* interpret_timer_;
 
   LoggingFilterInterpreter* loggingFilter_;
-  scoped_ptr<GestureInterpreterConsumer> consumer_;
+  std::unique_ptr<GestureInterpreterConsumer> consumer_;
   HardwareProperties hwprops_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureInterpreter);

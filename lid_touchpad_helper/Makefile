@@ -11,6 +11,7 @@ DESTDIR = .
 
 CXXFLAGS+=\
 	-g \
+	-std=gnu++11 \
 	-fno-exceptions \
 	-fno-strict-aliasing \
 	-fPIC \

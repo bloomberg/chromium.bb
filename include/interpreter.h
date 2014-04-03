@@ -74,11 +74,11 @@ class Interpreter {
   const char* name() const { return name_; }
 
  protected:
-  scoped_ptr<ActivityLog> log_;
+  std::unique_ptr<ActivityLog> log_;
   GestureConsumer* consumer_;
   const HardwareProperties* hwprops_;
   Metrics* metrics_;
-  scoped_ptr<Metrics> own_metrics_;
+  std::unique_ptr<Metrics> own_metrics_;
   bool requires_metrics_;
   bool initialized_;
 

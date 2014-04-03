@@ -4,7 +4,7 @@
 
 #include <math.h>
 
-#include <base/memory/scoped_ptr.h>
+#include <memory>
 #include <gtest/gtest.h>  // for FRIEND_TEST
 
 #include "gestures/include/filter_interpreter.h"

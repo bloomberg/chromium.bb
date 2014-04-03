@@ -725,7 +725,7 @@ bool ActivityReplay::ReplayPropChange(
     Err("Unable to find prop %s to set.", entry.name);
     return false;
   }
-  scoped_ptr<Value> value;
+  std::unique_ptr<Value> value;
   switch (entry.type) {
     case ActivityLog::PropChangeEntry::kBoolProp:
       value.reset(Value::CreateBooleanValue(entry.value.bool_val));
