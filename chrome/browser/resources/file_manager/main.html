@@ -277,7 +277,7 @@
           <img id="profile-badge"></img><span id="app-name"></span>
         </div>
         <div class="dialog-navigation-list-contents">
-          <list id="navigation-list" tabindex="14"></list>
+          <list id="navigation-list" tabindex="15"></list>
         </div>
         <div class="dialog-navigation-list-footer">
           <div id="progress-center" hidden>
@@ -333,7 +333,7 @@
             <div class="dialog-middlebar-contents" hidden>
               <div id="middlebar-header"
                    i18n-content="DRIVE_DIRECTORY_LABEL"></div>
-              <tree id="directory-tree" tabindex="15"></tree>
+              <tree id="directory-tree" tabindex="16"></tree>
             </div>
             <div class="splitter" id="middlebar-splitter" hidden></div>
             <div class="filelist-panel">
@@ -380,10 +380,12 @@
               <div class="progress-track"></div>
             </div>
             <div class="right buttonbar" id="open-panel"
-                 visibleif="open-file open-multi-file">
+                 visibleif="open-file open-multi-file folder upload-folder">
               <select class="file-type" hidden></select>
-              <button class="ok" disabled tabindex="11"></button>
-              <button class="cancel" i18n-content="CANCEL_LABEL" tabindex="12"></button>
+              <button i18n-content="NEW_FOLDER_BUTTON_LABEL"
+                      visibleif="folder" command="#new-folder" tabindex="11"></button>
+              <button class="ok" disabled tabindex="12"></button>
+              <button class="cancel" i18n-content="CANCEL_LABEL" tabindex="13"></button>
             </div>
           </div>
           <div id="unmounted-panel"></div>
@@ -395,7 +397,7 @@
       </div>
     </div>
     <div class="dialog-footer progressable" tabindex="-1"
-         visibleif="saveas-file folder upload-folder">
+         visibleif="saveas-file">
       <div class="left">
         <button id="new-folder-button" i18n-content="NEW_FOLDER_BUTTON_LABEL"
                 visibleif="saveas-file folder" command="#new-folder"

@@ -127,8 +127,7 @@ var FileManagerUI = function(element, dialogType) {
 FileManagerUI.prototype.initDialogType_ = function() {
   // Obtain elements.
   var hasFooterPanel =
-      this.dialogType_ == DialogType.SELECT_SAVEAS_FILE ||
-      DialogType.isFolderDialog(this.dialogType_);
+      this.dialogType_ == DialogType.SELECT_SAVEAS_FILE;
 
   // If the footer panel exists, the buttons are placed there. Otherwise,
   // the buttons are on the preview panel.

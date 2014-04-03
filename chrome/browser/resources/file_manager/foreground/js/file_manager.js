@@ -116,7 +116,9 @@ DialogType.isModal = function(type) {
  */
 DialogType.isOpenDialog = function(type) {
   return type == DialogType.SELECT_OPEN_FILE ||
-         type == DialogType.SELECT_OPEN_MULTI_FILE;
+         type == DialogType.SELECT_OPEN_MULTI_FILE ||
+         type == DialogType.SELECT_FOLDER ||
+         type == DialogType.SELECT_UPLOAD_FOLDER;
 };
 
 /**
