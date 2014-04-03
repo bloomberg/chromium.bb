@@ -492,6 +492,7 @@ public:
     virtual bool canHaveChildren() const { return true; }
     bool hasChildren() const { return m_haveChildren; }
     virtual void updateChildrenIfNecessary();
+    virtual bool needsToUpdateChildren() const { return false; }
     virtual void setNeedsToUpdateChildren() { }
     virtual void clearChildren();
     virtual void detachFromParent() { }

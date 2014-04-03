@@ -15,7 +15,7 @@
 
 <script>
 
-    description("Tests that accessible inline text boxes update when a static text node changes.");
+    description("Tests that accessible inline text boxes update when the static text style changes.");
 
     if (window.accessibilityController) {
         testRunner.waitUntilDone();
@@ -31,21 +31,14 @@
         shouldBe("axInlineBefore1.stringValue", "'AXValue: two lines of text.'");
 
         // Modify the text.
-        document.getElementById("p").innerText += ' One more sentence.';
+        document.getElementById("p").style.width = "100em";
 
         // Wait for a notification on the element before checking the new state.
         axStaticText.addNotificationListener(function(notification) {
             // Make sure the inline text boxes changed.
-            shouldBe("axStaticText.childrenCount", "3");
+            shouldBe("axStaticText.childrenCount", "1");
             window.axInlineAfter0 = axStaticText.childAtIndex(0);
-            shouldBe("axInlineAfter0.stringValue",  "'AXValue: This paragraph contains '");
-            window.axInlineAfter1 = axStaticText.childAtIndex(1);
-            shouldBe("axInlineAfter1.stringValue", "'AXValue: two lines of text. One '");
-            window.axInlineAfter2 = axStaticText.childAtIndex(2);
-            shouldBe("axInlineAfter2.stringValue", "'AXValue: more sentence.'");
-
-            // Make sure the old object pointing to the second text box is no longer valid.
-            shouldBe("axInlineBefore1.stringValue", "'AXValue: '");
+            shouldBe("axInlineAfter0.stringValue",  "'AXValue: This paragraph contains two lines of text.'");
             finishJSTest();
         });
     }

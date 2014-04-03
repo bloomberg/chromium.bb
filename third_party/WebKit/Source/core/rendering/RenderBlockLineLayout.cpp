@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "core/accessibility/AXObjectCache.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderFlowThread.h"
@@ -283,6 +284,9 @@ RootInlineBox* RenderBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
             text->setDirOverride(r->dirOverride(visuallyOrdered));
             if (r->m_hasHyphen)
                 text->setHasHyphen(true);
+
+            if (AXObjectCache* cache = document().existingAXObjectCache())
+                cache->inlineTextBoxesUpdated(r->m_object);
         }
     }
 

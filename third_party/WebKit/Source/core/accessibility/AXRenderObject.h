@@ -72,7 +72,6 @@ public:
     RenderView* topRenderer() const;
     Document* topDocument() const;
     bool shouldNotifyActiveDescendant() const;
-    bool needsToUpdateChildren() const { return m_childrenDirty; }
     virtual ScrollableArea* getScrollableAreaIfScrollable() const OVERRIDE FINAL;
     virtual AccessibilityRole determineAccessibilityRole() OVERRIDE;
     void checkCachedElementRect() const;
@@ -170,6 +169,7 @@ protected:
     virtual void addChildren() OVERRIDE;
     virtual bool canHaveChildren() const OVERRIDE;
     virtual void updateChildrenIfNecessary() OVERRIDE;
+    virtual bool needsToUpdateChildren() const { return m_childrenDirty; }
     virtual void setNeedsToUpdateChildren() OVERRIDE { m_childrenDirty = true; }
     virtual void clearChildren() OVERRIDE;
     virtual AXObject* observableObject() const OVERRIDE;

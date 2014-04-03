@@ -141,6 +141,8 @@ public:
     void handleAttributeChanged(const QualifiedName& attrName, Element*);
     void recomputeIsIgnored(RenderObject* renderer);
 
+    void inlineTextBoxesUpdated(RenderObject* renderer);
+
     static void enableAccessibility() { gAccessibilityEnabled = true; }
     static bool accessibilityEnabled() { return gAccessibilityEnabled; }
     static void setInlineTextBoxAccessibility(bool flag) { gInlineTextBoxAccessibility = flag; }

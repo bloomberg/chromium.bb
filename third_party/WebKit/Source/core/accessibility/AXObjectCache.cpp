@@ -882,6 +882,21 @@ void AXObjectCache::recomputeIsIgnored(RenderObject* renderer)
         obj->notifyIfIgnoredValueChanged();
 }
 
+void AXObjectCache::inlineTextBoxesUpdated(RenderObject* renderer)
+{
+    if (!gInlineTextBoxAccessibility)
+        return;
+
+    // Only update if the accessibility object already exists and it's
+    // not already marked as dirty.
+    if (AXObject* obj = get(renderer)) {
+        if (!obj->needsToUpdateChildren()) {
+            obj->setNeedsToUpdateChildren();
+            postNotification(renderer, AXChildrenChanged, true);
+        }
+    }
+}
+
 void AXObjectCache::startCachingComputedObjectAttributesUntilTreeMutates()
 {
     // FIXME: no longer needed. When Chromium no longer calls

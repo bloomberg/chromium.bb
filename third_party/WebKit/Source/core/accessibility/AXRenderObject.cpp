@@ -1783,10 +1783,14 @@ void AXRenderObject::addInlineTextBoxChildren()
     if (!renderer() || !renderer()->isText())
         return;
 
-    RenderText* renderText = toRenderText(renderer());
-    if (renderText->needsLayout())
-        renderText->document().updateLayoutIgnorePendingStylesheets();
+    if (renderer()->needsLayout()) {
+        // If a RenderText needs layout, its inline text boxes are either
+        // nonexistent or invalid, so defer until the layout happens and
+        // the renderer calls AXObjectCache::inlineTextBoxesUpdated.
+        return;
+    }
 
+    RenderText* renderText = toRenderText(renderer());
     for (RefPtr<AbstractInlineTextBox> box = renderText->firstAbstractInlineTextBox(); box.get(); box = box->nextInlineTextBox()) {
         AXObject* axObject = axObjectCache()->getOrCreate(box.get());
         if (!axObject->accessibilityIsIgnored())
