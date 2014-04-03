@@ -205,6 +205,15 @@ Polymer('audio-player', {
         (this.trackList.getNextTrackIndex(forward, repeat) !== -1);
 
     this.audioController.playing = isNextTrackAvailable;
+
+    // If there is only a single file in the list, 'currentTrackInde' is not
+    // changed and the handler is not invoked. Instead, plays here.
+    // TODO(yoshiki): clean up the code around here.
+    if (isNextTrackAvailable &&
+        this.trackList.currentTrackIndex == nextTrackIndex) {
+      this.audioElement.play();
+    }
+
     this.trackList.currentTrackIndex = nextTrackIndex;
 
     Platform.performMicrotaskCheckpoint();
