@@ -28,10 +28,6 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
 
   adapter_->Initialize(this);
 
-  if (!webaudio_source_) {
-    source_provider_.reset(new WebRtcLocalAudioSourceProvider());
-    AddSink(source_provider_.get());
-  }
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }
 

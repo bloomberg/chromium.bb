@@ -14,7 +14,6 @@
 #include "content/renderer/media/media_stream_track.h"
 #include "content/renderer/media/tagged_list.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
-#include "content/renderer/media/webrtc_local_audio_source_provider.h"
 
 namespace content {
 
@@ -84,10 +83,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   void SetAudioProcessor(
       const scoped_refptr<MediaStreamAudioProcessor>& processor);
 
-  blink::WebAudioSourceProvider* audio_source_provider() const {
-    return source_provider_.get();
-  }
-
  private:
   typedef TaggedList<MediaStreamAudioTrackSink> SinkList;
 
@@ -119,10 +114,6 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Audio parameters of the audio capture stream.
   // Accessed on only the audio capture thread.
   media::AudioParameters audio_parameters_;
-
-  // The source provider to feed the track data to other clients like
-  // WebAudio.
-  scoped_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
 
   // Used to calculate the signal level that shows in the UI.
   // Accessed on only the audio thread.

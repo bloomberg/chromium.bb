@@ -106,8 +106,6 @@ class WebRtcAudioCapturerTest : public testing::Test {
     scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
         WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
     track_.reset(new WebRtcLocalAudioTrack(adapter, capturer_, NULL));
-    static_cast<WebRtcLocalAudioSourceProvider*>(
-        track_->audio_source_provider())->SetSinkParamsForTesting(params_);
     track_->Start();
 
     // Connect a mock sink to the track.

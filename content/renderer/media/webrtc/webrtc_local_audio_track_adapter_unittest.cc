@@ -41,8 +41,6 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    static_cast<WebRtcLocalAudioSourceProvider*>(
-        track_->audio_source_provider())->SetSinkParamsForTesting(params_);
     track_->OnSetFormat(params_);
     EXPECT_TRUE(track_->GetAudioAdapter()->enabled());
   }

@@ -22,8 +22,11 @@ static const size_t kMaxNumberOfBuffers = 10;
 // static
 const size_t WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize = 128;
 
-WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider()
-    : is_enabled_(false) {
+WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider(
+    const blink::WebMediaStreamTrack& track)
+    : is_enabled_(false),
+      track_(track),
+      track_stopped_(false) {
   // Get the native audio output hardware sample-rate for the sink.
   // We need to check if RenderThreadImpl is valid here since the unittests
   // do not have one and they will inject their own |sink_params_| for testing.
@@ -36,11 +39,19 @@ WebRtcLocalAudioSourceProvider::WebRtcLocalAudioSourceProvider()
         media::CHANNEL_LAYOUT_STEREO, 2, 0, sample_rate, 16,
         kWebAudioRenderBufferSize);
   }
+
+  // Connect the source provider to the track as a sink.
+  MediaStreamAudioSink::AddToAudioTrack(this, track_);
 }
 
 WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
   if (audio_converter_.get())
     audio_converter_->RemoveInput(this);
+
+  // If the track is still active, it is necessary to notify the track before
+  // the source provider goes away.
+  if (!track_stopped_)
+    MediaStreamAudioSink::RemoveFromAudioTrack(this, track_);
 }
 
 void WebRtcLocalAudioSourceProvider::OnSetFormat(
@@ -66,6 +77,12 @@ void WebRtcLocalAudioSourceProvider::OnSetFormat(
       kMaxNumberOfBuffers * params.frames_per_buffer()));
   input_bus_ = media::AudioBus::Create(params.channels(),
                                        params.frames_per_buffer());
+}
+
+void WebRtcLocalAudioSourceProvider::OnReadyStateChanged(
+      blink::WebMediaStreamSource::ReadyState state) {
+  if (state ==  blink::WebMediaStreamSource::ReadyStateEnded)
+    track_stopped_ = true;
 }
 
 void WebRtcLocalAudioSourceProvider::OnData(

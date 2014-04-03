@@ -15,6 +15,7 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_converter.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace media {
@@ -31,12 +32,13 @@ class WebAudioSourceProviderClient;
 namespace content {
 
 // WebRtcLocalAudioSourceProvider provides a bridge between classes:
-//     WebRtcAudioCapturer ---> blink::WebAudioSourceProvider
+//     WebRtcLocalAudioTrack ---> blink::WebAudioSourceProvider
 //
-// WebRtcLocalAudioSourceProvider works as a sink to the WebRtcAudiocapturer
+// WebRtcLocalAudioSourceProvider works as a sink to the WebRtcLocalAudioTrack
 // and store the capture data to a FIFO. When the media stream is connected to
-// WebAudio as a source provider, WebAudio will periodically call
-// provideInput() to get the data from the FIFO.
+// WebAudio MediaStreamAudioSourceNode as a source provider,
+// MediaStreamAudioSourceNode will periodically call provideInput() to get the
+// data from the FIFO.
 //
 // All calls are protected by a lock.
 class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
@@ -46,7 +48,8 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
  public:
   static const size_t kWebAudioRenderBufferSize;
 
-  WebRtcLocalAudioSourceProvider();
+  explicit WebRtcLocalAudioSourceProvider(
+      const blink::WebMediaStreamTrack& track);
   virtual ~WebRtcLocalAudioSourceProvider();
 
   // MediaStreamAudioSink implementation.
@@ -55,6 +58,8 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
                       int number_of_channels,
                       int number_of_frames) OVERRIDE;
   virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
+  virtual void OnReadyStateChanged(
+      blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
 
   // blink::WebAudioSourceProvider implementation.
   virtual void setClient(blink::WebAudioSourceProviderClient* client) OVERRIDE;
@@ -93,6 +98,12 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
 
   // Used to report the correct delay to |webaudio_source_|.
   base::TimeTicks last_fill_;
+
+  // The audio track that this source provider is connected to.
+  blink::WebMediaStreamTrack track_;
+
+  // Flag to tell if the track has been stopped or not.
+  bool track_stopped_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioSourceProvider);
 };

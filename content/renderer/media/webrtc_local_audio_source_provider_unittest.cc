@@ -3,10 +3,16 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
+#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
+#include "content/renderer/media/webrtc_local_audio_track.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace content {
 
@@ -23,7 +29,22 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
         source_params_.frames_per_buffer() * source_params_.channels();
     source_data_.reset(new int16[length]);
     sink_bus_ = media::AudioBus::Create(sink_params_);
-    source_provider_.reset(new WebRtcLocalAudioSourceProvider());
+    blink::WebMediaConstraints constraints;
+    scoped_refptr<WebRtcAudioCapturer> capturer(
+        WebRtcAudioCapturer::CreateCapturer(-1, StreamDeviceInfo(),
+                                            constraints, NULL));
+    scoped_refptr<WebRtcLocalAudioTrackAdapter> adapter(
+        WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL));
+    scoped_ptr<WebRtcLocalAudioTrack> native_track(
+        new WebRtcLocalAudioTrack(adapter, capturer, NULL));
+    blink::WebMediaStreamSource audio_source;
+    audio_source.initialize(base::UTF8ToUTF16("dummy_source_id"),
+                            blink::WebMediaStreamSource::TypeAudio,
+                            base::UTF8ToUTF16("dummy_source_name"));
+    blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
+                            audio_source);
+    blink_track_.setExtraData(native_track.release());
+    source_provider_.reset(new WebRtcLocalAudioSourceProvider(blink_track_));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);
   }
@@ -32,6 +53,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
   scoped_ptr<int16[]> source_data_;
   media::AudioParameters sink_params_;
   scoped_ptr<media::AudioBus> sink_bus_;
+  blink::WebMediaStreamTrack blink_track_;
   scoped_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
 };
 
@@ -89,6 +111,27 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
     EXPECT_GT(sink_bus_->channel(1)[0], 0);
     EXPECT_DOUBLE_EQ(sink_bus_->channel(0)[0], sink_bus_->channel(1)[0]);
   }
+}
+
+TEST_F(WebRtcLocalAudioSourceProviderTest,
+       DeleteSourceProviderBeforeStoppingTrack) {
+  source_provider_.reset();
+
+  // Stop the audio track.
+  WebRtcLocalAudioTrack* native_track = static_cast<WebRtcLocalAudioTrack*>(
+      MediaStreamTrack::GetTrack(blink_track_));
+  native_track->Stop();
+}
+
+TEST_F(WebRtcLocalAudioSourceProviderTest,
+       StopTrackBeforeDeletingSourceProvider) {
+  // Stop the audio track.
+  WebRtcLocalAudioTrack* native_track = static_cast<WebRtcLocalAudioTrack*>(
+      MediaStreamTrack::GetTrack(blink_track_));
+  native_track->Stop();
+
+  // Delete the source provider.
+  source_provider_.reset();
 }
 
 }  // namespace content

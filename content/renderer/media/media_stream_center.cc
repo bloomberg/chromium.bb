@@ -154,8 +154,7 @@ MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
   WebRtcLocalAudioSourceProvider* source_provider =
-      new WebRtcLocalAudioSourceProvider();
-  MediaStreamAudioSink::AddToAudioTrack(source_provider, track);
+      new WebRtcLocalAudioSourceProvider(track);
   return source_provider;
 }
 

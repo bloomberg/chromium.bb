@@ -567,11 +567,8 @@ void MediaStreamDependencyFactory::CreateLocalAudioTrack(
 
   StartLocalAudioTrack(audio_track.get());
 
-  // Pass the pointer of the source provider to the blink audio track.
-  blink::WebMediaStreamTrack writable_track = track;
-  writable_track.setSourceProvider(audio_track->audio_source_provider());
-
   // Pass the ownership of the native local audio track to the blink track.
+  blink::WebMediaStreamTrack writable_track = track;
   writable_track.setExtraData(audio_track.release());
 }
 
