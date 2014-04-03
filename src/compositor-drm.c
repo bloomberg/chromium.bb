@@ -2788,6 +2788,11 @@ drm_compositor_create(struct wl_display *display,
 		goto err_sprite;
 	}
 
+	/* A this point we have some idea of whether or not we have a working
+	 * cursor plane. */
+	if (!ec->cursors_are_broken)
+		ec->base.capabilities |= WESTON_CAP_CURSOR_PLANE;
+
 	path = NULL;
 
 	if (udev_input_init(&ec->input,

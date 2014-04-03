@@ -558,6 +558,12 @@ enum weston_capability {
 
 	/* screencaptures need to be y-flipped */
 	WESTON_CAP_CAPTURE_YFLIP		= 0x0002,
+
+	/* backend/renderer has a seperate cursor plane */
+	WESTON_CAP_CURSOR_PLANE			= 0x0004,
+
+	/* backend supports setting arbitrary resolutions */
+	WESTON_CAP_ARBITRARY_MODES		= 0x0008,
 };
 
 struct weston_compositor {
