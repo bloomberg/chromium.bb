@@ -61,10 +61,6 @@ class FileSystemApiTestForDrive : public PlatformAppBrowserTest {
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
     fake_drive_service_ = new drive::FakeDriveService;
-    fake_drive_service_->LoadResourceListForWapi(
-        "gdata/empty_feed.json");
-    fake_drive_service_->LoadAccountMetadataForWapi(
-        "gdata/account_metadata.json");
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
     SetUpTestFileHierarchy();
