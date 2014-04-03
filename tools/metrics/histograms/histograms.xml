@@ -28002,6 +28002,50 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UpdateEngine.Daily.OSAgeDays" units="days">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The age of the OS in days, defined as the age of the /etc/lsb-release file.
+
+    This is reported on every update check but at most once a day.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.FailedUpdateCount" units="count">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of consecutive times a device has failed to boot an update that
+    successfully applied.
+
+    This is reported every time the firmware fails to boot the slot with the
+    update and fell back to the slot it originally updated from.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.InstallDateProvisioningSource"
+    enum="UpdateEngineInstallDateProvisioningSource">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The source used to provision the install-date-days value sent to Omaha with
+    every request.
+
+    This is reported when OOBE (Out Of Box Experience) completes (M34 or later)
+    or when upgrading to a version with install-date-days support.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.TimeToRebootMinutes" units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The duration between when an update has successfully completed and the user
+    is presented with the &quot;reboot arrow&quot; and when the system has
+    booted into the new update.
+
+    This is reported every time the device is rebooted after an update has been
+    applied.
+  </summary>
+</histogram>
+
 <histogram name="Uptime.ChromeExecToLoginPromptVisibleAfterLogout" units="ms">
   <owner>dmikurube@chromium.org</owner>
   <summary>
