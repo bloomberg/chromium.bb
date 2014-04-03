@@ -5,6 +5,7 @@
 #include "media/cast/test/utility/udp_proxy.h"
 
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/rand_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -18,12 +19,10 @@ namespace test {
 
 const size_t kMaxPacketSize = 65536;
 
-Packet::Packet(size_t size) : data(size) {}
-Packet::~Packet() {}
-
 PacketPipe::PacketPipe() {}
 PacketPipe::~PacketPipe() {}
 void PacketPipe::InitOnIOThread() {
+  task_runner_ = base::MessageLoopProxy::current();
   if (pipe_) {
     pipe_->InitOnIOThread();
   }
@@ -41,18 +40,16 @@ void PacketPipe::AppendToPipe(scoped_ptr<PacketPipe> pipe) {
 // Packets are output at a maximum bandwidth.
 class Buffer : public PacketPipe {
  public:
-  Buffer(size_t buffer_size,
-         double max_megabits_per_second) :
-      buffer_size_(0),
-      max_buffer_size_(buffer_size),
-      max_megabits_per_second_(max_megabits_per_second),
-      weak_factory_(this) {
-  }
+  Buffer(size_t buffer_size, double max_megabits_per_second)
+      : buffer_size_(0),
+        max_buffer_size_(buffer_size),
+        max_megabits_per_second_(max_megabits_per_second),
+        weak_factory_(this) {}
 
-  virtual void Send(scoped_refptr<Packet> packet) OVERRIDE {
-    if (packet->data.size() + buffer_size_ <= max_buffer_size_) {
-      buffer_.push_back(packet);
-      buffer_size_ += packet->data.size();
+  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
+    if (packet->size() + buffer_size_ <= max_buffer_size_) {
+      buffer_size_ += packet->size();
+      buffer_.push_back(linked_ptr<transport::Packet>(packet.release()));
       if (buffer_.size() == 1) {
         Schedule();
       }
@@ -61,10 +58,10 @@ class Buffer : public PacketPipe {
 
  private:
   void Schedule() {
-    double megabits = buffer_.front()->data.size() * 8 / 1000000.0;
+    double megabits = buffer_.front()->size() * 8 / 1000000.0;
     double seconds = megabits / max_megabits_per_second_;
     int64 microseconds = static_cast<int64>(seconds * 1E6);
-    base::MessageLoop::current()->PostDelayedTask(
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&Buffer::ProcessBuffer, weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMicroseconds(microseconds));
@@ -72,15 +69,16 @@ class Buffer : public PacketPipe {
 
   void ProcessBuffer() {
     CHECK(!buffer_.empty());
-    pipe_->Send(buffer_.front());
-    buffer_size_ -= buffer_.front()->data.size();
+    scoped_ptr<transport::Packet> packet(buffer_.front().release());
+    buffer_size_ -= packet->size();
     buffer_.pop_front();
+    pipe_->Send(packet.Pass());
     if (!buffer_.empty()) {
       Schedule();
     }
   }
 
-  std::deque<scoped_refptr<Packet> > buffer_;
+  std::deque<linked_ptr<transport::Packet> > buffer_;
   size_t buffer_size_;
   size_t max_buffer_size_;
   double max_megabits_per_second_;  // megabits per second
@@ -96,9 +94,9 @@ class RandomDrop : public PacketPipe {
   RandomDrop(double drop_fraction) : drop_fraction_(drop_fraction) {
   }
 
-  virtual void Send(scoped_refptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
     if (base::RandDouble() >= drop_fraction_) {
-      pipe_->Send(packet);
+      pipe_->Send(packet.Pass());
     }
   }
 
@@ -112,26 +110,24 @@ scoped_ptr<PacketPipe> NewRandomDrop(double drop_fraction) {
 
 class SimpleDelayBase : public PacketPipe {
  public:
-  SimpleDelayBase() : weak_factory_(this) {
-  }
+  SimpleDelayBase() : weak_factory_(this) {}
   virtual ~SimpleDelayBase() {}
 
-  virtual void Send(scoped_refptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
     double seconds = GetDelay();
-    base::MessageLoop::current()->PostDelayedTask(
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&SimpleDelayBase::SendInternal,
                    weak_factory_.GetWeakPtr(),
-                   packet),
-        base::TimeDelta::FromMicroseconds(
-            static_cast<int64>(seconds * 1E6)));
+                   base::Passed(&packet)),
+        base::TimeDelta::FromMicroseconds(static_cast<int64>(seconds * 1E6)));
   }
  protected:
   virtual double GetDelay() = 0;
 
  private:
-  virtual void SendInternal(scoped_refptr<Packet> packet) {
-    pipe_->Send(packet);
+  virtual void SendInternal(scoped_ptr<transport::Packet> packet) {
+    pipe_->Send(packet.Pass());
   }
 
   base::WeakPtrFactory<SimpleDelayBase> weak_factory_;
@@ -139,8 +135,7 @@ class SimpleDelayBase : public PacketPipe {
 
 class ConstantDelay : public SimpleDelayBase {
  public:
-  ConstantDelay(double delay_seconds) : delay_seconds_(delay_seconds) {
-  }
+  ConstantDelay(double delay_seconds) : delay_seconds_(delay_seconds) {}
   virtual double GetDelay() OVERRIDE {
     return delay_seconds_;
   }
@@ -150,15 +145,12 @@ class ConstantDelay : public SimpleDelayBase {
 };
 
 scoped_ptr<PacketPipe> NewConstantDelay(double delay_seconds) {
-  return scoped_ptr<PacketPipe>(
-      new ConstantDelay(delay_seconds)).Pass();
+  return scoped_ptr<PacketPipe>(new ConstantDelay(delay_seconds)).Pass();
 }
 
 class RandomUnsortedDelay : public SimpleDelayBase {
  public:
-  RandomUnsortedDelay(double random_delay) :
-      random_delay_(random_delay) {
-  }
+  RandomUnsortedDelay(double random_delay) : random_delay_(random_delay) {}
 
   virtual double GetDelay() OVERRIDE {
     return random_delay_ * base::RandDouble();
@@ -169,8 +161,7 @@ class RandomUnsortedDelay : public SimpleDelayBase {
 };
 
 scoped_ptr<PacketPipe> NewRandomUnsortedDelay(double random_delay) {
-  return scoped_ptr<PacketPipe>(
-      new RandomUnsortedDelay(random_delay)).Pass();
+  return scoped_ptr<PacketPipe>(new RandomUnsortedDelay(random_delay)).Pass();
 }
 
 
@@ -178,15 +169,14 @@ class RandomSortedDelay : public PacketPipe {
  public:
   RandomSortedDelay(double random_delay,
                     double extra_delay,
-                    double seconds_between_extra_delay) :
-      random_delay_(random_delay),
-      extra_delay_(extra_delay),
-      seconds_between_extra_delay_(seconds_between_extra_delay),
-      weak_factory_(this) {
-  }
+                    double seconds_between_extra_delay)
+      : random_delay_(random_delay),
+        extra_delay_(extra_delay),
+        seconds_between_extra_delay_(seconds_between_extra_delay),
+        weak_factory_(this) {}
 
-  virtual void Send(scoped_refptr<Packet> packet) OVERRIDE {
-    buffer_.push_back(packet);
+  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
+    buffer_.push_back(linked_ptr<transport::Packet>(packet.release()));
     if (buffer_.size() == 1) {
       Schedule();
     }
@@ -202,7 +192,7 @@ class RandomSortedDelay : public PacketPipe {
   void ScheduleExtraDelay(double mult) {
     double seconds = seconds_between_extra_delay_ * mult * base::RandDouble();
     int64 microseconds = static_cast<int64>(seconds * 1E6);
-    base::MessageLoop::current()->PostDelayedTask(
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&RandomSortedDelay::CauseExtraDelay,
                    weak_factory_.GetWeakPtr()),
@@ -229,16 +219,16 @@ class RandomSortedDelay : public PacketPipe {
       block_time = delay_time;
     }
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RandomSortedDelay::ProcessBuffer,
-                   weak_factory_.GetWeakPtr()),
-        delay_time);
+    task_runner_->PostDelayedTask(FROM_HERE,
+                                  base::Bind(&RandomSortedDelay::ProcessBuffer,
+                                             weak_factory_.GetWeakPtr()),
+                                  delay_time);
   }
 
   void ProcessBuffer() {
     CHECK(!buffer_.empty());
-    pipe_->Send(buffer_.front());
+    scoped_ptr<transport::Packet> packet(buffer_.front().release());
+    pipe_->Send(packet.Pass());
     buffer_.pop_front();
     if (!buffer_.empty()) {
       Schedule();
@@ -246,7 +236,7 @@ class RandomSortedDelay : public PacketPipe {
   }
 
   base::TimeTicks block_until_;
-  std::deque<scoped_refptr<Packet> > buffer_;
+  std::deque<linked_ptr<transport::Packet> > buffer_;
   double random_delay_;
   double extra_delay_;
   double seconds_between_extra_delay_;
@@ -258,29 +248,27 @@ scoped_ptr<PacketPipe> NewRandomSortedDelay(
     double extra_delay,
     double seconds_between_extra_delay) {
   return scoped_ptr<PacketPipe>(
-      new RandomSortedDelay(random_delay,
-                            extra_delay,
-                            seconds_between_extra_delay)).Pass();
+             new RandomSortedDelay(
+                 random_delay, extra_delay, seconds_between_extra_delay))
+      .Pass();
 }
 
 class NetworkGlitchPipe : public PacketPipe {
  public:
-  NetworkGlitchPipe(double average_work_time,
-                    double average_outage_time) :
-      works_(false),
-      max_work_time_(average_work_time * 2),
-      max_outage_time_(average_outage_time * 2),
-      weak_factory_(this) {
-  }
+  NetworkGlitchPipe(double average_work_time, double average_outage_time)
+      : works_(false),
+        max_work_time_(average_work_time * 2),
+        max_outage_time_(average_outage_time * 2),
+        weak_factory_(this) {}
 
   virtual void InitOnIOThread() OVERRIDE {
     PacketPipe::InitOnIOThread();
     Flip();
   }
 
-  virtual void Send(scoped_refptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
     if (works_) {
-      pipe_->Send(packet);
+      pipe_->Send(packet.Pass());
     }
   }
 
@@ -290,10 +278,9 @@ class NetworkGlitchPipe : public PacketPipe {
     double seconds = base::RandDouble() *
         (works_ ? max_work_time_ : max_outage_time_);
     int64 microseconds = static_cast<int64>(seconds * 1E6);
-    base::MessageLoop::current()->PostDelayedTask(
+    task_runner_->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&NetworkGlitchPipe::Flip,
-                   weak_factory_.GetWeakPtr()),
+        base::Bind(&NetworkGlitchPipe::Flip, weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMicroseconds(microseconds));
   }
 
@@ -306,7 +293,8 @@ class NetworkGlitchPipe : public PacketPipe {
 scoped_ptr<PacketPipe> NewNetworkGlitchPipe(double average_work_time,
                                             double average_outage_time) {
   return scoped_ptr<PacketPipe>(
-      new NetworkGlitchPipe(average_work_time, average_outage_time)).Pass();
+             new NetworkGlitchPipe(average_work_time, average_outage_time))
+      .Pass();
 }
 
 class PacketSender : public PacketPipe {
@@ -318,17 +306,18 @@ class PacketSender : public PacketPipe {
       destination_(destination),
       weak_factory_(this) {
   }
-  virtual void Send(scoped_refptr<Packet> packet) OVERRIDE {
+  virtual void Send(scoped_ptr<transport::Packet> packet) OVERRIDE {
     if (blocked_) {
       LOG(ERROR) << "Cannot write packet right now: blocked";
       return;
     }
 
-    VLOG(1) << "Sending packet, len = " << packet->data.size();
+    VLOG(1) << "Sending packet, len = " << packet->size();
     // We ignore all problems, callbacks and errors.
     // If it didn't work we just drop the packet at and call it a day.
-    scoped_refptr<net::IOBuffer> buf = new net::WrappedIOBuffer(
-        reinterpret_cast<char*>(&packet->data.front()));
+    scoped_refptr<net::IOBuffer> buf =
+        new net::WrappedIOBuffer(reinterpret_cast<char*>(&packet->front()));
+    size_t buf_size = packet->size();
     int result;
     if (destination_->address().empty()) {
       VLOG(1) << "Destination has not been set yet.";
@@ -336,12 +325,12 @@ class PacketSender : public PacketPipe {
     } else {
       VLOG(1) << "Destination:" << destination_->ToString();
       result = udp_socket_->SendTo(buf,
-                                   static_cast<int>(packet->data.size()),
+                                   static_cast<int>(buf_size),
                                    *destination_,
                                    base::Bind(&PacketSender::AllowWrite,
                                               weak_factory_.GetWeakPtr(),
                                               buf,
-                                              packet));
+                                              base::Passed(&packet)));
     }
     if (result == net::ERR_IO_PENDING) {
       blocked_ = true;
@@ -355,7 +344,7 @@ class PacketSender : public PacketPipe {
 
  private:
   void AllowWrite(scoped_refptr<net::IOBuffer> buf,
-                  scoped_refptr<Packet> packet,
+                  scoped_ptr<transport::Packet> packet,
                   int unused_len) {
     DCHECK(blocked_);
     blocked_ = false;
@@ -457,9 +446,7 @@ class UDPProxyImpl : public UDPProxy {
     proxy_thread_.Stop();
   }
 
-
-  void ProcessPacket(scoped_refptr<Packet> packet,
-                     scoped_refptr<net::IOBuffer> recv_buf,
+  void ProcessPacket(scoped_refptr<net::IOBuffer> recv_buf,
                      int len) {
     DCHECK_NE(len, net::ERR_IO_PENDING);
     VLOG(1) << "Got packet, len = " << len;
@@ -467,39 +454,37 @@ class UDPProxyImpl : public UDPProxy {
       LOG(WARNING) << "Socket read error: " << len;
       return;
     }
-    packet->data.resize(len);
+    packet_->resize(len);
     if (recv_address_ == destination_) {
-      from_dest_pipe_->Send(packet);
+      from_dest_pipe_->Send(packet_.Pass());
     } else {
       VLOG(1) << "Return address = " << recv_address_.ToString();
       return_address_ = recv_address_;
-      to_dest_pipe_->Send(packet);
+      to_dest_pipe_->Send(packet_.Pass());
     }
   }
 
-  void ReadCallback(scoped_refptr<Packet> packet,
-                    scoped_refptr<net::IOBuffer> recv_buf,
+  void ReadCallback(scoped_refptr<net::IOBuffer> recv_buf,
                     int len) {
-    ProcessPacket(packet, recv_buf, len);
+    ProcessPacket(recv_buf, len);
     PollRead();
   }
 
   void PollRead() {
     while (true) {
-      scoped_refptr<Packet> packet(new Packet(kMaxPacketSize));
-      scoped_refptr<net::IOBuffer> recv_buf = new net::WrappedIOBuffer(
-          reinterpret_cast<char*>(&packet->data.front()));
+      packet_.reset(new transport::Packet(kMaxPacketSize));
+      scoped_refptr<net::IOBuffer> recv_buf =
+          new net::WrappedIOBuffer(reinterpret_cast<char*>(&packet_->front()));
       int len = socket_->RecvFrom(
           recv_buf,
           kMaxPacketSize,
           &recv_address_,
           base::Bind(&UDPProxyImpl::ReadCallback,
                      base::Unretained(this),
-                     packet,
                      recv_buf));
       if (len == net::ERR_IO_PENDING)
         break;
-      ProcessPacket(packet, recv_buf, len);
+      ProcessPacket(recv_buf, len);
     }
   }
 
@@ -513,6 +498,7 @@ class UDPProxyImpl : public UDPProxy {
   scoped_ptr<PacketPipe> to_dest_pipe_;
   scoped_ptr<PacketPipe> from_dest_pipe_;
   base::WaitableEvent start_event_;
+  scoped_ptr<transport::Packet> packet_;
 };
 
 scoped_ptr<UDPProxy> UDPProxy::Create(
