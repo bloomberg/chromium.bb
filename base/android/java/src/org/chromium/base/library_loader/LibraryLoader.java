@@ -47,14 +47,20 @@ public class LibraryLoader {
     // The flag is used to report UMA stats later.
     private static boolean sNativeLibraryHackWasUsed = false;
 
+    // TODO(fqian): Remove this method once downstream CL is
+    // committed.
+    public static void ensureInitialized(Context context) throws ProcessInitException {
+        ensureInitialized(context, true);
+    }
 
     /**
-     * TODO: http://crbug.com/354655
-     * remove this method once WebViewChromiumFactoryProvider.java
-     * changes the call to ensureInitialized(null).
+     * The same as ensureInitialized(null, false), should only be called
+     * by non-browser processes.
+     *
+     * @throws ProcessInitException
      */
     public static void ensureInitialized() throws ProcessInitException {
-        ensureInitialized(null);
+        ensureInitialized(null, false);
     }
 
     /**
@@ -70,14 +76,19 @@ public class LibraryLoader {
      *    will extract the native libraries from APK. This is a hack used to
      *    work around some Sony devices with the following platform bug:
      *    http://b/13216167.
+     *
+     *  @param shouldDeleteOldWorkaroundLibraries The flag tells whether the method
+     *    should delete the old workaround libraries or not.
      */
-    public static void ensureInitialized(Context context) throws ProcessInitException {
+    public static void ensureInitialized(
+            Context context, boolean shouldDeleteOldWorkaroundLibraries)
+            throws ProcessInitException {
         synchronized (sLock) {
             if (sInitialized) {
                 // Already initialized, nothing to do.
                 return;
             }
-            loadAlreadyLocked(context);
+            loadAlreadyLocked(context, shouldDeleteOldWorkaroundLibraries);
             initializeAlreadyLocked(CommandLine.getJavaSwitchesOrNull());
         }
     }
@@ -92,17 +103,32 @@ public class LibraryLoader {
     }
 
     /**
+     * The same as loadNow(null, false), should only be called by
+     * non-browser process.
+     *
+     * @throws ProcessInitException
+     */
+    public static void loadNow() throws ProcessInitException {
+        loadNow(null, false);
+    }
+
+    /**
      * Loads the library and blocks until the load completes. The caller is responsible
      * for subsequently calling ensureInitialized().
      * May be called on any thread, but should only be called once. Note the thread
      * this is called on will be the thread that runs the native code's static initializers.
      * See the comment in doInBackground() for more considerations on this.
      *
+     * @param context The context the code is running, or null if it doesn't have one.
+     * @param shouldDeleteOldWorkaroundLibraries The flag tells whether the method
+     *   should delete the old workaround libraries or not.
+     *
      * @throws ProcessInitException if the native library failed to load.
      */
-    public static void loadNow(Context context) throws ProcessInitException {
+    public static void loadNow(Context context, boolean shouldDeleteOldWorkaroundLibraries)
+            throws ProcessInitException {
         synchronized (sLock) {
-            loadAlreadyLocked(context);
+            loadAlreadyLocked(context, shouldDeleteOldWorkaroundLibraries);
         }
     }
 
@@ -120,7 +146,9 @@ public class LibraryLoader {
     }
 
     // Invoke System.loadLibrary(...), triggering JNI_OnLoad in native code
-    private static void loadAlreadyLocked(Context context) throws ProcessInitException {
+    private static void loadAlreadyLocked(
+            Context context, boolean shouldDeleteOldWorkaroundLibraries)
+            throws ProcessInitException {
         try {
             if (!sLoaded) {
                 assert !sInitialized;
@@ -137,10 +165,6 @@ public class LibraryLoader {
                     } else {
                         try {
                             System.loadLibrary(library);
-                            if (context != null) {
-                                LibraryLoaderHelper.deleteWorkaroundLibrariesAsynchronously(
-                                    context);
-                            }
                         } catch (UnsatisfiedLinkError e) {
                             if (context != null
                                 && LibraryLoaderHelper.tryLoadLibraryUsingWorkaround(context,
@@ -153,6 +177,14 @@ public class LibraryLoader {
                     }
                 }
                 if (useChromiumLinker) Linker.finishLibraryLoad();
+
+                if (context != null
+                    && shouldDeleteOldWorkaroundLibraries
+                    && !sNativeLibraryHackWasUsed) {
+                    LibraryLoaderHelper.deleteWorkaroundLibrariesAsynchronously(
+                        context);
+                }
+
                 long stopTime = SystemClock.uptimeMillis();
                 Log.i(TAG, String.format("Time to load native libraries: %d ms (timestamps %d-%d)",
                         stopTime - startTime,

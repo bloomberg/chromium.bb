@@ -34,7 +34,7 @@ public class ImportantFileWriterAndroidTest extends InstrumentationTestCase {
             public void run() {
                 ContentShellApplication.initializeApplicationParameters();
                 try {
-                    LibraryLoader.ensureInitialized(null);
+                    LibraryLoader.ensureInitialized();
                 } catch (ProcessInitException e) {
                     throw new Error(e);
                 }

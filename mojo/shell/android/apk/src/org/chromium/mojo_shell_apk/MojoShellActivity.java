@@ -26,7 +26,7 @@ public class MojoShellActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         try {
-            LibraryLoader.ensureInitialized(null);
+            LibraryLoader.ensureInitialized();
         } catch (ProcessInitException e) {
             Log.e(TAG, "libmojo_shell initialization failed.", e);
             finish();
