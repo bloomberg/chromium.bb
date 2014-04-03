@@ -116,6 +116,8 @@ NexeLoadManager::NexeLoadManager(
     : pp_instance_(pp_instance),
       nacl_ready_state_(PP_NACL_READY_STATE_UNSENT),
       nexe_error_reported_(false),
+      is_installed_(false),
+      exit_status_(-1),
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
       weak_factory_(this) {
   SetLastError("");
@@ -318,6 +320,13 @@ void NexeLoadManager::SetReadOnlyProperty(PP_Var key, PP_Var value) {
 void NexeLoadManager::LogToConsole(const std::string& message) {
   ppapi::PpapiGlobals::Get()->LogWithSource(
       pp_instance_, PP_LOGLEVEL_LOG, std::string("NativeClient"), message);
+}
+
+void NexeLoadManager::set_exit_status(int exit_status) {
+  ppapi::ScopedPPVar exit_status_name_var(
+      ppapi::ScopedPPVar::PassRef(),
+      ppapi::StringVar::StringToPPVar("exitStatus"));
+  SetReadOnlyProperty(exit_status_name_var.get(), PP_MakeInt32(exit_status));
 }
 
 }  // namespace nacl

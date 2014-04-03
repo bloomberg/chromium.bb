@@ -84,6 +84,9 @@ class NexeLoadManager {
   int64_t ready_time() const { return ready_time_; }
   void set_ready_time(int64_t ready_time) { ready_time_ = ready_time; }
 
+  int32_t exit_status() const { return exit_status_; }
+  void set_exit_status(int32_t exit_status);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(NexeLoadManager);
 
@@ -104,6 +107,11 @@ class NexeLoadManager {
 
   // Time of a successful nexe load, in microseconds since the epoch.
   int64_t ready_time_;
+
+  // The exit status of the plugin process.
+  // This will have a value in the range (0x00-0xff) if the exit status is set,
+  // or -1 if set_exit_status() has never been called.
+  int32_t exit_status_;
 
   // Non-owning.
   content::PepperPluginInstance* plugin_instance_;

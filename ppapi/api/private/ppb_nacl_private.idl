@@ -276,13 +276,6 @@ interface PPB_NaCl_Private {
                      [in] uint64_t loaded_bytes,
                      [in] uint64_t total_bytes);
 
-  /* Sets a read-only property on the <embed> DOM element that corresponds to
-   * the given instance.
-   */
-  void SetReadOnlyProperty([in] PP_Instance instance,
-                           [in] PP_Var key,
-                           [in] PP_Var value);
-
   /* Report that the nexe loaded successfully. */
   void ReportLoadSuccess([in] PP_Instance instance,
                          [in] str_t url,
@@ -348,4 +341,11 @@ interface PPB_NaCl_Private {
   /* Sets the time the nexe became ready. */
   void SetReadyTime([in] PP_Instance instance,
                     [in] int64_t ready_time);
+
+  /* Returns the exit status of the plugin process. */
+  int32_t GetExitStatus([in] PP_Instance instance);
+
+  /* Sets the exit status of the plugin process. */
+  void SetExitStatus([in] PP_Instance instance,
+                     [in] int32_t exit_status);
 };

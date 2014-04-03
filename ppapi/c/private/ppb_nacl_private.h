@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon Mar 31 13:29:26 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Apr  2 10:41:10 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -284,12 +284,6 @@ struct PPB_NaCl_Private_1_0 {
                         PP_Bool length_is_computable,
                         uint64_t loaded_bytes,
                         uint64_t total_bytes);
-  /* Sets a read-only property on the <embed> DOM element that corresponds to
-   * the given instance.
-   */
-  void (*SetReadOnlyProperty)(PP_Instance instance,
-                              struct PP_Var key,
-                              struct PP_Var value);
   /* Report that the nexe loaded successfully. */
   void (*ReportLoadSuccess)(PP_Instance instance,
                             const char* url,
@@ -335,6 +329,10 @@ struct PPB_NaCl_Private_1_0 {
   int64_t (*GetReadyTime)(PP_Instance instance);
   /* Sets the time the nexe became ready. */
   void (*SetReadyTime)(PP_Instance instance, int64_t ready_time);
+  /* Returns the exit status of the plugin process. */
+  int32_t (*GetExitStatus)(PP_Instance instance);
+  /* Sets the exit status of the plugin process. */
+  void (*SetExitStatus)(PP_Instance instance, int32_t exit_status);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

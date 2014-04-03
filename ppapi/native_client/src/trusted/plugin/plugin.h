@@ -204,7 +204,6 @@ class Plugin : public pp::Instance {
   Manifest const* manifest() const { return manifest_.get(); }
   const pp::URLUtil_Dev* url_util() const { return url_util_; }
 
-  int exit_status() const { return exit_status_; }
   // set_exit_status may be called off the main thread.
   void set_exit_status(int exit_status);
 

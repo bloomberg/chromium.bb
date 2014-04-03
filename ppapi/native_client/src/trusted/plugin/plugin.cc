@@ -582,7 +582,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       init_time_(0),
       nexe_size_(0),
       time_of_last_progress_event_(0),
-      exit_status_(-1),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
@@ -811,13 +810,14 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
                    " non-PP_OK arg -- SHOULD NOT HAPPEN\n"));
   }
   PLUGIN_PRINTF(("Plugin::NexeDidCrash: crash event!\n"));
-  if (-1 != exit_status()) {
+  int exit_status = nacl_interface_->GetExitStatus(pp_instance());
+  if (exit_status != -1) {
     // The NaCl module voluntarily exited.  However, this is still a
     // crash from the point of view of Pepper, since PPAPI plugins are
     // event handlers and should never exit.
     PLUGIN_PRINTF((("Plugin::NexeDidCrash: nexe exited with status %d"
                     " so this is a \"controlled crash\".\n"),
-                   exit_status()));
+                   exit_status));
   }
   // If the crash occurs during load, we just want to report an error
   // that fits into our load progress event grammar.  If the crash
@@ -1372,10 +1372,7 @@ void Plugin::SetExitStatusOnMainThread(int32_t pp_error,
                                        int exit_status) {
   DCHECK(pp::Module::Get()->core()->IsMainThread());
   DCHECK(nacl_interface_);
-  exit_status_ = exit_status;
-  nacl_interface_->SetReadOnlyProperty(pp_instance(),
-                                       pp::Var("exitStatus").pp_var(),
-                                       pp::Var(exit_status_).pp_var());
+  nacl_interface_->SetExitStatus(pp_instance(), exit_status);
 }
 
 

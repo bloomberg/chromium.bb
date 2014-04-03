@@ -432,14 +432,6 @@ void DispatchEventOnMainThread(PP_Instance instance,
   }
 }
 
-void SetReadOnlyProperty(PP_Instance instance,
-                         struct PP_Var key,
-                         struct PP_Var value) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager)
-    load_manager->SetReadOnlyProperty(key, value);
-}
-
 void ReportLoadSuccess(PP_Instance instance,
                        const char* url,
                        uint64_t loaded_bytes,
@@ -575,6 +567,21 @@ void SetReadyTime(PP_Instance instance, int64_t ready_time) {
     load_manager->set_ready_time(ready_time);
 }
 
+int32_t GetExitStatus(PP_Instance instance) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    return load_manager->exit_status();
+  return -1;
+}
+
+void SetExitStatus(PP_Instance instance, int32_t exit_status) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  DCHECK(load_manager);
+  if (load_manager)
+    return load_manager->set_exit_status(exit_status);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -589,7 +596,6 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportTranslationFinished,
   &OpenNaClExecutable,
   &DispatchEvent,
-  &SetReadOnlyProperty,
   &ReportLoadSuccess,
   &ReportLoadError,
   &ReportLoadAbort,
@@ -606,7 +612,9 @@ const PPB_NaCl_Private nacl_interface = {
   &GetIsInstalled,
   &SetIsInstalled,
   &GetReadyTime,
-  &SetReadyTime
+  &SetReadyTime,
+  &GetExitStatus,
+  &SetExitStatus
 };
 
 }  // namespace
