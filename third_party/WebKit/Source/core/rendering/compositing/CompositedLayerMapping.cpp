@@ -449,11 +449,11 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     if (updateForegroundLayer(compositor->needsContentsCompositingLayer(&m_owningLayer)))
         layerConfigChanged = true;
 
-    bool needsDescendentsClippingLayer = compositor->clipsCompositingDescendants(&m_owningLayer);
+    bool needsDescendantsClippingLayer = compositor->clipsCompositingDescendants(&m_owningLayer);
 
     // Our scrolling layer will clip.
     if (m_owningLayer.needsCompositedScrolling())
-        needsDescendentsClippingLayer = false;
+        needsDescendantsClippingLayer = false;
 
     RenderLayer* scrollParent = renderer->compositorDrivenAcceleratedScrollingEnabled() ? m_owningLayer.scrollParent() : 0;
     bool needsAncestorClip = compositor->clippedByAncestor(&m_owningLayer);
@@ -464,7 +464,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
             needsAncestorClip = false;
     }
 
-    if (updateClippingLayers(needsAncestorClip, needsDescendentsClippingLayer))
+    if (updateClippingLayers(needsAncestorClip, needsDescendantsClippingLayer))
         layerConfigChanged = true;
 
     if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer()))

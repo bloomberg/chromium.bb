@@ -211,10 +211,9 @@ private:
         SquashingState()
             : mostRecentMapping(0)
             , hasMostRecentMapping(false)
-            , nextSquashedLayerIndex(0)
-            , clippingAncestorForMostRecentMapping(0) { }
+            , nextSquashedLayerIndex(0) { }
 
-        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, LayoutPoint newOffsetFromAbsoluteForSquashingCLM, RenderLayer* clippingAncestorForMostRecentMapping);
+        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, LayoutPoint newOffsetFromAbsoluteForSquashingCLM);
 
         // The most recent composited backing that the layer should squash onto if needed.
         CompositedLayerMappingPtr mostRecentMapping;
@@ -226,13 +225,11 @@ private:
 
         // Counter that tracks what index the next RenderLayer would be if it gets squashed to the current squashing layer.
         size_t nextSquashedLayerIndex;
-
-        RenderLayer* clippingAncestorForMostRecentMapping;
     };
 
     bool hasUnresolvedDirtyBits();
 
-    bool canSquashIntoCurrentSquashingOwner(const RenderLayer* candidate, const SquashingState&, const RenderLayer* clippingAncestor);
+    bool canSquashIntoCurrentSquashingOwner(const RenderLayer* candidate, const SquashingState&);
 
     CompositingStateTransitionType computeCompositedLayerUpdate(RenderLayer*);
     // Make updates to the layer based on viewport-constrained properties such as position:fixed. This can in turn affect
@@ -271,7 +268,7 @@ private:
 
     // Defines which RenderLayers will paint into which composited backings, by allocating and destroying CompositedLayerMappings as needed.
     void assignLayersToBackings(RenderLayer*, bool& layersChanged);
-    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged, RenderLayer* clippingAncestor);
+    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged);
 
     // Hook compositing layers together
     void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);

@@ -349,7 +349,7 @@ private:
     //
     // If m_clippingAncestorLayer is present:
     //
-    // m_clippingAncestorLayer
+    // m_ancestorClippingLayer
     //   + m_graphicsLayer
     //   + m_squashingLayer
     //
