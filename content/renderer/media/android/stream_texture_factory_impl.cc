@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/android/stream_texture_factory_android_impl.h"
+#include "content/renderer/media/android/stream_texture_factory_impl.h"
 
 #include "cc/output/context_provider.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
@@ -125,8 +125,8 @@ unsigned StreamTextureFactoryImpl::CreateStreamTexture(
   return stream_id;
 }
 
-void StreamTextureFactoryImpl::SetStreamTextureSize(
-    int32 stream_id, const gfx::Size& size) {
+void StreamTextureFactoryImpl::SetStreamTextureSize(int32 stream_id,
+                                                    const gfx::Size& size) {
   channel_->Send(new GpuStreamTextureMsg_SetSize(stream_id, size));
 }
 

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/android/stream_texture_factory_android_synchronous_impl.h"
+#include "content/renderer/media/android/stream_texture_factory_synchronous_impl.h"
 
 #include <algorithm>
 
@@ -192,8 +192,7 @@ void StreamTextureFactorySynchronousImpl::SetStreamTextureSize(
     int32 stream_id,
     const gfx::Size& size) {}
 
-gpu::gles2::GLES2Interface*
-StreamTextureFactorySynchronousImpl::ContextGL() {
+gpu::gles2::GLES2Interface* StreamTextureFactorySynchronousImpl::ContextGL() {
   DCHECK(context_provider_);
   return context_provider_->ContextGL();
 }

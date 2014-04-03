@@ -8,7 +8,7 @@
 #include "base/synchronization/lock.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/renderer/android/synchronous_compositor_factory.h"
-#include "content/renderer/media/android/stream_texture_factory_android_synchronous_impl.h"
+#include "content/renderer/media/android/stream_texture_factory_synchronous_impl.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
 #include "webkit/common/gpu/context_provider_web_context.h"
 

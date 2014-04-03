@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
-#define CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
+#ifndef CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,7 +16,6 @@ namespace gles2 {
 class GLES2Interface;
 }  // namespace gles2
 }  // namespace gpu
-
 
 namespace content {
 
@@ -57,9 +56,9 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
   // the player_id.
   virtual void EstablishPeer(int32 stream_id, int player_id) = 0;
 
-  // Create the streamTexture and return the stream Id and create a client-side
-  // texture id to refer to the streamTexture. The texture id is produced into
-  // a mailbox so it can be used to ship in a VideoFrame.
+  // Creates a StreamTexture and returns its id.  Sets |*texture_id| to the
+  // client-side id of the StreamTexture. The texture is produced into
+  // a mailbox so it can be shipped in a VideoFrame.
   virtual unsigned CreateStreamTexture(unsigned texture_target,
                                        unsigned* texture_id,
                                        gpu::Mailbox* texture_mailbox) = 0;
@@ -77,4 +76,4 @@ class StreamTextureFactory : public base::RefCounted<StreamTextureFactory> {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_ANDROID_H_
+#endif  // CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_FACTORY_H_
