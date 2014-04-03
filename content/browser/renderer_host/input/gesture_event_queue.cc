@@ -285,7 +285,7 @@ void GestureEventQueue::MergeOrInsertScrollAndPinchEvent(
   }
   GestureEventWithLatencyInfo* last_event = &coalesced_gesture_events_.back();
   if (last_event->CanCoalesceWith(gesture_event)) {
-      last_event->CoalesceWith(gesture_event);
+    last_event->CoalesceWith(gesture_event);
     if (!combined_scroll_pinch_.IsIdentity()) {
       combined_scroll_pinch_.ConcatTransform(
           GetTransformForEvent(gesture_event));

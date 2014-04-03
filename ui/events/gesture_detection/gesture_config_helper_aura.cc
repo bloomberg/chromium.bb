@@ -34,7 +34,6 @@ ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
   ScaleGestureDetector::Config config;
 
   config.gesture_detector_config = DefaultGestureDetectorConfig();
-  config.quick_scale_enabled = false;
   config.min_scaling_touch_major = GestureConfiguration::default_radius() / 2;
   config.min_scaling_span =
       GestureConfiguration::min_distance_for_pinch_scroll_in_pixels();

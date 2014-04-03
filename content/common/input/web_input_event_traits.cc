@@ -145,17 +145,35 @@ void Coalesce(const WebTouchEvent& event_to_coalesce, WebTouchEvent* event) {
 
 bool CanCoalesce(const WebGestureEvent& event_to_coalesce,
                  const WebGestureEvent& event) {
-  return event.type == event_to_coalesce.type &&
-         event.type == WebInputEvent::GestureScrollUpdate &&
-         event.sourceDevice == event_to_coalesce.sourceDevice &&
-         event.modifiers == event_to_coalesce.modifiers;
+  if (event.type != event_to_coalesce.type ||
+      event.sourceDevice != event_to_coalesce.sourceDevice ||
+      event.modifiers != event_to_coalesce.modifiers)
+    return false;
+
+  if (event.type == WebInputEvent::GestureScrollUpdate)
+    return true;
+
+  // GesturePinchUpdate scales can be combined only if they share a focal point,
+  // e.g., with double-tap drag zoom.
+  if (event.type == WebInputEvent::GesturePinchUpdate &&
+      event.x == event_to_coalesce.x &&
+      event.y == event_to_coalesce.y)
+    return true;
+
+  return false;
 }
 
 void Coalesce(const WebGestureEvent& event_to_coalesce,
               WebGestureEvent* event) {
   DCHECK(CanCoalesce(event_to_coalesce, *event));
-  event->data.scrollUpdate.deltaX += event_to_coalesce.data.scrollUpdate.deltaX;
-  event->data.scrollUpdate.deltaY += event_to_coalesce.data.scrollUpdate.deltaY;
+  if (event->type == WebInputEvent::GestureScrollUpdate) {
+    event->data.scrollUpdate.deltaX +=
+        event_to_coalesce.data.scrollUpdate.deltaX;
+    event->data.scrollUpdate.deltaY +=
+        event_to_coalesce.data.scrollUpdate.deltaY;
+  } else if (event->type == WebInputEvent::GesturePinchUpdate) {
+    event->data.pinchUpdate.scale *= event_to_coalesce.data.pinchUpdate.scale;
+  }
 }
 
 struct WebInputEventSize {

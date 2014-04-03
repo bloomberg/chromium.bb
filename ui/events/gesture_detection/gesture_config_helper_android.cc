@@ -37,9 +37,7 @@ ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
   ScaleGestureDetector::Config config;
 
   config.gesture_detector_config = DefaultGestureDetectorConfig();
-  // TODO(jdduke): Enable "quick scale" on the ScaleGestureDetector, and remove
-  // corresponding double tap drag zoom code from GestureProvider, crbug/331092.
-  config.quick_scale_enabled = false;
+  config.quick_scale_enabled = true;
   config.min_scaling_touch_major =
       ViewConfiguration::GetMinScalingTouchMajorInPixels();
   config.min_scaling_span = ViewConfiguration::GetMinScalingSpanInPixels();

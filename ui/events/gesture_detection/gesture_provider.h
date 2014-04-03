@@ -66,8 +66,12 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // forwarded and detection is still active).
   bool IsPinchInProgress() const;
 
-  // Whether a double tap-gesture is in-progress.
+  // Whether a double-tap gesture is in-progress (either double-tap or
+  // double-tap drag zoom).
   bool IsDoubleTapInProgress() const;
+
+  // Whether double-tap gesture detection is supported.
+  bool IsDoubleTapSupported() const;
 
   // Whether the tap gesture delay is explicitly disabled (independent of
   // whether double-tap is supported), see |Config.disable_click_delay|.
@@ -93,6 +97,7 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   bool SendLongTapIfNecessary(const MotionEvent& event);
   void EndTouchScrollIfNecessary(base::TimeTicks time,
                                  bool send_scroll_end_event);
+  void UpdateDoubleTapDetectionSupport();
 
   GestureProviderClient* const client_;
 
@@ -119,6 +124,10 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // with a {SCROLL,PINCH}_END.
   bool touch_scroll_in_progress_;
   bool pinch_in_progress_;
+
+  // Whether double-tap gesture detection is currently supported.
+  bool double_tap_support_for_page_;
+  bool double_tap_support_for_platform_;
 
   // Keeps track of the current GESTURE_LONG_PRESS event. If a context menu is
   // opened after a GESTURE_LONG_PRESS, this is used to insert a

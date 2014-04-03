@@ -26,7 +26,7 @@ const float kScaleFactor = .5f;
 // Note: These constants were taken directly from the default (unscaled)
 // versions found in Android's ViewConfiguration.
 ScaleGestureDetector::Config::Config()
-    : quick_scale_enabled(false),
+    : quick_scale_enabled(true),
       min_scaling_touch_major(48),
       min_scaling_span(200) {}
 
@@ -245,6 +245,10 @@ bool ScaleGestureDetector::IsQuickScaleEnabled() const {
 
 bool ScaleGestureDetector::IsInProgress() const { return in_progress_; }
 
+bool ScaleGestureDetector::InDoubleTapMode() const {
+  return double_tap_mode_ == DOUBLE_TAP_MODE_IN_PROGRESS;
+}
+
 float ScaleGestureDetector::GetFocusX() const { return focus_x_; }
 
 float ScaleGestureDetector::GetFocusY() const { return focus_y_; }
@@ -358,10 +362,6 @@ void ScaleGestureDetector::ClearTouchHistory() {
   touch_history_last_accepted_ = std::numeric_limits<float>::quiet_NaN();
   touch_history_direction_ = 0;
   touch_history_last_accepted_time_ = base::TimeTicks();
-}
-
-bool ScaleGestureDetector::InDoubleTapMode() const {
-  return double_tap_mode_ == DOUBLE_TAP_MODE_IN_PROGRESS;
 }
 
 }  // namespace ui

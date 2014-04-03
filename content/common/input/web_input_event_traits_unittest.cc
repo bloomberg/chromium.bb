@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
+using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
@@ -16,28 +17,39 @@ namespace {
 
 class WebInputEventTraitsTest : public testing::Test {
  protected:
-  static WebTouchPoint Create(int id, WebTouchPoint::State state) {
+  static WebTouchPoint CreateTouchPoint(WebTouchPoint::State state, int id) {
     WebTouchPoint touch;
-    touch.id = id;
     touch.state = state;
+    touch.id = id;
     return touch;
   }
 
-  static WebTouchEvent Create(WebInputEvent::Type type) {
-    return Create(type, 1);
+  static WebTouchEvent CreateTouch(WebInputEvent::Type type) {
+    return CreateTouch(type, 1);
   }
 
-  static WebTouchEvent Create(WebInputEvent::Type type, unsigned touch_count) {
+  static WebTouchEvent CreateTouch(WebInputEvent::Type type,
+                                   unsigned touch_count) {
     WebTouchEvent event;
     event.touchesLength = touch_count;
     event.type = type;
     return event;
   }
+
+  static WebGestureEvent CreateGesture(WebInputEvent::Type type,
+                                       float x,
+                                       float y) {
+    WebGestureEvent event;
+    event.type = type;
+    event.x = x;
+    event.y = y;
+    return event;
+  }
 };
 
 TEST_F(WebInputEventTraitsTest, TouchEventCoalescing) {
-  WebTouchEvent touch0 = Create(WebInputEvent::TouchStart);
-  WebTouchEvent touch1 = Create(WebInputEvent::TouchMove);
+  WebTouchEvent touch0 = CreateTouch(WebInputEvent::TouchStart);
+  WebTouchEvent touch1 = CreateTouch(WebInputEvent::TouchMove);
 
   // Non touch-moves won't coalesce.
   EXPECT_FALSE(WebInputEventTraits::CanCoalesce(touch0, touch0));
@@ -49,32 +61,35 @@ TEST_F(WebInputEventTraitsTest, TouchEventCoalescing) {
   EXPECT_TRUE(WebInputEventTraits::CanCoalesce(touch1, touch1));
 
   // Touch moves with different touch ids should not coalesce.
-  touch0 = Create(WebInputEvent::TouchMove);
-  touch1 = Create(WebInputEvent::TouchMove);
+  touch0 = CreateTouch(WebInputEvent::TouchMove);
+  touch1 = CreateTouch(WebInputEvent::TouchMove);
   touch0.touches[0].id = 7;
   EXPECT_FALSE(WebInputEventTraits::CanCoalesce(touch0, touch1));
-  touch0 = Create(WebInputEvent::TouchMove, 2);
-  touch1 = Create(WebInputEvent::TouchMove, 2);
+  touch0 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
   touch0.touches[0].id = 1;
   touch1.touches[0].id = 0;
   EXPECT_FALSE(WebInputEventTraits::CanCoalesce(touch0, touch1));
 
   // Touch moves with different touch lengths should not coalesce.
-  touch0 = Create(WebInputEvent::TouchMove, 1);
-  touch1 = Create(WebInputEvent::TouchMove, 2);
+  touch0 = CreateTouch(WebInputEvent::TouchMove, 1);
+  touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
   EXPECT_FALSE(WebInputEventTraits::CanCoalesce(touch0, touch1));
 
   // Touch moves with identical touch ids in different orders should coalesce.
-  touch0 = Create(WebInputEvent::TouchMove, 2);
-  touch1 = Create(WebInputEvent::TouchMove, 2);
-  touch0.touches[0] = touch1.touches[1] = Create(1, WebTouchPoint::StateMoved);
-  touch0.touches[1] = touch1.touches[0] = Create(0, WebTouchPoint::StateMoved);
+  touch0 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch0.touches[0] = touch1.touches[1] =
+      CreateTouchPoint(WebTouchPoint::StateMoved, 1);
+  touch0.touches[1] = touch1.touches[0] =
+      CreateTouchPoint(WebTouchPoint::StateMoved, 0);
   EXPECT_TRUE(WebInputEventTraits::CanCoalesce(touch0, touch1));
 
   // Pointers with the same ID's should coalesce.
-  touch0 = Create(WebInputEvent::TouchMove, 2);
-  touch1 = Create(WebInputEvent::TouchMove, 2);
-  touch0.touches[0] = touch1.touches[1] = Create(1, WebTouchPoint::StateMoved);
+  touch0 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch0.touches[0] = touch1.touches[1] =
+      CreateTouchPoint(WebTouchPoint::StateMoved, 1);
   WebInputEventTraits::Coalesce(touch0, &touch1);
   ASSERT_EQ(1, touch1.touches[0].id);
   ASSERT_EQ(0, touch1.touches[1].id);
@@ -82,16 +97,44 @@ TEST_F(WebInputEventTraitsTest, TouchEventCoalescing) {
   EXPECT_EQ(WebTouchPoint::StateMoved, touch1.touches[0].state);
 
   // Movement from now-stationary pointers should be preserved.
-  touch0 = touch1 = Create(WebInputEvent::TouchMove, 2);
-  touch0.touches[0] = Create(1, WebTouchPoint::StateMoved);
-  touch1.touches[1] = Create(1, WebTouchPoint::StateStationary);
-  touch0.touches[1] = Create(0, WebTouchPoint::StateStationary);
-  touch1.touches[0] = Create(0, WebTouchPoint::StateMoved);
+  touch0 = touch1 = CreateTouch(WebInputEvent::TouchMove, 2);
+  touch0.touches[0] = CreateTouchPoint(WebTouchPoint::StateMoved, 1);
+  touch1.touches[1] = CreateTouchPoint(WebTouchPoint::StateStationary, 1);
+  touch0.touches[1] = CreateTouchPoint(WebTouchPoint::StateStationary, 0);
+  touch1.touches[0] = CreateTouchPoint(WebTouchPoint::StateMoved, 0);
   WebInputEventTraits::Coalesce(touch0, &touch1);
   ASSERT_EQ(1, touch1.touches[0].id);
   ASSERT_EQ(0, touch1.touches[1].id);
   EXPECT_EQ(WebTouchPoint::StateMoved, touch1.touches[0].state);
   EXPECT_EQ(WebTouchPoint::StateMoved, touch1.touches[1].state);
+}
+
+TEST_F(WebInputEventTraitsTest, PinchEventCoalescing) {
+  WebGestureEvent pinch0 =
+      CreateGesture(WebInputEvent::GesturePinchBegin, 1, 1);
+  WebGestureEvent pinch1 =
+      CreateGesture(WebInputEvent::GesturePinchUpdate, 2, 2);
+
+  // Only GesturePinchUpdate's coalesce.
+  EXPECT_FALSE(WebInputEventTraits::CanCoalesce(pinch0, pinch0));
+
+  // Pinch gestures of different types should not coalesce.
+  EXPECT_FALSE(WebInputEventTraits::CanCoalesce(pinch0, pinch1));
+
+  // Pinches with different focal points should not coalesce.
+  pinch0 = CreateGesture(WebInputEvent::GesturePinchUpdate, 1, 1);
+  pinch1 = CreateGesture(WebInputEvent::GesturePinchUpdate, 2, 2);
+  EXPECT_FALSE(WebInputEventTraits::CanCoalesce(pinch0, pinch1));
+  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(pinch0, pinch0));
+
+  // Coalesced scales are multiplicative.
+  pinch0 = CreateGesture(WebInputEvent::GesturePinchUpdate, 1, 1);
+  pinch0.data.pinchUpdate.scale = 2.f;
+  pinch1 = CreateGesture(WebInputEvent::GesturePinchUpdate, 1, 1);
+  pinch1.data.pinchUpdate.scale = 3.f;
+  EXPECT_TRUE(WebInputEventTraits::CanCoalesce(pinch0, pinch0));
+  WebInputEventTraits::Coalesce(pinch0, &pinch1);
+  EXPECT_EQ(2.f * 3.f, pinch1.data.pinchUpdate.scale);
 }
 
 }  // namespace

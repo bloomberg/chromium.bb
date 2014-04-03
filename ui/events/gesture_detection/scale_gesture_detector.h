@@ -71,6 +71,7 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
   void SetQuickScaleEnabled(bool scales);
   bool IsQuickScaleEnabled() const;
   bool IsInProgress() const;
+  bool InDoubleTapMode() const;
   float GetFocusX() const;
   float GetFocusY() const;
   float GetCurrentSpan() const;
@@ -93,7 +94,6 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
   // some hardware/driver combos. Smooth out to get kinder, gentler behavior.
   void AddTouchHistory(const MotionEvent& ev);
   void ClearTouchHistory();
-  bool InDoubleTapMode() const;
 
   ScaleGestureListener* const listener_;
 

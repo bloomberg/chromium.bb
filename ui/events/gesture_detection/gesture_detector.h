@@ -88,6 +88,10 @@ class GestureDetector {
     double_tap_listener_ = double_tap_listener;
   }
 
+  bool has_doubletap_listener() const { return double_tap_listener_ != NULL; }
+
+  bool is_double_tapping() const { return is_double_tapping_; }
+
   void set_is_longpress_enabled(bool is_longpress_enabled) {
     is_longpress_enabled_ = is_longpress_enabled;
   }
