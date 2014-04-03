@@ -19,11 +19,14 @@ class ManagePasswordItemView : public views::View,
                                public views::ButtonListener,
                                public views::LinkListener {
  public:
+  enum Position { FIRST_ITEM, SUBSEQUENT_ITEM };
+
   ManagePasswordItemView(
       ManagePasswordsBubbleModel* manage_passwords_bubble_model,
       autofill::PasswordForm password_form,
       int field_1_width,
-      int field_2_width);
+      int field_2_width,
+      Position position);
 
   static base::string16 GetPasswordDisplayString(
       const base::string16& password);

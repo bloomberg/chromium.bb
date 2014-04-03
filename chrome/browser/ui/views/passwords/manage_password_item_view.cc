@@ -17,7 +17,8 @@ ManagePasswordItemView::ManagePasswordItemView(
     ManagePasswordsBubbleModel* manage_passwords_bubble_model,
     autofill::PasswordForm password_form,
     int field_1_width,
-    int field_2_width)
+    int field_2_width,
+    Position position)
     : manage_passwords_bubble_model_(manage_passwords_bubble_model),
       password_form_(password_form),
       delete_password_(false),
@@ -26,6 +27,17 @@ ManagePasswordItemView::ManagePasswordItemView(
   views::GridLayout* layout = new views::GridLayout(this);
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   SetLayoutManager(layout);
+
+  // When a password is displayed as the first item in a list, it has borders
+  // on both the top and bottom. When it's in the middle of a list, or at the
+  // end, it has a border only on the bottom.
+  SetBorder(views::Border::CreateSolidSidedBorder(
+      position == FIRST_ITEM ? 1 : 0,
+      0,
+      1,
+      0,
+      GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
 
   // Build the columnset we need for the current state of the model.
   int column_set_to_build =

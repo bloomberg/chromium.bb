@@ -21,6 +21,7 @@ class WebContents;
 namespace views {
 class BlueButton;
 class LabelButton;
+class GridLayout;
 }
 
 class ManagePasswordsBubbleView : public views::BubbleDelegateView,
@@ -40,10 +41,25 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   static bool IsShowing();
 
  private:
+  enum ColumnSetType {
+    // | | (FILL, FILL) | |
+    // Used for the bubble's header, the credentials list, and for simple
+    // messages like "No passwords".
+    SINGLE_VIEW_COLUMN_SET = 0,
+
+    // | | (TRAILING, CENTER) | | (TRAILING, CENTER) | |
+    // Used for buttons and links at the bottom of the bubble.
+    DOUBLE_VIEW_COLUMN_SET = 1,
+  };
+
   ManagePasswordsBubbleView(content::WebContents* web_contents,
                             views::View* anchor_view,
                             ManagePasswordsIconView* icon_view);
   virtual ~ManagePasswordsBubbleView();
+
+  // Construct an appropriate ColumnSet for the given |type|, and add it
+  // to |layout|.
+  void BuildColumnSet(views::GridLayout* layout, ColumnSetType type);
 
   // Returns the maximum width needed to display the longest value in the
   // |type| field.
