@@ -20,7 +20,6 @@ ensure_in_path() {
 }
 
 ensure_in_path xmlto
-ensure_in_path asciidoc
 
 DFLT_CATALOG_PATH="/usr/local/etc/xml/catalog"
 if [[ ! $XML_CATALOG_FILES && -f "$DFLT_CATALOG_PATH" ]]
@@ -29,6 +28,20 @@ then
   export XML_CATALOG_FILES="$DFLT_CATALOG_PATH"
   echo Using \'$DFLT_CATALOG_PATH\' for \$XML_CATALOG_FILES.
 fi
+
+# We pull asciidoc to get the right version
+BRANCH=8.6.9
+ASCIIDOC_HASH=7fed0aff1b30
+if [[ ! -d asciidoc || $(cd asciidoc && hg id -i) != $ASCIIDOC_HASH ]]
+then
+  echo Cloning asciidoc
+  rm -rf asciidoc
+  hg clone -r $BRANCH https://asciidoc.googlecode.com/hg/ asciidoc
+  (cd asciidoc && ln -s asciidoc.py asciidoc)
+fi
+echo Asciidoc up to date at $ASCIIDOC_HASH \($BRANCH\)
+
+export PATH=`pwd`/asciidoc:$PATH
 
 # We pull git to get its documentation toolchain
 BRANCH=v1.9.0
