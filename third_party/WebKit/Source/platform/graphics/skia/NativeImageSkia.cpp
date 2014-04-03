@@ -451,8 +451,9 @@ void NativeImageSkia::drawPattern(
         return; // nothing to draw
 
     SkMatrix totalMatrix = context->getTotalMatrix();
-    SkScalar ctmScaleX = totalMatrix.getScaleX();
-    SkScalar ctmScaleY = totalMatrix.getScaleY();
+    AffineTransform ctm = context->getCTM();
+    SkScalar ctmScaleX = ctm.xScale();
+    SkScalar ctmScaleY = ctm.yScale();
     totalMatrix.preScale(scale.width(), scale.height());
 
     // Figure out what size the bitmap will be in the destination. The
