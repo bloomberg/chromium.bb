@@ -241,6 +241,9 @@ wayland_backend_la_CFLAGS =			\
 	$(WAYLAND_COMPOSITOR_CFLAGS)		\
 	$(GCC_CFLAGS)
 wayland_backend_la_SOURCES = src/compositor-wayland.c
+nodist_wayland_backend_la_SOURCES =			\
+	protocol/fullscreen-shell-protocol.c		\
+	protocol/fullscreen-shell-client-protocol.h
 endif
 
 if ENABLE_RPI_COMPOSITOR
