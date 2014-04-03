@@ -63,6 +63,7 @@ void PageDistiller::OnExecuteJavaScriptDone(const GURL& page_url,
   scoped_ptr<DistilledPageInfo> page_info(new DistilledPageInfo());
   std::string result;
   const base::ListValue* result_list = NULL;
+  bool found_content = false;
   if (!value->GetAsList(&result_list)) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -83,6 +84,7 @@ void PageDistiller::OnExecuteJavaScriptDone(const GURL& page_url,
           break;
         case 1:
           page_info->html = item;
+          found_content = true;
           break;
         case 2:
           page_info->next_page_url = item;
@@ -91,12 +93,16 @@ void PageDistiller::OnExecuteJavaScriptDone(const GURL& page_url,
           page_info->prev_page_url = item;
           break;
         default:
-          page_info->image_urls.push_back(item);
+          if (GURL(item).is_valid()) {
+            page_info->image_urls.push_back(item);
+          }
       }
     }
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(page_distiller_callback_, base::Passed(&page_info), true));
+        base::Bind(page_distiller_callback_,
+                   base::Passed(&page_info),
+                   found_content));
   }
 }
 

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(cjhopman): remove dependency on readability.
-
 // These includes will be processed at build time by grit.
 <include src="../../../../third_party/dom_distiller_js/js/domdistiller.js"/>
 
@@ -13,12 +11,16 @@
 // element is the previous page link.
 (function() {
   var result = new Array(4);
-  result[0] = com.dom_distiller.DocumentTitleGetter.getDocumentTitle(
-      document.title, document.documentElement);
-  result[1] = com.dom_distiller.ContentExtractor.extractContent();
-  result[2] = com.dom_distiller.PagingLinksFinder.findNext(
-      document.documentElement);
-  // TODO(shashishekhar): Add actual previous page link here.
-  result[3] = '';
+  try {
+    result[0] = com.dom_distiller.DocumentTitleGetter.getDocumentTitle(
+        document.title, document.documentElement);
+    result[1] = com.dom_distiller.ContentExtractor.extractContent();
+    result[2] = com.dom_distiller.PagingLinksFinder.findNext(
+        document.documentElement);
+    // TODO(shashishekhar): Add actual previous page link here.
+    result[3] = '';
+  } catch (e) {
+    window.console.log("Error during distillation: " + e);
+  }
   return result;
 })()

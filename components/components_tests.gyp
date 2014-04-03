@@ -548,6 +548,7 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+            '../testing/gmock.gyp:gmock',
           ],
           'include_dirs': [
             '..',
