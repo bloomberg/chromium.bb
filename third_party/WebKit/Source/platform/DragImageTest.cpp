@@ -32,8 +32,8 @@
 
 #include "platform/DragImage.h"
 
-#include "URLTestHelpers.h"
-#include "core/rendering/RenderTheme.h"
+#include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontTraits.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
@@ -47,7 +47,6 @@
 #include <gtest/gtest.h>
 
 using namespace WebCore;
-using blink::URLTestHelpers::toKURL;
 
 namespace {
 
@@ -143,14 +142,20 @@ TEST(DragImageTest, CreateDragImage)
     }
 }
 
-TEST(DragImageTest, TrimWhitspace)
+TEST(DragImageTest, TrimWhitespace)
 {
-    KURL url = toKURL("http://www.example.com/");
+    KURL url(ParsedURLString, "http://www.example.com/");
     String testLabel = "          Example Example Example      \n    ";
     String expectedLabel = "Example Example Example";
     float deviceScaleFactor = 1.0f;
+
     FontDescription fontDescription;
-    RenderTheme::theme().systemFont(WebCore::CSSValueNone, fontDescription);
+    fontDescription.firstFamily().setFamily("Arial");
+    fontDescription.setSpecifiedSize(16);
+    fontDescription.setIsAbsoluteSize(true);
+    fontDescription.setGenericFamily(FontDescription::NoFamily);
+    fontDescription.setWeight(FontWeightNormal);
+    fontDescription.setStyle(FontStyleNormal);
 
     OwnPtr<DragImage> testImage =
         DragImage::create(url, testLabel, fontDescription, deviceScaleFactor);

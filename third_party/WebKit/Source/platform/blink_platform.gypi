@@ -872,6 +872,7 @@
     'platform_test_files': [
       'ClockTest.cpp',
       'DecimalTest.cpp',
+      'DragImageTest.cpp',
       'LayoutUnitTest.cpp',
       'LifecycleContextTest.cpp',
       'PODArenaTest.cpp',

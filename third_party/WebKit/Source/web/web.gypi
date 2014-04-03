@@ -268,7 +268,6 @@
       'tests/ChromeClientImplTest.cpp',
       'tests/CompositedLayerMappingTest.cpp',
       'tests/CustomEventTest.cpp',
-      'tests/DragImageTest.cpp',
       'tests/FakeWebPlugin.cpp',
       'tests/FakeWebPlugin.h',
       'tests/FrameLoaderClientImplTest.cpp',

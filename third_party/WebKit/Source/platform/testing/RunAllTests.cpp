@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include "platform/Partitions.h"
 #include "platform/TestingPlatformSupport.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
@@ -56,5 +57,9 @@ int main(int argc, char** argv)
     WebCore::TestingPlatformSupport::Config platformConfig;
     WebCore::TestingPlatformSupport platform(platformConfig);
 
-    return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+    WebCore::Partitions::init();
+    int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+    WebCore::Partitions::shutdown();
+
+    return result;
 }
