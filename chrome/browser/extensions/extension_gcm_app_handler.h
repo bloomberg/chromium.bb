@@ -47,6 +47,10 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
       const std::string& app_id,
       const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
 
+ protected:
+  virtual void OnUnregisterCompleted(const std::string& app_id,
+                                     gcm::GCMClient::Result result);
+
  private:
   friend class BrowserContextKeyedAPIFactory<ExtensionGCMAppHandler>;
 
@@ -56,8 +60,6 @@ class ExtensionGCMAppHandler : public gcm::GCMAppHandler,
                        const content::NotificationDetails& details) OVERRIDE;
 
   gcm::GCMProfileService* GetGCMProfileService() const;
-  void OnUnregisterCompleted(const std::string& app_id,
-                             gcm::GCMClient::Result result);
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ExtensionGCMAppHandler"; }

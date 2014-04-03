@@ -2,56 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
-#include <map>
-
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
-#include "base/run_loop.h"
-#include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_gcm_app_handler.h"
-#include "chrome/browser/extensions/state_store.h"
-#include "chrome/browser/extensions/test_extension_service.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/services/gcm/gcm_app_handler.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
-#include "chrome/browser/signin/chrome_signin_client.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_test_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/os_crypt/os_crypt.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_prefs.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#else
-#include "components/signin/core/browser/signin_manager.h"
-#endif
-
-using namespace extensions;
 
 namespace gcm {
 
 namespace {
 
-const char kTestExtensionName[] = "FooBar";
 const char kTestingUsername[] = "user1@example.com";
 const char kTestingUsername2[] = "user2@example.com";
 const char kTestingUsername3[] = "user3@example.com";
@@ -62,108 +33,13 @@ const char kUserId2[] = "user2";
 
 std::vector<std::string> ToSenderList(const std::string& sender_ids) {
   std::vector<std::string> senders;
-  base::StringTokenizer tokenizer(sender_ids, ",");
-  while (tokenizer.GetNext())
-    senders.push_back(tokenizer.token());
+  Tokenize(sender_ids, ",", &senders);
   return senders;
 }
 
-// Helper class for asynchrnous waiting.
-class Waiter {
- public:
-  Waiter() {}
-  virtual ~Waiter() {}
-
-  // Waits until the asynchrnous operation finishes.
-  void WaitUntilCompleted() {
-    run_loop_.reset(new base::RunLoop);
-    run_loop_->Run();
-  }
-
-  // Signals that the asynchronous operation finishes.
-  void SignalCompleted() {
-    if (run_loop_ && run_loop_->running())
-      run_loop_->Quit();
-  }
-
-  // Runs until UI loop becomes idle.
-  void PumpUILoop() {
-    base::MessageLoop::current()->RunUntilIdle();
-  }
-
-  // Runs until IO loop becomes idle.
-  void PumpIOLoop() {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Waiter::OnIOLoopPump, base::Unretained(this)));
-
-    WaitUntilCompleted();
-  }
-
- private:
-  void PumpIOLoopCompleted() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-    SignalCompleted();
-  }
-
-  void OnIOLoopPump() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&Waiter::OnIOLoopPumpCompleted, base::Unretained(this)));
-  }
-
-  void OnIOLoopPumpCompleted() {
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&Waiter::PumpIOLoopCompleted,
-                   base::Unretained(this)));
-  }
-
-  scoped_ptr<base::RunLoop> run_loop_;
-};
-
-class FakeSigninManager : public SigninManagerBase {
- public:
-  explicit FakeSigninManager(Profile* profile)
-      : SigninManagerBase(
-            ChromeSigninClientFactory::GetInstance()->GetForProfile(profile)),
-        profile_(profile) {
-    Initialize(NULL);
-  }
-
-  virtual ~FakeSigninManager() {
-  }
-
-  void SignIn(const std::string& username) {
-    SetAuthenticatedUsername(username);
-    FOR_EACH_OBSERVER(Observer,
-                      observer_list_,
-                      GoogleSigninSucceeded(username, std::string()));
-  }
-
-  void SignOut() {
-    std::string username = GetAuthenticatedUsername();
-    clear_authenticated_username();
-    profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
-    FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
-  }
-
- private:
-  Profile* profile_;
-};
-
 }  // namespace
 
-// TODO(jianli): Move extension specific tests to a separate file.
-class FakeGCMAppHandler : public ExtensionGCMAppHandler {
+class FakeGCMAppHandler : public GCMAppHandler {
  public:
   enum Event {
     NO_EVENT,
@@ -172,13 +48,15 @@ class FakeGCMAppHandler : public ExtensionGCMAppHandler {
     SEND_ERROR_EVENT
   };
 
-  FakeGCMAppHandler(Profile* profile, Waiter* waiter)
-      : ExtensionGCMAppHandler(profile),
-        waiter_(waiter),
+  explicit FakeGCMAppHandler(Waiter* waiter)
+      : waiter_(waiter),
         received_event_(NO_EVENT) {
   }
 
   virtual ~FakeGCMAppHandler() {
+  }
+
+  virtual void ShutdownHandler() OVERRIDE {
   }
 
   virtual void OnMessage(const std::string& app_id,
@@ -238,42 +116,8 @@ class FakeGCMAppHandler : public ExtensionGCMAppHandler {
   GCMClient::SendErrorDetails send_error_details_;
 };
 
-class FakeGCMClientFactory : public GCMClientFactory {
- public:
-  FakeGCMClientFactory(
-      GCMClientMock::LoadingDelay gcm_client_loading_delay,
-      GCMClientMock::ErrorSimulation gcm_client_error_simulation)
-      : gcm_client_loading_delay_(gcm_client_loading_delay),
-        gcm_client_error_simulation_(gcm_client_error_simulation),
-        gcm_client_(NULL) {
-  }
-
-  virtual ~FakeGCMClientFactory() {
-  }
-
-  virtual scoped_ptr<GCMClient> BuildInstance() OVERRIDE {
-    gcm_client_ = new GCMClientMock(gcm_client_loading_delay_,
-                                    gcm_client_error_simulation_);
-    return scoped_ptr<GCMClient>(gcm_client_);
-  }
-
-  GCMClientMock* gcm_client() const { return gcm_client_; }
-
- private:
-  GCMClientMock::LoadingDelay gcm_client_loading_delay_;
-  GCMClientMock::ErrorSimulation gcm_client_error_simulation_;
-  GCMClientMock* gcm_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeGCMClientFactory);
-};
-
 class GCMProfileServiceTestConsumer {
  public:
-  static KeyedService* BuildFakeSigninManager(
-      content::BrowserContext* context) {
-    return new FakeSigninManager(static_cast<Profile*>(context));
-  }
-
   static KeyedService* BuildGCMProfileService(
       content::BrowserContext* context) {
     return new GCMProfileService(static_cast<Profile*>(context));
@@ -281,37 +125,18 @@ class GCMProfileServiceTestConsumer {
 
   explicit GCMProfileServiceTestConsumer(Waiter* waiter)
       : waiter_(waiter),
-        extension_service_(NULL),
         signin_manager_(NULL),
         gcm_client_loading_delay_(GCMClientMock::NO_DELAY_LOADING),
-        gcm_client_error_simulation_(GCMClientMock::ALWAYS_SUCCEED),
-        registration_result_(GCMClient::SUCCESS),
-        has_persisted_registration_info_(false),
-        send_result_(GCMClient::SUCCESS) {
+        registration_result_(GCMClient::UNKNOWN_ERROR),
+        unregistration_result_(GCMClient::UNKNOWN_ERROR),
+        send_result_(GCMClient::UNKNOWN_ERROR) {
     // Create a new profile.
     TestingProfile::Builder builder;
-    builder.AddTestingFactory(
-        SigninManagerFactory::GetInstance(),
-        GCMProfileServiceTestConsumer::BuildFakeSigninManager);
+    builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                              FakeSigninManager::Build);
     profile_ = builder.Build();
-
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetInstance()->GetForProfile(profile_.get());
-    signin_manager_ = static_cast<FakeSigninManager*>(signin_manager);
-
-    // Create extension service in order to uninstall the extension.
-    extensions::TestExtensionSystem* extension_system(
-        static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(profile())));
-    extension_system->CreateExtensionService(
-        CommandLine::ForCurrentProcess(), base::FilePath(), false);
-    extension_service_ = extension_system->Get(profile())->extension_service();
-
-    // EventRouter is needed for GcmJsEventRouter.
-    if (!extension_system->event_router()) {
-      extension_system->SetEventRouter(scoped_ptr<EventRouter>(
-          new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
-    }
+    signin_manager_ = static_cast<FakeSigninManager*>(
+        SigninManagerFactory::GetInstance()->GetForProfile(profile_.get()));
 
     // Enable GCM such that tests could be run on all channels.
     profile()->GetPrefs()->SetBoolean(prefs::kGCMChannelEnabled, true);
@@ -322,55 +147,15 @@ class GCMProfileServiceTestConsumer {
     GetGCMProfileService()->RemoveAppHandler(kTestingAppId2);
   }
 
-  // Returns a barebones test extension.
-  scoped_refptr<Extension> CreateExtension() {
-#if defined(OS_WIN)
-    base::FilePath path(FILE_PATH_LITERAL("c:\\foo"));
-#elif defined(OS_POSIX)
-    base::FilePath path(FILE_PATH_LITERAL("/foo"));
-#endif
-
-    base::DictionaryValue manifest;
-    manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
-    manifest.SetString(manifest_keys::kName, kTestExtensionName);
-    base::ListValue* permission_list = new base::ListValue;
-    permission_list->Append(base::Value::CreateStringValue("gcm"));
-    manifest.Set(manifest_keys::kPermissions, permission_list);
-
-    std::string error;
-    scoped_refptr<Extension> extension =
-        Extension::Create(path.AppendASCII(kTestExtensionName),
-                          Manifest::INVALID_LOCATION,
-                          manifest,
-                          Extension::NO_FLAGS,
-                          &error);
-    EXPECT_TRUE(extension.get()) << error;
-    EXPECT_TRUE(extension->HasAPIPermission(APIPermission::kGcm));
-
-    extension_service_->AddExtension(extension.get());
-    return extension;
-  }
-
-  void UninstallExtension(const extensions::Extension* extension) {
-    extension_service_->UninstallExtension(extension->id(), false, NULL);
-  }
-
-  void ReloadExtension(const extensions::Extension* extension) {
-    extension_service_->UnloadExtension(
-        extension->id(), UnloadedExtensionInfo::REASON_TERMINATE);
-    extension_service_->AddExtension(extension);
-  }
-
   void CreateGCMProfileServiceInstance() {
     GCMProfileService* gcm_profile_service = static_cast<GCMProfileService*>(
         GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), &GCMProfileServiceTestConsumer::BuildGCMProfileService));
     scoped_ptr<GCMClientFactory> gcm_client_factory(
-        new FakeGCMClientFactory(gcm_client_loading_delay_,
-                                 gcm_client_error_simulation_));
+        new FakeGCMClientFactory(gcm_client_loading_delay_));
     gcm_profile_service->Initialize(gcm_client_factory.Pass());
 
-    gcm_app_handler_.reset(new FakeGCMAppHandler(profile(), waiter_));
+    gcm_app_handler_.reset(new FakeGCMAppHandler(waiter_));
     gcm_profile_service->AddAppHandler(kTestingAppId, gcm_app_handler());
     gcm_profile_service->AddAppHandler(kTestingAppId2, gcm_app_handler());
 
@@ -463,9 +248,6 @@ class GCMProfileServiceTestConsumer {
   void set_gcm_client_loading_delay(GCMClientMock::LoadingDelay delay) {
     gcm_client_loading_delay_ = delay;
   }
-  void set_gcm_client_error_simulation(GCMClientMock::ErrorSimulation error) {
-    gcm_client_error_simulation_ = error;
-  }
 
   const std::string& registration_id() const { return registration_id_; }
   GCMClient::Result registration_result() const { return registration_result_; }
@@ -490,16 +272,13 @@ class GCMProfileServiceTestConsumer {
  private:
   Waiter* waiter_;  // Not owned.
   scoped_ptr<TestingProfile> profile_;
-  ExtensionService* extension_service_;  // Not owned.
   FakeSigninManager* signin_manager_;  // Not owned.
   scoped_ptr<FakeGCMAppHandler> gcm_app_handler_;
 
   GCMClientMock::LoadingDelay gcm_client_loading_delay_;
-  GCMClientMock::ErrorSimulation gcm_client_error_simulation_;
 
   std::string registration_id_;
   GCMClient::Result registration_result_;
-  bool has_persisted_registration_info_;
 
   GCMClient::Result unregistration_result_;
 
@@ -523,28 +302,13 @@ class GCMProfileServiceTest : public testing::Test {
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::REAL_IO_THREAD));
 
-    // This is needed to create extension service under CrOS.
-#if defined(OS_CHROMEOS)
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
-#endif
-
-    // OSCrypt ends up needing access to the keychain on OS X. So use the mock
-    // keychain to prevent prompts.
-#if defined(OS_MACOSX)
-    OSCrypt::UseMockKeychain(true);
-#endif
-
     // Create a main profile consumer.
     consumer_.reset(new GCMProfileServiceTestConsumer(&waiter_));
   }
 
   virtual void TearDown() OVERRIDE {
-#if defined(OS_CHROMEOS)
-    test_user_manager_.reset();
-#endif
-
     consumer_.reset();
-    base::RunLoop().RunUntilIdle();
+    PumpUILoop();
   }
 
   void WaitUntilCompleted() {
@@ -571,12 +335,6 @@ class GCMProfileServiceTest : public testing::Test {
 
  private:
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
-  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
-#endif
-
   scoped_ptr<GCMProfileServiceTestConsumer> consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceTest);
@@ -895,40 +653,24 @@ TEST_F(GCMProfileServiceSingleProfileTest,
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest,
-       GCMClientReadyAfterReadingRegistration) {
-  scoped_refptr<Extension> extension(consumer()->CreateExtension());
-
-  std::vector<std::string> sender_ids;
-  sender_ids.push_back("sender1");
-  consumer()->Register(extension->id(), sender_ids);
-
-  WaitUntilCompleted();
-  EXPECT_FALSE(consumer()->registration_id().empty());
-  EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
-  std::string old_registration_id = consumer()->registration_id();
-
-  // Clears the results that would be set by the Register callback in
-  // preparation to call register 2nd time.
-  consumer()->clear_registration_result();
-
-  // Simulate start-up by recreating GCMProfileService.
+       GCMClientNotReadyBeforeRegistration) {
+  // Make GCMClient not ready initially.
   consumer()->set_gcm_client_loading_delay(GCMClientMock::DELAY_LOADING);
   consumer()->CreateGCMProfileServiceInstance();
 
-  // Simulate start-up by reloading extension.
-  consumer()->ReloadExtension(extension);
-
-  // Read the registration info from the extension's state store.
-  // This would hold up because GCMClient is in loading state.
-  consumer()->Register(extension->id(), sender_ids);
-  base::RunLoop().RunUntilIdle();
+  // The registration is on hold until GCMClient is ready.
+  std::vector<std::string> sender_ids;
+  sender_ids.push_back("sender1");
+  consumer()->Register(kTestingAppId, sender_ids);
+  PumpIOLoop();
   EXPECT_TRUE(consumer()->registration_id().empty());
   EXPECT_EQ(GCMClient::UNKNOWN_ERROR, consumer()->registration_result());
 
   // Register operation will be invoked after GCMClient becomes ready.
   consumer()->GetGCMClient()->PerformDelayedLoading();
-  WaitUntilCompleted();
-  EXPECT_EQ(old_registration_id, consumer()->registration_id());
+  PumpIOLoop();  // The 1st pump is to wait till the delayed loading is done.
+  PumpIOLoop();  // The 2nd pump is to wait till the registration is done.
+  EXPECT_FALSE(consumer()->registration_id().empty());
   EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
 }
 
@@ -942,22 +684,6 @@ TEST_F(GCMProfileServiceSingleProfileTest, RegisterAfterSignOut) {
 
   EXPECT_TRUE(consumer()->registration_id().empty());
   EXPECT_EQ(GCMClient::NOT_SIGNED_IN, consumer()->registration_result());
-}
-
-TEST_F(GCMProfileServiceSingleProfileTest, UnregisterImplicitly) {
-  scoped_refptr<Extension> extension(consumer()->CreateExtension());
-
-  std::vector<std::string> sender_ids;
-  sender_ids.push_back("sender1");
-  consumer()->Register(extension->id(), sender_ids);
-
-  WaitUntilCompleted();
-  EXPECT_FALSE(consumer()->registration_id().empty());
-  EXPECT_EQ(GCMClient::SUCCESS, consumer()->registration_result());
-
-  // Uninstall the extension.
-  consumer()->UninstallExtension(extension);
-  base::MessageLoop::current()->RunUntilIdle();
 }
 
 TEST_F(GCMProfileServiceSingleProfileTest, UnregisterExplicitly) {
@@ -1055,6 +781,29 @@ TEST_F(GCMProfileServiceSingleProfileTest, Send) {
 
   // Wait for the send callback is called.
   WaitUntilCompleted();
+  EXPECT_EQ(consumer()->send_message_id(), message.id);
+  EXPECT_EQ(GCMClient::SUCCESS, consumer()->send_result());
+}
+
+TEST_F(GCMProfileServiceSingleProfileTest, GCMClientNotReadyBeforeSending) {
+  // Make GCMClient not ready initially.
+  consumer()->set_gcm_client_loading_delay(GCMClientMock::DELAY_LOADING);
+  consumer()->CreateGCMProfileServiceInstance();
+
+  // The sending is on hold until GCMClient is ready.
+  GCMClient::OutgoingMessage message;
+  message.id = "1";
+  message.data["key1"] = "value1";
+  message.data["key2"] = "value2";
+  consumer()->Send(kTestingAppId, kUserId, message);
+  PumpIOLoop();
+  EXPECT_TRUE(consumer()->send_message_id().empty());
+  EXPECT_EQ(GCMClient::UNKNOWN_ERROR, consumer()->send_result());
+
+  // Register operation will be invoked after GCMClient becomes ready.
+  consumer()->GetGCMClient()->PerformDelayedLoading();
+  PumpIOLoop();
+  PumpIOLoop();
   EXPECT_EQ(consumer()->send_message_id(), message.id);
   EXPECT_EQ(GCMClient::SUCCESS, consumer()->send_result());
 }

@@ -27,6 +27,10 @@ namespace base {
 class Value;
 }
 
+namespace extensions {
+class ExtensionGCMAppHandlerTest;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -131,6 +135,7 @@ class GCMProfileService : public KeyedService,
 
  private:
   friend class GCMProfileServiceTestConsumer;
+  friend class extensions::ExtensionGCMAppHandlerTest;
 
   class DelayedTaskController;
   class IOWorker;

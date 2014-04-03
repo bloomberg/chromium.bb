@@ -25,14 +25,8 @@ class GCMClientMock : public GCMClient {
     DELAY_LOADING,
   };
 
-  enum ErrorSimulation {
-    ALWAYS_SUCCEED,
-    FORCE_ERROR
-  };
-
   // |loading_delay| denotes if the check-in should be delayed.
-  // |error_simulation| denotes if we should simulate server error.
-  GCMClientMock(LoadingDelay loading_delay, ErrorSimulation error_simulation);
+  explicit GCMClientMock(LoadingDelay loading_delay);
   virtual ~GCMClientMock();
 
   // Overridden from GCMClient:
@@ -88,7 +82,6 @@ class GCMClientMock : public GCMClient {
   Delegate* delegate_;
   Status status_;
   LoadingDelay loading_delay_;
-  ErrorSimulation error_simulation_;
   base::WeakPtrFactory<GCMClientMock> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientMock);
