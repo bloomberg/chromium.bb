@@ -10,7 +10,6 @@
 #include "ui/events/event_handler.h"
 
 namespace ash {
-namespace internal {
 
 // EventFilter for tracking keyboard-related metrics, which intercepts events
 // before they are processed by the usual path and logs metrics about the
@@ -30,7 +29,6 @@ class KeyboardUMAEventFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(KeyboardUMAEventFilter);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_KEYBOARD_UMA_EVENT_FILTER_H_

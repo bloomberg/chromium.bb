@@ -40,9 +40,9 @@ const int kHopDownMS = 200;
 const int kAttentionThrobDurationMS = 800;
 
 bool ShouldHop(int state) {
-  return state & ash::internal::ShelfButton::STATE_HOVERED ||
-         state & ash::internal::ShelfButton::STATE_ACTIVE ||
-         state & ash::internal::ShelfButton::STATE_FOCUSED;
+  return state & ash::ShelfButton::STATE_HOVERED ||
+         state & ash::ShelfButton::STATE_ACTIVE ||
+         state & ash::ShelfButton::STATE_FOCUSED;
 }
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
@@ -116,7 +116,6 @@ class ShelfButtonAnimation : public gfx::AnimationDelegate {
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfButton::BarView
@@ -590,5 +589,4 @@ void ShelfButton::UpdateBar() {
   bar_->SetVisible(bar_id != 0 && state_ != STATE_NORMAL);
 }
 
-}  // namespace internal
 }  // namespace ash

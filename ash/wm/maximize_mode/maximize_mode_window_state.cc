@@ -23,7 +23,6 @@
 #include "ui/gfx/rect.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 // Returns the biggest possible size for a window which is about to be
@@ -223,5 +222,4 @@ void MaximizeModeWindowState::MaximizeOrCenterWindow(
   }
 }
 
-}  // namespace internal
 }  // namespace ash

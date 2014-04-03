@@ -12,7 +12,6 @@
 #include "grit/ash_resources.h"
 
 namespace ash {
-namespace internal {
 
 TrayEnterprise::TrayEnterprise(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
@@ -56,5 +55,4 @@ void TrayEnterprise::OnViewClicked(views::View* sender) {
   Shell::GetInstance()->system_tray_delegate()->ShowEnterpriseInfo();
 }
 
-} // namespace internal
 } // namespace ash

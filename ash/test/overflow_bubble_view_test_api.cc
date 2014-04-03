@@ -10,9 +10,8 @@ namespace ash {
 namespace test {
 
 OverflowBubbleViewTestAPI::OverflowBubbleViewTestAPI(
-    internal::OverflowBubbleView* bubble_view)
-    : bubble_view_(bubble_view) {
-}
+    OverflowBubbleView* bubble_view)
+    : bubble_view_(bubble_view) {}
 
 OverflowBubbleViewTestAPI::~OverflowBubbleViewTestAPI() {
 }

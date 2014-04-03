@@ -6,7 +6,6 @@
 #include "ash/shell.h"
 
 namespace ash {
-namespace internal {
 
 ScopedTargetRootWindow::ScopedTargetRootWindow(
     aura::Window* root_window) {
@@ -17,5 +16,4 @@ ScopedTargetRootWindow::~ScopedTargetRootWindow() {
   Shell::GetInstance()->scoped_target_root_window_ = NULL;
 }
 
-}  // namespace internal
 }  // namespace ash

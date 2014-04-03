@@ -20,8 +20,6 @@ class NetworkState;
 }
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 class NetworkDefaultView;
 class NetworkDetailedView;
@@ -71,7 +69,6 @@ class TrayNetwork : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayNetwork);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_NETWORK_H

@@ -38,9 +38,7 @@ using message_center::MessageCenter;
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 namespace tray {
-
 namespace {
 
 const int kMaxSpringChargerAccessibilityNotifyCount = 3;
@@ -397,5 +395,4 @@ void TrayPower::RecordChargerType() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

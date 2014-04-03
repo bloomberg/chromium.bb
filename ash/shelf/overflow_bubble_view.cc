@@ -19,8 +19,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Max bubble size to screen size ratio.
@@ -65,7 +63,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
 
   set_parent_window(Shell::GetContainer(
       anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
-      internal::kShellWindowId_ShelfBubbleContainer));
+      kShellWindowId_ShelfBubbleContainer));
   views::BubbleDelegateView::CreateBubble(this);
 }
 
@@ -223,5 +221,4 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
   return bubble_rect;
 }
 
-}  // namespace internal
 }  // namespace ash

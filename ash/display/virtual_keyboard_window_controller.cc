@@ -22,7 +22,6 @@
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
-namespace internal {
 
 VirtualKeyboardWindowController::VirtualKeyboardWindowController() {
   Shell::GetInstance()->AddShellObserver(this);
@@ -90,8 +89,8 @@ void VirtualKeyboardWindowController::FlipDisplay() {
 
   aura::WindowTreeHost* host = root_window_controller_->host();
   scoped_ptr<aura::RootWindowTransformer> transformer(
-      internal::CreateRootWindowTransformerForDisplay(host->window(),
-          display_manager->non_desktop_display()));
+      CreateRootWindowTransformerForDisplay(
+          host->window(), display_manager->non_desktop_display()));
   host->SetRootWindowTransformer(transformer.Pass());
 }
 
@@ -106,5 +105,4 @@ void VirtualKeyboardWindowController::OnMaximizeModeEnded() {
     Shell::GetInstance()->DeactivateKeyboard();
 }
 
-}  // namespace internal
 }  // namespace ash

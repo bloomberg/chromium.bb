@@ -24,8 +24,6 @@ bool HasFocusableWindow() {
 
 }  // namespace
 
-namespace internal {
-
 FocusCycler::FocusCycler() : widget_activating_(NULL) {
 }
 
@@ -108,7 +106,5 @@ bool FocusCycler::FocusWidget(views::Widget* widget) {
   widget_activating_ = NULL;
   return widget->IsActive();
 }
-
-}  // namespace internal
 
 }  // namespace ash

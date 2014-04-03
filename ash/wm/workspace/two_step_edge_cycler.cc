@@ -7,8 +7,6 @@
 #include <cmath>
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // We cycle to the second mode if any of the following happens while the mouse
@@ -46,5 +44,4 @@ void TwoStepEdgeCycler::OnMove(const gfx::Point& location) {
   time_last_move_ = base::TimeTicks::Now();
 }
 
-}  // namespace internal
 }  // namespace ash

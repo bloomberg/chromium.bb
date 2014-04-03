@@ -61,7 +61,6 @@ using gfx::Animation;
 using views::View;
 
 namespace ash {
-namespace internal {
 
 const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM = 0;
 const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT = 1;
@@ -566,7 +565,7 @@ void ShelfView::CreateDragIconProxy(
     const gfx::Vector2d& cursor_offset_from_center,
     float scale_factor) {
   drag_replaced_view_ = replaced_view;
-  drag_image_.reset(new ash::internal::DragImageView(
+  drag_image_.reset(new ash::DragImageView(
       drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow(),
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE));
   drag_image_->SetImage(icon);
@@ -2057,5 +2056,4 @@ int ShelfView::CalculateShelfDistance(const gfx::Point& coordinate) const {
   return distance > 0 ? distance : 0;
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -36,10 +36,8 @@ class Widget;
 }
 
 namespace ash {
-class Shelf;
-
-namespace internal {
 class PanelCalloutWidget;
+class Shelf;
 class ShelfLayoutManager;
 
 // PanelLayoutManager is responsible for organizing panels within the
@@ -186,7 +184,6 @@ class ASH_EXPORT PanelLayoutManager
   DISALLOW_COPY_AND_ASSIGN(PanelLayoutManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_PANELS_PANEL_LAYOUT_MANAGER_H_

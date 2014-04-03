@@ -348,9 +348,8 @@ MaximizeBubbleControllerBubble::MaximizeBubbleControllerBubble(
 
   // The window needs to be owned by the root so that the phantom window does
   // not cover it upon animation.
-  aura::Window* parent = Shell::GetContainer(
-      Shell::GetTargetRootWindow(),
-      internal::kShellWindowId_ShelfContainer);
+  aura::Window* parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
+                                             kShellWindowId_ShelfContainer);
   set_parent_window(parent);
 
   set_notify_enter_exit_on_child(true);

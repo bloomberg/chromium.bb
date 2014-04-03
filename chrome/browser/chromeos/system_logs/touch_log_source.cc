@@ -20,7 +20,7 @@ const char kHUDLogDataKey[] = "hud_log";
 
 void GetTouchLogs(system_logs::SystemLogsResponse* response) {
   scoped_ptr<base::DictionaryValue> dictionary =
-      ash::internal::TouchHudDebug::GetAllAsDictionary();
+      ash::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {
     std::string touch_log;
     JSONStringValueSerializer json(&touch_log);

@@ -11,8 +11,6 @@
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
-namespace internal {
-
 class ShelfButtonHost;
 class ShelfLayoutManager;
 
@@ -154,7 +152,6 @@ class ASH_EXPORT ShelfButton : public views::CustomButton {
   DISALLOW_COPY_AND_ASSIGN(ShelfButton);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_BUTTON_H_

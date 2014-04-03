@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
-namespace internal {
 
 // Trivial test case verifying assertions on left edge.
 TEST(MagnetismMatcherTest, TrivialLeft) {
@@ -166,6 +165,5 @@ TEST(MagnetismMatcherTest, ObscureTrailing) {
   EXPECT_EQ(SECONDARY_MAGNETISM_EDGE_NONE, edge.secondary_edge);
 }
 
-}  // namespace internal
 }  // namespace ash
 

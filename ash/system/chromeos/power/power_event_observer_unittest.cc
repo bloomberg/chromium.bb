@@ -11,7 +11,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace ash {
-namespace internal {
 
 class PowerEventObserverTest : public test::AshTestBase {
  public:
@@ -68,5 +67,4 @@ TEST_F(PowerEventObserverTest, LockBeforeSuspend) {
   EXPECT_EQ(0, client->GetNumPendingSuspendReadinessCallbacks());
 }
 
-}  // namespace internal
 }  // namespace ash

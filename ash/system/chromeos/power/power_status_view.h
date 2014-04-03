@@ -15,7 +15,6 @@ class Label;
 }
 
 namespace ash {
-namespace internal {
 
 class ASH_EXPORT PowerStatusView : public views::View,
                                    public PowerStatus::Observer {
@@ -68,7 +67,6 @@ class ASH_EXPORT PowerStatusView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(PowerStatusView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_VIEW_H_

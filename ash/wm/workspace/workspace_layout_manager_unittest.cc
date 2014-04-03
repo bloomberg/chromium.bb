@@ -371,8 +371,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
                                              NULL));
   wm::GetWindowState(window.get())->Maximize();
   aura::Window* default_container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      internal::kShellWindowId_DefaultContainer);
+      Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
   default_container->AddChild(window.get());
   window->Show();
   gfx::Rect work_area(
@@ -518,10 +517,9 @@ class WorkspaceLayoutManagerSoloTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     UpdateDisplay("800x600");
     aura::Window* default_container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        internal::kShellWindowId_DefaultContainer);
-    default_container->SetLayoutManager(new internal::WorkspaceLayoutManager(
-        Shell::GetPrimaryRootWindow()));
+        Shell::GetPrimaryRootWindow(), kShellWindowId_DefaultContainer);
+    default_container->SetLayoutManager(
+        new WorkspaceLayoutManager(Shell::GetPrimaryRootWindow()));
   }
 
   aura::Window* CreateTestWindow(const gfx::Rect& bounds) {
@@ -754,8 +752,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   window->Show();
 
-  internal::ShelfLayoutManager* shelf =
-      internal::ShelfLayoutManager::ForShelf(window.get());
+  ShelfLayoutManager* shelf = ShelfLayoutManager::ForShelf(window.get());
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   window->SetBounds(ScreenUtil::GetMaximizedWindowBoundsInParent(window.get()));
@@ -787,9 +784,8 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     test::AshTestBase::SetUp();
     UpdateDisplay("800x600");
-    default_container_ = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        internal::kShellWindowId_DefaultContainer);
+    default_container_ = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                             kShellWindowId_DefaultContainer);
     // We set the size to something smaller then the display to avoid resizing
     // issues with the shelf.
     default_container_->SetBounds(gfx::Rect(0, 0, 800, 500));
@@ -802,14 +798,12 @@ class WorkspaceLayoutManagerBackdropTest : public test::AshTestBase {
 
   // Turn the top window back drop on / off.
   void ShowTopWindowBackdrop(bool show) {
-    scoped_ptr<ash::internal::WorkspaceLayoutManagerDelegate> backdrop;
+    scoped_ptr<ash::WorkspaceLayoutManagerDelegate> backdrop;
     if (show) {
-      backdrop.reset(new ash::internal::WorkspaceBackdropDelegate(
-          default_container_));
+      backdrop.reset(new ash::WorkspaceBackdropDelegate(default_container_));
     }
-    (static_cast<internal::WorkspaceLayoutManager*>
-        (default_container_->layout_manager()))->SetMaximizeBackdropDelegate(
-            backdrop.Pass());
+    (static_cast<WorkspaceLayoutManager*>(default_container_->layout_manager()))
+        ->SetMaximizeBackdropDelegate(backdrop.Pass());
     // Closing and / or opening can be a delayed operation.
     base::MessageLoop::current()->RunUntilIdle();
   }

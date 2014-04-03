@@ -9,8 +9,6 @@
 #include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 class BluetoothDefaultView;
 class BluetoothDetailedView;
@@ -42,7 +40,6 @@ class TrayBluetooth : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayBluetooth);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_BLUETOOTH_TRAY_BLUETOOTH_H_

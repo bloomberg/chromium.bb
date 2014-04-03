@@ -19,8 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // A SingleThreadTaskRunner that mocks the current time and allows it to be
@@ -289,5 +287,4 @@ TEST_F(LogoutConfirmationControllerTest, DurationExpiredAfterDeniedRequest) {
   EXPECT_TRUE(log_out_called_);
 }
 
-}  // namespace internal
 }  // namespace ash

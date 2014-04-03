@@ -13,7 +13,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 
-using ash::internal::DisplayManager;
+using ash::DisplayManager;
 
 namespace extensions {
 
@@ -363,8 +363,8 @@ void DisplayInfoProvider::UpdateDisplayUnitInfoForPlatform(
     const gfx::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
 
-  ash::internal::DisplayManager* display_manager
-      = ash::Shell::GetInstance()->display_manager();
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
   unit->name = display_manager->GetDisplayNameForId(display.id());
   if (display_manager->IsMirrored()) {
     unit->mirroring_source_id =

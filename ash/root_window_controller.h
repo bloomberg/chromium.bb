@@ -47,12 +47,6 @@ class ScopedCaptureClient;
 }
 
 namespace ash {
-class ShelfWidget;
-class StackingController;
-class SystemTray;
-
-namespace internal {
-
 class AlwaysOnTopController;
 class AnimatingDesktopController;
 class DesktopBackgroundWidgetController;
@@ -61,9 +55,12 @@ class PanelLayoutManager;
 class RootWindowLayoutManager;
 class ScreenDimmer;
 class ShelfLayoutManager;
+class ShelfWidget;
+class StackingController;
 class StatusAreaWidget;
 class SystemBackgroundController;
 class SystemModalContainerLayoutManager;
+class SystemTray;
 class TouchHudDebug;
 class TouchHudProjection;
 class WorkspaceController;
@@ -102,7 +99,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   static RootWindowController* ForWindow(const aura::Window* window);
 
   // Returns the RootWindowController of the target root window.
-  static internal::RootWindowController* ForTargetRootWindow();
+  static RootWindowController* ForTargetRootWindow();
 
   // Returns container which contains a given |window|.
   static aura::Window* GetContainerForWindow(aura::Window* window);
@@ -320,7 +317,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 ASH_EXPORT RootWindowController* GetRootWindowController(
     const aura::Window* root_window);
 
-}  // namespace internal
 }  // ash
 
 #endif  //  ASH_ROOT_WINDOW_CONTROLLER_H_

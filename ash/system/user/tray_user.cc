@@ -134,8 +134,6 @@ void SwitchUser(ash::MultiProfileIndex user_index) {
 }  // namespace
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 
 // A custom image view with rounded edges.
@@ -1356,14 +1354,12 @@ MultiProfileIndex TrayUser::GetTrayIndex() {
 }
 
 void TrayUser::UpdateLayoutOfItem() {
-  internal::RootWindowController* controller =
-      internal::GetRootWindowController(
-          system_tray()->GetWidget()->GetNativeWindow()->GetRootWindow());
+  RootWindowController* controller = GetRootWindowController(
+      system_tray()->GetWidget()->GetNativeWindow()->GetRootWindow());
   if (controller && controller->shelf()) {
     UpdateAfterShelfAlignmentChange(
         controller->GetShelfLayoutManager()->GetAlignment());
   }
 }
 
-}  // namespace internal
 }  // namespace ash

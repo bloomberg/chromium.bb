@@ -24,7 +24,6 @@ bool animations_enabled = true;
 }
 
 namespace ash {
-namespace internal {
 
 TrayItemView::TrayItemView(SystemTrayItem* owner)
     : owner_(owner),
@@ -137,5 +136,4 @@ void TrayItemView::AnimationCanceled(const gfx::Animation* animation) {
   AnimationEnded(animation);
 }
 
-}  // namespace internal
 }  // namespace ash

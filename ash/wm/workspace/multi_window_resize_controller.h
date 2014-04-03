@@ -24,8 +24,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
-
 class MultiWindowResizeControllerTest;
 class WorkspaceWindowResizer;
 
@@ -180,7 +178,6 @@ class ASH_EXPORT MultiWindowResizeController :
   DISALLOW_COPY_AND_ASSIGN(MultiWindowResizeController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_MULTI_WINDOW_RESIZE_CONTROLLER_H_

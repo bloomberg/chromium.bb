@@ -12,16 +12,13 @@ class Size;
 }
 
 namespace ash {
-
-namespace internal {
 class OverflowBubbleView;
-}
 
 namespace test {
 
 class OverflowBubbleViewTestAPI {
  public:
-  explicit OverflowBubbleViewTestAPI(internal::OverflowBubbleView* bubble_view);
+  explicit OverflowBubbleViewTestAPI(OverflowBubbleView* bubble_view);
   ~OverflowBubbleViewTestAPI();
 
   // Returns the total width of items included in ShelfView.
@@ -32,7 +29,7 @@ class OverflowBubbleViewTestAPI {
   void ScrollByXOffset(int x_offset);
 
  private:
-  internal::OverflowBubbleView* bubble_view_;
+  OverflowBubbleView* bubble_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowBubbleViewTestAPI);
 };

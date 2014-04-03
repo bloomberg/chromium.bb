@@ -32,8 +32,6 @@ ASH_WITH_CONTENT_EXPORT bool IsScreensaverShown();
 typedef
     base::Callback<views::WebView*(content::BrowserContext*)> WebViewFactory;
 
-namespace internal {
-
 // Shows a URL as a screensaver. The screensaver window is fullscreen,
 // always on top of every other window and will reload the URL if the
 // renderer crashes for any reason.
@@ -88,7 +86,6 @@ class ScreensaverView : public views::WidgetDelegateView,
   DISALLOW_COPY_AND_ASSIGN(ScreensaverView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SCREENSAVER_SCREENSAVER_VIEW_H_

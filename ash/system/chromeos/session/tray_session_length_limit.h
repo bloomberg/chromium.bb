@@ -14,12 +14,9 @@
 #include "base/timer/timer.h"
 
 namespace ash {
-
 namespace test {
 class TraySessionLengthLimitTest;
 }
-
-namespace internal {
 
 namespace tray {
 class RemainingSessionTimeTrayView;
@@ -71,7 +68,6 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimit);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SESSION_SESSION_LENGTH_LIMIT_H_

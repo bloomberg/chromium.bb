@@ -13,7 +13,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 
 namespace ash {
-namespace internal {
 
 // A class that observes power-management-related events.
 class ASH_EXPORT PowerEventObserver
@@ -44,7 +43,6 @@ class ASH_EXPORT PowerEventObserver
   DISALLOW_COPY_AND_ASSIGN(PowerEventObserver);
 };
 
-}  // namespace internal
 }  // namespace chromeos
 
 #endif  // ASH_SYSTEM_CHROMEOS_POWER_POWER_EVENT_OBSERVER_H_

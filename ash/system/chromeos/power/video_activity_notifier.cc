@@ -9,8 +9,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Minimum number of seconds between notifications.
@@ -47,5 +45,4 @@ void VideoActivityNotifier::OnLockStateChanged(bool locked) {
   screen_is_locked_ = locked;
 }
 
-}  // namespace internal
 }  // namespace ash

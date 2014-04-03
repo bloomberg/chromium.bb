@@ -12,7 +12,6 @@
 #include "ui/views/controls/button/custom_button.h"
 
 namespace ash {
-namespace internal {
 
 // Shelf overflow chevron button.
 class OverflowButton : public views::CustomButton {
@@ -38,7 +37,6 @@ class OverflowButton : public views::CustomButton {
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_OVERFLOW_BUTTON_H_

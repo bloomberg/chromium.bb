@@ -25,10 +25,7 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
-
 namespace {
 
 // Updates bluetooth device |device| in the |list|. If it is new, append to the
@@ -465,5 +462,4 @@ void TrayBluetooth::OnBluetoothDiscoveringChanged() {
   detailed_->Update();
 }
 
-}  // namespace internal
 }  // namespace ash

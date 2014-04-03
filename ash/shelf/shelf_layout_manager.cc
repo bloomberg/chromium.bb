@@ -50,8 +50,6 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Delay before showing the shelf. This is after the mouse stops moving.
@@ -1184,5 +1182,4 @@ void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

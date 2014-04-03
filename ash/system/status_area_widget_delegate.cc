@@ -20,7 +20,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 const int kStatusTrayOffsetFromScreenEdge = 4;
@@ -154,5 +153,4 @@ void StatusAreaWidgetDelegate::UpdateWidgetSize() {
     GetWidget()->SetSize(GetPreferredSize());
 }
 
-}  // namespace internal
 }  // namespace ash

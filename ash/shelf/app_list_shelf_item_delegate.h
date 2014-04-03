@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 
 namespace ash {
-namespace internal {
 
 // ShelfItemDelegate for TYPE_APP_LIST.
 class AppListShelfItemDelegate : public ShelfItemDelegate {
@@ -32,7 +31,6 @@ class AppListShelfItemDelegate : public ShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppListShelfItemDelegate);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_APP_LIST_SHELF_ITEM_DELEGATE_H_

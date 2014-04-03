@@ -50,9 +50,8 @@ void LockWindowAura::Init() {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   // TODO(oshima): move the lock screen harness to ash.
   params.parent =
-      ash::Shell::GetContainer(
-          ash::Shell::GetPrimaryRootWindow(),
-          ash::internal::kShellWindowId_LockScreenContainer);
+      ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                               ash::kShellWindowId_LockScreenContainer);
   views::Widget::Init(params);
   wm::SetWindowVisibilityAnimationTransition(
       GetNativeView(), wm::ANIMATE_NONE);

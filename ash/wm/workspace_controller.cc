@@ -24,7 +24,6 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 // Amount of time to pause before animating anything. Only used during initial
@@ -70,10 +69,8 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
 
   // These are the container ids of containers which may contain windows that
   // may overlap the launcher shelf and affect its transparency.
-  const int kWindowContainerIds[] = {
-      internal::kShellWindowId_DefaultContainer,
-      internal::kShellWindowId_DockedContainer,
-  };
+  const int kWindowContainerIds[] = {kShellWindowId_DefaultContainer,
+                                     kShellWindowId_DockedContainer, };
   const gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
   bool window_overlaps_launcher = false;
   for (size_t idx = 0; idx < arraysize(kWindowContainerIds); idx++) {
@@ -141,5 +138,4 @@ void WorkspaceController::SetMaximizeBackdropDelegate(
   layout_manager_->SetMaximizeBackdropDelegate(delegate.Pass());
 }
 
-}  // namespace internal
 }  // namespace ash

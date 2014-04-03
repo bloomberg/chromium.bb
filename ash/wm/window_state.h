@@ -24,10 +24,8 @@ class Rect;
 }
 
 namespace ash {
-namespace internal {
 class WorkspaceLayoutManager;
 class MaximizeModeWindowState;
-}
 
 namespace wm {
 class WindowStateDelegate;
@@ -296,7 +294,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
  private:
   friend class DefaultState;
-  friend class ash::internal::MaximizeModeWindowState;
+  friend class ash::MaximizeModeWindowState;
   FRIEND_TEST_ALL_PREFIXES(WindowAnimationsTest, CrossFadeToBounds);
 
   WindowStateDelegate* delegate() { return delegate_.get(); }

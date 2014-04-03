@@ -11,7 +11,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
-namespace internal {
 
 AppListShelfItemDelegate::AppListShelfItemDelegate() {
   ShelfItem app_list;
@@ -61,5 +60,4 @@ bool AppListShelfItemDelegate::ShouldShowTooltip() {
 void AppListShelfItemDelegate::Close() {
 }
 
-}  // namespace internal
 }  // namespace ash

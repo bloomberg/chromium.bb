@@ -41,7 +41,7 @@ class DisplayInfoProviderChromeosTest : public ash::test::AshTestBase {
     return display.id() != gfx::Display::kInvalidDisplayID;
   }
 
-  ash::internal::DisplayManager* GetDisplayManager() const {
+  ash::DisplayManager* GetDisplayManager() const {
     return ash::Shell::GetInstance()->display_manager();
   }
 

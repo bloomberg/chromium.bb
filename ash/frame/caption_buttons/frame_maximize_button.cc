@@ -414,7 +414,7 @@ void FrameMaximizeButton::UpdateSnap(const gfx::Point& location) {
 
   if (!phantom_window_) {
     phantom_window_.reset(
-        new internal::PhantomWindowController(frame_->GetNativeWindow()));
+        new PhantomWindowController(frame_->GetNativeWindow()));
   }
   if (maximizer_) {
     phantom_window_->set_phantom_below_window(maximizer_->GetBubbleWindow());

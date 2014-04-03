@@ -38,9 +38,8 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
   }
 
   void RootWindowAdded(aura::Window* root) {
-    aura::Window* panel_container = ash::Shell::GetContainer(
-        root,
-        internal::kShellWindowId_PanelContainer);
+    aura::Window* panel_container =
+        ash::Shell::GetContainer(root, kShellWindowId_PanelContainer);
     panel_container->AddObserver(watcher_);
 
     aura::Window* container =
@@ -51,9 +50,8 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
   }
 
   void RootWindowRemoved(aura::Window* root) {
-    aura::Window* panel_container = ash::Shell::GetContainer(
-        root,
-        internal::kShellWindowId_PanelContainer);
+    aura::Window* panel_container =
+        ash::Shell::GetContainer(root, kShellWindowId_PanelContainer);
     panel_container->RemoveObserver(watcher_);
 
     aura::Window* container =

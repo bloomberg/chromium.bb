@@ -20,7 +20,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // An event filter which handles system level gesture events. Objects of this
 // class manage their own lifetime.
@@ -86,7 +85,6 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(TouchObserverHUD);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_TOUCH_TOUCH_OBSERVER_HUD_H_

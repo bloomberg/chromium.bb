@@ -19,7 +19,6 @@ namespace ash {
 namespace wm {
 class WindowState;
 }  // namespace wm
-namespace internal {
 
 // Shell-specific window property keys.
 
@@ -40,7 +39,6 @@ extern const aura::WindowProperty<wm::WindowState*>* const kWindowStateKey;
 
 // Alphabetical sort.
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WINDOW_PROPERTIES_H_

@@ -20,8 +20,6 @@ namespace test {
 class SystemGestureEventFilterTest;
 }
 
-namespace internal {
-
 // LongPressAffordanceHandler displays an animated affordance that is shown
 // on a TAP_DOWN gesture. The animation sequence consists of two parts:
 // The first part is a grow animation that starts at semi-long-press and
@@ -69,7 +67,6 @@ class LongPressAffordanceHandler : public gfx::LinearAnimation,
   DISALLOW_COPY_AND_ASSIGN(LongPressAffordanceHandler);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_GESTURES_LONG_PRESS_AFFORDANCE_HANDLER_H_

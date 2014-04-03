@@ -12,7 +12,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusAreaLayoutManager, public:
@@ -77,5 +76,4 @@ void StatusAreaLayoutManager::LayoutStatusArea() {
   shelf_->shelf_layout_manager()->LayoutShelf();
 }
 
-}  // namespace internal
 }  // namespace ash

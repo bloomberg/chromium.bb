@@ -11,15 +11,11 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-
 class OverviewButtonTray;
 class ShellDelegate;
+class StatusAreaWidgetDelegate;
 class SystemTray;
 class WebNotificationTray;
-
-namespace internal {
-
-class StatusAreaWidgetDelegate;
 #if defined(OS_CHROMEOS)
 class LogoutButtonTray;
 class VirtualKeyboardTray;
@@ -50,7 +46,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // notification tray.
   void UpdateAfterLoginStatusChange(user::LoginStatus login_status);
 
-  internal::StatusAreaWidgetDelegate* status_area_widget_delegate() {
+  StatusAreaWidgetDelegate* status_area_widget_delegate() {
     return status_area_widget_delegate_;
   }
   SystemTray* system_tray() { return system_tray_; }
@@ -84,7 +80,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   void AddOverviewButtonTray();
 
   // Weak pointers to View classes that are parented to StatusAreaWidget:
-  internal::StatusAreaWidgetDelegate* status_area_widget_delegate_;
+  StatusAreaWidgetDelegate* status_area_widget_delegate_;
   OverviewButtonTray* overview_button_tray_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
@@ -97,7 +93,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_STATUS_AREA_WIDGET_H_

@@ -21,7 +21,6 @@ class LayerDelegate;
 }
 
 namespace ash {
-namespace internal {
 
 // BootSplashScreen manages a ui::Layer, stacked at the top of the root layer's
 // children, that displays a copy of the initial contents of the host window.
@@ -47,7 +46,6 @@ class BootSplashScreen {
   DISALLOW_COPY_AND_ASSIGN(BootSplashScreen);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_BOOT_SPLASH_SCREEN_CHROMEOS_H_

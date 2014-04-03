@@ -12,8 +12,6 @@
 #include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Minimum number of seconds between notifications.
@@ -64,5 +62,4 @@ void UserActivityNotifier::OnUserActivity(const ui::Event* event) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

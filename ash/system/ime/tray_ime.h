@@ -13,10 +13,7 @@ class Label;
 }
 
 namespace ash {
-
 struct IMEInfo;
-
-namespace internal {
 
 namespace tray {
 class IMEDefaultView;
@@ -56,7 +53,6 @@ class TrayIME : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayIME);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_IME_TRAY_IME_H_

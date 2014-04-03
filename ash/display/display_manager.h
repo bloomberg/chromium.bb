@@ -30,14 +30,13 @@ class Screen;
 namespace ash {
 class AcceleratorControllerTest;
 class DisplayController;
+class DisplayLayoutStore;
 class ScreenAsh;
 
 namespace test {
 class DisplayManagerTestApi;
 class SystemGestureEventFilterTest;
 }
-namespace internal {
-class DisplayLayoutStore;
 
 // DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
@@ -365,7 +364,6 @@ private:
   DISALLOW_COPY_AND_ASSIGN(DisplayManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_DISPLAY_MANAGER_H_

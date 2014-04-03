@@ -10,10 +10,10 @@
 DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WindowState*);
 
 namespace ash {
-namespace internal {
+
 DEFINE_WINDOW_PROPERTY_KEY(bool, kStayInSameRootWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kUsesScreenCoordinatesKey, false);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(wm::WindowState,
                                  kWindowStateKey, NULL);
-}  // namespace internal
+
 }  // namespace ash

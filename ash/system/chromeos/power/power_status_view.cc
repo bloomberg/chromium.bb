@@ -22,7 +22,6 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace ash {
-namespace internal {
 
 // Padding between battery status text and battery icon on default view.
 const int kPaddingBetweenBatteryStatusAndIcon = 3;
@@ -84,8 +83,7 @@ void PowerStatusView::LayoutDefaultView() {
                              kTrayPopupPaddingBetweenItems);
     SetLayoutManager(layout);
 
-    icon_ =
-        new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+    icon_ = new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
     AddChildView(icon_);
 
     AddChildView(percentage_label_);
@@ -218,5 +216,4 @@ void PowerStatusView::Layout() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

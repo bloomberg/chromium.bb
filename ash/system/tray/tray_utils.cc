@@ -11,7 +11,6 @@
 #include "ui/views/controls/label.h"
 
 namespace ash {
-namespace internal {
 
 void SetupLabelForTray(views::Label* label) {
   // Making label_font static to avoid the time penalty of Derive for all but
@@ -67,5 +66,4 @@ void SetTrayLabelItemBorder(TrayItemView* tray_view,
   }
 }
 
-}  // namespace internal
 }  // namespace ash

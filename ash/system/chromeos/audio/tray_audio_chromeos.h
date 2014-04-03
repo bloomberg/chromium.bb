@@ -10,9 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {
-
-namespace internal {
-
 namespace tray {
 class AudioDetailedView;
 }
@@ -36,7 +33,6 @@ class ASH_EXPORT TrayAudioChromeOs : public TrayAudio {
   DISALLOW_COPY_AND_ASSIGN(TrayAudioChromeOs);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_CHROMEOS_H_

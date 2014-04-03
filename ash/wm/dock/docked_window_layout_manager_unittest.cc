@@ -35,7 +35,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 class DockedWindowLayoutManagerTest
     : public test::AshTestBase,
@@ -101,7 +100,7 @@ class DockedWindowLayoutManagerTest
 
   aura::Window* GetPanelContainer(aura::Window* panel) {
     return Shell::GetContainer(panel->GetRootWindow(),
-                               internal::kShellWindowId_PanelContainer);
+                               kShellWindowId_PanelContainer);
   }
 
   static WindowResizer* CreateSomeWindowResizer(
@@ -149,8 +148,8 @@ class DockedWindowLayoutManagerTest
   // parent.
   int CorrectContainerIdDuringDrag() {
     if (window_type_ == ui::wm::WINDOW_TYPE_PANEL)
-      return internal::kShellWindowId_PanelContainer;
-    return internal::kShellWindowId_DockedContainer;
+      return kShellWindowId_PanelContainer;
+    return kShellWindowId_DockedContainer;
   }
 
   // Test dragging the window vertically (to detach if it is a panel) and then
@@ -202,7 +201,7 @@ class DockedWindowLayoutManagerTest
 
     // x-coordinate can get adjusted by snapping or sticking.
     // y-coordinate could be changed by possible automatic layout if docked.
-    if (window->parent()->id() != internal::kShellWindowId_DockedContainer &&
+    if (window->parent()->id() != kShellWindowId_DockedContainer &&
         !wm::GetWindowState(window)->HasRestoreBounds()) {
       EXPECT_EQ(initial_bounds.y() + dy, window->GetBoundsInScreen().y());
     }
@@ -234,7 +233,7 @@ TEST_P(DockedWindowLayoutManagerTest, AddOneWindow) {
   EXPECT_EQ(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(ideal_width(), window->bounds().width());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 }
 
 // Tests that with a window docked on the left the auto-placing logic in
@@ -250,7 +249,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingLeft) {
   // The window should be attached and snapped to the right side of the screen.
   EXPECT_EQ(window->GetRootWindow()->bounds().x(),
             window->GetBoundsInScreen().x());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
       window->parent()->layout_manager());
@@ -300,7 +299,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRight) {
   // The window should be attached and snapped to the right side of the screen.
   EXPECT_EQ(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
       window->parent()->layout_manager());
@@ -354,7 +353,7 @@ TEST_P(DockedWindowLayoutManagerTest, AutoPlacingRightSecondScreen) {
   // The window should be attached and snapped to the right side of the screen.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   DockedWindowLayoutManager* manager = static_cast<DockedWindowLayoutManager*>(
       window->parent()->layout_manager());
@@ -405,10 +404,10 @@ TEST_P(DockedWindowLayoutManagerTest, AddTwoWindows) {
   // The windows should be attached and snapped to the right side of the screen.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
             w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
 
   // Test that the gaps differ at most by a single pixel.
   gfx::Rect work_area =
@@ -434,10 +433,10 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsDragging) {
   // The windows should be attached and snapped to the right side of the screen.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
             w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
 
   // Drag w2 above w1.
   ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(w2.get(), 0, 20));
@@ -471,13 +470,13 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDragging) {
   // All windows should be attached and snapped to the right side of the screen.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
             w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
   EXPECT_EQ(w3->GetRootWindow()->bounds().right(),
             w3->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w3->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w3->parent()->id());
 
   // Test that the top and bottom windows are clamped in work area and
   // that the gaps between the windows differ at most by a pixel.
@@ -540,13 +539,13 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   // All windows should be attached and snapped to the right side of the screen.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
             w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
   EXPECT_EQ(w3->GetRootWindow()->bounds().right(),
             w3->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w3->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w3->parent()->id());
 
   gfx::Rect work_area =
       Shell::GetScreen()->GetDisplayNearestWindow(w1.get()).work_area();
@@ -685,7 +684,7 @@ TEST_P(DockedWindowLayoutManagerTest, WidthMoreThanMax) {
   // The window should not get docked even though it is dragged past the edge.
   EXPECT_NE(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
-  EXPECT_NE(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_NE(kShellWindowId_DockedContainer, window->parent()->id());
 }
 
 // Docks three windows and tests that the very first window gets minimized.
@@ -703,16 +702,16 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsMinimize) {
   // The last two windows should be attached and snapped to the right edge.
   EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
   EXPECT_EQ(w3->GetRootWindow()->bounds().right(),
             w3->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w3->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w3->parent()->id());
 
   // The first window should get minimized but parented by the dock container.
   EXPECT_TRUE(wm::GetWindowState(w1.get())->IsMinimized());
   EXPECT_TRUE(wm::GetWindowState(w2.get())->IsNormalStateType());
   EXPECT_TRUE(wm::GetWindowState(w3.get())->IsNormalStateType());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
 }
 
 // Docks up to three windows and tests that they split vertical space.
@@ -729,10 +728,10 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsSplitHeightEvenly) {
   // The two windows should be attached and snapped to the right edge.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
             w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
 
   // The two windows should be same size vertically and almost 1/2 of work area.
   gfx::Rect work_area =
@@ -748,9 +747,9 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsSplitHeightEvenly) {
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w3.get(), 300);
 
   // All three windows should be docked and snapped to the right edge.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w3->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w3->parent()->id());
 
   // All windows should be near same size vertically and about 1/3 of work area.
   EXPECT_NEAR(w1->GetBoundsInScreen().height(),
@@ -786,10 +785,10 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsHeightRestrictions) {
   // The two windows should be attached and snapped to the right edge.
   EXPECT_EQ(w1->GetRootWindow()->bounds().right(),
             w1->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w1->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w1->parent()->id());
   EXPECT_EQ(w2->GetRootWindow()->bounds().right(),
             w2->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, w2->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, w2->parent()->id());
 
   // The two windows should have their heights restricted.
   EXPECT_EQ(300, w1->GetBoundsInScreen().height());
@@ -824,7 +823,7 @@ TEST_P(DockedWindowLayoutManagerTest, DisplayDisconnectionMovesDocked) {
   // Its height should grow to match the new work area.
   EXPECT_EQ(window->GetRootWindow()->bounds().right(),
             window->GetBoundsInScreen().right());
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
   EXPECT_EQ(ideal_width(), window->bounds().width());
   gfx::Rect work_area =
       Shell::GetScreen()->GetDisplayNearestWindow(window.get()).work_area();
@@ -836,5 +835,5 @@ INSTANTIATE_TEST_CASE_P(NormalOrPanel,
                         DockedWindowLayoutManagerTest,
                         testing::Values(ui::wm::WINDOW_TYPE_NORMAL,
                                         ui::wm::WINDOW_TYPE_PANEL));
-}  // namespace internal
+
 }  // namespace ash

@@ -21,7 +21,7 @@ using content::BrowserThread;
 
 namespace {
 
-ash::internal::ScreensaverView* g_instance = NULL;
+ash::ScreensaverView* g_instance = NULL;
 
 // Do not restart the screensaver again if it has
 // terminated kMaxTerminations times already.
@@ -31,19 +31,11 @@ const int kMaxTerminations = 3;
 
 namespace ash {
 
-void ShowScreensaver(const GURL& url) {
-  internal::ScreensaverView::ShowScreensaver(url);
-}
+void ShowScreensaver(const GURL& url) { ScreensaverView::ShowScreensaver(url); }
 
-void CloseScreensaver() {
-  internal::ScreensaverView::CloseScreensaver();
-}
+void CloseScreensaver() { ScreensaverView::CloseScreensaver(); }
 
-bool IsScreensaverShown() {
-  return internal::ScreensaverView::IsScreensaverShown();
-}
-
-namespace internal {
+bool IsScreensaverShown() { return ScreensaverView::IsScreensaverShown(); }
 
 // static
 void ScreensaverView::ShowScreensaver(const GURL& url) {
@@ -166,5 +158,4 @@ ScreensaverView* ScreensaverView::GetInstance() {
   return g_instance;
 }
 
-}  // namespace internal
 }  // namespace ash

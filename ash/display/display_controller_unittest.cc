@@ -509,10 +509,10 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
 
 namespace {
 
-internal::DisplayInfo CreateDisplayInfo(int64 id,
-                                        const gfx::Rect& bounds,
-                                        float device_scale_factor) {
-  internal::DisplayInfo info(id, "", false);
+DisplayInfo CreateDisplayInfo(int64 id,
+                              const gfx::Rect& bounds,
+                              float device_scale_factor) {
+  DisplayInfo info(id, "", false);
   info.SetBounds(bounds);
   info.set_device_scale_factor(device_scale_factor);
   return info;
@@ -526,15 +526,14 @@ TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
   w1->Focus();
 
   // Docked mode.
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  const internal::DisplayInfo internal_display_info =
+  const DisplayInfo internal_display_info =
       CreateDisplayInfo(1, gfx::Rect(0, 0, 500, 500), 2.0f);
-  const internal::DisplayInfo external_display_info =
+  const DisplayInfo external_display_info =
       CreateDisplayInfo(2, gfx::Rect(0, 0, 500, 500), 1.0f);
 
-  std::vector<internal::DisplayInfo> display_info_list;
+  std::vector<DisplayInfo> display_info_list;
   // Mirror.
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
@@ -583,8 +582,7 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
 
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   gfx::Insets insets(5, 5, 5, 5);
   display_manager->UpdateWorkAreaOfDisplay(
       ScreenUtil::GetSecondaryDisplay().id(), insets);
@@ -666,8 +664,7 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200,300x300");
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
@@ -757,8 +754,7 @@ TEST_F(DisplayControllerTest, FindNearestDisplay) {
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200,300x300");
   DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
@@ -803,8 +799,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200,300x300");
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
@@ -894,8 +889,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200,300x300");
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
@@ -966,7 +960,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
 
   // Adding 2nd display with the same ID.  The 2nd display should become primary
   // since secondary id is still stored as desirable_primary_id.
-  std::vector<internal::DisplayInfo> display_info_list;
+  std::vector<DisplayInfo> display_info_list;
   display_info_list.push_back(
       display_manager->GetDisplayInfo(primary_display.id()));
   display_info_list.push_back(
@@ -988,14 +982,14 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   // Deleting 2nd display and adding 2nd display with a different ID.  The 2nd
   // display shouldn't become primary.
   UpdateDisplay("200x200");
-  internal::DisplayInfo third_display_info(
+  DisplayInfo third_display_info(
       secondary_display.id() + 1, std::string(), false);
   third_display_info.SetBounds(secondary_display.bounds());
   ASSERT_NE(primary_display.id(), third_display_info.id());
 
-  const internal::DisplayInfo& primary_display_info =
+  const DisplayInfo& primary_display_info =
       display_manager->GetDisplayInfo(primary_display.id());
-  std::vector<internal::DisplayInfo> display_info_list2;
+  std::vector<DisplayInfo> display_info_list2;
   display_info_list2.push_back(primary_display_info);
   display_info_list2.push_back(third_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list2);
@@ -1121,8 +1115,7 @@ TEST_F(DisplayControllerTest, Rotate) {
   if (!SupportsMultipleDisplays())
     return;
 
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   TestEventHandler event_handler;
   Shell::GetInstance()->AddPreTargetHandler(&event_handler);
 
@@ -1212,8 +1205,7 @@ TEST_F(DisplayControllerTest, ScaleRootWindow) {
   generator.MoveMouseToInHost(599, 200);
   EXPECT_EQ("449,150", event_handler.GetLocationAndReset());
 
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetDisplayUIScale(display1.id(), 1.25f);
   display1 = Shell::GetScreen()->GetPrimaryDisplay();
   display2 = ScreenUtil::GetSecondaryDisplay();
@@ -1320,10 +1312,10 @@ TEST_F(DisplayControllerTest, ConvertHostToRootCoords) {
 
 namespace {
 
-internal::DisplayInfo CreateDisplayInfo(int64 id,
-                                        int y,
-                                        gfx::Display::Rotation rotation) {
-  internal::DisplayInfo info(id, "", false);
+DisplayInfo CreateDisplayInfo(int64 id,
+                              int y,
+                              gfx::Display::Rotation rotation) {
+  DisplayInfo info(id, "", false);
   info.SetBounds(gfx::Rect(0, y, 500, 500));
   info.set_rotation(rotation);
   return info;
@@ -1337,17 +1329,16 @@ TEST_F(DisplayControllerTest, DockToSingle) {
   if (!SupportsMultipleDisplays())
     return;
 
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   const int64 internal_id = 1;
 
-  const internal::DisplayInfo internal_display_info =
+  const DisplayInfo internal_display_info =
       CreateDisplayInfo(internal_id, 0, gfx::Display::ROTATE_0);
-  const internal::DisplayInfo external_display_info =
+  const DisplayInfo external_display_info =
       CreateDisplayInfo(2, 1, gfx::Display::ROTATE_90);
 
-  std::vector<internal::DisplayInfo> display_info_list;
+  std::vector<DisplayInfo> display_info_list;
   // Extended
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);

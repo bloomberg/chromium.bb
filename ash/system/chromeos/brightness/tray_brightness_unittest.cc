@@ -11,7 +11,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-
 namespace {
 
 user::LoginStatus GetUserLoginStatus() {
@@ -19,8 +18,6 @@ user::LoginStatus GetUserLoginStatus() {
 }
 
 }  // namespace
-
-namespace internal {
 
 class TrayBrightnessTest : public test::AshTestBase {
  public:
@@ -94,8 +91,6 @@ TEST_F(TrayBrightnessTest, DetailedViewVisibilityChangesDuringMaximizeMode) {
   Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
   EXPECT_TRUE(tray->visible());
 }
-
-}  // namespace internal
 
 }  // namespace ash
 

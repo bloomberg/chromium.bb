@@ -11,8 +11,6 @@
 
 namespace ash {
 
-namespace internal {
-
 // An event filter that transforms input event properties in extended desktop
 // environment.
 class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
@@ -43,7 +41,6 @@ class ASH_EXPORT EventTransformationHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(EventTransformationHandler);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_EVENT_TRANSFORMATION_HANDLER_H_

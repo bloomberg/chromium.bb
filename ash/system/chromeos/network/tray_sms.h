@@ -12,7 +12,6 @@
 #include "chromeos/network/network_sms_handler.h"
 
 namespace ash {
-namespace internal {
 
 class TraySms : public SystemTrayItem,
                 public chromeos::NetworkSmsHandler::Observer {
@@ -60,7 +59,6 @@ class TraySms : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TraySms);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_SMS_H

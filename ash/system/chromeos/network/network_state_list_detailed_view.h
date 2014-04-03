@@ -27,12 +27,8 @@ class BubbleDelegateView;
 }
 
 namespace ash {
-
-class SystemTrayItem;
-
-namespace internal {
-
 class HoverHighlightView;
+class SystemTrayItem;
 class TrayPopupLabelButton;
 
 namespace tray {
@@ -153,7 +149,6 @@ class NetworkStateListDetailedView
 };
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_STATE_LIST_DETAILED_VIEW

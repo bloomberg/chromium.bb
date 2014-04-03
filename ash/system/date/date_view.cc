@@ -24,9 +24,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace tray {
-
 namespace {
 
 // Amount of slop to add into the timer to make sure we're into the next minute
@@ -314,5 +312,4 @@ void TimeView::SetupLabel(views::Label* label) {
 }
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash

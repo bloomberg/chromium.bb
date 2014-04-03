@@ -14,8 +14,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Returns true if |window| is non-NULL and is visible.
@@ -172,5 +170,4 @@ TEST_F(PhantomWindowControllerTest, OldCaptionButtonStyle) {
   EXPECT_FALSE(start_deletion_observer.IsWindowAlive());
 }
 
-}  // namespace internal
 }  // namespace ash

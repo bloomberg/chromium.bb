@@ -389,10 +389,10 @@ void WindowOverview::PositionWindowsOnRoot(
     return;
 
   gfx::Size window_size;
-  gfx::Rect total_bounds = ScreenUtil::ConvertRectToScreen(root_window,
+  gfx::Rect total_bounds = ScreenUtil::ConvertRectToScreen(
+      root_window,
       ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-      Shell::GetContainer(root_window,
-                          internal::kShellWindowId_DefaultContainer)));
+          Shell::GetContainer(root_window, kShellWindowId_DefaultContainer)));
 
   // Find the minimum number of windows per row that will fit all of the
   // windows on screen.
@@ -433,10 +433,10 @@ void WindowOverview::InitializeSelectionWidget() {
   params.keep_on_top = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
-  params.parent = Shell::GetContainer(
-      single_root_window_ ? single_root_window_ :
-                            windows_->front()->GetRootWindow(),
-      internal::kShellWindowId_DefaultContainer);
+  params.parent = Shell::GetContainer(single_root_window_
+                                          ? single_root_window_
+                                          : windows_->front()->GetRootWindow(),
+                                      kShellWindowId_DefaultContainer);
   params.accept_events = false;
   selection_widget_->set_focus_on_creation(false);
   selection_widget_->Init(params);

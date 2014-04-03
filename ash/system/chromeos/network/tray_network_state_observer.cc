@@ -16,7 +16,6 @@
 using chromeos::NetworkHandler;
 
 namespace ash {
-namespace internal {
 
 TrayNetworkStateObserver::TrayNetworkStateObserver(Delegate* delegate)
     : delegate_(delegate) {
@@ -56,4 +55,3 @@ void TrayNetworkStateObserver::NetworkPropertiesUpdated(
 }
 
 }  // namespace ash
-}  // namespace internal

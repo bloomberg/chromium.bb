@@ -31,9 +31,7 @@ class EventGenerator;
 }  // namespace aura
 
 namespace ash {
-namespace internal {
 class DisplayManager;
-}  // namespace internal
 
 namespace test {
 

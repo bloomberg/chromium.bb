@@ -13,7 +13,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
 
 class ASH_EXPORT ScreenShareTrayItem : public ScreenTrayItem,
                                        public ScreenShareObserver {
@@ -41,7 +40,6 @@ class ASH_EXPORT ScreenShareTrayItem : public ScreenTrayItem,
   DISALLOW_COPY_AND_ASSIGN(ScreenShareTrayItem);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SCREEN_SHARE_SCREEN_SHARE_TRAY_ITEM_H_

@@ -7,7 +7,6 @@
 #include <limits>
 
 namespace ash {
-namespace internal {
 
 DefaultAccessibilityDelegate::DefaultAccessibilityDelegate()
     : spoken_feedback_enabled_(false),
@@ -115,5 +114,4 @@ base::TimeDelta DefaultAccessibilityDelegate::PlayShutdownSound() const {
   return base::TimeDelta();
 }
 
-}  // namespace internal
 }  // namespace ash

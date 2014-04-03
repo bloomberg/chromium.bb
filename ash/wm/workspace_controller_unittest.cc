@@ -41,7 +41,6 @@
 using aura::Window;
 
 namespace ash {
-namespace internal {
 
 // Returns a string containing the names of all the children of |window| (in
 // order). Each entry is separated by a space.
@@ -128,11 +127,9 @@ class WorkspaceControllerTest : public test::AshTestBase {
     test::TestShelfDelegate* shelf_delegate =
         test::TestShelfDelegate::instance();
     shelf_delegate->AddShelfItem(window);
-    PanelLayoutManager* manager =
-        static_cast<PanelLayoutManager*>(
-            Shell::GetContainer(window->GetRootWindow(),
-                                internal::kShellWindowId_PanelContainer)->
-                                layout_manager());
+    PanelLayoutManager* manager = static_cast<PanelLayoutManager*>(
+        Shell::GetContainer(window->GetRootWindow(),
+                            kShellWindowId_PanelContainer)->layout_manager());
     manager->Relayout();
     return window;
   }
@@ -1469,7 +1466,7 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
       123, gfx::Rect(20, 10, 100, 50), NULL));
   ParentWindowInPrimaryRootWindow(window.get());
   aura::Window* docked_container = Shell::GetContainer(
-      window->GetRootWindow(), internal::kShellWindowId_DockedContainer);
+      window->GetRootWindow(), kShellWindowId_DockedContainer);
   docked_container->AddChild(window.get());
   window->Show();
   ui::EventTarget* root = window->GetRootWindow();
@@ -1508,5 +1505,4 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

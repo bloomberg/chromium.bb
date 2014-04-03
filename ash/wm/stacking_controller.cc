@@ -44,10 +44,8 @@ bool HasTransientParentWindow(const aura::Window* window) {
       ui::wm::WINDOW_TYPE_UNKNOWN;
 }
 
-internal::AlwaysOnTopController*
-GetAlwaysOnTopController(aura::Window* root_window) {
-  return internal::GetRootWindowController(root_window)->
-      always_on_top_controller();
+AlwaysOnTopController* GetAlwaysOnTopController(aura::Window* root_window) {
+  return GetRootWindowController(root_window)->always_on_top_controller();
 }
 
 }  // namespace
@@ -82,24 +80,22 @@ aura::Window* StackingController::GetDefaultParent(aura::Window* context,
       if (IsSystemModal(window))
         return GetSystemModalContainer(target_root, window);
       else if (HasTransientParentWindow(window))
-        return internal::RootWindowController::GetContainerForWindow(
+        return RootWindowController::GetContainerForWindow(
             ::wm::GetTransientParent(window));
       return GetAlwaysOnTopController(target_root)->GetContainer(window);
     case ui::wm::WINDOW_TYPE_CONTROL:
-      return GetContainerById(
-          target_root, internal::kShellWindowId_UnparentedControlContainer);
+      return GetContainerById(target_root,
+                              kShellWindowId_UnparentedControlContainer);
     case ui::wm::WINDOW_TYPE_PANEL:
       if (wm::GetWindowState(window)->panel_attached())
-        return GetContainerById(target_root,
-                                internal::kShellWindowId_PanelContainer);
+        return GetContainerById(target_root, kShellWindowId_PanelContainer);
       else
         return GetAlwaysOnTopController(target_root)->GetContainer(window);
     case ui::wm::WINDOW_TYPE_MENU:
-      return GetContainerById(
-          target_root, internal::kShellWindowId_MenuContainer);
+      return GetContainerById(target_root, kShellWindowId_MenuContainer);
     case ui::wm::WINDOW_TYPE_TOOLTIP:
-      return GetContainerById(
-          target_root, internal::kShellWindowId_DragImageAndTooltipContainer);
+      return GetContainerById(target_root,
+                              kShellWindowId_DragImageAndTooltipContainer);
     default:
       NOTREACHED() << "Window " << window->id()
                    << " has unhandled type " << window->type();
@@ -124,8 +120,7 @@ aura::Window* StackingController::GetSystemModalContainer(
       Shell::GetInstance()->session_state_delegate();
   if (!session_state_delegate->IsUserSessionBlocked() ||
       !::wm::GetTransientParent(window)) {
-    return GetContainerById(root,
-                            internal::kShellWindowId_SystemModalContainer);
+    return GetContainerById(root, kShellWindowId_SystemModalContainer);
   }
 
   // Otherwise those that originate from LockScreen container and above are
@@ -133,12 +128,10 @@ aura::Window* StackingController::GetSystemModalContainer(
   int window_container_id =
       ::wm::GetTransientParent(window)->parent()->id();
   aura::Window* container = NULL;
-  if (window_container_id < internal::kShellWindowId_LockScreenContainer) {
-    container = GetContainerById(
-        root, internal::kShellWindowId_SystemModalContainer);
+  if (window_container_id < kShellWindowId_LockScreenContainer) {
+    container = GetContainerById(root, kShellWindowId_SystemModalContainer);
   } else {
-    container = GetContainerById(
-        root, internal::kShellWindowId_LockSystemModalContainer);
+    container = GetContainerById(root, kShellWindowId_LockSystemModalContainer);
   }
 
   return container;

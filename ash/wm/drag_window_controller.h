@@ -26,7 +26,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // DragWindowController is responsible for showing a semi-transparent window
 // while dragging a window across displays.
@@ -91,7 +90,6 @@ class ASH_EXPORT DragWindowController {
   DISALLOW_COPY_AND_ASSIGN(DragWindowController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_DRAG_WINDOW_CONTROLLER_H_

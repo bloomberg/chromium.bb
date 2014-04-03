@@ -46,7 +46,7 @@ WebNotificationTray* GetTray() {
 }
 
 WebNotificationTray* GetSecondaryTray() {
-  internal::RootWindowController* primary_controller =
+  RootWindowController* primary_controller =
       Shell::GetPrimaryRootWindowController();
   Shell::RootWindowControllerList controllers =
       Shell::GetAllRootWindowControllers();
@@ -293,15 +293,14 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupShownOnBothDisplays) {
   // root window controller and shelf with having notifications. This code
   // verifies it doesn't cause crash and popups are still visible. See
   // http://crbug.com/263664
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
-  display_manager->SetSecondDisplayMode(internal::DisplayManager::MIRRORING);
+  display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   EXPECT_FALSE(GetSecondaryTray());
 
-  display_manager->SetSecondDisplayMode(internal::DisplayManager::EXTENDED);
+  display_manager->SetSecondDisplayMode(DisplayManager::EXTENDED);
   UpdateDisplay("400x400,200x200");
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   secondary_tray = GetSecondaryTray();
@@ -370,7 +369,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   // Shelf's auto-hide state won't be HIDDEN unless window exists.
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
-  internal::ShelfLayoutManager* shelf =
+  ShelfLayoutManager* shelf =
       Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
@@ -432,7 +431,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   // Checks the work area for normal auto-hidden state.
   scoped_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
-  internal::ShelfLayoutManager* shelf =
+  ShelfLayoutManager* shelf =
       Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());

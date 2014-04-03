@@ -28,7 +28,7 @@ namespace ash {
 // A customized dialog view for the keyboard overlay.
 class ASH_WITH_CONTENT_EXPORT KeyboardOverlayView
     : public views::WebDialogView,
-      public ash::internal::OverlayEventFilter::Delegate {
+      public ash::OverlayEventFilter::Delegate {
  public:
   struct KeyEventData {
     ui::KeyboardCode key_code;
@@ -40,7 +40,7 @@ class ASH_WITH_CONTENT_EXPORT KeyboardOverlayView
                       WebContentsHandler* handler);
   virtual ~KeyboardOverlayView();
 
-  // Overridden from ash::internal::OverlayEventFilter::Delegate:
+  // Overridden from ash::OverlayEventFilter::Delegate:
   virtual void Cancel() OVERRIDE;
   virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual aura::Window* GetWindow() OVERRIDE;

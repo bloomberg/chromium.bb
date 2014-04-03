@@ -28,7 +28,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 // For our scaling ratios we need to round positive numbers.
@@ -224,5 +223,4 @@ views::Widget* CreateDesktopBackground(aura::Window* root_window,
   return desktop_widget;
 }
 
-}  // namespace internal
 }  // namespace ash

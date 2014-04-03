@@ -9,7 +9,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
 
 TrayUserSeparator::TrayUserSeparator(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
@@ -44,5 +43,4 @@ void TrayUserSeparator::DestroyDefaultView() {
   separator_shown_ = false;
 }
 
-}  // namespace internal
 }  // namespace ash

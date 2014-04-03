@@ -14,7 +14,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
 
 namespace tray {
 class UpdateNagger;
@@ -45,7 +44,6 @@ class TrayUpdate : public TrayImageItem,
   DISALLOW_COPY_AND_ASSIGN(TrayUpdate);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_UPDATE_H_

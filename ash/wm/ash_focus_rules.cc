@@ -16,23 +16,22 @@ namespace {
 // These are the list of container ids of containers which may contain windows
 // that need to be activated in the order that they should be activated.
 const int kWindowContainerIds[] = {
-    internal::kShellWindowId_OverlayContainer,
-    internal::kShellWindowId_LockSystemModalContainer,
-    internal::kShellWindowId_SettingBubbleContainer,
-    internal::kShellWindowId_LockScreenContainer,
-    internal::kShellWindowId_SystemModalContainer,
-    internal::kShellWindowId_AlwaysOnTopContainer,
-    internal::kShellWindowId_AppListContainer,
-    internal::kShellWindowId_DefaultContainer,
+    kShellWindowId_OverlayContainer,
+    kShellWindowId_LockSystemModalContainer,
+    kShellWindowId_SettingBubbleContainer,
+    kShellWindowId_LockScreenContainer,
+    kShellWindowId_SystemModalContainer,
+    kShellWindowId_AlwaysOnTopContainer,
+    kShellWindowId_AppListContainer,
+    kShellWindowId_DefaultContainer,
 
     // Docked, panel, launcher and status are intentionally checked after other
     // containers even though these layers are higher. The user expects their
     // windows to be focused before these elements.
-    internal::kShellWindowId_DockedContainer,
-    internal::kShellWindowId_PanelContainer,
-    internal::kShellWindowId_ShelfContainer,
-    internal::kShellWindowId_StatusContainer,
-};
+    kShellWindowId_DockedContainer,
+    kShellWindowId_PanelContainer,
+    kShellWindowId_ShelfContainer,
+    kShellWindowId_StatusContainer, };
 
 bool BelongsToContainerWithEqualOrGreaterId(const aura::Window* window,
                                             int container_id) {
@@ -58,7 +57,7 @@ AshFocusRules::~AshFocusRules() {
 // AshFocusRules, ::wm::FocusRules:
 
 bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
-  if (window->id() == internal::kShellWindowId_DefaultContainer)
+  if (window->id() == kShellWindowId_DefaultContainer)
     return true;
 
   for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
@@ -78,9 +77,9 @@ bool AshFocusRules::IsWindowConsideredVisibleForActivation(
   if (wm::GetWindowState(window)->IsMinimized())
     return true;
 
-  return window->TargetVisibility() && (window->parent()->id() ==
-      internal::kShellWindowId_DefaultContainer || window->parent()->id() ==
-      internal::kShellWindowId_LockScreenContainer);
+  return window->TargetVisibility() &&
+         (window->parent()->id() == kShellWindowId_DefaultContainer ||
+          window->parent()->id() == kShellWindowId_LockScreenContainer);
 }
 
 bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
@@ -93,7 +92,7 @@ bool AshFocusRules::CanActivateWindow(aura::Window* window) const {
 
   if (Shell::GetInstance()->IsSystemModalWindowOpen()) {
     return BelongsToContainerWithEqualOrGreaterId(
-          window, internal::kShellWindowId_SystemModalContainer);
+        window, kShellWindowId_SystemModalContainer);
   }
 
   return true;

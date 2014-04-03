@@ -74,9 +74,9 @@ class ResizeShadowAndCursorTest : public AshTestBase {
   // Returns the hit test code if there is a resize shadow. Returns HTNOWHERE if
   // there is no resize shadow.
   int ResizeShadowHitTest() const {
-    ash::internal::ResizeShadow* resize_shadow =
-        ash::Shell::GetInstance()->resize_shadow_controller()->
-            GetShadowForWindowForTest(window_);
+    ash::ResizeShadow* resize_shadow = ash::Shell::GetInstance()
+                                           ->resize_shadow_controller()
+                                           ->GetShadowForWindowForTest(window_);
     return resize_shadow ? resize_shadow->GetLastHitTestForTest() : HTNOWHERE;
   }
 

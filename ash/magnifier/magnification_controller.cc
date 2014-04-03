@@ -271,7 +271,7 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
   gfx::Display display =
       Shell::GetScreen()->GetDisplayNearestWindow(root_window_);
   scoped_ptr<aura::RootWindowTransformer> transformer(
-      internal::CreateRootWindowTransformerForDisplay(root_window_, display));
+      CreateRootWindowTransformerForDisplay(root_window_, display));
   root_window_->GetHost()->SetRootWindowTransformer(transformer.Pass());
 
   if (animate)

@@ -13,7 +13,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // This class allows to show a (native) view always on top of everything. It
 // does this by creating a widget and setting the content as the given view. The
@@ -72,7 +71,6 @@ class DragImageView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(DragImageView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DRAG_DROP_DRAG_IMAGE_VIEW_H_

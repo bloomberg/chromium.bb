@@ -40,7 +40,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
 
 TrayAudio::TrayAudio(SystemTray* system_tray,
                      scoped_ptr<system::TrayAudioDelegate> audio_delegate)
@@ -147,5 +146,4 @@ void TrayAudio::Update() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

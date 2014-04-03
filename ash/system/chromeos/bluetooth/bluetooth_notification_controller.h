@@ -17,7 +17,6 @@
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace ash {
-namespace internal {
 
 // The BluetoothNotificationController receives incoming pairing requests from
 // the BluetoothAdapter, and notifications of changes to the adapter state and
@@ -89,7 +88,6 @@ class ASH_EXPORT BluetoothNotificationController
   DISALLOW_COPY_AND_ASSIGN(BluetoothNotificationController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_BLUETOOTH_BLUETOOTH_NOTIFICATION_CONTROLLER_H_

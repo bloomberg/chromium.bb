@@ -21,7 +21,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace internal {
 
 const int kAnimationDurationInMs = 600;
 const float kAnimationOpacity[] = { 1.0f, 0.4f, 1.0f };
@@ -128,5 +127,4 @@ void AppListButton::GetAccessibleState(ui::AXViewState* state) {
   state->name = host_->GetAccessibleName(this);
 }
 
-}  // namespace internal
 }  // namespace ash

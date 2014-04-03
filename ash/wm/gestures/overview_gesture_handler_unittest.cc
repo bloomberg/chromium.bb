@@ -13,7 +13,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 
 namespace ash {
-namespace internal {
 
 class OverviewGestureHandlerTest : public test::AshTestBase {
  public:
@@ -170,5 +169,4 @@ TEST_F(OverviewGestureHandlerTest, GestureSwipeTopOfWindow) {
   EXPECT_FALSE(IsSelecting());
 }
 
-}  // namespace internal
 }  // namespace ash

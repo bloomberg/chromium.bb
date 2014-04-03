@@ -16,7 +16,6 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace ash {
-namespace internal {
 
 TrayNotificationView::TrayNotificationView(SystemTrayItem* owner, int icon_id)
     : owner_(owner),
@@ -168,5 +167,4 @@ void TrayNotificationView::HandleClickAction() {
   OnClickAction();
 }
 
-}  // namespace internal
 }  // namespace ash

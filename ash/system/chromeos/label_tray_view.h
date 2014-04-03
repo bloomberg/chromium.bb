@@ -9,7 +9,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
 
 class ViewClickListener;
 
@@ -31,7 +30,6 @@ class LabelTrayView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(LabelTrayView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_LABEL_TRAY_VIEW_H_

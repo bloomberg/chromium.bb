@@ -21,12 +21,8 @@ class Widget;
 
 namespace ash {
 class FrameMaximizeButtonObserver;
-
-namespace internal {
-class PhantomWindowController;
-}
-
 class MaximizeBubbleController;
+class PhantomWindowController;
 
 // Button used for the maximize control on the frame. Handles snapping logic.
 class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
@@ -144,7 +140,7 @@ class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
   bool observing_frame_;
 
   // Renders the snap position.
-  scoped_ptr<internal::PhantomWindowController> phantom_window_;
+  scoped_ptr<PhantomWindowController> phantom_window_;
 
   // Is snapping enabled? Set on press so that in drag we know whether we
   // should show the snap locations.

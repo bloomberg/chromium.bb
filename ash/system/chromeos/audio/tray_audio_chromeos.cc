@@ -16,8 +16,6 @@ namespace ash {
 using system::TrayAudioDelegate;
 using system::TrayAudioDelegateChromeOs;
 
-namespace internal {
-
 TrayAudioChromeOs::TrayAudioChromeOs(SystemTray* system_tray)
     : TrayAudio(system_tray,
                 scoped_ptr<TrayAudioDelegate>(new TrayAudioDelegateChromeOs())),
@@ -56,5 +54,4 @@ void TrayAudioChromeOs::DestroyDetailedView() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

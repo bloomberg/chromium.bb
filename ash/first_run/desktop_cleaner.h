@@ -13,15 +13,12 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {
+class ContainerHider;
+class NotificationBlocker;
 
 namespace test {
 class FirstRunHelperTest;
 }
-
-namespace internal {
-
-class ContainerHider;
-class NotificationBlocker;
 
 // Class used to "clean" ash desktop, i.e. hide all windows and notifications.
 class ASH_EXPORT DesktopCleaner {
@@ -40,7 +37,6 @@ class ASH_EXPORT DesktopCleaner {
   DISALLOW_COPY_AND_ASSIGN(DesktopCleaner);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_FIRST_RUN_DESKTOP_CLEANER_

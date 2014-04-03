@@ -17,7 +17,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
 
 // Test with unicode strings.
 const char kTestScreenCaptureAppName[] =
@@ -223,5 +222,4 @@ TEST_F(ScreenShareTest, SystemTrayInteraction) {
   TestSystemTrayInteraction(this);
 }
 
-} // namespace internal
-} // namespace ash
+}  // namespace ash

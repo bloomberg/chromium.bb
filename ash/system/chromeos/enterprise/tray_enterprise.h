@@ -14,8 +14,6 @@ class SystemTray;
 }
 
 namespace ash {
-namespace internal {
-
 class LabelTrayView;
 
 class TrayEnterprise : public SystemTrayItem,
@@ -45,7 +43,6 @@ class TrayEnterprise : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayEnterprise);
 };
 
-} // namespace internal
 } // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_ENTERPRISE_TRAY_ENTERPRISE_H

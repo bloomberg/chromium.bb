@@ -139,7 +139,7 @@ ash::SessionStateDelegate* ShellDelegateImpl::CreateSessionStateDelegate() {
 }
 
 ash::AccessibilityDelegate* ShellDelegateImpl::CreateAccessibilityDelegate() {
-  return new internal::DefaultAccessibilityDelegate;
+  return new DefaultAccessibilityDelegate;
 }
 
 ash::NewWindowDelegate* ShellDelegateImpl::CreateNewWindowDelegate() {

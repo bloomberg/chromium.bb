@@ -29,7 +29,7 @@ OverviewButtonTray* GetTray() {
 }
 
 OverviewButtonTray* GetSecondaryTray() {
-  internal::RootWindowController* primary_controller =
+  RootWindowController* primary_controller =
       Shell::GetPrimaryRootWindowController();
   Shell::RootWindowControllerList controllers =
       Shell::GetAllRootWindowControllers();

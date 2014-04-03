@@ -17,8 +17,6 @@ class Widget;
 
 namespace ash {
 
-namespace internal {
-
 // This class handles moving focus between a set of widgets and the main browser
 // window.
 class ASH_EXPORT FocusCycler {
@@ -53,8 +51,6 @@ class ASH_EXPORT FocusCycler {
 
   DISALLOW_COPY_AND_ASSIGN(FocusCycler);
 };
-
-}  // namespace internal
 
 }  // namespace ash
 

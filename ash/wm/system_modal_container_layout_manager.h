@@ -26,7 +26,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // LayoutManager for the modal window container.
 class ASH_EXPORT SystemModalContainerLayoutManager
@@ -92,7 +91,6 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   DISALLOW_COPY_AND_ASSIGN(SystemModalContainerLayoutManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_SYSTEM_MODAL_CONTAINER_LAYOUT_MANAGER_H_

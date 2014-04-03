@@ -12,15 +12,13 @@
 #include "ui/display/display_constants.h"
 
 namespace ash {
-namespace internal {
 class DisplayManager;
-}  // internal
 
 namespace test {
 
 class DisplayManagerTestApi {
  public:
-  explicit DisplayManagerTestApi(internal::DisplayManager* display_manager);
+  explicit DisplayManagerTestApi(DisplayManager* display_manager);
   virtual ~DisplayManagerTestApi();
 
   // Update the display configuration as given in |display_specs|. The format of
@@ -42,7 +40,7 @@ class DisplayManagerTestApi {
       const std::vector<ui::ColorCalibrationProfile>& profiles);
 
  private:
-  internal::DisplayManager* display_manager_;  // not owned
+  DisplayManager* display_manager_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(DisplayManagerTestApi);
 };

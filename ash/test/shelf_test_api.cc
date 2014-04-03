@@ -16,9 +16,7 @@ ShelfTestAPI::ShelfTestAPI(Shelf* shelf)
 ShelfTestAPI::~ShelfTestAPI() {
 }
 
-internal::ShelfView* ShelfTestAPI::shelf_view() {
-  return shelf_->shelf_view_;
-}
+ShelfView* ShelfTestAPI::shelf_view() { return shelf_->shelf_view_; }
 
 void ShelfTestAPI::SetShelfDelegate(ShelfDelegate* delegate) {
   shelf_->delegate_ = delegate;

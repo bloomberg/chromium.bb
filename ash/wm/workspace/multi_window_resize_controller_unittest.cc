@@ -19,7 +19,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 class MultiWindowResizeControllerTest : public test::AshTestBase {
  public:
@@ -254,5 +253,5 @@ TEST_F(MultiWindowResizeControllerTest, Three) {
   EXPECT_TRUE(IsShowing());
   generator.PressLeftButton();
 }
-}  // namespace internal
+
 }  // namespace ash

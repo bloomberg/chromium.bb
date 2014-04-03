@@ -16,7 +16,6 @@ using ui::OutputConfigurator;
 typedef testing::Test DisplayChangeObserverTest;
 
 namespace ash {
-namespace internal {
 
 TEST_F(DisplayChangeObserverTest, GetDisplayModeList) {
   ScopedVector<const ui::DisplayMode> modes;
@@ -83,5 +82,4 @@ TEST_F(DisplayChangeObserverTest, GetDisplayModeList) {
   EXPECT_EQ(0u, display_modes.size());
 }
 
-}  // namespace internal
 }  // namespace ash

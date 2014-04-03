@@ -26,7 +26,6 @@
 DECLARE_WINDOW_PROPERTY_TYPE(gfx::Display::Rotation);
 
 namespace ash {
-namespace internal {
 namespace {
 
 #if defined(OS_WIN)
@@ -281,5 +280,4 @@ aura::RootWindowTransformer* CreateRootWindowTransformerForMirroredDisplay(
                                          mirror_display_info);
 }
 
-}  // namespace internal
 }  // namespace ash

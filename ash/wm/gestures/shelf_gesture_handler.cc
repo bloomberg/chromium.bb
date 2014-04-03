@@ -21,7 +21,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 ShelfGestureHandler::ShelfGestureHandler()
     : drag_in_progress_(false) {
@@ -93,5 +92,4 @@ bool ShelfGestureHandler::ProcessGestureEvent(const ui::GestureEvent& event) {
   return false;
 }
 
-}  // namespace internal
 }  // namespace ash

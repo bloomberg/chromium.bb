@@ -8,10 +8,9 @@
 #include "ui/aura/window_property.h"
 #include "ui/gfx/display.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::internal::RootWindowSettings*);
+DECLARE_WINDOW_PROPERTY_TYPE(ash::RootWindowSettings*);
 
 namespace ash {
-namespace internal {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(RootWindowSettings,
                                  kRootWindowSettingsKey, NULL);
@@ -36,5 +35,4 @@ const RootWindowSettings* GetRootWindowSettings(const aura::Window* root) {
   return root->GetProperty(kRootWindowSettingsKey);
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -50,7 +50,6 @@ bool IsDragging(aura::Window* window) {
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 ShelfWindowWatcher::RootWindowObserver::RootWindowObserver(
     ShelfWindowWatcher* window_watcher)
@@ -289,5 +288,4 @@ void ShelfWindowWatcher::OnDisplayRemoved(const gfx::Display& old_display) {
   // Do nothing here.
 }
 
-}  // namespace internal
 }  // namespace ash

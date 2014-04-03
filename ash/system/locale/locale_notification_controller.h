@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 
 namespace ash {
-namespace internal {
 
 // Observes the locale change and creates rich notification for the change.
 class LocaleNotificationController : public LocaleObserver {
@@ -35,7 +34,6 @@ class LocaleNotificationController : public LocaleObserver {
   DISALLOW_COPY_AND_ASSIGN(LocaleNotificationController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_LOCALE_LOCALE_NOTIFICATION_CONTROLLER_H_

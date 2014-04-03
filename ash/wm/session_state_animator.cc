@@ -15,8 +15,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Slightly-smaller size that we scale the screen down to for the pre-lock and
@@ -460,44 +458,38 @@ void SessionStateAnimator::GetContainers(int container_mask,
 
   if (container_mask & DESKTOP_BACKGROUND) {
     containers->push_back(Shell::GetContainer(
-        root_window,
-        internal::kShellWindowId_DesktopBackgroundContainer));
+        root_window, kShellWindowId_DesktopBackgroundContainer));
   }
   if (container_mask & LAUNCHER) {
-    containers->push_back(Shell::GetContainer(
-        root_window,
-        internal::kShellWindowId_ShelfContainer));
+    containers->push_back(
+        Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
   }
   if (container_mask & NON_LOCK_SCREEN_CONTAINERS) {
     // TODO(antrim): Figure out a way to eliminate a need to exclude launcher
     // in such way.
     aura::Window* non_lock_screen_containers = Shell::GetContainer(
-        root_window,
-        internal::kShellWindowId_NonLockScreenContainersContainer);
+        root_window, kShellWindowId_NonLockScreenContainersContainer);
     aura::Window::Windows children = non_lock_screen_containers->children();
 
     for (aura::Window::Windows::const_iterator it = children.begin();
          it != children.end(); ++it) {
       aura::Window* window = *it;
-      if (window->id() == internal::kShellWindowId_ShelfContainer)
+      if (window->id() == kShellWindowId_ShelfContainer)
         continue;
       containers->push_back(window);
     }
   }
   if (container_mask & LOCK_SCREEN_BACKGROUND) {
     containers->push_back(Shell::GetContainer(
-        root_window,
-        internal::kShellWindowId_LockScreenBackgroundContainer));
+        root_window, kShellWindowId_LockScreenBackgroundContainer));
   }
   if (container_mask & LOCK_SCREEN_CONTAINERS) {
     containers->push_back(Shell::GetContainer(
-        root_window,
-        internal::kShellWindowId_LockScreenContainersContainer));
+        root_window, kShellWindowId_LockScreenContainersContainer));
   }
   if (container_mask & LOCK_SCREEN_RELATED_CONTAINERS) {
     containers->push_back(Shell::GetContainer(
-        root_window,
-        internal::kShellWindowId_LockScreenRelatedContainersContainer));
+        root_window, kShellWindowId_LockScreenRelatedContainersContainer));
   }
 }
 
@@ -613,5 +605,4 @@ void SessionStateAnimator::RunAnimationForWindow(
   }
 }
 
-}  // namespace internal
 }  // namespace ash

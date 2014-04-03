@@ -13,7 +13,6 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
-namespace internal {
 
 TrayImageItem::TrayImageItem(SystemTray* system_tray, int resource_id)
     : SystemTrayItem(system_tray),
@@ -89,5 +88,4 @@ void TrayImageItem::SetItemAlignment(ShelfAlignment alignment) {
   tray_view_->Layout();
 }
 
-}  // namespace internal
 }  // namespace ash

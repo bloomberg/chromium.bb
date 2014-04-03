@@ -68,9 +68,9 @@ ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
 
   // TODO(brettw). We should not be grabbing the active toplevel window, we
   // should use the toplevel window associated with the render view.
-  aura::Window* parent = ash::Shell::GetContainer(
-      ash::Shell::GetTargetRootWindow(),
-      ash::internal::kShellWindowId_SystemModalContainer);
+  aura::Window* parent =
+      ash::Shell::GetContainer(ash::Shell::GetTargetRootWindow(),
+                               ash::kShellWindowId_SystemModalContainer);
   reply.params.set_result(static_cast<int32_t>(
       chrome::ShowMessageBox(parent, title, message,
                              chrome::MESSAGE_BOX_TYPE_QUESTION) ==

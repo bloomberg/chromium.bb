@@ -23,8 +23,8 @@ namespace {
 bool DoesFullscreenModeBlockNotifications() {
 #if defined(USE_ASH)
   if (ash::Shell::HasInstance()) {
-    ash::internal::RootWindowController* controller =
-        ash::internal::RootWindowController::ForTargetRootWindow();
+    ash::RootWindowController* controller =
+        ash::RootWindowController::ForTargetRootWindow();
 
     // During shutdown |controller| can be NULL.
     if (!controller)

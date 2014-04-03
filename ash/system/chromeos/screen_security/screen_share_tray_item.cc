@@ -16,7 +16,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 namespace {
 
 const char kScreenShareNotificationId[] = "chrome://screen/share";
@@ -100,5 +99,4 @@ void ScreenShareTrayItem::OnScreenShareStop() {
   Update();
 }
 
-}  // namespace internal
 }  // namespace ash

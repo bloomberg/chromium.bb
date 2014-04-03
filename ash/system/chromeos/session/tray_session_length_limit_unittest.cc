@@ -26,8 +26,7 @@ class TraySessionLengthLimitTest : public AshTestBase {
     AshTestBase::SetUp();
     SystemTray* system_tray =
         Shell::GetPrimaryRootWindowController()->GetSystemTray();
-    tray_session_length_limit_ = new internal::TraySessionLengthLimit(
-        system_tray);
+    tray_session_length_limit_ = new TraySessionLengthLimit(system_tray);
     system_tray->AddTrayItem(tray_session_length_limit_);
   }
 
@@ -47,7 +46,7 @@ class TraySessionLengthLimitTest : public AshTestBase {
         message_center::MessageCenter::Get()->GetVisibleNotifications();
     for (message_center::NotificationList::Notifications::const_iterator iter =
              notifications.begin(); iter != notifications.end(); ++iter) {
-      if ((*iter)->id() == internal::TraySessionLengthLimit::kNotificationId)
+      if ((*iter)->id() == TraySessionLengthLimit::kNotificationId)
         return *iter;
     }
     return NULL;
@@ -60,10 +59,10 @@ class TraySessionLengthLimitTest : public AshTestBase {
 
   void RemoveNotification() {
     message_center::MessageCenter::Get()->RemoveNotification(
-        internal::TraySessionLengthLimit::kNotificationId, true /* by_user */);
+        TraySessionLengthLimit::kNotificationId, true /* by_user */);
   }
 
-  internal::TraySessionLengthLimit* tray_session_length_limit() {
+  TraySessionLengthLimit* tray_session_length_limit() {
     return tray_session_length_limit_;
   }
 
@@ -73,7 +72,7 @@ class TraySessionLengthLimitTest : public AshTestBase {
 
  private:
   // Weak reference, owned by the SystemTray.
-  internal::TraySessionLengthLimit* tray_session_length_limit_;
+  TraySessionLengthLimit* tray_session_length_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimitTest);
 };
@@ -84,31 +83,31 @@ TEST_F(TraySessionLengthLimitTest, TrayView) {
 
   // Limit is 15 min.
   UpdateSessionLengthLimitInMin(15);
-  EXPECT_EQ(internal::TraySessionLengthLimit::LIMIT_SET,
+  EXPECT_EQ(TraySessionLengthLimit::LIMIT_SET,
             tray_session_length_limit()->GetLimitState());
   EXPECT_TRUE(IsTrayViewVisible());
 
   // Limit is 3 min.
   UpdateSessionLengthLimitInMin(3);
-  EXPECT_EQ(internal::TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
+  EXPECT_EQ(TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
             tray_session_length_limit()->GetLimitState());
   EXPECT_TRUE(IsTrayViewVisible());
 
   // Nothing left.
   UpdateSessionLengthLimitInMin(0);
-  EXPECT_EQ(internal::TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
+  EXPECT_EQ(TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
             tray_session_length_limit()->GetLimitState());
   EXPECT_TRUE(IsTrayViewVisible());
 
   // Checks the behavior in case the limit goes negative.
   UpdateSessionLengthLimitInMin(-5);
-  EXPECT_EQ(internal::TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
+  EXPECT_EQ(TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
             tray_session_length_limit()->GetLimitState());
   EXPECT_TRUE(IsTrayViewVisible());
 
   // Clears the session length limit, the TrayView should get invisible.
   ClearSessionLengthLimit();
-  ASSERT_EQ(internal::TraySessionLengthLimit::LIMIT_NONE,
+  ASSERT_EQ(TraySessionLengthLimit::LIMIT_NONE,
             tray_session_length_limit()->GetLimitState());
   EXPECT_FALSE(IsTrayViewVisible());
 }

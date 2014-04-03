@@ -10,8 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace ash {
-namespace internal {
-
 class TrayNetworkStateObserver;
 
 namespace tray {
@@ -50,7 +48,6 @@ class TrayVPN : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayVPN);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_NETWORK_TRAY_VPN_H

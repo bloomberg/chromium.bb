@@ -17,7 +17,6 @@ const int kKeystrokeThresholdInSeconds = 5;
 }
 
 namespace ash {
-namespace internal {
 
 KeyboardUMAEventFilter::KeyboardUMAEventFilter() {}
 
@@ -47,5 +46,4 @@ void KeyboardUMAEventFilter::OnKeyEvent(ui::KeyEvent* event) {
   last_keystroke_time_ = event->time_stamp();
 }
 
-}  // namespace internal
 }  // namespace ash

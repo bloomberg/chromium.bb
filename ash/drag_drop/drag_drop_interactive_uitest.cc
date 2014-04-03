@@ -20,7 +20,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 class DraggableView : public views::View {
@@ -184,5 +183,4 @@ TEST_F(DragDropTest, MAYBE_DragDropAcrossMultiDisplay) {
   target->Close();
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -8,15 +8,11 @@
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
-
+class ShelfButtonHost;
 class ShelfWidget;
 
-namespace internal {
-
-class ShelfButtonHost;
-
 // Button used for the AppList icon on the shelf.
-// This class is an alternate implementation to ash::internal::AppListButton
+// This class is an alternate implementation to ash::AppListButton
 // for the purposes of testing an alternate shelf layout
 // (see ash_switches: UseAlternateShelfLayout).
 class AlternateAppListButton : public views::ImageButton {
@@ -53,7 +49,6 @@ class AlternateAppListButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(AlternateAppListButton);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_ALTERNATE_APP_LIST_BUTTON_H_

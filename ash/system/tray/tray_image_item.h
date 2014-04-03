@@ -12,8 +12,6 @@ class ImageView;
 }
 
 namespace ash {
-namespace internal {
-
 class TrayItemView;
 
 class TrayImageItem : public SystemTrayItem {
@@ -50,7 +48,6 @@ class TrayImageItem : public SystemTrayItem {
   DISALLOW_COPY_AND_ASSIGN(TrayImageItem);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_IMAGE_ITEM_H_

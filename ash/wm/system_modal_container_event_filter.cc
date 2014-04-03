@@ -9,7 +9,6 @@
 #include "ui/events/event.h"
 
 namespace ash {
-namespace internal {
 
 SystemModalContainerEventFilter::SystemModalContainerEventFilter(
     SystemModalContainerEventFilterDelegate* delegate)
@@ -32,5 +31,4 @@ void SystemModalContainerEventFilter::OnMouseEvent(
     event->StopPropagation();
 }
 
-}  // namespace internal
 }  // namespace ash

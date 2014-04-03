@@ -19,8 +19,6 @@ class LabelButton;
 }
 
 namespace ash {
-namespace internal {
-
 class StatusAreaWidget;
 
 // Adds a logout button to the launcher's status area if enabled by the
@@ -60,7 +58,6 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
   DISALLOW_COPY_AND_ASSIGN(LogoutButtonTray);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_TRAY_H_

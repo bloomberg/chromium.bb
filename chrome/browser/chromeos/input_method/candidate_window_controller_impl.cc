@@ -47,9 +47,9 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
   aura::Window* active_window = ash::wm::GetActiveWindow();
   candidate_window_view_ =
       new ash::ime::CandidateWindowView(ash::Shell::GetContainer(
-          active_window ?
-          active_window->GetRootWindow() : ash::Shell::GetTargetRootWindow(),
-          ash::internal::kShellWindowId_InputMethodContainer));
+          active_window ? active_window->GetRootWindow()
+                        : ash::Shell::GetTargetRootWindow(),
+          ash::kShellWindowId_InputMethodContainer));
   candidate_window_view_->AddObserver(this);
   candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
   views::Widget* widget = candidate_window_view_->InitWidget();

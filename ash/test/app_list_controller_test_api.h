@@ -13,10 +13,8 @@ class AppsGridView;
 }
 
 namespace ash {
-class Shell;
-namespace internal {
 class AppListController;
-}
+class Shell;
 
 namespace test {
 
@@ -31,7 +29,7 @@ class AppListControllerTestApi {
   app_list::AppListView* view();
 
  private:
-  internal::AppListController* app_list_controller_;  // Not owned.
+  AppListController* app_list_controller_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerTestApi);
 };

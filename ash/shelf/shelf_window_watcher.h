@@ -29,7 +29,6 @@ namespace ash {
 class ShelfModel;
 class ShelfItemDelegateManager;
 
-namespace internal {
 // ShelfWindowWatcher creates and handles a ShelfItem for windows that have
 // a ShelfItemDetails property in the default container.
 class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
@@ -144,7 +143,6 @@ class ShelfWindowWatcher : public aura::client::ActivationChangeObserver,
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcher);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_WINDOW_WATCHER_H_

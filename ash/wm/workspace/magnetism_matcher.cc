@@ -8,8 +8,6 @@
 #include <cmath>
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Returns true if |a| is close enough to |b| that the two edges snap.
@@ -190,5 +188,4 @@ void MagnetismMatcher::AttachToSecondaryEdge(
   }
 }
 
-}  // namespace internal
 }  // namespace ash

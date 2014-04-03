@@ -19,9 +19,6 @@ class View;
 }
 
 namespace ash {
-
-namespace internal {
-
 class OverflowBubbleView;
 class ShelfLayoutManager;
 class ShelfView;
@@ -63,7 +60,6 @@ class OverflowBubble : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(OverflowBubble);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_OVERFLOW_BUBBLE_H_

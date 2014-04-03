@@ -80,7 +80,7 @@ class FirstRunHelperTest : public AshTestBase,
   void CheckContainersAreVisible() const {
     aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
     std::vector<int> containers_to_check =
-        internal::DesktopCleaner::GetContainersToHideForTest();
+        DesktopCleaner::GetContainersToHideForTest();
     for (size_t i = 0; i < containers_to_check.size(); ++i) {
       aura::Window* container =
           Shell::GetContainer(root_window, containers_to_check[i]);
@@ -91,7 +91,7 @@ class FirstRunHelperTest : public AshTestBase,
   void CheckContainersAreHidden() const {
     aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
     std::vector<int> containers_to_check =
-        internal::DesktopCleaner::GetContainersToHideForTest();
+        DesktopCleaner::GetContainersToHideForTest();
     for (size_t i = 0; i < containers_to_check.size(); ++i) {
       aura::Window* container =
           Shell::GetContainer(root_window, containers_to_check[i]);

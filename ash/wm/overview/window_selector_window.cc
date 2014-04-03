@@ -28,8 +28,8 @@ views::Widget* CreateCloseWindowButton(aura::Window* root_window,
   params.can_activate = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent = Shell::GetContainer(root_window,
-      ash::internal::kShellWindowId_OverlayContainer);
+  params.parent =
+      Shell::GetContainer(root_window, ash::kShellWindowId_OverlayContainer);
   widget->set_focus_on_creation(false);
   widget->Init(params);
   views::ImageButton* button = new views::ImageButton(listener);

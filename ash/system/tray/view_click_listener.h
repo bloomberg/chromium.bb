@@ -10,7 +10,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
 
 class ViewClickListener {
  public:
@@ -20,7 +19,6 @@ class ViewClickListener {
   virtual ~ViewClickListener() {}
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_VIEW_CLICK_LISTENER_H_

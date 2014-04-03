@@ -15,8 +15,6 @@ class Window;
 }
 
 namespace ash {
-namespace internal {
-
 class ShelfLayoutManager;
 class WorkspaceControllerTestHelper;
 class WorkspaceEventHandler;
@@ -48,14 +46,13 @@ class ASH_EXPORT WorkspaceController {
 
   aura::Window* viewport_;
 
-  internal::ShelfLayoutManager* shelf_;
-  scoped_ptr<internal::WorkspaceEventHandler> event_handler_;
-  internal::WorkspaceLayoutManager* layout_manager_;
+  ShelfLayoutManager* shelf_;
+  scoped_ptr<WorkspaceEventHandler> event_handler_;
+  WorkspaceLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_CONTROLLER_H_

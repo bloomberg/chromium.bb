@@ -15,7 +15,6 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
-namespace internal {
 
 class ScrollSeparator : public views::View {
  public:
@@ -161,5 +160,4 @@ void TrayDetailsView::OnPaintBorder(gfx::Canvas* canvas) {
   views::View::OnPaintBorder(canvas);
 }
 
-}  // namespace internal
 }  // namespace ash

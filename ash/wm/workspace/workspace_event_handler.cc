@@ -14,7 +14,6 @@
 #include "ui/base/hit_test.h"
 
 namespace ash {
-namespace internal {
 
 WorkspaceEventHandler::WorkspaceEventHandler() {
 }
@@ -109,5 +108,4 @@ void WorkspaceEventHandler::HandleVerticalResizeDoubleClick(
   }
 }
 
-}  // namespace internal
 }  // namespace ash

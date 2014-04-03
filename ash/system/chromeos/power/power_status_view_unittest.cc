@@ -15,7 +15,6 @@
 using power_manager::PowerSupplyProperties;
 
 namespace ash {
-namespace internal {
 
 class PowerStatusViewTest : public test::AshTestBase {
  public:
@@ -212,5 +211,4 @@ TEST_F(PowerStatusNotificationViewTest, Basic) {
   EXPECT_TRUE(RemainingTimeInView().empty());
 }
 
-}  // internal
-}  // ash
+}  // namespace ash

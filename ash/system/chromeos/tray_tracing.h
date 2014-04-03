@@ -22,8 +22,6 @@ class ASH_EXPORT TracingObserver {
   virtual void OnTracingModeChanged(bool value) = 0;
 };
 
-namespace internal {
-
 // This is the item that displays when users enable performance tracing at
 // chrome://slow.  It alerts them that this mode is running, and provides an
 // easy way to open the page to disable it.
@@ -51,7 +49,6 @@ class TrayTracing : public TrayImageItem,
   DISALLOW_COPY_AND_ASSIGN(TrayTracing);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRACING_H_

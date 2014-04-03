@@ -40,7 +40,6 @@ void ShowLayer(ui::Layer* layer, bool visible) {
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 ResizeShadow::ResizeShadow() : last_hit_test_(HTNOWHERE) {}
 
@@ -106,5 +105,4 @@ void ResizeShadow::Layout(const gfx::Rect& content_bounds) {
   image_grid_->SetContentBounds(local_bounds);
 }
 
-}  // namespace internal
 }  // namespace ash

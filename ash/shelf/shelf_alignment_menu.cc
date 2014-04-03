@@ -34,12 +34,11 @@ ShelfAlignmentMenu::ShelfAlignmentMenu(aura::Window* root)
 ShelfAlignmentMenu::~ShelfAlignmentMenu() {}
 
 bool ShelfAlignmentMenu::IsCommandIdChecked(int command_id) const {
-  return internal::ShelfLayoutManager::ForShelf(root_window_)->
-      SelectValueForShelfAlignment(
-          MENU_ALIGN_BOTTOM == command_id,
-          MENU_ALIGN_LEFT == command_id,
-          MENU_ALIGN_RIGHT == command_id,
-          false);
+  return ShelfLayoutManager::ForShelf(root_window_)
+      ->SelectValueForShelfAlignment(MENU_ALIGN_BOTTOM == command_id,
+                                     MENU_ALIGN_LEFT == command_id,
+                                     MENU_ALIGN_RIGHT == command_id,
+                                     false);
 }
 
 bool ShelfAlignmentMenu::IsCommandIdEnabled(int command_id) const {

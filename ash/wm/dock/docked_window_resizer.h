@@ -21,8 +21,6 @@ class RootWindow;
 }
 
 namespace ash {
-namespace internal {
-
 class DockedWindowLayoutManager;
 
 // DockWindowResizer is used by ToplevelWindowEventFilter to handle dragging,
@@ -77,8 +75,8 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   scoped_ptr<WindowResizer> next_window_resizer_;
 
   // Dock container window.
-  internal::DockedWindowLayoutManager* dock_layout_;
-  internal::DockedWindowLayoutManager* initial_dock_layout_;
+  DockedWindowLayoutManager* dock_layout_;
+  DockedWindowLayoutManager* initial_dock_layout_;
 
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
@@ -98,7 +96,6 @@ class ASH_EXPORT DockedWindowResizer : public WindowResizer {
   DISALLOW_COPY_AND_ASSIGN(DockedWindowResizer);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_DOCK_DOCK_WINDOW_RESIZER_H_

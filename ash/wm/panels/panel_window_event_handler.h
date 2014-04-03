@@ -8,7 +8,6 @@
 #include "ui/events/event_handler.h"
 
 namespace ash {
-namespace internal {
 
 // PanelWindowEventHandler minimizes panels when the user double clicks or
 // double taps on the panel header.
@@ -25,7 +24,6 @@ class PanelWindowEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(PanelWindowEventHandler);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_PANELS_PANEL_WINDOW_EVENT_HANDLER_H_

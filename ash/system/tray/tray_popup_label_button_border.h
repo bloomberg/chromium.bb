@@ -10,7 +10,6 @@
 #include "ui/views/controls/button/label_button_border.h"
 
 namespace ash {
-namespace internal {
 
 // A border for label buttons that paints a vertical separator in normal state
 // and a custom hover effect in hovered or pressed state.
@@ -26,7 +25,6 @@ class TrayPopupLabelButtonBorder : public views::LabelButtonBorder {
   DISALLOW_COPY_AND_ASSIGN(TrayPopupLabelButtonBorder);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_POPUP_LABEL_BUTTON_BORDER_H_

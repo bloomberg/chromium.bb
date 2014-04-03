@@ -20,7 +20,7 @@
 namespace ash {
 
 namespace {
-internal::DisplayManager* GetDisplayManager() {
+DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 }
@@ -32,7 +32,7 @@ gfx::Display ScreenUtil::FindDisplayContainingPoint(const gfx::Point& point) {
 
 // static
 gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
-  if (internal::GetRootWindowController(window->GetRootWindow())->shelf())
+  if (GetRootWindowController(window->GetRootWindow())->shelf())
     return GetDisplayWorkAreaBoundsInParent(window);
   else
     return GetDisplayBoundsInParent(window);
@@ -72,7 +72,7 @@ gfx::Rect ScreenUtil::ConvertRectFromScreen(aura::Window* window,
 
 // static
 const gfx::Display& ScreenUtil::GetSecondaryDisplay() {
-  internal::DisplayManager* display_manager = GetDisplayManager();
+  DisplayManager* display_manager = GetDisplayManager();
   CHECK_EQ(2U, display_manager->GetNumDisplays());
   return display_manager->GetDisplayAt(0).id() ==
       Shell::GetScreen()->GetPrimaryDisplay().id() ?

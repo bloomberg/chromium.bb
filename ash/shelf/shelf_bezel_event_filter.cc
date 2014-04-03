@@ -10,7 +10,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace internal {
 
 ShelfBezelEventFilter::ShelfBezelEventFilter(
     ShelfLayoutManager* shelf)
@@ -74,5 +73,4 @@ bool ShelfBezelEventFilter::IsShelfOnBezel(
   return false;
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -25,9 +25,8 @@ views::Widget* CreateFirstRunWindow() {
   params.bounds = Shell::GetScreen()->GetPrimaryDisplay().bounds();
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                          ash::internal::kShellWindowId_OverlayContainer);
+  params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                      ash::kShellWindowId_OverlayContainer);
   views::Widget* window = new views::Widget;
   window->Init(params);
   return window;

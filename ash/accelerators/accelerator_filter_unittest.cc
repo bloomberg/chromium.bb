@@ -86,7 +86,7 @@ TEST_F(AcceleratorFilterTest, TestCapsLockMask) {
 // Tests if special hardware keys like brightness and volume are consumed as
 // expected by the shell.
 TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
-  internal::AcceleratorFilter filter;
+  AcceleratorFilter filter;
 
   // Normal keys are not consumed.
   ui::KeyEvent press_a(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);

@@ -14,7 +14,6 @@ class Window;
 }
 
 namespace ash {
-namespace internal {
 
 // AlwaysOnTopController puts window into proper containers based on its
 // 'AlwaysOnTop' property. That is, putting a window into the worskpace
@@ -45,7 +44,6 @@ class AlwaysOnTopController : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnTopController);
 };
 
-}  // namepsace internal
 }  // namepsace ash
 
 #endif  // ASH_WM_ALWAYS_ON_TOP_CONTROLLER_H_

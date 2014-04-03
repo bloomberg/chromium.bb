@@ -11,7 +11,6 @@
 #include "ash/display/display_layout.h"
 
 namespace ash {
-namespace internal {
 
 class ASH_EXPORT DisplayLayoutStore {
  public:
@@ -63,7 +62,6 @@ class ASH_EXPORT DisplayLayoutStore {
   DISALLOW_COPY_AND_ASSIGN(DisplayLayoutStore);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_DISPLAY_LAYOUT_STORE_H_

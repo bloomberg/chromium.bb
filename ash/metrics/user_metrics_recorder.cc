@@ -387,16 +387,16 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
 }
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {
-  internal::ShelfLayoutManager* manager =
-      internal::ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow());
+  ShelfLayoutManager* manager =
+      ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow());
   if (manager) {
     UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentOverTime",
-        manager->SelectValueForShelfAlignment(
-            internal::SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
-            internal::SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-            internal::SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT,
-            -1),
-        internal::SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
+                              manager->SelectValueForShelfAlignment(
+                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
+                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
+                                  SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT,
+                                  -1),
+                              SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
   }
 
   enum ActiveWindowStateType {

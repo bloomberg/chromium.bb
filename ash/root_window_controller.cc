@@ -95,7 +95,7 @@ aura::Window* CreateContainer(int window_id,
   container->SetName(name);
   container->Init(aura::WINDOW_LAYER_NOT_DRAWN);
   parent->AddChild(container);
-  if (window_id != internal::kShellWindowId_UnparentedControlContainer)
+  if (window_id != kShellWindowId_UnparentedControlContainer)
     container->Show();
   return container;
 }
@@ -123,7 +123,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
   bool has_restore_bounds = state->HasRestoreBounds();
 
   bool update_bounds = (state->IsNormalOrSnapped() || state->IsMinimized()) &&
-      new_parent->id() != internal::kShellWindowId_DockedContainer;
+                       new_parent->id() != kShellWindowId_DockedContainer;
   gfx::Rect local_bounds;
   if (update_bounds) {
     local_bounds = state->window()->bounds();
@@ -149,15 +149,14 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
   const int kContainerIdsToMove[] = {
-    internal::kShellWindowId_DefaultContainer,
-    internal::kShellWindowId_DockedContainer,
-    internal::kShellWindowId_PanelContainer,
-    internal::kShellWindowId_AlwaysOnTopContainer,
-    internal::kShellWindowId_SystemModalContainer,
-    internal::kShellWindowId_LockSystemModalContainer,
-    internal::kShellWindowId_InputMethodContainer,
-    internal::kShellWindowId_UnparentedControlContainer,
-  };
+      kShellWindowId_DefaultContainer,
+      kShellWindowId_DockedContainer,
+      kShellWindowId_PanelContainer,
+      kShellWindowId_AlwaysOnTopContainer,
+      kShellWindowId_SystemModalContainer,
+      kShellWindowId_LockSystemModalContainer,
+      kShellWindowId_InputMethodContainer,
+      kShellWindowId_UnparentedControlContainer, };
   for (size_t i = 0; i < arraysize(kContainerIdsToMove); i++) {
     int id = kContainerIdsToMove[i];
     aura::Window* src_container = Shell::GetContainer(src, id);
@@ -168,8 +167,7 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       aura::Window::Windows::const_iterator iter =
           src_container->children().begin();
       while (iter != src_container->children().end() &&
-             internal::SystemModalContainerLayoutManager::IsModalBackground(
-                *iter)) {
+             SystemModalContainerLayoutManager::IsModalBackground(*iter)) {
         ++iter;
       }
       // If the entire window list is modal background windows then stop.
@@ -183,13 +181,13 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
 // Mark the container window so that a widget added to this container will
 // use the virtual screeen coordinates instead of parent.
 void SetUsesScreenCoordinates(aura::Window* container) {
-  container->SetProperty(internal::kUsesScreenCoordinatesKey, true);
+  container->SetProperty(kUsesScreenCoordinatesKey, true);
 }
 
 // Mark the container window so that a widget added to this container will
 // say in the same root window regardless of the bounds specified.
 void DescendantShouldStayInSameRootWindow(aura::Window* container) {
-  container->SetProperty(internal::kStayInSameRootWindowKey, true);
+  container->SetProperty(kStayInSameRootWindowKey, true);
 }
 
 void SetUsesEasyResizeTargeter(aura::Window* container) {
@@ -260,8 +258,6 @@ class EmptyWindowDelegate : public aura::WindowDelegate {
 
 }  // namespace
 
-namespace internal {
-
 void RootWindowController::CreateForPrimaryDisplay(aura::WindowTreeHost* host) {
   RootWindowController* controller = new RootWindowController(host);
   controller->Init(RootWindowController::PRIMARY,
@@ -294,7 +290,7 @@ RootWindowController* RootWindowController::ForWindow(
 
 // static
 RootWindowController* RootWindowController::ForTargetRootWindow() {
-  return internal::GetRootWindowController(Shell::GetTargetRootWindow());
+  return GetRootWindowController(Shell::GetTargetRootWindow());
 }
 
 // static
@@ -350,9 +346,9 @@ void RootWindowController::Shutdown() {
   workspace_controller_.reset();
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
-  internal::GetRootWindowSettings(root_window())->display_id =
+  GetRootWindowSettings(root_window())->display_id =
       gfx::Display::kInvalidDisplayID;
-  internal::GetRootWindowSettings(root_window())->shutdown = true;
+  GetRootWindowSettings(root_window())->shutdown = true;
 
   system_background_.reset();
   aura::client::SetScreenPositionClient(root_window(), NULL);
@@ -728,17 +724,14 @@ void RootWindowController::InitLayoutManagers() {
   aura::Window* always_on_top_container =
       GetContainer(kShellWindowId_AlwaysOnTopContainer);
   always_on_top_container->SetLayoutManager(
-      new internal::WorkspaceLayoutManager(
-          always_on_top_container));
-  always_on_top_controller_.reset(new internal::AlwaysOnTopController);
+      new WorkspaceLayoutManager(always_on_top_container));
+  always_on_top_controller_.reset(new AlwaysOnTopController);
   always_on_top_controller_->SetAlwaysOnTopContainer(always_on_top_container);
 
   DCHECK(!shelf_.get());
-  aura::Window* shelf_container =
-      GetContainer(internal::kShellWindowId_ShelfContainer);
+  aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
   // TODO(harrym): Remove when status area is view.
-  aura::Window* status_container =
-      GetContainer(internal::kShellWindowId_StatusContainer);
+  aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
   shelf_.reset(new ShelfWidget(
       shelf_container, status_container, workspace_controller()));
 
@@ -750,24 +743,20 @@ void RootWindowController::InitLayoutManagers() {
     mouse_event_target_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
 
     aura::Window* lock_background_container =
-        GetContainer(internal::kShellWindowId_LockScreenBackgroundContainer);
+        GetContainer(kShellWindowId_LockScreenBackgroundContainer);
     lock_background_container->AddChild(mouse_event_target_.get());
     mouse_event_target_->Show();
   }
 
   // Create Docked windows layout manager
-  aura::Window* docked_container = GetContainer(
-      internal::kShellWindowId_DockedContainer);
+  aura::Window* docked_container = GetContainer(kShellWindowId_DockedContainer);
   docked_layout_manager_ =
-      new internal::DockedWindowLayoutManager(docked_container,
-                                              workspace_controller());
+      new DockedWindowLayoutManager(docked_container, workspace_controller());
   docked_container->SetLayoutManager(docked_layout_manager_);
 
   // Create Panel layout manager
-  aura::Window* panel_container = GetContainer(
-      internal::kShellWindowId_PanelContainer);
-  panel_layout_manager_ =
-      new internal::PanelLayoutManager(panel_container);
+  aura::Window* panel_container = GetContainer(kShellWindowId_PanelContainer);
+  panel_layout_manager_ = new PanelLayoutManager(panel_container);
   panel_container->SetLayoutManager(panel_layout_manager_);
   panel_container_handler_.reset(new PanelWindowEventHandler);
   panel_container->AddPreTargetHandler(panel_container_handler_.get());
@@ -918,8 +907,7 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_LockScreenContainer,
       "LockScreenContainer",
       lock_screen_containers);
-  lock_container->SetLayoutManager(
-      new internal::WorkspaceLayoutManager(lock_container));
+  lock_container->SetLayoutManager(new WorkspaceLayoutManager(lock_container));
   SetUsesScreenCoordinates(lock_container);
   // TODO(beng): stopsevents
 
@@ -1014,5 +1002,4 @@ RootWindowController* GetRootWindowController(
   return root_window ? GetRootWindowSettings(root_window)->controller : NULL;
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -81,7 +81,6 @@ namespace ash {
 namespace {
 
 using base::UserMetricsAction;
-using internal::DisplayInfo;
 
 bool DebugShortcutsEnabled() {
 #if defined(NDEBUG)
@@ -292,12 +291,12 @@ bool HandleRotatePaneFocus(Shell::Direction direction) {
     // TODO(stevet): Not sure if this is the same as IDC_FOCUS_NEXT_PANE.
     case Shell::FORWARD: {
       base::RecordAction(UserMetricsAction("Accel_Focus_Next_Pane"));
-      shell->focus_cycler()->RotateFocus(internal::FocusCycler::FORWARD);
+      shell->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
       break;
     }
     case Shell::BACKWARD: {
       base::RecordAction(UserMetricsAction("Accel_Focus_Previous_Pane"));
-      shell->focus_cycler()->RotateFocus(internal::FocusCycler::BACKWARD);
+      shell->focus_cycler()->RotateFocus(FocusCycler::BACKWARD);
       break;
     }
   }
@@ -350,8 +349,7 @@ bool HandleRotateScreen() {
 }
 
 bool HandleScaleReset() {
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   int64 display_id = display_manager->GetDisplayIdForUIScaling();
   if (display_id == gfx::Display::kInvalidDisplayID)
     return false;
@@ -363,8 +361,7 @@ bool HandleScaleReset() {
 }
 
 bool HandleScaleUI(bool up) {
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   int64 display_id = display_manager->GetDisplayIdForUIScaling();
   if (display_id == gfx::Display::kInvalidDisplayID)
     return false;
@@ -376,8 +373,7 @@ bool HandleScaleUI(bool up) {
   }
 
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
-  float next_scale =
-      internal::DisplayManager::GetNextUIScale(display_info, up);
+  float next_scale = DisplayManager::GetNextUIScale(display_info, up);
   display_manager->SetDisplayUIScale(display_id, next_scale);
   return true;
 }
@@ -399,10 +395,10 @@ bool HandleShowKeyboardOverlay() {
 
 void HandleShowMessageCenterBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_Message_Center_Bubble"));
-  internal::RootWindowController* controller =
-    internal::RootWindowController::ForTargetRootWindow();
-  internal::StatusAreaWidget* status_area_widget =
-    controller->shelf()->status_area_widget();
+  RootWindowController* controller =
+      RootWindowController::ForTargetRootWindow();
+  StatusAreaWidget* status_area_widget =
+      controller->shelf()->status_area_widget();
   if (status_area_widget) {
     WebNotificationTray* notification_tray =
       status_area_widget->web_notification_tray();
@@ -413,8 +409,8 @@ void HandleShowMessageCenterBubble() {
 
 bool HandleShowSystemTrayBubble() {
   base::RecordAction(UserMetricsAction("Accel_Show_System_Tray_Bubble"));
-  internal::RootWindowController* controller =
-    internal::RootWindowController::ForTargetRootWindow();
+  RootWindowController* controller =
+      RootWindowController::ForTargetRootWindow();
   if (!controller->GetSystemTray()->HasSystemBubble()) {
     controller->GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
     return true;
@@ -608,8 +604,8 @@ bool HandleToggleTouchViewTesting() {
 }
 
 bool HandleTouchHudClear() {
-  internal::RootWindowController* controller =
-      internal::RootWindowController::ForTargetRootWindow();
+  RootWindowController* controller =
+      RootWindowController::ForTargetRootWindow();
   if (controller->touch_hud_debug()) {
     controller->touch_hud_debug()->Clear();
     return true;
@@ -618,8 +614,8 @@ bool HandleTouchHudClear() {
 }
 
 bool HandleTouchHudModeChange() {
-  internal::RootWindowController* controller =
-      internal::RootWindowController::ForTargetRootWindow();
+  RootWindowController* controller =
+      RootWindowController::ForTargetRootWindow();
   if (controller->touch_hud_debug()) {
     controller->touch_hud_debug()->ChangeToNextMode();
     return true;

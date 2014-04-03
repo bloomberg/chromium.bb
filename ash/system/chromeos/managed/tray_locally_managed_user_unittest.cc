@@ -16,7 +16,6 @@
 using message_center::NotificationList;
 
 namespace ash {
-namespace internal {
 
 class TrayLocallyManagedUserTest : public test::AshTestBase {
  public:
@@ -85,5 +84,4 @@ TEST_F(TrayLocallyManagedUserInitialTest, LocallyManagedUserNoCrash) {
             notification->rich_notification_data().priority);
 }
 
-}  // namespace test
 }  // namespace

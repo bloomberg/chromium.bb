@@ -22,7 +22,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace ash {
-namespace internal {
 
 class CursorWindowDelegate : public aura::WindowDelegate {
  public:
@@ -258,5 +257,4 @@ void CursorWindowController::UpdateCursorImage() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -34,8 +34,7 @@ TEST_F(AppListControllerTest, RemainVisibleWhenFocusingToApplistContainer) {
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   aura::Window* applist_container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      internal::kShellWindowId_AppListContainer);
+      Shell::GetPrimaryRootWindow(), kShellWindowId_AppListContainer);
   scoped_ptr<aura::Window> window(
       aura::test::CreateTestWindowWithId(0, applist_container));
   wm::ActivateWindow(window.get());

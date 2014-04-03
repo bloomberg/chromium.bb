@@ -32,8 +32,6 @@ using aura::Window;
 
 namespace ash {
 
-namespace internal {
-
 WorkspaceLayoutManager::WorkspaceLayoutManager(aura::Window* window)
     : shelf_(NULL),
       window_(window),
@@ -57,7 +55,7 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
 }
 
-void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
+void WorkspaceLayoutManager::SetShelf(ShelfLayoutManager* shelf) {
   shelf_ = shelf;
 }
 
@@ -281,5 +279,4 @@ void WorkspaceLayoutManager::UpdateFullscreenState() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

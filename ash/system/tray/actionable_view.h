@@ -11,7 +11,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
 
 // A focusable view that performs an action when user clicks on it, or presses
 // enter or space when focused. Note that the action is triggered on mouse-up,
@@ -62,7 +61,6 @@ class ASH_EXPORT ActionableView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ActionableView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_ACTIONABLE_VIEW_H_

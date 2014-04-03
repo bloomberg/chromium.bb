@@ -26,12 +26,11 @@ class Reflector;
 }
 
 namespace ash {
+class DisplayInfo;
+
 namespace test{
 class MirrorWindowTestApi;
 }
-
-namespace internal {
-class DisplayInfo;
 
 // An object that copies the content of the primary root window to a
 // mirror window. This also draws a mouse cursor as the mouse cursor
@@ -71,7 +70,6 @@ class ASH_EXPORT MirrorWindowController : public aura::WindowTreeHostObserver {
   DISALLOW_COPY_AND_ASSIGN(MirrorWindowController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_MIRROR_WINDOW_CONTROLLER_H_

@@ -20,7 +20,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 namespace {
 
 const char kLocaleChangeNotificationId[] = "chrome://settings/locale";
@@ -125,5 +124,4 @@ void LocaleNotificationController::OnLocaleChanged(
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
-}  // namespace internal
 }  // namespace ash

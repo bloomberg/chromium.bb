@@ -19,7 +19,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace internal {
 
 class TouchHudTestBase : public test::AshTestBase {
  public:
@@ -163,22 +162,22 @@ class TouchHudTestBase : public test::AshTestBase {
     return GetDisplayController()->GetRootWindowForDisplayId(display.id());
   }
 
-  internal::RootWindowController* GetInternalRootController() {
+  RootWindowController* GetInternalRootController() {
     aura::Window* root = GetInternalRootWindow();
     return GetRootWindowController(root);
   }
 
-  internal::RootWindowController* GetExternalRootController() {
+  RootWindowController* GetExternalRootController() {
     aura::Window* root = GetExternalRootWindow();
     return GetRootWindowController(root);
   }
 
-  internal::RootWindowController* GetPrimaryRootController() {
+  RootWindowController* GetPrimaryRootController() {
     aura::Window* root = GetPrimaryRootWindow();
     return GetRootWindowController(root);
   }
 
-  internal::RootWindowController* GetSecondaryRootController() {
+  RootWindowController* GetSecondaryRootController() {
     aura::Window* root = GetSecondaryRootWindow();
     return GetRootWindowController(root);
   }
@@ -189,11 +188,11 @@ class TouchHudTestBase : public test::AshTestBase {
     return info;
   }
 
-  aura::Window* GetRootWindowForTouchHud(internal::TouchObserverHUD* hud) {
+  aura::Window* GetRootWindowForTouchHud(TouchObserverHUD* hud) {
     return hud->root_window_;
   }
 
-  views::Widget* GetWidgetForTouchHud(internal::TouchObserverHUD* hud) {
+  views::Widget* GetWidgetForTouchHud(TouchObserverHUD* hud) {
     return hud->widget_;
   }
 
@@ -224,8 +223,7 @@ class TouchHudDebugTest : public TouchHudTestBase {
   }
 
   void CheckInternalDisplay() {
-    EXPECT_NE(static_cast<internal::TouchObserverHUD*>(NULL),
-              GetInternalTouchHudDebug());
+    EXPECT_NE(static_cast<TouchObserverHUD*>(NULL), GetInternalTouchHudDebug());
     EXPECT_EQ(internal_display_id(), GetInternalTouchHudDebug()->display_id());
     EXPECT_EQ(GetInternalRootWindow(),
               GetRootWindowForTouchHud(GetInternalTouchHudDebug()));
@@ -238,8 +236,7 @@ class TouchHudDebugTest : public TouchHudTestBase {
   }
 
   void CheckExternalDisplay() {
-    EXPECT_NE(static_cast<internal::TouchHudDebug*>(NULL),
-              GetExternalTouchHudDebug());
+    EXPECT_NE(static_cast<TouchHudDebug*>(NULL), GetExternalTouchHudDebug());
     EXPECT_EQ(external_display_id(), GetExternalTouchHudDebug()->display_id());
     EXPECT_EQ(GetExternalRootWindow(),
               GetRootWindowForTouchHud(GetExternalTouchHudDebug()));
@@ -252,19 +249,19 @@ class TouchHudDebugTest : public TouchHudTestBase {
   }
 
  private:
-  internal::TouchHudDebug* GetInternalTouchHudDebug() {
+  TouchHudDebug* GetInternalTouchHudDebug() {
     return GetInternalRootController()->touch_hud_debug();
   }
 
-  internal::TouchHudDebug* GetExternalTouchHudDebug() {
+  TouchHudDebug* GetExternalTouchHudDebug() {
     return GetExternalRootController()->touch_hud_debug();
   }
 
-  internal::TouchHudDebug* GetPrimaryTouchHudDebug() {
+  TouchHudDebug* GetPrimaryTouchHudDebug() {
     return GetPrimaryRootController()->touch_hud_debug();
   }
 
-  internal::TouchHudDebug* GetSecondaryTouchHudDebug() {
+  TouchHudDebug* GetSecondaryTouchHudDebug() {
     return GetSecondaryRootController()->touch_hud_debug();
   }
 
@@ -284,7 +281,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
     Shell::GetInstance()->SetTouchHudProjectionEnabled(false);
   }
 
-  internal::TouchHudProjection* GetInternalTouchHudProjection() {
+  TouchHudProjection* GetInternalTouchHudProjection() {
     return GetInternalRootController()->touch_hud_projection();
   }
 
@@ -498,7 +495,7 @@ TEST_F(TouchHudProjectionTest, TouchMoveRelease) {
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 
   EnableTouchHudProjection();
-  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+  EXPECT_NE(static_cast<TouchHudProjection*>(NULL),
             GetInternalTouchHudProjection());
   EXPECT_EQ(0, GetInternalTouchPointsCount());
 
@@ -523,7 +520,7 @@ TEST_F(TouchHudProjectionTest, TouchMoveCancel) {
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 
   EnableTouchHudProjection();
-  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+  EXPECT_NE(static_cast<TouchHudProjection*>(NULL),
             GetInternalTouchHudProjection());
   EXPECT_EQ(0, GetInternalTouchPointsCount());
 
@@ -547,7 +544,7 @@ TEST_F(TouchHudProjectionTest, DoubleTouch) {
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 
   EnableTouchHudProjection();
-  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+  EXPECT_NE(static_cast<TouchHudProjection*>(NULL),
             GetInternalTouchHudProjection());
   EXPECT_EQ(0, GetInternalTouchPointsCount());
 
@@ -581,7 +578,7 @@ TEST_F(TouchHudProjectionTest, DisableWhileTouching) {
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 
   EnableTouchHudProjection();
-  EXPECT_NE(static_cast<internal::TouchHudProjection*>(NULL),
+  EXPECT_NE(static_cast<TouchHudProjection*>(NULL),
             GetInternalTouchHudProjection());
   EXPECT_EQ(0, GetInternalTouchPointsCount());
 
@@ -593,5 +590,4 @@ TEST_F(TouchHudProjectionTest, DisableWhileTouching) {
   EXPECT_EQ(NULL, GetInternalTouchHudProjection());
 }
 
-}  // namespace internal
 }  // namespace ash

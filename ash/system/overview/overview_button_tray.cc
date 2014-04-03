@@ -29,10 +29,8 @@ const int kVerticalShelfVerticalPadding = 5;
 
 namespace ash {
 
-OverviewButtonTray::OverviewButtonTray(
-    internal::StatusAreaWidget* status_area_widget)
-    : TrayBackgroundView(status_area_widget),
-      icon_(NULL) {
+OverviewButtonTray::OverviewButtonTray(StatusAreaWidget* status_area_widget)
+    : TrayBackgroundView(status_area_widget), icon_(NULL) {
   SetContentsBackground();
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();

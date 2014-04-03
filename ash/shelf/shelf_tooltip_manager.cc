@@ -25,7 +25,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace {
 const int kTooltipTopBottomMargin = 3;
 const int kTooltipLeftRightMargin = 10;
@@ -99,7 +98,7 @@ ShelfTooltipManager::ShelfTooltipBubble::ShelfTooltipBubble(
     aura::Window* root_window =
         anchor->GetWidget()->GetNativeView()->GetRootWindow();
     set_parent_window(ash::Shell::GetInstance()->GetContainer(
-        root_window, ash::internal::kShellWindowId_SettingBubbleContainer));
+        root_window, ash::kShellWindowId_SettingBubbleContainer));
   }
   label_ = new views::Label;
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -375,5 +374,4 @@ void ShelfTooltipManager::CreateTimer(int delay_in_ms) {
   timer_.reset(new_timer);
 }
 
-}  // namespace internal
 }  // namespace ash

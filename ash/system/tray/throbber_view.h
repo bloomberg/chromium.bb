@@ -10,7 +10,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
 
 // A SmoothedThrobber with tooltip.
 class SystemTrayThrobber : public views::SmoothedThrobber {
@@ -59,7 +58,6 @@ class ThrobberView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ThrobberView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_THROBBER_VIEW_H_

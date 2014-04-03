@@ -23,7 +23,7 @@ class Widget;
 }  // namespace views
 
 namespace ash {
-namespace internal {
+
 // A class which manages the notification of display resolution change and
 // also manages the timeout in case the new resolution is unusable.
 class ASH_EXPORT ResolutionNotificationController
@@ -93,7 +93,6 @@ class ASH_EXPORT ResolutionNotificationController
   DISALLOW_COPY_AND_ASSIGN(ResolutionNotificationController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_RESOLUTION_NOTIFICATION_CONTROLLER_H_

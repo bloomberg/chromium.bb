@@ -19,7 +19,6 @@
 #endif
 
 namespace ash {
-namespace internal {
 
 SystemGestureEventFilter::SystemGestureEventFilter()
     : long_press_affordance_(new LongPressAffordanceHandler),
@@ -69,5 +68,4 @@ void SystemGestureEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

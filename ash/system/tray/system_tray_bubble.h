@@ -14,11 +14,8 @@
 #include <vector>
 
 namespace ash {
-
 class SystemTray;
 class SystemTrayItem;
-
-namespace internal {
 
 class SystemTrayBubble {
  public:
@@ -76,7 +73,6 @@ class SystemTrayBubble {
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubble);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_SYSTEM_TRAY_BUBBLE_H_

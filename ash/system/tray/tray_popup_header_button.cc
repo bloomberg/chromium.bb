@@ -11,7 +11,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace internal {
 
 // static
 const char TrayPopupHeaderButton::kViewClassName[] =
@@ -66,5 +65,4 @@ void TrayPopupHeaderButton::StateChanged() {
   SchedulePaint();
 }
 
-}  // namespace internal
 }  // namespace ash

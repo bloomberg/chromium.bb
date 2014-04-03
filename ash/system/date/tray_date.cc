@@ -16,7 +16,6 @@
 #endif
 
 namespace ash {
-namespace internal {
 
 TrayDate::TrayDate(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
@@ -113,5 +112,4 @@ void TrayDate::Refresh() {
     time_tray_->UpdateText();
 }
 
-}  // namespace internal
 }  // namespace ash

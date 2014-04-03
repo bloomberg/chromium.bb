@@ -13,7 +13,6 @@
 #include "ui/events/event.h"
 
 namespace ash {
-namespace internal {
 
 PanelWindowEventHandler::PanelWindowEventHandler() {
 }
@@ -52,5 +51,4 @@ void PanelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

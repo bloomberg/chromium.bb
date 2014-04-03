@@ -120,7 +120,7 @@ SessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {
 }
 
 AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
-  return new internal::DefaultAccessibilityDelegate();
+  return new DefaultAccessibilityDelegate();
 }
 
 NewWindowDelegate* TestShellDelegate::CreateNewWindowDelegate() {

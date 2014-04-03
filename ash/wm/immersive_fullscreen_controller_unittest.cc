@@ -1018,7 +1018,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Bubbles) {
 // immersive fullscreen and that the shelf's state before entering immersive
 // fullscreen is restored upon exiting immersive fullscreen.
 TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
-  ash::internal::ShelfLayoutManager* shelf =
+  ash::ShelfLayoutManager* shelf =
       ash::Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
 
   // Shelf is visible by default.

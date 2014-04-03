@@ -13,8 +13,6 @@ class Label;
 }
 
 namespace ash {
-namespace internal {
-
 class ThrobberView;
 class TrayItemView;
 class TrayPopupHeaderButton;
@@ -48,7 +46,6 @@ class SpecialPopupRow : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SpecialPopupRow);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_SPECIAL_POPUP_ROW_H_

@@ -19,10 +19,7 @@ class Label;
 }
 
 namespace ash {
-
 class SystemTrayItem;
-
-namespace internal {
 
 // Base-class for items in the tray. It makes sure the widget is updated
 // correctly when the visibility/size of the tray item changes. It also adds
@@ -79,7 +76,6 @@ class ASH_EXPORT TrayItemView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(TrayItemView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_ITEM_VIEW_H_

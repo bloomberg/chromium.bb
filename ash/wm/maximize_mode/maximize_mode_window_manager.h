@@ -17,10 +17,8 @@
 #include "ui/gfx/display_observer.h"
 
 namespace ash {
-class Shell;
-
-namespace internal{
 class MaximizeModeWindowState;
+class Shell;
 
 // A window manager which - when created - will force all windows into maximized
 // mode. Exception are panels and windows which cannot be maximized.
@@ -114,7 +112,6 @@ class ASH_EXPORT MaximizeModeWindowManager : public aura::WindowObserver,
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_MANAGER_H_

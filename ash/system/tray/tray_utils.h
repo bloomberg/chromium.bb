@@ -13,7 +13,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
 
 class TrayItemView;
 
@@ -29,7 +28,6 @@ void SetTrayImageItemBorder(views::View* tray_view, ShelfAlignment alignment);
 void SetTrayLabelItemBorder(TrayItemView* tray_view,
                             ShelfAlignment alignment);
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_UTILS_H_

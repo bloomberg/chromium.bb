@@ -12,8 +12,6 @@
 #include "base/time/time.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 const int kLogoutConfirmationDelayInSeconds = 20;
 }
@@ -41,5 +39,4 @@ void LastWindowClosedLogoutReminder::OnLastWindowClosed() {
       base::TimeDelta::FromSeconds(kLogoutConfirmationDelayInSeconds));
 }
 
-}  // namespace internal
 }  // namespace ash

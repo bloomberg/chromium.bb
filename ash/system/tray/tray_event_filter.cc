@@ -18,7 +18,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 TrayEventFilter::TrayEventFilter() {
 }
@@ -56,10 +55,11 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
   if (event->target()) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     // Don't process events that occurred inside an embedded menu.
-    internal::RootWindowController* root_controller =
-        internal::GetRootWindowController(target->GetRootWindow());
-    if (root_controller && root_controller->GetContainer(
-            internal::kShellWindowId_MenuContainer)->Contains(target)) {
+    RootWindowController* root_controller =
+        GetRootWindowController(target->GetRootWindow());
+    if (root_controller &&
+        root_controller->GetContainer(kShellWindowId_MenuContainer)
+            ->Contains(target)) {
       return false;
     }
   }
@@ -109,5 +109,4 @@ bool TrayEventFilter::ProcessLocatedEvent(ui::LocatedEvent* event) {
   return handled;
 }
 
-}  // namespace internal
 }  // namespace ash

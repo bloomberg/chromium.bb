@@ -14,8 +14,6 @@ class TrayBubbleView;
 }
 
 namespace ash {
-namespace internal {
-
 class TrayBackgroundView;
 class TrayEventFilter;
 
@@ -45,7 +43,6 @@ class TrayBubbleWrapper : public views::WidgetObserver {
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleWrapper);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_BUBBLE_WRAPPER_H_

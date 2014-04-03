@@ -11,7 +11,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 OverlayEventFilter::OverlayEventFilter()
     : delegate_(NULL) {
@@ -70,5 +69,5 @@ void OverlayEventFilter::Cancel() {
   if (delegate_)
     delegate_->Cancel();
 }
-}  // namespace internal
+
 }  // namespace ash

@@ -16,19 +16,14 @@ class ImageView;
 }
 
 namespace ash {
-
+class HoverHighlightView;
 class SystemTrayItem;
 
 namespace system {
 class TrayAudioDelegate;
 }
 
-namespace internal {
-
-class HoverHighlightView;
-
 namespace tray {
-
 class BarSeparator;
 class VolumeButton;
 class VolumeSlider;
@@ -83,7 +78,6 @@ class VolumeView : public ActionableView,
 };
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_AUDIO_VOLUME_VIEW_H_

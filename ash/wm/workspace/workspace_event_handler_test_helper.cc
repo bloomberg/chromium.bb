@@ -5,7 +5,6 @@
 #include "ash/wm/workspace/workspace_event_handler_test_helper.h"
 
 namespace ash {
-namespace internal {
 
 WorkspaceEventHandlerTestHelper::WorkspaceEventHandlerTestHelper(
     WorkspaceEventHandler* handler)
@@ -15,5 +14,4 @@ WorkspaceEventHandlerTestHelper::WorkspaceEventHandlerTestHelper(
 WorkspaceEventHandlerTestHelper::~WorkspaceEventHandlerTestHelper() {
 }
 
-}  // namespace internal
 }  // namespace ash

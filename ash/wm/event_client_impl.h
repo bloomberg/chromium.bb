@@ -11,7 +11,6 @@
 #include "ui/aura/client/event_client.h"
 
 namespace ash {
-namespace internal {
 
 class EventClientImpl : public aura::client::EventClient {
  public:
@@ -27,7 +26,6 @@ class EventClientImpl : public aura::client::EventClient {
   DISALLOW_COPY_AND_ASSIGN(EventClientImpl);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_EVENT_CLIENT_IMPL_H_

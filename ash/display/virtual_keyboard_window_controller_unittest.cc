@@ -24,18 +24,17 @@ class VirtualKeyboardWindowControllerTest : public AshTestBase {
   virtual ~VirtualKeyboardWindowControllerTest() {}
 
   void set_virtual_keyboard_window_controller(
-      internal::VirtualKeyboardWindowController* controller) {
+      VirtualKeyboardWindowController* controller) {
     virtual_keyboard_window_controller_ = controller;
   }
 
-  internal::RootWindowController* root_window_controller() {
+  RootWindowController* root_window_controller() {
     return virtual_keyboard_window_controller_->
         root_window_controller_for_test();
   }
 
  private:
-  internal::VirtualKeyboardWindowController*
-      virtual_keyboard_window_controller_;
+  VirtualKeyboardWindowController* virtual_keyboard_window_controller_;
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardWindowControllerTest);
 };
 
@@ -70,7 +69,7 @@ TEST_F(VirtualKeyboardUsabilityExperimentTest, VirtualKeyboardWindowTest) {
   EXPECT_TRUE(root_window_controller());
   // Keyboard container is added to virtual keyboard window.
   EXPECT_TRUE(root_window_controller()->GetContainer(
-      internal::kShellWindowId_VirtualKeyboardContainer));
+      kShellWindowId_VirtualKeyboardContainer));
 }
 
 // Tests that the onscreen keyboard becomes enabled when maximize mode is

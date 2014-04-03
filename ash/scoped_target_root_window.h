@@ -12,7 +12,6 @@ class Window;
 }
 
 namespace ash {
-namespace internal {
 
 // Constructing a ScopedTargetRootWindow allows temporarily
 // switching a target root window so that a new window gets created
@@ -28,7 +27,6 @@ class ASH_EXPORT ScopedTargetRootWindow {
   DISALLOW_COPY_AND_ASSIGN(ScopedTargetRootWindow);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SCOPED_TARGET_ROOT_WINDOW_H_

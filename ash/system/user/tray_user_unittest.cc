@@ -23,7 +23,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 class TrayUserTest : public ash::test::AshTestBase {
  public:
@@ -48,10 +47,8 @@ class TrayUserTest : public ash::test::AshTestBase {
   ShelfLayoutManager* shelf() { return shelf_; }
   SystemTray* tray() { return tray_; }
   ash::test::TestSessionStateDelegate* delegate() { return delegate_; }
-  ash::internal::TrayUser* tray_user(int index) { return tray_user_[index]; }
-  ash::internal::TrayUserSeparator* tray_user_separator() {
-    return tray_user_separator_;
-  }
+  ash::TrayUser* tray_user(int index) { return tray_user_[index]; }
+  ash::TrayUserSeparator* tray_user_separator() { return tray_user_separator_; }
 
  private:
   ShelfLayoutManager* shelf_;
@@ -59,7 +56,7 @@ class TrayUserTest : public ash::test::AshTestBase {
   ash::test::TestSessionStateDelegate* delegate_;
 
   // Note that the ownership of these items is on the shelf.
-  std::vector<ash::internal::TrayUser*> tray_user_;
+  std::vector<ash::TrayUser*> tray_user_;
 
   // The separator between the tray users and the rest of the menu.
   // Note: The item will get owned by the shelf.
@@ -100,11 +97,11 @@ void TrayUserTest::InitializeParameters(int users_logged_in,
   // Instead of using the existing tray panels we create new ones which makes
   // the access easier.
   for (int i = 0; i < delegate_->GetMaximumNumberOfLoggedInUsers(); i++) {
-    tray_user_.push_back(new ash::internal::TrayUser(tray_, i));
+    tray_user_.push_back(new ash::TrayUser(tray_, i));
     tray_->AddTrayItem(tray_user_[i]);
   }
   // We then add also the separator.
-  tray_user_separator_ = new ash::internal::TrayUserSeparator(tray_);
+  tray_user_separator_ = new ash::TrayUserSeparator(tray_);
   tray_->AddTrayItem(tray_user_separator_);
 }
 
@@ -152,8 +149,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   EXPECT_FALSE(tray()->IsAnyBubbleVisible());
 
   for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
-    EXPECT_EQ(ash::internal::TrayUser::HIDDEN,
-              tray_user(i)->GetStateForTest());
+    EXPECT_EQ(ash::TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
   EXPECT_FALSE(tray_user_separator()->separator_shown());
 
   ShowTrayMenu(&generator);
@@ -162,8 +158,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   EXPECT_TRUE(tray()->IsAnyBubbleVisible());
 
   for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
-    EXPECT_EQ(i == 0 ? ash::internal::TrayUser::SHOWN :
-                       ash::internal::TrayUser::HIDDEN,
+    EXPECT_EQ(i == 0 ? ash::TrayUser::SHOWN : ash::TrayUser::HIDDEN,
               tray_user(i)->GetStateForTest());
   EXPECT_FALSE(tray_user_separator()->separator_shown());
   tray()->CloseSystemBubble();
@@ -200,8 +195,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
     EXPECT_TRUE(tray()->HasSystemBubble());
     EXPECT_TRUE(tray()->IsAnyBubbleVisible());
     for (int i = 0; i < max_users; i++) {
-      EXPECT_EQ(i < j ? ash::internal::TrayUser::SHOWN :
-                        ash::internal::TrayUser::HIDDEN,
+      EXPECT_EQ(i < j ? ash::TrayUser::SHOWN : ash::TrayUser::HIDDEN,
                 tray_user(i)->GetStateForTest());
     }
 
@@ -210,33 +204,28 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
 
     // Move the mouse over the user item and it should hover.
     MoveOverUserItem(&generator, 0);
-    EXPECT_EQ(ash::internal::TrayUser::HOVERED,
-              tray_user(0)->GetStateForTest());
+    EXPECT_EQ(ash::TrayUser::HOVERED, tray_user(0)->GetStateForTest());
     for (int i = 1; i < max_users; i++) {
-      EXPECT_EQ(i < j ? ash::internal::TrayUser::SHOWN :
-                        ash::internal::TrayUser::HIDDEN,
+      EXPECT_EQ(i < j ? ash::TrayUser::SHOWN : ash::TrayUser::HIDDEN,
                 tray_user(i)->GetStateForTest());
     }
 
     // Check that clicking the button allows to add item if we have still room
     // for one more user.
     ClickUserItem(&generator, 0);
-    EXPECT_EQ(j == max_users ?
-                  ash::internal::TrayUser::ACTIVE_BUT_DISABLED :
-                  ash::internal::TrayUser::ACTIVE,
+    EXPECT_EQ(j == max_users ? ash::TrayUser::ACTIVE_BUT_DISABLED
+                             : ash::TrayUser::ACTIVE,
               tray_user(0)->GetStateForTest());
 
     // Click the button again to see that the menu goes away.
     ClickUserItem(&generator, 0);
-    EXPECT_EQ(ash::internal::TrayUser::HOVERED,
-              tray_user(0)->GetStateForTest());
+    EXPECT_EQ(ash::TrayUser::HOVERED, tray_user(0)->GetStateForTest());
 
     // Close and check that everything is deleted.
     tray()->CloseSystemBubble();
     EXPECT_FALSE(tray()->IsAnyBubbleVisible());
     for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
-      EXPECT_EQ(ash::internal::TrayUser::HIDDEN,
-                tray_user(i)->GetStateForTest());
+      EXPECT_EQ(ash::TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
   }
 }
 
@@ -258,5 +247,4 @@ TEST_F(TrayUserTest, MutiUserModeButtonClicks) {
 
 #endif
 
-}  // namespace internal
 }  // namespace ash

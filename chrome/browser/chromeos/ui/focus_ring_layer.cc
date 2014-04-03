@@ -82,15 +82,13 @@ void FocusRingLayer::SetForView(views::View* view) {
 
   // Workarounds for system tray items that have customized focus borders.  The
   // insets here must be consistent with the ones used by those classes.
-  if (view->GetClassName() ==
-      ash::internal::ActionableView::kViewClassName) {
+  if (view->GetClassName() == ash::ActionableView::kViewClassName) {
     view_bounds = view->GetLocalBounds();
     view_bounds.Inset(1, 1, 3, 3);
-  } else if (view->GetClassName() ==
-             ash::internal::TrayBackgroundView::kViewClassName) {
+  } else if (view->GetClassName() == ash::TrayBackgroundView::kViewClassName) {
     view_bounds.Inset(1, 1, 3, 3);
   } else if (view->GetClassName() ==
-             ash::internal::TrayPopupHeaderButton::kViewClassName) {
+             ash::TrayPopupHeaderButton::kViewClassName) {
     view_bounds = view->GetLocalBounds();
     view_bounds.Inset(2, 1, 2, 2);
   }

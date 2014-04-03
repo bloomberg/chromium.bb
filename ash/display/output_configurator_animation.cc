@@ -18,7 +18,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 const int kFadingAnimationDurationInMS = 200;
@@ -122,9 +121,9 @@ void OutputConfiguratorAnimation::StartFadeOutAnimation(
     ui::Layer* hiding_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
     hiding_layer->SetColor(SK_ColorBLACK);
     hiding_layer->SetBounds(root_window->bounds());
-    ui::Layer* parent = ash::Shell::GetContainer(
-        root_window,
-        ash::internal::kShellWindowId_OverlayContainer)->layer();
+    ui::Layer* parent =
+        ash::Shell::GetContainer(root_window,
+                                 ash::kShellWindowId_OverlayContainer)->layer();
     parent->Add(hiding_layer);
 
     hiding_layer->SetOpacity(0.0);
@@ -181,9 +180,9 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
       hiding_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
       hiding_layer->SetColor(SK_ColorBLACK);
       hiding_layer->SetBounds(root_window->bounds());
-      ui::Layer* parent = ash::Shell::GetContainer(
-          root_window,
-          ash::internal::kShellWindowId_OverlayContainer)->layer();
+      ui::Layer* parent =
+          ash::Shell::GetContainer(
+              root_window, ash::kShellWindowId_OverlayContainer)->layer();
       parent->Add(hiding_layer);
       hiding_layer->SetOpacity(1.0f);
       hiding_layer->SetVisible(true);
@@ -225,5 +224,4 @@ void OutputConfiguratorAnimation::ClearHidingLayers() {
   hiding_layers_.clear();
 }
 
-}  // namespace internal
 }  // namespace ash

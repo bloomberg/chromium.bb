@@ -21,7 +21,6 @@
 #include "ui/base/hit_test.h"
 
 namespace ash {
-namespace internal {
 
 class ShelfWindowWatcherTest : public test::AshTestBase {
  public:
@@ -286,5 +285,4 @@ TEST_F(ShelfWindowWatcherTest, ReparentWindowDuringTheDragging) {
   EXPECT_EQ(1, model_->item_count());
 }
 
-}  // namespace internal
 }  // namespace ash

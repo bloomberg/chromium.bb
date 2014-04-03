@@ -18,8 +18,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
-
 class TouchHudCanvas;
 class TouchLog;
 
@@ -81,7 +79,6 @@ class ASH_EXPORT TouchHudDebug : public TouchObserverHUD {
   DISALLOW_COPY_AND_ASSIGN(TouchHudDebug);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_TOUCH_TOUCH_HUD_DEBUG_H_

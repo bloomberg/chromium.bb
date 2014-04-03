@@ -22,8 +22,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 const int kButtonHoverAlpha = 150;
@@ -171,5 +169,4 @@ void OverflowButton::OnPaint(gfx::Canvas* canvas) {
                        bounds.y() + ((bounds.height() - image->height()) / 2));
 }
 
-}  // namespace internal
 }  // namespace ash

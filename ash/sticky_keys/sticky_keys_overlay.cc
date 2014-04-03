@@ -223,9 +223,8 @@ StickyKeysOverlay::StickyKeysOverlay()
   params.remove_standard_frame = true;
   params.delegate = overlay_view_;
   params.bounds = CalculateOverlayBounds();
-  params.parent = Shell::GetContainer(
-      Shell::GetTargetRootWindow(),
-      internal::kShellWindowId_OverlayContainer);
+  params.parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
+                                      kShellWindowId_OverlayContainer);
   overlay_widget_.reset(new views::Widget);
   overlay_widget_->Init(params);
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(false);

@@ -23,13 +23,13 @@ class ScreenDimmerTest : public AshTestBase {
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     dimmer_ = Shell::GetPrimaryRootWindowController()->screen_dimmer();
-    test_api_.reset(new internal::ScreenDimmer::TestApi(dimmer_));
+    test_api_.reset(new ScreenDimmer::TestApi(dimmer_));
   }
 
  protected:
-  internal::ScreenDimmer* dimmer_;  // not owned
+  ScreenDimmer* dimmer_;  // not owned
 
-  scoped_ptr<internal::ScreenDimmer::TestApi> test_api_;
+  scoped_ptr<ScreenDimmer::TestApi> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmerTest);

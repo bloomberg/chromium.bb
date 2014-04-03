@@ -11,9 +11,6 @@
 #include "ui/display/chromeos/test/test_display_snapshot.h"
 
 namespace ash {
-
-namespace internal {
-
 namespace {
 
 ui::TestDisplaySnapshot* CreateInternalSnapshot() {
@@ -191,7 +188,5 @@ TEST_F(ProjectingObserverTest,
   EXPECT_EQ(2, fake_power_client_->num_set_is_projecting_calls());
   EXPECT_FALSE(fake_power_client_->is_projecting());
 }
-
-}  // namespace internal
 
 }  // namespace ash

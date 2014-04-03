@@ -38,7 +38,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 using aura::test::WindowIsAbove;
 
@@ -75,7 +74,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   aura::Window* GetPanelContainer(aura::Window* panel) {
     return Shell::GetContainer(panel->GetRootWindow(),
-                               internal::kShellWindowId_PanelContainer);
+                               kShellWindowId_PanelContainer);
   }
 
   views::Widget* GetCalloutWidgetForPanel(aura::Window* panel) {
@@ -238,9 +237,9 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   void SetShelfAutoHideBehavior(aura::Window* window,
                                 ShelfAutoHideBehavior behavior) {
-    internal::ShelfLayoutManager* shelf =
-        RootWindowController::ForWindow(window)->shelf()->
-        shelf_layout_manager();
+    ShelfLayoutManager* shelf = RootWindowController::ForWindow(window)
+                                    ->shelf()
+                                    ->shelf_layout_manager();
     shelf->SetAutoHideBehavior(behavior);
     ShelfView* shelf_view = GetShelfView(Shelf::ForWindow(window));
     test::ShelfViewTestAPI test_api(shelf_view);
@@ -249,13 +248,13 @@ class PanelLayoutManagerTest : public test::AshTestBase {
 
   void SetShelfVisibilityState(aura::Window* window,
                                ShelfVisibilityState visibility_state) {
-    internal::ShelfLayoutManager* shelf =
-        RootWindowController::ForWindow(window)->shelf()->
-        shelf_layout_manager();
+    ShelfLayoutManager* shelf = RootWindowController::ForWindow(window)
+                                    ->shelf()
+                                    ->shelf_layout_manager();
     shelf->SetState(visibility_state);
   }
 
-  internal::ShelfView* GetShelfView(Shelf* shelf) {
+  ShelfView* GetShelfView(Shelf* shelf) {
     return test::ShelfTestAPI(shelf).shelf_view();
   }
 
@@ -609,10 +608,10 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
   EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());
   EXPECT_EQ(root_windows[1], p2_d2->GetRootWindow());
 
-  EXPECT_EQ(internal::kShellWindowId_PanelContainer, p1_d1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_PanelContainer, p2_d1->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_PanelContainer, p1_d2->parent()->id());
-  EXPECT_EQ(internal::kShellWindowId_PanelContainer, p2_d2->parent()->id());
+  EXPECT_EQ(kShellWindowId_PanelContainer, p1_d1->parent()->id());
+  EXPECT_EQ(kShellWindowId_PanelContainer, p2_d1->parent()->id());
+  EXPECT_EQ(kShellWindowId_PanelContainer, p1_d2->parent()->id());
+  EXPECT_EQ(kShellWindowId_PanelContainer, p2_d2->parent()->id());
 
   // Test a panel on 1st display.
   // Clicking on the same display has no effect.
@@ -788,5 +787,4 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
 INSTANTIATE_TEST_CASE_P(LtrRtl, PanelLayoutManagerTextDirectionTest,
                         testing::Bool());
 
-}  // namespace internal
 }  // namespace ash

@@ -29,15 +29,13 @@ class Layer;
 }
 
 namespace ash {
+class ShelfLayoutManager;
+class WorkspaceLayoutManagerDelegate;
+
 namespace wm {
 class WindowState;
 class WMEvent;
 }
-
-namespace internal {
-
-class ShelfLayoutManager;
-class WorkspaceLayoutManagerDelegate;
 
 // LayoutManager used on the window created for a workspace.
 class ASH_EXPORT WorkspaceLayoutManager
@@ -50,7 +48,7 @@ class ASH_EXPORT WorkspaceLayoutManager
   explicit WorkspaceLayoutManager(aura::Window* window);
   virtual ~WorkspaceLayoutManager();
 
-  void SetShelf(internal::ShelfLayoutManager* shelf);
+  void SetShelf(ShelfLayoutManager* shelf);
 
   // A delegate which can be set to add a backdrop behind the top most visible
   // window. With the call the ownership of the delegate will be transferred to
@@ -123,7 +121,7 @@ class ASH_EXPORT WorkspaceLayoutManager
   // Animates the window bounds to |bounds|.
   void SetChildBoundsAnimated(aura::Window* child, const gfx::Rect& bounds);
 
-  internal::ShelfLayoutManager* shelf_;
+  ShelfLayoutManager* shelf_;
   aura::Window* window_;
   aura::Window* root_window_;
 
@@ -143,7 +141,6 @@ class ASH_EXPORT WorkspaceLayoutManager
   DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_H_

@@ -29,11 +29,9 @@ SystemTray* GetSystemTray() {
       status_area_widget()->system_tray();
 }
 
-class TestDetailsView : public internal::TrayDetailsView,
-                        public internal::ViewClickListener {
+class TestDetailsView : public TrayDetailsView, public ViewClickListener {
  public:
-  explicit TestDetailsView(SystemTrayItem* owner)
-      : internal::TrayDetailsView(owner)  {}
+  explicit TestDetailsView(SystemTrayItem* owner) : TrayDetailsView(owner) {}
 
   virtual ~TestDetailsView() {}
 
@@ -44,7 +42,7 @@ class TestDetailsView : public internal::TrayDetailsView,
     footer()->content()->RequestFocus();
   }
 
-  // Overridden from internal::ViewClickListener:
+  // Overridden from ViewClickListener:
   virtual void OnViewClicked(views::View* sender) OVERRIDE {}
 
  private:

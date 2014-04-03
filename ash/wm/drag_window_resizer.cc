@@ -23,8 +23,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // The maximum opacity of the drag phantom window.
@@ -211,5 +209,4 @@ bool DragWindowResizer::ShouldAllowMouseWarp() {
        GetTarget()->type() == ui::wm::WINDOW_TYPE_PANEL);
 }
 
-}  // namespace internal
 }  // namespace ash

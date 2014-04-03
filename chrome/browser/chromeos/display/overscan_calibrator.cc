@@ -70,13 +70,15 @@ OverscanCalibrator::OverscanCalibrator(
   ash::Shell::GetInstance()->display_controller()->SetOverscanInsets(
       display_.id(), gfx::Insets());
 
-  ash::internal::DisplayInfo info = ash::Shell::GetInstance()->
-      display_manager()->GetDisplayInfo(display_.id());
+  ash::DisplayInfo info =
+      ash::Shell::GetInstance()->display_manager()->GetDisplayInfo(
+          display_.id());
 
   aura::Window* root = ash::Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display_.id());
-  ui::Layer* parent_layer = ash::Shell::GetContainer(
-      root, ash::internal::kShellWindowId_OverlayContainer)->layer();
+  ui::Layer* parent_layer =
+      ash::Shell::GetContainer(root, ash::kShellWindowId_OverlayContainer)
+          ->layer();
 
   calibration_layer_.reset(new ui::Layer());
   calibration_layer_->SetOpacity(0.5f);

@@ -9,13 +9,11 @@
 #include "ui/events/event_handler.h"
 
 namespace ash {
+class WorkspaceEventHandlerTestHelper;
+
 namespace wm {
 class WindowState;
 }
-
-namespace internal {
-
-class WorkspaceEventHandlerTestHelper;
 
 class WorkspaceEventHandler : public ui::EventHandler {
  public:
@@ -41,7 +39,6 @@ class WorkspaceEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandler);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_H_

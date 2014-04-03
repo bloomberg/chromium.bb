@@ -32,10 +32,7 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
-
 namespace {
 
 // We don't let the screen brightness go lower than this when it's being
@@ -281,5 +278,4 @@ void TrayBrightness::HandleBrightnessChanged(double percent,
     PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
-}  // namespace internal
 }  // namespace ash

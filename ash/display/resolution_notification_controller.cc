@@ -23,7 +23,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 namespace {
 
 bool g_use_timer = true;
@@ -320,5 +319,4 @@ void ResolutionNotificationController::SuppressTimerForTest() {
   g_use_timer = false;
 }
 
-}  // namespace internal
 }  // namespace ash

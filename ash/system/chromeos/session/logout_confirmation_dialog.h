@@ -16,7 +16,6 @@ class Label;
 }
 
 namespace ash {
-namespace internal {
 
 class LogoutConfirmationController;
 
@@ -53,7 +52,6 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(LogoutConfirmationDialog);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_

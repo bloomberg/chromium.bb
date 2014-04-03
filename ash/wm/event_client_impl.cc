@@ -11,7 +11,6 @@
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
-namespace internal {
 
 EventClientImpl::EventClientImpl() {
 }
@@ -56,5 +55,4 @@ ui::EventTarget* EventClientImpl::GetToplevelEventTarget() {
   return Shell::GetInstance();
 }
 
-}  // namespace internal
 }  // namespace ash

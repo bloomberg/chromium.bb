@@ -18,7 +18,6 @@ class Label;
 }
 
 namespace ash {
-namespace internal {
 namespace tray {
 
 // Abstract base class containing common updating and layout code for the
@@ -131,7 +130,6 @@ class ASH_EXPORT TimeView : public BaseDateTimeView {
 };
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_DATE_DATE_VIEW_H_

@@ -22,7 +22,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // SharedDisplayEdgeIndicator is responsible for showing a window that indicates
 // the edge that a window can be dragged into another display.
@@ -53,7 +52,6 @@ class ASH_EXPORT SharedDisplayEdgeIndicator : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(SharedDisplayEdgeIndicator);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_SHARED_DISPLAY_EDGE_INDICATOR_H_

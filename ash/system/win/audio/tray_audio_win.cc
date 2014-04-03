@@ -11,8 +11,6 @@ namespace ash {
 using system::TrayAudioDelegate;
 using system::TrayAudioDelegateWin;
 
-namespace internal {
-
 TrayAudioWin::TrayAudioWin(SystemTray* system_tray)
     : TrayAudio(system_tray,
                 scoped_ptr<TrayAudioDelegate>(new TrayAudioDelegateWin())) {
@@ -21,5 +19,4 @@ TrayAudioWin::TrayAudioWin(SystemTray* system_tray)
 TrayAudioWin::~TrayAudioWin() {
 }
 
-}  // namespace internal
 }  // namespace ash

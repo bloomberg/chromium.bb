@@ -33,8 +33,6 @@ namespace test {
 class AppListControllerTestApi;
 }
 
-namespace internal {
-
 // AppListController is a controller that manages app list UI for shell.
 // It creates AppListView and schedules showing/hiding animation.
 // While the UI is visible, it monitors things such as app list widget's
@@ -139,7 +137,6 @@ class AppListController : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(AppListController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_APP_LIST_CONTROLLER_H_

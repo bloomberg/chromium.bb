@@ -12,8 +12,6 @@
 #include "ui/views/bubble/tray_bubble_view.h"
 
 namespace ash {
-namespace internal {
-
 class ShelfLayoutManager;
 class StatusAreaWidget;
 class TrayEventFilter;
@@ -59,7 +57,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
     DISALLOW_COPY_AND_ASSIGN(TrayContainer);
   };
 
-  explicit TrayBackgroundView(internal::StatusAreaWidget* status_area_widget);
+  explicit TrayBackgroundView(StatusAreaWidget* status_area_widget);
   virtual ~TrayBackgroundView();
 
   // Called after the tray has been added to the widget containing it.
@@ -73,11 +71,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse) OVERRIDE;
 
-  // Overridden from internal::ActionableView.
+  // Overridden from ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
   virtual gfx::Rect GetFocusBounds() OVERRIDE;
 
-  // Overridden from internal::BackgroundAnimatorDelegate.
+  // Overridden from BackgroundAnimatorDelegate.
   virtual void UpdateBackground(int alpha) OVERRIDE;
 
   // Called whenever the shelf alignment changes.
@@ -164,11 +162,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   ShelfAlignment shelf_alignment_;
 
   // Owned by the view passed to SetContents().
-  internal::TrayBackground* background_;
+  TrayBackground* background_;
 
   // Animators for the background. They are only used for the old shelf layout.
-  internal::BackgroundAnimator hide_background_animator_;
-  internal::BackgroundAnimator hover_background_animator_;
+  BackgroundAnimator hide_background_animator_;
+  BackgroundAnimator hover_background_animator_;
 
   // True if the background gets hovered.
   bool hovered_;
@@ -183,7 +181,6 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   DISALLOW_COPY_AND_ASSIGN(TrayBackgroundView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_BACKGROUND_VIEW_H_

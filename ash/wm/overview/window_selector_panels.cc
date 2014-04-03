@@ -62,10 +62,9 @@ void ScopedTransformPanelWindow::PrepareForOverview() {
 }
 
 views::Widget* ScopedTransformPanelWindow::GetCalloutWidget() {
-  DCHECK(window()->parent()->id() == internal::kShellWindowId_PanelContainer);
-  internal::PanelLayoutManager* panel_layout_manager =
-      static_cast<internal::PanelLayoutManager*>(
-          window()->parent()->layout_manager());
+  DCHECK(window()->parent()->id() == kShellWindowId_PanelContainer);
+  PanelLayoutManager* panel_layout_manager =
+      static_cast<PanelLayoutManager*>(window()->parent()->layout_manager());
   return panel_layout_manager->GetCalloutWidgetForPanel(window());
 }
 

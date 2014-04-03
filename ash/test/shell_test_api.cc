@@ -18,7 +18,7 @@ namespace test {
 
 ShellTestApi::ShellTestApi(Shell* shell) : shell_(shell) {}
 
-internal::RootWindowLayoutManager* ShellTestApi::root_window_layout() {
+RootWindowLayoutManager* ShellTestApi::root_window_layout() {
   return shell_->GetPrimaryRootWindowController()->root_window_layout();
 }
 
@@ -27,17 +27,15 @@ ShellTestApi::input_method_event_filter() {
   return shell_->input_method_filter_.get();
 }
 
-internal::SystemGestureEventFilter*
-ShellTestApi::system_gesture_event_filter() {
+SystemGestureEventFilter* ShellTestApi::system_gesture_event_filter() {
   return shell_->system_gesture_filter_.get();
 }
 
-internal::WorkspaceController* ShellTestApi::workspace_controller() {
+WorkspaceController* ShellTestApi::workspace_controller() {
   return shell_->GetPrimaryRootWindowController()->workspace_controller();
 }
 
-internal::ScreenPositionController*
-ShellTestApi::screen_position_controller() {
+ScreenPositionController* ShellTestApi::screen_position_controller() {
   return shell_->screen_position_controller_.get();
 }
 
@@ -49,16 +47,15 @@ ShelfModel* ShellTestApi::shelf_model() {
   return shell_->shelf_model_.get();
 }
 
-internal::DragDropController* ShellTestApi::drag_drop_controller() {
+DragDropController* ShellTestApi::drag_drop_controller() {
   return shell_->drag_drop_controller_.get();
 }
 
-internal::AppListController* ShellTestApi::app_list_controller() {
+AppListController* ShellTestApi::app_list_controller() {
   return shell_->app_list_controller_.get();
 }
 
-internal::MaximizeModeWindowManager*
-ShellTestApi::maximize_mode_window_manager() {
+MaximizeModeWindowManager* ShellTestApi::maximize_mode_window_manager() {
   return shell_->maximize_mode_window_manager_.get();
 }
 

@@ -14,7 +14,6 @@
 #include "ui/gfx/canvas.h"
 
 namespace ash {
-namespace internal {
 
 // ui::LayerDelegate that copies the aura host window's content to a ui::Layer.
 class BootSplashScreen::CopyHostContentLayerDelegate
@@ -72,5 +71,4 @@ void BootSplashScreen::StartHideAnimation(base::TimeDelta duration) {
   layer_->SetOpacity(0.0f);
 }
 
-}  // namespace internal
 }  // namespace ash

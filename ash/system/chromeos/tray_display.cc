@@ -31,7 +31,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 namespace {
 
 DisplayManager* GetDisplayManager() {
@@ -130,7 +129,7 @@ void OpenSettings() {
 
 const char TrayDisplay::kNotificationId[] = "chrome://settings/display";
 
-class DisplayView : public internal::ActionableView {
+class DisplayView : public ActionableView {
  public:
   explicit DisplayView() {
     SetLayoutManager(new views::BoxLayout(
@@ -139,7 +138,7 @@ class DisplayView : public internal::ActionableView {
         kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_ = new internal::FixedSizedImageView(0, kTrayPopupItemHeight);
+    image_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
     image_->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY).ToImageSkia());
     AddChildView(image_);
@@ -436,5 +435,4 @@ bool TrayDisplay::GetAccessibleStateForTesting(ui::AXViewState* state) {
   return false;
 }
 
-}  // namespace internal
 }  // namespace ash

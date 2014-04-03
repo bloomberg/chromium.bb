@@ -60,7 +60,7 @@ int DecideResource(ash::UpdateObserver::UpdateSeverity severity, bool dark) {
   return 0;
 }
 
-class UpdateView : public ash::internal::ActionableView {
+class UpdateView : public ash::ActionableView {
  public:
   explicit UpdateView(ash::UpdateObserver::UpdateSeverity severity) {
     SetLayoutManager(new
@@ -70,7 +70,7 @@ class UpdateView : public ash::internal::ActionableView {
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     views::ImageView* image =
-        new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+        new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
     image->SetImage(bundle.GetImageNamed(DecideResource(severity, true)).
         ToImageSkia());
 
@@ -96,8 +96,6 @@ class UpdateView : public ash::internal::ActionableView {
 }
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 
 class UpdateNagger : public ui::LayerAnimationObserver {
@@ -110,7 +108,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   }
 
   virtual ~UpdateNagger() {
-    internal::StatusAreaWidget* status_area =
+    StatusAreaWidget* status_area =
         Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
     if (status_area) {
       status_area->system_tray()->GetWidget()->GetNativeView()->layer()->
@@ -201,5 +199,4 @@ void TrayUpdate::OnUpdateRecommended(UpdateObserver::UpdateSeverity severity) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

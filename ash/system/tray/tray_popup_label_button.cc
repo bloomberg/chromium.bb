@@ -11,7 +11,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace internal {
 
 TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
                                            const base::string16& text)
@@ -28,5 +27,4 @@ TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
 
 TrayPopupLabelButton::~TrayPopupLabelButton() {}
 
-}  // namespace internal
 }  // namespace ash

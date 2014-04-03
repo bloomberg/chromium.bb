@@ -13,8 +13,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-namespace internal {
-
 class FocusCycler;
 
 class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
@@ -64,7 +62,6 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidgetDelegate);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_

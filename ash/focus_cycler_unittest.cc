@@ -27,14 +27,11 @@ namespace ash {
 namespace test {
 
 using aura::Window;
-using internal::FocusCycler;
 
 namespace {
 
-internal::StatusAreaWidgetDelegate* GetStatusAreaWidgetDelegate(
-    views::Widget* widget) {
-  return static_cast<internal::StatusAreaWidgetDelegate*>(
-      widget->GetContentsView());
+StatusAreaWidgetDelegate* GetStatusAreaWidgetDelegate(views::Widget* widget) {
+  return static_cast<StatusAreaWidgetDelegate*>(widget->GetContentsView());
 }
 
 class PanedWidgetDelegate : public views::WidgetDelegate {
@@ -96,10 +93,11 @@ class FocusCyclerTest : public AshTestBase {
   bool CreateTray() {
     if (tray_)
       return false;
-    aura::Window* parent = Shell::GetPrimaryRootWindowController()->
-        GetContainer(ash::internal::kShellWindowId_StatusContainer);
+    aura::Window* parent =
+        Shell::GetPrimaryRootWindowController()->GetContainer(
+            ash::kShellWindowId_StatusContainer);
 
-    internal::StatusAreaWidget* widget = new internal::StatusAreaWidget(parent);
+    StatusAreaWidget* widget = new StatusAreaWidget(parent);
     widget->CreateTrayViews();
     widget->Show();
     tray_.reset(widget->system_tray());

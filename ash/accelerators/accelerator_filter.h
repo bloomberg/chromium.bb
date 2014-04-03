@@ -11,7 +11,6 @@
 #include "ui/events/event_handler.h"
 
 namespace ash {
-namespace internal {
 
 // AcceleratorFilter filters key events for AcceleratorControler handling global
 // keyboard accelerators.
@@ -27,7 +26,6 @@ class ASH_EXPORT AcceleratorFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(AcceleratorFilter);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_ACCELERATORS_ACCELERATOR_FILTER_H_

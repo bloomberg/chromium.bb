@@ -14,8 +14,6 @@
 #include "ui/message_center/notification_blocker.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 const int kContainerIdsToHide[] = {
@@ -114,6 +112,5 @@ std::vector<int> DesktopCleaner::GetContainersToHideForTest() {
                           kContainerIdsToHide + arraysize(kContainerIdsToHide));
 }
 
-}  // namespace internal
 }  // namespace ash
 

@@ -22,7 +22,6 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 // Maximum size on the display edge that initiate snapping phantom window,
@@ -262,5 +261,4 @@ void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
   src_indicator_bounds_.set_height(lower_indicator_y - upper_indicator_y);
 }
 
-}  // namespace internal
 }  // namespace ash

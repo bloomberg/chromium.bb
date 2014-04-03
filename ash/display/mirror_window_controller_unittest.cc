@@ -20,7 +20,6 @@
 #include "ui/base/hit_test.h"
 
 namespace ash {
-namespace internal {
 
 namespace {
 DisplayInfo CreateDisplayInfo(int64 id, const gfx::Rect& bounds) {
@@ -287,5 +286,4 @@ TEST_F(MirrorOnBootTest, MAYBE_MirrorOnBoot) {
   EXPECT_TRUE(test_api.GetHost());
 }
 
-}  // namsspace internal
 }  // namespace ash

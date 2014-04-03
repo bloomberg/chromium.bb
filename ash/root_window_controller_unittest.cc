@@ -118,9 +118,8 @@ class RootWindowControllerTest : public test::AshTestBase {
   }
 
   aura::Window* GetModalContainer(aura::Window* root_window) {
-    return Shell::GetContainer(
-        root_window,
-        ash::internal::kShellWindowId_SystemModalContainer);
+    return Shell::GetContainer(root_window,
+                               ash::kShellWindowId_SystemModalContainer);
   }
 };
 
@@ -130,9 +129,8 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   // Windows origin should be doubled when moved to the 1st display.
   UpdateDisplay("600x600,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  internal::RootWindowController* controller =
-      Shell::GetPrimaryRootWindowController();
-  internal::ShelfLayoutManager* shelf_layout_manager =
+  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
+  ShelfLayoutManager* shelf_layout_manager =
       controller->GetShelfLayoutManager();
   shelf_layout_manager->SetAutoHideBehavior(
       ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -173,13 +171,13 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   unparented_control->Init(params);
   EXPECT_EQ(root_windows[1],
             unparented_control->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(internal::kShellWindowId_UnparentedControlContainer,
+  EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
             unparented_control->GetNativeView()->parent()->id());
 
   aura::Window* panel = CreateTestWindowInShellWithDelegateAndType(
       NULL, ui::wm::WINDOW_TYPE_PANEL, 0, gfx::Rect(700, 100, 100, 100));
   EXPECT_EQ(root_windows[1], panel->GetRootWindow());
-  EXPECT_EQ(internal::kShellWindowId_PanelContainer, panel->parent()->id());
+  EXPECT_EQ(kShellWindowId_PanelContainer, panel->parent()->id());
 
   // Make sure a window that will delete itself when losing focus
   // will not crash.
@@ -248,12 +246,12 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   // Test if the unparented widget has moved.
   EXPECT_EQ(root_windows[0],
             unparented_control->GetNativeView()->GetRootWindow());
-  EXPECT_EQ(internal::kShellWindowId_UnparentedControlContainer,
+  EXPECT_EQ(kShellWindowId_UnparentedControlContainer,
             unparented_control->GetNativeView()->parent()->id());
 
   // Test if the panel has moved.
   EXPECT_EQ(root_windows[0], panel->GetRootWindow());
-  EXPECT_EQ(internal::kShellWindowId_PanelContainer, panel->parent()->id());
+  EXPECT_EQ(kShellWindowId_PanelContainer, panel->parent()->id());
 }
 
 TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
@@ -291,39 +289,42 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
 TEST_F(RootWindowControllerTest, ModalContainer) {
   UpdateDisplay("600x600");
   Shell* shell = Shell::GetInstance();
-  internal::RootWindowController* controller =
-      shell->GetPrimaryRootWindowController();
+  RootWindowController* controller = shell->GetPrimaryRootWindowController();
   EXPECT_EQ(user::LOGGED_IN_USER,
             shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_SystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(NULL));
+                                kShellWindowId_SystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(NULL));
 
   views::Widget* session_modal_widget =
       CreateModalWidget(gfx::Rect(300, 10, 100, 100));
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_SystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(
-              session_modal_widget->GetNativeView()));
+                                kShellWindowId_SystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(
+                session_modal_widget->GetNativeView()));
 
   shell->session_state_delegate()->LockScreen();
   EXPECT_EQ(user::LOGGED_IN_LOCKED,
             shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(NULL));
+                                kShellWindowId_LockSystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(NULL));
 
-  aura::Window* lock_container =
-      Shell::GetContainer(controller->root_window(),
-                          internal::kShellWindowId_LockScreenContainer);
+  aura::Window* lock_container = Shell::GetContainer(
+      controller->root_window(), kShellWindowId_LockScreenContainer);
   views::Widget* lock_modal_widget =
       CreateModalWidgetWithParent(gfx::Rect(300, 10, 100, 100), lock_container);
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(
-              lock_modal_widget->GetNativeView()));
+                                kShellWindowId_LockSystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(
+                lock_modal_widget->GetNativeView()));
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
+                                kShellWindowId_SystemModalContainer)
+                ->layout_manager(),
             controller->GetSystemModalLayoutManager(
                 session_modal_widget->GetNativeView()));
 
@@ -341,21 +342,21 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   EXPECT_EQ(0, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_FALSE(shell->session_state_delegate()->IsActiveUserSessionStarted());
 
-  internal::RootWindowController* controller =
-      shell->GetPrimaryRootWindowController();
+  RootWindowController* controller = shell->GetPrimaryRootWindowController();
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(NULL));
+                                kShellWindowId_LockSystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(NULL));
 
-  aura::Window* lock_container =
-      Shell::GetContainer(controller->root_window(),
-                          internal::kShellWindowId_LockScreenContainer);
+  aura::Window* lock_container = Shell::GetContainer(
+      controller->root_window(), kShellWindowId_LockScreenContainer);
   views::Widget* login_modal_widget =
       CreateModalWidgetWithParent(gfx::Rect(300, 10, 100, 100), lock_container);
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(
-              login_modal_widget->GetNativeView()));
+                                kShellWindowId_LockSystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(
+                login_modal_widget->GetNativeView()));
   login_modal_widget->Close();
 
   // Configure user session environment.
@@ -366,59 +367,64 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   EXPECT_EQ(1, shell->session_state_delegate()->NumberOfLoggedInUsers());
   EXPECT_TRUE(shell->session_state_delegate()->IsActiveUserSessionStarted());
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_SystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(NULL));
+                                kShellWindowId_SystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(NULL));
 
   views::Widget* session_modal_widget =
         CreateModalWidget(gfx::Rect(300, 10, 100, 100));
   EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-      internal::kShellWindowId_SystemModalContainer)->layout_manager(),
-          controller->GetSystemModalLayoutManager(
-              session_modal_widget->GetNativeView()));
+                                kShellWindowId_SystemModalContainer)
+                ->layout_manager(),
+            controller->GetSystemModalLayoutManager(
+                session_modal_widget->GetNativeView()));
 }
 
 TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
   UpdateDisplay("600x600");
   Shell* shell = Shell::GetInstance();
-  internal::RootWindowController* controller =
-      shell->GetPrimaryRootWindowController();
-  aura::Window* lock_container =
-      Shell::GetContainer(controller->root_window(),
-                          internal::kShellWindowId_LockScreenContainer);
+  RootWindowController* controller = shell->GetPrimaryRootWindowController();
+  aura::Window* lock_container = Shell::GetContainer(
+      controller->root_window(), kShellWindowId_LockScreenContainer);
   for (int block_reason = FIRST_BLOCK_REASON;
        block_reason < NUMBER_OF_BLOCK_REASONS;
        ++block_reason) {
     views::Widget* session_modal_widget =
           CreateModalWidget(gfx::Rect(300, 10, 100, 100));
     EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
-            controller->GetSystemModalLayoutManager(
-                session_modal_widget->GetNativeView()));
+                                  kShellWindowId_SystemModalContainer)
+                  ->layout_manager(),
+              controller->GetSystemModalLayoutManager(
+                  session_modal_widget->GetNativeView()));
     EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
-            controller->GetSystemModalLayoutManager(NULL));
+                                  kShellWindowId_SystemModalContainer)
+                  ->layout_manager(),
+              controller->GetSystemModalLayoutManager(NULL));
     session_modal_widget->Close();
 
     BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
 
     EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-        internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
-            controller->GetSystemModalLayoutManager(NULL));
+                                  kShellWindowId_LockSystemModalContainer)
+                  ->layout_manager(),
+              controller->GetSystemModalLayoutManager(NULL));
 
     views::Widget* lock_modal_widget =
         CreateModalWidgetWithParent(gfx::Rect(300, 10, 100, 100),
                                     lock_container);
     EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-        internal::kShellWindowId_LockSystemModalContainer)->layout_manager(),
+                                  kShellWindowId_LockSystemModalContainer)
+                  ->layout_manager(),
               controller->GetSystemModalLayoutManager(
                   lock_modal_widget->GetNativeView()));
 
     session_modal_widget =
           CreateModalWidget(gfx::Rect(300, 10, 100, 100));
     EXPECT_EQ(Shell::GetContainer(controller->root_window(),
-        internal::kShellWindowId_SystemModalContainer)->layout_manager(),
-            controller->GetSystemModalLayoutManager(
-                session_modal_widget->GetNativeView()));
+                                  kShellWindowId_SystemModalContainer)
+                  ->layout_manager(),
+              controller->GetSystemModalLayoutManager(
+                  session_modal_widget->GetNativeView()));
     session_modal_widget->Close();
 
     lock_modal_widget->Close();
@@ -428,7 +434,7 @@ TEST_F(RootWindowControllerTest, ModalContainerBlockedSession) {
 
 TEST_F(RootWindowControllerTest, GetWindowForFullscreenMode) {
   UpdateDisplay("600x600");
-  internal::RootWindowController* controller =
+  RootWindowController* controller =
       Shell::GetInstance()->GetPrimaryRootWindowController();
 
   Widget* w1 = CreateTestWidget(gfx::Rect(0, 0, 100, 100));
@@ -500,11 +506,10 @@ TEST_F(RootWindowControllerTest, MultipleDisplaysGetWindowForFullscreenMode) {
 // some overlapping UI.
 TEST_F(RootWindowControllerTest, FocusBlockedWindow) {
   UpdateDisplay("600x600");
-  internal::RootWindowController* controller =
+  RootWindowController* controller =
       Shell::GetInstance()->GetPrimaryRootWindowController();
-  aura::Window* lock_container =
-      Shell::GetContainer(controller->root_window(),
-                          internal::kShellWindowId_LockScreenContainer);
+  aura::Window* lock_container = Shell::GetContainer(
+      controller->root_window(), kShellWindowId_LockScreenContainer);
   aura::Window* lock_window = Widget::CreateWindowWithParentAndBounds(NULL,
       lock_container, gfx::Rect(0, 0, 100, 100))->GetNativeView();
   lock_window->Show();
@@ -639,12 +644,10 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       root_windows[0] == primary_root_window ?
           root_windows[1] : root_windows[0];
 
-  ASSERT_TRUE(Shell::GetContainer(
-      primary_root_window,
-      internal::kShellWindowId_VirtualKeyboardContainer));
-  ASSERT_FALSE(Shell::GetContainer(
-      secondary_root_window,
-      internal::kShellWindowId_VirtualKeyboardContainer));
+  ASSERT_TRUE(Shell::GetContainer(primary_root_window,
+                                  kShellWindowId_VirtualKeyboardContainer));
+  ASSERT_FALSE(Shell::GetContainer(secondary_root_window,
+                                   kShellWindowId_VirtualKeyboardContainer));
 }
 
 // Test for http://crbug.com/263599. Virtual keyboard should be able to receive
@@ -652,8 +655,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        ClickVirtualKeyboardInBlockedWindow) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container = Shell::GetContainer(root_window,
-      internal::kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* keyboard_container =
+      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
 
@@ -689,8 +692,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 TEST_F(VirtualKeyboardRootWindowControllerTest,
        DeleteOldContainerOnVirtualKeyboardInit) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container = Shell::GetContainer(root_window,
-      internal::kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* keyboard_container =
+      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);
   // Track the keyboard container window.
   aura::WindowTracker tracker;
@@ -705,8 +708,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 // full screen.
 TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container = Shell::GetContainer(root_window,
-      internal::kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* keyboard_container =
+      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   keyboard_container->Show();
   keyboard::KeyboardController* controller =
       Shell::GetInstance()->keyboard_controller();
@@ -733,8 +736,8 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
 // keyboard.
 TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  aura::Window* keyboard_container = Shell::GetContainer(root_window,
-      internal::kShellWindowId_VirtualKeyboardContainer);
+  aura::Window* keyboard_container =
+      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
   ASSERT_TRUE(keyboard_container);
   keyboard_container->Show();
 

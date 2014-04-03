@@ -10,7 +10,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace internal {
 
 ResizeShadowController::ResizeShadowController() {
 }
@@ -70,5 +69,4 @@ ResizeShadow* ResizeShadowController::GetShadowForWindow(aura::Window* window) {
   return it != window_shadows_.end() ? it->second.get() : NULL;
 }
 
-}  // namespace internal
 }  // namespace ash

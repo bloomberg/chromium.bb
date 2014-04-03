@@ -17,7 +17,6 @@ class ScrollEvent;
 }
 
 namespace ash {
-namespace internal {
 
 // This handles a 3-finger swipe down gesture from the top of the screen to
 // enter overview mode.
@@ -45,7 +44,6 @@ class OverviewGestureHandler {
   DISALLOW_COPY_AND_ASSIGN(OverviewGestureHandler);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_GESTURES_OVERVIEW_GESTURE_HANDLER_H_

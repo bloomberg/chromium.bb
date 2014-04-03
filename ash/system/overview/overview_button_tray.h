@@ -20,24 +20,24 @@ namespace ash {
 // This hosts a ShellObserver that listens for the activation of Maximize Mode
 // This tray will only be visible while in this state. This tray does not
 // provide any bubble view windows.
-class ASH_EXPORT OverviewButtonTray : public internal::TrayBackgroundView,
+class ASH_EXPORT OverviewButtonTray : public TrayBackgroundView,
                                       public ShellObserver {
  public:
-  explicit OverviewButtonTray(internal::StatusAreaWidget* status_area_widget);
+  explicit OverviewButtonTray(StatusAreaWidget* status_area_widget);
   virtual ~OverviewButtonTray();
 
   // Updates the tray's visibility based on the LoginStatus and the current
   // state of MaximizeMode
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status);
 
-  // internal::ActionableView:
+  // ActionableView:
   virtual bool PerformAction(const ui::Event& event) OVERRIDE;
 
   // ShellObserver:
   virtual void OnMaximizeModeStarted() OVERRIDE;
   virtual void OnMaximizeModeEnded() OVERRIDE;
 
-  // internal::TrayBackgroundView:
+  // TrayBackgroundView:
   virtual bool ClickedOutsideBubble() OVERRIDE;
   virtual base::string16 GetAccessibleNameForTray() OVERRIDE;
   virtual void HideBubbleWithView(

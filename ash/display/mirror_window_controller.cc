@@ -34,7 +34,6 @@
 #endif
 
 namespace ash {
-namespace internal {
 namespace {
 
 #if defined(USE_X11)
@@ -121,9 +120,8 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
       Shell::GetScreen()->GetPrimaryDisplay().id());
   DCHECK(display_manager->IsMirrored());
   scoped_ptr<aura::RootWindowTransformer> transformer(
-      internal::CreateRootWindowTransformerForMirroredDisplay(
-          source_display_info,
-          display_info));
+      CreateRootWindowTransformerForMirroredDisplay(source_display_info,
+                                                    display_info));
   host_->SetRootWindowTransformer(transformer.Pass());
 }
 
@@ -171,10 +169,8 @@ MirrorWindowController::CreateRootWindowTransformer() const {
       Shell::GetScreen()->GetPrimaryDisplay().id());
   DCHECK(display_manager->IsMirrored());
   return scoped_ptr<aura::RootWindowTransformer>(
-      internal::CreateRootWindowTransformerForMirroredDisplay(
-          source_display_info,
-          mirror_display_info));
+      CreateRootWindowTransformerForMirroredDisplay(source_display_info,
+                                                    mirror_display_info));
 }
 
-}  // namespace internal
 }  // namespace ash

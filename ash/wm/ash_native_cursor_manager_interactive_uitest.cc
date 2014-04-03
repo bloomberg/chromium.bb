@@ -50,10 +50,10 @@ class AshNativeCursorManagerTest : public test::AshTestBase {
 
 namespace {
 
-internal::DisplayInfo CreateDisplayInfo(int64 id,
-                                        const gfx::Rect& bounds,
-                                        float device_scale_factor) {
-  internal::DisplayInfo info(id, "", false);
+DisplayInfo CreateDisplayInfo(int64 id,
+                              const gfx::Rect& bounds,
+                              float device_scale_factor) {
+  DisplayInfo info(id, "", false);
   info.SetBounds(bounds);
   info.set_device_scale_factor(device_scale_factor);
   return info;
@@ -93,13 +93,12 @@ TEST_F(AshNativeCursorManagerTest, MAYBE_CursorChangeOnEnterNotify) {
   CursorManager* cursor_manager = Shell::GetInstance()->cursor_manager();
   test::CursorManagerTestApi test_api(cursor_manager);
 
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
-  internal::DisplayInfo display_info1 =
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DisplayInfo display_info1 =
       CreateDisplayInfo(10, gfx::Rect(0, 0, 500, 300), 1.0f);
-  internal::DisplayInfo display_info2 =
+  DisplayInfo display_info2 =
       CreateDisplayInfo(20, gfx::Rect(500, 0, 500, 300), 2.0f);
-  std::vector<internal::DisplayInfo> display_info_list;
+  std::vector<DisplayInfo> display_info_list;
   display_info_list.push_back(display_info1);
   display_info_list.push_back(display_info2);
   display_manager->OnNativeDisplaysChanged(display_info_list);

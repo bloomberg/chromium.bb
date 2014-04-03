@@ -9,10 +9,6 @@
 
 namespace ash {
 
-// TODO: we're using this in random places outside of ash, it shouldn't be in
-// internal.
-namespace internal {
-
 // A higher-level container that holds all of the containers stacked below
 // kShellWindowId_LockScreenContainer.  Only used by PowerButtonController for
 // animating lower-level containers.
@@ -109,8 +105,6 @@ const int kShellWindowId_MouseCursorContainer = 25;
 
 // The topmost container, used for power off animation.
 const int kShellWindowId_PowerButtonAnimationContainer = 26;
-
-}  // namespace internal
 
 }  // namespace ash
 

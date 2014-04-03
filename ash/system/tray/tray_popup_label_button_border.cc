@@ -13,7 +13,6 @@
 #include "ui/views/native_theme_delegate.h"
 
 namespace ash {
-namespace internal {
 
 TrayPopupLabelButtonBorder::TrayPopupLabelButtonBorder()
     : LabelButtonBorder(views::Button::STYLE_TEXTBUTTON) {
@@ -97,5 +96,4 @@ void TrayPopupLabelButtonBorder::Paint(const views::View& view,
   }
 }
 
-}  // namespace internal
 }  // namespace ash

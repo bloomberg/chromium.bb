@@ -23,8 +23,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 bool CapsLockIsEnabled() {
@@ -216,5 +214,4 @@ void TrayCapsLock::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-}  // namespace internal
 }  // namespace ash

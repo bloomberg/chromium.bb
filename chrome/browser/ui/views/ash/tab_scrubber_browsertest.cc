@@ -52,7 +52,7 @@ class TabScrubberTest : public InProcessBrowserTest,
     // Disable external monitor scaling of coordinates.
     ash::Shell* shell = ash::Shell::GetInstance();
     shell->event_transformation_handler()->set_transformation_mode(
-        ash::internal::EventTransformationHandler::TRANSFORM_NONE);
+        ash::EventTransformationHandler::TRANSFORM_NONE);
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {

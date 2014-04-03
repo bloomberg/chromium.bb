@@ -223,8 +223,7 @@ void AlternateFrameSizeButton::UpdateSnapType(const ui::LocatedEvent& event) {
   if (snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT) {
     aura::Window* window = frame_->GetNativeWindow();
     if (!phantom_window_controller_.get()) {
-      phantom_window_controller_.reset(
-          new internal::PhantomWindowController(window));
+      phantom_window_controller_.reset(new PhantomWindowController(window));
     }
     gfx::Rect phantom_bounds_in_parent = (snap_type_ == SNAP_LEFT) ?
         wm::GetDefaultLeftSnappedWindowBoundsInParent(window) :

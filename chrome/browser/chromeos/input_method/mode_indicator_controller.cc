@@ -104,9 +104,9 @@ void ModeIndicatorController::ShowModeIndicator() {
   const base::string16 short_name =
       imm_->GetInputMethodUtil()->GetInputMethodShortName(descriptor);
 
-  aura::Window* parent = ash::Shell::GetContainer(
-      ash::wm::GetActiveWindow()->GetRootWindow(),
-      ash::internal::kShellWindowId_InputMethodContainer);
+  aura::Window* parent =
+      ash::Shell::GetContainer(ash::wm::GetActiveWindow()->GetRootWindow(),
+                               ash::kShellWindowId_InputMethodContainer);
   ash::ime::ModeIndicatorView* mi_view = new ash::ime::ModeIndicatorView(
       parent, cursor_bounds_, short_name);
   views::BubbleDelegateView::CreateBubble(mi_view);

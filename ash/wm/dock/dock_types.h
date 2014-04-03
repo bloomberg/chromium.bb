@@ -7,8 +7,6 @@
 
 namespace ash {
 
-namespace internal {
-
 // Possible values of which side of the screen the windows are docked at.
 // This is used by DockedwindowLayoutManager and DockedWindowResizer to
 // implement docking behavior including magnetism while dragging windows into
@@ -49,7 +47,6 @@ enum DockedActionSource {
   DOCKED_ACTION_SOURCE_COUNT,
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_DOCK_DOCK_TYPES_H_

@@ -18,7 +18,6 @@ class Layer;
 }
 
 namespace ash {
-namespace internal {
 
 // SystemBackgroundController manages a ui::Layer that's stacked at the bottom
 // of an aura::RootWindow's children.  It exists solely to obscure portions of
@@ -48,7 +47,6 @@ class SystemBackgroundController : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(SystemBackgroundController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_SYSTEM_BACKGROUND_CONTROLLER_H_

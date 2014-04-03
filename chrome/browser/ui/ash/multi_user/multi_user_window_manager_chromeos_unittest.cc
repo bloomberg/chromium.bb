@@ -87,7 +87,7 @@ class MultiUserWindowManagerChromeOSTest : public AshTestBase {
   void MakeWindowSystemModal(aura::Window* window) {
     aura::Window* system_modal_container =
         window->GetRootWindow()->GetChildById(
-            ash::internal::kShellWindowId_SystemModalContainer);
+            ash::kShellWindowId_SystemModalContainer);
     system_modal_container->AddChild(window);
   }
 

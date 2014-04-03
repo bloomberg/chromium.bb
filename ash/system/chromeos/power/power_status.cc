@@ -24,8 +24,6 @@
 #include "ui/gfx/rect.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Updates |proto| to ensure that its fields are consistent.
@@ -305,5 +303,4 @@ void PowerStatus::PowerChanged(
   FOR_EACH_OBSERVER(Observer, observers_, OnPowerStatusChanged());
 }
 
-}  // namespace internal
 }  // namespace ash

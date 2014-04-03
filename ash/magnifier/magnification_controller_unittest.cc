@@ -16,7 +16,6 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 const int kRootHeight = 600;
@@ -439,5 +438,4 @@ TEST_F(MagnificationControllerTest, PanWindowToLeft) {
   EXPECT_EQ("100,300", GetHostMouseLocation());
 }
 
-}  // namespace internal
 }  // namespace ash

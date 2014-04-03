@@ -14,7 +14,6 @@
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
-namespace internal {
 
 LabelTrayView::LabelTrayView(ViewClickListener* click_listener,
                              int icon_resource_id)
@@ -64,5 +63,4 @@ views::View* LabelTrayView::CreateChildView(
   return child;
 }
 
-}  // namespace internal
 }  // namespace ash

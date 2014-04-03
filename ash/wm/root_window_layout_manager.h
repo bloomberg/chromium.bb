@@ -25,7 +25,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // A layout manager for the root window.
 // Resizes all of its immediate children to fill the bounds of the root window.
@@ -50,7 +49,6 @@ class RootWindowLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_

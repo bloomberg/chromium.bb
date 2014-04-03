@@ -73,8 +73,7 @@ void CreateAndShowWidgetWithContent(views::WidgetDelegate* delegate,
   params.delegate = delegate;
   params.bounds = bounds;
   params.parent = ash::Shell::GetContainer(
-      root_window,
-      ash::internal::kShellWindowId_SettingBubbleContainer);
+      root_window, ash::kShellWindowId_SettingBubbleContainer);
   views::Widget* widget = new views::Widget;
   widget->Init(params);
   widget->SetContentsView(view);

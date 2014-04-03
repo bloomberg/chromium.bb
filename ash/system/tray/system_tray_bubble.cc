@@ -127,8 +127,6 @@ class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
 
 }  // namespace
 
-namespace internal {
-
 // SystemTrayBubble
 
 SystemTrayBubble::SystemTrayBubble(
@@ -384,5 +382,4 @@ void SystemTrayBubble::CreateItemViews(user::LoginStatus login_status) {
     focus_view->RequestFocus();
 }
 
-}  // namespace internal
 }  // namespace ash

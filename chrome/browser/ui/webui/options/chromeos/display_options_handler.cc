@@ -26,7 +26,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size_conversions.h"
 
-using ash::internal::DisplayManager;
+using ash::DisplayManager;
 
 namespace chromeos {
 namespace options {
@@ -53,8 +53,7 @@ int64 GetDisplayId(const base::ListValue* args) {
   return display_id;
 }
 
-bool CompareDisplayMode(ash::internal::DisplayMode d1,
-                        ash::internal::DisplayMode d2) {
+bool CompareDisplayMode(ash::DisplayMode d1, ash::DisplayMode d2) {
   if (d1.size.GetArea() == d2.size.GetArea())
     return d1.refresh_rate < d2.refresh_rate;
   return d1.size.GetArea() < d2.size.GetArea();
@@ -202,7 +201,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
   base::ListValue js_displays;
   for (size_t i = 0; i < displays.size(); ++i) {
     const gfx::Display& display = displays[i];
-    const ash::internal::DisplayInfo& display_info =
+    const ash::DisplayInfo& display_info =
         display_manager->GetDisplayInfo(display.id());
     const gfx::Rect& bounds = display.bounds();
     base::DictionaryValue* js_display = new base::DictionaryValue();
@@ -217,7 +216,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
     js_display->SetBoolean("isInternal", display.IsInternal());
     js_display->SetInteger("orientation",
                            static_cast<int>(display_info.rotation()));
-    std::vector<ash::internal::DisplayMode> display_modes;
+    std::vector<ash::DisplayMode> display_modes;
     std::vector<float> ui_scales;
     if (display.IsInternal()) {
       ui_scales = DisplayManager::GetScalesForDisplay(display_info);
@@ -232,7 +231,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
       for (size_t i = 0; i < ui_scales.size(); ++i) {
         gfx::SizeF new_size = base_size;
         new_size.Scale(ui_scales[i]);
-        display_modes.push_back(ash::internal::DisplayMode(
+        display_modes.push_back(ash::DisplayMode(
             gfx::ToFlooredSize(new_size), -1.0f, false, false));
       }
     } else {
@@ -391,7 +390,7 @@ void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
     return;
   }
 
-  const ash::internal::DisplayInfo& display_info =
+  const ash::DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display_id);
   gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
   gfx::Size new_resolution = gfx::ToFlooredSize(gfx::SizeF(width, height));
@@ -400,7 +399,7 @@ void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
   bool has_new_resolution = false;
   bool has_old_resolution = false;
   for (size_t i = 0; i < display_info.display_modes().size(); ++i) {
-    ash::internal::DisplayMode display_mode = display_info.display_modes()[i];
+    ash::DisplayMode display_mode = display_info.display_modes()[i];
     if (display_mode.size == new_resolution)
       has_new_resolution = true;
     if (display_mode.size == old_resolution)

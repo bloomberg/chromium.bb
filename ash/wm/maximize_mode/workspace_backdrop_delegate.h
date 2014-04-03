@@ -22,8 +22,6 @@ class Widget;
 
 namespace ash {
 
-namespace internal {
-
 // A background which gets created for a container |window| and which gets
 // stacked behind the topmost window (within that container) covering the
 // entire container.
@@ -72,8 +70,6 @@ class WorkspaceBackdropDelegate : public aura::WindowObserver,
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceBackdropDelegate);
 };
-
-}  // namespace internal
 
 }  // namespace ash
 

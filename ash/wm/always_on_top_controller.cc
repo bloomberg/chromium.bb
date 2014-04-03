@@ -10,7 +10,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace internal {
 
 AlwaysOnTopController::AlwaysOnTopController()
     : always_on_top_container_(NULL) {
@@ -68,5 +67,4 @@ void AlwaysOnTopController::OnWindowDestroyed(aura::Window* window) {
     always_on_top_container_ = NULL;
 }
 
-}  // namespace internal
 }  // namespace ash

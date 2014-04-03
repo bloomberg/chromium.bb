@@ -15,7 +15,6 @@
 using aura::Window;
 
 namespace ash {
-namespace internal {
 
 class StackingControllerTest : public test::AshTestBase {
  public:
@@ -60,5 +59,4 @@ TEST_F(StackingControllerTest, TransientParent) {
   EXPECT_EQ(launcher, w1->parent());
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -13,7 +13,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 LogoutConfirmationController::LogoutConfirmationController(
     const base::Closure& logout_closure)
@@ -83,5 +82,4 @@ void LogoutConfirmationController::OnDialogClosed() {
   logout_timer_.Stop();
 }
 
-}  // namespace internal
 }  // namespace ash

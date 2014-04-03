@@ -15,12 +15,10 @@ class Label;
 }
 
 namespace ash {
-namespace internal {
-
+class DateDefaultView;
 #if defined(OS_CHROMEOS)
 class SystemClockObserver;
 #endif
-class DateDefaultView;
 
 namespace tray {
 class TimeView;
@@ -71,7 +69,6 @@ class ASH_EXPORT TrayDate : public SystemTrayItem, public ClockObserver {
   DISALLOW_COPY_AND_ASSIGN(TrayDate);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_DATE_TRAY_DATE_H_

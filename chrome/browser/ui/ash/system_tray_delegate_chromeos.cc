@@ -147,9 +147,9 @@ gfx::NativeWindow GetNativeWindowByStatus(ash::user::LoginStatus login_status,
                                           bool session_started) {
   int container_id =
       (!session_started || login_status == ash::user::LOGGED_IN_NONE ||
-       login_status == ash::user::LOGGED_IN_LOCKED) ?
-          ash::internal::kShellWindowId_LockSystemModalContainer :
-          ash::internal::kShellWindowId_SystemModalContainer;
+       login_status == ash::user::LOGGED_IN_LOCKED)
+          ? ash::kShellWindowId_LockSystemModalContainer
+          : ash::kShellWindowId_SystemModalContainer;
   return ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                   container_id);
 }

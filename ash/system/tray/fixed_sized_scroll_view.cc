@@ -5,7 +5,6 @@
 #include "ash/system/tray/fixed_sized_scroll_view.h"
 
 namespace ash {
-namespace internal {
 
 FixedSizedScrollView::FixedSizedScrollView() {
   set_notify_enter_exit_on_child(true);
@@ -53,5 +52,4 @@ void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   contents()->SetBoundsRect(bounds);
 }
 
-}  // namespace internal
 }  // namespace ash

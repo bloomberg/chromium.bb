@@ -10,8 +10,6 @@
 
 namespace ash {
 
-namespace internal {
-
 ProjectingObserver::ProjectingObserver()
     : has_internal_output_(false),
       output_count_(0),
@@ -56,7 +54,5 @@ void ProjectingObserver::SetIsProjecting() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->SetIsProjecting(
       projecting);
 }
-
-}  // namespace internal
 
 }  // namespace ash

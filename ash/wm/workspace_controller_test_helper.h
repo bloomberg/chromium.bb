@@ -8,8 +8,6 @@
 #include "ash/wm/workspace_controller.h"
 
 namespace ash {
-namespace internal {
-
 class MultiWindowResizeController;
 class WorkspaceEventHandler;
 
@@ -27,7 +25,6 @@ class WorkspaceControllerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTestHelper);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_CONTROLLER_TEST_HELPER_H_

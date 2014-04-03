@@ -11,7 +11,6 @@
 #include "ui/display/chromeos/output_configurator.h"
 
 namespace ash {
-namespace internal {
 
 // The class to observe the output failures and shows the error dialog when
 // necessary.
@@ -33,7 +32,6 @@ class ASH_EXPORT DisplayErrorObserver
   DISALLOW_COPY_AND_ASSIGN(DisplayErrorObserver);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_DISPLAY_ERROR_OBSERVER_CHROMEOS_H_

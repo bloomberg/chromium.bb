@@ -41,10 +41,9 @@ namespace ash {
 namespace {
 
 // Containers IDs used for tests.
-const int kDesktopBackgroundId =
-    ash::internal::kShellWindowId_DesktopBackgroundContainer;
+const int kDesktopBackgroundId = ash::kShellWindowId_DesktopBackgroundContainer;
 const int kLockScreenBackgroundId =
-    ash::internal::kShellWindowId_LockScreenBackgroundContainer;
+    ash::kShellWindowId_LockScreenBackgroundContainer;
 
 // Returns number of child windows in a shell window container.
 int ChildCountForContainer(int container_id) {
@@ -111,7 +110,7 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
     test::AshTestBase::SetUp();
     // Ash shell initialization creates wallpaper. Reset it so we can manually
     // control wallpaper creation and animation in our tests.
-    internal::RootWindowController* root_window_controller =
+    RootWindowController* root_window_controller =
         Shell::GetPrimaryRootWindowController();
     root_window_controller->SetWallpaperController(NULL);
     root_window_controller->SetAnimatingWallpaperController(NULL);
@@ -151,9 +150,10 @@ class DesktopBackgroundControllerTest : public test::AshTestBase {
   // Runs kAnimatingDesktopController's animation to completion.
   // TODO(bshe): Don't require tests to run animations; it's slow.
   void RunDesktopControllerAnimation() {
-    internal::DesktopBackgroundWidgetController* controller =
-        Shell::GetPrimaryRootWindowController()->
-        animating_wallpaper_controller()->GetController(false);
+    DesktopBackgroundWidgetController* controller =
+        Shell::GetPrimaryRootWindowController()
+            ->animating_wallpaper_controller()
+            ->GetController(false);
     ASSERT_NO_FATAL_FAILURE(RunAnimationForWidget(controller->widget()));
   }
 
@@ -321,7 +321,7 @@ TEST_F(DesktopBackgroundControllerTest, ControllerOwnership) {
 
   // The new wallpaper is ready to start animating. kAnimatingDesktopController
   // holds the widget controller instance. kDesktopController will get it later.
-  internal::RootWindowController* root_window_controller =
+  RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
   EXPECT_TRUE(root_window_controller->animating_wallpaper_controller()->
               GetController(false));
@@ -363,7 +363,7 @@ TEST_F(DesktopBackgroundControllerTest, BackgroundMovementDuringUnlock) {
 
   // In this state we have two desktop background views stored in different
   // properties. Both are in the lock screen background container.
-  internal::RootWindowController* root_window_controller =
+  RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
   EXPECT_TRUE(root_window_controller->animating_wallpaper_controller()->
               GetController(false));
@@ -405,11 +405,11 @@ TEST_F(DesktopBackgroundControllerTest, ChangeWallpaperQuick) {
   // Change to a new wallpaper.
   controller->CreateEmptyWallpaper();
 
-  internal::RootWindowController* root_window_controller =
+  RootWindowController* root_window_controller =
       Shell::GetPrimaryRootWindowController();
-  internal::DesktopBackgroundWidgetController* animating_controller =
-      root_window_controller->animating_wallpaper_controller()->
-      GetController(false);
+  DesktopBackgroundWidgetController* animating_controller =
+      root_window_controller->animating_wallpaper_controller()->GetController(
+          false);
   EXPECT_TRUE(animating_controller);
   EXPECT_TRUE(root_window_controller->wallpaper_controller());
 

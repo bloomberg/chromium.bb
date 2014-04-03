@@ -49,7 +49,6 @@ base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
 using chromeos::CrasAudioHandler;
 
 namespace ash {
-namespace internal {
 namespace tray {
 
 AudioDetailedView::AudioDetailedView(SystemTrayItem* owner,
@@ -173,5 +172,4 @@ void AudioDetailedView::OnViewClicked(views::View* sender) {
 }
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash

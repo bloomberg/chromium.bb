@@ -16,7 +16,6 @@ class Layer;
 }
 
 namespace ash {
-namespace internal {
 
 // ScreenDimmer displays a partially-opaque layer above everything
 // else in the root window to darken the display.  It shouldn't be used
@@ -65,7 +64,6 @@ class ASH_EXPORT ScreenDimmer : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmer);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_SCREEN_DIMMER_H_

@@ -870,8 +870,7 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
   {
     aura::Window* first_root =
         ash::Shell::GetAllRootWindows()[0];
-    ash::internal::ScopedTargetRootWindow tmp(
-        first_root);
+    ash::ScopedTargetRootWindow tmp(first_root);
     gfx::Rect bounds;
     ui::WindowShowState show_state;
     WindowSizer::GetBrowserWindowBoundsAndShowState(
@@ -885,8 +884,7 @@ TEST_F(WindowSizerAshTest, DefaultBoundsInTargetDisplay) {
   {
     aura::Window* second_root =
         ash::Shell::GetAllRootWindows()[1];
-    ash::internal::ScopedTargetRootWindow tmp(
-        second_root);
+    ash::ScopedTargetRootWindow tmp(second_root);
     gfx::Rect bounds;
     ui::WindowShowState show_state;
     WindowSizer::GetBrowserWindowBoundsAndShowState(

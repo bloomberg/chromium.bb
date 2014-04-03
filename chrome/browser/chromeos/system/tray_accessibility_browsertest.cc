@@ -113,12 +113,12 @@ class TrayAccessibilityTest
     }
   }
 
-  ash::internal::TrayAccessibility* tray() {
+  ash::TrayAccessibility* tray() {
     return ash::Shell::GetInstance()->GetPrimarySystemTray()->
         GetTrayAccessibilityForTest();
   }
 
-  const ash::internal::TrayAccessibility* tray() const {
+  const ash::TrayAccessibility* tray() const {
     return ash::Shell::GetInstance()
         ->GetPrimarySystemTray()
         ->GetTrayAccessibilityForTest();

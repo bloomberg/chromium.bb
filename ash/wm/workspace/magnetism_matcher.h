@@ -15,7 +15,6 @@
 #include "ui/gfx/rect.h"
 
 namespace ash {
-namespace internal {
 
 enum MagnetismEdge {
   MAGNETISM_EDGE_TOP    = 1 << 0,
@@ -185,7 +184,6 @@ class ASH_EXPORT MagnetismMatcher {
   DISALLOW_COPY_AND_ASSIGN(MagnetismMatcher);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_MAGNETISM_MATCHER_H_

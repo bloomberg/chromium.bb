@@ -31,7 +31,6 @@
 #endif
 
 namespace ash {
-namespace internal {
 
 const int kPointRadius = 20;
 const SkColor kColors[] = {
@@ -374,8 +373,8 @@ scoped_ptr<base::DictionaryValue> TouchHudDebug::GetAllAsDictionary() {
   aura::Window::Windows roots = Shell::GetInstance()->GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = roots.begin();
       iter != roots.end(); ++iter) {
-    internal::RootWindowController* controller = GetRootWindowController(*iter);
-    internal::TouchHudDebug* hud = controller->touch_hud_debug();
+    RootWindowController* controller = GetRootWindowController(*iter);
+    TouchHudDebug* hud = controller->touch_hud_debug();
     if (hud) {
       scoped_ptr<base::ListValue> list = hud->GetLogAsList();
       if (!list->empty())
@@ -486,5 +485,4 @@ void TouchHudDebug::UnsetHudForRootWindowController(
   controller->set_touch_hud_debug(NULL);
 }
 
-}  // namespace internal
 }  // namespace ash

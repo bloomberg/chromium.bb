@@ -39,8 +39,6 @@
 #include "ui/wm/public/activation_delegate.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 class NonActivatableActivationDelegate
@@ -1038,7 +1036,7 @@ TEST_F(WindowSelectorTest, DISABLED_DragDropInProgress) {
   gfx::Rect bounds(0, 0, 400, 400);
   scoped_ptr<aura::Window> window(CreateWindow(bounds));
   test::ShellTestApi shell_test_api(Shell::GetInstance());
-  ash::internal::DragDropController* drag_drop_controller =
+  ash::DragDropController* drag_drop_controller =
       shell_test_api.drag_drop_controller();
   ui::OSExchangeData data;
   base::MessageLoopForUI::current()->PostTask(FROM_HERE,
@@ -1089,5 +1087,4 @@ TEST_F(WindowSelectorTest, HitTestingInOverview) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

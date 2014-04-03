@@ -13,8 +13,6 @@
 #include "ui/gfx/size.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Opacity for |dimming_layer_| when it's dimming the screen.
@@ -65,5 +63,4 @@ void ScreenDimmer::OnWindowBoundsChanged(aura::Window* root,
     dimming_layer_->SetBounds(gfx::Rect(root->bounds().size()));
 }
 
-}  // namespace internal
 }  // namespace ash

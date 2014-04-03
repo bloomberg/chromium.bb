@@ -16,14 +16,14 @@
 namespace ash {
 namespace test {
 typedef std::vector<gfx::Display> DisplayList;
-typedef internal::DisplayInfo DisplayInfo;
+typedef DisplayInfo DisplayInfo;
 typedef std::vector<DisplayInfo> DisplayInfoList;
 
 namespace {
 
 std::vector<DisplayInfo> CreateDisplayInfoListFromString(
     const std::string specs,
-    internal::DisplayManager* display_manager) {
+    DisplayManager* display_manager) {
   std::vector<DisplayInfo> display_info_list;
   std::vector<std::string> parts;
   base::SplitString(specs, ',', &parts);
@@ -41,10 +41,8 @@ std::vector<DisplayInfo> CreateDisplayInfoListFromString(
 
 }  // namespace
 
-DisplayManagerTestApi::DisplayManagerTestApi(
-    internal::DisplayManager* display_manager)
-        : display_manager_(display_manager) {
-}
+DisplayManagerTestApi::DisplayManagerTestApi(DisplayManager* display_manager)
+    : display_manager_(display_manager) {}
 
 DisplayManagerTestApi::~DisplayManagerTestApi() {}
 

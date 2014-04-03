@@ -16,7 +16,6 @@
 const int kMinBubbleHeight = 13;
 
 namespace ash {
-namespace internal {
 
 TrayGestureHandler::TrayGestureHandler()
     : widget_(NULL),
@@ -105,5 +104,4 @@ void TrayGestureHandler::OnWidgetDestroying(views::Widget* widget) {
   widget_ = NULL;
 }
 
-}  // namespace internal
 }  // namespace ash

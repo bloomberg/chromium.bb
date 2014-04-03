@@ -15,8 +15,6 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // The number of pixels from the top of the screen (a virtual bezel) to allow
@@ -106,5 +104,4 @@ bool OverviewGestureHandler::ProcessGestureEvent(
   return true;
 }
 
-}  // namespace internal
 }  // namespace ash

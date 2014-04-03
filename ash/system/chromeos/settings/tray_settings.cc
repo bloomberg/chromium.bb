@@ -25,8 +25,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 
 class SettingsDefaultView : public ActionableView,
@@ -46,7 +44,7 @@ class SettingsDefaultView : public ActionableView,
         login_status_ != user::LOGGED_IN_LOCKED) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       views::ImageView* icon =
-          new ash::internal::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+          new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
       icon->SetImage(
           rb.GetImageNamed(IDR_AURA_UBER_TRAY_SETTINGS).ToImageSkia());
       AddChildView(icon);
@@ -60,8 +58,8 @@ class SettingsDefaultView : public ActionableView,
     }
 
     if (PowerStatus::Get()->IsBatteryPresent()) {
-      power_status_view_ = new ash::internal::PowerStatusView(
-          ash::internal::PowerStatusView::VIEW_DEFAULT, power_view_right_align);
+      power_status_view_ = new ash::PowerStatusView(
+          ash::PowerStatusView::VIEW_DEFAULT, power_view_right_align);
       AddChildView(power_status_view_);
       OnPowerStatusChanged();
     }
@@ -71,7 +69,7 @@ class SettingsDefaultView : public ActionableView,
     PowerStatus::Get()->RemoveObserver(this);
   }
 
-  // Overridden from ash::internal::ActionableView.
+  // Overridden from ash::ActionableView.
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
     if (login_status_ == user::LOGGED_IN_NONE ||
         login_status_ == user::LOGGED_IN_LOCKED)
@@ -117,7 +115,7 @@ class SettingsDefaultView : public ActionableView,
  private:
   user::LoginStatus login_status_;
   views::Label* label_;
-  ash::internal::PowerStatusView* power_status_view_;
+  ash::PowerStatusView* power_status_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsDefaultView);
  };
@@ -167,5 +165,4 @@ void TraySettings::DestroyDetailedView() {
 void TraySettings::UpdateAfterLoginStatusChange(user::LoginStatus status) {
 }
 
-}  // namespace internal
 }  // namespace ash

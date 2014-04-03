@@ -25,15 +25,11 @@ class EventHandler;
 }
 
 namespace ash {
-
-namespace internal {
-class WindowSelectorTest;
-}
-
 class ScopedShowWindow;
 class WindowOverview;
 class WindowSelectorDelegate;
 class WindowSelectorItem;
+class WindowSelectorTest;
 
 // The WindowSelector allows selecting a window by alt-tabbing (CYCLE mode) or
 // by clicking or tapping on it (OVERVIEW mode). A WindowOverview will be shown
@@ -87,7 +83,7 @@ class ASH_EXPORT WindowSelector
       aura::Window* actual_active) OVERRIDE;
 
  private:
-  friend class internal::WindowSelectorTest;
+  friend class WindowSelectorTest;
 
   // Begins positioning windows such that all windows are visible on the screen.
   void StartOverview();

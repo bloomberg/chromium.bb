@@ -21,7 +21,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 
 const char TrayLocallyManagedUser::kNotificationId[] =
     "chrome://user/locally-managed";
@@ -89,5 +88,4 @@ void TrayLocallyManagedUser::CreateOrUpdateNotification(
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
-} // namespace internal
-} // namespace ash
+}  // namespace ash

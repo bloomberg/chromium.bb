@@ -163,7 +163,7 @@ TEST_F(ExtendedDesktopTest, Basic) {
   ASSERT_EQ(2U, root_windows.size());
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    EXPECT_TRUE(internal::GetRootWindowController(*iter) != NULL);
+    EXPECT_TRUE(GetRootWindowController(*iter) != NULL);
   }
   // Make sure root windows share the same controllers.
   EXPECT_EQ(aura::client::GetFocusClient(root_windows[0]),
@@ -671,12 +671,12 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
 
   // The widget stays in the same root if kStayInSameRootWindowKey is set to
   // true.
-  w1->GetNativeView()->SetProperty(internal::kStayInSameRootWindowKey, true);
+  w1->GetNativeView()->SetProperty(kStayInSameRootWindowKey, true);
   w1->SetBounds(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
 
   // The widget should now move to the 1st root window without the property.
-  w1->GetNativeView()->ClearProperty(internal::kStayInSameRootWindowKey);
+  w1->GetNativeView()->ClearProperty(kStayInSameRootWindowKey);
   w1->SetBounds(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
 
@@ -684,7 +684,7 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
   // not move to another root window regardles of the bounds specified.
   aura::Window* settings_bubble_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
-          internal::kShellWindowId_SettingBubbleContainer);
+          kShellWindowId_SettingBubbleContainer);
   aura::Window* window = aura::test::CreateTestWindowWithId(
       100, settings_bubble_container);
   window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
@@ -693,7 +693,7 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
 
   aura::Window* status_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
-          internal::kShellWindowId_StatusContainer);
+          kShellWindowId_StatusContainer);
   window = aura::test::CreateTestWindowWithId(100, status_container);
   window->SetBoundsInScreen(gfx::Rect(150, 10, 50, 50),
                             ScreenUtil::GetSecondaryDisplay());
@@ -723,10 +723,9 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   views::Textfield* textfield = new views::Textfield;
   lock_widget->client_view()->AddChildView(textfield);
 
-  ash::Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      ash::internal::kShellWindowId_LockScreenContainer)->
-      AddChild(lock_widget->GetNativeView());
+  ash::Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                           ash::kShellWindowId_LockScreenContainer)
+      ->AddChild(lock_widget->GetNativeView());
   lock_widget->Show();
   textfield->RequestFocus();
 

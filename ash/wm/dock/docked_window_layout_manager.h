@@ -38,12 +38,10 @@ class Widget;
 }
 
 namespace ash {
-class Shelf;
-
-namespace internal {
 class DockedBackgroundWidget;
 class DockedWindowLayoutManagerObserver;
 class DockedWindowResizerTest;
+class Shelf;
 class ShelfLayoutManager;
 class WorkspaceController;
 
@@ -310,7 +308,6 @@ class ASH_EXPORT DockedWindowLayoutManager
   DISALLOW_COPY_AND_ASSIGN(DockedWindowLayoutManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_H_

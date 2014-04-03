@@ -27,8 +27,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 const char kDesktopBackgroundView[] = "DesktopBackgroundView";
@@ -410,5 +408,4 @@ TEST_F(RootWindowTransformersTest, LetterBoxPillarBox) {
   EXPECT_EQ("125,0,125,0", transformer->GetHostInsets().ToString());
 }
 
-}  // namespace test
 }  // namespace ash

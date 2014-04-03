@@ -25,7 +25,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 const int kAffordanceOuterRadius = 60;
@@ -365,5 +364,4 @@ void LongPressAffordanceHandler::OnWindowDestroying(aura::Window* window) {
   StopAffordance();
 }
 
-}  // namespace internal
 }  // namespace ash

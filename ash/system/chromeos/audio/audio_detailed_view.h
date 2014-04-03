@@ -17,8 +17,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
-
 class HoverHighlightView;
 
 namespace tray {
@@ -60,7 +58,6 @@ class AudioDetailedView : public TrayDetailsView,
 };
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_AUDIO_AUDIO_DETAILED_VIEW_H_

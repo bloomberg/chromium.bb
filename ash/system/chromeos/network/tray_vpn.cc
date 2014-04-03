@@ -27,8 +27,6 @@ using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 
 class VpnDefaultView : public TrayItemMore,
@@ -176,5 +174,4 @@ void TrayVPN::NetworkServiceChanged(const chromeos::NetworkState* network) {
     detailed_->NetworkServiceChanged(network);
 }
 
-}  // namespace internal
 }  // namespace ash

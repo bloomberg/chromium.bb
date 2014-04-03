@@ -12,7 +12,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowLayoutManager, public:
@@ -79,5 +78,4 @@ void RootWindowLayoutManager::SetChildBounds(
   SetChildBoundsDirect(child, requested_bounds);
 }
 
-}  // namespace internal
 }  // namespace ash

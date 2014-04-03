@@ -27,7 +27,6 @@
 #include "ui/wm/core/compound_event_filter.h"
 
 namespace ash {
-namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, public:
@@ -66,7 +65,7 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
          child->type() == ui::wm::WINDOW_TYPE_NORMAL ||
          child->type() == ui::wm::WINDOW_TYPE_POPUP);
   DCHECK(
-      container_->id() != internal::kShellWindowId_LockSystemModalContainer ||
+      container_->id() != kShellWindowId_LockSystemModalContainer ||
       Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked());
 
   child->AddObserver(this);
@@ -133,7 +132,7 @@ bool SystemModalContainerLayoutManager::CanWindowReceiveEvents(
   // This container can not handle events if the screen is locked and it is not
   // above the lock screen layer (crbug.com/110920).
   if (Shell::GetInstance()->session_state_delegate()->IsUserSessionBlocked() &&
-      container_->id() < ash::internal::kShellWindowId_LockScreenContainer)
+      container_->id() < ash::kShellWindowId_LockScreenContainer)
     return true;
   return wm::GetActivatableWindow(window) == modal_window();
 }
@@ -188,8 +187,8 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
 bool SystemModalContainerLayoutManager::IsModalBackground(
     aura::Window* window) {
   int id = window->parent()->id();
-  if (id != internal::kShellWindowId_SystemModalContainer &&
-      id != internal::kShellWindowId_LockSystemModalContainer)
+  if (id != kShellWindowId_SystemModalContainer &&
+      id != kShellWindowId_LockSystemModalContainer)
     return false;
   SystemModalContainerLayoutManager* layout_manager =
       static_cast<SystemModalContainerLayoutManager*>(
@@ -220,5 +219,4 @@ void SystemModalContainerLayoutManager::RemoveModalWindow(
     modal_windows_.erase(it);
 }
 
-}  // namespace internal
 }  // namespace ash

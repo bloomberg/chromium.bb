@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 
 namespace ash {
-namespace internal {
 
 class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
  public:
@@ -54,7 +53,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityDelegate);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // DEFAULT_ACCESSIBILITY_DELEGATE_H_

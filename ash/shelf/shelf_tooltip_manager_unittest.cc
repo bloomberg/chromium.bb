@@ -42,9 +42,8 @@ class ShelfTooltipManagerTest : public AshTestBase {
 
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
-    internal::RootWindowController* controller =
-        Shell::GetPrimaryRootWindowController();
-    tooltip_manager_.reset(new internal::ShelfTooltipManager(
+    RootWindowController* controller = Shell::GetPrimaryRootWindowController();
+    tooltip_manager_.reset(new ShelfTooltipManager(
         controller->GetShelfLayoutManager(),
         ShelfTestAPI(controller->shelf()->shelf()).shelf_view()));
   }
@@ -83,7 +82,7 @@ class ShelfTooltipManagerTest : public AshTestBase {
  protected:
   scoped_ptr<views::Widget> widget_;
   scoped_ptr<views::View> dummy_anchor_;
-  scoped_ptr<internal::ShelfTooltipManager> tooltip_manager_;
+  scoped_ptr<ShelfTooltipManager> tooltip_manager_;
 
  private:
   void CreateWidget() {
@@ -94,9 +93,8 @@ class ShelfTooltipManagerTest : public AshTestBase {
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.parent = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(),
-        ash::internal::kShellWindowId_ShelfContainer);
+    params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                                        ash::kShellWindowId_ShelfContainer);
 
     widget_->Init(params);
     widget_->SetContentsView(dummy_anchor_.get());
@@ -157,7 +155,7 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  internal::ShelfLayoutManager* shelf =
+  ShelfLayoutManager* shelf =
       Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf->UpdateAutoHideState();

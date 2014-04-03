@@ -150,7 +150,7 @@ bool WindowState::IsActive() const {
 
 bool WindowState::IsDocked() const {
   return window_->parent() &&
-      window_->parent()->id() == internal::kShellWindowId_DockedContainer;
+         window_->parent()->id() == kShellWindowId_DockedContainer;
 }
 
 bool WindowState::CanMaximize() const {
@@ -158,12 +158,11 @@ bool WindowState::CanMaximize() const {
 }
 
 bool WindowState::CanMinimize() const {
-  internal::RootWindowController* controller =
-      internal::RootWindowController::ForWindow(window_);
+  RootWindowController* controller = RootWindowController::ForWindow(window_);
   if (!controller)
     return false;
-  aura::Window* lockscreen = controller->GetContainer(
-      internal::kShellWindowId_LockScreenContainersContainer);
+  aura::Window* lockscreen =
+      controller->GetContainer(kShellWindowId_LockScreenContainersContainer);
   if (lockscreen->Contains(window_))
     return false;
 
@@ -418,10 +417,10 @@ WindowState* GetActiveWindowState() {
 WindowState* GetWindowState(aura::Window* window) {
   if (!window)
     return NULL;
-  WindowState* settings = window->GetProperty(internal::kWindowStateKey);
+  WindowState* settings = window->GetProperty(kWindowStateKey);
   if(!settings) {
     settings = new WindowState(window);
-    window->SetProperty(internal::kWindowStateKey, settings);
+    window->SetProperty(kWindowStateKey, settings);
   }
   return settings;
 }

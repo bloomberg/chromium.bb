@@ -12,8 +12,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 class DateView;
 }  // namespace tray
@@ -45,7 +43,6 @@ class ASH_EXPORT DateDefaultView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(DateDefaultView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_DATE_DATE_DEFAULT_VIEW_H_

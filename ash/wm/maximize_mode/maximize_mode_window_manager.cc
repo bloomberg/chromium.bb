@@ -16,7 +16,6 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
-namespace internal {
 
 MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   Shell::GetInstance()->RemoveShellObserver(this);
@@ -170,8 +169,8 @@ void MaximizeModeWindowManager::AddWindowCreationObservers() {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    aura::Window* container = Shell::GetContainer(*iter,
-        internal::kShellWindowId_DefaultContainer);
+    aura::Window* container =
+        Shell::GetContainer(*iter, kShellWindowId_DefaultContainer);
     DCHECK(observed_container_windows_.find(container) ==
               observed_container_windows_.end());
     container->AddObserver(this);
@@ -212,13 +211,11 @@ void MaximizeModeWindowManager::EnableBackdropBehindTopWindowOnEachDisplay(
        iter != controllers.end(); ++iter) {
     RootWindowController* controller = *iter;
     aura::Window* container = Shell::GetContainer(
-        controller->root_window(),
-        internal::kShellWindowId_DefaultContainer);
+        controller->root_window(), kShellWindowId_DefaultContainer);
     controller->workspace_controller()->SetMaximizeBackdropDelegate(
         scoped_ptr<WorkspaceLayoutManagerDelegate>(
             enable ? new WorkspaceBackdropDelegate(container) : NULL));
   }
 }
 
-}  // namespace internal
 }  // namespace ash

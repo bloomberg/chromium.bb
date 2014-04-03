@@ -12,7 +12,6 @@
 #include "ui/gfx/point.h"
 
 namespace ash {
-namespace internal {
 
 class DragWindowController;
 
@@ -64,7 +63,6 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   DISALLOW_COPY_AND_ASSIGN(DragWindowResizer);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_DRAG_WINDOW_RESIZER_H_

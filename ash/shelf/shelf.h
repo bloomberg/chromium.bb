@@ -30,21 +30,18 @@ class View;
 }
 
 namespace ash {
-
-namespace internal {
 class FocusCycler;
+class ShelfDelegate;
+class ShelfIconObserver;
 class ShelfLayoutManager;
+class ShelfModel;
 class ShelfView;
-}
+class ShelfWidget;
 
 namespace test {
 class ShelfTestAPI;
 }
 
-class ShelfDelegate;
-class ShelfIconObserver;
-class ShelfModel;
-class ShelfWidget;
 
 class ASH_EXPORT Shelf {
  public:
@@ -115,7 +112,7 @@ class ASH_EXPORT Shelf {
   friend class test::ShelfTestAPI;
 
   // ShelfView used to display icons.
-  internal::ShelfView* shelf_view_;
+  ShelfView* shelf_view_;
 
   ShelfAlignment alignment_;
 

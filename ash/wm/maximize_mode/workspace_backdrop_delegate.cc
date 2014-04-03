@@ -16,9 +16,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-
-namespace internal {
-
 namespace {
 
 // The opacity of the backdrop.
@@ -149,5 +146,4 @@ void WorkspaceBackdropDelegate::Show() {
   background_->GetNativeView()->layer()->SetOpacity(kBackdropOpacity);
 }
 
-}  // namespace internal
 }  // namespace ash

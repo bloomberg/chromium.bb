@@ -33,7 +33,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
 
-using ash::internal::DesktopBackgroundWidgetController;
 using content::BrowserThread;
 
 namespace ash {
@@ -370,25 +369,24 @@ void DesktopBackgroundController::OnDefaultWallpaperLoadCompleted(
 
 void DesktopBackgroundController::InstallDesktopController(
     aura::Window* root_window) {
-  internal::DesktopBackgroundWidgetController* component = NULL;
+  DesktopBackgroundWidgetController* component = NULL;
   int container_id = GetBackgroundContainerId(locked_);
 
   switch (desktop_background_mode_) {
     case BACKGROUND_IMAGE: {
-      views::Widget* widget = internal::CreateDesktopBackground(root_window,
-                                                                container_id);
-      component = new internal::DesktopBackgroundWidgetController(widget);
+      views::Widget* widget =
+          CreateDesktopBackground(root_window, container_id);
+      component = new DesktopBackgroundWidgetController(widget);
       break;
     }
     case BACKGROUND_NONE:
       NOTREACHED();
       return;
   }
-  internal::GetRootWindowController(root_window)->
-      SetAnimatingWallpaperController(
-          new internal::AnimatingDesktopController(component));
+  GetRootWindowController(root_window)->SetAnimatingWallpaperController(
+      new AnimatingDesktopController(component));
 
-  component->StartAnimating(internal::GetRootWindowController(root_window));
+  component->StartAnimating(GetRootWindowController(root_window));
 }
 
 void DesktopBackgroundController::InstallDesktopControllerForAllWindows() {
@@ -407,7 +405,7 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
       Shell::GetAllRootWindowControllers();
   for (Shell::RootWindowControllerList::iterator iter = controllers.begin();
     iter != controllers.end(); ++iter) {
-    internal::RootWindowController* root_window_controller = *iter;
+    RootWindowController* root_window_controller = *iter;
     // In the steady state (no animation playing) the background widget
     // controller exists in the RootWindowController.
     DesktopBackgroundWidgetController* desktop_controller =
@@ -439,8 +437,8 @@ bool DesktopBackgroundController::ReparentBackgroundWidgets(int src_container,
 }
 
 int DesktopBackgroundController::GetBackgroundContainerId(bool locked) {
-  return locked ? internal::kShellWindowId_LockScreenBackgroundContainer :
-                  internal::kShellWindowId_DesktopBackgroundContainer;
+  return locked ? kShellWindowId_LockScreenBackgroundContainer
+                : kShellWindowId_DesktopBackgroundContainer;
 }
 
 void DesktopBackgroundController::UpdateWallpaper() {
@@ -456,8 +454,7 @@ gfx::Size DesktopBackgroundController::GetMaxDisplaySizeInNative() {
   int width = 0;
   int height = 0;
   std::vector<gfx::Display> displays = Shell::GetScreen()->GetAllDisplays();
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
 
   for (std::vector<gfx::Display>::iterator iter = displays.begin();
        iter != displays.end(); ++iter) {

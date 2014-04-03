@@ -21,11 +21,9 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 
-class DefaultTracingView : public internal::ActionableView {
+class DefaultTracingView : public ActionableView {
  public:
   DefaultTracingView() {
     SetLayoutManager(new views::BoxLayout(
@@ -34,7 +32,7 @@ class DefaultTracingView : public internal::ActionableView {
         kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_ = new internal::FixedSizedImageView(0, kTrayPopupItemHeight);
+    image_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
     image_->SetImage(
         bundle.GetImageNamed(IDR_AURA_UBER_TRAY_TRACING).ToImageSkia());
     AddChildView(image_);
@@ -64,7 +62,7 @@ class DefaultTracingView : public internal::ActionableView {
 }  // namespace tray
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::internal::TrayTracing
+// ash::TrayTracing
 
 TrayTracing::TrayTracing(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_TRACING),
@@ -109,5 +107,4 @@ void TrayTracing::OnTracingModeChanged(bool value) {
   SetTrayIconVisible(value);
 }
 
-}  // namespace internal
 }  // namespace ash

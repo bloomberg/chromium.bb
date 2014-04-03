@@ -15,7 +15,7 @@ namespace ash {
 class Shell;
 
 class FirstRunHelperImpl : public FirstRunHelper,
-                           public internal::OverlayEventFilter::Delegate {
+                           public OverlayEventFilter::Delegate {
  public:
   FirstRunHelperImpl();
   virtual ~FirstRunHelperImpl();
@@ -33,14 +33,14 @@ class FirstRunHelperImpl : public FirstRunHelper,
   virtual gfx::Rect GetTrayBubbleBounds() OVERRIDE;
   virtual gfx::Rect GetHelpButtonBounds() OVERRIDE;
 
-  // Overriden from internal::OverlayEventFilter::Delegate.
+  // Overriden from OverlayEventFilter::Delegate.
   virtual void Cancel() OVERRIDE;
   virtual bool IsCancelingKeyEvent(ui::KeyEvent* event) OVERRIDE;
   virtual aura::Window* GetWindow() OVERRIDE;
 
  private:
   views::Widget* widget_;
-  internal::DesktopCleaner cleaner_;
+  DesktopCleaner cleaner_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunHelperImpl);
 };

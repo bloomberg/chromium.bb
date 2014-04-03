@@ -14,7 +14,6 @@
 #include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
-namespace internal {
 
 PowerEventObserver::PowerEventObserver()
     : screen_locked_(false) {
@@ -80,5 +79,4 @@ void PowerEventObserver::ScreenIsUnlocked() {
   screen_locked_ = false;
 }
 
-}  // namespace internal
 }  // namespace ash

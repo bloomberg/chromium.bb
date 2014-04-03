@@ -27,7 +27,6 @@ const int kPaddingVertical = 19;
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 DateDefaultView::DateDefaultView(ash::user::LoginStatus login)
     : help_(NULL),
@@ -118,5 +117,4 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
   }
 }
 
-}  // namespace internal
 }  // namespace ash

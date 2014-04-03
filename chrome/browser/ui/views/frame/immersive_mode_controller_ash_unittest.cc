@@ -229,7 +229,7 @@ TEST_F(ImmersiveModeControllerAshTest, TabAndBrowserFullscreen) {
   AddTab(browser(), GURL("about:blank"));
 
   // The shelf should start out as visible.
-  ash::internal::ShelfLayoutManager* shelf =
+  ash::ShelfLayoutManager* shelf =
       ash::Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   ASSERT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
 

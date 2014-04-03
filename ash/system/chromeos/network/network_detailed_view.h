@@ -9,8 +9,6 @@
 #include "chromeos/network/network_state_handler.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 
 // Abstract base class for all NetworkDetailedView derived subclasses,
@@ -48,8 +46,6 @@ class NetworkDetailedView : public TrayDetailsView {
 };
 
 }  // namespace tray
-
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_NETWORK_NETWORK_DETAILED_VIEW_H

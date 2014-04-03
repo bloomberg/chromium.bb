@@ -37,8 +37,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // If the remaining session time falls below this threshold, the user should be
@@ -388,5 +386,4 @@ bool TraySessionLengthLimit::IsTrayViewVisibleForTest() {
   return tray_view_ && tray_view_->visible();
 }
 
-}  // namespace internal
 }  // namespace ash

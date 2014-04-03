@@ -736,7 +736,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     // Get the system modal container for the window's root window.
     aura::Window* system_modal_container =
         window->GetRootWindow()->GetChildById(
-            ash::internal::kShellWindowId_SystemModalContainer);
+            ash::kShellWindowId_SystemModalContainer);
     if (window->parent() == system_modal_container) {
       // The window is system modal and we need to find the parent which owns
       // it so that we can switch to the desktop accordingly.

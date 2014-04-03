@@ -232,14 +232,14 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       if (!(WindowResizer::GetBoundsChangeForWindowComponent(component) &
             WindowResizer::kBoundsChange_Resizes))
         return;
-      internal::ResizeShadowController* controller =
+      ResizeShadowController* controller =
           Shell::GetInstance()->resize_shadow_controller();
       if (controller)
         controller->ShowShadow(target, component);
       return;
     }
     case ui::ET_GESTURE_END: {
-      internal::ResizeShadowController* controller =
+      ResizeShadowController* controller =
           Shell::GetInstance()->resize_shadow_controller();
       if (controller)
         controller->HideShadow(target);
@@ -532,7 +532,7 @@ void ToplevelWindowEventHandler::HandleMouseMoved(
 
   // TODO(jamescook): Move the resize cursor update code into here from
   // CompoundEventFilter?
-  internal::ResizeShadowController* controller =
+  ResizeShadowController* controller =
       Shell::GetInstance()->resize_shadow_controller();
   if (controller) {
     if (event->flags() & ui::EF_IS_NON_CLIENT) {
@@ -554,7 +554,7 @@ void ToplevelWindowEventHandler::HandleMouseExited(
   if (event->phase() != ui::EP_POSTTARGET)
     return;
 
-  internal::ResizeShadowController* controller =
+  ResizeShadowController* controller =
       Shell::GetInstance()->resize_shadow_controller();
   if (controller)
     controller->HideShadow(target);

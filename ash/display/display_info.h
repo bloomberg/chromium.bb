@@ -15,7 +15,6 @@
 #include "ui/gfx/rect.h"
 
 namespace ash {
-namespace internal {
 
 // A struct that represents the display's mode info.
 struct ASH_EXPORT DisplayMode {
@@ -225,7 +224,6 @@ class ASH_EXPORT DisplayInfo {
   std::vector<ui::ColorCalibrationProfile> available_color_profiles_;
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  //  ASH_DISPLAY_DISPLAY_INFO_H_

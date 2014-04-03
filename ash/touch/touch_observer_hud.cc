@@ -16,7 +16,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
     : display_id_(GetRootWindowSettings(initial_root)->display_id),
@@ -37,9 +36,8 @@ TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
   params.can_activate = false;
   params.accept_events = false;
   params.bounds = display.bounds();
-  params.parent = Shell::GetContainer(
-      root_window_,
-      internal::kShellWindowId_OverlayContainer);
+  params.parent =
+      Shell::GetContainer(root_window_, kShellWindowId_OverlayContainer);
   widget_->Init(params);
   widget_->SetContentsView(content);
   widget_->StackAtTop();
@@ -127,7 +125,7 @@ void TouchObserverHUD::OnDisplayConfigurationChanging() {
   views::Widget::ReparentNativeView(
       widget_->GetNativeView(),
       Shell::GetContainer(root_window_,
-                          internal::kShellWindowId_UnparentedControlContainer));
+                          kShellWindowId_UnparentedControlContainer));
 
   root_window_ = NULL;
 }
@@ -141,8 +139,7 @@ void TouchObserverHUD::OnDisplayConfigurationChanged() {
 
   views::Widget::ReparentNativeView(
       widget_->GetNativeView(),
-      Shell::GetContainer(root_window_,
-                          internal::kShellWindowId_OverlayContainer));
+      Shell::GetContainer(root_window_, kShellWindowId_OverlayContainer));
 
   RootWindowController* controller = GetRootWindowController(root_window_);
   SetHudForRootWindowController(controller);
@@ -150,5 +147,4 @@ void TouchObserverHUD::OnDisplayConfigurationChanged() {
   root_window_->AddPreTargetHandler(this);
 }
 
-}  // namespace internal
 }  // namespace ash

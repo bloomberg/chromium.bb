@@ -20,8 +20,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
-
 class ScreenTrayItem;
 
 namespace tray {
@@ -141,7 +139,6 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   DISALLOW_COPY_AND_ASSIGN(ScreenTrayItem);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SCREEN_TRAY_ITEM_H_

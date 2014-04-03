@@ -12,9 +12,7 @@
 #include "ui/aura/client/window_tree_client.h"
 
 namespace ash {
-namespace internal {
 class AlwaysOnTopController;
-}
 
 class ASH_EXPORT StackingController : public aura::client::WindowTreeClient {
  public:

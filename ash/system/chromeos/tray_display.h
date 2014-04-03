@@ -15,12 +15,11 @@
 #include "ui/views/view.h"
 
 namespace ash {
+class DisplayView;
+
 namespace test {
 class AshTestBase;
 }
-
-namespace internal {
-class DisplayView;
 
 class ASH_EXPORT TrayDisplay : public SystemTrayItem,
                                public DisplayController::Observer {
@@ -74,7 +73,6 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayDisplay);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_TRAY_DISPLAY_H_

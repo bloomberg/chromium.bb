@@ -148,11 +148,9 @@ class CompletableLinearAnimation : public gfx::LinearAnimation {
   int duration_;
 };
 
-class TestDragDropController : public internal::DragDropController {
+class TestDragDropController : public DragDropController {
  public:
-  TestDragDropController() : internal::DragDropController() {
-    Reset();
-  }
+  TestDragDropController() : DragDropController() { Reset(); }
 
   void Reset() {
     drag_start_received_ = false;
@@ -333,7 +331,7 @@ class DragDropControllerTest : public AshTestBase {
         NULL;
   }
 
-  internal::DragDropTracker* drag_drop_tracker() {
+  DragDropTracker* drag_drop_tracker() {
     return drag_drop_controller_->drag_drop_tracker_.get();
   }
 

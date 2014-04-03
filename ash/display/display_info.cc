@@ -21,7 +21,6 @@
 #endif
 
 namespace ash {
-namespace internal {
 
 DisplayMode::DisplayMode()
     : refresh_rate(0.0f), interlaced(false), native(false) {}
@@ -316,5 +315,4 @@ bool DisplayInfo::IsColorProfileAvailable(
                    profile) != available_color_profiles_.end();
 }
 
-}  // namespace internal
 }  // namespace ash

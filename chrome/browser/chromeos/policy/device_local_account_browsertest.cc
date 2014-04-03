@@ -1096,7 +1096,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   app_window_registry->AddObserver(this);
 
   // Verify that the logout confirmation dialog is not showing.
-  ash::internal::LogoutConfirmationController* logout_confirmation_controller =
+  ash::LogoutConfirmationController* logout_confirmation_controller =
       ash::Shell::GetInstance()->logout_confirmation_controller();
   ASSERT_TRUE(logout_confirmation_controller);
   EXPECT_FALSE(logout_confirmation_controller->dialog_for_testing());
@@ -1196,7 +1196,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
   EXPECT_TRUE(browser_list->empty());
 
   // Verify that the logout confirmation dialog is showing.
-  ash::internal::LogoutConfirmationDialog* dialog =
+  ash::LogoutConfirmationDialog* dialog =
       logout_confirmation_controller->dialog_for_testing();
   ASSERT_TRUE(dialog);
 

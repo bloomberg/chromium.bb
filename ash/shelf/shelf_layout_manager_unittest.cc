@@ -47,8 +47,6 @@
 #endif
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
@@ -1015,8 +1013,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
             GetShelfWidget()->GetWindowBoundsInScreen().y());
 
   aura::Window* lock_container = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      internal::kShellWindowId_LockScreenContainer);
+      Shell::GetPrimaryRootWindow(), kShellWindowId_LockScreenContainer);
 
   views::Widget* lock_widget = new views::Widget;
   views::Widget::InitParams lock_params(
@@ -2056,5 +2053,4 @@ TEST_F(ShelfLayoutManagerTest, MAYBE_StatusAreaHitBoxCoversEdge) {
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
 }
 
-}  // namespace internal
 }  // namespace ash

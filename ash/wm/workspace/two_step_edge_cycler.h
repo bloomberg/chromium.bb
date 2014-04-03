@@ -12,8 +12,6 @@
 
 namespace ash {
 
-namespace internal {
-
 // TwoStepEdgeCycler is responsible for cycling between two modes when the mouse
 // is at the edge of the workspace. The cycler does not loop so it is impossible
 // to get back to the first mode once the second mode is reached.
@@ -46,7 +44,6 @@ class ASH_EXPORT TwoStepEdgeCycler {
   DISALLOW_COPY_AND_ASSIGN(TwoStepEdgeCycler);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_TWO_STEP_EDGE_CYCLER_H_

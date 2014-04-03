@@ -9,7 +9,6 @@
 #include "ui/gfx/canvas.h"
 
 namespace ash {
-namespace internal {
 
 // static
 const char ActionableView::kViewClassName[] = "tray/ActionableView";
@@ -91,5 +90,4 @@ void ActionableView::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 
 namespace ash {
-namespace internal {
 
 // Shows a dialog asking the user whether to end the session when the last
 // window has been closed in a public session.
@@ -25,7 +24,6 @@ class LastWindowClosedLogoutReminder : public LastWindowClosedObserver {
   DISALLOW_COPY_AND_ASSIGN(LastWindowClosedLogoutReminder);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SESSION_LAST_WINDOW_CLOSED_LOGOUT_REMINDER_H_

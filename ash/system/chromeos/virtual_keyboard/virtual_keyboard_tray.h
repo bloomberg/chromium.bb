@@ -16,8 +16,6 @@ class ImageButton;
 }
 
 namespace ash {
-namespace internal {
-
 class StatusAreaWidget;
 
 class VirtualKeyboardTray : public TrayBackgroundView,
@@ -49,7 +47,6 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardTray);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_VIRTUAL_KEYBOARD_VIRTUAL_KEYBOARD_TRAY_H_

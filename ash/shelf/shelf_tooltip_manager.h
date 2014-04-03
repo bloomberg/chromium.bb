@@ -26,14 +26,13 @@ class Label;
 }
 
 namespace ash {
+class ShelfView;
+class ShelfLayoutManager;
+
 namespace test {
 class ShelfTooltipManagerTest;
 class ShelfViewTest;
 }
-
-namespace internal {
-class ShelfView;
-class ShelfLayoutManager;
 
 // ShelfTooltipManager manages the tooltip balloon poping up on shelf items.
 class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
@@ -115,7 +114,6 @@ protected:
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_TOOLTIP_MANAGER_H_

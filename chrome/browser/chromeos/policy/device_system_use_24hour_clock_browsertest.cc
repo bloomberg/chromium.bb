@@ -55,36 +55,35 @@ class SystemUse24HourClockPolicyTest
   }
 
   static base::HourClockType TestGetPrimarySystemTrayTimeHourType() {
-    const ash::internal::TrayDate* tray_date = ash::Shell::GetInstance()->
-                                                   GetPrimarySystemTray()->
-                                                   GetTrayDateForTesting();
-    const ash::internal::tray::TimeView* time_tray =
-        tray_date->GetTimeTrayForTesting();
+    const ash::TrayDate* tray_date = ash::Shell::GetInstance()
+                                         ->GetPrimarySystemTray()
+                                         ->GetTrayDateForTesting();
+    const ash::tray::TimeView* time_tray = tray_date->GetTimeTrayForTesting();
 
     return time_tray->GetHourTypeForTesting();
   }
 
   static bool TestPrimarySystemTrayHasDateDefaultView() {
-    const ash::internal::TrayDate* tray_date = ash::Shell::GetInstance()->
-                                                   GetPrimarySystemTray()->
-                                                   GetTrayDateForTesting();
-    const ash::internal::DateDefaultView* date_default_view =
+    const ash::TrayDate* tray_date = ash::Shell::GetInstance()
+                                         ->GetPrimarySystemTray()
+                                         ->GetTrayDateForTesting();
+    const ash::DateDefaultView* date_default_view =
         tray_date->GetDefaultViewForTesting();
     return (date_default_view != NULL);
   }
 
   static void TestPrimarySystemTrayCreateDefaultView() {
-    ash::internal::TrayDate* tray_date = ash::Shell::GetInstance()->
-                                                   GetPrimarySystemTray()->
-                                                   GetTrayDateForTesting();
+    ash::TrayDate* tray_date = ash::Shell::GetInstance()
+                                   ->GetPrimarySystemTray()
+                                   ->GetTrayDateForTesting();
     tray_date->CreateDefaultViewForTesting(ash::user::LOGGED_IN_NONE);
   }
 
   static base::HourClockType TestGetPrimarySystemTrayDateHourType() {
-    const ash::internal::TrayDate* tray_date = ash::Shell::GetInstance()->
-                                                   GetPrimarySystemTray()->
-                                                   GetTrayDateForTesting();
-    const ash::internal::DateDefaultView* date_default_view =
+    const ash::TrayDate* tray_date = ash::Shell::GetInstance()
+                                         ->GetPrimarySystemTray()
+                                         ->GetTrayDateForTesting();
+    const ash::DateDefaultView* date_default_view =
         tray_date->GetDefaultViewForTesting();
 
     return date_default_view->GetDateView()->GetHourTypeForTesting();

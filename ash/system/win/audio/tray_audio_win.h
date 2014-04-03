@@ -11,8 +11,6 @@
 
 namespace ash {
 
-namespace internal {
-
 class TrayAudioWin : public TrayAudio {
  public:
   explicit TrayAudioWin(SystemTray* system_tray);
@@ -22,7 +20,6 @@ class TrayAudioWin : public TrayAudio {
   DISALLOW_COPY_AND_ASSIGN(TrayAudioWin);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_WIN_AUDIO_TRAY_AUDIO_WIN_H_

@@ -27,8 +27,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Duration for show/hide animation in milliseconds.
@@ -295,12 +293,12 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
     RootWindowController* root_controller =
         GetRootWindowController(target->GetRootWindow());
     if (root_controller) {
-      aura::Window* menu_container = root_controller->GetContainer(
-          internal::kShellWindowId_MenuContainer);
+      aura::Window* menu_container =
+          root_controller->GetContainer(kShellWindowId_MenuContainer);
       if (menu_container->Contains(target))
         return;
       aura::Window* keyboard_container = root_controller->GetContainer(
-          internal::kShellWindowId_VirtualKeyboardContainer);
+          kShellWindowId_VirtualKeyboardContainer);
       if (keyboard_container->Contains(target))
         return;
     }
@@ -437,5 +435,4 @@ void AppListController::TransitionChanged() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

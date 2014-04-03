@@ -16,8 +16,6 @@ class Window;
 }
 
 namespace ash {
-namespace internal {
-
 class TrayBubbleWrapper;
 
 // Handles events for a tray bubble.
@@ -43,7 +41,6 @@ class TrayEventFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(TrayEventFilter);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_EVENT_FILTER_H_

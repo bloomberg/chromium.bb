@@ -11,7 +11,6 @@
 #include "ui/display/chromeos/output_configurator.h"
 
 namespace ash {
-namespace internal {
 
 struct DisplayMode;
 
@@ -45,7 +44,6 @@ class DisplayChangeObserver : public ui::OutputConfigurator::StateController,
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserver);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_AURA_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H

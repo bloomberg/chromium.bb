@@ -9,15 +9,13 @@
 #include "ui/events/event_handler.h"
 
 namespace ash {
+class LongPressAffordanceHandler;
+class OverviewGestureHandler;
+class ShelfGestureHandler;
 
 namespace test {
 class SystemGestureEventFilterTest;
 }
-
-namespace internal {
-class LongPressAffordanceHandler;
-class OverviewGestureHandler;
-class ShelfGestureHandler;
 
 // An event filter which handles system level gesture events.
 class SystemGestureEventFilter : public ui::EventHandler {
@@ -41,7 +39,6 @@ class SystemGestureEventFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(SystemGestureEventFilter);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_SYSTEM_GESTURE_EVENT_FILTER_H_

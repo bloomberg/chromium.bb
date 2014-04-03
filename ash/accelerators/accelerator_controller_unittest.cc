@@ -546,12 +546,12 @@ TEST_F(AcceleratorControllerTest, CenterWindowAccelerator) {
   // Add the window to docked container and try to center it.
   window->SetBounds(gfx::Rect(0, 0, 20, 20));
   aura::Window* docked_container = Shell::GetContainer(
-      window->GetRootWindow(), internal::kShellWindowId_DockedContainer);
+      window->GetRootWindow(), kShellWindowId_DockedContainer);
   docked_container->AddChild(window.get());
   gfx::Rect docked_bounds = window->GetBoundsInScreen();
   GetController()->PerformAction(WINDOW_POSITION_CENTER, dummy);
   // It should not get centered and should remain docked.
-  EXPECT_EQ(internal::kShellWindowId_DockedContainer, window->parent()->id());
+  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
   EXPECT_EQ(docked_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 

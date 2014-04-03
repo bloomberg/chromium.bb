@@ -17,7 +17,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 namespace {
 
 const char kDisplayErrorNotificationId[] = "chrome://settings/display/error";
@@ -70,5 +69,4 @@ base::string16 DisplayErrorObserver::
   return base::string16();
 }
 
-}  // namespace internal
 }  // namespace ash

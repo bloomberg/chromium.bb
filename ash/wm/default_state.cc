@@ -31,7 +31,7 @@ const float kMinimumPercentOnScreenArea = 0.3f;
 
 bool IsPanel(aura::Window* window) {
   return window->parent() &&
-      window->parent()->id() == internal::kShellWindowId_PanelContainer;
+         window->parent()->id() == kShellWindowId_PanelContainer;
 }
 
 void MoveToDisplayForRestore(WindowState* window_state) {

@@ -43,7 +43,6 @@
 #endif
 
 namespace ash {
-namespace internal {
 typedef std::vector<gfx::Display> DisplayList;
 typedef std::vector<DisplayInfo> DisplayInfoList;
 
@@ -1117,5 +1116,4 @@ void DisplayManager::UpdateDisplayBoundsForLayout(
   secondary_display->UpdateWorkAreaFromInsets(insets);
 }
 
-}  // namespace internal
 }  // namespace ash

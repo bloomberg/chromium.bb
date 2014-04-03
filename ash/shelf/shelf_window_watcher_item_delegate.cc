@@ -14,7 +14,6 @@
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
-namespace internal {
 
 ShelfWindowWatcherItemDelegate::ShelfWindowWatcherItemDelegate(
     aura::Window* window, ShelfModel* model)
@@ -69,5 +68,4 @@ bool ShelfWindowWatcherItemDelegate::ShouldShowTooltip() {
   return true;
 }
 
-}  // namespace internal
 }  // namespace ash

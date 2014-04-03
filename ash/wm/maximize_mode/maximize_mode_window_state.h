@@ -8,7 +8,6 @@
 #include "ash/wm/window_state.h"
 
 namespace ash {
-namespace internal {
 class MaximizeModeWindowManager;
 
 // The MaximizeModeWindowState implementation which reduces all possible window
@@ -62,7 +61,6 @@ class MaximizeModeWindowState : public wm::WindowState::State {
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeWindowState);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_WINDOW_STATE_H_

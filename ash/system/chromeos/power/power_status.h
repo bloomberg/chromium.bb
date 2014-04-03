@@ -15,7 +15,6 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
-namespace internal {
 
 // PowerStatus is a singleton that receives updates about the system's
 // power status from chromeos::PowerManagerClient and makes the information
@@ -152,7 +151,6 @@ class ASH_EXPORT PowerStatus : public chromeos::PowerManagerClient::Observer {
   DISALLOW_COPY_AND_ASSIGN(PowerStatus);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_POWER_POWER_STATUS_H_

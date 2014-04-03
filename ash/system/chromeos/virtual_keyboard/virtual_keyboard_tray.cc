@@ -19,8 +19,6 @@
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 class VirtualKeyboardButton : public views::ImageButton {
@@ -116,5 +114,4 @@ void VirtualKeyboardTray::OnAccessibilityModeChanged(
       IsVirtualKeyboardEnabled());
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -27,25 +27,21 @@ class ViewModel;
 }
 
 namespace ash {
-
-namespace test {
-class ShelfViewTestAPI;
-}
-
 class ShelfDelegate;
 class ShelfIconObserver;
 class ShelfItemDelegateManager;
 class ShelfModel;
 struct ShelfItem;
-
-namespace internal {
-
 class DragImageView;
 class OverflowBubble;
 class OverflowButton;
 class ShelfButton;
 class ShelfLayoutManager;
 class ShelfTooltipManager;
+
+namespace test {
+class ShelfViewTestAPI;
+}
 
 extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM;
 extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT;
@@ -420,7 +416,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // The image proxy for drag operations when a drag and drop host exists and
   // the item can be dragged outside the app grid.
-  scoped_ptr<ash::internal::DragImageView> drag_image_;
+  scoped_ptr<ash::DragImageView> drag_image_;
 
   // The cursor offset to the middle of the dragged item.
   gfx::Vector2d drag_image_offset_;
@@ -452,7 +448,6 @@ class ASH_EXPORT ShelfView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_VIEW_H_

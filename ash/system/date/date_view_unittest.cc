@@ -8,7 +8,6 @@
 #include "ui/views/controls/label.h"
 
 namespace ash {
-namespace internal {
 namespace tray {
 
 class TimeViewTest : public ash::test::AshTestBase {
@@ -62,5 +61,4 @@ TEST_F(TimeViewTest, Basics) {
 }
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash

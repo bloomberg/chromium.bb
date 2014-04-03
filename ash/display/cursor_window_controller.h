@@ -14,8 +14,6 @@ namespace test{
 class MirrorWindowTestApi;
 }
 
-namespace internal {
-
 class CursorWindowDelegate;
 
 // Draws a mouse cursor on a given container window.
@@ -84,7 +82,6 @@ class CursorWindowController {
   DISALLOW_COPY_AND_ASSIGN(CursorWindowController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_CURSOR_WINDOW_CONTROLLER_H_

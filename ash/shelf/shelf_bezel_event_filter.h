@@ -10,7 +10,6 @@
 #include "ui/gfx/rect.h"
 
 namespace ash {
-namespace internal {
 class ShelfLayoutManager;
 
 // Detects and forwards touch gestures that occur on a bezel sensor to the
@@ -33,7 +32,6 @@ class ShelfBezelEventFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(ShelfBezelEventFilter);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_BEZEL_EVENT_FILTER_H_

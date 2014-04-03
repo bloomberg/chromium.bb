@@ -24,7 +24,6 @@
 #include "ui/gfx/screen_type_delegate.h"
 
 namespace ash {
-namespace internal {
 
 using std::vector;
 using std::string;
@@ -1230,5 +1229,4 @@ TEST_F(ScreenShutdownTest, ScreenAfterShutdown) {
   UpdateDisplay("500x300,800x400");
 }
 
-}  // namespace internal
 }  // namespace ash

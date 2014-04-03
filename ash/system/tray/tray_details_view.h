@@ -14,13 +14,9 @@ class ScrollView;
 }
 
 namespace ash {
-
-class SystemTrayItem;
-
-namespace internal {
-
 class FixedSizedScrollView;
 class ScrollBorder;
+class SystemTrayItem;
 class ViewClickListener;
 
 class ASH_EXPORT TrayDetailsView : public views::View {
@@ -67,7 +63,6 @@ class ASH_EXPORT TrayDetailsView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TrayDetailsView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_DETAILS_VIEW_H_

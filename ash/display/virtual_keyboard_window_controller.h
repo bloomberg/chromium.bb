@@ -16,14 +16,12 @@ class KeyboardController;
 }
 
 namespace ash {
+class DisplayInfo;
+class RootWindowController;
 
 namespace test {
 class VirtualKeyboardWindowControllerTest;
 }  // namespace test
-
-namespace internal {
-class DisplayInfo;
-class RootWindowController;
 
 // This class maintains the RootWindowController dedicated for
 // virtual keyboard.
@@ -60,7 +58,6 @@ class ASH_EXPORT VirtualKeyboardWindowController : public ShellObserver {
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardWindowController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_VIRTUAL_KEYBOARD_WINDOW_CONTROLLER_H_

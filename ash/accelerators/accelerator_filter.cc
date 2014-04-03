@@ -85,8 +85,6 @@ bool ShouldProcessAcceleratorsNow(const ui::Accelerator& accelerator,
 
 }  // namespace
 
-namespace internal {
-
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratorFilter, public:
 
@@ -133,5 +131,4 @@ void AcceleratorFilter::OnKeyEvent(ui::KeyEvent* event) {
     event->StopPropagation();
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -27,7 +27,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 const int kRootHeight = 600;
@@ -107,7 +106,7 @@ class DragWindowResizerTest : public test::AshTestBase {
     return location;
   }
 
-  internal::ShelfLayoutManager* shelf_layout_manager() {
+  ShelfLayoutManager* shelf_layout_manager() {
     return Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   }
 
@@ -356,7 +355,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
-    internal::DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
+    DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
     ASSERT_TRUE(drag_resizer);
     EXPECT_FALSE(drag_resizer->drag_window_controller_.get());
 
@@ -408,7 +407,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
     scoped_ptr<WindowResizer> resizer(CreateDragWindowResizer(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
-    internal::DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
+    DragWindowResizer* drag_resizer = DragWindowResizer::instance_;
     ASSERT_TRUE(drag_resizer);
     EXPECT_FALSE(drag_resizer->drag_window_controller_.get());
 
@@ -509,8 +508,8 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
   {
     // Make sure the window is on the default container first.
     aura::Window* default_container =
-        GetRootWindowController(root_windows[1])->GetContainer(
-            internal::kShellWindowId_DefaultContainer);
+        GetRootWindowController(root_windows[1])
+            ->GetContainer(kShellWindowId_DefaultContainer);
     default_container->AddChild(window_.get());
     window_->SetBoundsInScreen(
         gfx::Rect(600, 0, 50, 60),
@@ -633,5 +632,4 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

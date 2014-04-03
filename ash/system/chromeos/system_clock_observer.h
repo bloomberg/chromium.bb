@@ -9,7 +9,6 @@
 #include "chromeos/settings/timezone_settings.h"
 
 namespace ash {
-namespace internal {
 
 class SystemClockObserver
     : public chromeos::SystemClockClient::Observer,
@@ -28,7 +27,6 @@ class SystemClockObserver
   DISALLOW_COPY_AND_ASSIGN(SystemClockObserver);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SYSTEM_CLOCK_OBSERVER_H_

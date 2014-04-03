@@ -28,7 +28,6 @@
 #endif
 
 namespace ash {
-namespace internal {
 
 class WorkspaceEventHandlerTest : public test::AshTestBase {
  public:
@@ -455,5 +454,4 @@ TEST_F(WorkspaceEventHandlerTest, DeleteWhileInRunLoop) {
                     aura::client::WINDOW_MOVE_SOURCE_MOUSE);
 }
 
-}  // namespace internal
 }  // namespace ash

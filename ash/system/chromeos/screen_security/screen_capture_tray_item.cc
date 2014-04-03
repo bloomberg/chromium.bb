@@ -16,7 +16,6 @@
 using message_center::Notification;
 
 namespace ash {
-namespace internal {
 namespace {
 
 const char kScreenCaptureNotificationId[] = "chrome://screen/capture";
@@ -90,5 +89,4 @@ void ScreenCaptureTrayItem::OnScreenCaptureStop() {
   Update();
 }
 
-}  // namespace internal
 }  // namespace ash

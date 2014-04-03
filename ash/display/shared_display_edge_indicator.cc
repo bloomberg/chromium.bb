@@ -18,7 +18,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 const int kIndicatorAnimationDurationMs = 1000;
@@ -113,5 +112,4 @@ void SharedDisplayEdgeIndicator::AnimationProgressed(
 
 }
 
-}  // namespace internal
 }  // namespace ash

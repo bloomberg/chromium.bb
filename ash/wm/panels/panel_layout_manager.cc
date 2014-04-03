@@ -37,9 +37,8 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
+
 const int kPanelIdealSpacing = 4;
 
 const float kMaxHeightFactor = .80f;
@@ -310,7 +309,7 @@ void PanelLayoutManager::SetShelf(Shelf* shelf) {
   shelf_ = shelf;
   shelf_->AddIconObserver(this);
   if (shelf_->shelf_widget()) {
-    shelf_layout_manager_ = ash::internal::ShelfLayoutManager::ForShelf(
+    shelf_layout_manager_ = ash::ShelfLayoutManager::ForShelf(
         shelf_->shelf_widget()->GetNativeWindow());
     WillChangeVisibilityState(shelf_layout_manager_->visibility_state());
     shelf_layout_manager_->AddObserver(this);
@@ -885,5 +884,4 @@ void PanelLayoutManager::OnKeyboardBoundsChanging(
   OnWindowResized();
 }
 
-}  // namespace internal
 }  // namespace ash

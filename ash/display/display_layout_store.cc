@@ -11,7 +11,6 @@
 #include "ui/gfx/display.h"
 
 namespace ash {
-namespace internal {
 
 DisplayLayoutStore::DisplayLayoutStore() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -90,5 +89,4 @@ DisplayLayout DisplayLayoutStore::CreateDisplayLayout(
   return layout;
 }
 
-}  // namespace internal
 }  // namespace ash

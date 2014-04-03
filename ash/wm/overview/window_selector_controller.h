@@ -21,12 +21,8 @@ class Window;
 }
 
 namespace ash {
-
-namespace internal {
-class WindowSelectorTest;
-}
-
 class WindowSelector;
+class WindowSelectorTest;
 
 // Manages a window selector which displays an overview of all windows and
 // allows selecting a window to activate it.
@@ -58,7 +54,7 @@ class ASH_EXPORT WindowSelectorController
   virtual void OnSelectionCanceled() OVERRIDE;
 
  private:
-  friend class internal::WindowSelectorTest;
+  friend class WindowSelectorTest;
 
   // Dispatched when window selection begins.
   void OnSelectionStarted();

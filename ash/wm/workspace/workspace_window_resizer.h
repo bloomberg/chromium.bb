@@ -17,16 +17,14 @@
 #include "ui/aura/window_tracker.h"
 
 namespace ash {
-namespace wm {
-class WindowState;
-}
-
-namespace internal {
-
 class DockedWindowLayoutManager;
 class PhantomWindowController;
 class TwoStepEdgeCycler;
 class WindowSize;
+
+namespace wm {
+class WindowState;
+}
 
 // WindowResizer implementation for workspaces. This enforces that windows are
 // not allowed to vertically move or resize outside of the work area. As windows
@@ -222,7 +220,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_WINDOW_RESIZER_H_

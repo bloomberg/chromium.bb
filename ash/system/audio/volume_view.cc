@@ -35,7 +35,6 @@ const int kVolumeLevels = 4;
 }  // namespace
 
 namespace ash {
-namespace internal {
 namespace tray {
 
 class VolumeButton : public views::ToggleImageButton {
@@ -328,5 +327,4 @@ bool VolumeView::PerformAction(const ui::Event& event) {
 }
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash

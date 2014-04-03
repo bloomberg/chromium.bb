@@ -14,7 +14,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 class DisplayErrorObserverTest : public test::AshTestBase {
  protected:
@@ -81,5 +80,4 @@ TEST_F(DisplayErrorObserverTest, CallWithDifferentState) {
             GetMessageContents());
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -22,7 +22,6 @@ class Layer;
 }  // namespace ui
 
 namespace ash {
-namespace internal {
 
 // OutputConfiguratorAnimation provides the visual effects for
 // ui::OutputConfigurator, such like fade-out/in during changing
@@ -60,7 +59,6 @@ class ASH_EXPORT OutputConfiguratorAnimation
   DISALLOW_COPY_AND_ASSIGN(OutputConfiguratorAnimation);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_OUTPUT_CONFIGURATION_CONTROLLER_H_

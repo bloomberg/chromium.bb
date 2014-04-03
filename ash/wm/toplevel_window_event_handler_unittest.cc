@@ -70,9 +70,8 @@ class ToplevelWindowEventHandlerTest : public AshTestBase {
     w1->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     w1->set_id(1);
     w1->Init(aura::WINDOW_LAYER_TEXTURED);
-    aura::Window* parent =
-      Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                          internal::kShellWindowId_AlwaysOnTopContainer);
+    aura::Window* parent = Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(), kShellWindowId_AlwaysOnTopContainer);
     parent->AddChild(w1);
     w1->SetBounds(gfx::Rect(0, 0, 100, 100));
     w1->Show();
@@ -477,8 +476,9 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMinimizeLoginScreen) {
   SetUserLoggedIn(false);
 
   scoped_ptr<aura::Window> target(CreateWindow(HTCAPTION));
-  aura::Window* lock = internal::RootWindowController::ForWindow(target.get())->
-      GetContainer(internal::kShellWindowId_LockSystemModalContainer);
+  aura::Window* lock =
+      RootWindowController::ForWindow(target.get())
+          ->GetContainer(kShellWindowId_LockSystemModalContainer);
   lock->AddChild(target.get());
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        target.get());

@@ -265,15 +265,15 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   // Fades in background layer with |speed| if it was hidden in unlocked state.
   void AnimateBackgroundAppearanceIfNecessary(
-      ash::internal::SessionStateAnimator::AnimationSpeed speed,
+      ash::SessionStateAnimator::AnimationSpeed speed,
       ui::LayerAnimationObserver* observer);
 
   // Fades out background layer with |speed| if it was hidden in unlocked state.
   void AnimateBackgroundHidingIfNecessary(
-      ash::internal::SessionStateAnimator::AnimationSpeed speed,
+      ash::SessionStateAnimator::AnimationSpeed speed,
       ui::LayerAnimationObserver* observer);
 
-  scoped_ptr<internal::SessionStateAnimator> animator_;
+  scoped_ptr<SessionStateAnimator> animator_;
 
   scoped_ptr<LockStateControllerDelegate> delegate_;
 

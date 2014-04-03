@@ -15,8 +15,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 class TestObserver : public PowerStatus::Observer {
@@ -142,5 +140,4 @@ TEST_F(PowerStatusTest, SplitTimeIntoHoursAndMinutes) {
   EXPECT_EQ(3, minutes);
 }
 
-}  // namespace internal
 }  // namespace ash

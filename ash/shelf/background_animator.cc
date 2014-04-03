@@ -6,8 +6,6 @@
 
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Duration of the background animation.
@@ -58,5 +56,4 @@ void BackgroundAnimator::AnimationProgressed(const gfx::Animation* animation) {
   delegate_->UpdateBackground(alpha_);
 }
 
-}  // namespace internal
 }  // namespace ash

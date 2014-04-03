@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 
 namespace ash {
-namespace internal {
 
 // Notifies the power manager when a video is playing.
 class VideoActivityNotifier : public VideoDetectorObserver,
@@ -38,7 +37,6 @@ class VideoActivityNotifier : public VideoDetectorObserver,
   DISALLOW_COPY_AND_ASSIGN(VideoActivityNotifier);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_POWER_VIDEO_ACTIVITY_NOTIFIER_H_

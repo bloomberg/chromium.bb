@@ -9,7 +9,6 @@
 #include "ui/aura/client/screen_position_client.h"
 
 namespace ash {
-namespace internal {
 
 class ScreenPositionController : public aura::client::ScreenPositionClient {
  public:
@@ -31,7 +30,6 @@ class ScreenPositionController : public aura::client::ScreenPositionClient {
   DISALLOW_COPY_AND_ASSIGN(ScreenPositionController);
 };
 
-}  // internal
-}  // ash
+}  // namespace ash
 
 #endif  // ASH_DISPLAY_SCREEN_POSITION_CONTROLLER_H_

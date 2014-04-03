@@ -18,8 +18,6 @@ class Window;
 }
 
 namespace ash {
-namespace internal {
-
 class ResizeShadow;
 
 // ResizeShadowController observes changes to resizable windows and shows
@@ -59,7 +57,6 @@ class ASH_EXPORT ResizeShadowController : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ResizeShadowController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_RESIZE_SHADOW_CONTROLLER_H_

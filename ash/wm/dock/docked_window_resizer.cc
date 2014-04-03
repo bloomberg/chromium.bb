@@ -32,8 +32,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 DockedWindowLayoutManager* GetDockedLayoutManagerAtPoint(
@@ -320,5 +318,4 @@ DockedAction DockedWindowResizer::MaybeReparentWindowOnDragCompletion(
   return action;
 }
 
-}  // namespace internal
 }  // namespace ash

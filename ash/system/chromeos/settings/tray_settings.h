@@ -8,8 +8,6 @@
 #include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 class SettingsDefaultView;
 }
@@ -34,7 +32,6 @@ class TraySettings : public SystemTrayItem {
   DISALLOW_COPY_AND_ASSIGN(TraySettings);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SETTINGS_TRAY_SETTINGS_H_

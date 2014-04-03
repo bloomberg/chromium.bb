@@ -24,8 +24,8 @@
 #include "base/win/windows_version.h"
 #endif
 
-using ash::internal::ShelfView;
-using ash::internal::ShelfButton;
+using ash::ShelfView;
+using ash::ShelfButton;
 
 namespace ash {
 

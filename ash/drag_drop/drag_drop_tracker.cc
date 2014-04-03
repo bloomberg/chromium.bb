@@ -15,8 +15,6 @@
 #include "ui/wm/public/activation_delegate.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // An activation delegate which disables activating the drag and drop window.
@@ -101,5 +99,4 @@ ui::LocatedEvent* DragDropTracker::ConvertEvent(
                                 changed_button_flags());
 }
 
-}  // namespace internal
 }  // namespace ash

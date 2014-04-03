@@ -18,7 +18,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 OverflowBubble::OverflowBubble()
     : bubble_(NULL),
@@ -100,5 +99,4 @@ void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
       widget->GetNativeView())->shelf_widget()->shelf()->SchedulePaint();
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -37,7 +37,6 @@ class Insets;
 }
 
 namespace ash {
-namespace internal {
 class CursorWindowController;
 class DisplayInfo;
 class DisplayManager;
@@ -45,13 +44,12 @@ class FocusActivationStore;
 class MirrorWindowController;
 class RootWindowController;
 class VirtualKeyboardWindowController;
-}
 
 // DisplayController owns and maintains RootWindows for each attached
 // display, keeping them in sync with display configuration changes.
 class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
                                      public aura::WindowTreeHostObserver,
-                                     public internal::DisplayManager::Delegate {
+                                     public DisplayManager::Delegate {
  public:
   class ASH_EXPORT Observer {
    public:
@@ -81,16 +79,15 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // TODO(oshima): Move this out from DisplayController;
   static int64 GetPrimaryDisplayId();
 
-  internal::CursorWindowController* cursor_window_controller() {
+  CursorWindowController* cursor_window_controller() {
     return cursor_window_controller_.get();
   }
 
-  internal::MirrorWindowController* mirror_window_controller() {
+  MirrorWindowController* mirror_window_controller() {
     return mirror_window_controller_.get();
   }
 
-  internal::VirtualKeyboardWindowController*
-      virtual_keyboard_window_controller() {
+  VirtualKeyboardWindowController* virtual_keyboard_window_controller() {
     return virtual_keyboard_window_controller_.get();
   }
 
@@ -133,7 +130,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   // Returns all oot window controllers. In non extended desktop
   // mode, this return a RootWindowController for the primary root window only.
-  std::vector<internal::RootWindowController*> GetAllRootWindowControllers();
+  std::vector<RootWindowController*> GetAllRootWindowControllers();
 
   // Gets/Sets/Clears the overscan insets for the specified |display_id|. See
   // display_manager.h for the details.
@@ -157,8 +154,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   virtual void OnHostResized(const aura::WindowTreeHost* host) OVERRIDE;
 
   // aura::DisplayManager::Delegate overrides:
-  virtual void CreateOrUpdateNonDesktopDisplay(
-      const internal::DisplayInfo& info) OVERRIDE;
+  virtual void CreateOrUpdateNonDesktopDisplay(const DisplayInfo& info)
+      OVERRIDE;
   virtual void CloseNonDesktopDisplay() OVERRIDE;
   virtual void PreDisplayConfigurationChange(bool clear_focus) OVERRIDE;
   virtual void PostDisplayConfigurationChange() OVERRIDE;
@@ -166,8 +163,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, BoundsUpdated);
   FRIEND_TEST_ALL_PREFIXES(DisplayControllerTest, SecondaryDisplayLayout);
-  friend class internal::DisplayManager;
-  friend class internal::MirrorWindowController;
+  friend class DisplayManager;
+  friend class MirrorWindowController;
 
   // Creates a WindowTreeHost for |display| and stores it in the |root_windows_|
   // map.
@@ -207,11 +204,11 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   // display.
   aura::Window* primary_root_window_for_replace_;
 
-  scoped_ptr<internal::FocusActivationStore> focus_activation_store_;
+  scoped_ptr<FocusActivationStore> focus_activation_store_;
 
-  scoped_ptr<internal::CursorWindowController> cursor_window_controller_;
-  scoped_ptr<internal::MirrorWindowController> mirror_window_controller_;
-  scoped_ptr<internal::VirtualKeyboardWindowController>
+  scoped_ptr<CursorWindowController> cursor_window_controller_;
+  scoped_ptr<MirrorWindowController> mirror_window_controller_;
+  scoped_ptr<VirtualKeyboardWindowController>
       virtual_keyboard_window_controller_;
 
   // Stores the curent cursor location (in native coordinates) used to

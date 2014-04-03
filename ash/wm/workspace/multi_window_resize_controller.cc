@@ -29,8 +29,6 @@
 using aura::Window;
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // Delay before showing.
@@ -386,9 +384,8 @@ void MultiWindowResizeController::ShowNow() {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = Shell::GetContainer(
-      Shell::GetTargetRootWindow(),
-      internal::kShellWindowId_AlwaysOnTopContainer);
+  params.parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
+                                      kShellWindowId_AlwaysOnTopContainer);
   params.can_activate = false;
   ResizeView* view = new ResizeView(this, windows_.direction);
   resize_widget_->set_focus_on_creation(false);
@@ -543,5 +540,4 @@ bool MultiWindowResizeController::IsOverWindow(
       window->delegate()->GetNonClientComponent(window_loc) == component;
 }
 
-}  // namespace internal
 }  // namespace ash

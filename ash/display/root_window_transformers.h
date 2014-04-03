@@ -18,7 +18,6 @@ class Transform;
 }
 
 namespace ash {
-namespace internal {
 class DisplayInfo;
 
 ASH_EXPORT aura::RootWindowTransformer* CreateRootWindowTransformerForDisplay(
@@ -34,7 +33,6 @@ CreateRootWindowTransformerForMirroredDisplay(
     const DisplayInfo& source_display_info,
     const DisplayInfo& mirror_display_info);
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_ROOT_WINDOW_TRANSFORMERS_H_

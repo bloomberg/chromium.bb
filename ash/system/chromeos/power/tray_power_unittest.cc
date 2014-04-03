@@ -42,7 +42,6 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 class TrayPowerTest : public test::AshTestBase {
  public:
@@ -232,5 +231,4 @@ TEST_F(TrayPowerTest, UpdateNotificationState) {
   EXPECT_EQ(TrayPower::NOTIFICATION_NONE, notification_state());
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -22,7 +22,6 @@ class Layer;
 }
 
 namespace ash {
-namespace internal {
 
 // Displays onscreen animations for session state changes (lock/unlock, sign
 // out, shut down).
@@ -174,7 +173,6 @@ class ASH_EXPORT SessionStateAnimator {
   DISALLOW_COPY_AND_ASSIGN(SessionStateAnimator);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_SESSION_STATE_ANIMATOR_H_

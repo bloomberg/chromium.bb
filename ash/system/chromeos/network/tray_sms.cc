@@ -53,7 +53,6 @@ bool GetMessageFromDictionary(const base::DictionaryValue* message,
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 class TraySms::SmsDefaultView : public TrayItemMore {
  public:
@@ -417,5 +416,4 @@ void TraySms::Update(bool notify) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

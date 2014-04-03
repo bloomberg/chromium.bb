@@ -11,11 +11,8 @@
 #include "base/strings/string16.h"
 
 namespace ash {
-class SystemTray;
-
-namespace internal {
-
 class LabelTrayView;
+class SystemTray;
 
 class ASH_EXPORT TrayLocallyManagedUser : public SystemTrayItem,
                                           public ViewClickListener {
@@ -49,7 +46,6 @@ class ASH_EXPORT TrayLocallyManagedUser : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayLocallyManagedUser);
 };
 
-} // namespace internal
 } // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_LOCALLY_MANAGED_TRAY_LOCALLY_MANAGED_USER_H

@@ -14,7 +14,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
                                      views::TrayBubbleView* bubble_view)
@@ -60,5 +59,4 @@ void TrayBubbleWrapper::OnWidgetBoundsChanged(views::Widget* widget,
   tray_->BubbleResized(bubble_view_);
 }
 
-}  // namespace internal
 }  // namespace ash

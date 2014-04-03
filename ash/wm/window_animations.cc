@@ -468,8 +468,7 @@ gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   // correctly and the window can be animated to the launcher item's light
   // bar.
   if (item_rect.width() != 0 || item_rect.height() != 0) {
-    internal::ShelfLayoutManager* layout_manager =
-        internal::ShelfLayoutManager::ForShelf(window);
+    ShelfLayoutManager* layout_manager = ShelfLayoutManager::ForShelf(window);
     if (layout_manager->visibility_state() == SHELF_AUTO_HIDE) {
       gfx::Rect shelf_bounds = shelf->shelf_widget()->GetWindowBoundsInScreen();
       switch (layout_manager->GetAlignment()) {

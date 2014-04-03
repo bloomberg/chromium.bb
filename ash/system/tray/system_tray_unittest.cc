@@ -173,7 +173,7 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
 TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
-  internal::ShelfLayoutManager* manager =
+  ShelfLayoutManager* manager =
       Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
   manager->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   // At the beginning the tray coloring is not active.
@@ -343,9 +343,9 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
 // Tests that the tray is laid out properly and is fully contained within
 // the shelf.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
-  internal::ShelfLayoutManager* manager =
+  ShelfLayoutManager* manager =
       Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
-  internal::StatusAreaWidget* widget =
+  StatusAreaWidget* widget =
       Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
   SystemTray* tray = widget->system_tray();
 

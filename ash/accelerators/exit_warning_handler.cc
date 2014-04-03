@@ -186,9 +186,8 @@ void ExitWarningHandler::Show() {
   params.remove_standard_frame = true;
   params.delegate = delegate;
   params.bounds = bounds;
-  params.parent = Shell::GetContainer(
-      root_window,
-      internal::kShellWindowId_SettingBubbleContainer);
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_SettingBubbleContainer);
   widget_.reset(new views::Widget);
   widget_->Init(params);
   widget_->SetContentsView(delegate);

@@ -19,8 +19,6 @@ class Window;
 
 namespace ash {
 class DisplayController;
-
-namespace internal {
 class SharedDisplayEdgeIndicator;
 
 // An event filter that controls mouse location in extended desktop
@@ -99,7 +97,6 @@ class ASH_EXPORT MouseCursorEventFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(MouseCursorEventFilter);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DISPLAY_MOUSE_CURSOR_EVENT_FILTER_H

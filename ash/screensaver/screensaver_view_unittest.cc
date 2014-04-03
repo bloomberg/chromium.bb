@@ -30,15 +30,14 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
   }
 
   void ExpectOpenScreensaver() {
-    internal::ScreensaverView* screensaver =
-        internal::ScreensaverView::GetInstance();
+    ScreensaverView* screensaver = ScreensaverView::GetInstance();
     EXPECT_TRUE(screensaver != NULL);
     if (!screensaver) return;
     EXPECT_TRUE(screensaver->IsScreensaverShowingURL(url_));
   }
 
   void ExpectClosedScreensaver() {
-    EXPECT_TRUE(internal::ScreensaverView::GetInstance() == NULL);
+    EXPECT_TRUE(ScreensaverView::GetInstance() == NULL);
   }
 
  protected:

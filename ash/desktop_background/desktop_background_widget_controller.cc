@@ -15,7 +15,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
@@ -144,5 +143,4 @@ DesktopBackgroundWidgetController* AnimatingDesktopController::GetController(
   return controller_.get();
 }
 
-}  // namespace internal
 }  // namespace ash

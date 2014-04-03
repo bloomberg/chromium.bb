@@ -25,8 +25,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 const int kLogoutButtonHorizontalExtraPadding = 7;
@@ -164,5 +162,4 @@ void LogoutButtonTray::UpdateVisibility() {
              login_status_ != user::LOGGED_IN_LOCKED);
 }
 
-}  // namespace internal
 }  // namespace ash

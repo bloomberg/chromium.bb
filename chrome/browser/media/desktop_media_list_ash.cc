@@ -187,11 +187,11 @@ void DesktopMediaListAsh::EnumerateSources(
 
     if (source_types_ & WINDOWS) {
       EnumerateWindowsForRoot(
-          sources, *iter, ash::internal::kShellWindowId_DefaultContainer);
+          sources, *iter, ash::kShellWindowId_DefaultContainer);
       EnumerateWindowsForRoot(
-          sources, *iter, ash::internal::kShellWindowId_AlwaysOnTopContainer);
+          sources, *iter, ash::kShellWindowId_AlwaysOnTopContainer);
       EnumerateWindowsForRoot(
-          sources, *iter, ash::internal::kShellWindowId_DockedContainer);
+          sources, *iter, ash::kShellWindowId_DockedContainer);
     }
   }
 }

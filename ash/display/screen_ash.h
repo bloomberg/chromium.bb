@@ -78,7 +78,7 @@ class ASH_EXPORT ScreenAsh : public gfx::Screen {
   virtual void RemoveObserver(gfx::DisplayObserver* observer) OVERRIDE;
 
  private:
-  friend class internal::DisplayManager;
+  friend class DisplayManager;
 
   // Notifies observers of display configuration changes.
   void NotifyBoundsChanged(const gfx::Display& display);

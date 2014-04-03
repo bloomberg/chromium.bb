@@ -13,7 +13,6 @@
 #include "ui/views/widget/widget_observer.h"
 
 namespace ash {
-namespace internal {
 class RootWindowController;
 
 // This class implements a widget-based wallpaper.
@@ -89,7 +88,6 @@ class ASH_EXPORT AnimatingDesktopController {
   DISALLOW_COPY_AND_ASSIGN(AnimatingDesktopController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_WIDGET_CONTROLLER_H_

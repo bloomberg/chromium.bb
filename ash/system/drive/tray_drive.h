@@ -14,8 +14,6 @@ class Label;
 }
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 class DriveTrayView;
 class DriveDefaultView;
@@ -52,7 +50,6 @@ class TrayDrive : public TrayImageItem,
   DISALLOW_COPY_AND_ASSIGN(TrayDrive);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_DRIVE_TRAY_DRIVE_H_

@@ -131,8 +131,8 @@ void VideoDetector::MaybeNotifyObservers(aura::Window* window,
   // http://crbug.com/340666
   bool fullscreen_window_exists = false;
   std::vector<aura::Window*> containers =
-      Shell::GetContainersFromAllRootWindows(
-          internal::kShellWindowId_DefaultContainer, NULL);
+      Shell::GetContainersFromAllRootWindows(kShellWindowId_DefaultContainer,
+                                             NULL);
   for (std::vector<aura::Window*>::const_iterator container =
        containers.begin(); container != containers.end(); ++container) {
     const aura::Window::Windows& windows = (*container)->children();

@@ -8,8 +8,6 @@
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
-namespace internal {
-
 class ShelfButtonHost;
 
 // Button used for the AppList icon on the shelf.
@@ -38,7 +36,6 @@ class AppListButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_APP_LIST_BUTTON_H_

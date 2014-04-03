@@ -22,7 +22,6 @@ class ImageGrid;
 }
 
 namespace ash {
-namespace internal {
 
 // A class to render the resize edge effect when the user moves their mouse
 // over a sizing edge.  This is just a visual effect; the actual resize is
@@ -60,7 +59,6 @@ class ResizeShadow {
   DISALLOW_COPY_AND_ASSIGN(ResizeShadow);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_RESIZE_SHADOW_H_

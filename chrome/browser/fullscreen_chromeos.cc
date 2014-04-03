@@ -9,7 +9,7 @@
 bool IsFullScreenMode() {
   // TODO(oshima): Fullscreen is per display state. Investigate
   // and fix if necessary.
-  ash::internal::RootWindowController* controller =
-      ash::internal::RootWindowController::ForTargetRootWindow();
+  ash::RootWindowController* controller =
+      ash::RootWindowController::ForTargetRootWindow();
   return controller && controller->GetWindowForFullscreenMode();
 }

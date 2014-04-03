@@ -50,7 +50,6 @@ const int kAnimationDurationForPopupMS = 200;
 using views::TrayBubbleView;
 
 namespace ash {
-namespace internal {
 
 // static
 const char TrayBackgroundView::kViewClassName[] = "tray/TrayBackgroundView";
@@ -316,15 +315,16 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
 ////////////////////////////////////////////////////////////////////////////////
 // TrayBackgroundView
 
-TrayBackgroundView::TrayBackgroundView(
-    internal::StatusAreaWidget* status_area_widget)
+TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
     : status_area_widget_(status_area_widget),
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
       hide_background_animator_(this, 0, kTrayBackgroundAlpha),
       hover_background_animator_(
-          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
+          this,
+          0,
+          kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
       hovered_(false),
       draw_background_as_active_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
@@ -422,7 +422,7 @@ void TrayBackgroundView::SetPaintsBackground(
 }
 
 void TrayBackgroundView::SetContentsBackground() {
-  background_ = new internal::TrayBackground(this);
+  background_ = new TrayBackground(this);
   tray_container_->set_background(background_);
 }
 
@@ -507,7 +507,7 @@ void TrayBackgroundView::InitializeBubbleAnimations(
 aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {
   return ash::Shell::GetContainer(
       tray_container()->GetWidget()->GetNativeWindow()->GetRootWindow(),
-      ash::internal::kShellWindowId_SettingBubbleContainer);
+      ash::kShellWindowId_SettingBubbleContainer);
 }
 
 gfx::Rect TrayBackgroundView::GetBubbleAnchorRect(
@@ -620,13 +620,11 @@ void TrayBackgroundView::UpdateBubbleViewArrow(
 
   aura::Window* root_window =
       bubble_view->GetWidget()->GetNativeView()->GetRootWindow();
-  ash::internal::ShelfLayoutManager* shelf =
-      ShelfLayoutManager::ForShelf(root_window);
+  ash::ShelfLayoutManager* shelf = ShelfLayoutManager::ForShelf(root_window);
   bubble_view->SetArrowPaintType(
       (shelf && shelf->IsVisible()) ?
       views::BubbleBorder::PAINT_NORMAL :
       views::BubbleBorder::PAINT_TRANSPARENT);
 }
 
-}  // namespace internal
 }  // namespace ash

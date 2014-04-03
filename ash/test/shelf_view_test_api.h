@@ -14,28 +14,24 @@ class Size;
 }
 
 namespace ash {
-
-class ShelfDelegate;
-
-namespace internal {
 class OverflowBubble;
 class ShelfButton;
+class ShelfDelegate;
 class ShelfView;
-}
 
 namespace test {
 
 // Use the api in this class to test ShelfView.
 class ShelfViewTestAPI {
  public:
-  explicit ShelfViewTestAPI(internal::ShelfView* shelf_view);
+  explicit ShelfViewTestAPI(ShelfView* shelf_view);
   ~ShelfViewTestAPI();
 
   // Number of icons displayed.
   int GetButtonCount();
 
   // Retrieve the button at |index|.
-  internal::ShelfButton* GetButton(int index);
+  ShelfButton* GetButton(int index);
 
   // First visible button index.
   int GetFirstVisibleIndex();
@@ -60,10 +56,10 @@ class ShelfViewTestAPI {
   void RunMessageLoopUntilAnimationsDone();
 
   // An accessor for |shelf_view|.
-  internal::ShelfView* shelf_view() { return shelf_view_; }
+  ShelfView* shelf_view() { return shelf_view_; }
 
   // An accessor for overflow bubble.
-  internal::OverflowBubble* overflow_bubble();
+  OverflowBubble* overflow_bubble();
 
   // Returns the preferred size of |shelf_view_|.
   gfx::Size GetPreferredSize();
@@ -90,7 +86,7 @@ class ShelfViewTestAPI {
   bool DraggedItemFromOverflowToShelf();
 
  private:
-  internal::ShelfView* shelf_view_;
+  ShelfView* shelf_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTestAPI);
 };

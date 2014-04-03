@@ -55,7 +55,6 @@ bool IsColor(const gfx::ImageSkia& image, const uint32_t expect) {
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 class WallpaperResizerTest : public testing::Test,
                              public WallpaperResizerObserver {
@@ -156,5 +155,4 @@ TEST_F(WallpaperResizerTest, ImageId) {
   EXPECT_EQ(WallpaperResizer::GetImageId(image), resizer.original_image_id());
 }
 
-}  // namespace internal
 }  // namespace ash

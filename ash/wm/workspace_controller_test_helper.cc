@@ -9,7 +9,6 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace internal {
 
 WorkspaceControllerTestHelper::WorkspaceControllerTestHelper(
     WorkspaceController* controller)
@@ -28,5 +27,4 @@ WorkspaceControllerTestHelper::GetMultiWindowResizeController() {
   return WorkspaceEventHandlerTestHelper(GetEventHandler()).resize_controller();
 }
 
-}  // namespace internal
 }  // namespace ash

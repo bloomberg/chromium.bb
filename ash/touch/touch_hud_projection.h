@@ -10,8 +10,6 @@
 #include "ash/touch/touch_observer_hud.h"
 
 namespace ash {
-namespace internal {
-
 class TouchPointView;
 
 // A heads-up display to show active touch points on the screen. As a derivative
@@ -40,7 +38,6 @@ class TouchHudProjection : public TouchObserverHUD {
   DISALLOW_COPY_AND_ASSIGN(TouchHudProjection);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_TOUCH_TOUCH_HUD_PROJECTION_H_

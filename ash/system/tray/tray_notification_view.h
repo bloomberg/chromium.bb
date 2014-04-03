@@ -18,10 +18,7 @@ class ImageView;
 }
 
 namespace ash {
-
 class SystemTrayItem;
-
-namespace internal {
 
 // A view for closable notification views, laid out like:
 //  -------------------
@@ -92,7 +89,6 @@ class TrayNotificationView : public views::SlideOutView,
   DISALLOW_COPY_AND_ASSIGN(TrayNotificationView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_NOTIFICATION_VIEW_H_

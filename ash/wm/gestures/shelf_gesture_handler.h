@@ -13,8 +13,6 @@ class GestureEvent;
 }
 
 namespace ash {
-namespace internal {
-
 class TrayGestureHandler;
 
 // This manages gestures on the shelf (e.g. launcher, status tray) that affects
@@ -37,7 +35,6 @@ class ShelfGestureHandler {
   DISALLOW_COPY_AND_ASSIGN(ShelfGestureHandler);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_GESTURES_SHELF_GESTURE_HANDLER_H_

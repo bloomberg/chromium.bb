@@ -11,8 +11,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 class BrightnessView;
 }
@@ -66,7 +64,6 @@ class ASH_EXPORT TrayBrightness
   DISALLOW_COPY_AND_ASSIGN(TrayBrightness);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_BRIGHTNESS_TRAY_BRIGHTNESS_H_

@@ -36,9 +36,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-
-namespace internal {
-
 namespace {
 
 const int kSidePadding = 8;
@@ -515,5 +512,4 @@ void TrayDrive::HideIfNoOperations() {
     detailed_->Update(&empty_list);
 }
 
-}  // namespace internal
 }  // namespace ash

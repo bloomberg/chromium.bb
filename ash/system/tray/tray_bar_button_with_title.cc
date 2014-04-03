@@ -13,8 +13,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 const int kBarImagesActive[] = {
@@ -109,5 +107,4 @@ void TrayBarButtonWithTitle::Layout() {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

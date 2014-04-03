@@ -20,7 +20,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace internal {
 
 typedef test::AshTestBase WindowModalityControllerTest;
 
@@ -560,5 +559,4 @@ TEST_F(WindowModalityControllerTest, ChildModalAncestor) {
   EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
 }
 
-}  // namespace internal
 }  // namespace ash

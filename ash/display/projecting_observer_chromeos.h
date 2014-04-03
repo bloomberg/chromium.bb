@@ -10,8 +10,6 @@
 
 namespace ash {
 
-namespace internal {
-
 class ASH_EXPORT ProjectingObserver : public ui::OutputConfigurator::Observer {
  public:
   ProjectingObserver();
@@ -40,8 +38,6 @@ class ASH_EXPORT ProjectingObserver : public ui::OutputConfigurator::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(ProjectingObserver);
 };
-
-}  // namespace internal
 
 }  // namespace ash
 

@@ -20,8 +20,6 @@ class MessageCenter;
 }
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 class PowerNotificationView;
 class PowerTrayView;
@@ -111,7 +109,6 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_POWER_TRAY_POWER_H_

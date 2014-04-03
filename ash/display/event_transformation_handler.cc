@@ -21,7 +21,6 @@
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
-namespace internal {
 namespace {
 
 // Boost factor for non-integrated displays.
@@ -90,5 +89,4 @@ void EventTransformationHandler::OnTouchEvent(ui::TouchEvent* event) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-}  // namespace internal
 }  // namespace ash

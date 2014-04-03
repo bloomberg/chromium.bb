@@ -18,7 +18,6 @@ class TickClock;
 }
 
 namespace ash {
-namespace internal {
 
 class LogoutConfirmationDialog;
 
@@ -65,7 +64,6 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
   DISALLOW_COPY_AND_ASSIGN(LogoutConfirmationController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_CONTROLLER_H_

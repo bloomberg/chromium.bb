@@ -18,8 +18,6 @@ enum BackgroundAnimatorChangeType {
   BACKGROUND_CHANGE_IMMEDIATE
 };
 
-namespace internal {
-
 // Delegate is notified any time the background changes.
 class ASH_EXPORT BackgroundAnimatorDelegate {
  public:
@@ -69,7 +67,6 @@ class ASH_EXPORT BackgroundAnimator : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(BackgroundAnimator);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_BACKGROUND_ANIMATOR_H_

@@ -13,7 +13,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
 
 class ASH_EXPORT ScreenCaptureTrayItem : public ScreenTrayItem,
                                          public ScreenCaptureObserver {
@@ -41,7 +40,6 @@ class ASH_EXPORT ScreenCaptureTrayItem : public ScreenTrayItem,
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureTrayItem);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_SCREEN_CAPTURE_SCREEN_CAPTURE_TRAY_ITEM_H_

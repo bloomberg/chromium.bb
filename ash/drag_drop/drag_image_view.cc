@@ -15,8 +15,6 @@
 #include "ui/wm/core/shadow_types.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 using views::Widget;
 
@@ -171,5 +169,4 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
-}  // namespace internal
 }  // namespace ash

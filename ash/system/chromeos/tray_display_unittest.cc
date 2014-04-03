@@ -23,7 +23,6 @@
 #include "ui/views/controls/label.h"
 
 namespace ash {
-namespace internal {
 
 base::string16 GetTooltipText(const base::string16& headline,
                               const base::string16& name1,
@@ -573,5 +572,4 @@ TEST_F(TrayDisplayTest, UpdateAfterSuppressDisplayNotification) {
       GetDisplayNotificationText());
 }
 
-}  // namespace internal
 }  // namespace ash

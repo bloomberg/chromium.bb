@@ -32,7 +32,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace tray {
 
 class IMEDefaultView : public TrayItemMore {
@@ -270,5 +269,4 @@ void TrayIME::OnIMERefresh() {
     detailed_->Update(list, property_list);
 }
 
-}  // namespace internal
 }  // namespace ash

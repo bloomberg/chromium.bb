@@ -15,7 +15,6 @@ class UserActivityDetector;
 }  // namespace wm
 
 namespace ash {
-namespace internal {
 
 // Notifies the power manager when the user is active.
 class UserActivityNotifier : public ::wm::UserActivityObserver {
@@ -35,7 +34,6 @@ class UserActivityNotifier : public ::wm::UserActivityObserver {
   DISALLOW_COPY_AND_ASSIGN(UserActivityNotifier);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_POWER_USER_ACTIVITY_NOTIFIER_H_

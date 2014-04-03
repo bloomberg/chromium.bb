@@ -92,7 +92,7 @@ ui::ColorCalibrationProfile StringToColorProfile(std::string value) {
   return ui::COLOR_PROFILE_STANDARD;
 }
 
-ash::internal::DisplayManager* GetDisplayManager() {
+ash::DisplayManager* GetDisplayManager() {
   return ash::Shell::GetInstance()->display_manager();
 }
 
@@ -108,8 +108,7 @@ bool UserCanSaveDisplayPreference() {
 
 void LoadDisplayLayouts() {
   PrefService* local_state = g_browser_process->local_state();
-  ash::internal::DisplayLayoutStore* layout_store =
-      GetDisplayManager()->layout_store();
+  ash::DisplayLayoutStore* layout_store = GetDisplayManager()->layout_store();
 
   const base::DictionaryValue* layouts = local_state->GetDictionary(
       prefs::kSecondaryDisplays);
@@ -216,7 +215,7 @@ void StoreCurrentDisplayLayoutPrefs() {
 }
 
 void StoreCurrentDisplayProperties() {
-  ash::internal::DisplayManager* display_manager = GetDisplayManager();
+  ash::DisplayManager* display_manager = GetDisplayManager();
   PrefService* local_state = g_browser_process->local_state();
 
   DictionaryPrefUpdate update(local_state, prefs::kDisplayProperties);
@@ -226,7 +225,7 @@ void StoreCurrentDisplayProperties() {
   for (size_t i = 0; i < num; ++i) {
     const gfx::Display& display = display_manager->GetDisplayAt(i);
     int64 id = display.id();
-    ash::internal::DisplayInfo info = display_manager->GetDisplayInfo(id);
+    ash::DisplayInfo info = display_manager->GetDisplayInfo(id);
 
     scoped_ptr<base::DictionaryValue> property_value(
         new base::DictionaryValue());
@@ -234,7 +233,7 @@ void StoreCurrentDisplayProperties() {
     property_value->SetInteger(
         "ui-scale",
         static_cast<int>(info.configured_ui_scale() * 1000));
-    ash::internal::DisplayMode mode;
+    ash::DisplayMode mode;
     if (!display.IsInternal() &&
         display_manager->GetSelectedModeForDisplayId(id, &mode) &&
         !mode.native) {

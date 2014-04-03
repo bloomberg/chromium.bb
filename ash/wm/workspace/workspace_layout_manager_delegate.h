@@ -16,8 +16,6 @@ namespace wm {
 class WindowState;
 }
 
-namespace internal {
-
 // A delegate which can be set to create and control a backdrop which gets
 // placed below the top level window.
 class WorkspaceLayoutManagerDelegate {
@@ -43,7 +41,6 @@ class WorkspaceLayoutManagerDelegate {
                                            wm::WindowStateType old_type) = 0;
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_DELEGATE_H_

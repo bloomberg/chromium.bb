@@ -272,7 +272,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
                        aura::test::EventGenerator* generator,
                        ash::test::ShelfViewTestAPI* test,
                        RipOffCommand command) {
-    ash::internal::ShelfButton* button = test->GetButton(index);
+    ash::ShelfButton* button = test->GetButton(index);
     gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
     gfx::Point rip_off_point(start_point.x(), 0);
     generator->MoveMouseTo(start_point.x(), start_point.y());
@@ -1774,8 +1774,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DragOffShelf) {
             GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT));
   // Make sure that the hide state has been unset after the snap back animation
   // finished.
-  ash::internal::ShelfButton* button = test.GetButton(browser_index);
-  EXPECT_FALSE(button->state() & ash::internal::ShelfButton::STATE_HIDDEN);
+  ash::ShelfButton* button = test.GetButton(browser_index);
+  EXPECT_FALSE(button->state() & ash::ShelfButton::STATE_HIDDEN);
 
   // Test #2: Ripping out the application and canceling the operation should
   // not change anything.

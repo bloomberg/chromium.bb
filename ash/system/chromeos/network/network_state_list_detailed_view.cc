@@ -51,9 +51,7 @@ using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
-namespace internal {
 namespace tray {
-
 namespace {
 
 // Delay between scan requests.
@@ -126,7 +124,7 @@ class NetworkStateListDetailedView::InfoBubble
     set_use_focusless(true);
     set_parent_window(ash::Shell::GetContainer(
         anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
-        ash::internal::kShellWindowId_SettingBubbleContainer));
+        ash::kShellWindowId_SettingBubbleContainer));
     SetLayoutManager(new views::FillLayout());
     AddChildView(content);
   }
@@ -834,5 +832,4 @@ void NetworkStateListDetailedView::ToggleMobile() {
 }
 
 }  // namespace tray
-}  // namespace internal
 }  // namespace ash

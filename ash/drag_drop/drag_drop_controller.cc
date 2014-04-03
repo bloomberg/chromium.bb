@@ -31,9 +31,8 @@
 #include "ui/wm/public/drag_drop_delegate.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
+
 // The duration of the drag cancel animation in millisecond.
 const int kCancelAnimationDuration = 250;
 const int kTouchCancelAnimationDuration = 20;
@@ -560,5 +559,4 @@ void DragDropController::Cleanup() {
   drag_drop_tracker_.Pass();
 }
 
-}  // namespace internal
 }  // namespace ash

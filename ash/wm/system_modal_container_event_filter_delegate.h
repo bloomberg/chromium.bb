@@ -12,7 +12,6 @@ class Window;
 }
 
 namespace ash {
-namespace internal {
 
 class ASH_EXPORT SystemModalContainerEventFilterDelegate {
  public:
@@ -20,7 +19,6 @@ class ASH_EXPORT SystemModalContainerEventFilterDelegate {
   virtual bool CanWindowReceiveEvents(aura::Window* window) = 0;
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_MODALITY_EVENT_FILTER_DELEGATE_H_

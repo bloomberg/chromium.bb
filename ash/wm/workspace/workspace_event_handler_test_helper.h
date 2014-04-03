@@ -8,7 +8,6 @@
 #include "ash/wm/workspace/workspace_event_handler.h"
 
 namespace ash {
-namespace internal {
 
 class WorkspaceEventHandlerTestHelper {
  public:
@@ -25,7 +24,6 @@ class WorkspaceEventHandlerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(WorkspaceEventHandlerTestHelper);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_TEST_HELPER_H_

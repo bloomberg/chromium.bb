@@ -15,7 +15,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 
 const int kPointRadius = 20;
 const SkColor kProjectionFillColor = SkColorSetRGB(0xF5, 0xF5, 0xDC);
@@ -185,5 +184,4 @@ void TouchHudProjection::UnsetHudForRootWindowController(
   controller->set_touch_hud_projection(NULL);
 }
 
-}  // namespace internal
 }  // namespace ash

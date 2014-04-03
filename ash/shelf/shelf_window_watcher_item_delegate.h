@@ -14,10 +14,7 @@ class Window;
 }
 
 namespace ash {
-
 class ShelfModel;
-
-namespace internal {
 
 // ShelfItemDelegate for the items created by ShelfWindowWatcher.
 class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
@@ -45,7 +42,6 @@ class ShelfWindowWatcherItemDelegate : public ShelfItemDelegate {
   DISALLOW_COPY_AND_ASSIGN(ShelfWindowWatcherItemDelegate);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_WINDOW_WATCHER_ITEM_DELEGATE_H_

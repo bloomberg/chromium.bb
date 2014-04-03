@@ -35,8 +35,8 @@ void AddTrackedWindows(aura::Window* root,
 // Adds windows being dragged in the docked container to |windows| list.
 void AddDraggedWindows(aura::Window* root,
                        MruWindowTracker::WindowList* windows) {
-  aura::Window* container = Shell::GetContainer(
-      root, internal::kShellWindowId_DockedContainer);
+  aura::Window* container =
+      Shell::GetContainer(root, kShellWindowId_DockedContainer);
   const MruWindowTracker::WindowList& children = container->children();
   for (MruWindowTracker::WindowList::const_iterator iter = children.begin();
        iter != children.end(); ++iter) {

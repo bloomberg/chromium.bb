@@ -9,7 +9,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace ash {
-namespace internal {
 
 SystemClockObserver::SystemClockObserver() {
   chromeos::DBusThreadManager::Get()->GetSystemClockClient()
@@ -32,5 +31,4 @@ void SystemClockObserver::TimezoneChanged(const icu::TimeZone& timezone) {
   Shell::GetInstance()->system_tray_notifier()->NotifyRefreshClock();
 }
 
-}  // namespace internal
 }  // namespace ash

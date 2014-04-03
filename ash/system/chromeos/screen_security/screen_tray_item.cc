@@ -16,8 +16,6 @@ const int kStopButtonRightPadding = 18;
 }  // namespace
 
 namespace ash {
-namespace internal {
-
 namespace tray {
 
 // ScreenTrayView implementations.
@@ -210,5 +208,4 @@ void ScreenTrayItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   tray_view_->Layout();
 }
 
-}  // namespace internal
 }  // namespace ash

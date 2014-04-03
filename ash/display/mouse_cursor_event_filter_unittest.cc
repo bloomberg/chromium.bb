@@ -15,7 +15,6 @@
 #include "ui/gfx/screen.h"
 
 namespace ash {
-namespace internal {
 
 class MouseCursorEventFilterTest : public test::AshTestBase {
  public:
@@ -376,5 +375,4 @@ TEST_F(MouseCursorEventFilterTest, CursorDeviceScaleFactor) {
   EXPECT_EQ(1.0f, cursor_test_api.GetDisplay().device_scale_factor());
 }
 
-}  // namespace internal
 }  // namespace ash

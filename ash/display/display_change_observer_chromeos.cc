@@ -25,7 +25,6 @@
 #include "ui/gfx/display.h"
 
 namespace ash {
-namespace internal {
 
 using ui::OutputConfigurator;
 
@@ -183,5 +182,4 @@ void DisplayChangeObserver::OnAppTerminating() {
 #endif
 }
 
-}  // namespace internal
 }  // namespace ash

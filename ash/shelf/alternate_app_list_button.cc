@@ -27,8 +27,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace internal {
-
 // static
 const int AlternateAppListButton::kImageBoundsSize = 7;
 
@@ -170,5 +168,4 @@ void AlternateAppListButton::GetAccessibleState(
   state->name = host_->GetAccessibleName(this);
 }
 
-}  // namespace internal
 }  // namespace ash

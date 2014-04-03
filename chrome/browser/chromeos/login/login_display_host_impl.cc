@@ -540,7 +540,7 @@ void LoginDisplayHostImpl::StartUserAdding(
   // Lock container can be transparent after lock screen animation.
   aura::Window* lock_container = ash::Shell::GetContainer(
       ash::Shell::GetPrimaryRootWindow(),
-      ash::internal::kShellWindowId_LockScreenContainersContainer);
+      ash::kShellWindowId_LockScreenContainersContainer);
   lock_container->layer()->SetOpacity(1.0);
 
   ash::Shell::GetInstance()->
@@ -818,10 +818,10 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
 }
 
 void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {
-  if (ash::Shell::GetContainer(
-          ash::Shell::GetPrimaryRootWindow(),
-          ash::internal::kShellWindowId_DesktopBackgroundContainer)->
-          children().empty()) {
+  if (ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                               ash::kShellWindowId_DesktopBackgroundContainer)
+          ->children()
+          .empty()) {
     // If there is no background window, don't perform any animation on the
     // default and background layer because there is nothing behind it.
     return;
@@ -937,9 +937,8 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent =
-      ash::Shell::GetContainer(
-          ash::Shell::GetPrimaryRootWindow(),
-          ash::internal::kShellWindowId_LockScreenContainer);
+      ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
+                               ash::kShellWindowId_LockScreenContainer);
 
   login_window_ = new views::Widget;
   login_window_->Init(params);

@@ -5,7 +5,6 @@
 #include "ash/system/tray/fixed_sized_image_view.h"
 
 namespace ash {
-namespace internal {
 
 FixedSizedImageView::FixedSizedImageView(int width, int height)
     : width_(width),
@@ -23,5 +22,4 @@ gfx::Size FixedSizedImageView::GetPreferredSize() {
                    height_ ? height_ : size.height());
 }
 
-}  // namespace internal
 }  // namespace ash

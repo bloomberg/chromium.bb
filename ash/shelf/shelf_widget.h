@@ -17,23 +17,19 @@ class Window;
 }
 
 namespace ash {
-class Shelf;
-
-namespace internal {
 class FocusCycler;
-class StatusAreaWidget;
+class Shelf;
 class ShelfLayoutManager;
+class StatusAreaWidget;
 class WorkspaceController;
-}
 
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
                                public ShelfLayoutManagerObserver {
  public:
-  ShelfWidget(
-      aura::Window* shelf_container,
-      aura::Window* status_container,
-      internal::WorkspaceController* workspace_controller);
+  ShelfWidget(aura::Window* shelf_container,
+              aura::Window* status_container,
+              WorkspaceController* workspace_controller);
   virtual ~ShelfWidget();
 
   // Returns if shelf alignment option is enabled, and the user is able
@@ -53,13 +49,9 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void SetDimsShelf(bool dimming);
   bool GetDimsShelf() const;
 
-  internal::ShelfLayoutManager* shelf_layout_manager() {
-    return shelf_layout_manager_;
-  }
+  ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
   Shelf* shelf() const { return shelf_.get(); }
-  internal::StatusAreaWidget* status_area_widget() const {
-    return status_area_widget_;
-  }
+  StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
   void CreateShelf();
 
@@ -68,8 +60,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   bool IsShelfVisible() const;
 
   // Sets the focus cycler.  Also adds the shelf to the cycle.
-  void SetFocusCycler(internal::FocusCycler* focus_cycler);
-  internal::FocusCycler* GetFocusCycler();
+  void SetFocusCycler(FocusCycler* focus_cycler);
+  FocusCycler* GetFocusCycler();
 
   // Called by the activation delegate, before the shelf is activated
   // when no other windows are visible.
@@ -104,14 +96,14 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
  private:
   class DelegateView;
 
-  internal::ShelfLayoutManager* shelf_layout_manager_;
+  ShelfLayoutManager* shelf_layout_manager_;
   scoped_ptr<Shelf> shelf_;
-  internal::StatusAreaWidget* status_area_widget_;
+  StatusAreaWidget* status_area_widget_;
 
   // delegate_view_ is attached to window_container_ and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
-  internal::BackgroundAnimator background_animator_;
+  BackgroundAnimator background_animator_;
   bool activating_as_fallback_;
   aura::Window* window_container_;
 };

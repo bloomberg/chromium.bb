@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
-namespace internal {
 
 typedef testing::Test DisplayInfoTest;
 
@@ -58,5 +57,4 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_FALSE(info.display_modes()[2].native);
 }
 
-}  // namespace internal
 }  // namespace ash

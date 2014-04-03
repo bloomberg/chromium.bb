@@ -19,7 +19,6 @@ class Widget;
 }
 
 namespace ash {
-namespace internal {
 
 // PhantomWindowController is responsible for showing a phantom representation
 // of a window. It's used to show a preview of how snapping or docking a window
@@ -81,7 +80,6 @@ class ASH_EXPORT PhantomWindowController {
   DISALLOW_COPY_AND_ASSIGN(PhantomWindowController);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_WORKSPACE_PHANTOM_WINDOW_CONTROLLER_H_

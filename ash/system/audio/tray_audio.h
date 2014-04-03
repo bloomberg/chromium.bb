@@ -15,8 +15,6 @@ namespace system {
 class TrayAudioDelegate;
 }
 
-namespace internal {
-
 namespace tray {
 class VolumeView;
 }
@@ -62,7 +60,6 @@ class TrayAudio : public TrayImageItem,
   DISALLOW_COPY_AND_ASSIGN(TrayAudio);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_AUDIO_TRAY_AUDIO_H_

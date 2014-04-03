@@ -63,7 +63,6 @@ const int kEnableQuietModeDay = 2;
 
 }
 
-namespace internal {
 namespace {
 
 const SkColor kWebNotificationColorNoUnread = SkColorSetA(SK_ColorWHITE, 128);
@@ -233,7 +232,7 @@ class WebNotificationBubbleWrapper {
 
  private:
   scoped_ptr<message_center::MessageBubbleBase> bubble_;
-  scoped_ptr<internal::TrayBubbleWrapper> bubble_wrapper_;
+  scoped_ptr<TrayBubbleWrapper> bubble_wrapper_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNotificationBubbleWrapper);
 };
@@ -297,16 +296,13 @@ class WebNotificationButton : public views::CustomButton {
   DISALLOW_COPY_AND_ASSIGN(WebNotificationButton);
 };
 
-}  // namespace internal
-
-WebNotificationTray::WebNotificationTray(
-    internal::StatusAreaWidget* status_area_widget)
+WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget),
       button_(NULL),
       show_message_center_on_unlock_(false),
       should_update_tray_content_(false),
       should_block_shelf_auto_hide_(false) {
-  button_ = new internal::WebNotificationButton(this);
+  button_ = new WebNotificationButton(this);
   button_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON);
   tray_container()->AddChildView(button_);
@@ -319,11 +315,11 @@ WebNotificationTray::WebNotificationTray(
   popup_collection_.reset(new message_center::MessagePopupCollection(
       ash::Shell::GetContainer(
           status_area_widget->GetNativeView()->GetRootWindow(),
-          internal::kShellWindowId_StatusContainer),
+          kShellWindowId_StatusContainer),
       message_center(),
       message_center_tray_.get(),
       ash::switches::UseAlternateShelfLayout()));
-  work_area_observer_.reset(new internal::WorkAreaObserver());
+  work_area_observer_.reset(new WorkAreaObserver());
   work_area_observer_->StartObserving(
       popup_collection_.get(),
       status_area_widget->GetNativeView()->GetRootWindow());
@@ -380,7 +376,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   if (show_settings)
     message_center_bubble->SetSettingsVisible();
   message_center_bubble_.reset(
-      new internal::WebNotificationBubbleWrapper(this, message_center_bubble));
+      new WebNotificationBubbleWrapper(this, message_center_bubble));
 
   status_area_widget()->SetHideSystemNotifications(true);
   GetShelfLayoutManager()->UpdateAutoHideState();
@@ -456,7 +452,7 @@ void WebNotificationTray::UpdateAfterLoginStatusChange(
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;
-  internal::TrayBackgroundView::SetShelfAlignment(alignment);
+  TrayBackgroundView::SetShelfAlignment(alignment);
   tray_container()->SetBorder(views::Border::NullBorder());
   // Destroy any existing bubble so that it will be rebuilt correctly.
   message_center_tray_->HideMessageCenterBubble();

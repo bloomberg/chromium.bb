@@ -11,15 +11,12 @@
 #include "ui/views/bubble/bubble_delegate.h"
 
 namespace ash {
+class ShelfLayoutManager;
+class ShelfView;
 
 namespace test {
 class OverflowBubbleViewTestAPI;
 }
-
-namespace internal {
-
-class ShelfLayoutManager;
-class ShelfView;
 
 // OverflowBubbleView hosts a ShelfView to display overflown items.
 // Exports to access this class from OverflowBubbleViewTestAPI.
@@ -63,7 +60,6 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDelegateView {
   DISALLOW_COPY_AND_ASSIGN(OverflowBubbleView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_OVERFLOW_BUBBLE_VIEW_H_

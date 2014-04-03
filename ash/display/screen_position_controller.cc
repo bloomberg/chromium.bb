@@ -28,9 +28,8 @@ namespace {
 // Return true if the window or its ancestor has |kStayInSameRootWindowkey|
 // property.
 bool ShouldStayInSameRootWindow(const aura::Window* window) {
-  return window &&
-      (window->GetProperty(internal::kStayInSameRootWindowKey) ||
-       ShouldStayInSameRootWindow(window->parent()));
+  return window && (window->GetProperty(kStayInSameRootWindowKey) ||
+                    ShouldStayInSameRootWindow(window->parent()));
 }
 
 // Move all transient children to |dst_root|, including the ones in
@@ -115,8 +114,6 @@ std::pair<aura::Window*, gfx::Point> GetRootWindowRelativeToWindow(
 
 }  // namespace
 
-namespace internal {
-
 void ScreenPositionController::ConvertPointToScreen(
     const aura::Window* window,
     gfx::Point* point) {
@@ -152,7 +149,7 @@ void ScreenPositionController::SetBounds(aura::Window* window,
                                          const gfx::Rect& bounds,
                                          const gfx::Display& display) {
   DCHECK_NE(-1, display.id());
-  if (!window->parent()->GetProperty(internal::kUsesScreenCoordinatesKey)) {
+  if (!window->parent()->GetProperty(kUsesScreenCoordinatesKey)) {
     window->SetBounds(bounds);
     return;
   }
@@ -228,5 +225,4 @@ void ScreenPositionController::SetBounds(aura::Window* window,
   window->SetBounds(gfx::Rect(origin, bounds.size()));
 }
 
-}  // internal
-}  // ash
+}  // namespace ash

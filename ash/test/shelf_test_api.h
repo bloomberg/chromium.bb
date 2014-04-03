@@ -11,10 +11,7 @@ namespace ash {
 
 class Shelf;
 class ShelfDelegate;
-
-namespace internal {
 class ShelfView;
-}
 
 namespace test {
 
@@ -26,7 +23,7 @@ class ShelfTestAPI {
   ~ShelfTestAPI();
 
   // An accessor for |shelf_view|.
-  internal::ShelfView* shelf_view();
+  ShelfView* shelf_view();
 
   // Set ShelfDelegate.
   void SetShelfDelegate(ShelfDelegate* delegate);

@@ -24,12 +24,10 @@ class Widget;
 
 namespace ash {
 
-namespace internal {
 views::Widget* CreateDesktopBackground(aura::Window* root_window,
                                        int container_id);
 
 ASH_EXPORT views::Widget* CreateStatusArea(views::View* contents);
-}  // namespace internal
 
 }  // namespace ash
 

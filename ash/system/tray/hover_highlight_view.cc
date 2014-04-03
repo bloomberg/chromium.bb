@@ -25,7 +25,6 @@ const int kCheckLabelPadding = 4;
 }  // namespace
 
 namespace ash {
-namespace internal {
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
     : listener_(listener),
@@ -186,5 +185,4 @@ void HoverHighlightView::OnFocus() {
   ActionableView::OnFocus();
 }
 
-}  // namespace internal
 }  // namespace ash

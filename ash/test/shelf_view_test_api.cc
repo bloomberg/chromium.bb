@@ -36,9 +36,8 @@ class TestAPIAnimationObserver : public views::BoundsAnimatorObserver {
 namespace ash {
 namespace test {
 
-ShelfViewTestAPI::ShelfViewTestAPI(internal::ShelfView* shelf_view)
-    : shelf_view_(shelf_view) {
-}
+ShelfViewTestAPI::ShelfViewTestAPI(ShelfView* shelf_view)
+    : shelf_view_(shelf_view) {}
 
 ShelfViewTestAPI::~ShelfViewTestAPI() {
 }
@@ -47,13 +46,12 @@ int ShelfViewTestAPI::GetButtonCount() {
   return shelf_view_->view_model_->view_size();
 }
 
-internal::ShelfButton* ShelfViewTestAPI::GetButton(int index) {
+ShelfButton* ShelfViewTestAPI::GetButton(int index) {
   // App list button is not a ShelfButton.
   if (shelf_view_->model_->items()[index].type == ash::TYPE_APP_LIST)
     return NULL;
 
-  return static_cast<internal::ShelfButton*>(
-      shelf_view_->view_model_->view_at(index));
+  return static_cast<ShelfButton*>(shelf_view_->view_model_->view_at(index));
 }
 
 int ShelfViewTestAPI::GetFirstVisibleIndex() {
@@ -99,7 +97,7 @@ void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
   shelf_view_->bounds_animator_->RemoveObserver(observer.get());
 }
 
-internal::OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
+OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
   return shelf_view_->overflow_bubble_.get();
 }
 

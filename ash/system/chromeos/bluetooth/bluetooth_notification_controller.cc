@@ -143,7 +143,6 @@ void BluetoothPairingNotificationDelegate::ButtonClick(int button_index) {
 
 
 namespace ash {
-namespace internal {
 
 BluetoothNotificationController::BluetoothNotificationController()
     : weak_ptr_factory_(this) {
@@ -368,5 +367,4 @@ void BluetoothNotificationController::NotifyPairedDevice(
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
-}  // namespace internal
 }  // namespace ash

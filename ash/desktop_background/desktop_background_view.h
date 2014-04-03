@@ -10,7 +10,6 @@
 #include "ui/views/view.h"
 
 namespace ash {
-namespace internal {
 
 class DesktopBackgroundView : public views::View,
                               public views::ContextMenuController {
@@ -31,7 +30,6 @@ class DesktopBackgroundView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DESKTOP_BACKGROUND_DESKTOP_BACKGROUND_VIEW_H_

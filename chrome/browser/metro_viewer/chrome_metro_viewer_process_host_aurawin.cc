@@ -153,8 +153,8 @@ void ChromeMetroViewerProcessHost::OnHandleSearchRequest(
 
 void ChromeMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,
                                                        uint32 height) {
-  std::vector<ash::internal::DisplayInfo> info_list;
-  info_list.push_back(ash::internal::DisplayInfo::CreateFromSpec(
+  std::vector<ash::DisplayInfo> info_list;
+  info_list.push_back(ash::DisplayInfo::CreateFromSpec(
       base::StringPrintf("%dx%d*%f", width, height, gfx::GetModernUIScale())));
   ash::Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(
       info_list);

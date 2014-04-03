@@ -48,7 +48,7 @@ TEST_F(DIPTest, WorkArea) {
   gfx::Screen* screen = Shell::GetScreen();
 
   const gfx::Display display_2x = screen->GetDisplayNearestWindow(root);
-  const internal::DisplayInfo display_info_2x =
+  const DisplayInfo display_info_2x =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
 
   // The |bounds_in_pixel()| should report bounds in pixel coordinate.
@@ -87,7 +87,7 @@ TEST_F(DIPTest, WorkAreaForLegacyShelfLayout) {
   gfx::Screen* screen = Shell::GetScreen();
 
   const gfx::Display display_2x = screen->GetDisplayNearestWindow(root);
-  const internal::DisplayInfo display_info_2x =
+  const DisplayInfo display_info_2x =
       Shell::GetInstance()->display_manager()->GetDisplayInfo(display_2x.id());
 
   // The |bounds_in_native()| should report bounds in pixel coordinate.

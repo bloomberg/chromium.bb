@@ -32,7 +32,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
 namespace {
 
 const int kRootHeight = 600;
@@ -183,7 +182,7 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     return std::vector<aura::Window*>();
   }
 
-  internal::ShelfLayoutManager* shelf_layout_manager() {
+  ShelfLayoutManager* shelf_layout_manager() {
     return Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   }
 
@@ -1874,5 +1873,4 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
             touch_resize_window_->bounds().ToString());
 }
 
-}  // namespace internal
 }  // namespace ash

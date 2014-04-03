@@ -26,7 +26,6 @@ class EmptyBackground : public views::Background {
 }
 
 namespace ash {
-namespace internal {
 
 TrayEmpty::TrayEmpty(SystemTray* system_tray)
     : SystemTrayItem(system_tray) {
@@ -64,5 +63,4 @@ void TrayEmpty::DestroyDetailedView() {}
 
 void TrayEmpty::UpdateAfterLoginStatusChange(user::LoginStatus status) {}
 
-}  // namespace internal
 }  // namespace ash

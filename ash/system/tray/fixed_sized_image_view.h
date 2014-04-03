@@ -10,7 +10,6 @@
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
-namespace internal {
 
 // An image view with a specified width and height (kTrayPopupDetailsIconWidth).
 // If the specified width or height is zero, then the image size is used for
@@ -29,7 +28,6 @@ class FixedSizedImageView : public views::ImageView {
   DISALLOW_COPY_AND_ASSIGN(FixedSizedImageView);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_FIXED_SIZED_IMAGE_VIEW_H_

@@ -13,7 +13,6 @@ class Window;
 }
 
 namespace ash {
-namespace internal {
 
 class RootWindowController;
 
@@ -45,7 +44,6 @@ ASH_EXPORT RootWindowSettings* GetRootWindowSettings(aura::Window* root);
 ASH_EXPORT const RootWindowSettings*
 GetRootWindowSettings(const aura::Window* root);
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_ROOT_WINDOW_SETTINGS_H_

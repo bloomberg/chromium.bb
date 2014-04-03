@@ -11,7 +11,6 @@
 
 namespace ash {
 class ShelfWidget;
-namespace internal {
 
 // StatusAreaLayoutManager is a layout manager responsible for the status area.
 // In any case when status area needs relayout it redirects this call to
@@ -45,7 +44,6 @@ class StatusAreaLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(StatusAreaLayoutManager);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_STATUS_AREA_LAYOUT_MANAGER_H_

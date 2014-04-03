@@ -12,7 +12,6 @@ class Rect;
 }
 
 namespace ash {
-namespace internal {
 
 // Observers to the DockedWindowLayoutManager are notified of significant
 // events that occur with the docked windows, such as the bounds change.
@@ -35,7 +34,6 @@ class ASH_EXPORT DockedWindowLayoutManagerObserver {
   virtual ~DockedWindowLayoutManagerObserver() {}
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // UI_DOCK_DOCKED_WINDOW_LAYOUT_MANAGER_OBSERVER_H_

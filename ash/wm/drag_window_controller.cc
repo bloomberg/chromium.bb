@@ -18,7 +18,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace internal {
 
 DragWindowController::DragWindowController(aura::Window* window)
     : window_(window),
@@ -119,5 +118,4 @@ void DragWindowController::RecreateWindowLayers() {
   layer_owner_->root()->parent()->Remove(layer_owner_->root());
 }
 
-}  // namespace internal
 }  // namespace ash

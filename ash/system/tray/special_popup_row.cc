@@ -19,8 +19,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 const int kIconPaddingLeft = 5;
@@ -130,5 +128,4 @@ void SpecialPopupRow::Layout() {
   content_->SetBoundsRect(bounds);
 }
 
-}  // namespace internal
 }  // namespace ash

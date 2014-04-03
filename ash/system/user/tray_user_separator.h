@@ -9,7 +9,6 @@
 #include "ash/system/tray/system_tray_item.h"
 
 namespace ash {
-namespace internal {
 
 // This tray item is showing an additional separator line between the logged in
 // users and the rest of the system tray menu. The separator will only be shown
@@ -41,7 +40,6 @@ class ASH_EXPORT TrayUserSeparator : public SystemTrayItem {
   DISALLOW_COPY_AND_ASSIGN(TrayUserSeparator);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_USER_TRAY_USER_SEPARATOR_H_

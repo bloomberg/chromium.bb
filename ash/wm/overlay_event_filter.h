@@ -12,7 +12,6 @@
 #include "ui/events/event_handler.h"
 
 namespace ash {
-namespace internal {
 
 // EventFilter for the "overlay window", which intercepts events before they are
 // processed by the usual path (e.g. the partial screenshot UI, the keyboard
@@ -66,7 +65,6 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(OverlayEventFilter);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_WM_OVERLAY_EVENT_FILTER_H_

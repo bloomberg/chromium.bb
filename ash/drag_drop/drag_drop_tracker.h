@@ -16,7 +16,6 @@ class WindowDelegate;
 }
 
 namespace ash {
-namespace internal {
 
 // Provides functions for handling drag events inside and outside the root
 // window where drag is started. This internally sets up a capture window for
@@ -53,7 +52,6 @@ class ASH_EXPORT DragDropTracker {
   DISALLOW_COPY_AND_ASSIGN(DragDropTracker);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_DRAG_DROP_DRAG_DROP_TRACKER_H_

@@ -26,7 +26,7 @@ namespace ash {
 // A self-owned object to handle the cancel and the finish of current partial
 // screenshot session.
 class PartialScreenshotView::OverlayDelegate
-    : public internal::OverlayEventFilter::Delegate,
+    : public OverlayEventFilter::Delegate,
       public views::WidgetObserver {
  public:
   OverlayDelegate() {
@@ -42,10 +42,10 @@ class PartialScreenshotView::OverlayDelegate
   virtual void Cancel() OVERRIDE {
     // Make sure the mouse_warp_mode allows warping. It can be stopped by a
     // partial screenshot view.
-    internal::MouseCursorEventFilter* mouse_cursor_filter =
+    MouseCursorEventFilter* mouse_cursor_filter =
         Shell::GetInstance()->mouse_cursor_filter();
     mouse_cursor_filter->set_mouse_warp_mode(
-        internal::MouseCursorEventFilter::WARP_ALWAYS);
+        MouseCursorEventFilter::WARP_ALWAYS);
     for (size_t i = 0; i < widgets_.size(); ++i)
       widgets_[i]->Close();
   }
@@ -116,9 +116,8 @@ void PartialScreenshotView::Init(aura::Window* root_window) {
   params.delegate = this;
   // The partial screenshot rectangle has to be at the real top of
   // the screen.
-  params.parent = Shell::GetContainer(
-      root_window,
-      internal::kShellWindowId_OverlayContainer);
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
 
   widget->Init(params);
   widget->SetContentsView(this);
@@ -194,10 +193,9 @@ bool PartialScreenshotView::OnMousePressed(const ui::MouseEvent& event) {
   // Prevent moving across displays during drag. Capturing a screenshot across
   // the displays is not supported yet.
   // TODO(mukai): remove this restriction.
-  internal::MouseCursorEventFilter* mouse_cursor_filter =
+  MouseCursorEventFilter* mouse_cursor_filter =
       Shell::GetInstance()->mouse_cursor_filter();
-  mouse_cursor_filter->set_mouse_warp_mode(
-      internal::MouseCursorEventFilter::WARP_NONE);
+  mouse_cursor_filter->set_mouse_warp_mode(MouseCursorEventFilter::WARP_NONE);
   OnSelectionStarted(event.location());
   return true;
 }

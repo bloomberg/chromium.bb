@@ -24,7 +24,7 @@
 #include "ui/display/chromeos/output_configurator.h"
 #include "ui/message_center/message_center.h"
 
-using ash::internal::ResolutionNotificationController;
+using ash::ResolutionNotificationController;
 
 namespace chromeos {
 namespace {
@@ -191,7 +191,7 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
 TEST_F(DisplayPreferencesTest, BasicStores) {
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200*2, 400x300#400x400|300x200");
@@ -489,7 +489,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
 }
 
 TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
@@ -521,7 +521,7 @@ TEST_F(DisplayPreferencesTest, RestoreColorProfiles) {
 TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   ash::DisplayController* display_controller =
       ash::Shell::GetInstance()->display_controller();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200*2,200x200");
@@ -556,11 +556,10 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   EXPECT_EQ("178x176", primary_display.bounds().size().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_90, primary_display.rotation());
 
-  const ash::internal::DisplayInfo& info1 =
-      display_manager->GetDisplayInfo(id1);
+  const ash::DisplayInfo& info1 = display_manager->GetDisplayInfo(id1);
   EXPECT_EQ(1.25f, info1.configured_ui_scale());
 
-  const ash::internal::DisplayInfo& info_primary =
+  const ash::DisplayInfo& info_primary =
       display_manager->GetDisplayInfo(new_primary);
   EXPECT_EQ(gfx::Display::ROTATE_90, info_primary.rotation());
   EXPECT_EQ(1.0f, info_primary.configured_ui_scale());

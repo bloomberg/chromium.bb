@@ -9,7 +9,6 @@
 #include "ui/compositor/layer_type.h"
 
 namespace ash {
-namespace internal {
 
 SystemBackgroundController::SystemBackgroundController(
     aura::Window* root_window,
@@ -41,5 +40,4 @@ void SystemBackgroundController::OnWindowBoundsChanged(
   layer_->SetBounds(gfx::Rect(root_window_->layer()->bounds().size()));
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -18,8 +18,6 @@
 #include "ui/message_center/notification_list.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 base::string16 ExpectedNotificationMessage(int64 display_id,
@@ -159,7 +157,7 @@ TEST_F(ResolutionNotificationControllerTest, Basic) {
 
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
@@ -192,7 +190,7 @@ TEST_F(ResolutionNotificationControllerTest, ClickMeansAccept) {
 
   UpdateDisplay("300x300#300x300%57|200x200%58,250x250#250x250%59|200x200%60");
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
@@ -221,7 +219,7 @@ TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
   if (!SupportsMultipleDisplays())
     return;
 
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   UpdateDisplay("300x300#300x300%59|200x200%60");
@@ -262,7 +260,7 @@ TEST_F(ResolutionNotificationControllerTest, Close) {
 
   UpdateDisplay("100x100,150x150#150x150%59|200x200%60");
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
@@ -301,7 +299,7 @@ TEST_F(ResolutionNotificationControllerTest, Timeout) {
   }
   EXPECT_FALSE(IsNotificationVisible());
   EXPECT_EQ(0, accept_count());
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   DisplayMode mode;
   EXPECT_TRUE(
@@ -317,7 +315,7 @@ TEST_F(ResolutionNotificationControllerTest, DisplayDisconnected) {
   UpdateDisplay("300x300#300x300%56|200x200%57,"
                 "200x200#250x250%58|200x200%59|100x100%60");
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   SetDisplayResolutionAndNotify(
       ScreenUtil::GetSecondaryDisplay(), gfx::Size(100, 100));
@@ -342,7 +340,7 @@ TEST_F(ResolutionNotificationControllerTest, MultipleResolutionChange) {
   UpdateDisplay("300x300#300x300%56|200x200%57,"
                 "250x250#250x250%58|200x200%59");
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
 
   SetDisplayResolutionAndNotify(
@@ -381,7 +379,7 @@ TEST_F(ResolutionNotificationControllerTest, Fallback) {
   UpdateDisplay("300x300#300x300%56|200x200%57,"
                 "250x250#250x250%58|220x220%59|200x200%60");
   int64 id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  ash::internal::DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
   ASSERT_EQ(0, accept_count());
   EXPECT_FALSE(IsNotificationVisible());
@@ -412,5 +410,4 @@ TEST_F(ResolutionNotificationControllerTest, Fallback) {
   EXPECT_EQ(58.0f, mode.refresh_rate);
 }
 
-}  // namespace internal
 }  // namespace ash

@@ -17,7 +17,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
 
 // The shelf buttons communicate back to the host by way of this interface.
 // This interface is used to enable reordering the items on the shelf.
@@ -61,7 +60,6 @@ class ASH_EXPORT ShelfButtonHost {
   virtual ~ShelfButtonHost() {}
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_BUTTON_HOST_H_

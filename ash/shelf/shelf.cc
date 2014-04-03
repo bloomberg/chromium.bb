@@ -49,7 +49,7 @@ Shelf::Shelf(ShelfModel* shelf_model,
       alignment_(shelf_widget->GetAlignment()),
       delegate_(shelf_delegate),
       shelf_widget_(shelf_widget) {
-  shelf_view_ = new internal::ShelfView(
+  shelf_view_ = new ShelfView(
       shelf_model, delegate_, shelf_widget_->shelf_layout_manager());
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
@@ -63,15 +63,14 @@ Shelf::~Shelf() {
 
 // static
 Shelf* Shelf::ForPrimaryDisplay() {
-  ShelfWidget* shelf_widget = internal::RootWindowController::ForShelf(
-      Shell::GetPrimaryRootWindow())->shelf();
+  ShelfWidget* shelf_widget =
+      RootWindowController::ForShelf(Shell::GetPrimaryRootWindow())->shelf();
   return shelf_widget ? shelf_widget->shelf() : NULL;
 }
 
 // static
 Shelf* Shelf::ForWindow(aura::Window* window) {
-  ShelfWidget* shelf_widget =
-      internal::RootWindowController::ForShelf(window)->shelf();
+  ShelfWidget* shelf_widget = RootWindowController::ForShelf(window)->shelf();
   return shelf_widget ? shelf_widget->shelf() : NULL;
 }
 

@@ -27,7 +27,7 @@ class View;
 }
 
 namespace ash {
-
+class HoverHighlightView;
 class SystemTrayItem;
 
 class ASH_EXPORT AccessibilityObserver {
@@ -39,9 +39,6 @@ class ASH_EXPORT AccessibilityObserver {
       AccessibilityNotificationVisibility notify) = 0;
 };
 
-namespace internal {
-
-class HoverHighlightView;
 
 namespace tray {
 
@@ -150,7 +147,6 @@ class TrayAccessibility : public TrayImageItem,
   DISALLOW_COPY_AND_ASSIGN(TrayAccessibility);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_ACCESSIBILITY_H_

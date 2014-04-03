@@ -24,8 +24,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
-namespace internal {
-
 namespace {
 
 // The duration of the show animation.
@@ -289,5 +287,4 @@ scoped_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   return phantom_widget.Pass();
 }
 
-}  // namespace internal
 }  // namespace ash

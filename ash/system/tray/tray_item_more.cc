@@ -16,7 +16,6 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
-namespace internal {
 
 TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
     : owner_(owner),
@@ -103,5 +102,4 @@ void TrayItemMore::GetAccessibleState(ui::AXViewState* state) {
   state->name = accessible_name_;
 }
 
-}  // namespace internal
 }  // namespace ash

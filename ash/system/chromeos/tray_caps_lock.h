@@ -14,8 +14,6 @@ class View;
 }
 
 namespace ash {
-namespace internal {
-
 class CapsLockDefaultView;
 
 class TrayCapsLock : public TrayImageItem,
@@ -46,7 +44,6 @@ class TrayCapsLock : public TrayImageItem,
   DISALLOW_COPY_AND_ASSIGN(TrayCapsLock);
 };
 
-}  // namespace internal
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_CHROMEOS_TRAY_CAPS_LOCK_H_
