@@ -80,7 +80,7 @@ enum ThreadAffinity {
 class Node;
 class CSSValue;
 
-template<typename T, bool derivesNodeOrCSSValue = WTF::IsSubclass<T, Node>::value || WTF::IsSubclass<T, CSSValue>::value > struct DefaultThreadingTrait;
+template<typename T, bool derivesNode = WTF::IsSubclass<T, Node>::value> struct DefaultThreadingTrait;
 
 template<typename T>
 struct DefaultThreadingTrait<T, false> {

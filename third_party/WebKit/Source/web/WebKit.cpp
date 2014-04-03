@@ -163,6 +163,7 @@ void initializeWithoutV8(Platform* platform)
     WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction);
     WTF::initializeMainThread(callOnMainThreadFunction);
     WebCore::Heap::init();
+    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (WebThread* currentThread = platform->currentThread()) {
         ASSERT(!s_pendingGCRunner);
         s_pendingGCRunner = new WebCore::PendingGCRunner;
@@ -216,6 +217,7 @@ void shutdownWithoutV8()
     ASSERT(!s_endOfTaskRunner);
     WebCore::ImageDecodingStore::shutdown();
     WebCore::shutdown();
+    // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread()) {
         ASSERT(s_pendingGCRunner);
         delete s_pendingGCRunner;
