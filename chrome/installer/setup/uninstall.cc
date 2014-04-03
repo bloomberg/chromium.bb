@@ -166,6 +166,7 @@ void ProcessIELowRightsPolicyWorkItems(const InstallerState& installer_state) {
 void ClearRlzProductState() {
   const rlz_lib::AccessPoint points[] = {rlz_lib::CHROME_OMNIBOX,
                                          rlz_lib::CHROME_HOME_PAGE,
+                                         rlz_lib::CHROME_APP_LIST,
                                          rlz_lib::NO_ACCESS_POINT};
 
   rlz_lib::ClearProductState(rlz_lib::CHROME, points);

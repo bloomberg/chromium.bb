@@ -60,16 +60,18 @@ enum AccessPoint {
 
   CHROMEOS_OMNIBOX,    // ChromeOS searches through the address bar omnibox.
   CHROMEOS_HOME_PAGE,  // ChromeOS searches through Google as home page.
-  CHROMEOS_RESERVED,   // Reserved for ChromeOS.
+  CHROMEOS_APP_LIST,   // ChromeOS searches through the app launcher search box.
 
   CHROME_IOS_OMNIBOX,  // Chrome searches through the address bar omnibox (iOS).
   CHROME_IOS_HOME_PAGE,// Chrome searches through Google as home page (iOS).
 
+  CHROME_APP_LIST,     // Chrome searches through the app launcher search box.
+  CHROME_MAC_APP_LIST, // Chrome searches through the app launcher search box
+                       // (Mac).
+
   // Unclaimed access points - should be used first before creating new APs.
   // Please also make sure you re-name the enum before using an unclaimed value;
   // this acts as a check to ensure we don't have collisions.
-  UNDEFINED_AP_O,
-  UNDEFINED_AP_P,
   UNDEFINED_AP_Q,
   UNDEFINED_AP_R,
   UNDEFINED_AP_S,

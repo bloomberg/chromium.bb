@@ -62,6 +62,9 @@ class RLZTracker : public content::NotificationObserver {
   // For the point parameter of RecordProductEvent.
   static const rlz_lib::AccessPoint CHROME_OMNIBOX;
   static const rlz_lib::AccessPoint CHROME_HOME_PAGE;
+#if !defined(OS_IOS)
+  static const rlz_lib::AccessPoint CHROME_APP_LIST;
+#endif
 
   // Gets the HTTP header value that can be added to requests from the
   // specific access point.  The string returned is of the form:
@@ -90,6 +93,11 @@ class RLZTracker : public content::NotificationObserver {
 
   // Enables zero delay for InitRlzFromProfileDelayed. For testing only.
   static void EnableZeroDelayForTesting();
+
+#if !defined(OS_IOS)
+  // Records that the app list search has been used.
+  static void RecordAppListSearch();
+#endif
 
   // The following methods are made protected so that they can be used for
   // testing purposes. Production code should never need to call these.
@@ -187,6 +195,10 @@ class RLZTracker : public content::NotificationObserver {
   virtual bool ScheduleClearRlzState();
 #endif
 
+  // Returns a pointer to the bool corresponding to whether |point| has been
+  // used but not reported.
+  bool* GetAccessPointRecord(rlz_lib::AccessPoint point);
+
   // Tracker used for testing purposes only. If this value is non-NULL, it
   // will be returned from GetInstance() instead of the regular singleton.
   static RLZTracker* tracker_;
@@ -212,9 +224,10 @@ class RLZTracker : public content::NotificationObserver {
   base::Lock cache_lock_;
   std::map<rlz_lib::AccessPoint, base::string16> rlz_cache_;
 
-  // Keeps track of whether the omnibox or host page have been used.
+  // Keeps track of whether the omnibox, home page or app list have been used.
   bool omnibox_used_;
   bool homepage_used_;
+  bool app_list_used_;
 
   // Main and (optionally) reactivation brand codes, assigned on UI thread.
   std::string brand_;
