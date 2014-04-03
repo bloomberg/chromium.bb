@@ -222,11 +222,8 @@ bool TestPlugin::initialize(WebPluginContainer* container)
 
 void TestPlugin::destroy()
 {
-    if (m_layer.get()) {
-        m_layer->WillModifyTexture();
-        m_layer->SetTextureMailbox(cc::TextureMailbox(),
-                                   scoped_ptr<cc::SingleReleaseCallback>());
-    }
+    if (m_layer.get())
+        m_layer->ClearTexture();
     if (m_container)
         m_container->setWebLayer(0);
     m_webLayer.reset();

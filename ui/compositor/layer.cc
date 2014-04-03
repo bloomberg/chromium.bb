@@ -458,7 +458,7 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   }
 
   if (texture_layer_.get())
-    texture_layer_->WillModifyTexture();
+    texture_layer_->ClearClient();
   // TODO(piman): delegated_renderer_layer_ cleanup.
 
   cc_layer_->RemoveAllChildren();
