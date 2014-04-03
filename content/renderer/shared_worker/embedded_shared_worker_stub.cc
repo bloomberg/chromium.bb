@@ -21,13 +21,16 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     const base::string16& name,
     const base::string16& content_security_policy,
     blink::WebContentSecurityPolicyType security_policy_type,
+    bool pause_on_start,
     int route_id)
-    : route_id_(route_id),
-      name_(name),
-      runing_(false),
-      url_(url) {
+    : route_id_(route_id), name_(name), runing_(false), url_(url) {
   RenderThreadImpl::current()->AddSharedWorkerRoute(route_id_, this);
   impl_ = blink::WebSharedWorker::create(this);
+  if (pause_on_start) {
+    // Pause worker context when it starts and wait until either DevTools client
+    // is attached or explicit resume notification is received.
+    impl_->pauseWorkerContextOnStart();
+  }
   worker_devtools_agent_.reset(
       new SharedWorkerDevToolsAgent(route_id, impl_));
   impl_->startWorkerContext(url, name_,

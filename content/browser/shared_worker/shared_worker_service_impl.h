@@ -92,12 +92,21 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   // RenderProcessHostImpl on UI thread if necessary.
   void CheckWorkerDependency();
 
+  void WorkerCreatedResultCallback(int worker_process_id,
+                                   int worker_route_id,
+                                   bool pause_on_start);
+  void NotifyWorkerDestroyed(int worker_process_id, int worker_route_id);
+
  private:
   friend struct DefaultSingletonTraits<SharedWorkerServiceImpl>;
   friend class SharedWorkerServiceImplTest;
 
   typedef void (*UpdateWorkerDependencyFunc)(const std::vector<int>&,
                                              const std::vector<int>&);
+  // Pair of render_process_id and worker_route_id.
+  typedef std::pair<int, int> ProcessRouteIdPair;
+  typedef base::ScopedPtrHashMap<ProcessRouteIdPair, SharedWorkerHost>
+      WorkerHostMap;
 
   SharedWorkerServiceImpl();
   virtual ~SharedWorkerServiceImpl();
@@ -108,7 +117,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
       SharedWorkerMessageFilter* filter,
       int worker_route_id);
 
-  SharedWorkerHost* FindSharedWorkerHost(
+  static SharedWorkerHost* FindSharedWorkerHost(
+      const WorkerHostMap& hosts,
       const GURL& url,
       const base::string16& name,
       const WorkerStoragePartition& worker_partition,
@@ -124,11 +134,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
   std::set<int> last_worker_depended_renderers_;
   UpdateWorkerDependencyFunc update_worker_dependency_;
 
-  // Pair of render_process_id and worker_route_id.
-  typedef std::pair<int, int> ProcessRouteIdPair;
-  typedef base::ScopedPtrHashMap<ProcessRouteIdPair,
-                                 SharedWorkerHost> WorkerHostMap;
   WorkerHostMap worker_hosts_;
+  WorkerHostMap pending_worker_hosts_;
 
   ObserverList<WorkerServiceObserver> observers_;
 
