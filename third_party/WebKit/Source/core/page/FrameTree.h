@@ -35,7 +35,9 @@ namespace WebCore {
 
         const AtomicString& name() const { return m_name; }
         const AtomicString& uniqueName() const { return m_uniqueName; }
-        void setName(const AtomicString&);
+        // If |name| is not empty, |fallbackName| is ignored. Otherwise,
+        // |fallbackName| is used as a source of uniqueName.
+        void setName(const AtomicString& name, const AtomicString& fallbackName = nullAtom);
 
         LocalFrame* parent() const;
         LocalFrame* top() const;

@@ -53,7 +53,7 @@ FrameTree::~FrameTree()
         child->setView(nullptr);
 }
 
-void FrameTree::setName(const AtomicString& name)
+void FrameTree::setName(const AtomicString& name, const AtomicString& fallbackName)
 {
     m_name = name;
     if (!parent()) {
@@ -61,7 +61,7 @@ void FrameTree::setName(const AtomicString& name)
         return;
     }
     m_uniqueName = AtomicString(); // Remove our old frame name so it's not considered in uniqueChildName.
-    m_uniqueName = parent()->tree().uniqueChildName(name);
+    m_uniqueName = parent()->tree().uniqueChildName(name.isEmpty() ? fallbackName : name);
 }
 
 LocalFrame* FrameTree::parent() const

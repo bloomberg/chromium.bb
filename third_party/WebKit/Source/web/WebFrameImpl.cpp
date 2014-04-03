@@ -1688,7 +1688,11 @@ PassRefPtr<LocalFrame> WebFrameImpl::createChildFrame(const FrameLoadRequest& re
     RefPtr<LocalFrame> childFrame = LocalFrame::create(&webframe->m_frameLoaderClientImpl, frame()->host(), ownerElement);
     webframe->setWebCoreFrame(childFrame);
 
-    childFrame->tree().setName(request.frameName());
+    // FIXME: Using subResourceAttributeName as fallback is not a perfect
+    // solution. subResourceAttributeName returns just one attribute name. The
+    // element might not have the attribute, and there might be other attributes
+    // which can identify the element.
+    childFrame->tree().setName(request.frameName(), ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
 
     // FIXME: This comment is not quite accurate anymore.
     // LocalFrame::init() can trigger onload event in the parent frame,
