@@ -51,6 +51,7 @@ class SyncMessage;
 }
 
 namespace blink {
+struct WebDeviceEmulationParams;
 class WebGestureEvent;
 class WebInputEvent;
 class WebKeyboardEvent;
@@ -208,10 +209,7 @@ class CONTENT_EXPORT RenderWidget
   // Emulates screen and widget metrics. Supplied values override everything
   // coming from host.
   void EnableScreenMetricsEmulation(
-      const gfx::Rect& device_rect,
-      const gfx::Rect& widget_rect,
-      float device_scale_factor,
-      bool fit_to_view);
+      const blink::WebDeviceEmulationParams& params);
   void DisableScreenMetricsEmulation();
   void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
 

@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDevToolsAgent.h"
+#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -223,10 +224,22 @@ void DevToolsAgent::enableDeviceEmulation(
     const blink::WebRect& view_rect,
     float device_scale_factor,
     bool fit_to_view) {
+  blink::WebDeviceEmulationParams params;
+  params.screenPosition = device_rect.isEmpty() ?
+      blink::WebDeviceEmulationParams::Desktop :
+      blink::WebDeviceEmulationParams::Mobile;
+  params.deviceScaleFactor = device_scale_factor;
+  params.viewSize = blink::WebSize(view_rect.width, view_rect.height);
+  params.fitToView = fit_to_view;
+  params.viewInsets = blink::WebSize(device_rect.x, device_rect.y);
+  enableDeviceEmulation(params);
+}
+
+void DevToolsAgent::enableDeviceEmulation(
+    const blink::WebDeviceEmulationParams& params) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
   impl->webview()->settings()->setForceCompositingMode(true);
-  impl->EnableScreenMetricsEmulation(gfx::Rect(device_rect),
-      gfx::Rect(view_rect), device_scale_factor, fit_to_view);
+  impl->EnableScreenMetricsEmulation(params);
 }
 
 void DevToolsAgent::disableDeviceEmulation() {

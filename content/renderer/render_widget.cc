@@ -54,6 +54,7 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
 #include "third_party/WebKit/public/web/WebPagePopup.h"
 #include "third_party/WebKit/public/web/WebPopupMenu.h"
 #include "third_party/WebKit/public/web/WebPopupMenuInfo.h"
@@ -84,6 +85,7 @@
 
 using blink::WebCompositionUnderline;
 using blink::WebCursorInfo;
+using blink::WebDeviceEmulationParams;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
@@ -161,23 +163,19 @@ class RenderWidget::ScreenMetricsEmulator {
  public:
   ScreenMetricsEmulator(
       RenderWidget* widget,
-      const gfx::Rect& device_rect,
-      const gfx::Rect& widget_rect,
-      float device_scale_factor,
-      bool fit_to_view);
+      const WebDeviceEmulationParams& params);
   virtual ~ScreenMetricsEmulator();
 
+  // Scale and offset used to convert between host coordinates
+  // and webwidget coordinates.
   float scale() { return scale_; }
   gfx::Point offset() { return offset_; }
-  gfx::Rect widget_rect() const { return widget_rect_; }
+  gfx::Rect applied_widget_rect() const { return applied_widget_rect_; }
   gfx::Rect original_screen_rect() const { return original_view_screen_rect_; }
   const WebScreenInfo& original_screen_info() { return original_screen_info_; }
 
   void ChangeEmulationParams(
-      const gfx::Rect& device_rect,
-      const gfx::Rect& widget_rect,
-      float device_scale_factor,
-      bool fit_to_view);
+      const WebDeviceEmulationParams& params);
 
   // The following methods alter handlers' behavior for messages related to
   // widget size and position.
@@ -187,21 +185,21 @@ class RenderWidget::ScreenMetricsEmulator {
   void OnShowContextMenu(ContextMenuParams* params);
 
  private:
-  void CalculateScaleAndOffset();
+  void Reapply();
   void Apply(float overdraw_bottom_height,
       gfx::Rect resizer_rect, bool is_fullscreen);
 
   RenderWidget* widget_;
 
   // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
-  gfx::Rect device_rect_;
-  gfx::Rect widget_rect_;
-  float device_scale_factor_;
-  bool fit_to_view_;
+  WebDeviceEmulationParams params_;
 
   // The computed scale and offset used to fit widget into browser window.
   float scale_;
   gfx::Point offset_;
+
+  // Widget rect as passed to webwidget.
+  gfx::Rect applied_widget_rect_;
 
   // Original values to restore back after emulation ends.
   gfx::Size original_size_;
@@ -213,15 +211,9 @@ class RenderWidget::ScreenMetricsEmulator {
 
 RenderWidget::ScreenMetricsEmulator::ScreenMetricsEmulator(
     RenderWidget* widget,
-    const gfx::Rect& device_rect,
-    const gfx::Rect& widget_rect,
-    float device_scale_factor,
-    bool fit_to_view)
+    const WebDeviceEmulationParams& params)
     : widget_(widget),
-      device_rect_(device_rect),
-      widget_rect_(widget_rect),
-      device_scale_factor_(device_scale_factor),
-      fit_to_view_(fit_to_view),
+      params_(params),
       scale_(1.f) {
   original_size_ = widget_->size_;
   original_physical_backing_size_ = widget_->physical_backing_size_;
@@ -245,67 +237,59 @@ RenderWidget::ScreenMetricsEmulator::~ScreenMetricsEmulator() {
 }
 
 void RenderWidget::ScreenMetricsEmulator::ChangeEmulationParams(
-    const gfx::Rect& device_rect,
-    const gfx::Rect& widget_rect,
-    float device_scale_factor,
-    bool fit_to_view) {
-  device_rect_ = device_rect;
-  widget_rect_ = widget_rect;
-  device_scale_factor_ = device_scale_factor;
-  fit_to_view_ = fit_to_view;
+    const WebDeviceEmulationParams& params) {
+  params_ = params;
+  Reapply();
+}
+
+void RenderWidget::ScreenMetricsEmulator::Reapply() {
   Apply(widget_->overdraw_bottom_height_,
         widget_->resizer_rect_, widget_->is_fullscreen_);
 }
 
-void RenderWidget::ScreenMetricsEmulator::CalculateScaleAndOffset() {
-  if (fit_to_view_) {
+void RenderWidget::ScreenMetricsEmulator::Apply(
+    float overdraw_bottom_height, gfx::Rect resizer_rect, bool is_fullscreen) {
+  applied_widget_rect_.set_size(params_.viewSize.isEmpty() ?
+      original_size_ : gfx::Size(params_.viewSize));
+
+  if (params_.fitToView) {
     DCHECK(!original_size_.IsEmpty());
 
     int width_with_gutter =
-        std::max(original_size_.width() - 2 * device_rect_.x(), 1);
+        std::max(original_size_.width() - 2 * params_.viewInsets.width, 1);
     int height_with_gutter =
-        std::max(original_size_.height() - 2 * device_rect_.y(), 1);
+        std::max(original_size_.height() - 2 * params_.viewInsets.height, 1);
     float width_ratio =
-        static_cast<float>(widget_rect_.width()) / width_with_gutter;
+        static_cast<float>(applied_widget_rect_.width()) / width_with_gutter;
     float height_ratio =
-        static_cast<float>(widget_rect_.height()) / height_with_gutter;
+        static_cast<float>(applied_widget_rect_.height()) / height_with_gutter;
     float ratio = std::max(1.0f, std::max(width_ratio, height_ratio));
     scale_ = 1.f / ratio;
 
     // Center emulated view inside available view space.
-    offset_.set_x((original_size_.width() - scale_ * widget_rect_.width()) / 2);
+    offset_.set_x(
+        (original_size_.width() - scale_ * applied_widget_rect_.width()) / 2);
     offset_.set_y(
-        (original_size_.height() - scale_ * widget_rect_.height()) / 2);
+        (original_size_.height() - scale_ * applied_widget_rect_.height()) / 2);
   } else {
     scale_ = 1.f;
     offset_.SetPoint(0, 0);
   }
-}
 
-void RenderWidget::ScreenMetricsEmulator::Apply(
-    float overdraw_bottom_height, gfx::Rect resizer_rect, bool is_fullscreen) {
-  gfx::Rect applied_widget_rect = widget_rect_;
-  if (widget_rect_.size().IsEmpty()) {
-    scale_ = 1.f;
-    offset_.SetPoint(0, 0);
-    applied_widget_rect =
-        gfx::Rect(original_view_screen_rect_.origin(), original_size_);
-  } else {
-    CalculateScaleAndOffset();
-  }
-
-  if (device_rect_.size().IsEmpty()) {
+  if (params_.screenPosition == WebDeviceEmulationParams::Desktop) {
+    applied_widget_rect_.set_origin(original_view_screen_rect_.origin());
     widget_->screen_info_.rect = original_screen_info_.rect;
     widget_->screen_info_.availableRect = original_screen_info_.availableRect;
     widget_->window_screen_rect_ = original_window_screen_rect_;
   } else {
-    widget_->screen_info_.rect = gfx::Rect(device_rect_.size());
-    widget_->screen_info_.availableRect = gfx::Rect(device_rect_.size());
-    widget_->window_screen_rect_ = widget_->screen_info_.availableRect;
+    applied_widget_rect_.set_origin(gfx::Point(0, 0));
+    widget_->screen_info_.rect = applied_widget_rect_;
+    widget_->screen_info_.availableRect = applied_widget_rect_;
+    widget_->window_screen_rect_ = applied_widget_rect_;
   }
 
-  float applied_device_scale_factor = device_scale_factor_ ?
-      device_scale_factor_ : original_screen_info_.deviceScaleFactor;
+  float applied_device_scale_factor = params_.deviceScaleFactor ?
+      params_.deviceScaleFactor : original_screen_info_.deviceScaleFactor;
   widget_->screen_info_.deviceScaleFactor = applied_device_scale_factor;
 
   // Pass three emulation parameters to the blink side:
@@ -317,11 +301,11 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
       original_screen_info_.deviceScaleFactor, offset_, scale_);
 
   widget_->SetDeviceScaleFactor(applied_device_scale_factor);
-  widget_->view_screen_rect_ = applied_widget_rect;
+  widget_->view_screen_rect_ = applied_widget_rect_;
 
   gfx::Size physical_backing_size = gfx::ToCeiledSize(gfx::ScaleSize(
       original_size_, original_screen_info_.deviceScaleFactor));
-  widget_->Resize(applied_widget_rect.size(), physical_backing_size,
+  widget_->Resize(applied_widget_rect_.size(), physical_backing_size,
       overdraw_bottom_height, resizer_rect, is_fullscreen, NO_RESIZE_ACK);
 }
 
@@ -347,10 +331,8 @@ void RenderWidget::ScreenMetricsEmulator::OnUpdateScreenRectsMessage(
     const gfx::Rect& window_screen_rect) {
   original_view_screen_rect_ = view_screen_rect;
   original_window_screen_rect_ = window_screen_rect;
-  if (device_rect_.size().IsEmpty())
-    widget_->window_screen_rect_ = window_screen_rect;
-  if (widget_rect_.size().IsEmpty())
-    widget_->view_screen_rect_ = view_screen_rect;
+  if (params_.screenPosition == WebDeviceEmulationParams::Desktop)
+    Reapply();
 }
 
 void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
@@ -548,17 +530,11 @@ bool RenderWidget::UsingSynchronousRendererCompositor() const {
 }
 
 void RenderWidget::EnableScreenMetricsEmulation(
-    const gfx::Rect& device_rect,
-    const gfx::Rect& widget_rect,
-    float device_scale_factor,
-    bool fit_to_view) {
-  if (!screen_metrics_emulator_) {
-    screen_metrics_emulator_.reset(new ScreenMetricsEmulator(this,
-        device_rect, widget_rect, device_scale_factor, fit_to_view));
-  } else {
-    screen_metrics_emulator_->ChangeEmulationParams(device_rect,
-        widget_rect, device_scale_factor, fit_to_view);
-  }
+    const WebDeviceEmulationParams& params) {
+  if (!screen_metrics_emulator_)
+    screen_metrics_emulator_.reset(new ScreenMetricsEmulator(this, params));
+  else
+    screen_metrics_emulator_->ChangeEmulationParams(params);
 }
 
 void RenderWidget::DisableScreenMetricsEmulation() {
@@ -568,7 +544,7 @@ void RenderWidget::DisableScreenMetricsEmulation() {
 void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
     ScreenMetricsEmulator* emulator) {
   popup_origin_scale_for_emulation_ = emulator->scale();
-  popup_view_origin_for_emulation_ = emulator->widget_rect().origin();
+  popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ = gfx::Point(
       emulator->original_screen_rect().origin().x() + emulator->offset().x(),
       emulator->original_screen_rect().origin().y() + emulator->offset().y());
