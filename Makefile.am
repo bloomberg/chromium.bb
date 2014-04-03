@@ -667,6 +667,28 @@ nodist_desktop_shell_la_SOURCES =			\
 BUILT_SOURCES += $(nodist_desktop_shell_la_SOURCES)
 endif
 
+if ENABLE_FULLSCREEN_SHELL
+
+module_LTLIBRARIES += fullscreen-shell.la
+
+fullscreen_shell_la_CPPFLAGS =			\
+	-I$(top_builddir)/protocol		\
+	-I$(top_srcdir)/shared			\
+	-I$(top_srcdir)/src			\
+	-I$(top_builddir)/src			\
+	-DIN_WESTON
+
+fullscreen_shell_la_LDFLAGS = -module -avoid-version
+fullscreen_shell_la_LIBADD = $(COMPOSITOR_LIBS)
+fullscreen_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
+fullscreen_shell_la_SOURCES =			\
+	fullscreen-shell/fullscreen-shell.c
+nodist_fullscreen_shell_la_SOURCES =			\
+	protocol/fullscreen-shell-protocol.c		\
+	protocol/fullscreen-shell-server-protocol.h
+
+BUILT_SOURCES += $(nodist_fullscreen_shell_la_SOURCES)
+endif
 
 if ENABLE_XWAYLAND
 
