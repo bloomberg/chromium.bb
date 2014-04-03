@@ -521,7 +521,7 @@ FileListBannerController.prototype.maybeShowLowSpaceWarning_ = function(
     return;
 
   chrome.fileBrowserPrivate.getSizeStats(
-      volume.fileSystem.root.toURL(),
+      volume.volumeId,
       function(sizeStats) {
         var currentVolume = this.volumeManager_.getVolumeInfo(
             this.directoryModel_.getCurrentDirEntry());
