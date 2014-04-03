@@ -74,6 +74,15 @@ const char kSupervisedUserPasswordSalt[] =
 const char kSupervisedUserPasswordRevision[] =
     "SupervisedUserPasswordRevision";
 
+// A map from user id to flag indicating if password should be updated upon
+// signin.
+const char kSupervisedUserNeedPasswordUpdate[] =
+    "SupervisedUserNeedPasswordUpdate";
+
+// A map from user id to flag indicating if cryptohome does not have signature
+// key.
+const char kSupervisedUserIncompleteKey[] = "SupervisedUserHasIncompleteKey";
+
 std::string LoadSyncToken(base::FilePath profile_dir) {
   std::string token;
   base::FilePath token_file =
@@ -117,6 +126,9 @@ void SupervisedUserManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kSupervisedUserPasswordSchema);
   registry->RegisterDictionaryPref(kSupervisedUserPasswordSalt);
   registry->RegisterDictionaryPref(kSupervisedUserPasswordRevision);
+
+  registry->RegisterDictionaryPref(kSupervisedUserNeedPasswordUpdate);
+  registry->RegisterDictionaryPref(kSupervisedUserIncompleteKey);
 }
 
 SupervisedUserManagerImpl::SupervisedUserManagerImpl(UserManagerImpl* owner)
@@ -253,6 +265,12 @@ void SupervisedUserManagerImpl::GetPasswordInformation(
   if (GetUserIntegerValue(user_id, kSupervisedUserPasswordRevision, &value))
     result->SetIntegerWithoutPathExpansion(kPasswordRevision, value);
 
+  bool flag;
+  if (GetUserBooleanValue(user_id, kSupervisedUserNeedPasswordUpdate, &flag))
+    result->SetBooleanWithoutPathExpansion(kRequirePasswordUpdate, flag);
+  if (GetUserBooleanValue(user_id, kSupervisedUserIncompleteKey, &flag))
+    result->SetBooleanWithoutPathExpansion(kHasIncompleteKey, flag);
+
   std::string salt;
   if (GetUserStringValue(user_id, kSupervisedUserPasswordSalt, &salt))
     result->SetStringWithoutPathExpansion(kSalt, salt);
@@ -266,6 +284,14 @@ void SupervisedUserManagerImpl::SetPasswordInformation(
     SetUserIntegerValue(user_id, kSupervisedUserPasswordSchema, value);
   if (password_info->GetIntegerWithoutPathExpansion(kPasswordRevision, &value))
     SetUserIntegerValue(user_id, kSupervisedUserPasswordRevision, value);
+
+  bool flag;
+  if (password_info->GetBooleanWithoutPathExpansion(kRequirePasswordUpdate,
+                                                    &flag)) {
+    SetUserBooleanValue(user_id, kSupervisedUserNeedPasswordUpdate, flag);
+  }
+  if (password_info->GetBooleanWithoutPathExpansion(kHasIncompleteKey, &flag))
+    SetUserBooleanValue(user_id, kSupervisedUserIncompleteKey, flag);
 
   std::string salt;
   if (password_info->GetStringWithoutPathExpansion(kSalt, &salt))
@@ -291,6 +317,14 @@ bool SupervisedUserManagerImpl::GetUserIntegerValue(
   return dictionary->GetIntegerWithoutPathExpansion(user_id, out_value);
 }
 
+bool SupervisedUserManagerImpl::GetUserBooleanValue(const std::string& user_id,
+                                                    const char* key,
+                                                    bool* out_value) const {
+  PrefService* local_state = g_browser_process->local_state();
+  const base::DictionaryValue* dictionary = local_state->GetDictionary(key);
+  return dictionary->GetBooleanWithoutPathExpansion(user_id, out_value);
+}
+
 void SupervisedUserManagerImpl::SetUserStringValue(
     const std::string& user_id,
     const char* key,
@@ -307,6 +341,14 @@ void SupervisedUserManagerImpl::SetUserIntegerValue(
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate update(local_state, key);
   update->SetIntegerWithoutPathExpansion(user_id, value);
+}
+
+void SupervisedUserManagerImpl::SetUserBooleanValue(const std::string& user_id,
+                                                    const char* key,
+                                                    const bool value) {
+  PrefService* local_state = g_browser_process->local_state();
+  DictionaryPrefUpdate update(local_state, key);
+  update->SetBooleanWithoutPathExpansion(user_id, value);
 }
 
 const User* SupervisedUserManagerImpl::FindByDisplayName(
@@ -412,6 +454,8 @@ void SupervisedUserManagerImpl::RemoveNonCryptohomeData(
   CleanPref(user_id, kSupervisedUserPasswordSalt);
   CleanPref(user_id, kSupervisedUserPasswordSchema);
   CleanPref(user_id, kSupervisedUserPasswordRevision);
+  CleanPref(user_id, kSupervisedUserNeedPasswordUpdate);
+  CleanPref(user_id, kSupervisedUserIncompleteKey);
 }
 
 void SupervisedUserManagerImpl::CleanPref(const std::string& user_id,

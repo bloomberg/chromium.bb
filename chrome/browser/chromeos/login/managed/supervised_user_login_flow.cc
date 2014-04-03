@@ -111,7 +111,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
   int revision = 0;
   int schema = 0;
   bool success = password_data->GetStringWithoutPathExpansion(
-      kPasswordSignatureKey, &base64_signature);
+      kPasswordSignature, &base64_signature);
   success &= password_data->GetIntegerWithoutPathExpansion(kPasswordRevision,
                                                            &revision);
   success &=
@@ -181,7 +181,7 @@ void SupervisedUserLoginFlow::OnNewKeyAdded(
   SupervisedUserAuthentication* auth =
       UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
   auth->StorePasswordData(user_id(), *password_data.get());
-  auth->MarkKeyIncomplete(user_id());
+  auth->MarkKeyIncomplete(user_id(), true /* incomplete */);
   authenticator_->RemoveKey(
       context_,
       kLegacyCryptohomeManagedUserKeyLabel,
@@ -230,7 +230,7 @@ void SupervisedUserLoginFlow::OnPasswordUpdated(
   bool was_incomplete = auth->HasIncompleteKey(user_id());
   auth->StorePasswordData(user_id(), *password_data.get());
   if (was_incomplete)
-    auth->MarkKeyIncomplete(user_id());
+    auth->MarkKeyIncomplete(user_id(), true /* incomplete */);
 
   UMA_HISTOGRAM_ENUMERATION(
       "ManagedUsers.ChromeOS.PasswordChange",

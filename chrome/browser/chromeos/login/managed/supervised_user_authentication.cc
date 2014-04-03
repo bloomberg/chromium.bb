@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -102,17 +103,20 @@ std::string BuildPasswordSignature(const std::string& password,
 base::DictionaryValue* LoadPasswordData(base::FilePath profile_dir) {
   JSONFileValueSerializer serializer(profile_dir.Append(kPasswordUpdateFile));
   std::string error_message;
-  int error_code;
+  int error_code = JSONFileValueSerializer::JSON_NO_ERROR;
   scoped_ptr<base::Value> value(
       serializer.Deserialize(&error_code, &error_message));
   if (JSONFileValueSerializer::JSON_NO_ERROR != error_code) {
+    LOG(ERROR) << "Could not deserialize password data, error = " << error_code
+               << " / " << error_message;
     return NULL;
   }
   base::DictionaryValue* result;
   if (!value->GetAsDictionary(&result)) {
+    LOG(ERROR) << "Stored password data is not a dictionary";
     return NULL;
   }
-  value.Pass();
+  ignore_result(value.release());
   return result;
 }
 
@@ -213,6 +217,8 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
         BuildPasswordSignature(salted_password, revision, base64_signature_key);
     password_data->SetStringWithoutPathExpansion(kEncryptedPassword,
                                                  salted_password);
+    password_data->SetStringWithoutPathExpansion(kPasswordSignature,
+                                                 base64_signature);
 
     extra_data->SetStringWithoutPathExpansion(kPasswordEncryptionKey,
                                               BuildRawHMACKey());
@@ -266,7 +272,6 @@ SupervisedUserAuthentication::GetPasswordSchema(
 bool SupervisedUserAuthentication::NeedPasswordChange(
     const std::string& user_id,
     const base::DictionaryValue* password_data) {
-
   base::DictionaryValue local;
   owner_->GetPasswordInformation(user_id, &local);
   int local_schema = SCHEMA_PLAIN;
@@ -333,11 +338,11 @@ bool SupervisedUserAuthentication::HasIncompleteKey(
   return incomplete_key;
 }
 
-void SupervisedUserAuthentication::MarkKeyIncomplete(
-    const std::string& user_id) {
+void SupervisedUserAuthentication::MarkKeyIncomplete(const std::string& user_id,
+                                                     bool incomplete) {
   base::DictionaryValue holder;
   owner_->GetPasswordInformation(user_id, &holder);
-  holder.SetBoolean(kHasIncompleteKey, true);
+  holder.SetBoolean(kHasIncompleteKey, incomplete);
   owner_->SetPasswordInformation(user_id, &holder);
 }
 

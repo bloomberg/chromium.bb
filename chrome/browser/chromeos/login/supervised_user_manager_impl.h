@@ -93,6 +93,14 @@ class SupervisedUserManagerImpl
                            const char* key,
                            const int value);
 
+  bool GetUserBooleanValue(const std::string& user_id,
+                           const char* key,
+                           bool* out_value) const;
+
+  void SetUserBooleanValue(const std::string& user_id,
+                           const char* key,
+                           const bool value);
+
   void CleanPref(const std::string& user_id,
                  const char* key);
 

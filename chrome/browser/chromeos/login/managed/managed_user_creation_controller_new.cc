@@ -136,7 +136,7 @@ void ManagedUserCreationControllerNew::StartImport(
 
 void ManagedUserCreationControllerNew::StartCreationImpl() {
   DCHECK(creation_context_);
-  DCHECK(stage_ == STAGE_INITIAL);
+  DCHECK_EQ(STAGE_INITIAL, stage_);
   VLOG(1) << "Starting supervised user creation";
   VLOG(1) << " Phase 1 : Prepare keys";
 
@@ -249,7 +249,7 @@ void ManagedUserCreationControllerNew::OnAuthenticationFailure(
 void ManagedUserCreationControllerNew::OnMountSuccess(
     const std::string& mount_hash) {
   DCHECK(creation_context_);
-  DCHECK(stage_ == KEYS_GENERATED);
+  DCHECK_EQ(KEYS_GENERATED, stage_);
   VLOG(1) << " Phase 2.2 : Created home dir with master key";
 
   creation_context_->mount_hash = mount_hash;
@@ -281,7 +281,7 @@ void ManagedUserCreationControllerNew::OnMountSuccess(
 
 void ManagedUserCreationControllerNew::OnAddKeySuccess() {
   DCHECK(creation_context_);
-  DCHECK(stage_ == KEYS_GENERATED);
+  DCHECK_EQ(KEYS_GENERATED, stage_);
   stage_ = CRYPTOHOME_CREATED;
 
   VLOG(1) << " Phase 3 : Create/update user on chrome.com/manage";
@@ -319,7 +319,7 @@ void ManagedUserCreationControllerNew::RegistrationCallback(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   DCHECK(creation_context_);
-  DCHECK(stage_ == CRYPTOHOME_CREATED);
+  DCHECK_EQ(CRYPTOHOME_CREATED, stage_);
 
   stage_ = DASHBOARD_CREATED;
 
@@ -344,7 +344,7 @@ void ManagedUserCreationControllerNew::RegistrationCallback(
 
 void ManagedUserCreationControllerNew::OnManagedUserFilesStored(bool success) {
   DCHECK(creation_context_);
-  DCHECK(stage_ == DASHBOARD_CREATED);
+  DCHECK_EQ(DASHBOARD_CREATED, stage_);
 
   if (!success) {
     stage_ = STAGE_ERROR;

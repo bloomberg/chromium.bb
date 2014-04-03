@@ -192,6 +192,12 @@ void ManagerPasswordService::OnAddKeySuccess(
       UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
   int old_schema = auth->GetPasswordSchema(user_id);
   auth->StorePasswordData(user_id, *password_data.get());
+
+  if (auth->HasIncompleteKey(user_id))
+    auth->MarkKeyIncomplete(user_id, false /* key is complete now */);
+
+  // Check if we have legacy labels for keys.
+  // TODO(antrim): Migrate it to GetLabels call once wad@ implement it.
   if (old_schema == SupervisedUserAuthentication::SCHEMA_PLAIN) {
     // 1) Add new manager key (using old key).
     // 2) Remove old supervised user key.

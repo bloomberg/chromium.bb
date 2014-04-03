@@ -86,7 +86,7 @@ class SupervisedUserAuthentication {
   // In this case it does not have encryption key, and should be updated by
   // manager even if password versions match.
   bool HasIncompleteKey(const std::string& user_id);
-  void MarkKeyIncomplete(const std::string& user_id);
+  void MarkKeyIncomplete(const std::string& user_id, bool incomplete);
 
   // Loads password data stored by ScheduleSupervisedPasswordChange.
   void LoadPasswordUpdateData(const std::string& user_id,
