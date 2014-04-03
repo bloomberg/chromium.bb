@@ -227,12 +227,26 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8* adts_header) {
       ? std::min(2 * samples_per_second, 48000)
       : samples_per_second;
 
+  // The following code is written according to ISO 14496 Part 3 Table 1.13 -
+  // Syntax of AudioSpecificConfig.
+  uint16 extra_data_int =
+      // Note: adts_profile is in the range [0,3], since the ADTS header only
+      // allows two bits for its value.
+      ((adts_profile + 1) << 11) +
+      (frequency_index << 7) +
+      (channel_configuration << 3);
+  uint8 extra_data[2] = {
+      static_cast<uint8>(extra_data_int >> 8),
+      static_cast<uint8>(extra_data_int & 0xff)
+  };
+
   AudioDecoderConfig audio_decoder_config(
       kCodecAAC,
       kSampleFormatS16,
       kADTSChannelLayoutTable[channel_configuration],
       extended_samples_per_second,
-      NULL, 0,
+      extra_data,
+      arraysize(extra_data),
       false);
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
