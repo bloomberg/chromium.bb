@@ -196,40 +196,6 @@ void Plugin::HistogramEnumerate(const std::string& name,
   uma_interface_.HistogramEnumeration(name, sample, maximum);
 }
 
-void Plugin::HistogramEnumerateOsArch(const std::string& sandbox_isa) {
-  enum NaClOSArch {
-    kNaClLinux32 = 0,
-    kNaClLinux64,
-    kNaClLinuxArm,
-    kNaClMac32,
-    kNaClMac64,
-    kNaClMacArm,
-    kNaClWin32,
-    kNaClWin64,
-    kNaClWinArm,
-    kNaClLinuxMips,
-    kNaClOSArchMax
-  };
-
-  NaClOSArch os_arch = kNaClOSArchMax;
-#if NACL_LINUX
-  os_arch = kNaClLinux32;
-#elif NACL_OSX
-  os_arch = kNaClMac32;
-#elif NACL_WINDOWS
-  os_arch = kNaClWin32;
-#endif
-
-  if (sandbox_isa == "x86-64")
-    os_arch = static_cast<NaClOSArch>(os_arch + 1);
-  if (sandbox_isa == "arm")
-    os_arch = static_cast<NaClOSArch>(os_arch + 2);
-  if (sandbox_isa == "mips32")
-    os_arch = kNaClLinuxMips;
-
-  HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax, -1);
-}
-
 void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
   HistogramEnumerate("NaCl.LoadStatus.SelLdr", error_code,
                      NACL_ERROR_CODE_MAX, LOAD_STATUS_UNKNOWN);
@@ -512,7 +478,6 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
 // failure. Note that module loading functions will log their own errors.
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
-  HistogramEnumerateOsArch(nacl_interface_->GetSandboxArch());
   init_time_ = NaClGetTimeOfDayMicroseconds();
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL)

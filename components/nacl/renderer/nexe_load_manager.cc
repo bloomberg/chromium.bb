@@ -10,6 +10,7 @@
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
+#include "components/nacl/renderer/sandbox_arch.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -60,6 +61,40 @@ void HistogramEnumerateLoadStatus(PP_NaClError error_code,
       "NaCl.LoadStatus.Plugin.InstalledApp" :
       "NaCl.LoadStatus.Plugin.NotInstalledApp";
   HistogramEnumerate(name, error_code, PP_NACL_ERROR_MAX);
+}
+
+void HistogramEnumerateOsArch(const std::string& sandbox_isa) {
+  enum NaClOSArch {
+    kNaClLinux32 = 0,
+    kNaClLinux64,
+    kNaClLinuxArm,
+    kNaClMac32,
+    kNaClMac64,
+    kNaClMacArm,
+    kNaClWin32,
+    kNaClWin64,
+    kNaClWinArm,
+    kNaClLinuxMips,
+    kNaClOSArchMax
+  };
+
+  NaClOSArch os_arch = kNaClOSArchMax;
+#if OS_LINUX
+  os_arch = kNaClLinux32;
+#elif OS_MACOSX
+  os_arch = kNaClMac32;
+#elif OS_WIN
+  os_arch = kNaClWin32;
+#endif
+
+  if (sandbox_isa == "x86-64")
+    os_arch = static_cast<NaClOSArch>(os_arch + 1);
+  if (sandbox_isa == "arm")
+    os_arch = static_cast<NaClOSArch>(os_arch + 2);
+  if (sandbox_isa == "mips32")
+    os_arch = kNaClLinuxMips;
+
+  HistogramEnumerate("NaCl.Client.OSArch", os_arch, kNaClOSArchMax);
 }
 
 // Records values up to 3 minutes, 20 seconds.
@@ -121,6 +156,7 @@ NexeLoadManager::NexeLoadManager(
       plugin_instance_(content::PepperPluginInstance::Get(pp_instance)),
       weak_factory_(this) {
   SetLastError("");
+  HistogramEnumerateOsArch(GetSandboxArch());
 }
 
 NexeLoadManager::~NexeLoadManager() {
