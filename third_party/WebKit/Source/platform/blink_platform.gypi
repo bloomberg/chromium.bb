@@ -379,7 +379,6 @@
       'fonts/harfbuzz/HarfBuzzShaper.cpp',
       'fonts/harfbuzz/HarfBuzzShaper.h',
       'fonts/linux/FontCacheLinux.cpp',
-      'fonts/linux/FontPlatformDataLinux.cpp',
       'fonts/mac/ComplexTextController.cpp',
       'fonts/mac/ComplexTextController.h',
       'fonts/mac/ComplexTextControllerCoreText.mm',

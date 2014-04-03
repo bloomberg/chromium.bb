@@ -128,15 +128,153 @@ static int computePaintTextFlags(String fontFamilyName)
     return textFlags;
 }
 
+FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
+    : m_textSize(-1)
+    , m_syntheticBold(false)
+    , m_syntheticItalic(false)
+    , m_orientation(Horizontal)
+    , m_typeface(adoptRef(SkTypeface::RefDefault()))
+    , m_paintTextFlags(0)
+    , m_isHashTableDeletedValue(true)
+    , m_useSubpixelPositioning(false)
+    , m_minSizeForAntiAlias(0)
+{
+}
 
-void FontPlatformData::querySystemForRenderStyle(bool)
+FontPlatformData::FontPlatformData()
+    : m_textSize(0)
+    , m_syntheticBold(false)
+    , m_syntheticItalic(false)
+    , m_orientation(Horizontal)
+    , m_typeface(adoptRef(SkTypeface::RefDefault()))
+    , m_paintTextFlags(0)
+    , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(false)
+    , m_minSizeForAntiAlias(0)
+{
+}
+
+// FIXME: this constructor is needed for SVG fonts but doesn't seem to do much
+FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
+    : m_textSize(size)
+    , m_syntheticBold(false)
+    , m_syntheticItalic(false)
+    , m_orientation(Horizontal)
+    , m_typeface(adoptRef(SkTypeface::RefDefault()))
+    , m_paintTextFlags(0)
+    , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(false)
+    , m_minSizeForAntiAlias(0)
+{
+}
+
+FontPlatformData::FontPlatformData(const FontPlatformData& data)
+    : m_textSize(data.m_textSize)
+    , m_syntheticBold(data.m_syntheticBold)
+    , m_syntheticItalic(data.m_syntheticItalic)
+    , m_orientation(data.m_orientation)
+    , m_typeface(data.m_typeface)
+    , m_paintTextFlags(data.m_paintTextFlags)
+    , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
+    , m_minSizeForAntiAlias(data.m_minSizeForAntiAlias)
+{
+}
+
+FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
+    : m_textSize(textSize)
+    , m_syntheticBold(data.m_syntheticBold)
+    , m_syntheticItalic(data.m_syntheticItalic)
+    , m_orientation(data.m_orientation)
+    , m_typeface(data.m_typeface)
+    , m_paintTextFlags(data.m_paintTextFlags)
+    , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
+    , m_minSizeForAntiAlias(data.m_minSizeForAntiAlias)
+{
+}
+
+FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family,
+    float textSize, bool syntheticBold, bool syntheticItalic, FontOrientation orientation,
+    bool useSubpixelPositioning)
+    : m_textSize(textSize)
+    , m_syntheticBold(syntheticBold)
+    , m_syntheticItalic(syntheticItalic)
+    , m_orientation(orientation)
+    , m_typeface(tf)
+    , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(useSubpixelPositioning)
+    , m_minSizeForAntiAlias(0)
 {
     m_paintTextFlags = computePaintTextFlags(fontFamilyName());
+}
+
+FontPlatformData::~FontPlatformData()
+{
+}
+
+FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
+{
+    if (this != &data) {
+        m_textSize = data.m_textSize;
+        m_syntheticBold = data.m_syntheticBold;
+        m_syntheticItalic = data.m_syntheticItalic;
+        m_orientation = data.m_orientation;
+        m_typeface = data.m_typeface;
+        m_paintTextFlags = data.m_paintTextFlags;
+        m_minSizeForAntiAlias = data.m_minSizeForAntiAlias;
+    }
+    return *this;
+}
+
+String FontPlatformData::fontFamilyName() const
+{
+    // FIXME: This returns the requested name, perhaps a better solution would be to
+    // return the list of names provided by SkTypeface::createFamilyNameIterator.
+    ASSERT(typeface());
+    SkString familyName;
+    typeface()->getFamilyName(&familyName);
+    return String::fromUTF8(familyName.c_str());
+}
+
+bool FontPlatformData::isFixedPitch() const
+{
+    return typeface() && typeface()->isFixedPitch();
+}
+
+bool FontPlatformData::operator==(const FontPlatformData& a) const
+{
+    return SkTypeface::Equal(m_typeface.get(), a.m_typeface.get())
+        && m_textSize == a.m_textSize
+        && m_syntheticBold == a.m_syntheticBold
+        && m_syntheticItalic == a.m_syntheticItalic
+        && m_orientation == a.m_orientation
+        && m_isHashTableDeletedValue == a.m_isHashTableDeletedValue;
+}
+
+HarfBuzzFace* FontPlatformData::harfBuzzFace() const
+{
+    if (!m_harfBuzzFace)
+        m_harfBuzzFace = HarfBuzzFace::create(const_cast<FontPlatformData*>(this), uniqueID());
+
+    return m_harfBuzzFace.get();
+}
+
+SkFontID FontPlatformData::uniqueID() const
+{
+    return m_typeface->uniqueID();
 }
 
 bool FontPlatformData::defaultUseSubpixelPositioning()
 {
     return FontCache::fontCache()->useSubpixelPositioning();
 }
+
+#ifndef NDEBUG
+String FontPlatformData::description() const
+{
+    return String();
+}
+#endif
 
 } // namespace WebCore
