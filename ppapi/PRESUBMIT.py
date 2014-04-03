@@ -172,7 +172,7 @@ def CheckHistogramXml(input_api, output_api):
       has_histogram_xml_change = True
 
   if interface_changes and not has_histogram_xml_change:
-    return [output_api.PresubmitPromptWarning(
+    return [output_api.PresubmitNotifyResult(
         'Missing change to tools/metrics/histograms/histograms.xml.\n' +
         'Run pepper_hash_for_uma to make get values for new interfaces.\n' +
         'Interface changes:\n' + '\n'.join(interface_changes))]
