@@ -25,6 +25,7 @@
         '../net/net.gyp:net',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../url/url.gyp:url_lib',
         'cryptohome_proto',
         'ime/input_method.gyp:gencode',
@@ -34,6 +35,8 @@
         'CHROMEOS_IMPLEMENTATION',
       ],
       'sources': [
+        'accelerometer/accelerometer_reader.cc',
+        'accelerometer/accelerometer_reader.h',
         'app_mode/kiosk_oem_manifest_parser.cc',
         'app_mode/kiosk_oem_manifest_parser.h',
         'audio/audio_device.cc',

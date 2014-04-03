@@ -11,6 +11,7 @@
 #include "ash/accelerators/accelerator_filter.h"
 #include "ash/accelerators/focus_manager_factory.h"
 #include "ash/accelerators/nested_dispatcher_controller.h"
+#include "ash/accelerometer/accelerometer_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -606,6 +607,7 @@ Shell::Shell(ShellDelegate* delegate)
       delegate_(delegate),
       window_positioner_(new WindowPositioner),
       activation_client_(NULL),
+      accelerometer_controller_(new AccelerometerController()),
 #if defined(OS_CHROMEOS)
       output_configurator_(new ui::OutputConfigurator()),
 #endif  // defined(OS_CHROMEOS)

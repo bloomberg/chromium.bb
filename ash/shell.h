@@ -74,6 +74,7 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorController;
+class AccelerometerController;
 class AccessibilityDelegate;
 class AshNativeCursorManager;
 class AutoclickController;
@@ -500,6 +501,10 @@ class ASH_EXPORT Shell
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
+  AccelerometerController* accelerometer_controller() {
+    return accelerometer_controller_.get();
+  }
+
 #if defined(OS_CHROMEOS)
   // TODO(oshima): Move these objects to DisplayController.
   ui::OutputConfigurator* output_configurator() {
@@ -696,6 +701,8 @@ class ASH_EXPORT Shell
 
   // The maximized window manager (if enabled).
   scoped_ptr<internal::MaximizeModeWindowManager> maximize_mode_window_manager_;
+
+  scoped_ptr<AccelerometerController> accelerometer_controller_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<internal::PowerEventObserver> power_event_observer_;
