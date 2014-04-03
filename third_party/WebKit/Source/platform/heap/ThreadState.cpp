@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "heap/ThreadState.h"
+#include "platform/heap/ThreadState.h"
 
-#include "heap/Handle.h"
-#include "heap/Heap.h"
+#include "platform/heap/Handle.h"
+#include "platform/heap/Heap.h"
 #include "wtf/ThreadingPrimitives.h"
 
 #if OS(WIN)

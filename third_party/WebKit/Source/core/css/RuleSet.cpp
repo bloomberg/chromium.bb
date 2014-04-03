@@ -39,8 +39,8 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/html/track/TextTrackCue.h"
-#include "heap/HeapTerminatedArrayBuilder.h"
 #include "platform/TraceEvent.h"
+#include "platform/heap/HeapTerminatedArrayBuilder.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 #include "wtf/TerminatedArrayBuilder.h"

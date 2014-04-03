@@ -31,8 +31,8 @@
 #ifndef Visitor_h
 #define Visitor_h
 
-#include "heap/HeapExport.h"
-#include "heap/ThreadState.h"
+#include "platform/PlatformExport.h"
+#include "platform/heap/ThreadState.h"
 #include "wtf/Assertions.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
@@ -191,7 +191,7 @@ struct ObjectAliveTrait {
 // Pointers within objects are traced by calling the |trace| methods
 // with the object as an argument. Tracing objects will mark all of the
 // contained pointers and push them on the marking stack.
-class HEAP_EXPORT Visitor {
+class PLATFORM_EXPORT Visitor {
 public:
     virtual ~Visitor() { }
 

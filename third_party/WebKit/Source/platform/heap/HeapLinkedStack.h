@@ -28,46 +28,88 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MessageLoopInterruptor_h
-#define MessageLoopInterruptor_h
+#ifndef HeapLinkedStack_h
+#define HeapLinkedStack_h
 
-#include "heap/ThreadState.h"
-#include "public/platform/WebThread.h"
+#include "platform/heap/Heap.h"
+#include "platform/heap/Visitor.h"
 
 namespace WebCore {
 
-class MessageLoopInterruptor : public ThreadState::Interruptor {
+template <typename T>
+class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T> > {
 public:
-    explicit MessageLoopInterruptor(blink::WebThread* thread) : m_thread(thread) { }
+    HeapLinkedStack() : m_size(0) { }
 
-    virtual void requestInterrupt() OVERRIDE
+    bool isEmpty();
+
+    void push(const T&);
+    const T& peek();
+    void pop();
+
+    size_t size();
+
+    void trace(Visitor* visitor)
     {
-        // GCTask has an empty run() method. Its only purpose is to guarantee
-        // that MessageLoop will have a task to process which will result
-        // in PendingGCRunner::didProcessTask being executed.
-        m_thread->postTask(new GCTask);
+        for (Node* current = m_head; current; current = current->m_next)
+            visitor->trace(current);
     }
 
-    virtual void clearInterrupt() OVERRIDE { }
-
 private:
-    class GCTask : public blink::WebThread::Task {
+    class Node : public GarbageCollected<Node> {
     public:
-        virtual ~GCTask() { }
+        Node(const T&, Node* next);
 
-        virtual void run() OVERRIDE
-        {
-            // Don't do anything here because we don't know if this is
-            // a nested event loop or not. PendingGCRunner::didProcessTask
-            // will enter correct safepoint for us.
-            // We are not calling onInterrupted() because that always
-            // conservatively enters safepoint with pointers on stack.
-        }
+        void trace(Visitor* visitor) { visitor->trace(m_data); }
+
+        T m_data;
+        Member<Node> m_next;
     };
 
-    blink::WebThread* m_thread;
+    Member<Node> m_head;
+    size_t m_size;
 };
+
+template <typename T>
+HeapLinkedStack<T>::Node::Node(const T& data, Node* next)
+    : m_data(data)
+    , m_next(next)
+{
+}
+
+template <typename T>
+inline bool HeapLinkedStack<T>::isEmpty()
+{
+    return !m_head;
+}
+
+template <typename T>
+inline void HeapLinkedStack<T>::push(const T& data)
+{
+    m_head = new Node(data, m_head);
+    ++m_size;
+}
+
+template <typename T>
+inline const T& HeapLinkedStack<T>::peek()
+{
+    return m_head->m_data;
+}
+
+template <typename T>
+inline void HeapLinkedStack<T>::pop()
+{
+    ASSERT(m_head && m_size);
+    m_head = m_head->m_next;
+    --m_size;
+}
+
+template <typename T>
+inline size_t HeapLinkedStack<T>::size()
+{
+    return m_size;
+}
 
 }
 
-#endif
+#endif // HeapLinkedStack_h

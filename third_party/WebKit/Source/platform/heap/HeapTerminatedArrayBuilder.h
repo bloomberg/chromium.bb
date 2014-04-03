@@ -5,8 +5,8 @@
 #ifndef HeapTerminatedArrayBuilder_h
 #define HeapTerminatedArrayBuilder_h
 
-#include "heap/Heap.h"
-#include "heap/HeapTerminatedArray.h"
+#include "platform/heap/Heap.h"
+#include "platform/heap/HeapTerminatedArray.h"
 #include "wtf/TerminatedArrayBuilder.h"
 
 namespace WebCore {

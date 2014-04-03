@@ -46,10 +46,10 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "core/html/parser/HTMLParserThread.h"
-#include "heap/Heap.h"
 #include "platform/EventTracer.h"
 #include "platform/Partitions.h"
 #include "platform/PlatformThreadData.h"
+#include "platform/heap/Heap.h"
 #include "wtf/text/StringStatics.h"
 
 namespace WebCore {

@@ -28,46 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PendingGCRunner_h
-#define PendingGCRunner_h
+#include "config.h"
+#include "platform/heap/Visitor.h"
 
-#include "heap/ThreadState.h"
-#include "public/platform/WebThread.h"
+#include "platform/heap/Handle.h"
+#include "platform/heap/Heap.h"
 
 namespace WebCore {
 
-class PendingGCRunner : public blink::WebThread::TaskObserver {
-public:
-    PendingGCRunner() : m_nesting(0) { }
-
-    ~PendingGCRunner()
-    {
-        // m_nesting can be 1 if this was unregistered in a task and
-        // didProcessTask was not called.
-        ASSERT(!m_nesting || m_nesting == 1);
-    }
-
-    virtual void willProcessTask()
-    {
-        m_nesting++;
-    }
-
-    virtual void didProcessTask()
-    {
-        // In the production code WebKit::initialize is called from inside the
-        // message loop so we can get didProcessTask() without corresponding
-        // willProcessTask once. This is benign.
-        if (m_nesting)
-            m_nesting--;
-
-        WebCore::ThreadState* state = WebCore::ThreadState::current();
-        state->safePoint(m_nesting ? WebCore::ThreadState::HeapPointersOnStack : WebCore::ThreadState::NoHeapPointersOnStack);
-    }
-
-private:
-    int m_nesting;
-};
-
+#ifndef NDEBUG
+void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
+{
+    FinalizedHeapObjectHeader::fromPayload(payload)->checkHeader();
+    ASSERT(FinalizedHeapObjectHeader::fromPayload(payload)->gcInfo() == gcInfo);
 }
 
+#define DEFINE_VISITOR_CHECK_MARKER(Type)                                    \
+    void Visitor::checkGCInfo(const Type* payload, const GCInfo* gcInfo)     \
+    {                                                                        \
+        HeapObjectHeader::fromPayload(payload)->checkHeader();               \
+        Type* object = const_cast<Type*>(payload);                           \
+        Address addr = pageHeaderAddress(reinterpret_cast<Address>(object)); \
+        BaseHeapPage* page = reinterpret_cast<BaseHeapPage*>(addr);          \
+        ASSERT(page->gcInfo() == gcInfo);                                    \
+    }
+
+FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_CHECK_MARKER)
+#undef DEFINE_VISITOR_CHECK_MARKER
 #endif
+
+}

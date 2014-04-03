@@ -31,8 +31,54 @@
   'includes': [
     '../build/win/precompile.gypi',
     'blink_platform.gypi',
+    'heap/blink_heap.gypi',
   ],
   'targets': [
+    {
+      'target_name': 'blink_heap_unittests',
+      'type': 'executable',
+      'dependencies': [
+        'blink_heap_run_all_tests',
+        '../config.gyp:unittest_config',
+        '../wtf/wtf.gyp:wtf',
+        '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
+        'blink_platform.gyp:blink_platform',
+      ],
+      'sources': [
+        '<@(platform_heap_test_files)',
+      ],
+      'conditions': [
+        # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
+        ['os_posix==1 and OS!="mac" and OS!="android" and OS!="ios" and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))', {
+          'dependencies': [
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ]
+        }],
+        ['OS=="android" and gtest_target_type == "shared_library"', {
+          'type': 'shared_library',
+          'dependencies': [
+            '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
+            '<(DEPTH)/tools/android/forwarder2/forwarder.gyp:forwarder2',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'blink_heap_run_all_tests',
+      'type': 'static_library',
+      'dependencies': [
+        '../wtf/wtf.gyp:wtf',
+        '../config.gyp:unittest_config',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+      ],
+      'export_dependent_settings': [
+        '<(DEPTH)/base/base.gyp:test_support_base',
+      ],
+      'sources': [
+        'heap/RunAllTests.cpp',
+      ]
+    },
     {
       'target_name': 'blink_platform_unittests',
       'type': 'executable',
@@ -91,6 +137,19 @@
   'conditions': [
     ['OS=="android" and android_webview_build==0 and gtest_target_type == "shared_library"', {
       'targets': [{
+        'target_name': 'blink_heap_unittests_apk',
+        'type': 'none',
+        'dependencies': [
+          '<(DEPTH)/base/base.gyp:base_java',
+          '<(DEPTH)/net/net.gyp:net_java',
+          'blink_heap_unittests',
+        ],
+        'variables': {
+          'test_suite_name': 'blink_heap_unittests',
+        },
+        'includes': [ '../../../../build/apk_test.gypi' ],
+      },
+      {
         'target_name': 'blink_platform_unittests_apk',
         'type': 'none',
         'dependencies': [

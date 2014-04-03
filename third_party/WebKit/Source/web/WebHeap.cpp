@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebHeap.h"
 
-#include "heap/ThreadState.h"
+#include "platform/heap/ThreadState.h"
 
 namespace blink {
 

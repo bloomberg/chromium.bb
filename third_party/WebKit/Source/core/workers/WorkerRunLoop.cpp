@@ -34,10 +34,10 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "heap/ThreadState.h"
 #include "platform/PlatformThreadData.h"
 #include "platform/SharedTimer.h"
 #include "platform/ThreadTimers.h"
+#include "platform/heap/ThreadState.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

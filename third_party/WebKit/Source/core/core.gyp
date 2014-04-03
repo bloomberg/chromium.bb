@@ -365,7 +365,6 @@
         'core_generated.gyp:make_core_generated',
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
-        '../heap/blink_heap.gyp:blink_heap',
         '../platform/blink_platform.gyp:blink_platform',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -386,7 +385,6 @@
       'export_dependent_settings': [
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
-        '../heap/blink_heap.gyp:blink_heap',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(angle_path)/src/build_angle.gyp:translator',

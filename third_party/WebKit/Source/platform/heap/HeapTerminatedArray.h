@@ -5,7 +5,7 @@
 #ifndef HeapTerminatedArray_h
 #define HeapTerminatedArray_h
 
-#include "heap/Heap.h"
+#include "platform/heap/Heap.h"
 #include "wtf/TerminatedArray.h"
 #include "wtf/TerminatedArrayBuilder.h"
 

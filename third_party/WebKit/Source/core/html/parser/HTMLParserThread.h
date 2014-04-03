@@ -31,8 +31,8 @@
 #ifndef HTMLParserThread_h
 #define HTMLParserThread_h
 
-#include "heap/glue/MessageLoopInterruptor.h"
-#include "heap/glue/PendingGCRunner.h"
+#include "platform/heap/glue/MessageLoopInterruptor.h"
+#include "platform/heap/glue/PendingGCRunner.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/OwnPtr.h"

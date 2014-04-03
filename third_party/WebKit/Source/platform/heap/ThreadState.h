@@ -31,8 +31,8 @@
 #ifndef ThreadState_h
 #define ThreadState_h
 
-#include "heap/AddressSanitizer.h"
-#include "heap/HeapExport.h"
+#include "platform/PlatformExport.h"
+#include "platform/heap/AddressSanitizer.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -214,7 +214,7 @@ private:
     friend class HeapTester;
 };
 
-class HEAP_EXPORT ThreadState {
+class PLATFORM_EXPORT ThreadState {
     WTF_MAKE_NONCOPYABLE(ThreadState);
 public:
     // When garbage collecting we need to know whether or not there
@@ -405,7 +405,7 @@ public:
     // can provide an interruptor object which would allow GC
     // to temporarily interrupt and pause this long running loop at
     // an arbitrary moment creating a safepoint for a GC.
-    class HEAP_EXPORT Interruptor {
+    class PLATFORM_EXPORT Interruptor {
     public:
         virtual ~Interruptor() { }
 

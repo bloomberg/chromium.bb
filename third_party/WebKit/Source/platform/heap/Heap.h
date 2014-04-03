@@ -31,10 +31,10 @@
 #ifndef Heap_h
 #define Heap_h
 
-#include "heap/AddressSanitizer.h"
-#include "heap/HeapExport.h"
-#include "heap/ThreadState.h"
-#include "heap/Visitor.h"
+#include "platform/PlatformExport.h"
+#include "platform/heap/AddressSanitizer.h"
+#include "platform/heap/ThreadState.h"
+#include "platform/heap/Visitor.h"
 
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
@@ -68,7 +68,7 @@ class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > > class Persistent;
 
-HEAP_EXPORT size_t osPageSize();
+PLATFORM_EXPORT size_t osPageSize();
 
 // Blink heap pages are set up with a guard page before and after the
 // payload.
@@ -112,9 +112,9 @@ inline bool isPageHeaderAddress(Address address)
 
 // Mask an address down to the enclosing oilpan heap page base address.
 // All oilpan heap pages are aligned at blinkPageBase plus an OS page size.
-// FIXME: Remove HEAP_EXPORT once we get a proper public interface to our typed heaps.
+// FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our typed heaps.
 // This is only exported to enable tests in HeapTest.cpp.
-HEAP_EXPORT inline Address pageHeaderAddress(Address address)
+PLATFORM_EXPORT inline Address pageHeaderAddress(Address address)
 {
     return blinkPageAddress(address) + osPageSize();
 }
@@ -231,7 +231,7 @@ private:
 // The BasicObjectHeader is the minimal object header. It is used when
 // encountering heap space of size allocationGranularity to mark it as
 // as freelist entry.
-class HEAP_EXPORT BasicObjectHeader {
+class PLATFORM_EXPORT BasicObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     explicit BasicObjectHeader(size_t encodedSize)
@@ -259,7 +259,7 @@ protected:
 // [ LargeObjectHeader | ] [ FinalizedObjectHeader | ] HeapObjectHeader | payload
 // The [ ] notation denotes that the LargeObjectHeader and the FinalizedObjectHeader
 // are independently optional.
-class HEAP_EXPORT HeapObjectHeader : public BasicObjectHeader {
+class PLATFORM_EXPORT HeapObjectHeader : public BasicObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     explicit HeapObjectHeader(size_t encodedSize)
@@ -315,7 +315,7 @@ const size_t objectHeaderSize = sizeof(HeapObjectHeader);
 
 // Each object on the GeneralHeap needs to carry a pointer to its
 // own GCInfo structure for tracing and potential finalization.
-class HEAP_EXPORT FinalizedHeapObjectHeader : public HeapObjectHeader {
+class PLATFORM_EXPORT FinalizedHeapObjectHeader : public HeapObjectHeader {
 public:
     NO_SANITIZE_ADDRESS
     FinalizedHeapObjectHeader(size_t encodedSize, const GCInfo* gcInfo)
@@ -714,10 +714,10 @@ private:
         PagePoolEntry* m_next;
     };
 
-    HEAP_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
+    PLATFORM_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
     static size_t allocationSizeFromSize(size_t);
     void addPageToHeap(const GCInfo*);
-    HEAP_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
+    PLATFORM_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
     bool ownsNonEmptyAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
@@ -755,7 +755,7 @@ private:
     PagePoolEntry* m_pagePool;
 };
 
-class HEAP_EXPORT Heap {
+class PLATFORM_EXPORT Heap {
 public:
     enum GCType {
         Normal,
@@ -1757,8 +1757,8 @@ struct IfWeakMember<WeakMember<T> > {
 // to export. This forces it to export all the methods from ThreadHeap.
 template<> void ThreadHeap<FinalizedHeapObjectHeader>::addPageToHeap(const GCInfo*);
 template<> void ThreadHeap<HeapObjectHeader>::addPageToHeap(const GCInfo*);
-extern template class HEAP_EXPORT ThreadHeap<FinalizedHeapObjectHeader>;
-extern template class HEAP_EXPORT ThreadHeap<HeapObjectHeader>;
+extern template class PLATFORM_EXPORT ThreadHeap<FinalizedHeapObjectHeader>;
+extern template class PLATFORM_EXPORT ThreadHeap<HeapObjectHeader>;
 #endif
 
 }

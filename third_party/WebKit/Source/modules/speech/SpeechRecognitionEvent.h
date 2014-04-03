@@ -28,7 +28,6 @@
 
 #include "core/events/Event.h"
 #include "heap/Handle.h"
-#include "heap/Heap.h"
 #include "modules/speech/SpeechRecognitionResult.h"
 #include "modules/speech/SpeechRecognitionResultList.h"
 #include "wtf/RefPtr.h"

@@ -50,7 +50,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "heap/ThreadState.h"
+#include "platform/heap/ThreadState.h"
 #include <v8.h>
 
 #include "public/platform/Platform.h"

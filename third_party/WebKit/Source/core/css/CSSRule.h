@@ -24,7 +24,6 @@
 #define CSSRule_h
 
 #include "heap/Handle.h"
-#include "heap/Visitor.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

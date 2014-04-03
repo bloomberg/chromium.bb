@@ -29,13 +29,13 @@
 #include "config.h"
 #include "modules/webdatabase/DatabaseThread.h"
 
-#include "heap/glue/MessageLoopInterruptor.h"
-#include "heap/glue/PendingGCRunner.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "platform/Logging.h"
+#include "platform/heap/glue/MessageLoopInterruptor.h"
+#include "platform/heap/glue/PendingGCRunner.h"
 #include "public/platform/Platform.h"
 
 namespace WebCore {

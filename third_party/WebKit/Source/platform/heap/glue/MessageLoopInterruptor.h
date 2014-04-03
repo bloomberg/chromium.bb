@@ -28,33 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "heap/Visitor.h"
+#ifndef MessageLoopInterruptor_h
+#define MessageLoopInterruptor_h
 
-#include "heap/Handle.h"
-#include "heap/Heap.h"
+#include "platform/heap/ThreadState.h"
+#include "public/platform/WebThread.h"
 
 namespace WebCore {
 
-#ifndef NDEBUG
-void Visitor::checkGCInfo(const void* payload, const GCInfo* gcInfo)
-{
-    FinalizedHeapObjectHeader::fromPayload(payload)->checkHeader();
-    ASSERT(FinalizedHeapObjectHeader::fromPayload(payload)->gcInfo() == gcInfo);
-}
+class MessageLoopInterruptor : public ThreadState::Interruptor {
+public:
+    explicit MessageLoopInterruptor(blink::WebThread* thread) : m_thread(thread) { }
 
-#define DEFINE_VISITOR_CHECK_MARKER(Type)                                    \
-    void Visitor::checkGCInfo(const Type* payload, const GCInfo* gcInfo)     \
-    {                                                                        \
-        HeapObjectHeader::fromPayload(payload)->checkHeader();               \
-        Type* object = const_cast<Type*>(payload);                           \
-        Address addr = pageHeaderAddress(reinterpret_cast<Address>(object)); \
-        BaseHeapPage* page = reinterpret_cast<BaseHeapPage*>(addr);          \
-        ASSERT(page->gcInfo() == gcInfo);                                    \
+    virtual void requestInterrupt() OVERRIDE
+    {
+        // GCTask has an empty run() method. Its only purpose is to guarantee
+        // that MessageLoop will have a task to process which will result
+        // in PendingGCRunner::didProcessTask being executed.
+        m_thread->postTask(new GCTask);
     }
 
-FOR_EACH_TYPED_HEAP(DEFINE_VISITOR_CHECK_MARKER)
-#undef DEFINE_VISITOR_CHECK_MARKER
-#endif
+    virtual void clearInterrupt() OVERRIDE { }
+
+private:
+    class GCTask : public blink::WebThread::Task {
+    public:
+        virtual ~GCTask() { }
+
+        virtual void run() OVERRIDE
+        {
+            // Don't do anything here because we don't know if this is
+            // a nested event loop or not. PendingGCRunner::didProcessTask
+            // will enter correct safepoint for us.
+            // We are not calling onInterrupted() because that always
+            // conservatively enters safepoint with pointers on stack.
+        }
+    };
+
+    blink::WebThread* m_thread;
+};
 
 }
+
+#endif

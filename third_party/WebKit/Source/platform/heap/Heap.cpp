@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "heap/Heap.h"
+#include "platform/heap/Heap.h"
 
-#include "heap/ThreadState.h"
+#include "platform/heap/ThreadState.h"
 
 #include "wtf/PassOwnPtr.h"
 

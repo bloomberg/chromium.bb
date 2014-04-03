@@ -28,32 +28,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef PendingGCRunner_h
+#define PendingGCRunner_h
 
-#include "heap/Heap.h"
-#include "wtf/CryptographicallyRandomNumber.h"
-#include "wtf/MainThread.h"
-#include "wtf/WTF.h"
-#include <base/test/test_suite.h>
-#include <string.h>
+#include "platform/heap/ThreadState.h"
+#include "public/platform/WebThread.h"
 
-static double CurrentTime()
-{
-    return 0.0;
+namespace WebCore {
+
+class PendingGCRunner : public blink::WebThread::TaskObserver {
+public:
+    PendingGCRunner() : m_nesting(0) { }
+
+    ~PendingGCRunner()
+    {
+        // m_nesting can be 1 if this was unregistered in a task and
+        // didProcessTask was not called.
+        ASSERT(!m_nesting || m_nesting == 1);
+    }
+
+    virtual void willProcessTask()
+    {
+        m_nesting++;
+    }
+
+    virtual void didProcessTask()
+    {
+        // In the production code WebKit::initialize is called from inside the
+        // message loop so we can get didProcessTask() without corresponding
+        // willProcessTask once. This is benign.
+        if (m_nesting)
+            m_nesting--;
+
+        WebCore::ThreadState* state = WebCore::ThreadState::current();
+        state->safePoint(m_nesting ? WebCore::ThreadState::HeapPointersOnStack : WebCore::ThreadState::NoHeapPointersOnStack);
+    }
+
+private:
+    int m_nesting;
+};
+
 }
 
-static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
-{
-    memset(buf, '\0', len);
-}
-
-int main(int argc, char** argv)
-{
-    WTF::setRandomSource(AlwaysZeroNumberSource);
-    WTF::initialize(CurrentTime, 0);
-    WTF::initializeMainThread(0);
-    WebCore::Heap::init();
-    int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
-    WebCore::Heap::shutdown();
-    return result;
-}
+#endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,26 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 
-#ifndef HeapExport_h
-#define HeapExport_h
+#include "platform/heap/Heap.h"
+#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/MainThread.h"
+#include "wtf/WTF.h"
+#include <base/test/test_suite.h>
+#include <string.h>
 
-#if !defined(HEAP_IMPLEMENTATION)
-#define HEAP_IMPLEMENTATION 0
-#endif
+static double CurrentTime()
+{
+    return 0.0;
+}
 
-#if defined(COMPONENT_BUILD)
-#if defined(WIN32)
-#if HEAP_IMPLEMENTATION
-#define HEAP_EXPORT __declspec(dllexport)
-#else
-#define HEAP_EXPORT __declspec(dllimport)
-#endif
-#else // defined(WIN32)
-#define HEAP_EXPORT __attribute__((visibility("default")))
-#endif
-#else // defined(COMPONENT_BUILD)
-#define HEAP_EXPORT
-#endif
+static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
+{
+    memset(buf, '\0', len);
+}
 
-#endif // HeapExport_h
+int main(int argc, char** argv)
+{
+    WTF::setRandomSource(AlwaysZeroNumberSource);
+    WTF::initialize(CurrentTime, 0);
+    WTF::initializeMainThread(0);
+    WebCore::Heap::init();
+    int result = base::RunUnitTestsUsingBaseTestSuite(argc, argv);
+    WebCore::Heap::shutdown();
+    return result;
+}
