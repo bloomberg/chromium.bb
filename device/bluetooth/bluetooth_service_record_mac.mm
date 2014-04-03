@@ -66,9 +66,7 @@ BluetoothServiceRecordMac::BluetoothServiceRecordMac(
       [record getAttributeDataElement:service_class_id];
   if ([service_class_data getTypeDescriptor] ==
           kBluetoothSDPDataElementTypeDataElementSequence) {
-    std::string uuid_str;
-    ExtractUuid(service_class_data, &uuid_str);
-    uuid_ = BluetoothUUID(uuid_str);
+    ExtractUuid(service_class_data, &uuid_);
   }
 }
 

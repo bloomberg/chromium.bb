@@ -69,13 +69,13 @@ BluetoothProfileChromeOS::~BluetoothProfileChromeOS() {
 }
 
 void BluetoothProfileChromeOS::Init(
-    const device::BluetoothUUID& uuid,
+    const std::string& uuid,
     const device::BluetoothProfile::Options& options,
     const ProfileCallback& callback) {
   DCHECK(object_path_.value().empty());
   DCHECK(profile_.get() == NULL);
 
-  if (!uuid.IsValid()) {
+  if (!BluetoothDevice::IsUUIDValid(uuid)) {
     callback.Run(NULL);
     return;
   }
@@ -83,7 +83,7 @@ void BluetoothProfileChromeOS::Init(
   uuid_ = uuid;
 
   options_.name = options.name;
-  options_.service = uuid.canonical_value();
+  options_.service = uuid;
   options_.channel = options.channel;
   options_.psm = options.psm;
   options_.require_authentication = options.require_authentication;
@@ -95,7 +95,7 @@ void BluetoothProfileChromeOS::Init(
   // The object path is relatively meaningless, but has to be unique, so we
   // use the UUID of the profile.
   std::string uuid_path;
-  base::ReplaceChars(uuid.canonical_value(), ":-", "_", &uuid_path);
+  base::ReplaceChars(uuid, ":-", "_", &uuid_path);
 
   object_path_ = dbus::ObjectPath("/org/chromium/bluetooth_profile/" +
                                   uuid_path);
@@ -143,7 +143,7 @@ void BluetoothProfileChromeOS::AdapterPresentChanged(BluetoothAdapter* adapter,
   DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->
       RegisterProfile(
           object_path_,
-          uuid_.canonical_value(),
+          uuid_,
           options_,
           base::Bind(&BluetoothProfileChromeOS::OnInternalRegisterProfile,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -162,7 +162,7 @@ void BluetoothProfileChromeOS::OnGetAdapter(
   DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->
       RegisterProfile(
           object_path_,
-          uuid_.canonical_value(),
+          uuid_,
           options_,
           base::Bind(&BluetoothProfileChromeOS::OnRegisterProfile,
                      weak_ptr_factory_.GetWeakPtr(),

@@ -46,7 +46,7 @@ IOBluetoothSDPUUID* GetIOBluetoothSDPUUID(const std::string& uuid) {
 
 namespace device {
 
-BluetoothProfileMac::BluetoothProfileMac(const BluetoothUUID& uuid,
+BluetoothProfileMac::BluetoothProfileMac(const std::string& uuid,
                                          const std::string& name)
     : BluetoothProfile(), uuid_(uuid), name_(name) {
 }
@@ -68,8 +68,7 @@ bool BluetoothProfileMac::Connect(IOBluetoothDevice* device) {
     return false;
 
   IOBluetoothSDPServiceRecord* record =
-      [device getServiceRecordForUUID:GetIOBluetoothSDPUUID(
-          uuid_.canonical_value())];
+      [device getServiceRecordForUUID:GetIOBluetoothSDPUUID(uuid_)];
   if (record != nil) {
     scoped_refptr<BluetoothSocket> socket(
         BluetoothSocketMac::CreateBluetoothSocket(record));

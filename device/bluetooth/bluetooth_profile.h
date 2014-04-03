@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
@@ -79,7 +78,7 @@ class BluetoothProfile {
   // This pointer is not owned by the receiver, but will not be freed unless
   // its Unregister() method is called.
   typedef base::Callback<void(BluetoothProfile*)> ProfileCallback;
-  static void Register(const BluetoothUUID& uuid,
+  static void Register(const std::string& uuid,
                        const Options& options,
                        const ProfileCallback& callback);
 

@@ -1,14 +1,17 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/bluetooth_utils.h"
+
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 
 namespace device {
+namespace bluetooth_utils {
 
 namespace {
 
@@ -21,11 +24,11 @@ const int kUuidSize = 36;
 void GetCanonicalUuid(std::string uuid,
                       std::string* canonical,
                       std::string* canonical_128,
-                      BluetoothUUID::Format* format) {
+                      UUID::Format* format) {
   // Initialize the values for the failure case.
   canonical->clear();
   canonical_128->clear();
-  *format = BluetoothUUID::kFormatInvalid;
+  *format = UUID::kFormatInvalid;
 
   if (uuid.empty())
     return;
@@ -44,12 +47,12 @@ void GetCanonicalUuid(std::string uuid,
     if (uuid.size() == 4) {
       canonical->assign(uuid);
       canonical_128->assign(kCommonUuidPrefix + uuid + kCommonUuidPostfix);
-      *format = BluetoothUUID::kFormat16Bit;
+      *format = UUID::kFormat16Bit;
       return;
     }
     canonical->assign(uuid);
     canonical_128->assign(uuid + kCommonUuidPostfix);
-    *format = BluetoothUUID::kFormat32Bit;
+    *format = UUID::kFormat32Bit;
     return;
   }
 
@@ -66,36 +69,42 @@ void GetCanonicalUuid(std::string uuid,
 
   canonical->assign(uuid);
   canonical_128->assign(uuid);
-  *format = BluetoothUUID::kFormat128Bit;
+  *format = UUID::kFormat128Bit;
 }
 
 }  // namespace
 
 
-BluetoothUUID::BluetoothUUID(const std::string& uuid) {
+UUID::UUID(const std::string& uuid) {
   GetCanonicalUuid(uuid, &value_, &canonical_value_, &format_);
 }
 
-BluetoothUUID::BluetoothUUID() : format_(kFormatInvalid) {
+UUID::~UUID() {
 }
 
-BluetoothUUID::~BluetoothUUID() {
-}
-
-bool BluetoothUUID::IsValid() const {
+bool UUID::IsValid() const {
   return format_ != kFormatInvalid;
 }
 
-bool BluetoothUUID::operator<(const BluetoothUUID& uuid) const {
+bool UUID::operator<(const UUID& uuid) const {
   return canonical_value_ < uuid.canonical_value_;
 }
 
-bool BluetoothUUID::operator==(const BluetoothUUID& uuid) const {
+bool UUID::operator==(const UUID& uuid) const {
   return canonical_value_ == uuid.canonical_value_;
 }
 
-bool BluetoothUUID::operator!=(const BluetoothUUID& uuid) const {
+bool UUID::operator!=(const UUID& uuid) const {
   return canonical_value_ != uuid.canonical_value_;
 }
 
+std::string CanonicalUuid(std::string uuid) {
+  std::string value;
+  std::string canonical_value;
+  UUID::Format format;
+  GetCanonicalUuid(uuid, &value, &canonical_value, &format);
+  return canonical_value;
+}
+
+}  // namespace bluetooth_utils
 }  // namespace device

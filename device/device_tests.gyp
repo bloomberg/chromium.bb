@@ -31,7 +31,7 @@
         'bluetooth/bluetooth_service_record_mac_unittest.mm',
         'bluetooth/bluetooth_service_record_win_unittest.cc',
         'bluetooth/bluetooth_task_manager_win_unittest.cc',
-        'bluetooth/bluetooth_uuid_unittest.cc',
+        'bluetooth/bluetooth_utils_unittest.cc',
         'nfc/nfc_chromeos_unittest.cc',
         'nfc/nfc_ndef_record_unittest.cc',
         'usb/usb_ids_unittest.cc',

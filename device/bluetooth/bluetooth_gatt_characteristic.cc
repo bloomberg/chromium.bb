@@ -16,7 +16,7 @@ BluetoothGattCharacteristic::~BluetoothGattCharacteristic() {
 
 // static
 BluetoothGattCharacteristic* BluetoothGattCharacteristic::Create(
-    const BluetoothUUID& uuid,
+    const bluetooth_utils::UUID& uuid,
     const std::vector<uint8>& value,
     Properties properties,
     Permissions permissions) {

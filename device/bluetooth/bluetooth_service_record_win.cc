@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "device/bluetooth/bluetooth_init_win.h"
-#include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/bluetooth_utils.h"
 
 namespace {
 
@@ -61,8 +61,7 @@ void ExtractChannels(const SDP_ELEMENT_DATA& protocol_descriptor_list_data,
   }
 }
 
-void ExtractUuid(const SDP_ELEMENT_DATA& uuid_data,
-                 device::BluetoothUUID* uuid) {
+void ExtractUuid(const SDP_ELEMENT_DATA& uuid_data, std::string* uuid) {
   HBLUETOOTH_CONTAINER_ELEMENT inner_uuid_element = NULL;
   SDP_ELEMENT_DATA inner_uuid_data;
   if (AdvanceToSdpType(uuid_data,
@@ -72,13 +71,13 @@ void ExtractUuid(const SDP_ELEMENT_DATA& uuid_data,
     if (inner_uuid_data.specificType == SDP_ST_UUID16) {
       std::string uuid_hex =
           base::StringPrintf("%04x", inner_uuid_data.data.uuid16);
-      *uuid = device::BluetoothUUID(uuid_hex);
+      *uuid = device::bluetooth_utils::CanonicalUuid(uuid_hex);
     } else if (inner_uuid_data.specificType == SDP_ST_UUID32) {
       std::string uuid_hex =
           base::StringPrintf("%08x", inner_uuid_data.data.uuid32);
-      *uuid = device::BluetoothUUID(uuid_hex);
+      *uuid = device::bluetooth_utils::CanonicalUuid(uuid_hex);
     } else if (inner_uuid_data.specificType == SDP_ST_UUID128) {
-      *uuid = device::BluetoothUUID(base::StringPrintf(
+      *uuid = base::StringPrintf(
           "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
           inner_uuid_data.data.uuid128.Data1,
           inner_uuid_data.data.uuid128.Data2,
@@ -90,9 +89,9 @@ void ExtractUuid(const SDP_ELEMENT_DATA& uuid_data,
           inner_uuid_data.data.uuid128.Data4[4],
           inner_uuid_data.data.uuid128.Data4[5],
           inner_uuid_data.data.uuid128.Data4[6],
-          inner_uuid_data.data.uuid128.Data4[7]));
+          inner_uuid_data.data.uuid128.Data4[7]);
     } else {
-      *uuid = device::BluetoothUUID();
+      uuid->clear();
     }
   }
 }
@@ -144,7 +143,7 @@ BluetoothServiceRecordWin::BluetoothServiceRecordWin(
       blob_size,
       kUuidId,
       &uuid_data)) {
-    ExtractUuid(uuid_data, &uuid_);
+  ExtractUuid(uuid_data, &uuid_);
   }
 }
 

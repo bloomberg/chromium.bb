@@ -52,7 +52,7 @@ class BluetoothDeviceMac : public BluetoothDevice {
       const ErrorCallback& error_callback) OVERRIDE;
   virtual void Forget(const ErrorCallback& error_callback) OVERRIDE;
   virtual void ConnectToService(
-      const device::BluetoothUUID& service_uuid,
+      const std::string& service_uuid,
       const SocketCallback& callback) OVERRIDE;
   virtual void ConnectToProfile(
       device::BluetoothProfile* profile,

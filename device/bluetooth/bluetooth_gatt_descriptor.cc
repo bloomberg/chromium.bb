@@ -8,18 +8,20 @@
 
 namespace device {
 
-const BluetoothUUID BluetoothGattDescriptor::
-    kCharacteristicExtendedPropertiesUuid("2900");
-const BluetoothUUID BluetoothGattDescriptor::
-    kCharacteristicUserDescriptionUuid("2901");
-const BluetoothUUID BluetoothGattDescriptor::
-    kClientCharacteristicConfigurationUuid("2902");
-const BluetoothUUID BluetoothGattDescriptor::
-    kServerCharacteristicConfigurationUuid("2903");
-const BluetoothUUID BluetoothGattDescriptor::
-    kCharacteristicPresentationFormatUuid("2904");
-const BluetoothUUID BluetoothGattDescriptor::
-    kCharacteristicAggregateFormatUuid("2905");
+using bluetooth_utils::UUID;
+
+const UUID BluetoothGattDescriptor::
+    kCharacteristicExtendedPropertiesUuid("0x2900");
+const UUID BluetoothGattDescriptor::
+    kCharacteristicUserDescriptionUuid("0x2901");
+const UUID BluetoothGattDescriptor::
+    kClientCharacteristicConfigurationUuid("0x2902");
+const UUID BluetoothGattDescriptor::
+    kServerCharacteristicConfigurationUuid("0x2903");
+const UUID BluetoothGattDescriptor::
+    kCharacteristicPresentationFormatUuid("0x2904");
+const UUID BluetoothGattDescriptor::
+    kCharacteristicAggregateFormatUuid("0x2905");
 
 BluetoothGattDescriptor::BluetoothGattDescriptor() {
 }
@@ -29,7 +31,7 @@ BluetoothGattDescriptor::~BluetoothGattDescriptor() {
 
 // static
 BluetoothGattDescriptor* BluetoothGattDescriptor::Create(
-    const BluetoothUUID& uuid,
+    const bluetooth_utils::UUID& uuid,
     const std::vector<uint8>& value) {
   LOG(ERROR) << "Creating local GATT characteristic descriptors currently not "
              << "supported.";

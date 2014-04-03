@@ -16,7 +16,7 @@ BluetoothGattService::~BluetoothGattService() {
 
 // static
 BluetoothGattService* BluetoothGattService::Create(
-    const BluetoothUUID& uuid,
+    const bluetooth_utils::UUID& uuid,
     bool is_primary,
     Delegate* delegate) {
   LOG(ERROR) << "Creating local GATT services currently not supported.";

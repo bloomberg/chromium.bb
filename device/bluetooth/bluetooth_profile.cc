@@ -13,6 +13,8 @@
 #include "device/bluetooth/bluetooth_profile_win.h"
 #endif
 
+#include <string>
+
 namespace device {
 
 BluetoothProfile::Options::Options()
@@ -40,7 +42,7 @@ BluetoothProfile::~BluetoothProfile() {
 
 
 // static
-void BluetoothProfile::Register(const BluetoothUUID& uuid,
+void BluetoothProfile::Register(const std::string& uuid,
                                 const Options& options,
                                 const ProfileCallback& callback) {
 #if defined(OS_CHROMEOS)

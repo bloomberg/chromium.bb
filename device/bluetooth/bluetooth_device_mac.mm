@@ -179,11 +179,10 @@ void BluetoothDeviceMac::Forget(const ErrorCallback& error_callback) {
 }
 
 void BluetoothDeviceMac::ConnectToService(
-    const device::BluetoothUUID& service_uuid,
+    const std::string& service_uuid,
     const SocketCallback& callback) {
   IOBluetoothSDPServiceRecord* record =
-      [device_ getServiceRecordForUUID:GetIOBluetoothSDPUUID(
-          service_uuid.canonical_value())];
+      [device_ getServiceRecordForUUID:GetIOBluetoothSDPUUID(service_uuid)];
   if (record != nil) {
     BluetoothServiceRecordMac service_record(record);
     scoped_refptr<BluetoothSocket> socket(

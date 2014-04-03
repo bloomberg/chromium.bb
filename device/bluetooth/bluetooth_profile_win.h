@@ -8,7 +8,6 @@
 #include <string>
 
 #include "device/bluetooth/bluetooth_profile.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
@@ -26,10 +25,10 @@ class BluetoothProfileWin : public BluetoothProfile {
  private:
   friend BluetoothProfile;
 
-  BluetoothProfileWin(const BluetoothUUID& uuid, const std::string& name);
+  BluetoothProfileWin(const std::string& uuid, const std::string& name);
   virtual ~BluetoothProfileWin();
 
-  const BluetoothUUID uuid_;
+  const std::string uuid_;
   const std::string name_;
   ConnectionCallback connection_callback_;
 };

@@ -219,15 +219,7 @@ BluetoothDeviceChromeOS::UUIDList BluetoothDeviceChromeOS::GetUUIDs() const {
           GetProperties(object_path_);
   DCHECK(properties);
 
-  std::vector<device::BluetoothUUID> uuids;
-  const std::vector<std::string> &dbus_uuids = properties->uuids.value();
-  for (std::vector<std::string>::const_iterator iter = dbus_uuids.begin();
-       iter != dbus_uuids.end(); ++iter) {
-    device::BluetoothUUID uuid(*iter);
-    DCHECK(uuid.IsValid());
-    uuids.push_back(uuid);
-  }
-  return uuids;
+  return properties->uuids.value();
 }
 
 bool BluetoothDeviceChromeOS::ExpectingPinCode() const {
@@ -352,7 +344,7 @@ void BluetoothDeviceChromeOS::Forget(const ErrorCallback& error_callback) {
 }
 
 void BluetoothDeviceChromeOS::ConnectToService(
-    const device::BluetoothUUID& service_uuid,
+    const std::string& service_uuid,
     const SocketCallback& callback) {
   // TODO(keybuk): implement
   callback.Run(scoped_refptr<device::BluetoothSocket>());
@@ -365,11 +357,11 @@ void BluetoothDeviceChromeOS::ConnectToProfile(
   BluetoothProfileChromeOS* profile_chromeos =
       static_cast<BluetoothProfileChromeOS*>(profile);
   VLOG(1) << object_path_.value() << ": Connecting profile: "
-          << profile_chromeos->uuid().canonical_value();
+          << profile_chromeos->uuid();
   DBusThreadManager::Get()->GetBluetoothDeviceClient()->
       ConnectProfile(
           object_path_,
-          profile_chromeos->uuid().canonical_value(),
+          profile_chromeos->uuid(),
           base::Bind(
               &BluetoothDeviceChromeOS::OnConnectProfile,
               weak_ptr_factory_.GetWeakPtr(),
@@ -575,7 +567,7 @@ void BluetoothDeviceChromeOS::OnConnectProfile(
   BluetoothProfileChromeOS* profile_chromeos =
       static_cast<BluetoothProfileChromeOS*>(profile);
   VLOG(1) << object_path_.value() << ": Profile connected: "
-          << profile_chromeos->uuid().canonical_value();
+          << profile_chromeos->uuid();
   callback.Run();
 }
 
@@ -587,7 +579,7 @@ void BluetoothDeviceChromeOS::OnConnectProfileError(
   BluetoothProfileChromeOS* profile_chromeos =
       static_cast<BluetoothProfileChromeOS*>(profile);
   VLOG(1) << object_path_.value() << ": Profile connection failed: "
-          << profile_chromeos->uuid().canonical_value() << ": "
+          << profile_chromeos->uuid() << ": "
           << error_name << ": " << error_message;
   error_callback.Run();
 }

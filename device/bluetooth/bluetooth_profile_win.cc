@@ -11,7 +11,7 @@
 
 namespace device {
 
-BluetoothProfileWin::BluetoothProfileWin(const BluetoothUUID& uuid,
+BluetoothProfileWin::BluetoothProfileWin(const std::string& uuid,
                                          const std::string& name)
     : BluetoothProfile(), uuid_(uuid), name_(name) {
 }

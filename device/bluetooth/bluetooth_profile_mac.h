@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "device/bluetooth/bluetooth_profile.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 
 #ifdef __OBJC__
 @class IOBluetoothDevice;
@@ -35,10 +34,10 @@ class BluetoothProfileMac : public BluetoothProfile {
  private:
   friend BluetoothProfile;
 
-  BluetoothProfileMac(const BluetoothUUID& uuid, const std::string& name);
+  BluetoothProfileMac(const std::string& uuid, const std::string& name);
   virtual ~BluetoothProfileMac();
 
-  const BluetoothUUID uuid_;
+  const std::string uuid_;
   const std::string name_;
   ConnectionCallback connection_callback_;
 };

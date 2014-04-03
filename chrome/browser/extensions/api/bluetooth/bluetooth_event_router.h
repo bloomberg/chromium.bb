@@ -18,7 +18,6 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_socket.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace content {
 class BrowserContext;
@@ -64,17 +63,17 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   // system. This class will hold onto the profile until RemoveProfile is
   // called for the profile, or until the extension that added the profile
   // is disabled/reloaded.
-  void AddProfile(const device::BluetoothUUID& uuid,
+  void AddProfile(const std::string& uuid,
                   const std::string& extension_id,
                   device::BluetoothProfile* bluetooth_profile);
 
   // Unregister the BluetoothProfile corersponding to |uuid| and release the
   // object from this class.
-  void RemoveProfile(const device::BluetoothUUID& uuid);
+  void RemoveProfile(const std::string& uuid);
 
   // Returns true if the BluetoothProfile corresponding to |uuid| is already
   // registered.
-  bool HasProfile(const device::BluetoothUUID& uuid) const;
+  bool HasProfile(const std::string& uuid) const;
 
   // Requests that a new device discovery session be initiated for extension
   // with id |extension_id|. |callback| is called, if a session has been
@@ -97,7 +96,7 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
 
   // Returns the BluetoothProfile that corresponds to |uuid|. It returns NULL
   // if the BluetoothProfile with |uuid| does not exist.
-  device::BluetoothProfile* GetProfile(const device::BluetoothUUID& uuid) const;
+  device::BluetoothProfile* GetProfile(const std::string& uuid) const;
 
   // Get the BluetoothSocket corresponding to |id|.
   scoped_refptr<device::BluetoothSocket> GetSocket(int id);
@@ -105,7 +104,7 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
   // Dispatch an event that takes a connection socket as a parameter to the
   // extension that registered the profile that the socket has connected to.
   void DispatchConnectionEvent(const std::string& extension_id,
-                               const device::BluetoothUUID& uuid,
+                               const std::string& uuid,
                                const device::BluetoothDevice* device,
                                scoped_refptr<device::BluetoothSocket> socket);
 
@@ -188,7 +187,7 @@ class BluetoothEventRouter : public device::BluetoothAdapter::Observer,
 
   // Maps uuids to a struct containing a Bluetooth profile and its
   // associated extension id.
-  typedef std::map<device::BluetoothUUID, ExtensionBluetoothProfileRecord>
+  typedef std::map<std::string, ExtensionBluetoothProfileRecord>
       BluetoothProfileMap;
   BluetoothProfileMap bluetooth_profile_map_;
 

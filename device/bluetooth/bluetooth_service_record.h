@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
@@ -28,7 +27,7 @@ class BluetoothServiceRecord {
 
   // The UUID of the service.  This field may be empty if no UUID was
   // specified in the service record.
-  const BluetoothUUID& uuid() const { return uuid_; }
+  const std::string& uuid() const { return uuid_; }
 
   // Indicates if this service supports HID.
   bool SupportsHid() const { return supports_hid_; }
@@ -53,7 +52,7 @@ class BluetoothServiceRecord {
 
   std::string address_;
   std::string name_;
-  BluetoothUUID uuid_;
+  std::string uuid_;
 
   bool supports_hid_;
   bool hid_reconnect_initiate_;

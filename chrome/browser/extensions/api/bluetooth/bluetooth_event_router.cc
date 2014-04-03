@@ -110,7 +110,7 @@ bool BluetoothEventRouter::ReleaseSocket(int id) {
 }
 
 void BluetoothEventRouter::AddProfile(
-    const device::BluetoothUUID& uuid,
+    const std::string& uuid,
     const std::string& extension_id,
     device::BluetoothProfile* bluetooth_profile) {
   DCHECK(!HasProfile(uuid));
@@ -118,7 +118,7 @@ void BluetoothEventRouter::AddProfile(
   bluetooth_profile_map_[uuid] = record;
 }
 
-void BluetoothEventRouter::RemoveProfile(const device::BluetoothUUID& uuid) {
+void BluetoothEventRouter::RemoveProfile(const std::string& uuid) {
   BluetoothProfileMap::iterator iter = bluetooth_profile_map_.find(uuid);
   if (iter != bluetooth_profile_map_.end()) {
     device::BluetoothProfile* bluetooth_profile = iter->second.profile;
@@ -127,7 +127,7 @@ void BluetoothEventRouter::RemoveProfile(const device::BluetoothUUID& uuid) {
   }
 }
 
-bool BluetoothEventRouter::HasProfile(const device::BluetoothUUID& uuid) const {
+bool BluetoothEventRouter::HasProfile(const std::string& uuid) const {
   return bluetooth_profile_map_.find(uuid) != bluetooth_profile_map_.end();
 }
 
@@ -176,7 +176,7 @@ void BluetoothEventRouter::StopDiscoverySession(
 }
 
 device::BluetoothProfile* BluetoothEventRouter::GetProfile(
-    const device::BluetoothUUID& uuid) const {
+    const std::string& uuid) const {
   BluetoothProfileMap::const_iterator iter = bluetooth_profile_map_.find(uuid);
   if (iter != bluetooth_profile_map_.end())
     return iter->second.profile;
@@ -193,7 +193,7 @@ scoped_refptr<device::BluetoothSocket> BluetoothEventRouter::GetSocket(int id) {
 
 void BluetoothEventRouter::DispatchConnectionEvent(
     const std::string& extension_id,
-    const device::BluetoothUUID& uuid,
+    const std::string& uuid,
     const device::BluetoothDevice* device,
     scoped_refptr<device::BluetoothSocket> socket) {
   if (!HasProfile(uuid))
@@ -202,7 +202,7 @@ void BluetoothEventRouter::DispatchConnectionEvent(
   int socket_id = RegisterSocket(extension_id, socket);
   bluetooth::Socket result_socket;
   bluetooth::BluetoothDeviceToApiDevice(*device, &result_socket.device);
-  result_socket.profile.uuid = uuid.canonical_value();
+  result_socket.profile.uuid = uuid;
   result_socket.id = socket_id;
 
   scoped_ptr<base::ListValue> args =

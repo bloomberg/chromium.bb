@@ -161,7 +161,7 @@ void BluetoothDeviceWin::Forget(const ErrorCallback& error_callback) {
 }
 
 void BluetoothDeviceWin::ConnectToService(
-    const device::BluetoothUUID& service_uuid,
+    const std::string& service_uuid,
     const SocketCallback& callback) {
   for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
        iter != service_record_list_.end();
@@ -202,11 +202,11 @@ void BluetoothDeviceWin::ClearOutOfBandPairingData(
 }
 
 const BluetoothServiceRecord* BluetoothDeviceWin::GetServiceRecord(
-    const device::BluetoothUUID& uuid) const {
+    const std::string& uuid) const {
   for (ServiceRecordList::const_iterator iter = service_record_list_.begin();
        iter != service_record_list_.end();
        ++iter) {
-    if ((*iter)->uuid() == uuid)
+    if ((*iter)->uuid().compare(uuid) == 0)
       return *iter;
   }
   return NULL;

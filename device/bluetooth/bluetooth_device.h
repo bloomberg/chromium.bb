@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
@@ -170,6 +169,10 @@ class BluetoothDevice {
     virtual void AuthorizePairing(BluetoothDevice* device) = 0;
   };
 
+  // Returns true if uuid is in a a valid canonical format
+  // (see utils::CanonicalUuid).
+  static bool IsUUIDValid(const std::string& uuid);
+
   virtual ~BluetoothDevice();
 
   // Returns the Bluetooth class of the device, used by GetDeviceType()
@@ -233,7 +236,9 @@ class BluetoothDevice {
   // devices this data is collected from both the EIR data and SDP tables,
   // for Low Energy devices this data is collected from AD and GATT primary
   // services, for dual mode devices this may be collected from both./
-  typedef std::vector<BluetoothUUID> UUIDList;
+  //
+  // All UUIDs are returned in the canonical 128-bit format.
+  typedef std::vector<std::string> UUIDList;
   virtual UUIDList GetUUIDs() const = 0;
 
   // The ErrorCallback is used for methods that can fail in which case it
@@ -328,7 +333,7 @@ class BluetoothDevice {
   // all references to the BluetoothSocket are released.  Note that the
   // BluetoothSocket object can outlive both this BluetoothDevice and the
   // BluetoothAdapter for this device.
-  virtual void ConnectToService(const BluetoothUUID& service_uuid,
+  virtual void ConnectToService(const std::string& service_uuid,
                                 const SocketCallback& callback) = 0;
 
   // Attempts to initiate an outgoing connection to this device for the profile

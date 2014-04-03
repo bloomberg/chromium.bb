@@ -10,7 +10,6 @@
 #include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
-#include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -24,7 +23,7 @@ const char kTestAudioSdpBytes[] =
     "35510900000a00010001090001350319110a09000435103506190100090019350619001909"
     "010209000535031910020900093508350619110d090102090100250c417564696f20536f75"
     "726365090311090001";
-const device::BluetoothUUID kTestAudioSdpUuid("110a");
+const char kTestAudioSdpUuid[] = "0000110a-0000-1000-8000-00805f9b34fb";
 
 const char kTestVideoSdpName[] = "Video";
 const char kTestVideoSdpAddress[] = "A0:10:0A:03:02:01";
@@ -32,7 +31,7 @@ const char kTestVideoSdpBytes[] =
     "354b0900000a000100030900013506191112191203090004350c3503190100350519000308"
     "0b090005350319100209000935083506191108090100090100250d566f6963652047617465"
     "776179";
-const device::BluetoothUUID kTestVideoSdpUuid("1112");
+const char kTestVideoSdpUuid[] = "00001112-0000-1000-8000-00805f9b34fb";
 
 }  // namespace
 
@@ -45,7 +44,6 @@ class BluetoothDeviceWinTest : public testing::Test {
     device_state.name = kDeviceName;
     device_state.address = kDeviceAddress;
 
-    // Add device with audio/video services.
     BluetoothTaskManagerWin::ServiceRecordState* audio_state =
         new BluetoothTaskManagerWin::ServiceRecordState();
     audio_state->name = kTestAudioSdpName;
@@ -61,10 +59,6 @@ class BluetoothDeviceWinTest : public testing::Test {
     device_state.service_record_states.push_back(video_state);
 
     device_.reset(new BluetoothDeviceWin(device_state));
-
-    // Add empty device.
-    device_state.service_record_states.clear();
-    empty_device_.reset(new BluetoothDeviceWin(device_state));
   }
 
  protected:
@@ -76,8 +70,8 @@ TEST_F(BluetoothDeviceWinTest, GetUUIDs) {
   BluetoothDevice::UUIDList uuids = device_->GetUUIDs();
 
   EXPECT_EQ(2, uuids.size());
-  EXPECT_EQ(kTestAudioSdpUuid, uuids[0]);
-  EXPECT_EQ(kTestVideoSdpUuid, uuids[1]);
+  EXPECT_STREQ(kTestAudioSdpUuid, uuids[0].c_str());
+  EXPECT_STREQ(kTestVideoSdpUuid, uuids[1].c_str());
 
   uuids = empty_device_->GetUUIDs();
   EXPECT_EQ(0, uuids.size());
