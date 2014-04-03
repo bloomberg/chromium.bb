@@ -964,6 +964,10 @@ gl_renderer_read_pixels(struct weston_output *output,
 			       uint32_t width, uint32_t height)
 {
 	GLenum gl_format;
+	struct gl_output_state *go = get_output_state(output);
+
+	x += go->borders[GL_RENDERER_BORDER_LEFT].width;
+	y += go->borders[GL_RENDERER_BORDER_BOTTOM].height;
 
 	switch (format) {
 	case PIXMAN_a8r8g8b8:
