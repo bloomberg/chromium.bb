@@ -151,7 +151,7 @@ public:
 
     void setEditingValue(const String&);
 
-    double valueAsDate() const;
+    double valueAsDate(bool& isNull) const;
     void setValueAsDate(double, ExceptionState&);
 
     double valueAsNumber() const;

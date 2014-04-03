@@ -1038,9 +1038,11 @@ void HTMLInputElement::updateView()
     m_inputTypeView->updateView();
 }
 
-double HTMLInputElement::valueAsDate() const
+double HTMLInputElement::valueAsDate(bool& isNull) const
 {
-    return m_inputType->valueAsDate();
+    double date =  m_inputType->valueAsDate();
+    isNull = !std::isfinite(date);
+    return date;
 }
 
 void HTMLInputElement::setValueAsDate(double value, ExceptionState& exceptionState)
