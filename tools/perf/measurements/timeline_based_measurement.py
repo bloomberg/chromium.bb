@@ -50,7 +50,7 @@ class _TimelineBasedMetrics(object):
   def FindTimelineInteractionRecords(self):
     # TODO(nduca): Add support for page-load interaction record.
     return [tir_module.TimelineInteractionRecord.FromEvent(event) for
-            event in self._renderer_thread.IterAllAsyncSlices()
+            event in self._renderer_thread.async_slices
             if tir_module.IsTimelineInteractionRecord(event.name)]
 
 

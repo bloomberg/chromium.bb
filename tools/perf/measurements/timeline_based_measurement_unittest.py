@@ -109,7 +109,7 @@ class TimelineBasedMeasurementTest(
                                   options=self._options)
     self.assertEquals(0, len(results.failures))
     v = results.FindAllPageSpecificValuesNamed('CenterAnimation-jank')
-    self.assertEquals(len(v), 2)
+    self.assertEquals(len(v), 1)
     v = results.FindAllPageSpecificValuesNamed('DrawerAnimation-jank')
-    self.assertEquals(len(v), 2)
+    self.assertEquals(len(v), 1)
 
