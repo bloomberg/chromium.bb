@@ -2223,6 +2223,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="Text for the link that opens the app in the Web Store.">
           View in Web Store
         </message>
+        <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="Text for the button that uninstalls the app.">
+          Uninstall
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_APPLICATION_INFO_CLOSE_BUTTON" desc="In Title Case: Button in the Application Information Dialog that closes the dialog">
@@ -2239,6 +2242,9 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="In Title Case: Text for the link that opens the app in the Web Store..">
           View in Web Store
+        </message>
+        <message name="IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT" desc="In Title Case: Text for the button that uninstalls the app.">
+          Uninstall
         </message>
       </if>
 

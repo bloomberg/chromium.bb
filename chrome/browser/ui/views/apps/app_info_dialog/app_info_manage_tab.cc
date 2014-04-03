@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_manage_tab.h"
 
-#include "ui/gfx/native_widget_types.h"
-
 AppInfoManageTab::AppInfoManageTab(gfx::NativeWindow parent_window,
                                    Profile* profile,
                                    const extensions::Extension* app,

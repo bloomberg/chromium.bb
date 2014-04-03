@@ -59,10 +59,12 @@ bool AppInfoDialog::Cancel() {
 }
 
 gfx::Size AppInfoDialog::GetPreferredSize() {
+  // These numbers represent the size of the view, not the total size of the
+  // dialog. The actual dialog will be slightly taller (have a larger height)
+  // than what is specified here.
   static const int kDialogWidth = 360;
-  int height =
-      GetLayoutManager()->GetPreferredHeightForWidth(this, kDialogWidth);
-  return gfx::Size(kDialogWidth, height);
+  static const int kDialogHeight = 360;
+  return gfx::Size(kDialogWidth, kDialogHeight);
 }
 
 base::string16 AppInfoDialog::GetDialogButtonLabel(

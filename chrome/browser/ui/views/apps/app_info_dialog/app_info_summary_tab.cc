@@ -24,15 +24,19 @@
 #include "grit/generated_resources.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
 // Size of extension icon in top left of dialog.
@@ -137,20 +141,17 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
                                      const base::Closure& close_callback)
     : AppInfoTab(parent_window, profile, app, close_callback),
       app_icon_(NULL),
+      view_in_store_link_(NULL),
+      uninstall_button_(NULL),
       launch_options_combobox_(NULL),
       weak_ptr_factory_(this) {
   // Create UI elements.
   views::Label* app_name_label =
-      new views::Label(base::UTF8ToUTF16(app_->name()));
+      new views::Label(base::UTF8ToUTF16(app_->name()),
+                       ui::ResourceBundle::GetSharedInstance().GetFontList(
+                           ui::ResourceBundle::BoldFont));
+  app_name_label->SetMultiLine(true);
   app_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  views::Label* app_description_label =
-      new views::Label(base::UTF8ToUTF16(app_->description()));
-  app_description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-
-  views::Label* app_version_label =
-      new views::Label(base::UTF8ToUTF16(app_->VersionString()));
-  app_version_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   app_icon_ = new views::ImageView();
   app_icon_->SetImageSize(gfx::Size(kIconSize, kIconSize));
@@ -189,20 +190,27 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
                              0,
                              0);
 
-  // The app icon takes up 3 rows.
-  layout->StartRow(0, kHeaderColumnSetId);
-  layout->AddView(app_icon_, 1, 3);
+  // To vertically align the app's information to the center of the icon, we
+  // need to place the info in its own view. This view can then be vertically
+  // centered in its column.
+  views::View* appInfoTextContainer = new views::View();
+  appInfoTextContainer->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           0,
+                           0,
+                           views::kRelatedControlSmallVerticalSpacing));
 
-  // The app information fills up the right side of the icon.
-  layout->AddView(app_name_label);
+  // All apps have a name.
+  appInfoTextContainer->AddChildView(app_name_label);
 
-  layout->StartRow(0, kHeaderColumnSetId);
-  layout->SkipColumns(1);
-  layout->AddView(app_version_label);
+  // The version number doesn't make sense for bookmarked apps.
+  if (!app_->from_bookmark()) {
+    views::Label* app_version_label =
+        new views::Label(base::UTF8ToUTF16(app_->VersionString()));
+    app_version_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  layout->StartRow(0, kHeaderColumnSetId);
-  layout->SkipColumns(1);
-  layout->AddView(app_description_label);
+    appInfoTextContainer->AddChildView(app_version_label);
+  }
 
   // Add a link to the web store for apps that have it.
   if (CanShowAppInWebStore()) {
@@ -211,8 +219,30 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
     view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     view_in_store_link_->set_listener(this);
 
+    appInfoTextContainer->AddChildView(view_in_store_link_);
+  }
+
+  layout->StartRow(0, kHeaderColumnSetId);
+  layout->AddView(app_icon_);
+  layout->AddView(appInfoTextContainer);
+
+  // Add the description, if the app has one.
+  if (!app_->description().empty()) {
+    const size_t kMaxLength = 400;
+
+    base::string16 text = base::UTF8ToUTF16(app_->description());
+    if (text.length() > kMaxLength) {
+      text = text.substr(0, kMaxLength);
+      text += base::ASCIIToUTF16(" ... ");
+    }
+
+    views::Label* app_description_label = new views::Label(text);
+    app_description_label->SetMultiLine(true);
+    app_description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
     layout->StartRow(0, kMainColumnSetId);
-    layout->AddView(view_in_store_link_);
+    layout->AddView(app_description_label);
   }
 
   // Add hosted app launch options for non-platform apps.
@@ -229,11 +259,42 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
     layout->StartRow(0, kMainColumnSetId);
     layout->AddView(launch_options_combobox_);
   }
+
+  // Add an uninstall button for apps that can be uninstalled.
+  if (CanUninstallApp()) {
+    // Create a column set specifically for the left-aligned uninstall button.
+    static const int kButtonsColumnSet = 2;
+    views::ColumnSet* buttons_column_set =
+        layout->AddColumnSet(kButtonsColumnSet);
+    buttons_column_set->AddColumn(views::GridLayout::LEADING,
+                                  views::GridLayout::LEADING,
+                                  0,
+                                  views::GridLayout::USE_PREF,
+                                  0,  // No fixed width
+                                  0);
+
+    uninstall_button_ = new views::LabelButton(
+        this,
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT));
+    uninstall_button_->SetStyle(views::Button::STYLE_BUTTON);
+
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
+    layout->StartRow(0, kButtonsColumnSet);
+    layout->AddView(uninstall_button_);
+  }
 }
 
 AppInfoSummaryTab::~AppInfoSummaryTab() {
   // Destroy view children before their models.
   RemoveAllChildViews(true);
+}
+
+void AppInfoSummaryTab::LinkClicked(views::Link* source, int event_flags) {
+  if (source == view_in_store_link_) {
+    ShowAppInWebStore();
+  } else {
+    NOTREACHED();
+  }
 }
 
 void AppInfoSummaryTab::OnPerformAction(views::Combobox* combobox) {
@@ -245,12 +306,26 @@ void AppInfoSummaryTab::OnPerformAction(views::Combobox* combobox) {
   }
 }
 
-void AppInfoSummaryTab::LinkClicked(views::Link* source, int event_flags) {
-  if (source == view_in_store_link_) {
-    ShowAppInWebStore();
+void AppInfoSummaryTab::ButtonPressed(views::Button* sender,
+                                      const ui::Event& event) {
+  if (sender == uninstall_button_) {
+    UninstallApp();
   } else {
     NOTREACHED();
   }
+}
+
+void AppInfoSummaryTab::ExtensionUninstallAccepted() {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  service->UninstallExtension(app_->id(), false, NULL);
+
+  // Close the App Info dialog as well (which will free the dialog too).
+  GetWidget()->Close();
+}
+
+void AppInfoSummaryTab::ExtensionUninstallCanceled() {
+  extension_uninstall_dialog_.reset();
 }
 
 void AppInfoSummaryTab::LoadAppImageAsync() {
@@ -285,23 +360,21 @@ extensions::LaunchType AppInfoSummaryTab::GetLaunchType() const {
                                    app_);
 }
 
-void AppInfoSummaryTab::SetLaunchType(extensions::LaunchType launch_type) {
+void AppInfoSummaryTab::SetLaunchType(
+    extensions::LaunchType launch_type) const {
   DCHECK(CanSetLaunchType());
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   extensions::SetLaunchType(service, app_->id(), launch_type);
 }
 
-bool AppInfoSummaryTab::CanSetLaunchType() {
+bool AppInfoSummaryTab::CanSetLaunchType() const {
   // V2 apps don't have a launch type.
   return !app_->is_platform_app();
 }
 
-bool AppInfoSummaryTab::CanShowAppInWebStore() const {
-  return app_->from_webstore();
-}
-
 void AppInfoSummaryTab::ShowAppInWebStore() const {
+  DCHECK(CanShowAppInWebStore());
   const GURL url = extensions::ManifestURL::GetDetailsURL(app_);
   DCHECK_NE(url, GURL::EmptyGURL());
   chrome::NavigateParams params(
@@ -311,4 +384,21 @@ void AppInfoSummaryTab::ShowAppInWebStore() const {
                                 extension_urls::kLaunchSourceAppListInfoDialog),
       content::PAGE_TRANSITION_LINK);
   chrome::Navigate(&params);
+}
+
+bool AppInfoSummaryTab::CanShowAppInWebStore() const {
+  return app_->from_webstore();
+}
+
+void AppInfoSummaryTab::UninstallApp() {
+  DCHECK(CanUninstallApp());
+  extension_uninstall_dialog_.reset(
+      ExtensionUninstallDialog::Create(profile_, NULL, this));
+  extension_uninstall_dialog_->ConfirmUninstall(app_);
+}
+
+bool AppInfoSummaryTab::CanUninstallApp() const {
+  return extensions::ExtensionSystem::Get(profile_)
+      ->management_policy()
+      ->UserMayModifySettings(app_, NULL);
 }
