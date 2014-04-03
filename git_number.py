@@ -37,6 +37,8 @@ CHUNK_FMT = '!20sL'
 CHUNK_SIZE = struct.calcsize(CHUNK_FMT)
 DIRTY_TREES = collections.defaultdict(int)
 REF = 'refs/number/commits'
+AUTHOR_NAME = 'git-number'
+AUTHOR_EMAIL = 'chrome-infrastructure-team@google.com'
 
 # Number of bytes to use for the prefix on our internal number structure.
 # 0 is slow to deserialize. 2 creates way too much bookeeping overhead (would
@@ -153,7 +155,14 @@ def finalize(targets):
     assert updater.returncode == 0
 
     tree_id = git.run('write-tree', env=env)
-    commit_cmd = ['commit-tree', '-m', msg, '-p'] + git.hash_multi(REF)
+    commit_cmd = [
+        # Git user.name and/or user.email may not be configured, so specifying
+        # them explicitly. They are not used, but requried by Git.
+        '-c', 'user.name=%s' % AUTHOR_NAME,
+        '-c', 'user.email=%s' % AUTHOR_EMAIL,
+        'commit-tree',
+        '-m', msg,
+        '-p'] + git.hash_multi(REF)
     for t in targets:
       commit_cmd.extend(['-p', binascii.hexlify(t)])
     commit_cmd.append(tree_id)
