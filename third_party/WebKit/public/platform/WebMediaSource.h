@@ -58,20 +58,7 @@ public:
     };
 
     virtual ~WebMediaSource() { }
-
-    // FIXME: Remove addSourceBuffer() that has no FrameProcessorChoice, and
-    // remove the default implementation for the addSourceBuffer() that has
-    // FrameProcessorChoice once the latter's Chromium implementation has
-    // landed. See http://crbug.com/249422.
-    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, WebSourceBuffer** webSourceBuffer)
-    {
-        return addSourceBuffer(type, codecs, WebMediaSource::UseLegacyFrameProcessor, webSourceBuffer);
-    }
-    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, const FrameProcessorChoice choice, WebSourceBuffer** webSourceBuffer)
-    {
-        return addSourceBuffer(type, codecs, webSourceBuffer);
-    }
-
+    virtual AddStatus addSourceBuffer(const WebString& type, const WebVector<WebString>& codecs, const FrameProcessorChoice, WebSourceBuffer**) = 0;
     virtual double duration() = 0;
     virtual void setDuration(double) = 0;
     virtual void markEndOfStream(EndOfStreamStatus) = 0;
