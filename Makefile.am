@@ -700,6 +700,28 @@ nodist_fullscreen_shell_la_SOURCES =			\
 BUILT_SOURCES += $(nodist_fullscreen_shell_la_SOURCES)
 endif
 
+if ENABLE_SCREEN_SHARING
+
+module_LTLIBRARIES += screen-share.la
+
+screen_share_la_CPPFLAGS = $(AM_CPPFLAGS) -DBINDIR='"$(bindir)"'
+screen_share_la_LDFLAGS = -module -avoid-version
+screen_share_la_LIBADD =			\
+	$(COMPOSITOR_LIBS)			\
+	$(SCREEN_SHARE_LIBS)			\
+	libshared-cairo.la
+screen_share_la_CFLAGS =			\
+	$(COMPOSITOR_CFLAGS)			\
+	$(SCREEN_SHARE_CFLAGS)			\
+	$(GCC_CFLAGS)
+screen_share_la_SOURCES =			\
+	src/screen-share.c
+nodist_screen_share_la_SOURCES =			\
+	protocol/fullscreen-shell-protocol.c		\
+	protocol/fullscreen-shell-client-protocol.h
+
+endif
+
 if ENABLE_XWAYLAND
 
 module_LTLIBRARIES += xwayland.la

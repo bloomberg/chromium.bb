@@ -222,6 +222,18 @@ if test x$enable_rdp_compositor = xyes; then
   CPPFLAGS="$SAVED_CPPFLAGS"
 fi
 
+AC_ARG_ENABLE([screen-sharing], [--enable-screen-sharing],,
+              enable_screen_sharing=no)
+AM_CONDITIONAL([ENABLE_SCREEN_SHARING],
+               [test x$enable_screen_sharing = xyes])
+if test x$enable_screen_sharing = xyes; then
+  PKG_CHECK_MODULES(SCREEN_SHARE, [wayland-client])
+
+  if test x$enable_rdp_compositor != xyes; then
+    AC_MSG_WARN([The screen-share.so module requires the RDP backend.])
+  fi
+fi
+
 AC_ARG_WITH(cairo,
 	    AS_HELP_STRING([--with-cairo=@<:@image|gl|glesv2@:>@]
 			   [Which Cairo renderer to use for the clients]),
@@ -523,6 +535,7 @@ AC_MSG_RESULT([
 	RPI Compositor			${enable_rpi_compositor}
 	FBDEV Compositor		${enable_fbdev_compositor}
 	RDP Compositor			${enable_rdp_compositor}
+	Screen Sharing			${enable_screen_sharing}
 
 	libinput Backend		${enable_libinput_backend}
 
