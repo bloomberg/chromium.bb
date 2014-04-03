@@ -14,6 +14,7 @@
 #include "base/metrics/sample_map.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -147,6 +148,9 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   base::HistogramBase::Count GetCount(MetricPolicyRefresh metric);
   base::HistogramBase::Count GetInvalidationCount(bool with_payload);
 
+  // Advance the test clock.
+  void AdvanceClock(base::TimeDelta delta);
+
  private:
   // Checks that the policy was refreshed due to an invalidation with the given
   // base delay.
@@ -170,6 +174,7 @@ class CloudPolicyInvalidatorTest : public testing::Test {
   CloudPolicyCore core_;
   MockCloudPolicyClient* client_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::SimpleTestClock* clock_;
 
   // The invalidator which will be tested.
   scoped_ptr<CloudPolicyInvalidator> invalidator_;
@@ -203,6 +208,7 @@ CloudPolicyInvalidatorTest::CloudPolicyInvalidatorTest()
             loop_.message_loop_proxy()),
       client_(NULL),
       task_runner_(new base::TestSimpleTaskRunner()),
+      clock_(new base::SimpleTestClock()),
       object_id_a_(135, "asdf"),
       object_id_b_(246, "zxcv"),
       timestamp_(123456),
@@ -225,7 +231,10 @@ void CloudPolicyInvalidatorTest::TearDown() {
 void CloudPolicyInvalidatorTest::StartInvalidator(
     bool initialize,
     bool start_refresh_scheduler) {
-  invalidator_.reset(new CloudPolicyInvalidator(&core_, task_runner_));
+  invalidator_.reset(new CloudPolicyInvalidator(
+      &core_,
+      task_runner_,
+      scoped_ptr<base::Clock>(clock_)));
   if (start_refresh_scheduler) {
     ConnectCore();
     StartRefreshScheduler();
@@ -378,6 +387,10 @@ base::HistogramBase::Count CloudPolicyInvalidatorTest::GetInvalidationCount(
   int metric = with_payload ? 1 : 0;
   return GetHistogramSamples(kMetricPolicyInvalidations)->GetCount(metric) -
       invalidations_samples_->GetCount(metric);
+}
+
+void CloudPolicyInvalidatorTest::AdvanceClock(base::TimeDelta delta) {
+  clock_->Advance(delta);
 }
 
 bool CloudPolicyInvalidatorTest::CheckPolicyRefreshed(base::TimeDelta delay) {
@@ -776,38 +789,48 @@ TEST_F(CloudPolicyInvalidatorTest, RefreshMetricsNoInvalidations) {
   // on whether the invalidation service was enabled or not.
   StorePolicy(POLICY_OBJECT_A);
   StartInvalidator();
+
+  // Initially, invalidations have not been enabled past the grace period, so
+  // invalidations are OFF.
   StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
+  EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+
+  // If the clock advances less than the grace period, invalidations are OFF.
+  AdvanceClock(base::TimeDelta::FromSeconds(1));
+  StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
+  StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
+  EXPECT_EQ(2, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+
+  // After the grace period elapses, invalidations are ON.
+  AdvanceClock(base::TimeDelta::FromSeconds(
+      CloudPolicyInvalidator::kInvalidationGracePeriod));
+  StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
+  StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
+  EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_CHANGED));
+
+  // After the invalidation service is disabled, invalidations are OFF.
   DisableInvalidationService();
   StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
+  EXPECT_EQ(3, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+
+  // Enabling the invalidation service results in a new grace period, so
+  // invalidations are OFF.
+  EnableInvalidationService();
   StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
-  EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_CHANGED));
-  EXPECT_EQ(2, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(3, GetCount(METRIC_POLICY_REFRESH_UNCHANGED));
-  EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
-  EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
-}
+  EXPECT_EQ(4, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
 
-TEST_F(CloudPolicyInvalidatorTest, RefreshMetricsStoreSameTimestamp) {
-  // Store loads with the same timestamp as the load which causes registration
-  // are not counted.
-  StartInvalidator();
-  StorePolicy(
-      POLICY_OBJECT_A, 0, false /* policy_changed */, 12 /* timestamp */);
-  StorePolicy(
-      POLICY_OBJECT_A, 0, false /* policy_changed */, 12 /* timestamp */);
-  StorePolicy(
-      POLICY_OBJECT_A, 0, true /* policy_changed */, 12 /* timestamp */);
+  // After the grace period elapses, invalidations are ON.
+  AdvanceClock(base::TimeDelta::FromSeconds(
+      CloudPolicyInvalidator::kInvalidationGracePeriod));
+  StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
+  StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);
 
-  // The next load with a different timestamp counts.
-  StorePolicy(
-      POLICY_OBJECT_A, 0, true /* policy_changed */, 13 /* timestamp */);
-
-  EXPECT_EQ(1, GetCount(METRIC_POLICY_REFRESH_CHANGED));
-  EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
-  EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_UNCHANGED));
+  EXPECT_EQ(2, GetCount(METRIC_POLICY_REFRESH_CHANGED));
+  EXPECT_EQ(4, GetCount(METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS));
+  EXPECT_EQ(6, GetCount(METRIC_POLICY_REFRESH_UNCHANGED));
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_CHANGED));
   EXPECT_EQ(0, GetCount(METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED));
 }
@@ -817,6 +840,8 @@ TEST_F(CloudPolicyInvalidatorTest, RefreshMetricsInvalidation) {
   // the loads do not result in the invalidation being acknowledged.
   StartInvalidator();
   StorePolicy(POLICY_OBJECT_A);
+  AdvanceClock(base::TimeDelta::FromSeconds(
+      CloudPolicyInvalidator::kInvalidationGracePeriod));
   FireInvalidation(POLICY_OBJECT_A, 5, "test");
   StorePolicy(POLICY_OBJECT_A, 0, false /* policy_changed */);
   StorePolicy(POLICY_OBJECT_A, 0, true /* policy_changed */);

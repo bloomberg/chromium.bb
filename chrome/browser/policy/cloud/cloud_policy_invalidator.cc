@@ -12,6 +12,7 @@
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
@@ -28,17 +29,20 @@ const int CloudPolicyInvalidator::kMissingPayloadDelay = 5;
 const int CloudPolicyInvalidator::kMaxFetchDelayDefault = 120000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMin = 1000;
 const int CloudPolicyInvalidator::kMaxFetchDelayMax = 300000;
+const int CloudPolicyInvalidator::kInvalidationGracePeriod = 10;
 
 CloudPolicyInvalidator::CloudPolicyInvalidator(
     CloudPolicyCore* core,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    scoped_ptr<base::Clock> clock)
     : state_(UNINITIALIZED),
       core_(core),
       task_runner_(task_runner),
+      clock_(clock.Pass()),
       invalidation_service_(NULL),
       invalidations_enabled_(false),
       invalidation_service_enabled_(false),
-      registered_timestamp_(0),
+      is_registered_(false),
       invalid_(false),
       invalidation_version_(0),
       unknown_version_invalidation_count_(0),
@@ -69,7 +73,7 @@ void CloudPolicyInvalidator::Shutdown() {
   DCHECK(state_ != SHUT_DOWN);
   DCHECK(thread_checker_.CalledOnValidThread());
   if (state_ == STARTED) {
-    if (registered_timestamp_)
+    if (is_registered_)
       invalidation_service_->UnregisterInvalidationHandler(this);
     core_->store()->RemoveObserver(this);
     weak_factory_.InvalidateWeakPtrs();
@@ -137,19 +141,12 @@ void CloudPolicyInvalidator::OnStoreLoaded(CloudPolicyStore* store) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool policy_changed = IsPolicyChanged(store->policy());
 
-  if (registered_timestamp_) {
-    // Update the kMetricPolicyRefresh histogram. In some cases, this object can
-    // be constructed during an OnStoreLoaded callback, which causes
-    // OnStoreLoaded to be called twice at initialization time, so make sure
-    // that the timestamp does not match the timestamp at which registration
-    // occurred. We only measure changes which occur after registration.
-    if (!store->policy() || !store->policy()->has_timestamp() ||
-        store->policy()->timestamp() != registered_timestamp_) {
-      UMA_HISTOGRAM_ENUMERATION(
-          kMetricPolicyRefresh,
-          GetPolicyRefreshMetric(policy_changed),
-          METRIC_POLICY_REFRESH_SIZE);
-    }
+  if (is_registered_) {
+    // Update the kMetricPolicyRefresh histogram.
+    UMA_HISTOGRAM_ENUMERATION(
+        kMetricPolicyRefresh,
+        GetPolicyRefreshMetric(policy_changed),
+        METRIC_POLICY_REFRESH_SIZE);
 
     // If the policy was invalid and the version stored matches the latest
     // invalidation version, acknowledge the latest invalidation.
@@ -229,7 +226,6 @@ void CloudPolicyInvalidator::UpdateRegistration(
   // Create the ObjectId based on the policy data.
   // If the policy does not specify an the ObjectId, then unregister.
   if (!policy ||
-      !policy->has_timestamp() ||
       !policy->has_invalidation_source() ||
       !policy->has_invalidation_name()) {
     Unregister();
@@ -241,15 +237,13 @@ void CloudPolicyInvalidator::UpdateRegistration(
 
   // If the policy object id in the policy data is different from the currently
   // registered object id, update the object registration.
-  if (!registered_timestamp_ || !(object_id == object_id_))
-    Register(policy->timestamp(), object_id);
+  if (!is_registered_ || !(object_id == object_id_))
+    Register(object_id);
 }
 
-void CloudPolicyInvalidator::Register(
-    int64 timestamp,
-    const invalidation::ObjectId& object_id) {
+void CloudPolicyInvalidator::Register(const invalidation::ObjectId& object_id) {
   // Register this handler with the invalidation service if needed.
-  if (!registered_timestamp_) {
+  if (!is_registered_) {
     OnInvalidatorStateChange(invalidation_service_->GetInvalidatorState());
     invalidation_service_->RegisterInvalidationHandler(this);
   }
@@ -257,7 +251,7 @@ void CloudPolicyInvalidator::Register(
   // Update internal state.
   if (invalid_)
     AcknowledgeInvalidation();
-  registered_timestamp_ = timestamp;
+  is_registered_ = true;
   object_id_ = object_id;
   UpdateInvalidationsEnabled();
 
@@ -268,14 +262,14 @@ void CloudPolicyInvalidator::Register(
 }
 
 void CloudPolicyInvalidator::Unregister() {
-  if (registered_timestamp_) {
+  if (is_registered_) {
     if (invalid_)
       AcknowledgeInvalidation();
     invalidation_service_->UpdateRegisteredInvalidationIds(
         this,
         syncer::ObjectIdSet());
     invalidation_service_->UnregisterInvalidationHandler(this);
-    registered_timestamp_ = 0;
+    is_registered_ = false;
     UpdateInvalidationsEnabled();
   }
 }
@@ -313,10 +307,11 @@ void CloudPolicyInvalidator::set_max_fetch_delay(int delay) {
 }
 
 void CloudPolicyInvalidator::UpdateInvalidationsEnabled() {
-  bool invalidations_enabled =
-      invalidation_service_enabled_ && registered_timestamp_;
+  bool invalidations_enabled = invalidation_service_enabled_ && is_registered_;
   if (invalidations_enabled_ != invalidations_enabled) {
     invalidations_enabled_ = invalidations_enabled;
+    if (invalidations_enabled)
+      invalidations_enabled_time_ = clock_->Now();
     core_->refresh_scheduler()->SetInvalidationServiceAvailability(
         invalidations_enabled);
   }
@@ -357,13 +352,22 @@ int CloudPolicyInvalidator::GetPolicyRefreshMetric(bool policy_changed) {
   if (policy_changed) {
     if (invalid_)
       return METRIC_POLICY_REFRESH_INVALIDATED_CHANGED;
-    if (invalidations_enabled_)
+    if (GetInvalidationsEnabled())
       return METRIC_POLICY_REFRESH_CHANGED;
     return METRIC_POLICY_REFRESH_CHANGED_NO_INVALIDATIONS;
   }
   if (invalid_)
     return METRIC_POLICY_REFRESH_INVALIDATED_UNCHANGED;
   return METRIC_POLICY_REFRESH_UNCHANGED;
+}
+
+bool CloudPolicyInvalidator::GetInvalidationsEnabled() {
+  if (!invalidations_enabled_)
+    return false;
+  // If invalidations have been enabled for less than the grace period, then
+  // consider invalidations to be disabled for metrics reporting.
+  base::TimeDelta elapsed = clock_->Now() - invalidations_enabled_time_;
+  return elapsed.InSeconds() >= kInvalidationGracePeriod;
 }
 
 }  // namespace policy
