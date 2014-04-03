@@ -94,19 +94,20 @@ fi
 chromeos_dev_list="libbluetooth-dev"
 
 # Packages needed for development
-dev_list="apache2.2-bin bison curl dpkg-dev elfutils fakeroot flex g++ git-core
-          gperf language-pack-da language-pack-fr language-pack-he
-          language-pack-zh-hant libapache2-mod-php5 libasound2-dev libbrlapi-dev
-          libbz2-dev libcairo2-dev libcap-dev libcups2-dev libcurl4-gnutls-dev
-          libdrm-dev libelf-dev libexif-dev libgconf2-dev libgl1-mesa-dev
-          libglib2.0-dev libglu1-mesa-dev libgnome-keyring-dev libgtk2.0-dev
-          libkrb5-dev libnspr4-dev libnss3-dev libpam0g-dev libpci-dev
-          libpulse-dev libsctp-dev libspeechd-dev libsqlite3-dev libssl-dev
-          libudev-dev libwww-perl libxslt1-dev libxss-dev libxt-dev libxtst-dev
-          mesa-common-dev openbox patch perl php5-cgi pkg-config python
-          python-cherrypy3 python-dev python-psutil rpm ruby subversion
-          ttf-dejavu-core ttf-indic-fonts ttf-kochi-gothic ttf-kochi-mincho
-          ttf-thai-tlwg wdiff xfonts-mathml $chromeos_dev_list"
+dev_list="apache2.2-bin bison curl dpkg-dev elfutils fakeroot flex
+          fonts-thai-tlwg g++ git-core gperf language-pack-da language-pack-fr
+          language-pack-he language-pack-zh-hant libapache2-mod-php5
+          libasound2-dev libbrlapi-dev libbz2-dev libcairo2-dev libcap-dev
+          libcups2-dev libcurl4-gnutls-dev libdrm-dev libelf-dev libexif-dev
+          libgconf2-dev libgl1-mesa-dev libglib2.0-dev libglu1-mesa-dev
+          libgnome-keyring-dev libgtk2.0-dev libkrb5-dev libnspr4-dev
+          libnss3-dev libpam0g-dev libpci-dev libpulse-dev libsctp-dev
+          libspeechd-dev libsqlite3-dev libssl-dev libudev-dev libwww-perl
+          libxslt1-dev libxss-dev libxt-dev libxtst-dev mesa-common-dev openbox
+          patch perl php5-cgi pkg-config python python-cherrypy3 python-dev
+          python-psutil rpm ruby subversion ttf-dejavu-core ttf-indic-fonts
+          ttf-kochi-gothic ttf-kochi-mincho wdiff xfonts-mathml
+          $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries. These are always needed, regardless of whether or not we want
