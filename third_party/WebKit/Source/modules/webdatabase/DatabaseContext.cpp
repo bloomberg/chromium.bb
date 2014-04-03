@@ -209,11 +209,6 @@ void DatabaseContext::stopSyncDatabases()
     // destructor.
     ASSERT(isContextThread());
 #if ENABLE(OILPAN)
-    // FIXME: We need to clear OwnPtr<> in the HeapHashMap explicitly.
-    // HeapHashMap::clear() doesn't destruct values
-    // immediately. crbug.com/357113.
-    for (PersistentHeapHashMap<WeakMember<DatabaseBackendBase>, OwnPtr<DatabaseCloser> >::iterator i = m_openSyncDatabases.begin(); i != m_openSyncDatabases.end(); ++i)
-        (*i).value.clear();
     m_openSyncDatabases.clear();
 #else
     Vector<DatabaseBackendBase*> syncDatabases;
