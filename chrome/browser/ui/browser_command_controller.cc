@@ -292,7 +292,7 @@ bool BrowserCommandController::IsReservedCommandOrKey(
   // it is not reserved.
   ui::TextEditKeyBindingsDelegateX11* delegate =
       ui::GetTextEditKeyBindingsDelegate();
-  if (delegate && delegate->MatchEvent(*event.os_event, NULL))
+  if (delegate && event.os_event && delegate->MatchEvent(*event.os_event, NULL))
     return false;
 #endif
 
