@@ -31,9 +31,11 @@
 #ifndef KeyframeEffectModel_h
 #define KeyframeEffectModel_h
 
-#include "core/animation/AnimatableValue.h"
+#include "core/animation/AnimatableValueKeyframe.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/InterpolationEffect.h"
+#include "core/animation/StringKeyframe.h"
+#include "core/animation/TimedItem.h"
 #include "heap/Handle.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/HashMap.h"
@@ -45,109 +47,36 @@
 
 namespace WebCore {
 
-typedef HashSet<CSSPropertyID> PropertySet;
-
 class KeyframeEffectModelTest;
 
-// Represents the keyframes set through the API.
-class Keyframe : public RefCountedWillBeGarbageCollectedFinalized<Keyframe> {
+class KeyframeEffectModelBase : public AnimationEffect {
 public:
-    static PassRefPtrWillBeRawPtr<Keyframe> create()
-    {
-        return adoptRefWillBeNoop(new Keyframe);
-    }
-    static bool compareOffsets(const RefPtrWillBeRawPtr<Keyframe>& a, const RefPtrWillBeRawPtr<Keyframe>& b)
-    {
-        return a->offset() < b->offset();
-    }
-    void setOffset(double offset) { m_offset = offset; }
-    double offset() const { return m_offset; }
-    void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }
-    AnimationEffect::CompositeOperation composite() const { return m_composite; }
-    void setEasing(PassRefPtr<TimingFunction>);
-    TimingFunction* easing() const { return m_easing.get(); }
-    void setPropertyValue(CSSPropertyID, const AnimatableValue*);
-    void clearPropertyValue(CSSPropertyID);
-    const AnimatableValue* propertyValue(CSSPropertyID) const;
-    PropertySet properties() const;
-    PassRefPtrWillBeRawPtr<Keyframe> clone() const { return adoptRefWillBeNoop(new Keyframe(*this)); }
-    PassRefPtrWillBeRawPtr<Keyframe> cloneWithOffset(double offset) const;
-
-    void trace(Visitor*);
-
-private:
-    Keyframe();
-    Keyframe(const Keyframe&);
-    double m_offset;
-    AnimationEffect::CompositeOperation m_composite;
-    RefPtr<TimingFunction> m_easing;
-    typedef WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<AnimatableValue> > PropertyValueMap;
-    PropertyValueMap m_propertyValues;
-};
-
-class KeyframeEffectModel FINAL : public AnimationEffect {
-public:
-    class PropertySpecificKeyframe;
-    typedef WillBeHeapVector<RefPtrWillBeMember<Keyframe> > KeyframeVector;
-    typedef WillBeHeapVector<OwnPtrWillBeMember<PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
     // FIXME: Implement accumulation.
-    static PassRefPtrWillBeRawPtr<KeyframeEffectModel> create(const KeyframeVector& keyframes)
-    {
-        return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes));
-    }
 
-    virtual bool affects(CSSPropertyID property) OVERRIDE
-    {
-        ensureKeyframeGroups();
-        return m_keyframeGroups->contains(property);
-    }
-
-    // AnimationEffect implementation.
-    virtual PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(int iteration, double fraction, double iterationDuration) const OVERRIDE;
-
-    // FIXME: Implement setFrames()
-    const KeyframeVector& getFrames() const { return m_keyframes; }
-
-    virtual bool isKeyframeEffectModel() const OVERRIDE { return true; }
-
-    bool isReplaceOnly();
-
-    PropertySet properties() const;
-
-    class PropertySpecificKeyframe : public NoBaseWillBeGarbageCollectedFinalized<PropertySpecificKeyframe> {
+    typedef WillBeHeapVector<OwnPtrWillBeMember<Keyframe::PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
+    class PropertySpecificKeyframeGroup : public NoBaseWillBeGarbageCollected<PropertySpecificKeyframeGroup> {
     public:
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, CompositeOperation);
-        double offset() const { return m_offset; }
-        TimingFunction* easing() const { return m_easing.get(); }
-        const AnimatableValue* value() const { return m_value.get(); }
-        AnimationEffect::CompositeOperation composite() const { return m_composite; }
-        PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const;
-
-        void trace(Visitor*);
-
-    private:
-        // Used by cloneWithOffset().
-        PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtrWillBeRawPtr<AnimatableValue>, CompositeOperation);
-        double m_offset;
-        RefPtr<TimingFunction> m_easing;
-        RefPtrWillBeMember<AnimatableValue> m_value;
-        AnimationEffect::CompositeOperation m_composite;
-    };
-
-    class PropertySpecificKeyframeGroup : public NoBaseWillBeGarbageCollectedFinalized<PropertySpecificKeyframeGroup> {
-    public:
-        void appendKeyframe(PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe>);
+        void appendKeyframe(PassOwnPtrWillBeRawPtr<Keyframe::PropertySpecificKeyframe>);
         const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
 
         void trace(Visitor*);
 
     private:
-        PropertySpecificKeyframeVector m_keyframes;
         void removeRedundantKeyframes();
-        void addSyntheticKeyframeIfRequired();
+        void addSyntheticKeyframeIfRequired(const KeyframeEffectModelBase* context);
 
-        friend class KeyframeEffectModel;
+        PropertySpecificKeyframeVector m_keyframes;
+
+        friend class KeyframeEffectModelBase;
     };
+
+    bool isReplaceOnly();
+
+    PropertySet properties() const;
+
+    typedef WillBeHeapVector<RefPtrWillBeMember<Keyframe> > KeyframeVector;
+    const KeyframeVector& getFrames() const { return m_keyframes; }
+    // FIXME: Implement setFrames()
 
     const PropertySpecificKeyframeVector& getPropertySpecificKeyframes(CSSPropertyID id) const
     {
@@ -155,11 +84,17 @@ public:
         return m_keyframeGroups->get(id)->keyframes();
     }
 
+    // AnimationEffect implementation.
+    virtual PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample(int iteration, double fraction, double iterationDuration) const OVERRIDE;
+
+    virtual bool isKeyframeEffectModel() const OVERRIDE { return true; }
+
+    virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
+    virtual bool isStringKeyframeEffectModel() const { return false; }
+
     virtual void trace(Visitor*) OVERRIDE;
 
-private:
-    KeyframeEffectModel(const KeyframeVector& keyframes);
-
+protected:
     static KeyframeVector normalizedKeyframes(const KeyframeVector& keyframes);
 
     // Lazily computes the groups of property-specific keyframes.
@@ -172,13 +107,63 @@ private:
     // property-specific lists.
     typedef WillBeHeapHashMap<CSSPropertyID, OwnPtrWillBeMember<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
     mutable OwnPtrWillBeMember<KeyframeGroupMap> m_keyframeGroups;
-
     mutable RefPtrWillBeMember<InterpolationEffect> m_interpolationEffect;
 
     friend class KeyframeEffectModelTest;
+
+    bool affects(CSSPropertyID property)
+    {
+        ensureKeyframeGroups();
+        return m_keyframeGroups->contains(property);
+    }
 };
 
-DEFINE_TYPE_CASTS(KeyframeEffectModel, AnimationEffect, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
+template <class Keyframe>
+class KeyframeEffectModel FINAL : public KeyframeEffectModelBase {
+public:
+    typedef WillBeHeapVector<RefPtrWillBeMember<Keyframe> > KeyframeVector;
+    static PassRefPtrWillBeRawPtr<KeyframeEffectModel<Keyframe> > create(const KeyframeVector& keyframes) { return adoptRefWillBeNoop(new KeyframeEffectModel(keyframes)); }
+
+private:
+    KeyframeEffectModel(const KeyframeVector& keyframes)
+    {
+        m_keyframes.appendVector(keyframes);
+    }
+
+    virtual bool isAnimatableValueKeyframeEffectModel() const { return false; }
+    virtual bool isStringKeyframeEffectModel() const { return false; }
+
+};
+
+typedef KeyframeEffectModelBase::KeyframeVector KeyframeVector;
+typedef KeyframeEffectModelBase::PropertySpecificKeyframeVector PropertySpecificKeyframeVector;
+
+typedef KeyframeEffectModel<AnimatableValueKeyframe> AnimatableValueKeyframeEffectModel;
+typedef AnimatableValueKeyframeEffectModel::KeyframeVector AnimatableValueKeyframeVector;
+typedef AnimatableValueKeyframeEffectModel::PropertySpecificKeyframeVector AnimatableValuePropertySpecificKeyframeVector;
+
+typedef KeyframeEffectModel<StringKeyframe> StringKeyframeEffectModel;
+typedef StringKeyframeEffectModel::KeyframeVector StringKeyframeVector;
+typedef StringKeyframeEffectModel::PropertySpecificKeyframeVector StringPropertySpecificKeyframeVector;
+
+DEFINE_TYPE_CASTS(KeyframeEffectModelBase, AnimationEffect, value, value->isKeyframeEffectModel(), value.isKeyframeEffectModel());
+DEFINE_TYPE_CASTS(AnimatableValueKeyframeEffectModel, KeyframeEffectModelBase, value, value->isAnimatableValueKeyframeEffectModel(), value.isAnimatableValueKeyframeEffectModel());
+
+inline const AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(const AnimationEffect* base)
+{
+    return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
+}
+
+inline AnimatableValueKeyframeEffectModel* toAnimatableValueKeyframeEffectModel(AnimationEffect* base)
+{
+    return toAnimatableValueKeyframeEffectModel(toKeyframeEffectModelBase(base));
+}
+
+template <>
+inline bool KeyframeEffectModel<AnimatableValueKeyframe>::isAnimatableValueKeyframeEffectModel() const { return true; }
+
+template <>
+inline bool KeyframeEffectModel<StringKeyframe>::isStringKeyframeEffectModel() const { return true; }
 
 } // namespace WebCore
 

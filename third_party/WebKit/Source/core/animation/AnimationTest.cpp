@@ -88,14 +88,13 @@ TEST_F(AnimationAnimationV8Test, CanCreateAnAnimation)
     Element* target = animation->target();
     EXPECT_EQ(*element.get(), *target);
 
-    const KeyframeEffectModel::KeyframeVector keyframes =
-        toKeyframeEffectModel(animation->effect())->getFrames();
+    const KeyframeVector keyframes = toKeyframeEffectModelBase(animation->effect())->getFrames();
 
     EXPECT_EQ(0, keyframes[0]->offset());
     EXPECT_EQ(1, keyframes[1]->offset());
 
-    const AnimatableValue* keyframe1Width = keyframes[0]->propertyValue(CSSPropertyWidth);
-    const AnimatableValue* keyframe2Width = keyframes[1]->propertyValue(CSSPropertyWidth);
+    const AnimatableValue* keyframe1Width = toAnimatableValueKeyframe(keyframes[0].get())->propertyValue(CSSPropertyWidth);
+    const AnimatableValue* keyframe2Width = toAnimatableValueKeyframe(keyframes[1].get())->propertyValue(CSSPropertyWidth);
     ASSERT(keyframe1Width);
     ASSERT(keyframe2Width);
 

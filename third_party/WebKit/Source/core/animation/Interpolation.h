@@ -44,7 +44,6 @@ private:
 
     friend class AnimationInterpolableValueTest;
     friend class AnimationInterpolationEffectTest;
-
 };
 
 class StyleInterpolation : public Interpolation {
@@ -83,7 +82,7 @@ public:
     virtual void apply(StyleResolverState&) const;
 
     virtual bool isLegacyStyleInterpolation() const OVERRIDE FINAL { return true; }
-    AnimatableValue* currentValue() const
+    PassRefPtrWillBeRawPtr<AnimatableValue> currentValue() const
     {
         InterpolableAnimatableValue* value = static_cast<InterpolableAnimatableValue*>(m_cachedValue.get());
         return value->value();

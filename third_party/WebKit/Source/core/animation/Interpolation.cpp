@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/animation/Interpolation.h"
 
+#include "core/animation/AnimatableDouble.h"
 #include "core/css/resolver/AnimatedStyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
 
@@ -70,8 +71,7 @@ void StyleInterpolation::trace(Visitor* visitor)
 
 void LegacyStyleInterpolation::apply(StyleResolverState& state) const
 {
-    AnimatableValue* value = currentValue();
-    AnimatedStyleBuilder::applyProperty(m_id, state, value);
+    AnimatedStyleBuilder::applyProperty(m_id, state, currentValue().get());
 }
 
 void LegacyStyleInterpolation::trace(Visitor* visitor)
