@@ -247,30 +247,50 @@
 
       <structure type="chrome_scaled_image" name="IDR_FILE_FOLDER" file="common/folder.png" />
       <if expr="chromeos">
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_ARCHIVE" file="cros/file_types/archive.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO" file="cros/file_types/audio.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_DRIVE" file="cros/file_types/drive.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_EXCEL" file="cros/file_types/excel.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_FORM" file="cros/file_types/form.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_GDOC" file="cros/file_types/gdoc.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_GDRAW" file="cros/file_types/gdraw.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_GENERIC" file="cros/file_types/generic.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_GLINK" file="cros/file_types/glink.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_GSHEET" file="cros/file_types/gsheet.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_GSLIDES" file="cros/file_types/gslides.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_GTABLE" file="cros/file_types/gtable.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_IMAGE" file="cros/file_types/image.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_PDF" file="cros/file_types/pdf.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_PPT" file="cros/file_types/ppt.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_SCRIPT" file="cros/file_types/script.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_SITES" file="cros/file_types/sites.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_VIDEO" file="cros/file_types/video.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_WORD" file="cros/file_types/word.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO" file="cros/file_types/thumbnails/audio.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_FOLDER" file="cros/file_types/thumbnails/folder.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_GENERIC" file="cros/file_types/thumbnails/generic.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_IMAGE" file="cros/file_types/thumbnails/image.png" />
-        <structure type="chrome_scaled_image" name="IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO" file="cros/file_types/thumbnails/video.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_ARCHIVE" file="cros/file_types/archive.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_ARCHIVE_WHITE" file="cros/file_types/archive_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_AUDIO" file="cros/file_types/audio.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_AUDIO_WHITE" file="cros/file_types/audio_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_DRIVE" file="cros/file_types/drive.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_EXCEL" file="cros/file_types/excel.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_EXCEL_WHITE" file="cros/file_types/excel_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_FOLDER" file="cros/file_types/folder.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_FOLDER_WHITE" file="cros/file_types/folder_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_FORM" file="cros/file_types/form.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_FORM_WHITE" file="cros/file_types/form_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GDOC" file="cros/file_types/gdoc.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GDOC_WHITE" file="cros/file_types/gdoc_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GDRAW" file="cros/file_types/gdraw.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GDRAW_WHITE" file="cros/file_types/gdraw_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GENERIC" file="cros/file_types/generic.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GENERIC_WHITE" file="cros/file_types/generic_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GLINK" file="cros/file_types/glink.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GLINK_WHITE" file="cros/file_types/glink_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GSHEET" file="cros/file_types/gsheet.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GSHEET_WHITE" file="cros/file_types/gsheet_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GSLIDES" file="cros/file_types/gslides.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GSLIDES_WHITE" file="cros/file_types/gslides_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GTABLE" file="cros/file_types/gtable.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_GTABLE_WHITE" file="cros/file_types/gtable_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_IMAGE" file="cros/file_types/image.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_IMAGE_WHITE" file="cros/file_types/image_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_PDF" file="cros/file_types/pdf.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_PDF_WHITE" file="cros/file_types/pdf_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_PPT" file="cros/file_types/ppt.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_PPT_WHITE" file="cros/file_types/ppt_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_SCRIPT" file="cros/file_types/script.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_SCRIPT_WHITE" file="cros/file_types/script_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_SITES" file="cros/file_types/sites.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_SITES_WHITE" file="cros/file_types/sites_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_VIDEO" file="cros/file_types/video.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_VIDEO_WHITE" file="cros/file_types/video_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_WORD" file="cros/file_types/word.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_WORD_WHITE" file="cros/file_types/word_white.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_AUDIO" file="cros/file_types/thumbnails/audio.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_FOLDER" file="cros/file_types/thumbnails/folder.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_GENERIC" file="cros/file_types/thumbnails/generic.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_IMAGE" file="cros/file_types/thumbnails/image.png" />
+        <structure type="chrome_scaled_image" name="IDR_FILETYPE_LARGE_VIDEO" file="cros/file_types/thumbnails/video.png" />
       </if>
 
       <if expr="chromeos">
