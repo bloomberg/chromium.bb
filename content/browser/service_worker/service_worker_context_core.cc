@@ -93,6 +93,7 @@ void ServiceWorkerContextCore::RegistrationComplete(
   if (status != SERVICE_WORKER_OK) {
     DCHECK(!registration);
     callback.Run(status, -1L);
+    return;
   }
 
   callback.Run(status, registration->id());
