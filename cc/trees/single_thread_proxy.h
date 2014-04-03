@@ -80,6 +80,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
       OVERRIDE {}
   virtual void DidActivatePendingTree() OVERRIDE {}
   virtual void DidManageTiles() OVERRIDE {}
+  virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE {}
 
   // Called by the legacy path where RenderWidget does the scheduling.
   void CompositeImmediately(base::TimeTicks frame_begin_time);

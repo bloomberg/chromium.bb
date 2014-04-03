@@ -374,8 +374,10 @@ void LayerTreeTest::EndTest() {
 }
 
 void LayerTreeTest::EndTestAfterDelay(int delay_milliseconds) {
-  main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_));
+  main_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_),
+      base::TimeDelta::FromMilliseconds(delay_milliseconds));
 }
 
 void LayerTreeTest::PostAddAnimationToMainThread(

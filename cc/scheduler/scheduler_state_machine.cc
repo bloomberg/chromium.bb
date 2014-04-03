@@ -44,7 +44,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       did_create_and_initialize_first_output_surface_(false),
       smoothness_takes_priority_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
-      skip_begin_main_frame_to_reduce_latency_(false) {}
+      skip_begin_main_frame_to_reduce_latency_(false),
+      continuous_painting_(false) {}
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
     OutputSurfaceState state) {
@@ -273,6 +274,7 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
                           skip_begin_main_frame_to_reduce_latency_);
   minor_state->SetBoolean("skip_next_begin_main_frame_to_reduce_latency",
                           skip_next_begin_main_frame_to_reduce_latency_);
+  minor_state->SetBoolean("continuous_painting", continuous_painting_);
   state->Set("minor_state", minor_state.release());
 
   return state.PassAs<base::Value>();
@@ -739,6 +741,9 @@ void SchedulerStateMachine::UpdateStateOnCommit(bool commit_was_aborted) {
     texture_state_ = LAYER_TEXTURE_STATE_ACQUIRED_BY_IMPL_THREAD;
   else
     texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
+
+  if (continuous_painting_)
+    needs_commit_ = true;
 }
 
 void SchedulerStateMachine::UpdateStateOnActivation() {

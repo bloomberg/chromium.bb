@@ -66,6 +66,7 @@ class ThreadProxy : public Proxy,
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
   virtual void AcquireLayerTextures() OVERRIDE;
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE;
+  virtual void SetDebugState(const LayerTreeDebugState& debug_state) OVERRIDE;
   virtual scoped_ptr<base::Value> AsValue() const OVERRIDE;
   virtual bool CommitPendingForTesting() OVERRIDE;
   virtual scoped_ptr<base::Value> SchedulerStateAsValueForTesting() OVERRIDE;
@@ -198,6 +199,8 @@ class ThreadProxy : public Proxy,
   void StartScrollbarAnimationOnImplThread();
   void MainThreadHasStoppedFlingingOnImplThread();
   void SetInputThrottledUntilCommitOnImplThread(bool is_throttled);
+  void SetDebugStateOnImplThread(const LayerTreeDebugState& debug_state);
+
   LayerTreeHost* layer_tree_host();
   const LayerTreeHost* layer_tree_host() const;
 

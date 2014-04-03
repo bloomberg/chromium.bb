@@ -5209,4 +5209,83 @@ class LayerTreeHostTestGpuRasterizationSetting : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationSetting);
 
+class LayerTreeHostTestContinuousPainting : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestContinuousPainting()
+      : num_commits_(0), num_draws_(0), bounds_(20, 20), child_layer_(NULL) {}
+
+ protected:
+  enum { kExpectedNumCommits = 10 };
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root_layer = Layer::Create();
+    root_layer->SetBounds(bounds_);
+
+    if (layer_tree_host()->settings().impl_side_painting) {
+      picture_layer_ = FakePictureLayer::Create(&client_);
+      child_layer_ = picture_layer_.get();
+    } else {
+      content_layer_ = ContentLayerWithUpdateTracking::Create(&client_);
+      child_layer_ = content_layer_.get();
+    }
+    child_layer_->SetBounds(bounds_);
+    child_layer_->SetIsDrawable(true);
+    root_layer->AddChild(child_layer_);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    layer_tree_host()->SetViewportSize(bounds_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    // Wait 50x longer than expected.
+    double milliseconds_per_frame =
+        1000 / layer_tree_host()->settings().refresh_rate;
+    EndTestAfterDelay(50 * kExpectedNumCommits * milliseconds_per_frame);
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &LayerTreeHostTestContinuousPainting::EnableContinuousPainting,
+            base::Unretained(this)));
+  }
+
+  virtual void Animate(base::TimeTicks monotonic_time) OVERRIDE {
+    child_layer_->SetNeedsDisplay();
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_LE(kExpectedNumCommits, num_commits_);
+    EXPECT_LE(kExpectedNumCommits, num_draws_);
+    int update_count = content_layer_ ? content_layer_->PaintContentsCount()
+                                      : picture_layer_->update_count();
+    EXPECT_LE(kExpectedNumCommits, update_count);
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    if (++num_draws_ == kExpectedNumCommits)
+      EndTest();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ++num_commits_;
+  }
+
+ private:
+  void EnableContinuousPainting() {
+    LayerTreeDebugState debug_state = layer_tree_host()->debug_state();
+    debug_state.continuous_painting = true;
+    layer_tree_host()->SetDebugState(debug_state);
+  }
+
+  int num_commits_;
+  int num_draws_;
+  const gfx::Size bounds_;
+  FakeContentLayerClient client_;
+  scoped_refptr<ContentLayerWithUpdateTracking> content_layer_;
+  scoped_refptr<FakePictureLayer> picture_layer_;
+  Layer* child_layer_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousPainting);
+
 }  // namespace cc

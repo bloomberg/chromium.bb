@@ -121,6 +121,9 @@ class CC_EXPORT Scheduler {
   }
 
   bool IsBeginMainFrameSent() const;
+  void SetContinuousPainting(bool continuous_painting) {
+    state_machine_.SetContinuousPainting(continuous_painting);
+  }
 
  private:
   Scheduler(SchedulerClient* client,

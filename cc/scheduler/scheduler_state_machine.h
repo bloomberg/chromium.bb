@@ -247,6 +247,10 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool SupportsProactiveBeginImplFrame() const;
 
+  void SetContinuousPainting(bool continuous_painting) {
+    continuous_painting_ = continuous_painting;
+  }
+
  protected:
   bool BeginImplFrameNeededToDraw() const;
   bool ProactiveBeginImplFrameWanted() const;
@@ -315,6 +319,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool smoothness_takes_priority_;
   bool skip_next_begin_main_frame_to_reduce_latency_;
   bool skip_begin_main_frame_to_reduce_latency_;
+  bool continuous_painting_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);
