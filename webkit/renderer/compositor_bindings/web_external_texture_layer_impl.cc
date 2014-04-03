@@ -39,7 +39,9 @@ blink::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
 
 void WebExternalTextureLayerImpl::clearTexture() {
   TextureLayer *layer = static_cast<TextureLayer*>(layer_->layer());
-  layer->ClearTexture();
+  layer->WillModifyTexture();
+  layer->SetTextureMailbox(cc::TextureMailbox(),
+                           scoped_ptr<cc::SingleReleaseCallback>());
 }
 
 void WebExternalTextureLayerImpl::setOpaque(bool opaque) {

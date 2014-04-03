@@ -35,7 +35,7 @@ TextureLayer::TextureLayer(TextureLayerClient* client, bool uses_mailbox)
       premultiplied_alpha_(true),
       blend_background_color_(false),
       rate_limit_context_(false),
-      impl_may_draw_client_data_(false),
+      content_committed_(false),
       texture_id_(0),
       needs_set_mailbox_(false) {
   vertex_opacity_[0] = 1.0f;
@@ -51,24 +51,10 @@ void TextureLayer::ClearClient() {
   if (rate_limit_context_ && client_ && layer_tree_host())
     layer_tree_host()->StopRateLimiter();
   client_ = NULL;
-  ClearTexture();
-}
-
-void TextureLayer::ClearTexture() {
-  if (uses_mailbox_) {
+  if (uses_mailbox_)
     SetTextureMailbox(TextureMailbox(), scoped_ptr<SingleReleaseCallback>());
-  } else if (texture_id_) {
-    if (impl_may_draw_client_data_) {
-      DCHECK(layer_tree_host());
-      layer_tree_host()->AcquireLayerTextures();
-      impl_may_draw_client_data_ = false;
-    }
-    texture_id_ = 0;
-    SetNeedsCommit();
-    // The texture id needs to be removed from the active tree before the
-    // commit is called complete.
-    SetNextCommitWaitsForActivation();
-  }
+  else
+    SetTextureId(0);
 }
 
 scoped_ptr<LayerImpl> TextureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
@@ -133,6 +119,19 @@ void TextureLayer::SetRateLimitContext(bool rate_limit) {
   rate_limit_context_ = rate_limit;
 }
 
+void TextureLayer::SetTextureId(unsigned id) {
+  DCHECK(!uses_mailbox_);
+  if (texture_id_ == id)
+    return;
+  if (texture_id_ && layer_tree_host())
+    layer_tree_host()->AcquireLayerTextures();
+  texture_id_ = id;
+  SetNeedsCommit();
+  // The texture id needs to be removed from the active tree before the
+  // commit is called complete.
+  SetNextCommitWaitsForActivation();
+}
+
 void TextureLayer::SetTextureMailboxInternal(
     const TextureMailbox& mailbox,
     scoped_ptr<SingleReleaseCallback> release_callback,
@@ -191,6 +190,14 @@ void TextureLayer::SetTextureMailboxWithoutReleaseCallback(
       mailbox, release.Pass(), requires_commit, allow_mailbox_reuse);
 }
 
+void TextureLayer::WillModifyTexture() {
+  if (!uses_mailbox_ && layer_tree_host() && (DrawsContent() ||
+      content_committed_)) {
+    layer_tree_host()->AcquireLayerTextures();
+    content_committed_ = false;
+  }
+}
+
 void TextureLayer::SetNeedsDisplayRect(const gfx::RectF& dirty_rect) {
   Layer::SetNeedsDisplayRect(dirty_rect);
 
@@ -205,12 +212,11 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   }
 
   if (layer_tree_host()) {
-    if (impl_may_draw_client_data_) {
+    if (texture_id_) {
       layer_tree_host()->AcquireLayerTextures();
       // The texture id needs to be removed from the active tree before the
       // commit is called complete.
       SetNextCommitWaitsForActivation();
-      impl_may_draw_client_data_ = false;
     }
     if (rate_limit_context_ && client_)
       layer_tree_host()->StopRateLimiter();
@@ -289,7 +295,7 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
     needs_set_mailbox_ = false;
   } else {
     texture_layer->SetTextureId(texture_id_);
-    impl_may_draw_client_data_ = texture_id_ && Layer::DrawsContent();
+    content_committed_ = DrawsContent();
   }
 }
 
