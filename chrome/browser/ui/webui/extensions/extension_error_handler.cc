@@ -40,6 +40,8 @@ void ExtensionErrorHandler::GetLocalizedValues(
   source->AddString(
       "extensionErrorViewManifest",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_VIEW_MANIFEST));
+  source->AddString("extensionErrorOverlayDone",
+                    l10n_util::GetStringUTF16(IDS_DONE));
   source->AddString(
       "extensionErrorOverlayContextUrl",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ERROR_CONTEXT));
