@@ -64,8 +64,8 @@ public:
     void invalidate();
 
 private:
-    NodeType* nodeBeforeCachedNode(const Collection&, unsigned index, const ContainerNode& root);
-    NodeType* nodeAfterCachedNode(const Collection&, unsigned index, const ContainerNode& root);
+    NodeType* nodeBeforeCachedNode(const Collection&, unsigned index);
+    NodeType* nodeAfterCachedNode(const Collection&, unsigned index);
 
     ALWAYS_INLINE NodeType* cachedNode() const { return m_currentNode; }
     ALWAYS_INLINE unsigned cachedNodeIndex() const { ASSERT(cachedNode()); return m_cachedNodeIndex; }
@@ -124,29 +124,28 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAt(const Collec
     if (isCachedNodeCountValid() && index >= cachedNodeCount())
         return 0;
 
-    ContainerNode& root = collection.rootNode();
     if (cachedNode()) {
         if (index > cachedNodeIndex())
-            return nodeAfterCachedNode(collection, index, root);
+            return nodeAfterCachedNode(collection, index);
         if (index < cachedNodeIndex())
-            return nodeBeforeCachedNode(collection, index, root);
+            return nodeBeforeCachedNode(collection, index);
         return cachedNode();
     }
 
     // No valid cache yet, let's find the first matching element.
     ASSERT(!isCachedNodeCountValid());
-    NodeType* firstNode = collection.traverseToFirstElement(root);
+    NodeType* firstNode = collection.traverseToFirstElement();
     if (!firstNode) {
         // The collection is empty.
         setCachedNodeCount(0);
         return 0;
     }
     setCachedNode(firstNode, 0);
-    return index ? nodeAfterCachedNode(collection, index, root) : firstNode;
+    return index ? nodeAfterCachedNode(collection, index) : firstNode;
 }
 
 template <typename Collection, typename NodeType>
-inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNode(const Collection& collection, unsigned index, const ContainerNode& root)
+inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNode(const Collection& collection, unsigned index)
 {
     ASSERT(cachedNode()); // Cache should be valid.
     unsigned currentIndex = cachedNodeIndex();
@@ -155,10 +154,10 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNod
     // Determine if we should traverse from the beginning of the collection instead of the cached node.
     bool firstIsCloser = index < currentIndex - index;
     if (firstIsCloser || !collection.canTraverseBackward()) {
-        NodeType* firstNode = collection.traverseToFirstElement(root);
+        NodeType* firstNode = collection.traverseToFirstElement();
         ASSERT(firstNode);
         setCachedNode(firstNode, 0);
-        return index ? nodeAfterCachedNode(collection, index, root) : firstNode;
+        return index ? nodeAfterCachedNode(collection, index) : firstNode;
     }
 
     // Backward traversal from the cached node to the requested index.
@@ -177,7 +176,7 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNod
 }
 
 template <typename Collection, typename NodeType>
-inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode(const Collection& collection, unsigned index, const ContainerNode& root)
+inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode(const Collection& collection, unsigned index)
 {
     ASSERT(cachedNode()); // Cache should be valid.
     unsigned currentIndex = cachedNodeIndex();
@@ -190,12 +189,12 @@ inline NodeType* CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode
         ASSERT(lastItem);
         setCachedNode(lastItem, cachedNodeCount() - 1);
         if (index < cachedNodeCount() - 1)
-            return nodeBeforeCachedNode(collection, index, root);
+            return nodeBeforeCachedNode(collection, index);
         return lastItem;
     }
 
     // Forward traversal from the cached node to the requested index.
-    NodeType* currentNode = collection.traverseForwardToOffset(index, *cachedNode(), currentIndex, root);
+    NodeType* currentNode = collection.traverseForwardToOffset(index, *cachedNode(), currentIndex);
     if (!currentNode) {
         // Did not find the node. On plus side, we now know the length.
         setCachedNodeCount(currentIndex + 1);

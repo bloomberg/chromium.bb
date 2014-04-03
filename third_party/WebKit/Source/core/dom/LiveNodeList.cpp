@@ -45,14 +45,14 @@ Element* LiveNodeList::itemBefore(const Element* previous) const
     return LiveNodeListBase::itemBefore(*this, previous);
 }
 
-Element* LiveNodeList::traverseToFirstElement(const ContainerNode& root) const
+Element* LiveNodeList::traverseToFirstElement() const
 {
-    return firstMatchingElement(*this, root);
+    return firstMatchingElement(*this);
 }
 
-Element* LiveNodeList::traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset, const ContainerNode& root) const
+Element* LiveNodeList::traverseForwardToOffset(unsigned offset, Element& currentNode, unsigned& currentOffset) const
 {
-    return traverseMatchingElementsForwardToOffset(*this, offset, currentNode, currentOffset, root);
+    return traverseMatchingElementsForwardToOffset(*this, offset, currentNode, currentOffset);
 }
 
 } // namespace WebCore

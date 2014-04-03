@@ -87,11 +87,11 @@ protected:
     template <typename Collection>
     static Element* itemBefore(const Collection&, const Element* previousItem);
     template <class NodeListType>
-    static Element* firstMatchingElement(const NodeListType&, const ContainerNode&);
+    static Element* firstMatchingElement(const NodeListType&);
     template <class NodeListType>
-    static Element* nextMatchingElement(const NodeListType&, Element& current, const ContainerNode& root);
+    static Element* nextMatchingElement(const NodeListType&, Element& current);
     template <class NodeListType>
-    static Element* traverseMatchingElementsForwardToOffset(const NodeListType&, unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root);
+    static Element* traverseMatchingElementsForwardToOffset(const NodeListType&, unsigned offset, Element& currentElement, unsigned& currentOffset);
 
 private:
     void invalidateIdNameCacheMaps() const;
@@ -174,8 +174,9 @@ Element* LiveNodeListBase::itemBefore(const Collection& collection, const Elemen
 }
 
 template <class NodeListType>
-Element* LiveNodeListBase::firstMatchingElement(const NodeListType& nodeList, const ContainerNode& root)
+Element* LiveNodeListBase::firstMatchingElement(const NodeListType& nodeList)
 {
+    ContainerNode& root = nodeList.rootNode();
     Element* element = ElementTraversal::firstWithin(root);
     while (element && !isMatchingElement(nodeList, *element))
         element = ElementTraversal::next(*element, &root);
@@ -183,8 +184,9 @@ Element* LiveNodeListBase::firstMatchingElement(const NodeListType& nodeList, co
 }
 
 template <class NodeListType>
-Element* LiveNodeListBase::nextMatchingElement(const NodeListType& nodeList, Element& current, const ContainerNode& root)
+Element* LiveNodeListBase::nextMatchingElement(const NodeListType& nodeList, Element& current)
 {
+    ContainerNode& root = nodeList.rootNode();
     Element* next = &current;
     do {
         next = ElementTraversal::next(*next, &root);
@@ -193,11 +195,11 @@ Element* LiveNodeListBase::nextMatchingElement(const NodeListType& nodeList, Ele
 }
 
 template <class NodeListType>
-Element* LiveNodeListBase::traverseMatchingElementsForwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root)
+Element* LiveNodeListBase::traverseMatchingElementsForwardToOffset(const NodeListType& nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset)
 {
     ASSERT(currentOffset < offset);
     Element* next = &currentElement;
-    while ((next = nextMatchingElement(nodeList, *next, root))) {
+    while ((next = nextMatchingElement(nodeList, *next))) {
         if (++currentOffset == offset)
             return next;
     }

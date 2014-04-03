@@ -52,8 +52,8 @@ public:
     ContainerNode& rootNode() const { return ownerNode(); }
     bool canTraverseBackward() const { return true; }
     Node* itemBefore(const Node* previousItem) const;
-    Node* traverseToFirstElement(const ContainerNode& root) const { return root.firstChild(); }
-    Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode& root) const;
+    Node* traverseToFirstElement() const { return rootNode().firstChild(); }
+    Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const;
 
 private:
     explicit ChildNodeList(ContainerNode& rootNode);

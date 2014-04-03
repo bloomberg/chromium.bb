@@ -306,9 +306,9 @@ static inline bool nameShouldBeVisibleInDocumentAll(const HTMLElement& element)
         || element.hasLocalName(selectTag);
 }
 
-inline Element* firstMatchingChildElement(const HTMLCollection& nodeList, const ContainerNode& root)
+inline Element* firstMatchingChildElement(const HTMLCollection& nodeList)
 {
-    Element* element = ElementTraversal::firstChild(root);
+    Element* element = ElementTraversal::firstChild(nodeList.rootNode());
     while (element && !isMatchingElement(nodeList, *element))
         element = ElementTraversal::nextSibling(*element);
     return element;
@@ -323,39 +323,39 @@ inline Element* nextMatchingChildElement(const HTMLCollection& nodeList, Element
     return next;
 }
 
-Element* HTMLCollection::traverseToFirstElement(const ContainerNode& root) const
+Element* HTMLCollection::traverseToFirstElement() const
 {
     switch (type()) {
     case HTMLTagCollectionType:
-        return firstMatchingElement(static_cast<const HTMLTagCollection&>(*this), root);
+        return firstMatchingElement(static_cast<const HTMLTagCollection&>(*this));
     case ClassCollectionType:
-        return firstMatchingElement(static_cast<const ClassCollection&>(*this), root);
+        return firstMatchingElement(static_cast<const ClassCollection&>(*this));
     default:
         if (overridesItemAfter())
             return virtualItemAfter(0);
         if (shouldOnlyIncludeDirectChildren())
-            return firstMatchingChildElement(*this, root);
-        return firstMatchingElement(*this, root);
+            return firstMatchingChildElement(*this);
+        return firstMatchingElement(*this);
     }
 }
 
-inline Element* HTMLCollection::traverseNextElement(Element& previous, const ContainerNode& root) const
+inline Element* HTMLCollection::traverseNextElement(Element& previous) const
 {
     if (overridesItemAfter())
         return virtualItemAfter(&previous);
     if (shouldOnlyIncludeDirectChildren())
         return nextMatchingChildElement(*this, previous);
-    return nextMatchingElement(*this, previous, root);
+    return nextMatchingElement(*this, previous);
 }
 
-Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, const ContainerNode& root) const
+Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset) const
 {
     ASSERT(currentOffset < offset);
     switch (type()) {
     case HTMLTagCollectionType:
-        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagCollection&>(*this), offset, currentElement, currentOffset, root);
+        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagCollection&>(*this), offset, currentElement, currentOffset);
     case ClassCollectionType:
-        return traverseMatchingElementsForwardToOffset(static_cast<const ClassCollection&>(*this), offset, currentElement, currentOffset, root);
+        return traverseMatchingElementsForwardToOffset(static_cast<const ClassCollection&>(*this), offset, currentElement, currentOffset);
     default:
         if (overridesItemAfter()) {
             Element* next = &currentElement;
@@ -373,7 +373,7 @@ Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& curre
             }
             return 0;
         }
-        return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset, root);
+        return traverseMatchingElementsForwardToOffset(*this, offset, currentElement, currentOffset);
     }
 }
 
@@ -414,8 +414,7 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names)
     //      nor is in result, append element's name attribute value to result.
     // 3. Return result.
     HashSet<AtomicString> existingNames;
-    ContainerNode& root = rootNode();
-    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
+    for (Element* element = traverseToFirstElement(); element; element = traverseNextElement(*element)) {
         const AtomicString& idAttribute = element->getIdAttribute();
         if (!idAttribute.isEmpty()) {
             HashSet<AtomicString>::AddResult addResult = existingNames.add(idAttribute);
@@ -444,8 +443,7 @@ void HTMLCollection::updateIdNameCache() const
         return;
 
     NamedItemCache& cache = createNamedItemCache();
-    ContainerNode& root = rootNode();
-    for (Element* element = traverseToFirstElement(root); element; element = traverseNextElement(*element, root)) {
+    for (Element* element = traverseToFirstElement(); element; element = traverseNextElement(*element)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
             cache.addElementWithId(idAttrVal, element);

@@ -49,7 +49,7 @@ Node* ChildNodeList::itemBefore(const Node* previous) const
     return LIKELY(!!previous) ? previous->previousSibling() : rootNode().lastChild();
 }
 
-Node* ChildNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, const ContainerNode&) const
+Node* ChildNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset) const
 {
     ASSERT(currentOffset < offset);
     Node* next = &currentNode;
