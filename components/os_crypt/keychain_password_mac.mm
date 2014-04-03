@@ -51,8 +51,13 @@ std::string KeychainPassword::GetPassword() const {
   // These two strings ARE indeed user facing.  But they are used to access
   // the encryption keyword.  So as to not lose encrypted data when system
   // locale changes we DO NOT LOCALIZE.
+#if defined(OFFICIAL_BUILD)
   const std::string service_name = "Chrome Safe Storage";
   const std::string account_name = "Chrome";
+#else
+  const std::string service_name = "Chromium Safe Storage";
+  const std::string account_name = "Chromium";
+#endif
 
   UInt32 password_length = 0;
   void* password_data = NULL;
