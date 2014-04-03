@@ -113,6 +113,7 @@ class CC_EXPORT Scheduler {
   void BeginImplFrame(const BeginFrameArgs& args);
   void OnBeginImplFrameDeadline();
   void PollForAnticipatedDrawTriggers();
+  void PollToAdvanceCommitState();
 
   scoped_ptr<base::Value> StateAsValue() const;
 
@@ -154,7 +155,7 @@ class CC_EXPORT Scheduler {
   BeginFrameArgs last_begin_impl_frame_args_;
   base::CancelableClosure begin_impl_frame_deadline_closure_;
   base::CancelableClosure poll_for_draw_triggers_closure_;
-  base::RepeatingTimer<Scheduler> advance_commit_state_timer_;
+  base::CancelableClosure advance_commit_state_closure_;
 
   SchedulerStateMachine state_machine_;
   bool inside_process_scheduled_actions_;

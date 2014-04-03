@@ -202,20 +202,21 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
       needs_advance_commit_state_timer = true;
     }
   }
-  if (needs_advance_commit_state_timer !=
-      advance_commit_state_timer_.IsRunning()) {
-    if (needs_advance_commit_state_timer &&
+
+  if (needs_advance_commit_state_timer) {
+    if (advance_commit_state_closure_.IsCancelled() &&
         last_begin_impl_frame_args_.IsValid()) {
       // Since we'd rather get a BeginImplFrame by the normal mechanism, we
       // set the interval to twice the interval from the previous frame.
-      advance_commit_state_timer_.Start(
+      advance_commit_state_closure_.Reset(base::Bind(
+          &Scheduler::PollToAdvanceCommitState, weak_factory_.GetWeakPtr()));
+      impl_task_runner_->PostDelayedTask(
           FROM_HERE,
-          last_begin_impl_frame_args_.interval * 2,
-          base::Bind(&Scheduler::ProcessScheduledActions,
-                     base::Unretained(this)));
-    } else {
-      advance_commit_state_timer_.Stop();
+          advance_commit_state_closure_.callback(),
+          last_begin_impl_frame_args_.interval * 2);
     }
+  } else {
+    advance_commit_state_closure_.Cancel();
   }
 }
 
@@ -224,6 +225,8 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(state_machine_.begin_impl_frame_state() ==
          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
+
+  advance_commit_state_closure_.Cancel();
 
   last_begin_impl_frame_args_ = args;
   last_begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
@@ -318,6 +321,12 @@ void Scheduler::PollForAnticipatedDrawTriggers() {
   state_machine_.DidEnterPollForAnticipatedDrawTriggers();
   ProcessScheduledActions();
   state_machine_.DidLeavePollForAnticipatedDrawTriggers();
+}
+
+void Scheduler::PollToAdvanceCommitState() {
+  TRACE_EVENT0("cc", "Scheduler::PollToAdvanceCommitState");
+  advance_commit_state_closure_.Cancel();
+  ProcessScheduledActions();
 }
 
 bool Scheduler::IsBeginMainFrameSent() const {
@@ -427,8 +436,8 @@ scoped_ptr<base::Value> Scheduler::StateAsValue() const {
       !begin_impl_frame_deadline_closure_.IsCancelled());
   scheduler_state->SetBoolean("poll_for_draw_triggers_closure_",
                               !poll_for_draw_triggers_closure_.IsCancelled());
-  scheduler_state->SetBoolean("advance_commit_state_timer_",
-                              advance_commit_state_timer_.IsRunning());
+  scheduler_state->SetBoolean("advance_commit_state_closure_",
+                              !advance_commit_state_closure_.IsCancelled());
   state->Set("scheduler_state", scheduler_state.release());
 
   scoped_ptr<base::DictionaryValue> client_state(new base::DictionaryValue);
