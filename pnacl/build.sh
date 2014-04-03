@@ -966,6 +966,7 @@ llvm-configure-ninja() {
       -DLLVM_TARGETS_TO_BUILD="X86;ARM;Mips" \
       -DLLVM_ENABLE_ASSERTIONS=ON \
       -ULLVM_ENABLE_ZLIB \
+      -DLLVM_ENABLE_TERMINFO=OFF \
       -DLLVM_BUILD_TESTS=ON \
       -DLLVM_APPEND_VC_REV=ON \
       -DLLVM_BINUTILS_INCDIR="${binutils_include}" \
