@@ -65,7 +65,7 @@ void RenderThemeChromiumFontProvider::systemFont(CSSValueID valueID, FontDescrip
     fontDescription.setIsAbsoluteSize(true);
     fontDescription.setGenericFamily(FontDescription::NoFamily);
     fontDescription.setWeight(FontWeightNormal);
-    fontDescription.setStyle(false);
+    fontDescription.setStyle(FontStyleNormal);
 }
 
 } // namespace WebCore

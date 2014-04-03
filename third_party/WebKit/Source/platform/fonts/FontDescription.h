@@ -136,7 +136,6 @@ public:
     void setComputedSize(float s) { m_computedSize = clampToFloat(s); }
     void setSpecifiedSize(float s) { m_specifiedSize = clampToFloat(s); }
     void setStyle(FontStyle i) { m_italic = i; }
-    void setStyle(bool i) { setStyle(i ? FontStyleItalic : FontStyleNormal); }
     void setVariant(FontVariant c) { s_variant = c; }
     void setIsAbsoluteSize(bool s) { m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_weight = w; }

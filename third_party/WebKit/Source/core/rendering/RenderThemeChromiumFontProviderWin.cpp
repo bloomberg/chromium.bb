@@ -175,7 +175,7 @@ void RenderThemeChromiumFontProvider::systemFont(CSSValueID valueID, FontDescrip
         cachedDesc->setGenericFamily(FontDescription::NoFamily);
         cachedDesc->setSpecifiedSize(fontSize);
         cachedDesc->setWeight(FontWeightNormal);
-        cachedDesc->setStyle(false);
+        cachedDesc->setStyle(FontStyleNormal);
     }
     fontDescription = *cachedDesc;
 }

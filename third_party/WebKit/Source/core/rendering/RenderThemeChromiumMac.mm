@@ -311,7 +311,7 @@ void RenderThemeChromiumMac::systemFont(CSSValueID cssValueId, FontDescription& 
         cachedDesc->firstFamily().setFamily([font webCoreFamilyName]);
         cachedDesc->setSpecifiedSize([font pointSize]);
         cachedDesc->setWeight(toFontWeight([fontManager weightOfFont:font]));
-        cachedDesc->setStyle([fontManager traitsOfFont:font] & NSItalicFontMask);
+        cachedDesc->setStyle([fontManager traitsOfFont:font] & NSItalicFontMask ? FontStyleItalic : FontStyleNormal);
     }
     fontDescription = *cachedDesc;
 }
