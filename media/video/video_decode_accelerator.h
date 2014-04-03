@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -19,8 +18,7 @@ namespace media {
 // Video decoder interface.
 // This interface is extended by the various components that ultimately
 // implement the backend of PPB_VideoDecode_Dev.
-class MEDIA_EXPORT VideoDecodeAccelerator
-    : public base::SupportsWeakPtr<VideoDecodeAccelerator> {
+class MEDIA_EXPORT VideoDecodeAccelerator {
  public:
   virtual ~VideoDecodeAccelerator();
 
@@ -44,15 +42,13 @@ class MEDIA_EXPORT VideoDecodeAccelerator
   };
 
   // Interface for collaborating with picture interface to provide memory for
-  // output picture and blitting them.
+  // output picture and blitting them. These callbacks will not be made unless
+  // Initialize() has returned successfully.
   // This interface is extended by the various layers that relay messages back
   // to the plugin, through the PPP_VideoDecode_Dev interface the plugin
   // implements.
   class MEDIA_EXPORT Client {
    public:
-    // Callback to notify client that decoder has been initialized.
-    virtual void NotifyInitializeDone() = 0;
-
     // Callback to tell client how many and what size of buffers to provide.
     virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
                                        const gfx::Size& dimensions,
@@ -74,7 +70,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator
     // Reset completion callback.
     virtual void NotifyResetDone() = 0;
 
-    // Callback to notify about decoding errors.
+    // Callback to notify about decoding errors. Note that errors in
+    // Initialize() will not be reported here, but will instead be indicated by
+    // a false return value there.
     virtual void NotifyError(Error error) = 0;
 
    protected:
@@ -83,16 +81,16 @@ class MEDIA_EXPORT VideoDecodeAccelerator
 
   // Video decoder functions.
 
-  // Initializes the video decoder with specific configuration.
+  // Initializes the video decoder with specific configuration.  Called once per
+  // decoder construction.  This call is synchronous and returns true iff
+  // initialization is successful.
   // Parameters:
   //  |profile| is the video stream's format profile.
   //  |client| is the client of this video decoder.  The provided pointer must
   //  be valid until Destroy() is called.
-  //
-  // Returns true when command successfully accepted. Otherwise false.
   virtual bool Initialize(VideoCodecProfile profile, Client* client) = 0;
 
-  // Decodes given bitstream buffer that contains at most one frame. Once
+  // Decodes given bitstream buffer that contains at most one frame.  Once
   // decoder is done with processing |bitstream_buffer| it will call
   // NotifyEndOfBitstreamBuffer() with the bitstream buffer id.
   // Parameters:

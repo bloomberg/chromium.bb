@@ -268,6 +268,9 @@ private:
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
 
+  // The WeakPtrFactory for |weak_this_|.
+  base::WeakPtrFactory<VaapiVideoDecodeAccelerator> weak_this_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(VaapiVideoDecodeAccelerator);
 };
 

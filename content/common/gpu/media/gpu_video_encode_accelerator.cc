@@ -23,42 +23,98 @@
 
 namespace content {
 
-GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(GpuChannel* gpu_channel,
-                                                     int32 route_id)
-    : weak_this_factory_(this),
-      channel_(gpu_channel),
-      route_id_(route_id),
+static bool MakeDecoderContextCurrent(
+    const base::WeakPtr<GpuCommandBufferStub> stub) {
+  if (!stub) {
+    DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
+    return false;
+  }
+
+  if (!stub->decoder()->MakeCurrent()) {
+    DLOG(ERROR) << "Failed to MakeCurrent()";
+    return false;
+  }
+
+  return true;
+}
+
+GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(int32 host_route_id,
+                                                     GpuCommandBufferStub* stub)
+    : host_route_id_(host_route_id),
+      stub_(stub),
       input_format_(media::VideoFrame::UNKNOWN),
-      output_buffer_size_(0) {}
+      output_buffer_size_(0),
+      weak_this_factory_(this) {
+  stub_->AddDestructionObserver(this);
+  stub_->channel()->AddRoute(host_route_id_, this);
+  make_context_current_ =
+      base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
+}
 
 GpuVideoEncodeAccelerator::~GpuVideoEncodeAccelerator() {
-  if (encoder_)
-    encoder_.release()->Destroy();
+  // This class can only be self-deleted from OnWillDestroyStub(), which means
+  // the VEA has already been destroyed in there.
+  DCHECK(!encoder_);
+}
+
+void GpuVideoEncodeAccelerator::Initialize(
+    media::VideoFrame::Format input_format,
+    const gfx::Size& input_visible_size,
+    media::VideoCodecProfile output_profile,
+    uint32 initial_bitrate,
+    IPC::Message* init_done_msg) {
+  DVLOG(2) << "GpuVideoEncodeAccelerator::Initialize(): "
+              "input_format=" << input_format
+           << ", input_visible_size=" << input_visible_size.ToString()
+           << ", output_profile=" << output_profile
+           << ", initial_bitrate=" << initial_bitrate;
+  DCHECK(!encoder_);
+
+  if (input_visible_size.width() > media::limits::kMaxDimension ||
+      input_visible_size.height() > media::limits::kMaxDimension ||
+      input_visible_size.GetArea() > media::limits::kMaxCanvas) {
+    DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
+                   "input_visible_size " << input_visible_size.ToString()
+                << " too large";
+    SendCreateEncoderReply(init_done_msg, MSG_ROUTING_NONE);
+    return;
+  }
+
+  CreateEncoder();
+  if (!encoder_) {
+    DLOG(ERROR)
+        << "GpuVideoEncodeAccelerator::Initialize(): VEA creation failed";
+    SendCreateEncoderReply(init_done_msg, MSG_ROUTING_NONE);
+    return;
+  }
+  if (!encoder_->Initialize(input_format,
+                            input_visible_size,
+                            output_profile,
+                            initial_bitrate,
+                            this)) {
+    DLOG(ERROR)
+        << "GpuVideoEncodeAccelerator::Initialize(): VEA initialization failed";
+    SendCreateEncoderReply(init_done_msg, MSG_ROUTING_NONE);
+    return;
+  }
+  input_format_ = input_format;
+  input_visible_size_ = input_visible_size;
+  SendCreateEncoderReply(init_done_msg, host_route_id_);
 }
 
 bool GpuVideoEncodeAccelerator::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuVideoEncodeAccelerator, message)
-    IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_Encode, OnEncode)
     IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_UseOutputBitstreamBuffer,
                         OnUseOutputBitstreamBuffer)
     IPC_MESSAGE_HANDLER(
         AcceleratedVideoEncoderMsg_RequestEncodingParametersChange,
         OnRequestEncodingParametersChange)
+    IPC_MESSAGE_HANDLER(AcceleratedVideoEncoderMsg_Destroy, OnDestroy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void GpuVideoEncodeAccelerator::OnChannelError() {
-  NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-  if (channel_)
-    channel_ = NULL;
-}
-
-void GpuVideoEncodeAccelerator::NotifyInitializeDone() {
-  Send(new AcceleratedVideoEncoderHostMsg_NotifyInitializeDone(route_id_));
 }
 
 void GpuVideoEncodeAccelerator::RequireBitstreamBuffers(
@@ -66,7 +122,7 @@ void GpuVideoEncodeAccelerator::RequireBitstreamBuffers(
     const gfx::Size& input_coded_size,
     size_t output_buffer_size) {
   Send(new AcceleratedVideoEncoderHostMsg_RequireBitstreamBuffers(
-      route_id_, input_count, input_coded_size, output_buffer_size));
+      host_route_id_, input_count, input_coded_size, output_buffer_size));
   input_coded_size_ = input_coded_size;
   output_buffer_size_ = output_buffer_size;
 }
@@ -75,12 +131,23 @@ void GpuVideoEncodeAccelerator::BitstreamBufferReady(int32 bitstream_buffer_id,
                                                      size_t payload_size,
                                                      bool key_frame) {
   Send(new AcceleratedVideoEncoderHostMsg_BitstreamBufferReady(
-      route_id_, bitstream_buffer_id, payload_size, key_frame));
+      host_route_id_, bitstream_buffer_id, payload_size, key_frame));
 }
 
 void GpuVideoEncodeAccelerator::NotifyError(
     media::VideoEncodeAccelerator::Error error) {
-  Send(new AcceleratedVideoEncoderHostMsg_NotifyError(route_id_, error));
+  Send(new AcceleratedVideoEncoderHostMsg_NotifyError(host_route_id_, error));
+}
+
+void GpuVideoEncodeAccelerator::OnWillDestroyStub() {
+  DCHECK(stub_);
+  stub_->channel()->RemoveRoute(host_route_id_);
+  stub_->RemoveDestructionObserver(this);
+
+  if (encoder_)
+    encoder_.release()->Destroy();
+
+  delete this;
 }
 
 // static
@@ -105,41 +172,6 @@ void GpuVideoEncodeAccelerator::CreateEncoder() {
 #elif defined(OS_ANDROID) && defined(ENABLE_WEBRTC)
   encoder_.reset(new AndroidVideoEncodeAccelerator());
 #endif
-}
-
-void GpuVideoEncodeAccelerator::OnInitialize(
-    media::VideoFrame::Format input_format,
-    const gfx::Size& input_visible_size,
-    media::VideoCodecProfile output_profile,
-    uint32 initial_bitrate) {
-  DVLOG(2) << "GpuVideoEncodeAccelerator::OnInitialize(): "
-              "input_format=" << input_format
-           << ", input_visible_size=" << input_visible_size.ToString()
-           << ", output_profile=" << output_profile
-           << ", initial_bitrate=" << initial_bitrate;
-  DCHECK(!encoder_);
-
-  if (input_visible_size.width() > media::limits::kMaxDimension ||
-      input_visible_size.height() > media::limits::kMaxDimension ||
-      input_visible_size.GetArea() > media::limits::kMaxCanvas) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnInitialize(): "
-                   "input_visible_size " << input_visible_size.ToString()
-                << " too large";
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
-
-  CreateEncoder();
-  if (!encoder_) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnInitialize(): VEA creation "
-                   "failed";
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
-  encoder_->Initialize(
-      input_format, input_visible_size, output_profile, initial_bitrate, this);
-  input_format_ = input_format;
-  input_visible_size_ = input_visible_size;
 }
 
 void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
@@ -222,6 +254,11 @@ void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
       media::BitstreamBuffer(buffer_id, buffer_handle, buffer_size));
 }
 
+void GpuVideoEncodeAccelerator::OnDestroy() {
+  DVLOG(2) << "GpuVideoEncodeAccelerator::OnDestroy()";
+  OnWillDestroyStub();
+}
+
 void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
     uint32 bitrate,
     uint32 framerate) {
@@ -236,21 +273,19 @@ void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
 void GpuVideoEncodeAccelerator::EncodeFrameFinished(
     int32 frame_id,
     scoped_ptr<base::SharedMemory> shm) {
-  Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(route_id_, frame_id));
+  Send(new AcceleratedVideoEncoderHostMsg_NotifyInputDone(host_route_id_,
+                                                          frame_id));
   // Just let shm fall out of scope.
 }
 
 void GpuVideoEncodeAccelerator::Send(IPC::Message* message) {
-  if (!channel_) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::Send(): no channel";
-    delete message;
-    return;
-  } else if (!channel_->Send(message)) {
-    DLOG(ERROR) << "GpuVideoEncodeAccelerator::Send(): sending failed: "
-                   "message->type()=" << message->type();
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
-    return;
-  }
+  stub_->channel()->Send(message);
+}
+
+void GpuVideoEncodeAccelerator::SendCreateEncoderReply(IPC::Message* message,
+                                                       int32 route_id) {
+  GpuCommandBufferMsg_CreateVideoEncoder::WriteReplyParams(message, route_id);
+  Send(message);
 }
 
 }  // namespace content

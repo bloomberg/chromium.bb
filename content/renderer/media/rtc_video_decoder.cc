@@ -294,11 +294,6 @@ int32_t RTCVideoDecoder::Reset() {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-void RTCVideoDecoder::NotifyInitializeDone() {
-  DVLOG(2) << "NotifyInitializeDone";
-  NOTREACHED();
-}
-
 void RTCVideoDecoder::ProvidePictureBuffers(uint32 count,
                                             const gfx::Size& size,
                                             uint32 texture_target) {
@@ -682,7 +677,7 @@ void RTCVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
 void RTCVideoDecoder::CreateVDA(media::VideoCodecProfile profile,
                                 base::WaitableEvent* waiter) {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
-  vda_ = factories_->CreateVideoDecodeAccelerator(profile);
+  vda_ = factories_->CreateVideoDecodeAccelerator();
   if (vda_ && !vda_->Initialize(profile, this))
     vda_.release()->Destroy();
   waiter->Signal();

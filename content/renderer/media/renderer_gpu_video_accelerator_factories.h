@@ -45,7 +45,7 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
 
   // media::GpuVideoAcceleratorFactories implementation.
   virtual scoped_ptr<media::VideoDecodeAccelerator>
-      CreateVideoDecodeAccelerator(media::VideoCodecProfile profile) OVERRIDE;
+      CreateVideoDecodeAccelerator() OVERRIDE;
   virtual scoped_ptr<media::VideoEncodeAccelerator>
       CreateVideoEncodeAccelerator() OVERRIDE;
   // Creates textures and produces them into mailboxes. Returns true on success

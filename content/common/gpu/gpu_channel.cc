@@ -20,7 +20,6 @@
 #include "content/common/gpu/devtools_gpu_agent.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -704,9 +703,6 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateVideoEncoder, OnCreateVideoEncoder)
-    IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoEncoder,
-                        OnDestroyVideoEncoder)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DevToolsStartEventsRecording,
                         OnDevToolsStartEventsRecording)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DevToolsStopEventsRecording,
@@ -839,26 +835,6 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
     // This stub won't get a chance to reschedule, so update the count now.
     StubSchedulingChanged(true);
   }
-}
-
-void GpuChannel::OnCreateVideoEncoder(int32* route_id) {
-  TRACE_EVENT0("gpu", "GpuChannel::OnCreateVideoEncoder");
-
-  *route_id = GenerateRouteID();
-  GpuVideoEncodeAccelerator* encoder =
-      new GpuVideoEncodeAccelerator(this, *route_id);
-  router_.AddRoute(*route_id, encoder);
-  video_encoders_.AddWithID(encoder, *route_id);
-}
-
-void GpuChannel::OnDestroyVideoEncoder(int32 route_id) {
-  TRACE_EVENT1(
-      "gpu", "GpuChannel::OnDestroyVideoEncoder", "route_id", route_id);
-  GpuVideoEncodeAccelerator* encoder = video_encoders_.Lookup(route_id);
-  if (!encoder)
-    return;
-  router_.RemoveRoute(route_id);
-  video_encoders_.Remove(route_id);
 }
 
 void GpuChannel::OnDevToolsStartEventsRecording(int32* route_id) {

@@ -76,7 +76,6 @@ class RTCVideoEncoder::Impl
   void Destroy();
 
   // media::VideoEncodeAccelerator::Client implementation.
-  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void RequireBitstreamBuffers(unsigned int input_count,
                                        const gfx::Size& input_coded_size,
                                        size_t output_buffer_size) OVERRIDE;
@@ -198,11 +197,14 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
     return;
   }
   input_visible_size_ = input_visible_size;
-  video_encoder_->Initialize(media::VideoFrame::I420,
-                             input_visible_size_,
-                             profile,
-                             bitrate * 1000,
-                             this);
+  if (!video_encoder_->Initialize(media::VideoFrame::I420,
+                                  input_visible_size_,
+                                  profile,
+                                  bitrate * 1000,
+                                  this)) {
+    NOTIFY_ERROR(media::VideoEncodeAccelerator::kInvalidArgumentError);
+    return;
+  }
 }
 
 void RTCVideoEncoder::Impl::Enqueue(const webrtc::I420VideoFrame* input_frame,
@@ -279,11 +281,6 @@ void RTCVideoEncoder::Impl::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (video_encoder_)
     video_encoder_.release()->Destroy();
-}
-
-void RTCVideoEncoder::Impl::NotifyInitializeDone() {
-  DVLOG(3) << "Impl::NotifyInitializeDone()";
-  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void RTCVideoEncoder::Impl::RequireBitstreamBuffers(

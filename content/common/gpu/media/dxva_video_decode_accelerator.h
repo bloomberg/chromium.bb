@@ -14,6 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
@@ -113,9 +114,6 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // been processed.
   void NotifyInputBufferRead(int input_buffer_id);
 
-  // Notifies the client that initialize was completed.
-  void NotifyInitializeDone();
-
   // Notifies the client that the decoder was flushed.
   void NotifyFlushDone();
 
@@ -206,6 +204,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Callback to set the correct gl context.
   base::Callback<bool(void)> make_context_current_;
+
+  // WeakPtrFactory for posting tasks back to |this|.
+  base::WeakPtrFactory<DXVAVideoDecodeAccelerator> weak_this_factory_;
 };
 
 }  // namespace content

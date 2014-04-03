@@ -9,7 +9,12 @@
 
 #include <list>
 
+#include "base/memory/weak_ptr.h"
 #include "media/base/bitstream_buffer.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace media {
 namespace cast {
@@ -17,10 +22,11 @@ namespace test {
 
 class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
  public:
-  FakeVideoEncodeAccelerator();
+  explicit FakeVideoEncodeAccelerator(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   virtual ~FakeVideoEncodeAccelerator();
 
-  virtual void Initialize(media::VideoFrame::Format input_format,
+  virtual bool Initialize(media::VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
                           VideoCodecProfile output_profile,
                           uint32 initial_bitrate,
@@ -37,10 +43,21 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   virtual void Destroy() OVERRIDE;
 
  private:
+  void DoRequireBitstreamBuffers(unsigned int input_count,
+                                 const gfx::Size& input_coded_size,
+                                 size_t output_buffer_size) const;
+  void DoBitstreamBufferReady(int32 bitstream_buffer_id,
+                              size_t payload_size,
+                              bool key_frame) const;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
   VideoEncodeAccelerator::Client* client_;
   bool first_;
 
   std::list<int32> available_buffer_ids_;
+
+  base::WeakPtrFactory<FakeVideoEncodeAccelerator> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoEncodeAccelerator);
 };

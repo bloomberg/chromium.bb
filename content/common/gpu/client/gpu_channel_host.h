@@ -22,8 +22,6 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sync_channel.h"
-#include "media/video/video_decode_accelerator.h"
-#include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -41,6 +39,11 @@ class WaitableEvent;
 
 namespace IPC {
 class SyncMessageFilter;
+}
+
+namespace media {
+class VideoDecodeAccelerator;
+class VideoEncodeAccelerator;
 }
 
 namespace content {
@@ -125,11 +128,11 @@ class GpuChannelHost : public IPC::Sender,
 
   // Creates a video decoder in the GPU process.
   scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder(
-      int command_buffer_route_id,
-      media::VideoCodecProfile profile);
+      int command_buffer_route_id);
 
   // Creates a video encoder in the GPU process.
-  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder();
+  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder(
+      int command_buffer_route_id);
 
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);

@@ -25,9 +25,9 @@ class GpuVideoDecodeAcceleratorHost
       public CommandBufferProxyImpl::DeletionObserver,
       public base::NonThreadSafe {
  public:
-  // |channel| is used to send IPC messages to GPU process.
+  // |this| is guaranteed not to outlive |channel| and |impl|.  (See comments
+  // for |channel_| and |impl_|.)
   GpuVideoDecodeAcceleratorHost(GpuChannelHost* channel,
-                                int32 decoder_route_id,
                                 CommandBufferProxyImpl* impl);
 
   // IPC::Listener implementation.
@@ -52,8 +52,13 @@ class GpuVideoDecodeAcceleratorHost
   // Only Destroy() should be deleting |this|.
   virtual ~GpuVideoDecodeAcceleratorHost();
 
+  // Notify |client_| of an error.  Posts a task to avoid re-entrancy.
+  void PostNotifyError(Error);
+
   void Send(IPC::Message* message);
 
+  // IPC handlers, proxying media::VideoDecodeAccelerator::Client for the GPU
+  // process.  Should not be called directly.
   void OnBitstreamBufferProcessed(int32 bitstream_buffer_id);
   void OnProvidePictureBuffer(uint32 num_requested_buffers,
                               const gfx::Size& dimensions,
@@ -62,9 +67,11 @@ class GpuVideoDecodeAcceleratorHost
   void OnPictureReady(int32 picture_buffer_id, int32 bitstream_buffer_id);
   void OnFlushDone();
   void OnResetDone();
-  void OnErrorNotification(uint32 error);
+  void OnNotifyError(uint32 error);
 
-  // Sends IPC messages to the Gpu process.
+  // Unowned reference to the GpuChannelHost to send IPC messages to the GPU
+  // process.  |channel_| outlives |impl_|, so the reference is always valid as
+  // long as it is not NULL.
   GpuChannelHost* channel_;
 
   // Route ID for the associated decoder in the GPU process.
@@ -73,11 +80,16 @@ class GpuVideoDecodeAcceleratorHost
   // The client that will receive callbacks from the decoder.
   Client* client_;
 
-  // Unowned reference to the CommandBufferProxyImpl that created us.
+  // Unowned reference to the CommandBufferProxyImpl that created us.  |this|
+  // registers as a DeletionObserver of |impl_|, the so reference is always
+  // valid as long as it is not NULL.
   CommandBufferProxyImpl* impl_;
 
   // Requested dimensions of the buffer, from ProvidePictureBuffers().
   gfx::Size picture_buffer_dimensions_;
+
+  // WeakPtr factory for posting tasks back to itself.
+  base::WeakPtrFactory<GpuVideoDecodeAcceleratorHost> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecodeAcceleratorHost);
 };

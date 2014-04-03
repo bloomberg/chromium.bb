@@ -158,7 +158,6 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop_proxy)
     : child_message_loop_proxy_(base::MessageLoopProxy::current()),
       io_message_loop_proxy_(io_message_loop_proxy),
-      weak_this_(base::AsWeakPtr(this)),
       io_client_(io_client),
       decoder_thread_("V4L2DecoderThread"),
       decoder_state_(kUninitialized),
@@ -183,7 +182,10 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       device_poll_thread_("V4L2DevicePollThread"),
       make_context_current_(make_context_current),
       egl_display_(egl_display),
-      video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN) {}
+      video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+      weak_this_factory_(this) {
+  weak_this_ = weak_this_factory_.GetWeakPtr();
+}
 
 V4L2VideoDecodeAccelerator::~V4L2VideoDecodeAccelerator() {
   DCHECK(!decoder_thread_.IsRunning());
@@ -288,14 +290,13 @@ bool V4L2VideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   }
 
   // StartDevicePoll will NOTIFY_ERROR on failure, so IgnoreResult is fine here.
-  decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      base::IgnoreResult(&V4L2VideoDecodeAccelerator::StartDevicePoll),
-      base::Unretained(this)));
+  decoder_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          base::IgnoreResult(&V4L2VideoDecodeAccelerator::StartDevicePoll),
+          base::Unretained(this)));
 
   SetDecoderState(kInitialized);
-
-  child_message_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-      &Client::NotifyInitializeDone, client_));
   return true;
 }
 
@@ -416,6 +417,7 @@ void V4L2VideoDecodeAccelerator::Destroy() {
 
   // We're destroying; cancel all callbacks.
   client_ptr_factory_.reset();
+  weak_this_factory_.InvalidateWeakPtrs();
 
   // If the decoder thread is running, destroy using posted task.
   if (decoder_thread_.IsRunning()) {

@@ -13,7 +13,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
-#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "url/gurl.h"
@@ -194,27 +193,21 @@ CommandBufferProxyImpl* GpuChannelHost::CreateOffscreenCommandBuffer(
 }
 
 scoped_ptr<media::VideoDecodeAccelerator> GpuChannelHost::CreateVideoDecoder(
-    int command_buffer_route_id,
-    media::VideoCodecProfile profile) {
+    int command_buffer_route_id) {
+  TRACE_EVENT0("gpu", "GpuChannelHost::CreateVideoDecoder");
   AutoLock lock(context_lock_);
   ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
   DCHECK(it != proxies_.end());
-  CommandBufferProxyImpl* proxy = it->second;
-  return proxy->CreateVideoDecoder(profile).Pass();
+  return it->second->CreateVideoDecoder();
 }
 
-scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder() {
+scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder(
+    int command_buffer_route_id) {
   TRACE_EVENT0("gpu", "GpuChannelHost::CreateVideoEncoder");
-
-  scoped_ptr<media::VideoEncodeAccelerator> vea;
-  int32 route_id = MSG_ROUTING_NONE;
-  if (!Send(new GpuChannelMsg_CreateVideoEncoder(&route_id)))
-    return vea.Pass();
-  if (route_id == MSG_ROUTING_NONE)
-    return vea.Pass();
-
-  vea.reset(new GpuVideoEncodeAcceleratorHost(this, route_id));
-  return vea.Pass();
+  AutoLock lock(context_lock_);
+  ProxyMap::iterator it = proxies_.find(command_buffer_route_id);
+  DCHECK(it != proxies_.end());
+  return it->second->CreateVideoEncoder();
 }
 
 void GpuChannelHost::DestroyCommandBuffer(

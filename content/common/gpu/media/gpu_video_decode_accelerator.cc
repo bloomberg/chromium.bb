@@ -42,7 +42,7 @@ namespace content {
 
 static bool MakeDecoderContextCurrent(
     const base::WeakPtr<GpuCommandBufferStub> stub) {
-  if (!stub.get()) {
+  if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
   }
@@ -120,8 +120,7 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
     int32 host_route_id,
     GpuCommandBufferStub* stub,
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
-    : init_done_msg_(NULL),
-      host_route_id_(host_route_id),
+    : host_route_id_(host_route_id),
       stub_(stub),
       texture_target_(0),
       filter_removed_(true, false),
@@ -138,7 +137,7 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
   // This class can only be self-deleted from OnWillDestroyStub(), which means
   // the VDA has already been destroyed in there.
-  CHECK(!video_decode_accelerator_.get());
+  DCHECK(!video_decode_accelerator_);
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
@@ -217,16 +216,6 @@ void GpuVideoDecodeAccelerator::PictureReady(
 
 void GpuVideoDecodeAccelerator::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
-  if (init_done_msg_) {
-    // If we get an error while we're initializing, NotifyInitializeDone won't
-    // be called, so we need to send the reply (with an error) here.
-    GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
-        init_done_msg_, -1);
-    if (!Send(init_done_msg_))
-      DLOG(ERROR) << "Send(init_done_msg_) failed";
-    init_done_msg_ = NULL;
-    return;
-  }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ErrorNotification(
           host_route_id_, error))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ErrorNotification) "
@@ -238,15 +227,12 @@ void GpuVideoDecodeAccelerator::Initialize(
     const media::VideoCodecProfile profile,
     IPC::Message* init_done_msg) {
   DCHECK(!video_decode_accelerator_.get());
-  DCHECK(!init_done_msg_);
-  DCHECK(init_done_msg);
-  init_done_msg_ = init_done_msg;
 
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
   // non-Windows VDAs.
   if (!make_context_current_.Run()) {
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
     return;
   }
 #endif
@@ -254,7 +240,7 @@ void GpuVideoDecodeAccelerator::Initialize(
 #if defined(OS_WIN)
   if (base::win::GetVersion() < base::win::VERSION_WIN7) {
     NOTIMPLEMENTED() << "HW video decode acceleration not available.";
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
     return;
   }
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
@@ -264,7 +250,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   scoped_ptr<V4L2Device> device =
       V4L2Device::Create(stub_->decoder()->GetGLContext()->GetHandle());
   if (!device.get()) {
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
     return;
   }
   video_decode_accelerator_.reset(
@@ -277,7 +263,7 @@ void GpuVideoDecodeAccelerator::Initialize(
   if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL) {
     VLOG(1) << "HW video decode acceleration not available without "
                "DesktopGL (GLX).";
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
     return;
   }
   gfx::GLContextGLX* glx_context =
@@ -290,7 +276,7 @@ void GpuVideoDecodeAccelerator::Initialize(
       make_context_current_));
 #else
   NOTIMPLEMENTED() << "HW video decode acceleration not available.";
-  NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+  SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
   return;
 #endif
 
@@ -299,8 +285,12 @@ void GpuVideoDecodeAccelerator::Initialize(
     stub_->channel()->AddFilter(filter_.get());
   }
 
-  if (!video_decode_accelerator_->Initialize(profile, this))
-    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+  if (!video_decode_accelerator_->Initialize(profile, this)) {
+    SendCreateDecoderReply(init_done_msg, MSG_ROUTING_NONE);
+    return;
+  }
+
+  SendCreateDecoderReply(init_done_msg, host_route_id_);
 }
 
 // Runs on IO thread if video_decode_accelerator_->CanDecodeOnIOThread() is
@@ -437,14 +427,6 @@ void GpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
   }
 }
 
-void GpuVideoDecodeAccelerator::NotifyInitializeDone() {
-  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(
-      init_done_msg_, host_route_id_);
-  if (!Send(init_done_msg_))
-    DLOG(ERROR) << "Send(init_done_msg_) failed";
-  init_done_msg_ = NULL;
-}
-
 void GpuVideoDecodeAccelerator::NotifyFlushDone() {
   if (!Send(new AcceleratedVideoDecoderHostMsg_FlushDone(host_route_id_)))
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_FlushDone) failed";
@@ -478,13 +460,6 @@ void GpuVideoDecodeAccelerator::OnWillDestroyStub() {
   delete this;
 }
 
-bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
-  if (filter_.get() && io_message_loop_->BelongsToCurrentThread())
-    return filter_->SendOnIOThread(message);
-  DCHECK(child_message_loop_->BelongsToCurrentThread());
-  return stub_->channel()->Send(message);
-}
-
 void GpuVideoDecodeAccelerator::SetTextureCleared(
     const media::Picture& picture) {
   DCHECK(child_message_loop_->BelongsToCurrentThread());
@@ -501,6 +476,19 @@ void GpuVideoDecodeAccelerator::SetTextureCleared(
   DCHECK(!texture_ref->texture()->IsLevelCleared(target, 0));
   texture_manager->SetLevelCleared(texture_ref, target, 0, true);
   uncleared_textures_.erase(it);
+}
+
+bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
+  if (filter_.get() && io_message_loop_->BelongsToCurrentThread())
+    return filter_->SendOnIOThread(message);
+  DCHECK(child_message_loop_->BelongsToCurrentThread());
+  return stub_->channel()->Send(message);
+}
+
+void GpuVideoDecodeAccelerator::SendCreateDecoderReply(IPC::Message* message,
+                                                       int32 route_id) {
+  GpuCommandBufferMsg_CreateVideoDecoder::WriteReplyParams(message, route_id);
+  Send(message);
 }
 
 }  // namespace content

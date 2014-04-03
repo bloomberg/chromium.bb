@@ -111,7 +111,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
                             task_runner_,
                             task_runner_);
     scoped_ptr<VideoEncodeAccelerator> fake_vea(
-        new test::FakeVideoEncodeAccelerator());
+        new test::FakeVideoEncodeAccelerator(task_runner_));
     video_encoder_.reset(
         new ExternalVideoEncoder(cast_environment_,
                                  video_config_,

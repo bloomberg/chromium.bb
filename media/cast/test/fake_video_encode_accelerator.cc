@@ -4,7 +4,10 @@
 
 #include "media/cast/test/fake_video_encode_accelerator.h"
 
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
 
 namespace media {
 namespace cast {
@@ -13,12 +16,18 @@ namespace test {
 static const unsigned int kMinimumInputCount = 1;
 static const size_t kMinimumOutputBufferSize = 123456;
 
-FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator()
-    : client_(NULL), first_(true) {}
+FakeVideoEncodeAccelerator::FakeVideoEncodeAccelerator(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : task_runner_(task_runner),
+      client_(NULL),
+      first_(true),
+      weak_this_factory_(this) {}
 
-FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {}
+FakeVideoEncodeAccelerator::~FakeVideoEncodeAccelerator() {
+  weak_this_factory_.InvalidateWeakPtrs();
+}
 
-void FakeVideoEncodeAccelerator::Initialize(
+bool FakeVideoEncodeAccelerator::Initialize(
     media::VideoFrame::Format input_format,
     const gfx::Size& input_visible_size,
     VideoCodecProfile output_profile,
@@ -27,12 +36,16 @@ void FakeVideoEncodeAccelerator::Initialize(
   client_ = client;
   if (output_profile != media::VP8PROFILE_MAIN &&
       output_profile != media::H264PROFILE_MAIN) {
-    client_->NotifyError(kInvalidArgumentError);
-    return;
+    return false;
   }
-  client_->NotifyInitializeDone();
-  client_->RequireBitstreamBuffers(
-      kMinimumInputCount, input_visible_size, kMinimumOutputBufferSize);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeVideoEncodeAccelerator::DoRequireBitstreamBuffers,
+                 weak_this_factory_.GetWeakPtr(),
+                 kMinimumInputCount,
+                 input_visible_size,
+                 kMinimumOutputBufferSize));
+  return true;
 }
 
 void FakeVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
@@ -50,7 +63,13 @@ void FakeVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
     is_key_fame = true;
     first_ = false;
   }
-  client_->BitstreamBufferReady(id, kMinimumOutputBufferSize, is_key_fame);
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeVideoEncodeAccelerator::DoBitstreamBufferReady,
+                 weak_this_factory_.GetWeakPtr(),
+                 id,
+                 kMinimumOutputBufferSize,
+                 is_key_fame));
 }
 
 void FakeVideoEncodeAccelerator::UseOutputBitstreamBuffer(
@@ -65,6 +84,21 @@ void FakeVideoEncodeAccelerator::RequestEncodingParametersChange(
 }
 
 void FakeVideoEncodeAccelerator::Destroy() { delete this; }
+
+void FakeVideoEncodeAccelerator::DoRequireBitstreamBuffers(
+    unsigned int input_count,
+    const gfx::Size& input_coded_size,
+    size_t output_buffer_size) const {
+  client_->RequireBitstreamBuffers(
+      input_count, input_coded_size, output_buffer_size);
+}
+
+void FakeVideoEncodeAccelerator::DoBitstreamBufferReady(
+    int32 bitstream_buffer_id,
+    size_t payload_size,
+    bool key_frame) const {
+  client_->BitstreamBufferReady(bitstream_buffer_id, payload_size, key_frame);
+}
 
 }  // namespace test
 }  // namespace cast

@@ -11,10 +11,8 @@ MockGpuVideoAcceleratorFactories::MockGpuVideoAcceleratorFactories() {}
 MockGpuVideoAcceleratorFactories::~MockGpuVideoAcceleratorFactories() {}
 
 scoped_ptr<VideoDecodeAccelerator>
-MockGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator(
-    VideoCodecProfile profile) {
-  return scoped_ptr<VideoDecodeAccelerator>(
-      DoCreateVideoDecodeAccelerator(profile));
+MockGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
+  return scoped_ptr<VideoDecodeAccelerator>(DoCreateVideoDecodeAccelerator());
 }
 
 scoped_ptr<VideoEncodeAccelerator>

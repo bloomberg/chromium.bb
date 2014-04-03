@@ -40,7 +40,7 @@ class CONTENT_EXPORT ExynosVideoEncodeAccelerator
   virtual ~ExynosVideoEncodeAccelerator();
 
   // media::VideoEncodeAccelerator implementation.
-  virtual void Initialize(media::VideoFrame::Format format,
+  virtual bool Initialize(media::VideoFrame::Format format,
                           const gfx::Size& input_visible_size,
                           media::VideoCodecProfile output_profile,
                           uint32 initial_bitrate,

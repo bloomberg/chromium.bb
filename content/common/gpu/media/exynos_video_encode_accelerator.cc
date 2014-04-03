@@ -26,23 +26,20 @@
     NotifyError(x);                                                \
   } while (0)
 
-#define IOCTL_OR_ERROR_RETURN(fd, type, arg)                       \
+#define IOCTL_OR_ERROR_RETURN_VALUE(fd, type, arg, value)          \
   do {                                                             \
     if (HANDLE_EINTR(ioctl(fd, type, arg) != 0)) {                 \
       DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
       NOTIFY_ERROR(kPlatformFailureError);                         \
-      return;                                                      \
+      return value;                                                \
     }                                                              \
   } while (0)
 
-#define IOCTL_OR_ERROR_RETURN_FALSE(fd, type, arg)                 \
-  do {                                                             \
-    if (HANDLE_EINTR(ioctl(fd, type, arg) != 0)) {                 \
-      DPLOG(ERROR) << __func__ << "(): ioctl() failed: " << #type; \
-      NOTIFY_ERROR(kPlatformFailureError);                         \
-      return false;                                                \
-    }                                                              \
-  } while (0)
+#define IOCTL_OR_ERROR_RETURN(fd, type, arg) \
+  IOCTL_OR_ERROR_RETURN_VALUE(fd, type, arg, ((void)0))
+
+#define IOCTL_OR_ERROR_RETURN_FALSE(fd, type, arg) \
+  IOCTL_OR_ERROR_RETURN_VALUE(fd, type, arg, false)
 
 namespace content {
 
@@ -127,7 +124,7 @@ ExynosVideoEncodeAccelerator::~ExynosVideoEncodeAccelerator() {
   }
 }
 
-void ExynosVideoEncodeAccelerator::Initialize(
+bool ExynosVideoEncodeAccelerator::Initialize(
     media::VideoFrame::Format input_format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
@@ -159,8 +156,8 @@ void ExynosVideoEncodeAccelerator::Initialize(
       input_format_fourcc_ = V4L2_PIX_FMT_YUV420M;
       break;
     default:
-      NOTIFY_ERROR(kInvalidArgumentError);
-      return;
+      DLOG(ERROR) << "Initialize(): invalid input_format=" << input_format;
+      return false;
   }
 
   if (output_profile >= media::H264PROFILE_MIN &&
@@ -170,8 +167,8 @@ void ExynosVideoEncodeAccelerator::Initialize(
              output_profile <= media::VP8PROFILE_MAX) {
     output_format_fourcc_ = V4L2_PIX_FMT_VP8;
   } else {
-    NOTIFY_ERROR(kInvalidArgumentError);
-    return;
+    DLOG(ERROR) << "Initialize(): invalid output_profile=" << output_profile;
+    return false;
   }
 
   // Open the color conversion device.
@@ -181,8 +178,7 @@ void ExynosVideoEncodeAccelerator::Initialize(
   if (gsc_fd_ == -1) {
     DPLOG(ERROR) << "Initialize(): could not open GSC device: "
                  << kExynosGscDevice;
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
+    return false;
   }
 
   // Capabilities check.
@@ -190,12 +186,14 @@ void ExynosVideoEncodeAccelerator::Initialize(
   memset(&caps, 0, sizeof(caps));
   const __u32 kCapsRequired = V4L2_CAP_VIDEO_CAPTURE_MPLANE |
                               V4L2_CAP_VIDEO_OUTPUT_MPLANE | V4L2_CAP_STREAMING;
-  IOCTL_OR_ERROR_RETURN(gsc_fd_, VIDIOC_QUERYCAP, &caps);
+  if (HANDLE_EINTR(ioctl(gsc_fd_, VIDIOC_QUERYCAP, &caps))) {
+    DPLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP";
+    return false;
+  }
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     DLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
                    "caps check failed: 0x" << std::hex << caps.capabilities;
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
+    return false;
   }
 
   // Open the video encoder device.
@@ -205,17 +203,18 @@ void ExynosVideoEncodeAccelerator::Initialize(
   if (mfc_fd_ == -1) {
     DPLOG(ERROR) << "Initialize(): could not open MFC device: "
                  << kExynosMfcDevice;
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
+    return false;
   }
 
   memset(&caps, 0, sizeof(caps));
-  IOCTL_OR_ERROR_RETURN(mfc_fd_, VIDIOC_QUERYCAP, &caps);
+  if (HANDLE_EINTR(ioctl(mfc_fd_, VIDIOC_QUERYCAP, &caps))) {
+    DPLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP";
+    return false;
+  }
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     DLOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
                    "caps check failed: 0x" << std::hex << caps.capabilities;
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
+    return false;
   }
 
   // Create the interrupt fd.
@@ -223,8 +222,7 @@ void ExynosVideoEncodeAccelerator::Initialize(
   device_poll_interrupt_fd_ = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
   if (device_poll_interrupt_fd_ == -1) {
     DPLOG(ERROR) << "Initialize(): eventfd() failed";
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
+    return false;
   }
 
   DVLOG(3)
@@ -235,7 +233,7 @@ void ExynosVideoEncodeAccelerator::Initialize(
       << ", output_visible_size_=" << output_visible_size_.ToString();
 
   if (!CreateGscInputBuffers() || !CreateGscOutputBuffers())
-    return;
+    return false;
 
   // MFC setup for encoding is rather particular in ordering:
   //
@@ -251,28 +249,23 @@ void ExynosVideoEncodeAccelerator::Initialize(
   // a UseOutputBitstreamBuffer() callback.
 
   if (!SetMfcFormats())
-    return;
+    return false;
 
   if (!InitMfcControls())
-    return;
+    return false;
 
   // VIDIOC_REQBUFS on CAPTURE queue.
   if (!CreateMfcOutputBuffers())
-    return;
-
+    return false;
 
   if (!encoder_thread_.Start()) {
     DLOG(ERROR) << "Initialize(): encoder thread failed to start";
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
+    return false;
   }
 
   RequestEncodingParametersChange(initial_bitrate, kInitialFramerate);
 
   SetEncoderState(kInitialized);
-
-  child_message_loop_proxy_->PostTask(
-      FROM_HERE, base::Bind(&Client::NotifyInitializeDone, client_));
 
   child_message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -281,6 +274,7 @@ void ExynosVideoEncodeAccelerator::Initialize(
                  gsc_input_buffer_map_.size(),
                  input_allocated_size_,
                  output_buffer_byte_size_));
+  return true;
 }
 
 void ExynosVideoEncodeAccelerator::Encode(

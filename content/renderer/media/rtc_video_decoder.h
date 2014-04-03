@@ -79,7 +79,6 @@ class CONTENT_EXPORT RTCVideoDecoder
   virtual int32_t Reset() OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
-  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void ProvidePictureBuffers(uint32 count,
                                      const gfx::Size& size,
                                      uint32 texture_target) OVERRIDE;

@@ -10,14 +10,19 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "media/base/video_decoder_config.h"
+#include "media/base/media_export.h"
+
+class SkBitmap;
 
 namespace base {
 class SingleThreadTaskRunner;
 class SharedMemory;
 }
 
-class SkBitmap;
+namespace gfx {
+class Rect;
+class Size;
+}
 
 namespace media {
 
@@ -38,8 +43,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the
   // VideoDecodeAccelerator interface.
-  virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator(
-      VideoCodecProfile profile) = 0;
+  virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator() = 0;
 
   // Caller owns returned pointer, but should call Destroy() on it (instead of
   // directly deleting) for proper destruction, as per the

@@ -216,7 +216,6 @@ class ThrottlingVDAClient : public VideoDecodeAccelerator::Client,
                                      uint32 texture_target) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
@@ -312,10 +311,6 @@ void ThrottlingVDAClient::CallClientPictureReady(int version) {
   }
 }
 
-void ThrottlingVDAClient::NotifyInitializeDone() {
-  client_->NotifyInitializeDone();
-}
-
 void ThrottlingVDAClient::NotifyEndOfBitstreamBuffer(
     int32 bitstream_buffer_id) {
   client_->NotifyEndOfBitstreamBuffer(bitstream_buffer_id);
@@ -397,7 +392,6 @@ class GLRenderingVDAClient
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
   // Simple state changes.
-  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
   virtual void NotifyResetDone() OVERRIDE;
@@ -421,6 +415,7 @@ class GLRenderingVDAClient
   typedef std::map<int, media::PictureBuffer*> PictureBufferById;
 
   void SetState(ClientState new_state);
+  void FinishInitialization();
 
   // Delete the associated decoder helper.
   void DeleteDecoder();
@@ -449,6 +444,8 @@ class GLRenderingVDAClient
   int next_bitstream_buffer_id_;
   ClientStateNotification<ClientState>* note_;
   scoped_ptr<VideoDecodeAccelerator> decoder_;
+  scoped_ptr<base::WeakPtrFactory<VideoDecodeAccelerator> >
+      weak_decoder_factory_;
   std::set<int> outstanding_texture_ids_;
   int remaining_play_throughs_;
   int reset_after_frame_num_;
@@ -576,11 +573,14 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
       base::Bind(&DoNothingReturnTrue)));
 #endif  // OS_WIN
   CHECK(decoder_.get());
+  weak_decoder_factory_.reset(
+      new base::WeakPtrFactory<VideoDecodeAccelerator>(decoder_.get()));
   SetState(CS_DECODER_SET);
   if (decoder_deleted())
     return;
 
   CHECK(decoder_->Initialize(profile_, client));
+  FinishInitialization();
 }
 
 void GLRenderingVDAClient::ProvidePictureBuffers(
@@ -660,27 +660,12 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
-                   decoder_->AsWeakPtr(),
+                   weak_decoder_factory_->GetWeakPtr(),
                    picture.picture_buffer_id()),
         kReuseDelay);
   } else {
     decoder_->ReusePictureBuffer(picture.picture_buffer_id());
   }
-}
-
-void GLRenderingVDAClient::NotifyInitializeDone() {
-  SetState(CS_INITIALIZED);
-  initialize_done_ticks_ = base::TimeTicks::Now();
-
-  if (reset_after_frame_num_ == START_OF_STREAM_RESET) {
-    reset_after_frame_num_ = MID_STREAM_RESET;
-    decoder_->Reset();
-    return;
-  }
-
-  for (int i = 0; i < num_in_flight_decodes_; ++i)
-    DecodeNextFragment();
-  DCHECK_EQ(outstanding_decodes_, num_in_flight_decodes_);
 }
 
 void GLRenderingVDAClient::NotifyEndOfBitstreamBuffer(
@@ -724,7 +709,7 @@ void GLRenderingVDAClient::NotifyResetDone() {
 
   if (remaining_play_throughs_) {
     encoded_data_next_pos_to_decode_ = 0;
-    NotifyInitializeDone();
+    FinishInitialization();
     return;
   }
 
@@ -769,9 +754,25 @@ void GLRenderingVDAClient::SetState(ClientState new_state) {
   }
 }
 
+void GLRenderingVDAClient::FinishInitialization() {
+  SetState(CS_INITIALIZED);
+  initialize_done_ticks_ = base::TimeTicks::Now();
+
+  if (reset_after_frame_num_ == START_OF_STREAM_RESET) {
+    reset_after_frame_num_ = MID_STREAM_RESET;
+    decoder_->Reset();
+    return;
+  }
+
+  for (int i = 0; i < num_in_flight_decodes_; ++i)
+    DecodeNextFragment();
+  DCHECK_EQ(outstanding_decodes_, num_in_flight_decodes_);
+}
+
 void GLRenderingVDAClient::DeleteDecoder() {
   if (decoder_deleted())
     return;
+  weak_decoder_factory_.reset();
   decoder_.release()->Destroy();
   STLClearObject(&encoded_data_);
   for (std::set<int>::iterator it = outstanding_texture_ids_.begin();

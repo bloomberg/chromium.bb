@@ -112,7 +112,7 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
-void AndroidVideoEncodeAccelerator::Initialize(
+bool AndroidVideoEncodeAccelerator::Initialize(
     VideoFrame::Format format,
     const gfx::Size& input_visible_size,
     media::VideoCodecProfile output_profile,
@@ -127,19 +127,21 @@ void AndroidVideoEncodeAccelerator::Initialize(
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
 
-  RETURN_ON_FAILURE(media::MediaCodecBridge::SupportsSetParameters() &&
-                        format == VideoFrame::I420 &&
-                        output_profile == media::VP8PROFILE_MAIN,
-                    "Unexpected combo: " << format << ", " << output_profile,
-                    kInvalidArgumentError);
+  if (!(media::MediaCodecBridge::SupportsSetParameters() &&
+        format == VideoFrame::I420 &&
+        output_profile == media::VP8PROFILE_MAIN)) {
+    DLOG(ERROR) << "Unexpected combo: " << format << ", " << output_profile;
+    return false;
+  }
 
   last_set_bitrate_ = initial_bitrate;
 
   // Only consider using MediaCodec if it's likely backed by hardware.
-  RETURN_ON_FAILURE(!media::VideoCodecBridge::IsKnownUnaccelerated(
-                         media::kCodecVP8, media::MEDIA_CODEC_ENCODER),
-                    "No HW support",
-                    kPlatformFailureError);
+  if (media::VideoCodecBridge::IsKnownUnaccelerated(
+          media::kCodecVP8, media::MEDIA_CODEC_ENCODER)) {
+    DLOG(ERROR) << "No HW support";
+    return false;
+  }
 
   // TODO(fischman): when there is more HW out there with different color-space
   // support, this should turn into a negotiation with the codec for supported
@@ -153,15 +155,11 @@ void AndroidVideoEncodeAccelerator::Initialize(
                                              IFRAME_INTERVAL,
                                              COLOR_FORMAT_YUV420_SEMIPLANAR));
 
-  RETURN_ON_FAILURE(
-      media_codec_,
-      "Failed to create/start the codec: " << input_visible_size.ToString(),
-      kPlatformFailureError);
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoEncodeAccelerator::Client::NotifyInitializeDone,
-                 client_ptr_factory_->GetWeakPtr()));
+  if (!media_codec_) {
+    DLOG(ERROR) << "Failed to create/start the codec: "
+                << input_visible_size.ToString();
+    return false;
+  }
 
   num_output_buffers_ = media_codec_->GetOutputBuffersCount();
   output_buffers_capacity_ = media_codec_->GetOutputBuffersCapacity();
@@ -172,6 +170,7 @@ void AndroidVideoEncodeAccelerator::Initialize(
                  num_output_buffers_,
                  input_visible_size,
                  output_buffers_capacity_));
+  return true;
 }
 
 void AndroidVideoEncodeAccelerator::MaybeStartIOTimer() {

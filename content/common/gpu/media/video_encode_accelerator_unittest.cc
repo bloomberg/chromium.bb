@@ -249,7 +249,6 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   void DestroyEncoder();
 
   // VideoDecodeAccelerator::Client implementation.
-  void NotifyInitializeDone() OVERRIDE;
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) OVERRIDE;
@@ -393,15 +392,21 @@ void VEAClient::CreateEncoder() {
   CHECK(!has_encoder());
 
   encoder_.reset(new ExynosVideoEncodeAccelerator());
-
   SetState(CS_ENCODER_SET);
+
   DVLOG(1) << "Profile: " << test_stream_.requested_profile
            << ", requested bitrate: " << test_stream_.requested_bitrate;
-  encoder_->Initialize(kInputFormat,
-                       test_stream_.size,
-                       test_stream_.requested_profile,
-                       test_stream_.requested_bitrate,
-                       this);
+  if (!encoder_->Initialize(kInputFormat,
+                            test_stream_.size,
+                            test_stream_.requested_profile,
+                            test_stream_.requested_bitrate,
+                            this)) {
+    DLOG(ERROR) << "VideoEncodeAccelerator::Initialize() failed";
+    SetState(CS_ERROR);
+    return;
+  }
+  SetInitialConfiguration();
+  SetState(CS_INITIALIZED);
 }
 
 void VEAClient::DestroyEncoder() {
@@ -409,12 +414,6 @@ void VEAClient::DestroyEncoder() {
   if (!has_encoder())
     return;
   encoder_.release()->Destroy();
-}
-
-void VEAClient::NotifyInitializeDone() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  SetInitialConfiguration();
-  SetState(CS_INITIALIZED);
 }
 
 void VEAClient::RequireBitstreamBuffers(unsigned int input_count,

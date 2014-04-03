@@ -14,6 +14,8 @@
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "media/video/video_decode_accelerator.h"
+#include "media/video/video_encode_accelerator.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
@@ -68,14 +70,13 @@ RendererGpuVideoAcceleratorFactories::GetContext3d() {
 }
 
 scoped_ptr<media::VideoDecodeAccelerator>
-RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator(
-    media::VideoCodecProfile profile) {
+RendererGpuVideoAcceleratorFactories::CreateVideoDecodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
   if (context && context->GetCommandBufferProxy()) {
     return gpu_channel_host_->CreateVideoDecoder(
-        context->GetCommandBufferProxy()->GetRouteID(), profile);
+        context->GetCommandBufferProxy()->GetRouteID());
   }
 
   return scoped_ptr<media::VideoDecodeAccelerator>();
@@ -85,7 +86,13 @@ scoped_ptr<media::VideoEncodeAccelerator>
 RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  return gpu_channel_host_->CreateVideoEncoder();
+  WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
+  if (context && context->GetCommandBufferProxy()) {
+    return gpu_channel_host_->CreateVideoEncoder(
+        context->GetCommandBufferProxy()->GetRouteID());
+  }
+
+  return scoped_ptr<media::VideoEncodeAccelerator>();
 }
 
 bool RendererGpuVideoAcceleratorFactories::CreateTextures(

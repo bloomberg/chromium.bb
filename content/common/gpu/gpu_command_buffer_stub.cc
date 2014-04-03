@@ -20,6 +20,7 @@
 #include "content/common/gpu/gpu_watchdog.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
+#include "content/common/gpu/media/gpu_video_encode_accelerator.h"
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/public/common/content_client.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -205,6 +206,8 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoDecoder,
                                     OnCreateVideoDecoder)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuCommandBufferMsg_CreateVideoEncoder,
+                                    OnCreateVideoEncoder)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetSurfaceVisible,
                         OnSetSurfaceVisible)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_RetireSyncPoint,
@@ -729,11 +732,30 @@ void GpuCommandBufferStub::OnCreateVideoDecoder(
     media::VideoCodecProfile profile,
     IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoDecoder");
-  int decoder_route_id = channel_->GenerateRouteID();
+  int32 decoder_route_id = channel_->GenerateRouteID();
   GpuVideoDecodeAccelerator* decoder = new GpuVideoDecodeAccelerator(
       decoder_route_id, this, channel_->io_message_loop());
   decoder->Initialize(profile, reply_message);
   // decoder is registered as a DestructionObserver of this stub and will
+  // self-delete during destruction of this stub.
+}
+
+void GpuCommandBufferStub::OnCreateVideoEncoder(
+    media::VideoFrame::Format input_format,
+    const gfx::Size& input_visible_size,
+    media::VideoCodecProfile output_profile,
+    uint32 initial_bitrate,
+    IPC::Message* reply_message) {
+  TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnCreateVideoEncoder");
+  int32 encoder_route_id = channel_->GenerateRouteID();
+  GpuVideoEncodeAccelerator* encoder =
+      new GpuVideoEncodeAccelerator(encoder_route_id, this);
+  encoder->Initialize(input_format,
+                      input_visible_size,
+                      output_profile,
+                      initial_bitrate,
+                      reply_message);
+  // encoder is registered as a DestructionObserver of this stub and will
   // self-delete during destruction of this stub.
 }
 

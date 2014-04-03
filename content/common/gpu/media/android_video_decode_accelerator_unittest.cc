@@ -37,7 +37,6 @@ class MockVideoDecodeAcceleratorClient
   virtual ~MockVideoDecodeAcceleratorClient() {};
 
   // VideoDecodeAccelerator::Client implementation.
-  virtual void NotifyInitializeDone() OVERRIDE {};
   virtual void ProvidePictureBuffers(uint32 requested_num_of_buffers,
                                      const gfx::Size& dimensions,
                                      uint32 texture_target) OVERRIDE {};

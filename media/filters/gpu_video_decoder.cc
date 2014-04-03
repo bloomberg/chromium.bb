@@ -180,7 +180,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  vda_ = factories_->CreateVideoDecodeAccelerator(config.profile()).Pass();
+  vda_ = factories_->CreateVideoDecodeAccelerator().Pass();
   if (!vda_ || !vda_->Initialize(config.profile(), this)) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
@@ -343,10 +343,6 @@ bool GpuVideoDecoder::CanReadWithoutStalling() const {
   return
       next_picture_buffer_id_ == 0 ||  // Decode() will ProvidePictureBuffers().
       available_pictures_ > 0 || !ready_video_frames_.empty();
-}
-
-void GpuVideoDecoder::NotifyInitializeDone() {
-  NOTREACHED() << "GpuVideoDecodeAcceleratorHost::Initialize is synchronous!";
 }
 
 void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,

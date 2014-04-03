@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "ipc/ipc_listener.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/size.h"
@@ -21,23 +22,29 @@ class SharedMemory;
 
 namespace content {
 
-class GpuChannel;
-
 // This class encapsulates the GPU process view of a VideoEncodeAccelerator,
 // wrapping the platform-specific VideoEncodeAccelerator instance.  It handles
 // IPC coming in from the renderer and passes it to the underlying VEA.
-class GpuVideoEncodeAccelerator : public IPC::Listener,
-                                  public media::VideoEncodeAccelerator::Client {
+class GpuVideoEncodeAccelerator
+    : public IPC::Listener,
+      public media::VideoEncodeAccelerator::Client,
+      public GpuCommandBufferStub::DestructionObserver {
  public:
-  GpuVideoEncodeAccelerator(GpuChannel* gpu_channel, int32 route_id);
+  GpuVideoEncodeAccelerator(int32 host_route_id, GpuCommandBufferStub* stub);
   virtual ~GpuVideoEncodeAccelerator();
+
+  // Initialize this accelerator with the given parameters and send
+  // |init_done_msg| when complete.
+  void Initialize(media::VideoFrame::Format input_format,
+                  const gfx::Size& input_visible_size,
+                  media::VideoCodecProfile output_profile,
+                  uint32 initial_bitrate,
+                  IPC::Message* init_done_msg);
 
   // IPC::Listener implementation
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void OnChannelError() OVERRIDE;
 
   // media::VideoEncodeAccelerator::Client implementation.
-  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void RequireBitstreamBuffers(unsigned int input_count,
                                        const gfx::Size& input_coded_size,
                                        size_t output_buffer_size) OVERRIDE;
@@ -45,6 +52,9 @@ class GpuVideoEncodeAccelerator : public IPC::Listener,
                                     size_t payload_size,
                                     bool key_frame) OVERRIDE;
   virtual void NotifyError(media::VideoEncodeAccelerator::Error error) OVERRIDE;
+
+  // GpuCommandBufferStub::DestructionObserver implementation.
+  virtual void OnWillDestroyStub() OVERRIDE;
 
   // Static query for supported profiles.  This query calls the appropriate
   // platform-specific version.
@@ -57,10 +67,6 @@ class GpuVideoEncodeAccelerator : public IPC::Listener,
 
   // IPC handlers, proxying media::VideoEncodeAccelerator for the renderer
   // process.
-  void OnInitialize(media::VideoFrame::Format input_format,
-                    const gfx::Size& input_visible_size,
-                    media::VideoCodecProfile output_profile,
-                    uint32 initial_bitrate);
   void OnEncode(int32 frame_id,
                 base::SharedMemoryHandle buffer_handle,
                 uint32 buffer_size,
@@ -70,25 +76,34 @@ class GpuVideoEncodeAccelerator : public IPC::Listener,
                                   uint32 buffer_size);
   void OnRequestEncodingParametersChange(uint32 bitrate, uint32 framerate);
 
+  void OnDestroy();
+
   void EncodeFrameFinished(int32 frame_id, scoped_ptr<base::SharedMemory> shm);
 
   void Send(IPC::Message* message);
+  // Helper for replying to the creation request.
+  void SendCreateEncoderReply(IPC::Message* message, int32 route_id);
 
-  // Weak pointer for media::VideoFrames that refer back to |this|.
-  base::WeakPtrFactory<GpuVideoEncodeAccelerator> weak_this_factory_;
+  // Route ID to communicate with the host.
+  int32 host_route_id_;
 
-  // The GpuChannel owns this GpuVideoEncodeAccelerator and will outlive |this|.
-  GpuChannel* channel_;
-  const int32 route_id_;
+  // Unowned pointer to the underlying GpuCommandBufferStub.  |this| is
+  // registered as a DestuctionObserver of |stub_| and will self-delete when
+  // |stub_| is destroyed.
+  GpuCommandBufferStub* stub_;
 
   // Owned pointer to the underlying VideoEncodeAccelerator.
   scoped_ptr<media::VideoEncodeAccelerator> encoder_;
+  base::Callback<bool(void)> make_context_current_;
 
   // Video encoding parameters.
   media::VideoFrame::Format input_format_;
   gfx::Size input_visible_size_;
   gfx::Size input_coded_size_;
   size_t output_buffer_size_;
+
+  // Weak pointer for media::VideoFrames that refer back to |this|.
+  base::WeakPtrFactory<GpuVideoEncodeAccelerator> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoEncodeAccelerator);
 };

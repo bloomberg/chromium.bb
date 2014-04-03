@@ -20,7 +20,6 @@
 #include "gpu/command_buffer/common/gpu_control.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "ipc/ipc_listener.h"
-#include "media/video/video_decode_accelerator.h"
 #include "ui/events/latency_info.h"
 
 struct GPUCommandBufferConsoleMessage;
@@ -35,6 +34,11 @@ class GpuMemoryBuffer;
 
 namespace gpu {
 struct Mailbox;
+}
+
+namespace media {
+class VideoDecodeAccelerator;
+class VideoEncodeAccelerator;
 }
 
 namespace content {
@@ -69,8 +73,15 @@ class CommandBufferProxyImpl
   // Note that the GpuVideoDecodeAccelerator may still fail to be created in
   // the GPU process, even if this returns non-NULL. In this case the VDA client
   // is notified of an error later, after Initialize().
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder(
-      media::VideoCodecProfile profile);
+  scoped_ptr<media::VideoDecodeAccelerator> CreateVideoDecoder();
+
+  // Sends an IPC message to create a GpuVideoEncodeAccelerator. Creates and
+  // returns it as an owned pointer to a media::VideoEncodeAccelerator.  Returns
+  // NULL on failure to create the GpuVideoEncodeAcceleratorHost.
+  // Note that the GpuVideoEncodeAccelerator may still fail to be created in
+  // the GPU process, even if this returns non-NULL. In this case the VEA client
+  // is notified of an error later, after Initialize();
+  scoped_ptr<media::VideoEncodeAccelerator> CreateVideoEncoder();
 
   // IPC::Listener implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -156,10 +167,7 @@ class CommandBufferProxyImpl
   void TryUpdateState();
 
   // The shared memory area used to update state.
-  gpu::CommandBufferSharedState* shared_state() const {
-    return reinterpret_cast<gpu::CommandBufferSharedState*>(
-        shared_state_shm_->memory());
-  }
+  gpu::CommandBufferSharedState* shared_state() const;
 
   // Unowned list of DeletionObservers.
   ObserverList<DeletionObserver> deletion_observers_;

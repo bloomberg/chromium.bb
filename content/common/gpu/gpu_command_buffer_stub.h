@@ -44,6 +44,7 @@ namespace content {
 
 class GpuChannel;
 class GpuVideoDecodeAccelerator;
+class GpuVideoEncodeAccelerator;
 class GpuWatchdog;
 
 class GpuCommandBufferStub
@@ -169,9 +170,13 @@ class GpuCommandBufferStub
   void OnDestroyTransferBuffer(int32 id);
   void OnGetTransferBuffer(int32 id, IPC::Message* reply_message);
 
-  void OnCreateVideoDecoder(
-      media::VideoCodecProfile profile,
-      IPC::Message* reply_message);
+  void OnCreateVideoDecoder(media::VideoCodecProfile profile,
+                            IPC::Message* reply_message);
+  void OnCreateVideoEncoder(media::VideoFrame::Format input_format,
+                            const gfx::Size& input_visible_size,
+                            media::VideoCodecProfile output_profile,
+                            uint32 initial_bitrate,
+                            IPC::Message* reply_message);
 
   void OnSetSurfaceVisible(bool visible);
 

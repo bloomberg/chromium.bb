@@ -28,8 +28,7 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   // CreateVideo{Decode,Encode}Accelerator returns scoped_ptr, which the mocking
   // framework does not want.  Trampoline them.
-  MOCK_METHOD1(DoCreateVideoDecodeAccelerator,
-               VideoDecodeAccelerator*(VideoCodecProfile));
+  MOCK_METHOD0(DoCreateVideoDecodeAccelerator, VideoDecodeAccelerator*());
   MOCK_METHOD0(DoCreateVideoEncodeAccelerator, VideoEncodeAccelerator*());
 
   MOCK_METHOD5(CreateTextures,
@@ -47,8 +46,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD1(CreateSharedMemory, base::SharedMemory*(size_t size));
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
 
-  virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator(
-      VideoCodecProfile profile) OVERRIDE;
+  virtual scoped_ptr<VideoDecodeAccelerator> CreateVideoDecodeAccelerator()
+      OVERRIDE;
 
   virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       OVERRIDE;

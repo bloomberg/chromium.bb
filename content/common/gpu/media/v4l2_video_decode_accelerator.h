@@ -434,6 +434,9 @@ class CONTENT_EXPORT V4L2VideoDecodeAccelerator
   // The codec we'll be decoding for.
   media::VideoCodecProfile video_profile_;
 
+  // The WeakPtrFactory for |weak_this_|.
+  base::WeakPtrFactory<V4L2VideoDecodeAccelerator> weak_this_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(V4L2VideoDecodeAccelerator);
 };
 

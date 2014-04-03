@@ -235,15 +235,16 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       input_ready_(&lock_),
       surfaces_available_(&lock_),
       message_loop_(base::MessageLoop::current()),
-      weak_this_(base::AsWeakPtr(this)),
-      va_surface_release_cb_(media::BindToCurrentLoop(base::Bind(
-          &VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_))),
       decoder_thread_("VaapiDecoderThread"),
       num_frames_at_client_(0),
       num_stream_bufs_at_decoder_(0),
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
-      requested_num_pics_(0) {
+      requested_num_pics_(0),
+      weak_this_factory_(this) {
+  weak_this_ = weak_this_factory_.GetWeakPtr();
+  va_surface_release_cb_ = media::BindToCurrentLoop(
+      base::Bind(&VaapiVideoDecodeAccelerator::RecycleVASurfaceID, weak_this_));
 }
 
 VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
@@ -318,9 +319,6 @@ bool VaapiVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
   decoder_thread_proxy_ = decoder_thread_.message_loop_proxy();
 
   state_ = kIdle;
-
-  message_loop_->PostTask(FROM_HERE, base::Bind(
-      &Client::NotifyInitializeDone, client_));
   return true;
 }
 
@@ -895,6 +893,7 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
   state_ = kDestroying;
 
   client_ptr_factory_.reset();
+  weak_this_factory_.InvalidateWeakPtrs();
 
   {
     base::AutoUnlock auto_unlock(lock_);

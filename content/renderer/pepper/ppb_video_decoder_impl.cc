@@ -294,8 +294,4 @@ void PPB_VideoDecoder_Impl::NotifyFlushDone() {
   RunFlushCallback(PP_OK);
 }
 
-void PPB_VideoDecoder_Impl::NotifyInitializeDone() {
-  NOTREACHED() << "PlatformVideoDecoder::Initialize() is synchronous!";
-}
-
 }  // namespace content

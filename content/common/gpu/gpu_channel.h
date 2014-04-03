@@ -42,7 +42,6 @@ namespace content {
 class DevToolsGpuAgent;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
-class GpuVideoEncodeAccelerator;
 class GpuWatchdog;
 
 // Encapsulates an IPC channel between the GPU process and one renderer
@@ -170,8 +169,6 @@ class GpuChannel : public IPC::Listener,
       const GPUCreateCommandBufferConfig& init_params,
       int32* route_id);
   void OnDestroyCommandBuffer(int32 route_id);
-  void OnCreateVideoEncoder(int32* route_id);
-  void OnDestroyVideoEncoder(int32 route_id);
   void OnDevToolsStartEventsRecording(int32* route_id);
   void OnDevToolsStopEventsRecording();
 
@@ -215,9 +212,6 @@ class GpuChannel : public IPC::Listener,
 
   typedef IDMap<GpuCommandBufferStub, IDMapOwnPointer> StubMap;
   StubMap stubs_;
-
-  typedef IDMap<GpuVideoEncodeAccelerator, IDMapOwnPointer> EncoderMap;
-  EncoderMap video_encoders_;
 
   bool log_messages_;  // True if we should log sent and received messages.
   gpu::gles2::DisallowedFeatures disallowed_features_;

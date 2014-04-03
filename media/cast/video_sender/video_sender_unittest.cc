@@ -153,7 +153,7 @@ class VideoSenderTest : public ::testing::Test {
 
     if (external) {
       scoped_ptr<VideoEncodeAccelerator> fake_vea(
-          new test::FakeVideoEncodeAccelerator());
+          new test::FakeVideoEncodeAccelerator(task_runner_));
       video_sender_.reset(
           new PeerVideoSender(cast_environment_,
                               video_config,

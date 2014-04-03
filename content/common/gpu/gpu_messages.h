@@ -566,7 +566,17 @@ IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_DestroyTransferBuffer,
 // no longer needed.
 IPC_SYNC_MESSAGE_ROUTED1_1(GpuCommandBufferMsg_CreateVideoDecoder,
                            media::VideoCodecProfile /* profile */,
-                           int /* route_id */)
+                           int32 /* route_id */)
+
+// Create and initialize a hardware video encoder, returning its new route_id.
+// Created encoders should be freed with AcceleratedVideoEncoderMsg_Destroy when
+// no longer needed.
+IPC_SYNC_MESSAGE_ROUTED4_1(GpuCommandBufferMsg_CreateVideoEncoder,
+                           media::VideoFrame::Format /* input_format */,
+                           gfx::Size /* input_visible_size */,
+                           media::VideoCodecProfile /* output_profile */,
+                           uint32 /* initial_bitrate */,
+                           int32 /* route_id  */)
 
 // Tells the proxy that there was an error and the command buffer had to be
 // destroyed for some reason.
@@ -717,13 +727,6 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_ErrorNotification,
 // Accelerated Video Encoder Messages
 // These messages are sent from the Renderer process to GPU process.
 
-// Initialize the accelerated encoder.
-IPC_MESSAGE_ROUTED4(AcceleratedVideoEncoderMsg_Initialize,
-                    media::VideoFrame::Format /* input_format */,
-                    gfx::Size /* input_visible_size */,
-                    media::VideoCodecProfile /* output_profile */,
-                    uint32 /* initial_bitrate */)
-
 // Queue a input buffer to the encoder to encode. |frame_id| will be returned by
 // AcceleratedVideoEncoderHostMsg_NotifyEncodeDone.
 IPC_MESSAGE_ROUTED4(AcceleratedVideoEncoderMsg_Encode,
@@ -748,9 +751,6 @@ IPC_MESSAGE_ROUTED2(AcceleratedVideoEncoderMsg_RequestEncodingParametersChange,
 // Accelerated Video Encoder Host Messages
 // These messages are sent from GPU process to Renderer process.
 
-// Notify of the completion of initialization.
-IPC_MESSAGE_ROUTED0(AcceleratedVideoEncoderHostMsg_NotifyInitializeDone)
-
 // Notify renderer of the input/output buffer requirements of the encoder.
 IPC_MESSAGE_ROUTED3(AcceleratedVideoEncoderHostMsg_RequireBitstreamBuffers,
                     uint32 /* input_count */,
@@ -773,3 +773,6 @@ IPC_MESSAGE_ROUTED3(AcceleratedVideoEncoderHostMsg_BitstreamBufferReady,
 // Report error condition.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyError,
                     media::VideoEncodeAccelerator::Error /* error */)
+
+// Send destroy request to the encoder.
+IPC_MESSAGE_ROUTED0(AcceleratedVideoEncoderMsg_Destroy)

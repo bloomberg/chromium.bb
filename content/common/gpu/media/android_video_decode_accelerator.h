@@ -77,9 +77,6 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // client.
   void DequeueOutput();
 
-  // Notifies the client that initialize was completed.
-  void NotifyInitializeDone();
-
   // Requests picture buffers from the client.
   void RequestPictureBuffers();
 
@@ -163,6 +160,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // Repeating timer responsible for draining pending IO to the codec.
   base::RepeatingTimer<AndroidVideoDecodeAccelerator> io_timer_;
+
+  // WeakPtrFactory for posting tasks back to |this|.
+  base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;
 
   friend class AndroidVideoDecodeAcceleratorTest;
 };

@@ -53,7 +53,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   virtual bool CanReadWithoutStalling() const OVERRIDE;
 
   // VideoDecodeAccelerator::Client implementation.
-  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void ProvidePictureBuffers(uint32 count,
                                      const gfx::Size& size,
                                      uint32 texture_target) OVERRIDE;

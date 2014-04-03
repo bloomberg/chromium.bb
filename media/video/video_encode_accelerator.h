@@ -48,12 +48,10 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     kErrorMax = kPlatformFailureError
   };
 
-  // Interface for clients that use VideoEncodeAccelerator.
+  // Interface for clients that use VideoEncodeAccelerator. These callbacks will
+  // not be made unless Initialize() has returned successfully.
   class MEDIA_EXPORT Client {
    public:
-    // Callback to notify client that encoder has been successfully initialized.
-    virtual void NotifyInitializeDone() = 0;
-
     // Callback to tell the client what size of frames and buffers to provide
     // for input and output.  The VEA disclaims use or ownership of all
     // previously provided buffers once this callback is made.
@@ -83,7 +81,9 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
                                       size_t payload_size,
                                       bool key_frame) = 0;
 
-    // Error notification callback.
+    // Error notification callback. Note that errors in Initialize() will not be
+    // reported here, but will instead be indicated by a false return value
+    // there.
     virtual void NotifyError(Error error) = 0;
 
    protected:
@@ -94,8 +94,9 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
 
   // Video encoder functions.
 
-  // Initialize the video encoder with a specific configuration.  Called once
-  // per encoder construction.
+  // Initializes the video encoder with specific configuration.  Called once per
+  // encoder construction.  This call is synchronous and returns true iff
+  // initialization is successful.
   // Parameters:
   //  |input_format| is the frame format of the input stream (as would be
   //  reported by VideoFrame::format() for frames passed to Encode()).
@@ -108,7 +109,7 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
   //  |client| is the client of this video encoder.  The provided pointer must
   //  be valid until Destroy() is called.
   // TODO(sheu): handle resolution changes.  http://crbug.com/249944
-  virtual void Initialize(VideoFrame::Format input_format,
+  virtual bool Initialize(VideoFrame::Format input_format,
                           const gfx::Size& input_visible_size,
                           VideoCodecProfile output_profile,
                           uint32 initial_bitrate,

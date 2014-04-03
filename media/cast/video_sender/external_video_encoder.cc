@@ -107,14 +107,18 @@ class LocalVideoEncodeAcceleratorClient
     codec_ = video_config.codec;
     max_frame_rate_ = video_config.max_frame_rate;
 
-    // Asynchronous initialization call; NotifyInitializeDone or NotifyError
-    // will be called once the HW is initialized.
-    video_encode_accelerator_->Initialize(
-        media::VideoFrame::I420,
-        gfx::Size(video_config.width, video_config.height),
-        output_profile,
-        video_config.start_bitrate,
-        this);
+    if (!video_encode_accelerator_->Initialize(
+            media::VideoFrame::I420,
+            gfx::Size(video_config.width, video_config.height),
+            output_profile,
+            video_config.start_bitrate,
+            this)) {
+      NotifyError(VideoEncodeAccelerator::kInvalidArgumentError);
+      return;
+    }
+
+    // Wait until shared memory is allocated to indicate that encoder is
+    // initialized.
   }
 
   // Free the HW.
@@ -151,14 +155,6 @@ class LocalVideoEncodeAcceleratorClient
   }
 
  protected:
-  virtual void NotifyInitializeDone() OVERRIDE {
-    DCHECK(encoder_task_runner_);
-    DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());
-
-    // Wait until shared memory is allocated to indicate that encoder is
-    // initialized.
-  }
-
   virtual void NotifyError(VideoEncodeAccelerator::Error error) OVERRIDE {
     DCHECK(encoder_task_runner_);
     DCHECK(encoder_task_runner_->RunsTasksOnCurrentThread());

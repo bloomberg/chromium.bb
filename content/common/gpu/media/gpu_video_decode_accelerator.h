@@ -49,7 +49,6 @@ class GpuVideoDecodeAccelerator
                                      uint32 texture_target) OVERRIDE;
   virtual void DismissPictureBuffer(int32 picture_buffer_id) OVERRIDE;
   virtual void PictureReady(const media::Picture& picture) OVERRIDE;
-  virtual void NotifyInitializeDone() OVERRIDE;
   virtual void NotifyError(media::VideoDecodeAccelerator::Error error) OVERRIDE;
   virtual void NotifyEndOfBitstreamBuffer(int32 bitstream_buffer_id) OVERRIDE;
   virtual void NotifyFlushDone() OVERRIDE;
@@ -63,8 +62,6 @@ class GpuVideoDecodeAccelerator
 
   // Initialize the accelerator with the given profile and send the
   // |init_done_msg| when done.
-  // The renderer process handle is valid as long as we have a channel between
-  // GPU process and the renderer.
   void Initialize(const media::VideoCodecProfile profile,
                   IPC::Message* init_done_msg);
 
@@ -89,15 +86,15 @@ class GpuVideoDecodeAccelerator
   // Sets the texture to cleared.
   void SetTextureCleared(const media::Picture& picture);
 
-  // Message to Send() when initialization is done.  Is only non-NULL during
-  // initialization and is owned by the IPC channel underlying the
-  // GpuCommandBufferStub.
-  IPC::Message* init_done_msg_;
+  // Helper for replying to the creation request.
+  void SendCreateDecoderReply(IPC::Message* message, int32 route_id);
 
   // Route ID to communicate with the host.
   int32 host_route_id_;
 
-  // Unowned pointer to the underlying GpuCommandBufferStub.
+  // Unowned pointer to the underlying GpuCommandBufferStub.  |this| is
+  // registered as a DestuctionObserver of |stub_| and will self-delete when
+  // |stub_| is destroyed.
   GpuCommandBufferStub* stub_;
 
   // The underlying VideoDecodeAccelerator.

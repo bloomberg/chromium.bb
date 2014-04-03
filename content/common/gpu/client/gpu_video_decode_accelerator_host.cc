@@ -17,31 +17,33 @@
 #include "content/public/common/sandbox_init.h"
 #endif  // OS_WIN
 
+#define NOTIFY_ERROR(error) \
+  PostNotifyError(error);   \
+  DLOG(ERROR)
+
 using media::VideoDecodeAccelerator;
 namespace content {
 
 GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
     GpuChannelHost* channel,
-    int32 decoder_route_id,
     CommandBufferProxyImpl* impl)
     : channel_(channel),
-      decoder_route_id_(decoder_route_id),
+      decoder_route_id_(MSG_ROUTING_NONE),
       client_(NULL),
-      impl_(impl) {
+      impl_(impl),
+      weak_this_factory_(this) {
   DCHECK(channel_);
-  channel_->AddRoute(decoder_route_id, base::AsWeakPtr(this));
+  DCHECK(impl_);
   impl_->AddDeletionObserver(this);
 }
 
-void GpuVideoDecodeAcceleratorHost::OnChannelError() {
-  DLOG(ERROR) << "GpuVideoDecodeAcceleratorHost::OnChannelError()";
-  if (channel_) {
+GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {
+  DCHECK(CalledOnValidThread());
+
+  if (channel_ && decoder_route_id_ != MSG_ROUTING_NONE)
     channel_->RemoveRoute(decoder_route_id_);
-    channel_ = NULL;
-  }
-  // See OnErrorNotification for why this needs to be the last thing in this
-  // function.
-  OnErrorNotification(PLATFORM_FAILURE);
+  if (impl_)
+    impl_->RemoveDeletionObserver(this);
 }
 
 bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
@@ -59,27 +61,49 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ResetDone,
                         OnResetDone)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_ErrorNotification,
-                        OnErrorNotification)
+                        OnNotifyError)
     IPC_MESSAGE_HANDLER(AcceleratedVideoDecoderHostMsg_DismissPictureBuffer,
                         OnDismissPictureBuffer)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
-  // See OnErrorNotification for why |this| mustn't be used after
-  // OnErrorNotification might have been called above.
+  // See OnNotifyError for why |this| mustn't be used after OnNotifyError might
+  // have been called above.
   return handled;
+}
+
+void GpuVideoDecodeAcceleratorHost::OnChannelError() {
+  DCHECK(CalledOnValidThread());
+  if (channel_) {
+    if (decoder_route_id_ != MSG_ROUTING_NONE)
+      channel_->RemoveRoute(decoder_route_id_);
+    channel_ = NULL;
+  }
+  NOTIFY_ERROR(PLATFORM_FAILURE) << "OnChannelError()";
 }
 
 bool GpuVideoDecodeAcceleratorHost::Initialize(media::VideoCodecProfile profile,
                                                Client* client) {
+  DCHECK(CalledOnValidThread());
   client_ = client;
+
+  if (!impl_)
+    return false;
+  Send(new GpuCommandBufferMsg_CreateVideoDecoder(
+      impl_->GetRouteID(), profile, &decoder_route_id_));
+  if (decoder_route_id_ == MSG_ROUTING_NONE) {
+    NOTIFY_ERROR(PLATFORM_FAILURE)
+        << "Send(GpuCommandBufferMsg_CreateVideoDecoder()) failed";
+    return false;
+  }
+
+  channel_->AddRoute(decoder_route_id_, weak_this_factory_.GetWeakPtr());
   return true;
 }
 
 void GpuVideoDecodeAcceleratorHost::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(CalledOnValidThread());
-  // Can happen if a decode task was posted before an error was delivered.
   if (!channel_)
     return;
 
@@ -98,13 +122,17 @@ void GpuVideoDecodeAcceleratorHost::Decode(
 void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
   DCHECK(CalledOnValidThread());
+  if (!channel_)
+    return;
   // Rearrange data for IPC command.
   std::vector<int32> buffer_ids;
   std::vector<uint32> texture_ids;
   for (uint32 i = 0; i < buffers.size(); i++) {
     const media::PictureBuffer& buffer = buffers[i];
     if (buffer.size() != picture_buffer_dimensions_) {
-      OnErrorNotification(INVALID_ARGUMENT);
+      NOTIFY_ERROR(INVALID_ARGUMENT) << "buffer.size() invalid: expected "
+                                     << picture_buffer_dimensions_.ToString()
+                                     << ", got " << buffer.size().ToString();
       return;
     }
     texture_ids.push_back(buffer.texture_id());
@@ -117,61 +145,57 @@ void GpuVideoDecodeAcceleratorHost::AssignPictureBuffers(
 void GpuVideoDecodeAcceleratorHost::ReusePictureBuffer(
     int32 picture_buffer_id) {
   DCHECK(CalledOnValidThread());
+  if (!channel_)
+    return;
   Send(new AcceleratedVideoDecoderMsg_ReusePictureBuffer(
       decoder_route_id_, picture_buffer_id));
 }
 
 void GpuVideoDecodeAcceleratorHost::Flush() {
   DCHECK(CalledOnValidThread());
+  if (!channel_)
+    return;
   Send(new AcceleratedVideoDecoderMsg_Flush(decoder_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Reset() {
   DCHECK(CalledOnValidThread());
+  if (!channel_)
+    return;
   Send(new AcceleratedVideoDecoderMsg_Reset(decoder_route_id_));
 }
 
 void GpuVideoDecodeAcceleratorHost::Destroy() {
   DCHECK(CalledOnValidThread());
+  if (channel_)
+    Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
   client_ = NULL;
-  Send(new AcceleratedVideoDecoderMsg_Destroy(decoder_route_id_));
   delete this;
 }
 
 void GpuVideoDecodeAcceleratorHost::OnWillDeleteImpl() {
+  DCHECK(CalledOnValidThread());
   impl_ = NULL;
 
   // The CommandBufferProxyImpl is going away; error out this VDA.
   OnChannelError();
 }
 
-GpuVideoDecodeAcceleratorHost::~GpuVideoDecodeAcceleratorHost() {
+void GpuVideoDecodeAcceleratorHost::PostNotifyError(Error error) {
   DCHECK(CalledOnValidThread());
-
-  if (channel_)
-    channel_->RemoveRoute(decoder_route_id_);
-  if (impl_)
-    impl_->RemoveDeletionObserver(this);
+  DVLOG(2) << "PostNotifyError(): error=" << error;
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuVideoDecodeAcceleratorHost::OnNotifyError,
+                 weak_this_factory_.GetWeakPtr(),
+                 error));
 }
 
 void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
-  // After OnChannelError is called, the client should no longer send
-  // messages to the gpu channel through this object.  But queued posted tasks
-  // can still be draining, so we're forgiving and simply ignore them.
-  bool error = false;
+  DCHECK(CalledOnValidThread());
   uint32 message_type = message->type();
-  if (!channel_) {
-    delete message;
-    DLOG(ERROR) << "Send(" << message_type << ") after error ignored";
-    error = true;
-  } else if (!channel_->Send(message)) {
-    DLOG(ERROR) << "Send(" << message_type << ") failed";
-    error = true;
-  }
-  // See OnErrorNotification for why this needs to be the last thing in this
-  // function.
-  if (error)
-    OnErrorNotification(PLATFORM_FAILURE);
+  if (!channel_->Send(message))
+    NOTIFY_ERROR(PLATFORM_FAILURE) << "Send(" << message_type << ") failed";
 }
 
 void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
@@ -221,17 +245,17 @@ void GpuVideoDecodeAcceleratorHost::OnResetDone() {
     client_->NotifyResetDone();
 }
 
-void GpuVideoDecodeAcceleratorHost::OnErrorNotification(uint32 error) {
+void GpuVideoDecodeAcceleratorHost::OnNotifyError(uint32 error) {
   DCHECK(CalledOnValidThread());
   if (!client_)
     return;
+  weak_this_factory_.InvalidateWeakPtrs();
 
   // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
   // last thing done on this stack!
   media::VideoDecodeAccelerator::Client* client = NULL;
   std::swap(client, client_);
-  client->NotifyError(
-      static_cast<media::VideoDecodeAccelerator::Error>(error));
+  client->NotifyError(static_cast<media::VideoDecodeAccelerator::Error>(error));
 }
 
 }  // namespace content
