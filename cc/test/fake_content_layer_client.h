@@ -49,6 +49,8 @@ class FakeContentLayerClient : public ContentLayerClient {
     draw_bitmaps_.push_back(data);
   }
 
+  SkCanvas* last_canvas() const { return last_canvas_; }
+
  private:
   typedef std::vector<std::pair<gfx::RectF, SkPaint> > RectPaintVector;
   typedef std::vector<BitmapData> BitmapVector;
@@ -56,6 +58,7 @@ class FakeContentLayerClient : public ContentLayerClient {
   bool paint_all_opaque_;
   RectPaintVector draw_rects_;
   BitmapVector draw_bitmaps_;
+  SkCanvas* last_canvas_;
 };
 
 }  // namespace cc

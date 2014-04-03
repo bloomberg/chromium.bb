@@ -10,14 +10,17 @@
 namespace cc {
 
 FakeContentLayerClient::FakeContentLayerClient()
-    : paint_all_opaque_(false) {
-}
+    : paint_all_opaque_(false), last_canvas_(NULL) {}
 
 FakeContentLayerClient::~FakeContentLayerClient() {
 }
 
 void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
     const gfx::Rect& paint_rect, gfx::RectF* opaque_rect) {
+  last_canvas_ = canvas;
+  if (!canvas)
+    return;
+
   if (paint_all_opaque_)
     *opaque_rect = paint_rect;
 

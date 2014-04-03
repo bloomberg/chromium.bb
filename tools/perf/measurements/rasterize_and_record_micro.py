@@ -103,11 +103,16 @@ class RasterizeAndRecordMicro(page_measurement.PageMeasurement):
 
     pixels_recorded = data['pixels_recorded']
     record_time = data['record_time_ms']
+    record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
+    record_time_painting_disabled = data['record_time_painting_disabled_ms']
     pixels_rasterized = data['pixels_rasterized']
     rasterize_time = data['rasterize_time_ms']
 
     results.Add('pixels_recorded', 'pixels', pixels_recorded)
     results.Add('record_time', 'ms', record_time)
+    results.Add('record_time_sk_null_canvas', 'ms', record_time_sk_null_canvas)
+    results.Add('record_time_painting_disabled', 'ms',
+        record_time_painting_disabled)
     results.Add('pixels_rasterized', 'pixels', pixels_rasterized)
     results.Add('rasterize_time', 'ms', rasterize_time)
 
