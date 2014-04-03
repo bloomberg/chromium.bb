@@ -313,7 +313,7 @@ bool AnimationPlayer::update(UpdateReason reason)
     if (reason == UpdateForAnimationFrame) {
         const AtomicString& eventType = EventTypeNames::finish;
         if (finished() && !m_finished && executionContext() && hasEventListeners(eventType)) {
-            RefPtr<AnimationPlayerEvent> event = AnimationPlayerEvent::create(eventType, currentTime(), timeline()->currentTime());
+            RefPtrWillBeRawPtr<AnimationPlayerEvent> event = AnimationPlayerEvent::create(eventType, currentTime(), timeline()->currentTime());
             event->setTarget(this);
             event->setCurrentTarget(this);
             m_timeline->document()->enqueueAnimationFrameEvent(event.release());
