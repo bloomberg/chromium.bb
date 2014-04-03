@@ -567,7 +567,6 @@
             '../chrome/chrome.gyp:chrome',
             # Dependencies of pyauto_functional tests.
             '../remoting/remoting.gyp:remoting_webapp',
-            '../chrome/chrome.gyp:pyautolib',
           ],
           'conditions': [
             ['OS=="mac"', {
@@ -603,7 +602,7 @@
         {
           # This target contains everything we need to run tests on the special
           # device-equipped WebRTC bots. We have device-requiring tests in
-          # PyAuto, browser_tests and content_browsertests.
+          # browser_tests and content_browsertests.
           'target_name': 'chromium_builder_webrtc',
           'type': 'none',
           'dependencies': [

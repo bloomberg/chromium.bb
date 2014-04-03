@@ -750,9 +750,6 @@
               'actions': [
                 {
                   'action_name': 'strip_reliability_tests',
-                  'inputs': [
-                    '<(PRODUCT_DIR)/_pyautolib.so',
-                  ],
                   'outputs': [
                     '<(PRODUCT_DIR)/strip_reliability_tests.stamp',
                   ],
