@@ -37,6 +37,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "WebDataSource.h"
 #include "WebDevToolsAgentClient.h"
+#include "WebDeviceEmulationParams.h"
 #include "WebFrameImpl.h"
 #include "WebInputEventConversion.h"
 #include "WebMemoryUsageInfo.h"
@@ -328,7 +329,6 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
         if (m_deviceMetricsEnabled) {
             m_deviceMetricsEnabled = false;
             m_webViewImpl->setBackgroundColorOverride(Color::transparent);
-            RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
             disableViewportEmulation();
             m_client->disableDeviceEmulation();
         }
@@ -336,14 +336,19 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
         if (!m_deviceMetricsEnabled) {
             m_deviceMetricsEnabled = true;
             m_webViewImpl->setBackgroundColorOverride(Color::darkGray);
-            m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
-            RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
         }
         if (emulateViewport)
             enableViewportEmulation();
         else
             disableViewportEmulation();
-        m_client->enableDeviceEmulation(IntRect(10, 10, width, height), IntRect(0, 0, width, height), deviceScaleFactor, fitWindow);
+
+        WebDeviceEmulationParams params;
+        params.screenPosition = emulateViewport ? WebDeviceEmulationParams::Mobile : WebDeviceEmulationParams::Desktop;
+        params.deviceScaleFactor = deviceScaleFactor;
+        params.viewSize = WebSize(width, height);
+        params.fitToView = fitWindow;
+        params.viewInsets = WebSize(10, 10);
+        m_client->enableDeviceEmulation(params);
     }
 }
 
@@ -352,6 +357,8 @@ void WebDevToolsAgentImpl::enableViewportEmulation()
     if (m_emulateViewportEnabled)
         return;
     m_emulateViewportEnabled = true;
+    m_isOverlayScrollbarsEnabled = RuntimeEnabledFeatures::overlayScrollbarsEnabled();
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
     m_originalViewportEnabled = RuntimeEnabledFeatures::cssViewportEnabled();
     RuntimeEnabledFeatures::setCSSViewportEnabled(true);
     m_webViewImpl->settings()->setViewportEnabled(true);
@@ -365,6 +372,7 @@ void WebDevToolsAgentImpl::disableViewportEmulation()
 {
     if (!m_emulateViewportEnabled)
         return;
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(m_isOverlayScrollbarsEnabled);
     RuntimeEnabledFeatures::setCSSViewportEnabled(m_originalViewportEnabled);
     m_webViewImpl->settings()->setViewportEnabled(false);
     m_webViewImpl->settings()->setViewportMetaEnabled(false);

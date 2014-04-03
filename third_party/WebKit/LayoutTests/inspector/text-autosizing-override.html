@@ -61,26 +61,26 @@
       },
 
       function checkAutosizedWithDeviceMetrics(next) {
-        PageAgent.setDeviceMetricsOverride(1920, 1200, 2, false, true, true, function() {
+        PageAgent.invoke_setDeviceMetricsOverride({width: 1920, height: 1200, deviceScaleFactor: 2, emulateViewport: false, fitWindow: true, textAutosizing: true}, function() {
           assertAutosizingResult(true, next);
         });
       },
 
       function checkNotAutosizedWithDeviceMetrics(next) {
-        PageAgent.setDeviceMetricsOverride(1920, 1200, 2, false, true, false, function() {
+        PageAgent.invoke_setDeviceMetricsOverride({width: 1920, height: 1200, deviceScaleFactor: 2, emulateViewport: false, fitWindow: true, textAutosizing: false}, function() {
           assertAutosizingResult(false, next);
         });
       },
 
       function checkNotAutosizedWithoutDeviceMetrics(next) {
-        PageAgent.setDeviceMetricsOverride(0, 0, 0, false, false, true, function() {
+        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: false, fitWindow: false, textAutosizing: true}, function() {
           assertAutosizingResult(false, next);
         });
       },
 
       function checkAutosizedWhenDeviceMetricsOverrideSettings(next) {
         InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          PageAgent.setDeviceMetricsOverride(1920, 1200, 2, false, true, true, function() {
+          PageAgent.invoke_setDeviceMetricsOverride({width: 1920, height: 1200, deviceScaleFactor: 2, emulateViewport: false, fitWindow: true, textAutosizing: true}, function() {
             assertAutosizingResult(true, next);
           });
         });

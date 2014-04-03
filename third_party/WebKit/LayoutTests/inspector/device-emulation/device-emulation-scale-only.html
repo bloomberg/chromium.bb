@@ -39,7 +39,7 @@ function test()
     function applyEmulationAndCheckMetrics(deviceScaleFactor, callback)
     {
         InspectorTest.addResult("Overriding device scale factor: " + deviceScaleFactor);
-        PageAgent.setDeviceMetricsOverride(0, 0, deviceScaleFactor, false, false, false, 1, getPageMetrics.bind(null, check));
+        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: deviceScaleFactor, emulateViewport: false, fitWindow: false}, getPageMetrics.bind(null, check));
 
         function check(metrics)
         {

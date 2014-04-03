@@ -3270,6 +3270,8 @@ void WebViewImpl::setInspectorSetting(const WebString& key,
 
 void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor)
 {
+    if (m_compositorDeviceScaleFactorOverride == deviceScaleFactor)
+        return;
     m_compositorDeviceScaleFactorOverride = deviceScaleFactor;
     if (page() && m_layerTreeView)
         updateLayerTreeDeviceScaleFactor();
@@ -3277,6 +3279,8 @@ void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor
 
 void WebViewImpl::setRootLayerTransform(const WebSize& rootLayerOffset, float rootLayerScale)
 {
+    if (m_rootLayerScale == rootLayerScale && m_rootLayerOffset == rootLayerOffset)
+        return;
     m_rootLayerScale = rootLayerScale;
     m_rootLayerOffset = rootLayerOffset;
     if (mainFrameImpl())
