@@ -452,6 +452,39 @@ bool LayerAnimationController::HasAnimationThatAffectsScale() const {
   return false;
 }
 
+bool LayerAnimationController::HasOnlyTranslationTransforms() const {
+  for (size_t i = 0; i < active_animations_.size(); ++i) {
+    if (active_animations_[i]->is_finished() ||
+        active_animations_[i]->target_property() != Animation::Transform)
+      continue;
+
+    const TransformAnimationCurve* transform_animation_curve =
+        active_animations_[i]->curve()->ToTransformAnimationCurve();
+    if (!transform_animation_curve->IsTranslation())
+      return false;
+  }
+
+  return true;
+}
+
+bool LayerAnimationController::MaximumScale(float* max_scale) const {
+  *max_scale = 0.f;
+  for (size_t i = 0; i < active_animations_.size(); ++i) {
+    if (active_animations_[i]->is_finished() ||
+        active_animations_[i]->target_property() != Animation::Transform)
+      continue;
+
+    const TransformAnimationCurve* transform_animation_curve =
+        active_animations_[i]->curve()->ToTransformAnimationCurve();
+    float animation_scale = 0.f;
+    if (!transform_animation_curve->MaximumScale(&animation_scale))
+      return false;
+    *max_scale = std::max(*max_scale, animation_scale);
+  }
+
+  return true;
+}
+
 void LayerAnimationController::PushNewAnimationsToImplThread(
     LayerAnimationController* controller_impl) const {
   // Any new animations owned by the main thread's controller are cloned and

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/box_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/gfx/vector3d_f.h"
@@ -87,6 +88,89 @@ bool TransformOperations::AffectsScale() const {
       return true;
   }
   return false;
+}
+
+bool TransformOperations::IsTranslation() const {
+  for (size_t i = 0; i < operations_.size(); ++i) {
+    switch (operations_[i].type) {
+      case TransformOperation::TransformOperationIdentity:
+      case TransformOperation::TransformOperationTranslate:
+        continue;
+      case TransformOperation::TransformOperationMatrix:
+        if (!operations_[i].matrix.IsIdentityOrTranslation())
+          return false;
+        continue;
+      case TransformOperation::TransformOperationRotate:
+      case TransformOperation::TransformOperationScale:
+      case TransformOperation::TransformOperationSkew:
+      case TransformOperation::TransformOperationPerspective:
+        return false;
+    }
+  }
+  return true;
+}
+
+bool TransformOperations::MaximumScale(const TransformOperations& from,
+                                       SkMScalar min_progress,
+                                       SkMScalar max_progress,
+                                       float* max_scale) const {
+  if (!MatchesTypes(from))
+    return false;
+
+  gfx::Vector3dF from_scale;
+  gfx::Vector3dF to_scale;
+
+  if (!from.ScaleComponent(&from_scale) || !ScaleComponent(&to_scale))
+    return false;
+
+  gfx::Vector3dF scale_at_min_progress(
+      std::abs(gfx::Tween::FloatValueBetween(
+          min_progress, from_scale.x(), to_scale.x())),
+      std::abs(gfx::Tween::FloatValueBetween(
+          min_progress, from_scale.y(), to_scale.y())),
+      std::abs(gfx::Tween::FloatValueBetween(
+          min_progress, from_scale.z(), to_scale.z())));
+  gfx::Vector3dF scale_at_max_progress(
+      std::abs(gfx::Tween::FloatValueBetween(
+          max_progress, from_scale.x(), to_scale.x())),
+      std::abs(gfx::Tween::FloatValueBetween(
+          max_progress, from_scale.y(), to_scale.y())),
+      std::abs(gfx::Tween::FloatValueBetween(
+          max_progress, from_scale.z(), to_scale.z())));
+
+  gfx::Vector3dF max_scale_3d = scale_at_min_progress;
+  max_scale_3d.SetToMax(scale_at_max_progress);
+  *max_scale =
+      std::max(max_scale_3d.x(), std::max(max_scale_3d.y(), max_scale_3d.z()));
+  return true;
+}
+
+bool TransformOperations::ScaleComponent(gfx::Vector3dF* scale) const {
+  *scale = gfx::Vector3dF(1.f, 1.f, 1.f);
+  bool has_scale_component = false;
+  for (size_t i = 0; i < operations_.size(); ++i) {
+    switch (operations_[i].type) {
+      case TransformOperation::TransformOperationIdentity:
+      case TransformOperation::TransformOperationTranslate:
+        continue;
+      case TransformOperation::TransformOperationMatrix:
+        if (!operations_[i].matrix.IsIdentityOrTranslation())
+          return false;
+        continue;
+      case TransformOperation::TransformOperationRotate:
+      case TransformOperation::TransformOperationSkew:
+      case TransformOperation::TransformOperationPerspective:
+        return false;
+      case TransformOperation::TransformOperationScale:
+        if (has_scale_component)
+          return false;
+        has_scale_component = true;
+        scale->Scale(operations_[i].scale.x,
+                     operations_[i].scale.y,
+                     operations_[i].scale.z);
+    }
+  }
+  return true;
 }
 
 bool TransformOperations::MatchesTypes(const TransformOperations& other) const {

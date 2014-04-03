@@ -78,6 +78,13 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
   // Returns true if this animation affects scale.
   virtual bool AffectsScale() const = 0;
 
+  // Returns true if this animation is a translation.
+  virtual bool IsTranslation() const = 0;
+
+  // Set |max_scale| to the maximum scale along any dimension during this
+  // animation. Returns false if the maximum scale cannot be computed.
+  virtual bool MaximumScale(float* max_scale) const = 0;
+
   // Partial Animation implementation.
   virtual CurveType Type() const OVERRIDE;
 };

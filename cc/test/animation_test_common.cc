@@ -170,6 +170,13 @@ bool FakeTransformTransition::AnimatedBoundsForBox(const gfx::BoxF& box,
 
 bool FakeTransformTransition::AffectsScale() const { return false; }
 
+bool FakeTransformTransition::IsTranslation() const { return true; }
+
+bool FakeTransformTransition::MaximumScale(float* max_scale) const {
+  *max_scale = 1.f;
+  return true;
+}
+
 scoped_ptr<AnimationCurve> FakeTransformTransition::Clone() const {
   return make_scoped_ptr(new FakeTransformTransition(*this))
       .PassAs<AnimationCurve>();

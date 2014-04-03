@@ -121,6 +121,12 @@ class CC_EXPORT LayerAnimationController
 
   bool HasAnimationThatAffectsScale() const;
 
+  bool HasOnlyTranslationTransforms() const;
+
+  // Sets |max_scale| to the maximum scale along any dimension during active
+  // animations. Returns false if the maximum scale cannot be computed.
+  bool MaximumScale(float* max_scale) const;
+
  protected:
   friend class base::RefCounted<LayerAnimationController>;
 

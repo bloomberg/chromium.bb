@@ -66,6 +66,15 @@ bool TransformAnimationCurveAdapter::AffectsScale() const {
          !target_value_.IsIdentityOrTranslation();
 }
 
+bool TransformAnimationCurveAdapter::IsTranslation() const {
+  return initial_value_.IsIdentityOrTranslation() &&
+         target_value_.IsIdentityOrTranslation();
+}
+
+bool TransformAnimationCurveAdapter::MaximumScale(float* max_scale) const {
+  return false;
+}
+
 InverseTransformCurveAdapter::InverseTransformCurveAdapter(
     TransformAnimationCurveAdapter base_curve,
     gfx::Transform initial_value,
@@ -118,6 +127,15 @@ bool InverseTransformCurveAdapter::AnimatedBoundsForBox(
 bool InverseTransformCurveAdapter::AffectsScale() const {
   return !initial_value_.IsIdentityOrTranslation() ||
          base_curve_.AffectsScale();
+}
+
+bool InverseTransformCurveAdapter::IsTranslation() const {
+  return initial_value_.IsIdentityOrTranslation() &&
+         base_curve_.IsTranslation();
+}
+
+bool InverseTransformCurveAdapter::MaximumScale(float* max_scale) const {
+  return false;
 }
 
 }  // namespace ui

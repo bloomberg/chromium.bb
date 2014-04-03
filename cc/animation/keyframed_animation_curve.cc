@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "cc/animation/keyframed_animation_curve.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/box_f.h"
@@ -339,6 +341,36 @@ bool KeyframedTransformAnimationCurve::AffectsScale() const {
       return true;
   }
   return false;
+}
+
+bool KeyframedTransformAnimationCurve::IsTranslation() const {
+  for (size_t i = 0; i < keyframes_.size(); ++i) {
+    if (!keyframes_[i]->Value().IsTranslation() &&
+        !keyframes_[i]->Value().IsIdentity())
+      return false;
+  }
+  return true;
+}
+
+bool KeyframedTransformAnimationCurve::MaximumScale(float* max_scale) const {
+  DCHECK_GE(keyframes_.size(), 2ul);
+  *max_scale = 0.f;
+  for (size_t i = 1; i < keyframes_.size(); ++i) {
+    float min_progress = 0.f;
+    float max_progress = 1.f;
+    if (keyframes_[i - 1]->timing_function())
+      keyframes_[i - 1]->timing_function()->Range(&min_progress, &max_progress);
+
+    float max_scale_for_segment = 0.f;
+    if (!keyframes_[i]->Value().MaximumScale(keyframes_[i - 1]->Value(),
+                                             min_progress,
+                                             max_progress,
+                                             &max_scale_for_segment))
+      return false;
+
+    *max_scale = std::max(*max_scale, max_scale_for_segment);
+  }
+  return true;
 }
 
 scoped_ptr<KeyframedFilterAnimationCurve> KeyframedFilterAnimationCurve::

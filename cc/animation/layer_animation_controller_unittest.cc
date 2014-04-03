@@ -1732,5 +1732,130 @@ TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
   EXPECT_FALSE(controller_impl->HasAnimationThatAffectsScale());
 }
 
+TEST(LayerAnimationControllerTest, HasOnlyTranslationTransforms) {
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+
+  controller_impl->AddAnimation(CreateAnimation(
+      scoped_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)).Pass(),
+      1,
+      Animation::Opacity));
+
+  // Opacity animations aren't non-translation transforms.
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve1(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations1, scoped_ptr<TimingFunction>()));
+  operations1.AppendTranslate(10.0, 15.0, 0.0);
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations1, scoped_ptr<TimingFunction>()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 2, 2, Animation::Transform));
+  controller_impl->AddAnimation(animation.Pass());
+
+  // The only transform animation we've added is a translation.
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve2(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations2;
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations2, scoped_ptr<TimingFunction>()));
+  operations2.AppendScale(2.0, 3.0, 4.0);
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations2, scoped_ptr<TimingFunction>()));
+
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
+  controller_impl->AddAnimation(animation.Pass());
+
+  // A scale animation is not a translation.
+  EXPECT_FALSE(controller_impl->HasOnlyTranslationTransforms());
+
+  controller_impl->GetAnimation(3, Animation::Transform)
+      ->SetRunState(Animation::Finished, 0.0);
+
+  // Only unfinished animations should be considered by
+  // HasOnlyTranslationTransforms.
+  EXPECT_TRUE(controller_impl->HasOnlyTranslationTransforms());
+}
+
+TEST(LayerAnimationControllerTest, MaximumScale) {
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+
+  float max_scale = 0.f;
+  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_EQ(0.f, max_scale);
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve1(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations1, scoped_ptr<TimingFunction>()));
+  operations1.AppendScale(2.0, 3.0, 4.0);
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations1, scoped_ptr<TimingFunction>()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 1, 1, Animation::Transform));
+  controller_impl->AddAnimation(animation.Pass());
+
+  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_EQ(4.f, max_scale);
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve2(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations2;
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations2, scoped_ptr<TimingFunction>()));
+  operations2.AppendScale(6.0, 5.0, 4.0);
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations2, scoped_ptr<TimingFunction>()));
+
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 2, 2, Animation::Transform);
+  controller_impl->AddAnimation(animation.Pass());
+
+  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_EQ(6.f, max_scale);
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve3(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations3;
+  curve3->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations3, scoped_ptr<TimingFunction>()));
+  operations3.AppendPerspective(6.0);
+  curve3->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations3, scoped_ptr<TimingFunction>()));
+
+  animation = Animation::Create(
+      curve3.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
+  controller_impl->AddAnimation(animation.Pass());
+
+  EXPECT_FALSE(controller_impl->MaximumScale(&max_scale));
+
+  controller_impl->GetAnimation(3, Animation::Transform)
+      ->SetRunState(Animation::Finished, 0.0);
+  controller_impl->GetAnimation(2, Animation::Transform)
+      ->SetRunState(Animation::Finished, 0.0);
+
+  // Only unfinished animations should be considered by
+  // MaximumScale.
+  EXPECT_TRUE(controller_impl->MaximumScale(&max_scale));
+  EXPECT_EQ(4.f, max_scale);
+}
+
 }  // namespace
 }  // namespace cc
