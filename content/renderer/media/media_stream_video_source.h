@@ -66,6 +66,9 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // exist.
   webrtc::VideoSourceInterface* GetAdapter();
 
+  // Return true if |name| is a constraint supported by MediaStreamVideoSource.
+  static bool IsConstraintSupported(const std::string& name);
+
   // Constraint keys used by a video source.
   // Specified by draft-alvestrand-constraints-resolution-00b
   static const char kMinAspectRatio[];  // minAspectRatio
@@ -120,6 +123,15 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // method has been called, MediaStreamVideoSource may be deleted.
   virtual void StopSourceImpl() = 0;
 
+  enum State {
+    NEW,
+    RETRIEVING_CAPABILITIES,
+    STARTING,
+    STARTED,
+    ENDED
+  };
+  State state() { return state_; }
+
  private:
   // Creates a webrtc::VideoSourceInterface used by libjingle.
   void InitAdapter();
@@ -140,13 +152,6 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // AddTrack match the format that was used to start the device.
   void FinalizeAddTrack();
 
-  enum State {
-    NEW,
-    RETRIEVING_CAPABILITIES,
-    STARTING,
-    STARTED,
-    ENDED
-  };
   State state_;
 
   media::VideoCaptureFormat current_format_;

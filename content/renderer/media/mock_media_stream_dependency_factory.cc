@@ -130,10 +130,6 @@ class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
         height_(0) {
   }
 
-  virtual void SetRequestedFormat(
-      const media::VideoCaptureFormat& format) OVERRIDE {
-  }
-
   virtual void OnFrameCaptured(
       const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
     ++number_of_capturered_frames_;

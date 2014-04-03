@@ -25,12 +25,6 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
   explicit WebRtcVideoCapturerAdapter(bool is_screencast);
   virtual ~WebRtcVideoCapturerAdapter();
 
-  // Sets the requested format. cricket::VideoCapturer may try to scale or
-  // crop to this format if the frame delivered in OnFrameCaptured is not in
-  // this format.
-  // This method is virtual for testing purposes.
-  virtual void SetRequestedFormat(const media::VideoCaptureFormat& format);
-
   // This method is virtual for testing purposes.
   virtual void OnFrameCaptured(const scoped_refptr<media::VideoFrame>& frame);
 

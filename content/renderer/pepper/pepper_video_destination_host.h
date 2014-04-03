@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/video_destination_handler.h"
+#include "content/renderer/media/webrtc/video_destination_handler.h"
 #include "ppapi/c/pp_time.h"
 #include "ppapi/host/resource_host.h"
 

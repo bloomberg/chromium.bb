@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/renderer/media/media_stream_video_source.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -31,6 +32,10 @@ void GetNativeMediaConstraints(
 
     // Ignore sourceId constraint since that has nothing to do with webrtc.
     if (new_constraint.key == kMediaStreamSourceInfoId)
+      continue;
+
+    // Ignore constraints that are handled by Chrome in MediaStreamVideoSource.
+    if (MediaStreamVideoSource::IsConstraintSupported(new_constraint.key))
       continue;
 
     DVLOG(3) << "MediaStreamConstraints:" << new_constraint.key

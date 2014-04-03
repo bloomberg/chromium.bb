@@ -5,42 +5,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_dependency_factory.h"
+#include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-class MockVideoSink : public MediaStreamVideoSink {
- public:
-  MockVideoSink()
-      : number_of_frames_(0), enabled_(true),
-        state_(blink::WebMediaStreamSource::ReadyStateLive) {
-  }
-
-  virtual void OnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
-    ++number_of_frames_;
-  }
-
-  virtual void OnReadyStateChanged(
-        blink::WebMediaStreamSource::ReadyState state) OVERRIDE {
-    state_ = state;
-  }
-
-  virtual void OnEnabledChanged(bool enabled) OVERRIDE {
-    enabled_ = enabled;
-  }
-
-  int number_of_frames() const { return number_of_frames_; }
-  bool enabled() const { return enabled_; }
-  blink::WebMediaStreamSource::ReadyState state() const { return state_; }
-
- private:
-  int number_of_frames_;
-  bool enabled_;
-  blink::WebMediaStreamSource::ReadyState state_;
-};
 
 class MediaStreamVideoTrackTest : public ::testing::Test {
  public:
@@ -84,7 +54,7 @@ TEST_F(MediaStreamVideoTrackTest, GetAdapter) {
 }
 
 TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
-  MockVideoSink sink;
+  MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
   MediaStreamVideoSink::AddToVideoTrack(&sink, track);
 
@@ -105,7 +75,7 @@ TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
 }
 
 TEST_F(MediaStreamVideoTrackTest, SetEnabled) {
-  MockVideoSink sink;
+  MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
   MediaStreamVideoSink::AddToVideoTrack(&sink, track);
 
@@ -131,7 +101,7 @@ TEST_F(MediaStreamVideoTrackTest, SetEnabled) {
 }
 
 TEST_F(MediaStreamVideoTrackTest, SourceStopped) {
-  MockVideoSink sink;
+  MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
   MediaStreamVideoSink::AddToVideoTrack(&sink, track);
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());

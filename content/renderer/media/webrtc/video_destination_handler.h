@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_VIDEO_DESTINATION_HANDLER_H_
-#define CONTENT_RENDERER_MEDIA_VIDEO_DESTINATION_HANDLER_H_
+#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_VIDEO_DESTINATION_HANDLER_H_
+#define CONTENT_RENDERER_MEDIA_WEBRTC_VIDEO_DESTINATION_HANDLER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/synchronization/lock.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/media/base/videocapturer.h"
+#include "content/renderer/media/media_stream_video_source.h"
+#include "media/base/video_frame_pool.h"
 
 namespace content {
 
@@ -30,43 +31,40 @@ class CONTENT_EXPORT FrameWriterInterface {
   virtual ~FrameWriterInterface() {}
 };
 
-// PpFrameWriter implements cricket::VideoCapturer so that it can be used in
-// the native video track's video source. It also implements
+// PpFrameWriter implements MediaStreamVideoSource and can therefore provide
+// video frames to MediaStreamVideoTracks. It also implements
 // FrameWriterInterface, which will be used by the effects pepper plugin to
 // inject the processed frame.
 class CONTENT_EXPORT PpFrameWriter
-    : public NON_EXPORTED_BASE(cricket::VideoCapturer),
-      public FrameWriterInterface {
+    : NON_EXPORTED_BASE(public MediaStreamVideoSource),
+      public FrameWriterInterface,
+      NON_EXPORTED_BASE(public base::SupportsWeakPtr<PpFrameWriter>) {
  public:
-  PpFrameWriter();
+  explicit PpFrameWriter(MediaStreamDependencyFactory* factory);
   virtual ~PpFrameWriter();
-
-  // cricket::VideoCapturer implementation.
-  // These methods are accessed from a libJingle worker thread.
-  virtual cricket::CaptureState Start(
-      const cricket::VideoFormat& capture_format) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual bool IsRunning() OVERRIDE;
-  virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) OVERRIDE;
-  virtual bool GetBestCaptureFormat(const cricket::VideoFormat& desired,
-                                    cricket::VideoFormat* best_format) OVERRIDE;
-  virtual bool IsScreencast() const OVERRIDE;
 
   // FrameWriterInterface implementation.
   // This method will be called by the Pepper host from render thread.
   virtual void PutFrame(PPB_ImageData_Impl* image_data,
                         int64 time_stamp_ns) OVERRIDE;
+ protected:
+  // MediaStreamVideoSource implementation.
+  virtual void GetCurrentSupportedFormats(int max_requested_width,
+                                          int max_requested_height) OVERRIDE;
+  virtual void StartSourceImpl(
+      const media::VideoCaptureParams& params) OVERRIDE;
+  virtual void StopSourceImpl() OVERRIDE;
 
  private:
-  bool started_;
-  // |lock_| is used to protect |started_| which will be accessed from different
-  // threads - libjingle worker thread and render thread.
-  base::Lock lock_;
+  // |format_| is the format currently received by this source.
+  media::VideoCaptureFormat format_;
+  bool first_frame_received_;
+  media::VideoFramePool frame_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(PpFrameWriter);
 };
 
-// VideoDestinationHandler is a glue class between the webrtc MediaStream and
+// VideoDestinationHandler is a glue class between the content MediaStream and
 // the effects pepper plugin host.
 class CONTENT_EXPORT VideoDestinationHandler {
  public:

@@ -383,4 +383,26 @@ TEST_F(MediaStreamVideoSourceTest, DeliverSmallerSizeWhenTooLargeMax) {
                       1280, 720);
 }
 
+TEST_F(MediaStreamVideoSourceTest, IsConstraintSupported) {
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+          MediaStreamVideoSource::kMaxFrameRate));
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+        MediaStreamVideoSource::kMinFrameRate));
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+      MediaStreamVideoSource::kMaxWidth));
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+        MediaStreamVideoSource::kMinWidth));
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+        MediaStreamVideoSource::kMaxHeight));
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+      MediaStreamVideoSource::kMinHeight));
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+        MediaStreamVideoSource::kMaxAspectRatio));
+  EXPECT_TRUE(MediaStreamVideoSource::IsConstraintSupported(
+      MediaStreamVideoSource::kMinAspectRatio));
+
+  EXPECT_FALSE(MediaStreamVideoSource::IsConstraintSupported(
+      "googCpuAdaptation"));
+}
+
 }  // namespace content

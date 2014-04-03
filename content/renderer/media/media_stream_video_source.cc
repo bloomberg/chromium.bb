@@ -26,6 +26,17 @@ const char MediaStreamVideoSource::kMinHeight[] = "minHeight";
 const char MediaStreamVideoSource::kMaxFrameRate[] = "maxFrameRate";
 const char MediaStreamVideoSource::kMinFrameRate[] = "minFrameRate";
 
+const char* kSupportedConstraints[] = {
+    MediaStreamVideoSource::kMaxAspectRatio,
+    MediaStreamVideoSource::kMinAspectRatio,
+    MediaStreamVideoSource::kMaxWidth,
+    MediaStreamVideoSource::kMinWidth,
+    MediaStreamVideoSource::kMaxHeight,
+    MediaStreamVideoSource::kMinHeight,
+    MediaStreamVideoSource::kMaxFrameRate,
+    MediaStreamVideoSource::kMinFrameRate,
+};
+
 const int MediaStreamVideoSource::kDefaultWidth = 640;
 const int MediaStreamVideoSource::kDefaultHeight = 480;
 const int MediaStreamVideoSource::kDefaultFrameRate = 30;
@@ -283,6 +294,15 @@ MediaStreamVideoSource* MediaStreamVideoSource::GetVideoSource(
   return static_cast<MediaStreamVideoSource*>(source.extraData());
 }
 
+//static
+bool MediaStreamVideoSource::IsConstraintSupported(const std::string& name) {
+  for (size_t i = 0; i < arraysize(kSupportedConstraints); ++i) {
+    if (kSupportedConstraints[i] == name)
+      return true;
+  }
+  return false;
+}
+
 MediaStreamVideoSource::MediaStreamVideoSource(
     MediaStreamDependencyFactory* factory)
     : state_(NEW),
@@ -354,7 +374,6 @@ void MediaStreamVideoSource::InitAdapter() {
       device_info().device.type == MEDIA_TAB_VIDEO_CAPTURE ||
       device_info().device.type == MEDIA_DESKTOP_VIDEO_CAPTURE;
   capture_adapter_ = factory_->CreateVideoCapturer(is_screencast);
-  capture_adapter_->SetRequestedFormat(current_format_);
   adapter_ = factory_->CreateVideoSource(capture_adapter_,
                                          current_constraints_);
 }

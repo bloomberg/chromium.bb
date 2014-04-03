@@ -24,25 +24,6 @@ WebRtcVideoCapturerAdapter::~WebRtcVideoCapturerAdapter() {
   base::AlignedFree(buffer_);
 }
 
-void WebRtcVideoCapturerAdapter::SetRequestedFormat(
-    const media::VideoCaptureFormat& format) {
-  DCHECK_EQ(media::PIXEL_FORMAT_I420, format.pixel_format);
-  DVLOG(3) << "WebRtcVideoCapturerAdapter::SetRequestedFormat"
-           << " w = " << format.frame_size.width()
-           << " h = " << format.frame_size.height();
-  cricket::VideoFormat supported_format(format.frame_size.width(),
-                                        format.frame_size.height(),
-                                        cricket::VideoFormat::FpsToInterval(
-                                            format.frame_rate),
-                                        cricket::FOURCC_I420);
-  SetCaptureFormat(&supported_format);
-
-  // Update the desired aspect ratio so that later the video frame can be
-  // cropped to meet the requirement if the camera returns a different
-  // resolution than the |request|.
-  UpdateAspectRatio(format.frame_size.width(), format.frame_size.height());
-}
-
 cricket::CaptureState WebRtcVideoCapturerAdapter::Start(
     const cricket::VideoFormat& capture_format) {
   DCHECK(!running_);

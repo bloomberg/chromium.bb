@@ -564,6 +564,8 @@
         'renderer/media/media_stream_video_capture_source_unittest.cc',
         'renderer/media/media_stream_video_source_unittest.cc',
         'renderer/media/media_stream_video_track_unittest.cc',
+        'renderer/media/mock_media_stream_video_sink.cc',
+        'renderer/media/mock_media_stream_video_sink.h',
         'renderer/media/mock_media_stream_video_source.cc',
         'renderer/media/mock_media_stream_video_source.h',
         'renderer/media/render_media_log_unittest.cc',
@@ -572,7 +574,6 @@
         'renderer/media/video_capture_impl_manager_unittest.cc',
         'renderer/media/video_capture_impl_unittest.cc',
         'renderer/media/video_capture_message_filter_unittest.cc',
-        'renderer/media/video_destination_handler_unittest.cc',
         'renderer/media/video_frame_compositor_unittest.cc',
         'renderer/media/webaudiosourceprovider_impl_unittest.cc',
         'renderer/npapi/webplugin_impl_unittest.cc',
@@ -703,7 +704,7 @@
           'sources!': [
             'browser/plugin_loader_posix_unittest.cc',
             'renderer/media/media_stream_video_source_unittest.cc',
-            'renderer/media/video_destination_handler_unittest.cc',
+            'renderer/media/webrtc/video_destination_handler_unittest.cc',
           ],
         }],
         ['enable_webrtc==1', {
@@ -725,6 +726,7 @@
             'renderer/media/rtc_video_decoder_unittest.cc',
             'renderer/media/video_source_handler_unittest.cc',
             'renderer/media/webrtc/media_stream_track_metrics_unittest.cc',
+            'renderer/media/webrtc/video_destination_handler_unittest.cc',
             'renderer/media/webrtc/webrtc_local_audio_track_adapter_unittest.cc',
             'renderer/media/webrtc/webrtc_video_capturer_adapter_unittest.cc',
             'renderer/media/webrtc_audio_capturer_unittest.cc',
