@@ -322,7 +322,6 @@ bool WebInputEventTraits::IgnoresAckDisposition(
     case WebInputEvent::GestureTapDown:
     case WebInputEvent::GestureShowPress:
     case WebInputEvent::GestureTapCancel:
-    case WebInputEvent::GestureTap:
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GestureScrollBegin:
