@@ -46,15 +46,15 @@ public:
     void requestSysexPermission(PassRefPtrWillBeRawPtr<MIDIAccess>);
     void cancelSysexPermissionRequest(MIDIAccess*);
 
-    static PassOwnPtr<MIDIController> create(MIDIClient*);
+    static PassOwnPtr<MIDIController> create(PassOwnPtr<MIDIClient>);
     static const char* supplementName();
     static MIDIController* from(Page* page) { return static_cast<MIDIController*>(Supplement<Page>::from(page, supplementName())); }
 
 protected:
-    explicit MIDIController(MIDIClient*);
+    explicit MIDIController(PassOwnPtr<MIDIClient>);
 
 private:
-    MIDIClient* m_client;
+    OwnPtr<MIDIClient> m_client;
 };
 
 } // namespace WebCore

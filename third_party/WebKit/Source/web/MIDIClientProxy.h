@@ -44,13 +44,18 @@ class WebMIDIClient;
 
 class MIDIClientProxy FINAL : public WebCore::MIDIClient {
 public:
-    explicit MIDIClientProxy(WebMIDIClient*);
+    static PassOwnPtr<MIDIClientProxy> create(WebMIDIClient* client)
+    {
+        return adoptPtr(new MIDIClientProxy(client));
+    }
 
     // WebCore::MIDIClient
     virtual void requestSysexPermission(PassRefPtrWillBeRawPtr<WebCore::MIDIAccess>) OVERRIDE;
     virtual void cancelSysexPermissionRequest(WebCore::MIDIAccess*) OVERRIDE;
 
 private:
+    explicit MIDIClientProxy(WebMIDIClient*);
+
     WebMIDIClient* m_client;
 };
 
