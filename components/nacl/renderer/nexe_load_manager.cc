@@ -323,6 +323,7 @@ void NexeLoadManager::LogToConsole(const std::string& message) {
 }
 
 void NexeLoadManager::set_exit_status(int exit_status) {
+  exit_status_ = exit_status;
   ppapi::ScopedPPVar exit_status_name_var(
       ppapi::ScopedPPVar::PassRef(),
       ppapi::StringVar::StringToPPVar("exitStatus"));
