@@ -625,7 +625,6 @@
         'browser/bookmarks/bookmark_index_unittest.cc',
         'browser/bookmarks/bookmark_model_unittest.cc',
         'browser/bookmarks/bookmark_node_data_unittest.cc',
-        'browser/bookmarks/bookmark_tag_model_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
         'browser/browser_commands_unittest.cc',
