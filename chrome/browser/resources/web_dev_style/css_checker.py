@@ -252,7 +252,7 @@ class CSSChecker(object):
           (?:0?\.?)?0%      # some equivalent to 0%""",
           re.VERBOSE)
       zeros_reg = re.compile(r"""
-          ^.*(?:^|\D)                                      # start/non-number
+          ^.*(?:^|[^0-9.])                                 # start/non-number
           (?:\.0|0(?:\.0?                                  # .0, 0, or 0.0
           |px|em|%|in|cm|mm|pc|pt|ex|deg|g?rad|m?s|k?hz))  # a length unit
           (?:\D|$)                                         # non-number/end

@@ -581,6 +581,11 @@ b:before,
   }
 }
 
+/* http://crbug.com/359682 */
+#spinner-container #spinner {
+  -webkit-animation-duration: 1.0s;
+}
+
 .media-button.play > .state0.active,
 .media-button[state='0'] > .state0.normal /* blah */, /* blee */
 .media-button[state='0']:not(.disabled):hover > .state0.hover {
