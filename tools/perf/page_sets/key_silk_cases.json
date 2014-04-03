@@ -36,6 +36,12 @@
       "smoothness": { "action": "wait", "seconds": 3 }
     },
     {
+      "url": "http://jsfiddle.net/jx5De/12/embedded/result",
+      "why": "Card expansion with animated contents, using will-change on the card",
+      "smoothness": { "action": "wait", "seconds": 4 },
+      "gpu_raster": true
+    },
+    {
       "url": "http://jsfiddle.net/3yDKh/6/embedded/result",
       "why": "Card fly-in: It should be fast to animate in a bunch of cards using margin-top and letting layout do the rest.",
       "smoothness": { "action": "wait", "seconds": 3 }
