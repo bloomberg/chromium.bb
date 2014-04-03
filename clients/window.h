@@ -602,6 +602,12 @@ output_get_transform(struct output *output);
 uint32_t
 output_get_scale(struct output *output);
 
+const char *
+output_get_make(struct output *output);
+
+const char *
+output_get_model(struct output *output);
+
 void
 keysym_modifiers_add(struct wl_array *modifiers_map,
 		     const char *name);
