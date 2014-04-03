@@ -132,7 +132,6 @@ DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
       severity_(severity),
       log_to_chrome_(log_to_chrome) {
   extra_ = GenerateExtra(err_ctx, err, NULL);
-  CreateTimestamp();
 }
 
 DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
@@ -147,7 +146,6 @@ DiagnosticLogMessage::DiagnosticLogMessage(const char* file,
       severity_(severity),
       log_to_chrome_(log_to_chrome) {
   extra_ = GenerateExtra(err_ctx, err, module);
-  CreateTimestamp();
 }
 
 DiagnosticLogMessage::~DiagnosticLogMessage() {
@@ -156,20 +154,8 @@ DiagnosticLogMessage::~DiagnosticLogMessage() {
   if (log_to_chrome_)
     LOG_LAZY_STREAM_DIRECT(file_name_, line_, severity_) << str;
   if (g_logging_delegate_function && severity_ <= LS_INFO) {
-    print_stream_with_timestamp_ << str;
-    g_logging_delegate_function(print_stream_with_timestamp_.str());
+    g_logging_delegate_function(str);
   }
-}
-
-void DiagnosticLogMessage::CreateTimestamp() {
-#if !defined(ANDROID)
-  static const uint32 g_logging_start_time = talk_base::Time();
-  uint32 time = talk_base::TimeSince(g_logging_start_time);
-  print_stream_with_timestamp_ << "[" << std::setfill('0')
-                               << std::setw(3) << (time / 1000)
-                               << ":" << std::setw(3) << (time % 1000)
-                               << std::setfill(' ') << "] ";
-#endif
 }
 
 // Note: this function is a copy from the overriden libjingle implementation.

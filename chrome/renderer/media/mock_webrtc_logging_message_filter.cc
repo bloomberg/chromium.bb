@@ -15,9 +15,11 @@ MockWebRtcLoggingMessageFilter::MockWebRtcLoggingMessageFilter(
 MockWebRtcLoggingMessageFilter::~MockWebRtcLoggingMessageFilter() {
 }
 
-void MockWebRtcLoggingMessageFilter::AddLogMessage(const std::string& message) {
+void MockWebRtcLoggingMessageFilter::AddLogMessages(
+    const std::vector<WebRtcLoggingMessageData>& messages) {
   CHECK(io_message_loop_->BelongsToCurrentThread());
-  log_buffer_ += message + "\n";
+  for (size_t i = 0; i < messages.size(); ++i)
+    log_buffer_ += messages[i].message + "\n";
 }
 
 void MockWebRtcLoggingMessageFilter::LoggingStopped() {

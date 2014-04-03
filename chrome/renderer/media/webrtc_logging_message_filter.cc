@@ -56,9 +56,10 @@ void WebRtcLoggingMessageFilter::OnChannelClosing() {
   log_message_delegate_->OnFilterRemoved();
 }
 
-void WebRtcLoggingMessageFilter::AddLogMessage(const std::string& message) {
+void WebRtcLoggingMessageFilter::AddLogMessages(
+    const std::vector<WebRtcLoggingMessageData>& messages) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
-  Send(new WebRtcLoggingMsg_AddLogMessage(message));
+  Send(new WebRtcLoggingMsg_AddLogMessages(messages));
 }
 
 void WebRtcLoggingMessageFilter::LoggingStopped() {

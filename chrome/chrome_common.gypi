@@ -283,6 +283,8 @@
         'common/mac/objc_zombie.h',
         'common/mac/objc_zombie.mm',
         'common/media/webrtc_logging_messages.h',
+        'common/media/webrtc_logging_message_data.cc',
+        'common/media/webrtc_logging_message_data.h',
         'common/metrics/caching_permuted_entropy_provider.cc',
         'common/metrics/caching_permuted_entropy_provider.h',
         'common/metrics/metrics_log_base.cc',

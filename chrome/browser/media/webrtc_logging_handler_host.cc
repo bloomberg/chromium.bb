@@ -219,7 +219,9 @@ void WebRtcLoggingHandlerHost::LogMessage(const std::string& message) {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(
-          &WebRtcLoggingHandlerHost::AddLogMessageFromBrowser, this, message));
+          &WebRtcLoggingHandlerHost::AddLogMessageFromBrowser,
+          this,
+          WebRtcLoggingMessageData(base::Time::Now(), message)));
 }
 
 void WebRtcLoggingHandlerHost::OnChannelClosing() {
@@ -227,6 +229,7 @@ void WebRtcLoggingHandlerHost::OnChannelClosing() {
   if (logging_state_ == STARTED || logging_state_ == STOPPED) {
     if (upload_log_on_render_close_) {
       logging_state_ = STOPPED;
+      logging_started_time_ = base::Time();
       content::BrowserThread::PostTaskAndReplyWithResult(
           content::BrowserThread::FILE,
           FROM_HERE,
@@ -249,7 +252,7 @@ bool WebRtcLoggingHandlerHost::OnMessageReceived(const IPC::Message& message,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebRtcLoggingHandlerHost, message, *message_was_ok)
-    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_AddLogMessage, OnAddLogMessage)
+    IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_AddLogMessages, OnAddLogMessages)
     IPC_MESSAGE_HANDLER(WebRtcLoggingMsg_LoggingStopped,
                         OnLoggingStoppedInRenderer)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -259,16 +262,20 @@ bool WebRtcLoggingHandlerHost::OnMessageReceived(const IPC::Message& message,
 }
 
 void WebRtcLoggingHandlerHost::AddLogMessageFromBrowser(
-    const std::string& message) {
+    const WebRtcLoggingMessageData& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (logging_state_ == STARTED)
-    LogToCircularBuffer(message);
+    LogToCircularBuffer(message.Format(logging_started_time_));
 }
 
-void WebRtcLoggingHandlerHost::OnAddLogMessage(const std::string& message) {
+void WebRtcLoggingHandlerHost::OnAddLogMessages(
+    const std::vector<WebRtcLoggingMessageData>& messages) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (logging_state_ == STARTED || logging_state_ == STOPPING)
-    LogToCircularBuffer(message);
+  if (logging_state_ == STARTED || logging_state_ == STOPPING) {
+    for (size_t i = 0; i < messages.size(); ++i) {
+      LogToCircularBuffer(messages[i].Format(logging_started_time_));
+    }
+  }
 }
 
 void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
@@ -281,6 +288,7 @@ void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
     BadMessageReceived();
     return;
   }
+  logging_started_time_ = base::Time();
   logging_state_ = STOPPED;
   FireGenericDoneCallback(&stop_callback_, true, "");
 }
@@ -398,6 +406,7 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
 void WebRtcLoggingHandlerHost::NotifyLoggingStarted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   Send(new WebRtcLoggingMsg_StartLogging());
+  logging_started_time_ = base::Time::Now();
   logging_state_ = STARTED;
   FireGenericDoneCallback(&start_callback_, true, "");
 }

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/shared_memory.h"
+#include "chrome/common/media/webrtc_logging_message_data.h"
 #include "content/public/renderer/webrtc_log_message_delegate.h"
 #include "ipc/ipc_channel_proxy.h"
 
@@ -41,12 +42,13 @@ class ChromeWebRtcLogMessageDelegate
   void OnStopLogging();
 
  private:
-  void LogMessageOnIOThread(const std::string& message);
+  void LogMessageOnIOThread(const WebRtcLoggingMessageData& message);
   void SendLogBuffer();
 
   scoped_refptr<base::MessageLoopProxy> io_message_loop_;
   bool logging_started_;
-  std::string log_buffer_;
+  std::vector<WebRtcLoggingMessageData> log_buffer_;
+
   base::TimeTicks last_log_buffer_send_;
 
   WebRtcLoggingMessageFilter* message_filter_;

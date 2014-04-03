@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/shared_memory.h"
+#include "chrome/common/media/webrtc_logging_message_data.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "net/base/net_util.h"
 
@@ -104,11 +105,11 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                                  bool* message_was_ok) OVERRIDE;
 
   // Handles log message requests from renderer process.
-  void OnAddLogMessage(const std::string& message);
+  void OnAddLogMessages(const std::vector<WebRtcLoggingMessageData>& messages);
   void OnLoggingStoppedInRenderer();
 
   // Handles log message requests from browser process.
-  void AddLogMessageFromBrowser(const std::string& message);
+  void AddLogMessageFromBrowser(const WebRtcLoggingMessageData& message);
 
   void StartLoggingIfAllowed();
   void DoStartLogging();
@@ -158,6 +159,10 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // it doesn't have to be passed on when posting messages between threads.
   // It's only accessed on the IO thread.
   base::SharedMemoryHandle foreign_memory_handle_;
+
+  // The system time in ms when logging is started. Reset when logging_state_
+  // changes to STOPPED.
+  base::Time logging_started_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLoggingHandlerHost);
 };

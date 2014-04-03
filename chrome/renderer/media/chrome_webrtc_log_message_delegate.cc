@@ -23,34 +23,38 @@ ChromeWebRtcLogMessageDelegate::~ChromeWebRtcLogMessageDelegate() {
 }
 
 void ChromeWebRtcLogMessageDelegate::LogMessage(const std::string& message) {
+  WebRtcLoggingMessageData data(base::Time::Now(), message);
+
   io_message_loop_->PostTask(
       FROM_HERE, base::Bind(
           &ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread,
           base::Unretained(this),
-          message));
+          data));
 }
 
 void ChromeWebRtcLogMessageDelegate::LogMessageOnIOThread(
-    const std::string& message) {
+    const WebRtcLoggingMessageData& message) {
   DCHECK(CalledOnValidThread());
+
   if (logging_started_ && message_filter_) {
     if (!log_buffer_.empty()) {
       // A delayed task has already been posted for sending the buffer contents.
       // Just add the message to the buffer.
-      log_buffer_ += "\n" + message;
+      log_buffer_.push_back(message);
+      return;
+    }
+
+    log_buffer_.push_back(message);
+
+    if (base::TimeTicks::Now() - last_log_buffer_send_ >
+        base::TimeDelta::FromMilliseconds(100)) {
+      SendLogBuffer();
     } else {
-      if (base::TimeTicks::Now() - last_log_buffer_send_ >
-          base::TimeDelta::FromMilliseconds(100)) {
-        log_buffer_ = message;
-        SendLogBuffer();
-      } else {
-        log_buffer_ = message;
-        io_message_loop_->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&ChromeWebRtcLogMessageDelegate::SendLogBuffer,
-                       base::Unretained(this)),
-            base::TimeDelta::FromMilliseconds(200));
-      }
+      io_message_loop_->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&ChromeWebRtcLogMessageDelegate::SendLogBuffer,
+                     base::Unretained(this)),
+          base::TimeDelta::FromMilliseconds(200));
     }
   }
 }
@@ -78,7 +82,7 @@ void ChromeWebRtcLogMessageDelegate::OnStopLogging() {
 void ChromeWebRtcLogMessageDelegate::SendLogBuffer() {
   DCHECK(CalledOnValidThread());
   if (logging_started_ && message_filter_) {
-    message_filter_->AddLogMessage(log_buffer_);
+    message_filter_->AddLogMessages(log_buffer_);
     last_log_buffer_send_ = base::TimeTicks::Now();
   }
   log_buffer_.clear();

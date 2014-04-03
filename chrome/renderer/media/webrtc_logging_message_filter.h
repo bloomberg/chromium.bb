@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 #define CHROME_RENDERER_MEDIA_WEBRTC_LOGGING_MESSAGE_FILTER_H_
 
+#include "chrome/common/media/webrtc_logging_message_data.h"
 #include "ipc/ipc_channel_proxy.h"
 
 namespace base {
@@ -22,7 +23,8 @@ class WebRtcLoggingMessageFilter
   explicit WebRtcLoggingMessageFilter(
       const scoped_refptr<base::MessageLoopProxy>& io_message_loop);
 
-  virtual void AddLogMessage(const std::string& message);
+  virtual void AddLogMessages(
+      const std::vector<WebRtcLoggingMessageData>& messages);
   virtual void LoggingStopped();
 
   const scoped_refptr<base::MessageLoopProxy>& io_message_loop() {

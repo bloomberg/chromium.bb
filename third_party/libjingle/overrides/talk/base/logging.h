@@ -119,7 +119,6 @@ class DiagnosticLogMessage {
   std::string extra_;
 
   std::ostringstream print_stream_;
-  std::ostringstream print_stream_with_timestamp_;
 };
 
 // This class is used to explicitly ignore values in the conditional
