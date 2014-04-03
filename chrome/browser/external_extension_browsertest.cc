@@ -83,7 +83,11 @@ class SearchProviderTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
 };
 
-#if defined(OS_WIN)
+#if 1
+// Disabled - http://crbug.com/359727 (js has syntax errors which v8 hates)
+#define MAYBE_TestIsSearchProviderInstalled \
+    DISABLED_TestIsSearchProviderInstalled
+#elif defined(OS_WIN)
 // This is flaking on XP. See http://crbug.com/159530
 #define MAYBE_TestIsSearchProviderInstalled \
     DISABLED_TestIsSearchProviderInstalled
