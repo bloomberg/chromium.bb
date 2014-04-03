@@ -83,9 +83,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual bool OnMessageReceived(RenderViewHost* render_view_host,
                                  const IPC::Message& message);
 
-  // Gets the URL that is currently being displayed, if there is one.
-  virtual const GURL& GetURL() const;
-
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL. DEPRECATED: Be sure to include brettw or
   // jam as reviewers before you use this method. http://crbug.com/82582
@@ -183,12 +180,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
                                       const base::string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) {}
-
-  // A message was added to to the console.
-  virtual bool AddMessageToConsole(int32 level,
-                                   const base::string16& message,
-                                   int32 line_no,
-                                   const base::string16& source_id);
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.

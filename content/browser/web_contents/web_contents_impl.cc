@@ -2845,6 +2845,10 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
   return OnMessageReceived(NULL, render_frame_host, message);
 }
 
+const GURL& WebContentsImpl::GetMainFrameLastCommittedURL() const {
+  return GetLastCommittedURL();
+}
+
 void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
   // Note this is only for subframes, the notification for the main frame
   // happens in RenderViewCreated.

@@ -443,11 +443,6 @@ public:
         WebTestProxyBase::didFinishResourceLoad(frame, identifier);
         Base::didFinishResourceLoad(frame, identifier);
     }
-    virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message, const blink::WebString& sourceName, unsigned sourceLine, const blink::WebString& stackTrace)
-    {
-        WebTestProxyBase::didAddMessageToConsole(message, sourceName, sourceLine);
-        Base::didAddMessageToConsole(message, sourceName, sourceLine, stackTrace);
-    }
     virtual void runModalAlertDialog(blink::WebFrame* frame, const blink::WebString& message)
     {
         WebTestProxyBase::runModalAlertDialog(frame, message);

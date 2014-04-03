@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -47,6 +48,18 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
                                         int world_id) {}
   virtual void DidClearWindowObject(int world_id) {}
+
+  // Called when we receive a console message from Blink for which we requested
+  // extra details (like the stack trace). |message| is the error message,
+  // |source| is the Blink-reported source of the error (either external or
+  // internal), and |stack_trace| is the stack trace of the error in a
+  // human-readable format (each frame is formatted as
+  // "\n    at function_name (source:line_number:column_number)").
+  virtual void DetailedConsoleMessageAdded(const base::string16& message,
+                                           const base::string16& source,
+                                           const base::string16& stack_trace,
+                                           int32 line_number,
+                                           int32 severity_level) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

@@ -401,7 +401,7 @@ RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
   return rvh_delegate_view_.get();
 }
 
-const GURL& InterstitialPageImpl::GetURL() const {
+const GURL& InterstitialPageImpl::GetMainFrameLastCommittedURL() const {
   return url_;
 }
 

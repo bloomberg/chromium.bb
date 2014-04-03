@@ -5,7 +5,10 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 
+#include "base/basictypes.h"
 #include "content/common/content_export.h"
+
+class GURL;
 
 namespace IPC {
 class Message;
@@ -23,6 +26,16 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // This is used to give the delegate a chance to filter IPC messages.
   virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
                                  const IPC::Message& message);
+
+  // Gets the last committed URL. See WebContents::GetLastCommittedURL for a
+  // description of the semantics.
+  virtual const GURL& GetMainFrameLastCommittedURL() const;
+
+  // A message was added to to the console.
+  virtual bool AddMessageToConsole(int32 level,
+                                   const base::string16& message,
+                                   int32 line_no,
+                                   const base::string16& source_id);
 
   // Informs the delegate whenever a RenderFrameHost is created.
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) {}

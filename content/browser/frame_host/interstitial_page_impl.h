@@ -119,7 +119,7 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
   virtual bool OnMessageReceived(RenderViewHost* render_view_host,
                                  const IPC::Message& message) OVERRIDE;
-  virtual const GURL& GetURL() const OVERRIDE;
+  virtual const GURL& GetMainFrameLastCommittedURL() const OVERRIDE;
   virtual void RenderViewTerminated(RenderViewHost* render_view_host,
                                     base::TerminationStatus status,
                                     int error_code) OVERRIDE;

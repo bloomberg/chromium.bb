@@ -1602,52 +1602,6 @@ WebStorageNamespace* RenderViewImpl::createSessionStorageNamespace() {
   return new WebStorageNamespaceImpl(session_storage_namespace_id_);
 }
 
-bool RenderViewImpl::shouldReportDetailedMessageForSource(
-    const WebString& source) {
-  return GetContentClient()->renderer()->ShouldReportDetailedMessageForSource(
-      source);
-}
-
-void RenderViewImpl::didAddMessageToConsole(
-    const WebConsoleMessage& message, const WebString& source_name,
-    unsigned source_line, const WebString& stack_trace) {
-  logging::LogSeverity log_severity = logging::LOG_VERBOSE;
-  switch (message.level) {
-    case WebConsoleMessage::LevelDebug:
-      log_severity = logging::LOG_VERBOSE;
-      break;
-    case WebConsoleMessage::LevelLog:
-    case WebConsoleMessage::LevelInfo:
-      log_severity = logging::LOG_INFO;
-      break;
-    case WebConsoleMessage::LevelWarning:
-      log_severity = logging::LOG_WARNING;
-      break;
-    case WebConsoleMessage::LevelError:
-      log_severity = logging::LOG_ERROR;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  if (shouldReportDetailedMessageForSource(source_name)) {
-    FOR_EACH_OBSERVER(
-        RenderViewObserver,
-        observers_,
-        DetailedConsoleMessageAdded(message.text,
-                                    source_name,
-                                    stack_trace,
-                                    source_line,
-                                    static_cast<int32>(log_severity)));
-  }
-
-  Send(new ViewHostMsg_AddMessageToConsole(routing_id_,
-                                           static_cast<int32>(log_severity),
-                                           message.text,
-                                           static_cast<int32>(source_line),
-                                           source_name));
-}
-
 void RenderViewImpl::printPage(WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     PrintPage(frame, handling_input_event_));

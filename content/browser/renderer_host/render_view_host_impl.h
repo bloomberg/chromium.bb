@@ -554,10 +554,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnTargetDropACK();
   void OnTakeFocus(bool reverse);
   void OnFocusedNodeChanged(bool is_editable_node);
-  void OnAddMessageToConsole(int32 level,
-                             const base::string16& message,
-                             int32 line_no,
-                             const base::string16& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
   void OnClosePageACK();

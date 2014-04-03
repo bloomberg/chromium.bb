@@ -342,6 +342,14 @@ IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
+// Blink and JavaScript error messages to log to the console
+// or debugger UI.
+IPC_MESSAGE_ROUTED4(FrameHostMsg_AddMessageToConsole,
+                    int32, /* log level */
+                    base::string16, /* msg */
+                    int32, /* line number */
+                    base::string16 /* source id */ )
+
 // Sent by the renderer when a child frame is created in the renderer.
 //
 // Each of these messages will have a corresponding FrameHostMsg_Detach message

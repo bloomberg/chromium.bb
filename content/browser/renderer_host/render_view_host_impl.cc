@@ -1102,7 +1102,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(DragHostMsg_TargetDrop_ACK, OnTargetDropACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionRootBoundsChanged,
@@ -1492,23 +1491,6 @@ void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
       NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
       Source<RenderViewHost>(this),
       Details<const bool>(&is_editable_node));
-}
-
-void RenderViewHostImpl::OnAddMessageToConsole(
-    int32 level,
-    const base::string16& message,
-    int32 line_no,
-    const base::string16& source_id) {
-  if (delegate_->AddMessageToConsole(level, message, line_no, source_id))
-    return;
-
-  // Pass through log level only on WebUI pages to limit console spew.
-  int32 resolved_level = HasWebUIScheme(delegate_->GetURL()) ? level : 0;
-
-  if (resolved_level >= ::logging::GetMinLogLevel()) {
-    logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
-        message << "\", source: " << source_id << " (" << line_no << ")";
-  }
 }
 
 void RenderViewHostImpl::OnUserGesture() {

@@ -186,6 +186,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   friend class TestRenderViewHost;
 
   // IPC Message handlers.
+  void OnAddMessageToConsole(int32 level,
+                             const base::string16& message,
+                             int32 line_no,
+                             const base::string16& source_id);
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);

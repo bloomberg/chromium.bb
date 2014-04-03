@@ -220,6 +220,12 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors);
+  virtual bool shouldReportDetailedMessageForSource(
+      const blink::WebString& source);
+  virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
+                                      const blink::WebString& source_name,
+                                      unsigned source_line,
+                                      const blink::WebString& stack_trace);
   virtual void loadURLExternally(blink::WebFrame* frame,
                                  const blink::WebURLRequest& request,
                                  blink::WebNavigationPolicy policy);

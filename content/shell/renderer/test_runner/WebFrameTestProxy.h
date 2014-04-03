@@ -42,6 +42,11 @@ public:
     }
 
     // WebFrameClient implementation.
+    virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message, const blink::WebString& sourceName, unsigned sourceLine, const blink::WebString& stackTrace)
+    {
+        m_baseProxy->didAddMessageToConsole(message, sourceName, sourceLine);
+        Base::didAddMessageToConsole(message, sourceName, sourceLine, stackTrace);
+    }
     virtual bool canCreatePluginWithoutRenderer(const blink::WebString& mimeType)
     {
         using blink::WebString;

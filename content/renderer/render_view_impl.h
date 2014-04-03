@@ -425,13 +425,6 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebPopupMenuInfo& popup_menu_info,
       blink::WebExternalPopupMenuClient* popup_menu_client);
   virtual blink::WebStorageNamespace* createSessionStorageNamespace();
-  virtual bool shouldReportDetailedMessageForSource(
-      const blink::WebString& source);
-  virtual void didAddMessageToConsole(
-      const blink::WebConsoleMessage& message,
-      const blink::WebString& source_name,
-      unsigned source_line,
-      const blink::WebString& stack_trace);
   virtual void printPage(blink::WebFrame* frame);
   virtual blink::WebNotificationPresenter* notificationPresenter();
   virtual bool enumerateChosenDirectory(

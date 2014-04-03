@@ -27,6 +27,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/common/url_utils.h"
 #include "url/gurl.h"
 
 using base::TimeDelta;
@@ -304,6 +305,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
   bool msg_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameHostImpl, msg, msg_is_ok)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
@@ -338,6 +340,24 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
 void RenderFrameHostImpl::Init() {
   GetProcess()->ResumeRequestsForView(routing_id_);
+}
+
+void RenderFrameHostImpl::OnAddMessageToConsole(
+    int32 level,
+    const base::string16& message,
+    int32 line_no,
+    const base::string16& source_id) {
+  if (delegate_->AddMessageToConsole(level, message, line_no, source_id))
+    return;
+
+  // Pass through log level only on WebUI pages to limit console spew.
+  int32 resolved_level =
+      HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL()) ? level : 0;
+
+  if (resolved_level >= ::logging::GetMinLogLevel()) {
+    logging::LogMessage("CONSOLE", line_no, resolved_level).stream() << "\"" <<
+        message << "\", source: " << source_id << " (" << line_no << ")";
+  }
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(int new_routing_id,

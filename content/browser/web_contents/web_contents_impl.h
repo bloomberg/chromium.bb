@@ -186,6 +186,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual NavigationControllerImpl& GetController() OVERRIDE;
   virtual const NavigationControllerImpl& GetController() const OVERRIDE;
   virtual BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual const GURL& GetURL() const OVERRIDE;
+  virtual const GURL& GetVisibleURL() const OVERRIDE;
+  virtual const GURL& GetLastCommittedURL() const OVERRIDE;
   virtual RenderProcessHost* GetRenderProcessHost() const OVERRIDE;
   virtual RenderFrameHost* GetMainFrame() OVERRIDE;
   virtual RenderFrameHost* GetFocusedFrame() OVERRIDE;
@@ -305,6 +308,7 @@ class CONTENT_EXPORT WebContentsImpl
   // RenderFrameHostDelegate ---------------------------------------------------
   virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
                                  const IPC::Message& message) OVERRIDE;
+  virtual const GURL& GetMainFrameLastCommittedURL() const OVERRIDE;
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DidStartLoading(RenderFrameHost* render_frame_host,
@@ -320,9 +324,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
   virtual bool OnMessageReceived(RenderViewHost* render_view_host,
                                  const IPC::Message& message) OVERRIDE;
-  virtual const GURL& GetURL() const OVERRIDE;
-  virtual const GURL& GetVisibleURL() const OVERRIDE;
-  virtual const GURL& GetLastCommittedURL() const OVERRIDE;
   // RenderFrameHostDelegate has the same method, so list it there because this
   // interface is going away.
   // virtual WebContents* GetAsWebContents() OVERRIDE;
