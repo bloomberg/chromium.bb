@@ -223,11 +223,11 @@ void AppListSyncableService::BuildModel() {
   DCHECK(profile_);
   // TODO(stevenjb): Correctly handle OTR profiles for Guest mode.
   if (!profile_->IsOffTheRecord() && SyncAppListEnabled()) {
-    DVLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
+    VLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
     SyncStarted();
     apps_builder_->InitializeWithService(this);
   } else {
-    DVLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
+    VLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
     apps_builder_->InitializeWithProfile(profile_, model_.get());
   }
 }
@@ -266,15 +266,13 @@ void AppListSyncableService::AddItem(scoped_ptr<AppListItem> app_item) {
   if (app_list::switches::IsFolderUIEnabled()) {
     if (AppIsOem(app_item->id())) {
       folder_id = FindOrCreateOemFolder();
-      DVLOG(1) << this << ": AddItem to OEM folder: " << sync_item->ToString();
+      VLOG(2) << this << ": AddItem to OEM folder: " << sync_item->ToString();
     } else {
       folder_id = sync_item->parent_id;
-      DVLOG(1) << this << ": AddItem: " << sync_item->ToString()
-               << " Folder: '" << folder_id << "'";
     }
   }
-  DVLOG(1) << this << ": AddItem: " << sync_item->ToString()
-           << "Folder: '" << folder_id << "'";
+  VLOG(2) << this << ": AddItem: " << sync_item->ToString()
+          << "Folder: '" << folder_id << "'";
   model_->AddItemToFolder(app_item.Pass(), folder_id);
 }
 
@@ -333,8 +331,8 @@ bool AppListSyncableService::RemoveDefaultApp(AppListItem* item,
   // installed as a Default app, uninstall the app instead of adding it.
   if (sync_item->item_type == sync_pb::AppListSpecifics::TYPE_APP &&
       AppIsDefault(extension_system_->extension_service(), item->id())) {
-    DVLOG(1) << this << ": HandleDefaultApp: Uninstall: "
-             << sync_item->ToString();
+    VLOG(2) << this << ": HandleDefaultApp: Uninstall: "
+            << sync_item->ToString();
     UninstallExtension(extension_system_->extension_service(), item->id());
     return true;
   }
@@ -391,7 +389,7 @@ void AppListSyncableService::UpdateItem(AppListItem* app_item) {
 }
 
 void AppListSyncableService::RemoveSyncItem(const std::string& id) {
-  DVLOG(2) << this << ": RemoveSyncItem: " << id.substr(0, 8);
+  VLOG(2) << this << ": RemoveSyncItem: " << id.substr(0, 8);
   SyncItemMap::iterator iter = sync_items_.find(id);
   if (iter == sync_items_.end()) {
     DVLOG(2) << this << " : RemoveSyncItem: No Item.";
@@ -476,8 +474,8 @@ syncer::SyncMergeResult AppListSyncableService::MergeDataAndStartSyncing(
 
   syncer::SyncMergeResult result = syncer::SyncMergeResult(type);
   result.set_num_items_before_association(sync_items_.size());
-  DVLOG(1) << this << ": MergeDataAndStartSyncing: "
-           << initial_sync_data.size();
+  VLOG(1) << this << ": MergeDataAndStartSyncing: "
+          << initial_sync_data.size();
 
   // Copy all sync items to |unsynced_items|.
   std::set<std::string> unsynced_items;
@@ -544,7 +542,7 @@ syncer::SyncDataList AppListSyncableService::GetAllSyncData(
     syncer::ModelType type) const {
   DCHECK_EQ(syncer::APP_LIST, type);
 
-  DVLOG(1) << this << ": GetAllSyncData: " << sync_items_.size();
+  VLOG(1) << this << ": GetAllSyncData: " << sync_items_.size();
   syncer::SyncDataList list;
   for (SyncItemMap::const_iterator iter = sync_items_.begin();
        iter != sync_items_.end(); ++iter) {
@@ -567,7 +565,7 @@ syncer::SyncError AppListSyncableService::ProcessSyncChanges(
   // Don't observe the model while processing incoming sync changes.
   model_observer_.reset();
 
-  DVLOG(1) << this << ": ProcessSyncChanges: " << change_list.size();
+  VLOG(1) << this << ": ProcessSyncChanges: " << change_list.size();
   for (syncer::SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
     const SyncChange& change = *iter;
@@ -632,7 +630,7 @@ bool AppListSyncableService::ProcessSyncItemSpecifics(
 }
 
 void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
-  DVLOG(2) << "ProcessNewSyncItem: " << sync_item->ToString();
+  VLOG(2) << "ProcessNewSyncItem: " << sync_item->ToString();
   switch (sync_item->item_type) {
     case sync_pb::AppListSpecifics::TYPE_APP: {
       // New apps are added through ExtensionAppModelBuilder.
@@ -641,7 +639,7 @@ void AppListSyncableService::ProcessNewSyncItem(SyncItem* sync_item) {
       return;
     }
     case sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP: {
-      DVLOG(1) << this << ": Uninstall: " << sync_item->ToString();
+      VLOG(1) << this << ": Uninstall: " << sync_item->ToString();
       UninstallExtension(extension_system_->extension_service(),
                          sync_item->item_id);
       return;
@@ -667,7 +665,7 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
       sync_pb::AppListSpecifics::TYPE_REMOVE_DEFAULT_APP) {
     return;
   }
-  DVLOG(2) << "ProcessExistingSyncItem: " << sync_item->ToString();
+  VLOG(2) << "ProcessExistingSyncItem: " << sync_item->ToString();
   AppListItem* app_item = model_->FindItem(sync_item->item_id);
   DVLOG(2) << " AppItem: " << app_item->ToDebugString();
   if (!app_item) {
@@ -702,7 +700,7 @@ bool AppListSyncableService::SyncStarted() {
   if (sync_processor_.get())
     return true;
   if (flare_.is_null()) {
-    DVLOG(2) << this << ": SyncStarted: Flare.";
+    VLOG(1) << this << ": SyncStarted: Flare.";
     flare_ = sync_start_util::GetFlareForSyncableService(profile_->GetPath());
     flare_.Run(syncer::APP_LIST);
   }
@@ -752,7 +750,7 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
     LOG(ERROR) << "Delete AppList item with empty ID";
     return;
   }
-  DVLOG(2) << this << ": DeleteSyncItemSpecifics: " << item_id.substr(0, 8);
+  VLOG(2) << this << ": DeleteSyncItemSpecifics: " << item_id.substr(0, 8);
   SyncItemMap::iterator iter = sync_items_.find(item_id);
   if (iter == sync_items_.end())
     return;

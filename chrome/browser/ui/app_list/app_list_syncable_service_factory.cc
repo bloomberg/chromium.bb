@@ -27,10 +27,20 @@ AppListSyncableServiceFactory* AppListSyncableServiceFactory::GetInstance() {
   return Singleton<AppListSyncableServiceFactory>::get();
 }
 
+// static
+KeyedService* AppListSyncableServiceFactory::BuildInstanceFor(
+    content::BrowserContext* browser_context) {
+  Profile* profile = static_cast<Profile*>(browser_context);
+  VLOG(1) << "BuildServiceInstanceFor: " << profile->GetDebugName();
+  return new AppListSyncableService(profile,
+                                    extensions::ExtensionSystem::Get(profile));
+}
+
 AppListSyncableServiceFactory::AppListSyncableServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "AppListSyncableService",
         BrowserContextDependencyManager::GetInstance()) {
+  VLOG(1) << "AppListSyncableServiceFactory()";
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
@@ -40,9 +50,7 @@ AppListSyncableServiceFactory::~AppListSyncableServiceFactory() {
 
 KeyedService* AppListSyncableServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
-  Profile* profile = static_cast<Profile*>(browser_context);
-  return new AppListSyncableService(profile,
-                                    extensions::ExtensionSystem::Get(profile));
+  return BuildInstanceFor(static_cast<Profile*>(browser_context));
 }
 
 void AppListSyncableServiceFactory::RegisterProfilePrefs(
@@ -57,6 +65,16 @@ content::BrowserContext* AppListSyncableServiceFactory::GetBrowserContextToUse(
   if (profile->IsGuestSession())
     return chrome::GetBrowserContextOwnInstanceInIncognito(context);
   return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
+
+bool AppListSyncableServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+  // Start AppListSyncableService early so that the app list positions are
+  // available before the app list is opened.
+  return true;
+}
+
+bool AppListSyncableServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
 }
 
 }  // namespace app_list

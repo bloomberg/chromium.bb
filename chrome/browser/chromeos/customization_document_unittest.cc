@@ -386,6 +386,11 @@ TEST_F(ServicesCustomizationDocumentTest, DefaultApps) {
   extensions::ExternalLoader* loader = doc->CreateExternalLoader(profile.get());
   EXPECT_TRUE(loader);
 
+  app_list::AppListSyncableServiceFactory::GetInstance()->
+      SetTestingFactoryAndUse(
+          profile.get(),
+          &app_list::AppListSyncableServiceFactory::BuildInstanceFor);
+
   MockExternalProviderVisitor visitor;
   scoped_ptr<extensions::ExternalProviderImpl> provider(
       new extensions::ExternalProviderImpl(

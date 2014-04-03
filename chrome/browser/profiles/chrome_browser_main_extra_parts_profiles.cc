@@ -40,6 +40,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/tabs/pinned_tab_service_factory.h"
@@ -138,9 +139,12 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   apps::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
-
   AppShortcutManagerFactory::GetInstance();
   EphemeralAppServiceFactory::GetInstance();
+#endif
+
+#if defined(ENABLE_APP_LIST)
+  app_list::AppListSyncableServiceFactory::GetInstance();
 #endif
 
   AboutSigninInternalsFactory::GetInstance();
