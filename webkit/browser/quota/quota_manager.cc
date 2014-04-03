@@ -227,8 +227,14 @@ void DispatchTemporaryGlobalQuotaCallback(
 
 int64 CalculateQuotaWithDiskSpace(
     int64 available_disk_space, int64 usage, int64 quota) {
-  if (available_disk_space < QuotaManager::kMinimumPreserveForSystem ||
-      quota < usage) {
+  if (available_disk_space < QuotaManager::kMinimumPreserveForSystem) {
+    LOG(WARNING)
+        << "Running out of disk space for profile."
+        << " QuotaManager starts forbidding further quota consumption.";
+    return usage;
+  }
+
+  if (quota < usage) {
     // No more space; cap the quota to the current usage.
     return usage;
   }
