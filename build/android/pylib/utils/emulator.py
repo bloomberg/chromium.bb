@@ -4,8 +4,6 @@
 
 """Provides an interface to start and stop Android emulator.
 
-Assumes system environment ANDROID_NDK_ROOT has been set.
-
   Emulator: The class provides the methods to launch/shutdown the emulator with
             the android virtual device named 'avd_armeabi' .
 """

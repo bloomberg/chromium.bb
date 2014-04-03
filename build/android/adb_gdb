@@ -245,12 +245,7 @@ them up automatically for you though:
    - host gdb client (e.g. arm-linux-androideabi-gdb)
    - directory with symbolic version of $PROGRAM_NAME's shared libraries.
 
-If you have sourced Chromium's build/android/envsetup.sh, this script will
-find all of them automatically. This is the recommended way to use it.
-
-Otherwise, if you have ANDROID_NDK_ROOT defined in your environment,
-the script will use it to find the gdb and gdbserver binaries. You can
-also use --ndk-dir=<path> to specify an alternative NDK installation
+You can also use --ndk-dir=<path> to specify an alternative NDK installation
 directory.
 
 The script tries to find the most recent version of the debug version of
@@ -342,10 +337,8 @@ if [ -z "$PACKAGE_NAME" ]; then
 fi
 
 if [ -z "$NDK_DIR" ]; then
-  if [ -z "$ANDROID_NDK_ROOT" ]; then
-    panic "Can't find NDK directory, please source \
-build/android/envsetup.sh!"
-  fi
+  ANDROID_NDK_ROOT=$(PYTHONPATH=build/android python -c \
+'from pylib.constants import ANDROID_NDK_ROOT; print ANDROID_NDK_ROOT,')
 else
   if [ ! -d "$NDK_DIR" ]; then
     panic "Invalid directory: $NDK_DIR"

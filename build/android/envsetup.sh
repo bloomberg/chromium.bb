@@ -33,9 +33,6 @@ fi
 # Allow the caller to override a few environment variables. If any of them is
 # unset, we default to a sane value that's known to work. This allows for
 # experimentation with a custom SDK.
-if [[ -z "${ANDROID_NDK_ROOT}" || ! -d "${ANDROID_NDK_ROOT}" ]]; then
-  export ANDROID_NDK_ROOT="${CHROME_SRC}/third_party/android_tools/ndk/"
-fi
 if [[ -z "${ANDROID_SDK_ROOT}" || ! -d "${ANDROID_SDK_ROOT}" ]]; then
   export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
 fi
