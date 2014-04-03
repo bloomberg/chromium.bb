@@ -21,14 +21,36 @@ message SyncedNotificationAppInfoSpecifics {
 }
 
 message SyncedNotificationAppInfo {
-  // The application ID of a subservice within the notification sending service.
+  // The application ID (the subservice within the sending service).
   repeated string app_id = 1;
 
   // The name to use in the settings screen for this app.
-  optional string settings_display_name = 2;
+  // Use app_name field instead.
+  optional string settings_display_name = 2 [deprecated = true];
 
-  // The icon to use. The URL of the icon may point to a
-  // hi-res image, so clients should always size the image to the
-  // preferred width and height specified in the Image proto.
-  optional SyncedNotificationImage icon = 3;
+  // This field is deprecated. Use the app_icon field instead.
+  optional SyncedNotificationImage icon = 3 [deprecated = true];
+
+  optional string app_name = 4;
+
+  optional string settings_url = 5;
+
+  optional string info_url = 6;
+
+  message Icon {
+    enum Type {
+      GRAYSCALE_FAVICON_1X = 1; // Grayscale 16x16 px icon.
+      GRAYSCALE_FAVICON_2X = 2; // Grayscale 32x32 px icon.
+      COLOR_FAVICON_1X = 3;  // Color 16x16 px icon.
+      COLOR_FAVICON_2X = 4;  // Color 32x32 px icon.
+      COLOR_APPICON_1X = 5;  // Color 80x80 px icon.
+      COLOR_APPICON_2X = 6;  // Color 160x160 px icon.
+    };
+    optional Type type = 1;
+
+    optional string url = 2;
+  };
+
+  // A repeated set of icons of different resolutions and types.
+  repeated Icon app_icon = 7;
 }

@@ -85,20 +85,36 @@ message CoalescedSyncedNotification {
     UNREAD = 1;
     READ = 2;
     DISMISSED = 3;
+    SEEN = 4;
   }
   optional ReadState read_state = 5;
 
   // The time when the LATEST notification of the coalesced notification is
   // created (in milliseconds since the linux epoch).
+  // This is called updated_version in the server side protobuf.
   optional uint64 creation_time_msec = 6;
 
   enum Priority {
-    LOW = 1;
-    STANDARD = 2;
+    INVISIBLE = 1;
+    LOW = 2;
     HIGH = 3;
     // We will most likely add at least one more priority in the near future.
   };
   optional Priority priority = 7;
+
+  // Security token that is to be used when making a PerformUserAction request
+  // when any user action within this coalesced notification is triggered.
+  optional string user_action_token = 8;
+
+  // This field corresponds to catchup_version in entity, which represents the
+  // version entity was last modified. Note that the
+  // Entity.last_modified_version will be actually the last creation version.
+  // See comments in updated_version.
+  optional uint64 last_modified_version = 9;
+
+  // Clients should use this field to order the notifications. Currently this is
+  // calculated from (priority, updated_version) pair.
+  optional uint64 sort_version = 10;
 }
 
 message SyncedNotificationList {
@@ -127,4 +143,65 @@ message Data {
 
 message ListData {
   repeated Data value = 1;
+};
+
+// The RenderContext encapsulates data about the device that is displaying the
+// notification. In the future, RenderContext might include data like the
+// location of the user.
+message RenderContext {
+  // The type of the device. This will be used to decide the resolution as well
+  // as the size of the image returned with the response.
+  // The server will try to find the closest matching resource to use.
+  // The android densities are from
+  // http://developer.android.com/guide/practices/screens_support.html
+  enum DeviceType {
+    UNKNOWN = 0;
+    IOS_NON_RETINA = 1;
+    IOS_RETINA = 2;
+    ANDROID_MDPI = 3;
+    ANDROID_HDPI = 4;
+    ANDROID_XHDPI = 5;
+    ANDROID_TVDPI = 6;
+    DESKTOP_NON_RETINA = 7;
+    DESKTOP_RETINA = 8;
+    ANDROID_XXHDPI = 9;
+    CHROME_1X = 10;
+    CHROME_2X = 11;
+  }
+
+  optional DeviceType device_type = 1;
+
+  // The locale to render the notifications in.
+  optional string language_code = 2;
+};
+
+// List of AppIds and whether to treat the list as a Whitelist or Blacklist.
+message AppList {
+  enum Type {
+    // Specified app_ids are supported.
+    WHITELIST = 1;
+    // Specified app_ids are not supported.
+    BLACKLIST = 2;
+  }
+
+  // Whether to treat the app_id list as a Whitelist or Blacklist.
+  optional Type type = 1 [default = WHITELIST];
+
+  // List of AppIds.
+  repeated string app_id = 2;
+};
+
+message ServerContext {
+  // render_context encapsulates data about the device that is displaying the
+  // notifications.
+  optional RenderContext render_context = 1;
+
+  // List of AppIds and whether it is a blacklist or whitelist.
+  // This field needs to be set only when the set of apps enabled on a client
+  // changes.  In the server response, this field will get cleared.
+  optional AppList app_list = 2;
+
+  // The view that the device has registered with.  It is obtained from guns
+  // based on the app_list specified above.
+  optional string view_id = 3;
 };

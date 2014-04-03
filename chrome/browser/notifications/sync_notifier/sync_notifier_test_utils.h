@@ -82,7 +82,7 @@ extern const char kContainedMessage2[];
 extern const char kContainedMessage3[];
 const uint64 kFakeCreationTime = 42;
 const int kProtobufPriority = static_cast<int>(
-    sync_pb::CoalescedSyncedNotification_Priority_LOW);
+    sync_pb::CoalescedSyncedNotification_Priority_INVISIBLE);
 
 const sync_pb::CoalescedSyncedNotification_ReadState kRead =
     sync_pb::CoalescedSyncedNotification_ReadState_READ;
