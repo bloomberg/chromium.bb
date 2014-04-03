@@ -54,7 +54,6 @@ class ExceptionState;
 class LocalFrame;
 class NodeFilter;
 class ScriptWrappable;
-class V8PerContextData;
 class XPathNSResolver;
 
 const int kMaxRecursionDepth = 22;
@@ -760,10 +759,8 @@ public:
 
 private:
     v8::HandleScope m_handleScope;
-    v8::Handle<v8::Context> m_context;
     v8::Context::Scope m_contextScope;
-    RefPtr<DOMWrapperWorld> m_world;
-    OwnPtr<V8PerContextData> m_perContextData;
+    RefPtr<NewScriptState> m_scriptState;
 };
 
 } // namespace WebCore

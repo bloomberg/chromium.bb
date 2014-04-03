@@ -92,7 +92,8 @@ namespace WebCore {
 
         v8::Isolate* isolate() const { return m_isolate; }
         DOMWrapperWorld& world() const { return *m_world; }
-        v8::Local<v8::Context> context() { return m_perContextData ? m_perContextData->context() : v8::Local<v8::Context>(); }
+        v8::Local<v8::Context> context() { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
+        bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
 
         // Send a notification about current thread is going to be idle.
         // Returns true if the embedder should stop calling idleNotification
@@ -101,13 +102,12 @@ namespace WebCore {
 
     private:
         bool initializeContextIfNeeded();
-        void disposeContext();
 
         v8::Isolate* m_isolate;
         WorkerGlobalScope& m_workerGlobalScope;
-        OwnPtr<V8PerContextData> m_perContextData;
-        String m_disableEvalPending;
+        RefPtr<NewScriptState> m_scriptState;
         RefPtr<DOMWrapperWorld> m_world;
+        String m_disableEvalPending;
         bool m_executionForbidden;
         bool m_executionScheduledToTerminate;
         mutable Mutex m_scheduledTerminationMutex;

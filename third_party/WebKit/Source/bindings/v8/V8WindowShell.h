@@ -32,8 +32,8 @@
 #define V8WindowShell_h
 
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
-#include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Forward.h"
@@ -57,7 +57,7 @@ class V8WindowShell {
 public:
     static PassOwnPtr<V8WindowShell> create(LocalFrame*, DOMWrapperWorld&, v8::Isolate*);
 
-    v8::Local<v8::Context> context() const { return m_perContextData ? m_perContextData->context() : v8::Local<v8::Context>(); }
+    v8::Local<v8::Context> context() const { return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>(); }
 
     // Update document object of the frame.
     void updateDocument();
@@ -69,7 +69,7 @@ public:
     // (e.g., after setting docoument.domain).
     void updateSecurityOrigin(SecurityOrigin*);
 
-    bool isContextInitialized() { return m_perContextData; }
+    bool isContextInitialized() { return m_scriptState && !!m_scriptState->perContextData(); }
     bool isGlobalInitialized() { return !m_global.isEmpty(); }
 
     bool initializeIfNeeded();
@@ -105,9 +105,9 @@ private:
     static V8WindowShell* enteredIsolatedWorldContext();
 
     LocalFrame* m_frame;
-    RefPtr<DOMWrapperWorld> m_world;
     v8::Isolate* m_isolate;
-    OwnPtr<V8PerContextData> m_perContextData;
+    RefPtr<NewScriptState> m_scriptState;
+    RefPtr<DOMWrapperWorld> m_world;
     ScopedPersistent<v8::Object> m_global;
     ScopedPersistent<v8::Object> m_document;
 };

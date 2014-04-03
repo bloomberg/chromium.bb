@@ -9,10 +9,13 @@
 
 namespace WebCore {
 
-void NewScriptState::install(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
+PassRefPtr<NewScriptState> NewScriptState::create(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
 {
     RefPtr<NewScriptState> scriptState = adoptRef(new NewScriptState(context, world));
+    // This ref() is for keeping this NewScriptState alive as long as the v8::Context is alive.
+    // This is deref()ed in the weak callback of the v8::Context.
     scriptState->ref();
+    return scriptState;
 }
 
 static void weakCallback(const v8::WeakCallbackData<v8::Context, NewScriptState>& data)
@@ -25,8 +28,8 @@ static void weakCallback(const v8::WeakCallbackData<v8::Context, NewScriptState>
 NewScriptState::NewScriptState(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
     : m_isolate(context->GetIsolate())
     , m_context(m_isolate, context)
-    , m_perContextData(0)
     , m_world(world)
+    , m_perContextData(V8PerContextData::create(context, m_world))
 {
     ASSERT(m_world);
     m_context.setWeak(this, &weakCallback);

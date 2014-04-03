@@ -672,10 +672,8 @@ PassOwnPtr<V8ExecutionScope> V8ExecutionScope::create(v8::Isolate* isolate)
 
 V8ExecutionScope::V8ExecutionScope(v8::Isolate* isolate)
     : m_handleScope(isolate)
-    , m_context(v8::Context::New(isolate))
-    , m_contextScope(m_context)
-    , m_world(DOMWrapperWorld::create())
-    , m_perContextData(V8PerContextData::create(m_context, m_world))
+    , m_contextScope(v8::Context::New(isolate))
+    , m_scriptState(NewScriptState::create(isolate->GetCurrentContext(), DOMWrapperWorld::create()))
 {
 }
 

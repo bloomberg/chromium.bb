@@ -107,26 +107,22 @@ WorkerScriptController::~WorkerScriptController()
     // See http://webkit.org/b/83104#c14 for why this is here.
     blink::Platform::current()->didStopWorkerRunLoop(blink::WebWorkerRunLoop(&m_workerGlobalScope.thread()->runLoop()));
 
-    disposeContext();
+    if (isContextInitialized())
+        m_scriptState->disposePerContextData();
 
     ThreadState::current()->addCleanupTask(IsolateCleanupTask::create(m_isolate));
 }
 
-void WorkerScriptController::disposeContext()
-{
-    m_perContextData.clear();
-}
-
 bool WorkerScriptController::initializeContextIfNeeded()
 {
-    if (m_perContextData)
+    if (isContextInitialized())
         return true;
 
     v8::Handle<v8::Context> context = v8::Context::New(m_isolate);
     if (context.IsEmpty())
         return false;
 
-    m_perContextData = V8PerContextData::create(context, m_world);
+    m_scriptState = NewScriptState::create(context, m_world);
 
     v8::Context::Scope scope(context);
 
@@ -139,17 +135,17 @@ bool WorkerScriptController::initializeContextIfNeeded()
         contextType = &V8ServiceWorkerGlobalScope::wrapperTypeInfo;
     else if (!m_workerGlobalScope.isDedicatedWorkerGlobalScope())
         contextType = &V8SharedWorkerGlobalScope::wrapperTypeInfo;
-    v8::Handle<v8::Function> workerGlobalScopeConstructor = m_perContextData->constructorForType(contextType);
+    v8::Handle<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(contextType);
     v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(workerGlobalScopeConstructor);
     if (jsWorkerGlobalScope.IsEmpty()) {
-        disposeContext();
+        m_scriptState->disposePerContextData();
         return false;
     }
 
     V8DOMWrapper::associateObjectWithWrapper<V8WorkerGlobalScope>(PassRefPtrWillBeRawPtr<WorkerGlobalScope>(&m_workerGlobalScope), contextType, jsWorkerGlobalScope, m_isolate, WrapperConfiguration::Dependent);
 
     // Insert the object instance as the prototype of the shadow object.
-    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_perContextData->context()->Global()->GetPrototype());
+    v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_scriptState->context()->Global()->GetPrototype());
     globalObject->SetPrototype(jsWorkerGlobalScope);
 
     return true;
@@ -162,7 +158,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     if (!initializeContextIfNeeded())
         return ScriptValue();
 
-    v8::Handle<v8::Context> context = m_perContextData->context();
+    v8::Handle<v8::Context> context = m_scriptState->context();
     if (!m_disableEvalPending.isEmpty()) {
         context->AllowCodeGenerationFromStrings(false);
         context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, m_disableEvalPending));

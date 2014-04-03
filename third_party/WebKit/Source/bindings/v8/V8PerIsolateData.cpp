@@ -32,7 +32,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
-#include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "wtf/MainThread.h"
 
@@ -128,9 +127,9 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
 
 v8::Local<v8::Context> V8PerIsolateData::ensureDomInJSContext()
 {
-    if (!m_domInJSPerContextData)
-        m_domInJSPerContextData = V8PerContextData::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
-    return m_domInJSPerContextData->context();
+    if (!m_blinkInJSScriptState)
+        m_blinkInJSScriptState = NewScriptState::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
+    return m_blinkInJSScriptState->context();
 }
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)

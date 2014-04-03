@@ -57,8 +57,6 @@ V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<D
     , m_customElementBindings(adoptPtr(new CustomElementBindingMap()))
 {
     m_contextHolder->SetContext(context);
-    NewScriptState::install(context, world);
-    NewScriptState::from(context)->setPerContextData(this);
 
     v8::Context::Scope contextScope(context);
     ASSERT(m_errorPrototype.isEmpty());
@@ -71,9 +69,6 @@ V8PerContextData::V8PerContextData(v8::Handle<v8::Context> context, PassRefPtr<D
 
 V8PerContextData::~V8PerContextData()
 {
-    v8::HandleScope handleScope(m_isolate);
-    NewScriptState::from(m_context.newLocal(m_isolate))->setPerContextData(0);
-
     disposeMapWithUnsafePersistentValues(&m_wrapperBoilerplates);
     disposeMapWithUnsafePersistentValues(&m_constructorMap);
 }

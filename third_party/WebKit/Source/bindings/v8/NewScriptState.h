@@ -21,7 +21,7 @@ class ExecutionContext;
 class NewScriptState : public RefCounted<NewScriptState> {
     WTF_MAKE_NONCOPYABLE(NewScriptState);
 public:
-    static void install(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
+    static PassRefPtr<NewScriptState> create(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
     ~NewScriptState();
 
     static NewScriptState* current(v8::Isolate* isolate)
@@ -46,17 +46,17 @@ public:
     v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
     void clearContext() { return m_context.clear(); }
     ExecutionContext* executionContext() const;
-    V8PerContextData* perContextData() const { return m_perContextData; }
-    void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
+    V8PerContextData* perContextData() const { return m_perContextData.get(); }
+    void disposePerContextData() { m_perContextData = nullptr; }
 
 private:
     NewScriptState(v8::Handle<v8::Context>, PassRefPtr<DOMWrapperWorld>);
 
     v8::Isolate* m_isolate;
     ScopedPersistent<v8::Context> m_context;
-    V8PerContextData* m_perContextData;
     // This RefPtr doesn't cause a cycle because all persistent handles that DOMWrapperWorld holds are weak.
     RefPtr<DOMWrapperWorld> m_world;
+    OwnPtr<V8PerContextData> m_perContextData;
 };
 
 }
