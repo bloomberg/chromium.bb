@@ -153,9 +153,9 @@ def AddInputLatencyStats(mock_timer, input_type, start_thread, end_thread,
   ref_latency_stats: A ReferenceInputLatencyStats object for expected values.
   """
 
-  mock_timer.Advance()
+  mock_timer.Advance(2, 4)
   ui_comp_time = mock_timer.Get() * 1000.0
-  mock_timer.Advance()
+  mock_timer.Advance(2, 4)
   begin_comp_time = mock_timer.Get() * 1000.0
   mock_timer.Advance(10, 20)
   end_comp_time = mock_timer.Get() * 1000.0
@@ -240,7 +240,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
     ref_stats = ReferenceRenderingStats()
 
     # Create 10 main and impl rendering stats events for Action A.
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
     ref_stats.AppendNewRange()
     for i in xrange(0, 10):
@@ -249,7 +249,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
       AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
       AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.EndSlice(timer.Get())
 
     # Create 5 main and impl rendering stats events not within any action.
@@ -261,7 +261,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddImplThreadRenderingStats(timer, browser_compositor, first, None)
 
     # Create 10 main and impl rendering stats events for Action B.
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.BeginSlice('webkit.console', 'ActionB', timer.Get(), '')
     ref_stats.AppendNewRange()
     for i in xrange(0, 10):
@@ -270,11 +270,11 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
       AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
       AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.EndSlice(timer.Get())
 
     # Create 10 main and impl rendering stats events for Action A.
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
     ref_stats.AppendNewRange()
     for i in xrange(0, 10):
@@ -283,7 +283,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
       AddImplThreadRenderingStats(timer, renderer_compositor, first, None)
       AddMainThreadRenderingStats(timer, browser_main, first, ref_stats)
       AddImplThreadRenderingStats(timer, browser_compositor, first, ref_stats)
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.EndSlice(timer.Get())
 
     browser.FinalizeImport()
@@ -324,7 +324,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
     ref_latency_stats = ReferenceInputLatencyStats()
 
     # Create 10 input latency stats events for Action A.
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
     for _ in xrange(0, 10):
       AddInputLatencyStats(timer, 'MouseWheel', browser_main,
@@ -333,10 +333,11 @@ class RenderingStatsUnitTest(unittest.TestCase):
                            renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'TouchMove', browser_main,
                            renderer_main, ref_latency_stats)
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.EndSlice(timer.Get())
 
     # Create 5 input latency stats events not within any action.
+    timer.Advance(2, 4)
     for _ in xrange(0, 5):
       AddInputLatencyStats(timer, 'MouseWheel', browser_main,
                            renderer_main, None)
@@ -346,7 +347,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
                            renderer_main, None)
 
     # Create 10 input latency stats events for Action B.
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.BeginSlice('webkit.console', 'ActionB', timer.Get(), '')
     for _ in xrange(0, 10):
       AddInputLatencyStats(timer, 'MouseWheel', browser_main,
@@ -355,11 +356,11 @@ class RenderingStatsUnitTest(unittest.TestCase):
                            renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'TouchMove', browser_main,
                            renderer_main, ref_latency_stats)
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.EndSlice(timer.Get())
 
     # Create 10 input latency stats events for Action A.
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.BeginSlice('webkit.console', 'ActionA', timer.Get(), '')
     for _ in xrange(0, 10):
       AddInputLatencyStats(timer, 'MouseWheel', browser_main,
@@ -368,7 +369,7 @@ class RenderingStatsUnitTest(unittest.TestCase):
                                   renderer_main, ref_latency_stats)
       AddInputLatencyStats(timer, 'TouchMove', browser_main,
                                   renderer_main, ref_latency_stats)
-    timer.Advance()
+    timer.Advance(2, 4)
     renderer_main.EndSlice(timer.Get())
 
     browser.FinalizeImport()
