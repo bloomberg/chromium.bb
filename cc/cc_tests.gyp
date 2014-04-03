@@ -303,6 +303,7 @@
         'layers/layer_perftest.cc',
         'layers/picture_layer_impl_perftest.cc',
         'resources/picture_layer_tiling_perftest.cc',
+        'resources/picture_pile_impl_perftest.cc',
         'resources/raster_worker_pool_perftest.cc',
         'resources/task_graph_runner_perftest.cc',
         'resources/tile_manager_perftest.cc',
