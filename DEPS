@@ -466,6 +466,8 @@ deps_os = {
       ((Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@" +
        Var("lss_revision")),
 
+    # FIXME(mithro): src/third_party/binutils is replacing src/third_party/gold.
+    # Remove gold when binutils is being used correctly.
     "src/third_party/gold":
       "/trunk/deps/third_party/gold@228995",
 
@@ -728,6 +730,17 @@ hooks = [
                 "--no_auth",
                 "--bucket", "chromium-clang-format",
                 "-s", "src/third_party/clang_format/bin/linux/clang-format.sha1",
+    ],
+  },
+  # Pull binutils for linux, enabled debug fission for faster linking /
+  # debugging when used with clang on Ubuntu Precise.
+  # https://code.google.com/p/chromium/issues/detail?id=352046
+  {
+    "name": "binutils",
+    "pattern": "src/third_party/binutils",
+    "action": [ 
+        "python",
+        "src/third_party/binutils/download.py",
     ],
   },
   # Pull eu-strip binaries using checked-in hashes.
