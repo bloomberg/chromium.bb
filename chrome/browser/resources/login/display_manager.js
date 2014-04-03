@@ -213,12 +213,12 @@ cr.define('cr.ui.login', function() {
      * @param {string} name Accelerator name.
      */
     handleAccelerator: function(name) {
+      var currentStepId = this.screens_[this.currentStep_];
       if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen.cancel) {
           this.currentScreen.cancel();
         }
       } else if (name == ACCELERATOR_ENROLLMENT) {
-        var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
@@ -233,7 +233,6 @@ cr.define('cr.ui.login', function() {
             this.currentScreen.cancelAutoEnrollment();
         }
       } else if (name == ACCELERATOR_KIOSK_ENABLE) {
-        var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleKioskEnableScreen');
@@ -242,7 +241,6 @@ cr.define('cr.ui.login', function() {
         if (this.allowToggleVersion_)
           $('version-labels').hidden = !$('version-labels').hidden;
       } else if (name == ACCELERATOR_RESET) {
-        var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleResetScreen');
@@ -254,11 +252,9 @@ cr.define('cr.ui.login', function() {
         if (this.isOobeUI())
           this.showDeviceRequisitionRemoraPrompt_();
       } else if (name == ACCELERATOR_APP_LAUNCH_BAILOUT) {
-        var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('cancelAppLaunch');
       } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
-        var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('networkConfigRequest');
       }

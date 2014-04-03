@@ -359,7 +359,6 @@ class SigninScreenHandler
   void HandleWallpaperReady();
   void HandleLoginWebuiReady();
   void HandleSignOutUser();
-  void HandleNetworkErrorShown();
   void HandleOpenProxySettings();
   void HandleLoginVisible(const std::string& source);
   void HandleCancelPasswordChangedFlow();
