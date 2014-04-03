@@ -1019,11 +1019,13 @@ emit_header(struct protocol *protocol, int server)
 
 static void
 emit_types_forward_declarations(struct protocol *protocol,
-				struct wl_list *message_list)
+				struct wl_list *message_list,
+				struct wl_array *types)
 {
 	struct message *m;
 	struct arg *a;
 	int length;
+	char **p;
 
 	wl_list_for_each(m, message_list, link) {
 		length = 0;
@@ -1037,8 +1039,8 @@ emit_types_forward_declarations(struct protocol *protocol,
 					continue;
 
 				m->all_null = 0;
-				printf("extern const struct wl_interface %s_interface;\n",
-				       a->interface_name);
+				p = wl_array_add(types, sizeof *p);
+				*p = a->interface_name;
 				break;
 			default:
 				break;
@@ -1153,10 +1155,20 @@ emit_messages(struct wl_list *message_list,
 	printf("};\n\n");
 }
 
+static int
+cmp_names(const void *p1, const void *p2)
+{
+	const char * const *s1 = p1, * const *s2 = p2;
+
+	return strcmp(*s1, *s2);
+}
+
 static void
 emit_code(struct protocol *protocol)
 {
 	struct interface *i;
+	struct wl_array types;
+	char **p, *prev;
 
 	if (protocol->copyright)
 		format_copyright(protocol->copyright);
@@ -1165,13 +1177,21 @@ emit_code(struct protocol *protocol)
 	       "#include <stdint.h>\n"
 	       "#include \"wayland-util.h\"\n\n");
 
-	printf("#pragma GCC diagnostic push\n"
-	       "#pragma GCC diagnostic ignored \"-Wredundant-decls\"\n");
+	wl_array_init(&types);
 	wl_list_for_each(i, &protocol->interface_list, link) {
-		emit_types_forward_declarations(protocol, &i->request_list);
-		emit_types_forward_declarations(protocol, &i->event_list);
+		emit_types_forward_declarations(protocol, &i->request_list, &types);
+		emit_types_forward_declarations(protocol, &i->event_list, &types);
 	}
-	printf("#pragma GCC diagnostic pop\n\n");
+	qsort(types.data, types.size / sizeof *p, sizeof *p, cmp_names);
+	prev = NULL;
+	wl_array_for_each(p, &types) {
+		if (prev && strcmp(*p, prev) == 0)
+			continue;
+		printf("extern const struct wl_interface %s_interface;\n", *p);
+		prev = *p;
+	}
+	wl_array_release(&types);
+	printf("\n");
 
 	printf("static const struct wl_interface *types[] = {\n");
 	emit_null_run(protocol);
