@@ -48,6 +48,7 @@ struct fullscreen {
 	int width, height;
 	int fullscreen;
 	float pointer_x, pointer_y;
+	int focussed, draw_cursor;
 
 	struct wl_list output_list;
 	struct fs_output *current_output;
@@ -186,7 +187,8 @@ redraw_handler(struct widget *widget, void *data)
 		x = 50;
 		cairo_set_line_width (cr, border);
 		while (x + 70 < fullscreen->width) {
-			if (fullscreen->pointer_x >= x && fullscreen->pointer_x < x + 50 &&
+			if (fullscreen->focussed &&
+			    fullscreen->pointer_x >= x && fullscreen->pointer_x < x + 50 &&
 			    fullscreen->pointer_y >= y && fullscreen->pointer_y < y + 40) {
 				cairo_set_source_rgb(cr, 1, 0, 0);
 				cairo_rectangle(cr,
@@ -203,6 +205,44 @@ redraw_handler(struct widget *widget, void *data)
 		}
 
 		y += 50;
+	}
+
+	if (fullscreen->focussed && fullscreen->draw_cursor) {
+		cairo_set_source_rgb(cr, 1, 1, 1);
+		cairo_set_line_width (cr, 8);
+		cairo_move_to(cr,
+			      fullscreen->pointer_x - 12,
+			      fullscreen->pointer_y - 12);
+		cairo_line_to(cr,
+			      fullscreen->pointer_x + 12,
+			      fullscreen->pointer_y + 12);
+		cairo_stroke(cr);
+
+		cairo_move_to(cr,
+			      fullscreen->pointer_x + 12,
+			      fullscreen->pointer_y - 12);
+		cairo_line_to(cr,
+			      fullscreen->pointer_x - 12,
+			      fullscreen->pointer_y + 12);
+		cairo_stroke(cr);
+
+		cairo_set_source_rgb(cr, 0, 0, 0);
+		cairo_set_line_width (cr, 4);
+		cairo_move_to(cr,
+			      fullscreen->pointer_x - 10,
+			      fullscreen->pointer_y - 10);
+		cairo_line_to(cr,
+			      fullscreen->pointer_x + 10,
+			      fullscreen->pointer_y + 10);
+		cairo_stroke(cr);
+
+		cairo_move_to(cr,
+			      fullscreen->pointer_x + 10,
+			      fullscreen->pointer_y - 10);
+		cairo_line_to(cr,
+			      fullscreen->pointer_x - 10,
+			      fullscreen->pointer_y + 10);
+		cairo_stroke(cr);
 	}
 
 	cairo_destroy(cr);
@@ -336,9 +376,37 @@ motion_handler(struct widget *widget,
 	fullscreen->pointer_y = y;
 
 	widget_schedule_redraw(widget);
-	return 0;
+
+	return fullscreen->draw_cursor ? CURSOR_BLANK : CURSOR_LEFT_PTR;
 }
 
+static int
+enter_handler(struct widget *widget,
+	      struct input *input,
+	      float x, float y, void *data)
+{
+	struct fullscreen *fullscreen = data;
+
+	fullscreen->focussed++;
+
+	fullscreen->pointer_x = x;
+	fullscreen->pointer_y = y;
+
+	widget_schedule_redraw(widget);
+
+	return fullscreen->draw_cursor ? CURSOR_BLANK : CURSOR_LEFT_PTR;
+}
+
+static void
+leave_handler(struct widget *widget,
+	      struct input *input, void *data)
+{
+	struct fullscreen *fullscreen = data;
+
+	fullscreen->focussed--;
+
+	widget_schedule_redraw(widget);
+}
 
 static void
 button_handler(struct widget *widget,
@@ -368,6 +436,25 @@ touch_handler(struct widget *widget, struct input *input,
 	struct fullscreen *fullscreen = data;
 	window_move(fullscreen->window, input, display_get_serial(fullscreen->display));
 }
+
+static void
+fshell_capability_handler(void *data, struct _wl_fullscreen_shell *fshell,
+			  uint32_t capability)
+{
+	struct fullscreen *fullscreen = data;
+
+	switch (capability) {
+	case _WL_FULLSCREEN_SHELL_CAPABILITY_CURSOR_PLANE:
+		fullscreen->draw_cursor = 0;
+		break;
+	default:
+		break;
+	}
+}
+
+struct _wl_fullscreen_shell_listener fullscreen_shell_listener = {
+	fshell_capability_handler
+};
 
 static void
 usage(int error_code)
@@ -406,6 +493,9 @@ global_handler(struct display *display, uint32_t id, const char *interface,
 		fullscreen->fshell = display_bind(display, id,
 						  &_wl_fullscreen_shell_interface,
 						  1);
+		_wl_fullscreen_shell_add_listener(fullscreen->fshell,
+						  &fullscreen_shell_listener,
+						  fullscreen);
 	}
 }
 
@@ -418,6 +508,7 @@ int main(int argc, char *argv[])
 	fullscreen.width = 640;
 	fullscreen.height = 480;
 	fullscreen.fullscreen = 0;
+	fullscreen.focussed = 0;
 	fullscreen.present_method = _WL_FULLSCREEN_SHELL_PRESENT_METHOD_DEFAULT;
 	wl_list_init(&fullscreen.output_list);
 	fullscreen.current_output = NULL;
@@ -457,9 +548,11 @@ int main(int argc, char *argv[])
 						     window_get_wl_surface(fullscreen.window),
 						     fullscreen.present_method,
 						     NULL);
-
+		/* If we get the CURSOR_PLANE capability, we'll change this */
+		fullscreen.draw_cursor = 1;
 	} else {
 		fullscreen.window = window_create(d);
+		fullscreen.draw_cursor = 0;
 	}
 
 	fullscreen.widget =
@@ -468,12 +561,14 @@ int main(int argc, char *argv[])
 	window_set_title(fullscreen.window, "Fullscreen");
 
 	widget_set_transparent(fullscreen.widget, 0);
-	widget_set_default_cursor(fullscreen.widget, CURSOR_LEFT_PTR);
 
+	widget_set_default_cursor(fullscreen.widget, CURSOR_LEFT_PTR);
 	widget_set_resize_handler(fullscreen.widget, resize_handler);
 	widget_set_redraw_handler(fullscreen.widget, redraw_handler);
 	widget_set_button_handler(fullscreen.widget, button_handler);
 	widget_set_motion_handler(fullscreen.widget, motion_handler);
+	widget_set_enter_handler(fullscreen.widget, enter_handler);
+	widget_set_leave_handler(fullscreen.widget, leave_handler);
 
 	widget_set_touch_down_handler(fullscreen.widget, touch_handler);
 
