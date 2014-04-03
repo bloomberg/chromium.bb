@@ -58,14 +58,14 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
     StyleSheetContents* styleSheetContents = element->document().elementSheet().contents();
 
     // FIXME: Move this code into KeyframeEffectModel, it will be used by the IDL constructor for that class.
-    AnimatableValueKeyframeVector keyframes;
+    KeyframeEffectModel::KeyframeVector keyframes;
     WillBeHeapVector<RefPtrWillBeMember<MutableStylePropertySet> > propertySetVector;
 
     for (size_t i = 0; i < keyframeDictionaryVector.size(); ++i) {
         RefPtrWillBeRawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
         propertySetVector.append(propertySet);
 
-        RefPtrWillBeRawPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
+        RefPtrWillBeRawPtr<Keyframe> keyframe = Keyframe::create();
         keyframes.append(keyframe);
 
         double offset;
@@ -106,7 +106,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
     }
 
     // FIXME: Replace this with code that just parses, when that code is available.
-    RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> keyframeEffectModel = StyleResolver::createKeyframeEffectModel(*element, propertySetVector, keyframes);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> keyframeEffectModel = StyleResolver::createKeyframeEffectModel(*element, propertySetVector, keyframes);
     if (!keyframeEffectModel->isReplaceOnly()) {
         exceptionState.throwDOMException(NotSupportedError, "Partial keyframes are not supported.");
         return nullptr;

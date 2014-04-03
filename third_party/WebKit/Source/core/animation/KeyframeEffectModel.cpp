@@ -36,12 +36,72 @@
 
 namespace WebCore {
 
-bool Keyframe::compareOffsets(const RefPtrWillBeRawPtr<Keyframe>& a, const RefPtrWillBeRawPtr<Keyframe>& b)
+Keyframe::Keyframe()
+    : m_offset(nullValue())
+    , m_composite(AnimationEffect::CompositeReplace)
+    , m_easing(LinearTimingFunction::preset())
+{ }
+
+Keyframe::Keyframe(const Keyframe& copyFrom)
+    : m_offset(copyFrom.m_offset)
+    , m_composite(copyFrom.m_composite)
+    , m_easing(copyFrom.m_easing)
 {
-    return a->offset() < b->offset();
+    ASSERT(m_easing);
+    for (PropertyValueMap::const_iterator iter = copyFrom.m_propertyValues.begin(); iter != copyFrom.m_propertyValues.end(); ++iter)
+        setPropertyValue(iter->key, iter->value.get());
 }
 
-PropertySet KeyframeEffectModelBase::properties() const
+void Keyframe::setEasing(PassRefPtr<TimingFunction> easing)
+{
+    ASSERT(easing);
+    m_easing = easing;
+}
+
+void Keyframe::setPropertyValue(CSSPropertyID property, const AnimatableValue* value)
+{
+    m_propertyValues.add(property, const_cast<AnimatableValue*>(value));
+}
+
+void Keyframe::clearPropertyValue(CSSPropertyID property)
+{
+    m_propertyValues.remove(property);
+}
+
+const AnimatableValue* Keyframe::propertyValue(CSSPropertyID property) const
+{
+    ASSERT(m_propertyValues.contains(property));
+    return m_propertyValues.get(property);
+}
+
+PropertySet Keyframe::properties() const
+{
+    // This is not used in time-critical code, so we probably don't need to
+    // worry about caching this result.
+    PropertySet properties;
+    for (PropertyValueMap::const_iterator iter = m_propertyValues.begin(); iter != m_propertyValues.end(); ++iter)
+        properties.add(*iter.keys());
+    return properties;
+}
+
+PassRefPtrWillBeRawPtr<Keyframe> Keyframe::cloneWithOffset(double offset) const
+{
+    RefPtrWillBeRawPtr<Keyframe> theClone = clone();
+    theClone->setOffset(offset);
+    return theClone.release();
+}
+
+void Keyframe::trace(Visitor* visitor)
+{
+    visitor->trace(m_propertyValues);
+}
+
+KeyframeEffectModel::KeyframeEffectModel(const KeyframeVector& keyframes)
+    : m_keyframes(keyframes)
+{
+}
+
+PropertySet KeyframeEffectModel::properties() const
 {
     PropertySet result;
     if (!m_keyframes.size()) {
@@ -57,7 +117,7 @@ PropertySet KeyframeEffectModelBase::properties() const
     return result;
 }
 
-PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > KeyframeEffectModelBase::sample(int iteration, double fraction, double iterationDuration) const
+PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > KeyframeEffectModel::sample(int iteration, double fraction, double iterationDuration) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
@@ -67,7 +127,7 @@ PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > Ke
     return m_interpolationEffect->getActiveInterpolations(fraction, iterationDuration);
 }
 
-KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes)
+KeyframeEffectModel::KeyframeVector KeyframeEffectModel::normalizedKeyframes(const KeyframeVector& keyframes)
 {
     // keyframes [beginIndex, endIndex) will remain after removing all keyframes if they are not
     // loosely sorted by offset, and after removing keyframes with positional offset outide [0, 1].
@@ -131,8 +191,7 @@ KeyframeEffectModelBase::KeyframeVector KeyframeEffectModelBase::normalizedKeyfr
     return result;
 }
 
-
-void KeyframeEffectModelBase::ensureKeyframeGroups() const
+void KeyframeEffectModel::ensureKeyframeGroups() const
 {
     if (m_keyframeGroups)
         return;
@@ -152,18 +211,19 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
                 group = groupIter->value.get();
 
             ASSERT(keyframe->composite() == AnimationEffect::CompositeReplace);
-            group->appendKeyframe(keyframe->createPropertySpecificKeyframe(property));
+            group->appendKeyframe(adoptPtrWillBeNoop(
+                new PropertySpecificKeyframe(keyframe->offset(), keyframe->easing(), keyframe->propertyValue(property), keyframe->composite())));
         }
     }
 
     // Add synthetic keyframes.
     for (KeyframeGroupMap::iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
-        iter->value->addSyntheticKeyframeIfRequired(this);
+        iter->value->addSyntheticKeyframeIfRequired();
         iter->value->removeRedundantKeyframes();
     }
 }
 
-void KeyframeEffectModelBase::ensureInterpolationEffect() const
+void KeyframeEffectModel::ensureInterpolationEffect() const
 {
     if (m_interpolationEffect)
         return;
@@ -172,20 +232,26 @@ void KeyframeEffectModelBase::ensureInterpolationEffect() const
     for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
         const PropertySpecificKeyframeVector& keyframes = iter->value->keyframes();
         ASSERT(keyframes[0]->composite() == AnimationEffect::CompositeReplace);
+        const AnimatableValue* start;
+        const AnimatableValue* end = keyframes[0]->value();
         for (size_t i = 0; i < keyframes.size() - 1; i++) {
             ASSERT(keyframes[i + 1]->composite() == AnimationEffect::CompositeReplace);
+            start = end;
+            end = keyframes[i + 1]->value();
             double applyFrom = i ? keyframes[i]->offset() : (-std::numeric_limits<double>::infinity());
             double applyTo = i == keyframes.size() - 2 ? std::numeric_limits<double>::infinity() : keyframes[i + 1]->offset();
             if (applyTo == 1)
                 applyTo = std::numeric_limits<double>::infinity();
-
-            m_interpolationEffect->addInterpolation(keyframes[i]->createInterpolation(iter->key, keyframes[i + 1].get()),
+            m_interpolationEffect->addInterpolation(
+                LegacyStyleInterpolation::create(
+                    AnimatableValue::takeConstRef(start),
+                    AnimatableValue::takeConstRef(end), iter->key),
                 keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i + 1]->offset(), applyFrom, applyTo);
         }
     }
 }
 
-bool KeyframeEffectModelBase::isReplaceOnly()
+bool KeyframeEffectModel::isReplaceOnly()
 {
     ensureKeyframeGroups();
     for (KeyframeGroupMap::iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
@@ -198,7 +264,7 @@ bool KeyframeEffectModelBase::isReplaceOnly()
     return true;
 }
 
-void KeyframeEffectModelBase::trace(Visitor* visitor)
+void KeyframeEffectModel::trace(Visitor* visitor)
 {
     visitor->trace(m_keyframes);
     visitor->trace(m_interpolationEffect);
@@ -207,20 +273,40 @@ void KeyframeEffectModelBase::trace(Visitor* visitor)
 #endif
 }
 
-Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, AnimationEffect::CompositeOperation composite)
+KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue* value, CompositeOperation composite)
     : m_offset(offset)
     , m_easing(easing)
     , m_composite(composite)
 {
+    m_value = AnimatableValue::takeConstRef(value);
 }
 
-void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::appendKeyframe(PassOwnPtr<PropertySpecificKeyframe> keyframe)
+KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, PassRefPtrWillBeRawPtr<AnimatableValue> value, CompositeOperation composite)
+    : m_offset(offset)
+    , m_easing(easing)
+    , m_value(value)
+    , m_composite(composite)
+{
+    ASSERT(!isNull(m_offset));
+}
+
+PassOwnPtrWillBeRawPtr<KeyframeEffectModel::PropertySpecificKeyframe> KeyframeEffectModel::PropertySpecificKeyframe::cloneWithOffset(double offset) const
+{
+    return adoptPtrWillBeNoop(new PropertySpecificKeyframe(offset, m_easing, m_value.get(), m_composite));
+}
+
+void KeyframeEffectModel::PropertySpecificKeyframe::trace(Visitor* visitor)
+{
+    visitor->trace(m_value);
+}
+
+void KeyframeEffectModel::PropertySpecificKeyframeGroup::appendKeyframe(PassOwnPtrWillBeRawPtr<PropertySpecificKeyframe> keyframe)
 {
     ASSERT(m_keyframes.isEmpty() || m_keyframes.last()->offset() <= keyframe->offset());
     m_keyframes.append(keyframe);
 }
 
-void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyframes()
+void KeyframeEffectModel::PropertySpecificKeyframeGroup::removeRedundantKeyframes()
 {
     // As an optimization, removes keyframes in the following categories, as
     // they will never be used by sample().
@@ -239,26 +325,20 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::removeRedundantKeyf
     ASSERT(m_keyframes.size() >= 2);
 }
 
-void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired(const KeyframeEffectModelBase* context)
+void KeyframeEffectModel::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfRequired()
 {
     ASSERT(!m_keyframes.isEmpty());
     if (m_keyframes.first()->offset() != 0.0)
-        m_keyframes.insert(0, m_keyframes.first()->neutralKeyframe(0, nullptr));
+        m_keyframes.insert(0, adoptPtrWillBeNoop(new PropertySpecificKeyframe(0, nullptr, AnimatableValue::neutralValue(), CompositeAdd)));
     if (m_keyframes.last()->offset() != 1.0)
-        appendKeyframe(m_keyframes.last()->neutralKeyframe(1, nullptr));
+        appendKeyframe(adoptPtrWillBeNoop(new PropertySpecificKeyframe(1, nullptr, AnimatableValue::neutralValue(), CompositeAdd)));
 }
 
-void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::trace(Visitor* visitor)
+void KeyframeEffectModel::PropertySpecificKeyframeGroup::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
+#if ENABLE_OILPAN
     visitor->trace(m_keyframes);
 #endif
 }
-
-template <>
-bool KeyframeEffectModel<AnimatableValueKeyframe>::isAnimatableValueKeyframeEffectModel() const { return true; }
-
-template <>
-bool KeyframeEffectModel<StringKeyframe>::isStringKeyframeEffectModel() const { return true; }
 
 } // namespace
