@@ -179,6 +179,8 @@ const base::FilePath::CharType kNewTabThumbnailsFilename[] =
     FPL("Top Thumbnails");
 const base::FilePath::CharType kOBCertFilename[] = FPL("Origin Bound Certs");
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
+const base::FilePath::CharType kProtectedPreferencesFilename[] =
+    FPL("Protected Preferences");
 const base::FilePath::CharType kReadmeFilename[] = FPL("README");
 const base::FilePath::CharType kResetPromptMementoFilename[] =
     FPL("Reset Prompt Memento");

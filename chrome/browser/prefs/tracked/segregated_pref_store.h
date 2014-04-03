@@ -18,6 +18,16 @@
 // Provides a unified PersistentPrefStore implementation that splits its storage
 // and retrieval between two underlying PersistentPrefStore instances: a set of
 // preference names is used to partition the preferences.
+//
+// Combines properties of the two stores as follows:
+//   * The unified read error will be:
+//                           Selected Store Error
+//    Default Store Error | NO_ERROR      | NO_FILE       | other selected |
+//               NO_ERROR | NO_ERROR      | NO_ERROR      | other selected |
+//               NO_FILE  | NO_FILE       | NO_FILE       | NO_FILE        |
+//          other default | other default | other default | other default  |
+//   * The unified initialization success, initialization completion, and
+//     read-only state are the boolean OR of the underlying stores' properties.
 class SegregatedPrefStore : public PersistentPrefStore {
  public:
   // Creates an instance that delegates to |selected_pref_store| for the

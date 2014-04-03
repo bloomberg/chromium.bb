@@ -119,20 +119,20 @@ bool SegregatedPrefStore::ReadOnly() const {
 PersistentPrefStore::PrefReadError SegregatedPrefStore::GetReadError() const {
   PersistentPrefStore::PrefReadError read_error =
       default_pref_store_->GetReadError();
-  return read_error != PersistentPrefStore::PREF_READ_ERROR_NONE
-             ? read_error
-             : selected_pref_store_->GetReadError();
+  if (read_error == PersistentPrefStore::PREF_READ_ERROR_NONE) {
+    read_error = selected_pref_store_->GetReadError();
+    // Ignore NO_FILE from selected_pref_store_.
+    if (read_error == PersistentPrefStore::PREF_READ_ERROR_NO_FILE)
+      read_error = PersistentPrefStore::PREF_READ_ERROR_NONE;
+  }
+  return read_error;
 }
 
 PersistentPrefStore::PrefReadError SegregatedPrefStore::ReadPrefs() {
-  PersistentPrefStore::PrefReadError unselected_read_error =
-      default_pref_store_->ReadPrefs();
-  PersistentPrefStore::PrefReadError selected_read_error =
-      selected_pref_store_->ReadPrefs();
+  default_pref_store_->ReadPrefs();
+  selected_pref_store_->ReadPrefs();
 
-  return unselected_read_error != PersistentPrefStore::PREF_READ_ERROR_NONE
-             ? unselected_read_error
-             : selected_read_error;
+  return GetReadError();
 }
 
 void SegregatedPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {

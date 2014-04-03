@@ -184,8 +184,52 @@ TEST_F(SegregatedPrefStoreTest, Observer) {
   observer_.VerifyAndResetChangedKey(kUnselectedPref);
 }
 
+TEST_F(SegregatedPrefStoreTest, SelectedPrefReadNoFileError) {
+  // PREF_READ_ERROR_NO_FILE for the selected prefs file is silently converted
+  // to PREF_READ_ERROR_NONE.
+  selected_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->ReadPrefs());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->GetReadError());
+}
+
 TEST_F(SegregatedPrefStoreTest, SelectedPrefReadError) {
   selected_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED,
+            segregated_store_->ReadPrefs());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED,
+            segregated_store_->GetReadError());
+}
+
+TEST_F(SegregatedPrefStoreTest, SelectedPrefReadNoFileErrorAsync) {
+  // PREF_READ_ERROR_NO_FILE for the selected prefs file is silently converted
+  // to PREF_READ_ERROR_NONE.
+  selected_store_->set_read_error(
+      PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
+
+  default_store_->SetBlockAsyncRead(true);
+
+  EXPECT_FALSE(read_error_delegate_data_.invoked);
+
+  segregated_store_->ReadPrefsAsync(GetReadErrorDelegate().release());
+
+  EXPECT_FALSE(read_error_delegate_data_.invoked);
+
+  default_store_->SetBlockAsyncRead(false);
+
+  // ReadErrorDelegate is not invoked for ERROR_NONE.
+  EXPECT_FALSE(read_error_delegate_data_.invoked);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->GetReadError());
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
+            segregated_store_->GetReadError());
+}
+
+TEST_F(SegregatedPrefStoreTest, UnselectedPrefReadNoFileError) {
+  default_store_->set_read_error(
       PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
             segregated_store_->ReadPrefs());
@@ -195,10 +239,10 @@ TEST_F(SegregatedPrefStoreTest, SelectedPrefReadError) {
 
 TEST_F(SegregatedPrefStoreTest, UnselectedPrefReadError) {
   default_store_->set_read_error(
-      PersistentPrefStore::PREF_READ_ERROR_NO_FILE);
-  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+      PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED);
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED,
             segregated_store_->ReadPrefs());
-  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
+  EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED,
             segregated_store_->GetReadError());
 }
 
