@@ -799,7 +799,7 @@ bool EventRewriter::RewriteFunctionKeys(XEvent* event) {
           kFkeysToSpecialKeys,
           arraysize(kFkeysToSpecialKeys),
           keysym,
-          xkey->state & !Mod4Mask,
+          xkey->state & ~Mod4Mask,
           &remapped_native_keysym,
           &remapped_native_mods);
     }
