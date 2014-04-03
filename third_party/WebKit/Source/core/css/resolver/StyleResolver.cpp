@@ -787,7 +787,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
 
 // This function is used by the WebAnimations JavaScript API method animate().
 // FIXME: Remove this when animate() switches away from resolution-dependent parsing.
-PassRefPtrWillBeRawPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element& element, const WillBeHeapVector<RefPtrWillBeMember<MutableStylePropertySet> >& propertySetVector, KeyframeEffectModel::KeyframeVector& keyframes)
+PassRefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> StyleResolver::createKeyframeEffectModel(Element& element, const WillBeHeapVector<RefPtrWillBeMember<MutableStylePropertySet> >& propertySetVector, AnimatableValueKeyframeVector& keyframes)
 {
     ASSERT(propertySetVector.size() == keyframes.size());
 
@@ -802,8 +802,7 @@ PassRefPtrWillBeRawPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectM
             keyframes[i]->setPropertyValue(id, CSSAnimatableValueFactory::create(id, *state.style()).get());
         }
     }
-
-    return KeyframeEffectModel::create(keyframes);
+    return AnimatableValueKeyframeEffectModel::create(keyframes);
 }
 
 PassRefPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
@@ -1100,7 +1099,7 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Wil
         CSSPropertyID property = iter->key;
         if (!isPropertyForPass<pass>(property))
             continue;
-        const StyleInterpolation *interpolation = toStyleInterpolation(iter->value.get());
+        const StyleInterpolation* interpolation = toStyleInterpolation(iter->value.get());
         interpolation->apply(state);
     }
 }
