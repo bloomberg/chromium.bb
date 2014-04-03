@@ -938,6 +938,8 @@ crbug.com/357464 [ Win Debug ] virtual/softwarecompositing/visibility/visibility
 crbug.com/357465 [ Debug ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 crbug.com/357465 [ Linux Release ] virtual/threaded/animations/keyframe-timing-functions-multiple-animations.html [ Pass Timeout ]
 
+Bug(pdr) fast/table/border-collapsing/cached-change-tbody-border-width.html [ NeedsRebaseline ]
+
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-005.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
