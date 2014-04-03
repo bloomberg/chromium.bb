@@ -364,6 +364,8 @@
     'browser/compositor/image_transport_factory.h',
     'browser/compositor/no_transport_image_transport_factory.cc',
     'browser/compositor/no_transport_image_transport_factory.h',
+    'browser/compositor/overlay_candidate_validator_ozone.cc',
+    'browser/compositor/overlay_candidate_validator_ozone.h',
     'browser/compositor/owned_mailbox.h',
     'browser/compositor/owned_mailbox.cc',
     'browser/compositor/reflector_impl.cc',

@@ -11,23 +11,14 @@
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
 
 class CC_EXPORT OverlayCandidate {
  public:
-  enum OverlayTransform {
-    INVALID,
-    NONE,
-    FLIP_HORIZONTAL,
-    FLIP_VERTICAL,
-    ROTATE_90,
-    ROTATE_180,
-    ROTATE_270,
-  };
-
-  static OverlayTransform GetOverlayTransform(
+  static gfx::OverlayTransform GetOverlayTransform(
       const gfx::Transform& quad_transform,
       bool flipped);
   static gfx::Rect GetOverlayRect(const gfx::Transform& quad_transform,
@@ -37,7 +28,7 @@ class CC_EXPORT OverlayCandidate {
   ~OverlayCandidate();
 
   // Transformation to apply to layer during composition.
-  OverlayTransform transform;
+  gfx::OverlayTransform transform;
   // Format of the buffer to composite.
   ResourceFormat format;
   // Rect on the display to position the overlay to.

@@ -76,11 +76,12 @@ void TestContextSupport::PartialSwapBuffers(const gfx::Rect& sub_buffer) {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void TestContextSupport::ScheduleOverlayPlane(int plane_z_order,
-                                              unsigned plane_transform,
-                                              unsigned overlay_texture_id,
-                                              const gfx::Rect& display_bounds,
-                                              const gfx::RectF& uv_rect) {
+void TestContextSupport::ScheduleOverlayPlane(
+    int plane_z_order,
+    gfx::OverlayTransform plane_transform,
+    unsigned overlay_texture_id,
+    const gfx::Rect& display_bounds,
+    const gfx::RectF& uv_rect) {
   if (!schedule_overlay_plane_callback_.is_null()) {
     schedule_overlay_plane_callback_.Run(plane_z_order,
                                          plane_transform,

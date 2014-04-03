@@ -2826,11 +2826,12 @@ void GLES2Implementation::SetSwapBuffersCompleteCallback(
   swap_buffers_complete_callback_ = swap_buffers_complete_callback;
 }
 
-void GLES2Implementation::ScheduleOverlayPlane(int plane_z_order,
-                                               unsigned plane_transform,
-                                               unsigned overlay_texture_id,
-                                               const gfx::Rect& display_bounds,
-                                               const gfx::RectF& uv_rect) {
+void GLES2Implementation::ScheduleOverlayPlane(
+    int plane_z_order,
+    gfx::OverlayTransform plane_transform,
+    unsigned overlay_texture_id,
+    const gfx::Rect& display_bounds,
+    const gfx::RectF& uv_rect) {
   NOTREACHED() << "Overlay supported isn't finished.";
 }
 

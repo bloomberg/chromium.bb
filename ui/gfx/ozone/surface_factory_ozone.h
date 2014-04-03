@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/rect.h"
 
 class SkBitmap;
@@ -66,17 +67,6 @@ class GFX_EXPORT SurfaceFactoryOzone {
     UNKNOWN,
     RGBA_8888,
     RGB_888,
-  };
-
-  // Describes transformation to be applied to the buffer before presenting
-  // to screen.
-  enum OverlayTransform {
-    NONE,
-    FLIP_HORIZONTAL,
-    FLIP_VERTICAL,
-    ROTATE_90,
-    ROTATE_180,
-    ROTATE_270,
   };
 
   typedef void*(*GLGetProcAddressProc)(const char* name);
@@ -146,7 +136,7 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // |display_bounds|.
   virtual void ScheduleOverlayPlane(gfx::AcceleratedWidget w,
                                     int plane_z_order,
-                                    OverlayTransform plane_transform,
+                                    gfx::OverlayTransform plane_transform,
                                     gfx::NativeBufferOzone buffer,
                                     const gfx::Rect& display_bounds,
                                     gfx::RectF crop_rect);

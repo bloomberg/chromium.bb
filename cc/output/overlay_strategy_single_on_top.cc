@@ -38,9 +38,9 @@ bool OverlayStrategySingleOnTop::Attempt(
     return false;
 
   // Simple quads only.
-  OverlayCandidate::OverlayTransform overlay_transform =
+  gfx::OverlayTransform overlay_transform =
       OverlayCandidate::GetOverlayTransform(quad.quadTransform(), quad.flipped);
-  if (overlay_transform == OverlayCandidate::INVALID ||
+  if (overlay_transform == gfx::OVERLAY_TRANSFORM_INVALID ||
       !quad.quadTransform().IsIdentityOrTranslation() || quad.needs_blending ||
       quad.shared_quad_state->opacity != 1.f ||
       quad.shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode ||

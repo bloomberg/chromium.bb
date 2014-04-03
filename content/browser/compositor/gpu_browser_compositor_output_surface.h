@@ -11,6 +11,10 @@ namespace ui {
 class CompositorVSyncManager;
 }
 
+namespace cc {
+class OverlayCandidateValidator;
+}
+
 namespace content {
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
@@ -23,7 +27,8 @@ class GpuBrowserCompositorOutputSurface
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager);
+      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+      scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator);
 
   virtual ~GpuBrowserCompositorOutputSurface();
 

@@ -24,13 +24,16 @@ class GFX_EXPORT OverlayCandidatesOzone {
     ~OverlaySurfaceCandidate();
 
     // Transformation to apply to layer during composition.
-    SurfaceFactoryOzone::OverlayTransform transform;
+    gfx::OverlayTransform transform;
     // Format of the buffer to composite.
     SurfaceFactoryOzone::BufferFormat format;
     // Rect on the display to position the overlay to.
     gfx::Rect display_rect;
     // Crop within the buffer to be placed inside |display_rect|.
     gfx::RectF crop_rect;
+    // Stacking order of the overlay plane relative to the main surface,
+    // which is 0. Signed to allow for "underlays".
+    int plane_z_order;
 
     // To be modified by the implementer if this candidate can go into
     // an overlay.

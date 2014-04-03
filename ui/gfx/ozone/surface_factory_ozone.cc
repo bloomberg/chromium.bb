@@ -50,12 +50,13 @@ gfx::OverlayCandidatesOzone* SurfaceFactoryOzone::GetOverlayCandidates(
   return NULL;
 }
 
-void SurfaceFactoryOzone::ScheduleOverlayPlane(gfx::AcceleratedWidget w,
-                                               int plane_z_order,
-                                               OverlayTransform plane_transform,
-                                               gfx::NativeBufferOzone buffer,
-                                               const gfx::Rect& display_bounds,
-                                               gfx::RectF crop_rect) {
+void SurfaceFactoryOzone::ScheduleOverlayPlane(
+    gfx::AcceleratedWidget w,
+    int plane_z_order,
+    gfx::OverlayTransform plane_transform,
+    gfx::NativeBufferOzone buffer,
+    const gfx::Rect& display_bounds,
+    gfx::RectF crop_rect) {
   NOTREACHED();
 }
 

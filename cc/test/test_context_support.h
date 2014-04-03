@@ -30,7 +30,7 @@ class TestContextSupport : public gpu::ContextSupport {
   virtual void SetSwapBuffersCompleteCallback(
       const base::Closure& callback) OVERRIDE;
   virtual void ScheduleOverlayPlane(int plane_z_order,
-                                    unsigned plane_transform,
+                                    gfx::OverlayTransform plane_transform,
                                     unsigned overlay_texture_id,
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& uv_rect) OVERRIDE;
@@ -42,7 +42,7 @@ class TestContextSupport : public gpu::ContextSupport {
       const SurfaceVisibleCallback& set_visible_callback);
 
   typedef base::Callback<void(int plane_z_order,
-                              unsigned plane_transform,
+                              gfx::OverlayTransform plane_transform,
                               unsigned overlay_texture_id,
                               const gfx::Rect& display_bounds,
                               const gfx::RectF& crop_rect)>

@@ -15,11 +15,14 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     const scoped_refptr<ContextProviderCommandBuffer>& context,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
-    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager)
+    const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
+    scoped_ptr<cc::OverlayCandidateValidator> overlay_candidate_validator)
     : BrowserCompositorOutputSurface(context,
                                      surface_id,
                                      output_surface_map,
-                                     vsync_manager) {}
+                                     vsync_manager) {
+  overlay_candidate_validator_ = overlay_candidate_validator.Pass();
+}
 
 GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {}
 

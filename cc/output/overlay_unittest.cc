@@ -497,7 +497,7 @@ class MockOverlayScheduler {
  public:
   MOCK_METHOD5(Schedule,
                void(int plane_z_order,
-                    unsigned plane_transform,
+                    gfx::OverlayTransform plane_transform,
                     unsigned overlay_texture_id,
                     const gfx::Rect& display_bounds,
                     const gfx::RectF& uv_rect));
@@ -565,7 +565,7 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(2);
   EXPECT_CALL(scheduler_,
               Schedule(1,
-                       OverlayCandidate::NONE,
+                       gfx::OVERLAY_TRANSFORM_NONE,
                        _,
                        kOverlayRect,
                        BoundingRect(kUVTopLeft, kUVBottomRight))).Times(1);

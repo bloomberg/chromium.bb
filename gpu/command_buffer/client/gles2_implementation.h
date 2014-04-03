@@ -221,7 +221,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       const base::Closure& swap_buffers_complete_callback)
           OVERRIDE;
   virtual void ScheduleOverlayPlane(int plane_z_order,
-                                    unsigned plane_transform,
+                                    gfx::OverlayTransform plane_transform,
                                     unsigned overlay_texture_id,
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& uv_rect) OVERRIDE;

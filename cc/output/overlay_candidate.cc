@@ -9,7 +9,7 @@
 namespace cc {
 
 OverlayCandidate::OverlayCandidate()
-    : transform(NONE),
+    : transform(gfx::OVERLAY_TRANSFORM_NONE),
       format(RGBA_8888),
       uv_rect(0.f, 0.f, 1.f, 1.f),
       resource_id(0),
@@ -19,13 +19,14 @@ OverlayCandidate::OverlayCandidate()
 OverlayCandidate::~OverlayCandidate() {}
 
 // static
-OverlayCandidate::OverlayTransform OverlayCandidate::GetOverlayTransform(
+gfx::OverlayTransform OverlayCandidate::GetOverlayTransform(
     const gfx::Transform& quad_transform,
     bool flipped) {
   if (!quad_transform.IsIdentityOrTranslation())
-    return INVALID;
+    return gfx::OVERLAY_TRANSFORM_INVALID;
 
-  return flipped ? FLIP_VERTICAL : NONE;
+  return flipped ? gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL
+                 : gfx::OVERLAY_TRANSFORM_NONE;
 }
 
 // static

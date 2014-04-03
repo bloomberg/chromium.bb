@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_CONTEXT_SUPPORT_H_
 
 #include "base/callback.h"
+#include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/rect.h"
 
 namespace gpu {
@@ -37,7 +38,7 @@ class ContextSupport {
   // primary surface during the next buffer swap.
   // This method is not stateful and needs to be re-scheduled every frame.
   virtual void ScheduleOverlayPlane(int plane_z_order,
-                                    unsigned plane_transform,
+                                    gfx::OverlayTransform plane_transform,
                                     unsigned overlay_texture_id,
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& uv_rect) = 0;

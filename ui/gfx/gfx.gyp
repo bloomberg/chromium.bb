@@ -202,6 +202,7 @@
         'native_widget_types.h',
         'nine_image_painter.cc',
         'nine_image_painter.h',
+        'overlay_transform.h',
         'ozone/dri/dri_skbitmap.cc',
         'ozone/dri/dri_skbitmap.h',
         'ozone/dri/dri_surface.cc',

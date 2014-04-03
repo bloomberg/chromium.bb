@@ -40,7 +40,9 @@
 #if defined(OS_WIN)
 #include "content/browser/compositor/software_output_device_win.h"
 #elif defined(USE_OZONE)
+#include "content/browser/compositor/overlay_candidate_validator_ozone.h"
 #include "content/browser/compositor/software_output_device_ozone.h"
+#include "ui/gfx/ozone/surface_factory_ozone.h"
 #elif defined(USE_X11)
 #include "content/browser/compositor/software_output_device_x11.h"
 #endif
@@ -180,6 +182,20 @@ scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
 #endif
 }
 
+scoped_ptr<cc::OverlayCandidateValidator> CreateOverlayCandidateValidator(
+    gfx::AcceleratedWidget widget) {
+#if defined(USE_OZONE)
+  gfx::OverlayCandidatesOzone* overlay_candidates =
+      gfx::SurfaceFactoryOzone::GetInstance()->GetOverlayCandidates(widget);
+  if (overlay_candidates && CommandLine::ForCurrentProcess()->HasSwitch(
+                                switches::kEnableHardwareOverlays)) {
+    return scoped_ptr<cc::OverlayCandidateValidator>(
+        new OverlayCandidateValidatorOzone(widget, overlay_candidates));
+  }
+#endif
+  return scoped_ptr<cc::OverlayCandidateValidator>();
+}
+
 scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     ui::Compositor* compositor, bool software_fallback) {
   PerCompositorData* data = per_compositor_data_[compositor];
@@ -237,7 +253,8 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
           context_provider,
           per_compositor_data_[compositor]->surface_id,
           &output_surface_map_,
-          compositor->vsync_manager()));
+          compositor->vsync_manager(),
+          CreateOverlayCandidateValidator(compositor->widget())));
   if (data->reflector.get())
     data->reflector->ReattachToOutputSurfaceFromMainThread(surface.get());
 

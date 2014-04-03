@@ -9,7 +9,7 @@
 namespace gfx {
 
 OverlayCandidatesOzone::OverlaySurfaceCandidate::OverlaySurfaceCandidate()
-    : transform(SurfaceFactoryOzone::NONE),
+    : transform(gfx::OVERLAY_TRANSFORM_NONE),
       format(SurfaceFactoryOzone::UNKNOWN),
       overlay_handled(false) {}
 
