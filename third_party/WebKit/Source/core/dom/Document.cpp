@@ -4475,6 +4475,12 @@ void Document::finishedParsing()
     RefPtr<Document> protect(this);
 
     if (RefPtr<LocalFrame> f = frame()) {
+        // Don't update the render tree if we haven't requested the main resource yet to avoid
+        // adding extra latency. Note that the first render tree update can be expensive since it
+        // triggers the parsing of the default stylesheets which are compiled-in.
+        const bool mainResourceWasAlreadyRequested =
+            m_frame->loader().stateMachine()->startedFirstRealLoad();
+
         // FrameLoader::finishedParsing() might end up calling Document::implicitClose() if all
         // resource loads are complete. HTMLObjectElements can start loading their resources from
         // post attach callbacks triggered by recalcStyle().  This means if we parse out an <object>
@@ -4482,7 +4488,8 @@ void Document::finishedParsing()
         // started the resource load and might fire the window load event too early.  To avoid this
         // we force the styles to be up to date before calling FrameLoader::finishedParsing().
         // See https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
-        updateRenderTreeIfNeeded();
+        if (mainResourceWasAlreadyRequested)
+            updateRenderTreeIfNeeded();
 
         f->loader().finishedParsing();
 
