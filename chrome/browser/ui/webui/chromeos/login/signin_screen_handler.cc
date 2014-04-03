@@ -294,6 +294,7 @@ SigninScreenHandler::SigninScreenHandler(
       native_window_delegate_(NULL),
       show_on_init_(false),
       oobe_ui_(false),
+      focus_stolen_(false),
       gaia_silent_load_(false),
       is_account_picker_showing_first_time_(false),
       dns_cleared_(false),
@@ -1050,6 +1051,8 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
        gaia_silent_load_network_ != active_network_path)) {
     // Network has changed. Force Gaia reload.
     gaia_silent_load_ = false;
+    // Gaia page will be realoded, so focus isn't stolen anymore.
+    focus_stolen_ = false;
   }
 
   // Note that LoadAuthExtension clears |email_|.
@@ -1069,7 +1072,8 @@ void SigninScreenHandler::ShowSigninScreenIfReady() {
     // The variable is assigned to false because silently loaded Gaia page was
     // used.
     gaia_silent_load_ = false;
-    HandleLoginWebuiReady();
+    if (focus_stolen_)
+      HandleLoginWebuiReady();
   }
 
   UpdateState(ErrorScreenActor::ERROR_REASON_UPDATE);
@@ -1361,6 +1365,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
           browser_policy_connector_chromeos();
   bool is_enterprise_managed = connector->IsEnterpriseManaged();
 
+
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& email = (*it)->email();
     bool is_owner = (email == owner);
@@ -1436,7 +1441,28 @@ void SigninScreenHandler::HandleWallpaperReady() {
 }
 
 void SigninScreenHandler::HandleLoginWebuiReady() {
+  if (focus_stolen_) {
+    // Set focus to the Gaia page.
+    // TODO(altimofeev): temporary solution, until focus parameters are
+    // implemented on the Gaia side.
+    // Do this only once. Any subsequent call would relod GAIA frame.
+    focus_stolen_ = false;
+    const char code[] =
+        "if (typeof gWindowOnLoad != 'undefined) gWindowOnLoad();";
+    content::RenderFrameHost* frame =
+        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
+  }
   if (gaia_silent_load_) {
+    focus_stolen_ = true;
+    // Prevent focus stealing by the Gaia page.
+    // TODO(altimofeev): temporary solution, until focus parameters are
+    // implemented on the Gaia side.
+    const char code[] = "var gWindowOnLoad = window.onload; "
+                        "window.onload=function() {};";
+    content::RenderFrameHost* frame =
+        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
     // As we could miss and window.onload could already be called, restore
     // focus to current pod (see crbug/175243).
     RefocusCurrentPod();

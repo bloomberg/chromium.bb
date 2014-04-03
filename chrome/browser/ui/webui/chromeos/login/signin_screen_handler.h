@@ -463,6 +463,9 @@ class SigninScreenHandler
   // Keeps whether screen should be shown for OOBE.
   bool oobe_ui_;
 
+  // Is focus still stolen from Gaia page?
+  bool focus_stolen_;
+
   // Has Gaia page silent load been started for the current sign-in attempt?
   bool gaia_silent_load_;
 
