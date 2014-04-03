@@ -389,7 +389,9 @@ demo_clients +=					\
 weston_simple_shm_SOURCES = clients/simple-shm.c
 nodist_weston_simple_shm_SOURCES =		\
 	protocol/xdg-shell-protocol.c		\
-	protocol/xdg-shell-client-protocol.h
+	protocol/xdg-shell-client-protocol.h	\
+	protocol/fullscreen-shell-protocol.c	\
+	protocol/fullscreen-shell-client-protocol.h
 weston_simple_shm_CFLAGS = $(AM_CFLAGS) $(SIMPLE_CLIENT_CFLAGS)
 weston_simple_shm_LDADD = $(SIMPLE_CLIENT_LIBS) libshared.la
 
@@ -605,6 +607,8 @@ BUILT_SOURCES +=					\
 	protocol/scaler-protocol.c			\
 	protocol/workspaces-client-protocol.h		\
 	protocol/workspaces-protocol.c			\
+	protocol/fullscreen-shell-protocol.c		\
+	protocol/fullscreen-shell-client-protocol.h	\
 	protocol/xdg-shell-protocol.c			\
 	protocol/xdg-shell-client-protocol.h
 
