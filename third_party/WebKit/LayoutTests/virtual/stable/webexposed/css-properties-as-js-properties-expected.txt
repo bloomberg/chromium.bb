@@ -4,6 +4,7 @@ alignContent
 alignItems
 alignSelf
 alignmentBaseline
+backfaceVisibility
 background
 backgroundAttachment
 backgroundBlendMode
@@ -157,6 +158,8 @@ pageBreakBefore
 pageBreakInside
 paintOrder
 parentRule
+perspective
+perspectiveOrigin
 pointerEvents
 position
 quotes
@@ -200,6 +203,9 @@ textUnderlineStyle
 textUnderlineWidth
 top
 touchAction
+transform
+transformOrigin
+transformStyle
 transition
 transitionDelay
 transitionDuration
