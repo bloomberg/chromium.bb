@@ -106,7 +106,7 @@ function test()
             function step3(row)
             {
                 InspectorTest.assertEquals("(GC roots)", row._name, "(GC roots) object");
-                InspectorTest.assertEquals(0, row._distance, "(GC roots) distance should be zero");
+                InspectorTest.assertEquals("\u2212", row.data.distance, "(GC roots) distance should be zero");
                 InspectorTest.findAndExpandWindow(step4);
             }
 
