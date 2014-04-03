@@ -1275,8 +1275,6 @@ void PPB_Instance_Proxy::OnHostMsgSetCursor(
 
 void PPB_Instance_Proxy::OnHostMsgSetTextInputType(PP_Instance instance,
                                                    PP_TextInput_Type type) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
-    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->SetTextInputType(instance, type);
@@ -1286,8 +1284,6 @@ void PPB_Instance_Proxy::OnHostMsgUpdateCaretPosition(
     PP_Instance instance,
     const PP_Rect& caret,
     const PP_Rect& bounding_box) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
-    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
     enter.functions()->UpdateCaretPosition(instance, caret, bounding_box);
@@ -1295,8 +1291,6 @@ void PPB_Instance_Proxy::OnHostMsgUpdateCaretPosition(
 
 void PPB_Instance_Proxy::OnHostMsgCancelCompositionText(PP_Instance instance) {
   EnterInstanceNoLock enter(instance);
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
-    return;
   if (enter.succeeded())
     enter.functions()->CancelCompositionText(instance);
 }
@@ -1306,8 +1300,6 @@ void PPB_Instance_Proxy::OnHostMsgUpdateSurroundingText(
     const std::string& text,
     uint32_t caret,
     uint32_t anchor) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
-    return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
     enter.functions()->UpdateSurroundingText(instance, text.c_str(), caret,
