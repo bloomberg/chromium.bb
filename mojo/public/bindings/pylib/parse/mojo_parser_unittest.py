@@ -226,5 +226,6 @@ module my_module { struct MyStruct { int32 a_hex @0X0; }; }
             r"Octal and hexadecimal ordinal values not allowed$"):
       mojo_parser.Parse(source5, "my_file.mojom")
 
+
 if __name__ == "__main__":
   unittest.main()

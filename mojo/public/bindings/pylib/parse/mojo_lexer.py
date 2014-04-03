@@ -78,7 +78,7 @@ class Lexer(object):
     # Constants
     'ORDINAL',
     'INT_CONST_DEC', 'INT_CONST_OCT', 'INT_CONST_HEX',
-    'FLOAT_CONST', 'HEX_FLOAT_CONST',
+    'FLOAT_CONST',
     'CHAR_CONST',
 
     # String literals
@@ -154,13 +154,7 @@ class Lexer(object):
   fractional_constant = r"""([0-9]*\.[0-9]+)|([0-9]+\.)"""
   floating_constant = \
       '(((('+fractional_constant+')'+ \
-      exponent_part+'?)|([0-9]+'+exponent_part+'))[FfLl]?)'
-  binary_exponent_part = r'''([pP][+-]?[0-9]+)'''
-  hex_fractional_constant = \
-      '((('+hex_digits+r""")?\."""+hex_digits+')|('+hex_digits+r"""\.))"""
-  hex_floating_constant = \
-      '('+hex_prefix+'('+hex_digits+'|'+hex_fractional_constant+')'+ \
-      binary_exponent_part+'[FfLl]?)'
+      exponent_part+'?)|([0-9]+'+exponent_part+')))'
 
   # Ordinals
   ordinal = r'@[0-9]+'
@@ -220,10 +214,6 @@ class Lexer(object):
   #
   @TOKEN(floating_constant)
   def t_FLOAT_CONST(self, t):
-    return t
-
-  @TOKEN(hex_floating_constant)
-  def t_HEX_FLOAT_CONST(self, t):
     return t
 
   @TOKEN(hex_constant)

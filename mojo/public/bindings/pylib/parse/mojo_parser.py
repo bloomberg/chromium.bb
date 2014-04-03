@@ -319,7 +319,6 @@ class Parser(object):
                 | INT_CONST_OCT
                 | INT_CONST_HEX
                 | FLOAT_CONST
-                | HEX_FLOAT_CONST
                 | CHAR_CONST
                 | STRING_LITERAL"""
     p[0] = _ListFromConcat(*p[1:])
