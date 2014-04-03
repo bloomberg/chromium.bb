@@ -91,7 +91,6 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
 
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
-  manager->SetInputMethodLoginDefault();
   manager->GetComponentExtensionIMEManager()->AddObserver(this);
 }
 
@@ -436,8 +435,6 @@ base::DictionaryValue* CreateInputMethodsEntry(
 }
 
 void NetworkScreenHandler::OnImeComponentExtensionInitialized() {
-  input_method::InputMethodManager::Get()->SetInputMethodLoginDefault();
-
   // Refreshes the language and keyboard list once the component extension
   // IMEs are initialized.
   if (page_is_ready())
@@ -474,12 +471,15 @@ base::ListValue* NetworkScreenHandler::GetInputMethods() {
     }
   }
 
+  const std::vector<std::string>& hardware_login_input_methods =
+      util->GetHardwareLoginInputMethodIds();
+  manager->EnableLoginLayouts(g_browser_process->GetApplicationLocale(),
+                              hardware_login_input_methods);
+
   scoped_ptr<input_method::InputMethodDescriptors> input_methods(
       manager->GetActiveInputMethods());
   const std::string& current_input_method_id =
       manager->GetCurrentInputMethod().id();
-  const std::vector<std::string>& hardware_login_input_methods =
-      util->GetHardwareLoginInputMethodIds();
   std::set<std::string> input_methods_added;
 
   for (std::vector<std::string>::const_iterator i =

@@ -225,6 +225,9 @@ void OobeLocalizationTest::RunLocalizationTest(
   StartupCustomizationDocument::GetInstance()->Init(
       statistics_provider_.get());
 
+  g_browser_process->local_state()->SetString(
+      prefs::kHardwareKeyboardLayout, keyboard_layout);
+
   input_method::InputMethodManager::Get()
       ->GetInputMethodUtil()
       ->InitXkbInputMethodsForTesting();

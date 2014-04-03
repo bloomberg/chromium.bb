@@ -525,7 +525,7 @@ base::string16 InputMethodUtil::GetInputMethodMediumName(
 
 base::string16 InputMethodUtil::GetInputMethodLongName(
     const InputMethodDescriptor& input_method) const {
-  if (!input_method.name().empty()) {
+  if (!input_method.name().empty() && !IsKeyboardLayout(input_method.id())) {
     // If the descriptor has a name, use it.
     return base::UTF8ToUTF16(input_method.name());
   }
@@ -744,7 +744,10 @@ void InputMethodUtil::UpdateHardwareLayoutCache() {
   DCHECK(thread_checker_.CalledOnValidThread());
   hardware_layouts_.clear();
   hardware_login_layouts_.clear();
-  Tokenize(delegate_->GetHardwareKeyboardLayouts(), ",", &hardware_layouts_);
+  if (cached_hardware_layouts_.empty())
+    Tokenize(delegate_->GetHardwareKeyboardLayouts(), ",",
+             &cached_hardware_layouts_);
+  hardware_layouts_ = cached_hardware_layouts_;
   MigrateXkbInputMethods(&hardware_layouts_);
 
   for (size_t i = 0; i < hardware_layouts_.size(); ++i) {
@@ -765,24 +768,21 @@ void InputMethodUtil::UpdateHardwareLayoutCache() {
 void InputMethodUtil::SetHardwareKeyboardLayoutForTesting(
     const std::string& layout) {
   delegate_->SetHardwareKeyboardLayoutForTesting(layout);
+  cached_hardware_layouts_.clear();
   UpdateHardwareLayoutCache();
 }
 
 const std::vector<std::string>&
     InputMethodUtil::GetHardwareInputMethodIds() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Once the initialization is done, at least one input method should be set.
-  if (hardware_layouts_.empty())
-    UpdateHardwareLayoutCache();
+  UpdateHardwareLayoutCache();
   return hardware_layouts_;
 }
 
 const std::vector<std::string>&
     InputMethodUtil::GetHardwareLoginInputMethodIds() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Once the initialization is done, at least one input method should be set.
-  if (hardware_login_layouts_.empty())
-    UpdateHardwareLayoutCache();
+  UpdateHardwareLayoutCache();
   return hardware_login_layouts_;
 }
 
@@ -820,6 +820,7 @@ void InputMethodUtil::SetComponentExtensions(
 }
 
 void InputMethodUtil::InitXkbInputMethodsForTesting() {
+  cached_hardware_layouts_.clear();
   if (!extension_ime_util::UseWrappedExtensionKeyboardLayouts())
     return;
   scoped_ptr<InputMethodDescriptors> original_imes =

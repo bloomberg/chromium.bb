@@ -203,6 +203,7 @@ class InputMethodUtil {
   base::ThreadChecker thread_checker_;
   std::vector<std::string> hardware_layouts_;
   std::vector<std::string> hardware_login_layouts_;
+  std::vector<std::string> cached_hardware_layouts_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodUtil);
 };
