@@ -51,6 +51,13 @@ extern "C" {
 #define WL_DEPRECATED
 #endif
 
+/* Printf annotation */
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define WL_PRINTF(x, y) __attribute__((__format__(__printf__, x, y)))
+#else
+#define WL_PRINTF(x, y)
+#endif
+
 struct wl_message {
 	const char *name;
 	const char *signature;
@@ -276,7 +283,7 @@ typedef int (*wl_dispatcher_func_t)(const void *, void *, uint32_t,
 				    const struct wl_message *,
 				    union wl_argument *);
 
-typedef void (*wl_log_func_t)(const char *, va_list);
+typedef void (*wl_log_func_t)(const char *, va_list) WL_PRINTF(1, 0);
 
 #ifdef  __cplusplus
 }
