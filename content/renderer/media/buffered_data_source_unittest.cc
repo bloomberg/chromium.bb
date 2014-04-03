@@ -37,8 +37,9 @@ class MockBufferedDataSource : public BufferedDataSource {
  public:
   MockBufferedDataSource(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
-      WebFrame* frame)
-      : BufferedDataSource(message_loop, frame, new media::MediaLog(),
+      WebFrame* frame,
+      media::DataSourceHost* host)
+      : BufferedDataSource(message_loop, frame, new media::MediaLog(), host,
                            base::Bind(&MockBufferedDataSource::set_downloading,
                                       base::Unretained(this))),
         downloading_(false),
@@ -96,8 +97,7 @@ class BufferedDataSourceTest : public testing::Test {
     view_->setMainFrame(frame_);
 
     data_source_.reset(new MockBufferedDataSource(
-        message_loop_.message_loop_proxy(), view_->mainFrame()));
-    data_source_->set_host(&host_);
+        message_loop_.message_loop_proxy(), view_->mainFrame(), &host_));
   }
 
   virtual ~BufferedDataSourceTest() {

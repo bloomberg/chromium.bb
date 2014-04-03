@@ -25,11 +25,6 @@ DataSourceLogger::DataSourceLogger(
       streaming_(streaming) {
 }
 
-void DataSourceLogger::set_host(media::DataSourceHost* host) {
-  VLOG(1) << "set_host(" << host << ")";
-  data_source_->set_host(host);
-}
-
 void DataSourceLogger::Stop(const base::Closure& closure) {
   VLOG(1) << "Stop() started";
   data_source_->Stop(base::Bind(&LogAndRunStopClosure, closure));

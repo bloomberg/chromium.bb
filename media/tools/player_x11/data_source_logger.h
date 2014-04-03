@@ -22,7 +22,6 @@ class DataSourceLogger : public media::DataSource {
   virtual ~DataSourceLogger();
 
   // media::DataSource implementation.
-  virtual void set_host(media::DataSourceHost* host) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual void Read(
       int64 position, int size, uint8* data,

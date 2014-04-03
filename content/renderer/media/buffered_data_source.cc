@@ -81,6 +81,7 @@ BufferedDataSource::BufferedDataSource(
     const scoped_refptr<base::MessageLoopProxy>& render_loop,
     WebFrame* frame,
     media::MediaLog* media_log,
+    media::DataSourceHost* host,
     const DownloadingCB& downloading_cb)
     : cors_mode_(BufferedResourceLoader::kUnspecified),
       total_bytes_(kPositionNotSpecified),
@@ -96,8 +97,10 @@ BufferedDataSource::BufferedDataSource(
       bitrate_(0),
       playback_rate_(0.0),
       media_log_(media_log),
+      host_(host),
       downloading_cb_(downloading_cb),
       weak_factory_(this) {
+  DCHECK(host_);
   DCHECK(!downloading_cb_.is_null());
 }
 
@@ -122,15 +125,6 @@ BufferedResourceLoader* BufferedDataSource::CreateResourceLoader(
                                     bitrate_,
                                     playback_rate_,
                                     media_log_.get());
-}
-
-void BufferedDataSource::set_host(media::DataSourceHost* host) {
-  DataSource::set_host(host);
-
-  if (loader_) {
-    base::AutoLock auto_lock(lock_);
-    UpdateHostState_Locked();
-  }
 }
 
 void BufferedDataSource::Initialize(
@@ -380,7 +374,12 @@ void BufferedDataSource::StartCallback(
     return;
 
   if (success) {
-    UpdateHostState_Locked();
+    if (total_bytes_ != kPositionNotSpecified) {
+      host_->SetTotalBytes(total_bytes_);
+      if (assume_fully_buffered_)
+        host_->AddBufferedByteRange(0, total_bytes_);
+    }
+
     media_log_->SetBooleanProperty("single_origin", loader_->HasSingleOrigin());
     media_log_->SetBooleanProperty("passed_cors_access_check",
                                    loader_->DidPassCORSAccessCheck());
@@ -460,10 +459,10 @@ void BufferedDataSource::ReadCallback(
     // fail like they would if we had known the file size at the beginning.
     total_bytes_ = loader_->instance_size();
 
-    if (host() && total_bytes_ != kPositionNotSpecified) {
-      host()->SetTotalBytes(total_bytes_);
-      host()->AddBufferedByteRange(loader_->first_byte_position(),
-                                   total_bytes_);
+    if (total_bytes_ != kPositionNotSpecified) {
+      host_->SetTotalBytes(total_bytes_);
+      host_->AddBufferedByteRange(loader_->first_byte_position(),
+                                  total_bytes_);
     }
   }
   ReadOperation::Run(read_op_.Pass(), bytes_read);
@@ -510,35 +509,7 @@ void BufferedDataSource::ProgressCallback(int64 position) {
   if (stop_signal_received_)
     return;
 
-  ReportOrQueueBufferedBytes(loader_->first_byte_position(), position);
-}
-
-void BufferedDataSource::ReportOrQueueBufferedBytes(int64 start, int64 end) {
-  if (host())
-    host()->AddBufferedByteRange(start, end);
-  else
-    queued_buffered_byte_ranges_.Add(start, end);
-}
-
-void BufferedDataSource::UpdateHostState_Locked() {
-  lock_.AssertAcquired();
-
-  if (!host())
-    return;
-
-  for (size_t i = 0; i < queued_buffered_byte_ranges_.size(); ++i) {
-    host()->AddBufferedByteRange(queued_buffered_byte_ranges_.start(i),
-                                 queued_buffered_byte_ranges_.end(i));
-  }
-  queued_buffered_byte_ranges_.clear();
-
-  if (total_bytes_ == kPositionNotSpecified)
-    return;
-
-  host()->SetTotalBytes(total_bytes_);
-
-  if (assume_fully_buffered_)
-    host()->AddBufferedByteRange(0, total_bytes_);
+  host_->AddBufferedByteRange(loader_->first_byte_position(), position);
 }
 
 void BufferedDataSource::UpdateDeferStrategy(bool paused) {

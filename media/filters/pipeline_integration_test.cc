@@ -1166,10 +1166,6 @@ TEST_P(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
 TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
   ASSERT_TRUE(Start(GetTestDataFilePath("bear-opus-end-trimming.webm"),
                     PIPELINE_OK));
-  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
-  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
-  EXPECT_EQ(kOpusEndTrimmingWebMFileDurationMs,
-            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }

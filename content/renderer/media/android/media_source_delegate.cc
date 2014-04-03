@@ -300,14 +300,6 @@ void MediaSourceDelegate::SeekInternal(const base::TimeDelta& seek_time) {
       media_weak_factory_.GetWeakPtr()));
 }
 
-void MediaSourceDelegate::SetTotalBytes(int64 total_bytes) {
-  NOTIMPLEMENTED();
-}
-
-void MediaSourceDelegate::AddBufferedByteRange(int64 start, int64 end) {
-  NOTIMPLEMENTED();
-}
-
 void MediaSourceDelegate::AddBufferedTimeRange(base::TimeDelta start,
                                                base::TimeDelta end) {
   buffered_time_ranges_.Add(start, end);

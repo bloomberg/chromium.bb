@@ -38,11 +38,9 @@ using ::testing::WithArg;
 
 namespace media {
 
-// Demuxer properties.
 const int kTotalBytes = 1024;
 
 ACTION_P(SetDemuxerProperties, duration) {
-  arg0->SetTotalBytes(kTotalBytes);
   arg0->SetDuration(duration);
 }
 
@@ -218,6 +216,13 @@ class PipelineTest : public ::testing::Test {
       }
       EXPECT_CALL(callbacks_, OnPrerollCompleted());
     }
+
+    // HACK: This is required to test the time range code now that DemuxerHost
+    // does not include SetTotalBytes(). The test cases that depend on this will
+    // be moved out of pipeline_unittest when Pipeline stops implementing
+    // DataSourceHost, see http://crbug.com/122071.
+    DataSourceHost* host = pipeline_.get();
+    host->SetTotalBytes(kTotalBytes);
 
     pipeline_->Start(
         filter_collection_.Pass(),

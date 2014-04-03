@@ -111,8 +111,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   virtual ~MediaSourceDelegate();
 
   // Methods inherited from DemuxerHost.
-  virtual void SetTotalBytes(int64 total_bytes) OVERRIDE;
-  virtual void AddBufferedByteRange(int64 start, int64 end) OVERRIDE;
   virtual void AddBufferedTimeRange(base::TimeDelta start,
                                     base::TimeDelta end) OVERRIDE;
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE;

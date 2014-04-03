@@ -76,7 +76,7 @@ typedef base::Callback<void(PipelineMetadata)> PipelineMetadataCB;
 // If any error ever happens, this object will transition to the "Error" state
 // from any state. If Stop() is ever called, this object will transition to
 // "Stopped" state.
-class MEDIA_EXPORT Pipeline : public DemuxerHost {
+class MEDIA_EXPORT Pipeline : public DataSourceHost, public DemuxerHost {
  public:
   // Constructs a media pipeline that will execute on |task_runner|.
   Pipeline(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,

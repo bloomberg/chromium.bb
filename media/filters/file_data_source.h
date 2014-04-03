@@ -25,7 +25,6 @@ class MEDIA_EXPORT FileDataSource : public DataSource {
   bool Initialize(const base::FilePath& file_path);
 
   // Implementation of DataSource.
-  virtual void set_host(DataSourceHost* host) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void Read(int64 position, int size, uint8* data,
                     const DataSource::ReadCB& read_cb) OVERRIDE;
@@ -38,9 +37,6 @@ class MEDIA_EXPORT FileDataSource : public DataSource {
   void force_streaming_for_testing() { force_streaming_ = true; }
 
  private:
-  // Informs the host of changes in total and buffered bytes.
-  void UpdateHostBytes();
-
   base::MemoryMappedFile file_;
 
   bool force_read_errors_;

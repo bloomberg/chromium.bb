@@ -374,7 +374,6 @@ void Pipeline::SetDuration(TimeDelta duration) {
 }
 
 void Pipeline::SetTotalBytes(int64 total_bytes) {
-  DCHECK(IsRunning());
   media_log_->AddEvent(
       media_log_->CreateStringEvent(
           MediaLogEvent::TOTAL_BYTES_SET, "total_bytes",
@@ -685,7 +684,6 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
 }
 
 void Pipeline::AddBufferedByteRange(int64 start, int64 end) {
-  DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
   buffered_byte_ranges_.Add(start, end);
   did_loading_progress_ = true;

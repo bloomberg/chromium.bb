@@ -444,10 +444,6 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   host_ = host;
   text_enabled_ = enable_text_tracks;
 
-  // TODO(scherkus): DataSource should have a host by this point,
-  // see http://crbug.com/122071
-  data_source_->set_host(host);
-
   url_protocol_.reset(new BlockingUrlProtocol(data_source_, BindToCurrentLoop(
       base::Bind(&FFmpegDemuxer::OnDataSourceError, base::Unretained(this)))));
   glue_.reset(new FFmpegGlue(url_protocol_.get()));

@@ -308,10 +308,13 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   }
 
   // Otherwise it's a regular request which requires resolving the URL first.
+  // TODO(sandersd): Make WMPI a DataSourceHost and pass |this| instead of
+  // |&pipeline_|.
   data_source_.reset(new BufferedDataSource(
       main_loop_,
       frame_,
       media_log_.get(),
+      &pipeline_,
       base::Bind(&WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   data_source_->Initialize(
       url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),

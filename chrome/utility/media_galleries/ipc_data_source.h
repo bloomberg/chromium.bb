@@ -32,7 +32,6 @@ class IPCDataSource: public media::DataSource,
 
   // Implementation of DataSource. These methods may be called on any single
   // thread. First usage of these methods attaches a thread checker.
-  virtual void set_host(media::DataSourceHost* host) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void Read(int64 position, int size, uint8* data,
                     const ReadCB& read_cb) OVERRIDE;

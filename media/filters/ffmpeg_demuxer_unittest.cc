@@ -75,8 +75,6 @@ class FFmpegDemuxerTest : public testing::Test {
   void CreateDemuxer(const std::string& name) {
     CHECK(!demuxer_);
 
-    EXPECT_CALL(host_, SetTotalBytes(_)).Times(AnyNumber());
-    EXPECT_CALL(host_, AddBufferedByteRange(_, _)).Times(AnyNumber());
     EXPECT_CALL(host_, AddBufferedTimeRange(_, _)).Times(AnyNumber());
 
     CreateDataSource(name);

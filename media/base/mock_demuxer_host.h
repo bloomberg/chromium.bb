@@ -16,15 +16,10 @@ class MockDemuxerHost : public DemuxerHost {
   MockDemuxerHost();
   virtual ~MockDemuxerHost();
 
-  // DataSourceHost implementation.
-  MOCK_METHOD1(SetTotalBytes, void(int64 total_bytes));
-  MOCK_METHOD2(AddBufferedByteRange, void(int64 start, int64 end));
   MOCK_METHOD2(AddBufferedTimeRange, void(base::TimeDelta start,
                                           base::TimeDelta end));
-
-  // DemuxerHost implementation.
-  MOCK_METHOD1(OnDemuxerError, void(PipelineStatus error));
   MOCK_METHOD1(SetDuration, void(base::TimeDelta duration));
+  MOCK_METHOD1(OnDemuxerError, void(PipelineStatus error));
   MOCK_METHOD2(AddTextStream, void(DemuxerStream*,
                                    const TextTrackConfig&));
   MOCK_METHOD1(RemoveTextStream, void(DemuxerStream*));

@@ -44,31 +44,15 @@ base::FilePath TestFileURL() {
   return data_dir;
 }
 
-// Test that FileDataSource call the appropriate methods on its filter host.
-TEST(FileDataSourceTest, OpenFile) {
-  StrictMock<MockDataSourceHost> host;
-  EXPECT_CALL(host, SetTotalBytes(10));
-  EXPECT_CALL(host, AddBufferedByteRange(0, 10));
-
-  FileDataSource data_source;
-  data_source.set_host(&host);
-  EXPECT_TRUE(data_source.Initialize(TestFileURL()));
-
-  data_source.Stop(NewExpectedClosure());
-}
-
 // Use the mock filter host to directly call the Read and GetPosition methods.
 TEST(FileDataSourceTest, ReadData) {
   int64 size;
   uint8 ten_bytes[10];
 
   // Create our mock filter host and initialize the data source.
-  NiceMock<MockDataSourceHost> host;
   FileDataSource data_source;
 
-  data_source.set_host(&host);
   EXPECT_TRUE(data_source.Initialize(TestFileURL()));
-
   EXPECT_TRUE(data_source.GetSize(&size));
   EXPECT_EQ(10, size);
 

@@ -21,14 +21,6 @@ IPCDataSource::~IPCDataSource() {
   DCHECK(utility_thread_checker_.CalledOnValidThread());
 }
 
-void IPCDataSource::set_host(media::DataSourceHost* host) {
-  DCHECK(data_source_thread_checker_.CalledOnValidThread());
-  DataSource::set_host(host);
-  if (media::DataSource::host()) {
-    media::DataSource::host()->SetTotalBytes(total_size_);
-  }
-}
-
 void IPCDataSource::Stop(const base::Closure& callback) {
   DCHECK(data_source_thread_checker_.CalledOnValidThread());
   callback.Run();

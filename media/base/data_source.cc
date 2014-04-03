@@ -13,16 +13,8 @@ const int DataSource::kReadError = -1;
 
 DataSourceHost::~DataSourceHost() {}
 
-DataSource::DataSource() : host_(NULL) {}
+DataSource::DataSource() {}
 
 DataSource::~DataSource() {}
-
-void DataSource::set_host(DataSourceHost* host) {
-  DCHECK(host);
-  DCHECK(!host_);
-  host_ = host;
-}
-
-DataSourceHost* DataSource::host() { return host_; }
 
 }  // namespace media

@@ -24,13 +24,9 @@ class DemuxerHostImpl : public media::DemuxerHost {
   DemuxerHostImpl() {}
   virtual ~DemuxerHostImpl() {}
 
-  // DataSourceHost implementation.
-  virtual void SetTotalBytes(int64 total_bytes) OVERRIDE {}
-  virtual void AddBufferedByteRange(int64 start, int64 end) OVERRIDE {}
+  // DemuxerHost implementation.
   virtual void AddBufferedTimeRange(base::TimeDelta start,
                                     base::TimeDelta end) OVERRIDE {}
-
-  // DemuxerHost implementation.
   virtual void SetDuration(base::TimeDelta duration) OVERRIDE {}
   virtual void OnDemuxerError(media::PipelineStatus error) OVERRIDE {}
   virtual void AddTextStream(media::DemuxerStream* text_stream,

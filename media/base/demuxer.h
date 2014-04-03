@@ -17,8 +17,12 @@ namespace media {
 
 class TextTrackConfig;
 
-class MEDIA_EXPORT DemuxerHost : public DataSourceHost {
+class MEDIA_EXPORT DemuxerHost {
  public:
+  // Notify the host that time range [start,end] has been buffered.
+  virtual void AddBufferedTimeRange(base::TimeDelta start,
+                                    base::TimeDelta end) = 0;
+
   // Sets the duration of the media in microseconds.
   // Duration may be kInfiniteDuration() if the duration is not known.
   virtual void SetDuration(base::TimeDelta duration) = 0;
