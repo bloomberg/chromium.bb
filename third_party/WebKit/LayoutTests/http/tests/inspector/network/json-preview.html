@@ -11,7 +11,7 @@ function test()
     function createNetworkRequestWithJSONMIMEType(type)
     {
         InspectorTest.addResult("Creating a NetworkRequest with type: " + type);
-        var request = new WebInspector.NetworkRequest(0, 'http://localhost');
+        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), 0, 'http://localhost');
         request.mimeType = type;
         request._content = '{"number": 42}';
         return request;

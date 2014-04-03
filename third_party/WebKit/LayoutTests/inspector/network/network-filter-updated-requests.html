@@ -10,11 +10,11 @@ function test() {
     target._resourceTypeFilterUI._toggleTypeFilter(types.XHR.name(), false);
     InspectorTest.addResult("Clicked '" + types.XHR.name() + "' button.");
 
-    var requestFoo = new WebInspector.NetworkRequest("", "", "", "", "");
+    var requestFoo = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), "", "", "", "", "");
     requestFoo.type = types.Script;
     requestFoo.requestId = "foo";
     target._appendRequest(requestFoo);
-    var requestBar = new WebInspector.NetworkRequest("", "", "", "", "");
+    var requestBar = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), "", "", "", "", "");
     requestBar.type = types.Script;
     requestBar.requestId = "bar";
     target._appendRequest(requestBar);

@@ -33,7 +33,7 @@ var test = function()
         request._transferSize = 539; // 39 = header size at the end of the day
     }
 
-    var testRequest = new WebInspector.NetworkRequest("testRequest", "http://example.com/inspector-test.js", 1); 
+    var testRequest = new WebInspector.NetworkRequest(WebInspector.targetManager.activeTarget(), "testRequest", "http://example.com/inspector-test.js", 1); 
     setRequestValues(testRequest);
     var headersText = testRequest.requestHeadersText();
     var requestResults = {

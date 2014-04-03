@@ -37,7 +37,7 @@ function test()
     {
         if (recordTypes.indexOf(record.type) === -1)
             return;
-        
+
         var details = WebInspector.TimelineUIUtils.buildDetailsNode(record, linkifier, false);
         if (details)
             InspectorTest.addResult("details.textContent for " + record.type + " event: '" + details.textContent + "'");
@@ -45,7 +45,7 @@ function test()
 
     function finish()
     {
-        InspectorTest.printTimelineRecords(null, formatter);
+        InspectorTest.printTimelinePresentationRecords(null, formatter);
         InspectorTest.completeTest();
     }
 }

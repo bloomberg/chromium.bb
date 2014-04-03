@@ -13,9 +13,8 @@ function test()
         spanWrapper.pushNodeToFrontend(step2);
     }
 
-    function step2(nodeId)
+    function step2(node)
     {
-        var node = WebInspector.domModel.nodeForId(nodeId);
         InspectorTest.assertTrue(node, "Node object should be resovled");
         node.resolveToObject(undefined, step3);
     }

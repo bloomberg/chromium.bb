@@ -72,8 +72,8 @@ function test()
 
     function didPause()
     {
-        var callStackPane = WebInspector.inspectorView.currentPanel().sidebarPanes.callstack;
-        var scopeChainPane = WebInspector.inspectorView.currentPanel().sidebarPanes.scopechain;
+        var callStackPane = WebInspector.panels.sources.sidebarPanes.callstack;
+        var scopeChainPane = WebInspector.panels.sources.sidebarPanes.scopechain;
         InspectorTest.addResult("Dumping call frames with scope chains:\n");
         printNextCallFrame();
 

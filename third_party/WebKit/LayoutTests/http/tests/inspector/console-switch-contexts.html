@@ -32,7 +32,7 @@ function test()
     function addFakeExecutionContext()
     {
         contextId++;
-        var executionContext = new WebInspector.ExecutionContext(contextId, "fake-execution-context " + contextId , false);
+        var executionContext = new WebInspector.ExecutionContext(WebInspector.targetManager.activeTarget(), contextId, "fake-execution-context " + contextId , false);
         contextList._addExecutionContext(executionContext);
     }
 
