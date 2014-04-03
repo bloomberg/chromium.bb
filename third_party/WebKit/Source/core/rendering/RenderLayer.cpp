@@ -3464,19 +3464,6 @@ LayoutRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, c
     else
         renderer->containingBlock()->flipForWritingMode(boundingBoxRect);
 
-    if (renderer->isRoot()) {
-        // If the root layer becomes composited (e.g. because some descendant with negative z-index is composited),
-        // then it has to be big enough to cover the viewport in order to display the background. This is akin
-        // to the code in RenderBox::paintRootBoxFillLayers().
-        if (FrameView* frameView = renderer->view()->frameView()) {
-            LayoutUnit contentsWidth = frameView->contentsWidth();
-            LayoutUnit contentsHeight = frameView->contentsHeight();
-
-            boundingBoxRect.setWidth(max(boundingBoxRect.width(), contentsWidth - boundingBoxRect.x()));
-            boundingBoxRect.setHeight(max(boundingBoxRect.height(), contentsHeight - boundingBoxRect.y()));
-        }
-    }
-
     LayoutRect unionBounds = boundingBoxRect;
 
     bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (transform() && flags & PretendLayerHasOwnBacking);
