@@ -65,6 +65,8 @@
     }],
     ['OS=="linux" and use_x11==1', {
       'dependencies': [
+        '../build/linux/system.gyp:x11',
+        '../build/linux/system.gyp:xext',
         '../build/linux/system.gyp:libpci',
         '../third_party/libXNVCtrl/libXNVCtrl.gyp:libXNVCtrl',
       ],
