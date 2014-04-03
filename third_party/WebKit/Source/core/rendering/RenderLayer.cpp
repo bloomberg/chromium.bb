@@ -239,6 +239,16 @@ bool RenderLayer::requiresFullLayerImageForFilters() const
     return filter ? filter->hasFilterThatMovesPixels() : false;
 }
 
+LayoutSize RenderLayer::subpixelAccumulation() const
+{
+    return m_subpixelAccumulation;
+}
+
+void RenderLayer::setSubpixelAccumulation(const LayoutSize& size)
+{
+    m_subpixelAccumulation = size;
+}
+
 LayoutPoint RenderLayer::computeOffsetFromRoot(bool& hasLayerOffset) const
 {
     hasLayerOffset = true;
@@ -2072,7 +2082,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     convertToLayerCoords(paintingInfo.rootLayer, offsetFromRoot);
 
     if (compositingState() == PaintsIntoOwnBacking)
-        offsetFromRoot.move(m_compositedLayerMapping->subpixelAccumulation());
+        offsetFromRoot.move(subpixelAccumulation());
 
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;

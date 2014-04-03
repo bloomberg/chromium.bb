@@ -200,7 +200,6 @@ public:
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
-    LayoutSize subpixelAccumulation() const { return m_subpixelAccumulation; }
 private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
@@ -365,7 +364,6 @@ private:
     Vector<GraphicsLayerPaintInfo> m_squashedLayers;
 
     LayoutRect m_compositedBounds;
-    LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of the compositedBounds compared to absolute coordinates.
 
     bool m_artificiallyInflatedBounds : 1; // bounds had to be made non-zero to make transform-origin work
     bool m_isMainFrameRenderViewLayer : 1;

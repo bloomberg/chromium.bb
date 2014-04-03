@@ -313,6 +313,9 @@ public:
     void setStaticInlinePosition(LayoutUnit position) { m_staticInlinePosition = position; }
     void setStaticBlockPosition(LayoutUnit position) { m_staticBlockPosition = position; }
 
+    LayoutSize subpixelAccumulation() const;
+    void setSubpixelAccumulation(const LayoutSize&);
+
     bool hasTransform() const { return renderer()->hasTransform(); }
     // Note that this transform has the transform-origin baked in.
     TransformationMatrix* transform() const { return m_transform.get(); }
@@ -798,6 +801,8 @@ private:
     OwnPtr<RenderLayerStackingNode> m_stackingNode;
     OwnPtr<RenderLayerReflectionInfo> m_reflectionInfo;
     RenderLayerBlendInfo m_blendInfo;
+
+    LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
 };
 
 } // namespace WebCore
