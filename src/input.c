@@ -603,6 +603,7 @@ seat_send_updated_caps(struct weston_seat *seat)
 	wl_resource_for_each(resource, &seat->base_resource_list) {
 		wl_seat_send_capabilities(resource, caps);
 	}
+	wl_signal_emit(&seat->updated_caps_signal, seat);
 }
 
 WL_EXPORT void
@@ -2185,6 +2186,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 	wl_signal_init(&seat->selection_signal);
 	wl_list_init(&seat->drag_resource_list);
 	wl_signal_init(&seat->destroy_signal);
+	wl_signal_init(&seat->updated_caps_signal);
 
 	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 3,
 					seat, bind_seat);

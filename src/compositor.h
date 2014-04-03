@@ -495,6 +495,7 @@ struct weston_seat {
 	struct weston_output *output; /* constraint */
 
 	struct wl_signal destroy_signal;
+	struct wl_signal updated_caps_signal;
 
 	struct weston_compositor *compositor;
 	struct wl_list link;
