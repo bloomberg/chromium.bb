@@ -72,7 +72,7 @@ else
 fi > naclsdk.tgz.sha1hash
 
 echo @@@BUILD_STEP archive_extract_package@@@
-python ../build/package_version/package_version.py archive \
+${NATIVE_PYTHON} ../build/package_version/package_version.py archive \
     --archive-package=nacl_x86_newlib --extract \
     naclsdk.tgz,sdk/nacl-sdk@http://gsdview.appspot.com/nativeclient-archive2/toolchain/123/naclsdk_linux_x86.tgz
 
@@ -97,18 +97,18 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/@@@
 
   echo @@@BUILD_STEP upload_package@@@
-  python ../build/package_version/package_version.py --annotate upload \
-      --upload-package=nacl_x86_newlib --revision=${BUILDBOT_GOT_REVISION}
+  ${NATIVE_PYTHON} ../build/package_version/package_version.py --annotate \
+      upload --upload-package=nacl_x86_newlib \
+      --revision=${BUILDBOT_GOT_REVISION}
 fi
 
 cd ..
 if [[ ${PLATFORM} == win ]]; then
-  # Explicitly call the depot tools version of Python to avoid cygwin issues.
-  python.bat buildbot/buildbot_standard.py opt 64 newlib
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py opt 64 newlib
 elif [[ ${PLATFORM} == mac ]]; then
-  python buildbot/buildbot_standard.py opt 32 newlib
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py opt 32 newlib
 elif [[ ${PLATFORM} == linux ]]; then
-  python buildbot/buildbot_standard.py opt 32 newlib
+  ${NATIVE_PYTHON} buildbot/buildbot_standard.py opt 32 newlib
 else
   echo "ERROR, bad platform."
   exit 1

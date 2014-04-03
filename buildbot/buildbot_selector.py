@@ -8,6 +8,9 @@ import os
 import subprocess
 import sys
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pynacl.platform
+
 python = sys.executable
 bash = '/bin/bash'
 echo = 'echo'
@@ -331,6 +334,13 @@ def Main():
     del env['BOTO_CONFIG']
 
   env['GSUTIL'] = '/b/build/third_party/gsutil/gsutil'
+
+  # When running from cygwin, we sometimes want to use a native python.
+  # The native python will use the depot_tools version by invoking python.bat.
+  if pynacl.platform.IsWindows():
+    env['NATIVE_PYTHON'] = 'python.bat'
+  else:
+    env['NATIVE_PYTHON'] = 'python'
 
   if sys.platform == 'win32':
     # If the temp directory is not on the same drive as the working directory,
