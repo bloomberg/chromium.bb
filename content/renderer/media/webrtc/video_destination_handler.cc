@@ -85,7 +85,7 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
     format_ = media::VideoCaptureFormat(
         frame_size,
         MediaStreamVideoSource::kDefaultFrameRate,
-        media::PIXEL_FORMAT_I420);
+        media::PIXEL_FORMAT_YV12);
     if (state() == MediaStreamVideoSource::RETRIEVING_CAPABILITIES) {
       media::VideoCaptureFormats formats;
       formats.push_back(format_);
@@ -99,8 +99,12 @@ void PpFrameWriter::PutFrame(PPB_ImageData_Impl* image_data,
   const base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
       time_stamp_ns / talk_base::kNumNanosecsPerMillisec);
 
+  // TODO(perkj): It would be more efficient to use I420 here. Using YV12 will
+  // force a copy into a tightly packed I420 frame in
+  // WebRtcVideoCapturerAdapter before the frame is delivered to libJingle.
+  // crbug/359587.
   scoped_refptr<media::VideoFrame> new_frame =
-      frame_pool_.CreateFrame(media::VideoFrame::I420, frame_size,
+      frame_pool_.CreateFrame(media::VideoFrame::YV12, frame_size,
                               gfx::Rect(frame_size), frame_size, timestamp);
 
   libyuv::BGRAToI420(reinterpret_cast<uint8*>(bitmap->getPixels()),
