@@ -242,8 +242,7 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
 
 bool FontPlatformData::isFixedPitch() const
 {
-    notImplemented();
-    return false;
+    return typeface() && typeface()->isFixedPitch();
 }
 
 HarfBuzzFace* FontPlatformData::harfBuzzFace() const
