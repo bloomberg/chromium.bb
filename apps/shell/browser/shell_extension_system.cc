@@ -7,7 +7,6 @@
 #include <string>
 
 #include "apps/app_window_registry.h"
-#include "apps/browser/api/app_runtime/app_runtime_api.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -75,8 +74,16 @@ bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
       content::Source<BrowserContext>(browser_context_),
       content::NotificationService::NoDetails());
 
-  // Launch the app.
-  apps::AppEventRouter::DispatchOnLaunchedEvent(browser_context_, extension);
+  // This is effectively the same behavior as
+  // apps::AppEventRouter::DispatchOnLaunchedEvent without any dependency
+  // on ExtensionSystem or Profile.
+  scoped_ptr<base::DictionaryValue> launch_data(new base::DictionaryValue());
+  launch_data->SetBoolean("isKioskSession", false);
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
+  event_args->Append(launch_data.release());
+  scoped_ptr<Event> event(
+      new Event("app.runtime.onLaunched", event_args.Pass()));
+  event_router_->DispatchEventWithLazyListener(extension->id(), event.Pass());
 
   return true;
 }
