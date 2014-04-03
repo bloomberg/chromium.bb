@@ -398,8 +398,15 @@ bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
   CrashContext context;
   memcpy(&context.siginfo, info, sizeof(siginfo_t));
   memcpy(&context.context, uc, sizeof(struct ucontext));
-#if !defined(__ARM_EABI__) && !defined(__aarch64__) && !defined(__mips__)
-  // FP state is not part of user ABI on ARM or ARM64 Linux.
+#if defined(__aarch64__)
+  struct ucontext *uc_ptr = (struct ucontext*)uc;
+  struct fpsimd_context *fp_ptr =
+      (struct fpsimd_context*)&uc_ptr->uc_mcontext.__reserved;
+  if (fp_ptr->head.magic == FPSIMD_MAGIC) {
+    memcpy(&context.float_state, fp_ptr, sizeof(context.float_state));
+  }
+#elif !defined(__ARM_EABI__)  && !defined(__mips__)
+  // FP state is not part of user ABI on ARM Linux.
   // In case of MIPS Linux FP state is already part of struct ucontext
   // and 'float_state' is not a member of CrashContext.
   struct ucontext *uc_ptr = (struct ucontext*)uc;

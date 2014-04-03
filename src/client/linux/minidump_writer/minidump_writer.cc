@@ -344,8 +344,7 @@ void CPUFillFromThreadInfo(MDRawContextARM* out,
 #endif
 }
 
-void CPUFillFromUContext(MDRawContextARM* out, const ucontext* uc,
-                         const struct _libc_fpstate* fpregs) {
+void CPUFillFromUContext(MDRawContextARM* out, const ucontext* uc) {
   out->context_flags = MD_CONTEXT_ARM_FULL;
 
   out->iregs[0] = uc->uc_mcontext.arm_r0;
@@ -383,7 +382,7 @@ void CPUFillFromThreadInfo(MDRawContextARM64* out,
 }
 
 void CPUFillFromUContext(MDRawContextARM64* out, const ucontext* uc,
-                         const struct _libc_fpstate* fpregs) {
+                         const struct fpsimd_context* fpregs) {
   // TODO(rmcilroy): Implement for arm64.
 }
 
@@ -418,8 +417,7 @@ static void CPUFillFromThreadInfo(MDRawContextMIPS* out,
   out->float_save.fir = info.fpregs.fir;
 }
 
-static void CPUFillFromUContext(MDRawContextMIPS* out, const ucontext* uc,
-                                const struct _libc_fpstate* fpregs) {
+static void CPUFillFromUContext(MDRawContextMIPS* out, const ucontext* uc) {
   out->context_flags = MD_CONTEXT_MIPS_FULL;
 
   for (int i = 0; i < MD_CONTEXT_MIPS_GPR_COUNT; ++i)
@@ -483,11 +481,8 @@ class MinidumpWriter {
       : fd_(minidump_fd),
         path_(minidump_path),
         ucontext_(context ? &context->context : NULL),
-#if !defined(__ARM_EABI__) && !defined(__mips__) && !defined(__aarch64__)
+#if !defined(__ARM_EABI__) && !defined(__mips__)
         float_state_(context ? &context->float_state : NULL),
-#else
-        // TODO: fix this after fixing ExceptionHandler
-        float_state_(NULL),
 #endif
         dumper_(dumper),
         minidump_size_limit_(-1),
@@ -848,7 +843,11 @@ class MinidumpWriter {
         if (!cpu.Allocate())
           return false;
         my_memset(cpu.get(), 0, sizeof(RawContextCPU));
+#if !defined(__ARM_EABI__) && !defined(__mips__)
         CPUFillFromUContext(cpu.get(), ucontext_, float_state_);
+#else
+        CPUFillFromUContext(cpu.get(), ucontext_);
+#endif
         if (stack_copy)
           PopSeccompStackFrame(cpu.get(), thread, stack_copy);
         thread.thread_context = cpu.location();
@@ -1756,7 +1755,9 @@ class MinidumpWriter {
   const char* path_;  // Path to the file where the minidum should be written.
 
   const struct ucontext* const ucontext_;  // also from the signal handler
-  const struct _libc_fpstate* const float_state_;  // ditto
+#if !defined(__ARM_EABI__) && !defined(__mips__)
+  const google_breakpad::fpstate_t* const float_state_;  // ditto
+#endif
   LinuxDumper* dumper_;
   MinidumpFileWriter minidump_writer_;
   off_t minidump_size_limit_;

@@ -47,8 +47,28 @@
 
 #elif defined(__aarch64__)
 
-#define  MCONTEXT_GREGS_OFFSET     56
-#define  UCONTEXT_SIGMASK_OFFSET   40
+#define  UCONTEXT_SIGMASK_OFFSET     40
+
+#define  MCONTEXT_GREGS_OFFSET       56
+#define  MCONTEXT_SP_OFFSET          304
+#define  MCONTEXT_PC_OFFSET          312
+#define  MCONTEXT_PSTATE_OFFSET      320
+#define  MCONTEXT_EXTENSION_OFFSET   336
+
+#define  FPSIMD_MAGIC                0x46508001
+
+#define  FPSIMD_CONTEXT_MAGIC_OFFSET 0
+#define  FPSIMD_CONTEXT_SIZE_OFFSET  4
+#define  FPSIMD_CONTEXT_FPSR_OFFSET  8
+#define  FPSIMD_CONTEXT_FPCR_OFFSET  12
+#define  FPSIMD_CONTEXT_VREGS_OFFSET 16
+#define  FPSIMD_CONTEXT_SIZE         528
+
+#define  REGISTER_SIZE               8
+#define  SIMD_REGISTER_SIZE          16
+
+#define  _NSIG                       64
+#define  __NR_rt_sigprocmask         135
 
 #elif defined(__i386__)
 

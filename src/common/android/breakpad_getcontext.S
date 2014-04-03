@@ -34,7 +34,7 @@
 
 /* int getcontext (ucontext_t *ucp) */
 
-#ifdef __arm__
+#if defined(__arm__)
 
   .text
   .global breakpad_getcontext
@@ -50,7 +50,7 @@ breakpad_getcontext:
 
   /* r12 is a scratch register, don't save it */
 
-  /* Save sp and lr explicitely. */
+  /* Save sp and lr explicitly. */
   /* - sp can't be stored with stmia in Thumb-2 */
   /* - STM instructions that store sp and pc are deprecated in ARM */
   str   sp, [r0, #(MCONTEXT_GREGS_OFFSET + 13*4)]
@@ -59,7 +59,7 @@ breakpad_getcontext:
   /* Save the caller's address in 'pc' */
   str   lr, [r0, #(MCONTEXT_GREGS_OFFSET + 15*4)]
 
-  /* Save ucontext_t* pointer accross next call */
+  /* Save ucontext_t* pointer across next call */
   mov   r4, r0
 
   /* Call sigprocmask(SIG_BLOCK, NULL, &(ucontext->uc_sigmask)) */
@@ -86,6 +86,90 @@ breakpad_getcontext:
   bx    lr
 
   .fnend
+  .size breakpad_getcontext, . - breakpad_getcontext
+
+#elif defined(__aarch64__)
+
+  .text
+  .global breakpad_getcontext
+  .hidden breakpad_getcontext
+  .type breakpad_getcontext, #function
+  .align 4
+  .cfi_startproc
+breakpad_getcontext:
+
+  /* The saved context will return to the getcontext() call point
+     with a return value of 0 */
+  str     xzr,      [x0, MCONTEXT_GREGS_OFFSET +  0 * REGISTER_SIZE]
+
+  stp     x18, x19, [x0, MCONTEXT_GREGS_OFFSET + 18 * REGISTER_SIZE]
+  stp     x20, x21, [x0, MCONTEXT_GREGS_OFFSET + 20 * REGISTER_SIZE]
+  stp     x22, x23, [x0, MCONTEXT_GREGS_OFFSET + 22 * REGISTER_SIZE]
+  stp     x24, x25, [x0, MCONTEXT_GREGS_OFFSET + 24 * REGISTER_SIZE]
+  stp     x26, x27, [x0, MCONTEXT_GREGS_OFFSET + 26 * REGISTER_SIZE]
+  stp     x28, x29, [x0, MCONTEXT_GREGS_OFFSET + 28 * REGISTER_SIZE]
+  str     x30,      [x0, MCONTEXT_GREGS_OFFSET + 30 * REGISTER_SIZE]
+
+  /* Place LR into the saved PC, this will ensure that when
+     switching to this saved context with setcontext() control
+     will pass back to the caller of getcontext(), we have
+     already arranged to return the appropriate return value in x0
+     above.  */
+  str     x30, [x0, MCONTEXT_PC_OFFSET]
+
+  /* Save the current SP */
+  mov     x2, sp
+  str     x2, [x0, MCONTEXT_SP_OFFSET]
+
+  /* Initialize the pstate.  */
+  str     xzr, [x0, MCONTEXT_PSTATE_OFFSET]
+
+  /* Figure out where to place the first context extension
+     block.  */
+  add     x2, x0, #MCONTEXT_EXTENSION_OFFSET
+
+  /* Write the context extension fpsimd header.  */
+  mov     w3, #(FPSIMD_MAGIC & 0xffff)
+  movk    w3, #(FPSIMD_MAGIC >> 16), lsl #16
+  str     w3, [x2, #FPSIMD_CONTEXT_MAGIC_OFFSET]
+  mov     w3, #FPSIMD_CONTEXT_SIZE
+  str     w3, [x2, #FPSIMD_CONTEXT_SIZE_OFFSET]
+
+  /* Fill in the FP SIMD context.  */
+  add     x3, x2, #(FPSIMD_CONTEXT_VREGS_OFFSET + 8 * SIMD_REGISTER_SIZE)
+  stp     d8,  d9, [x3], #(2 * SIMD_REGISTER_SIZE)
+  stp     d10, d11, [x3], #(2 * SIMD_REGISTER_SIZE)
+  stp     d12, d13, [x3], #(2 * SIMD_REGISTER_SIZE)
+  stp     d14, d15, [x3], #(2 * SIMD_REGISTER_SIZE)
+
+  add     x3, x2, FPSIMD_CONTEXT_FPSR_OFFSET
+
+  mrs     x4, fpsr
+  str     w4, [x3]
+
+  mrs     x4, fpcr
+  str     w4, [x3, FPSIMD_CONTEXT_FPCR_OFFSET - FPSIMD_CONTEXT_FPSR_OFFSET]
+
+  /* Write the termination context extension header.  */
+  add     x2, x2, #FPSIMD_CONTEXT_SIZE
+
+  str     xzr, [x2, #FPSIMD_CONTEXT_MAGIC_OFFSET]
+  str     xzr, [x2, #FPSIMD_CONTEXT_SIZE_OFFSET]
+
+  /* Grab the signal mask */
+  /* rt_sigprocmask (SIG_BLOCK, NULL, &ucp->uc_sigmask, _NSIG8) */
+  add     x2, x0, #UCONTEXT_SIGMASK_OFFSET
+  mov     x0, #0  /* SIG_BLOCK */
+  mov     x1, #0  /* NULL */
+  mov     x3, #(_NSIG / 8)
+  mov     x8, #__NR_rt_sigprocmask
+  svc     0
+
+  /* Return x0 for success */
+  mov     x0, 0
+  ret
+
+  .cfi_endproc
   .size breakpad_getcontext, . - breakpad_getcontext
 
 #elif defined(__i386__)
@@ -139,10 +223,6 @@ breakpad_getcontext:
   ret
 
   .size breakpad_getcontext, . - breakpad_getcontext
-
-#elif defined(__aarch64__)
-
- // TODO(rmcilroy): Implement for arm64.
 
 #elif defined(__mips__)
 
