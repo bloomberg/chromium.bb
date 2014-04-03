@@ -6,7 +6,7 @@
 #include "chrome/browser/extensions/api/system_cpu/cpu_info_provider.h"
 #include "chrome/browser/extensions/api/system_cpu/system_cpu_api.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/features/base_feature_provider.h"
+#include "extensions/common/features/base_feature_provider.h"
 
 namespace extensions {
 

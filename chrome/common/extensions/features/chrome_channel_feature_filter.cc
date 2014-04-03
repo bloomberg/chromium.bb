@@ -9,7 +9,7 @@
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/extensions/features/feature_channel.h"
-#include "chrome/common/extensions/features/simple_feature.h"
+#include "extensions/common/features/simple_feature.h"
 
 namespace extensions {
 

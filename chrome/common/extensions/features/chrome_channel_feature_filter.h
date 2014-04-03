@@ -6,7 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_FEATURES_CHROME_CHANNEL_FEATURE_FILTER_H_
 
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/extensions/features/simple_feature_filter.h"
+#include "extensions/common/features/simple_feature_filter.h"
 
 namespace extensions {
 

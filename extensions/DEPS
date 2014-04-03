@@ -12,11 +12,7 @@ include_rules = [
   #
   # TODO(jamescook): Remove these. http://crbug.com/162530
   "!chrome/browser/chrome_notification_types.h",
-  "!chrome/browser/extensions/api/content_settings/content_settings_store.h",
-  "!chrome/browser/extensions/api/runtime/runtime_api.h",
-  "!chrome/browser/renderer_host/chrome_render_message_filter.h",
   "!chrome/common/extensions/features/feature_channel.h",
-  "!chrome/common/extensions/api/generated_schemas.h",
   "!grit/chromium_strings.h",
   "!grit/common_resources.h",
   "!grit/extensions_api_resources.h",
@@ -37,10 +33,13 @@ specific_include_rules = {
     "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",
     "+chrome/test/base/testing_profile.h",
   ],
+  "(simple|complex)_feature_unittest\.cc|base_feature_provider_unittest\.cc": [
+    "+chrome/common/extensions/features/chrome_channel_feature_filter.h",
+    "+chrome/common/extensions/features/feature_channel.h",
+  ],
   "permissions_data_unittest\.cc": [
     "+chrome/common/chrome_version_info.h",
     "+chrome/common/extensions/extension_test_util.h",
     "+chrome/common/extensions/features/feature_channel.h",
-    "+chrome/common/extensions/permissions/socket_permission.h",
   ],
 }

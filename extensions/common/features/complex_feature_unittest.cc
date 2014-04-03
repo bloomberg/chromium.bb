@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/features/complex_feature.h"
+#include "extensions/common/features/complex_feature.h"
 
-#include "chrome/common/extensions/features/api_feature.h"
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
-#include "chrome/common/extensions/features/simple_feature.h"
+#include "extensions/common/features/api_feature.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"

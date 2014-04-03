@@ -11,7 +11,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
-#include "chrome/common/extensions/features/simple_feature.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -19,6 +18,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "extensions/common/features/simple_feature.h"
 
 using extensions::UnloadedExtensionInfo;
 

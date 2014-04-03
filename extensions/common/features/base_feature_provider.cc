@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/features/base_feature_provider.h"
+#include "extensions/common/features/base_feature_provider.h"
 
 #include <stack>
 
@@ -10,11 +10,11 @@
 #include "base/lazy_instance.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/extensions/features/api_feature.h"
-#include "chrome/common/extensions/features/complex_feature.h"
-#include "chrome/common/extensions/features/manifest_feature.h"
-#include "chrome/common/extensions/features/permission_feature.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/api_feature.h"
+#include "extensions/common/features/complex_feature.h"
+#include "extensions/common/features/manifest_feature.h"
+#include "extensions/common/features/permission_feature.h"
 #include "grit/common_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 

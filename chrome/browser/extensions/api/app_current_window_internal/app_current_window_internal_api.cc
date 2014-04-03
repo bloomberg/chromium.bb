@@ -13,7 +13,7 @@
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
-#include "chrome/common/extensions/features/simple_feature.h"
+#include "extensions/common/features/simple_feature.h"
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
