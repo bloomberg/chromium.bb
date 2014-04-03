@@ -959,8 +959,6 @@ crbug.com/354785 [ Linux Debug ] svg/as-background-image/animated-svg-animation-
 crbug.com/354791 [ Mac ] transitions/webkit-clip-path-equality.html [ Pass Failure ]
 crbug.com/354791 [ Mac ] virtual/threaded/transitions/webkit-clip-path-equality.html [ Pass Failure ]
 
-crbug.com/355459 [ Release ] inspector/elements/edit-dom-actions-shadow.html [ Pass Timeout ]
-
 crbug.com/355463 [ Linux Win ] css3/flexbox/repaint.html [ Pass Failure ]
 crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
 crbug.com/355489 media/activation-behavior.html [ Pass Failure Timeout ]
