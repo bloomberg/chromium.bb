@@ -26,6 +26,12 @@ ManageProfileUITest.prototype = {
   runAccessibilityChecks: false,
 
   /**
+   * Some default profile infos.
+   */
+  defaultIconURLs: [],
+  defaultNames: [],
+
+  /**
    * Returns a test profile-info object with configurable "managed" status.
    * @param {boolean} managed If true, the test profile will be marked as
    *     managed.
@@ -54,6 +60,32 @@ ManageProfileUITest.prototype = {
     }.bind(this);
     // Set the profile info in the overlay.
     ManageProfileOverlay.setProfileInfo(this.testProfileInfo_(managed), mode);
+  },
+
+  /**
+   * Set some default profile infos (icon URLs and names).
+   * @param {boolean} managed Whether the test profile should be marked managed.
+   * @param {string} mode The mode of the overlay (either 'manage' or 'create').
+   */
+  initDefaultProfiles_: function(mode) {
+    OptionsPage.showPageByName(mode + 'Profile');
+
+    var defaultProfile = {
+      name: "Default Name",
+      iconURL: "/default/path",
+    };
+    this.defaultIconURLs = ['/some/path',
+                            defaultProfile.iconURL,
+                            '/another/path',
+                            '/one/more/path'];
+    this.defaultNames = ['Some Name', defaultProfile.name, '', 'Another Name'];
+    ManageProfileOverlay.receiveDefaultProfileIconsAndNames(
+        mode, this.defaultIconURLs, this.defaultNames);
+    ManageProfileOverlay.receiveNewProfileDefaults(defaultProfile);
+
+    // Make sure the correct item in the icon grid was selected.
+    var gridEl = $(mode + '-profile-icon-grid');
+    expectEquals(defaultProfile.iconURL, gridEl.selectedItem);
   },
 };
 
@@ -183,10 +215,10 @@ TEST_F('ManageProfileUITestAsync', 'CreateExistingManagedUser', function() {
                CreateProfileOverlay.getInstance().signedInEmail_);
   this.setProfileManaged_(false, 'create');
 
-  // Also add the names 'Test' and 'Test2' to |profileNames_| to simulate that
-  // profiles with those names exist on the device.
-  ManageProfileOverlay.getInstance().profileNames_.Test = true;
-  ManageProfileOverlay.getInstance().profileNames_.SameName = true;
+  // Also add the names 'Test' and 'SameName' to |existingProfileNames_| to
+  // simulate that profiles with those names exist on the device.
+  ManageProfileOverlay.getInstance().existingProfileNames_.Test = true;
+  ManageProfileOverlay.getInstance().existingProfileNames_.SameName = true;
 
   // Initially, the ok button should be enabled and the import link should not
   // exist.
@@ -305,7 +337,7 @@ TEST_F('ManageProfileUITest', 'NoCreateConfirmationOnError', function() {
   assertFalse(errorBubble.hidden);
 });
 
-// The name and email sould be inserted into the confirmation dialog.
+// The name and email should be inserted into the confirmation dialog.
 TEST_F('ManageProfileUITest', 'CreateConfirmationText', function () {
   var self = this;
   var custodianEmail = 'foo@example.com';
@@ -515,6 +547,103 @@ TEST_F('ManageProfileUITest', 'ManagedDelete', function() {
   messages = clickAndListen();
   assertEquals(0, messages.length);
   assertEquals('settings', OptionsPage.getTopmostVisiblePage().name);
+});
+
+// Selecting a different avatar image should update the suggested profile name.
+TEST_F('ManageProfileUITest', 'Create_NameUpdateOnAvatarSelected', function() {
+  var mode = 'create';
+  this.initDefaultProfiles_(mode);
+
+  var gridEl = $(mode + '-profile-icon-grid');
+  var nameEl = $(mode + '-profile-name');
+
+  // Select another icon and check that the profile name was updated.
+  assertNotEquals(gridEl.selectedItem, this.defaultIconURLs[0]);
+  gridEl.selectedItem = this.defaultIconURLs[0];
+  expectEquals(this.defaultNames[0], nameEl.value);
+
+  // Select icon without an associated name; the profile name shouldn't change.
+  var oldName = nameEl.value;
+  assertEquals('', this.defaultNames[2]);
+  gridEl.selectedItem = this.defaultIconURLs[2];
+  expectEquals(oldName, nameEl.value);
+
+  // Select another icon with a name and check that the name is updated again.
+  assertNotEquals('', this.defaultNames[1]);
+  gridEl.selectedItem = this.defaultIconURLs[1];
+  expectEquals(this.defaultNames[1], nameEl.value);
+
+  OptionsPage.closeOverlay();
+});
+
+// After the user edited the profile name, selecting a different avatar image
+// should not update the suggested name anymore.
+TEST_F('ManageProfileUITest', 'Create_NoNameUpdateOnAvatarSelectedAfterEdit',
+    function() {
+  var mode = 'create';
+  this.initDefaultProfiles_(mode);
+
+  var gridEl = $(mode + '-profile-icon-grid');
+  var nameEl = $(mode + '-profile-name');
+
+  // After the user manually entered a name, it should not be changed anymore
+  // (even if the entered name is another default name).
+  nameEl.value = this.defaultNames[3];
+  nameEl.oninput();
+  gridEl.selectedItem = this.defaultIconURLs[0];
+  expectEquals(this.defaultNames[3], nameEl.value);
+
+  OptionsPage.closeOverlay();
+});
+
+// After the user edited the profile name, selecting a different avatar image
+// should not update the suggested name anymore even if the original suggestion
+// is entered again.
+TEST_F('ManageProfileUITest', 'Create_NoNameUpdateOnAvatarSelectedAfterRevert',
+    function() {
+  var mode = 'create';
+  this.initDefaultProfiles_(mode);
+
+  var gridEl = $(mode + '-profile-icon-grid');
+  var nameEl = $(mode + '-profile-name');
+
+  // After the user manually entered a name, it should not be changed anymore,
+  // even if the user then reverts to the original suggestion.
+  var oldName = nameEl.value;
+  nameEl.value = 'Custom Name';
+  nameEl.oninput();
+  nameEl.value = oldName;
+  nameEl.oninput();
+  // Now select another avatar and check that the name remained the same.
+  assertNotEquals(gridEl.selectedItem, this.defaultIconURLs[0]);
+  gridEl.selectedItem = this.defaultIconURLs[0];
+  expectEquals(oldName, nameEl.value);
+
+  OptionsPage.closeOverlay();
+});
+
+// In the manage dialog, the name should never be updated on avatar selection.
+TEST_F('ManageProfileUITest', 'Manage_NoNameUpdateOnAvatarSelected',
+    function() {
+  var mode = 'manage';
+  this.setProfileManaged_(false, mode);
+  OptionsPage.showPageByName(mode + 'Profile');
+
+  var testProfile = this.testProfileInfo_(false);
+  var iconURLs = [testProfile.iconURL, '/some/path', '/another/path'];
+  var names = [testProfile.name, 'Some Name', ''];
+  ManageProfileOverlay.receiveDefaultProfileIconsAndNames(
+     mode, iconURLs, names);
+
+  var gridEl = $(mode + '-profile-icon-grid');
+  var nameEl = $(mode + '-profile-name');
+
+  // Select another icon and check if the profile name was updated.
+  var oldName = nameEl.value;
+  gridEl.selectedItem = iconURLs[1];
+  expectEquals(oldName, nameEl.value);
+
+  OptionsPage.closeOverlay();
 });
 
 GEN('#endif  // OS_CHROMEOS');

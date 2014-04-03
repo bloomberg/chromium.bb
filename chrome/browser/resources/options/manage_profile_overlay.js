@@ -27,8 +27,16 @@ cr.define('options', function() {
     // Info about the currently managed/deleted profile.
     profileInfo_: null,
 
-    // An object containing all known profile names.
-    profileNames_: {},
+    // Whether the currently chosen name for a new profile was assigned
+    // automatically by choosing an avatar. Set on receiveNewProfileDefaults;
+    // cleared on first edit (in onNameChanged_).
+    profileNameIsDefault_: false,
+
+    // List of default profile names corresponding to the respective icons.
+    defaultProfileNames_: [],
+
+    // An object containing all names of existing profiles.
+    existingProfileNames_: {},
 
     // The currently selected icon in the icon grid.
     iconGridSelectedURL_: null,
@@ -111,7 +119,7 @@ cr.define('options', function() {
 
     /** @override */
     didShowPage: function() {
-      chrome.send('requestDefaultProfileIcons');
+      chrome.send('requestDefaultProfileIcons', ['manage']);
 
       // Just ignore the manage profile dialog on Chrome OS, they use /accounts.
       if (!cr.isChromeOS && window.location.pathname == '/manageProfile')
@@ -134,6 +142,8 @@ cr.define('options', function() {
         $('manage-profile-ok').focus();
       else
         manageNameField.focus();
+
+      this.profileNameIsDefault_ = false;
     },
 
     /**
@@ -180,28 +190,38 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets the name of the currently edited profile.
+     * Sets the name of the profile being edited or created.
+     * @param {string} name New profile name.
+     * @param {string} mode A label that specifies the type of dialog box which
+     *     is currently being viewed (i.e. 'create' or 'manage').
      * @private
      */
-    setProfileName_: function(name) {
+    setProfileName_: function(name, mode) {
       if (this.profileInfo_)
         this.profileInfo_.name = name;
-      $('manage-profile-name').value = name;
+      $(mode + '-profile-name').value = name;
     },
 
     /**
      * Set an array of default icon URLs. These will be added to the grid that
      * the user will use to choose their profile icon.
+     * @param {string} mode A label that specifies the type of dialog box which
+     *     is currently being viewed (i.e. 'create' or 'manage').
      * @param {Array.<string>} iconURLs An array of icon URLs.
+     * @param {Array.<string>} names An array of default names
+     *     corresponding to the icons.
      * @private
      */
-    receiveDefaultProfileIcons_: function(iconGrid, iconURLs) {
-      $(iconGrid).dataModel = new ArrayDataModel(iconURLs);
+    receiveDefaultProfileIconsAndNames_: function(mode, iconURLs, names) {
+      this.defaultProfileNames_ = names;
+
+      var grid = $(mode + '-profile-icon-grid');
+
+      grid.dataModel = new ArrayDataModel(iconURLs);
 
       if (this.profileInfo_)
-        $(iconGrid).selectedItem = this.profileInfo_.iconURL;
+        grid.selectedItem = this.profileInfo_.iconURL;
 
-      var grid = $(iconGrid);
       // Recalculate the measured item size.
       grid.measured_ = null;
       grid.columns = 0;
@@ -219,6 +239,7 @@ cr.define('options', function() {
      */
     receiveNewProfileDefaults_: function(profileInfo) {
       ManageProfileOverlay.setProfileInfo(profileInfo, 'create');
+      this.profileNameIsDefault_ = true;
       $('create-profile-name-label').hidden = false;
       $('create-profile-name').hidden = false;
       // Trying to change the focus if this isn't the topmost overlay can
@@ -241,8 +262,8 @@ cr.define('options', function() {
      * @param {Object} profileNames A dictionary of profile names.
      * @private
      */
-    receiveProfileNames_: function(profileNames) {
-      this.profileNames_ = profileNames;
+    receiveExistingProfileNames_: function(profileNames) {
+      this.existingProfileNames_ = profileNames;
     },
 
     /**
@@ -295,17 +316,23 @@ cr.define('options', function() {
      * @private
      */
     onNameChanged_: function(mode) {
-      var newName = $(mode + '-profile-name').value;
-      var oldName = this.profileInfo_.name;
+      this.profileNameIsDefault_ = false;
+      this.updateCreateOrImport_(mode);
+    },
 
-      // In 'create' mode, the initial name can be the name of an already
-      // existing supervised user.
-      if (newName == oldName && mode == 'manage') {
-        this.hideErrorBubble_(mode);
-      } else if (mode == 'create' &&
-                 !loadTimeData.getBoolean(
-                     'disableCreateExistingManagedUsers') &&
-                 $('create-profile-managed').checked) {
+    /**
+     * Called when the profile name is changed or the 'create managed' checkbox
+     * is toggled. Updates the 'ok' button and the 'import existing supervised
+     * user' link.
+     * @param {string} mode A label that specifies the type of dialog box which
+     *     is currently being viewed (i.e. 'create' or 'manage').
+     * @private
+     */
+    updateCreateOrImport_: function(mode) {
+      // In 'create' mode, check for existing managed users with the same name.
+      if (mode == 'create' &&
+          !loadTimeData.getBoolean('disableCreateExistingManagedUsers') &&
+          $('create-profile-managed').checked) {
         options.ManagedUserListData.requestExistingManagedUsers().then(
             this.receiveExistingManagedUsers_.bind(this),
             this.onSigninError_.bind(this));
@@ -381,8 +408,12 @@ cr.define('options', function() {
      * @private
      */
     updateOkButton_: function(mode) {
+      var oldName = this.profileInfo_.name;
       var newName = $(mode + '-profile-name').value;
-      if (this.profileNames_[newName] != undefined) {
+      var nameIsDuplicate = this.existingProfileNames_[newName] != undefined;
+      if (mode == 'manage' && oldName == newName)
+        nameIsDuplicate = false;
+      if (nameIsDuplicate) {
         var errorHtml =
             loadTimeData.getString('manageProfilesDuplicateNameError');
         this.showErrorBubble_(errorHtml, mode, true);
@@ -448,6 +479,13 @@ cr.define('options', function() {
       if (!iconURL || iconURL == this.iconGridSelectedURL_)
         return;
       this.iconGridSelectedURL_ = iconURL;
+      if (this.profileNameIsDefault_) {
+        var index = $(mode + '-profile-icon-grid').selectionModel.selectedIndex;
+        var name = this.defaultProfileNames_[index];
+        if (name) {
+          this.setProfileName_(name, mode);
+        }
+      }
       if (this.profileInfo_ && this.profileInfo_.filePath) {
         chrome.send('profileIconSelectionChanged',
                     [this.profileInfo_.filePath, iconURL]);
@@ -531,9 +569,9 @@ cr.define('options', function() {
 
   // Forward public APIs to private implementations.
   [
-    'receiveDefaultProfileIcons',
+    'receiveDefaultProfileIconsAndNames',
     'receiveNewProfileDefaults',
-    'receiveProfileNames',
+    'receiveExistingProfileNames',
     'receiveHasProfileShortcuts',
     'setProfileInfo',
     'setProfileName',
@@ -575,7 +613,7 @@ cr.define('options', function() {
      */
     didShowPage: function() {
       chrome.send('requestCreateProfileUpdate');
-      chrome.send('requestDefaultProfileIcons');
+      chrome.send('requestDefaultProfileIcons', ['create']);
       chrome.send('requestNewProfileDefaults');
 
       $('manage-profile-overlay-create').hidden = false;
@@ -599,12 +637,14 @@ cr.define('options', function() {
       $('import-existing-managed-user-link').hidden = true;
       if (!loadTimeData.getBoolean('disableCreateExistingManagedUsers')) {
         $('create-profile-managed').onchange = function() {
-          ManageProfileOverlay.getInstance().onNameChanged_('create');
+          ManageProfileOverlay.getInstance().updateCreateOrImport_('create');
         };
       }
       $('create-profile-managed-signed-in').disabled = true;
       $('create-profile-managed-signed-in').hidden = true;
       $('create-profile-managed-not-signed-in').hidden = true;
+
+      this.profileNameIsDefault_ = false;
     },
 
     /** @override */

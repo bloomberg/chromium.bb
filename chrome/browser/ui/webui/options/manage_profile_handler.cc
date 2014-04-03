@@ -50,8 +50,8 @@ namespace options {
 
 namespace {
 
-const char kCreateProfileIconGridName[] = "create-profile-icon-grid";
-const char kManageProfileIconGridName[] = "manage-profile-icon-grid";
+const char kCreateProfileIdentifier[] = "create";
+const char kManageProfileIdentifier[] = "manage";
 
 // Given |args| from the WebUI, parses value 0 as a FilePath |profile_file_path|
 // and returns true on success.
@@ -158,7 +158,7 @@ void ManageProfileHandler::InitializeHandler() {
 }
 
 void ManageProfileHandler::InitializePage() {
-  SendProfileNames();
+  SendExistingProfileNames();
   OnCreateManagedUserPrefChange();
 }
 
@@ -203,9 +203,9 @@ void ManageProfileHandler::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
-    SendProfileNames();
-    base::StringValue value(kManageProfileIconGridName);
-    SendProfileIcons(value);
+    SendExistingProfileNames();
+    base::StringValue value(kManageProfileIdentifier);
+    SendProfileIconsAndNames(value);
   }
 }
 
@@ -215,10 +215,14 @@ void ManageProfileHandler::OnStateChanged() {
 
 void ManageProfileHandler::RequestDefaultProfileIcons(
     const base::ListValue* args) {
-  base::StringValue create_value(kCreateProfileIconGridName);
-  base::StringValue manage_value(kManageProfileIconGridName);
-  SendProfileIcons(manage_value);
-  SendProfileIcons(create_value);
+  std::string mode;
+  bool ok = args->GetString(0, &mode);
+  DCHECK(ok);
+  DCHECK(mode == kCreateProfileIdentifier || mode == kManageProfileIdentifier);
+  if (ok) {
+    base::StringValue value(mode);
+    SendProfileIconsAndNames(value);
+  }
 }
 
 void ManageProfileHandler::RequestNewProfileDefaults(
@@ -235,9 +239,10 @@ void ManageProfileHandler::RequestNewProfileDefaults(
       "ManageProfileOverlay.receiveNewProfileDefaults", profile_info);
 }
 
-void ManageProfileHandler::SendProfileIcons(
-    const base::StringValue& icon_grid) {
+void ManageProfileHandler::SendProfileIconsAndNames(
+    const base::StringValue& mode) {
   base::ListValue image_url_list;
+  base::ListValue default_name_list;
 
   // First add the GAIA picture if it's available.
   const ProfileInfoCache& cache =
@@ -250,22 +255,24 @@ void ManageProfileHandler::SendProfileIcons(
     if (icon) {
       gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
       gaia_picture_url_ = webui::GetBitmapDataUrl(icon2.AsBitmap());
-      image_url_list.Append(new base::StringValue(gaia_picture_url_));
+      image_url_list.AppendString(gaia_picture_url_);
+      default_name_list.AppendString(std::string());
     }
   }
 
-  // Next add the default avatar icons.
+  // Next add the default avatar icons and names.
   for (size_t i = 0; i < ProfileInfoCache::GetDefaultAvatarIconCount(); i++) {
     std::string url = ProfileInfoCache::GetDefaultAvatarIconUrl(i);
-    image_url_list.Append(new base::StringValue(url));
+    image_url_list.AppendString(url);
+    default_name_list.AppendString(cache.ChooseNameForNewProfile(i));
   }
 
   web_ui()->CallJavascriptFunction(
-      "ManageProfileOverlay.receiveDefaultProfileIcons", icon_grid,
-      image_url_list);
+      "ManageProfileOverlay.receiveDefaultProfileIconsAndNames", mode,
+      image_url_list, default_name_list);
 }
 
-void ManageProfileHandler::SendProfileNames() {
+void ManageProfileHandler::SendExistingProfileNames() {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   base::DictionaryValue profile_name_dict;
@@ -274,8 +281,8 @@ void ManageProfileHandler::SendProfileNames() {
         base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(i)), true);
   }
 
-  web_ui()->CallJavascriptFunction("ManageProfileOverlay.receiveProfileNames",
-                                   profile_name_dict);
+  web_ui()->CallJavascriptFunction(
+      "ManageProfileOverlay.receiveExistingProfileNames", profile_name_dict);
 }
 
 void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
@@ -386,8 +393,9 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
     return;
 
   base::StringValue gaia_name_value(gaia_name);
+  base::StringValue mode_value(kManageProfileIdentifier);
   web_ui()->CallJavascriptFunction("ManageProfileOverlay.setProfileName",
-                                   gaia_name_value);
+                                   gaia_name_value, mode_value);
 }
 
 void ManageProfileHandler::RequestHasProfileShortcuts(

@@ -47,8 +47,8 @@ class ManageProfileHandler : public OptionsPageUIHandler,
 
  private:
   // Callback for the "requestDefaultProfileIcons" message.
-  // Sends the array of default profile icon URLs to WebUI.
-  // |args| is of the form: [ {string} iconURL ]
+  // Sends the array of default profile icon URLs and profile names to WebUI.
+  // First item of |args| is the dialog mode, i.e. "create" or "manage".
   void RequestDefaultProfileIcons(const base::ListValue* args);
 
   // Callback for the "requestNewProfileDefaults" message.
@@ -56,10 +56,9 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   //   { "name": profileName, "iconURL": iconURL }
   void RequestNewProfileDefaults(const base::ListValue* args);
 
-  // Send all profile icons to the overlay.
-  // |iconGrid| is the name of the grid to populate with icons (i.e.
-  // "create-profile-icon-grid" or "manage-profile-icon-grid").
-  void SendProfileIcons(const base::StringValue& icon_grid);
+  // Send all profile icons and their default names to the overlay.
+  // |mode| is the dialog mode, i.e. "create" or "manage".
+  void SendProfileIconsAndNames(const base::StringValue& mode);
 
   // Sends an object to WebUI of the form:
   //   profileNames = {
@@ -68,7 +67,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
   //     ...
   //   };
   // This is used to detect duplicate profile names.
-  void SendProfileNames();
+  void SendExistingProfileNames();
 
   // Callback for the "setProfileIconAndName" message. Sets the name and icon
   // of a given profile.
