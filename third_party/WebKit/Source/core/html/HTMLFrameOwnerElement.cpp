@@ -23,21 +23,77 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
+#include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocument.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
 namespace WebCore {
 
+typedef HashMap<RefPtr<Widget>, FrameView*> WidgetToParentMap;
+static WidgetToParentMap& widgetNewParentMap()
+{
+    DEFINE_STATIC_LOCAL(WidgetToParentMap, map, ());
+    return map;
+}
+
+static unsigned s_updateSuspendCount = 0;
+
+HTMLFrameOwnerElement::UpdateSuspendScope::UpdateSuspendScope()
+{
+    ++s_updateSuspendCount;
+}
+
+void HTMLFrameOwnerElement::UpdateSuspendScope::performDeferredWidgetTreeOperations()
+{
+    WidgetToParentMap map;
+    widgetNewParentMap().swap(map);
+    WidgetToParentMap::iterator end = map.end();
+    for (WidgetToParentMap::iterator it = map.begin(); it != end; ++it) {
+        Widget* child = it->key.get();
+        ScrollView* currentParent = toScrollView(child->parent());
+        FrameView* newParent = it->value;
+        if (newParent != currentParent) {
+            if (currentParent)
+                currentParent->removeChild(child);
+            if (newParent)
+                newParent->addChild(child);
+        }
+    }
+}
+
+HTMLFrameOwnerElement::UpdateSuspendScope::~UpdateSuspendScope()
+{
+    ASSERT(s_updateSuspendCount > 0);
+    if (s_updateSuspendCount == 1)
+        performDeferredWidgetTreeOperations();
+    --s_updateSuspendCount;
+}
+
+static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
+{
+    if (!s_updateSuspendCount) {
+        if (parent)
+            parent->addChild(child);
+        else if (toScrollView(child->parent()))
+            toScrollView(child->parent())->removeChild(child);
+        return;
+    }
+    widgetNewParentMap().set(child, parent);
+}
+
 HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
     , m_contentFrame(0)
+    , m_widget(nullptr)
     , m_sandboxFlags(SandboxNone)
 {
 }
@@ -122,6 +178,40 @@ SVGDocument* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionStat
     return 0;
 }
 
+void HTMLFrameOwnerElement::setWidget(PassRefPtr<Widget> widget)
+{
+    if (widget == m_widget)
+        return;
+
+    if (m_widget) {
+        if (m_widget->parent())
+            moveWidgetToParentSoon(m_widget.get(), 0);
+        m_widget = nullptr;
+    }
+
+    m_widget = widget;
+
+    RenderWidget* renderWidget = toRenderWidget(renderer());
+    if (!renderWidget)
+        return;
+
+    if (m_widget) {
+        renderWidget->updateOnWidgetChange();
+
+        ASSERT(document().view() == renderWidget->frameView());
+        ASSERT(renderWidget->frameView());
+        moveWidgetToParentSoon(m_widget.get(), renderWidget->frameView());
+    }
+
+    if (AXObjectCache* cache = document().existingAXObjectCache())
+        cache->childrenChanged(renderWidget);
+}
+
+Widget* HTMLFrameOwnerElement::ownedWidget() const
+{
+    return m_widget.get();
+}
+
 bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const AtomicString& frameName, bool lockBackForwardList)
 {
     RefPtr<LocalFrame> parentFrame = document().frame();
@@ -155,10 +245,12 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(const KURL& url, const Atomic
     // FIXME: Can we remove this entirely? m_isComplete normally gets set to false when a load is committed.
     childFrame->loader().started();
 
-    RenderObject* renderObject = renderer();
     FrameView* view = childFrame->view();
+    RenderObject* renderObject = renderer();
+    // We need to test the existence of renderObject and its widget-ness, as
+    // failing to do so causes problems.
     if (renderObject && renderObject->isWidget() && view)
-        toRenderWidget(renderObject)->setWidget(view);
+        setWidget(view);
 
     // Some loads are performed synchronously (e.g., about:blank and loads
     // cancelled by returning a null ResourceRequest from requestFromDelegate).

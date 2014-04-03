@@ -165,7 +165,6 @@
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFontFaceElement.h"
@@ -1791,7 +1790,7 @@ void Document::updateStyle(StyleRecalcChange change)
 {
     TRACE_EVENT0("webkit", "Document::updateStyle");
 
-    RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+    HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     m_lifecycle.advanceTo(DocumentLifecycle::InStyleRecalc);
 
     if (styleChangeType() >= SubtreeStyleChange)

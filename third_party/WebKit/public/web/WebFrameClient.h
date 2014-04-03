@@ -116,6 +116,9 @@ public:
 
     // General notifications -----------------------------------------------
 
+    // Indicates if creating a plugin without an associated renderer is supported.
+    virtual bool canCreatePluginWithoutRenderer(const WebString& mimeType) { return false; }
+
     // Indicates that another page has accessed the DOM of the initial empty
     // document of a main frame. After this, it is no longer safe to show a
     // pending navigation's URL, because a URL spoof is possible.

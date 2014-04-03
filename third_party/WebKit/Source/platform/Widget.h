@@ -86,6 +86,7 @@ public:
     virtual bool isRemoteFrameView() const { return false; }
     virtual bool isPluginView() const { return false; }
     virtual bool isPluginContainer() const { return false; }
+    virtual bool pluginShouldPersist() const { return false; }
     virtual bool isScrollbar() const { return false; }
     virtual bool isScrollView() const { return false; }
 

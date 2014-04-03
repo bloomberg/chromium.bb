@@ -164,6 +164,7 @@ namespace WebCore {
             FailOnDetachedPlugin,
             AllowDetachedPlugin,
         };
+        virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const = 0;
         virtual PassRefPtr<Widget> createPlugin(HTMLPlugInElement*, const KURL&, const Vector<String>&, const Vector<String>&, const String&, bool loadManually, DetachedPluginPolicy) = 0;
 
         virtual PassRefPtr<Widget> createJavaAppletWidget(HTMLAppletElement*, const KURL& baseURL, const Vector<String>& paramNames, const Vector<String>& paramValues) = 0;

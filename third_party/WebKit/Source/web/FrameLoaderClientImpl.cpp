@@ -615,6 +615,14 @@ PassRefPtr<LocalFrame> FrameLoaderClientImpl::createFrame(
     return m_webFrame->createChildFrame(frameRequest, ownerElement);
 }
 
+bool FrameLoaderClientImpl::canCreatePluginWithoutRenderer(const String& mimeType) const
+{
+    if (!m_webFrame->client())
+        return false;
+
+    return m_webFrame->client()->canCreatePluginWithoutRenderer(mimeType);
+}
+
 PassRefPtr<Widget> FrameLoaderClientImpl::createPlugin(
     HTMLPlugInElement* element,
     const KURL& url,

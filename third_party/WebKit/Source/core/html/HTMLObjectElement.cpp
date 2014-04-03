@@ -97,7 +97,11 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
+        // FIXME: What is the right thing to do here? Should we supress the
+        // reload stuff when a persistable widget-type is specified?
         reloadPluginOnAttributeChange(name);
+        if (!renderer())
+            requestPluginCreationWithoutRendererIfPossible();
     } else if (name == dataAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
         if (renderer() && isImageType()) {

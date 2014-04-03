@@ -33,8 +33,6 @@ public:
     explicit RenderPart(Element*);
     virtual ~RenderPart();
 
-    virtual void setWidget(PassRefPtr<Widget>) OVERRIDE FINAL;
-
     bool requiresAcceleratedCompositing() const;
 
     virtual bool needsPreferredWidthsRecalculation() const OVERRIDE FINAL;

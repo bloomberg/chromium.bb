@@ -46,15 +46,6 @@ RenderPart::RenderPart(Element* node)
 
 RenderPart::~RenderPart()
 {
-    clearWidget();
-}
-
-void RenderPart::setWidget(PassRefPtr<Widget> widget)
-{
-    if (widget == this->widget())
-        return;
-
-    RenderWidget::setWidget(widget);
 }
 
 LayerType RenderPart::layerTypeRequired() const

@@ -38,12 +38,12 @@
 #include "core/dom/SelectorQuery.h"
 #include "core/events/MutationEvent.h"
 #include "core/html/HTMLCollection.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/RadioNodeList.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 
 using namespace std;
 
@@ -449,7 +449,7 @@ void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
     }
 
     {
-        RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+        HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
 
         Node* prev = child->previousSibling();
         Node* next = child->nextSibling();
@@ -539,7 +539,7 @@ void ContainerNode::removeChildren()
 
     NodeVector removedChildren;
     {
-        RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+        HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
         {
             NoEventDispatchAssertion assertNoEventDispatch;
             removedChildren.reserveInitialCapacity(countChildren());

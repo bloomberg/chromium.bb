@@ -64,6 +64,7 @@ public:
     virtual void destroy() = 0;
 
     virtual WebPluginContainer* container() const { return 0; }
+    virtual void containerDidDetachFromParent() { }
 
     virtual NPObject* scriptableObject() = 0;
     virtual struct _NPP* pluginNPP() { return 0; }
@@ -168,6 +169,7 @@ public:
     virtual void rotateView(RotationType type) { }
 
     virtual bool isPlaceholder() { return true; }
+    virtual bool shouldPersist() const { return false; }
 
 protected:
     ~WebPlugin() { }

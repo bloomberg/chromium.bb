@@ -205,9 +205,9 @@ FrameView::~FrameView()
 
     ASSERT(m_frame);
     ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
-    RenderPart* renderer = m_frame->ownerRenderer();
-    if (renderer && renderer->widget() == this)
-        renderer->setWidget(nullptr);
+    HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement();
+    if (ownerElement && ownerElement->ownedWidget() == this)
+        ownerElement->setWidget(nullptr);
 }
 
 void FrameView::reset()

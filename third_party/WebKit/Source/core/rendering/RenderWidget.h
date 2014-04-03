@@ -31,9 +31,9 @@ class RenderWidget : public RenderReplaced {
 public:
     virtual ~RenderWidget();
 
-    Widget* widget() const { return m_widget.get(); }
-    virtual void setWidget(PassRefPtr<Widget>);
+    Widget* widget() const;
 
+    void updateOnWidgetChange();
     void updateWidgetPosition();
     void widgetPositionsUpdated();
 
@@ -42,16 +42,11 @@ public:
     void ref() { ++m_refCount; }
     void deref();
 
-    class UpdateSuspendScope {
-    public:
-        UpdateSuspendScope();
-        ~UpdateSuspendScope();
-    };
+    virtual bool isWidget() const OVERRIDE FINAL { return true; }
+    bool updateWidgetGeometry();
 
 protected:
     explicit RenderWidget(Element*);
-
-    void clearWidget();
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE FINAL;
     virtual void layout() OVERRIDE;
@@ -62,15 +57,11 @@ protected:
     virtual void paintContents(PaintInfo&, const LayoutPoint&);
 
 private:
-    virtual bool isWidget() const OVERRIDE FINAL { return true; }
-
     virtual void willBeDestroyed() OVERRIDE FINAL;
     virtual void destroy() OVERRIDE FINAL;
 
     bool setWidgetGeometry(const LayoutRect&);
-    bool updateWidgetGeometry();
 
-    RefPtr<Widget> m_widget;
     int m_refCount;
 };
 

@@ -96,7 +96,6 @@
 #include "core/page/PointerLockController.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/RenderWidget.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/scroll/ScrollableArea.h"
@@ -1414,7 +1413,7 @@ void Element::attach(const AttachContext& context)
 
 void Element::detach(const AttachContext& context)
 {
-    RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
+    HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     cancelFocusAppearanceUpdate();
     removeCallbackSelectors();
     if (needsLayerUpdate())

@@ -190,7 +190,7 @@ void HTMLAppletElement::updateWidgetInternal()
         return;
     }
     document().setContainsPlugins();
-    renderer->setWidget(widget);
+    setWidget(widget);
 }
 
 bool HTMLAppletElement::canEmbedJava() const

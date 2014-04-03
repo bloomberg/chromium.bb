@@ -114,6 +114,7 @@ public:
     virtual WTF::String doNotTrackValue() OVERRIDE;
     virtual void transitionToCommittedForNewPage() OVERRIDE;
     virtual PassRefPtr<WebCore::LocalFrame> createFrame(const WebCore::KURL&, const WTF::AtomicString& name, const WebCore::Referrer&, WebCore::HTMLFrameOwnerElement*) OVERRIDE;
+    virtual bool canCreatePluginWithoutRenderer(const String& mimeType) const;
     virtual PassRefPtr<WebCore::Widget> createPlugin(
         WebCore::HTMLPlugInElement*, const WebCore::KURL&,
         const Vector<WTF::String>&, const Vector<WTF::String>&,

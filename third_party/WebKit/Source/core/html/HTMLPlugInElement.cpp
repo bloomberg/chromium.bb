@@ -31,6 +31,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLContentElement.h"
@@ -116,6 +117,7 @@ void HTMLPlugInElement::attach(const AttachContext& context)
 
     if (!renderer() || useFallbackContent())
         return;
+
     if (isImageType()) {
         if (!m_imageLoader)
             m_imageLoader = adoptPtr(new HTMLImageLoader(this));
@@ -141,6 +143,35 @@ void HTMLPlugInElement::updateWidget()
     }
 }
 
+void HTMLPlugInElement::requestPluginCreationWithoutRendererIfPossible()
+{
+    if (m_serviceType.isEmpty())
+        return;
+
+    if (!document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType))
+        return;
+
+    if (renderer() && renderer()->isWidget())
+        return;
+
+    createPluginWithoutRenderer();
+}
+
+void HTMLPlugInElement::createPluginWithoutRenderer()
+{
+    ASSERT(document().frame()->loader().client()->canCreatePluginWithoutRenderer(m_serviceType));
+
+    KURL url;
+    Vector<String> paramNames;
+    Vector<String> paramValues;
+
+    paramNames.append("type");
+    paramValues.append(m_serviceType);
+
+    bool useFallback = false;
+    loadPlugin(url, m_serviceType, paramNames, paramValues, useFallback, false);
+}
+
 void HTMLPlugInElement::detach(const AttachContext& context)
 {
     // Update the widget the next time we attach (detaching destroys the plugin).
@@ -152,7 +183,13 @@ void HTMLPlugInElement::detach(const AttachContext& context)
         document().decrementLoadEventDelayCount();
     }
 
+    // Only try to persist a plugin widget we actually own.
+    Widget* plugin = ownedWidget();
+    if (plugin && plugin->pluginShouldPersist())
+        m_persistedPluginWidget = plugin;
     resetInstance();
+    // FIXME - is this next line necessary?
+    setWidget(nullptr);
 
     if (m_isCapturingMouseEvents) {
         if (LocalFrame* frame = document().frame())
@@ -218,8 +255,15 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper()
     // return the cached allocated Bindings::Instance. Not supporting this
     // edge-case is OK.
     if (!m_pluginWrapper) {
-        if (Widget* widget = pluginWidget())
-            m_pluginWrapper = frame->script().createPluginWrapper(widget);
+        Widget* plugin;
+
+        if (m_persistedPluginWidget)
+            plugin = m_persistedPluginWidget.get();
+        else
+            plugin = pluginWidget();
+
+        if (plugin)
+            m_pluginWrapper = frame->script().createPluginWrapper(plugin);
     }
     return m_pluginWrapper.get();
 }
@@ -399,8 +443,9 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
         return false;
 
     bool useFallback;
+    bool requireRenderer = true;
     if (shouldUsePlugin(completedURL, mimeType, renderer->hasFallbackContent(), useFallback))
-        return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback);
+        return loadPlugin(completedURL, mimeType, paramNames, paramValues, useFallback, requireRenderer);
 
     // If the plug-in element already contains a subframe,
     // loadOrRedirectSubframe will re-use it. Otherwise, it will create a new
@@ -409,7 +454,7 @@ bool HTMLPlugInElement::requestObject(const String& url, const String& mimeType,
     return loadOrRedirectSubframe(completedURL, getNameAttribute(), true);
 }
 
-bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback)
+bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireRenderer)
 {
     LocalFrame* frame = document().frame();
 
@@ -418,23 +463,32 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
 
     RenderEmbeddedObject* renderer = renderEmbeddedObject();
     // FIXME: This code should not depend on renderer!
-    if (!renderer || useFallback)
+    if ((!renderer && requireRenderer) || useFallback)
         return false;
 
     WTF_LOG(Plugins, "%p Plug-in URL: %s", this, m_url.utf8().data());
     WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
-    bool loadManually = document().isPluginDocument() && !document().containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
-    RefPtr<Widget> widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, FrameLoaderClient::FailOnDetachedPlugin);
+    RefPtr<Widget> widget = m_persistedPluginWidget;
+    if (!widget) {
+        bool loadManually = document().isPluginDocument() && !document().containsPlugins() && toPluginDocument(document()).shouldLoadPluginManually();
+        FrameLoaderClient::DetachedPluginPolicy policy = requireRenderer ? FrameLoaderClient::FailOnDetachedPlugin : FrameLoaderClient::AllowDetachedPlugin;
+        widget = frame->loader().client()->createPlugin(this, url, paramNames, paramValues, mimeType, loadManually, policy);
+    }
 
     if (!widget) {
-        if (!renderer->showsUnavailablePluginIndicator())
+        if (renderer && !renderer->showsUnavailablePluginIndicator())
             renderer->setPluginUnavailabilityReason(RenderEmbeddedObject::PluginMissing);
         return false;
     }
 
-    renderer->setWidget(widget);
+    if (renderer) {
+        setWidget(widget);
+        m_persistedPluginWidget = nullptr;
+    } else if (widget != m_persistedPluginWidget) {
+        m_persistedPluginWidget = widget;
+    }
     document().setContainsPlugins();
     scheduleLayerUpdate();
     return true;

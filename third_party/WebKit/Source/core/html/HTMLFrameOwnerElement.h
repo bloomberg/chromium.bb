@@ -31,6 +31,7 @@ class DOMWindow;
 class ExceptionState;
 class Frame;
 class RenderPart;
+class Widget;
 
 class HTMLFrameOwnerElement : public HTMLElement {
 public:
@@ -62,6 +63,17 @@ public:
     virtual void renderFallbackContent() { }
 
     virtual bool isObjectElement() const { return false; }
+    void setWidget(PassRefPtr<Widget>);
+    Widget* ownedWidget() const;
+
+    class UpdateSuspendScope {
+    public:
+        UpdateSuspendScope();
+        ~UpdateSuspendScope();
+
+    private:
+        void performDeferredWidgetTreeOperations();
+    };
 
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
@@ -74,6 +86,7 @@ private:
     virtual bool isFrameOwnerElement() const OVERRIDE FINAL { return true; }
 
     Frame* m_contentFrame;
+    RefPtr<Widget> m_widget;
     SandboxFlags m_sandboxFlags;
 };
 

@@ -94,6 +94,8 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name, const AtomicStr
         size_t pos = m_serviceType.find(";");
         if (pos != kNotFound)
             m_serviceType = m_serviceType.left(pos);
+        if (!renderer())
+            requestPluginCreationWithoutRendererIfPossible();
     } else if (name == codeAttr) {
         m_url = stripLeadingAndTrailingHTMLSpaces(value);
     } else if (name == srcAttr) {

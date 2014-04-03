@@ -158,10 +158,10 @@ void HTMLFrameElementBase::attach(const AttachContext& context)
 {
     HTMLFrameOwnerElement::attach(context);
 
-    if (RenderPart* part = renderPart()) {
+    if (renderPart()) {
         if (Frame* frame = contentFrame()) {
             if (frame->isLocalFrame())
-                part->setWidget(toLocalFrame(frame)->view());
+                setWidget(toLocalFrame(frame)->view());
         }
     }
 }

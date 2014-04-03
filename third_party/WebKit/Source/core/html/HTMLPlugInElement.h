@@ -56,6 +56,9 @@ public:
     void setNeedsWidgetUpdate(bool needsWidgetUpdate) { m_needsWidgetUpdate = needsWidgetUpdate; }
     void updateWidget();
 
+    void requestPluginCreationWithoutRendererIfPossible();
+    void createPluginWithoutRenderer();
+
 protected:
     HTMLPlugInElement(const QualifiedName& tagName, Document&, bool createdByParser, PreferPlugInsForImagesOption);
 
@@ -124,7 +127,7 @@ private:
     DisplayState displayState() const { return m_displayState; }
     void setDisplayState(DisplayState state) { m_displayState = state; }
     const String loadedMimeType() const;
-    bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback);
+    bool loadPlugin(const KURL&, const String& mimeType, const Vector<String>& paramNames, const Vector<String>& paramValues, bool useFallback, bool requireRenderer);
     bool pluginIsLoadable(const KURL&, const String& mimeType);
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
@@ -134,6 +137,13 @@ private:
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
     DisplayState m_displayState;
+
+    // Normally the Widget is stored in HTMLFrameOwnerElement::m_widget.
+    // However, plugins can persist even when not rendered. In order to
+    // prevent confusing code which may assume that widget() != null
+    // means the frame is active, we save off m_widget here while
+    // the plugin is persisting but not being displayed.
+    RefPtr<Widget> m_persistedPluginWidget;
 };
 
 inline bool isHTMLPlugInElement(const Element& element)

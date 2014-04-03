@@ -270,6 +270,8 @@ void WebPluginContainerImpl::setParent(Widget* widget)
     Widget::setParent(widget);
     if (widget)
         reportGeometry();
+    else if (m_webPlugin)
+        m_webPlugin->containerDidDetachFromParent();
 }
 
 void WebPluginContainerImpl::setPlugin(WebPlugin* plugin)
@@ -913,6 +915,11 @@ WebCore::IntRect WebPluginContainerImpl::windowClipRect() const
     }
 
     return clipRect;
+}
+
+bool WebPluginContainerImpl::pluginShouldPersist() const
+{
+    return m_webPlugin->shouldPersist();
 }
 
 } // namespace blink
