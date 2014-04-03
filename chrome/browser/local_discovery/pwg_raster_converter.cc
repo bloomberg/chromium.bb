@@ -7,7 +7,6 @@
 #include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/file_util.h"
-#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -24,10 +23,15 @@ using content::BrowserThread;
 
 class FileHandlers {
  public:
-  FileHandlers() {}
+  FileHandlers() : pdf_file_(base::kInvalidPlatformFileValue),
+                   pwg_file_(base::kInvalidPlatformFileValue) { }
 
   ~FileHandlers() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    if (pdf_file_ != base::kInvalidPlatformFileValue)
+      base::ClosePlatformFile(pdf_file_);
+    if (pwg_file_ != base::kInvalidPlatformFileValue)
+      base::ClosePlatformFile(pwg_file_);
   }
 
   void Init(base::RefCountedMemory* data);
@@ -42,23 +46,25 @@ class FileHandlers {
   }
 
   IPC::PlatformFileForTransit GetPdfForProcess(base::ProcessHandle process) {
-    DCHECK(pdf_file_.IsValid());
+    DCHECK_NE(pdf_file_, base::kInvalidPlatformFileValue);
     IPC::PlatformFileForTransit transit =
-        IPC::TakeFileHandleForProcess(pdf_file_.Pass(), process);
+        IPC::GetFileHandleForProcess(pdf_file_, process, true);
+    pdf_file_ = base::kInvalidPlatformFileValue;
     return transit;
   }
 
   IPC::PlatformFileForTransit GetPwgForProcess(base::ProcessHandle process) {
-    DCHECK(pwg_file_.IsValid());
+    DCHECK_NE(pwg_file_, base::kInvalidPlatformFileValue);
     IPC::PlatformFileForTransit transit =
-        IPC::TakeFileHandleForProcess(pwg_file_.Pass(), process);
+        IPC::GetFileHandleForProcess(pwg_file_, process, true);
+    pwg_file_ = base::kInvalidPlatformFileValue;
     return transit;
   }
 
  private:
   base::ScopedTempDir temp_dir_;
-  base::File pdf_file_;
-  base::File pwg_file_;
+  base::PlatformFile pdf_file_;
+  base::PlatformFile pwg_file_;
 };
 
 void FileHandlers::Init(base::RefCountedMemory* data) {
@@ -74,14 +80,17 @@ void FileHandlers::Init(base::RefCountedMemory* data) {
   }
 
   // Reopen in read only mode.
-  pdf_file_.Initialize(GetPdfPath(),
-                       base::File::FLAG_OPEN | base::File::FLAG_READ);
-  pwg_file_.Initialize(GetPwgPath(),
-                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  pdf_file_ = base::CreatePlatformFile(GetPdfPath(), base::PLATFORM_FILE_OPEN |
+                                                     base::PLATFORM_FILE_READ,
+                                       NULL, NULL);
+  pwg_file_ = base::CreatePlatformFile(GetPwgPath(),
+                                       base::PLATFORM_FILE_CREATE_ALWAYS |
+                                       base::PLATFORM_FILE_APPEND, NULL, NULL);
 }
 
 bool FileHandlers::IsValid() {
-  return pdf_file_.IsValid() && pwg_file_.IsValid();
+  return pdf_file_ != base::kInvalidPlatformFileValue &&
+         pwg_file_ != base::kInvalidPlatformFileValue;
 }
 
 // Converts PDF into PWG raster.
