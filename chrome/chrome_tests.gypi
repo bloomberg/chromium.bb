@@ -684,6 +684,7 @@
         'test/chromedriver/key_converter.h',
         'test/chromedriver/keycode_text_conversion.h',
         'test/chromedriver/keycode_text_conversion_mac.mm',
+        'test/chromedriver/keycode_text_conversion_ozone.cc',
         'test/chromedriver/keycode_text_conversion_win.cc',
         'test/chromedriver/keycode_text_conversion_x.cc',
         'test/chromedriver/logging.cc',
