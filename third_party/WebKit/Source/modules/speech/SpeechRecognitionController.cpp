@@ -33,7 +33,7 @@ const char* SpeechRecognitionController::supplementName()
     return "SpeechRecognitionController";
 }
 
-SpeechRecognitionController::SpeechRecognitionController(SpeechRecognitionClient* client)
+SpeechRecognitionController::SpeechRecognitionController(PassOwnPtr<SpeechRecognitionClient> client)
     : m_client(client)
 {
 }
@@ -43,12 +43,12 @@ SpeechRecognitionController::~SpeechRecognitionController()
     // FIXME: Call m_client->pageDestroyed(); once we have implemented a client.
 }
 
-PassOwnPtr<SpeechRecognitionController> SpeechRecognitionController::create(SpeechRecognitionClient* client)
+PassOwnPtr<SpeechRecognitionController> SpeechRecognitionController::create(PassOwnPtr<SpeechRecognitionClient> client)
 {
     return adoptPtr(new SpeechRecognitionController(client));
 }
 
-void provideSpeechRecognitionTo(Page& page, SpeechRecognitionClient* client)
+void provideSpeechRecognitionTo(Page& page, PassOwnPtr<SpeechRecognitionClient> client)
 {
     SpeechRecognitionController::provideTo(page, SpeechRecognitionController::supplementName(), SpeechRecognitionController::create(client));
 }

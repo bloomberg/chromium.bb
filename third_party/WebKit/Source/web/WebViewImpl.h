@@ -735,8 +735,6 @@ private:
     bool m_recreatingGraphicsContext;
     static const WebInputEvent* m_currentInputEvent;
 
-    OwnPtr<SpeechRecognitionClientProxy> m_speechRecognitionClient;
-
     OwnPtr<GeolocationClientProxy> m_geolocationClientProxy;
 
     UserMediaClientImpl m_userMediaClientImpl;
