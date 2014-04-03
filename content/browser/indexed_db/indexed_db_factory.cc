@@ -60,6 +60,15 @@ void IndexedDBFactory::ReleaseDatabase(
 
 void IndexedDBFactory::ReleaseBackingStore(const GURL& origin_url,
                                            bool immediate) {
+  if (immediate) {
+    IndexedDBBackingStoreMap::iterator it =
+        backing_stores_with_active_blobs_.find(origin_url);
+    if (it != backing_stores_with_active_blobs_.end()) {
+      it->second->active_blob_registry()->ForceShutdown();
+      backing_stores_with_active_blobs_.erase(it);
+    }
+  }
+
   // Only close if this is the last reference.
   if (!HasLastBackingStoreReference(origin_url))
     return;
@@ -134,7 +143,29 @@ void IndexedDBFactory::ContextDestroyed() {
        ++it)
     it->second->close_timer()->Stop();
   backing_store_map_.clear();
+  backing_stores_with_active_blobs_.clear();
   context_ = NULL;
+}
+
+void IndexedDBFactory::ReportOutstandingBlobs(const GURL& origin_url,
+                                              bool blobs_outstanding) {
+  if (!context_)
+    return;
+  if (blobs_outstanding) {
+    DCHECK(!backing_stores_with_active_blobs_.count(origin_url));
+    IndexedDBBackingStoreMap::iterator it = backing_store_map_.find(origin_url);
+    if (it != backing_store_map_.end())
+      backing_stores_with_active_blobs_.insert(*it);
+    else
+      DCHECK(false);
+  } else {
+    IndexedDBBackingStoreMap::iterator it =
+        backing_stores_with_active_blobs_.find(origin_url);
+    if (it != backing_stores_with_active_blobs_.end()) {
+      backing_stores_with_active_blobs_.erase(it);
+      ReleaseBackingStore(origin_url, false /* immediate */);
+    }
+  }
 }
 
 void IndexedDBFactory::GetDatabaseNames(
@@ -288,13 +319,16 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
 
   scoped_refptr<IndexedDBBackingStore> backing_store;
   if (open_in_memory) {
-    backing_store = IndexedDBBackingStore::OpenInMemory(origin_url);
+    backing_store =
+        IndexedDBBackingStore::OpenInMemory(origin_url, context_->TaskRunner());
   } else {
-    backing_store = IndexedDBBackingStore::Open(origin_url,
+    backing_store = IndexedDBBackingStore::Open(this,
+                                                origin_url,
                                                 data_directory,
                                                 data_loss,
                                                 data_loss_message,
-                                                disk_full);
+                                                disk_full,
+                                                context_->TaskRunner());
   }
 
   if (backing_store.get()) {

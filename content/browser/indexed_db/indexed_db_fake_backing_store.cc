@@ -8,6 +8,22 @@
 
 namespace content {
 
+IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
+    : IndexedDBBackingStore(NULL,
+                            GURL("http://localhost:81"),
+                            scoped_ptr<LevelDBDatabase>(),
+                            scoped_ptr<LevelDBComparator>(),
+                            NULL) {}
+
+IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
+    IndexedDBFactory* factory,
+    base::TaskRunner* task_runner)
+    : IndexedDBBackingStore(factory,
+                            GURL("http://localhost:81"),
+                            scoped_ptr<LevelDBDatabase>(),
+                            scoped_ptr<LevelDBComparator>(),
+                            task_runner) {}
+
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
 std::vector<base::string16> IndexedDBFakeBackingStore::GetDatabaseNames() {
@@ -112,6 +128,9 @@ leveldb::Status IndexedDBFakeBackingStore::PutIndexDataForRecord(
     const RecordIdentifier&) {
   return leveldb::Status::IOError("test error");
 }
+
+void IndexedDBFakeBackingStore::ReportBlobUnused(int64 database_id,
+                                                 int64 blob_key) {}
 
 scoped_ptr<IndexedDBBackingStore::Cursor>
 IndexedDBFakeBackingStore::OpenObjectStoreKeyCursor(

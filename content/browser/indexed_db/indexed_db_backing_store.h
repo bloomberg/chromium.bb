@@ -15,6 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db.h"
+#include "content/browser/indexed_db/indexed_db_active_blob_registry.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
@@ -25,8 +26,13 @@
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "url/gurl.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace content {
 
+class IndexedDBFactory;
 class LevelDBComparator;
 class LevelDBDatabase;
 struct IndexedDBValue;
@@ -54,29 +60,40 @@ class CONTENT_EXPORT IndexedDBBackingStore
   };
 
   const GURL& origin_url() const { return origin_url_; }
+  IndexedDBFactory* factory() const { return indexed_db_factory_; }
+  base::TaskRunner* task_runner() const { return task_runner_; }
   base::OneShotTimer<IndexedDBBackingStore>* close_timer() {
     return &close_timer_;
   }
+  IndexedDBActiveBlobRegistry* active_blob_registry() {
+    return &active_blob_registry_;
+  }
 
   static scoped_refptr<IndexedDBBackingStore> Open(
-      const GURL& origin_url,
-      const base::FilePath& path_base,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
-      bool* disk_full);
-
-  static scoped_refptr<IndexedDBBackingStore> Open(
+      IndexedDBFactory* indexed_db_factory,
       const GURL& origin_url,
       const base::FilePath& path_base,
       blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full,
-      LevelDBFactory* factory);
-  static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
-      const GURL& origin_url);
+      base::TaskRunner* task_runner);
+
+  static scoped_refptr<IndexedDBBackingStore> Open(
+      IndexedDBFactory* indexed_db_factory,
+      const GURL& origin_url,
+      const base::FilePath& path_base,
+      blink::WebIDBDataLoss* data_loss,
+      std::string* data_loss_message,
+      bool* disk_full,
+      LevelDBFactory* leveldb_factory,
+      base::TaskRunner* task_runner);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
       const GURL& origin_url,
-      LevelDBFactory* factory);
+      base::TaskRunner* task_runner);
+  static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
+      const GURL& origin_url,
+      LevelDBFactory* level_db_factory,
+      base::TaskRunner* task_runner);
 
   // Compact is public for testing.
   virtual void Compact();
@@ -216,6 +233,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
       scoped_ptr<IndexedDBKey>* found_primary_key,
       bool* exists) WARN_UNUSED_RESULT;
 
+  // Public for IndexedDBActiveBlobRegistry::ReleaseBlobRef.
+  virtual void ReportBlobUnused(int64 database_id, int64 blob_key);
+
   class Cursor {
    public:
     virtual ~Cursor();
@@ -322,17 +342,22 @@ class CONTENT_EXPORT IndexedDBBackingStore
   };
 
  protected:
-  IndexedDBBackingStore(const GURL& origin_url,
+  IndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
+                        const GURL& origin_url,
                         scoped_ptr<LevelDBDatabase> db,
-                        scoped_ptr<LevelDBComparator> comparator);
+                        scoped_ptr<LevelDBComparator> comparator,
+                        base::TaskRunner* task_runner);
   virtual ~IndexedDBBackingStore();
   friend class base::RefCounted<IndexedDBBackingStore>;
 
  private:
   static scoped_refptr<IndexedDBBackingStore> Create(
+      IndexedDBFactory* indexed_db_factory,
       const GURL& origin_url,
       scoped_ptr<LevelDBDatabase> db,
-      scoped_ptr<LevelDBComparator> comparator);
+      scoped_ptr<LevelDBComparator> comparator,
+      base::TaskRunner* task_runner);
+
   static bool ReadCorruptionInfo(const base::FilePath& path_base,
                                  const GURL& origin_url,
                                  std::string& message);
@@ -350,6 +375,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                              IndexedDBObjectStoreMetadata::IndexMap* map)
       WARN_UNUSED_RESULT;
 
+  IndexedDBFactory* indexed_db_factory_;
   const GURL origin_url_;
 
   // The origin identifier is a key prefix unique to the origin used in the
@@ -359,9 +385,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // this is redundant but necessary for backwards compatibility; the suffix
   // provides for future flexibility.
   const std::string origin_identifier_;
+  base::TaskRunner* task_runner_;
 
   scoped_ptr<LevelDBDatabase> db_;
   scoped_ptr<LevelDBComparator> comparator_;
+  // Whenever blobs are registered in active_blob_registry_, indexed_db_factory_
+  // will hold a reference to this backing store.
+  IndexedDBActiveBlobRegistry active_blob_registry_;
   base::OneShotTimer<IndexedDBBackingStore> close_timer_;
 };
 

@@ -399,6 +399,7 @@
         'browser/geolocation/wifi_data_provider_unittest_win.cc',
         'browser/gpu/shader_disk_cache_unittest.cc',
         'browser/host_zoom_map_impl_unittest.cc',
+        'browser/indexed_db/indexed_db_active_blob_registry_unittest.cc',
         'browser/indexed_db/indexed_db_backing_store_unittest.cc',
         'browser/indexed_db/indexed_db_cleanup_on_io_error_unittest.cc',
         'browser/indexed_db/indexed_db_database_unittest.cc',

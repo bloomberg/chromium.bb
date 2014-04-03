@@ -662,6 +662,8 @@
     'browser/host_zoom_map_impl.cc',
     'browser/host_zoom_map_impl.h',
     'browser/indexed_db/indexed_db.h',
+    'browser/indexed_db/indexed_db_active_blob_registry.cc',
+    'browser/indexed_db/indexed_db_active_blob_registry.h',
     'browser/indexed_db/indexed_db_backing_store.cc',
     'browser/indexed_db/indexed_db_backing_store.h',
     'browser/indexed_db/indexed_db_blob_info.cc',

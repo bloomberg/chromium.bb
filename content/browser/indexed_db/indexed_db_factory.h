@@ -61,6 +61,10 @@ class CONTENT_EXPORT IndexedDBFactory
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   void ContextDestroyed();
 
+  // Called by the IndexedDBActiveBlobRegistry.
+  virtual void ReportOutstandingBlobs(const GURL& origin_url,
+                                      bool blobs_outstanding);
+
   // Called by an IndexedDBDatabase when it is actually deleted.
   void DatabaseDeleted(const IndexedDBDatabase::Identifier& identifier);
 
@@ -120,6 +124,7 @@ class CONTENT_EXPORT IndexedDBFactory
   IndexedDBBackingStoreMap backing_store_map_;
 
   std::set<scoped_refptr<IndexedDBBackingStore> > session_only_backing_stores_;
+  IndexedDBBackingStoreMap backing_stores_with_active_blobs_;
 };
 
 }  // namespace content

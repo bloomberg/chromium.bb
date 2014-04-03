@@ -21,6 +21,14 @@ using content::LevelDBDatabase;
 using content::LevelDBFactory;
 using content::LevelDBSnapshot;
 
+namespace base {
+class TaskRunner;
+}
+
+namespace content {
+class IndexedDBFactory;
+}
+
 namespace {
 
 class BustedLevelDBDatabase : public LevelDBDatabase {
@@ -62,6 +70,7 @@ class MockLevelDBFactory : public LevelDBFactory {
 };
 
 TEST(IndexedDBIOErrorTest, CleanUpTest) {
+  content::IndexedDBFactory* factory = NULL;
   const GURL origin("http://localhost:81");
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
@@ -71,13 +80,16 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
       blink::WebIDBDataLossNone;
   std::string data_loss_message;
   bool disk_full = false;
+  base::TaskRunner* task_runner = NULL;
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      IndexedDBBackingStore::Open(origin,
+      IndexedDBBackingStore::Open(factory,
+                                  origin,
                                   path,
                                   &data_loss,
                                   &data_loss_message,
                                   &disk_full,
-                                  &mock_leveldb_factory);
+                                  &mock_leveldb_factory,
+                                  task_runner);
 }
 
 // TODO(dgrogan): Remove expect_destroy if we end up not using it again. It is
@@ -114,6 +126,7 @@ class MockErrorLevelDBFactory : public LevelDBFactory {
 };
 
 TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
+  content::IndexedDBFactory* factory = NULL;
   const GURL origin("http://localhost:81");
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
@@ -122,44 +135,53 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
       blink::WebIDBDataLossNone;
   std::string data_loss_reason;
   bool disk_full = false;
+  base::TaskRunner* task_runner = NULL;
 
   MockErrorLevelDBFactory<int> mock_leveldb_factory(ENOSPC, false);
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      IndexedDBBackingStore::Open(origin,
+      IndexedDBBackingStore::Open(factory,
+                                  origin,
                                   path,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
-                                  &mock_leveldb_factory);
+                                  &mock_leveldb_factory,
+                                  task_runner);
 
   MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory2(
       base::File::FILE_ERROR_NO_MEMORY, false);
   scoped_refptr<IndexedDBBackingStore> backing_store2 =
-      IndexedDBBackingStore::Open(origin,
+      IndexedDBBackingStore::Open(factory,
+                                  origin,
                                   path,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
-                                  &mock_leveldb_factory2);
+                                  &mock_leveldb_factory2,
+                                  task_runner);
 
   MockErrorLevelDBFactory<int> mock_leveldb_factory3(EIO, false);
   scoped_refptr<IndexedDBBackingStore> backing_store3 =
-      IndexedDBBackingStore::Open(origin,
+      IndexedDBBackingStore::Open(factory,
+                                  origin,
                                   path,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
-                                  &mock_leveldb_factory3);
+                                  &mock_leveldb_factory3,
+                                  task_runner);
 
   MockErrorLevelDBFactory<base::File::Error> mock_leveldb_factory4(
       base::File::FILE_ERROR_FAILED, false);
   scoped_refptr<IndexedDBBackingStore> backing_store4 =
-      IndexedDBBackingStore::Open(origin,
+      IndexedDBBackingStore::Open(factory,
+                                  origin,
                                   path,
                                   &data_loss,
                                   &data_loss_reason,
                                   &disk_full,
-                                  &mock_leveldb_factory4);
+                                  &mock_leveldb_factory4,
+                                  task_runner);
 }
 
 }  // namespace

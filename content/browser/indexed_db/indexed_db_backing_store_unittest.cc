@@ -23,7 +23,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
   IndexedDBBackingStoreTest() {}
   virtual void SetUp() {
     const GURL origin("http://localhost:81");
-    backing_store_ = IndexedDBBackingStore::OpenInMemory(origin);
+    backing_store_ =
+        IndexedDBBackingStore::OpenInMemory(origin, NULL /* task_runner */);
 
     // useful keys and values during tests
     m_value1 = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());

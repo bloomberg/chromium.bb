@@ -422,13 +422,18 @@ class DefaultLevelDBFactory : public LevelDBFactory {
 };
 
 IndexedDBBackingStore::IndexedDBBackingStore(
+    IndexedDBFactory* indexed_db_factory,
     const GURL& origin_url,
     scoped_ptr<LevelDBDatabase> db,
-    scoped_ptr<LevelDBComparator> comparator)
-    : origin_url_(origin_url),
+    scoped_ptr<LevelDBComparator> comparator,
+    base::TaskRunner* task_runner)
+    : indexed_db_factory_(indexed_db_factory),
+      origin_url_(origin_url),
       origin_identifier_(ComputeOriginIdentifier(origin_url)),
+      task_runner_(task_runner),
       db_(db.Pass()),
-      comparator_(comparator.Pass()) {}
+      comparator_(comparator.Pass()),
+      active_blob_registry_(this) {}
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
   // db_'s destructor uses comparator_. The order of destruction is important.
@@ -470,19 +475,23 @@ enum IndexedDBBackingStoreOpenResult {
 
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
+    IndexedDBFactory* indexed_db_factory,
     const GURL& origin_url,
     const base::FilePath& path_base,
     blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
-    bool* disk_full) {
+    bool* disk_full,
+    base::TaskRunner* task_runner) {
   *data_loss = blink::WebIDBDataLossNone;
   DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::Open(origin_url,
+  return IndexedDBBackingStore::Open(indexed_db_factory,
+                                     origin_url,
                                      path_base,
                                      data_loss,
                                      data_loss_message,
                                      disk_full,
-                                     &leveldb_factory);
+                                     &leveldb_factory,
+                                     task_runner);
 }
 
 static std::string OriginToCustomHistogramSuffix(const GURL& origin_url) {
@@ -628,12 +637,14 @@ bool IndexedDBBackingStore::RecordCorruptionInfo(
 
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
+    IndexedDBFactory* indexed_db_factory,
     const GURL& origin_url,
     const base::FilePath& path_base,
     blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
     bool* is_disk_full,
-    LevelDBFactory* leveldb_factory) {
+    LevelDBFactory* leveldb_factory,
+    base::TaskRunner* task_runner) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
   *data_loss = blink::WebIDBDataLossNone;
@@ -749,20 +760,27 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     return scoped_refptr<IndexedDBBackingStore>();
   }
 
-  return Create(origin_url, db.Pass(), comparator.Pass());
-}
-
-// static
-scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
-    const GURL& origin_url) {
-  DefaultLevelDBFactory leveldb_factory;
-  return IndexedDBBackingStore::OpenInMemory(origin_url, &leveldb_factory);
+  return Create(indexed_db_factory,
+                origin_url,
+                db.Pass(),
+                comparator.Pass(),
+                task_runner);
 }
 
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
     const GURL& origin_url,
-    LevelDBFactory* leveldb_factory) {
+    base::TaskRunner* task_runner) {
+  DefaultLevelDBFactory leveldb_factory;
+  return IndexedDBBackingStore::OpenInMemory(
+      origin_url, &leveldb_factory, task_runner);
+}
+
+// static
+scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
+    const GURL& origin_url,
+    LevelDBFactory* leveldb_factory,
+    base::TaskRunner* task_runner) {
   IDB_TRACE("IndexedDBBackingStore::OpenInMemory");
 
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
@@ -776,18 +794,28 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::OpenInMemory(
   }
   HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS, origin_url);
 
-  return Create(origin_url, db.Pass(), comparator.Pass());
+  return Create(NULL /* indexed_db_factory */,
+                origin_url,
+                db.Pass(),
+                comparator.Pass(),
+                task_runner);
 }
 
 // static
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Create(
+    IndexedDBFactory* indexed_db_factory,
     const GURL& origin_url,
     scoped_ptr<LevelDBDatabase> db,
-    scoped_ptr<LevelDBComparator> comparator) {
+    scoped_ptr<LevelDBComparator> comparator,
+    base::TaskRunner* task_runner) {
   // TODO(jsbell): Handle comparator name changes.
 
   scoped_refptr<IndexedDBBackingStore> backing_store(
-      new IndexedDBBackingStore(origin_url, db.Pass(), comparator.Pass()));
+      new IndexedDBBackingStore(indexed_db_factory,
+                                origin_url,
+                                db.Pass(),
+                                comparator.Pass(),
+                                task_runner));
   if (!SetUpMetadata(backing_store->db_.get(),
                      backing_store->origin_identifier_))
     return scoped_refptr<IndexedDBBackingStore>();
@@ -1977,6 +2005,11 @@ leveldb::Status IndexedDBBackingStore::KeyExistsInIndex(
     return s;
   else
     return InvalidDBKeyStatus();
+}
+
+void IndexedDBBackingStore::ReportBlobUnused(int64 database_id,
+                                             int64 blob_key) {
+  // TODO(ericu)
 }
 
 IndexedDBBackingStore::Cursor::Cursor(
