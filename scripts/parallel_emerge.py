@@ -822,10 +822,10 @@ class EmergeJobState(object):
                retcode=None, fetch_only=False, unpack_only=False):
 
     # The full name of the target we're building (e.g.
-    # chromeos-base/chromeos-0.0.1-r60)
+    # virtual/target-os-1-r60)
     self.target = target
 
-    # The short name of the target we're building (e.g. chromeos-0.0.1-r60)
+    # The short name of the target we're building (e.g. target-os-1-r60)
     self.pkgname = pkgname
 
     # Whether the job is done. (True if the job is done; false otherwise.)
@@ -1363,7 +1363,7 @@ class EmergeQueue(object):
     # to be installed just free up its children and continue.
     # It is possible to reinstall deps of deps, without reinstalling
     # first level deps, like so:
-    # chromeos (merge) -> eselect (nomerge) -> python (merge)
+    # virtual/target-os (merge) -> eselect (nomerge) -> python (merge)
     this_pkg = pkg_state.info
     target = pkg_state.target
     if pkg_state.info is not None:

@@ -1190,7 +1190,7 @@ def GenerateCPEExport(buildroot, board, useflags=None):
     export command.
   """
   cmd = ['cros_extract_deps', '--format=cpe', '--board=%s' % board,
-         'chromeos']
+         'virtual/target-os']
   env = {}
   if useflags:
     env['USE'] = ' '.join(useflags)

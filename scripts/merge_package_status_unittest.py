@@ -53,9 +53,9 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
           mps.COL_OVERLAY: 'chromiumos-overlay',
           COL_VER_x86: '1.2.3',
           COL_VER_arm: '1.2.3-r1',
-          mps.COL_TARGET: 'chromeos'}
+          mps.COL_TARGET: 'virtual/target-os'}
   ROW1_FINAL = dict(ROW1)
-  ROW1_FINAL[COL_CROS_TARGET] = 'chromeos'
+  ROW1_FINAL[COL_CROS_TARGET] = 'virtual/target-os'
   ROW1_FINAL[COL_HOST_TARGET] = ''
   ROW1_FINAL[COL_CMP_ARCH] = 'different'
 
@@ -99,7 +99,7 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
                       self._GetFullRowFor(row2, cols))
 
   def testGetCrosTargetRank(self):
-    cros_rank = mps._GetCrosTargetRank('chromeos')
+    cros_rank = mps._GetCrosTargetRank('virtual/target-os')
     crosdev_rank = mps._GetCrosTargetRank('chromeos-dev')
     crostest_rank = mps._GetCrosTargetRank('chromeos-test')
     other_rank = mps._GetCrosTargetRank('foobar')
@@ -113,8 +113,8 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
 
   def testProcessTargets(self):
     test_in = [
-        ['chromeos', 'chromeos-dev'],
-        ['world', 'chromeos', 'chromeos-dev', 'chromeos-test'],
+        ['virtual/target-os', 'chromeos-dev'],
+        ['world', 'virtual/target-os', 'chromeos-dev', 'chromeos-test'],
         ['world', 'virtual/target-sdk', 'chromeos-dev', 'chromeos-test'],
         ]
     test_out = [
@@ -123,8 +123,8 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
         ['chromeos-test', 'virtual/target-sdk', 'world'],
         ]
     test_rev_out = [
-        ['chromeos'],
-        ['chromeos', 'world'],
+        ['virtual/target-os'],
+        ['virtual/target-os', 'world'],
         ['chromeos-dev', 'virtual/target-sdk', 'world'],
         ]
 
@@ -156,7 +156,7 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
               mps.COL_SLOT: '2',
               mps.COL_OVERLAY: 'chromiumos-overlay',
               self.COL_VER_arm: '3.2.1',
-              mps.COL_TARGET: 'chromeos virtual/target-sdk'}
+              mps.COL_TARGET: 'virtual/target-os virtual/target-sdk'}
     cols = [col for col in self.COLUMNS if col != self.COL_VER_x86]
     table_2 = self._CreateTableWithRows(cols,
                                         [row0_2, row1_2, row2_2])
@@ -176,13 +176,13 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
                   mps.COL_OVERLAY: 'chromiumos-overlay',
                   self.COL_VER_x86: '1.2.3',
                   self.COL_VER_arm: '1.2.3-r1',
-                  mps.COL_TARGET: 'chromeos'}
+                  mps.COL_TARGET: 'virtual/target-os'}
     final_row1 = {mps.COL_PACKAGE: 'dev/newby',
                   mps.COL_SLOT: '2',
                   mps.COL_OVERLAY: 'chromiumos-overlay',
                   self.COL_VER_x86: '',
                   self.COL_VER_arm: '3.2.1',
-                  mps.COL_TARGET: 'chromeos virtual/target-sdk'}
+                  mps.COL_TARGET: 'virtual/target-os virtual/target-sdk'}
     final_row2 = {mps.COL_PACKAGE: 'lib/foo',
                   mps.COL_SLOT: '0',
                   mps.COL_OVERLAY: 'portage',

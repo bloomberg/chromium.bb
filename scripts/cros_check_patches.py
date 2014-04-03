@@ -158,7 +158,7 @@ def Usage():
   print """Usage:
 cros_check_patches [--board=BOARD] [emerge args] package overlay-dir config.json
 
-Given a package name (e.g. 'chromeos') and an overlay directory
+Given a package name (e.g. 'virtual/target-os') and an overlay directory
 (e.g. /usr/local/portage/chromiumos), outputs a list of patches
 applied by that overlay, in the course of building the specified
 package and all its dependencies. Additional configuration options are

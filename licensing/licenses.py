@@ -21,8 +21,8 @@ Recommended build:
   sudo rm -rf /build/$board
   sudo install -o $(whoami) -d /build/x86-alex//var/lib/licenses/
   cd ~/trunk/src/scripts
-  # If you wonder why we need to build
-  # chromeos just to run emerge -p -v chromeos-base/chromeos on it, we don't.
+  # If you wonder why we need to build Chromium OS just to run
+  # `emerge -p -v virtual/target-os` on it, we don't.
   # However, later we run ebuild unpack, and this will apply patches and run
   # configure. Configure will fail due to aclocal macros missing in
   # /build/x86-alex/usr/share/aclocal (those are generated during build).
@@ -1084,7 +1084,7 @@ def ListInstalledPackages(board, all_packages=False):
   # all packages.
   # If it's set to False, it will only generate a licensing file that contains
   # packages used for a release build (as determined by the dependencies for
-  # chromeos-base/chromeos).
+  # virtual/target-os).
 
   if all_packages:
     # The following returns all packages that were part of the build tree
@@ -1101,7 +1101,7 @@ def ListInstalledPackages(board, all_packages=False):
     # Note that it also contains packages that are in the build as
     # defined by build_packages but not part of the image we ship.
     args = ["emerge-%s" % board, "--with-bdeps=y", "--usepkgonly",
-            "--emptytree", "--pretend", "--color=n", "chromeos-base/chromeos"]
+            "--emptytree", "--pretend", "--color=n", "virtual/target-os"]
     emerge = cros_build_lib.RunCommand(args, print_cmd=debug,
                                        redirect_stdout=True).output.splitlines()
     # Another option which we've decided not to use, is bdeps=n.  This outputs

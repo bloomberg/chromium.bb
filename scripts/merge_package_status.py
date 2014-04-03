@@ -24,13 +24,15 @@ ID_COLS = [COL_PACKAGE, COL_SLOT]
 oper = operation.Operation('merge_package_status')
 
 # A bit of hard-coding with knowledge of how cros targets work.
-CHROMEOS_TARGET_ORDER = ['chromeos', 'chromeos-dev', 'chromeos-test']
+CHROMEOS_TARGET_ORDER = ['virtual/target-os', 'chromeos-dev', 'chromeos-test']
+
 def _GetCrosTargetRank(target):
-  """Hard-coded ranking of known/expected chromeos root targets for sorting.
+  """Hard-coded ranking of known/expected OS root targets for sorting.
 
   The lower the ranking, the earlier in the target list it falls by
   convention.  In other words, in the typical target combination
-  "chromeos chromeos-dev", "chromeos" has a lower ranking than "chromeos-dev".
+  "virtual/target-os chromeos-dev", "virtual/target-os" has a lower
+  ranking than "chromeos-dev".
 
   All valid rankings are greater than zero.
 
@@ -46,12 +48,12 @@ def ProcessTargets(targets, reverse_cros=False):
   """Process a list of |targets| to smaller, sorted list.
 
   For example:
-  chromeos chromeos-dev -> chromeos-dev
-  chromeos chromeos-dev world -> chromeos-dev world
+  virtual/target-os chromeos-dev -> chromeos-dev
+  virtual/target-os chromeos-dev world -> chromeos-dev world
   world virtual/target-sdk -> virtual/target-sdk world
 
-  The one chromeos target always comes back first, with targets
-  otherwise sorted alphabetically.  The chromeos target that is
+  The one virtual/target-os target always comes back first, with targets
+  otherwise sorted alphabetically.  The virtual/target-os target that is
   kept will be the one with the highest 'ranking', as decided
   by _GetCrosTargetRank.  To reverse the ranking sense, specify
   |reverse_cros| as True.
