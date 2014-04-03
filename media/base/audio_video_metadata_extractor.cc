@@ -195,12 +195,21 @@ int AudioVideoMetadataExtractor::track() const {
   return track_;
 }
 
+const std::map<std::string, std::string>&
+AudioVideoMetadataExtractor::raw_tags() const {
+  DCHECK(extracted_);
+  return raw_tags_;
+}
+
 void AudioVideoMetadataExtractor::ExtractDictionary(AVDictionary* metadata) {
   if (!metadata)
     return;
 
   AVDictionaryEntry* tag = NULL;
   while ((tag = av_dict_get(metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+    if (raw_tags_.find(tag->key) == raw_tags_.end())
+      raw_tags_[tag->key] = tag->value;
+
     if (ExtractInt(tag, "rotate", &rotation_)) continue;
     if (ExtractString(tag, "album", &album_)) continue;
     if (ExtractString(tag, "artist", &artist_)) continue;

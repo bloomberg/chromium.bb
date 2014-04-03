@@ -5,6 +5,7 @@
 #ifndef MEDIA_BASE_AUDIO_VIDEO_METADATA_EXTRACTOR_H_
 #define MEDIA_BASE_AUDIO_VIDEO_METADATA_EXTRACTOR_H_
 
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -51,6 +52,8 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   const std::string& title() const;
   int track() const;
 
+  const std::map<std::string, std::string>& raw_tags() const;
+
  private:
   void ExtractDictionary(AVDictionary* metadata);
 
@@ -73,6 +76,8 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   int rotation_;
   std::string title_;
   int track_;
+
+  std::map<std::string, std::string> raw_tags_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioVideoMetadataExtractor);
 };

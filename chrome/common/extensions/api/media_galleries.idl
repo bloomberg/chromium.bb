@@ -120,6 +120,10 @@ namespace mediaGalleries {
     DOMString? language;
     DOMString? title;
     long? track;
+
+    // A dictionary of all the metadata in the media file. This metadata is in
+    // string form, and neither the key nor value is normalized.
+    object rawTags;
   };
 
   callback MediaMetadataCallback = void (MediaMetadata metadata);

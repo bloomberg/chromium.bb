@@ -61,6 +61,12 @@ scoped_ptr<MediaMetadataParser::MediaMetadata> ParseAudioVideoMetadata(
   SetStringScopedPtr(extractor.title(), &metadata->title);
   SetIntScopedPtr(extractor.track(), &metadata->track);
 
+  for (std::map<std::string, std::string>::const_iterator it =
+           extractor.raw_tags().begin();
+       it != extractor.raw_tags().end(); ++it) {
+    metadata->raw_tags.additional_properties.SetString(it->first, it->second);
+  }
+
   return metadata.Pass();
 }
 

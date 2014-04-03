@@ -51,6 +51,15 @@ function MP3TagsTest() {
     chrome.test.assertEq("OK Computer", metadata.album);
     chrome.test.assertEq(1, metadata.track);
     chrome.test.assertEq("Alternative", metadata.genre);
+
+    chrome.test.assertEq("OK Computer", metadata.rawTags["album"]);
+    chrome.test.assertEq("Radiohead", metadata.rawTags["artist"]);
+    chrome.test.assertEq("1997", metadata.rawTags["date"]);
+    chrome.test.assertEq("Lavf54.4.100", metadata.rawTags["encoder"]);
+    chrome.test.assertEq("Alternative", metadata.rawTags["genre"]);
+    chrome.test.assertEq("Airbag", metadata.rawTags["title"]);
+    chrome.test.assertEq("1", metadata.rawTags["track"]);
+
     chrome.test.succeed();
   }
 
@@ -61,6 +70,16 @@ function RotatedVideoTest() {
   function verifyMetadata(metadata) {
     chrome.test.assertEq("video/mp4", metadata.mimeType);
     chrome.test.assertEq(90, metadata.rotation);
+
+    chrome.test.assertEq("isom3gp4", metadata.rawTags["compatible_brands"]);
+    chrome.test.assertEq("2014-02-11 00:39:25",
+                         metadata.rawTags["creation_time"]);
+    chrome.test.assertEq("VideoHandle", metadata.rawTags["handler_name"]);
+    chrome.test.assertEq("eng", metadata.rawTags["language"]);
+    chrome.test.assertEq("isom", metadata.rawTags["major_brand"]);
+    chrome.test.assertEq("0", metadata.rawTags["minor_version"]);
+    chrome.test.assertEq("90", metadata.rawTags["rotate"]);
+
     chrome.test.succeed();
   }
 
