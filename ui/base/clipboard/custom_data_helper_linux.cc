@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 
 namespace ui {
 
 // TODO(dcheng): This name is temporary. See crbug.com/106449
+#if defined(USE_AURA) || defined(TOOLKIT_GTK)
 const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
+#endif
 
 }  // namespace ui
