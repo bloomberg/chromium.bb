@@ -13,6 +13,7 @@
 #include "content/test/test_web_contents.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace content {
 
@@ -30,12 +31,14 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
   }
 
   void SetDummyScreenshotOnNavEntry(NavigationEntry* entry) {
-    const unsigned char* raw_data =
-        reinterpret_cast<const unsigned char*>("garbage");
-    const int length = 5;
-    std::vector<unsigned char> data_vector(raw_data, raw_data+length);
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+    bitmap.allocPixels();
+    bitmap.eraseColor(SK_ColorWHITE);
+    std::vector<unsigned char> png_data;
+    gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data);
     scoped_refptr<base::RefCountedBytes> png_bytes =
-        base::RefCountedBytes::TakeVector(&data_vector);
+        base::RefCountedBytes::TakeVector(&png_data);
     NavigationEntryImpl* entry_impl =
         NavigationEntryImpl::FromNavigationEntry(entry);
     entry_impl->SetScreenshotPNGData(png_bytes);
@@ -128,8 +131,9 @@ TEST_F(OverscrollNavigationOverlayTest, FirstVisuallyNonEmptyPaint_NoImage) {
   EXPECT_TRUE(GetOverlay()->received_paint_update_);
   EXPECT_FALSE(GetOverlay()->loading_complete_);
 
-  // The paint update will hide the overlay, although the page hasn't completely
-  // loaded yet. This is because the image-delegate doesn't have an image set.
+  EXPECT_TRUE(GetOverlay()->received_paint_update_);
+  EXPECT_FALSE(GetOverlay()->loading_complete_);
+  // The paint update will hide the overlay.
   EXPECT_FALSE(GetOverlay()->web_contents());
 }
 
@@ -139,10 +143,7 @@ TEST_F(OverscrollNavigationOverlayTest, FirstVisuallyNonEmptyPaint_WithImage) {
   ReceivePaintUpdate();
   EXPECT_TRUE(GetOverlay()->received_paint_update_);
   EXPECT_FALSE(GetOverlay()->loading_complete_);
-  EXPECT_TRUE(GetOverlay()->web_contents());
-
-  contents()->TestSetIsLoading(false);
-  EXPECT_TRUE(GetOverlay()->loading_complete_);
+  // The paint update will hide the overlay.
   EXPECT_FALSE(GetOverlay()->web_contents());
 }
 
@@ -178,13 +179,9 @@ TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_PaintUpdate) {
   GetOverlay()->image_delegate_->SetImage(CreateDummyScreenshot());
   SetDummyScreenshotOnNavEntry(controller().GetEntryAtOffset(-1));
 
-  ReceivePaintUpdate();
-  EXPECT_TRUE(GetOverlay()->received_paint_update_);
-
   PerformBackNavigationViaSliderCallbacks();
   // Screenshot was set on NavEntry at offset -1.
   EXPECT_TRUE(GetOverlay()->image_delegate_->has_image());
-  // Navigation was started, so the paint update flag should be reset.
   EXPECT_FALSE(GetOverlay()->received_paint_update_);
 
   ReceivePaintUpdate();
@@ -198,9 +195,6 @@ TEST_F(OverscrollNavigationOverlayTest, MultiNavigation_PaintUpdate) {
   // should now be updated.
   EXPECT_TRUE(GetOverlay()->received_paint_update_);
 
-  EXPECT_TRUE(GetOverlay()->web_contents());
-  contents()->TestSetIsLoading(true);
-  contents()->TestSetIsLoading(false);
   EXPECT_FALSE(GetOverlay()->web_contents());
 }
 

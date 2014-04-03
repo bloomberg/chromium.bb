@@ -156,13 +156,7 @@ void OverscrollNavigationOverlay::SetupForTesting() {
 }
 
 void OverscrollNavigationOverlay::StopObservingIfDone() {
-  // If there is a screenshot displayed in the overlay window, then wait for
-  // the navigated page to complete loading and some paint update before
-  // hiding the overlay.
-  // If there is no screenshot in the overlay window, then hide this view
-  // as soon as there is any new painting notification.
-  if ((need_paint_update_ && !received_paint_update_) ||
-      (image_delegate_->has_image() && !loading_complete_)) {
+  if ((need_paint_update_ && !received_paint_update_)) {
     return;
   }
 
@@ -313,8 +307,7 @@ void OverscrollNavigationOverlay::DocumentOnLoadCompletedInMainFrame(
   // pending entry has been created.
   int committed_entry_id =
       web_contents_->GetController().GetLastCommittedEntry()->GetUniqueID();
-  // For the purposes of dismissing the overlay - consider the loading completed
-  // once the main frame has loaded.
+  // Consider the loading completed once the main frame has loaded.
   if (committed_entry_id == pending_entry_id_ || !pending_entry_id_) {
     loading_complete_ = true;
     StopObservingIfDone();
@@ -337,7 +330,7 @@ void OverscrollNavigationOverlay::DidStopLoading(RenderViewHost* host) {
       web_contents_->GetController().GetLastCommittedEntry()->GetUniqueID();
   if (committed_entry_id == pending_entry_id_ || !pending_entry_id_) {
     loading_complete_ = true;
-    if (!received_paint_update_) {
+    if (!received_paint_update_ && need_paint_update_) {
       // Force a repaint after the page is loaded.
       RenderViewHostImpl* view = static_cast<RenderViewHostImpl*>(host);
       view->ScheduleComposite();
