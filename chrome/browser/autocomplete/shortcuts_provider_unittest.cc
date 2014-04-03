@@ -176,6 +176,16 @@ struct TestShortcutInfo {
     "http://duplicate.com/", "Duplicate", "0,1", "Duplicate", "0,1",
     content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "", 1,
     100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F9", "notrailing.com/",
+    "http://notrailing.com", "http://notrailing.com/", "No Trailing Slash",
+    "0,1", "No Trailing Slash on fill_into_edit", "0,1",
+    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "",
+    1, 100 },
+  { "BD85DBA2-8C29-49F9-84AE-48E1E90880FA", "http:///foo.com",
+    "http://foo.com", "http://foo.com/", "Foo - Typo in Input",
+    "0,1", "Foo - Typo in Input Corrected in fill_into_edit", "0,1",
+    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "",
+    1, 100 },
 };
 
 }  // namespace
@@ -483,6 +493,24 @@ TEST_F(ShortcutsProviderTest, TrickySingleMatch) {
   // be used because |allowed_to_be_default_match| will be false.
   RunTest(text, true, expected_urls, expected_url,
           ASCIIToUTF16("ace/long-url-with-space.html"));
+
+  // Test when the user input has a trailing slash but fill_into_edit does
+  // not.  This should still be allowed to be default.
+  text = ASCIIToUTF16("notrailing.com/");
+  expected_url = "http://notrailing.com/";
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, true, expected_urls, expected_url, base::string16());
+
+  // Test when the user input has a typo that can be fixed up for matching
+  // fill_into_edit.  This should still be allowed to be default.
+  text = ASCIIToUTF16("http:///foo.com");
+  expected_url = "http://foo.com/";
+  expected_urls.clear();
+  expected_urls.push_back(
+      ExpectedURLAndAllowedToBeDefault(expected_url, true));
+  RunTest(text, true, expected_urls, expected_url, base::string16());
 }
 
 TEST_F(ShortcutsProviderTest, MultiMatch) {
