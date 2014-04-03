@@ -132,6 +132,9 @@
       'xcode_settings': {
         'WARNING_CFLAGS!': ['-Wglobal-constructors'],
       },
+      'variables': {
+        'chromium_code': 1,
+      },
     },
   }
   ],
