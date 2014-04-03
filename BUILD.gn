@@ -25,7 +25,7 @@ group("root") {
     #"//components/translate:translate_core_browser",
     #"//components/translate:translate_core_common",
     #"//crypto",
-    #"//device/usb:device_usb",
+    "//device/usb",
     "//ipc",
     #"//net",
     #"//net/third_party/nss:ssl",
