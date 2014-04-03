@@ -3171,10 +3171,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollAlways) {
   EXPECT_EQ(gfx::Vector2dF(0, 10), host_impl_->accumulated_root_overscroll());
 }
 
-TEST_F(LayerTreeHostImplTest, UnnecessaryGlowEffectCallsWhileScrollingUp) {
-  // Edge glow effect should be applicable only upon reaching Edges
-  // of the content. unnecessary glow effect calls shouldn't be
-  // called while scrolling up without reaching the edge of the content.
+TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
   gfx::Size surface_size(100, 100);
   gfx::Size content_size(200, 200);
   scoped_ptr<LayerImpl> root_clip =
@@ -3195,6 +3192,9 @@ TEST_F(LayerTreeHostImplTest, UnnecessaryGlowEffectCallsWhileScrollingUp) {
   host_impl_->active_tree()->DidBecomeActive();
   DrawFrame();
   {
+    // Edge glow effect should be applicable only upon reaching Edges
+    // of the content. unnecessary glow effect calls shouldn't be
+    // called while scrolling up without reaching the edge of the content.
     EXPECT_EQ(InputHandler::ScrollStarted,
               host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::Wheel));
     host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, 100));
@@ -3202,6 +3202,20 @@ TEST_F(LayerTreeHostImplTest, UnnecessaryGlowEffectCallsWhileScrollingUp) {
               host_impl_->accumulated_root_overscroll().ToString());
     host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, -2.30f));
     EXPECT_EQ(gfx::Vector2dF().ToString(),
+              host_impl_->accumulated_root_overscroll().ToString());
+    host_impl_->ScrollEnd();
+    // unusedrootDelta should be subtracted from applied delta so that
+    // unwanted glow effect calls are not called.
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->ScrollBegin(gfx::Point(0, 0),
+                                      InputHandler::NonBubblingGesture));
+    EXPECT_EQ(InputHandler::ScrollStarted, host_impl_->FlingScrollBegin());
+    host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0, 20));
+    EXPECT_EQ(gfx::Vector2dF(0.000000f, 17.699997f).ToString(),
+              host_impl_->accumulated_root_overscroll().ToString());
+
+    host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(0.02f, -0.01f));
+    EXPECT_EQ(gfx::Vector2dF(0.000000f, 17.699997f).ToString(),
               host_impl_->accumulated_root_overscroll().ToString());
     host_impl_->ScrollEnd();
   }

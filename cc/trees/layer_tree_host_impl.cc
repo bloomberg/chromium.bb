@@ -2269,6 +2269,15 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
       applied_delta = ScrollLayerWithLocalDelta(layer_impl, pending_delta);
     }
 
+    if (layer_impl == InnerViewportScrollLayer()) {
+      unused_root_delta.Subtract(applied_delta);
+      const float kOverscrollEpsilon = 0.01f;
+      if (std::abs(unused_root_delta.x()) < kOverscrollEpsilon)
+        unused_root_delta.set_x(0.0f);
+      if (std::abs(unused_root_delta.y()) < kOverscrollEpsilon)
+        unused_root_delta.set_y(0.0f);
+    }
+
     // If the layer wasn't able to move, try the next one in the hierarchy.
     float move_threshold = 0.1f;
     bool did_move_layer_x = std::abs(applied_delta.x()) > move_threshold;
@@ -2282,15 +2291,6 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
         continue;
       else
         break;
-    }
-
-    if (layer_impl == InnerViewportScrollLayer()) {
-      unused_root_delta.Subtract(applied_delta);
-      const float kOverscrollEpsilon = 0.01f;
-      if (std::abs(unused_root_delta.x()) < kOverscrollEpsilon)
-        unused_root_delta.set_x(0.0f);
-      if (std::abs(unused_root_delta.y()) < kOverscrollEpsilon)
-        unused_root_delta.set_y(0.0f);
     }
 
     did_lock_scrolling_layer_ = true;
