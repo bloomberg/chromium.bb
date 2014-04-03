@@ -203,8 +203,6 @@ class CompositingIOSurfaceMac {
   void SwitchToContextOnNewWindow(NSView* view,
                                   int window_number);
 
-  bool IsVendorIntel();
-
   // Returns true if IOSurface is ready to render. False otherwise.
   bool MapIOSurfaceToTextureWithContextCurrent(
       const scoped_refptr<CompositingIOSurfaceContext>& current_context,

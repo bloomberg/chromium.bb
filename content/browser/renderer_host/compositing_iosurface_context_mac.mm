@@ -179,10 +179,7 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
       cgl_context_(cgl_context),
       is_vsync_disabled_(is_vsync_disabled),
       shader_program_cache_(shader_program_cache.Pass()),
-      poisoned_(false),
-      initialized_is_intel_(false),
-      is_intel_(false),
-      screen_(0) {
+      poisoned_(false) {
   DCHECK(window_map()->find(window_number_) == window_map()->end());
   window_map()->insert(std::make_pair(window_number_, this));
 }
@@ -207,20 +204,6 @@ NSOpenGLContext* CompositingIOSurfaceContext::nsgl_context() const {
   // This should not be called from any CoreAnimation paths.
   CHECK(GetCoreAnimationStatus() == CORE_ANIMATION_DISABLED);
   return nsgl_context_;
-}
-
-bool CompositingIOSurfaceContext::IsVendorIntel() {
-  GLint screen;
-  CGLGetVirtualScreen(cgl_context(), &screen);
-  if (screen != screen_)
-    initialized_is_intel_ = false;
-  screen_ = screen;
-  if (!initialized_is_intel_) {
-    is_intel_ = strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)),
-                      "Intel") != NULL;
-    initialized_is_intel_ = true;
-  }
-  return is_intel_;
 }
 
 // static

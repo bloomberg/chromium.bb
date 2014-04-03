@@ -43,9 +43,6 @@ const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
 // Sets the total amount of memory that may be allocated for GPU resources
 const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
 
-// Force the synchronous copy path in compositing_iosurface_mac.
-const char kForceSynchronousGLReadPixels[]  = "force-synchronous-glreadpixels";
-
 // Pass a set of GpuDriverBugWorkaroundType ids, seperated by ','.
 const char kGpuDriverBugWorkarounds[] = "gpu-driver-bug-workarounds";
 
@@ -71,7 +68,6 @@ const char* kGpuSwitches[] = {
   kDisableGpuProgramCache,
   kEnforceGLMinimums,
   kForceGpuMemAvailableMb,
-  kForceSynchronousGLReadPixels,
   kGpuDriverBugWorkarounds,
   kGpuProgramCacheSizeKb,
   kDisableGpuShaderDiskCache,

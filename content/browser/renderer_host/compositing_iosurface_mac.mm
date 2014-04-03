@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
@@ -22,7 +21,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/common/content_constants_internal.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -369,7 +367,7 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   bool workaround_needed =
       GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
           gpu::FORCE_GL_FINISH_AFTER_COMPOSITING);
-  // Note that this is not necessary when flushing the drawable in Mavericks
+  // Note that this is not necessary when not flushing the drawable in Mavericks
   // or later if we are in one of the two following situations:
   // - we are drawing an underlay, and we will call glFinish() when drawing
   //   the overlay.
@@ -568,17 +566,12 @@ void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
 }
 
 bool CompositingIOSurfaceMac::IsAsynchronousReadbackSupported() {
-  const bool forced_synchronous = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kForceSynchronousGLReadPixels);
-  if (forced_synchronous)
-    return false;
   if (!HasAppleFenceExtension() && HasPixelBufferObjectExtension())
     return false;
-  // Using PBO crashes or generates invalid output for machines using
-  // Snow Leopard (10.6).
-  // See bug crbug.com/152225 and crbug.com/348256.
-  if (!base::mac::IsOSMountainLionOrLater())
+  if (GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
+          gpu::DISABLE_ASYNC_READPIXELS)) {
     return false;
+  }
   return true;
 }
 

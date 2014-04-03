@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.9",
+  "version": "4.10",
   "entries": [
     {
       "id": 1,
@@ -356,7 +356,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     {
       "id": 25,
       "cr_bugs": [152225],
-      "description": "PBO + Readpixels don't work on Intel GPUs on OS X 10.7",
+      "description": "PBO + Readpixels don't work on OS X 10.7",
       "os": {
         "type": "macosx",
         "version": {
@@ -364,7 +364,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
           "value": "10.8"
         }
       },
-      "vendor_id": "0x8086",
       "features": [
         "disable_async_readpixels"
       ]

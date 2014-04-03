@@ -58,8 +58,6 @@ class CompositingIOSurfaceContext
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
   int window_number() const { return window_number_; }
 
-  bool IsVendorIntel();
-
  private:
   friend class base::RefCounted<CompositingIOSurfaceContext>;
 
@@ -81,10 +79,6 @@ class CompositingIOSurfaceContext
   bool is_vsync_disabled_;
   scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
   bool poisoned_;
-
-  bool initialized_is_intel_;
-  bool is_intel_;
-  GLint screen_;
 
   // The global map from window number and window ordering to
   // context data.

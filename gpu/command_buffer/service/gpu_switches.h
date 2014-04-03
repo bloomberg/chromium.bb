@@ -22,7 +22,6 @@ GPU_EXPORT extern const char kEnableGPUServiceLoggingGPU[];
 GPU_EXPORT extern const char kDisableGpuProgramCache[];
 GPU_EXPORT extern const char kEnforceGLMinimums[];
 GPU_EXPORT extern const char kForceGpuMemAvailableMb[];
-GPU_EXPORT extern const char kForceSynchronousGLReadPixels[];
 GPU_EXPORT extern const char kGpuDriverBugWorkarounds[];
 GPU_EXPORT extern const char kGpuProgramCacheSizeKb[];
 GPU_EXPORT extern const char kDisableGpuShaderDiskCache[];
