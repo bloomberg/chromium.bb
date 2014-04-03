@@ -188,7 +188,7 @@
           'dependencies': [
             '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:pnacl_irt_shim_aot',
           ],
-         'actions': [
+          'actions': [
             {
               'action_name': 'Generate PNACL NEWLIB NMF',
               # NOTE: create_nmf must be first, it is the script python executes
@@ -206,6 +206,13 @@
               ],
             },
           ],
+        }],
+        ['disable_pnacl==0 and target_arch=="ia32" and OS=="linux"', {
+          # In addition to above configuration, build x86-32-nonsfi .nexe file
+          # by translating from .pexe binary, for non-SFI mode PPAPI testing.
+          'variables': {
+            'enable_x86_32_nonsfi': 1,
+          },
         }],
         ['disable_pnacl==0 and target_arch=="arm"', {
           'variables': {

@@ -30,6 +30,7 @@
             'tests/test_case.html.mock-http-headers',
             'tests/test_page.css',
             'tests/ppapi_nacl_tests_newlib.nmf',
+            'tests/ppapi_nacl_tests_pnacl_nonsfi.nmf',
           ],
         },
         {

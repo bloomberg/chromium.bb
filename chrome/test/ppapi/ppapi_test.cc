@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -444,6 +445,19 @@ std::string PPAPINaClPNaClTest::BuildQuery(const std::string& base,
                                            const std::string& test_case) {
   return base::StringPrintf("%smode=nacl_pnacl&testcase=%s", base.c_str(),
                             test_case.c_str());
+}
+
+void PPAPINaClPNaClNonSfiTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  PPAPINaClTest::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
+}
+
+std::string PPAPINaClPNaClNonSfiTest::BuildQuery(
+    const std::string& base,
+    const std::string& test_case) {
+  return base::StringPrintf("%smode=nacl_pnacl_nonsfi&testcase=%s",
+                            base.c_str(), test_case.c_str());
 }
 
 void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(

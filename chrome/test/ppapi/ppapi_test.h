@@ -175,6 +175,15 @@ class PPAPINaClPNaClTest : public PPAPINaClTest {
                                  const std::string& test_case) OVERRIDE;
 };
 
+// Test Non-SFI Mode, using PNaCl toolchain to produce nexes.
+class PPAPINaClPNaClNonSfiTest : public PPAPINaClTest {
+ public:
+  virtual void SetUpCommandLine(base::CommandLine* command_line);
+
+  virtual std::string BuildQuery(const std::string& base,
+                                 const std::string& test_case) OVERRIDE;
+};
+
 class PPAPIPrivateNaClPNaClTest : public PPAPINaClPNaClTest {
  protected:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;

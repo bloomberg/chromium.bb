@@ -1,0 +1,5 @@
+{
+  "program": {
+    "x86-32-nonsfi": {"url": "ppapi_nacl_tests_pnacl_newlib_x32_nonsfi.nexe"}
+  }
+}

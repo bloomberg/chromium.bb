@@ -216,6 +216,16 @@ TEST_PPAPI_IN_PROCESS(MAYBE_Core)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_Core)
 TEST_PPAPI_NACL(MAYBE_Core)
 
+// The NonSFI test is currently available only on linux-x86-32 architecture.
+// Currently PPAPINaClPNaClNonSfiTest is under development. So only Core
+// is enabled on it.
+// TODO(hidehiko): Enable other tests, too.
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest, Core) {
+  RunTestViaHTTP(STRIP_PREFIXES(Core));
+}
+#endif
+
 TEST_PPAPI_IN_PROCESS(TraceEvent)
 TEST_PPAPI_OUT_OF_PROCESS(TraceEvent)
 TEST_PPAPI_NACL(TraceEvent)
