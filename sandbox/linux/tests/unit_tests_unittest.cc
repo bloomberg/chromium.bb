@@ -11,7 +11,9 @@ namespace sandbox {
 
 namespace {
 
-const int kExpectedExitCode = 42;
+// Let's not use any of the "magic" values used internally in unit_tests.cc,
+// such as kExpectedValue.
+const int kExpectedExitCode = 100;
 
 SANDBOX_DEATH_TEST(UnitTests,
                    DeathExitCode,
