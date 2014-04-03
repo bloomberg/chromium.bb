@@ -94,6 +94,19 @@ public:
                && m_topLeft == o.m_topLeft && m_topRight == o.m_topRight && m_bottomLeft == o.m_bottomLeft && m_bottomRight == o.m_bottomRight;
     }
 
+    bool visuallyEqual(const BorderData& o) const
+    {
+        return m_left.visuallyEqual(o.m_left)
+            && m_right.visuallyEqual(o.m_right)
+            && m_top.visuallyEqual(o.m_top)
+            && m_bottom.visuallyEqual(o.m_bottom)
+            && m_image == o.m_image
+            && m_topLeft == o.m_topLeft
+            && m_topRight == o.m_topRight
+            && m_bottomLeft == o.m_bottomLeft
+            && m_bottomRight == o.m_bottomRight;
+    }
+
     bool operator!=(const BorderData& o) const
     {
         return !(*this == o);

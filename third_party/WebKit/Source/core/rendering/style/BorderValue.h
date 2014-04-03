@@ -63,6 +63,16 @@ public:
         return m_width == o.m_width && m_style == o.m_style && m_color == o.m_color && m_colorIsCurrentColor == o.m_colorIsCurrentColor;
     }
 
+    // The default width is 3px, but if the style is none we compute a value of 0 (in RenderStyle itself)
+    bool visuallyEqual(const BorderValue& o) const
+    {
+        if (m_style == BNONE && o.m_style == BNONE)
+            return true;
+        if (m_style == BHIDDEN && o.m_style == BHIDDEN)
+            return true;
+        return *this == o;
+    }
+
     bool operator!=(const BorderValue& o) const
     {
         return !(*this == o);

@@ -622,8 +622,8 @@ StyleDifference RenderStyle::repaintOnlyDiff(const RenderStyle& other, unsigned&
     if (inherited_flags._visibility != other.inherited_flags._visibility
         || inherited_flags.m_printColorAdjust != other.inherited_flags.m_printColorAdjust
         || inherited_flags._insideLink != other.inherited_flags._insideLink
-        || surround->border != other.surround->border
-        || *m_background.get() != *other.m_background.get()
+        || !surround->border.visuallyEqual(other.surround->border)
+        || !m_background->visuallyEqual(*other.m_background)
         || rareInheritedData->userModify != other.rareInheritedData->userModify
         || rareInheritedData->userSelect != other.rareInheritedData->userSelect
         || rareNonInheritedData->userDrag != other.rareNonInheritedData->userDrag
