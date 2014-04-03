@@ -176,6 +176,7 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
 
   size_t num_nt_prpsinfo = 0;
   size_t num_nt_prstatus = 0;
+  size_t num_pr_fpvalid = 0;
 #if defined(__i386__) || defined(__x86_64__)
   size_t num_nt_fpregset = 0;
 #endif
@@ -207,6 +208,8 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
           EXPECT_EQ(kCrashSignal, status->pr_info.si_signo);
         }
         ++num_nt_prstatus;
+        if (status->pr_fpvalid)
+          ++num_pr_fpvalid;
         break;
       }
 #if defined(__i386__) || defined(__x86_64__)
@@ -235,9 +238,9 @@ TEST(ElfCoreDumpTest, ValidCoreFile) {
   EXPECT_EQ(1U, num_nt_prpsinfo);
   EXPECT_EQ(kNumOfThreads, num_nt_prstatus);
 #if defined(__i386__) || defined(__x86_64__)
-  EXPECT_EQ(kNumOfThreads, num_nt_fpregset);
+  EXPECT_EQ(num_pr_fpvalid, num_nt_fpregset);
 #endif
 #if defined(__i386__)
-  EXPECT_EQ(kNumOfThreads, num_nt_prxfpreg);
+  EXPECT_EQ(num_pr_fpvalid, num_nt_prxfpreg);
 #endif
 }
