@@ -1253,12 +1253,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              (params_.media_flags &
               WebContextMenuData::MediaInError) == 0;
 
-    // Media controls can be toggled only for video player. If we toggle
-    // controls for audio then the player disappears, and there is no way to
-    // return it back.
     case IDC_CONTENT_CONTEXT_CONTROLS:
       return (params_.media_flags &
-              WebContextMenuData::MediaHasVideo) != 0;
+              WebContextMenuData::MediaCanToggleControls) != 0;
 
     case IDC_CONTENT_CONTEXT_ROTATECW:
     case IDC_CONTENT_CONTEXT_ROTATECCW:
