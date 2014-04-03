@@ -307,11 +307,12 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     registration_ = new ServiceWorkerRegistration(
         embedded_test_server()->GetURL("/*"),
         embedded_test_server()->GetURL(worker_url),
-        next_registration_id_++);
+        next_registration_id_++,
+        wrapper()->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_,
-        wrapper()->context()->embedded_worker_registry(),
-        version_id);
+        version_id,
+        wrapper()->context()->AsWeakPtr());
     AssociateRendererProcessToWorker(version_->embedded_worker());
   }
 

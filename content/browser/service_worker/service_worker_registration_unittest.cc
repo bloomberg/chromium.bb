@@ -4,10 +4,12 @@
 
 #include "content/browser/service_worker/service_worker_registration.h"
 
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -18,9 +20,14 @@ class ServiceWorkerRegistrationTest : public testing::Test {
   ServiceWorkerRegistrationTest()
       : io_thread_(BrowserThread::IO, &message_loop_) {}
 
-  virtual void SetUp() OVERRIDE {}
+  virtual void SetUp() OVERRIDE {
+    context_.reset(new ServiceWorkerContextCore(base::FilePath(), NULL));
+    context_ptr_ = context_->AsWeakPtr();
+  }
 
  protected:
+  scoped_ptr<ServiceWorkerContextCore> context_;
+  base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
   base::MessageLoopForIO message_loop_;
   BrowserThreadImpl io_thread_;
 };
@@ -32,10 +39,11 @@ TEST_F(ServiceWorkerRegistrationTest, Shutdown) {
       new ServiceWorkerRegistration(
           GURL("http://www.example.com/*"),
           GURL("http://www.example.com/service_worker.js"),
-          registration_id);
+          registration_id,
+          context_ptr_);
 
   scoped_refptr<ServiceWorkerVersion> active_version =
-      new ServiceWorkerVersion(registration, NULL, version_id);
+      new ServiceWorkerVersion(registration, version_id, context_ptr_);
   registration->set_active_version(active_version);
 
   registration->Shutdown();
@@ -53,17 +61,18 @@ TEST_F(ServiceWorkerRegistrationTest, ActivatePending) {
       new ServiceWorkerRegistration(
           GURL("http://www.example.com/*"),
           GURL("http://www.example.com/service_worker.js"),
-          registration_id);
+          registration_id,
+          context_ptr_);
 
   const int64 version_1_id = 1L;
   const int64 version_2_id = 2L;
   scoped_refptr<ServiceWorkerVersion> version_1 =
-      new ServiceWorkerVersion(registration, NULL, version_1_id);
+      new ServiceWorkerVersion(registration, version_1_id, context_ptr_);
   version_1->SetStatus(ServiceWorkerVersion::ACTIVE);
   registration->set_active_version(version_1);
 
   scoped_refptr<ServiceWorkerVersion> version_2 =
-      new ServiceWorkerVersion(registration, NULL, version_2_id);
+      new ServiceWorkerVersion(registration, version_2_id, context_ptr_);
   registration->set_pending_version(version_2);
 
   registration->ActivatePendingVersion();

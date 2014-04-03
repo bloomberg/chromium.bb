@@ -59,6 +59,12 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ~ServiceWorkerContextCore();
 
   ServiceWorkerStorage* storage() { return storage_.get(); }
+  EmbeddedWorkerRegistry* embedded_worker_registry() {
+    return embedded_worker_registry_.get();
+  }
+  ServiceWorkerJobCoordinator* job_coordinator() {
+    return job_coordinator_.get();
+  }
 
   // The context class owns the set of ProviderHosts.
   ServiceWorkerProviderHost* GetProviderHost(int process_id, int provider_id);
@@ -77,17 +83,20 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                int source_process_id,
                                const UnregistrationCallback& callback);
 
-  EmbeddedWorkerRegistry* embedded_worker_registry() {
-    return embedded_worker_registry_.get();
-  }
-
-  ServiceWorkerJobCoordinator* job_coordinator() {
-    return job_coordinator_.get();
-  }
+  // This class maintains collections of live instances, this class
+  // does not own these object or influence their lifetime.
+  ServiceWorkerRegistration* GetLiveRegistration(int64 registration_id);
+  void AddLiveRegistration(ServiceWorkerRegistration* registration);
+  void RemoveLiveRegistration(int64 registration_id);
+  ServiceWorkerVersion* GetLiveVersion(int64 version_id);
+  void AddLiveVersion(ServiceWorkerVersion* version);
+  void RemoveLiveVersion(int64 registration_id);
 
  private:
   typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
   typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
+  typedef std::map<int64, ServiceWorkerRegistration*> RegistrationsMap;
+  typedef std::map<int64, ServiceWorkerVersion*> VersionMap;
 
   ProviderMap* GetProviderMapForProcess(int process_id) {
     return providers_.Lookup(process_id);
@@ -102,6 +111,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   scoped_ptr<ServiceWorkerStorage> storage_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
   scoped_ptr<ServiceWorkerJobCoordinator> job_coordinator_;
+  std::map<int64, ServiceWorkerRegistration*> live_registrations_;
+  std::map<int64, ServiceWorkerVersion*> live_versions_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextCore);
 };

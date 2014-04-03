@@ -88,6 +88,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnAddScriptClient)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_RemoveScriptClient,
                         OnRemoveScriptClient)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetVersionId,
+                        OnSetHostedVersionId)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessage, OnPostMessage)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStarted,
                         OnWorkerStarted)
@@ -218,7 +220,8 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(int provider_id) {
     return;
   }
   scoped_ptr<ServiceWorkerProviderHost> provider_host(
-       new ServiceWorkerProviderHost(render_process_id_, provider_id));
+      new ServiceWorkerProviderHost(
+          render_process_id_, provider_id, context_));
   context_->AddProviderHost(provider_host.Pass());
 }
 
@@ -252,6 +255,18 @@ void ServiceWorkerDispatcherHost::OnRemoveScriptClient(
   if (!provider_host)
     return;
   provider_host->RemoveScriptClient(thread_id);
+}
+
+void ServiceWorkerDispatcherHost::OnSetHostedVersionId(
+    int provider_id, int64 version_id) {
+  if (!context_)
+    return;
+  ServiceWorkerProviderHost* provider_host =
+      context_->GetProviderHost(render_process_id_, provider_id);
+  if (!provider_host || !provider_host->SetHostedVersionId(version_id)) {
+    BadMessageReceived();
+    return;
+  }
 }
 
 void ServiceWorkerDispatcherHost::RegistrationComplete(

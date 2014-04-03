@@ -74,8 +74,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
 
   typedef std::map<GURL, scoped_refptr<ServiceWorkerRegistration> >
       PatternToRegistrationMap;
-  typedef std::map<int64, scoped_refptr<ServiceWorkerRegistration> >
-      RegistrationIdToRegistrationMap;
 
   static bool PatternMatches(const GURL& pattern, const GURL& script_url);
 

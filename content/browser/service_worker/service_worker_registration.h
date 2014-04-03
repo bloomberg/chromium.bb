@@ -37,7 +37,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
  public:
   ServiceWorkerRegistration(const GURL& pattern,
                             const GURL& script_url,
-                            int64 registration_id);
+                            int64 registration_id,
+                            base::WeakPtr<ServiceWorkerContextCore> context);
 
   void Shutdown();
   bool is_shutdown() const { return is_shutdown_; }
@@ -84,6 +85,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   scoped_refptr<ServiceWorkerVersion> pending_version_;
 
   bool is_shutdown_;
+  base::WeakPtr<ServiceWorkerContextCore> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegistration);
 };

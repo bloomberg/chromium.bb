@@ -95,14 +95,14 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     registration_ = new ServiceWorkerRegistration(
         GURL("http://example.com/*"),
         GURL("http://example.com/service_worker.js"),
-        1L);
+        1L, context_->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_,
-        embedded_worker_registry(),
-        1L);
+        1L, context_->AsWeakPtr());
 
     scoped_ptr<ServiceWorkerProviderHost> provider_host(
-        new ServiceWorkerProviderHost(kProcessID, kProviderID));
+        new ServiceWorkerProviderHost(kProcessID, kProviderID,
+                                      context_->AsWeakPtr()));
     provider_host->AssociateVersion(version_.get());
 
     url_request_job_factory_.SetProtocolHandler(
@@ -135,10 +135,6 @@ class ServiceWorkerURLRequestJobTest : public testing::Test {
     // Verify response.
     EXPECT_TRUE(request_->status().is_success());
     EXPECT_EQ(200, request_->response_headers()->response_code());
-  }
-
-  EmbeddedWorkerRegistry* embedded_worker_registry() {
-    return context_->embedded_worker_registry();
   }
 
   TestBrowserThreadBundle thread_bundle_;

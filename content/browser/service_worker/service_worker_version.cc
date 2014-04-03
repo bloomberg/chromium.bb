@@ -161,20 +161,23 @@ void HandleSyncEventFinished(const StatusCallback& callback,
 
 ServiceWorkerVersion::ServiceWorkerVersion(
     ServiceWorkerRegistration* registration,
-    EmbeddedWorkerRegistry* worker_registry,
-    int64 version_id)
+    int64 version_id,
+    base::WeakPtr<ServiceWorkerContextCore> context)
     : version_id_(version_id),
       status_(NEW),
       is_shutdown_(false),
       registration_(registration),
-      weak_factory_(this) {
-  if (worker_registry) {
-    embedded_worker_ = worker_registry->CreateWorker();
-    embedded_worker_->AddObserver(this);
-  }
+      weak_factory_(this),
+      context_(context) {
+  DCHECK(context_);
+  context_->AddLiveVersion(this);
+  embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
+  embedded_worker_->AddObserver(this);
 }
 
-ServiceWorkerVersion::~ServiceWorkerVersion() { DCHECK(is_shutdown_); }
+ServiceWorkerVersion::~ServiceWorkerVersion() {
+  DCHECK(is_shutdown_);
+}
 
 void ServiceWorkerVersion::Shutdown() {
   is_shutdown_ = true;
@@ -184,6 +187,8 @@ void ServiceWorkerVersion::Shutdown() {
     embedded_worker_->RemoveObserver(this);
     embedded_worker_.reset();
   }
+  if (context_)
+    context_->RemoveLiveVersion(version_id_);
 }
 
 void ServiceWorkerVersion::SetStatus(Status status) {

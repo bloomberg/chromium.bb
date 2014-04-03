@@ -23,6 +23,7 @@ class GURL;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+class ServiceWorkerContextCore;
 class ServiceWorkerRegistration;
 class ServiceWorkerVersionInfo;
 
@@ -68,8 +69,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   ServiceWorkerVersion(
       ServiceWorkerRegistration* registration,
-      EmbeddedWorkerRegistry* worker_registry,
-      int64 version_id);
+      int64 version_id,
+      base::WeakPtr<ServiceWorkerContextCore> context);
 
   int64 version_id() const { return version_id_; }
 
@@ -178,22 +179,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   virtual ~ServiceWorkerVersion();
 
   const int64 version_id_;
-
   Status status_;
-
   bool is_shutdown_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_ptr<EmbeddedWorkerInstance> embedded_worker_;
-
-  // Pending callbacks.
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;
-
   std::vector<base::Closure> status_change_callbacks_;
-
   IDMap<MessageCallback, IDMapOwnPointer> message_callbacks_;
-
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
+  base::WeakPtr<ServiceWorkerContextCore> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };

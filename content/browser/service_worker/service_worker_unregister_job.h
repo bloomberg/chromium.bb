@@ -15,6 +15,7 @@
 namespace content {
 
 class EmbeddedWorkerRegistry;
+class ServiceWorkerContextCore;
 class ServiceWorkerJobCoordinator;
 class ServiceWorkerRegistration;
 class ServiceWorkerStorage;
@@ -29,9 +30,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   typedef base::Callback<void(ServiceWorkerStatusCode status)>
       UnregistrationCallback;
 
-  ServiceWorkerUnregisterJob(ServiceWorkerStorage* storage,
-                             EmbeddedWorkerRegistry* worker_registry,
-                             ServiceWorkerJobCoordinator* coordinator,
+  ServiceWorkerUnregisterJob(base::WeakPtr<ServiceWorkerContextCore> context,
                              const GURL& pattern);
   virtual ~ServiceWorkerUnregisterJob();
 
@@ -51,8 +50,7 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
   void Complete(ServiceWorkerStatusCode status);
 
   // The ServiceWorkerStorage object should always outlive this.
-  ServiceWorkerStorage* storage_;
-  ServiceWorkerJobCoordinator* coordinator_;
+  base::WeakPtr<ServiceWorkerContextCore> context_;
   const GURL pattern_;
   std::vector<UnregistrationCallback> callbacks_;
   base::WeakPtrFactory<ServiceWorkerUnregisterJob> weak_factory_;

@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_unregister_job.h"
 
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -13,12 +14,9 @@ namespace content {
 typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerUnregisterJob::ServiceWorkerUnregisterJob(
-    ServiceWorkerStorage* storage,
-    EmbeddedWorkerRegistry* worker_registry,
-    ServiceWorkerJobCoordinator* coordinator,
+    base::WeakPtr<ServiceWorkerContextCore> context,
     const GURL& pattern)
-    : storage_(storage),
-      coordinator_(coordinator),
+    : context_(context),
       pattern_(pattern),
       weak_factory_(this) {}
 
@@ -30,7 +28,7 @@ void ServiceWorkerUnregisterJob::AddCallback(
 }
 
 void ServiceWorkerUnregisterJob::Start() {
-  storage_->FindRegistrationForPattern(
+  context_->storage()->FindRegistrationForPattern(
       pattern_,
       base::Bind(&ServiceWorkerUnregisterJob::DeleteExistingRegistration,
                  weak_factory_.GetWeakPtr()));
@@ -51,7 +49,7 @@ void ServiceWorkerUnregisterJob::DeleteExistingRegistration(
     const scoped_refptr<ServiceWorkerRegistration>& registration) {
   if (status == SERVICE_WORKER_OK) {
     registration->Shutdown();
-    storage_->DeleteRegistration(
+    context_->storage()->DeleteRegistration(
         pattern_,
         base::Bind(&ServiceWorkerUnregisterJob::Complete,
                    weak_factory_.GetWeakPtr()));
@@ -73,7 +71,7 @@ void ServiceWorkerUnregisterJob::Complete(ServiceWorkerStatusCode status) {
        ++it) {
     it->Run(status);
   }
-  coordinator_->FinishJob(pattern_, this);
+  context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 }  // namespace content

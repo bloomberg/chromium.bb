@@ -22,8 +22,8 @@ class ServiceWorkerStorage;
 // This class manages all in-flight registration or unregistration jobs.
 class CONTENT_EXPORT ServiceWorkerJobCoordinator {
  public:
-  explicit ServiceWorkerJobCoordinator(ServiceWorkerStorage* storage,
-                                       EmbeddedWorkerRegistry* registry);
+  explicit ServiceWorkerJobCoordinator(
+      base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerJobCoordinator();
 
   void Register(const GURL& pattern,
@@ -62,9 +62,9 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
 
   typedef std::map<GURL, JobQueue> RegistrationJobMap;
 
-  // The ServiceWorkerStorage object should always outlive this.
-  ServiceWorkerStorage* storage_;
-  EmbeddedWorkerRegistry* worker_registry_;
+  // The ServiceWorkerContextCore object should always outlive the
+  // job coordinator, the core owns the coordinator.
+  base::WeakPtr<ServiceWorkerContextCore> context_;
   RegistrationJobMap jobs_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerJobCoordinator);

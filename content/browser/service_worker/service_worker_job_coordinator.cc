@@ -42,9 +42,9 @@ void ServiceWorkerJobCoordinator::JobQueue::Pop(
 }
 
 ServiceWorkerJobCoordinator::ServiceWorkerJobCoordinator(
-    ServiceWorkerStorage* storage,
-    EmbeddedWorkerRegistry* worker_registry)
-    : storage_(storage), worker_registry_(worker_registry) {}
+    base::WeakPtr<ServiceWorkerContextCore> context)
+    : context_(context) {
+}
 
 ServiceWorkerJobCoordinator::~ServiceWorkerJobCoordinator() {
   DCHECK(jobs_.empty()) << "Destroying ServiceWorkerJobCoordinator with "
@@ -56,8 +56,8 @@ void ServiceWorkerJobCoordinator::Register(
     const GURL& script_url,
     int source_process_id,
     const ServiceWorkerRegisterJob::RegistrationCallback& callback) {
-  scoped_ptr<ServiceWorkerRegisterJobBase> job(new ServiceWorkerRegisterJob(
-      storage_, worker_registry_, this, pattern, script_url));
+  scoped_ptr<ServiceWorkerRegisterJobBase> job(
+      new ServiceWorkerRegisterJob(context_, pattern, script_url));
   ServiceWorkerRegisterJob* queued_job =
       static_cast<ServiceWorkerRegisterJob*>(jobs_[pattern].Push(job.Pass()));
   queued_job->AddCallback(callback, source_process_id);
@@ -67,9 +67,8 @@ void ServiceWorkerJobCoordinator::Unregister(
     const GURL& pattern,
     int source_process_id,
     const ServiceWorkerUnregisterJob::UnregistrationCallback& callback) {
-
-  scoped_ptr<ServiceWorkerRegisterJobBase> job(new ServiceWorkerUnregisterJob(
-      storage_, worker_registry_, this, pattern));
+  scoped_ptr<ServiceWorkerRegisterJobBase> job(
+      new ServiceWorkerUnregisterJob(context_, pattern));
   ServiceWorkerUnregisterJob* queued_job =
       static_cast<ServiceWorkerUnregisterJob*>(jobs_[pattern].Push(job.Pass()));
   queued_job->AddCallback(callback);

@@ -5,19 +5,32 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
 #include "base/stl_util.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 
 namespace content {
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
-    int process_id, int provider_id)
+    int process_id, int provider_id,
+    base::WeakPtr<ServiceWorkerContextCore> context)
     : process_id_(process_id),
-      provider_id_(provider_id) {
+      provider_id_(provider_id),
+      context_(context) {
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   AssociateVersion(NULL);
+}
+
+void ServiceWorkerProviderHost::AddScriptClient(int thread_id) {
+  DCHECK(!ContainsKey(script_client_thread_ids_, thread_id));
+  script_client_thread_ids_.insert(thread_id);
+}
+
+void ServiceWorkerProviderHost::RemoveScriptClient(int thread_id) {
+  DCHECK(ContainsKey(script_client_thread_ids_, thread_id));
+  script_client_thread_ids_.erase(thread_id);
 }
 
 void ServiceWorkerProviderHost::AssociateVersion(
@@ -29,14 +42,26 @@ void ServiceWorkerProviderHost::AssociateVersion(
     version->AddProcessToWorker(process_id_);
 }
 
-void ServiceWorkerProviderHost::AddScriptClient(int thread_id) {
-  DCHECK(!ContainsKey(script_client_thread_ids_, thread_id));
-  script_client_thread_ids_.insert(thread_id);
-}
+bool ServiceWorkerProviderHost::SetHostedVersionId(int64 version_id) {
+  if (!context_)
+    return true;  // System is shutting down.
+  if (associated_version_)
+    return false;  // Unexpected bad message.
 
-void ServiceWorkerProviderHost::RemoveScriptClient(int thread_id) {
-  DCHECK(ContainsKey(script_client_thread_ids_, thread_id));
-  script_client_thread_ids_.erase(thread_id);
+  ServiceWorkerVersion* live_version = context_->GetLiveVersion(version_id);
+  if (!live_version)
+    return true;  // Was deleted before it got started.
+
+  ServiceWorkerVersionInfo info = live_version->GetInfo();
+  if (info.running_status != ServiceWorkerVersion::STARTING ||
+      info.process_id != process_id_) {
+    // If we aren't trying to start this version in our process
+    // something is amiss.
+    return false;
+  }
+
+  hosted_version_ = live_version;
+  return true;
 }
 
 bool ServiceWorkerProviderHost::ShouldHandleRequest(

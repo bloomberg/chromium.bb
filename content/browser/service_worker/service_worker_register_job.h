@@ -37,9 +37,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   registration)> RegistrationCallback;
 
-  ServiceWorkerRegisterJob(ServiceWorkerStorage* storage,
-                           EmbeddedWorkerRegistry* worker_registry,
-                           ServiceWorkerJobCoordinator* coordinator,
+  ServiceWorkerRegisterJob(base::WeakPtr<ServiceWorkerContextCore> context,
                            const GURL& pattern,
                            const GURL& script_url);
   virtual ~ServiceWorkerRegisterJob();
@@ -64,9 +62,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void Complete(ServiceWorkerStatusCode status);
 
   // The ServiceWorkerStorage object should always outlive this.
-  ServiceWorkerStorage* storage_;
-  EmbeddedWorkerRegistry* worker_registry_;
-  ServiceWorkerJobCoordinator* coordinator_;
+  base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> pending_version_;
   const GURL pattern_;

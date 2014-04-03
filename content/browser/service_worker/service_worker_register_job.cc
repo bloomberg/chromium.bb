@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
@@ -15,14 +16,10 @@ namespace content {
 typedef ServiceWorkerRegisterJobBase::RegistrationJobType RegistrationJobType;
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
-    ServiceWorkerStorage* storage,
-    EmbeddedWorkerRegistry* worker_registry,
-    ServiceWorkerJobCoordinator* coordinator,
+    base::WeakPtr<ServiceWorkerContextCore> context,
     const GURL& pattern,
     const GURL& script_url)
-    : storage_(storage),
-      worker_registry_(worker_registry),
-      coordinator_(coordinator),
+    : context_(context),
       pattern_(pattern),
       script_url_(script_url),
       weak_factory_(this) {}
@@ -43,7 +40,7 @@ void ServiceWorkerRegisterJob::AddCallback(const RegistrationCallback& callback,
 }
 
 void ServiceWorkerRegisterJob::Start() {
-  storage_->FindRegistrationForPattern(
+  context_->storage()->FindRegistrationForPattern(
       pattern_,
       base::Bind(
           &ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue,
@@ -82,7 +79,7 @@ void ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue(
     // Script URL mismatch: delete the existing registration and register a new
     // one.
     registration->Shutdown();
-    storage_->DeleteRegistration(
+    context_->storage()->DeleteRegistration(
         pattern_,
         base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
                    weak_factory_.GetWeakPtr()));
@@ -104,8 +101,9 @@ void ServiceWorkerRegisterJob::RegisterAndContinue(
   }
 
   registration_ = new ServiceWorkerRegistration(
-      pattern_, script_url_, storage_->NewRegistrationId());
-  storage_->StoreRegistration(
+      pattern_, script_url_, context_->storage()->NewRegistrationId(),
+      context_);
+  context_->storage()->StoreRegistration(
       registration_.get(),
       base::Bind(&ServiceWorkerRegisterJob::StartWorkerAndContinue,
                  weak_factory_.GetWeakPtr()));
@@ -123,8 +121,7 @@ void ServiceWorkerRegisterJob::StartWorkerAndContinue(
   }
 
   pending_version_ = new ServiceWorkerVersion(
-      registration_, worker_registry_,
-      storage_->NewVersionId());
+      registration_, context_->storage()->NewVersionId(), context_);
   for (std::vector<int>::const_iterator it = pending_process_ids_.begin();
        it != pending_process_ids_.end();
        ++it)
@@ -149,7 +146,7 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
        ++it) {
     it->Run(status, registration_);
   }
-  coordinator_->FinishJob(pattern_, this);
+  context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 }  // namespace content
