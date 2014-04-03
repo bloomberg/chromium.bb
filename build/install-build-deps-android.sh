@@ -17,11 +17,9 @@ if ! uname -m | egrep -q "i686|x86_64"; then
   exit
 fi
 
-if [ "x$(id -u)" != x0 ]; then
-  echo "Running as non-root user."
-  echo "You might have to enter your password one or more times for 'sudo'."
-  echo
-fi
+# Install first the default Linux build deps.
+"$(dirname "${BASH_SOURCE[0]}")/install-build-deps.sh" \
+    --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
 
 # The temporary directory used to store output of update-java-alternatives
 TEMPDIR=$(mktemp -d)
