@@ -396,6 +396,8 @@ namespace WTF {
         template<typename HashTranslator, typename T> FullLookupType fullLookupForWriting(const T&);
         template<typename HashTranslator, typename T> LookupType lookupForWriting(const T&);
 
+        template<typename HashTranslator, typename T> void checkKey(const T&);
+
         void remove(ValueType*);
 
         bool shouldExpand() const { return (m_keyCount + m_deletedCount) * m_maxLoad >= m_tableSize; }
@@ -502,10 +504,33 @@ namespace WTF {
         return key;
     }
 
+#if ASSERT_DISABLED
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    template<typename HashTranslator, typename T>
+    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::checkKey(const T&)
+    {
+    }
+#else
+    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
+    template<typename HashTranslator, typename T>
+    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::checkKey(const T& key)
+    {
+        if (!HashFunctions::safeToCompareToEmptyOrDeleted)
+            return;
+        ASSERT(!HashTranslator::equal(KeyTraits::emptyValue(), key));
+        AlignedBuffer<sizeof(ValueType), WTF_ALIGN_OF(ValueType)> deletedValueBuffer;
+        ValueType& deletedValue = *reinterpret_cast_ptr<ValueType*>(&deletedValueBuffer.buffer);
+        Traits::constructDeletedValue(deletedValue);
+        ASSERT(!HashTranslator::equal(Extractor::extract(deletedValue), key));
+    }
+#endif
+
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template<typename HashTranslator, typename T>
     inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(const T& key)
     {
+        checkKey<HashTranslator>(key);
+
         ValueType* table = m_table;
         if (!table)
             return 0;
@@ -780,6 +805,7 @@ namespace WTF {
         }
 
         HashTranslator::translate(*entry, key, extra);
+        ASSERT(!isEmptyOrDeletedBucket(*entry));
 
         ++m_keyCount;
 
@@ -813,6 +839,8 @@ namespace WTF {
         }
 
         HashTranslator::translate(*entry, key, extra, h);
+        ASSERT(!isEmptyOrDeletedBucket(*entry));
+
         ++m_keyCount;
         if (shouldExpand())
             entry = expand(entry);
