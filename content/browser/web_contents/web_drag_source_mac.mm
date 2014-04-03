@@ -7,6 +7,7 @@
 #include <sys/param.h>
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/mac/mac_util.h"
 #include "base/pickle.h"
@@ -26,7 +27,6 @@
 #include "content/public/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "net/base/escape.h"
-#include "net/base/file_stream.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -41,7 +41,6 @@ using content::DragDownloadFile;
 using content::DropData;
 using content::PromiseFileFinalizer;
 using content::RenderViewHostImpl;
-using net::FileStream;
 
 namespace {
 
@@ -85,9 +84,9 @@ base::FilePath GetFileNameFromDragData(const DropData& drop_data) {
 // is responsible for opening the file. It takes the drop data and an open file
 // stream.
 void PromiseWriterHelper(const DropData& drop_data,
-                         scoped_ptr<FileStream> file_stream) {
-  DCHECK(file_stream);
-  file_stream->WriteSync(drop_data.file_contents.data(),
+                         base::File file) {
+  DCHECK(file.IsValid());
+  file.WriteAtCurrentPos(drop_data.file_contents.data(),
                          drop_data.file_contents.length());
 }
 
@@ -323,19 +322,18 @@ void PromiseWriterHelper(const DropData& drop_data,
   base::FilePath filePath(SysNSStringToUTF8(path));
   filePath = filePath.Append(downloadFileName_);
 
-  // CreateFileStreamForDrop() will call base::PathExists(),
+  // CreateFileForDrop() will call base::PathExists(),
   // which is blocking.  Since this operation is already blocking the
   // UI thread on OSX, it should be reasonable to let it happen.
   base::ThreadRestrictions::ScopedAllowIO allowIO;
-  scoped_ptr<FileStream> fileStream(content::CreateFileStreamForDrop(
-      &filePath, content::GetContentClient()->browser()->GetNetLog()));
-  if (!fileStream)
+  base::File file(content::CreateFileForDrop(&filePath));
+  if (!file.IsValid())
     return nil;
 
   if (downloadURL_.is_valid()) {
     scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
         filePath,
-        fileStream.Pass(),
+        file.Pass(),
         downloadURL_,
         content::Referrer(contents_->GetLastCommittedURL(),
                           dropData_->referrer_policy),
@@ -351,7 +349,7 @@ void PromiseWriterHelper(const DropData& drop_data,
                             FROM_HERE,
                             base::Bind(&PromiseWriterHelper,
                                        *dropData_,
-                                       base::Passed(&fileStream)));
+                                       base::Passed(&file)));
   }
 
   // The DragDownloadFile constructor may have altered the value of |filePath|

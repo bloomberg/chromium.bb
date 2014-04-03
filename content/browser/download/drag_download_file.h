@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_FILE_H_
 
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -15,13 +16,8 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/common/referrer.h"
-#include "net/base/file_stream.h"
 #include "ui/base/dragdrop/download_file_interface.h"
 #include "url/gurl.h"
-
-namespace net {
-class FileStream;
-}
 
 namespace content {
 
@@ -35,11 +31,11 @@ class WebContents;
 class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
  public:
   // On Windows, we need to download into a temporary file. On posix, we need to
-  // download into a file stream that has already been created, so only the UI
-  // thread is involved. |file_stream| must be null on windows but non-null on
+  // download into a file that has already been created, so only the UI
+  // thread is involved. |file| must be null on windows but non-null on
   // posix systems. |file_path| is an absolute path on all systems.
   DragDownloadFile(const base::FilePath& file_path,
-                   scoped_ptr<net::FileStream> file_stream,
+                   base::File file,
                    const GURL& url,
                    const Referrer& referrer,
                    const std::string& referrer_encoding,
@@ -60,7 +56,7 @@ class CONTENT_EXPORT DragDownloadFile : public ui::DownloadFileProvider {
   void CheckThread();
 
   base::FilePath file_path_;
-  scoped_ptr<net::FileStream> file_stream_;
+  base::File file_;
   base::MessageLoop* drag_message_loop_;
   State state_;
   scoped_refptr<ui::DownloadFileObserver> observer_;

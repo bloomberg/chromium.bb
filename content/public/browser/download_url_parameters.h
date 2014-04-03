@@ -98,8 +98,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
     save_info_.hash_state = hash_state;
   }
   void set_prompt(bool prompt) { save_info_.prompt_for_save_location = prompt; }
-  void set_file_stream(scoped_ptr<net::FileStream> file_stream) {
-    save_info_.file_stream = file_stream.Pass();
+  void set_file(base::File file) {
+    save_info_.file = file.Pass();
   }
 
   const OnStartedCallback& callback() const { return callback_; }
@@ -136,10 +136,8 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const GURL& url() const { return url_; }
 
   // Note that this is state changing--the DownloadUrlParameters object
-  // will not have a file_stream attached to it after this call.
-  scoped_ptr<net::FileStream> GetFileStream() {
-    return save_info_.file_stream.Pass();
-  }
+  // will not have a file attached to it after this call.
+  base::File GetFile() { return save_info_.file.Pass(); }
 
  private:
   OnStartedCallback callback_;

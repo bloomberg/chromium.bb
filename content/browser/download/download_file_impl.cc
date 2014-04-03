@@ -44,7 +44,7 @@ DownloadFileImpl::DownloadFileImpl(
                 save_info->offset,
                 calculate_hash,
                 save_info->hash_state,
-                save_info->file_stream.Pass(),
+                save_info->file.Pass(),
                 bound_net_log),
           default_download_directory_(default_download_directory),
           stream_reader_(stream.Pass()),

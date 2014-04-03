@@ -5,6 +5,7 @@
 #include "content/browser/download/drag_download_file.h"
 
 #include "base/bind.h"
+#include "base/files/file.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -13,7 +14,6 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
-#include "net/base/file_stream.h"
 
 namespace content {
 
@@ -53,7 +53,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     // Do not call weak_ptr_factory_.GetWeakPtr() outside the UI thread.
   }
 
-  void InitiateDownload(scoped_ptr<net::FileStream> file_stream,
+  void InitiateDownload(base::File file,
                         const base::FilePath& file_path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DownloadManager* download_manager =
@@ -67,7 +67,7 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
     params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,
                                     weak_ptr_factory_.GetWeakPtr()));
     params->set_file_path(file_path);
-    params->set_file_stream(file_stream.Pass());  // Nulls file_stream.
+    params->set_file(file.Pass());  // Nulls file.
     download_manager->DownloadUrl(params.Pass());
   }
 
@@ -150,13 +150,13 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
 };
 
 DragDownloadFile::DragDownloadFile(const base::FilePath& file_path,
-                                   scoped_ptr<net::FileStream> file_stream,
+                                   base::File file,
                                    const GURL& url,
                                    const Referrer& referrer,
                                    const std::string& referrer_encoding,
                                    WebContents* web_contents)
     : file_path_(file_path),
-      file_stream_(file_stream.Pass()),
+      file_(file.Pass()),
       drag_message_loop_(base::MessageLoop::current()),
       state_(INITIALIZED),
       drag_ui_(NULL),
@@ -197,7 +197,7 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &DragDownloadFileUI::InitiateDownload, base::Unretained(drag_ui_),
-      base::Passed(&file_stream_), file_path_));
+      base::Passed(&file_), file_path_));
 }
 
 bool DragDownloadFile::Wait() {

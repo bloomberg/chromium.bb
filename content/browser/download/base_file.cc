@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -17,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "crypto/secure_hash.h"
-#include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
 namespace content {
@@ -31,12 +31,12 @@ BaseFile::BaseFile(const base::FilePath& full_path,
                    int64 received_bytes,
                    bool calculate_hash,
                    const std::string& hash_state_bytes,
-                   scoped_ptr<net::FileStream> file_stream,
+                   base::File file,
                    const net::BoundNetLog& bound_net_log)
     : full_path_(full_path),
       source_url_(source_url),
       referrer_url_(referrer_url),
-      file_stream_(file_stream.Pass()),
+      file_(file.Pass()),
       bytes_so_far_(received_bytes),
       start_tick_(base::TimeTicks::Now()),
       calculate_hash_(calculate_hash),
@@ -66,11 +66,6 @@ DownloadInterruptReason BaseFile::Initialize(
     const base::FilePath& default_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
-
-  if (file_stream_) {
-    file_stream_->SetBoundNetLogSource(bound_net_log_);
-    file_stream_->EnableErrorStatistics();
-  }
 
   if (full_path_.empty()) {
     base::FilePath initial_directory(default_directory);
@@ -103,7 +98,7 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   if (detached_)
     RecordDownloadCount(APPEND_TO_DETACHED_FILE_COUNT);
 
-  if (!file_stream_)
+  if (!file_.IsValid())
     return LogInterruptReason("No file stream on append", 0,
                               DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
 
@@ -117,19 +112,12 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   const char* current_data = data;
   while (len > 0) {
     write_count++;
-    int write_result =
-        file_stream_->WriteSync(current_data, len);
+    int write_result = file_.WriteAtCurrentPos(current_data, len);
     DCHECK_NE(0, write_result);
 
-    // Check for errors.
-    if (static_cast<size_t>(write_result) != data_len) {
-      // We should never get ERR_IO_PENDING, as the Write above is synchronous.
-      DCHECK_NE(net::ERR_IO_PENDING, write_result);
-
-      // Report errors on file writes.
-      if (write_result < 0)
-        return LogNetError("Write", static_cast<net::Error>(write_result));
-    }
+    // Report errors on file writes.
+    if (write_result < 0)
+      return LogSystemError("Write", logging::GetLastSystemErrorCode());
 
     // Update status.
     size_t write_size = static_cast<size_t>(write_result);
@@ -258,11 +246,6 @@ std::string BaseFile::DebugString() const {
                             detached_ ? 'T' : 'F');
 }
 
-void BaseFile::CreateFileStream() {
-  file_stream_.reset(new net::FileStream(bound_net_log_.net_log()));
-  file_stream_->SetBoundNetLogSource(bound_net_log_);
-}
-
 DownloadInterruptReason BaseFile::Open() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
@@ -272,43 +255,36 @@ DownloadInterruptReason BaseFile::Open() {
       net::NetLog::TYPE_DOWNLOAD_FILE_OPENED,
       base::Bind(&FileOpenedNetLogCallback, &full_path_, bytes_so_far_));
 
-  // Create a new file stream if it is not provided.
-  if (!file_stream_) {
-    CreateFileStream();
-    file_stream_->EnableErrorStatistics();
-    int open_result = file_stream_->OpenSync(
-        full_path_,
-        base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE);
-    if (open_result != net::OK) {
-      ClearStream();
-      return LogNetError("Open", static_cast<net::Error>(open_result));
+  // Create a new file if it is not provided.
+  if (!file_.IsValid()) {
+    file_.Initialize(
+        full_path_, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE);
+    if (!file_.IsValid()) {
+      return LogNetError("Open",
+                         net::FileErrorToNetError(file_.error_details()));
     }
-
-    // We may be re-opening the file after rename. Always make sure we're
-    // writing at the end of the file.
-    int64 seek_result = file_stream_->SeekSync(net::FROM_END, 0);
-    if (seek_result < 0) {
-      ClearStream();
-      return LogNetError("Seek", static_cast<net::Error>(seek_result));
-    }
-  } else {
-    file_stream_->SetBoundNetLogSource(bound_net_log_);
   }
 
-  int64 file_size = file_stream_->SeekSync(net::FROM_END, 0);
-  if (file_size > bytes_so_far_) {
+  // We may be re-opening the file after rename. Always make sure we're
+  // writing at the end of the file.
+  int64 file_size = file_.Seek(base::File::FROM_END, 0);
+  if (file_size < 0) {
+    logging::SystemErrorCode error = logging::GetLastSystemErrorCode();
+    ClearFile();
+    return LogSystemError("Seek", error);
+  } else if (file_size > bytes_so_far_) {
     // The file is larger than we expected.
     // This is OK, as long as we don't use the extra.
     // Truncate the file.
-    int64 truncate_result = file_stream_->Truncate(bytes_so_far_);
-    if (truncate_result < 0)
-      return LogNetError("Truncate", static_cast<net::Error>(truncate_result));
-
-    // If if wasn't an error, it should have truncated to the size
-    // specified.
-    DCHECK_EQ(bytes_so_far_, truncate_result);
+    if (!file_.SetLength(bytes_so_far_) ||
+        file_.Seek(base::File::FROM_BEGIN, bytes_so_far_) != bytes_so_far_) {
+      logging::SystemErrorCode error = logging::GetLastSystemErrorCode();
+      ClearFile();
+      return LogSystemError("Truncate",  error);
+    }
   } else if (file_size < bytes_so_far_) {
     // The file is shorter than we expected.  Our hashes won't be valid.
+    ClearFile();
     return LogInterruptReason("Unable to seek to last written point", 0,
                               DOWNLOAD_INTERRUPT_REASON_FILE_TOO_SHORT);
   }
@@ -321,20 +297,18 @@ void BaseFile::Close() {
 
   bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_FILE_CLOSED);
 
-  if (file_stream_) {
-#if defined(OS_CHROMEOS)
+  if (file_.IsValid()) {
     // Currently we don't really care about the return value, since if it fails
     // theres not much we can do.  But we might in the future.
-    file_stream_->FlushSync();
-#endif
-    ClearStream();
+    file_.Flush();
+    ClearFile();
   }
 }
 
-void BaseFile::ClearStream() {
+void BaseFile::ClearFile() {
   // This should only be called when we have a stream.
-  DCHECK(file_stream_.get() != NULL);
-  file_stream_.reset();
+  DCHECK(file_.IsValid());
+  file_.Close();
   bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_OPENED);
 }
 
@@ -349,7 +323,7 @@ DownloadInterruptReason BaseFile::LogNetError(
 
 DownloadInterruptReason BaseFile::LogSystemError(
     const char* operation,
-    int os_error) {
+    logging::SystemErrorCode os_error) {
   // There's no direct conversion from a system error to an interrupt reason.
   net::Error net_error = net::MapSystemError(os_error);
   return LogInterruptReason(

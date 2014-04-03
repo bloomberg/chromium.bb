@@ -7,24 +7,22 @@
 
 #include <string>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "crypto/sha2.h"
-#include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
 #include "url/gurl.h"
 
 namespace crypto {
 class SecureHash;
-}
-namespace net {
-class FileStream;
 }
 
 namespace content {
@@ -41,7 +39,7 @@ class CONTENT_EXPORT BaseFile {
            int64 received_bytes,
            bool calculate_hash,
            const std::string& hash_state,
-           scoped_ptr<net::FileStream> file_stream,
+           base::File file,
            const net::BoundNetLog& bound_net_log);
   virtual ~BaseFile();
 
@@ -82,7 +80,7 @@ class CONTENT_EXPORT BaseFile {
   DownloadInterruptReason AnnotateWithSourceInformation();
 
   base::FilePath full_path() const { return full_path_; }
-  bool in_progress() const { return file_stream_.get() != NULL; }
+  bool in_progress() const { return file_.IsValid(); }
   int64 bytes_so_far() const { return bytes_so_far_; }
 
   // Fills |hash| with the hash digest for the file.
@@ -103,17 +101,14 @@ class CONTENT_EXPORT BaseFile {
   friend class BaseFileTest;
   FRIEND_TEST_ALL_PREFIXES(BaseFileTest, IsEmptyHash);
 
-  // Re-initializes file_stream_ with a newly allocated net::FileStream().
-  void CreateFileStream();
-
-  // Creates and opens the file_stream_ if it is NULL.
+  // Creates and opens the file_ if it is NULL.
   DownloadInterruptReason Open();
 
-  // Closes and resets file_stream_.
+  // Closes and resets file_.
   void Close();
 
-  // Resets file_stream_.
-  void ClearStream();
+  // Resets file_.
+  void ClearFile();
 
   // Platform specific method that moves a file to a new path and adjusts the
   // security descriptor / permissions on the file to match the defaults for the
@@ -130,7 +125,8 @@ class CONTENT_EXPORT BaseFile {
 
   // Log the system error in |os_error| and converts it into a
   // |DownloadInterruptReason|.
-  DownloadInterruptReason LogSystemError(const char* operation, int os_error);
+  DownloadInterruptReason LogSystemError(const char* operation,
+                                         logging::SystemErrorCode os_error);
 
   // Log a TYPE_DOWNLOAD_FILE_ERROR NetLog event with |os_error| and |reason|.
   // Returns |reason|.
@@ -151,8 +147,8 @@ class CONTENT_EXPORT BaseFile {
 
   std::string client_guid_;
 
-  // OS file stream for writing
-  scoped_ptr<net::FileStream> file_stream_;
+  // OS file for writing
+  base::File file_;
 
   // Amount of data received up so far, in bytes.
   int64 bytes_so_far_;

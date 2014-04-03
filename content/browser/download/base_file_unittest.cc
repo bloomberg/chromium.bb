@@ -5,6 +5,7 @@
 #include "content/browser/download/base_file.h"
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -14,8 +15,6 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
-#include "net/base/file_stream.h"
-#include "net/base/mock_file_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -55,7 +54,7 @@ class BaseFileTest : public testing::Test {
                                   0,
                                   false,
                                   std::string(),
-                                  scoped_ptr<net::FileStream>(),
+                                  base::File(),
                                   net::BoundNetLog()));
   }
 
@@ -106,7 +105,7 @@ class BaseFileTest : public testing::Test {
                                   0,
                                   true,
                                   std::string(),
-                                  scoped_ptr<net::FileStream>(),
+                                  base::File(),
                                   net::BoundNetLog()));
   }
 
@@ -146,7 +145,7 @@ class BaseFileTest : public testing::Test {
                   0,
                   false,
                   std::string(),
-                  scoped_ptr<net::FileStream>(),
+                  base::File(),
                   net::BoundNetLog());
 
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
@@ -172,7 +171,7 @@ class BaseFileTest : public testing::Test {
                             0,
                             false,
                             std::string(),
-                            scoped_ptr<net::FileStream>(),
+                            base::File(),
                             net::BoundNetLog());
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               duplicate_file.Initialize(temp_dir_.path()));
@@ -197,8 +196,6 @@ class BaseFileTest : public testing::Test {
   }
 
  protected:
-  linked_ptr<net::testing::MockFileStream> mock_file_stream_;
-
   // BaseClass instance we are testing.
   scoped_ptr<BaseFile> base_file_;
 
@@ -401,7 +398,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
                        base_file_->bytes_so_far(),
                        true,
                        hash_state,
-                       scoped_ptr<net::FileStream>(),
+                       base::File(),
                        net::BoundNetLog());
   ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             second_file.Initialize(base::FilePath()));
@@ -479,41 +476,29 @@ TEST_F(BaseFileTest, RenameWithError) {
   base_file_->Finish();
 }
 
-// Write data to the file multiple times.
-TEST_F(BaseFileTest, MultipleWritesWithError) {
+// Test that a failed write reports an error.
+TEST_F(BaseFileTest, WriteWithError) {
   base::FilePath path;
   ASSERT_TRUE(base::CreateTemporaryFile(&path));
-  // Create a new file stream.  scoped_ptr takes ownership and passes it to
-  // BaseFile; we use the pointer anyway and rely on the BaseFile not
-  // deleting the MockFileStream until the BaseFile is reset.
-  net::testing::MockFileStream* mock_file_stream(
-      new net::testing::MockFileStream(NULL));
-  scoped_ptr<net::FileStream> mock_file_stream_scoped_ptr(mock_file_stream);
 
-  ASSERT_EQ(0,
-            mock_file_stream->OpenSync(
-                path,
-                base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE));
-
-  // Copy of mock_file_stream; we pass ownership and rely on the BaseFile
-  // not deleting it until it is reset.
-
-  base_file_.reset(new BaseFile(mock_file_stream->get_path(),
+  // Pass a file handle which was opened without the WRITE flag.
+  // This should result in an error when writing.
+  base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ);
+  base_file_.reset(new BaseFile(path,
                                 GURL(),
                                 GURL(),
                                 0,
                                 false,
                                 std::string(),
-                                mock_file_stream_scoped_ptr.Pass(),
+                                file.Pass(),
                                 net::BoundNetLog()));
   ASSERT_TRUE(InitializeFile());
-  ASSERT_TRUE(AppendDataToFile(kTestData1));
-  ASSERT_TRUE(AppendDataToFile(kTestData2));
-  mock_file_stream->set_forced_error(net::ERR_ACCESS_DENIED);
+#if defined(OS_WIN)
   set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED);
-  ASSERT_FALSE(AppendDataToFile(kTestData3));
-  std::string hash;
-  EXPECT_FALSE(base_file_->GetHash(&hash));
+#elif defined (OS_POSIX)
+  set_expected_error(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+#endif
+  ASSERT_FALSE(AppendDataToFile(kTestData1));
   base_file_->Finish();
 }
 
@@ -551,7 +536,7 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
                                 kTestDataLength4,
                                 false,
                                 std::string(),
-                                scoped_ptr<net::FileStream>(),
+                                base::File(),
                                 net::BoundNetLog()));
 
   ASSERT_TRUE(InitializeFile());
@@ -585,7 +570,7 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
                                 0,
                                 false,
                                 std::string(),
-                                scoped_ptr<net::FileStream>(),
+                                base::File(),
                                 net::BoundNetLog()));
 
   expect_in_progress_ = false;

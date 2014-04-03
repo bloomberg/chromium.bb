@@ -118,7 +118,7 @@ void BeginDownload(scoped_ptr<DownloadUrlParameters> params,
   save_info->offset = params->offset();
   save_info->hash_state = params->hash_state();
   save_info->prompt_for_save_location = params->prompt();
-  save_info->file_stream = params->GetFileStream();
+  save_info->file = params->GetFile();
 
   ResourceDispatcherHost::Get()->BeginDownload(
       request.Pass(),

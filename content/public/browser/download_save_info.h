@@ -5,10 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 #define CONTENT_PUBLIC_BROWSER_DOWNLOAD_SAVE_INFO_H_
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/memory/linked_ptr.h"
 #include "content/common/content_export.h"
-#include "net/base/file_stream.h"
 
 namespace content {
 
@@ -29,8 +28,8 @@ struct CONTENT_EXPORT DownloadSaveInfo {
   // a path (only a filename), and is only effective if |file_path| is empty.
   base::string16 suggested_name;
 
-  // If non-NULL, contains the source data stream for the file contents.
-  scoped_ptr<net::FileStream> file_stream;
+  // If valid, contains the source data stream for the file contents.
+  base::File file;
 
   // The file offset at which to start the download.  May be 0.
   int64 offset;

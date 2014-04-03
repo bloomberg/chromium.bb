@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/file_stream.h"
 
 namespace content {
 
@@ -21,7 +20,7 @@ SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
             0,
             calculate_hash,
             std::string(),
-            scoped_ptr<net::FileStream>(),
+            base::File(),
             net::BoundNetLog()),
       info_(info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));

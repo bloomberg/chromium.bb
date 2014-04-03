@@ -315,7 +315,7 @@ void PrepareDragForDownload(
   scoped_refptr<DragDownloadFile> download_file =
       new DragDownloadFile(
           download_path,
-          scoped_ptr<net::FileStream>(),
+          base::File(),
           download_url,
           Referrer(page_url, drop_data.referrer_policy),
           page_encoding,

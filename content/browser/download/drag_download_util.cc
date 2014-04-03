@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -15,11 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/file_stream.h"
-#include "net/base/net_errors.h"
 #include "url/gurl.h"
-
-using net::FileStream;
 
 namespace content {
 
@@ -58,11 +54,9 @@ bool ParseDownloadMetadata(const base::string16& metadata,
   return true;
 }
 
-FileStream* CreateFileStreamForDrop(base::FilePath* file_path,
-                                    net::NetLog* net_log) {
+base::File CreateFileForDrop(base::FilePath* file_path) {
   DCHECK(file_path && !file_path->empty());
 
-  scoped_ptr<FileStream> file_stream(new FileStream(net_log));
   const int kMaxSeq = 99;
   for (int seq = 0; seq <= kMaxSeq; seq++) {
     base::FilePath new_file_path;
@@ -81,17 +75,15 @@ FileStream* CreateFileStreamForDrop(base::FilePath* file_path,
     // http://crbug.com/110709
     base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-    // Explicitly (and redundantly check) for file -- despite the fact that our
-    // open won't overwrite -- just to avoid log spew.
-    if (!base::PathExists(new_file_path) &&
-        file_stream->OpenSync(new_file_path, base::PLATFORM_FILE_CREATE |
-                              base::PLATFORM_FILE_WRITE) == net::OK) {
+    base::File file(
+        new_file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    if (file.IsValid()) {
       *file_path = new_file_path;
-      return file_stream.release();
+      return file.Pass();
     }
   }
 
-  return NULL;
+  return base::File();
 }
 
 PromiseFileFinalizer::PromiseFileFinalizer(
