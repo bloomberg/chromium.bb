@@ -4359,7 +4359,7 @@ window_create_internal(struct display *display, int custom)
 	surface = surface_create(window);
 	window->main_surface = surface;
 
-	fail_on_null(display->xdg_shell);
+	assert(custom || display->xdg_shell);
 
 	window->custom = custom;
 	window->preferred_format = WINDOW_PREFERRED_FORMAT_NONE;
