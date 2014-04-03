@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/image_util.h"
 #include "extensions/common/error_utils.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
@@ -647,38 +648,6 @@ void ExtensionActionFunction::NotifySystemIndicatorChange() {
       content::Details<ExtensionAction>(extension_action_));
 }
 
-// static
-bool ExtensionActionFunction::ParseCSSColorString(
-    const std::string& color_string,
-    SkColor* result) {
-  std::string formatted_color;
-  // Check the string for incorrect formatting.
-  if (color_string.empty() || color_string[0] != '#')
-    return false;
-
-  // Convert the string from #FFF format to #FFFFFF format.
-  if (color_string.length() == 4) {
-    for (size_t i = 1; i < 4; ++i) {
-      formatted_color += color_string[i];
-      formatted_color += color_string[i];
-    }
-  } else if (color_string.length() == 7) {
-    formatted_color = color_string.substr(1, 6);
-  } else {
-    return false;
-  }
-
-  // Convert the string to an integer and make sure it is in the correct value
-  // range.
-  std::vector<uint8> color_bytes;
-  if (!base::HexStringToBytes(formatted_color, &color_bytes))
-    return false;
-
-  DCHECK_EQ(3u, color_bytes.size());
-  *result = SkColorSetARGB(255, color_bytes[0], color_bytes[1], color_bytes[2]);
-  return true;
-}
-
 bool ExtensionActionFunction::SetVisible(bool visible) {
   if (extension_action_->GetIsVisible(tab_id_) == visible)
     return true;
@@ -786,7 +755,7 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   } else if (color_value->IsType(base::Value::TYPE_STRING)) {
     std::string color_string;
     EXTENSION_FUNCTION_VALIDATE(details_->GetString("color", &color_string));
-    if (!ParseCSSColorString(color_string, &color))
+    if (!image_util::ParseCSSColorString(color_string, &color))
       return false;
   }
 

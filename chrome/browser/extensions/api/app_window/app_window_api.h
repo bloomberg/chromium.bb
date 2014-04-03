@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_APP_WINDOW_APP_WINDOW_API_H_
 
 #include "apps/app_window.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
@@ -16,7 +16,7 @@ struct CreateWindowOptions;
 }
 }
 
-class AppWindowCreateFunction : public ChromeAsyncExtensionFunction {
+class AppWindowCreateFunction : public UIThreadExtensionFunction {
  public:
   AppWindowCreateFunction();
   DECLARE_EXTENSION_FUNCTION("app.window.create", APP_WINDOW_CREATE)

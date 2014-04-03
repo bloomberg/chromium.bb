@@ -14,11 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/window_controller.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/app_window.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,17 +24,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/image_util.h"
 #include "extensions/common/switches.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
-
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
 
 using apps::AppWindow;
 
@@ -189,9 +180,9 @@ bool AppWindowCreateFunction::RunImpl() {
       }
 
       if (!options->singleton || *options->singleton) {
-        AppWindow* window = apps::AppWindowRegistry::Get(GetProfile())
+        AppWindow* window = apps::AppWindowRegistry::Get(browser_context())
                                 ->GetAppWindowForAppAndKey(
-                                      extension_id(), create_params.window_key);
+                                    extension_id(), create_params.window_key);
         if (window) {
           content::RenderViewHost* created_view =
               window->web_contents()->GetRenderViewHost();
@@ -275,12 +266,12 @@ bool AppWindowCreateFunction::RunImpl() {
   create_params.creator_process_id =
       render_view_host_->GetProcess()->GetID();
 
-  AppWindow* app_window =
-      apps::AppsClient::Get()->CreateAppWindow(GetProfile(), GetExtension());
+  AppWindow* app_window = apps::AppsClient::Get()->CreateAppWindow(
+      browser_context(), GetExtension());
   app_window->Init(
       url, new apps::AppWindowContentsImpl(app_window), create_params);
 
-  if (chrome::IsRunningInForcedAppMode())
+  if (ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode())
     app_window->ForcedFullscreen();
 
   content::RenderViewHost* created_view =
@@ -297,7 +288,7 @@ bool AppWindowCreateFunction::RunImpl() {
   app_window->GetSerializedState(result);
   SetResult(result);
 
-  if (apps::AppWindowRegistry::Get(GetProfile())
+  if (apps::AppWindowRegistry::Get(browser_context())
           ->HadDevToolsAttached(created_view)) {
     new DevToolsRestorer(this, created_view);
     return true;
@@ -467,9 +458,8 @@ bool AppWindowCreateFunction::GetFrameOptions(
       return false;
     }
 
-    if (ExtensionActionFunction::ParseCSSColorString(
-            *options.frame->as_frame_options->color,
-            &create_params->frame_color)) {
+    if (image_util::ParseCSSColorString(*options.frame->as_frame_options->color,
+                                        &create_params->frame_color)) {
       create_params->has_frame_color = true;
       return true;
     }

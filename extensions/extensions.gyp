@@ -304,6 +304,8 @@
         'browser/extensions_browser_client.cc',
         'browser/extensions_browser_client.h',
         'browser/external_provider_interface.h',
+        'browser/image_util.cc',
+        'browser/image_util.h',
         'browser/info_map.cc',
         'browser/info_map.h',
         'browser/file_highlighter.cc',
