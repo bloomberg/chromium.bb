@@ -2176,6 +2176,8 @@
             'tools/quic/test_tools/quic_test_utils.h',
             'tools/quic/test_tools/server_thread.h',
             'tools/quic/test_tools/server_thread.cc',
+            'tools/quic/test_tools/simple_client.h',
+            'tools/quic/test_tools/simple_client.cc',
           ],
         }],
         ['chromeos==1', {
