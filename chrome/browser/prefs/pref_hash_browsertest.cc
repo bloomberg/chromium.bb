@@ -138,15 +138,16 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
             chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways &&
         GetParam() != chrome_prefs::internals::
                           kSettingsEnforcementGroupEnforceAlwaysWithExtensions;
-    const bool allowed_from_configuration =
+    const bool blocked_by_configuration =
 #if defined(OFFICIAL_BUILD)
         // SettingsEnforcement can't be forced via --force-fieldtrials in
-        // official builds.
+        // official builds. And since the default is the strongest enforcement
+        // level, nothing is allowed.
         true;
 #else
         false;
 #endif
-    return allowed_from_param || allowed_from_configuration;
+    return allowed_from_param && !blocked_by_configuration;
   }
 };
 
