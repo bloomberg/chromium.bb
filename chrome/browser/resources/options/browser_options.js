@@ -1199,7 +1199,8 @@ cr.define('options', function() {
      *         name: "Profile Name",
      *         iconURL: "chrome://path/to/icon/image",
      *         filePath: "/path/to/profile/data/on/disk",
-     *         isCurrentProfile: false
+     *         isCurrentProfile: false,
+     *         isManaged: false
      *       };
      * @private
      */

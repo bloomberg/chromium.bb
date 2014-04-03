@@ -87,11 +87,22 @@ html[dir=rtl] #account-picture-wrapper {
   min-height: 0;
 }
 
+#profiles-list .profile-container {
+  -webkit-box-align: center;
+  display: -webkit-box;
+  max-width: 100%;
+}
+
 #profiles-list .profile-name {
   -webkit-box-flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+#profiles-list .profile-supervised {
+  color: #999;
+  margin-left: 5px;
 }
 
 #profiles-list > * {
