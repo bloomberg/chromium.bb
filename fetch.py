@@ -124,6 +124,9 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
         'submodule', 'foreach',
         'git config -f $toplevel/.git/config submodule.$name.ignore all',
         cwd=wd)
+    self.run_git(
+        'config', '--add', 'remote.origin.fetch',
+        '+refs/tags/*:refs/tags/*', cwd=wd)
     self.run_git('config', 'diff.ignoreSubmodules', 'all', cwd=wd)
 
 
