@@ -111,16 +111,21 @@ SettingsOverridesAPI::GetFactoryInstance() {
 void SettingsOverridesAPI::SetPref(const std::string& extension_id,
                                    const std::string& pref_key,
                                    base::Value* value) {
-  PreferenceAPI::Get(profile_)->SetExtensionControlledPref(
-      extension_id,
-      pref_key,
-      kExtensionPrefsScopeRegular,
-      value);
+  PreferenceAPI* prefs = PreferenceAPI::Get(profile_);
+  if (!prefs)
+    return;  // Expected in unit tests.
+  prefs->SetExtensionControlledPref(extension_id,
+                                    pref_key,
+                                    kExtensionPrefsScopeRegular,
+                                    value);
 }
 
 void SettingsOverridesAPI::UnsetPref(const std::string& extension_id,
                                      const std::string& pref_key) {
-  PreferenceAPI::Get(profile_)->RemoveExtensionControlledPref(
+  PreferenceAPI* prefs = PreferenceAPI::Get(profile_);
+  if (!prefs)
+    return;  // Expected in unit tests.
+  prefs->RemoveExtensionControlledPref(
       extension_id,
       pref_key,
       kExtensionPrefsScopeRegular);

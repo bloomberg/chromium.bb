@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
@@ -93,35 +94,34 @@ bool SettingsApiBubbleDelegate::ShouldIncludeExtension(
   if (prefs->HasSettingsApiBubbleBeenAcknowledged(extension_id))
     return false;
 
-  const SettingsOverrides* settings = SettingsOverrides::Get(extension);
-  if (!settings)
-    return false;
-
-  bool should_include = false;
+  const extensions::Extension* override = NULL;
   switch (type_) {
     case extensions::BUBBLE_TYPE_HOME_PAGE:
-      should_include = settings->homepage != NULL;
+      override = extensions::OverridesHomepage(profile_, NULL);
       break;
     case extensions::BUBBLE_TYPE_STARTUP_PAGES:
-      should_include = !settings->startup_pages.empty();
+      override = extensions::OverridesStartupPages(profile_, NULL);
       break;
     case extensions::BUBBLE_TYPE_SEARCH_ENGINE:
-      should_include = settings->search_engine != NULL;
+      override = extensions::OverridesSearchEngine(profile_, NULL);
       break;
   }
 
-  if (should_include && extension_id_ != extension_id) {
-    DCHECK(extension_id_.empty());
-    extension_id_ = extension_id;
-  }
-  return should_include;
+  if (!override || override->id() != extension->id())
+    return false;
+
+  extension_id_ = extension_id;
+  return true;
 }
 
 void SettingsApiBubbleDelegate::AcknowledgeExtension(
     const std::string& extension_id,
     ExtensionMessageBubbleController::BubbleAction user_action) {
-  extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(profile_);
-  prefs->SetSettingsApiBubbleBeenAcknowledged(extension_id, true);
+  if (user_action != ExtensionMessageBubbleController::ACTION_EXECUTE) {
+    extensions::ExtensionPrefs* prefs =
+        extensions::ExtensionPrefs::Get(profile_);
+    prefs->SetSettingsApiBubbleBeenAcknowledged(extension_id, true);
+  }
 }
 
 void SettingsApiBubbleDelegate::PerformAction(

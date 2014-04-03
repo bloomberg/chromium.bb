@@ -1860,10 +1860,8 @@ void ExtensionPrefs::SetInstallSignature(
 std::string ExtensionPrefs::GetInstallParam(
     const std::string& extension_id) const {
   const base::DictionaryValue* extension = GetExtensionPref(extension_id);
-  if (!extension) {
-    NOTREACHED();
+  if (!extension)  // Expected during unit testing.
     return std::string();
-  }
   std::string install_parameter;
   if (!extension->GetString(kPrefInstallParam, &install_parameter))
     return std::string();

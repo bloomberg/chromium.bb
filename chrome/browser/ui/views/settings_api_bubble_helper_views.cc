@@ -5,8 +5,7 @@
 #include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/extensions/settings_api_helpers.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/extensions/extension_message_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -14,8 +13,6 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
-#include "content/public/browser/browser_context.h"
-#include "extensions/browser/extension_registry.h"
 
 namespace {
 
@@ -86,72 +83,6 @@ void MaybeShowExtensionControlledSearchNotification(
                             views::BubbleBorder::TOP_RIGHT);
     }
   }
-}
-
-const extensions::SettingsOverrides* FindOverridingExtension(
-    content::BrowserContext* browser_context,
-    SettingsApiOverrideType type,
-    const Extension** extension) {
-  const extensions::ExtensionSet& extensions =
-      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
-
-  for (extensions::ExtensionSet::const_iterator it = extensions.begin();
-       it != extensions.end();
-       ++it) {
-    const extensions::SettingsOverrides* settings =
-        extensions::SettingsOverrides::Get(*it);
-    if (settings) {
-      if ((type == BUBBLE_TYPE_HOME_PAGE && settings->homepage) ||
-          (type == BUBBLE_TYPE_STARTUP_PAGES &&
-              !settings->startup_pages.empty()) ||
-          (type == BUBBLE_TYPE_SEARCH_ENGINE && settings->search_engine)) {
-        *extension = *it;
-        return settings;
-      }
-    }
-  }
-
-  return NULL;
-}
-
-const Extension* OverridesHomepage(content::BrowserContext* browser_context,
-                                   GURL* home_page_url) {
-  const extensions::Extension* extension = NULL;
-  const extensions::SettingsOverrides* settings =
-      FindOverridingExtension(
-          browser_context, BUBBLE_TYPE_HOME_PAGE, &extension);
-  if (settings && home_page_url)
-    *home_page_url = *settings->homepage;
-  return extension;
-}
-
-const Extension* OverridesStartupPages(content::BrowserContext* browser_context,
-                                       std::vector<GURL>* startup_pages) {
-  const extensions::Extension* extension = NULL;
-  const extensions::SettingsOverrides* settings =
-      FindOverridingExtension(
-          browser_context, BUBBLE_TYPE_STARTUP_PAGES, &extension);
-  if (settings && startup_pages) {
-    startup_pages->clear();
-    for (std::vector<GURL>::const_iterator it = settings->startup_pages.begin();
-         it != settings->startup_pages.end();
-         ++it)
-      startup_pages->push_back(GURL(*it));
-  }
-  return extension;
-}
-
-const Extension* OverridesSearchEngine(
-    content::BrowserContext* browser_context,
-    api::manifest_types::ChromeSettingsOverrides::Search_provider*
-        search_provider) {
-  const extensions::Extension* extension = NULL;
-  const extensions::SettingsOverrides* settings =
-      FindOverridingExtension(
-          browser_context, BUBBLE_TYPE_SEARCH_ENGINE, &extension);
-  if (settings && search_provider)
-    search_provider = settings->search_engine.get();
-  return extension;
 }
 
 }  // namespace extensions
