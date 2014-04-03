@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_math.h"
 #include "base/process/process.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
@@ -259,8 +260,10 @@ void AudioInputRendererHost::OnCreateStream(
 
   // Create the shared memory and share it with the renderer process
   // using a new SyncWriter object.
-  if (!entry->shared_memory.CreateAndMapAnonymous(
-      segment_size * entry->shared_memory_segment_count)) {
+  base::CheckedNumeric<uint32> size = segment_size;
+  size *= entry->shared_memory_segment_count;
+  if (!size.IsValid() ||
+      !entry->shared_memory.CreateAndMapAnonymous(size.ValueOrDie())) {
     // If creation of shared memory failed then send an error message.
     SendErrorMessage(stream_id, SHARED_MEMORY_CREATE_FAILED);
     return;
