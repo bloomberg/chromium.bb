@@ -135,7 +135,9 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
   bool IsUnloadedProfileSeedingAllowed() const {
     const bool allowed_from_param =
         GetParam() !=
-        chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways;
+            chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways &&
+        GetParam() != chrome_prefs::internals::
+                          kSettingsEnforcementGroupEnforceAlwaysWithExtensions;
     const bool allowed_from_configuration =
 #if defined(OFFICIAL_BUILD)
         // SettingsEnforcement can't be forced via --force-fieldtrials in
@@ -319,4 +321,6 @@ INSTANTIATE_TEST_CASE_P(
     testing::Values(
         chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement,
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
-        chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways));
+        chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
+        chrome_prefs::internals::
+            kSettingsEnforcementGroupEnforceAlwaysWithExtensions));

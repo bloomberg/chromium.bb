@@ -9,10 +9,12 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/user_script_master.h"
+#include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -25,6 +27,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -41,18 +44,29 @@ using extensions::FeatureSwitch;
 
 class ExtensionStartupTestBase : public InProcessBrowserTest {
  public:
-  ExtensionStartupTestBase() :
-      enable_extensions_(false) {
+  ExtensionStartupTestBase() : unauthenticated_load_allowed_(true) {
     num_expected_extensions_ = 3;
   }
 
  protected:
   // InProcessBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (!enable_extensions_)
-      command_line->AppendSwitch(switches::kDisableExtensions);
-
-    if (!load_extensions_.empty()) {
+    if (load_extensions_.empty()) {
+      // If no |load_extensions_| were specified, allow unauthenticated
+      // extension settings to be loaded from Preferences as if they had been
+      // authenticated correctly before they were handed to the ExtensionSystem.
+      command_line->AppendSwitchASCII(
+          switches::kForceFieldTrials,
+          base::StringPrintf(
+              "%s/%s/",
+              chrome_prefs::internals::kSettingsEnforcementTrialName,
+              chrome_prefs::internals::kSettingsEnforcementGroupNoEnforcement));
+#if defined(OFFICIAL_BUILD)
+      // In official builds, it is not possible to disable settings
+      // authentication.
+      unauthenticated_load_allowed_ = false;
+#endif
+    } else {
       base::FilePath::StringType paths = JoinString(load_extensions_, ',');
       command_line->AppendSwitchNative(switches::kLoadExtension,
                                        paths);
@@ -70,7 +84,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     user_scripts_dir_ = profile_dir.AppendASCII("User Scripts");
     extensions_dir_ = profile_dir.AppendASCII("Extensions");
 
-    if (enable_extensions_ && load_extensions_.empty()) {
+    if (load_extensions_.empty()) {
       base::FilePath src_dir;
       PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
       src_dir = src_dir.AppendASCII("extensions").AppendASCII("good");
@@ -107,6 +121,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
         found_extensions++;
     }
 
+    if (!unauthenticated_load_allowed_)
+      num_expected_extensions = 0;
+
     ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
               static_cast<uint32>(found_extensions));
     ASSERT_EQ(expect_extensions_enabled, service->extensions_enabled());
@@ -123,6 +140,11 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   }
 
   void TestInjection(bool expect_css, bool expect_script) {
+    if (!unauthenticated_load_allowed_) {
+      expect_css = false;
+      expect_script = false;
+    }
+
     // Load a page affected by the content script and test to see the effect.
     base::FilePath test_file;
     PathService::Get(chrome::DIR_TEST_DATA, &test_file);
@@ -151,7 +173,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   base::FilePath preferences_file_;
   base::FilePath extensions_dir_;
   base::FilePath user_scripts_dir_;
-  bool enable_extensions_;
+  // True unless unauthenticated extension settings are not allowed to be
+  // loaded in this configuration.
+  bool unauthenticated_load_allowed_;
   // Extensions to load from the command line.
   std::vector<base::FilePath::StringType> load_extensions_;
 
@@ -162,13 +186,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 // ExtensionsStartupTest
 // Ensures that we can startup the browser with --enable-extensions and some
 // extensions installed and see them run and do basic things.
-
-class ExtensionsStartupTest : public ExtensionStartupTestBase {
- public:
-  ExtensionsStartupTest() {
-    enable_extensions_ = true;
-  }
-};
+typedef ExtensionStartupTestBase ExtensionsStartupTest;
 
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
   WaitForServicesToStart(num_expected_extensions_, true);
@@ -216,11 +234,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
 // ExtensionsLoadTest
 // Ensures that we can startup the browser with --load-extension and see them
 // run.
-
 class ExtensionsLoadTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadTest() {
-    enable_extensions_ = true;
     base::FilePath one_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
     one_extension_path = one_extension_path
@@ -247,7 +263,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
 class ExtensionsLoadMultipleTest : public ExtensionStartupTestBase {
  public:
   ExtensionsLoadMultipleTest() {
-    enable_extensions_ = true;
     base::FilePath one_extension_path;
     PathService::Get(chrome::DIR_TEST_DATA, &one_extension_path);
     one_extension_path = one_extension_path
