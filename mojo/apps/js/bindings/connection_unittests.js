@@ -53,16 +53,19 @@ define([
     "mojo/public/bindings/js/connection",
     "mojo/public/interfaces/bindings/tests/sample_interfaces.mojom",
     "mojo/public/interfaces/bindings/tests/sample_service.mojom",
+    "gc",
 ], function(expect,
             mockSupport,
             core,
             connection,
             sample_interfaces,
-            sample_service) {
+            sample_service,
+            gc) {
   testClientServer();
   testWriteToClosedPipe();
   testRequestResponse();
   this.result = "PASS";
+  gc.collectGarbage();  // should not crash
 
   function testClientServer() {
     var receivedFrobinate = false;

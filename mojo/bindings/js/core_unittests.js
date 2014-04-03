@@ -5,11 +5,13 @@
 define([
     "gin/test/expect",
     "mojo/bindings/js/core",
-  ], function(expect, core) {
+    "gc",
+  ], function(expect, core, gc) {
   runWithMessagePipe(testNop);
   runWithMessagePipe(testReadAndWriteMessage);
   runWithDataPipe(testNop);
   runWithDataPipe(testReadAndWriteDataPipe);
+  gc.collectGarbage();  // should not crash
   this.result = "PASS";
 
   function runWithMessagePipe(test) {

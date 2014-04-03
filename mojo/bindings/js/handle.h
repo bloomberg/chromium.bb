@@ -6,10 +6,37 @@
 #define MOJO_BINDINGS_JS_HANDLE_H_
 
 #include "gin/converter.h"
+#include "gin/handle.h"
+#include "gin/wrappable.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace gin {
 
+// Wrapper for mojo Handles exposed to JavaScript. This ensures the Handle
+// is Closed when its JS object is garbage collected.
+class HandleWrapper : public gin::Wrappable<HandleWrapper> {
+ public:
+  static gin::WrapperInfo kWrapperInfo;
+
+  static gin::Handle<HandleWrapper> Create(v8::Isolate* isolate,
+                                           MojoHandle handle) {
+    return gin::CreateHandle(isolate, new HandleWrapper(handle));
+  }
+
+  mojo::Handle get() const { return handle_.get(); }
+  mojo::Handle release() { return handle_.release(); }
+  void Close() { handle_.reset(); }
+
+ protected:
+  HandleWrapper(MojoHandle handle);
+  virtual ~HandleWrapper();
+  mojo::ScopedHandle handle_;
+};
+
+// Note: It's important to use this converter rather than the one for
+// MojoHandle, since that will do a simple int32 conversion. It's unfortunate
+// there's no way to prevent against accidental use.
+// TODO(mpcomplete): define converters for all Handle subtypes.
 template<>
 struct Converter<mojo::Handle> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,

@@ -11,15 +11,37 @@
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/function_template.h"
+#include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
+#include "gin/wrappable.h"
 #include "mojo/bindings/js/handle.h"
 
 namespace mojo {
 namespace js {
 
 namespace {
+
+MojoResult CloseHandle(gin::Handle<gin::HandleWrapper> handle) {
+  if (!handle->get().is_valid())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  handle->Close();
+  return MOJO_RESULT_OK;
+}
+
+MojoResult WaitHandle(mojo::Handle handle,
+                      MojoWaitFlags flags,
+                      MojoDeadline deadline) {
+  return MojoWait(handle.value(), flags, deadline);
+}
+
+MojoResult WaitMany(
+    const std::vector<mojo::Handle>& handles,
+    const std::vector<MojoWaitFlags>& flags,
+    MojoDeadline deadline) {
+  return mojo::WaitMany(handles, flags, deadline);
+}
 
 gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
   MojoHandle handle0 = MOJO_HANDLE_INVALID;
@@ -28,30 +50,41 @@ gin::Dictionary CreateMessagePipe(const gin::Arguments& args) {
   CHECK(result == MOJO_RESULT_OK);
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
-  dictionary.Set("handle0", handle0);
-  dictionary.Set("handle1", handle1);
+  dictionary.Set("handle0", mojo::Handle(handle0));
+  dictionary.Set("handle1", mojo::Handle(handle1));
   return dictionary;
 }
 
-MojoResult WriteMessage(MojoHandle handle,
-                        const gin::ArrayBufferView& buffer,
-                        const std::vector<MojoHandle>& handles,
-                        MojoWriteMessageFlags flags) {
-  return MojoWriteMessage(handle,
+MojoResult WriteMessage(
+    mojo::Handle handle,
+    const gin::ArrayBufferView& buffer,
+    const std::vector<gin::Handle<gin::HandleWrapper> >& handles,
+    MojoWriteMessageFlags flags) {
+  std::vector<MojoHandle> raw_handles(handles.size());
+  for (size_t i = 0; i < handles.size(); ++i)
+    raw_handles[i] = handles[i]->get().value();
+  MojoResult rv = MojoWriteMessage(handle.value(),
                           buffer.bytes(),
                           static_cast<uint32_t>(buffer.num_bytes()),
-                          handles.empty() ? NULL : &handles[0],
-                          static_cast<uint32_t>(handles.size()),
+                          raw_handles.empty() ? NULL : &raw_handles[0],
+                          static_cast<uint32_t>(raw_handles.size()),
                           flags);
+  // MojoWriteMessage takes ownership of the handles upon success, so
+  // release them here.
+  if (rv == MOJO_RESULT_OK) {
+    for (size_t i = 0; i < handles.size(); ++i)
+      mojo::Handle _ MOJO_ALLOW_UNUSED = handles[i]->release();
+  }
+  return rv;
 }
 
 gin::Dictionary ReadMessage(const gin::Arguments& args,
-                            MojoHandle handle,
+                            mojo::Handle handle,
                             MojoReadMessageFlags flags) {
   uint32_t num_bytes = 0;
   uint32_t num_handles = 0;
   MojoResult result = MojoReadMessage(
-      handle, NULL, &num_bytes, NULL, &num_handles, flags);
+      handle.value(), NULL, &num_bytes, NULL, &num_handles, flags);
   if (result != MOJO_RESULT_RESOURCE_EXHAUSTED) {
     gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
     dictionary.Set("result", result);
@@ -60,16 +93,17 @@ gin::Dictionary ReadMessage(const gin::Arguments& args,
 
   v8::Handle<v8::ArrayBuffer> array_buffer =
       v8::ArrayBuffer::New(args.isolate(), num_bytes);
-  std::vector<MojoHandle> handles(num_handles);
+  std::vector<mojo::Handle> handles(num_handles);
 
   gin::ArrayBuffer buffer;
   ConvertFromV8(args.isolate(), array_buffer, &buffer);
   CHECK(buffer.num_bytes() == num_bytes);
 
-  result = MojoReadMessage(handle,
+  result = MojoReadMessage(handle.value(),
                            buffer.bytes(),
                            &num_bytes,
-                           handles.empty() ? NULL : &handles[0],
+                           handles.empty() ? NULL :
+                               reinterpret_cast<MojoHandle*>(&handles[0]),
                            &num_handles,
                            flags);
 
@@ -116,17 +150,18 @@ gin::Dictionary CreateDataPipe(const gin::Arguments& args,
   CHECK_EQ(MOJO_RESULT_OK, result);
 
   dictionary.Set("result", result);
-  dictionary.Set("producerHandle", producer_handle);
-  dictionary.Set("consumerHandle", consumer_handle);
+  dictionary.Set("producerHandle", mojo::Handle(producer_handle));
+  dictionary.Set("consumerHandle", mojo::Handle(consumer_handle));
   return dictionary;
 }
 
 gin::Dictionary WriteData(const gin::Arguments& args,
-                          MojoHandle handle,
+                          mojo::Handle handle,
                           const gin::ArrayBufferView& buffer,
                           MojoWriteDataFlags flags) {
   uint32_t num_bytes = static_cast<uint32_t>(buffer.num_bytes());
-  MojoResult result = MojoWriteData(handle, buffer.bytes(), &num_bytes, flags);
+  MojoResult result =
+      MojoWriteData(handle.value(), buffer.bytes(), &num_bytes, flags);
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
   dictionary.Set("result", result);
   dictionary.Set("numBytes", num_bytes);
@@ -134,11 +169,11 @@ gin::Dictionary WriteData(const gin::Arguments& args,
 }
 
 gin::Dictionary ReadData(const gin::Arguments& args,
-                         MojoHandle handle,
+                         mojo::Handle handle,
                          MojoReadDataFlags flags) {
   uint32_t num_bytes = 0;
   MojoResult result = MojoReadData(
-      handle, NULL, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
+      handle.value(), NULL, &num_bytes, MOJO_READ_DATA_FLAG_QUERY);
   if (result != MOJO_RESULT_OK) {
     gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
     dictionary.Set("result", result);
@@ -151,7 +186,7 @@ gin::Dictionary ReadData(const gin::Arguments& args,
   ConvertFromV8(args.isolate(), array_buffer, &buffer);
   CHECK_EQ(num_bytes, buffer.num_bytes());
 
-  result = MojoReadData(handle, buffer.bytes(), &num_bytes, flags);
+  result = MojoReadData(handle.value(), buffer.bytes(), &num_bytes, flags);
   CHECK_EQ(num_bytes, buffer.num_bytes());
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
@@ -173,10 +208,11 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
 
   if (templ.IsEmpty()) {
      templ = gin::ObjectTemplateBuilder(isolate)
-        .SetMethod("close", mojo::CloseRaw)
-        .SetMethod("wait", mojo::Wait)
-        .SetMethod("waitMany", mojo::WaitMany<std::vector<mojo::Handle>,
-                                              std::vector<MojoWaitFlags> >)
+        // TODO(mpcomplete): Should these just be methods on the JS Handle
+        // object?
+        .SetMethod("close", CloseHandle)
+        .SetMethod("wait", WaitHandle)
+        .SetMethod("waitMany", WaitMany)
         .SetMethod("createMessagePipe", CreateMessagePipe)
         .SetMethod("writeMessage", WriteMessage)
         .SetMethod("readMessage", ReadMessage)

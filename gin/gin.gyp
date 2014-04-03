@@ -103,6 +103,8 @@
       'sources': [
         'test/file_runner.cc',
         'test/file_runner.h',
+        'test/gc.cc',
+        'test/gc.h',
         'test/gtest.cc',
         'test/gtest.h',
         'test/v8_test.cc',

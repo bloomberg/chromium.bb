@@ -12,6 +12,7 @@
 #include "gin/modules/module_registry.h"
 #include "gin/public/context_holder.h"
 #include "gin/public/isolate_holder.h"
+#include "gin/test/gc.h"
 #include "gin/test/gtest.h"
 #include "gin/try_catch.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,6 +35,7 @@ FileRunnerDelegate::FileRunnerDelegate()
     : ModuleRunnerDelegate(GetModuleSearchPaths()) {
   AddBuiltinModule(Console::kModuleName, Console::GetModule);
   AddBuiltinModule(GTest::kModuleName, GTest::GetModule);
+  AddBuiltinModule(GC::kModuleName, GC::GetModule);
 }
 
 FileRunnerDelegate::~FileRunnerDelegate() {

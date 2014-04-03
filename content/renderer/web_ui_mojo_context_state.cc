@@ -14,6 +14,7 @@
 #include "gin/public/context_holder.h"
 #include "gin/try_catch.h"
 #include "mojo/bindings/js/core.h"
+#include "mojo/bindings/js/handle.h"
 #include "mojo/bindings/js/support.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -41,7 +42,7 @@ void RunMain(base::WeakPtr<gin::Runner> runner,
   v8::Handle<v8::Function> start;
   CHECK(gin::ConvertFromV8(isolate, module, &start));
   v8::Handle<v8::Value> args[] = {
-      gin::ConvertToV8(isolate, handle->release().value()) };
+      gin::ConvertToV8(isolate, mojo::Handle(handle->release().value())) };
   runner->Call(start, runner->global(), 1, args);
 }
 
