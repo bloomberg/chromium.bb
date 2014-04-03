@@ -27,10 +27,6 @@ using ui::GestureConfiguration;
 
 namespace {
 
-// TODO(tdresser): Remove this deprecated pref. See crbug.com/339486.
-const char kMinScrollSuccessiveVelocityEvents[] =
-    "gesture.min_scroll_successive_velocity_events";
-
 struct OverscrollPref {
   const char* pref_name;
   content::OverscrollConfig config;
@@ -137,9 +133,6 @@ const char* kFlingTouchscreenPrefs[] = {
 
 GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
     : prefs_(prefs) {
-  // Clear for migration.
-  prefs->ClearPref(kMinScrollSuccessiveVelocityEvents);
-
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
@@ -435,13 +428,6 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
       prefs::kShowPressDelayInMS,
       GestureConfiguration::show_press_delay_in_ms(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  // Register for migration.
-  registry->RegisterIntegerPref(
-      kMinScrollSuccessiveVelocityEvents,
-      0,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);
 }
