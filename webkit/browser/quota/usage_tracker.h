@@ -25,6 +25,7 @@
 namespace quota {
 
 class ClientUsageTracker;
+class StorageMonitor;
 
 // A helper class that gathers and tracks the amount of data stored in
 // all quota clients.
@@ -32,7 +33,8 @@ class ClientUsageTracker;
 class WEBKIT_STORAGE_BROWSER_EXPORT UsageTracker : public QuotaTaskObserver {
  public:
   UsageTracker(const QuotaClientList& clients, StorageType type,
-               SpecialStoragePolicy* special_storage_policy);
+               SpecialStoragePolicy* special_storage_policy,
+               StorageMonitor* storage_monitor);
   virtual ~UsageTracker();
 
   StorageType type() const { return type_; }
@@ -82,6 +84,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT UsageTracker : public QuotaTaskObserver {
   GlobalUsageCallbackQueue global_usage_callbacks_;
   HostUsageCallbackMap host_usage_callbacks_;
 
+  StorageMonitor* storage_monitor_;
+
   base::WeakPtrFactory<UsageTracker> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(UsageTracker);
 };
@@ -101,7 +105,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   ClientUsageTracker(UsageTracker* tracker,
                      QuotaClient* client,
                      StorageType type,
-                     SpecialStoragePolicy* special_storage_policy);
+                     SpecialStoragePolicy* special_storage_policy,
+                     StorageMonitor* storage_monitor);
   virtual ~ClientUsageTracker();
 
   void GetGlobalLimitedUsage(const UsageCallback& callback);
@@ -152,6 +157,8 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
                              const GURL& origin,
                              int64 usage);
 
+  void DidGetHostUsageAfterUpdate(const GURL& origin, int64 usage);
+
   // Methods used by our GatherUsage tasks, as a task makes progress
   // origins and hosts are added incrementally to the cache.
   void AddCachedOrigin(const GURL& origin, int64 usage);
@@ -171,6 +178,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   UsageTracker* tracker_;
   QuotaClient* client_;
   const StorageType type_;
+  StorageMonitor* storage_monitor_;
 
   int64 global_limited_usage_;
   int64 global_unlimited_usage_;

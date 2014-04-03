@@ -121,7 +121,7 @@ class UsageTrackerTest : public testing::Test {
   UsageTrackerTest()
       : storage_policy_(new MockSpecialStoragePolicy()),
         usage_tracker_(GetUsageTrackerList(), kStorageTypeTemporary,
-                       storage_policy_.get()) {
+                       storage_policy_.get(), NULL) {
   }
 
   virtual ~UsageTrackerTest() {}

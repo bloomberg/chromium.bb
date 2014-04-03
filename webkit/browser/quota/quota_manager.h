@@ -25,6 +25,7 @@
 #include "webkit/browser/quota/quota_database.h"
 #include "webkit/browser/quota/quota_task.h"
 #include "webkit/browser/quota/special_storage_policy.h"
+#include "webkit/browser/quota/storage_observer.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
 namespace base {
@@ -43,6 +44,7 @@ class MockQuotaManager;
 class QuotaDatabase;
 class QuotaManagerProxy;
 class QuotaTemporaryStorageEvictor;
+class StorageMonitor;
 class UsageTracker;
 
 struct QuotaManagerDeleter;
@@ -225,6 +227,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManager
 
   bool ResetUsageTracker(StorageType type);
 
+  // Used to register/deregister observers that wish to monitor storage events.
+  void AddStorageObserver(StorageObserver* observer,
+                          const StorageObserver::MonitorParams& params);
+  void RemoveStorageObserver(StorageObserver* observer);
+  void RemoveStorageObserverForFilter(StorageObserver* observer,
+                                      const StorageObserver::Filter& filter);
+
   // Determines the portion of the temp pool that can be
   // utilized by a single host (ie. 5 for 20%).
   static const int kPerHostTemporaryPortion;
@@ -256,6 +265,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManager
   friend class QuotaManagerTest;
   friend class QuotaTemporaryStorageEvictor;
   friend struct QuotaManagerDeleter;
+  friend class StorageMonitorTest;
 
   class GetUsageInfoTask;
 
@@ -423,6 +433,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaManager
   // overwritten by QuotaManagerTest in order to attain a deterministic reported
   // value. The default value points to base::SysInfo::AmountOfFreeDiskSpace.
   GetAvailableDiskSpaceFn get_disk_space_fn_;
+
+  scoped_ptr<StorageMonitor> storage_monitor_;
 
   base::WeakPtrFactory<QuotaManager> weak_factory_;
 

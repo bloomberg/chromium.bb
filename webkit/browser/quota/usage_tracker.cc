@@ -14,6 +14,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/stl_util.h"
 #include "net/base/net_util.h"
+#include "webkit/browser/quota/storage_monitor.h"
+#include "webkit/browser/quota/storage_observer.h"
 
 namespace quota {
 
@@ -35,8 +37,6 @@ void DidGetHostUsage(const UsageCallback& callback,
   DCHECK_GE(unlimited_usage, 0);
   callback.Run(limited_usage + unlimited_usage);
 }
-
-void NoopHostUsageCallback(int64 usage) {}
 
 bool EraseOriginFromOriginSet(OriginSetByHost* origins_by_host,
                               const std::string& host,
@@ -72,15 +72,18 @@ void DidGetGlobalUsageForLimitedGlobalUsage(const UsageCallback& callback,
 
 UsageTracker::UsageTracker(const QuotaClientList& clients,
                            StorageType type,
-                           SpecialStoragePolicy* special_storage_policy)
+                           SpecialStoragePolicy* special_storage_policy,
+                           StorageMonitor* storage_monitor)
     : type_(type),
+      storage_monitor_(storage_monitor),
       weak_factory_(this) {
   for (QuotaClientList::const_iterator iter = clients.begin();
       iter != clients.end();
       ++iter) {
     if ((*iter)->DoesSupport(type)) {
       client_tracker_map_[(*iter)->id()] =
-          new ClientUsageTracker(this, *iter, type, special_storage_policy);
+          new ClientUsageTracker(this, *iter, type, special_storage_policy,
+                                 storage_monitor_);
     }
   }
 }
@@ -271,10 +274,12 @@ void UsageTracker::AccumulateClientHostUsage(AccumulateInfo* info,
 
 ClientUsageTracker::ClientUsageTracker(
     UsageTracker* tracker, QuotaClient* client, StorageType type,
-    SpecialStoragePolicy* special_storage_policy)
+    SpecialStoragePolicy* special_storage_policy,
+    StorageMonitor* storage_monitor)
     : tracker_(tracker),
       client_(client),
       type_(type),
+      storage_monitor_(storage_monitor),
       global_limited_usage_(0),
       global_unlimited_usage_(0),
       global_usage_retrieved_(false),
@@ -364,11 +369,19 @@ void ClientUsageTracker::UpdateUsageCache(
       global_limited_usage_ += delta;
     DCHECK_GE(cached_usage_by_host_[host][origin], 0);
     DCHECK_GE(global_limited_usage_, 0);
+
+    // Notify the usage monitor that usage has changed. The storage monitor may
+    // be NULL during tests.
+    if (storage_monitor_) {
+      StorageObserver::Filter filter(type_, origin);
+      storage_monitor_->NotifyUsageChange(filter, delta);
+    }
     return;
   }
 
   // We don't know about this host yet, so populate our cache for it.
-  GetHostUsage(host, base::Bind(&NoopHostUsageCallback));
+  GetHostUsage(host, base::Bind(&ClientUsageTracker::DidGetHostUsageAfterUpdate,
+                                AsWeakPtr(), origin));
 }
 
 void ClientUsageTracker::GetCachedHostsUsage(
@@ -547,6 +560,15 @@ void ClientUsageTracker::AccumulateOriginUsage(AccumulateInfo* info,
   AddCachedHost(host);
   host_usage_accumulators_.Run(
       host, MakeTuple(info->limited_usage, info->unlimited_usage));
+}
+
+void ClientUsageTracker::DidGetHostUsageAfterUpdate(
+    const GURL& origin, int64 usage) {
+  if (!storage_monitor_)
+    return;
+
+  StorageObserver::Filter filter(type_, origin);
+  storage_monitor_->NotifyUsageChange(filter, 0);
 }
 
 void ClientUsageTracker::AddCachedOrigin(

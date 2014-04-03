@@ -650,6 +650,7 @@
         '../webkit/browser/quota/quota_database_unittest.cc',
         '../webkit/browser/quota/quota_manager_unittest.cc',
         '../webkit/browser/quota/quota_temporary_storage_evictor_unittest.cc',
+        '../webkit/browser/quota/storage_monitor_unittest.cc',
         '../webkit/browser/quota/usage_tracker_unittest.cc',
       ],
       'conditions': [
