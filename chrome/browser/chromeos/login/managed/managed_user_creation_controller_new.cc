@@ -72,6 +72,10 @@ void ManagedUserCreationControllerNew::SetManagerProfile(
   creation_context_->manager_profile = manager_profile;
 }
 
+Profile* ManagedUserCreationControllerNew::GetManagerProfile() {
+  return creation_context_->manager_profile;
+}
+
 void ManagedUserCreationControllerNew::StartCreation(
     const base::string16& display_name,
     const std::string& password,
@@ -105,7 +109,6 @@ void ManagedUserCreationControllerNew::StartImport(
 
 void ManagedUserCreationControllerNew::StartImport(
     const base::string16& display_name,
-    const std::string& password,
     int avatar_index,
     const std::string& sync_id,
     const std::string& master_key,
@@ -113,10 +116,10 @@ void ManagedUserCreationControllerNew::StartImport(
     const std::string& encryption_key,
     const std::string& signature_key) {
   DCHECK(creation_context_);
-  creation_context_->creation_type = USER_IMPORT_OLD;
+  creation_context_->creation_type = USER_IMPORT_NEW;
 
   creation_context_->display_name = display_name;
-  creation_context_->password = password;
+
   creation_context_->avatar_index = avatar_index;
 
   creation_context_->sync_user_id = sync_id;

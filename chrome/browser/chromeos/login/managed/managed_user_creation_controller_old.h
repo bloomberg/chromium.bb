@@ -58,7 +58,17 @@ class ManagedUserCreationControllerOld
                            const std::string& sync_id,
                            const std::string& master_key) OVERRIDE;
 
+  // Not implemented in this class.
+  virtual void StartImport(const base::string16& display_name,
+                           int avatar_index,
+                           const std::string& sync_id,
+                           const std::string& master_key,
+                           const base::DictionaryValue* password_data,
+                           const std::string& encryption_key,
+                           const std::string& signature_key) OVERRIDE;
+
   virtual void SetManagerProfile(Profile* manager_profile) OVERRIDE;
+  virtual Profile* GetManagerProfile() OVERRIDE;
 
   virtual void CancelCreation() OVERRIDE;
   virtual void FinishCreation() OVERRIDE;

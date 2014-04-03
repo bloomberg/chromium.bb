@@ -228,6 +228,7 @@ void ManagedUserRegistrationUtilityImpl::Register(
   callback_ = callback;
   pending_managed_user_id_ = managed_user_id;
 
+  bool need_password_update = !info.password_data.empty();
   const base::DictionaryValue* dict =
       prefs_->GetDictionary(prefs::kManagedUsers);
   is_existing_managed_user_ = dict->HasKey(managed_user_id);
@@ -265,6 +266,7 @@ void ManagedUserRegistrationUtilityImpl::Register(
           info.avatar_index);
     } else {
       // The user already exists and does not need to be updated.
+      need_password_update = false;
       OnManagedUserAcknowledged(managed_user_id);
     }
     avatar_updated_ =
@@ -280,7 +282,7 @@ void ManagedUserRegistrationUtilityImpl::Register(
   managed_user_shared_settings_service_->SetValue(
       pending_managed_user_id_, kAvatarKey,
       base::FundamentalValue(info.avatar_index));
-  if (!info.password_data.empty()) {
+  if (need_password_update) {
     password_update_.reset(new ManagedUserSharedSettingsUpdate(
         managed_user_shared_settings_service_,
         pending_managed_user_id_,

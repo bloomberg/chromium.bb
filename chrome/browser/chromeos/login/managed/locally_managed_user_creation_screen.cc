@@ -21,6 +21,9 @@
 #include "chrome/browser/chromeos/login/user_image.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/managed_mode/managed_user_constants.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
+#include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -226,11 +229,17 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
   }
   base::string16 display_name;
   std::string master_key;
+  std::string signature_key;
+  std::string encryption_key;
   std::string avatar;
   bool exists;
   int avatar_index = ManagedUserCreationController::kDummyAvatarIndex;
   user_info->GetString(ManagedUserSyncService::kName, &display_name);
   user_info->GetString(ManagedUserSyncService::kMasterKey, &master_key);
+  user_info->GetString(ManagedUserSyncService::kPasswordSignatureKey,
+                       &signature_key);
+  user_info->GetString(ManagedUserSyncService::kPasswordEncryptionKey,
+                       &encryption_key);
   user_info->GetString(ManagedUserSyncService::kChromeOsAvatar, &avatar);
   user_info->GetBoolean(kUserExists, &exists);
 
@@ -248,11 +257,27 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
 
   ManagedUserSyncService::GetAvatarIndex(avatar, &avatar_index);
 
-  controller_->StartImport(display_name,
-                           std::string(),
-                           avatar_index,
-                           user_id,
-                           master_key);
+  const base::DictionaryValue* password_data = NULL;
+  ManagedUserSharedSettingsService* shared_settings_service =
+      ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
+          controller_->GetManagerProfile());
+  const base::Value* value = shared_settings_service->GetValue(
+      user_id, managed_users::kChromeOSPasswordData);
+
+  bool password_right_here = value && value->GetAsDictionary(&password_data) &&
+                             !password_data->empty();
+
+  if (password_right_here) {
+    controller_->StartImport(display_name,
+                             avatar_index,
+                             user_id,
+                             master_key,
+                             password_data,
+                             encryption_key,
+                             signature_key);
+  } else {
+    NOTREACHED() << " Oops, no password";
+  }
 }
 
 // TODO(antrim): Code duplication with previous method will be removed once
@@ -503,8 +528,14 @@ void LocallyManagedUserCreationScreen::OnGetManagedUsers(
       ui_copy->SetString(kUserConflict, kUserConflictName);
     }
     ui_copy->SetString(ManagedUserSyncService::kName, display_name);
-    // TODO(antrim): For now mark all users as having no password.
-    ui_copy->SetBoolean(kUserNeedPassword, true);
+
+    std::string signature_key;
+    bool has_password =
+        local_copy->GetString(ManagedUserSyncService::kPasswordSignatureKey,
+                              &signature_key) &&
+        !signature_key.empty();
+
+    ui_copy->SetBoolean(kUserNeedPassword, !has_password);
     ui_copy->SetString("id", it.key());
 
     existing_users_->Set(it.key(), local_copy);
