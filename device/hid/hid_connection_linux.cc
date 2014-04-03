@@ -232,8 +232,11 @@ bool HidConnectionLinux::FindHidrawDevNode(udev_device* parent,
     std::string device_path = udev_device_get_devpath(hid_dev.get());
     if (raw_path &&
         !device_path.compare(0, parent_path.length(), parent_path)) {
-      *result = raw_path;
-      return true;
+      std::string sub_path = device_path.substr(parent_path.length());
+      if (sub_path.substr(0, sizeof(kHidrawSubsystem)-1) == kHidrawSubsystem) {
+        *result = raw_path;
+        return true;
+      }
     }
   }
 
@@ -241,3 +244,4 @@ bool HidConnectionLinux::FindHidrawDevNode(udev_device* parent,
 }
 
 }  // namespace device
+
