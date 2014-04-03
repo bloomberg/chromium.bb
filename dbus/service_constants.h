@@ -256,13 +256,15 @@ const char kHandlePowerButtonAcknowledgmentMethod[] =
 const char kBrightnessChangedSignal[] = "BrightnessChanged";
 const char kKeyboardBrightnessChangedSignal[] = "KeyboardBrightnessChanged";
 const char kPeripheralBatteryStatusSignal[] = "PeripheralBatteryStatus";
-const char kPowerStateChangedSignal[] = "PowerStateChanged";
 const char kPowerSupplyPollSignal[] = "PowerSupplyPoll";
 const char kSuspendImminentSignal[] = "SuspendImminent";
+const char kSuspendDoneSignal[] = "SuspendDone";
 const char kInputEventSignal[] = "InputEvent";
-const char kSuspendStateChangedSignal[] = "SuspendStateChanged";
 const char kIdleActionImminentSignal[] = "IdleActionImminent";
 const char kIdleActionDeferredSignal[] = "IdleActionDeferred";
+// TODO(derat): Remove these once nobody is using them: http://crbug.com/359619
+const char kPowerStateChangedSignal[] = "PowerStateChanged";
+const char kSuspendStateChangedSignal[] = "SuspendStateChanged";
 // Values
 const int kBrightnessTransitionGradual = 1;
 const int kBrightnessTransitionInstant = 2;

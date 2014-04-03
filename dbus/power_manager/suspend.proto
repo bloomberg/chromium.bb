@@ -11,6 +11,9 @@ package power_manager;
 // Included in powerd's SuspendStateChanged signal, sent when the system is
 // suspending or has just resumed.  The SUSPEND_TO_MEMORY notification may
 // arrive after the subsequent resume.
+// TODO(derat): Remove this; other processes should register suspend delays if
+// they need to be notified before the system suspends and listen for
+// SuspendDone to learn when the process is complete.
 message SuspendState {
   // Next ID to use: 3
 
@@ -35,18 +38,21 @@ message SuspendState {
 // The general flow is as follows:
 //
 // 1. A client that needs to perform some work before the system can be
-//    suspended listens for SuspendImminent messages from powerd.
+//    suspended listens for SuspendImminent and SuspendDone signals from powerd.
 // 2. The client passes a RegisterSuspendDelayRequest to powerd's
 //    RegisterSuspendDelay method and receives a RegisterSuspendDelayReply in
 //    response.  The client saves the |delay_id| field from the response.
 // 3. When the power manager is about to suspend the system, it emits a
 //    SuspendImminent signal containing this message.
 // 4. Upon receipt of the signal, the client performs any last minute work
-//    that it needs to do and then calls powerd's HandleSuspendReadiness,
-//    including its client ID and the |suspend_id| field from the signal.
+//    that it needs to do and then calls powerd's HandleSuspendReadiness method,
+//    including its |delay_id| and the |suspend_id| field from the signal.
 // 5. Once powerd has received notification that all registered clients are
 //    ready to suspend, the system will be suspended.
-// 6. Before the client exits, it calls UnregisterSuspendDelayRequest with its
+// 6. After the system resumes (or the suspend attempt fails or is canceled),
+//    powerd emits a SuspendDone signal. The client may undo any pre-suspend
+//    work that was done in response to the SuspendImminent signal.
+// 7. Before the client exits, it calls UnregisterSuspendDelayRequest with its
 //    delay ID.
 message SuspendImminent {
   // Next ID to use: 2
@@ -54,6 +60,21 @@ message SuspendImminent {
   // Unique ID corresponding to this suspend attempt.  This is included in the
   // SuspendReadinessInfo message passed via HandleSuspendReadiness.
   optional int32 suspend_id = 1;
+}
+
+// Included in powerd's SuspendDone signal, sent after the system has completed
+// a suspend attempt (either by suspending and resuming or by failing to
+// suspend). Each SuspendImminent signal will be followed by a SuspendDone
+// signal.
+message SuspendDone {
+  // Next ID to use: 3
+
+  // Unique ID corresponding to the suspend attempt.
+  optional int32 suspend_id = 1;
+
+  // Wall time that the system was suspended, as given by
+  // base::TimeDelta::ToInternalValue().
+  optional int64 suspend_duration = 2;
 }
 
 // Included in calls to powerd's RegisterSuspendDelay method.
