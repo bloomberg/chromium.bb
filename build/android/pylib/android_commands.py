@@ -964,31 +964,40 @@ class AndroidCommands(object):
     host_hash_tuples, device_hash_tuples = self._RunMd5Sum(
         real_host_path, real_device_path)
 
-    # Ignore extra files on the device.
-    if not ignore_filenames:
-      host_files = [os.path.relpath(os.path.normpath(p.path),
-                                    real_host_path) for p in host_hash_tuples]
-
-      def HostHas(fname):
-        return any(path in fname for path in host_files)
-
-      device_hash_tuples = [h for h in device_hash_tuples if HostHas(h.path)]
-
     if len(host_hash_tuples) > len(device_hash_tuples):
       logging.info('%s files do not exist on the device' %
                    (len(host_hash_tuples) - len(device_hash_tuples)))
 
-    # Constructs the target device path from a given host path. Don't use when
-    # only a single file is given as the base name given in device_path may
-    # differ from that in host_path.
-    def HostToDevicePath(host_file_path):
-      return os.path.join(device_path, os.path.relpath(host_file_path,
-                                                       real_host_path))
+    host_rel = [(os.path.relpath(os.path.normpath(t.path), real_host_path),
+                 t.hash)
+                for t in host_hash_tuples]
 
-    device_hashes = [h.hash for h in device_hash_tuples]
-    return [(t.path, HostToDevicePath(t.path) if
-             os.path.isdir(real_host_path) else real_device_path)
-            for t in host_hash_tuples if t.hash not in device_hashes]
+    if os.path.isdir(real_host_path):
+      def RelToRealPaths(rel_path):
+        return (os.path.join(real_host_path, rel_path),
+                os.path.join(real_device_path, rel_path))
+    else:
+      assert len(host_rel) == 1
+      def RelToRealPaths(_):
+        return (real_host_path, real_device_path)
+
+    if ignore_filenames:
+      # If we are ignoring file names, then we want to push any file for which
+      # a file with an equivalent MD5 sum does not exist on the device.
+      device_hashes = set([h.hash for h in device_hash_tuples])
+      ShouldPush = lambda p, h: h not in device_hashes
+    else:
+      # Otherwise, we want to push any file on the host for which a file with
+      # an equivalent MD5 sum does not exist at the same relative path on the
+      # device.
+      device_rel = dict([(os.path.relpath(os.path.normpath(t.path),
+                                          real_device_path),
+                          t.hash)
+                         for t in device_hash_tuples])
+      ShouldPush = lambda p, h: p not in device_rel or h != device_rel[p]
+
+    return [RelToRealPaths(path) for path, host_hash in host_rel
+            if ShouldPush(path, host_hash)]
 
   def PushIfNeeded(self, host_path, device_path):
     """Pushes |host_path| to |device_path|.
