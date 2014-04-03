@@ -46,7 +46,7 @@
           'CPU_CISC',
         ],
       }],
-      ['target_arch=="arm" or target_arch=="armv7"', {
+      ['target_arch=="arm" or target_arch=="armv7" or target_arch=="arm64"', {
         'defines': [
           # TODO(leozwang): CPU_RISC doesn't work properly on android/arm
           # platform for unknown reasons, need to investigate the root cause
@@ -154,7 +154,7 @@
             # sources
             'srtp/srtp/ekt.c',
             'srtp/srtp/srtp.c',
-        
+
             'srtp/crypto/cipher/aes.c',
             'srtp/crypto/cipher/aes_cbc.c',
             'srtp/crypto/cipher/aes_icm.c',
