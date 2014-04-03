@@ -717,6 +717,7 @@
     { "name": "mbp.banking.co.at", "mode": "force-https" },
     { "name": "feedbin.com", "mode": "force-https" },
     { "name": "heha.co", "include_subdomains": true, "mode": "force-https" },
+    { "name": "passwordbox.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
