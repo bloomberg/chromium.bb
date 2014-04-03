@@ -4168,7 +4168,7 @@ int main(int argc, char *argv[])
 						 NULL);
 
 	if (!backend) {
-		if (getenv("WAYLAND_DISPLAY"))
+		if (getenv("WAYLAND_DISPLAY") || getenv("WAYLAND_SOCKET"))
 			backend = strdup("wayland-backend.so");
 		else if (getenv("DISPLAY"))
 			backend = strdup("x11-backend.so");
