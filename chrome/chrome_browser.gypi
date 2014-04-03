@@ -1420,8 +1420,6 @@
         'browser/notifications/notification_system_observer.h',
         'browser/notifications/notification_ui_manager.cc',
         'browser/notifications/notification_ui_manager.h',
-        'browser/notifications/notification_ui_manager_mac.mm',
-        'browser/notifications/notification_ui_manager_mac.h',
         'browser/notifications/sync_notifier/chrome_notifier_delegate.cc',
         'browser/notifications/sync_notifier/chrome_notifier_delegate.h',
         'browser/notifications/sync_notifier/chrome_notifier_service.cc',

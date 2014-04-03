@@ -28,7 +28,6 @@ bool NotificationUIManager::DelegatesToMessageCenter() {
   return message_center::IsRichNotificationEnabled();
 }
 
-#if !defined(OS_MACOSX)
 // static
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   if (DelegatesToMessageCenter()) {
@@ -47,6 +46,10 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   // the dependent classes there.
   CHECK(false);
   return NULL;
+#elif defined(OS_MACOSX) || defined(USE_AURA)
+  // IsRichNotificationEnabled() always returns true in this case.
+  CHECK(false);
+  return NULL;
 #else
   BalloonNotificationUIManager* balloon_manager =
       new BalloonNotificationUIManager(local_state);
@@ -54,4 +57,3 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   return balloon_manager;
 #endif
 }
-#endif

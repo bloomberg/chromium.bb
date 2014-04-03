@@ -30,13 +30,6 @@ DEFINE_EMPTY_PROTOCOL(ICCameraDeviceDownloadDelegate)
 
 #endif  // MAC_OS_X_VERSION_10_7
 
-#if !defined(MAC_OS_X_VERSION_10_8) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_8
-
-DEFINE_EMPTY_PROTOCOL(NSUserNotificationCenterDelegate)
-
-#endif  // MAC_OS_X_VERSION_10_8
-
 #undef DEFINE_EMPTY_PROTOCOL
 
 #endif  // BASE_COCOA_PROTOCOLS_MAC_H_
