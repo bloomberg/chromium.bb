@@ -37,6 +37,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/UniqueIdentifier.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/testing/UnitTestHelpers.h"
 #include "platform/SharedBuffer.h"
@@ -109,6 +110,8 @@ TEST(ImageResourceTest, CancelOnDetach)
 
     // Emulate starting a real load.
     ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
+    cachedImage->setIdentifier(createUniqueIdentifier());
+
     cachedImage->load(documentLoader->fetcher(), ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
