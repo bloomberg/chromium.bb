@@ -27,11 +27,6 @@
 
 using content::BrowserThread;
 
-// Whether we accept requests for launching external protocols. This is set to
-// false every time an external protocol is requested, and set back to true on
-// each user gesture. This variable should only be accessed from the UI thread.
-static bool g_accept_requests = true;
-
 namespace {
 
 // Functions enabling unit testing. Using a NULL delegate will use the default
@@ -49,11 +44,13 @@ ShellIntegration::DefaultProtocolClientWorker* CreateShellWorker(
 
 ExternalProtocolHandler::BlockState GetBlockStateWithDelegate(
     const std::string& scheme,
-    ExternalProtocolHandler::Delegate* delegate) {
+    ExternalProtocolHandler::Delegate* delegate,
+    bool initiated_by_user_gesture) {
   if (!delegate)
-    return ExternalProtocolHandler::GetBlockState(scheme);
+    return ExternalProtocolHandler::GetBlockState(scheme,
+                                                  initiated_by_user_gesture);
 
-  return delegate->GetBlockState(scheme);
+  return delegate->GetBlockState(scheme, initiated_by_user_gesture);
 }
 
 void RunExternalProtocolDialogWithDelegate(
@@ -203,9 +200,9 @@ void ExternalProtocolHandler::PrepopulateDictionary(
 
 // static
 ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
-    const std::string& scheme) {
-  // If we are being carpet bombed, block the request.
-  if (!g_accept_requests)
+    const std::string& scheme,
+    bool initiated_by_user_gesture) {
+  if (!initiated_by_user_gesture)
     return BLOCK;
 
   if (scheme.length() == 1) {
@@ -252,10 +249,12 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
 }
 
 // static
-void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
-                                                    int render_process_host_id,
-                                                    int tab_contents_id,
-                                                    Delegate* delegate) {
+void ExternalProtocolHandler::LaunchUrlWithDelegate(
+    const GURL& url,
+    int render_process_host_id,
+    int tab_contents_id,
+    Delegate* delegate,
+    bool initiated_by_user_gesture) {
   DCHECK(base::MessageLoopForUI::IsCurrent());
 
   // Escape the input scheme to be sure that the command does not
@@ -263,14 +262,13 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(const GURL& url,
   std::string escaped_url_string = net::EscapeExternalHandlerValue(url.spec());
   GURL escaped_url(escaped_url_string);
   BlockState block_state = GetBlockStateWithDelegate(escaped_url.scheme(),
-                                                     delegate);
+                                                     delegate,
+                                                     initiated_by_user_gesture);
   if (block_state == BLOCK) {
     if (delegate)
       delegate->BlockRequest();
     return;
   }
-
-  g_accept_requests = false;
 
   // The worker creates tasks with references to itself and puts them into
   // message loops. When no tasks are left it will delete the observer and
@@ -307,10 +305,4 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
 // static
 void ExternalProtocolHandler::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
-}
-
-// static
-void ExternalProtocolHandler::PermitLaunchUrl() {
-  DCHECK(base::MessageLoopForUI::IsCurrent());
-  g_accept_requests = true;
 }

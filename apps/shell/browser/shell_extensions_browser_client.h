@@ -54,7 +54,6 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate()
       OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
-  virtual void PermitExternalProtocolHandler() OVERRIDE;
   virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
   virtual ApiActivityMonitor* GetApiActivityMonitor(

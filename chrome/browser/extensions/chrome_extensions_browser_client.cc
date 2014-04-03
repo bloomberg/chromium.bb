@@ -192,10 +192,6 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
   return last_version.IsOlderThan(current_version);
 }
 
-void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
-  ExternalProtocolHandler::PermitLaunchUrl();
-}
-
 scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {
   return scoped_ptr<AppSorting>(new ChromeAppSorting());
 }

@@ -40,7 +40,6 @@
 #else
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/external_protocol/external_protocol_observer.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/network_time/navigation_time_helper.h"
 #include "chrome/browser/plugins/plugin_observer.h"
@@ -152,7 +151,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
-  ExternalProtocolObserver::CreateForWebContents(web_contents);
   HungPluginTabHelper::CreateForWebContents(web_contents);
   ManagePasswordsBubbleUIController::CreateForWebContents(web_contents);
   NavigationTimeHelper::CreateForWebContents(web_contents);
