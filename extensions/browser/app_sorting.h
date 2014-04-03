@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 #include "sync/api/string_ordinal.h"
 

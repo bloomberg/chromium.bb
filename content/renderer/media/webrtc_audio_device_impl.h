@@ -17,7 +17,6 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_device_not_impl.h"
-#include "content/renderer/media/webrtc_audio_renderer.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_sink.h"
