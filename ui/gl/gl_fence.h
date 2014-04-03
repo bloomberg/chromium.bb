@@ -16,11 +16,16 @@ class GL_EXPORT GLFence {
   virtual ~GLFence();
 
   static GLFence* Create();
+
   // Creates a fence that is not guaranteed to signal until the current context
-  // is flushed. Use with caution.
+  // is flushed. It is illegal to call Client/ServerWait() on a fence without
+  // having explicitly called glFlush() or glFinish() in the originating
+  // context.
   static GLFence* CreateWithoutFlush();
+
   virtual bool HasCompleted() = 0;
   virtual void ClientWait() = 0;
+
   // Will block the server if supported, but might fall back to blocking the
   // client.
   virtual void ServerWait() = 0;

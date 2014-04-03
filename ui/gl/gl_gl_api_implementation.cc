@@ -355,6 +355,11 @@ void GLApiBase::InitializeBase(DriverGL* driver) {
   driver_ = driver;
 }
 
+void GLApiBase::SignalFlush() {
+  DCHECK(GLContext::GetCurrent());
+  GLContext::GetCurrent()->OnFlush();
+}
+
 RealGLApi::RealGLApi() {
 }
 
@@ -363,6 +368,16 @@ RealGLApi::~RealGLApi() {
 
 void RealGLApi::Initialize(DriverGL* driver) {
   InitializeBase(driver);
+}
+
+void RealGLApi::glFlushFn() {
+  GLApiBase::glFlushFn();
+  GLApiBase::SignalFlush();
+}
+
+void RealGLApi::glFinishFn() {
+  GLApiBase::glFinishFn();
+  GLApiBase::SignalFlush();
 }
 
 TraceGLApi::~TraceGLApi() {
@@ -461,6 +476,16 @@ const GLubyte* VirtualGLApi::glGetStringFn(GLenum name) {
     default:
       return driver_->fn.glGetStringFn(name);
   }
+}
+
+void VirtualGLApi::glFlushFn() {
+  GLApiBase::glFlushFn();
+  GLApiBase::SignalFlush();
+}
+
+void VirtualGLApi::glFinishFn() {
+  GLApiBase::glFinishFn();
+  GLApiBase::SignalFlush();
 }
 
 }  // namespace gfx

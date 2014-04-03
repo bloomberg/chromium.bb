@@ -278,12 +278,8 @@ void NativeImageBuffer::DidRead(gfx::GLImage* client) {
 
 void NativeImageBuffer::DidWrite(gfx::GLImage* client) {
   base::AutoLock lock(lock_);
-  // TODO(sievers): crbug.com/352419
-  // This is super-risky. We need to somehow find out about when the current
-  // context gets flushed, so that we will only ever wait on the write fence
-  // (esp. from another context) if it was flushed and is guaranteed to clear.
-  // On the other hand, proactively flushing here is not feasible in terms
-  // of perf when there are multiple draw calls per frame.
+  // Sharing semantics require the client to flush in order to make changes
+  // visible to other clients.
   write_fence_.reset(gfx::GLFence::CreateWithoutFlush());
   write_client_ = client;
   for (std::list<ClientInfo>::iterator it = client_infos_.begin();

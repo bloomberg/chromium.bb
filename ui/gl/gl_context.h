@@ -6,10 +6,12 @@
 #define UI_GL_GL_CONTEXT_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/cancellation_flag.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gpu_preference.h"
@@ -31,6 +33,25 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // should be specific for all platforms though.
   virtual bool Initialize(
       GLSurface* compatible_surface, GpuPreference gpu_preference) = 0;
+
+  class FlushEvent : public base::RefCountedThreadSafe<FlushEvent> {
+    public:
+      bool IsSignaled();
+
+    private:
+      friend class base::RefCountedThreadSafe<FlushEvent>;
+      friend class GLContext;
+      FlushEvent();
+      virtual ~FlushEvent();
+      void Signal();
+
+      base::CancellationFlag flag_;
+  };
+
+  // Needs to be called with this context current. It will return a FlushEvent
+  // that is initially unsignaled, but will transition to signaled after the
+  // next glFlush() or glFinish() occurs in this context.
+  scoped_refptr<FlushEvent> SignalFlush();
 
   // Destroys the GL context.
   virtual void Destroy() = 0;
@@ -114,6 +135,9 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Returns the GL renderer string. The context must be current.
   virtual std::string GetGLRenderer();
 
+  // Called when glFlush()/glFinish() is called with this context current.
+  void OnFlush();
+
  protected:
   virtual ~GLContext();
 
@@ -151,6 +175,8 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   scoped_ptr<VirtualGLApi> virtual_gl_api_;
   scoped_ptr<GLStateRestorer> state_restorer_;
   scoped_ptr<GLVersionInfo> version_info_;
+
+  std::vector<scoped_refptr<FlushEvent> > flush_events_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContext);
 };
