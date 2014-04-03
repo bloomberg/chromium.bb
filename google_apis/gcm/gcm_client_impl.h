@@ -162,12 +162,17 @@ class GCM_EXPORT GCMClientImpl : public GCMClient {
   void OnReady();
 
   // Starts a first time device checkin.
-  void StartCheckin(const CheckinInfo& checkin_info);
+  void StartCheckin();
   // Completes the device checkin request.
   // |android_id| and |security_token| are expected to be non-zero or an error
   // is triggered. Function also cleans up the pending checkin.
   void OnCheckinCompleted(uint64 android_id,
                           uint64 security_token);
+  // Schedules next device checkin, based on |last_checkin_time| and default
+  // checkin interval.
+  void SchedulePeriodicCheckin(const base::Time& last_checkin_time);
+  // Callback for setting last checkin time in the |gcm_store_|.
+  void SetLastCheckinTimeCallback(bool success);
 
   // Callback for persisting device credentials in the |gcm_store_|.
   void SetDeviceCredentialsCallback(bool success);

@@ -74,6 +74,10 @@ class GCM_EXPORT GCMStoreImpl : public GCMStore {
   virtual void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
                                       const UpdateCallback& callback) OVERRIDE;
 
+  // Sets last device's checkin time.
+  virtual void SetLastCheckinTime(const base::Time& last_checkin_time,
+                                  const UpdateCallback& callback) OVERRIDE;
+
  private:
   typedef std::map<std::string, int> AppIdToMessageCountMap;
 

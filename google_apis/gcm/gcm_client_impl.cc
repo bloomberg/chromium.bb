@@ -74,6 +74,7 @@ enum MessageType {
 const char kMCSEndpointMain[] = "https://mtalk.google.com:5228";
 const char kMCSEndpointFallback[] = "https://mtalk.google.com:443";
 
+const int64 kDefaultCheckinInterval = 2 * 24 * 60 * 60LL;  // seconds = 2 days.
 const int kMaxRegistrationRetries = 5;
 const char kMessageTypeDataMessage[] = "gcm";
 const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
@@ -209,18 +210,20 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
   }
 
   registrations_ = result->registrations;
-
   device_checkin_info_.android_id = result->device_android_id;
   device_checkin_info_.secret = result->device_security_token;
+  base::Time last_checkin_time = result->last_checkin_time;
   InitializeMCSClient(result.Pass());
-  if (!device_checkin_info_.IsValid()) {
-    device_checkin_info_.Reset();
-    state_ = INITIAL_DEVICE_CHECKIN;
-    StartCheckin(device_checkin_info_);
+
+  if (device_checkin_info_.IsValid()) {
+    SchedulePeriodicCheckin(last_checkin_time);
+    OnReady();
     return;
   }
 
-  OnReady();
+  state_ = INITIAL_DEVICE_CHECKIN;
+  device_checkin_info_.Reset();
+  StartCheckin();
 }
 
 void GCMClientImpl::InitializeMCSClient(
@@ -281,14 +284,14 @@ void GCMClientImpl::ResetState() {
   // TODO(fgorski): reset all of the necessart objects and start over.
 }
 
-void GCMClientImpl::StartCheckin(const CheckinInfo& checkin_info) {
+void GCMClientImpl::StartCheckin() {
   checkin_request_.reset(
       new CheckinRequest(base::Bind(&GCMClientImpl::OnCheckinCompleted,
                                     weak_ptr_factory_.GetWeakPtr()),
                          kDefaultBackoffPolicy,
                          chrome_build_proto_,
-                         checkin_info.android_id,
-                         checkin_info.secret,
+                         device_checkin_info_.android_id,
+                         device_checkin_info_.secret,
                          account_ids_,
                          url_request_context_getter_));
   checkin_request_->Start();
@@ -311,14 +314,41 @@ void GCMClientImpl::OnCheckinCompleted(uint64 android_id,
   if (state_ == INITIAL_DEVICE_CHECKIN) {
     OnFirstTimeDeviceCheckinCompleted(checkin_info);
   } else {
+    // checkin_info is not expected to change after a periodic checkin as it
+    // would invalidate the registratoin IDs.
     DCHECK_EQ(READY, state_);
-    if (device_checkin_info_.android_id != checkin_info.android_id ||
-        device_checkin_info_.secret != checkin_info.secret) {
-      ResetState();
-    } else {
-      // TODO(fgorski): Reset the checkin timer.
-    }
+    DCHECK_EQ(device_checkin_info_.android_id, checkin_info.android_id);
+    DCHECK_EQ(device_checkin_info_.secret, checkin_info.secret);
   }
+
+  if (device_checkin_info_.IsValid()) {
+    base::Time last_checkin_time = clock_->Now();
+    gcm_store_->SetLastCheckinTime(
+        last_checkin_time,
+        base::Bind(&GCMClientImpl::SetLastCheckinTimeCallback,
+                   weak_ptr_factory_.GetWeakPtr()));
+    SchedulePeriodicCheckin(last_checkin_time);
+  }
+}
+
+void GCMClientImpl::SchedulePeriodicCheckin(
+    const base::Time& last_checkin_time) {
+  base::TimeDelta time_to_next_checkin = last_checkin_time +
+      base::TimeDelta::FromSeconds(kDefaultCheckinInterval) - clock_->Now();
+  if (time_to_next_checkin < base::TimeDelta::FromSeconds(0L))
+    time_to_next_checkin = base::TimeDelta::FromSeconds(0L);
+  // TODO(fgorski): Make sure that once dynamic events (like accounts list
+  // change) trigger checkin we reset the timer.
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&GCMClientImpl::StartCheckin,
+                 weak_ptr_factory_.GetWeakPtr()),
+      time_to_next_checkin);
+}
+
+void GCMClientImpl::SetLastCheckinTimeCallback(bool success) {
+  // TODO(fgorski): This is one of the signals that store needs a rebuild.
+  DCHECK(success);
 }
 
 void GCMClientImpl::SetDeviceCredentialsCallback(bool success) {

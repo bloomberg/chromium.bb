@@ -53,6 +53,8 @@ const char kOutgoingMsgKeyStart[] = "outgoing1-";
 // Key guaranteed to be higher than all outgoing message keys.
 // Used for limiting iteration.
 const char kOutgoingMsgKeyEnd[] = "outgoing2-";
+// Key used to timestamp last checkin (marked with G services settings update).
+const char kLastCheckinTimeKey[] = "last_checkin_time";
 
 std::string MakeRegistrationKey(const std::string& app_id) {
   return kRegistrationKeyStart + app_id;
@@ -117,7 +119,8 @@ class GCMStoreImpl::Backend
                            const UpdateCallback& callback);
   void RemoveUserSerialNumber(const std::string& username,
                               const UpdateCallback& callback);
-  void SetNextSerialNumber(int64 serial_number, const UpdateCallback& callback);
+  void SetLastCheckinTime(const base::Time& last_checkin_time,
+                          const UpdateCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<Backend>;
@@ -127,6 +130,7 @@ class GCMStoreImpl::Backend
   bool LoadRegistrations(RegistrationInfoMap* registrations);
   bool LoadIncomingMessages(std::vector<std::string>* incoming_messages);
   bool LoadOutgoingMessages(OutgoingMessageMap* outgoing_messages);
+  bool LoadLastCheckinTime(base::Time* last_checkin_time);
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
@@ -171,12 +175,14 @@ void GCMStoreImpl::Backend::Load(const LoadCallback& callback) {
                              &result->device_security_token) ||
       !LoadRegistrations(&result->registrations) ||
       !LoadIncomingMessages(&result->incoming_messages) ||
-      !LoadOutgoingMessages(&result->outgoing_messages)) {
+      !LoadOutgoingMessages(&result->outgoing_messages) ||
+      !LoadLastCheckinTime(&result->last_checkin_time)) {
     result->device_android_id = 0;
     result->device_security_token = 0;
     result->registrations.clear();
     result->incoming_messages.clear();
     result->outgoing_messages.clear();
+    result->last_checkin_time = base::Time::FromInternalValue(0LL);
     foreground_task_runner_->PostTask(FROM_HERE,
                                       base::Bind(callback,
                                                  base::Passed(&result)));
@@ -445,6 +451,24 @@ void GCMStoreImpl::Backend::RemoveOutgoingMessages(
                                                AppIdToMessageCountMap()));
 }
 
+void GCMStoreImpl::Backend::SetLastCheckinTime(
+    const base::Time& last_checkin_time,
+    const UpdateCallback& callback) {
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  int64 last_checkin_time_internal = last_checkin_time.ToInternalValue();
+  const leveldb::Status s =
+      db_->Put(write_options,
+               MakeSlice(kLastCheckinTimeKey),
+               MakeSlice(base::Int64ToString(last_checkin_time_internal)));
+
+  if (!s.ok())
+    LOG(ERROR) << "LevelDB set last checkin time failed: " << s.ToString();
+
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, s.ok()));
+}
+
 bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64* android_id,
                                                   uint64* security_token) {
   leveldb::ReadOptions read_options;
@@ -556,6 +580,26 @@ bool GCMStoreImpl::Backend::LoadOutgoingMessages(
              << base::IntToString(tag);
     (*outgoing_messages)[id] = make_linked_ptr(message.release());
   }
+
+  return true;
+}
+
+bool GCMStoreImpl::Backend::LoadLastCheckinTime(
+    base::Time* last_checkin_time) {
+  leveldb::ReadOptions read_options;
+  read_options.verify_checksums = true;
+
+  std::string result;
+  leveldb::Status s = db_->Get(read_options,
+                               MakeSlice(kLastCheckinTimeKey),
+                               &result);
+  int64 time_internal = 0LL;
+  if (s.ok() && !base::StringToInt64(result, &time_internal))
+    LOG(ERROR) << "Failed to restore last checkin time. Using default = 0.";
+
+  // In case we cannot read last checkin time, we default it to 0, as we don't
+  // want that situation to cause the whole load to fail.
+  *last_checkin_time = base::Time::FromInternalValue(time_internal);
 
   return true;
 }
@@ -732,6 +776,16 @@ void GCMStoreImpl::RemoveOutgoingMessages(
                  base::Bind(&GCMStoreImpl::RemoveOutgoingMessagesContinuation,
                             weak_ptr_factory_.GetWeakPtr(),
                             callback)));
+}
+
+void GCMStoreImpl::SetLastCheckinTime(const base::Time& last_checkin_time,
+                                      const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMStoreImpl::Backend::SetLastCheckinTime,
+                 backend_,
+                 last_checkin_time,
+                 callback));
 }
 
 void GCMStoreImpl::LoadContinuation(const LoadCallback& callback,

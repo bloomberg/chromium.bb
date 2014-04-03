@@ -108,6 +108,7 @@ TEST_F(GCMStoreImplTest, LoadNew) {
   EXPECT_EQ(0U, load_result->device_security_token);
   EXPECT_TRUE(load_result->incoming_messages.empty());
   EXPECT_TRUE(load_result->outgoing_messages.empty());
+  EXPECT_EQ(base::Time::FromInternalValue(0LL), load_result->last_checkin_time);
 }
 
 TEST_F(GCMStoreImplTest, DeviceCredentials) {
@@ -130,6 +131,28 @@ TEST_F(GCMStoreImplTest, DeviceCredentials) {
 
   ASSERT_EQ(kDeviceId, load_result->device_android_id);
   ASSERT_EQ(kDeviceToken, load_result->device_security_token);
+}
+
+TEST_F(GCMStoreImplTest, LastCheckinTime) {
+  scoped_ptr<GCMStore> gcm_store(BuildGCMStore());
+  scoped_ptr<GCMStore::LoadResult> load_result;
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  base::Time last_checkin_time = base::Time::Now();
+
+  gcm_store->SetLastCheckinTime(
+      last_checkin_time,
+      base::Bind(&GCMStoreImplTest::UpdateCallback, base::Unretained(this)));
+  PumpLoop();
+
+  gcm_store = BuildGCMStore().Pass();
+  gcm_store->Load(base::Bind(
+      &GCMStoreImplTest::LoadCallback, base::Unretained(this), &load_result));
+  PumpLoop();
+
+  ASSERT_EQ(last_checkin_time, load_result->last_checkin_time);
 }
 
 TEST_F(GCMStoreImplTest, Registrations) {
