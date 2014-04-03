@@ -431,21 +431,15 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
       net::URLRequest* request) OVERRIDE {
     // Make a temporary file.
     CHECK(base::CreateTemporaryFile(&temp_path_));
-    base::PlatformFile platform_file =
-        base::CreatePlatformFile(temp_path_,
-                                 base::PLATFORM_FILE_WRITE |
-                                 base::PLATFORM_FILE_TEMPORARY |
-                                 base::PLATFORM_FILE_CREATE_ALWAYS |
-                                 base::PLATFORM_FILE_ASYNC,
-                                 NULL, NULL);
-    CHECK_NE(base::kInvalidPlatformFileValue, platform_file);
+    int flags = base::File::FLAG_WRITE | base::File::FLAG_TEMPORARY |
+                base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_ASYNC;
+    base::File file(temp_path_, flags);
+    CHECK(file.IsValid());
 
     // Create mock file streams and a ShareableFileReference.
     scoped_ptr<net::testing::MockFileStream> file_stream(
-        new net::testing::MockFileStream(
-            platform_file,
-            base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC,
-            NULL, base::MessageLoopProxy::current()));
+        new net::testing::MockFileStream(file.Pass(), NULL,
+                                         base::MessageLoopProxy::current()));
     file_stream_ = file_stream.get();
     deletable_file_ = ShareableFileReference::GetOrCreate(
         temp_path_,

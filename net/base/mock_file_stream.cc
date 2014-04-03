@@ -19,10 +19,8 @@ MockFileStream::MockFileStream(net::NetLog* net_log)
       weak_factory_(this) {
 }
 
-MockFileStream::MockFileStream(base::PlatformFile file,
-                               int flags,
-                               net::NetLog* net_log)
-    : net::FileStream(file, flags, net_log),
+MockFileStream::MockFileStream(base::File file, net::NetLog* net_log)
+    : net::FileStream(file.Pass(), net_log),
       forced_error_(net::OK),
       async_error_(false),
       throttled_(false),
@@ -30,11 +28,10 @@ MockFileStream::MockFileStream(base::PlatformFile file,
 }
 
 MockFileStream::MockFileStream(
-    base::PlatformFile file,
-    int flags,
+    base::File file,
     net::NetLog* net_log,
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : net::FileStream(file, flags, net_log, task_runner),
+    : net::FileStream(file.Pass(), net_log, task_runner),
       forced_error_(net::OK),
       async_error_(false),
       throttled_(false),
