@@ -77,9 +77,12 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
         SurfaceFactoryOzone::GetInstance()->CreateSurfaceForWidget(window);
     if (!surface_ozone->InitializeEGL())
       return NULL;
+
+    scoped_ptr<VSyncProvider> vsync_provider =
+        surface_ozone->CreateVSyncProvider();
     scoped_refptr<GLSurfaceOzoneEGL> surface =
         new GLSurfaceOzoneEGL(surface_ozone.Pass());
-    if (!surface->Initialize(surface_ozone->CreateVSyncProvider()))
+    if (!surface->Initialize(vsync_provider.Pass()))
       return NULL;
     return surface;
   } else {
