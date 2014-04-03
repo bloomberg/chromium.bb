@@ -306,6 +306,13 @@ TEST_F(HistoryQuickProviderTest, SimpleSingleMatch) {
                   ASCIIToUTF16(".org/favorite_page.html"));
 }
 
+TEST_F(HistoryQuickProviderTest, WordBoundariesWithPunctuationMatch) {
+  std::vector<std::string> expected_urls;
+  expected_urls.push_back("http://popularsitewithpathonly.com/moo");
+  RunTest(ASCIIToUTF16("/moo"), false, expected_urls, false,
+          ASCIIToUTF16("popularsitewithpathonly.com/moo"), base::string16());
+}
+
 TEST_F(HistoryQuickProviderTest, MultiTermTitleMatch) {
   std::vector<std::string> expected_urls;
   expected_urls.push_back(

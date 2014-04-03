@@ -1155,9 +1155,13 @@ ACMatchClassifications HistoryURLProvider::ClassifyDescription(
   history::WordStarts description_word_starts;
   history::String16VectorFromString16(
       clean_description, false, &description_word_starts);
+  // If HistoryURL retrieves any matches (and hence we reach this code), we
+  // are guaranteed that the beginning of input_text must be a word break.
+  history::WordStarts offsets(1, 0u);
   description_matches =
       history::ScoredHistoryMatch::FilterTermMatchesByWordStarts(
-          description_matches, description_word_starts, 0, std::string::npos);
+          description_matches, offsets, description_word_starts, 0,
+          std::string::npos);
   return SpansFromTermMatch(
       description_matches, clean_description.length(), false);
 }

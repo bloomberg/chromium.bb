@@ -214,6 +214,7 @@ class URLIndexPrivateData
     ScoredHistoryMatches scored_matches_;
     const base::string16& lower_string_;
     const String16Vector& lower_terms_;
+    WordStarts lower_terms_to_word_starts_offsets_;
     const base::Time now_;
   };
 

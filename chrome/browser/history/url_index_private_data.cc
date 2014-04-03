@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
@@ -1283,7 +1284,24 @@ URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     bookmark_service_(bookmark_service),
     lower_string_(lower_string),
     lower_terms_(lower_terms),
-    now_(now) {}
+    now_(now) {
+  // Calculate offsets for each term.  For instance, the offset for
+  // ".net" should be 1, indicating that the actual word-part of the term
+  // starts at offset 1.
+  lower_terms_to_word_starts_offsets_.resize(lower_terms_.size(), 0u);
+  for (size_t i = 0; i < lower_terms_.size(); ++i) {
+    base::i18n::BreakIterator iter(lower_terms_[i],
+                                   base::i18n::BreakIterator::BREAK_WORD);
+    // If the iterator doesn't work, assume an offset of 0.
+    if (!iter.Init())
+      continue;
+    // Find the first word start.
+    while (iter.Advance() && !iter.IsWord()) {}
+    if (iter.IsWord())
+      lower_terms_to_word_starts_offsets_[i] = iter.prev();
+    // Else: the iterator didn't find a word break.  Assume an offset of 0.
+  }
+}
 
 URLIndexPrivateData::AddHistoryMatch::~AddHistoryMatch() {}
 
@@ -1298,8 +1316,8 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
         private_data_.word_starts_map_.find(history_id);
     DCHECK(starts_pos != private_data_.word_starts_map_.end());
     ScoredHistoryMatch match(hist_item, visits, languages_, lower_string_,
-                             lower_terms_, starts_pos->second, now_,
-                             bookmark_service_);
+                             lower_terms_, lower_terms_to_word_starts_offsets_,
+                             starts_pos->second, now_, bookmark_service_);
     if (match.raw_score() > 0)
       scored_matches_.push_back(match);
   }
