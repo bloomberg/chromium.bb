@@ -32,7 +32,7 @@ bool SyncChange::IsValid() const {
     return IsRealDataType(sync_data_.GetDataType());
 
   // Local changes must always have a tag and specify a valid datatype.
-  if (sync_data_.GetTag().empty() ||
+  if (SyncDataLocal(sync_data_).GetTag().empty() ||
       !IsRealDataType(sync_data_.GetDataType())) {
     return false;
   }

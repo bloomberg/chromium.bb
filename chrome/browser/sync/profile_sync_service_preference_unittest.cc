@@ -329,7 +329,8 @@ TEST_F(ProfileSyncServicePreferenceTest, CreatePrefSyncData) {
   syncer::SyncData sync_data;
   EXPECT_TRUE(pref_sync_service_->CreatePrefSyncData(pref->name(),
       *pref->GetValue(), &sync_data));
-  EXPECT_EQ(std::string(prefs::kHomePage), sync_data.GetTag());
+  EXPECT_EQ(std::string(prefs::kHomePage),
+            syncer::SyncDataLocal(sync_data).GetTag());
   const sync_pb::PreferenceSpecifics& specifics(sync_data.GetSpecifics().
       preference());
   EXPECT_EQ(std::string(prefs::kHomePage), specifics.name());

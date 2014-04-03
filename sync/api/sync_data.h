@@ -28,6 +28,8 @@ class SyncEntity;
 namespace syncer {
 
 class AttachmentService;
+class SyncDataLocal;
+class SyncDataRemote;
 
 // A light-weight container for immutable sync data. Pass-by-value and storage
 // in STL containers are supported and encouraged if helpful.
@@ -86,29 +88,12 @@ class SYNC_EXPORT SyncData {
   // Return the current sync datatype specifics.
   const sync_pb::EntitySpecifics& GetSpecifics() const;
 
-  // Returns the value of the unique client tag. This is only set for data going
-  // TO the syncer, not coming from.
-  const std::string& GetTag() const;
-
-  // Returns the non unique title (for debugging). Currently only set for data
+  // Return the non unique title (for debugging). Currently only set for data
   // going TO the syncer, not from.
   const std::string& GetTitle() const;
 
-  // Returns the last motification time according to the server. This is
-  // only valid if IsLocal() is false, and may be null if the SyncData
-  // represents a deleted item.
-  const base::Time& GetRemoteModifiedTime() const;
-
-  // Should only be called by sync code when IsLocal() is false.
-  int64 GetRemoteId() const;
-
   // Whether this sync data is for local data or data coming from the syncer.
   bool IsLocal() const;
-
-  // TODO(maniscalco): Reduce the dependence on knowing whether a SyncData is
-  // local (in the IsLocal() == true sense) or remote.  Make it harder for users
-  // of SyncData to accidentally call local-only methods on a remote SyncData
-  // (bug 357305).
 
   std::string ToString() const;
 
@@ -117,40 +102,12 @@ class SYNC_EXPORT SyncData {
   // The attachments may or may not be present on this device.
   AttachmentIdList GetAttachmentIds() const;
 
-  // Return a list of this SyncData's attachments.
-  //
-  // May only be called when IsLocal() is true.
-  const AttachmentList& GetLocalAttachmentsForUpload() const;
-
-  // Retrieve the attachments indentified by |attachment_ids|. Invoke |callback|
-  // with the requested attachments.
-  //
-  // May only be called when IsLocal() is false.
-  //
-  // |callback| will be invoked when the operation is complete (successfully or
-  // otherwise).
-  //
-  // Retrieving the requested attachments may require reading local storage or
-  // requesting the attachments from the network.
-  //
-  void GetOrDownloadAttachments(
-      const AttachmentIdList& attachment_ids,
-      const AttachmentService::GetOrDownloadCallback& callback);
-
-  // Drop (delete from local storage) the attachments associated with this
-  // SyncData specified in |attachment_ids|. This method will not delete
-  // attachments from the server.
-  //
-  // May only be called when IsLocal() is false.
-  //
-  // |callback| will be invoked when the operation is complete (successfully or
-  // otherwise).
-  void DropAttachments(const AttachmentIdList& attachment_ids,
-                       const AttachmentService::DropCallback& callback);
-
   // TODO(zea): Query methods for other sync properties: parent, successor, etc.
 
- private:
+ protected:
+  // These data members are protected so derived types like SyncDataLocal and
+  // SyncDataRemote can access them.
+
   // Necessary since we forward-declare sync_pb::SyncEntity; see
   // comments in immutable.h.
   struct ImmutableSyncEntityTraits {
@@ -170,22 +127,10 @@ class SYNC_EXPORT SyncData {
   typedef Immutable<sync_pb::SyncEntity, ImmutableSyncEntityTraits>
       ImmutableSyncEntity;
 
-  // Clears |entity| and |attachments|.
-  SyncData(
-      int64 id,
-      sync_pb::SyncEntity* entity,
-      AttachmentList* attachments,
-      const base::Time& remote_modification_time,
-      const syncer::AttachmentServiceProxy& attachment_service);
-
-  // Whether this SyncData holds valid data.
-  bool is_valid_;
-
   // Equal to kInvalidId iff this is local.
   int64 id_;
 
-  // This is only valid if IsLocal() is false, and may be null if the
-  // SyncData represents a deleted item.
+  // This may be null if the SyncData represents a deleted item.
   base::Time remote_modification_time_;
 
   // The actual shared sync entity being held.
@@ -194,6 +139,72 @@ class SYNC_EXPORT SyncData {
   Immutable<AttachmentList> attachments_;
 
   AttachmentServiceProxy attachment_service_;
+
+ private:
+  // Whether this SyncData holds valid data.
+  bool is_valid_;
+
+  // Clears |entity| and |attachments|.
+  SyncData(int64 id,
+           sync_pb::SyncEntity* entity,
+           AttachmentList* attachments,
+           const base::Time& remote_modification_time,
+           const syncer::AttachmentServiceProxy& attachment_service);
+};
+
+// A SyncData going to the syncer.
+class SYNC_EXPORT SyncDataLocal : public SyncData {
+ public:
+  // Construct a SyncDataLocal from a SyncData.
+  //
+  // |sync_data|'s IsLocal() must be true.
+  explicit SyncDataLocal(const SyncData& sync_data);
+  ~SyncDataLocal();
+
+  // Return a list of this SyncData's attachments.
+  const AttachmentList& GetLocalAttachmentsForUpload() const;
+
+  // Return the value of the unique client tag. This is only set for data going
+  // TO the syncer, not coming from.
+  const std::string& GetTag() const;
+};
+
+// A SyncData that comes from the syncer.
+class SYNC_EXPORT SyncDataRemote : public SyncData {
+ public:
+  // Construct a SyncDataRemote from a SyncData.
+  //
+  // |sync_data|'s IsLocal() must be false.
+  explicit SyncDataRemote(const SyncData& sync_data);
+  ~SyncDataRemote();
+
+  // Return the last motification time according to the server. This may be null
+  // if the SyncData represents a deleted item.
+  const base::Time& GetModifiedTime() const;
+
+  int64 GetId() const;
+
+  // Retrieve the attachments indentified by |attachment_ids|. Invoke
+  // |callback| with the requested attachments.
+  //
+  // |callback| will be invoked when the operation is complete (successfully
+  // or otherwise).
+  //
+  // Retrieving the requested attachments may require reading local storage or
+  // requesting the attachments from the network.
+  //
+  void GetOrDownloadAttachments(
+      const AttachmentIdList& attachment_ids,
+      const AttachmentService::GetOrDownloadCallback& callback);
+
+  // Drop (delete from local storage) the attachments associated with this
+  // SyncData specified in |attachment_ids|. This method will not delete
+  // attachments from the server.
+  //
+  // |callback| will be invoked when the operation is complete (successfully
+  // or otherwise).
+  void DropAttachments(const AttachmentIdList& attachment_ids,
+                       const AttachmentService::DropCallback& callback);
 };
 
 // gmock printer helper.

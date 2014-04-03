@@ -30,7 +30,7 @@ TEST_F(SyncChangeTest, LocalDelete) {
                change_type,
                SyncData::CreateLocalDelete(tag, PREFERENCES));
   EXPECT_EQ(change_type, e.change_type());
-  EXPECT_EQ(tag, e.sync_data().GetTag());
+  EXPECT_EQ(tag, SyncDataLocal(e.sync_data()).GetTag());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
 }
 
@@ -45,7 +45,7 @@ TEST_F(SyncChangeTest, LocalUpdate) {
                change_type,
                SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
-  EXPECT_EQ(tag, e.sync_data().GetTag());
+  EXPECT_EQ(tag, SyncDataLocal(e.sync_data()).GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
   scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));
@@ -65,7 +65,7 @@ TEST_F(SyncChangeTest, LocalAdd) {
                change_type,
                SyncData::CreateLocalData(tag, title, specifics));
   EXPECT_EQ(change_type, e.change_type());
-  EXPECT_EQ(tag, e.sync_data().GetTag());
+  EXPECT_EQ(tag, SyncDataLocal(e.sync_data()).GetTag());
   EXPECT_EQ(title, e.sync_data().GetTitle());
   EXPECT_EQ(PREFERENCES, e.sync_data().GetDataType());
   scoped_ptr<base::DictionaryValue> ref_spec(EntitySpecificsToValue(specifics));

@@ -1010,7 +1010,7 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
     syncer::SyncDataList all_sync_data =
         GetSyncableService(model_type)->GetAllSyncData(model_type);
     EXPECT_EQ(1u, all_sync_data.size());
-    EXPECT_EQ("good/foo", all_sync_data[0].GetTag());
+    EXPECT_EQ("good/foo", syncer::SyncDataLocal(all_sync_data[0]).GetTag());
   }
   testing_factory->GetExisting("bad")->set_error_code(ValueStore::OK);
 

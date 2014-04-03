@@ -220,7 +220,8 @@ testing::AssertionResult VerifyChanges(
     if (change_list[i].change_type() != expected_change_types[i])
       return testing::AssertionFailure() << "Change type doesn't match.";
     if (change_list[i].change_type() == syncer::SyncChange::ACTION_DELETE) {
-      if (change_list[i].sync_data().GetTag() != data.icon_url.spec())
+      if (syncer::SyncDataLocal(change_list[i].sync_data()).GetTag() !=
+          data.icon_url.spec())
         return testing::AssertionFailure() << "Deletion url does not match.";
     } else {
       testing::AssertionResult compare_result =
@@ -237,7 +238,7 @@ testing::AssertionResult VerifyChanges(
 // Helper to extract the favicon id embedded in the tag of a sync
 // change.
 int GetFaviconId(const syncer::SyncChange change) {
-  std::string tag = change.sync_data().GetTag();
+  std::string tag = syncer::SyncDataLocal(change.sync_data()).GetTag();
   const std::string kPrefix = "http://bla.com/";
   const std::string kSuffix = ".ico";
   if (tag.find(kPrefix) != 0)
@@ -1346,7 +1347,8 @@ TEST_F(SyncFaviconCacheTest, ExpireOnFaviconVisited) {
         CompareFaviconDataToSpecifics(test_data,
                                       changes[0].sync_data().GetSpecifics()));
     EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, changes[1].change_type());
-    EXPECT_EQ(old_favicon.icon_url.spec(), changes[1].sync_data().GetTag());
+    EXPECT_EQ(old_favicon.icon_url.spec(),
+              syncer::SyncDataLocal(changes[1].sync_data()).GetTag());
 
     EXPECT_EQ(syncer::SyncChange::ACTION_ADD, changes[2].change_type());
     EXPECT_EQ(test_data.icon_url.spec(),
@@ -1355,7 +1357,8 @@ TEST_F(SyncFaviconCacheTest, ExpireOnFaviconVisited) {
     EXPECT_NE(changes[2].sync_data().GetSpecifics().favicon_tracking().
                   last_visit_time_ms(), 0);
     EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, changes[3].change_type());
-    EXPECT_EQ(old_favicon.icon_url.spec(), changes[3].sync_data().GetTag());
+    EXPECT_EQ(old_favicon.icon_url.spec(),
+              syncer::SyncDataLocal(changes[3].sync_data()).GetTag());
   }
 
   EXPECT_EQ(0U, GetTaskCount());

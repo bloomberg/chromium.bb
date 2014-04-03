@@ -63,20 +63,19 @@ void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
   t1->Swap(t2);
 }
 
-SyncData::SyncData() : is_valid_(false), id_(kInvalidId) {}
+SyncData::SyncData() : id_(kInvalidId), is_valid_(false) {}
 
-SyncData::SyncData(
-    int64 id,
-    sync_pb::SyncEntity* entity,
-    AttachmentList* attachments,
-    const base::Time& remote_modification_time,
-    const syncer::AttachmentServiceProxy& attachment_service)
-    : is_valid_(true),
-      id_(id),
+SyncData::SyncData(int64 id,
+                   sync_pb::SyncEntity* entity,
+                   AttachmentList* attachments,
+                   const base::Time& remote_modification_time,
+                   const syncer::AttachmentServiceProxy& attachment_service)
+    : id_(id),
       remote_modification_time_(remote_modification_time),
       immutable_entity_(entity),
       attachments_(attachments),
-      attachment_service_(attachment_service) {}
+      attachment_service_(attachment_service),
+      is_valid_(true) {}
 
 SyncData::~SyncData() {}
 
@@ -165,25 +164,10 @@ ModelType SyncData::GetDataType() const {
   return GetModelTypeFromSpecifics(GetSpecifics());
 }
 
-const std::string& SyncData::GetTag() const {
-  DCHECK(IsLocal());
-  return immutable_entity_.Get().client_defined_unique_tag();
-}
-
 const std::string& SyncData::GetTitle() const {
   // TODO(zea): set this for data coming from the syncer too.
   DCHECK(immutable_entity_.Get().has_non_unique_name());
   return immutable_entity_.Get().non_unique_name();
-}
-
-const base::Time& SyncData::GetRemoteModifiedTime() const {
-  DCHECK(!IsLocal());
-  return remote_modification_time_;
-}
-
-int64 SyncData::GetRemoteId() const {
-  DCHECK(!IsLocal());
-  return id_;
 }
 
 bool SyncData::IsLocal() const { return id_ == kInvalidId; }
@@ -200,11 +184,14 @@ std::string SyncData::ToString() const {
       value.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &specifics);
 
   if (IsLocal()) {
-    return "{ isLocal: true, type: " + type + ", tag: " + GetTag() +
-           ", title: " + GetTitle() + ", specifics: " + specifics + "}";
+    SyncDataLocal sync_data_local(*this);
+    return "{ isLocal: true, type: " + type + ", tag: " +
+           sync_data_local.GetTag() + ", title: " + GetTitle() +
+           ", specifics: " + specifics + "}";
   }
 
-  std::string id = base::Int64ToString(GetRemoteId());
+  SyncDataRemote sync_data_remote(*this);
+  std::string id = base::Int64ToString(sync_data_remote.GetId());
   return "{ isLocal: false, type: " + type + ", specifics: " + specifics +
          ", id: " + id + "}";
 }
@@ -223,22 +210,44 @@ AttachmentIdList SyncData::GetAttachmentIds() const {
   return result;
 }
 
-const AttachmentList& SyncData::GetLocalAttachmentsForUpload() const {
-  DCHECK(IsLocal());
+SyncDataLocal::SyncDataLocal(const SyncData& sync_data) : SyncData(sync_data) {
+  DCHECK(sync_data.IsLocal());
+}
+
+SyncDataLocal::~SyncDataLocal() {}
+
+const AttachmentList& SyncDataLocal::GetLocalAttachmentsForUpload() const {
   return attachments_.Get();
 }
 
-void SyncData::GetOrDownloadAttachments(
+const std::string& SyncDataLocal::GetTag() const {
+  return immutable_entity_.Get().client_defined_unique_tag();
+}
+
+SyncDataRemote::SyncDataRemote(const SyncData& sync_data)
+    : SyncData(sync_data) {
+  DCHECK(!sync_data.IsLocal());
+}
+
+SyncDataRemote::~SyncDataRemote() {}
+
+const base::Time& SyncDataRemote::GetModifiedTime() const {
+  return remote_modification_time_;
+}
+
+int64 SyncDataRemote::GetId() const {
+  return id_;
+}
+
+void SyncDataRemote::GetOrDownloadAttachments(
     const AttachmentIdList& attachment_ids,
     const AttachmentService::GetOrDownloadCallback& callback) {
-  DCHECK(!IsLocal());
   attachment_service_.GetOrDownloadAttachments(attachment_ids, callback);
 }
 
-void SyncData::DropAttachments(
+void SyncDataRemote::DropAttachments(
     const AttachmentIdList& attachment_ids,
     const AttachmentService::DropCallback& callback) {
-  DCHECK(!IsLocal());
   attachment_service_.DropAttachments(attachment_ids, callback);
 }
 

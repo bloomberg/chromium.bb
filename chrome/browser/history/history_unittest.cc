@@ -1683,9 +1683,9 @@ TEST_F(HistoryTest, ProcessGlobalIdDeleteDirective) {
   const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
-  EXPECT_EQ(1, sync_changes[0].sync_data().GetRemoteId());
+  EXPECT_EQ(1, syncer::SyncDataRemote(sync_changes[0].sync_data()).GetId());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[1].change_type());
-  EXPECT_EQ(2, sync_changes[1].sync_data().GetRemoteId());
+  EXPECT_EQ(2, syncer::SyncDataRemote(sync_changes[1].sync_data()).GetId());
 }
 
 // Create delete directives for time ranges.  The expected entries should be
@@ -1758,9 +1758,9 @@ TEST_F(HistoryTest, ProcessTimeRangeDeleteDirective) {
   const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
-  EXPECT_EQ(1, sync_changes[0].sync_data().GetRemoteId());
+  EXPECT_EQ(1, syncer::SyncDataRemote(sync_changes[0].sync_data()).GetId());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[1].change_type());
-  EXPECT_EQ(2, sync_changes[1].sync_data().GetRemoteId());
+  EXPECT_EQ(2, syncer::SyncDataRemote(sync_changes[1].sync_data()).GetId());
 }
 
 TEST_F(HistoryBackendDBTest, MigratePresentations) {

@@ -311,7 +311,7 @@ TEST_F(SpellcheckCustomDictionaryTest,
   for (size_t i = 0; i < data.size(); i++) {
     EXPECT_TRUE(data[i].GetSpecifics().has_dictionary());
     EXPECT_EQ(syncer::DICTIONARY, data[i].GetDataType());
-    EXPECT_EQ(words[i], data[i].GetTag());
+    EXPECT_EQ(words[i], syncer::SyncDataLocal(data[i]).GetTag());
     EXPECT_EQ(words[i], data[i].GetSpecifics().dictionary().word());
   }
 

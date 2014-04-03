@@ -53,7 +53,7 @@ TEST_F(SyncDataTest, CreateLocalDelete) {
   SyncData data = SyncData::CreateLocalDelete(kSyncTag, kDatatype);
   EXPECT_TRUE(data.IsValid());
   EXPECT_TRUE(data.IsLocal());
-  EXPECT_EQ(kSyncTag, data.GetTag());
+  EXPECT_EQ(kSyncTag, SyncDataLocal(data).GetTag());
   EXPECT_EQ(kDatatype, data.GetDataType());
 }
 
@@ -63,7 +63,7 @@ TEST_F(SyncDataTest, CreateLocalData) {
       SyncData::CreateLocalData(kSyncTag, kNonUniqueTitle, specifics);
   EXPECT_TRUE(data.IsValid());
   EXPECT_TRUE(data.IsLocal());
-  EXPECT_EQ(kSyncTag, data.GetTag());
+  EXPECT_EQ(kSyncTag, SyncDataLocal(data).GetTag());
   EXPECT_EQ(kDatatype, data.GetDataType());
   EXPECT_EQ(kNonUniqueTitle, data.GetTitle());
   EXPECT_TRUE(data.GetSpecifics().has_preference());
@@ -81,13 +81,13 @@ TEST_F(SyncDataTest, CreateLocalDataWithAttachments) {
       kSyncTag, kNonUniqueTitle, specifics, attachments);
   EXPECT_TRUE(data.IsValid());
   EXPECT_TRUE(data.IsLocal());
-  EXPECT_EQ(kSyncTag, data.GetTag());
+  EXPECT_EQ(kSyncTag, SyncDataLocal(data).GetTag());
   EXPECT_EQ(kDatatype, data.GetDataType());
   EXPECT_EQ(kNonUniqueTitle, data.GetTitle());
   EXPECT_TRUE(data.GetSpecifics().has_preference());
   AttachmentIdList attachment_ids = data.GetAttachmentIds();
   EXPECT_EQ(3U, attachment_ids.size());
-  EXPECT_EQ(3U, data.GetLocalAttachmentsForUpload().size());
+  EXPECT_EQ(3U, SyncDataLocal(data).GetLocalAttachmentsForUpload().size());
 }
 
 TEST_F(SyncDataTest, CreateLocalDataWithAttachments_EmptyListOfAttachments) {
@@ -97,12 +97,12 @@ TEST_F(SyncDataTest, CreateLocalDataWithAttachments_EmptyListOfAttachments) {
       kSyncTag, kNonUniqueTitle, specifics, attachments);
   EXPECT_TRUE(data.IsValid());
   EXPECT_TRUE(data.IsLocal());
-  EXPECT_EQ(kSyncTag, data.GetTag());
+  EXPECT_EQ(kSyncTag, SyncDataLocal(data).GetTag());
   EXPECT_EQ(kDatatype, data.GetDataType());
   EXPECT_EQ(kNonUniqueTitle, data.GetTitle());
   EXPECT_TRUE(data.GetSpecifics().has_preference());
   EXPECT_TRUE(data.GetAttachmentIds().empty());
-  EXPECT_TRUE(data.GetLocalAttachmentsForUpload().empty());
+  EXPECT_TRUE(SyncDataLocal(data).GetLocalAttachmentsForUpload().empty());
 }
 
 TEST_F(SyncDataTest, CreateRemoteData) {
@@ -114,8 +114,8 @@ TEST_F(SyncDataTest, CreateRemoteData) {
                                              attachment_service_proxy);
   EXPECT_TRUE(data.IsValid());
   EXPECT_FALSE(data.IsLocal());
-  EXPECT_EQ(kId, data.GetRemoteId());
-  EXPECT_EQ(kLastModifiedTime, data.GetRemoteModifiedTime());
+  EXPECT_EQ(kId, SyncDataRemote(data).GetId());
+  EXPECT_EQ(kLastModifiedTime, SyncDataRemote(data).GetModifiedTime());
   EXPECT_TRUE(data.GetSpecifics().has_preference());
   EXPECT_TRUE(data.GetAttachmentIds().empty());
 }
@@ -125,8 +125,8 @@ TEST_F(SyncDataTest, CreateRemoteData_WithoutAttachmentService) {
   SyncData data = SyncData::CreateRemoteData(kId, specifics, kLastModifiedTime);
   EXPECT_TRUE(data.IsValid());
   EXPECT_FALSE(data.IsLocal());
-  EXPECT_EQ(kId, data.GetRemoteId());
-  EXPECT_EQ(kLastModifiedTime, data.GetRemoteModifiedTime());
+  EXPECT_EQ(kId, SyncDataRemote(data).GetId());
+  EXPECT_EQ(kLastModifiedTime, SyncDataRemote(data).GetModifiedTime());
   EXPECT_TRUE(data.GetSpecifics().has_preference());
 }
 

@@ -291,7 +291,7 @@ syncer::SyncError AttemptDelete(
     DataTypeErrorHandler* error_handler) {
   DCHECK_EQ(change.change_type(), syncer::SyncChange::ACTION_DELETE);
   if (change.sync_data().IsLocal()) {
-    const std::string& tag = change.sync_data().GetTag();
+    const std::string& tag = syncer::SyncDataLocal(change.sync_data()).GetTag();
     if (tag.empty()) {
       syncer::SyncError error(
           FROM_HERE,
@@ -315,8 +315,8 @@ syncer::SyncError AttemptDelete(
           type, error_handler);
     }
   } else {
-    syncer::BaseNode::InitByLookupResult result =
-        node->InitByIdLookup(change.sync_data().GetRemoteId());
+    syncer::BaseNode::InitByLookupResult result = node->InitByIdLookup(
+        syncer::SyncDataRemote(change.sync_data()).GetId());
     if (result != syncer::BaseNode::INIT_OK) {
       return LogLookupFailure(
           result, FROM_HERE,
@@ -415,9 +415,10 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
     return error;
   }
   syncer::WriteNode::InitUniqueByCreationResult result =
-      sync_node->InitUniqueByCreation(change.sync_data().GetDataType(),
-                                      root_node,
-                                      change.sync_data().GetTag());
+      sync_node->InitUniqueByCreation(
+          change.sync_data().GetDataType(),
+          root_node,
+          syncer::SyncDataLocal(change.sync_data()).GetTag());
   if (result != syncer::WriteNode::INIT_SUCCESS) {
     std::string error_prefix = "Failed to create " + type_str + " node: " +
                                change.location().ToString() + ", ";
@@ -485,8 +486,9 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
     syncer::WriteNode* sync_node) {
   // TODO(zea): consider having this logic for all possible changes?
   syncer::BaseNode::InitByLookupResult result =
-      sync_node->InitByClientTagLookup(change.sync_data().GetDataType(),
-                                       change.sync_data().GetTag());
+      sync_node->InitByClientTagLookup(
+          change.sync_data().GetDataType(),
+          syncer::SyncDataLocal(change.sync_data()).GetTag());
   if (result != syncer::BaseNode::INIT_OK) {
     std::string error_prefix = "Failed to load " + type_str + " node. " +
                                change.location().ToString() + ", ";

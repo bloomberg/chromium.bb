@@ -278,7 +278,8 @@ class SessionsSyncManagerTest
     syncer::SyncChangeList::iterator it = list->begin();
     bool found = false;
     while (it != list->end()) {
-      if (it->sync_data().GetTag() == manager_->current_machine_tag()) {
+      if (syncer::SyncDataLocal(it->sync_data()).GetTag() ==
+          manager_->current_machine_tag()) {
         EXPECT_TRUE(SyncChange::ACTION_ADD == it->change_type() ||
                     SyncChange::ACTION_UPDATE == it->change_type());
         it = list->erase(it);
@@ -637,7 +638,8 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   EXPECT_TRUE(out[0].IsValid());
   EXPECT_EQ(SyncChange::ACTION_ADD, out[0].change_type());
   const SyncData data(out[0].sync_data());
-  EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
+  EXPECT_EQ(manager()->current_machine_tag(),
+            syncer::SyncDataLocal(data).GetTag());
   const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
   EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
   EXPECT_TRUE(specifics.has_header());
@@ -649,7 +651,8 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   EXPECT_TRUE(out[1].IsValid());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[1].change_type());
   const SyncData data_2(out[1].sync_data());
-  EXPECT_EQ(manager()->current_machine_tag(), data_2.GetTag());
+  EXPECT_EQ(manager()->current_machine_tag(),
+            syncer::SyncDataLocal(data_2).GetTag());
   const sync_pb::SessionSpecifics& specifics2(data_2.GetSpecifics().session());
   EXPECT_EQ(manager()->current_machine_tag(), specifics2.session_tag());
   EXPECT_TRUE(specifics2.has_header());
@@ -825,7 +828,8 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
   EXPECT_TRUE(output[0].IsValid());
   EXPECT_EQ(SyncChange::ACTION_ADD, output[0].change_type());
   const SyncData data(output[0].sync_data());
-  EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
+  EXPECT_EQ(manager()->current_machine_tag(),
+            syncer::SyncDataLocal(data).GetTag());
   const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
   EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
   EXPECT_TRUE(specifics.has_header());
@@ -838,7 +842,7 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
   for (int i = 1; i < 3; i++) {
     EXPECT_TRUE(output[i].IsValid());
     const SyncData data(output[i].sync_data());
-    EXPECT_TRUE(StartsWithASCII(data.GetTag(),
+    EXPECT_TRUE(StartsWithASCII(syncer::SyncDataLocal(data).GetTag(),
                                 manager()->current_machine_tag(), true));
     const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
     EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
@@ -851,7 +855,8 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
   EXPECT_TRUE(output[3].IsValid());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, output[3].change_type());
   const SyncData data_2(output[3].sync_data());
-  EXPECT_EQ(manager()->current_machine_tag(), data_2.GetTag());
+  EXPECT_EQ(manager()->current_machine_tag(),
+            syncer::SyncDataLocal(data_2).GetTag());
   const sync_pb::SessionSpecifics& specifics2(data_2.GetSpecifics().session());
   EXPECT_EQ(manager()->current_machine_tag(), specifics2.session_tag());
   EXPECT_TRUE(specifics2.has_header());
@@ -1008,7 +1013,9 @@ TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
     EXPECT_TRUE(changes[i].IsValid());
     EXPECT_EQ(SyncChange::ACTION_DELETE, changes[i].change_type());
     EXPECT_TRUE(changes[i].sync_data().IsValid());
-    EXPECT_EQ(1U, expected_tags.erase(changes[i].sync_data().GetTag()));
+    EXPECT_EQ(1U,
+              expected_tags.erase(
+                  syncer::SyncDataLocal(changes[i].sync_data()).GetTag()));
   }
 }
 
@@ -1131,7 +1138,7 @@ TEST_F(SessionsSyncManagerTest, ProcessRemoteDeleteOfLocalSession) {
   int tab_node_id = out[1].sync_data().GetSpecifics().session().tab_node_id();
   EXPECT_EQ(TabNodePool2::TabIdToTag(
                 manager()->current_machine_tag(), tab_node_id),
-            out[1].sync_data().GetTag());
+            syncer::SyncDataLocal(out[1].sync_data()).GetTag());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[2].change_type());
   ASSERT_TRUE(out[2].sync_data().GetSpecifics().session().has_tab());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[3].change_type());
@@ -1230,7 +1237,7 @@ TEST_F(SessionsSyncManagerTest, MergeDeletesCorruptNode) {
   EXPECT_EQ(1U, FilterOutLocalHeaderChanges(&changes)->size());
   EXPECT_EQ(SyncChange::ACTION_DELETE, changes[0].change_type());
   EXPECT_EQ(TabNodePool2::TabIdToTag(local_tag, tab_node_id),
-            changes[0].sync_data().GetTag());
+            syncer::SyncDataLocal(changes[0].sync_data()).GetTag());
 }
 
 // Test that things work if a tab is initially ignored.
@@ -1250,14 +1257,18 @@ TEST_F(SessionsSyncManagerTest, AssociateWindowsDontReloadTabs) {
 
   EXPECT_EQ(3U, out.size());  // Tab add, update, and header update.
 
-  EXPECT_TRUE(StartsWithASCII(out[0].sync_data().GetTag(),
-                              manager()->current_machine_tag(), true));
+  EXPECT_TRUE(
+      StartsWithASCII(syncer::SyncDataLocal(out[0].sync_data()).GetTag(),
+                      manager()->current_machine_tag(),
+                      true));
   EXPECT_EQ(manager()->current_machine_tag(),
             out[0].sync_data().GetSpecifics().session().session_tag());
   EXPECT_EQ(SyncChange::ACTION_ADD, out[0].change_type());
 
-  EXPECT_TRUE(StartsWithASCII(out[1].sync_data().GetTag(),
-                              manager()->current_machine_tag(), true));
+  EXPECT_TRUE(
+      StartsWithASCII(syncer::SyncDataLocal(out[1].sync_data()).GetTag(),
+                      manager()->current_machine_tag(),
+                      true));
   EXPECT_EQ(manager()->current_machine_tag(),
             out[1].sync_data().GetSpecifics().session().session_tag());
   EXPECT_TRUE(out[1].sync_data().GetSpecifics().session().has_tab());
@@ -1266,7 +1277,8 @@ TEST_F(SessionsSyncManagerTest, AssociateWindowsDontReloadTabs) {
   EXPECT_TRUE(out[2].IsValid());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[2].change_type());
   const SyncData data(out[2].sync_data());
-  EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
+  EXPECT_EQ(manager()->current_machine_tag(),
+            syncer::SyncDataLocal(data).GetTag());
   const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
   EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
   EXPECT_TRUE(specifics.has_header());
@@ -1310,7 +1322,7 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
     SCOPED_TRACE(i);
     EXPECT_TRUE(out[i].IsValid());
     const SyncData data(out[i].sync_data());
-    EXPECT_TRUE(StartsWithASCII(data.GetTag(),
+    EXPECT_TRUE(StartsWithASCII(syncer::SyncDataLocal(data).GetTag(),
                                 manager()->current_machine_tag(), true));
     const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
     EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
@@ -1318,21 +1330,22 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
       // First thing on an AddTab is a no-op header update for parented tab.
       EXPECT_EQ(header.SerializeAsString(),
                 data.GetSpecifics().SerializeAsString());
-      EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
+      EXPECT_EQ(manager()->current_machine_tag(),
+                syncer::SyncDataLocal(data).GetTag());
     } else if (i % 6 == 1) {
       // Next, the TabNodePool should create the tab node.
       EXPECT_EQ(SyncChange::ACTION_ADD, out[i].change_type());
       EXPECT_EQ(TabNodePool2::TabIdToTag(
                     manager()->current_machine_tag(),
                     data.GetSpecifics().session().tab_node_id()),
-                data.GetTag());
+                syncer::SyncDataLocal(data).GetTag());
     } else if (i % 6 == 2) {
       // Then we see the tab update to the URL.
       EXPECT_EQ(SyncChange::ACTION_UPDATE, out[i].change_type());
       EXPECT_EQ(TabNodePool2::TabIdToTag(
                     manager()->current_machine_tag(),
                     data.GetSpecifics().session().tab_node_id()),
-                data.GetTag());
+                syncer::SyncDataLocal(data).GetTag());
       ASSERT_TRUE(specifics.has_tab());
     } else if (i % 6 == 3) {
       // The header needs to be updated to reflect the new window state.
@@ -1344,7 +1357,7 @@ TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
       EXPECT_EQ(TabNodePool2::TabIdToTag(
                     manager()->current_machine_tag(),
                     data.GetSpecifics().session().tab_node_id()),
-                data.GetTag());
+                syncer::SyncDataLocal(data).GetTag());
       ASSERT_TRUE(specifics.has_tab());
     } else if (i % 6 == 5) {
       // The header needs to be updated to reflect the new window state.
@@ -1403,7 +1416,8 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   EXPECT_TRUE(out[0].IsValid());
   EXPECT_EQ(SyncChange::ACTION_ADD, out[0].change_type());
   const SyncData data(out[0].sync_data());
-  EXPECT_EQ(manager()->current_machine_tag(), data.GetTag());
+  EXPECT_EQ(manager()->current_machine_tag(),
+            syncer::SyncDataLocal(data).GetTag());
   const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
   EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
   EXPECT_TRUE(specifics.has_header());
@@ -1416,7 +1430,7 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   for (int i = 1; i < 5; i++) {
     EXPECT_TRUE(out[i].IsValid());
     const SyncData data(out[i].sync_data());
-    EXPECT_TRUE(StartsWithASCII(data.GetTag(),
+    EXPECT_TRUE(StartsWithASCII(syncer::SyncDataLocal(data).GetTag(),
                                 manager()->current_machine_tag(), true));
     const sync_pb::SessionSpecifics& specifics(data.GetSpecifics().session());
     EXPECT_EQ(manager()->current_machine_tag(), specifics.session_tag());
@@ -1432,7 +1446,8 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   EXPECT_TRUE(out[5].IsValid());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, out[5].change_type());
   const SyncData data_2(out[5].sync_data());
-  EXPECT_EQ(manager()->current_machine_tag(), data_2.GetTag());
+  EXPECT_EQ(manager()->current_machine_tag(),
+            syncer::SyncDataLocal(data_2).GetTag());
   const sync_pb::SessionSpecifics& specifics2(data_2.GetSpecifics().session());
   EXPECT_EQ(manager()->current_machine_tag(), specifics2.session_tag());
   EXPECT_TRUE(specifics2.has_header());
@@ -1502,11 +1517,12 @@ TEST_F(SessionsSyncManagerTest, DoGarbageCollection) {
   ASSERT_EQ(5U, output.size());
   EXPECT_EQ(SyncChange::ACTION_DELETE, output[0].change_type());
   const SyncData data(output[0].sync_data());
-  EXPECT_EQ(tag1, data.GetTag());
+  EXPECT_EQ(tag1, syncer::SyncDataLocal(data).GetTag());
   for (int i = 1; i < 5; i++) {
     EXPECT_EQ(SyncChange::ACTION_DELETE, output[i].change_type());
     const SyncData data(output[i].sync_data());
-    EXPECT_EQ(TabNodePool2::TabIdToTag(tag1, i), data.GetTag());
+    EXPECT_EQ(TabNodePool2::TabIdToTag(tag1, i),
+              syncer::SyncDataLocal(data).GetTag());
   }
 
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));

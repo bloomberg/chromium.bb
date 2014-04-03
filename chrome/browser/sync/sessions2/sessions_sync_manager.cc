@@ -488,7 +488,7 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
           return syncer::SyncError();
         }
         UpdateTrackerWithForeignSession(
-            session, it->sync_data().GetRemoteModifiedTime());
+            session, syncer::SyncDataRemote(it->sync_data()).GetModifiedTime());
         break;
       default:
         NOTREACHED() << "Processing sync changes failed, unknown change type.";
@@ -541,7 +541,8 @@ bool SessionsSyncManager::InitFromSyncModel(
       if (tombstone.IsValid())
         new_changes->push_back(tombstone);
     } else if (specifics.session_tag() != current_machine_tag()) {
-      UpdateTrackerWithForeignSession(specifics, data.GetRemoteModifiedTime());
+      UpdateTrackerWithForeignSession(
+          specifics, syncer::SyncDataRemote(data).GetModifiedTime());
     } else {
       // This is previously stored local session information.
       if (specifics.has_header() && !found_current_header) {
