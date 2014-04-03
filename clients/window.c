@@ -3507,7 +3507,8 @@ void
 input_set_selection(struct input *input,
 		    struct wl_data_source *source, uint32_t time)
 {
-	wl_data_device_set_selection(input->data_device, source, time);
+	if (input->data_device)
+		wl_data_device_set_selection(input->data_device, source, time);
 }
 
 void
@@ -4903,11 +4904,14 @@ display_add_input(struct display *d, uint32_t id)
 	wl_seat_add_listener(input->seat, &seat_listener, input);
 	wl_seat_set_user_data(input->seat, input);
 
-	input->data_device =
-		wl_data_device_manager_get_data_device(d->data_device_manager,
-						       input->seat);
-	wl_data_device_add_listener(input->data_device, &data_device_listener,
-				    input);
+	if (d->data_device_manager) {
+		input->data_device =
+			wl_data_device_manager_get_data_device(d->data_device_manager,
+							       input->seat);
+		wl_data_device_add_listener(input->data_device,
+					    &data_device_listener,
+					    input);
+	}
 
 	input->pointer_surface = wl_compositor_create_surface(d->compositor);
 
@@ -4930,7 +4934,8 @@ input_destroy(struct input *input)
 	if (input->selection_offer)
 		data_offer_destroy(input->selection_offer);
 
-	wl_data_device_destroy(input->data_device);
+	if (input->data_device)
+		wl_data_device_destroy(input->data_device);
 
 	if (input->display->seat_version >= 3) {
 		if (input->pointer)
@@ -5413,7 +5418,10 @@ display_get_egl_display(struct display *d)
 struct wl_data_source *
 display_create_data_source(struct display *display)
 {
-	return wl_data_device_manager_create_data_source(display->data_device_manager);
+	if (display->data_device_manager)
+		return wl_data_device_manager_create_data_source(display->data_device_manager);
+	else
+		return NULL;
 }
 
 EGLConfig
