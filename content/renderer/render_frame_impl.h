@@ -389,6 +389,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSelectAll();
   void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
   void OnUnselect();
+  void OnReplace(const base::string16& text);
+  void OnReplaceMisspelling(const base::string16& text);
   void OnCSSInsertRequest(const std::string& css);
   void OnJavaScriptExecuteRequest(const base::string16& javascript,
                                   int id,

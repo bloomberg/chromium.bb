@@ -218,7 +218,10 @@ class SpellCheckObserver : public content::WebContentsObserver {
   // that we want to replace the selected word in the text with.
   NSString* newWord = [[sender selectedCell] stringValue];
   if (newWord != nil) {
-    renderWidgetHost_->Replace(base::SysNSStringToUTF16(newWord));
+    content::WebContents* webContents =
+        content::WebContents::FromRenderViewHost(
+            RenderViewHost::From(renderWidgetHost_));
+    webContents->Replace(base::SysNSStringToUTF16(newWord));
   }
 }
 

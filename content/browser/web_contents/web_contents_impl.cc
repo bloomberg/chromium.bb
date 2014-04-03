@@ -51,6 +51,7 @@
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/image_messages.h"
+#include "content/common/input_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
@@ -1775,7 +1776,27 @@ void WebContentsImpl::SetHistoryLengthAndPrune(
 }
 
 void WebContentsImpl::ReloadFocusedFrame(bool ignore_cache) {
-  Send(new FrameMsg_Reload(GetFocusedFrame()->GetRoutingID(), ignore_cache));
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  Send(new FrameMsg_Reload(focused_frame->GetRoutingID(), ignore_cache));
+}
+
+void WebContentsImpl::Replace(const base::string16& word) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  Send(new InputMsg_Replace(focused_frame->GetRoutingID(), word));
+}
+
+void WebContentsImpl::ReplaceMisspelling(const base::string16& word) {
+  RenderFrameHost* focused_frame = GetFocusedFrame();
+  if (!focused_frame)
+    return;
+
+  Send(new InputMsg_ReplaceMisspelling(focused_frame->GetRoutingID(), word));
 }
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {

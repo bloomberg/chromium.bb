@@ -328,9 +328,16 @@ class WebContents : public PageNavigator,
   // heap-allocated pointer is owned by the caller.
   virtual WebContents* Clone() = 0;
 
-  // Actions on the focused frame ----------------------------------------------
-
+  // Reloads the focused frame.
   virtual void ReloadFocusedFrame(bool ignore_cache) = 0;
+
+  // Editing commands ----------------------------------------------------------
+
+  // Replaces the currently selected word or a word around the cursor.
+  virtual void Replace(const base::string16& word) = 0;
+
+  // Replaces the misspelling in the current selection.
+  virtual void ReplaceMisspelling(const base::string16& word) = 0;
 
   // Views and focus -----------------------------------------------------------
 

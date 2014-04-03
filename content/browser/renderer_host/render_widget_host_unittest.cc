@@ -2423,13 +2423,14 @@ TEST_InputRouterRoutes_NOARGS_FromRFH(InputMsg_Unselect);
 
 TEST_F(RenderWidgetHostTest, InputRouterRoutesReplace) {
   host_->SetupForInputRouterTest();
-  host_->Replace(base::string16());
+  host_->Send(new InputMsg_Replace(host_->GetRoutingID(), base::string16()));
   EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
 }
 
 TEST_F(RenderWidgetHostTest, InputRouterRoutesReplaceMisspelling) {
   host_->SetupForInputRouterTest();
-  host_->ReplaceMisspelling(base::string16());
+  host_->Send(new InputMsg_ReplaceMisspelling(host_->GetRoutingID(),
+                                              base::string16()));
   EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
 }
 

@@ -1071,8 +1071,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP_EX(RenderViewImpl, message, msg_is_ok)
     IPC_MESSAGE_HANDLER(InputMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(InputMsg_MoveCaret, OnMoveCaret)
-    IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
-    IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
     IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
                         OnScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
@@ -1252,28 +1250,6 @@ void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
   Send(new ViewHostMsg_MoveCaret_ACK(routing_id_));
 
   webview()->focusedFrame()->moveCaretSelection(point);
-}
-
-void RenderViewImpl::OnReplace(const base::string16& text) {
-  if (!webview())
-    return;
-
-  WebFrame* frame = webview()->focusedFrame();
-  if (!frame->hasSelection())
-    frame->selectWordAroundCaret();
-
-  frame->replaceSelection(text);
-}
-
-void RenderViewImpl::OnReplaceMisspelling(const base::string16& text) {
-  if (!webview())
-    return;
-
-  WebFrame* frame = webview()->focusedFrame();
-  if (!frame->hasSelection())
-    return;
-
-  frame->replaceMisspelledRange(text);
 }
 
 void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(

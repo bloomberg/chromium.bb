@@ -2004,14 +2004,6 @@ void RenderWidgetHostImpl::ScrollBackingStoreRect(const gfx::Vector2d& delta,
   backing_store->ScrollBackingStore(delta, clip_rect, view_size);
 }
 
-void RenderWidgetHostImpl::Replace(const base::string16& word) {
-  Send(new InputMsg_Replace(routing_id_, word));
-}
-
-void RenderWidgetHostImpl::ReplaceMisspelling(const base::string16& word) {
-  Send(new InputMsg_ReplaceMisspelling(routing_id_, word));
-}
-
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   ignore_input_events_ = ignore_input_events;
 }

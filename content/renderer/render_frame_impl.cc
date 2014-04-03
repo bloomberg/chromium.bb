@@ -577,6 +577,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_SelectAll, OnSelectAll)
     IPC_MESSAGE_HANDLER(InputMsg_SelectRange, OnSelectRange)
     IPC_MESSAGE_HANDLER(InputMsg_Unselect, OnUnselect)
+    IPC_MESSAGE_HANDLER(InputMsg_Replace, OnReplace)
+    IPC_MESSAGE_HANDLER(InputMsg_ReplaceMisspelling, OnReplaceMisspelling)
     IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
                         OnJavaScriptExecuteRequest)
@@ -991,6 +993,20 @@ void RenderFrameImpl::OnSelectRange(const gfx::Point& start,
 void RenderFrameImpl::OnUnselect() {
   base::AutoReset<bool> handling_select_range(&handling_select_range_, true);
   frame_->executeCommand(WebString::fromUTF8("Unselect"), GetFocusedElement());
+}
+
+void RenderFrameImpl::OnReplace(const base::string16& text) {
+  if (!frame_->hasSelection())
+    frame_->selectWordAroundCaret();
+
+  frame_->replaceSelection(text);
+}
+
+void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {
+  if (!frame_->hasSelection())
+    return;
+
+  frame_->replaceMisspelledRange(text);
 }
 
 void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {

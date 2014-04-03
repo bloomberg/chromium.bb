@@ -242,14 +242,6 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Returns true if this is a RenderViewHost, false if not.
   virtual bool IsRenderView() const = 0;
 
-  // Makes an IPC call to tell webkit to replace the currently selected word
-  // or a word around the cursor.
-  virtual void Replace(const base::string16& word) = 0;
-
-  // Makes an IPC call to tell webkit to replace the misspelling in the current
-  // selection.
-  virtual void ReplaceMisspelling(const base::string16& word) = 0;
-
   // Called to notify the RenderWidget that the resize rect has changed without
   // the size of the RenderWidget itself changing.
   virtual void ResizeRectChanged(const gfx::Rect& new_rect) = 0;

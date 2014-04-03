@@ -240,6 +240,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void Stop() OVERRIDE;
   virtual WebContents* Clone() OVERRIDE;
   virtual void ReloadFocusedFrame(bool ignore_cache) OVERRIDE;
+  virtual void Replace(const base::string16& word) OVERRIDE;
+  virtual void ReplaceMisspelling(const base::string16& word) OVERRIDE;
   virtual void FocusThroughTabTraversal(bool reverse) OVERRIDE;
   virtual bool ShowingInterstitialPage() const OVERRIDE;
   virtual InterstitialPage* GetInterstitialPage() const OVERRIDE;
