@@ -1836,8 +1836,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_EASY_UNLOCK_DESCRIPTION,
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableEasyUnlock)
-  }
+  },
 #endif
+  {
+    "enable-embedded-shared-worker",
+    IDS_FLAGS_ENABLE_EMBEDDED_SHARED_WORKER_NAME,
+    IDS_FLAGS_ENABLE_EMBEDDED_SHARED_WORKER_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableEmbeddedSharedWorker)
+  },
 };
 
 const Experiment* experiments = kExperiments;

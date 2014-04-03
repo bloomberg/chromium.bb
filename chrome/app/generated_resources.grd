@@ -7019,6 +7019,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_DESCRIPTION" desc="Description for flag to Enable Easy Unlock.">
         Easy Unlock allows you to unlock your Chromebook when in proximity to your phone.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EMBEDDED_SHARED_WORKER_NAME" desc="Name for In-renderer Shared Worker.">
+        In-renderer Shared Worker.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EMBEDDED_SHARED_WORKER_DESCRIPTION" desc="Description for flag to In-renderer Shared Worker.">
+        Run Shared Worker in a renderer process.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
