@@ -69,6 +69,7 @@ class WebKeyboardEvent;
 class WebMIDIClient;
 class WebNode;
 class WebNotificationPresenter;
+class WebPushClient;
 class WebRange;
 class WebSpeechInputController;
 class WebSpeechInputListener;
@@ -379,6 +380,9 @@ public:
 
     virtual WebMIDIClient* webMIDIClient() { return 0; }
 
+    // Push Messaging -------------------------------------------------------
+
+    virtual WebPushClient* webPushClient() { return 0; }
 
     // Content detection ----------------------------------------------------
 

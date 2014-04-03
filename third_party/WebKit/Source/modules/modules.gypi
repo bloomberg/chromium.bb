@@ -568,6 +568,8 @@
       'performance/WorkerPerformance.h',
       'push_messaging/NavigatorPushManager.cpp',
       'push_messaging/NavigatorPushManager.h',
+      'push_messaging/PushController.cpp',
+      'push_messaging/PushController.h',
       'push_messaging/PushManager.cpp',
       'push_messaging/PushManager.h',
       'push_messaging/PushRegistration.h',

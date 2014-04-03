@@ -123,6 +123,7 @@
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
 #include "modules/notifications/NotificationController.h"
+#include "modules/push_messaging/PushController.h"
 #include "painting/ContinuousPainter.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
@@ -411,6 +412,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->makeOrdinary();
 
     if (m_client) {
+        providePushControllerTo(*m_page, m_client->webPushClient());
         setDeviceScaleFactor(m_client->screenInfo().deviceScaleFactor);
         setVisibilityState(m_client->visibilityState(), true);
     }
