@@ -28,6 +28,7 @@ using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
+using ::testing::Values;
 using ::testing::_;
 
 namespace media {
@@ -132,7 +133,12 @@ static void OnSeekDone_OKExpected(bool* called, PipelineStatus status) {
 
 static void LogFunc(const std::string& str) { DVLOG(1) << str; }
 
-class ChunkDemuxerTest : public testing::Test {
+// Test parameter determines which coded frame processor is used to process
+// appended data. If true, LegacyFrameProcessor is used. Otherwise, (not yet
+// supported), a more compliant frame processor is used.
+// TODO(wolenetz): Enable usage of new frame processor based on this flag.
+// See http://crbug.com/249422.
+class ChunkDemuxerTest : public ::testing::TestWithParam<bool> {
  protected:
   enum CodecsIndex {
     AUDIO,
@@ -156,6 +162,7 @@ class ChunkDemuxerTest : public testing::Test {
 
   ChunkDemuxerTest()
       : append_window_end_for_next_append_(kInfiniteDuration()) {
+    use_legacy_frame_processor_ = GetParam();
     CreateNewDemuxer();
   }
 
@@ -313,7 +320,8 @@ class ChunkDemuxerTest : public testing::Test {
       return AddId(kSourceId, HAS_AUDIO | HAS_VIDEO);
     }
 
-    return demuxer_->AddId(source_id, type, codecs);
+    return demuxer_->AddId(source_id, type, codecs,
+                           use_legacy_frame_processor_);
   }
 
   void AppendData(const uint8* data, size_t length) {
@@ -968,6 +976,7 @@ class ChunkDemuxerTest : public testing::Test {
   MockDemuxerHost host_;
 
   scoped_ptr<ChunkDemuxer> demuxer_;
+  bool use_legacy_frame_processor_;
 
   base::TimeDelta append_window_start_for_next_append_;
   base::TimeDelta append_window_end_for_next_append_;
@@ -980,7 +989,7 @@ class ChunkDemuxerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChunkDemuxerTest);
 };
 
-TEST_F(ChunkDemuxerTest, Init) {
+TEST_P(ChunkDemuxerTest, Init) {
   // Test no streams, audio-only, video-only, and audio & video scenarios.
   // Audio and video streams can be encrypted or not encrypted.
   for (int i = 0; i < 16; i++) {
@@ -1049,7 +1058,7 @@ TEST_F(ChunkDemuxerTest, Init) {
 
 // TODO(acolwell): Fold this test into Init tests since the tests are
 // almost identical.
-TEST_F(ChunkDemuxerTest, InitText) {
+TEST_P(ChunkDemuxerTest, InitText) {
   // Test with 1 video stream and 1 text streams, and 0 or 1 audio streams.
   // No encryption cases handled here.
   bool has_video = true;
@@ -1113,7 +1122,7 @@ TEST_F(ChunkDemuxerTest, InitText) {
 
 // Make sure that the demuxer reports an error if Shutdown()
 // is called before all the initialization segments are appended.
-TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {
+TEST_P(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(
@@ -1127,7 +1136,7 @@ TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {
   ShutdownDemuxer();
 }
 
-TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppendedText) {
+TEST_P(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppendedText) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(
@@ -1146,7 +1155,7 @@ TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppendedText) {
 
 // Verifies that all streams waiting for data receive an end of stream
 // buffer when Shutdown() is called.
-TEST_F(ChunkDemuxerTest, Shutdown_EndOfStreamWhileWaitingForData) {
+TEST_P(ChunkDemuxerTest, Shutdown_EndOfStreamWhileWaitingForData) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
@@ -1176,7 +1185,7 @@ TEST_F(ChunkDemuxerTest, Shutdown_EndOfStreamWhileWaitingForData) {
 
 // Test that Seek() completes successfully when the first cluster
 // arrives.
-TEST_F(ChunkDemuxerTest, AppendDataAfterSeek) {
+TEST_P(ChunkDemuxerTest, AppendDataAfterSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendCluster(kDefaultFirstCluster());
 
@@ -1198,7 +1207,7 @@ TEST_F(ChunkDemuxerTest, AppendDataAfterSeek) {
 }
 
 // Test that parsing errors are handled for clusters appended after init.
-TEST_F(ChunkDemuxerTest, ErrorWhileParsingClusterAfterInit) {
+TEST_P(ChunkDemuxerTest, ErrorWhileParsingClusterAfterInit) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendCluster(kDefaultFirstCluster());
 
@@ -1209,7 +1218,7 @@ TEST_F(ChunkDemuxerTest, ErrorWhileParsingClusterAfterInit) {
 // Test the case where a Seek() is requested while the parser
 // is in the middle of cluster. This is to verify that the parser
 // does not reset itself on a seek.
-TEST_F(ChunkDemuxerTest, SeekWhileParsingCluster) {
+TEST_P(ChunkDemuxerTest, SeekWhileParsingCluster) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   InSequence s;
@@ -1243,7 +1252,7 @@ TEST_F(ChunkDemuxerTest, SeekWhileParsingCluster) {
 }
 
 // Test the case where AppendData() is called before Init().
-TEST_F(ChunkDemuxerTest, AppendDataBeforeInit) {
+TEST_P(ChunkDemuxerTest, AppendDataBeforeInit) {
   scoped_ptr<uint8[]> info_tracks;
   int info_tracks_size = 0;
   CreateInitSegment(HAS_AUDIO | HAS_VIDEO,
@@ -1255,7 +1264,7 @@ TEST_F(ChunkDemuxerTest, AppendDataBeforeInit) {
 }
 
 // Make sure Read() callbacks are dispatched with the proper data.
-TEST_F(ChunkDemuxerTest, Read) {
+TEST_P(ChunkDemuxerTest, Read) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(kDefaultFirstCluster());
@@ -1273,7 +1282,7 @@ TEST_F(ChunkDemuxerTest, Read) {
   EXPECT_TRUE(video_read_done);
 }
 
-TEST_F(ChunkDemuxerTest, OutOfOrderClusters) {
+TEST_P(ChunkDemuxerTest, OutOfOrderClusters) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendCluster(kDefaultFirstCluster());
   AppendCluster(GenerateCluster(10, 4));
@@ -1290,7 +1299,7 @@ TEST_F(ChunkDemuxerTest, OutOfOrderClusters) {
                        &timestamp_offset_map_[kSourceId]);
 }
 
-TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
+TEST_P(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendCluster(kDefaultFirstCluster());
 
@@ -1315,7 +1324,7 @@ TEST_F(ChunkDemuxerTest, NonMonotonicButAboveClusterTimecode) {
                        &timestamp_offset_map_[kSourceId]);
 }
 
-TEST_F(ChunkDemuxerTest, BackwardsAndBeforeClusterTimecode) {
+TEST_P(ChunkDemuxerTest, BackwardsAndBeforeClusterTimecode) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendCluster(kDefaultFirstCluster());
 
@@ -1341,7 +1350,7 @@ TEST_F(ChunkDemuxerTest, BackwardsAndBeforeClusterTimecode) {
 }
 
 
-TEST_F(ChunkDemuxerTest, PerStreamMonotonicallyIncreasingTimestamps) {
+TEST_P(ChunkDemuxerTest, PerStreamMonotonicallyIncreasingTimestamps) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendCluster(kDefaultFirstCluster());
 
@@ -1361,7 +1370,7 @@ TEST_F(ChunkDemuxerTest, PerStreamMonotonicallyIncreasingTimestamps) {
 
 // Test the case where a cluster is passed to AppendCluster() before
 // INFO & TRACKS data.
-TEST_F(ChunkDemuxerTest, ClusterBeforeInitSegment) {
+TEST_P(ChunkDemuxerTest, ClusterBeforeInitSegment) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_OPEN), true);
@@ -1372,14 +1381,14 @@ TEST_F(ChunkDemuxerTest, ClusterBeforeInitSegment) {
 }
 
 // Test cases where we get an MarkEndOfStream() call during initialization.
-TEST_F(ChunkDemuxerTest, EOSDuringInit) {
+TEST_P(ChunkDemuxerTest, EOSDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_OPEN), true);
   MarkEndOfStream(PIPELINE_OK);
 }
 
-TEST_F(ChunkDemuxerTest, EndOfStreamWithNoAppend) {
+TEST_P(ChunkDemuxerTest, EndOfStreamWithNoAppend) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_OPEN), true);
@@ -1394,7 +1403,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWithNoAppend) {
   demuxer_.reset();
 }
 
-TEST_F(ChunkDemuxerTest, EndOfStreamWithNoMediaAppend) {
+TEST_P(ChunkDemuxerTest, EndOfStreamWithNoMediaAppend) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   CheckExpectedRanges("{ }");
@@ -1402,7 +1411,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWithNoMediaAppend) {
   CheckExpectedRanges("{ }");
 }
 
-TEST_F(ChunkDemuxerTest, DecodeErrorEndOfStream) {
+TEST_P(ChunkDemuxerTest, DecodeErrorEndOfStream) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(kDefaultFirstCluster());
@@ -1413,7 +1422,7 @@ TEST_F(ChunkDemuxerTest, DecodeErrorEndOfStream) {
   CheckExpectedRanges(kDefaultFirstClusterRange);
 }
 
-TEST_F(ChunkDemuxerTest, NetworkErrorEndOfStream) {
+TEST_P(ChunkDemuxerTest, NetworkErrorEndOfStream) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(kDefaultFirstCluster());
@@ -1473,7 +1482,7 @@ class EndOfStreamHelper {
 
 // Make sure that all pending reads that we don't have media data for get an
 // "end of stream" buffer when MarkEndOfStream() is called.
-TEST_F(ChunkDemuxerTest, EndOfStreamWithPendingReads) {
+TEST_P(ChunkDemuxerTest, EndOfStreamWithPendingReads) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(GenerateCluster(0, 2));
@@ -1508,7 +1517,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWithPendingReads) {
 
 // Make sure that all Read() calls after we get an MarkEndOfStream()
 // call return an "end of stream" buffer.
-TEST_F(ChunkDemuxerTest, ReadsAfterEndOfStream) {
+TEST_P(ChunkDemuxerTest, ReadsAfterEndOfStream) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(GenerateCluster(0, 2));
@@ -1547,7 +1556,7 @@ TEST_F(ChunkDemuxerTest, ReadsAfterEndOfStream) {
   end_of_stream_helper_3.CheckIfReadDonesWereCalled(true);
 }
 
-TEST_F(ChunkDemuxerTest, EndOfStreamDuringCanceledSeek) {
+TEST_P(ChunkDemuxerTest, EndOfStreamDuringCanceledSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(0, 10);
@@ -1578,7 +1587,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamDuringCanceledSeek) {
 }
 
 // Verify buffered range change behavior for audio/video/text tracks.
-TEST_F(ChunkDemuxerTest, EndOfStreamRangeChanges) {
+TEST_P(ChunkDemuxerTest, EndOfStreamRangeChanges) {
   DemuxerStream* text_stream = NULL;
 
   EXPECT_CALL(host_, AddTextStream(_, _))
@@ -1617,7 +1626,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamRangeChanges) {
 }
 
 // Make sure AppendData() will accept elements that span multiple calls.
-TEST_F(ChunkDemuxerTest, AppendingInPieces) {
+TEST_P(ChunkDemuxerTest, AppendingInPieces) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kDefaultDuration(), PIPELINE_OK), true);
@@ -1649,7 +1658,7 @@ TEST_F(ChunkDemuxerTest, AppendingInPieces) {
   GenerateExpectedReads(0, 9);
 }
 
-TEST_F(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
+TEST_P(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
   struct BufferTimestamps buffer_timestamps[] = {
     {0, 0},
     {33, 3},
@@ -1668,7 +1677,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioAndVideo) {
                             base::TimeDelta::FromMilliseconds(2744)));
 }
 
-TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
+TEST_P(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
   struct BufferTimestamps buffer_timestamps[] = {
     {0, 0},
     {33, 3},
@@ -1682,7 +1691,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_LiveAudioAndVideo) {
                             kInfiniteDuration()));
 }
 
-TEST_F(ChunkDemuxerTest, WebMFile_AudioOnly) {
+TEST_P(ChunkDemuxerTest, WebMFile_AudioOnly) {
   struct BufferTimestamps buffer_timestamps[] = {
     {kSkip, 0},
     {kSkip, 3},
@@ -1702,7 +1711,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_AudioOnly) {
                             HAS_AUDIO));
 }
 
-TEST_F(ChunkDemuxerTest, WebMFile_VideoOnly) {
+TEST_P(ChunkDemuxerTest, WebMFile_VideoOnly) {
   struct BufferTimestamps buffer_timestamps[] = {
     {0, kSkip},
     {33, kSkip},
@@ -1722,7 +1731,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_VideoOnly) {
                             HAS_VIDEO));
 }
 
-TEST_F(ChunkDemuxerTest, WebMFile_AltRefFrames) {
+TEST_P(ChunkDemuxerTest, WebMFile_AltRefFrames) {
   struct BufferTimestamps buffer_timestamps[] = {
     {0, 0},
     {33, 3},
@@ -1742,7 +1751,7 @@ TEST_F(ChunkDemuxerTest, WebMFile_AltRefFrames) {
 }
 
 // Verify that we output buffers before the entire cluster has been parsed.
-TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
+TEST_P(ChunkDemuxerTest, IncrementalClusterParsing) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendEmptyCluster(0);
 
@@ -1805,7 +1814,7 @@ TEST_F(ChunkDemuxerTest, IncrementalClusterParsing) {
   EXPECT_TRUE(video_read_done);
 }
 
-TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
+TEST_P(ChunkDemuxerTest, ParseErrorDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(
@@ -1820,7 +1829,7 @@ TEST_F(ChunkDemuxerTest, ParseErrorDuringInit) {
                        &timestamp_offset_map_[kSourceId]);
 }
 
-TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
+TEST_P(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kNoTimestamp(),
@@ -1828,13 +1837,14 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithAudioOnlyType) {
 
   std::vector<std::string> codecs(1);
   codecs[0] = "vorbis";
-  ASSERT_EQ(demuxer_->AddId(kSourceId, "audio/webm", codecs),
+  ASSERT_EQ(demuxer_->AddId(kSourceId, "audio/webm", codecs,
+                            use_legacy_frame_processor_),
             ChunkDemuxer::kOk);
 
   AppendInitSegment(HAS_AUDIO | HAS_VIDEO);
 }
 
-TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
+TEST_P(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kNoTimestamp(),
@@ -1842,13 +1852,14 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
 
   std::vector<std::string> codecs(1);
   codecs[0] = "vp8";
-  ASSERT_EQ(demuxer_->AddId(kSourceId, "video/webm", codecs),
+  ASSERT_EQ(demuxer_->AddId(kSourceId, "video/webm", codecs,
+                            use_legacy_frame_processor_),
             ChunkDemuxer::kOk);
 
   AppendInitSegment(HAS_AUDIO | HAS_VIDEO);
 }
 
-TEST_F(ChunkDemuxerTest, MultipleHeaders) {
+TEST_P(ChunkDemuxerTest, MultipleHeaders) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(kDefaultFirstCluster());
@@ -1861,7 +1872,7 @@ TEST_F(ChunkDemuxerTest, MultipleHeaders) {
   GenerateExpectedReads(0, 9);
 }
 
-TEST_F(ChunkDemuxerTest, AddSeparateSourcesForAudioAndVideo) {
+TEST_P(ChunkDemuxerTest, AddSeparateSourcesForAudioAndVideo) {
   std::string audio_id = "audio1";
   std::string video_id = "video1";
   ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
@@ -1875,7 +1886,7 @@ TEST_F(ChunkDemuxerTest, AddSeparateSourcesForAudioAndVideo) {
   GenerateVideoStreamExpectedReads(0, 4);
 }
 
-TEST_F(ChunkDemuxerTest, AddSeparateSourcesForAudioAndVideoText) {
+TEST_P(ChunkDemuxerTest, AddSeparateSourcesForAudioAndVideoText) {
   // TODO(matthewjheaney): Here and elsewhere, we need more tests
   // for inband text tracks (http://crbug/321455).
 
@@ -1895,7 +1906,7 @@ TEST_F(ChunkDemuxerTest, AddSeparateSourcesForAudioAndVideoText) {
   GenerateVideoStreamExpectedReads(0, 4);
 }
 
-TEST_F(ChunkDemuxerTest, AddIdFailures) {
+TEST_P(ChunkDemuxerTest, AddIdFailures) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kDefaultDuration(), PIPELINE_OK), true);
@@ -1915,7 +1926,7 @@ TEST_F(ChunkDemuxerTest, AddIdFailures) {
 }
 
 // Test that Read() calls after a RemoveId() return "end of stream" buffers.
-TEST_F(ChunkDemuxerTest, RemoveId) {
+TEST_P(ChunkDemuxerTest, RemoveId) {
   std::string audio_id = "audio1";
   std::string video_id = "video1";
   ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
@@ -1944,7 +1955,7 @@ TEST_F(ChunkDemuxerTest, RemoveId) {
 
 // Test that removing an ID immediately after adding it does not interfere with
 // quota for new IDs in the future.
-TEST_F(ChunkDemuxerTest, RemoveAndAddId) {
+TEST_P(ChunkDemuxerTest, RemoveAndAddId) {
   std::string audio_id_1 = "audio1";
   ASSERT_TRUE(AddId(audio_id_1, HAS_AUDIO) == ChunkDemuxer::kOk);
   demuxer_->RemoveId(audio_id_1);
@@ -1953,7 +1964,7 @@ TEST_F(ChunkDemuxerTest, RemoveAndAddId) {
   ASSERT_TRUE(AddId(audio_id_2, HAS_AUDIO) == ChunkDemuxer::kOk);
 }
 
-TEST_F(ChunkDemuxerTest, SeekCanceled) {
+TEST_P(ChunkDemuxerTest, SeekCanceled) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   // Append cluster at the beginning of the stream.
@@ -1983,7 +1994,7 @@ TEST_F(ChunkDemuxerTest, SeekCanceled) {
   GenerateExpectedReads(0, 4);
 }
 
-TEST_F(ChunkDemuxerTest, SeekCanceledWhileWaitingForSeek) {
+TEST_P(ChunkDemuxerTest, SeekCanceledWhileWaitingForSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   // Append cluster at the beginning of the stream.
@@ -2012,7 +2023,7 @@ TEST_F(ChunkDemuxerTest, SeekCanceledWhileWaitingForSeek) {
 }
 
 // Test that Seek() successfully seeks to all source IDs.
-TEST_F(ChunkDemuxerTest, SeekAudioAndVideoSources) {
+TEST_P(ChunkDemuxerTest, SeekAudioAndVideoSources) {
   std::string audio_id = "audio1";
   std::string video_id = "video1";
   ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
@@ -2069,7 +2080,7 @@ TEST_F(ChunkDemuxerTest, SeekAudioAndVideoSources) {
 // is called before data is available for that seek point.
 // This scenario might be useful if seeking past the end of stream
 // of either audio or video (or both).
-TEST_F(ChunkDemuxerTest, EndOfStreamAfterPastEosSeek) {
+TEST_P(ChunkDemuxerTest, EndOfStreamAfterPastEosSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(GenerateSingleStreamCluster(0, 120, kAudioTrackNum, 10));
@@ -2098,7 +2109,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamAfterPastEosSeek) {
 
 // Test that EndOfStream is ignored if coming during a pending seek
 // whose seek time is before some existing ranges.
-TEST_F(ChunkDemuxerTest, EndOfStreamDuringPendingSeek) {
+TEST_P(ChunkDemuxerTest, EndOfStreamDuringPendingSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(GenerateSingleStreamCluster(0, 120, kAudioTrackNum, 10));
@@ -2134,7 +2145,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamDuringPendingSeek) {
 }
 
 // Test ranges in an audio-only stream.
-TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioIdOnly) {
+TEST_P(ChunkDemuxerTest, GetBufferedRanges_AudioIdOnly) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kDefaultDuration(), PIPELINE_OK), true);
@@ -2156,7 +2167,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioIdOnly) {
 }
 
 // Test ranges in a video-only stream.
-TEST_F(ChunkDemuxerTest, GetBufferedRanges_VideoIdOnly) {
+TEST_P(ChunkDemuxerTest, GetBufferedRanges_VideoIdOnly) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(kDefaultDuration(), PIPELINE_OK), true);
@@ -2177,7 +2188,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_VideoIdOnly) {
   CheckExpectedRanges("{ [0,132) [200,299) }");
 }
 
-TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideo) {
+TEST_P(ChunkDemuxerTest, GetBufferedRanges_AudioVideo) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   // Audio: 0 -> 23
@@ -2234,7 +2245,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideo) {
   CheckExpectedRanges("{ [0,23) [320,400) [520,570) [720,750) [920,950) }");
 }
 
-TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideoText) {
+TEST_P(ChunkDemuxerTest, GetBufferedRanges_AudioVideoText) {
   EXPECT_CALL(host_, AddTextStream(_, _));
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO | HAS_TEXT));
 
@@ -2261,7 +2272,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideoText) {
 // Once MarkEndOfStream() is called, GetBufferedRanges should not cut off any
 // over-hanging tails at the end of the ranges as this is likely due to block
 // duration differences.
-TEST_F(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
+TEST_P(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "0K 23K");
@@ -2319,7 +2330,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_EndOfStream) {
   CheckExpectedRanges("{ [0,46) [200,266) [300,366) }");
 }
 
-TEST_F(ChunkDemuxerTest, DifferentStreamTimecodes) {
+TEST_P(ChunkDemuxerTest, DifferentStreamTimecodes) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   // Create a cluster where the video timecode begins 25ms after the audio.
@@ -2337,7 +2348,7 @@ TEST_F(ChunkDemuxerTest, DifferentStreamTimecodes) {
   GenerateExpectedReads(5025, 5000, 8);
 }
 
-TEST_F(ChunkDemuxerTest, DifferentStreamTimecodesSeparateSources) {
+TEST_P(ChunkDemuxerTest, DifferentStreamTimecodesSeparateSources) {
   std::string audio_id = "audio1";
   std::string video_id = "video1";
   ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
@@ -2355,7 +2366,7 @@ TEST_F(ChunkDemuxerTest, DifferentStreamTimecodesSeparateSources) {
   GenerateVideoStreamExpectedReads(30, 4);
 }
 
-TEST_F(ChunkDemuxerTest, DifferentStreamTimecodesOutOfRange) {
+TEST_P(ChunkDemuxerTest, DifferentStreamTimecodesOutOfRange) {
   std::string audio_id = "audio1";
   std::string video_id = "video1";
   ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
@@ -2376,7 +2387,7 @@ TEST_F(ChunkDemuxerTest, DifferentStreamTimecodesOutOfRange) {
   ExpectEndOfStream(DemuxerStream::VIDEO);
 }
 
-TEST_F(ChunkDemuxerTest, ClusterWithNoBuffers) {
+TEST_P(ChunkDemuxerTest, ClusterWithNoBuffers) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   // Generate and append an empty cluster beginning at 0.
@@ -2388,7 +2399,7 @@ TEST_F(ChunkDemuxerTest, ClusterWithNoBuffers) {
   ExpectRead(DemuxerStream::VIDEO, 0);
 }
 
-TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
+TEST_P(ChunkDemuxerTest, CodecPrefixMatching) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -2398,12 +2409,14 @@ TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
   std::vector<std::string> codecs;
   codecs.push_back("avc1.4D4041");
 
-  EXPECT_EQ(demuxer_->AddId("source_id", "video/mp4", codecs), expected);
+  EXPECT_EQ(demuxer_->AddId("source_id", "video/mp4", codecs,
+                            use_legacy_frame_processor_),
+            expected);
 }
 
 // Test codec ID's that are not compliant with RFC6381, but have been
 // seen in the wild.
-TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
+TEST_P(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
 #if defined(USE_PROPRIETARY_CODECS)
@@ -2420,7 +2433,8 @@ TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
     codecs.push_back(codec_ids[i]);
 
     ChunkDemuxer::Status result =
-        demuxer_->AddId("source_id", "audio/mp4", codecs);
+        demuxer_->AddId("source_id", "audio/mp4", codecs,
+                        use_legacy_frame_processor_);
 
     EXPECT_EQ(result, expected)
         << "Fail to add codec_id '" << codec_ids[i] << "'";
@@ -2430,7 +2444,7 @@ TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
   }
 }
 
-TEST_F(ChunkDemuxerTest, EndOfStreamStillSetAfterSeek) {
+TEST_P(ChunkDemuxerTest, EndOfStreamStillSetAfterSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   EXPECT_CALL(host_, SetDuration(_))
@@ -2467,7 +2481,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamStillSetAfterSeek) {
   EXPECT_EQ(kLastVideoTimestamp, last_timestamp);
 }
 
-TEST_F(ChunkDemuxerTest, GetBufferedRangesBeforeInitSegment) {
+TEST_P(ChunkDemuxerTest, GetBufferedRangesBeforeInitSegment) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(&host_, CreateInitDoneCB(PIPELINE_OK), true);
   ASSERT_EQ(AddId("audio", HAS_AUDIO), ChunkDemuxer::kOk);
@@ -2479,7 +2493,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRangesBeforeInitSegment) {
 
 // Test that Seek() completes successfully when the first cluster
 // arrives.
-TEST_F(ChunkDemuxerTest, EndOfStreamDuringSeek) {
+TEST_P(ChunkDemuxerTest, EndOfStreamDuringSeek) {
   InSequence s;
 
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
@@ -2504,7 +2518,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamDuringSeek) {
   end_of_stream_helper.CheckIfReadDonesWereCalled(true);
 }
 
-TEST_F(ChunkDemuxerTest, ConfigChange_Video) {
+TEST_P(ChunkDemuxerTest, ConfigChange_Video) {
   InSequence s;
 
   ASSERT_TRUE(InitDemuxerWithConfigChangeData());
@@ -2551,7 +2565,7 @@ TEST_F(ChunkDemuxerTest, ConfigChange_Video) {
   ASSERT_EQ(status, DemuxerStream::kOk);
 }
 
-TEST_F(ChunkDemuxerTest, ConfigChange_Audio) {
+TEST_P(ChunkDemuxerTest, ConfigChange_Audio) {
   InSequence s;
 
   ASSERT_TRUE(InitDemuxerWithConfigChangeData());
@@ -2598,7 +2612,7 @@ TEST_F(ChunkDemuxerTest, ConfigChange_Audio) {
   ASSERT_EQ(status, DemuxerStream::kOk);
 }
 
-TEST_F(ChunkDemuxerTest, ConfigChange_Seek) {
+TEST_P(ChunkDemuxerTest, ConfigChange_Seek) {
   InSequence s;
 
   ASSERT_TRUE(InitDemuxerWithConfigChangeData());
@@ -2645,7 +2659,7 @@ TEST_F(ChunkDemuxerTest, ConfigChange_Seek) {
   ASSERT_TRUE(video_config_1.Matches(video->video_decoder_config()));
 }
 
-TEST_F(ChunkDemuxerTest, TimestampPositiveOffset) {
+TEST_P(ChunkDemuxerTest, TimestampPositiveOffset) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   ASSERT_TRUE(SetTimestampOffset(kSourceId, base::TimeDelta::FromSeconds(30)));
@@ -2656,7 +2670,7 @@ TEST_F(ChunkDemuxerTest, TimestampPositiveOffset) {
   GenerateExpectedReads(30000, 2);
 }
 
-TEST_F(ChunkDemuxerTest, TimestampNegativeOffset) {
+TEST_P(ChunkDemuxerTest, TimestampNegativeOffset) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   ASSERT_TRUE(SetTimestampOffset(kSourceId, base::TimeDelta::FromSeconds(-1)));
@@ -2665,7 +2679,7 @@ TEST_F(ChunkDemuxerTest, TimestampNegativeOffset) {
   GenerateExpectedReads(0, 2);
 }
 
-TEST_F(ChunkDemuxerTest, TimestampOffsetSeparateStreams) {
+TEST_P(ChunkDemuxerTest, TimestampOffsetSeparateStreams) {
   std::string audio_id = "audio1";
   std::string video_id = "video1";
   ASSERT_TRUE(InitDemuxerAudioAndVideoSources(audio_id, video_id));
@@ -2695,7 +2709,7 @@ TEST_F(ChunkDemuxerTest, TimestampOffsetSeparateStreams) {
   GenerateAudioStreamExpectedReads(27300, 4);
 }
 
-TEST_F(ChunkDemuxerTest, IsParsingMediaSegmentMidMediaSegment) {
+TEST_P(ChunkDemuxerTest, IsParsingMediaSegmentMidMediaSegment) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   scoped_ptr<Cluster> cluster = GenerateCluster(0, 2);
@@ -2711,7 +2725,7 @@ TEST_F(ChunkDemuxerTest, IsParsingMediaSegmentMidMediaSegment) {
   ASSERT_FALSE(demuxer_->IsParsingMediaSegment(kSourceId));
 }
 
-TEST_F(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
+TEST_P(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
   // TODO(wolenetz): Also test 'unknown' sized clusters.
   // See http://crbug.com/335676.
   const uint8 kBuffer[] = {
@@ -2741,7 +2755,7 @@ TEST_F(ChunkDemuxerTest, WebMIsParsingMediaSegmentDetection) {
   }
 }
 
-TEST_F(ChunkDemuxerTest, DurationChange) {
+TEST_P(ChunkDemuxerTest, DurationChange) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   const int kStreamDuration = kDefaultDuration().InMilliseconds();
 
@@ -2782,7 +2796,7 @@ TEST_F(ChunkDemuxerTest, DurationChange) {
   CheckExpectedRanges(kSourceId, "{ [201191,201290) }");
 }
 
-TEST_F(ChunkDemuxerTest, DurationChangeTimestampOffset) {
+TEST_P(ChunkDemuxerTest, DurationChangeTimestampOffset) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   ASSERT_TRUE(SetTimestampOffset(kSourceId, kDefaultDuration()));
@@ -2799,7 +2813,7 @@ TEST_F(ChunkDemuxerTest, DurationChangeTimestampOffset) {
   AppendCluster(GenerateCluster(0, 4));
 }
 
-TEST_F(ChunkDemuxerTest, EndOfStreamTruncateDuration) {
+TEST_P(ChunkDemuxerTest, EndOfStreamTruncateDuration) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(kDefaultFirstCluster());
@@ -2810,12 +2824,12 @@ TEST_F(ChunkDemuxerTest, EndOfStreamTruncateDuration) {
 }
 
 
-TEST_F(ChunkDemuxerTest, ZeroLengthAppend) {
+TEST_P(ChunkDemuxerTest, ZeroLengthAppend) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendData(NULL, 0);
 }
 
-TEST_F(ChunkDemuxerTest, AppendAfterEndOfStream) {
+TEST_P(ChunkDemuxerTest, AppendAfterEndOfStream) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   EXPECT_CALL(host_, SetDuration(_))
@@ -2833,14 +2847,14 @@ TEST_F(ChunkDemuxerTest, AppendAfterEndOfStream) {
 // Test receiving a Shutdown() call before we get an Initialize()
 // call. This can happen if video element gets destroyed before
 // the pipeline has a chance to initialize the demuxer.
-TEST_F(ChunkDemuxerTest, Shutdown_BeforeInitialize) {
+TEST_P(ChunkDemuxerTest, Shutdown_BeforeInitialize) {
   demuxer_->Shutdown();
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(DEMUXER_ERROR_COULD_NOT_OPEN), true);
   message_loop_.RunUntilIdle();
 }
 
-TEST_F(ChunkDemuxerTest, ReadAfterAudioDisabled) {
+TEST_P(ChunkDemuxerTest, ReadAfterAudioDisabled) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   AppendCluster(kDefaultFirstCluster());
 
@@ -2862,7 +2876,7 @@ TEST_F(ChunkDemuxerTest, ReadAfterAudioDisabled) {
 
 // Verifies that signaling end of stream while stalled at a gap
 // boundary does not trigger end of stream buffers to be returned.
-TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
+TEST_P(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   AppendCluster(0, 10);
@@ -2925,7 +2939,7 @@ TEST_F(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {
   EXPECT_TRUE(video_read_done);
 }
 
-TEST_F(ChunkDemuxerTest, CanceledSeekDuringInitialPreroll) {
+TEST_P(ChunkDemuxerTest, CanceledSeekDuringInitialPreroll) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
 
   // Cancel preroll.
@@ -2939,7 +2953,7 @@ TEST_F(ChunkDemuxerTest, CanceledSeekDuringInitialPreroll) {
   AppendCluster(seek_time.InMilliseconds(), 10);
 }
 
-TEST_F(ChunkDemuxerTest, GCDuringSeek) {
+TEST_P(ChunkDemuxerTest, GCDuringSeek) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
 
   demuxer_->SetMemoryLimitsForTesting(5 * kBlockSize);
@@ -2982,7 +2996,7 @@ TEST_F(ChunkDemuxerTest, GCDuringSeek) {
   CheckExpectedRanges(kSourceId, "{ [500,592) [792,815) }");
 }
 
-TEST_F(ChunkDemuxerTest, RemoveBeforeInitSegment) {
+TEST_P(ChunkDemuxerTest, RemoveBeforeInitSegment) {
     EXPECT_CALL(*this, DemuxerOpened());
     demuxer_->Initialize(
         &host_, CreateInitDoneCB(kNoTimestamp(), PIPELINE_OK), true);
@@ -2993,7 +3007,7 @@ TEST_F(ChunkDemuxerTest, RemoveBeforeInitSegment) {
                      base::TimeDelta::FromMilliseconds(1));
 }
 
-TEST_F(ChunkDemuxerTest, AppendWindow_Video) {
+TEST_P(ChunkDemuxerTest, AppendWindow_Video) {
   ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
   DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
 
@@ -3021,7 +3035,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Video) {
   CheckExpectedRanges(kSourceId, "{ [120,270) [420,630) }");
 }
 
-TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
+TEST_P(ChunkDemuxerTest, AppendWindow_Audio) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
   DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::AUDIO);
 
@@ -3050,7 +3064,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
   CheckExpectedRanges(kSourceId, "{ [30,270) [360,630) }");
 }
 
-TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
+TEST_P(ChunkDemuxerTest, AppendWindow_Text) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
@@ -3089,7 +3103,7 @@ TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
   CheckExpectedBuffers(text_stream, "400 500");
 }
 
-TEST_F(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {
+TEST_P(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
   EXPECT_CALL(host_, OnDemuxerError(PIPELINE_ERROR_DECODE));
   AppendGarbage();
@@ -3097,7 +3111,7 @@ TEST_F(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {
   demuxer_->StartWaitingForSeek(seek_time);
 }
 
-TEST_F(ChunkDemuxerTest, Remove_AudioVideoText) {
+TEST_P(ChunkDemuxerTest, Remove_AudioVideoText) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
@@ -3140,7 +3154,7 @@ TEST_F(ChunkDemuxerTest, Remove_AudioVideoText) {
 // Verifies that a Seek() will complete without text cues for
 // the seek point and will return cues after the seek position
 // when they are eventually appended.
-TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
+TEST_P(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   DemuxerStream* text_stream = NULL;
   EXPECT_CALL(host_, AddTextStream(_, _))
       .WillOnce(SaveArg<0>(&text_stream));
@@ -3194,5 +3208,9 @@ TEST_F(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   CheckExpectedBuffers(audio_stream, "160 180");
   CheckExpectedBuffers(video_stream, "180 210");
 }
+
+// TODO(wolenetz): Enable testing of new frame processor based on this flag,
+// once the new processor has landed. See http://crbug.com/249422.
+INSTANTIATE_TEST_CASE_P(LegacyFrameProcessor, ChunkDemuxerTest, Values(true));
 
 }  // namespace media

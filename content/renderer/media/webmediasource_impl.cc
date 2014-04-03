@@ -36,14 +36,26 @@ WebMediaSourceImpl::~WebMediaSourceImpl() {}
 WebMediaSource::AddStatus WebMediaSourceImpl::addSourceBuffer(
     const blink::WebString& type,
     const blink::WebVector<blink::WebString>& codecs,
+    const WebMediaSource::FrameProcessorChoice frame_processor_choice,
     blink::WebSourceBuffer** source_buffer) {
   std::string id = base::GenerateGUID();
   std::vector<std::string> new_codecs(codecs.size());
   for (size_t i = 0; i < codecs.size(); ++i)
     new_codecs[i] = codecs[i].utf8().data();
+
+  bool use_legacy_frame_processor = false;
+  switch (frame_processor_choice) {
+    case UseLegacyFrameProcessor:
+      use_legacy_frame_processor = true;
+      break;
+    case UseNewFrameProcessor:
+      break;
+  }
+
   WebMediaSource::AddStatus result =
       static_cast<WebMediaSource::AddStatus>(
-          demuxer_->AddId(id, type.utf8().data(), new_codecs));
+          demuxer_->AddId(id, type.utf8().data(), new_codecs,
+                          use_legacy_frame_processor));
 
   if (result == WebMediaSource::AddStatusOk)
     *source_buffer = new WebSourceBufferImpl(id, demuxer_);

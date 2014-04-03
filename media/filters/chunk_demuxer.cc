@@ -138,7 +138,7 @@ class SourceState {
   void SetSequenceMode(bool sequence_mode);
 
   // Returns the range of buffered data in this source, capped at |duration|.
-  // |ended| - Set to true if end of stream has been signalled and the special
+  // |ended| - Set to true if end of stream has been signaled and the special
   // end of stream range logic needs to be executed.
   Ranges<TimeDelta> GetBufferedRanges(TimeDelta duration, bool ended) const;
 
@@ -1106,9 +1106,11 @@ void ChunkDemuxer::CancelPendingSeek(TimeDelta seek_time) {
   base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 }
 
-ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
-                                         const std::string& type,
-                                         std::vector<std::string>& codecs) {
+ChunkDemuxer::Status ChunkDemuxer::AddId(
+    const std::string& id,
+    const std::string& type,
+    std::vector<std::string>& codecs,
+    const bool use_legacy_frame_processor) {
   base::AutoLock auto_lock(lock_);
 
   if ((state_ != WAITING_FOR_INIT && state_ != INITIALIZING) || IsValidId(id))
@@ -1132,6 +1134,10 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   if (has_video)
     source_id_video_ = id;
+
+  if (!use_legacy_frame_processor) {
+    DLOG(WARNING) << "New frame processor is not yet supported. Using legacy.";
+  }
 
   scoped_ptr<FrameProcessorBase> frame_processor(new LegacyFrameProcessor(
       base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,

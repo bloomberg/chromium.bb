@@ -186,13 +186,19 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   // Registers a new |id| to use for AppendData() calls. |type| indicates
   // the MIME type for the data that we intend to append for this ID.
+  // |use_legacy_frame_processor| determines which of LegacyFrameProcessor or
+  // a (not yet implemented) more compliant frame processor to use to process
+  // parsed frames from AppendData() calls.
+  // TODO(wolenetz): Enable usage of new frame processor based on this flag.
+  // See http://crbug.com/249422.
   // kOk is returned if the demuxer has enough resources to support another ID
   //    and supports the format indicated by |type|.
   // kNotSupported is returned if |type| is not a supported format.
   // kReachedIdLimit is returned if the demuxer cannot handle another ID right
   //    now.
   Status AddId(const std::string& id, const std::string& type,
-               std::vector<std::string>& codecs);
+               std::vector<std::string>& codecs,
+               const bool use_legacy_frame_processor);
 
   // Removed an ID & associated resources that were previously added with
   // AddId().
@@ -289,8 +295,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
 
   void OnNewTextTrack(ChunkDemuxerStream* text_stream,
                       const TextTrackConfig& config);
-  void OnNewMediaSegment(const std::string& source_id,
-                         base::TimeDelta start_timestamp);
 
   // Returns true if |source_id| is valid, false otherwise.
   bool IsValidId(const std::string& source_id) const;

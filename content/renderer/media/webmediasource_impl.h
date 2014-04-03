@@ -26,11 +26,12 @@ class WebMediaSourceImpl : public blink::WebMediaSource {
   virtual AddStatus addSourceBuffer(
       const blink::WebString& type,
       const blink::WebVector<blink::WebString>& codecs,
-      blink::WebSourceBuffer** source_buffer) OVERRIDE;
-  virtual double duration() OVERRIDE;
-  virtual void setDuration(double duration) OVERRIDE;
-  virtual void markEndOfStream(EndOfStreamStatus status) OVERRIDE;
-  virtual void unmarkEndOfStream() OVERRIDE;
+      const FrameProcessorChoice frame_processor_choice,
+      blink::WebSourceBuffer** source_buffer);
+  virtual double duration();
+  virtual void setDuration(double duration);
+  virtual void markEndOfStream(EndOfStreamStatus status);
+  virtual void unmarkEndOfStream();
 
  private:
   media::ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.
