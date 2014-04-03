@@ -73,11 +73,14 @@ class GpuInProcessThread
   virtual void ScheduleTask(const base::Closure& task) OVERRIDE;
   virtual void ScheduleIdleWork(const base::Closure& callback) OVERRIDE;
   virtual bool UseVirtualizedGLContexts() OVERRIDE { return false; }
+  virtual scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache()
+      OVERRIDE;
 
  private:
   virtual ~GpuInProcessThread();
   friend class base::RefCountedThreadSafe<GpuInProcessThread>;
 
+  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
   DISALLOW_COPY_AND_ASSIGN(GpuInProcessThread);
 };
 
@@ -96,6 +99,13 @@ void GpuInProcessThread::ScheduleTask(const base::Closure& task) {
 void GpuInProcessThread::ScheduleIdleWork(const base::Closure& callback) {
   message_loop()->PostDelayedTask(
       FROM_HERE, callback, base::TimeDelta::FromMilliseconds(5));
+}
+
+scoped_refptr<gles2::ShaderTranslatorCache>
+GpuInProcessThread::shader_translator_cache() {
+  if (!shader_translator_cache_.get())
+    shader_translator_cache_ = new gpu::gles2::ShaderTranslatorCache;
+  return shader_translator_cache_;
 }
 
 base::LazyInstance<std::set<InProcessCommandBuffer*> > default_thread_clients_ =
@@ -325,12 +335,14 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
 
   bool bind_generates_resource = false;
   decoder_.reset(gles2::GLES2Decoder::Create(
-      params.context_group ? params.context_group->decoder_->GetContextGroup()
-                    : new gles2::ContextGroup(NULL,
-                                              NULL,
-                                              NULL,
-                                              NULL,
-                                              bind_generates_resource)));
+      params.context_group
+          ? params.context_group->decoder_->GetContextGroup()
+          : new gles2::ContextGroup(NULL,
+                                    NULL,
+                                    NULL,
+                                    service_->shader_translator_cache(),
+                                    NULL,
+                                    bind_generates_resource)));
 
   gpu_scheduler_.reset(
       new GpuScheduler(command_buffer.get(), decoder_.get(), decoder_.get()));

@@ -113,6 +113,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       new ContextGroup(NULL,
                        NULL,
                        memory_tracker_,
+                       new ShaderTranslatorCache,
                        feature_info.get(),
                        init.bind_generates_resource));
 

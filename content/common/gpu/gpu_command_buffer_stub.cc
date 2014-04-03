@@ -147,6 +147,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
         mailbox_manager,
         image_manager,
         new GpuCommandBufferMemoryTracker(channel),
+        channel_->gpu_channel_manager()->shader_translator_cache(),
         NULL,
         true);
   }

@@ -32,11 +32,13 @@ ContextGroup::ContextGroup(
     MailboxManager* mailbox_manager,
     ImageManager* image_manager,
     MemoryTracker* memory_tracker,
+    ShaderTranslatorCache* shader_translator_cache,
     FeatureInfo* feature_info,
     bool bind_generates_resource)
     : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
       image_manager_(image_manager ? image_manager : new ImageManager),
       memory_tracker_(memory_tracker),
+      shader_translator_cache_(shader_translator_cache),
       enforce_gl_minimums_(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnforceGLMinimums)),
       bind_generates_resource_(bind_generates_resource),

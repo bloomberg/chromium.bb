@@ -77,9 +77,16 @@ bool CommandBufferImpl::DoInitialize(const ShmHandle& shared_state) {
   if (!context->MakeCurrent(surface.get()))
     return false;
 
+  // TODO(piman): ShaderTranslatorCache is currently per-ContextGroup but
+  // only needs to be per-thread.
   scoped_refptr<gpu::gles2::ContextGroup> context_group =
-      new gpu::gles2::ContextGroup(
-          NULL, NULL, new MemoryTrackerStub(), NULL, true);
+      new gpu::gles2::ContextGroup(NULL,
+                                   NULL,
+                                   new MemoryTrackerStub,
+                                   new gpu::gles2::ShaderTranslatorCache,
+                                   NULL,
+                                   true);
+
   command_buffer_.reset(
       new gpu::CommandBufferService(context_group->transfer_buffer_manager()));
   bool result = command_buffer_->Initialize();

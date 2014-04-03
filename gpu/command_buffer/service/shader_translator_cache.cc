@@ -7,14 +7,11 @@
 namespace gpu {
 namespace gles2 {
 
-ShaderTranslatorCache* ShaderTranslatorCache::GetInstance() {
-  return Singleton<ShaderTranslatorCache>::get();
-}
-
 ShaderTranslatorCache::ShaderTranslatorCache() {
 }
 
 ShaderTranslatorCache::~ShaderTranslatorCache() {
+  DCHECK(cache_.empty());
 }
 
 void ShaderTranslatorCache::OnDestruct(ShaderTranslator* translator) {

@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "ui/gfx/transform.h"
 
 using content::BrowserThread;
@@ -251,6 +252,13 @@ void DeferredGpuCommandService::ScheduleIdleWork(
 }
 
 bool DeferredGpuCommandService::UseVirtualizedGLContexts() { return true; }
+
+scoped_refptr<gpu::gles2::ShaderTranslatorCache>
+DeferredGpuCommandService::shader_translator_cache() {
+  if (!shader_translator_cache_.get())
+    shader_translator_cache_ = new gpu::gles2::ShaderTranslatorCache;
+  return shader_translator_cache_;
+}
 
 void DeferredGpuCommandService::RunTasks() {
   bool has_more_tasks;

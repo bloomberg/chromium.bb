@@ -39,7 +39,7 @@ class ContextGroupTest : public testing::Test {
     ::gfx::MockGLInterface::SetGLInterface(gl_.get());
     decoder_.reset(new MockGLES2Decoder());
     group_ = scoped_refptr<ContextGroup>(
-        new ContextGroup(NULL, NULL, NULL, NULL, true));
+        new ContextGroup(NULL, NULL, NULL, NULL, NULL, true));
   }
 
   virtual void TearDown() {

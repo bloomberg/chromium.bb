@@ -46,6 +46,7 @@ namespace gpu {
 
 namespace gles2 {
 class GLES2Decoder;
+class ShaderTranslatorCache;
 }
 
 class CommandBufferServiceBase;
@@ -129,6 +130,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual void ScheduleIdleWork(const base::Closure& task) = 0;
 
     virtual bool UseVirtualizedGLContexts() = 0;
+    virtual scoped_refptr<gles2::ShaderTranslatorCache>
+        shader_translator_cache() = 0;
   };
 
 #if defined(OS_ANDROID)

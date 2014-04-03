@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
+#include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -46,6 +47,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
       MailboxManager* mailbox_manager,
       ImageManager* image_manager,
       MemoryTracker* memory_tracker,
+      ShaderTranslatorCache* shader_translator_cache,
       FeatureInfo* feature_info,
       bool bind_generates_resource);
 
@@ -69,6 +71,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
 
   MemoryTracker* memory_tracker() const {
     return memory_tracker_.get();
+  }
+
+  ShaderTranslatorCache* shader_translator_cache() const {
+    return shader_translator_cache_.get();
   }
 
   bool bind_generates_resource() {
@@ -179,6 +185,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_refptr<MailboxManager> mailbox_manager_;
   scoped_refptr<ImageManager> image_manager_;
   scoped_refptr<MemoryTracker> memory_tracker_;
+  scoped_refptr<ShaderTranslatorCache> shader_translator_cache_;
   scoped_ptr<TransferBufferManagerInterface> transfer_buffer_manager_;
 
   bool enforce_gl_minimums_;

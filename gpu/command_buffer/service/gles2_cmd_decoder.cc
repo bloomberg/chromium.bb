@@ -774,6 +774,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return group_->shader_manager();
   }
 
+  ShaderTranslatorCache* shader_translator_cache() {
+    return group_->shader_translator_cache();
+  }
+
   const TextureManager* texture_manager() const {
     return group_->texture_manager();
   }
@@ -2762,9 +2766,10 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   if (workarounds().unroll_for_loop_with_sampler_array_index)
     driver_bug_workarounds |= SH_UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX;
 
-  ShaderTranslatorCache* cache = ShaderTranslatorCache::GetInstance();
-  vertex_translator_ = cache->GetTranslator(
-      SH_VERTEX_SHADER, shader_spec, &resources,
+  vertex_translator_ = shader_translator_cache()->GetTranslator(
+      SH_VERTEX_SHADER,
+      shader_spec,
+      &resources,
       implementation_type,
       static_cast<ShCompileOptions>(driver_bug_workarounds));
   if (!vertex_translator_.get()) {
@@ -2773,8 +2778,10 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
     return false;
   }
 
-  fragment_translator_ = cache->GetTranslator(
-      SH_FRAGMENT_SHADER, shader_spec, &resources,
+  fragment_translator_ = shader_translator_cache()->GetTranslator(
+      SH_FRAGMENT_SHADER,
+      shader_spec,
+      &resources,
       implementation_type,
       static_cast<ShCompileOptions>(driver_bug_workarounds));
   if (!fragment_translator_.get()) {
@@ -3408,6 +3415,11 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   offscreen_saved_color_texture_.reset();
   offscreen_resolved_frame_buffer_.reset();
   offscreen_resolved_color_texture_.reset();
+
+  // Need to release these before releasing |group_| which may own the
+  // ShaderTranslatorCache.
+  fragment_translator_ = NULL;
+  vertex_translator_ = NULL;
 
   // Should destroy the transfer manager before the texture manager held
   // by the context group.

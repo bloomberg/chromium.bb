@@ -117,11 +117,13 @@ void GLManager::Initialize(const GLManager::Options& options) {
   attrib_helper.Serialize(&attribs);
 
   if (!context_group) {
-    context_group = new gles2::ContextGroup(mailbox_manager_.get(),
-                                            options.image_manager,
-                                            NULL,
-                                            NULL,
-                                            options.bind_generates_resource);
+    context_group =
+        new gles2::ContextGroup(mailbox_manager_.get(),
+                                options.image_manager,
+                                NULL,
+                                new gpu::gles2::ShaderTranslatorCache,
+                                NULL,
+                                options.bind_generates_resource);
   }
 
   decoder_.reset(::gpu::gles2::GLES2Decoder::Create(context_group));

@@ -10,22 +10,23 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
 namespace gpu {
 namespace gles2 {
 
-// This singleton and the cache that it implements is NOT thread safe.
-// We're relying on the fact that the all GLES2DecoderImpl's are used
-// on one thread.
+// This class is not thread safe and can only be created and destroyed
+// on a single thread. But it is safe to use two independent instances on two
+// threads without synchronization.
 //
 // TODO(backer): Investigate using glReleaseShaderCompiler as an alternative to
 // to this cache.
-class ShaderTranslatorCache : public ShaderTranslator::DestructionObserver {
+class GPU_EXPORT ShaderTranslatorCache
+    : public base::RefCounted<ShaderTranslatorCache>,
+      public NON_EXPORTED_BASE(ShaderTranslator::DestructionObserver) {
  public:
-  static ShaderTranslatorCache* GetInstance();
+  ShaderTranslatorCache();
 
   // ShaderTranslator::DestructionObserver implementation
   virtual void OnDestruct(ShaderTranslator* translator) OVERRIDE;
@@ -39,10 +40,8 @@ class ShaderTranslatorCache : public ShaderTranslator::DestructionObserver {
       ShCompileOptions driver_bug_workarounds);
 
  private:
-  ShaderTranslatorCache();
+  friend class base::RefCounted<ShaderTranslatorCache>;
   virtual ~ShaderTranslatorCache();
-
-  friend struct DefaultSingletonTraits<ShaderTranslatorCache>;
 
   // Parameters passed into ShaderTranslator::Init
   struct ShaderTranslatorInitParams {
