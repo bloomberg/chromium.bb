@@ -252,7 +252,8 @@ bool NaClForkDelegate::CanHelp(const std::string& process_type,
                                std::string* uma_name,
                                int* uma_sample,
                                int* uma_boundary_value) {
-  if (process_type != switches::kNaClLoaderProcess)
+  if (process_type != switches::kNaClLoaderProcess &&
+      process_type != switches::kNaClLoaderNonSfiProcess)
     return false;
   *uma_name = "NaCl.Client.Helper.StateOnFork";
   *uma_sample = status_;
@@ -260,7 +261,8 @@ bool NaClForkDelegate::CanHelp(const std::string& process_type,
   return true;
 }
 
-pid_t NaClForkDelegate::Fork(const std::vector<int>& fds) {
+pid_t NaClForkDelegate::Fork(const std::string& process_type,
+                             const std::vector<int>& fds) {
   VLOG(1) << "NaClForkDelegate::Fork";
 
   DCHECK(fds.size() == kNumPassedFDs);
@@ -273,6 +275,11 @@ pid_t NaClForkDelegate::Fork(const std::vector<int>& fds) {
   // First, send a remote fork request.
   Pickle write_pickle;
   write_pickle.WriteInt(nacl::kNaClForkRequest);
+  // TODO(hamaji): When we split the helper binary for non-SFI mode
+  // from nacl_helper, stop sending this information.
+  const bool uses_nonsfi_mode =
+    process_type == switches::kNaClLoaderNonSfiProcess;
+  write_pickle.WriteBool(uses_nonsfi_mode);
 
   char reply_buf[kNaClMaxIPCMessageLength];
   ssize_t reply_size = 0;

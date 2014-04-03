@@ -47,7 +47,8 @@ struct NaClLoaderSystemInfo {
 // side of the fork. See zygote_main_linux.cc:HandleForkRequest from
 //   if (!child) {
 void BecomeNaClLoader(const std::vector<int>& child_fds,
-                      const NaClLoaderSystemInfo& system_info) {
+                      const NaClLoaderSystemInfo& system_info,
+                      bool uses_nonsfi_mode) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // don't need zygote FD any more
   if (IGNORE_EINTR(close(kNaClZygoteDescriptor)) != 0)
@@ -63,6 +64,7 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
 
   base::MessageLoopForIO main_message_loop;
   NaClListener listener;
+  listener.set_uses_nonsfi_mode(uses_nonsfi_mode);
   listener.set_prereserved_sandbox_size(system_info.prereserved_sandbox_size);
   listener.set_number_of_cores(system_info.number_of_cores);
   listener.Listen();
@@ -71,7 +73,8 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
 
 // Start the NaCl loader in a child created by the NaCl loader Zygote.
 void ChildNaClLoaderInit(const std::vector<int>& child_fds,
-                         const NaClLoaderSystemInfo& system_info) {
+                         const NaClLoaderSystemInfo& system_info,
+                         bool uses_nonsfi_mode) {
   const int parent_fd = child_fds[content::ZygoteForkDelegate::kParentFDIndex];
   const int dummy_fd = child_fds[content::ZygoteForkDelegate::kDummyFDIndex];
   bool validack = false;
@@ -103,7 +106,7 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
   if (IGNORE_EINTR(close(parent_fd)) != 0)
     LOG(ERROR) << "close(parent_fd) failed";
   if (validack) {
-    BecomeNaClLoader(child_fds, system_info);
+    BecomeNaClLoader(child_fds, system_info, uses_nonsfi_mode);
   } else {
     LOG(ERROR) << "Failed to synch with zygote";
   }
@@ -115,7 +118,14 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
 // content/browser/zygote_main_linux.cc:ForkWithRealPid()
 bool HandleForkRequest(const std::vector<int>& child_fds,
                        const NaClLoaderSystemInfo& system_info,
+                       PickleIterator* input_iter,
                        Pickle* output_pickle) {
+  bool uses_nonsfi_mode;
+  if (!input_iter->ReadBool(&uses_nonsfi_mode)) {
+    LOG(ERROR) << "Could not read uses_nonsfi_mode status";
+    return false;
+  }
+
   if (content::ZygoteForkDelegate::kNumPassedFDs != child_fds.size()) {
     LOG(ERROR) << "nacl_helper: unexpected number of fds, got "
         << child_fds.size();
@@ -129,7 +139,7 @@ bool HandleForkRequest(const std::vector<int>& child_fds,
   }
 
   if (child_pid == 0) {
-    ChildNaClLoaderInit(child_fds, system_info);
+    ChildNaClLoaderInit(child_fds, system_info, uses_nonsfi_mode);
     NOTREACHED();
   }
 
@@ -201,7 +211,7 @@ bool HonorRequestAndReply(int reply_fd,
   switch (command_type) {
     case nacl::kNaClForkRequest:
       have_to_reply = HandleForkRequest(attached_fds, system_info,
-                                        &write_pickle);
+                                        input_iter, &write_pickle);
       break;
     case nacl::kNaClGetTerminationStatusRequest:
       have_to_reply =

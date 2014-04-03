@@ -59,7 +59,8 @@ class ZygoteForkDelegate {
   // suid sandbox, Fork() returns the Linux process ID.
   // This method is not aware of any potential pid namespaces, so it'll
   // return a raw pid just like fork() would.
-  virtual pid_t Fork(const std::vector<int>& fds) = 0;
+  virtual pid_t Fork(const std::string& process_type,
+                     const std::vector<int>& fds) = 0;
 
   // After a successful fork, signal the child to indicate that
   // the child's PID has been received. Also communicate the

@@ -39,7 +39,12 @@ const char kNaClGdb[]                       = "nacl-gdb";
 // GDB script to pass to the nacl-gdb debugger at startup.
 const char kNaClGdbScript[]                 = "nacl-gdb-script";
 
-// Value for --type that causes the process to run as a NativeClient loader.
+// Value for --type that causes the process to run as a NativeClient loader
+// for SFI mode.
 const char kNaClLoaderProcess[]             = "nacl-loader";
+
+// Value for --type that causes the process to run as a NativeClient loader
+// for non SFI mode.
+const char kNaClLoaderNonSfiProcess[]       = "nacl-loader-nonsfi";
 
 }  // namespace switches

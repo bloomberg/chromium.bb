@@ -28,7 +28,8 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
                           int* uma_boundary_value) OVERRIDE;
   virtual bool CanHelp(const std::string& process_type, std::string* uma_name,
                           int* uma_sample, int* uma_boundary_value) OVERRIDE;
-  virtual pid_t Fork(const std::vector<int>& fds) OVERRIDE;
+  virtual pid_t Fork(const std::string& process_type,
+                     const std::vector<int>& fds) OVERRIDE;
   virtual bool AckChild(int fd,
                         const std::string& channel_switch) OVERRIDE;
   virtual bool GetTerminationStatus(pid_t pid, bool known_dead,

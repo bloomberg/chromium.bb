@@ -429,6 +429,21 @@ void NaClProcessHost::Launch(
     return;
   }
 
+  if (uses_nonsfi_mode_) {
+#if defined(OS_LINUX)
+    const bool kNonSFIModeSupported = true;
+#else
+    const bool kNonSFIModeSupported = false;
+#endif
+    if (!kNonSFIModeSupported ||
+        !cmd->HasSwitch(switches::kEnableNaClNonSfiMode)) {
+      SendErrorToRenderer("NaCl non-SFI mode works only on Linux with"
+                          " --enable-nacl-nonsfi-mode specified");
+      delete this;
+      return;
+    }
+  }
+
   // Rather than creating a socket pair in the renderer, and passing
   // one side through the browser to sel_ldr, socket pairs are created
   // in the browser and then passed to the renderer and sel_ldr.
@@ -592,7 +607,9 @@ bool NaClProcessHost::LaunchSelLdr() {
   CopyNaClCommandLineArguments(cmd_line.get());
 
   cmd_line->AppendSwitchASCII(switches::kProcessType,
-                              switches::kNaClLoaderProcess);
+                              (uses_nonsfi_mode_ ?
+                               switches::kNaClLoaderNonSfiProcess :
+                               switches::kNaClLoaderProcess));
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
@@ -777,7 +794,6 @@ bool NaClProcessHost::StartNaClExecution() {
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.uses_irt = uses_irt_;
   params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
-  params.uses_nonsfi_mode = uses_nonsfi_mode_;
 
   const ChildProcessData& data = process_->GetData();
   if (!ShareHandleToSelLdr(data.handle,
@@ -826,19 +842,6 @@ bool NaClProcessHost::StartNaClExecution() {
     }
   }
 #endif
-
-  if (params.uses_nonsfi_mode) {
-#if defined(OS_LINUX)
-    const bool kNonSFIModeSupported = true;
-#else
-    const bool kNonSFIModeSupported = false;
-#endif
-    if (!kNonSFIModeSupported ||
-        !CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableNaClNonSfiMode)) {
-      return false;
-    }
-  }
 
   process_->Send(new NaClProcessMsg_Start(params));
 

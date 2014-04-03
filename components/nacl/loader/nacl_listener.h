@@ -30,6 +30,9 @@ class NaClListener : public IPC::Listener {
 
   bool Send(IPC::Message* msg);
 
+  void set_uses_nonsfi_mode(bool uses_nonsfi_mode) {
+    uses_nonsfi_mode_ = uses_nonsfi_mode;
+  }
 #if defined(OS_LINUX)
   void set_prereserved_sandbox_size(size_t prereserved_sandbox_size) {
     prereserved_sandbox_size_ = prereserved_sandbox_size;
@@ -54,6 +57,7 @@ class NaClListener : public IPC::Listener {
   base::WaitableEvent shutdown_event_;
   base::Thread io_thread_;
 
+  bool uses_nonsfi_mode_;
 #if defined(OS_LINUX)
   size_t prereserved_sandbox_size_;
 #endif

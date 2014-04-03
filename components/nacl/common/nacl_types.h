@@ -60,7 +60,6 @@ struct NaClStartParams {
   bool enable_ipc_proxy;
   bool uses_irt;
   bool enable_dyncode_syscalls;
-  bool uses_nonsfi_mode;
 };
 
 // Parameters sent to the browser process to have it launch a NaCl process.

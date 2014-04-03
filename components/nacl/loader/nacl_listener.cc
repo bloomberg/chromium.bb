@@ -200,6 +200,7 @@ class BrowserValidationDBProxy : public NaClValidationDB {
 
 NaClListener::NaClListener() : shutdown_event_(true, false),
                                io_thread_("NaCl_IOThread"),
+                               uses_nonsfi_mode_(false),
 #if defined(OS_LINUX)
                                prereserved_sandbox_size_(0),
 #endif
@@ -257,6 +258,9 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClListener::OnStart(const nacl::NaClStartParams& params) {
+#if !defined(OS_LINUX)
+  CHECK(!uses_nonsfi_mode_) << "Non-SFI NaCl is only supported on Linux";
+#endif
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   int urandom_fd = dup(base::GetUrandomFD());
   if (urandom_fd < 0) {
@@ -287,7 +291,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     ppapi_renderer_handle = IPC::Channel::GenerateVerifiedChannelID("nacl");
 
 #if defined(OS_LINUX)
-    if (params.uses_nonsfi_mode) {
+    if (uses_nonsfi_mode_) {
       // In non-SFI mode, we neither intercept nor rewrite the message using
       // NaClIPCAdapter, and the channels are connected between the plugin and
       // the hosts directly. So, the IPC::Channel instances will be created in
@@ -421,7 +425,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #endif
 
 #if defined(OS_LINUX)
-  if (params.uses_nonsfi_mode) {
+  if (uses_nonsfi_mode_) {
     nacl::nonsfi::MainStart(args->imc_bootstrap_handle);
     return;
   }

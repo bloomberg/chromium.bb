@@ -24,7 +24,6 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(enable_ipc_proxy)
   IPC_STRUCT_TRAITS_MEMBER(uses_irt)
   IPC_STRUCT_TRAITS_MEMBER(enable_dyncode_syscalls)
-  IPC_STRUCT_TRAITS_MEMBER(uses_nonsfi_mode)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------

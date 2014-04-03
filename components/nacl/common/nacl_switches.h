@@ -20,6 +20,7 @@ extern const char kNaClDebugMask[];
 extern const char kNaClGdb[];
 extern const char kNaClGdbScript[];
 extern const char kNaClLoaderProcess[];
+extern const char kNaClLoaderNonSfiProcess[];
 
 }  // namespace switches
 

@@ -320,7 +320,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     fds.push_back(ipc_channel_fd);  // kBrowserFDIndex
     fds.push_back(dummy_fd);  // kDummyFDIndex
     fds.push_back(pipe_fds[0]);  // kParentFDIndex
-    pid = helper_->Fork(fds);
+    pid = helper_->Fork(process_type, fds);
   } else {
     pid = fork();
   }

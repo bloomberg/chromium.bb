@@ -199,7 +199,8 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
              process_type == switches::kServiceProcess) {
     score = kMiscScore;
 #ifndef DISABLE_NACL
-  } else if (process_type == switches::kNaClLoaderProcess) {
+  } else if (process_type == switches::kNaClLoaderProcess ||
+             process_type == switches::kNaClLoaderNonSfiProcess) {
     score = kPluginScore;
 #endif
   } else if (process_type == switches::kZygoteProcess ||
