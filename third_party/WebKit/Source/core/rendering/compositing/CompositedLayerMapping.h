@@ -152,7 +152,6 @@ public:
 
     LayoutRect compositedBounds() const { return m_compositedBounds; }
     IntRect pixelSnappedCompositedBounds() const;
-    void setCompositedBounds(const LayoutRect&);
     void updateCompositedBounds(GraphicsLayerUpdater::UpdateType);
 
     void updateAfterWidgetResize();

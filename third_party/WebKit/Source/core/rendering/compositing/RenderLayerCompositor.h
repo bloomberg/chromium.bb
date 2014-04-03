@@ -51,7 +51,7 @@ enum CompositingUpdateType {
     CompositingUpdateAfterLayout,
     CompositingUpdateOnScroll,
     CompositingUpdateOnCompositedScroll,
-    CompositingUpdateAfterCanvasContextChange
+    CompositingUpdateAfterCanvasContextChange,
 };
 
 // RenderLayerCompositor manages the hierarchy of

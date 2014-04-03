@@ -406,7 +406,7 @@ void CompositedLayerMapping::updateCompositedBounds(GraphicsLayerUpdater::Update
         m_artificiallyInflatedBounds = false;
     }
 
-    setCompositedBounds(layerBounds);
+    m_compositedBounds = layerBounds;
 }
 
 void CompositedLayerMapping::updateAfterWidgetResize()
@@ -2057,11 +2057,6 @@ IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const
     LayoutRect bounds = m_compositedBounds;
     bounds.move(m_owningLayer.subpixelAccumulation());
     return pixelSnappedIntRect(bounds);
-}
-
-void CompositedLayerMapping::setCompositedBounds(const LayoutRect& bounds)
-{
-    m_compositedBounds = bounds;
 }
 
 bool CompositedLayerMapping::updateSquashingLayerAssignment(RenderLayer* layer, LayoutSize offsetFromSquashingCLM, size_t nextSquashedLayerIndex)

@@ -556,7 +556,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         enableCompositingMode(false);
 
     // The scrolling coordinator may realize that it needs updating while compositing was being updated in this function.
-    needsToUpdateScrollingCoordinator |= scrollingCoordinator() ? scrollingCoordinator()->needsToUpdateAfterCompositingChange() : false;
+    needsToUpdateScrollingCoordinator |= scrollingCoordinator() && scrollingCoordinator()->needsToUpdateAfterCompositingChange();
     if (needsToUpdateScrollingCoordinator && isMainFrame() && scrollingCoordinator() && inCompositingMode())
         scrollingCoordinator()->updateAfterCompositingChange();
 
