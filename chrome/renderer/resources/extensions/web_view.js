@@ -244,6 +244,17 @@ WebViewInternal.prototype.canGoForward = function() {
 /**
  * @private
  */
+WebViewInternal.prototype.clearData = function() {
+  if (!this.instanceId) {
+    return;
+  }
+  var args = $Array.concat([this.instanceId], $Array.slice(arguments));
+  $Function.apply(WebView.clearData, null, args);
+};
+
+/**
+ * @private
+ */
 WebViewInternal.prototype.getProcessId = function() {
   return this.processId;
 };
@@ -1073,6 +1084,11 @@ function registerWebViewElement() {
 
   proto.canGoForward = function() {
     return privates(this).internal.canGoForward();
+  };
+
+  proto.clearData = function() {
+    var internal = privates(this).internal;
+    $Function.apply(internal.clearData, internal, arguments);
   };
 
   proto.getProcessId = function() {

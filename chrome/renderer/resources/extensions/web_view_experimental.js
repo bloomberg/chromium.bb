@@ -163,15 +163,6 @@ WebViewInternal.prototype.maybeSetCurrentZoomFactor =
 };
 
 /** @private */
-WebViewInternal.prototype.clearData = function() {
-  if (!this.instanceId) {
-    return;
-  }
-  var args = $Array.concat([this.instanceId], $Array.slice(arguments));
-  $Function.apply(WebView.clearData, null, args);
-};
-
-/** @private */
 WebViewInternal.prototype.setZoom = function(zoomFactor, callback) {
   if (!this.instanceId) {
     return;
@@ -208,11 +199,6 @@ WebViewInternal.prototype.stopFinding = function(action) {
 };
 
 WebViewInternal.maybeRegisterExperimentalAPIs = function(proto) {
-  proto.clearData = function() {
-    var internal = privates(this).internal;
-    $Function.apply(internal.clearData, internal, arguments);
-  };
-
   proto.setZoom = function(zoomFactor, callback) {
     privates(this).internal.setZoom(zoomFactor, callback);
   };
