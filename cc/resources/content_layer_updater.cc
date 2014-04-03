@@ -35,20 +35,21 @@ void ContentLayerUpdater::set_rendering_stats_instrumentation(
 }
 
 void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
-                                        const gfx::Point& origin,
+                                        const gfx::Rect& content_rect,
                                         float contents_width_scale,
                                         float contents_height_scale,
                                         gfx::Rect* resulting_opaque_rect) {
   TRACE_EVENT0("cc", "ContentLayerUpdater::PaintContents");
   canvas->save();
-  canvas->translate(SkFloatToScalar(-origin.x()),
-                    SkFloatToScalar(-origin.y()));
+  canvas->translate(SkFloatToScalar(-content_rect.x()),
+                    SkFloatToScalar(-content_rect.y()));
 
-  SkISize size = canvas->getDeviceSize();
-  gfx::Rect content_rect(origin, gfx::Size(size.width(), size.height()));
+  // The |canvas| backing should be sized to hold the |content_rect|.
+  SkISize size = canvas->getBaseLayerSize();
+  CHECK_EQ(content_rect.width(), size.width());
+  CHECK_EQ(content_rect.height(), size.height());
 
   gfx::Rect layer_rect = content_rect;
-
   if (contents_width_scale != 1.f || contents_height_scale != 1.f) {
     canvas->scale(SkFloatToScalar(contents_width_scale),
                   SkFloatToScalar(contents_height_scale));

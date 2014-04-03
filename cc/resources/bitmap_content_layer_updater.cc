@@ -67,12 +67,15 @@ void BitmapContentLayerUpdater::PrepareToUpdate(
     bitmap_backing_.allocN32Pixels(
         canvas_size_.width(), canvas_size_.height(), layer_is_opaque_);
     canvas_ = skia::AdoptRef(new SkCanvas(bitmap_backing_));
+    SkISize size = canvas_->getBaseLayerSize();
+    CHECK_EQ(content_rect.width(), size.width());
+    CHECK_EQ(content_rect.height(), size.height());
   }
 
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas_.get(),
-                content_rect.origin(),
+                content_rect,
                 contents_width_scale,
                 contents_height_scale,
                 resulting_opaque_rect);

@@ -29,10 +29,13 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
     gfx::Rect* resulting_opaque_rect) {
   SkCanvas* canvas =
       picture_.beginRecording(content_rect.width(), content_rect.height());
+  SkISize size = canvas->getBaseLayerSize();
+  CHECK_EQ(content_rect.width(), size.width());
+  CHECK_EQ(content_rect.height(), size.height());
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas,
-                content_rect.origin(),
+                content_rect,
                 contents_width_scale,
                 contents_height_scale,
                 resulting_opaque_rect);
