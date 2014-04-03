@@ -397,6 +397,7 @@ Visit.prototype.addFaviconToElement_ = function(el) {
 Visit.prototype.showMoreFromSite_ = function() {
   recordUmaAction('HistoryPage_EntryMenuShowMoreFromSite');
   historyView.setSearch(this.domain_);
+  $('search-field').focus();
 };
 
 // Visit, private, static: ----------------------------------------------------
