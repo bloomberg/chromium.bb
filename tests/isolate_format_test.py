@@ -765,6 +765,18 @@ class IsolateFormatTest(unittest.TestCase):
     }
     self.assertEqual(expected, config.make_isolate_file())
 
+  def test_ConfigSettings_union(self):
+    lhs_values = {}
+    rhs_values = {KEY_UNTRACKED: ['data/', 'test/data/']}
+    lhs = isolate_format.ConfigSettings(lhs_values, '/src/net/third_party/nss')
+    rhs = isolate_format.ConfigSettings(rhs_values, '/src/base')
+    out = lhs.union(rhs)
+    expected = {
+      KEY_UNTRACKED: ['data/', 'test/data/'],
+      'isolate_dir': '/src/base',
+    }
+    self.assertEqual(expected, out.flatten())
+
   def test_merge_three_conditions(self):
     values = {
       ('linux',): {

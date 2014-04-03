@@ -52,9 +52,9 @@ def determine_root_dir(relative_root, infiles):
       x = os.path.dirname(x)
     if deepest_root.startswith(x):
       deepest_root = x
-  logging.debug(
-      'determine_root_dir(%s, %d files) -> %s' % (
-          relative_root, len(infiles), deepest_root))
+  logging.info(
+      'determine_root_dir(%s, %d files) -> %s',
+      relative_root, len(infiles), deepest_root)
   return deepest_root
 
 
@@ -538,7 +538,11 @@ class ConfigSettings(object):
     # Takes the difference between the two isolate_dir. Note that while
     # isolate_dir is in native path case, all other references are in posix.
     l_rel_cwd, r_rel_cwd = self.isolate_dir, rhs.isolate_dir
-    use_rhs = bool(not self.command and rhs.command)
+    if self.command or rhs.command:
+      use_rhs = bool(not self.command and rhs.command)
+    else:
+      # If self doesn't define any file, use rhs.
+      use_rhs = not bool(self.touched or self.tracked or self.untracked)
     if use_rhs:
       # Rebase files in rhs.
       l_rel_cwd, r_rel_cwd = r_rel_cwd, l_rel_cwd
@@ -563,8 +567,7 @@ class ConfigSettings(object):
       'command': self.command or rhs.command,
       'read_only': rhs.read_only if self.read_only is None else self.read_only,
     }
-    isolate_dir = self.isolate_dir if self.command else rhs.isolate_dir
-    return ConfigSettings(var, isolate_dir)
+    return ConfigSettings(var, l_rel_cwd)
 
   def flatten(self):
     """Converts the object into a dict."""
@@ -583,6 +586,16 @@ class ConfigSettings(object):
     if self.isolate_dir is not None:
       out['isolate_dir'] = self.isolate_dir
     return out
+
+  def __str__(self):
+    """Returns a short representation useful for debugging."""
+    files = ''.join(
+        '\n    ' + f for f in (self.touched + self.tracked + self.untracked))
+    return 'ConfigSettings(%s, %s, %s, %s)' % (
+        self.command,
+        self.isolate_dir,
+        self.read_only,
+        files or '[]')
 
 
 def _safe_index(l, k):
@@ -707,6 +720,11 @@ class Configs(object):
     configs_by_dependency = reduce_inputs(invert_map(dependencies_by_config))
     return convert_map_to_isolate_dict(configs_by_dependency,
                                        self.config_variables)
+
+  def __str__(self):
+    return 'Configs(%s,%s)' % (
+      self._config_variables,
+      ''.join('\n  %s' % str(f) for f in self._by_config))
 
 
 def load_isolate_as_config(isolate_dir, value, file_comment):
