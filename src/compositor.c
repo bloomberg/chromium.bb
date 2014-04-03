@@ -4080,6 +4080,16 @@ catch_signals(void)
 	sigaction(SIGABRT, &action, NULL);
 }
 
+static void
+handle_primary_client_destroyed(struct wl_listener *listener, void *data)
+{
+	struct wl_client *client = data;
+
+	weston_log("Primary client died.  Closing...\n");
+
+	wl_display_terminate(wl_client_get_display(client));
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = EXIT_SUCCESS;
@@ -4091,19 +4101,22 @@ int main(int argc, char *argv[])
 		*(*backend_init)(struct wl_display *display,
 				 int *argc, char *argv[],
 				 struct weston_config *config);
-	int i;
+	int i, fd;
 	char *backend = NULL;
 	char *option_backend = NULL;
 	char *shell = NULL;
 	char *option_shell = NULL;
 	char *modules, *option_modules = NULL;
 	char *log = NULL;
+	char *server_socket = NULL, *end;
 	int32_t idle_time = 300;
 	int32_t help = 0;
 	char *socket_name = "wayland-0";
 	int32_t version = 0;
 	struct weston_config *config;
 	struct weston_config_section *section;
+	struct wl_client *primary_client;
+	struct wl_listener primary_client_destroyed;
 
 	const struct weston_option core_options[] = {
 		{ WESTON_OPTION_STRING, "backend", 'B', &option_backend },
@@ -4226,10 +4239,33 @@ int main(int argc, char *argv[])
 
 	weston_compositor_log_capabilities(ec);
 
-	if (wl_display_add_socket(display, socket_name)) {
-		weston_log("fatal: failed to add socket: %m\n");
-		ret = EXIT_FAILURE;
-		goto out;
+	server_socket = getenv("WAYLAND_SERVER_SOCKET");
+	if (server_socket) {
+		weston_log("Running with single client\n");
+		fd = strtol(server_socket, &end, 0);
+		if (*end != '\0')
+			fd = -1;
+	} else {
+		fd = -1;
+	}
+
+	if (fd != -1) {
+		primary_client = wl_client_create(display, fd);
+		if (!primary_client) {
+			weston_log("fatal: failed to add client: %m\n");
+			ret = EXIT_FAILURE;
+			goto out;
+		}
+		primary_client_destroyed.notify =
+			handle_primary_client_destroyed;
+		wl_client_add_destroy_listener(primary_client,
+					       &primary_client_destroyed);
+	} else {
+		if (wl_display_add_socket(display, socket_name)) {
+			weston_log("fatal: failed to add socket: %m\n");
+			ret = EXIT_FAILURE;
+			goto out;
+		}
 	}
 
 	weston_compositor_wake(ec);
