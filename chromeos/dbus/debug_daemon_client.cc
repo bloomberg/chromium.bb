@@ -19,13 +19,11 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/threading/worker_pool.h"
+#include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "net/base/file_stream.h"
-#include "net/base/io_buffer.h"
-#include "net/base/net_errors.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
@@ -34,107 +32,6 @@ namespace {
 void EmptyStopSystemTracingCallbackBody(
   const scoped_refptr<base::RefCountedString>& unused_result) {
 }
-
-// Simple class to encapsulate collecting data from a pipe into a
-// string.  To use, instantiate the class, start i/o, and then delete
-// the instance on callback.  The data should be retrieved before
-// delete and extracted or copied.
-//
-// TODO(sleffler) move data collection to a sub-class so this
-// can be reused to process data as it is received
-class PipeReader {
- public:
-  typedef base::Callback<void(void)>IOCompleteCallback;
-
-  explicit PipeReader(IOCompleteCallback callback)
-      : io_buffer_(new net::IOBufferWithSize(4096)),
-        callback_(callback),
-        weak_ptr_factory_(this) {
-    pipe_fd_[0] = pipe_fd_[1] = -1;
-  }
-
-  virtual ~PipeReader() {
-    // Don't close pipe_fd_[0] as it's closed by data_stream_.
-    if (pipe_fd_[1] != -1)
-      if (IGNORE_EINTR(close(pipe_fd_[1])) < 0)
-        PLOG(ERROR) << "close[1]";
-  }
-
-  // Returns descriptor for the writeable side of the pipe.
-  int GetWriteFD() { return pipe_fd_[1]; }
-
-  // Closes writeable descriptor; normally used in parent process after fork.
-  void CloseWriteFD() {
-    if (pipe_fd_[1] != -1) {
-      if (IGNORE_EINTR(close(pipe_fd_[1])) < 0)
-        PLOG(ERROR) << "close";
-      pipe_fd_[1] = -1;
-    }
-  }
-
-  // Returns collected data.
-  std::string* data() { return &data_; }
-
-  // Starts data collection.  Returns true if stream was setup correctly.
-  // On success data will automatically be accumulated into a string that
-  // can be retrieved with PipeReader::data().  To shutdown collection delete
-  // the instance and/or use PipeReader::OnDataReady(-1).
-  bool StartIO() {
-    // Use a pipe to collect data
-    const int status = HANDLE_EINTR(pipe(pipe_fd_));
-    if (status < 0) {
-      PLOG(ERROR) << "pipe";
-      return false;
-    }
-    base::PlatformFile data_file_ = pipe_fd_[0];  // read side
-    data_stream_.reset(new net::FileStream(data_file_,
-        base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC,
-        NULL));
-
-    // Post an initial async read to setup data collection
-    int rv = data_stream_->Read(io_buffer_.get(), io_buffer_->size(),
-        base::Bind(&PipeReader::OnDataReady, weak_ptr_factory_.GetWeakPtr()));
-    if (rv != net::ERR_IO_PENDING) {
-      LOG(ERROR) << "Unable to post initial read";
-      return false;
-    }
-    return true;
-  }
-
-  // Called when pipe data are available.  Can also be used to shutdown
-  // data collection by passing -1 for |byte_count|.
-  void OnDataReady(int byte_count) {
-    DVLOG(1) << "OnDataReady byte_count " << byte_count;
-    if (byte_count <= 0) {
-      callback_.Run();  // signal creator to take data and delete us
-      return;
-    }
-    data_.append(io_buffer_->data(), byte_count);
-
-    // Post another read
-    int rv = data_stream_->Read(io_buffer_.get(), io_buffer_->size(),
-        base::Bind(&PipeReader::OnDataReady, weak_ptr_factory_.GetWeakPtr()));
-    if (rv != net::ERR_IO_PENDING) {
-      LOG(ERROR) << "Unable to post another read";
-      // TODO(sleffler) do something more intelligent?
-    }
-  }
-
- private:
-  friend class base::RefCounted<PipeReader>;
-
-  int pipe_fd_[2];
-  scoped_ptr<net::FileStream> data_stream_;
-  scoped_refptr<net::IOBufferWithSize> io_buffer_;
-  std::string data_;
-  IOCompleteCallback callback_;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<PipeReader> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(PipeReader);
-};
 
 }  // namespace
 
@@ -324,7 +221,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       return false;
     }
 
-    pipe_reader_.reset(new PipeReader(
+    pipe_reader_.reset(new PipeReaderForString(
         base::Bind(&DebugDaemonClientImpl::OnIOComplete,
                    weak_ptr_factory_.GetWeakPtr())));
     int write_fd = -1;
@@ -334,7 +231,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       write_fd = HANDLE_EINTR(open("/dev/null", O_WRONLY));
       // TODO(sleffler) if this fails AppendFileDescriptor will abort
     } else {
-      write_fd = pipe_reader_->GetWriteFD();
+      write_fd = pipe_reader_->write_fd();
     }
 
     dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor(write_fd);
@@ -616,12 +513,14 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
   // Called when pipe i/o completes; pass data on and delete the instance.
   void OnIOComplete() {
-    callback_.Run(base::RefCountedString::TakeString(pipe_reader_->data()));
+    std::string pipe_data;
+    pipe_reader_->GetData(&pipe_data);
+    callback_.Run(base::RefCountedString::TakeString(&pipe_data));
     pipe_reader_.reset();
   }
 
   dbus::ObjectProxy* debugdaemon_proxy_;
-  scoped_ptr<PipeReader> pipe_reader_;
+  scoped_ptr<PipeReaderForString> pipe_reader_;
   StopSystemTracingCallback callback_;
   base::WeakPtrFactory<DebugDaemonClientImpl> weak_ptr_factory_;
 

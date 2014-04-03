@@ -222,6 +222,8 @@
         'dbus/modem_messaging_client.h',
         'dbus/permission_broker_client.cc',
         'dbus/permission_broker_client.h',
+        'dbus/pipe_reader.cc',
+        'dbus/pipe_reader.h',
         'dbus/power_manager_client.cc',
         'dbus/power_manager_client.h',
         'dbus/power_policy_controller.cc',
