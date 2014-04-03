@@ -203,7 +203,7 @@ NSMenu* PageActionDecoration::GetMenu() {
   const Extension* extension = service->GetExtensionById(
       page_action_->extension_id(), false);
   DCHECK(extension);
-  if (!extension)
+  if (!extension || !extension->ShowConfigureContextMenus())
     return nil;
 
   contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
