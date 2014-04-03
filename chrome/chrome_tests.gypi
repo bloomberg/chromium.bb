@@ -934,7 +934,6 @@
         'browser/autofill/autofill_browsertest.cc',
         'browser/autofill/content_autofill_driver_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
-        'browser/autofill/risk/fingerprint_browsertest.cc',
         'browser/bitmap_fetcher_browsertest.cc',
         'browser/browser_encoding_browsertest.cc',
         'browser/browsing_data/browsing_data_database_helper_browsertest.cc',
@@ -1652,11 +1651,6 @@
           'sources!': [
             'browser/ui/gtk/one_click_signin_bubble_gtk_browsertest.cc',
             'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
-          ]
-        }],
-        [ 'OS == "android"', {
-          'sources!': [
-            'browser/autofill/risk/fingerprint_browsertest.cc',
           ]
         }],
         ['enable_autofill_dialog==0', {

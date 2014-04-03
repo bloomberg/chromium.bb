@@ -532,6 +532,7 @@
           'type': '<(gtest_target_type)',
           'defines!': ['CONTENT_IMPLEMENTATION'],
           'dependencies': [
+            'components.gyp:autofill_content_browser',
             'components.gyp:dom_distiller_content',
             'components.gyp:dom_distiller_core',
             'components_resources.gyp:components_resources',
@@ -545,6 +546,7 @@
             '../content/content_shell_and_tests.gyp:content_shell_pak',
             '../content/content_shell_and_tests.gyp:test_support_content',
             '../skia/skia.gyp:skia',
+            '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
@@ -554,6 +556,7 @@
             'HAS_OUT_OF_PROC_TEST_RUNNER',
           ],
           'sources': [
+            'autofill/content/browser/risk/fingerprint_browsertest.cc',
             'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
 
             # content_extractor is a standalone content extraction tool built as
@@ -574,6 +577,11 @@
             },
           ],
           'conditions': [
+            ['OS == "android"', {
+              'sources!': [
+                'autofill/content/browser/risk/fingerprint_browsertest.cc',
+              ],
+            }],
             ['OS=="win"', {
               'resource_include_dirs': [
                 '<(SHARED_INTERMEDIATE_DIR)/webkit',

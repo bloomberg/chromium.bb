@@ -1,4 +1,4 @@
-// Copyright 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,13 +7,11 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/port.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/chrome_content_client.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "content/public/browser/geolocation_provider.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/geoposition.h"
+#include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,6 +49,8 @@ const uint64 kObfuscatedGaiaId = GG_UINT64_C(16571487432910023183);
 const char kCharset[] = "UTF-8";
 const char kAcceptLanguages[] = "en-US,en";
 const int kScreenColorDepth = 53;
+const char kLocale[] = "en-GB";
+const char kUserAgent[] = "TestUserAgent";
 
 // Geolocation constants that are passed verbatim to the fingerprinter code and
 // should be serialized into the resulting protocol buffer.
@@ -60,7 +60,7 @@ const double kAltitude = 123.4;
 const double kAccuracy = 73.7;
 const int kGeolocationTime = 87;
 
-class AutofillRiskFingerprintTest : public InProcessBrowserTest {
+class AutofillRiskFingerprintTest : public content::ContentBrowserTest {
  public:
   AutofillRiskFingerprintTest()
       : window_bounds_(2, 3, 5, 7),
@@ -77,7 +77,7 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
     EXPECT_TRUE(machine.has_operating_system_build());
     EXPECT_TRUE(machine.has_browser_install_time_hours());
     EXPECT_GT(machine.font_size(), 0);
-    EXPECT_GT(machine.plugin_size(), 0);
+    EXPECT_EQ(machine.plugin_size(), 0);  // TODO(isherman): crbug.com/358548.
     EXPECT_TRUE(machine.has_utc_offset_ms());
     EXPECT_TRUE(machine.has_browser_language());
     EXPECT_GT(machine.requested_language_size(), 0);
@@ -134,6 +134,8 @@ class AutofillRiskFingerprintTest : public InProcessBrowserTest {
 
     // Some values have exact known (mocked out) values:
     EXPECT_THAT(machine.requested_language(), ElementsAre("en-US", "en"));
+    EXPECT_EQ(kLocale, machine.browser_language());
+    EXPECT_EQ(kUserAgent, machine.user_agent());
     EXPECT_EQ(kCharset, machine.charset());
     EXPECT_EQ(kScreenColorDepth, machine.screen_color_depth());
     EXPECT_EQ(unavailable_screen_bounds_.width(),
@@ -198,8 +200,8 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
 
   internal::GetFingerprintInternal(
       kObfuscatedGaiaId, window_bounds_, content_bounds_, screen_info,
-      "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(),
-      g_browser_process->GetApplicationLocale(), GetUserAgent(),
+      "25.0.0.123", kCharset, kAcceptLanguages, base::Time::Now(), kLocale,
+      kUserAgent,
       base::TimeDelta::FromDays(1),  // Ought to be longer than any test run.
       base::Bind(&AutofillRiskFingerprintTest::GetFingerprintTestCallback,
                  base::Unretained(this)));
