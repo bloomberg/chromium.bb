@@ -25,13 +25,13 @@ static bool isNameStart(UChar c)
     return !isASCII(c);
 }
 
-// http://www.w3.org/TR/css-syntax-3/#name-code-point
+// http://dev.w3.org/csswg/css-syntax/#name-code-point
 static bool isNameChar(UChar c)
 {
     return isNameStart(c) || isASCIIDigit(c) || c == '-';
 }
 
-// http://www.w3.org/TR/css-syntax-3/#check-if-two-code-points-are-a-valid-escape
+// http://dev.w3.org/csswg/css-syntax/#check-if-two-code-points-are-a-valid-escape
 static bool twoCharsAreValidEscape(UChar first, UChar second)
 {
     return ((first == '\\') && (second != '\n') && (second != kEndOfFileMarker));
@@ -165,6 +165,11 @@ MediaQueryToken MediaQueryTokenizer::nameStart(UChar cc)
     return consumeIdentLikeToken();
 }
 
+MediaQueryToken MediaQueryTokenizer::stringStart(UChar cc)
+{
+    return consumeStringTokenUntil(cc);
+}
+
 MediaQueryToken MediaQueryTokenizer::endOfFile(UChar cc)
 {
     return MediaQueryToken(EOFToken);
@@ -173,7 +178,7 @@ MediaQueryToken MediaQueryTokenizer::endOfFile(UChar cc)
 void MediaQueryTokenizer::tokenize(String string, Vector<MediaQueryToken>& outTokens)
 {
     // According to the spec, we should perform preprocessing here.
-    // See: http://www.w3.org/TR/css-syntax-3/#input-preprocessing
+    // See: http://dev.w3.org/csswg/css-syntax/#input-preprocessing
     //
     // However, we can skip this step since:
     // * We're using HTML spaces (which accept \r and \f as a valid white space)
@@ -315,6 +320,41 @@ MediaQueryToken MediaQueryTokenizer::consumeIdentLikeToken()
     return MediaQueryToken(IdentToken, name);
 }
 
+static bool isNewLine(UChar cc)
+{
+    // We check \r and \f here, since we have no preprocessing stage
+    return (cc == '\r' || cc == '\n' || cc == '\f');
+}
+
+// http://dev.w3.org/csswg/css-syntax/#consume-a-string-token
+MediaQueryToken MediaQueryTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
+{
+    StringBuilder output;
+    while (true) {
+        UChar cc = consume();
+        if (cc == endingCodePoint || cc == kEndOfFileMarker) {
+            // The "reconsume" here deviates from the spec, but is required to avoid consuming past the EOF
+            if (cc == kEndOfFileMarker)
+                reconsume(cc);
+            return MediaQueryToken(StringToken, output.toString());
+        }
+        if (isNewLine(cc)) {
+            reconsume(cc);
+            return MediaQueryToken(BadStringToken);
+        }
+        if (cc == '\\') {
+            if (m_input.currentInputChar() == kEndOfFileMarker)
+                continue;
+            if (isNewLine(m_input.currentInputChar()))
+                consume();
+            else
+                output.append(consumeEscape());
+        } else {
+            output.append(cc);
+        }
+    }
+}
+
 void MediaQueryTokenizer::consumeUntilNonWhitespace()
 {
     // Using HTML space here rather than CSS space since we don't do preprocessing
@@ -369,7 +409,7 @@ String MediaQueryTokenizer::consumeName()
     }
 }
 
-// http://www.w3.org/TR/css-syntax-3/#consume-an-escaped-code-point
+// http://dev.w3.org/csswg/css-syntax/#consume-an-escaped-code-point
 UChar MediaQueryTokenizer::consumeEscape()
 {
     UChar cc = consume();

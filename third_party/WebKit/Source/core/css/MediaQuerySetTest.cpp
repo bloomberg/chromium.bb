@@ -149,6 +149,12 @@ TEST(MediaQueryParserTest, Basic)
         {"all an[isdfs bla())(]icalc(i)(()), (max-width: 500px)", "not all", true},
         {"all an[isdfs bla())(]icalc(i)(())), (max-width: 600px)", "not all", true},
         {"all an[isdfs bla())(]icalc(i)(()))], (max-width: 800px)", "not all, (max-width: 800px)", true},
+        {"(max-width: '40px')", "not all", true},
+        {"('max-width': 40px)", "not all", true},
+        {"'\"'\", (max-width: 900px)", "not all", true},
+        {"'\"\"\"', (max-width: 900px)", "not all, (max-width: 900px)", true},
+        {"\"'\"', (max-width: 900px)", "not all", true},
+        {"\"'''\", (max-width: 900px)", "not all, (max-width: 900px)", true},
         {0, 0} // Do not remove the terminator line.
     };
 

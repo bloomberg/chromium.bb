@@ -30,6 +30,14 @@ TEST(MediaQueryTokenizerTest, Basic)
         { "(max-width: 120px)/*", "(max-width: 120px)" },
         { "(max-width: 130px)/**", "(max-width: 130px)" },
         { "(max-width: /***/140px)/**/", "(max-width: 140px)" },
+        { "(max-width: '40px')", "(max-width: 40px)" },
+        { "(max-width: '40px", "(max-width: 40px" },
+        { "(max-width: '40px\n", "(max-width:  " },
+        { "(max-width: '40px\\", "(max-width: 40px" },
+        { "(max-width: '40px\\\n", "(max-width: 40px" },
+        { "(max-width: '40px\\\n')", "(max-width: 40px)" },
+        { "(max-width: '40\\70\\78')", "(max-width: 40px)" },
+        { "(max-width: '40\\\npx')", "(max-width: 40px)" },
         { 0, 0 } // Do not remove the terminator line.
     };
 
@@ -77,6 +85,8 @@ TEST(MediaQueryTokenizerCodepointsTest, Basic)
             testToken(c, RightBraceToken);
         else if (c == '.' || c == '+' || c == '-' || c == '/' || c == '\\')
             testToken(c, DelimiterToken);
+        else if (c == '\'' || c == '"')
+            testToken(c, StringToken);
         else if (c == ',')
             testToken(c, CommaToken);
         else if (c == ':')

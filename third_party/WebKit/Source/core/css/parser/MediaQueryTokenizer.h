@@ -32,6 +32,7 @@ private:
     MediaQueryToken consumeNumericToken();
     MediaQueryToken consumeIdentLikeToken();
     MediaQueryToken consumeNumber();
+    MediaQueryToken consumeStringTokenUntil(UChar);
 
     void consumeUntilNonWhitespace();
     bool consumeUntilCommentEndFound();
@@ -64,6 +65,7 @@ private:
     MediaQueryToken reverseSolidus(UChar);
     MediaQueryToken asciiDigit(UChar);
     MediaQueryToken nameStart(UChar);
+    MediaQueryToken stringStart(UChar);
     MediaQueryToken endOfFile(UChar);
 
     MediaQueryInputStream& m_input;
