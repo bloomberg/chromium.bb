@@ -414,9 +414,21 @@ bool Scheduler::WillDrawIfNeeded() const {
 scoped_ptr<base::Value> Scheduler::StateAsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
   state->Set("state_machine", state_machine_.AsValue().release());
-  state->SetDouble(
+
+  scoped_ptr<base::DictionaryValue> scheduler_state(new base::DictionaryValue);
+  scheduler_state->SetDouble(
       "time_until_anticipated_draw_time_ms",
       (AnticipatedDrawTime() - base::TimeTicks::Now()).InMillisecondsF());
+  scheduler_state->SetBoolean("last_set_needs_begin_impl_frame_",
+                              last_set_needs_begin_impl_frame_);
+  scheduler_state->SetBoolean(
+      "begin_impl_frame_deadline_closure_",
+      !begin_impl_frame_deadline_closure_.IsCancelled());
+  scheduler_state->SetBoolean("poll_for_draw_triggers_closure_",
+                              !poll_for_draw_triggers_closure_.IsCancelled());
+  scheduler_state->SetBoolean("advance_commit_state_timer_",
+                              advance_commit_state_timer_.IsRunning());
+  state->Set("scheduler_state", scheduler_state.release());
 
   scoped_ptr<base::DictionaryValue> client_state(new base::DictionaryValue);
   client_state->SetDouble("draw_duration_estimate_ms",
