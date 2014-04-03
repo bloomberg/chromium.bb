@@ -35,6 +35,7 @@
         'conditions': [
           ['OS!="android"', {
             'schema_files': [
+              'accessibility_private.json',
               'activity_log_private.json',
               'alarms.idl',
               'app_current_window_internal.idl',
@@ -64,7 +65,6 @@
               'echo_private.json',
               'enterprise_platform_keys_private.json',
               'events.json',
-              'experimental_accessibility.json',
               'feedback_private.idl',
               'file_browser_private.idl',
               'file_system.idl',

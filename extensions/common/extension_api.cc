@@ -230,6 +230,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
 
   // Schemas to be loaded from resources.
   CHECK(unloaded_schemas_.empty());
+  RegisterSchemaResource("accessibilityPrivate",
+                         IDR_EXTENSION_API_JSON_ACCESSIBILITYPRIVATE);
   RegisterSchemaResource("app", IDR_EXTENSION_API_JSON_APP);
   RegisterSchemaResource("browserAction", IDR_EXTENSION_API_JSON_BROWSERACTION);
   RegisterSchemaResource("commands", IDR_EXTENSION_API_JSON_COMMANDS);

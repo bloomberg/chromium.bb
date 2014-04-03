@@ -9,7 +9,7 @@ chrome.test.runTests([
   function oneAlert() {
     chrome.tabs.query({'active': true}, function(tabs) {
       chrome.test.assertEq(tabs.length, 1);
-      chrome.experimental.accessibility.getAlertsForTab(
+      chrome.accessibilityPrivate.getAlertsForTab(
           tabs[0].id, function(alerts) {
         chrome.test.assertEq(alerts.length, 1);
         chrome.test.assertEq(alerts[0].message, 'Simple Alert Infobar.');
@@ -21,7 +21,7 @@ chrome.test.runTests([
     chrome.tabs.create({});
     chrome.tabs.query({'active': true}, function(tabs) {
       chrome.test.assertEq(tabs.length, 1);
-      chrome.experimental.accessibility.getAlertsForTab(
+      chrome.accessibilityPrivate.getAlertsForTab(
           tabs[0].id, function(alerts) {
         chrome.test.assertEq(alerts.length, 0);
         chrome.test.succeed();

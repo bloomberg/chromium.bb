@@ -1,5 +1,6 @@
 {
-  "name": "chrome.experimental.accessibility",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4lO8n4xbwOFnA0F5e+lNcB5v0hFVe8vNxo5B9EaAFKtrwWtlnxWI+5U7PywVIFzS7Nsi4CYcY0K+1xMRfuwhvdH+baW5eoE4NU3Y3O9Va0ByAA3x1FNcQazjMciYjOlAnboAaBOEvANfwFHXoOC9GDvMOPLGDAVMoIITQ0vrsOE6VXikRzTkRvpUyqI7QIC1nsixL8I3B8uDiAN6Scfnpo19Og+tF45LP3nDp+kPzmwpd6TyAEky3nkOAxNTvlz4Su4s39qfXS18KOj+jAnn1KyhRPgpiCxjwIIujvfcEy/F/naYtdIA8mIu5aURwycDRDFoYISw9bM9TCt4tHgsjQIDAQAB",
+  "name": "chrome.accessibilityPrivate",
   "version": "0.1",
   "manifest_version": 2,
   "description": "browser test for chrome.experimental.accessibility.getAlertsForTab API",
@@ -8,6 +9,6 @@
   },
   "permissions": [
     "tabs",
-    "experimental"
+    "accessibilityPrivate"
   ]
 }

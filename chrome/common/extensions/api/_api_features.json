@@ -18,6 +18,10 @@
     "dependencies": ["permission:accessibilityFeatures.read"],
     "contexts": ["blessed_extension"]
   }],
+  "accessibilityPrivate": {
+    "dependencies": ["permission:accessibilityPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "activityLogPrivate": {
     "dependencies": ["permission:activityLogPrivate"],
     "contexts": ["blessed_extension"]
@@ -279,10 +283,6 @@
     "extension_types": ["platform_app", "extension"],
     "contexts": "all",
     "matches": ["<all_urls>"]
-  },
-  "experimental.accessibility": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
   },
   "experimental.devtools.audits": {
     "dependencies": ["permission:experimental", "manifest:devtools_page"],
