@@ -16,6 +16,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_profile.h"
@@ -28,8 +29,8 @@
 namespace {
 
 const char kTestExtensionId[] = "test extension id";
-const char kAudioProfileUuid[] = "audio profile uuid";
-const char kHealthProfileUuid[] = "health profile uuid";
+const device::BluetoothUUID kAudioProfileUuid("1234");
+const device::BluetoothUUID kHealthProfileUuid("4321");
 
 class FakeEventRouter : public extensions::EventRouter {
  public:
@@ -221,7 +222,7 @@ TEST_F(BluetoothEventRouterTest, DispatchConnectionEvent) {
   ASSERT_TRUE(socket_value->GetDictionary("profile", &profile_value));
   std::string uuid;
   ASSERT_TRUE(profile_value->GetString("uuid", &uuid));
-  EXPECT_STREQ(kAudioProfileUuid, uuid.c_str());
+  EXPECT_STREQ(kAudioProfileUuid.canonical_value().c_str(), uuid.c_str());
 
   EXPECT_CALL(*mock_adapter_, RemoveObserver(testing::_)).Times(1);
   router_.ReleaseSocket(socket_id);

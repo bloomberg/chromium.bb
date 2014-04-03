@@ -19,7 +19,6 @@
 #include "device/bluetooth/bluetooth_profile.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_socket.h"
-#include "device/bluetooth/bluetooth_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -134,7 +133,9 @@ bool BluetoothAddProfileFunction::RunImpl() {
   scoped_ptr<AddProfile::Params> params(AddProfile::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
-  if (!BluetoothDevice::IsUUIDValid(params->profile.uuid)) {
+  device::BluetoothUUID uuid(params->profile.uuid);
+
+  if (!uuid.IsValid()) {
     SetError(kInvalidUuid);
     return false;
   }
@@ -145,7 +146,7 @@ bool BluetoothAddProfileFunction::RunImpl() {
     return false;
   }
 
-  uuid_ = device::bluetooth_utils::CanonicalUuid(params->profile.uuid);
+  uuid_ = uuid;
 
   if (GetEventRouter(browser_context())->HasProfile(uuid_)) {
     SetError(kProfileAlreadyRegistered);
@@ -216,13 +217,12 @@ bool BluetoothRemoveProfileFunction::RunImpl() {
   scoped_ptr<RemoveProfile::Params> params(
       RemoveProfile::Params::Create(*args_));
 
-  if (!BluetoothDevice::IsUUIDValid(params->profile.uuid)) {
+  device::BluetoothUUID uuid(params->profile.uuid);
+
+  if (!uuid.IsValid()) {
     SetError(kInvalidUuid);
     return false;
   }
-
-  std::string uuid =
-      device::bluetooth_utils::CanonicalUuid(params->profile.uuid);
 
   if (!GetEventRouter(browser_context())->HasProfile(uuid)) {
     SetError(kProfileNotFound);
@@ -303,7 +303,9 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
   const bluetooth::ConnectOptions& options = params->options;
 
-  if (!BluetoothDevice::IsUUIDValid(options.profile.uuid)) {
+  device::BluetoothUUID uuid(options.profile.uuid);
+
+  if (!uuid.IsValid()) {
     SetError(kInvalidUuid);
     SendResponse(false);
     return false;
@@ -315,9 +317,6 @@ bool BluetoothConnectFunction::DoWork(scoped_refptr<BluetoothAdapter> adapter) {
     SendResponse(false);
     return false;
   }
-
-  std::string uuid = device::bluetooth_utils::CanonicalUuid(
-      options.profile.uuid);
 
   BluetoothProfile* bluetooth_profile =
       GetEventRouter(browser_context())->GetProfile(uuid);

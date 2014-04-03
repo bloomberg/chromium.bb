@@ -52,7 +52,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
       const ErrorCallback& error_callback) OVERRIDE;
   virtual void Forget(const ErrorCallback& error_callback) OVERRIDE;
   virtual void ConnectToService(
-      const std::string& service_uuid,
+      const device::BluetoothUUID& service_uuid,
       const SocketCallback& callback) OVERRIDE;
   virtual void ConnectToProfile(
       device::BluetoothProfile* profile,
@@ -69,7 +69,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
   // Used by BluetoothProfileWin to retrieve the service record for the given
   // |uuid|.
   const BluetoothServiceRecord* GetServiceRecord(
-      const std::string& uuid) const;
+      const device::BluetoothUUID& uuid) const;
 
  protected:
   // BluetoothDevice override

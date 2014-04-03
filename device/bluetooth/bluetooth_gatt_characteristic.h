@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "device/bluetooth/bluetooth_utils.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
@@ -80,7 +80,7 @@ class BluetoothGattCharacteristic {
     // Called when the UUID of |characteristic| has changed.
     virtual void UuidChanged(
         BluetoothGattCharacteristic* characteristic,
-        const bluetooth_utils::UUID& uuid) {}
+        const BluetoothUUID& uuid) {}
 
     // Called when the current value of |characteristic| has changed.
     virtual void ValueChanged(
@@ -125,13 +125,13 @@ class BluetoothGattCharacteristic {
   // "Characteristic Extended Properties" descriptor and this will automatically
   // set the correspoding bit in the characteristic's properties field. If
   // |properties| has |kPropertyExtendedProperties| set, it will be ignored.
-  static BluetoothGattCharacteristic* Create(const bluetooth_utils::UUID& uuid,
+  static BluetoothGattCharacteristic* Create(const BluetoothUUID& uuid,
                                              const std::vector<uint8>& value,
                                              Properties properties,
                                              Permissions permissions);
 
   // The Bluetooth-specific UUID of the characteristic.
-  virtual const bluetooth_utils::UUID& GetUuid() const = 0;
+  virtual const BluetoothUUID& GetUuid() const = 0;
 
   // Returns true, if this characteristic is hosted locally. If false, then this
   // instance represents a remote GATT characteristic.

@@ -1,23 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_UTILS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_UTILS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_
 
 #include <string>
 
-#include "base/basictypes.h"
-
 namespace device {
-namespace bluetooth_utils {
 
 // Opaque wrapper around a Bluetooth UUID. Instances of UUID represent the
 // 128-bit universally unique identifiers (UUIDs) of profiles and attributes
 // used in Bluetooth based communication, such as a peripheral's services,
 // characteristics, and characteristic descriptors. An instance are
 // constructed using a string representing 16, 32, or 128 bit UUID formats.
-class UUID {
+class BluetoothUUID {
  public:
   // Possible representation formats used during construction.
   enum Format {
@@ -41,8 +38,14 @@ class UUID {
   // should be provided in the 128-bit format. If |uuid| is in an unsupported
   // format, the result might be invalid. Use IsValid to check for validity
   // after construction.
-  explicit UUID(const std::string& uuid);
-  ~UUID();
+  explicit BluetoothUUID(const std::string& uuid);
+
+  // Default constructor does nothing. Since BluetoothUUID is copyable, this
+  // constructor is useful for initializing member variables and assigning a
+  // value to them later. The default constructor will initialize an invalid
+  // UUID by definition and the string accessors will return an empty string.
+  BluetoothUUID();
+  virtual ~BluetoothUUID();
 
   // Returns true, if the UUID is in a valid canonical format.
   bool IsValid() const;
@@ -67,11 +70,11 @@ class UUID {
 
   // Permit sufficient comparison to allow a UUID to be used as a key in a
   // std::map.
-  bool operator<(const UUID& uuid) const;
+  bool operator<(const BluetoothUUID& uuid) const;
 
   // Equality operators.
-  bool operator==(const UUID& uuid) const;
-  bool operator!=(const UUID& uuid) const;
+  bool operator==(const BluetoothUUID& uuid) const;
+  bool operator!=(const BluetoothUUID& uuid) const;
 
  private:
   // String representation of the UUID that was used during construction. For
@@ -86,21 +89,6 @@ class UUID {
   std::string canonical_value_;
 };
 
-// DEPRECATED. Use bluetooth_utils::UUID instead.
-//
-// Takes a 4, 8 or 36 character UUID, validates it and returns it in 36
-// character format with all hex digits lower case.  If |uuid| is invalid, the
-// empty string is returned.
-//
-// Valid inputs are:
-//   XXXX
-//   0xXXXX
-//   XXXXXXXX
-//   0xXXXXXXXX
-//   XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-std::string CanonicalUuid(std::string uuid);
-
-}  // namespace bluetooth_utils
 }  // namespace device
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_UTILS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_UUID_H_

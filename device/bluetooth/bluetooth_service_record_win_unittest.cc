@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/strings/string_number_conversions.h"
 #include "device/bluetooth/bluetooth_service_record_win.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -14,14 +15,14 @@ const char kTestNoRfcommSdpBytes[] =
     "010209000535031910020900093508350619110d090102090100250c417564696f20536f75"
     "726365090311090001";
 const int kTestNoRfcommSdpBytesSize = sizeof(kTestNoRfcommSdpBytes) / 2;
-const char kTestNoRfcommSdpUuid[] = "0000110a-0000-1000-8000-00805f9b34fb";
+const device::BluetoothUUID kTestNoRfcommSdpUuid("110a");
 
 const char kTestRfcommSdpBytes[] =
     "354b0900000a000100030900013506191112191203090004350c3503190100350519000308"
     "0b090005350319100209000935083506191108090100090100250d566f6963652047617465"
     "776179";
 const int kTestRfcommSdpBytesSize = sizeof(kTestRfcommSdpBytes) / 2;
-const char kTestRfcommSdpUuid[] = "00001112-0000-1000-8000-00805f9b34fb";
+const device::BluetoothUUID kTestRfcommSdpUuid("1112");
 const int kTestRfcommChannel = 11;
 
 }  // namespace
@@ -46,7 +47,7 @@ TEST_F(BluetoothServiceRecordWinTest, NoRfcommSdp) {
                                            "01:02:03:0A:10:A0",
                                            kTestNoRfcommSdpBytesSize,
                                            sdp_bytes_array);
-  EXPECT_STREQ(kTestNoRfcommSdpUuid, service_record.uuid().c_str());
+  EXPECT_EQ(kTestNoRfcommSdpUuid, service_record.uuid());
   EXPECT_FALSE(service_record.SupportsRfcomm());
 }
 
@@ -58,7 +59,7 @@ TEST_F(BluetoothServiceRecordWinTest, RfcommSdp) {
                                            "01:02:03:0A:10:A0",
                                            kTestRfcommSdpBytesSize,
                                            sdp_bytes_array);
-  EXPECT_STREQ(kTestRfcommSdpUuid, service_record.uuid().c_str());
+  EXPECT_EQ(kTestRfcommSdpUuid, service_record.uuid());
   EXPECT_TRUE(service_record.SupportsRfcomm());
   EXPECT_EQ(kTestRfcommChannel, service_record.rfcomm_channel());
 }

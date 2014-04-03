@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "device/bluetooth/bluetooth_utils.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
@@ -133,7 +133,7 @@ class BluetoothGattService {
     // Called when the UUID of |service| have changed.
     virtual void UuidChanged(
         BluetoothGattService* service,
-        const bluetooth_utils::UUID& uuid) {}
+        const BluetoothUUID& uuid) {}
 
     // Called when the services included by |service| have changed.
     virtual void IncludedServicesChanged(
@@ -157,12 +157,12 @@ class BluetoothGattService {
   // peripheral role events. If |delegate| is NULL, then this service will
   // employ a default behavior when responding to read and write requests based
   // on the cached value of its characteristics and descriptors at a given time.
-  static BluetoothGattService* Create(const bluetooth_utils::UUID& uuid,
+  static BluetoothGattService* Create(const BluetoothUUID& uuid,
                                       bool is_primary,
                                       Delegate* delegate);
 
   // The Bluetooth-specific UUID of the service.
-  virtual const bluetooth_utils::UUID& GetUuid() const = 0;
+  virtual const BluetoothUUID& GetUuid() const = 0;
 
   // Returns true, if this service hosted locally. If false, then this service
   // represents a remote GATT service.

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_extension_function.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_profile.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
@@ -88,7 +89,7 @@ class BluetoothAddProfileFunction : public UIThreadExtensionFunction {
  private:
   void OnProfileRegistered(device::BluetoothProfile* bluetooth_profile);
 
-  std::string uuid_;
+  device::BluetoothUUID uuid_;
 };
 
 class BluetoothRemoveProfileFunction : public SyncExtensionFunction {
