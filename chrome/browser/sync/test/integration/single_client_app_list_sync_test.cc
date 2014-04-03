@@ -11,7 +11,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "ui/app_list/app_list_switches.h"
 
 using sync_integration_test_util::AwaitCommitActivityCompletion;
@@ -34,6 +33,11 @@ class SingleClientAppListSyncTest : public SyncTest {
   virtual ~SingleClientAppListSyncTest() {}
 
   // SyncTest
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    SyncTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(app_list::switches::kEnableSyncAppList);
+  }
+
   virtual bool SetupClients() OVERRIDE {
     if (!SyncTest::SetupClients())
       return false;

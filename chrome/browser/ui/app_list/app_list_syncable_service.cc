@@ -36,11 +36,6 @@ namespace {
 
 const char kOemFolderId[] = "ddb1da55-d478-4243-8642-56d3041f0263";
 
-bool SyncAppListEnabled() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kDisableSyncAppList);
-}
-
 void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
                             AppListSyncableService::SyncItem* item) {
   DCHECK_EQ(item->item_id, specifics.item_id());
@@ -222,7 +217,9 @@ void AppListSyncableService::BuildModel() {
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
   DCHECK(profile_);
   // TODO(stevenjb): Correctly handle OTR profiles for Guest mode.
-  if (!profile_->IsOffTheRecord() && SyncAppListEnabled()) {
+  // crbug.com/359176.
+  if (!profile_->IsOffTheRecord() &&
+      app_list::switches::IsAppListSyncEnabled()) {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithService.";
     SyncStarted();
     apps_builder_->InitializeWithService(this);

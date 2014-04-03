@@ -122,6 +122,12 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
  protected:
+  void EnsureFoldersEnabled() {
+    // Folders require AppList sync to be enabled.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableSyncAppList);
+  }
+
   AppListItemView* GetItemViewAt(int index) {
     return static_cast<AppListItemView*>(
         test_api_->GetViewAtModelIndex(index));
@@ -269,7 +275,7 @@ TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragWithFolderDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableFolderUI);
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSyncAppList);
   const int kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
@@ -310,6 +316,8 @@ TEST_F(AppsGridViewTest, MouseDragWithFolderDisabled) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragItemIntoFolder) {
+  EnsureFoldersEnabled();
+
   size_t kTotalItems = 3;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(model_->top_level_item_list()->item_count(), kTotalItems);
@@ -357,6 +365,8 @@ TEST_F(AppsGridViewTest, MouseDragItemIntoFolder) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolder) {
+  EnsureFoldersEnabled();
+
   // Create and add a folder with 15 items in it.
   size_t kTotalItems = kMaxFolderItems - 1;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
@@ -403,6 +413,9 @@ TEST_F(AppsGridViewTest, MouseDragMaxItemsInFolder) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragItemReorder) {
+  // This test assumes Folders are enabled.
+  EnsureFoldersEnabled();
+
   size_t kTotalItems = 2;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(2u, model_->top_level_item_list()->item_count());
@@ -425,6 +438,8 @@ TEST_F(AppsGridViewTest, MouseDragItemReorder) {
 }
 
 TEST_F(AppsGridViewTest, MouseDragFolderReorder) {
+  EnsureFoldersEnabled();
+
   size_t kTotalItems = 2;
   model_->CreateAndPopulateFolderWithApps(kTotalItems);
   model_->PopulateAppWithId(kTotalItems);
@@ -531,7 +546,7 @@ TEST_F(AppsGridViewTest, MouseDragFlipPage) {
 }
 
 TEST_F(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableFolderUI);
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSyncAppList);
   const int kTotalItems = 4;
   model_->PopulateApps(kTotalItems);
   EXPECT_EQ(std::string("Item 0,Item 1,Item 2,Item 3"),
@@ -563,6 +578,8 @@ TEST_F(AppsGridViewTest, SimultaneousDragWithFolderDisabled) {
 }
 
 TEST_F(AppsGridViewTest, UpdateFolderBackgroundOnCancelDrag) {
+  EnsureFoldersEnabled();
+
   const int kTotalItems = 4;
   TestAppsGridViewFolderDelegate folder_delegate;
   apps_grid_view_->set_folder_delegate(&folder_delegate);

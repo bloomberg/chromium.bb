@@ -401,6 +401,16 @@ const Experiment::Choice kTouchScrollingModeChoices[] = {
     switches::kTouchScrollingModeSyncTouchmove },
 };
 
+#if defined(ENABLE_APP_LIST)
+const Experiment::Choice kEnableSyncAppListChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    app_list::switches::kEnableSyncAppList, "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    app_list::switches::kDisableSyncAppList, "" },
+};
+#endif
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1211,11 +1221,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(ENABLE_APP_LIST)
   {
-    "disable-sync-app-list",
-    IDS_FLAGS_DISABLE_SYNC_APP_LIST_NAME,
-    IDS_FLAGS_DISABLE_SYNC_APP_LIST_DESCRIPTION,
+    "enable-sync-app-list",
+    IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME,
+    IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION,
     kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableSyncAppList)
+    MULTI_VALUE_TYPE(kEnableSyncAppListChoices)
   },
 #endif
   {
@@ -1512,13 +1522,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppList)
   },
 #endif
-  {
-    "disable-app-list-folder-ui",
-    IDS_FLAGS_DISABLE_APP_LIST_FOLDER,
-    IDS_FLAGS_DISABLE_APP_LIST_FOLDER_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(app_list::switches::kDisableFolderUI)
-  },
   {
     "disable-app-list-voice-search",
     IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH,

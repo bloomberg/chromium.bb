@@ -6606,11 +6606,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable synced notifications.">
         Enable experimental Synchronized Notifications.
       </message>
-      <message name="IDS_FLAGS_DISABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to disable syncing the app list.">
-        Disable App Launcher sync
+      <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
+        Enable App Launcher sync
       </message>
-      <message name="IDS_FLAGS_DISABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to disable syncing the app list.">
-        Disable App Launcher sync.
+      <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to enable syncing the app list.">
+        Enable App Launcher sync. This also enables Folders where available (non OSX).
       </message>
       <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME" desc="Name of the flag to enable screen capture support.">
         Enable screen capture support in getUserMedia().
@@ -6805,12 +6805,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_FLAGS_ENABLE_APP_LIST_DESCRIPTION" desc="Description of the flag to enable app launcher.">
           Enable the App Launcher. Upon enabling, creates operating system shortcuts to the App Launcher.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_APP_LIST_FOLDER" desc="Name of the flag to disable app list folder.">
-          Disable App Launcher folders.
-        </message>
-        <message name="IDS_FLAGS_DISABLE_APP_LIST_FOLDER_DESCRIPTION" desc="Description of the flag to disable the app list folder.">
-          Enabling this option prevents the user to create and manage folders in App Launcher.
         </message>
         <message name="IDS_FLAGS_DISABLE_APP_LIST_VOICE_SEARCH" desc="Name of the flag to disable voice search in the app list.">
           Disable voice search in the App Launcher.

@@ -405,9 +405,6 @@ const char kDisableSpdy31[]                 = "disable-spdy31";
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
-// Disables syncing of the app list independent of extensions.
-const char kDisableSyncAppList[]            = "disable-sync-app-list";
-
 // Disables sync/API based session sync implementation (back to legacy).
 const char kDisableSyncSessionsV2[] = "disable-sync-sessions-v2";
 

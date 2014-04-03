@@ -47,8 +47,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/themes/theme_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -71,6 +69,12 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#endif
+
+#if defined(ENABLE_APP_LIST)
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "ui/app_list/app_list_switches.h"
 #endif
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -361,7 +365,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   }
 
 #if defined(ENABLE_APP_LIST)
-  if (!command_line_->HasSwitch(switches::kDisableSyncAppList)) {
+  if (app_list::switches::IsAppListSyncEnabled()) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
