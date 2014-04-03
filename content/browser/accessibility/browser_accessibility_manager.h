@@ -84,15 +84,12 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   BrowserAccessibility* GetFromRendererID(int32 renderer_id);
 
   // Called to notify the accessibility manager that its associated native
-  // view got focused. This implies that it is shown (opposite of WasHidden,
-  // below).
-  // The touch_event_context parameter indicates that we were called in the
-  // context of a touch event.
-  void GotFocus(bool touch_event_context);
+  // view got focused.
+  virtual void OnWindowFocused();
 
   // Called to notify the accessibility manager that its associated native
-  // view was hidden. When it's no longer hidden, GotFocus will be called.
-  void WasHidden();
+  // view lost focus.
+  virtual void OnWindowBlurred();
 
   // Called to notify the accessibility manager that a mouse down event
   // occurred in the tab.

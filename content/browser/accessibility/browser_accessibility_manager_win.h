@@ -46,6 +46,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // BrowserAccessibilityManager methods
   virtual void AddNodeToMap(BrowserAccessibility* node);
   virtual void RemoveNode(BrowserAccessibility* node) OVERRIDE;
+  virtual void OnWindowFocused() OVERRIDE;
+  virtual void OnWindowBlurred() OVERRIDE;
   virtual void NotifyAccessibilityEvent(
       ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 

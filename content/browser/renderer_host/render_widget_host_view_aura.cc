@@ -3116,6 +3116,10 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
     } else {
       host_->SetInputMethodActive(false);
     }
+
+    BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+    if (manager)
+      manager->OnWindowFocused();
   } else if (window_ == lost_focus) {
     host_->SetActive(false);
     host_->Blur();
@@ -3125,6 +3129,10 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
 
     if (touch_editing_client_)
       touch_editing_client_->EndTouchEditing(false);
+
+    BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
+    if (manager)
+      manager->OnWindowBlurred();
 
     // If we lose the focus while fullscreen, close the window; Pepper Flash
     // won't do it for us (unlike NPAPI Flash). However, we do not close the

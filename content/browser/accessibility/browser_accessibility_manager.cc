@@ -86,18 +86,14 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFromRendererID(
   return NULL;
 }
 
-void BrowserAccessibilityManager::GotFocus(bool touch_event_context) {
-  if (!touch_event_context)
-    osk_state_ = OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED;
-
-  if (!focus_)
-    return;
-
-  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, focus_);
+void BrowserAccessibilityManager::OnWindowFocused() {
+  if (focus_)
+    NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, focus_);
 }
 
-void BrowserAccessibilityManager::WasHidden() {
-  osk_state_ = OSK_DISALLOWED_BECAUSE_TAB_HIDDEN;
+void BrowserAccessibilityManager::OnWindowBlurred() {
+  if (focus_)
+    NotifyAccessibilityEvent(ui::AX_EVENT_BLUR, focus_);
 }
 
 void BrowserAccessibilityManager::GotMouseDown() {
