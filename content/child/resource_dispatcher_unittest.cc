@@ -14,10 +14,12 @@
 #include "content/child/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "webkit/child/resource_loader_bridge.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
 using webkit_glue::ResourceLoaderBridge;
@@ -36,7 +38,7 @@ static const uint32 test_page_contents_len = arraysize(test_page_contents) - 1;
 
 // Listens for request response data and stores it so that it can be compared
 // to the reference data.
-class TestRequestCallback : public ResourceLoaderBridge::Peer {
+class TestRequestCallback : public RequestPeer {
  public:
   TestRequestCallback() : complete_(false) {
   }
@@ -229,7 +231,7 @@ TEST_F(ResourceDispatcherTest, SerializedPostData) {
 // loading is enabled/disabled in the context of a dispatched message, other
 // queued messages should not be dispatched until deferred load is turned off.
 class DeferredResourceLoadingTest : public ResourceDispatcherTest,
-                                    public ResourceLoaderBridge::Peer {
+                                    public RequestPeer {
  public:
   DeferredResourceLoadingTest()
       : defer_loading_(false) {
@@ -262,7 +264,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
     set_defer_loading(false);
   }
 
-  // ResourceLoaderBridge::Peer methods.
+  // RequestPeer methods.
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
@@ -338,7 +340,7 @@ TEST_F(DeferredResourceLoadingTest, DeferredLoadTest) {
 }
 
 class TimeConversionTest : public ResourceDispatcherTest,
-                           public ResourceLoaderBridge::Peer {
+                           public RequestPeer {
  public:
   virtual bool Send(IPC::Message* msg) OVERRIDE {
     delete msg;
@@ -353,7 +355,7 @@ class TimeConversionTest : public ResourceDispatcherTest,
         ResourceMsg_ReceivedResponse(0, response_head));
   }
 
-  // ResourceLoaderBridge::Peer methods.
+  // RequestPeer methods.
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 

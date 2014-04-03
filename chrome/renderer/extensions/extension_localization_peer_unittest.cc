@@ -50,8 +50,7 @@ class MockIpcMessageSender : public IPC::Sender {
   DISALLOW_COPY_AND_ASSIGN(MockIpcMessageSender);
 };
 
-class MockResourceLoaderBridgePeer
-    : public webkit_glue::ResourceLoaderBridge::Peer {
+class MockResourceLoaderBridgePeer : public content::RequestPeer {
  public:
   MockResourceLoaderBridgePeer() {}
   virtual ~MockResourceLoaderBridgePeer() {}

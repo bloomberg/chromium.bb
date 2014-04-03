@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/child/multipart_response_delegate.h"
+#include "webkit/child/resource_loader_bridge.h"
 #include "webkit/common/resource_response_info.h"
 
 namespace content {

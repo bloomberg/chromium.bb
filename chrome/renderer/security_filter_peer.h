@@ -5,56 +5,58 @@
 #ifndef CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 #define CHROME_RENDERER_SECURITY_FILTER_PEER_H_
 
-#include "webkit/child/resource_loader_bridge.h"
+#include "content/public/child/request_peer.h"
 #include "webkit/common/resource_response_info.h"
 #include "webkit/common/resource_type.h"
 
+namespace webkit_glue {
+class ResourceLoaderBridge;
+}
+
 // The SecurityFilterPeer is a proxy to a
-// webkit_glue::ResourceLoaderBridge::Peer instance.  It is used to pre-process
+// content::RequestPeer instance.  It is used to pre-process
 // unsafe resources (such as mixed-content resource).
 // Call the factory method CreateSecurityFilterPeer() to obtain an instance of
 // SecurityFilterPeer based on the original Peer.
 // NOTE: subclasses should insure they delete themselves at the end of the
 // OnReceiveComplete call.
-class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
+class SecurityFilterPeer : public content::RequestPeer {
  public:
   virtual ~SecurityFilterPeer();
 
   static SecurityFilterPeer* CreateSecurityFilterPeerForDeniedRequest(
       ResourceType::Type resource_type,
-      webkit_glue::ResourceLoaderBridge::Peer* peer,
+      content::RequestPeer* peer,
       int os_error);
 
   static SecurityFilterPeer* CreateSecurityFilterPeerForFrame(
-      webkit_glue::ResourceLoaderBridge::Peer* peer,
+      content::RequestPeer* peer,
       int os_error);
 
-  // ResourceLoaderBridge::Peer methods.
+  // content::RequestPeer methods.
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const webkit_glue::ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) OVERRIDE;
+  virtual bool OnReceivedRedirect(const GURL& new_url,
+                                  const webkit_glue::ResourceResponseInfo& info,
+                                  bool* has_new_first_party_for_cookies,
+                                  GURL* new_first_party_for_cookies) OVERRIDE;
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {}
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void OnCompletedRequest(
-      int error_code,
-      bool was_ignored_by_handler,
-      bool stale_copy_in_cache,
-      const std::string& security_info,
-      const base::TimeTicks& completion_time,
-      int64 total_transfer_size) OVERRIDE;
+  virtual void OnCompletedRequest(int error_code,
+                                  bool was_ignored_by_handler,
+                                  bool stale_copy_in_cache,
+                                  const std::string& security_info,
+                                  const base::TimeTicks& completion_time,
+                                  int64 total_transfer_size) OVERRIDE;
 
  protected:
   SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-                     webkit_glue::ResourceLoaderBridge::Peer* peer);
+                     content::RequestPeer* peer);
 
-  webkit_glue::ResourceLoaderBridge::Peer* original_peer_;
+  content::RequestPeer* original_peer_;
   webkit_glue::ResourceLoaderBridge* resource_loader_bridge_;
 
  private:
@@ -66,11 +68,11 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
 class BufferedPeer : public SecurityFilterPeer {
  public:
   BufferedPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-               webkit_glue::ResourceLoaderBridge::Peer* peer,
+               content::RequestPeer* peer,
                const std::string& mime_type);
   virtual ~BufferedPeer();
 
-  // ResourceLoaderBridge::Peer Implementation.
+  // content::RequestPeer Implementation.
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedData(const char* data,
@@ -111,12 +113,12 @@ class BufferedPeer : public SecurityFilterPeer {
 class ReplaceContentPeer : public SecurityFilterPeer {
  public:
   ReplaceContentPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-                     webkit_glue::ResourceLoaderBridge::Peer* peer,
+                     content::RequestPeer* peer,
                      const std::string& mime_type,
                      const std::string& data);
   virtual ~ReplaceContentPeer();
 
-  // ResourceLoaderBridge::Peer Implementation.
+  // content::RequestPeer Implementation.
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedData(const char* data,

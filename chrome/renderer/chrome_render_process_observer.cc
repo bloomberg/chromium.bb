@@ -65,8 +65,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
       : weak_factory_(this) {
   }
 
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+  virtual content::RequestPeer* OnRequestComplete(
+      content::RequestPeer* current_peer,
       ResourceType::Type resource_type,
       int error_code) OVERRIDE {
     // Update the browser about our cache.
@@ -88,8 +88,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
         resource_type, current_peer, error_code);
   }
 
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+  virtual content::RequestPeer* OnReceivedResponse(
+      content::RequestPeer* current_peer,
       const std::string& mime_type,
       const GURL& url) OVERRIDE {
     return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(

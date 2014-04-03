@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "content/public/child/request_peer.h"
 #include "url/gurl.h"
-#include "webkit/child/resource_loader_bridge.h"
 
 namespace webkit_glue {
 class MultipartResponseDelegate;
@@ -20,7 +20,7 @@ namespace content {
 class PluginStreamUrl;
 
 // Fetches URLS for a plugin using ResourceDispatcher.
-class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
+class PluginURLFetcher : public RequestPeer {
  public:
   PluginURLFetcher(PluginStreamUrl* plugin_stream,
                    const GURL& url,
@@ -54,7 +54,7 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   bool pending_failure_notification() { return pending_failure_notification_; }
 
  private:
-  // webkit_glue::ResourceLoaderBridge::Peer implementation:
+  // RequestPeer implementation:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
   virtual bool OnReceivedRedirect(const GURL& new_url,
                                   const webkit_glue::ResourceResponseInfo& info,
@@ -66,13 +66,12 @@ class PluginURLFetcher : public webkit_glue::ResourceLoaderBridge::Peer {
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void OnCompletedRequest(
-      int error_code,
-      bool was_ignored_by_handler,
-      bool stale_copy_in_cache,
-      const std::string& security_info,
-      const base::TimeTicks& completion_time,
-      int64 total_transfer_size) OVERRIDE;
+  virtual void OnCompletedRequest(int error_code,
+                                  bool was_ignored_by_handler,
+                                  bool stale_copy_in_cache,
+                                  const std::string& security_info,
+                                  const base::TimeTicks& completion_time,
+                                  int64 total_transfer_size) OVERRIDE;
 
   PluginStreamUrl* plugin_stream_;
   GURL url_;

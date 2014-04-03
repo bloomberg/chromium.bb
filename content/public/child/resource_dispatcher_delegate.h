@@ -5,10 +5,16 @@
 #ifndef CONTENT_PUBLIC_CHILD_RESOURCE_DISPATCHER_DELEGATE_H_
 #define CONTENT_PUBLIC_CHILD_RESOURCE_DISPATCHER_DELEGATE_H_
 
+#include <string>
+
 #include "content/common/content_export.h"
-#include "webkit/child/resource_loader_bridge.h"
+#include "webkit/common/resource_type.h"
+
+class GURL;
 
 namespace content {
+
+class RequestPeer;
 
 // Interface that allows observing request events and optionally replacing the
 // peer.
@@ -16,13 +22,13 @@ class CONTENT_EXPORT ResourceDispatcherDelegate {
  public:
   virtual ~ResourceDispatcherDelegate() {}
 
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+  virtual RequestPeer* OnRequestComplete(
+      RequestPeer* current_peer,
       ResourceType::Type resource_type,
       int error_code) = 0;
 
-  virtual webkit_glue::ResourceLoaderBridge::Peer* OnReceivedResponse(
-      webkit_glue::ResourceLoaderBridge::Peer* current_peer,
+  virtual RequestPeer* OnReceivedResponse(
+      RequestPeer* current_peer,
       const std::string& mime_type,
       const GURL& url) = 0;
 };

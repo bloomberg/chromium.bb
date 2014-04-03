@@ -21,12 +21,14 @@
 #include "content/child/sync_load_response.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/resource_messages.h"
+#include "content/public/child/request_peer.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
+#include "webkit/child/resource_loader_bridge.h"
 #include "webkit/common/resource_type.h"
 
 using webkit_glue::ResourceLoaderBridge;
@@ -75,14 +77,14 @@ class IPCResourceLoaderBridge : public ResourceLoaderBridge {
 
   // ResourceLoaderBridge
   virtual void SetRequestBody(ResourceRequestBody* request_body) OVERRIDE;
-  virtual bool Start(Peer* peer) OVERRIDE;
+  virtual bool Start(RequestPeer* peer) OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual void SetDefersLoading(bool value) OVERRIDE;
   virtual void DidChangePriority(net::RequestPriority new_priority) OVERRIDE;
   virtual void SyncLoad(SyncLoadResponse* response) OVERRIDE;
 
  private:
-  ResourceLoaderBridge::Peer* peer_;
+  RequestPeer* peer_;
 
   // The resource dispatcher for this loader.  The bridge doesn't own it, but
   // it's guaranteed to outlive the bridge.
@@ -174,7 +176,7 @@ void IPCResourceLoaderBridge::SetRequestBody(
 }
 
 // Writes a footer on the message and sends it
-bool IPCResourceLoaderBridge::Start(Peer* peer) {
+bool IPCResourceLoaderBridge::Start(RequestPeer* peer) {
   if (request_id_ != -1) {
     NOTREACHED() << "Starting a request twice";
     return false;
@@ -345,7 +347,7 @@ void ResourceDispatcher::OnReceivedResponse(
   request_info->response_start = ConsumeIOTimestamp();
 
   if (delegate_) {
-    ResourceLoaderBridge::Peer* new_peer =
+    RequestPeer* new_peer =
         delegate_->OnReceivedResponse(
             request_info->peer, response_head.mime_type, request_info->url);
     if (new_peer)
@@ -529,10 +531,10 @@ void ResourceDispatcher::OnRequestComplete(
   request_info->buffer.reset();
   request_info->buffer_size = 0;
 
-  ResourceLoaderBridge::Peer* peer = request_info->peer;
+  RequestPeer* peer = request_info->peer;
 
   if (delegate_) {
-    ResourceLoaderBridge::Peer* new_peer =
+    RequestPeer* new_peer =
         delegate_->OnRequestComplete(
             request_info->peer, request_info->resource_type,
             request_complete_data.error_code);
@@ -553,12 +555,11 @@ void ResourceDispatcher::OnRequestComplete(
                            request_complete_data.encoded_data_length);
 }
 
-int ResourceDispatcher::AddPendingRequest(
-    ResourceLoaderBridge::Peer* callback,
-    ResourceType::Type resource_type,
-    int origin_pid,
-    const GURL& frame_origin,
-    const GURL& request_url) {
+int ResourceDispatcher::AddPendingRequest(RequestPeer* callback,
+                                          ResourceType::Type resource_type,
+                                          int origin_pid,
+                                          const GURL& frame_origin,
+                                          const GURL& request_url) {
   // Compute a unique request_id for this renderer process.
   int id = MakeRequestID();
   pending_requests_[id] = PendingRequestInfo(
@@ -628,7 +629,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo()
 }
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
-    webkit_glue::ResourceLoaderBridge::Peer* peer,
+    RequestPeer* peer,
     ResourceType::Type resource_type,
     int origin_pid,
     const GURL& frame_origin,
@@ -641,8 +642,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       frame_origin(frame_origin),
       response_url(request_url),
       request_start(base::TimeTicks::Now()),
-      blocked_response(false) {
-}
+      blocked_response(false) {}
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {}
 

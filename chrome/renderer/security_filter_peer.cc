@@ -13,7 +13,7 @@
 
 SecurityFilterPeer::SecurityFilterPeer(
     webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-    webkit_glue::ResourceLoaderBridge::Peer* peer)
+    content::RequestPeer* peer)
     : original_peer_(peer),
       resource_loader_bridge_(resource_loader_bridge) {
 }
@@ -23,9 +23,9 @@ SecurityFilterPeer::~SecurityFilterPeer() {
 
 // static
 SecurityFilterPeer*
-    SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
+SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
     ResourceType::Type resource_type,
-    webkit_glue::ResourceLoaderBridge::Peer* peer,
+    content::RequestPeer* peer,
     int os_error) {
   // Create a filter for SSL and CERT errors.
   switch (os_error) {
@@ -55,7 +55,8 @@ SecurityFilterPeer*
 
 // static
 SecurityFilterPeer* SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
-    webkit_glue::ResourceLoaderBridge::Peer* peer, int os_error) {
+    content::RequestPeer* peer,
+    int os_error) {
   // TODO(jcampan): use a different message when getting a phishing/malware
   // error.
   std::string html = base::StringPrintf(
@@ -134,7 +135,7 @@ void ProcessResponseInfo(
 
 BufferedPeer::BufferedPeer(
     webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-    webkit_glue::ResourceLoaderBridge::Peer* peer,
+    content::RequestPeer* peer,
     const std::string& mime_type)
     : SecurityFilterPeer(resource_loader_bridge, peer),
       mime_type_(mime_type) {
@@ -189,7 +190,7 @@ void BufferedPeer::OnCompletedRequest(int error_code,
 
 ReplaceContentPeer::ReplaceContentPeer(
     webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
-    webkit_glue::ResourceLoaderBridge::Peer* peer,
+    content::RequestPeer* peer,
     const std::string& mime_type,
     const std::string& data)
     : SecurityFilterPeer(resource_loader_bridge, peer),

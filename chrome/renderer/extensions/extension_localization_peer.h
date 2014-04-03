@@ -7,64 +7,63 @@
 
 #include <string>
 
-#include "ipc/ipc_sender.h"
-#include "webkit/child/resource_loader_bridge.h"
+#include "content/public/child/request_peer.h"
 #include "webkit/common/resource_response_info.h"
 
+namespace IPC {
+class Sender;
+}
+
 // The ExtensionLocalizationPeer is a proxy to a
-// webkit_glue::ResourceLoaderBridge::Peer instance.  It is used to pre-process
+// content::RequestPeer instance.  It is used to pre-process
 // CSS files requested by extensions to replace localization templates with the
 // appropriate localized strings.
 //
 // Call the factory method CreateExtensionLocalizationPeer() to obtain an
 // instance of ExtensionLocalizationPeer based on the original Peer.
-class ExtensionLocalizationPeer
-    : public webkit_glue::ResourceLoaderBridge::Peer {
+class ExtensionLocalizationPeer : public content::RequestPeer {
  public:
   virtual ~ExtensionLocalizationPeer();
 
   static ExtensionLocalizationPeer* CreateExtensionLocalizationPeer(
-      webkit_glue::ResourceLoaderBridge::Peer* peer,
+      content::RequestPeer* peer,
       IPC::Sender* message_sender,
       const std::string& mime_type,
       const GURL& request_url);
 
-  // ResourceLoaderBridge::Peer methods.
+  // content::RequestPeer methods.
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const webkit_glue::ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) OVERRIDE;
+  virtual bool OnReceivedRedirect(const GURL& new_url,
+                                  const webkit_glue::ResourceResponseInfo& info,
+                                  bool* has_new_first_party_for_cookies,
+                                  GURL* new_first_party_for_cookies) OVERRIDE;
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE {}
   virtual void OnReceivedData(const char* data,
                               int data_length,
                               int encoded_data_length) OVERRIDE;
-  virtual void OnCompletedRequest(
-      int error_code,
-      bool was_ignored_by_handler,
-      bool stale_copy_in_cache,
-      const std::string& security_info,
-      const base::TimeTicks& completion_time,
-      int64 total_transfer_size) OVERRIDE;
+  virtual void OnCompletedRequest(int error_code,
+                                  bool was_ignored_by_handler,
+                                  bool stale_copy_in_cache,
+                                  const std::string& security_info,
+                                  const base::TimeTicks& completion_time,
+                                  int64 total_transfer_size) OVERRIDE;
 
  private:
   friend class ExtensionLocalizationPeerTest;
 
   // Use CreateExtensionLocalizationPeer to create an instance.
-  ExtensionLocalizationPeer(
-      webkit_glue::ResourceLoaderBridge::Peer* peer,
-      IPC::Sender* message_sender,
-      const GURL& request_url);
+  ExtensionLocalizationPeer(content::RequestPeer* peer,
+                            IPC::Sender* message_sender,
+                            const GURL& request_url);
 
   // Loads message catalogs, and replaces all __MSG_some_name__ templates within
   // loaded file.
   void ReplaceMessages();
 
   // Original peer that handles the request once we are done processing data_.
-  webkit_glue::ResourceLoaderBridge::Peer* original_peer_;
+  content::RequestPeer* original_peer_;
 
   // We just pass though the response info. This holds the copy of the original.
   webkit_glue::ResourceResponseInfo response_info_;

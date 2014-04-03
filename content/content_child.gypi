@@ -217,6 +217,7 @@
     'child/worker_thread_task_runner.cc',
     'child/worker_thread_task_runner.h',
     'public/child/image_decoder_utils.h',
+    'public/child/request_peer.h',
     'public/child/resource_dispatcher_delegate.h',
   ],
   'conditions': [

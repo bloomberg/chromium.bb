@@ -11,11 +11,12 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "grit/generated_resources.h"
+#include "ipc/ipc_sender.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 
 ExtensionLocalizationPeer::ExtensionLocalizationPeer(
-    webkit_glue::ResourceLoaderBridge::Peer* peer,
+    content::RequestPeer* peer,
     IPC::Sender* message_sender,
     const GURL& request_url)
     : original_peer_(peer),
@@ -29,7 +30,7 @@ ExtensionLocalizationPeer::~ExtensionLocalizationPeer() {
 // static
 ExtensionLocalizationPeer*
 ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-    webkit_glue::ResourceLoaderBridge::Peer* peer,
+    content::RequestPeer* peer,
     IPC::Sender* message_sender,
     const std::string& mime_type,
     const GURL& request_url) {
