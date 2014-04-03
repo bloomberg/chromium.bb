@@ -207,13 +207,13 @@
   // The reason for this mismatch is probably because most of the AVFoundation
   // docs are written for iOS and not for MacOsX.
   // AVVideoScalingModeKey() refers to letterboxing yes/no and preserve aspect
-  // ratio yes/no when scaling. Currently we set letterbox and preservation.
+  // ratio yes/no when scaling. Currently we set cropping and preservation.
   NSDictionary* videoSettingsDictionary = @{
     (id)kCVPixelBufferWidthKey : @(width),
     (id)kCVPixelBufferHeightKey : @(height),
     (id)kCVPixelBufferPixelFormatTypeKey : @(kCVPixelFormatType_422YpCbCr8),
     AVFoundationGlue::AVVideoScalingModeKey() :
-        AVFoundationGlue::AVVideoScalingModeResizeAspect()
+        AVFoundationGlue::AVVideoScalingModeResizeAspectFill()
   };
   [captureVideoDataOutput_ setVideoSettings:videoSettingsDictionary];
 

@@ -49,7 +49,8 @@ class AVFoundationInternal {
         {&AVCaptureSessionPreset640x480_, "AVCaptureSessionPreset640x480"},
         {&AVCaptureSessionPreset1280x720_, "AVCaptureSessionPreset1280x720"},
         {&AVVideoScalingModeKey_, "AVVideoScalingModeKey"},
-        {&AVVideoScalingModeResizeAspect_, "AVVideoScalingModeResizeAspect"},
+        {&AVVideoScalingModeResizeAspectFill_,
+         "AVVideoScalingModeResizeAspectFill"},
     };
     for (size_t i = 0; i < arraysize(av_strings); ++i) {
       *av_strings[i].loaded_string = *reinterpret_cast<NSString**>(
@@ -89,8 +90,8 @@ class AVFoundationInternal {
     return AVCaptureSessionPreset1280x720_;
   }
   NSString* AVVideoScalingModeKey() const { return AVVideoScalingModeKey_; }
-  NSString* AVVideoScalingModeResizeAspect() const {
-    return AVVideoScalingModeResizeAspect_;
+  NSString* AVVideoScalingModeResizeAspectFill() const {
+    return AVVideoScalingModeResizeAspectFill_;
   }
 
  private:
@@ -109,7 +110,7 @@ class AVFoundationInternal {
   NSString* AVCaptureSessionPreset640x480_;
   NSString* AVCaptureSessionPreset1280x720_;
   NSString* AVVideoScalingModeKey_;
-  NSString* AVVideoScalingModeResizeAspect_;
+  NSString* AVVideoScalingModeResizeAspectFill_;
 
   DISALLOW_COPY_AND_ASSIGN(AVFoundationInternal);
 };
@@ -188,8 +189,8 @@ NSString* AVFoundationGlue::AVVideoScalingModeKey() {
   return g_avfoundation_handle.Get().AVVideoScalingModeKey();
 }
 
-NSString* AVFoundationGlue::AVVideoScalingModeResizeAspect() {
-  return g_avfoundation_handle.Get().AVVideoScalingModeResizeAspect();
+NSString* AVFoundationGlue::AVVideoScalingModeResizeAspectFill() {
+  return g_avfoundation_handle.Get().AVVideoScalingModeResizeAspectFill();
 }
 
 Class AVFoundationGlue::AVCaptureSessionClass() {

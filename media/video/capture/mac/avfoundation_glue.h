@@ -47,7 +47,7 @@ class MEDIA_EXPORT AVFoundationGlue {
 
   // Originally from AVVideoSettings.h but in global namespace.
   static NSString* AVVideoScalingModeKey();
-  static NSString* AVVideoScalingModeResizeAspect();
+  static NSString* AVVideoScalingModeResizeAspectFill();
 
   static Class AVCaptureSessionClass();
   static Class AVCaptureVideoDataOutputClass();
