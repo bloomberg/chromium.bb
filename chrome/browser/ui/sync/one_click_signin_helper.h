@@ -9,10 +9,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/signin/signin_oauth_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
+#include "components/signin/core/browser/signin_oauth_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"

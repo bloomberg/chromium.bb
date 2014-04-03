@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_H_
-#define CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_H_
+#ifndef COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_RECONCILOR_H_
+#define COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_RECONCILOR_H_
 
 #include <deque>
 #include <functional>
@@ -24,7 +24,7 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class GaiaAuthFetcher;
-class Profile;
+class ProfileOAuth2TokenService;
 class SigninClient;
 class SigninOAuthHelper;
 
@@ -39,7 +39,9 @@ class AccountReconcilor : public KeyedService,
                           public OAuth2TokenService::Observer,
                           public SigninManagerBase::Observer {
  public:
-  explicit AccountReconcilor(Profile* profile, SigninClient* client);
+  AccountReconcilor(ProfileOAuth2TokenService* token_service,
+                    SigninManagerBase* signin_manager,
+                    SigninClient* client);
   virtual ~AccountReconcilor();
 
   void Initialize(bool start_reconcile_if_tokens_available);
@@ -51,7 +53,8 @@ class AccountReconcilor : public KeyedService,
   void AddMergeSessionObserver(MergeSessionHelper::Observer* observer);
   void RemoveMergeSessionObserver(MergeSessionHelper::Observer* observer);
 
-  Profile* profile() { return profile_; }
+  ProfileOAuth2TokenService* token_service() { return token_service_; }
+  SigninClient* client() { return client_; }
 
  private:
   // An std::set<> for use with email addresses that uses
@@ -82,8 +85,8 @@ class AccountReconcilor : public KeyedService,
 
   bool AreAllRefreshTokensChecked() const;
 
-  const std::vector<std::pair<std::string, bool> >&
-      GetGaiaAccountsForTesting() const {
+  const std::vector<std::pair<std::string, bool> >& GetGaiaAccountsForTesting()
+      const {
     return gaia_accounts_;
   }
 
@@ -97,10 +100,10 @@ class AccountReconcilor : public KeyedService,
 
   // Used during GetAccountsFromCookie.
   // Stores a callback for the next action to perform.
-  typedef base::Callback<void(
-      const GoogleServiceAuthError& error,
-      const std::vector<std::pair<std::string, bool> >&)>
-          GetAccountsFromCookieCallback;
+  typedef base::Callback<
+      void(const GoogleServiceAuthError& error,
+           const std::vector<std::pair<std::string, bool> >&)>
+      GetAccountsFromCookieCallback;
 
   friend class AccountReconcilorTest;
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
@@ -175,13 +178,13 @@ class AccountReconcilor : public KeyedService,
 
   // Overriden from GaiaAuthConsumer.
   virtual void OnListAccountsSuccess(const std::string& data) OVERRIDE;
-  virtual void OnListAccountsFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnListAccountsFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
 
   // Overriden from MergeSessionHelper::Observer.
-  virtual void MergeSessionCompleted(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void MergeSessionCompleted(const std::string& account_id,
+                                     const GoogleServiceAuthError& error)
+      OVERRIDE;
 
   // Overriden from OAuth2TokenService::Consumer.
   virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -202,8 +205,11 @@ class AccountReconcilor : public KeyedService,
 
   void MayBeDoNextListAccounts();
 
-  // The profile that this reconcilor belongs to.
-  Profile* profile_;
+  // The ProfileOAuth2TokenService associated with this reconcilor.
+  ProfileOAuth2TokenService* token_service_;
+
+  // The SigninManager associated with this reconcilor.
+  SigninManagerBase* signin_manager_;
 
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;
@@ -243,4 +249,4 @@ class AccountReconcilor : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);
 };
 
-#endif  // CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_H_
+#endif  // COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_RECONCILOR_H_

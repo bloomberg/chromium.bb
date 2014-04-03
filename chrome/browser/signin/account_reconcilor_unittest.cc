@@ -5,7 +5,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/account_reconcilor.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -30,7 +30,9 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
  public:
   static KeyedService* Build(content::BrowserContext* context);
 
-  explicit MockAccountReconcilor(Profile* profile, SigninClient* client);
+  MockAccountReconcilor(ProfileOAuth2TokenService* token_service,
+                        SigninManagerBase* signin_manager,
+                        SigninClient* client);
   virtual ~MockAccountReconcilor() {}
 
   MOCK_METHOD1(PerformMergeAction, void(const std::string& account_id));
@@ -49,14 +51,20 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
 KeyedService* MockAccountReconcilor::Build(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   AccountReconcilor* reconcilor = new MockAccountReconcilor(
-      profile, ChromeSigninClientFactory::GetForProfile(profile));
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      SigninManagerFactory::GetForProfile(profile),
+      ChromeSigninClientFactory::GetForProfile(profile));
   reconcilor->Initialize(false /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }
 
-MockAccountReconcilor::MockAccountReconcilor(Profile* profile,
-                                             SigninClient* client)
-    : testing::StrictMock<AccountReconcilor>(profile, client) {}
+MockAccountReconcilor::MockAccountReconcilor(
+    ProfileOAuth2TokenService* token_service,
+    SigninManagerBase* signin_manager,
+    SigninClient* client)
+    : testing::StrictMock<AccountReconcilor>(token_service,
+                                             signin_manager,
+                                             client) {}
 
 }  // namespace
 
@@ -156,7 +164,7 @@ TEST_F(AccountReconcilorTest, Basic) {
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
-  ASSERT_EQ(profile(), reconcilor->profile());
+  ASSERT_EQ(token_service(), reconcilor->token_service());
 }
 
 #if !defined(OS_CHROMEOS)

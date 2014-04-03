@@ -4,7 +4,7 @@
 
 #include "chrome/browser/signin/signin_tracker.h"
 
-#include "chrome/browser/signin/account_reconcilor.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_constants.h"

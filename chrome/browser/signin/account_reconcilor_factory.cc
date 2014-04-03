@@ -37,7 +37,9 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   AccountReconcilor* reconcilor = new AccountReconcilor(
-      profile, ChromeSigninClientFactory::GetForProfile(profile));
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
+      SigninManagerFactory::GetForProfile(profile),
+      ChromeSigninClientFactory::GetForProfile(profile));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
 }

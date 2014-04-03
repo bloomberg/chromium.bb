@@ -39,6 +39,8 @@
       'sources': [
         'signin/core/browser/about_signin_internals.cc',
         'signin/core/browser/about_signin_internals.h',
+        'signin/core/browser/account_reconcilor.cc',
+        'signin/core/browser/account_reconcilor.h',
         'signin/core/browser/mutable_profile_oauth2_token_service.cc',
         'signin/core/browser/mutable_profile_oauth2_token_service.h',
         'signin/core/browser/profile_oauth2_token_service.cc',
@@ -56,6 +58,8 @@
         'signin/core/browser/signin_manager.h',
         'signin/core/browser/signin_manager_cookie_helper.cc',
         'signin/core/browser/signin_manager_cookie_helper.h',
+        'signin/core/browser/signin_oauth_helper.cc',
+        'signin/core/browser/signin_oauth_helper.h',
         'signin/core/browser/webdata/token_service_table.cc',
         'signin/core/browser/webdata/token_service_table.h',
         'signin/core/browser/webdata/token_web_data.cc',

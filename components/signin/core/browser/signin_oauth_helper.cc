@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/signin_oauth_helper.h"
+#include "components/signin/core/browser/signin_oauth_helper.h"
 
 #include "base/message_loop/message_loop.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -28,7 +28,7 @@ void SigninOAuthHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 }
 
 void SigninOAuthHelper::OnClientOAuthFailure(
-      const GoogleServiceAuthError& error) {
+    const GoogleServiceAuthError& error) {
   VLOG(1) << "SigninOAuthHelper::OnClientOAuthFailure: " << error.ToString();
   consumer_->OnSigninOAuthInformationFailure(error);
 }
@@ -56,9 +56,8 @@ void SigninOAuthHelper::OnGetUserInfoSuccess(const UserInfoMap& data) {
     VLOG(1) << "SigninOAuthHelper::OnGetUserInfoSuccess:"
             << " email=" << email_iter->second
             << " displayEmail=" << display_email_iter->second;
-    consumer_->OnSigninOAuthInformationAvailable(email_iter->second,
-                                                 display_email_iter->second,
-                                                 refresh_token_);
+    consumer_->OnSigninOAuthInformationAvailable(
+        email_iter->second, display_email_iter->second, refresh_token_);
   }
 }
 

@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/signin/account_reconcilor.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 
 class AccountReconcilor;
 class Profile;
