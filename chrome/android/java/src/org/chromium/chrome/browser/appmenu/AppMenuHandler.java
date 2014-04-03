@@ -62,7 +62,7 @@ public class AppMenuHandler {
      *         the menu is not yet available to be shown, or the menu is already showing.
      */
     public boolean showAppMenu(View anchorView, boolean isByHardwareButton, boolean startDragging) {
-        if (!mDelegate.shouldShowAppMenu()) return false;
+        if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
 
         if (mMenu == null) {
             // Use a PopupMenu to create the Menu object. Note this is not the same as the
