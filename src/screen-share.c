@@ -949,6 +949,8 @@ shared_output_destroy(struct shared_output *so)
 {
 	struct ss_shm_buffer *buffer, *bnext;
 
+	so->output->disable_planes--;
+
 	wl_list_for_each_safe(buffer, bnext, &so->shm.buffers, link)
 		ss_shm_buffer_destroy(buffer);
 	wl_list_for_each_safe(buffer, bnext, &so->shm.free_buffers, link)
