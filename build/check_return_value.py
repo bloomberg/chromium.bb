@@ -6,10 +6,12 @@
 """This program wraps an arbitrary command and prints "1" if the command ran
 successfully."""
 
+import os
 import subprocess
 import sys
 
-if not subprocess.call(sys.argv[1:]):
+devnull = open(os.devnull, 'wb')
+if not subprocess.call(sys.argv[1:], stdout=devnull, stderr=devnull):
   print 1
 else:
   print 0
