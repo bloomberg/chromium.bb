@@ -100,7 +100,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize)
     }
     // No more reference to marked node.
 #if ENABLE(OILPAN)
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(WebCore::ThreadState::NoHeapPointersOnStack);
 #endif
     EXPECT_EQ(1u, markerController().markers().size());
 }
@@ -114,7 +114,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren)
     parent->removeChildren();
     // No more reference to marked node.
 #if ENABLE(OILPAN)
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(WebCore::ThreadState::NoHeapPointersOnStack);
 #endif
     EXPECT_EQ(0u, markerController().markers().size());
 }
@@ -130,7 +130,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked)
     }
     // No more reference to marked node.
 #if ENABLE(OILPAN)
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(WebCore::ThreadState::NoHeapPointersOnStack);
 #endif
     EXPECT_EQ(0u, markerController().markers().size());
 }
@@ -146,7 +146,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor)
     }
     // No more reference to marked node.
 #if ENABLE(OILPAN)
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(WebCore::ThreadState::NoHeapPointersOnStack);
 #endif
     EXPECT_EQ(0u, markerController().markers().size());
 }
@@ -162,7 +162,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent)
     }
     // No more reference to marked node.
 #if ENABLE(OILPAN)
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(WebCore::ThreadState::NoHeapPointersOnStack);
 #endif
     EXPECT_EQ(0u, markerController().markers().size());
 }
@@ -178,7 +178,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild)
     }
     // No more reference to marked node.
 #if ENABLE(OILPAN)
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(WebCore::ThreadState::NoHeapPointersOnStack);
 #endif
     EXPECT_EQ(0u, markerController().markers().size());
 }
@@ -194,7 +194,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML)
     }
     // No more reference to marked node.
 #if ENABLE(OILPAN)
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage(WebCore::ThreadState::NoHeapPointersOnStack);
 #endif
     EXPECT_EQ(0u, markerController().markers().size());
 }
