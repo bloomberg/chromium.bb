@@ -6,7 +6,6 @@
 #include <string>
 
 #include <base/file_util.h>
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/split_correcting_filter_interpreter.h"

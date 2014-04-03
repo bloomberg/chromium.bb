@@ -5,10 +5,10 @@
 #include <deque>
 #include <math.h>
 #include <set>
+#include <stdio.h>
 #include <utility>
 #include <vector>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
@@ -1175,7 +1175,7 @@ TEST(LookaheadFilterInterpreterTest, CyapaQuickTwoFingerMoveTest) {
       while (timeout >= 0 && (now + timeout) < next_timestamp) {
         now += timeout;
         timeout = -1;
-        LOG(INFO) << "calling handler timer: " << now;
+        fprintf(stderr, "calling handler timer: %f\n", now);
         interpreter.HandleTimer(now, &timeout);
       }
     }

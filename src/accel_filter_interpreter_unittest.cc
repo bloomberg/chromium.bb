@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/accel_filter_interpreter.h"

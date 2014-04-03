@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdio.h>
 #include <vector>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
@@ -581,7 +581,7 @@ TEST(ImmediateInterpreterTest, ScrollReevaluateTest) {
 
   gs = wrapper.SyncInterpret(&hardware_states[idx++], NULL);
   if (gs) {
-    LOG(INFO)<< "gs:" << gs->String() << "i=" << idx;
+    fprintf(stderr, "gs:%si=%zd\n", gs->String().c_str(), idx);
     EXPECT_NE(kGestureTypeScroll, gs->type);
   }
 }
@@ -2045,7 +2045,7 @@ TEST(ImmediateInterpreterTest, TapToClickStateMachineTest) {
 
     if (hwstate && hwstate->timestamp == 0.0) {
       // Reset imm interpreter
-      LOG(INFO) << "Resetting imm interpreter, i = " << i;
+      fprintf(stderr, "Resetting imm interpreter, i = %zd\n", i);
       ii.reset(new ImmediateInterpreter(NULL, NULL));
       wrapper.Reset(ii.get());
       ii->drag_lock_enable_.val_ = 1;
@@ -2353,7 +2353,7 @@ TEST(ImmediateInterpreterTest, TapToClickEnableTest) {
       bool same_fingers = false;
       if (hwstate && hwstate->timestamp == 0.0) {
         // Reset imm interpreter
-        LOG(INFO) << "Resetting imm interpreter, i = " << i;
+        fprintf(stderr, "Resetting imm interpreter, i = %zd\n", i);
         ii.reset(new ImmediateInterpreter(NULL, NULL));
         wrapper.Reset(ii.get());
         ii->drag_lock_enable_.val_ = 1;

@@ -5,7 +5,6 @@
 #include <string>
 
 #include <base/json/json_writer.h>
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_log.h"

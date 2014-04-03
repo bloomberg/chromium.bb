@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <set>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/list.h"

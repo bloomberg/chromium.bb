@@ -7,7 +7,6 @@
 #include <vector>
 #include <utility>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"

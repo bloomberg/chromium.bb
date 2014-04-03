@@ -8,7 +8,6 @@
 
 #include <base/command_line.h>
 #include <base/file_util.h>
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"

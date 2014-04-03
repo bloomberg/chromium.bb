@@ -4,7 +4,6 @@
 
 #include <deque>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"

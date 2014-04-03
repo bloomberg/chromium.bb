@@ -4,10 +4,10 @@
 
 #include <deque>
 #include <math.h>
+#include <stdio.h>
 #include <vector>
 #include <utility>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
@@ -291,7 +291,7 @@ TEST(PalmClassifyingFilterInterpreterTest, PalmAtEdgeTest) {
         ADD_FAILURE() << "Should be unreached.";
         break;
     }
-    LOG(INFO) << "iteration i = " << i;
+    fprintf(stderr, "iteration i = %zd\n", i);
     wrapper.SyncInterpret(&hardware_state[i], NULL);
   }
 }

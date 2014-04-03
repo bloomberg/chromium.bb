@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include <base/logging.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"
