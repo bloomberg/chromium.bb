@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -155,6 +156,14 @@ void CheckNoBackupData(const sql::Connection& connection,
   EXPECT_FALSE(connection.DoesTableExist("keywords_backup"));
 }
 
+std::string RemoveQuotes(const std::string& has_quotes) {
+  // SQLite quotes: http://www.sqlite.org/lang_keywords.html
+  static const char kQuotes[] = "\"[]`";
+  std::string no_quotes;
+  base::RemoveChars(has_quotes, kQuotes, &no_quotes);
+  return no_quotes;
+}
+
 }  // anonymous namespace
 
 // The WebDatabaseMigrationTest encapsulates testing of database migrations.
@@ -258,6 +267,25 @@ void WebDatabaseMigrationTest::LoadDatabase(
   sql::Connection connection;
   ASSERT_TRUE(connection.Open(GetDatabasePath()));
   ASSERT_TRUE(connection.Execute(contents.data()));
+}
+
+// Tests that migrating from the golden files version_XX.sql results in the same
+// schema as migrating from an empty database.
+TEST_F(WebDatabaseMigrationTest, VersionXxSqlFilesAreGolden) {
+  DoMigration();
+  sql::Connection connection;
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  const std::string& expected_schema = RemoveQuotes(connection.GetSchema());
+  static const int kFirstVersion = 53;
+  for (int i = kFirstVersion; i < kCurrentTestedVersionNumber; ++i) {
+    connection.Raze();
+    const base::FilePath& file_name = base::FilePath::FromUTF8Unsafe(
+        "version_" + base::IntToString(i) + ".sql");
+    ASSERT_NO_FATAL_FAILURE(LoadDatabase(file_name.value()))
+        << "Failed to load " << file_name.MaybeAsASCII();
+    DoMigration();
+    EXPECT_EQ(expected_schema, RemoveQuotes(connection.GetSchema()));
+  }
 }
 
 // Tests that the all migrations from an empty database succeed.
