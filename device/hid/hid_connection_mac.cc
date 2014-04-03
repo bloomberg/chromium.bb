@@ -105,18 +105,11 @@ void HidConnectionMac::InputReportCallback(void* context,
                                            uint8_t* report_bytes,
                                            CFIndex report_length) {
   HidConnectionMac* connection = static_cast<HidConnectionMac*>(context);
-  // If a report ID was received, inject it into a copy of the received
-  // report. This is consistent with how input reports are received on
-  // other platforms.
+  // report_id is already contained in report_bytes
   scoped_refptr<net::IOBufferWithSize> buffer;
-  if (report_id != 0) {
-    buffer = new net::IOBufferWithSize(report_length + 1);
-    buffer->data()[0] = static_cast<uint8_t>(report_id);
-    memcpy(buffer->data() + 1, report_bytes, report_length);
-  } else {
-    buffer = new net::IOBufferWithSize(report_length);
-    memcpy(buffer->data(), report_bytes, report_length);
-  }
+  buffer = new net::IOBufferWithSize(report_length);
+  memcpy(buffer->data(), report_bytes, report_length);
+
   connection->message_loop_->PostTask(
       FROM_HERE,
       base::Bind(
@@ -158,16 +151,25 @@ void HidConnectionMac::WriteReport(IOHIDReportType type,
     callback.Run(false, 0);
     return;
   }
+  scoped_refptr<net::IOBufferWithSize> output_buffer;
+  if (report_id != 0) {
+    output_buffer = new net::IOBufferWithSize(buffer->size() + 1);
+    output_buffer->data()[0] = static_cast<uint8_t>(report_id);
+    memcpy(output_buffer->data() + 1, buffer->data(), buffer->size());
+  } else {
+    output_buffer = new net::IOBufferWithSize(buffer->size());
+    memcpy(output_buffer->data(), buffer->data(), buffer->size());
+  }
   IOReturn res =
       IOHIDDeviceSetReport(device_.get(),
                            type,
                            report_id,
-                           reinterpret_cast<uint8_t*>(buffer->data()),
-                           buffer->size());
+                           reinterpret_cast<uint8_t*>(output_buffer->data()),
+                           output_buffer->size());
   if (res != kIOReturnSuccess) {
     callback.Run(false, 0);
   } else {
-    callback.Run(true, buffer->size());
+    callback.Run(true, output_buffer->size());
   }
 }
 
