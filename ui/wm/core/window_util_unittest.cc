@@ -45,5 +45,8 @@ TEST_F(WindowUtilTest, RecreateLayers) {
   ASSERT_EQ(2u, window1->layer()->children().size());
   EXPECT_EQ(window11->layer(), window1->layer()->children()[0]);
   EXPECT_EQ(window12->layer(), window1->layer()->children()[1]);
+
+  // Delete the window before the acquired layer is deleted.
+  window11.reset();
 }
 }  // namespace wm
