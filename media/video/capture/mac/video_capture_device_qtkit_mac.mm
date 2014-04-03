@@ -309,7 +309,12 @@
 - (void)handleNotification:(NSNotification*)errorNotification {
   NSError * error = (NSError*)[[errorNotification userInfo]
       objectForKey:QTCaptureSessionErrorKey];
-  frameReceiver_->ReceiveError([[error localizedDescription] UTF8String]);
+  NSString* str_error =
+      [NSString stringWithFormat:@"%@: %@",
+                                 [error localizedDescription],
+                                 [error localizedFailureReason]];
+
+  frameReceiver_->ReceiveError([str_error UTF8String]);
 }
 
 @end

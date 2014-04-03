@@ -297,9 +297,14 @@
 - (void)onVideoError:(NSNotification*)errorNotification {
   NSError* error = base::mac::ObjCCast<NSError>([[errorNotification userInfo]
       objectForKey:AVFoundationGlue::AVCaptureSessionErrorKey()]);
+  NSString* str_error =
+      [NSString stringWithFormat:@"%@: %@",
+                                 [error localizedDescription],
+                                 [error localizedFailureReason]];
+
   base::AutoLock lock(lock_);
   if (frameReceiver_)
-    frameReceiver_->ReceiveError([[error localizedDescription] UTF8String]);
+    frameReceiver_->ReceiveError([str_error UTF8String]);
 }
 
 @end
