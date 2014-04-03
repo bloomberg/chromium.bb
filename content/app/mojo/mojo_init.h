@@ -5,12 +5,14 @@
 #ifndef CONTENT_APP_MOJO_MOJO_INIT_H_
 #define CONTENT_APP_MOJO_MOJO_INIT_H_
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 // Perform any necessary Mojo initialization.
-void InitializeMojo();
+CONTENT_EXPORT void InitializeMojo();
 
-void ShutdownMojo();
+CONTENT_EXPORT void ShutdownMojo();
 
 }  // namespace content
 

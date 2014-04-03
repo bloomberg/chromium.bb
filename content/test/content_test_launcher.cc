@@ -27,6 +27,11 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/common/shell_content_client.h"
 #include "ui/base/ui_base_paths.h"
+
+#if defined(USE_MOJO)
+#include "content/app/mojo/mojo_init.h"
+#endif
+
 #endif
 
 namespace content {
@@ -67,13 +72,26 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
     RegisterPathProvider();
     ui::RegisterPathProvider();
     RegisterInProcessThreads();
+
+#if defined(USE_MOJO)
+    InitializeMojo();
+#endif
+
 #endif
 
     ContentTestSuiteBase::Initialize();
   }
 
+  virtual void Shutdown() OVERRIDE {
+    ContentTestSuiteBase::Shutdown();
+
+#if defined(OS_ANDROID) && defined(USE_MOJO)
+    ShutdownMojo();
+#endif
+  }
+
 #if defined(OS_ANDROID)
-  scoped_ptr<ShellContentClient> content_client_;	
+  scoped_ptr<ShellContentClient> content_client_;
   scoped_ptr<ShellContentBrowserClient> browser_content_client_;
 #endif
 

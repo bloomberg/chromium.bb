@@ -914,7 +914,6 @@
           'type': 'static_library',
           'dependencies': [
             'content_shell_lib',
-            'content.gyp:content_browser',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
           ],
@@ -925,6 +924,17 @@
             'public/test/content_browser_test_utils.cc',
             'public/test/content_browser_test_utils.h',
             'public/test/content_browser_test_utils_mac.mm',
+          ],
+          'conditions': [
+            ['use_mojo==1 and OS=="android"', {
+              'dependencies': [
+                'content.gyp:content_app_both',
+              ],
+            }, {
+              'dependencies': [
+                'content.gyp:content_browser',
+              ],
+            }],
           ],
         },
         {
