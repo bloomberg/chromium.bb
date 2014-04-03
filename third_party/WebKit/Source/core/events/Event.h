@@ -172,7 +172,7 @@ public:
     void setCancelBubble(bool cancel) { m_cancelBubble = cancel; }
 
     Event* underlyingEvent() const { return m_underlyingEvent.get(); }
-    void setUnderlyingEvent(PassRefPtr<Event>);
+    void setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event>);
 
     EventPath& eventPath() { ASSERT(m_eventPath); return *m_eventPath; }
     EventPath& ensureEventPath();
@@ -206,7 +206,7 @@ private:
     EventTarget* m_currentTarget;
     RefPtr<EventTarget> m_target;
     DOMTimeStamp m_createTime;
-    RefPtr<Event> m_underlyingEvent;
+    RefPtrWillBeMember<Event> m_underlyingEvent;
     OwnPtr<EventPath> m_eventPath;
 };
 

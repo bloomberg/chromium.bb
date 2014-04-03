@@ -232,7 +232,7 @@ Document* SVGElementInstance::ownerDocument() const
     return m_element ? m_element->ownerDocument() : 0;
 }
 
-bool SVGElementInstance::dispatchEvent(PassRefPtr<Event> event)
+bool SVGElementInstance::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     SVGElement* element = shadowTreeElement();
     if (!element)

@@ -179,7 +179,7 @@ private:
 
     void requestAutocompleteTimerFired(Timer<HTMLFormElement>*);
 
-    Vector<RefPtr<Event> > m_pendingAutocompleteEvents;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_pendingAutocompleteEvents;
     Timer<HTMLFormElement> m_requestAutocompleteTimer;
 };
 

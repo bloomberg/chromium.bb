@@ -82,7 +82,7 @@ public:
     double timerAlignmentInterval() const;
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(PassRefPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
+    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, PassRefPtr<ScriptCallStack>, AccessControlStatus);
 
     void addConsoleMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber);
     void addConsoleMessage(MessageSource, MessageLevel, const String& message, ScriptState* = 0);
@@ -131,7 +131,7 @@ protected:
 private:
     friend class DOMTimer; // For installNewTimeout() and removeTimeoutByID() below.
 
-    bool dispatchErrorEvent(PassRefPtr<ErrorEvent>, AccessControlStatus);
+    bool dispatchErrorEvent(PassRefPtrWillBeRawPtr<ErrorEvent>, AccessControlStatus);
 
     virtual void refExecutionContext() = 0;
     virtual void derefExecutionContext() = 0;

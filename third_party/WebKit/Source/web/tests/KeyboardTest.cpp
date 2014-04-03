@@ -58,7 +58,7 @@ public:
     {
         PlatformKeyboardEventBuilder evt(webKeyboardEvent);
         evt.setKeyType(keyType);
-        RefPtr<KeyboardEvent> keyboardEvent = KeyboardEvent::create(evt, 0);
+        RefPtrWillBeRawPtr<KeyboardEvent> keyboardEvent = KeyboardEvent::create(evt, 0);
         OwnPtr<Settings> settings = Settings::create();
         EditingBehavior behavior(settings->editingBehaviorType());
         return behavior.interpretKeyEvent(*keyboardEvent);

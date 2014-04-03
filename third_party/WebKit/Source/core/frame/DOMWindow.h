@@ -231,7 +231,7 @@ enum PageshowEventPersistence {
 
         void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, DOMWindow* source, ExceptionState&);
         void postMessageTimerFired(PassOwnPtr<PostMessageTimer>);
-        void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtr<Event>, PassRefPtr<ScriptCallStack>);
+        void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtr<ScriptCallStack>);
 
         void scrollBy(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
         void scrollTo(int x, int y, const Dictionary& scrollOptions, ExceptionState&) const;
@@ -257,7 +257,7 @@ enum PageshowEventPersistence {
         virtual void removeAllEventListeners() OVERRIDE;
 
         using EventTarget::dispatchEvent;
-        bool dispatchEvent(PassRefPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget);
+        bool dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget);
 
         void dispatchLoadEvent();
 
@@ -314,8 +314,8 @@ enum PageshowEventPersistence {
         PassOwnPtr<LifecycleNotifier<DOMWindow> > createLifecycleNotifier();
 
         EventQueue* eventQueue() const;
-        void enqueueWindowEvent(PassRefPtr<Event>);
-        void enqueueDocumentEvent(PassRefPtr<Event>);
+        void enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event>);
+        void enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event>);
         void enqueuePageshowEvent(PageshowEventPersistence);
         void enqueueHashchangeEvent(const String& oldURL, const String& newURL);
         void enqueuePopstateEvent(PassRefPtr<SerializedScriptValue>);

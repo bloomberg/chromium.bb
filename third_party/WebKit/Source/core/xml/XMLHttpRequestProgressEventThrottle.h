@@ -27,6 +27,7 @@
 #ifndef XMLHttpRequestProgressEventThrottle_h
 #define XMLHttpRequestProgressEventThrottle_h
 
+#include "heap/Handle.h"
 #include "platform/Timer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
@@ -51,8 +52,8 @@ public:
     virtual ~XMLHttpRequestProgressEventThrottle();
 
     void dispatchProgressEvent(bool lengthComputable, unsigned long long loaded, unsigned long long total);
-    void dispatchReadyStateChangeEvent(PassRefPtr<Event>, ProgressEventAction = DoNotFlushProgressEvent);
-    void dispatchEvent(PassRefPtr<Event>);
+    void dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event>, ProgressEventAction = DoNotFlushProgressEvent);
+    void dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
 
     void suspend();
@@ -76,8 +77,8 @@ private:
     unsigned long long m_total;
 
     bool m_deferEvents;
-    RefPtr<Event> m_deferredProgressEvent;
-    Vector<RefPtr<Event> > m_deferredEvents;
+    RefPtrWillBePersistent<Event> m_deferredProgressEvent;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_deferredEvents;
     Timer<XMLHttpRequestProgressEventThrottle> m_dispatchDeferredEventsTimer;
 };
 

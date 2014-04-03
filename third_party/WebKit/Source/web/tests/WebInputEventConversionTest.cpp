@@ -249,7 +249,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     // which expect CSS pixel coordinates.
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), LeftButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
-        RefPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
+        RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, docRenderer, *mouseEvent);
 
         EXPECT_EQ(10, webMouseBuilder.x);
@@ -262,14 +262,14 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
 
     {
         PlatformMouseEvent platformMouseEvent(IntPoint(10, 10), IntPoint(10, 10), NoButton, PlatformEvent::MouseMoved, 1, false, false, false, false, 0);
-        RefPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
+        RefPtrWillBeRawPtr<MouseEvent> mouseEvent = MouseEvent::create(WebCore::EventTypeNames::mousemove, domWindow, platformMouseEvent, 0, document);
         WebMouseEventBuilder webMouseBuilder(view, docRenderer, *mouseEvent);
         EXPECT_EQ(WebMouseEvent::ButtonNone, webMouseBuilder.button);
     }
 
     {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 10), IntPoint(10, 10), IntSize(10, 10), 0, false, false, false, false, 10, 10, 10, 10);
-        RefPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
+        RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(domWindow, platformGestureEvent);
         WebGestureEventBuilder webGestureBuilder(view, docRenderer, *gestureEvent);
 
         EXPECT_EQ(10, webGestureBuilder.x);
@@ -284,7 +284,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         RefPtrWillBeRawPtr<Touch> touch = Touch::create(webViewImpl->page()->mainFrame(), document.get(), 0, 10, 10, 10, 10, 10, 10, 0, 0);
         RefPtrWillBeRawPtr<TouchList> touchList = TouchList::create();
         touchList->append(touch);
-        RefPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventTypeNames::touchmove, domWindow, 10, 10, 10, 10, false, false, false, false);
+        RefPtrWillBeRawPtr<TouchEvent> touchEvent = TouchEvent::create(touchList.get(), touchList.get(), touchList.get(), WebCore::EventTypeNames::touchmove, domWindow, 10, 10, 10, 10, false, false, false, false);
 
         WebTouchEventBuilder webTouchBuilder(view, docRenderer, *touchEvent);
         ASSERT_EQ(1u, webTouchBuilder.touchesLength);

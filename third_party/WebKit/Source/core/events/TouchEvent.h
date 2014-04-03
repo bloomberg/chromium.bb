@@ -87,10 +87,10 @@ private:
 
 class TouchEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<TouchEventDispatchMediator> create(PassRefPtr<TouchEvent>);
+    static PassRefPtr<TouchEventDispatchMediator> create(PassRefPtrWillBeRawPtr<TouchEvent>);
 
 private:
-    explicit TouchEventDispatchMediator(PassRefPtr<TouchEvent>);
+    explicit TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<TouchEvent>);
     TouchEvent* event() const;
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };

@@ -407,8 +407,8 @@ void FontFaceSet::fireDoneEventIfPossible()
         return;
 
     if (hasLoadedFonts()) {
-        RefPtr<CSSFontFaceLoadEvent> doneEvent;
-        RefPtr<CSSFontFaceLoadEvent> errorEvent;
+        RefPtrWillBeRawPtr<CSSFontFaceLoadEvent> doneEvent;
+        RefPtrWillBeRawPtr<CSSFontFaceLoadEvent> errorEvent;
         doneEvent = CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loadingdone, m_loadedFonts);
         m_loadedFonts.clear();
         if (!m_failedFonts.isEmpty()) {

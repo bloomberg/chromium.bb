@@ -221,12 +221,12 @@ void KeyboardEvent::trace(Visitor* visitor)
     UIEventWithKeyState::trace(visitor);
 }
 
-PassRefPtr<KeyboardEventDispatchMediator> KeyboardEventDispatchMediator::create(PassRefPtr<KeyboardEvent> event)
+PassRefPtr<KeyboardEventDispatchMediator> KeyboardEventDispatchMediator::create(PassRefPtrWillBeRawPtr<KeyboardEvent> event)
 {
     return adoptRef(new KeyboardEventDispatchMediator(event));
 }
 
-KeyboardEventDispatchMediator::KeyboardEventDispatchMediator(PassRefPtr<KeyboardEvent> event)
+KeyboardEventDispatchMediator::KeyboardEventDispatchMediator(PassRefPtrWillBeRawPtr<KeyboardEvent> event)
     : EventDispatchMediator(event)
 {
 }

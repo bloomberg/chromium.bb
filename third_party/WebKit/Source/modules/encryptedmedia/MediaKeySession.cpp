@@ -185,7 +185,7 @@ void MediaKeySession::message(const unsigned char* message, size_t messageLength
     init.message = Uint8Array::create(message, messageLength);
     init.destinationURL = destinationURL.string();
 
-    RefPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::message, init);
+    RefPtrWillBeRawPtr<MediaKeyMessageEvent> event = MediaKeyMessageEvent::create(EventTypeNames::message, init);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
@@ -194,7 +194,7 @@ void MediaKeySession::ready()
 {
     WTF_LOG(Media, "MediaKeySession::ready");
 
-    RefPtr<Event> event = Event::create(EventTypeNames::ready);
+    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::ready);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }
@@ -203,7 +203,7 @@ void MediaKeySession::close()
 {
     WTF_LOG(Media, "MediaKeySession::close");
 
-    RefPtr<Event> event = Event::create(EventTypeNames::close);
+    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::close);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 
@@ -234,7 +234,7 @@ void MediaKeySession::error(MediaKeyErrorCode errorCode, unsigned long systemCod
     m_error = MediaKeyError::create(mediaKeyErrorCode, systemCode);
 
     // 3. queue a task to fire a simple event named keyerror at the MediaKeySession object.
-    RefPtr<Event> event = Event::create(EventTypeNames::error);
+    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::error);
     event->setTarget(this);
     m_asyncEventQueue->enqueueEvent(event.release());
 }

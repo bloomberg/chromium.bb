@@ -85,7 +85,7 @@ public:
 
     // EventTarget interface.
     virtual ExecutionContext* executionContext() const OVERRIDE FINAL { return ActiveDOMObject::executionContext(); }
-    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE FINAL;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE FINAL;
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
     // ActiveDOMObject interface.

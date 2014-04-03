@@ -55,7 +55,7 @@ public:
         return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent(type, initializer));
     }
 
-    static PassRefPtr<CSSFontFaceLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
+    static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
     {
         return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent(type, fontfaces));
     }

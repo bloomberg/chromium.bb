@@ -72,7 +72,7 @@ bool DeviceMotionController::hasLastData()
     return DeviceMotionDispatcher::instance().latestDeviceMotionData();
 }
 
-PassRefPtr<Event> DeviceMotionController::getLastEvent()
+PassRefPtrWillBeRawPtr<Event> DeviceMotionController::getLastEvent()
 {
     return DeviceMotionEvent::create(EventTypeNames::devicemotion, DeviceMotionDispatcher::instance().latestDeviceMotionData());
 }

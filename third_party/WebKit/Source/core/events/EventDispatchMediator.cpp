@@ -36,12 +36,12 @@
 
 namespace WebCore {
 
-PassRefPtr<EventDispatchMediator> EventDispatchMediator::create(PassRefPtr<Event> event)
+PassRefPtr<EventDispatchMediator> EventDispatchMediator::create(PassRefPtrWillBeRawPtr<Event> event)
 {
     return adoptRef(new EventDispatchMediator(event));
 }
 
-EventDispatchMediator::EventDispatchMediator(PassRefPtr<Event> event)
+EventDispatchMediator::EventDispatchMediator(PassRefPtrWillBeRawPtr<Event> event)
     : m_event(event)
 {
 }

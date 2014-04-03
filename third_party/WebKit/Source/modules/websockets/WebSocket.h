@@ -125,6 +125,7 @@ public:
     virtual void didClose(unsigned long unhandledBufferedAmount, ClosingHandshakeCompletionStatus, unsigned short code, const String& reason) OVERRIDE;
 
 private:
+    // FIXME: This should inherit WebCore::EventQueue.
     class EventQueue FINAL : public RefCounted<EventQueue> {
     public:
         static PassRefPtr<EventQueue> create(EventTarget* target) { return adoptRef(new EventQueue(target)); }
@@ -133,7 +134,7 @@ private:
         // Dispatches the event if this queue is active.
         // Queues the event if this queue is suspended.
         // Does nothing otherwise.
-        void dispatch(PassRefPtr<Event> /* event */);
+        void dispatch(PassRefPtrWillBeRawPtr<Event> /* event */);
 
         bool isEmpty() const;
 
@@ -157,7 +158,8 @@ private:
 
         State m_state;
         EventTarget* m_target;
-        Deque<RefPtr<Event> > m_events;
+        // FIXME: oilpan: This should be HeapDeque once it's implemented.
+        Deque<RefPtrWillBePersistent<Event> > m_events;
         Timer<EventQueue> m_resumeTimer;
     };
 

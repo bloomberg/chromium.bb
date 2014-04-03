@@ -75,7 +75,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchProgressEvent(bool lengthCompu
     m_total = total;
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtr<Event> event, ProgressEventAction progressEventAction)
+void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefPtrWillBeRawPtr<Event> event, ProgressEventAction progressEventAction)
 {
     if (progressEventAction == FlushProgressEvent || progressEventAction == FlushDeferredProgressEvent) {
         if (!flushDeferredProgressEvent() && progressEventAction == FlushProgressEvent)
@@ -85,7 +85,7 @@ void XMLHttpRequestProgressEventThrottle::dispatchReadyStateChangeEvent(PassRefP
     dispatchEvent(event);
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtr<Event> event)
+void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     ASSERT(event);
     if (m_deferEvents) {
@@ -122,7 +122,7 @@ void XMLHttpRequestProgressEventThrottle::deliverProgressEvent()
     if (!hasEventToDispatch())
         return;
 
-    PassRefPtr<Event> event = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
+    RefPtrWillBeRawPtr<Event> event = XMLHttpRequestProgressEvent::create(EventTypeNames::progress, m_lengthComputable, m_loaded, m_total);
     m_loaded = 0;
     m_total = 0;
 
@@ -139,14 +139,14 @@ void XMLHttpRequestProgressEventThrottle::dispatchDeferredEvents(Timer<XMLHttpRe
     m_deferEvents = false;
 
     // Take over the deferred events before dispatching them which can potentially add more.
-    Vector<RefPtr<Event> > deferredEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > deferredEvents;
     m_deferredEvents.swap(deferredEvents);
 
-    RefPtr<Event> deferredProgressEvent = m_deferredProgressEvent;
+    RefPtrWillBeRawPtr<Event> deferredProgressEvent = m_deferredProgressEvent;
     m_deferredProgressEvent = nullptr;
 
-    Vector<RefPtr<Event> >::const_iterator it = deferredEvents.begin();
-    const Vector<RefPtr<Event> >::const_iterator end = deferredEvents.end();
+    WillBeHeapVector<RefPtrWillBeMember<Event> >::const_iterator it = deferredEvents.begin();
+    const WillBeHeapVector<RefPtrWillBeMember<Event> >::const_iterator end = deferredEvents.end();
     for (; it != end; ++it)
         dispatchEvent(*it);
 

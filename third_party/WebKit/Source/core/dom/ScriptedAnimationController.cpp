@@ -100,7 +100,7 @@ void ScriptedAnimationController::cancelCallback(CallbackId id)
 
 void ScriptedAnimationController::dispatchEvents()
 {
-    Vector<RefPtr<Event> > events;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > events;
     events.swap(m_eventQueue);
     m_perFrameEvents.clear();
 
@@ -161,13 +161,13 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
     scheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueueEvent(PassRefPtr<Event> event)
+void ScriptedAnimationController::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     m_eventQueue.append(event);
     scheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::enqueuePerFrameEvent(PassRefPtr<Event> event)
+void ScriptedAnimationController::enqueuePerFrameEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     if (!m_perFrameEvents.add(eventTargetKey(event.get())).isNewEntry)
         return;

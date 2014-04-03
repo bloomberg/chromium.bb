@@ -124,7 +124,7 @@ void SpeechRecognition::didReceiveNoMatch(PassRefPtrWillBeRawPtr<SpeechRecogniti
     dispatchEvent(SpeechRecognitionEvent::createNoMatch(result));
 }
 
-void SpeechRecognition::didReceiveError(PassRefPtr<SpeechRecognitionError> error)
+void SpeechRecognition::didReceiveError(PassRefPtrWillBeRawPtr<SpeechRecognitionError> error)
 {
     dispatchEvent(error);
     m_started = false;

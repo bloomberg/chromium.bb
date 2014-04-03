@@ -47,7 +47,7 @@ public:
     virtual ~DOMWindowEventQueue();
 
     // EventQueue
-    virtual bool enqueueEvent(PassRefPtr<Event>) OVERRIDE;
+    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
     virtual bool cancelEvent(Event*) OVERRIDE;
     virtual void close() OVERRIDE;
 
@@ -55,10 +55,11 @@ private:
     explicit DOMWindowEventQueue(ExecutionContext*);
 
     void pendingEventTimerFired();
-    void dispatchEvent(PassRefPtr<Event>);
+    void dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
 
     OwnPtr<DOMWindowEventQueueTimer> m_pendingEventTimer;
-    ListHashSet<RefPtr<Event>, 16> m_queuedEvents;
+    // FIXME: oilpan: This should be HeapListHashSet once it's implemented.
+    ListHashSet<RefPtrWillBePersistent<Event>, 16> m_queuedEvents;
     bool m_isClosed;
 
     friend class DOMWindowEventQueueTimer;

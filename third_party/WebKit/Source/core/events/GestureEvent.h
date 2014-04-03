@@ -57,13 +57,13 @@ private:
 
 class GestureEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<GestureEventDispatchMediator> create(PassRefPtr<GestureEvent> gestureEvent)
+    static PassRefPtr<GestureEventDispatchMediator> create(PassRefPtrWillBeRawPtr<GestureEvent> gestureEvent)
     {
         return adoptRef(new GestureEventDispatchMediator(gestureEvent));
     }
 
 private:
-    explicit GestureEventDispatchMediator(PassRefPtr<GestureEvent>);
+    explicit GestureEventDispatchMediator(PassRefPtrWillBeRawPtr<GestureEvent>);
 
     GestureEvent* event() const;
 

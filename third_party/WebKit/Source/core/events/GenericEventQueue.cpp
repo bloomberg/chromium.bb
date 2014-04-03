@@ -48,7 +48,7 @@ GenericEventQueue::~GenericEventQueue()
 {
 }
 
-bool GenericEventQueue::enqueueEvent(PassRefPtr<Event> event)
+bool GenericEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     if (m_isClosed)
         return false;
@@ -85,7 +85,7 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
     ASSERT(!m_timer.isActive());
     ASSERT(!m_pendingEvents.isEmpty());
 
-    Vector<RefPtr<Event> > pendingEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
     m_pendingEvents.swap(pendingEvents);
 
     RefPtr<EventTarget> protect(m_owner);

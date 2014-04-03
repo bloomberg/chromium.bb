@@ -98,7 +98,7 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
 
     // ActiveDOMObject
     virtual bool hasPendingActivity() const OVERRIDE;
@@ -107,7 +107,7 @@ public:
 private:
     IDBTransaction(ExecutionContext*, int64_t, const Vector<String>&, blink::WebIDBDatabase::TransactionMode, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata&);
 
-    void enqueueEvent(PassRefPtr<Event>);
+    void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 
     enum State {
         Inactive, // Created or started, but not in an event callback

@@ -599,7 +599,7 @@ void MediaController::scheduleEvent(const AtomicString& eventName)
 
 void MediaController::asyncEventTimerFired(Timer<MediaController>*)
 {
-    Vector<RefPtr<Event> > pendingEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
 
     m_pendingEvents.swap(pendingEvents);
     size_t count = pendingEvents.size();

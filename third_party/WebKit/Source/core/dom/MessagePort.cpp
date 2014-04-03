@@ -197,7 +197,7 @@ void MessagePort::dispatchMessages()
             return;
 
         OwnPtr<MessagePortArray> ports = MessagePort::entanglePorts(*executionContext(), channels.release());
-        RefPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
+        RefPtrWillBeRawPtr<Event> evt = MessageEvent::create(ports.release(), message.release());
 
         dispatchEvent(evt.release(), ASSERT_NO_EXCEPTION);
     }

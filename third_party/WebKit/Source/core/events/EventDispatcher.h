@@ -27,6 +27,7 @@
 #define EventDispatcher_h
 
 #include "core/dom/SimulatedClickOptions.h"
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -56,7 +57,7 @@ public:
     Event* event() const { return m_event.get(); }
 
 private:
-    EventDispatcher(Node*, PassRefPtr<Event>);
+    EventDispatcher(Node*, PassRefPtrWillBeRawPtr<Event>);
     const NodeEventContext* topNodeEventContext();
 
     EventDispatchContinuation dispatchEventPreProcess(void*& preDispatchEventHandlerResult);
@@ -66,7 +67,7 @@ private:
     void dispatchEventPostProcess(void* preDispatchEventHandlerResult);
 
     RefPtr<Node> m_node;
-    RefPtr<Event> m_event;
+    RefPtrWillBePersistent<Event> m_event;
     RefPtr<FrameView> m_view;
 #ifndef NDEBUG
     bool m_eventDispatched;
