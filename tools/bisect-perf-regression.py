@@ -1172,6 +1172,7 @@ class BisectPerformanceMetrics(object):
             git_revision = self.source_control.ResolveToRevision(
                 bleeding_edge_revision, 'v8_bleeding_edge', 1,
                 cwd=v8_bleeding_edge_dir)
+            return git_revision
           except IndexError, ValueError:
             pass
 
@@ -1181,12 +1182,12 @@ class BisectPerformanceMetrics(object):
               int(svn_revision) - 1, 'v8_bleeding_edge', -1,
               cwd=v8_bleeding_edge_dir)
 
-        if git_revision:
-          revision_info = self.source_control.QueryRevisionInfo(git_revision,
-              cwd=v8_bleeding_edge_dir)
+          if git_revision:
+            revision_info = self.source_control.QueryRevisionInfo(git_revision,
+                cwd=v8_bleeding_edge_dir)
 
-          if 'Prepare push to trunk' in revision_info['subject']:
-            return git_revision
+            if 'Prepare push to trunk' in revision_info['subject']:
+              return git_revision
     return None
 
   def _GetNearestV8BleedingEdgeFromTrunk(self, revision, search_forward=True):
