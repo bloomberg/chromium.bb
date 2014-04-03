@@ -267,7 +267,10 @@ class USBImager(object):
       A local path to the image.
     """
     static_dir = DEVSERVER_STATIC_DIR
-    osutils.SafeMakedirsNonRoot(static_dir)
+    try:
+      osutils.SafeMakedirsNonRoot(static_dir)
+    except OSError:
+      logging.error('Failed to create %s', static_dir)
 
     ds = ds_wrapper.DevServerWrapper(static_dir=static_dir)
     req = GenerateXbuddyRequestForImage(path)
@@ -382,7 +385,8 @@ class RemoteDeviceUpdater(object):
 
   def __init__(self, ssh_hostname, ssh_port, image_path, stateful_update=True,
                rootfs_update=True, clobber_stateful=False, reboot=True,
-               board=None, src_image=None, wipe=True, debug=False, yes=False):
+               board=None, src_image_to_delta=None, wipe=True, debug=False,
+               yes=False):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       cros_build_lib.Die('No update operation to perform. Use -h to see usage.')
@@ -392,7 +396,7 @@ class RemoteDeviceUpdater(object):
     self.ssh_port = ssh_port
     self.image_path = image_path
     self.board = board
-    self.src_image = src_image
+    self.src_image_to_delta = src_image_to_delta
     self.do_stateful_update = stateful_update
     self.do_rootfs_update = rootfs_update
     self.clobber_stateful = clobber_stateful
@@ -557,25 +561,28 @@ class RemoteDeviceUpdater(object):
                             follow_symlinks=True,
                             error_code_ok=True)
 
-  def GetUpdatePayloads(self, path, payload_dir, board=None, src_image=None,
-                        timeout=60 * 15):
+  def GetUpdatePayloads(self, path, payload_dir, board=None,
+                        src_image_to_delta=None, timeout=60 * 15):
     """Launch devserver to get the update payloads.
 
     Args:
       path: The image or xbuddy path.
       payload_dir: The directory to store the payloads.
       board: The default board to use when |path| is None.
-      src_image: Image used as the base to generate the delta payloads.
+      src_image_to_delta: Image used as the base to generate the delta payloads.
       timeout: Timeout for launching devserver (seconds).
     """
     static_dir = DEVSERVER_STATIC_DIR
     # SafeMakedirsNonroot has a side effect that 'chown' an existing
     # root-owned directory with a non-root user. This makes sure
     # we can write to static_dir later.
-    osutils.SafeMakedirsNonRoot(static_dir)
+    try:
+      osutils.SafeMakedirsNonRoot(static_dir)
+    except OSError:
+      logging.error('Failed to create %s', static_dir)
 
     ds = ds_wrapper.DevServerWrapper(
-        static_dir=static_dir, src_image=src_image, board=board)
+        static_dir=static_dir, src_image=src_image_to_delta, board=board)
     req = GenerateXbuddyRequestForUpdate(path, static_dir)
     logging.info('Starting local devserver to generate/serve payloads...')
     try:
@@ -690,7 +697,7 @@ class RemoteDeviceUpdater(object):
           payload_dir = self.tempdir
           self.GetUpdatePayloads(self.image_path, payload_dir,
                                  board=board,
-                                 src_image=self.src_image)
+                                 src_image_to_delta=self.src_image_to_delta)
 
         self._CheckPayloads(payload_dir)
 
@@ -818,6 +825,9 @@ When updating the device, there are certain constraints on the local image path:
         "can be: 'test', 'dev', 'base', or 'recovery'. Note any strings that "
         "do not map to a real file path will be converted to an xbuddy path "
         "i.e., latest, will map to xbuddy://latest.")
+    parser.add_argument(
+        '--clear-cache', default=False, action='store_true',
+        help='Clear the devserver cache. Default is not to clear.')
 
     update = parser.add_argument_group('Advanced device update options')
     update.add_argument(
@@ -843,9 +853,9 @@ When updating the device, there are certain constraints on the local image path:
         help='Do not update the rootfs partition on the device. '
         'Default is always update.')
     update.add_argument(
-        '--src-image', type='path',
+        '--src-image-to-delta', type='path',
         help='Local path to an image to be used as the base to generate '
-        'payloads.')
+        'delta payloads.')
     update.add_argument(
         '--clobber-stateful', action='store_true', default=False,
         help='Clobber stateful partition when performing update.')
@@ -885,8 +895,12 @@ When updating the device, there are certain constraints on the local image path:
   def Run(self):
     """Perfrom the cros flash command."""
     self.options.Freeze()
-    self._ParseDevice(self.options.device)
+    if self.options.clear_cache:
+      logging.info('Clearing the devserver cache...')
+      ds_wrapper.DevServerWrapper.WipePayloadCache(
+          static_dir=DEVSERVER_STATIC_DIR)
 
+    self._ParseDevice(self.options.device)
     try:
       if self.run_mode == self.SSH_MODE:
         logging.info('Preparing to update the remote device %s',
@@ -896,7 +910,7 @@ When updating the device, there are certain constraints on the local image path:
             self.ssh_port,
             self.options.image,
             board=self.options.board,
-            src_image=self.options.src_image,
+            src_image_to_delta=self.options.src_image_to_delta,
             rootfs_update=self.options.rootfs_update,
             stateful_update=self.options.stateful_update,
             clobber_stateful=self.options.clobber_stateful,
