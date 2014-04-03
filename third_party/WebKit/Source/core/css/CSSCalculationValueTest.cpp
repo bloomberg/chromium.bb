@@ -144,4 +144,47 @@ TEST(CSSCalculationValue, CreateExpressionNodeFromLengthFromExpressionNode)
         style.get());
 }
 
+TEST(CSSCalculationValue, RefCount)
+{
+    RefPtr<CalculationValue> calc = CalculationValue::create(adoptPtr(new CalcExpressionNumber(40)), ValueRangeAll);
+    Length lengthA(calc);
+    EXPECT_EQ(calc->refCount(), 2);
+
+    Length lengthB;
+    lengthB = lengthA;
+    EXPECT_EQ(calc->refCount(), 3);
+
+    Length lengthC(calc);
+    lengthC = lengthA;
+    EXPECT_EQ(calc->refCount(), 4);
+
+    Length lengthD(CalculationValue::create(adoptPtr(new CalcExpressionNumber(40)), ValueRangeAll));
+    lengthD = lengthA;
+    EXPECT_EQ(calc->refCount(), 5);
+}
+
+TEST(CSSCalculationValue, RefCountLeak)
+{
+    RefPtr<CalculationValue> calc = CalculationValue::create(adoptPtr(new CalcExpressionNumber(40)), ValueRangeAll);
+    Length lengthA(calc);
+
+    Length lengthB = lengthA;
+    for (int i = 0; i < 100; ++i)
+        lengthB = lengthA;
+    EXPECT_EQ(calc->refCount(), 3);
+
+    Length lengthC(lengthA);
+    for (int i = 0; i < 100; ++i)
+        lengthC = lengthA;
+    EXPECT_EQ(calc->refCount(), 4);
+
+    Length lengthD(calc);
+    for (int i = 0; i < 100; ++i)
+        lengthD = lengthA;
+    EXPECT_EQ(calc->refCount(), 5);
+
+    lengthD = Length();
+    EXPECT_EQ(calc->refCount(), 4);
+}
+
 }
