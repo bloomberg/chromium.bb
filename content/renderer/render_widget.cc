@@ -2832,7 +2832,6 @@ RenderWidget::CreateGraphicsContext3D() {
   attributes.noAutomaticFlushes = true;
   attributes.depth = false;
   attributes.stencil = false;
-  bool bind_generates_resources = false;
   bool lose_context_when_out_of_memory = true;
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
 #if defined(OS_ANDROID)
@@ -2863,7 +2862,6 @@ RenderWidget::CreateGraphicsContext3D() {
                                                 GetURLForGraphicsContext3D(),
                                                 gpu_channel_host.get(),
                                                 attributes,
-                                                bind_generates_resources,
                                                 lose_context_when_out_of_memory,
                                                 limits,
                                                 NULL));

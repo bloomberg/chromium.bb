@@ -148,6 +148,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
       GLint max_vertex_uniform_vectors;
       GLint num_compressed_texture_formats;
       GLint num_shader_binary_formats;
+      GLint bind_generates_resource_chromium;
     };
     IntState int_state;
 

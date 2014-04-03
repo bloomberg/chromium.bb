@@ -67,8 +67,8 @@ GLES2Implementation::GLStaticState::IntState::IntState()
       max_vertex_texture_image_units(0),
       max_vertex_uniform_vectors(0),
       num_compressed_texture_formats(0),
-      num_shader_binary_formats(0) {
-}
+      num_shader_binary_formats(0),
+      bind_generates_resource_chromium(0) {}
 
 GLES2Implementation::SingleThreadChecker::SingleThreadChecker(
     GLES2Implementation* gles2_implementation)
@@ -201,6 +201,16 @@ bool GLES2Implementation::Initialize(
       reserved_ids_[0],
       reserved_ids_[1]));
 
+  // GL_BIND_GENERATES_RESOURCE_CHROMIUM state must be the same
+  // on Client & Service.
+  if (static_state_.int_state.bind_generates_resource_chromium !=
+      (share_group_->bind_generates_resource() ? 1 : 0)) {
+    SetGLError(GL_INVALID_OPERATION,
+               "Initialize",
+               "Service bind_generates_resource mismatch.");
+    return false;
+  }
+
   return true;
 }
 
@@ -219,6 +229,7 @@ bool GLES2Implementation::QueryAndCacheStaticState() {
     GL_MAX_VERTEX_UNIFORM_VECTORS,
     GL_NUM_COMPRESSED_TEXTURE_FORMATS,
     GL_NUM_SHADER_BINARY_FORMATS,
+    GL_BIND_GENERATES_RESOURCE_CHROMIUM,
   };
 
   GetMultipleIntegervState integerv_state(

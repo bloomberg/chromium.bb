@@ -140,8 +140,14 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       total_gpu_memory_(0) {
   active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
   FastSetActiveURL(active_url_, active_url_hash_);
+
+  gpu::gles2::ContextCreationAttribHelper attrib_parser;
+  attrib_parser.Parse(requested_attribs_);
+
   if (share_group) {
     context_group_ = share_group->context_group_;
+    DCHECK(context_group_->bind_generates_resource() ==
+           attrib_parser.bind_generates_resource_);
   } else {
     context_group_ = new gpu::gles2::ContextGroup(
         mailbox_manager,
@@ -149,7 +155,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
         new GpuCommandBufferMemoryTracker(channel),
         channel_->gpu_channel_manager()->shader_translator_cache(),
         NULL,
-        true);
+        attrib_parser.bind_generates_resource_);
   }
 
   use_virtualized_gl_context_ |=

@@ -351,6 +351,10 @@ typedef void (GL_APIENTRYP PFNGLBLITFRAMEBUFFERCHROMIUMPROC) (GLint srcX0, GLint
 #endif
 #endif  /* GL_CHROMIUM_async_pixel_transfers */
 
+#ifndef GL_BIND_GENERATES_RESOURCE_CHROMIUM
+#define GL_BIND_GENERATES_RESOURCE_CHROMIUM 0x9244
+#endif
+
 /* GL_CHROMIUM_copy_texture */
 #ifndef GL_CHROMIUM_copy_texture
 #define GL_CHROMIUM_copy_texture 1

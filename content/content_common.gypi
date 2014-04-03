@@ -6,6 +6,7 @@
   'dependencies': [
     '../base/base.gyp:base',
     '../components/tracing.gyp:tracing',
+    '../gpu/command_buffer/command_buffer.gyp:gles2_utils',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../third_party/WebKit/public/blink_headers.gyp:blink_headers',

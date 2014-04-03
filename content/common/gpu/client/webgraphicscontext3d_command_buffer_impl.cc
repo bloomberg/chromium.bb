@@ -229,7 +229,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     const GURL& active_url,
     GpuChannelHost* host,
     const Attributes& attributes,
-    bool bind_generates_resources,
     bool lose_context_when_out_of_memory,
     const SharedMemoryLimits& limits,
     WebGraphicsContext3DCommandBufferImpl* share_context)
@@ -247,7 +246,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       weak_ptr_factory_(this),
       initialized_(false),
       gl_(NULL),
-      bind_generates_resources_(bind_generates_resources),
       lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       mem_limits_(limits),
       flush_id_(0) {
@@ -354,6 +352,8 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   attribs.push_back(attributes_.failIfMajorPerformanceCaveat ? 1 : 0);
   attribs.push_back(LOSE_CONTEXT_WHEN_OUT_OF_MEMORY);
   attribs.push_back(lose_context_when_out_of_memory_ ? 1 : 0);
+  attribs.push_back(BIND_GENERATES_RESOURCES);
+  attribs.push_back(0);
   attribs.push_back(NONE);
 
   // Create a proxy to a command buffer in the GPU process.
@@ -428,11 +428,12 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(bool onscreen) {
   DCHECK(host_.get());
 
   // Create the object exposing the OpenGL API.
+  bool bind_generates_resources = false;
   real_gl_.reset(
       new gpu::gles2::GLES2Implementation(gles2_helper_.get(),
                                           gles2_share_group,
                                           transfer_buffer_.get(),
-                                          bind_generates_resources_,
+                                          bind_generates_resources,
                                           lose_context_when_out_of_memory_,
                                           command_buffer_.get()));
   gl_ = real_gl_.get();
@@ -1206,13 +1207,11 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
   if (share_context && share_context->IsCommandBufferContextLost())
     return NULL;
 
-  bool bind_generates_resources = false;
   return new WebGraphicsContext3DCommandBufferImpl(
       0,
       active_url,
       host,
       attributes,
-      bind_generates_resources,
       lose_context_when_out_of_memory,
       limits,
       share_context);
