@@ -262,8 +262,8 @@ void NinjaBinaryTargetWriter::WriteLinkerFlags(
   if (!all_lib_dirs.empty()) {
     // Since we're passing these on the command line to the linker and not
     // to Ninja, we need to do shell escaping.
-    PathOutput lib_path_output(path_output_.current_dir(), ESCAPE_NINJA_SHELL,
-                               true);
+    PathOutput lib_path_output(
+        path_output_.current_dir(), ESCAPE_NINJA_SHELL, false);
     for (size_t i = 0; i < all_lib_dirs.size(); i++) {
       out_ << " " << tool.lib_dir_prefix;
       lib_path_output.WriteDir(out_, all_lib_dirs[i],

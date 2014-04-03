@@ -130,14 +130,13 @@ base::FilePath SourceDir::Resolve(const base::FilePath& source_root) const {
     } else {
       converted.assign(value_);
     }
-    ConvertPathToSystem(&converted);
     return base::FilePath(UTF8ToFilePath(converted));
   }
 
   // String the double-leading slash for source-relative paths.
   converted.assign(&value_[2], value_.size() - 2);
-  ConvertPathToSystem(&converted);
-  return source_root.Append(UTF8ToFilePath(converted));
+  return source_root.Append(UTF8ToFilePath(converted))
+      .NormalizePathSeparatorsTo('/');
 }
 
 void SourceDir::SwapValue(std::string* v) {

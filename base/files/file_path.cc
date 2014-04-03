@@ -1292,10 +1292,16 @@ void FilePath::StripTrailingSeparatorsInternal() {
 }
 
 FilePath FilePath::NormalizePathSeparators() const {
+  return NormalizePathSeparatorsTo(kSeparators[0]);
+}
+
+FilePath FilePath::NormalizePathSeparatorsTo(CharType separator) const {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
+  DCHECK_NE(kSeparators + kSeparatorsLength,
+            std::find(kSeparators, kSeparators + kSeparatorsLength, separator));
   StringType copy = path_;
-  for (size_t i = 1; i < kSeparatorsLength; ++i) {
-    std::replace(copy.begin(), copy.end(), kSeparators[i], kSeparators[0]);
+  for (size_t i = 0; i < kSeparatorsLength; ++i) {
+    std::replace(copy.begin(), copy.end(), kSeparators[i], separator);
   }
   return FilePath(copy);
 #else

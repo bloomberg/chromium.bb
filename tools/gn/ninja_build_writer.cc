@@ -30,7 +30,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   base::FilePath executable;
   PathService::Get(base::FILE_EXE, &executable);
 
-  CommandLine cmdline(executable);
+  CommandLine cmdline(executable.NormalizePathSeparatorsTo('/'));
   cmdline.AppendArg("gen");
   cmdline.AppendArg(build_settings->build_dir().value());
   cmdline.AppendSwitchPath("--root", build_settings->root_path());
@@ -76,7 +76,7 @@ NinjaBuildWriter::NinjaBuildWriter(
       default_toolchain_targets_(default_toolchain_targets),
       out_(out),
       dep_out_(dep_out),
-      path_output_(build_settings->build_dir(), ESCAPE_NINJA, true),
+      path_output_(build_settings->build_dir(), ESCAPE_NINJA, false),
       helper_(build_settings) {
 }
 

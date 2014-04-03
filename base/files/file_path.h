@@ -374,6 +374,10 @@ class BASE_EXPORT FilePath {
   // (if FILE_PATH_USES_WIN_SEPARATORS is true), or do nothing on POSIX systems.
   FilePath NormalizePathSeparators() const;
 
+  // Normalize all path separattors to given type on Windows
+  // (if FILE_PATH_USES_WIN_SEPARATORS is true), or do nothing on POSIX systems.
+  FilePath NormalizePathSeparatorsTo(CharType separator) const;
+
   // Compare two strings in the same way the file system does.
   // Note that these always ignore case, even on file systems that are case-
   // sensitive. If case-sensitive comparison is ever needed, add corresponding

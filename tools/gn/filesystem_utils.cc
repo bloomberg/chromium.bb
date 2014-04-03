@@ -562,12 +562,6 @@ void ConvertPathToSystem(std::string* path) {
 #endif
 }
 
-std::string PathToSystem(const std::string& path) {
-  std::string ret(path);
-  ConvertPathToSystem(&ret);
-  return ret;
-}
-
 std::string RebaseSourceAbsolutePath(const std::string& input,
                                      const SourceDir& dest_dir) {
   CHECK(input.size() >= 2 && input[0] == '/' && input[1] == '/')

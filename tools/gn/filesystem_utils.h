@@ -138,7 +138,6 @@ void NormalizePath(std::string* path);
 // Converts slashes to backslashes for Windows. Keeps the string unchanged
 // for other systems.
 void ConvertPathToSystem(std::string* path);
-std::string PathToSystem(const std::string& path);
 
 // Takes a source-absolute path (must begin with "//") and makes it relative
 // to the given directory, which also must be source-absolute.

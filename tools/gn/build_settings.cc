@@ -26,12 +26,12 @@ BuildSettings::~BuildSettings() {
 
 void BuildSettings::SetRootPath(const base::FilePath& r) {
   DCHECK(r.value()[r.value().size() - 1] != base::FilePath::kSeparators[0]);
-  root_path_ = r;
+  root_path_ = r.NormalizePathSeparatorsTo('/');
   root_path_utf8_ = FilePathToUTF8(root_path_);
 }
 
 void BuildSettings::SetSecondarySourcePath(const SourceDir& d) {
-  secondary_source_path_ = GetFullPath(d);
+  secondary_source_path_ = GetFullPath(d).NormalizePathSeparatorsTo('/');
 }
 
 void BuildSettings::SetBuildDir(const SourceDir& d) {
@@ -40,21 +40,21 @@ void BuildSettings::SetBuildDir(const SourceDir& d) {
 }
 
 base::FilePath BuildSettings::GetFullPath(const SourceFile& file) const {
-  return file.Resolve(root_path_);
+  return file.Resolve(root_path_).NormalizePathSeparatorsTo('/');
 }
 
 base::FilePath BuildSettings::GetFullPath(const SourceDir& dir) const {
-  return dir.Resolve(root_path_);
+  return dir.Resolve(root_path_).NormalizePathSeparatorsTo('/');
 }
 
 base::FilePath BuildSettings::GetFullPathSecondary(
     const SourceFile& file) const {
-  return file.Resolve(secondary_source_path_);
+  return file.Resolve(secondary_source_path_).NormalizePathSeparatorsTo('/');
 }
 
 base::FilePath BuildSettings::GetFullPathSecondary(
     const SourceDir& dir) const {
-  return dir.Resolve(secondary_source_path_);
+  return dir.Resolve(secondary_source_path_).NormalizePathSeparatorsTo('/');
 }
 
 void BuildSettings::ItemDefined(scoped_ptr<Item> item) const {

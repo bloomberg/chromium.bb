@@ -294,11 +294,9 @@ bool Setup::FillSourceDir(const CommandLine& cmdline) {
 }
 
 bool Setup::FillBuildDir(const std::string& build_dir) {
-  std::string normalized_build_dir = PathToSystem(build_dir);
-
   SourceDir resolved =
       SourceDirForCurrentDirectory(build_settings_.root_path()).
-          ResolveRelativeDir(normalized_build_dir);
+          ResolveRelativeDir(build_dir);
   if (resolved.is_null()) {
     Err(Location(), "Couldn't resolve build directory.",
         "The build directory supplied (\"" + build_dir + "\") was not valid.").
@@ -327,8 +325,8 @@ void Setup::FillPythonPath() {
         "just \"python.exe\"");
     python_path = "python.exe";
   }
-  build_settings_.set_python_path(
-      base::FilePath(base::UTF8ToUTF16(python_path)));
+  build_settings_.set_python_path(base::FilePath(base::UTF8ToUTF16(python_path))
+                                      .NormalizePathSeparatorsTo('/'));
 #else
   build_settings_.set_python_path(base::FilePath("python"));
 #endif

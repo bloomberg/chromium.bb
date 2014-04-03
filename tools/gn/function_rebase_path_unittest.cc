@@ -13,14 +13,11 @@ namespace {
 std::string RebaseOne(Scope* scope,
                       const char* input,
                       const char* to_dir,
-                      const char* from_dir,
-                      const char* sep = NULL) {
+                      const char* from_dir) {
   std::vector<Value> args;
   args.push_back(Value(NULL, input));
   args.push_back(Value(NULL, to_dir));
   args.push_back(Value(NULL, from_dir));
-  if (sep)
-    args.push_back(Value(NULL, sep));
 
   Err err;
   FunctionCallNode function;
@@ -60,21 +57,17 @@ TEST(RebasePath, Strings) {
   EXPECT_EQ("../foo", RebaseOne(scope, "//foo", "//foo", "//"));
 
   // Test slash conversion.
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", ".", "to_slash"));
-  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo\\bar", ".", ".", "to_slash"));
-#if defined(OS_WIN)
-  EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo/bar", ".", ".", "to_system"));
-  EXPECT_EQ("foo\\bar", RebaseOne(scope, "foo\\bar", ".", ".", "to_system"));
-#endif
+  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo/bar", ".", "."));
+  EXPECT_EQ("foo/bar", RebaseOne(scope, "foo\\bar", ".", "."));
 
   // Test system path output.
 #if defined(OS_WIN)
-  setup.build_settings()->SetRootPath(base::FilePath(L"C:\\source"));
-  EXPECT_EQ("C:\\source", RebaseOne(scope, ".", "", "//"));
-  EXPECT_EQ("C:\\source\\", RebaseOne(scope, "//", "", "//"));
-  EXPECT_EQ("C:\\source\\foo", RebaseOne(scope, "foo", "", "//"));
-  EXPECT_EQ("C:\\source\\foo\\", RebaseOne(scope, "foo/", "", "//"));
-  EXPECT_EQ("C:\\source\\tools\\gn\\foo", RebaseOne(scope, "foo", "", "."));
+  setup.build_settings()->SetRootPath(base::FilePath(L"C:/source"));
+  EXPECT_EQ("C:/source", RebaseOne(scope, ".", "", "//"));
+  EXPECT_EQ("C:/source/", RebaseOne(scope, "//", "", "//"));
+  EXPECT_EQ("C:/source/foo", RebaseOne(scope, "foo", "", "//"));
+  EXPECT_EQ("C:/source/foo/", RebaseOne(scope, "foo/", "", "//"));
+  EXPECT_EQ("C:/source/tools/gn/foo", RebaseOne(scope, "foo", "", "."));
 #else
   setup.build_settings()->SetRootPath(base::FilePath("/source"));
   EXPECT_EQ("/source", RebaseOne(scope, ".", "", "//"));

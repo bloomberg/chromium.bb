@@ -16,22 +16,6 @@ namespace functions {
 
 namespace {
 
-enum SeparatorConversion {
-  SEP_TO_SLASH,  // All slashes to forward.
-  SEP_TO_SYSTEM,  // Slashes to system ones.
-};
-
-// Does the specified path separator conversion in-place.
-void ConvertSlashes(std::string* str, SeparatorConversion mode) {
-#if defined(OS_WIN)
-  if (mode == SEP_TO_SYSTEM)
-    std::replace(str->begin(), str->end(), '/', '\\');
-  else
-#endif
-  if (mode == SEP_TO_SLASH)
-    std::replace(str->begin(), str->end(), '\\', '/');
-}
-
 // We want the output to match the input in terms of ending in a slash or not.
 // Through all the transformations, these can get added or removed in various
 // cases.
@@ -73,7 +57,6 @@ Value ConvertOnePath(const Scope* scope,
                      const SourceDir& from_dir,
                      const SourceDir& to_dir,
                      bool convert_to_system_absolute,
-                     SeparatorConversion separator_conversion,
                      Err* err) {
   Value result;  // Ensure return value optimization.
 
@@ -96,7 +79,6 @@ Value ConvertOnePath(const Scope* scope,
     result = Value(function, FilePathToUTF8(system_path));
     if (looks_like_dir)
       MakeSlashEndingMatchInput(string_value, &result.string_value());
-    ConvertPathToSystem(&result.string_value());
     return result;
   }
 
@@ -119,7 +101,6 @@ Value ConvertOnePath(const Scope* scope,
         to_dir);
   }
 
-  ConvertSlashes(&result.string_value(), separator_conversion);
   return result;
 }
 
@@ -133,8 +114,7 @@ const char kRebasePath_Help[] =
     "\n"
     "  converted = rebase_path(input,\n"
     "                          new_base = \"\",\n"
-    "                          current_base = \".\",\n"
-    "                          path_separators = \"to_slash\")\n"
+    "                          current_base = \".\")\n"
     "\n"
     "  Takes a string argument representing a file name, or a list of such\n"
     "  strings and converts it/them to be relative to a different base\n"
@@ -174,15 +154,6 @@ const char kRebasePath_Help[] =
     "      If this is not an absolute path, it will be treated as being\n"
     "      relative to the current build file. Use \".\" (the default) to\n"
     "      convert paths from the current BUILD-file's directory.\n"
-    "\n"
-    "  path_separators\n"
-    "      On Windows systems, indicates whether and how path separators\n"
-    "      should be converted as part of the transformation. It can be one\n"
-    "      of the following strings:\n"
-    "       - \"to_slash\" Normalize all types of slashes to forward slashes.\n"
-    "         This is the default if this argument is unspecified.\n"
-    "       - \"to_system\" Convert to the system path separators\n"
-    "         (backslashes on Windows).\n"
     "\n"
     "      On Posix systems there are no path separator transformations\n"
     "      applied. If the new_base is empty (specifying absolute output)\n"
@@ -239,10 +210,9 @@ Value RunRebasePath(Scope* scope,
   static const size_t kArgIndexInputs = 0;
   static const size_t kArgIndexDest = 1;
   static const size_t kArgIndexFrom = 2;
-  static const size_t kArgIndexPathConversion = 3;
 
   // Inputs.
-  if (args.size() < 1 || args.size() > 4) {
+  if (args.size() < 1 || args.size() > 3) {
     *err = Err(function->function(), "Wrong # of arguments for rebase_path.");
     return result;
   }
@@ -275,38 +245,9 @@ Value RunRebasePath(Scope* scope,
   }
 
   // Path conversion.
-  SeparatorConversion sep_conversion = SEP_TO_SLASH;
-  if (args.size() > kArgIndexPathConversion) {
-    if (convert_to_system_absolute) {
-      *err = Err(function, "Can't specify slash conversion.",
-          "You specified absolute system path output by using an empty string "
-          "for the destination directory on rebase_path(). In this case, you "
-          "can't specify slash conversion.");
-      return result;
-    }
-
-    if (!args[kArgIndexPathConversion].VerifyTypeIs(Value::STRING, err))
-      return result;
-    const std::string& sep_string =
-        args[kArgIndexPathConversion].string_value();
-    if (sep_string == "to_slash") {
-      sep_conversion = SEP_TO_SLASH;
-    } else if (sep_string == "to_system") {
-      sep_conversion = SEP_TO_SYSTEM;
-    } else {
-      *err = Err(args[kArgIndexPathConversion],
-          "Invalid path separator conversion mode.",
-          "I was expecting \"to_slash\" or \"to_system\" and\n"
-          "you gave me \"" + args[kArgIndexPathConversion].string_value() +
-          "\".");
-      return result;
-    }
-  }
-
   if (inputs.type() == Value::STRING) {
     return ConvertOnePath(scope, function, inputs,
-                          from_dir, to_dir, convert_to_system_absolute,
-                          sep_conversion, err);
+                          from_dir, to_dir, convert_to_system_absolute, err);
 
   } else if (inputs.type() == Value::LIST) {
     result = Value(function, Value::LIST);
@@ -315,8 +256,7 @@ Value RunRebasePath(Scope* scope,
     for (size_t i = 0; i < inputs.list_value().size(); i++) {
       result.list_value().push_back(
           ConvertOnePath(scope, function, inputs.list_value()[i],
-                         from_dir, to_dir, convert_to_system_absolute,
-                         sep_conversion, err));
+                         from_dir, to_dir, convert_to_system_absolute, err));
       if (err->has_error()) {
         result = Value();
         return result;

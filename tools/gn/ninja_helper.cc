@@ -25,7 +25,6 @@ NinjaHelper::NinjaHelper(const BuildSettings* build_settings)
     build_to_src_no_last_slash_.resize(build_to_src_no_last_slash_.size() - 1);
 
   build_to_src_system_no_last_slash_ = build_to_src_no_last_slash_;
-  ConvertPathToSystem(&build_to_src_system_no_last_slash_);
 }
 
 NinjaHelper::~NinjaHelper() {

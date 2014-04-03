@@ -30,7 +30,6 @@ std::string FormatSourceDir(const SourceDir& dir) {
     std::string buf = dir.value();
     if (buf.size() > 3 && buf[2] == ':') {
       buf.erase(buf.begin());  // Erase beginning slash.
-      ConvertPathToSystem(&buf);  // Convert to backslashes.
       return buf;
     }
   }
