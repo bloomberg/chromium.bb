@@ -243,34 +243,36 @@ void TabHelper::DidNavigateMainFrame(
   }
 #endif  // defined(ENABLE_EXTENSIONS)
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  ExtensionService* service = profile->GetExtensionService();
-  if (!service)
-    return;
+  content::BrowserContext* context = web_contents()->GetBrowserContext();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableStreamlinedHostedApps)) {
 #if !defined(OS_ANDROID)
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
     if (browser && browser->is_app()) {
-      SetExtensionApp(service->GetInstalledExtension(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())));
+      SetExtensionApp(registry->GetExtensionById(
+          web_app::GetExtensionIdFromApplicationName(browser->app_name()),
+          ExtensionRegistry::EVERYTHING));
     } else {
-      UpdateExtensionAppIcon(service->GetInstalledExtensionByUrl(params.url));
+      UpdateExtensionAppIcon(
+          enabled_extensions.GetExtensionOrAppByURL(params.url));
     }
 #endif
   } else {
-    UpdateExtensionAppIcon(service->GetInstalledExtensionByUrl(params.url));
+    UpdateExtensionAppIcon(
+        enabled_extensions.GetExtensionOrAppByURL(params.url));
   }
 
   if (details.is_in_page)
     return;
 
   ExtensionActionManager* extension_action_manager =
-      ExtensionActionManager::Get(profile);
-  for (ExtensionSet::const_iterator it = service->extensions()->begin();
-       it != service->extensions()->end(); ++it) {
+      ExtensionActionManager::Get(Profile::FromBrowserContext(context));
+  for (ExtensionSet::const_iterator it = enabled_extensions.begin();
+       it != enabled_extensions.end();
+       ++it) {
     ExtensionAction* browser_action =
         extension_action_manager->GetBrowserAction(*it->get());
     if (browser_action) {

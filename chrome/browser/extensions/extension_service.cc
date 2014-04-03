@@ -268,13 +268,9 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   return true;
 }
 
-const Extension* ExtensionService::GetInstalledExtensionByUrl(
-    const GURL& url) const {
-  return registry_->enabled_extensions().GetExtensionOrAppByURL(url);
-}
-
 const Extension* ExtensionService::GetInstalledApp(const GURL& url) const {
-  const Extension* extension = GetInstalledExtensionByUrl(url);
+  const Extension* extension =
+      registry_->enabled_extensions().GetExtensionOrAppByURL(url);
   return (extension && extension->is_app()) ? extension : NULL;
 }
 
