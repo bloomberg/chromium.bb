@@ -2694,7 +2694,7 @@
     # temporary target to keep cros compiling until it removes references to pyauto
     {
       'target_name': 'pyautolib',
-      'type': 'executable',
+      'type': 'none',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
