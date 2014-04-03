@@ -8,6 +8,8 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/app_banner_view"
         android:background="@drawable/card_background_default"
+        android:clickable="true"
+        android:focusableInTouchMode="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
     <!-- View showing the icon. -->
@@ -66,6 +68,7 @@
     <!-- Button that closes the banner. -->
     <ImageButton
             android:id="@+id/close_button"
+            android:contentDescription="@string/infobar_close"
             android:adjustViewBounds="true"
             android:src="@drawable/dismiss"
             android:background="@drawable/app_banner_button_close"

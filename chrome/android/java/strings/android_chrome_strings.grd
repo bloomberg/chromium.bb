@@ -293,6 +293,14 @@ You are signing in with a managed account and giving its administrator control o
         Open
       </message>
 
+      <!-- App banner accessibility strings, used for touch exploration -->
+      <message name="IDS_APP_BANNER_VIEW_ACCESSIBILITY" desc="Accessibililty text: Describes the banner content, including the app name and rating.">
+        Prompt to get app from the Google Play Store.  App name: <ph name="APP_NAME">%1$s<ex>Gmail</ex></ph>.  App average rating: <ph name="APP_RATING">%2$.1f<ex>4.2</ex></ph>.
+      </message>
+      <message name="IDS_APP_BANNER_INSTALL_ACCESSIBILITY" desc="Accessibility text: Indicates that clicking on the button will purchase the app or install it.">
+        Get app from the Google Play Store: <ph name="APP_ACTION">%s<ex>Install</ex></ph>
+      </message>
+
       <!-- DOM Distiller strings -->
       <message name="IDS_DISTILLATION_QUALITY_QUESTION" desc="Question to ask the user about whether the text from a web page was extracted correctly.">
         Was the text extracted correctly?

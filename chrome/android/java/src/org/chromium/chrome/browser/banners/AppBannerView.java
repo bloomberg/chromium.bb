@@ -242,12 +242,22 @@ public class AppBannerView extends SwipableOverlayView
         mTitleView.setText(mAppData.title());
         mIconView.setImageDrawable(mAppData.icon());
         mRatingView.initialize(mAppData.rating());
+        setAccessibilityInformation();
 
         // Determine how much the user can drag sideways before their touch is considered a scroll.
         mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
 
         // Set up the install button.
         updateButtonAppearance();
+    }
+
+    /**
+     * Creates a succinct description about the app being advertised.
+     */
+    private void setAccessibilityInformation() {
+        String bannerText = getContext().getString(
+                R.string.app_banner_view_accessibility, mAppData.title(), mAppData.rating());
+        setContentDescription(bannerText);
     }
 
     @Override
@@ -431,6 +441,8 @@ public class AppBannerView extends SwipableOverlayView
             fgColor = res.getColor(R.color.app_banner_install_button_fg);
             if (mInstallState == INSTALL_STATE_NOT_INSTALLED) {
                 text = mAppData.installButtonText();
+                mInstallButtonView.setContentDescription(
+                        getContext().getString(R.string.app_banner_install_accessibility, text));
             } else {
                 text = res.getString(R.string.app_banner_installing);
             }
