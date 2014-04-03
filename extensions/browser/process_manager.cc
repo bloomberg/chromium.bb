@@ -28,12 +28,14 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager_observer.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -58,11 +60,18 @@ namespace {
 
 std::string GetExtensionID(RenderViewHost* render_view_host) {
   // This works for both apps and extensions because the site has been
-  // normalized to the extension URL for apps.
-  if (!render_view_host->GetSiteInstance())
+  // normalized to the extension URL for hosted apps.
+  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
+  if (!site_instance)
     return std::string();
 
-  return render_view_host->GetSiteInstance()->GetSiteURL().host();
+  const GURL& site_url = site_instance->GetSiteURL();
+
+  if (!site_url.SchemeIs(kExtensionScheme) &&
+      !site_url.SchemeIs(content::kGuestScheme))
+    return std::string();
+
+  return site_url.host();
 }
 
 std::string GetExtensionIDFromFrame(
