@@ -13,6 +13,15 @@
 /* Use relative path so that irt_dev.h can be installed as a system header. */
 #include "irt.h"
 
+/*
+ * This header file is for IRT interfaces that are only available in
+ * Chromium behind a flag, or are not available in Chromium at all.
+ *
+ * For example, the filesystem interfaces and getpid() are only
+ * available when the env var NACL_DANGEROUS_ENABLE_FILE_ACCESS is
+ * set, which enables an unsafe debugging mode.
+ */
+
 struct dirent;
 struct stat;
 struct timeval;
@@ -102,6 +111,11 @@ struct nacl_irt_dev_filename {
 struct nacl_irt_dev_list_mappings {
   int (*list_mappings)(struct NaClMemMappingInfo *regions,
                        size_t count, size_t *result_count);
+};
+
+#define NACL_IRT_DEV_GETPID_v0_1 "nacl-irt-dev-getpid-0.1"
+struct nacl_irt_dev_getpid {
+  int (*getpid)(int *pid);
 };
 
 #if defined(__cplusplus)

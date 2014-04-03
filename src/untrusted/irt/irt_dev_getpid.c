@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
