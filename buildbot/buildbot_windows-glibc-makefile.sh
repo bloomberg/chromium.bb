@@ -109,7 +109,7 @@ else
   echo @@@BUILD_STEP archive_extract_package@@@
   python build/package_version/package_version.py archive \
       --archive-package=nacl_x86_glibc --extract \
-      tools/toolchain.tar.xz,toolchain/win_x86@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_win_x86.tar.xz
+      tools/toolchain.tar.bz2,toolchain/win_x86@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_win_x86.tar.xz
 
   echo @@@BUILD_STEP upload_package@@@
   python build/package_version/package_version.py --annotate \

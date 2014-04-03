@@ -99,9 +99,9 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   echo @@@BUILD_STEP upload_package@@@
   python ../build/package_version/package_version.py --annotate upload \
       --upload-package=nacl_x86_newlib --revision=${BUILDBOT_GOT_REVISION}
-
 fi
 
+cd ..
 if [[ ${PLATFORM} == win ]]; then
   # Explicitly call the depot tools version of Python to avoid cygwin issues.
   python.bat buildbot/buildbot_standard.py opt 64 newlib
