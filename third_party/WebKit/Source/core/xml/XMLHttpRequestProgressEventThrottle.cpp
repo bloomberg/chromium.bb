@@ -216,10 +216,4 @@ void XMLHttpRequestProgressEventThrottle::resume()
     m_dispatchDeferredEventsTimer.startOneShot(0, FROM_HERE);
 }
 
-void XMLHttpRequestProgressEventThrottle::trace(Visitor* visitor)
-{
-    visitor->trace(m_deferredProgressEvent);
-    visitor->trace(m_deferredEvents);
-}
-
 } // namespace WebCore

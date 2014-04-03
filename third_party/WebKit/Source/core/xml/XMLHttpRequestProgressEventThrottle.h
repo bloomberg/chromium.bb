@@ -47,7 +47,6 @@ enum ProgressEventAction {
 // This implements the XHR2 progress event dispatching: "dispatch a progress event called progress
 // about every 50ms or for every byte received, whichever is least frequent".
 class XMLHttpRequestProgressEventThrottle FINAL : public TimerBase {
-    DISALLOW_ALLOCATION();
 public:
     explicit XMLHttpRequestProgressEventThrottle(EventTarget*);
     virtual ~XMLHttpRequestProgressEventThrottle();
@@ -59,8 +58,6 @@ public:
 
     void suspend();
     void resume();
-
-    void trace(Visitor*);
 
 private:
     static const double minimumProgressEventDispatchingIntervalInSeconds;
@@ -80,8 +77,8 @@ private:
     unsigned long long m_total;
 
     bool m_deferEvents;
-    RefPtrWillBeMember<Event> m_deferredProgressEvent;
-    WillBeHeapVector<RefPtrWillBeMember<Event> > m_deferredEvents;
+    RefPtrWillBePersistent<Event> m_deferredProgressEvent;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_deferredEvents;
     Timer<XMLHttpRequestProgressEventThrottle> m_dispatchDeferredEventsTimer;
 };
 

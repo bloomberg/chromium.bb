@@ -435,7 +435,7 @@ void HTMLFormElement::requestAutocomplete()
 
 void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 {
-    RefPtrWillBeRawPtr<Event> event = nullptr;
+    RefPtrWillBeRawPtr<Event> event;
     if (result == AutocompleteResultSuccess)
         event = Event::create(EventTypeNames::autocomplete);
     else if (result == AutocompleteResultErrorDisabled)
