@@ -92,7 +92,8 @@ EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
 }
 
 EmbeddedWorkerContextClient::~EmbeddedWorkerContextClient() {
-  DCHECK(g_worker_client_tls.Pointer()->Get() != NULL);
+  // g_worker_client_tls.Pointer()->Get() could be NULL if this gets
+  // deleted before workerContextStarted() is called.
   g_worker_client_tls.Pointer()->Set(NULL);
 }
 
