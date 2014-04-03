@@ -68,7 +68,7 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     controller_.reset([[ProfileChooserController alloc]
         initWithBrowser:browser()
              anchoredAt:point
-               withMode:PROFILE_CHOOSER_VIEW]);
+               withMode:BUBBLE_VIEW_MODE_PROFILE_CHOOSER]);
     [controller_ showWindow:nil];
   }
 
@@ -248,7 +248,7 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
       UpdateCredentials(kSecondaryEmail, kLoginToken);
 
   StartProfileChooserController();
-  [controller() initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
+  [controller() initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 
   NSArray* subviews = [[[controller() window] contentView] subviews];
 
@@ -286,14 +286,14 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
 
   NSButton* genericAccount =
       static_cast<NSButton*>([accountsListSubviews objectAtIndex:0]);
-  EXPECT_EQ(@selector(removeAccount:), [genericAccount action]);
+  EXPECT_EQ(@selector(showAccountRemovalView:), [genericAccount action]);
   EXPECT_EQ(controller(), [genericAccount target]);
 
-  // Primary accounts are always last and can't be deleted.
+  // Primary accounts are always last.
   NSButton* primaryAccount =
       static_cast<NSButton*>([accountsListSubviews objectAtIndex:1]);
-  EXPECT_EQ(nil, [primaryAccount action]);
-  EXPECT_EQ(nil, [primaryAccount target]);
+  EXPECT_EQ(@selector(showAccountRemovalView:), [primaryAccount action]);
+  EXPECT_EQ(controller(), [primaryAccount target]);
 
   // There should be another separator.
   EXPECT_TRUE([[subviews objectAtIndex:3] isKindOfClass:[NSBox class]]);

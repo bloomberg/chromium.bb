@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 #include <map>
+#include <string>
 
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -26,10 +27,16 @@ class WebContents;
  @public
   // Different views that can be displayed in the bubble.
   enum BubbleViewMode {
-    PROFILE_CHOOSER_VIEW,     // Shows a "fast profile switcher" view.
-    ACCOUNT_MANAGEMENT_VIEW,  // Shows a list of accounts for the active user.
-    GAIA_SIGNIN_VIEW,         // Shows a web view for primary sign in.
-    GAIA_ADD_ACCOUNT_VIEW     // Shows a web view for adding secondary accounts.
+    // Shows a "fast profile switcher" view.
+    BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
+    // Shows a list of accounts for the active user.
+    BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT,
+    // Shows a web view for primary sign in.
+    BUBBLE_VIEW_MODE_GAIA_SIGNIN,
+    // Shows a web view for adding secondary accounts.
+    BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
+    // Shows a view for confirming account removal.
+    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL
   };
 
  @private
@@ -42,6 +49,11 @@ class WebContents;
 
   // The browser that launched the bubble. Not owned.
   Browser* browser_;
+
+  // The id for the account that the user has requested to remove from the
+  // current profile. It is set in |showAccountRemovalView| and used in
+  // |removeAccountAndRelaunch|.
+  std::string accountIdToRemove_;
 
   // Active view mode.
   BubbleViewMode viewMode_;
@@ -89,8 +101,12 @@ class WebContents;
 // Adds an account to the active profile.
 - (IBAction)addAccount:(id)sender;
 
-// Deletes an account from the active profile.
-- (IBAction)removeAccount:(id)sender;
+// Shows the account removal view to confirm removing the currently selected
+// account from the active profile if possible.
+- (IBAction)showAccountRemovalView:(id)sender;
+
+// Removes the current account |accountIdToRemove_| and relaunches the browser.
+- (IBAction)removeAccountAndRelaunch:(id)sender;
 
 // Reset the WebContents used by the Gaia embedded view.
 - (void)cleanUpEmbeddedViewContents;

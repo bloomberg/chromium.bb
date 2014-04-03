@@ -124,8 +124,8 @@ class ProfileInfoUpdateObserver : public ProfileInfoCacheObserver {
   if (switches::IsNewProfileManagement()) {
     BubbleViewMode viewMode =
         mode == BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT ?
-        PROFILE_CHOOSER_VIEW :
-        ACCOUNT_MANAGEMENT_VIEW;
+        BUBBLE_VIEW_MODE_PROFILE_CHOOSER :
+        BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT;
     menuController_ =
         [[ProfileChooserController alloc] initWithBrowser:browser_
                                                anchoredAt:point

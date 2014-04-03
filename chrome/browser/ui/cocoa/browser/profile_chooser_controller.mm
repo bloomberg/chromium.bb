@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -77,12 +78,18 @@ const int kBezelThickness = 3;  // Width of the bezel on an NSButton.
 const int kImageTitleSpacing = 10;
 const int kBlueButtonHeight = 30;
 
-// Minimum size for embedded sign in pages as defined in Gaia.
-const CGFloat kMinGaiaViewWidth = 320;
-const CGFloat kMinGaiaViewHeight = 440;
+// Fixed size for embedded sign in pages as defined in Gaia.
+const CGFloat kFixedGaiaViewWidth = 360;
+const CGFloat kFixedGaiaViewHeight = 400;
+
+// Fixed size for the account removal view.
+const CGFloat kFixedAccountRemovalViewWidth = 280;
 
 // Maximum number of times to show the tutorial in the profile avatar bubble.
 const int kProfileAvatarTutorialShowMax = 5;
+
+// The tag number for the primary account.
+const int kPrimaryProfileTag = -1;
 
 gfx::Image CreateProfileImage(const gfx::Image& icon, int imageSize) {
   return profiles::GetSizedAvatarIconWithBorder(
@@ -107,6 +114,59 @@ NSString* ElideEmail(const std::string& email, CGFloat width) {
           ui::ResourceBundle::BaseFont),
       width);
   return base::SysUTF16ToNSString(elidedEmail);
+}
+
+// Builds  a label with the given |title| and anchored at |frame_origin|.
+NSTextField* BuildLabel(NSString* title, NSPoint frame_origin) {
+  base::scoped_nsobject<NSTextField> label(
+      [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [label setStringValue:title];
+  [label setEditable:NO];
+  [label setAlignment:NSLeftTextAlignment];
+  [label setBezeled:NO];
+  [label setFont:[NSFont labelFontOfSize:kTextFontSize]];
+  [label setFrameOrigin:frame_origin];
+  [label sizeToFit];
+
+  return label.autorelease();
+}
+
+// Builds a title card with one back button right aligned and one label center
+// aligned.
+NSView* BuildTitleCard(NSRect frame_rect,
+                       int message_id,
+                       id back_button_target,
+                       SEL back_button_action) {
+  base::scoped_nsobject<NSView> container(
+      [[NSView alloc] initWithFrame:frame_rect]);
+
+  base::scoped_nsobject<HoverImageButton> button(
+      [[HoverImageButton alloc] initWithFrame:frame_rect]);
+  [button setBordered:NO];
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  [button setDefaultImage:rb->GetNativeImageNamed(IDR_BACK).ToNSImage()];
+  [button setHoverImage:rb->GetNativeImageNamed(IDR_BACK_H).ToNSImage()];
+  [button setPressedImage:rb->GetNativeImageNamed(IDR_BACK_P).ToNSImage()];
+  [button setTarget:back_button_target];
+  [button setAction:back_button_action];
+  [button setFrameSize:NSMakeSize(kProfileButtonHeight, kProfileButtonHeight)];
+  [button setFrameOrigin:NSMakePoint(kHorizontalSpacing, 0)];
+
+  NSTextField* title_label =
+      BuildLabel(l10n_util::GetNSString(message_id), NSZeroPoint);
+  [title_label setAlignment:NSCenterTextAlignment];
+  [title_label setFont:[NSFont labelFontOfSize:kTitleFontSize]];
+  [title_label sizeToFit];
+  CGFloat x_offset = (frame_rect.size.width - NSWidth([title_label frame])) / 2;
+  [title_label setFrameOrigin:NSMakePoint(x_offset, 0)];
+
+  [container addSubview:button];
+  [container addSubview:title_label];
+  CGFloat height = std::max(NSMaxY([title_label frame]),
+                            NSMaxY([button frame])) + kSmallVerticalSpacing;
+  [container setFrameSize:NSMakeSize(NSWidth([container frame]), height)];
+
+  return container.autorelease();
 }
 
 }  // namespace
@@ -158,25 +218,27 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // which is started from the account management view. Refresh it to show the
     // update.
     BubbleViewMode viewMode = [controller_ viewMode];
-    if (viewMode == ACCOUNT_MANAGEMENT_VIEW ||
-        viewMode == GAIA_SIGNIN_VIEW ||
-        viewMode == GAIA_ADD_ACCOUNT_VIEW) {
-      [controller_ initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
+    if (viewMode == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT ||
+        viewMode == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
+        viewMode == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
+      [controller_
+          initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
     }
   }
 
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE {
     // Tokens can only be removed from the account management view. Refresh it
     // to show the update.
-    if ([controller_ viewMode] == ACCOUNT_MANAGEMENT_VIEW)
-      [controller_ initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
+    if ([controller_ viewMode] == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT)
+      [controller_
+          initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
   }
 
   // AvatarMenuObserver:
   virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE {
     // While the bubble is open, the avatar menu can only change from the
     // profile chooser view by modifying the current profile's photo or name.
-    [controller_ initMenuContentsWithView:PROFILE_CHOOSER_VIEW];
+    [controller_ initMenuContentsWithView:BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
   }
 
   // content::NotificationObserver:
@@ -501,7 +563,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 @end
 
-
 @interface ProfileChooserController ()
 // Creates a tutorial card for the profile |avatar_item| if needed.
 - (NSView*)createTutorialViewIfNeeded:(const AvatarMenu::Item&)item;
@@ -532,7 +593,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSView*)createAccountsListWithRect:(NSRect)rect;
 
 // Creates the Gaia sign-in/add account view.
-- (NSView*)createGaiaEmbeddedView;
+- (NSView*)buildGaiaEmbeddedView;
+
+// Creates the account removal view.
+- (NSView*)buildAccountRemovalView;
 
 // Creates a button with |text|, an icon given by |imageResourceId| and with
 // |action|. The icon |alternateImageResourceId| is displayed in the button's
@@ -549,14 +613,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                      frameOrigin:(NSPoint)frameOrigin
                           action:(SEL)action;
 
-// Creates an email account button with |title|. If |canBeDeleted| is YES, then
-// the button is clickable and has a remove icon.
+// Creates an email account button with |title| and a remove icon.
 - (NSButton*)accountButtonWithRect:(NSRect)rect
-                             title:(const std::string&)title
-                      canBeDeleted:(BOOL)canBeDeleted;
-
-- (NSTextField*)labelWithTitle:(NSString*)title
-                   frameOrigin:(NSPoint)frameOrigin;
+                             title:(const std::string&)title;
 
 @end
 
@@ -580,7 +639,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showAccountManagement:(id)sender {
-  [self initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
+  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
 }
 
 - (IBAction)lockProfile:(id)sender {
@@ -588,20 +647,36 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showSigninPage:(id)sender {
-  [self initMenuContentsWithView:GAIA_SIGNIN_VIEW];
+  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_GAIA_SIGNIN];
 }
 
 - (IBAction)addAccount:(id)sender {
-  [self initMenuContentsWithView:GAIA_ADD_ACCOUNT_VIEW];
+  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
 }
 
-- (IBAction)removeAccount:(id)sender {
+- (IBAction)showAccountRemovalView:(id)sender {
   DCHECK(!isGuestSession_);
-  DCHECK_GE([sender tag], 0);  // Should not be called for the primary account.
-  DCHECK(ContainsKey(currentProfileAccounts_, [sender tag]));
-  std::string account = currentProfileAccounts_[[sender tag]];
+
+  // Tag is either |kPrimaryProfileTag| for the primary account, or equal to the
+  // index in |currentProfileAccounts_| for a secondary account.
+  int tag = [sender tag];
+  if (tag == kPrimaryProfileTag) {
+    accountIdToRemove_ = SigninManagerFactory::GetForProfile(
+        browser_->profile())->GetAuthenticatedUsername();
+  } else {
+    DCHECK(ContainsKey(currentProfileAccounts_, tag));
+    accountIdToRemove_ = currentProfileAccounts_[tag];
+  }
+
+  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL];
+}
+
+- (IBAction)removeAccountAndRelaunch:(id)sender {
+  DCHECK(!accountIdToRemove_.empty());
   ProfileOAuth2TokenServiceFactory::GetPlatformSpecificForProfile(
-      browser_->profile())->RevokeCredentials(account);
+      browser_->profile())->RevokeCredentials(accountIdToRemove_);
+  accountIdToRemove_.clear();
+  chrome::AttemptRestart();
 }
 
 - (IBAction)openTutorialLearnMoreURL:(id)sender {
@@ -620,7 +695,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // indeed shown for the maximum number of times.
   browser_->profile()->GetPrefs()->SetInteger(
       prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax + 1);
-  [self initMenuContentsWithView:PROFILE_CHOOSER_VIEW];
+  [self initMenuContentsWithView:BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (void)cleanUpEmbeddedViewContents {
@@ -670,10 +745,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   NSView* contentView = [[self window] contentView];
   [contentView setSubviews:[NSArray array]];
 
-  if (viewMode_ == GAIA_SIGNIN_VIEW || viewMode_ == GAIA_ADD_ACCOUNT_VIEW) {
-    [contentView addSubview:[self createGaiaEmbeddedView]];
+  if (viewMode_ == BUBBLE_VIEW_MODE_GAIA_SIGNIN ||
+      viewMode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT ||
+      viewMode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL) {
+    bool isRemovalView = viewMode_ == BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL;
+    NSView* subView = isRemovalView ?
+        [self buildAccountRemovalView] : [self buildGaiaEmbeddedView];
+    [contentView addSubview:subView];
     SetWindowSize([self window],
-                  NSMakeSize(kMinGaiaViewWidth, kMinGaiaViewHeight));
+        NSMakeSize(NSWidth([subView frame]), NSHeight([subView frame])));
     return;
   }
 
@@ -689,7 +769,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   for (int i = avatarMenu_->GetNumberOfItems() - 1; i >= 0; --i) {
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
-      if (viewMode_ == PROFILE_CHOOSER_VIEW)
+      if (viewMode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER)
         tutorialView = [self createTutorialViewIfNeeded:item];
       currentProfileView = [self createCurrentProfileView:item];
       enableLock = item.signed_in;
@@ -716,7 +796,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [contentView addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
-  if (viewToDisplay == PROFILE_CHOOSER_VIEW &&
+  if (viewToDisplay == BUBBLE_VIEW_MODE_PROFILE_CHOOSER &&
       switches::IsFastUserSwitching()) {
     // Other profiles switcher. The profiles have already been sorted
     // by their y-coordinate, so they can be added in the existing order.
@@ -732,7 +812,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // profile card and the bottom of the bubble.
     if ([otherProfiles.get() count] > 0)
       yOffset += kSmallVerticalSpacing;
-  } else if (viewToDisplay == ACCOUNT_MANAGEMENT_VIEW) {
+  } else if (viewToDisplay == BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT) {
     NSView* currentProfileAccountsView = [self createCurrentProfileAccountsView:
         NSMakeRect(kHorizontalSpacing,
                    yOffset,
@@ -820,9 +900,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Adds body content consisting of three bulleted lines.
   const int kTextHorizIndentation = 10;
   NSTextField* bulletLabel =
-      [self labelWithTitle:l10n_util::GetNSString(
-          IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT)
-               frameOrigin:NSMakePoint(kTextHorizIndentation, yOffset)];
+      BuildLabel(
+          l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT),
+          NSMakePoint(kTextHorizIndentation, yOffset));
   [bulletLabel setFrameSize:NSMakeSize(availableWidth,
       NSHeight([bulletLabel frame]))];
   [container addSubview:bulletLabel];
@@ -830,9 +910,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Adds body header.
   NSTextField* contentHeaderLabel =
-      [self labelWithTitle:l10n_util::GetNSString(
-          IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER)
-               frameOrigin:NSMakePoint(0, yOffset)];
+      BuildLabel(
+          l10n_util::GetNSString(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER),
+          NSMakePoint(0, yOffset));
   [contentHeaderLabel setFrameSize:NSMakeSize(availableWidth, 0)];
   [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
       contentHeaderLabel];
@@ -841,10 +921,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   // Adds title.
   NSTextField* titleLabel =
-      [self labelWithTitle:l10n_util::GetNSStringF(
-          IDS_PROFILES_SIGNIN_TUTORIAL_TITLE,
-          profiles::GetAvatarNameForProfile(profile))
-               frameOrigin:NSMakePoint(0, yOffset)];
+      BuildLabel(
+          l10n_util::GetNSStringF(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE,
+              profiles::GetAvatarNameForProfile(profile)),
+          NSMakePoint(0, yOffset));
   [titleLabel setFont:[NSFont labelFontOfSize:kTitleFontSize]];
   [[titleLabel cell] setTextColor:
       gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
@@ -874,7 +954,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
   CGFloat xOffset = NSMaxX([iconView frame]) + kHorizontalSpacing;
   CGFloat yOffset = kVerticalSpacing;
-  if (!isGuestSession_ && viewMode_ == PROFILE_CHOOSER_VIEW) {
+  if (!isGuestSession_ && viewMode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
     NSView* linksContainer =
         [self createCurrentProfileLinksForItem:item withXOffset:xOffset];
     [container addSubview:linksContainer];
@@ -1065,31 +1145,31 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     // Save the original email address, as the button text could be elided.
     currentProfileAccounts_[i] = accounts[i];
     NSButton* accountButton = [self accountButtonWithRect:rect
-                                                    title:accounts[i]
-                                             canBeDeleted:true];
+                                                    title:accounts[i]];
     [accountButton setTag:i];
     [container addSubview:accountButton];
     rect.origin.y = NSMaxY([accountButton frame]) + kSmallVerticalSpacing;
   }
 
-  // The primary account should always be listed first. It doesn't need a tag,
-  // as it cannot be removed.
-  // TODO(rogerta): we still need to further differentiate the primary account
-  // from the others in the UI, so more work is likely required here:
-  // crbug.com/311124.
+  // The primary account should always be listed first.
   NSButton* accountButton = [self accountButtonWithRect:rect
-                                                  title:primaryAccount
-                                           canBeDeleted:false];
+                                                  title:primaryAccount];
   [container addSubview:accountButton];
   [container setFrameSize:NSMakeSize(NSWidth([container frame]),
                                      NSMaxY([accountButton frame]))];
+  [accountButton setTag:kPrimaryProfileTag];
   return container.autorelease();
 }
 
-- (NSView*) createGaiaEmbeddedView {
-  signin::Source source = (viewMode_ == GAIA_SIGNIN_VIEW) ?
-      signin::SOURCE_AVATAR_BUBBLE_SIGN_IN :
-      signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
+- (NSView*)buildGaiaEmbeddedView {
+  base::scoped_nsobject<NSView> container(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  CGFloat yOffset = 0;
+
+  bool addSecondaryAccount = viewMode_ == BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT;
+  signin::Source source = addSecondaryAccount ?
+      signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT :
+      signin::SOURCE_AVATAR_BUBBLE_SIGN_IN;
 
   webContents_.reset(content::WebContents::Create(
       content::WebContents::CreateParams(browser_->profile())));
@@ -1100,8 +1180,88 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       content::PAGE_TRANSITION_AUTO_TOPLEVEL,
       std::string());
   NSView* webview = webContents_->GetView()->GetNativeView();
-  [webview setFrameSize:NSMakeSize(kMinGaiaViewWidth, kMinGaiaViewHeight)];
-  return webview;
+  [webview setFrameSize:NSMakeSize(kFixedGaiaViewWidth, kFixedGaiaViewHeight)];
+  [container addSubview:webview];
+  yOffset = NSMaxY([webview frame]);
+
+  // Adds the title card.
+  NSBox* separator = [self separatorWithFrame:
+      NSMakeRect(0, yOffset, kFixedGaiaViewWidth, 0)];
+  [container addSubview:separator];
+  yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;
+
+  NSView* titleView = BuildTitleCard(
+      NSMakeRect(0, yOffset, kFixedGaiaViewWidth,0),
+      addSecondaryAccount ? IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE :
+                            IDS_PROFILES_GAIA_SIGNIN_TITLE,
+      self /* backButtonTarget*/,
+      @selector(showAccountManagement:) /* backButtonAction */);
+  [container addSubview:titleView];
+  yOffset = NSMaxY([titleView frame]);
+
+  [container setFrameSize:NSMakeSize(kFixedGaiaViewWidth, yOffset)];
+  return container.autorelease();
+}
+
+- (NSView*)buildAccountRemovalView {
+  DCHECK(!accountIdToRemove_.empty());
+
+  base::scoped_nsobject<NSView> container(
+      [[NSView alloc] initWithFrame:NSZeroRect]);
+  CGFloat availableWidth =
+      kFixedAccountRemovalViewWidth - 2 * kHorizontalSpacing;
+  CGFloat yOffset = kVerticalSpacing;
+
+  const std::string& primaryAccount = SigninManagerFactory::GetForProfile(
+      browser_->profile())->GetAuthenticatedUsername();
+  bool isPrimaryAccount = primaryAccount == accountIdToRemove_;
+
+  // Adds "remove and relaunch" button at the bottom if needed.
+  if (!isPrimaryAccount) {
+    base::scoped_nsobject<NSButton> removeAndRelaunchButton(
+        [[BlueLabelButton alloc] initWithFrame:NSZeroRect]);
+    [removeAndRelaunchButton setTitle:l10n_util::GetNSString(
+        IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON)];
+    [removeAndRelaunchButton setTarget:self];
+    [removeAndRelaunchButton setAction:@selector(removeAccountAndRelaunch:)];
+    [removeAndRelaunchButton sizeToFit];
+    [removeAndRelaunchButton setAlignment:NSCenterTextAlignment];
+    CGFloat xOffset = (kFixedAccountRemovalViewWidth -
+        NSWidth([removeAndRelaunchButton frame])) / 2;
+    [removeAndRelaunchButton setFrameOrigin:NSMakePoint(xOffset, yOffset)];
+    [container addSubview:removeAndRelaunchButton];
+
+    yOffset = NSMaxY([removeAndRelaunchButton frame]) + kVerticalSpacing;
+  }
+
+  // Adds the main text.
+  NSString* contentStr = isPrimaryAccount ?
+      l10n_util::GetNSStringF(IDS_PROFILES_PRIMARY_ACCOUNT_REMOVAL_TEXT,
+                              base::UTF8ToUTF16(accountIdToRemove_)) :
+      l10n_util::GetNSString(IDS_PROFILES_ACCOUNT_REMOVAL_TEXT);
+  NSTextField* contentLabel =
+      BuildLabel(contentStr, NSMakePoint(kHorizontalSpacing, yOffset));
+  [contentLabel setFrameSize:NSMakeSize(availableWidth, 0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:contentLabel];
+  [container addSubview:contentLabel];
+  yOffset = NSMaxY([contentLabel frame]) + kVerticalSpacing;
+
+  // Adds the title card.
+  NSBox* separator = [self separatorWithFrame:
+      NSMakeRect(0, yOffset, kFixedAccountRemovalViewWidth, 0)];
+  [container addSubview:separator];
+  yOffset = NSMaxY([separator frame]) + kSmallVerticalSpacing;
+
+  NSView* titleView = BuildTitleCard(
+      NSMakeRect(0, yOffset, kFixedAccountRemovalViewWidth,0),
+      IDS_PROFILES_ACCOUNT_REMOVAL_TITLE,
+      self /* backButtonTarget*/,
+      @selector(showAccountManagement:) /* backButtonAction */);
+  [container addSubview:titleView];
+  yOffset = NSMaxY([titleView frame]);
+
+  [container setFrameSize:NSMakeSize(kFixedAccountRemovalViewWidth, yOffset)];
+  return container.autorelease();
 }
 
 - (NSButton*)hoverButtonWithRect:(NSRect)rect
@@ -1149,36 +1309,19 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (NSButton*)accountButtonWithRect:(NSRect)rect
-                             title:(const std::string&)title
-                      canBeDeleted:(BOOL)canBeDeleted {
+                             title:(const std::string&)title {
   base::scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:rect]);
   [button setTitle:ElideEmail(title, rect.size.width)];
   [button setAlignment:NSLeftTextAlignment];
   [button setBordered:NO];
 
-  if (canBeDeleted) {
-    [button setImage:ui::ResourceBundle::GetSharedInstance().
-        GetNativeImageNamed(IDR_CLOSE_1).ToNSImage()];
-    [button setImagePosition:NSImageRight];
-    [button setTarget:self];
-    [button setAction:@selector(removeAccount:)];
-  }
+  [button setImage:ui::ResourceBundle::GetSharedInstance().
+      GetNativeImageNamed(IDR_CLOSE_1).ToNSImage()];
+  [button setImagePosition:NSImageRight];
+  [button setTarget:self];
+  [button setAction:@selector(showAccountRemovalView:)];
 
   return button.autorelease();
 }
 
-- (NSTextField*)labelWithTitle:(NSString*)title
-                   frameOrigin:(NSPoint)frameOrigin {
-  base::scoped_nsobject<NSTextField> label(
-      [[NSTextField alloc] initWithFrame:NSZeroRect]);
-  [label setStringValue:title];
-  [label setEditable:NO];
-  [label setAlignment:NSLeftTextAlignment];
-  [label setBezeled:NO];
-  [label setFont:[NSFont labelFontOfSize:kTextFontSize]];
-  [label setFrameOrigin:frameOrigin];
-  [label sizeToFit];
-
-  return label.autorelease();
-}
 @end
