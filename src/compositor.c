@@ -4059,6 +4059,7 @@ usage(int error_code)
        "  --env-socket=SOCKET\tUse that socket as peer connection\n"
        "  --address=ADDR\tThe address to bind\n"
        "  --port=PORT\tThe port to listen on\n"
+       "  --no-clients-resize\tThe RDP peers will be forced to the size of the desktop\n"
        "  --rdp4-key=FILE\tThe file containing the key for RDP4 encryption\n"
        "  --rdp-tls-cert=FILE\tThe file containing the certificate for TLS encryption\n"
        "  --rdp-tls-key=FILE\tThe file containing the private key for TLS encryption\n"

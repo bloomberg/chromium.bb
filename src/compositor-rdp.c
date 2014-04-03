@@ -60,6 +60,7 @@ struct rdp_compositor_config {
 	char *server_cert;
 	char *server_key;
 	int env_socket;
+	int no_clients_resize;
 };
 
 struct rdp_output;
@@ -75,6 +76,7 @@ struct rdp_compositor {
 	char *server_key;
 	char *rdp_key;
 	int tls_enabled;
+	int no_clients_resize;
 };
 
 enum peer_item_flags {
@@ -122,6 +124,7 @@ rdp_compositor_config_init(struct rdp_compositor_config *config) {
 	config->server_cert = NULL;
 	config->server_key = NULL;
 	config->env_socket = 0;
+	config->no_clients_resize = 0;
 }
 
 static void
@@ -412,7 +415,8 @@ rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode) {
 
 	wl_list_for_each(rdpPeer, &rdpOutput->peers, link) {
 		settings = rdpPeer->peer->settings;
-		if (settings->DesktopWidth == target_mode->width && settings->DesktopHeight == target_mode->height)
+		if (settings->DesktopWidth == (UINT32)target_mode->width &&
+				settings->DesktopHeight == (UINT32)target_mode->height)
 			continue;
 
 		if (!settings->DesktopResize) {
@@ -672,18 +676,33 @@ xf_peer_post_connect(freerdp_peer* client)
 	if (output->base.width != (int)settings->DesktopWidth ||
 			output->base.height != (int)settings->DesktopHeight)
 	{
-		struct weston_mode new_mode;
-		struct weston_mode *target_mode;
-		new_mode.width = (int)settings->DesktopWidth;
-		new_mode.height = (int)settings->DesktopHeight;
-		target_mode = ensure_matching_mode(&output->base, &new_mode);
-		if (!target_mode) {
-			weston_log("client mode not found\n");
-			return FALSE;
+		if (c->no_clients_resize) {
+			/* RDP peers don't dictate their resolution to weston */
+			if (!settings->DesktopResize) {
+				/* peer does not support desktop resize */
+				weston_log("%s: client doesn't support resizing, closing connection\n", __FUNCTION__);
+				client->Close(client);
+				return FALSE;
+			} else {
+				settings->DesktopWidth = output->base.width;
+				settings->DesktopHeight = output->base.height;
+				client->update->DesktopResize(client->context);
+			}
+		} else {
+			/* ask weston to adjust size */
+			struct weston_mode new_mode;
+			struct weston_mode *target_mode;
+			new_mode.width = (int)settings->DesktopWidth;
+			new_mode.height = (int)settings->DesktopHeight;
+			target_mode = ensure_matching_mode(&output->base, &new_mode);
+			if (!target_mode) {
+				weston_log("client mode not found\n");
+				return FALSE;
+			}
+			weston_output_switch_mode(&output->base, target_mode, 1, WESTON_MODE_SWITCH_SET_NATIVE);
+			output->base.width = new_mode.width;
+			output->base.height = new_mode.height;
 		}
-		weston_output_switch_mode(&output->base, target_mode, 1, WESTON_MODE_SWITCH_SET_NATIVE);
-		output->base.width = new_mode.width;
-		output->base.height = new_mode.height;
 	}
 
 	weston_log("kbd_layout:%x kbd_type:%x kbd_subType:%x kbd_functionKeys:%x\n",
@@ -988,6 +1007,7 @@ rdp_compositor_create(struct wl_display *display,
 	c->base.destroy = rdp_destroy;
 	c->base.restore = rdp_restore;
 	c->rdp_key = config->rdp_key ? strdup(config->rdp_key) : NULL;
+	c->no_clients_resize = config->no_clients_resize;
 
 	/* activate TLS only if certificate/key are available */
 	if (config->server_cert && config->server_key) {
@@ -1069,6 +1089,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		{ WESTON_OPTION_INTEGER, "height", 0, &config.height },
 		{ WESTON_OPTION_STRING,  "address", 0, &config.bind_address },
 		{ WESTON_OPTION_INTEGER, "port", 0, &config.port },
+		{ WESTON_OPTION_BOOLEAN, "no-clients-resize", 0, &config.no_clients_resize },
 		{ WESTON_OPTION_STRING,  "rdp4-key", 0, &config.rdp_key },
 		{ WESTON_OPTION_STRING,  "rdp-tls-cert", 0, &config.server_cert },
 		{ WESTON_OPTION_STRING,  "rdp-tls-key", 0, &config.server_key }
