@@ -4,7 +4,7 @@
 
 #include "chrome/browser/policy/policy_path_parser.h"
 
-#include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #import "base/mac/scoped_nsautorelease_pool.h"
@@ -21,78 +21,71 @@ namespace policy {
 
 namespace path_parser {
 
+namespace internal {
+
+bool GetFolder(NSSearchPathDirectory id, base::FilePath::StringType* value) {
+  NSArray* searchpaths =
+      NSSearchPathForDirectoriesInDomains(id, NSAllDomainsMask, true);
+  if ([searchpaths count] > 0) {
+    NSString* variable_value = [searchpaths objectAtIndex:0];
+    *value = base::SysNSStringToUTF8(variable_value);
+    return true;
+  }
+  return false;
+}
+
+// The wrapper is used instead of callbacks since these function are
+// initialized in a global table and using callbacks in the table results in
+// the increase in size of static initializers.
+#define WRAP_GET_FORLDER_FUNCTION(FunctionName, FolderId)   \
+  bool FunctionName(base::FilePath::StringType* value) { \
+    return GetFolder(FolderId, value);                      \
+  }
+
+WRAP_GET_FORLDER_FUNCTION(GetMacUserFolderPath, NSUserDirectory)
+WRAP_GET_FORLDER_FUNCTION(GetMacDocumentsFolderPath, NSDocumentDirectory)
+
+bool GetUserName(base::FilePath::StringType* value) {
+  NSString* username = NSUserName();
+  if (username)
+    *value = base::SysNSStringToUTF8(username);
+  else
+    LOG(ERROR) << "Username variable can not be resolved.";
+  return (username != NULL);
+}
+
+bool GetMachineName(base::FilePath::StringType* value) {
+  SCDynamicStoreContext context = {0, NULL, NULL, NULL};
+  SCDynamicStoreRef store = SCDynamicStoreCreate(
+      kCFAllocatorDefault, CFSTR("policy_subsystem"), NULL, &context);
+  CFStringRef machinename = SCDynamicStoreCopyLocalHostName(store);
+  if (machinename) {
+    *value = base::SysCFStringRefToUTF8(machinename);
+    CFRelease(machinename);
+  } else {
+    LOG(ERROR) << "Machine name variable can not be resolved.";
+  }
+  CFRelease(store);
+  return (machinename != NULL);
+}
+
 const char* kUserNamePolicyVarName = "${user_name}";
 const char* kMachineNamePolicyVarName = "${machine_name}";
 const char* kMacUsersDirectory = "${users}";
 const char* kMacDocumentsFolderVarName = "${documents}";
 
-struct MacFolderNamesToSPDMaping {
-  const char* name;
-  NSSearchPathDirectory id;
-};
+// A table mapping variable names to their respective get value function
+// pointers.
+const VariableNameAndValueCallback kVariableNameAndValueCallbacks[] = {
+    {kUserNamePolicyVarName, &GetUserName},
+    {kMachineNamePolicyVarName, &GetMachineName},
+    {kMacUsersDirectory, &GetMacUserFolderPath},
+    {kMacDocumentsFolderVarName, &GetMacDocumentsFolderPath}};
 
-// Mapping from variable names to MacOS NSSearchPathDirectory ids.
-const MacFolderNamesToSPDMaping mac_folder_mapping[] = {
-    { kMacUsersDirectory, NSUserDirectory},
-    { kMacDocumentsFolderVarName, NSDocumentDirectory}
-};
+// Total number of entries in the mapping table.
+const int kNoOfVariables = arraysize(kVariableNameAndValueCallbacks);
 
-// Replaces all variable occurrences in the policy string with the respective
-// system settings values.
-base::FilePath::StringType ExpandPathVariables(
-    const base::FilePath::StringType& untranslated_string) {
-  base::FilePath::StringType result(untranslated_string);
-  if (result.length() == 0)
-    return result;
-  // Sanitize quotes in case of any around the whole string.
-  if (result.length() > 1 &&
-      ((result[0] == '"' && result[result.length() - 1] == '"') ||
-      (result[0] == '\'' && result[result.length() - 1] == '\''))) {
-    // Strip first and last char which should be matching quotes now.
-    result = result.substr(1, result.length() - 2);
-  }
-  // First translate all path variables we recognize.
-  for (size_t i = 0; i < arraysize(mac_folder_mapping); ++i) {
-    size_t position = result.find(mac_folder_mapping[i].name);
-    if (position != std::string::npos) {
-      NSArray* searchpaths = NSSearchPathForDirectoriesInDomains(
-          mac_folder_mapping[i].id, NSAllDomainsMask, true);
-      if ([searchpaths count] > 0) {
-        NSString *variable_value = [searchpaths objectAtIndex:0];
-        result.replace(position, strlen(mac_folder_mapping[i].name),
-                       base::SysNSStringToUTF8(variable_value));
-      }
-    }
-  }
-  // Next translate two special variables ${user_name} and ${machine_name}
-  size_t position = result.find(kUserNamePolicyVarName);
-  if (position != std::string::npos) {
-    NSString* username = NSUserName();
-    if (username) {
-      result.replace(position, strlen(kUserNamePolicyVarName),
-                     base::SysNSStringToUTF8(username));
-    } else {
-      LOG(ERROR) << "Username variable can not be resolved.";
-    }
-  }
-  position = result.find(kMachineNamePolicyVarName);
-  if (position != std::string::npos) {
-    SCDynamicStoreContext context = { 0, NULL, NULL, NULL };
-    SCDynamicStoreRef store = SCDynamicStoreCreate(kCFAllocatorDefault,
-                                                   CFSTR("policy_subsystem"),
-                                                   NULL, &context);
-    CFStringRef machinename = SCDynamicStoreCopyLocalHostName(store);
-    if (machinename) {
-      result.replace(position, strlen(kMachineNamePolicyVarName),
-                     base::SysCFStringRefToUTF8(machinename));
-      CFRelease(machinename);
-    } else {
-      LOG(ERROR) << "Machine name variable can not be resolved.";
-    }
-    CFRelease(store);
-  }
-  return result;
-}
+}  // namespace internal
 
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   base::mac::ScopedNSAutoreleasePool pool;

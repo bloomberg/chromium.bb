@@ -8,6 +8,7 @@
 
 #include "chrome/browser/policy/policy_path_parser.h"
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
@@ -28,6 +29,75 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive, base::FilePath* dir) {
   return false;
 }
 
+}  // namespace
+
+namespace policy {
+
+namespace path_parser {
+
+namespace internal {
+
+bool GetSpecialFolderPath(int id, base::FilePath::StringType* value) {
+  WCHAR path[MAX_PATH];
+  ::SHGetSpecialFolderPath(0, path, id, false);
+  *value = base::FilePath::StringType(path);
+  return true;
+}
+
+// The wrapper is used instead of callbacks since these function are
+// initialized in a global table and using callbacks in the table results in
+// the increase in size of static initializers.
+#define WRAP_GET_FORLDER_FUNCTION(FunctionName, FolderId) \
+  bool FunctionName(base::FilePath::StringType* value) {   \
+    return GetSpecialFolderPath(FolderId, value);         \
+  }
+
+WRAP_GET_FORLDER_FUNCTION(GetWindowsFolderPath, CSIDL_WINDOWS)
+WRAP_GET_FORLDER_FUNCTION(GetProgramFilesFolderPath, CSIDL_PROGRAM_FILES)
+WRAP_GET_FORLDER_FUNCTION(GetProgramDataFolderPath, CSIDL_COMMON_APPDATA)
+WRAP_GET_FORLDER_FUNCTION(GetProfileFolderPath, CSIDL_PROFILE)
+WRAP_GET_FORLDER_FUNCTION(GetLocalAppDataFolderPath, CSIDL_LOCAL_APPDATA)
+WRAP_GET_FORLDER_FUNCTION(GetRoamingAppDataFolderPath, CSIDL_APPDATA)
+WRAP_GET_FORLDER_FUNCTION(GetDocumentsFolderPath, CSIDL_PERSONAL)
+
+bool GetWindowsUserName(base::FilePath::StringType* value) {
+  DWORD return_length = 0;
+  ::GetUserName(NULL, &return_length);
+  if (return_length) {
+    scoped_ptr<WCHAR[]> username(new WCHAR[return_length]);
+    ::GetUserName(username.get(), &return_length);
+    *value = base::FilePath::StringType(username.get());
+  }
+  return (return_length != 0);
+}
+
+bool GetMachineName(base::FilePath::StringType* value) {
+  DWORD return_length = 0;
+  ::GetComputerNameEx(ComputerNamePhysicalDnsHostname, NULL, &return_length);
+  if (return_length) {
+    scoped_ptr<WCHAR[]> machinename(new WCHAR[return_length]);
+    ::GetComputerNameEx(
+        ComputerNamePhysicalDnsHostname, machinename.get(), &return_length);
+    *value = base::FilePath::StringType(machinename.get());
+  }
+  return (return_length != 0);
+}
+
+bool GetClientName(base::FilePath::StringType* value) {
+  LPWSTR buffer = NULL;
+  DWORD buffer_length = 0;
+  BOOL status;
+  if ((status = ::WTSQuerySessionInformation(WTS_CURRENT_SERVER,
+                                             WTS_CURRENT_SESSION,
+                                             WTSClientName,
+                                             &buffer,
+                                             &buffer_length))) {
+    *value = base::FilePath::StringType(buffer);
+    ::WTSFreeMemory(buffer);
+  }
+  return (status == TRUE);
+}
+
 const WCHAR* kMachineNamePolicyVarName = L"${machine_name}";
 const WCHAR* kUserNamePolicyVarName = L"${user_name}";
 const WCHAR* kWinDocumentsFolderVarName = L"${documents}";
@@ -39,92 +109,24 @@ const WCHAR* kWinProgramFilesFolderVarName = L"${program_files}";
 const WCHAR* kWinWindowsFolderVarName = L"${windows}";
 const WCHAR* kWinClientName = L"${client_name}";
 
-struct WinFolderNamesToCSIDLMapping {
-  const WCHAR* name;
-  int id;
-};
+// A table mapping variable names to their respective get value function
+// pointers.
+const VariableNameAndValueCallback kVariableNameAndValueCallbacks[] = {
+    {kWinWindowsFolderVarName, &GetWindowsFolderPath},
+    {kWinProgramFilesFolderVarName, &GetProgramFilesFolderPath},
+    {kWinProgramDataFolderVarName, &GetProgramDataFolderPath},
+    {kWinProfileFolderVarName, &GetProfileFolderPath},
+    {kWinLocalAppDataFolderVarName, &GetLocalAppDataFolderPath},
+    {kWinRoamingAppDataFolderVarName, &GetRoamingAppDataFolderPath},
+    {kWinDocumentsFolderVarName, &GetDocumentsFolderPath},
+    {kUserNamePolicyVarName, &GetWindowsUserName},
+    {kMachineNamePolicyVarName, &GetMachineName},
+    {kWinClientName, &GetClientName}};
 
-// Mapping from variable names to Windows CSIDL ids.
-const WinFolderNamesToCSIDLMapping win_folder_mapping[] = {
-    { kWinWindowsFolderVarName,        CSIDL_WINDOWS},
-    { kWinProgramFilesFolderVarName,   CSIDL_PROGRAM_FILES},
-    { kWinProgramDataFolderVarName,    CSIDL_COMMON_APPDATA},
-    { kWinProfileFolderVarName,        CSIDL_PROFILE},
-    { kWinLocalAppDataFolderVarName,   CSIDL_LOCAL_APPDATA},
-    { kWinRoamingAppDataFolderVarName, CSIDL_APPDATA},
-    { kWinDocumentsFolderVarName,      CSIDL_PERSONAL}
-};
+// Total number of entries in the mapping table.
+const int kNoOfVariables = arraysize(kVariableNameAndValueCallbacks);
 
-}  // namespace
-
-namespace policy {
-
-namespace path_parser {
-
-// Replaces all variable occurances in the policy string with the respective
-// system settings values.
-base::FilePath::StringType ExpandPathVariables(
-    const base::FilePath::StringType& untranslated_string) {
-  base::FilePath::StringType result(untranslated_string);
-  if (result.length() == 0)
-    return result;
-  // Sanitize quotes in case of any around the whole string.
-  if (result.length() > 1 &&
-      ((result[0] == L'"' && result[result.length() - 1] == L'"') ||
-       (result[0] == L'\'' && result[result.length() - 1] == L'\''))) {
-    // Strip first and last char which should be matching quotes now.
-    result = result.substr(1, result.length() - 2);
-  }
-  // First translate all path variables we recognize.
-  for (int i = 0; i < arraysize(win_folder_mapping); ++i) {
-    size_t position = result.find(win_folder_mapping[i].name);
-    if (position != std::wstring::npos) {
-      WCHAR path[MAX_PATH];
-      ::SHGetSpecialFolderPath(0, path, win_folder_mapping[i].id, false);
-      std::wstring path_string(path);
-      result.replace(position, wcslen(win_folder_mapping[i].name), path_string);
-    }
-  }
-  // Next translate other windows specific variables.
-  size_t position = result.find(kUserNamePolicyVarName);
-  if (position != std::wstring::npos) {
-    DWORD return_length = 0;
-    ::GetUserName(NULL, &return_length);
-    if (return_length != 0) {
-      scoped_ptr<WCHAR[]> username(new WCHAR[return_length]);
-      ::GetUserName(username.get(), &return_length);
-      std::wstring username_string(username.get());
-      result.replace(position, wcslen(kUserNamePolicyVarName), username_string);
-    }
-  }
-  position = result.find(kMachineNamePolicyVarName);
-  if (position != std::wstring::npos) {
-    DWORD return_length = 0;
-    ::GetComputerNameEx(ComputerNamePhysicalDnsHostname, NULL, &return_length);
-    if (return_length != 0) {
-      scoped_ptr<WCHAR[]> machinename(new WCHAR[return_length]);
-      ::GetComputerNameEx(ComputerNamePhysicalDnsHostname,
-                          machinename.get(), &return_length);
-      std::wstring machinename_string(machinename.get());
-      result.replace(
-          position, wcslen(kMachineNamePolicyVarName), machinename_string);
-    }
-  }
-  position = result.find(kWinClientName);
-  if (position != std::wstring::npos) {
-    LPWSTR buffer = NULL;
-    DWORD buffer_length = 0;
-    if (::WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
-                                     WTSClientName,
-                                     &buffer, &buffer_length)) {
-      std::wstring clientname_string(buffer);
-      result.replace(position, wcslen(kWinClientName), clientname_string);
-      ::WTSFreeMemory(buffer);
-    }
-  }
-
-  return result;
-}
+}  // namespace internal
 
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   DCHECK(user_data_dir);
