@@ -1,5 +1,4 @@
-# Copyright (c) 2010, Google Inc.
-# All rights reserved.
+# Copyright 2010 Google Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -1324,9 +1323,3 @@
     'SYMROOT': '<(DEPTH)/xcodebuild',
   },
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:

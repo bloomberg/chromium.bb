@@ -28,7 +28,7 @@
 
 {
   'includes': [
-    '../../client/windows/build/common.gypi',
+    '../../../build/common.gypi',
   ],
   'targets': [
     {

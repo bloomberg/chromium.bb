@@ -28,7 +28,7 @@
 
 {
   'includes': [
-    '../../../client/windows/build/common.gypi',
+    '../../../../build/common.gypi',
   ],
   'targets': [
     {
@@ -38,7 +38,7 @@
         'symupload.cc',
       ],
       'dependencies': [
-        '<(DEPTH)/common/windows/common_windows.gyp:common_windows_lib',
+        '../../../common/windows/common_windows.gyp:common_windows_lib',
       ],
     },
   ],
