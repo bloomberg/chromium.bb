@@ -22,7 +22,6 @@
 #include "third_party/skia/include/core/SkDrawFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkStream.h"
-#include "third_party/skia/include/utils/SkNullCanvas.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -87,11 +86,10 @@ scoped_refptr<Picture> Picture::Create(
     ContentLayerClient* client,
     const SkTileGridPicture::TileGridInfo& tile_grid_info,
     bool gather_pixel_refs,
-    int num_raster_threads,
-    RecordingMode recording_mode) {
+    int num_raster_threads) {
   scoped_refptr<Picture> picture = make_scoped_refptr(new Picture(layer_rect));
 
-  picture->Record(client, tile_grid_info, recording_mode);
+  picture->Record(client, tile_grid_info);
   if (gather_pixel_refs)
     picture->GatherPixelRefs(tile_grid_info);
   picture->CloneForDrawing(num_raster_threads);
@@ -225,59 +223,37 @@ void Picture::CloneForDrawing(int num_threads) {
 }
 
 void Picture::Record(ContentLayerClient* painter,
-                     const SkTileGridPicture::TileGridInfo& tile_grid_info,
-                     RecordingMode recording_mode) {
-  TRACE_EVENT2("cc",
-               "Picture::Record",
-               "data",
-               AsTraceableRecordData(),
-               "recording_mode",
-               recording_mode);
+                     const SkTileGridPicture::TileGridInfo& tile_grid_info) {
+  TRACE_EVENT1("cc", "Picture::Record",
+               "data", AsTraceableRecordData());
 
   DCHECK(!picture_);
   DCHECK(!tile_grid_info.fTileInterval.isEmpty());
   picture_ = skia::AdoptRef(new SkTileGridPicture(
       layer_rect_.width(), layer_rect_.height(), tile_grid_info));
 
-  SkCanvas* canvas = NULL;
-  switch (recording_mode) {
-    case RECORD_NORMALLY:
-      canvas = picture_->beginRecording(
-          layer_rect_.width(),
-          layer_rect_.height(),
-          SkPicture::kUsePathBoundsForClip_RecordingFlag |
-              SkPicture::kOptimizeForClippedPlayback_RecordingFlag);
-      break;
-    case RECORD_WITH_SK_NULL_CANVAS:
-      canvas = SkCreateNullCanvas();
-      break;
-    case RECORD_WITH_PAINTING_DISABLED:
-      // Blink's GraphicsContext will disable painting when given a NULL
-      // canvas.
-      break;
-    default:
-      NOTREACHED();
-  }
+  SkCanvas* canvas = picture_->beginRecording(
+      layer_rect_.width(),
+      layer_rect_.height(),
+      SkPicture::kUsePathBoundsForClip_RecordingFlag |
+      SkPicture::kOptimizeForClippedPlayback_RecordingFlag);
 
-  if (canvas) {
-    canvas->save();
-    canvas->translate(SkFloatToScalar(-layer_rect_.x()),
-                      SkFloatToScalar(-layer_rect_.y()));
+  canvas->save();
+  canvas->translate(SkFloatToScalar(-layer_rect_.x()),
+                    SkFloatToScalar(-layer_rect_.y()));
 
-    SkRect layer_skrect = SkRect::MakeXYWH(layer_rect_.x(),
-                                           layer_rect_.y(),
-                                           layer_rect_.width(),
-                                           layer_rect_.height());
-    canvas->clipRect(layer_skrect);
-  }
+  SkRect layer_skrect = SkRect::MakeXYWH(layer_rect_.x(),
+                                         layer_rect_.y(),
+                                         layer_rect_.width(),
+                                         layer_rect_.height());
+  canvas->clipRect(layer_skrect);
 
   gfx::RectF opaque_layer_rect;
+
   painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
 
-  if (canvas)
-    canvas->restore();
-  if (picture_->getRecordingCanvas())
-    picture_->endRecording();
+  canvas->restore();
+  picture_->endRecording();
 
   opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
 

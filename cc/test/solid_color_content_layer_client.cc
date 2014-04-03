@@ -13,8 +13,6 @@ namespace cc {
 
 void SolidColorContentLayerClient::PaintContents(
     SkCanvas* canvas, const gfx::Rect& rect, gfx::RectF* opaque_rect) {
-  if (!canvas)
-    return;
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(color_);

@@ -6,10 +6,8 @@
 
 #include <algorithm>
 #include <limits>
-#include <string>
 
 #include "base/basictypes.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "cc/debug/rasterize_and_record_benchmark_impl.h"
 #include "cc/layers/layer.h"
@@ -23,9 +21,6 @@ namespace cc {
 namespace {
 
 const int kDefaultRecordRepeatCount = 100;
-
-const char* kModeSuffixes[Picture::RECORDING_MODE_COUNT] = {
-    "", "_sk_null_canvas", "_painting_disabled"};
 
 base::TimeTicks Now() {
   return base::TimeTicks::IsThreadNowSupported()
@@ -66,12 +61,8 @@ void RasterizeAndRecordBenchmark::DidUpdateLayers(LayerTreeHost* host) {
   DCHECK(!results_.get());
   results_ = make_scoped_ptr(new base::DictionaryValue);
   results_->SetInteger("pixels_recorded", record_results_.pixels_recorded);
-
-  for (int i = 0; i < Picture::RECORDING_MODE_COUNT; i++) {
-    std::string name = base::StringPrintf("record_time%s_ms", kModeSuffixes[i]);
-    results_->SetDouble(name,
-                        record_results_.total_best_time[i].InMillisecondsF());
-  }
+  results_->SetDouble("record_time_ms",
+                      record_results_.total_best_time.InMillisecondsF());
   main_thread_benchmark_done_ = true;
 }
 
@@ -116,27 +107,21 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   if (visible_content_rect.IsEmpty())
     return;
 
-  for (int mode_index = 0; mode_index < Picture::RECORDING_MODE_COUNT;
-       mode_index++) {
-    Picture::RecordingMode mode =
-        static_cast<Picture::RecordingMode>(mode_index);
-    base::TimeDelta min_time = base::TimeDelta::Max();
-    for (int i = 0; i < record_repeat_count_; ++i) {
-      base::TimeTicks start = Now();
-      scoped_refptr<Picture> picture = Picture::Create(
-          visible_content_rect, painter, tile_grid_info, false, 0, mode);
-      base::TimeTicks end = Now();
-      base::TimeDelta duration = end - start;
-      if (duration < min_time)
-        min_time = duration;
-    }
 
-    if (mode == Picture::RECORD_NORMALLY) {
-      record_results_.pixels_recorded +=
-          visible_content_rect.width() * visible_content_rect.height();
-    }
-    record_results_.total_best_time[mode_index] += min_time;
+  base::TimeDelta min_time = base::TimeDelta::Max();
+  for (int i = 0; i < record_repeat_count_; ++i) {
+    base::TimeTicks start = Now();
+    scoped_refptr<Picture> picture = Picture::Create(
+        visible_content_rect, painter, tile_grid_info, false, 0);
+    base::TimeTicks end = Now();
+    base::TimeDelta duration = end - start;
+    if (duration < min_time)
+      min_time = duration;
   }
+
+  record_results_.pixels_recorded +=
+      visible_content_rect.width() * visible_content_rect.height();
+  record_results_.total_best_time += min_time;
 }
 
 RasterizeAndRecordBenchmark::RecordResults::RecordResults()
