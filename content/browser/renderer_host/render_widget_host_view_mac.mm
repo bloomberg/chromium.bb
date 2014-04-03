@@ -2274,7 +2274,12 @@ void RenderWidgetHostViewMac::LayoutLayers() {
   // in the layer being anchored to the top-left. Set the layer's frame
   // explicitly, since this is more reliable in practice.
   if (software_layer_) {
-    [software_layer_ setFrame:new_background_frame];
+    bool frame_changed = !CGRectEqualToRect(
+        new_background_frame, [software_layer_ frame]);
+    if (frame_changed) {
+      [software_layer_ setFrame:new_background_frame];
+      [software_layer_ setNeedsDisplay];
+    }
   }
 }
 
