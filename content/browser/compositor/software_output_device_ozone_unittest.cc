@@ -25,13 +25,13 @@ class MockSurfaceOzone : public gfx::SurfaceOzoneBase {
   virtual ~MockSurfaceOzone() {}
 
   // gfx::SurfaceOzoneBase overrides:
-  virtual bool InitializeCanvas() { return true; }
-  virtual bool ResizeCanvas(const gfx::Size& size) {
+  virtual bool InitializeCanvas() OVERRIDE { return true; }
+  virtual bool ResizeCanvas(const gfx::Size& size) OVERRIDE {
     surface_ = skia::AdoptRef(SkSurface::NewRaster(
         SkImageInfo::MakeN32Premul(size.width(), size.height())));
     return true;
   }
-  virtual skia::RefPtr<SkCanvas> GetCanvas() {
+  virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE {
     return skia::SharePtr(surface_->getCanvas());
   }
 
@@ -60,10 +60,6 @@ class MockSurfaceFactoryOzone : public gfx::SurfaceFactoryOzone {
   virtual scoped_ptr<gfx::SurfaceOzone> CreateSurfaceForWidget(
       gfx::AcceleratedWidget widget) OVERRIDE {
     return make_scoped_ptr<gfx::SurfaceOzone>(new MockSurfaceOzone());
-  }
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider(
-      gfx::AcceleratedWidget w) OVERRIDE {
-    return scoped_ptr<gfx::VSyncProvider>();
   }
 
  private:
