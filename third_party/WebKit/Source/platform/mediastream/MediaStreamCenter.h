@@ -66,6 +66,7 @@ public:
     PassOwnPtr<AudioSourceProvider> createWebAudioSourceFromMediaStreamTrack(MediaStreamComponent*);
 
     void didCreateMediaStream(MediaStreamDescriptor*);
+    void didCreateMediaStreamAndTracks(MediaStreamDescriptor*);
     bool didAddMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
     bool didRemoveMediaStreamTrack(MediaStreamDescriptor*, MediaStreamComponent*);
     void didStopLocalMediaStream(MediaStreamDescriptor*);

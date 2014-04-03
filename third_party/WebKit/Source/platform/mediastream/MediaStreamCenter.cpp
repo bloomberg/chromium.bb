@@ -101,11 +101,26 @@ bool MediaStreamCenter::didStopMediaStreamTrack(MediaStreamComponent* track)
     return m_private && m_private->didStopMediaStreamTrack(track);
 }
 
+void MediaStreamCenter::didCreateMediaStreamAndTracks(MediaStreamDescriptor* stream)
+{
+    if (!m_private)
+        return;
+
+    for (size_t i = 0; i < stream->numberOfAudioComponents(); ++i)
+        didCreateMediaStreamTrack(stream->audioComponent(i));
+
+    for (size_t i = 0; i < stream->numberOfVideoComponents(); ++i)
+        didCreateMediaStreamTrack(stream->videoComponent(i));
+
+    blink::WebMediaStream webStream(stream);
+    m_private->didCreateMediaStream(webStream);
+}
+
 void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream)
 {
     if (m_private) {
-        blink::WebMediaStream webStream(stream);
-        m_private->didCreateMediaStream(webStream);
+        blink::WebMediaStream WebMediaStream(stream);
+        m_private->didCreateMediaStream(WebMediaStream);
     }
 }
 
