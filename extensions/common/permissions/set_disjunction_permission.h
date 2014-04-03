@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "extensions/common/extension_messages.h"
@@ -112,8 +113,10 @@ class SetDisjunctionPermission : public APIPermission {
     return result->data_set_.empty() ? NULL : result.release();
   }
 
-  virtual bool FromValue(const base::Value* value,
-                         std::string* error) OVERRIDE {
+  virtual bool FromValue(
+      const base::Value* value,
+      std::string* error,
+      std::vector<std::string>* unhandled_permissions) OVERRIDE {
     data_set_.clear();
     const base::ListValue* list = NULL;
 
@@ -130,13 +133,21 @@ class SetDisjunctionPermission : public APIPermission {
       DCHECK(item_value);
 
       PermissionDataType data;
-      if (!data.FromValue(item_value)) {
-        if (error)
-          *error = "Cannot parse an item from the permission list";
-        return false;
+      if (data.FromValue(item_value)) {
+        data_set_.insert(data);
+      } else {
+        std::string unknown_permission;
+        base::JSONWriter::Write(item_value, &unknown_permission);
+        if (unhandled_permissions) {
+          unhandled_permissions->push_back(unknown_permission);
+        } else {
+          if (error) {
+            *error = "Cannot parse an item from the permission list: " +
+                     unknown_permission;
+          }
+          return false;
+        }
       }
-
-      data_set_.insert(data);
     }
     return true;
   }

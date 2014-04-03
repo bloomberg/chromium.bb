@@ -51,7 +51,7 @@ TEST(USBDevicePermissionTest, MAYBE_PermissionMessage) {
 
   UsbDevicePermission permission(
       PermissionsInfo::GetInstance()->GetByID(APIPermission::kUsbDevice));
-  ASSERT_TRUE(permission.FromValue(permission_list.get(), NULL));
+  ASSERT_TRUE(permission.FromValue(permission_list.get(), NULL, NULL));
 
   PermissionMessages messages = permission.GetMessages();
   ASSERT_EQ(3U, messages.size());

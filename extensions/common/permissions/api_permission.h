@@ -212,8 +212,13 @@ class APIPermission {
   virtual bool Equal(const APIPermission* rhs) const = 0;
 
   // Parses the APIPermission from |value|. Returns false if an error happens
-  // and optionally set |error| if |error| is not NULL.
-  virtual bool FromValue(const base::Value* value, std::string* error) = 0;
+  // and optionally set |error| if |error| is not NULL. If |value| represents
+  // multiple permissions, some are invalid, and |unhandled_permissions| is
+  // not NULL, the invalid ones are put into |unhandled_permissions| and the
+  // function returns true.
+  virtual bool FromValue(const base::Value* value,
+                         std::string* error,
+                         std::vector<std::string>* unhandled_permissions) = 0;
 
   // Stores this into a new created |value|.
   virtual scoped_ptr<base::Value> ToValue() const = 0;

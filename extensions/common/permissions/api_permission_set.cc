@@ -42,7 +42,8 @@ bool CreateAPIPermission(
     }
 
     std::string error_details;
-    if (!permission->FromValue(permission_value, &error_details)) {
+    if (!permission->FromValue(permission_value, &error_details,
+                               unhandled_permissions)) {
       if (error) {
         if (error_details.empty()) {
           *error = ErrorUtils::FormatErrorMessageUTF16(

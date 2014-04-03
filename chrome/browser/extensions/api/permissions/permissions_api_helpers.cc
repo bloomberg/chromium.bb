@@ -108,7 +108,7 @@ scoped_refptr<PermissionSet> UnpackPermissionSet(
         }
 
         CHECK(permission);
-        if (!permission->FromValue(permission_json.get(), NULL)) {
+        if (!permission->FromValue(permission_json.get(), NULL, NULL)) {
           *error = ErrorUtils::FormatErrorMessage(kInvalidParameter, *it);
           return NULL;
         }

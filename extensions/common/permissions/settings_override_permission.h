@@ -25,7 +25,10 @@ class SettingsOverrideAPIPermission : public APIPermission {
   virtual bool Check(const APIPermission::CheckParam* param) const OVERRIDE;
   virtual bool Contains(const APIPermission* rhs) const OVERRIDE;
   virtual bool Equal(const APIPermission* rhs) const OVERRIDE;
-  virtual bool FromValue(const base::Value* value, std::string* error) OVERRIDE;
+  virtual bool FromValue(
+      const base::Value* value,
+      std::string* error,
+      std::vector<std::string>* unhandled_permissions) OVERRIDE;
   virtual scoped_ptr<base::Value> ToValue() const OVERRIDE;
   virtual APIPermission* Clone() const OVERRIDE;
   virtual APIPermission* Diff(const APIPermission* rhs) const OVERRIDE;

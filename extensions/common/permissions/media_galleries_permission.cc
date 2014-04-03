@@ -56,12 +56,23 @@ MediaGalleriesPermission::MediaGalleriesPermission(
 MediaGalleriesPermission::~MediaGalleriesPermission() {
 }
 
-bool MediaGalleriesPermission::FromValue(const base::Value* value,
-                                         std::string* error) {
+bool MediaGalleriesPermission::FromValue(
+    const base::Value* value,
+    std::string* error,
+    std::vector<std::string>* unhandled_permissions) {
+  std::vector<std::string> unhandled_sub_permissions;
   if (!SetDisjunctionPermission<MediaGalleriesPermissionData,
-                                MediaGalleriesPermission>::FromValue(value,
-                                                                     error)) {
+                                MediaGalleriesPermission>::FromValue(
+                                    value, error, &unhandled_sub_permissions)) {
+    unhandled_permissions->insert(unhandled_permissions->end(),
+                                  unhandled_sub_permissions.begin(),
+                                  unhandled_sub_permissions.end());
     return false;
+  }
+
+  for (size_t i = 0; i < unhandled_sub_permissions.size(); i++) {
+    unhandled_permissions->push_back(
+        "{\"mediaGalleries\": [" + unhandled_sub_permissions[i] + "]}");
   }
 
   bool has_read = false;

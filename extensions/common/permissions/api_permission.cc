@@ -47,8 +47,10 @@ class SimpleAPIPermission : public APIPermission {
     return true;
   }
 
-  virtual bool FromValue(const base::Value* value,
-                         std::string* /*error*/) OVERRIDE {
+  virtual bool FromValue(
+      const base::Value* value,
+      std::string* /*error*/,
+      std::vector<std::string>* /*unhandled_permissions*/) OVERRIDE {
     return (value == NULL);
   }
 

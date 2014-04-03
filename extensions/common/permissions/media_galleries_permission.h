@@ -38,7 +38,10 @@ class MediaGalleriesPermission
   // SetDisjunctionPermission overrides.
   // MediaGalleriesPermission does additional checks to make sure the
   // permissions do not contain unknown values.
-  virtual bool FromValue(const base::Value* value, std::string* error) OVERRIDE;
+  virtual bool FromValue(
+      const base::Value* value,
+      std::string* error,
+      std::vector<std::string>* unhandled_permissions) OVERRIDE;
 
   // APIPermission overrides.
   virtual PermissionMessages GetMessages() const OVERRIDE;

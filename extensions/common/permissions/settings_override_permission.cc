@@ -64,8 +64,10 @@ bool SettingsOverrideAPIPermission::Equal(const APIPermission* rhs) const {
   return true;
 }
 
-bool SettingsOverrideAPIPermission::FromValue(const base::Value* value,
-                                              std::string* /*error*/) {
+bool SettingsOverrideAPIPermission::FromValue(
+    const base::Value* value,
+    std::string* /*error*/,
+    std::vector<std::string>* unhandled_permissions) {
   return (value == NULL);
 }
 
