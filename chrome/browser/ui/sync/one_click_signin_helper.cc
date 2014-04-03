@@ -321,7 +321,7 @@ void StartExplicitSync(const OneClickSigninHelper::StartSyncArgs& args,
     }
     if (action == ConfirmEmailDialogDelegate::CREATE_NEW_USER) {
       chrome::ShowSettingsSubPage(args.browser,
-                                  std::string(chrome::kSearchUsersSubPage));
+                                  std::string(chrome::kCreateProfileSubPage));
     }
   }
 }
