@@ -40,7 +40,7 @@ deps = {
     'src/testing/gtest':
         Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'src/third_party/WebKit':
-        Var('webkit_url') + Var('webkit_rev'),
+        Var('webkit_url') + '' + Var('webkit_rev'),
     'src/third_party/WebKit/LayoutTests/w3c/csswg-test':
         Var('git_url') + '/external/w3c/csswg-test.git@8c415e3215a203fa3a22dbdd1799279fdf44c81e',
     'src/third_party/WebKit/LayoutTests/w3c/web-platform-tests':
