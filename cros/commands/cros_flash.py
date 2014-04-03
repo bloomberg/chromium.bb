@@ -935,7 +935,10 @@ When updating the device, there are certain constraints on the local image path:
                             debug=self.options.debug)
         imager.Run()
 
-
-    except (Exception, KeyboardInterrupt):
+    except (Exception, KeyboardInterrupt) as e:
+      logging.error(e)
       logging.error('Cros Flash failed before completing.')
-      raise
+      if self.options.debug:
+        raise
+    else:
+      logging.info('Cros Flash completed successfully.')

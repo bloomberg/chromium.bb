@@ -259,7 +259,6 @@ For more information of cros build usage:
     """Run cros deploy."""
     cros_build_lib.AssertInsideChroot()
     self._ReadOptions()
-
     try:
       with remote_access.ChromiumOSDeviceHandler(
           self.ssh_hostname, port=self.ssh_port, username=self.ssh_username,
@@ -285,8 +284,10 @@ For more information of cros build usage:
           else:
             self._Unmerge(device, pkg, self.root)
 
-    except Exception:
+    except (Exception, KeyboardInterrupt) as e:
+      logging.error(e)
       logging.error('Cros Deploy terminated before completing!')
-      raise
+      if self.options.debug:
+        raise
     else:
-      logging.info('All packages are processed.')
+      logging.info('Cros Deploy completed successfully.')
