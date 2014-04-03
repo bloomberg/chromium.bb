@@ -44,7 +44,7 @@ class Crypto : public RefCountedWillBeGarbageCollectedFinalized<Crypto>, public 
 public:
     static PassRefPtrWillBeRawPtr<Crypto> create() { return adoptRefWillBeNoop(new Crypto()); }
 
-    static void getRandomValues(ArrayBufferView*, ExceptionState&);
+    void getRandomValues(ArrayBufferView*, ExceptionState&);
 
     SubtleCrypto* subtle();
 

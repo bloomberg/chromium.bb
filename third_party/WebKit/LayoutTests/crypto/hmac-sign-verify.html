@@ -87,12 +87,12 @@ function runTest(testCase)
         
         // shouldBe() can only resolve variables in global context.
         tmpKey = key;
-        shouldEvaluateAs("tmpKey.type", "secret")
-        shouldEvaluateAs("tmpKey.extractable", false)
-        shouldEvaluateAs("tmpKey.algorithm.name", "HMAC")
-        shouldEvaluateAs("tmpKey.algorithm.hash.name", testCase.hash)
+        shouldEvaluateAs("tmpKey.type", "secret");
+        shouldEvaluateAs("tmpKey.extractable", false);
+        shouldEvaluateAs("tmpKey.algorithm.name", "HMAC");
+        shouldEvaluateAs("tmpKey.algorithm.hash.name", testCase.hash);
         shouldEvaluateAs("tmpKey.algorithm.length", keyData.length * 8);
-        shouldEvaluateAs("tmpKey.usages.join(',')", "sign,verify")
+        shouldEvaluateAs("tmpKey.usages.join(',')", "sign,verify");
 
         // (2) Sign.
         return crypto.subtle.sign(algorithm, key, hexStringToUint8Array(testCase.message));
@@ -103,14 +103,14 @@ function runTest(testCase)
         return crypto.subtle.verify(algorithm, key, hexStringToUint8Array(testCase.mac), hexStringToUint8Array(testCase.message));
     }).then(function(result) {
         verifyResult = result;
-        shouldBe("verifyResult", "true")
+        shouldBe("verifyResult", "true");
 
         // (4) Verify truncated mac (by stripping 1 byte off of it).
         var expectedMac = hexStringToUint8Array(testCase.mac);
         return crypto.subtle.verify(algorithm, key, expectedMac.subarray(0, expectedMac.byteLength - 1), hexStringToUint8Array(testCase.message));
     }).then(function(result) {
         verifyResult = result;
-        shouldBe("verifyResult", "false")
+        shouldBe("verifyResult", "false");
     });
 }
 

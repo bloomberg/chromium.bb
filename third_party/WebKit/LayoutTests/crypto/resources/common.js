@@ -60,7 +60,7 @@ function asciiToUint8Array(str)
 
 function failAndFinishJSTest(error)
 {
-    testFailed(error);
+    testFailed('' + error);
     finishJSTest();
 }
 

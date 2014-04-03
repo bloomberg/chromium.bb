@@ -32,7 +32,7 @@
 #include "modules/crypto/WorkerGlobalScopeCrypto.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "modules/crypto/WorkerCrypto.h"
+#include "modules/crypto/Crypto.h"
 
 namespace WebCore {
 
@@ -55,15 +55,15 @@ WorkerGlobalScopeCrypto& WorkerGlobalScopeCrypto::from(WillBeHeapSupplementable<
     return *supplement;
 }
 
-WorkerCrypto* WorkerGlobalScopeCrypto::crypto(WillBeHeapSupplementable<WorkerGlobalScope>& context)
+Crypto* WorkerGlobalScopeCrypto::crypto(WillBeHeapSupplementable<WorkerGlobalScope>& context)
 {
     return WorkerGlobalScopeCrypto::from(context).crypto();
 }
 
-WorkerCrypto* WorkerGlobalScopeCrypto::crypto() const
+Crypto* WorkerGlobalScopeCrypto::crypto() const
 {
     if (!m_crypto)
-        m_crypto = WorkerCrypto::create();
+        m_crypto = Crypto::create();
     return m_crypto.get();
 }
 

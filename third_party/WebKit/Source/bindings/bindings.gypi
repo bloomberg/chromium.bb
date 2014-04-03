@@ -235,7 +235,6 @@
             'v8/custom/V8WebKitPointCustom.cpp',
             'v8/custom/V8WindowCustom.cpp',
             'v8/custom/V8WorkerGlobalScopeCustom.cpp',
-            'v8/custom/V8WorkerCryptoCustom.cpp',
             'v8/custom/V8WorkerCustom.cpp',
             'v8/custom/V8XMLHttpRequestCustom.cpp',
             'v8/custom/V8XSLTProcessorCustom.cpp',
