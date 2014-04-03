@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
@@ -59,6 +60,29 @@ void UpdateWorkerDependency(const std::vector<int>& added_ids,
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&UpdateWorkerDependencyOnUI, added_ids, removed_ids));
+}
+
+void WorkerCreatedResultCallbackOnIO(int worker_process_id,
+                                     int worker_route_id,
+                                     bool pause_on_start) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  SharedWorkerServiceImpl::GetInstance()->WorkerCreatedResultCallback(
+      worker_process_id, worker_route_id, pause_on_start);
+}
+
+void NotifyWorkerCreatedOnUI(int worker_process_id,
+                             int worker_route_id,
+                             const SharedWorkerInstance& instance) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  bool pause_on_start =
+      SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
+          worker_process_id, worker_route_id, instance);
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&WorkerCreatedResultCallbackOnIO,
+                                     worker_process_id,
+                                     worker_route_id,
+                                     pause_on_start));
 }
 
 }  // namespace
@@ -130,7 +154,7 @@ void SharedWorkerServiceImpl::CreateWorker(
   ScopedWorkerDependencyChecker checker(this);
   *url_mismatch = false;
   SharedWorkerHost* existing_host = FindSharedWorkerHost(
-      params.url, params.name, partition, resource_context);
+      worker_hosts_, params.url, params.name, partition, resource_context);
   if (existing_host) {
     if (params.url != existing_host->instance()->url()) {
       *url_mismatch = true;
@@ -148,6 +172,23 @@ void SharedWorkerServiceImpl::CreateWorker(
     filter->Send(new ViewMsg_WorkerCreated(route_id));
     return;
   }
+  SharedWorkerHost* pending_host = FindSharedWorkerHost(pending_worker_hosts_,
+                                                        params.url,
+                                                        params.name,
+                                                        partition,
+                                                        resource_context);
+  if (pending_host) {
+    if (params.url != pending_host->instance()->url()) {
+      *url_mismatch = true;
+      return;
+    }
+    pending_host->AddFilter(filter, route_id);
+    pending_host->worker_document_set()->Add(filter,
+                                             params.document_id,
+                                             filter->render_process_id(),
+                                             params.render_frame_route_id);
+    return;
+  }
 
   scoped_ptr<SharedWorkerInstance> instance(new SharedWorkerInstance(
       params.url,
@@ -156,25 +197,42 @@ void SharedWorkerServiceImpl::CreateWorker(
       params.security_policy_type,
       resource_context,
       partition));
-  scoped_ptr<SharedWorkerHost> host(new SharedWorkerHost(instance.release()));
+  scoped_ptr<SharedWorkerHost> host(
+      new SharedWorkerHost(instance.release(), filter));
   host->AddFilter(filter, route_id);
   host->worker_document_set()->Add(filter,
                                    params.document_id,
                                    filter->render_process_id(),
                                    params.render_frame_route_id);
-
-  host->Init(filter);
   const int worker_route_id = host->worker_route_id();
-  worker_hosts_.set(std::make_pair(filter->render_process_id(),
-                                   worker_route_id),
-                    host.Pass());
+  // We need to call SharedWorkerDevToolsManager::WorkerCreated() on UI thread
+  // to know whether the worker should be paused on start or not.
+  // WorkerCreatedResultCallback() will be called with the result.
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&NotifyWorkerCreatedOnUI,
+                                     filter->render_process_id(),
+                                     worker_route_id,
+                                     *host->instance()));
+  pending_worker_hosts_.set(
+      std::make_pair(filter->render_process_id(), worker_route_id),
+      host.Pass());
+}
 
+void SharedWorkerServiceImpl::WorkerCreatedResultCallback(int worker_process_id,
+                                                          int worker_route_id,
+                                                          bool pause_on_start) {
+  scoped_ptr<SharedWorkerHost> host = pending_worker_hosts_.take_and_erase(
+      std::make_pair(worker_process_id, worker_route_id));
+  const GURL url = host->instance()->url();
+  const base::string16 name = host->instance()->name();
+  host->Start(pause_on_start);
+  worker_hosts_.set(std::make_pair(worker_process_id, worker_route_id),
+                    host.Pass());
   FOR_EACH_OBSERVER(
-      WorkerServiceObserver, observers_,
-      WorkerCreated(params.url,
-                    params.name,
-                    filter->render_process_id(),
-                    worker_route_id));
+      WorkerServiceObserver,
+      observers_,
+      WorkerCreated(url, name, worker_process_id, worker_route_id));
 }
 
 void SharedWorkerServiceImpl::ForwardToWorker(
@@ -288,8 +346,17 @@ void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
     if (iter->first.first == filter->render_process_id())
       remove_list.push_back(iter->first);
   }
-  for (size_t i = 0; i < remove_list.size(); ++i)
-    worker_hosts_.erase(remove_list[i]);
+  for (size_t i = 0; i < remove_list.size(); ++i) {
+    scoped_ptr<SharedWorkerHost> host =
+        worker_hosts_.take_and_erase(remove_list[i]);
+  }
+}
+
+void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,
+                                                    int worker_route_id) {
+  FOR_EACH_OBSERVER(WorkerServiceObserver,
+                    observers_,
+                    WorkerDestroyed(worker_process_id, worker_route_id));
 }
 
 SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
@@ -299,13 +366,14 @@ SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
                                           worker_route_id));
 }
 
+// static
 SharedWorkerHost* SharedWorkerServiceImpl::FindSharedWorkerHost(
+    const WorkerHostMap& hosts,
     const GURL& url,
     const base::string16& name,
     const WorkerStoragePartition& partition,
     ResourceContext* resource_context) {
-  for (WorkerHostMap::const_iterator iter = worker_hosts_.begin();
-       iter != worker_hosts_.end();
+  for (WorkerHostMap::const_iterator iter = hosts.begin(); iter != hosts.end();
        ++iter) {
     SharedWorkerInstance* instance = iter->second->instance();
     if (instance && !iter->second->closed() &&

@@ -35,6 +35,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
       const base::string16& name,
       const base::string16& content_security_policy,
       blink::WebContentSecurityPolicyType security_policy_type,
+      bool pause_on_start,
       int route_id);
 
   // IPC::Listener implementation.
