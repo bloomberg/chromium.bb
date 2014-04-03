@@ -31,6 +31,7 @@ group("root") {
     #"//net/third_party/nss:ssl",
     #"//sdch",
     "//third_party/re2",
+    "//third_party/freetype2",
     #"//third_party/WebKit/Source/platform",
     #"//third_party/icu:icudata",
     #"//third_party/leveldatabase",
