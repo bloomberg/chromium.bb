@@ -19,13 +19,13 @@ function dc_onclose() {
     finishJSTest();
 }
 
-function dc_onmessage_arraybufferview(e) {
-    testPassed("dc_onmessage_arraybufferview was called");
+function dc_onmessage_dataview(e) {
+    testPassed("dc_onmessage_dataview was called");
     data = e.data;
-    shouldBe("data.byteLength", "2");
+    shouldBe("data.byteLength", "10");
     array = new Int8Array(e.data);
-    shouldBe("array[0]", "11");
-    shouldBe("array[1]", "13");
+    shouldBe("array[0]", "1");
+    shouldBe("array[9]", "10");
 
     dc.onclose = dc_onclose;
     dc.close();
@@ -39,10 +39,17 @@ function dc_onmessage_arraybuffer(e) {
     shouldBe("array[0]", "17");
     shouldBe("array[1]", "19");
 
-    array[0] = 11;
-    array[1] = 13;
-    dc.onmessage = dc_onmessage_arraybufferview;
-    shouldNotThrow("dc.send(array);");
+    data = new ArrayBuffer(12);
+    array = new Int8Array(data);
+    array[1]=1;
+    array[10]=10;
+
+    shouldBe("data.byteLength", "12");
+
+    shrunkView = new DataView(data, 1, 10);
+
+    dc.onmessage = dc_onmessage_dataview;
+    shouldNotThrow("dc.send(shrunkView);");
 }
 
 function dc_onmessage_string(e) {

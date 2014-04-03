@@ -193,9 +193,7 @@ void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& excep
     if (!dataLength)
         return;
 
-    const char* dataPointer = static_cast<const char*>(data->data());
-
-    if (!m_handler->sendRawData(dataPointer, dataLength)) {
+    if (!m_handler->sendRawData(static_cast<const char*>((data->data())), dataLength)) {
         // FIXME: This should not throw an exception but instead forcefully close the data channel.
         throwCouldNotSendDataException(exceptionState);
     }
@@ -203,8 +201,10 @@ void RTCDataChannel::send(PassRefPtr<ArrayBuffer> prpData, ExceptionState& excep
 
 void RTCDataChannel::send(PassRefPtr<ArrayBufferView> data, ExceptionState& exceptionState)
 {
-    RefPtr<ArrayBuffer> arrayBuffer(data->buffer());
-    send(arrayBuffer.release(), exceptionState);
+    if (!m_handler->sendRawData(static_cast<const char*>(data->baseAddress()), data->byteLength())) {
+        // FIXME: This should not throw an exception but instead forcefully close the data channel.
+        throwCouldNotSendDataException(exceptionState);
+    }
 }
 
 void RTCDataChannel::send(PassRefPtrWillBeRawPtr<Blob> data, ExceptionState& exceptionState)

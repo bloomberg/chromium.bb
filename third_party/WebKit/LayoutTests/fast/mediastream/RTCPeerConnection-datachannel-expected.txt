@@ -30,11 +30,12 @@ PASS dc_onmessage_arraybuffer was called
 PASS data.byteLength is 2
 PASS array[0] is 17
 PASS array[1] is 19
-PASS dc.send(array); did not throw exception.
-PASS dc_onmessage_arraybufferview was called
-PASS data.byteLength is 2
-PASS array[0] is 11
-PASS array[1] is 13
+PASS data.byteLength is 12
+PASS dc.send(shrunkView); did not throw exception.
+PASS dc_onmessage_dataview was called
+PASS data.byteLength is 10
+PASS array[0] is 1
+PASS array[9] is 10
 PASS dc_onclose was called
 PASS dc.readyState is 'closed'
 PASS successfullyParsed is true
