@@ -43,6 +43,7 @@ def ParseElfHeader(path):
 
   e_machine_mapping = {
     3 : 'x86-32',
+    8 : 'mips32',
     40 : 'arm',
     62 : 'x86-64'
   }
