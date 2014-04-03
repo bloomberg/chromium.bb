@@ -14,13 +14,14 @@ namespace content {
 #define COMPILE_ASSERT_MATCHING_ENUM(expected, actual) \
   COMPILE_ASSERT(int(expected) == int(actual), mismatching_enums)
 
-COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationPortraitPrimary,
-    PORTRAIT_PRIMARY);
-COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLandscapePrimary,
-    LANDSCAPE_PRIMARY);
-COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationPortraitSecondary,
-    PORTRAIT_SECONDARY);
-COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLandscapeSecondary,
-    LANDSCAPE_SECONDARY);
+// TODO(mlamouri): this is temporary to allow to change the enum in Blink.
+// COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationPortraitPrimary,
+//     PORTRAIT_PRIMARY);
+// COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLandscapePrimary,
+//     LANDSCAPE_PRIMARY);
+// COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationPortraitSecondary,
+//     PORTRAIT_SECONDARY);
+// COMPILE_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLandscapeSecondary,
+//     LANDSCAPE_SECONDARY);
 
 } // namespace content
