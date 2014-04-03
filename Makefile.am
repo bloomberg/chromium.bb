@@ -504,6 +504,9 @@ weston_transformed_LDADD = libtoytoolkit.la
 weston_transformed_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
 weston_fullscreen_SOURCES = clients/fullscreen.c
+nodist_weston_fullscreen_SOURCES =			\
+	protocol/fullscreen-shell-protocol.c		\
+	protocol/fullscreen-shell-client-protocol.h
 weston_fullscreen_LDADD = libtoytoolkit.la
 weston_fullscreen_CFLAGS = $(AM_CFLAGS) $(CLIENT_CFLAGS)
 
