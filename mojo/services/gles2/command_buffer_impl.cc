@@ -18,6 +18,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
+#include "mojo/services/gles2/mojo_buffer_backing.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 
@@ -56,12 +57,13 @@ CommandBufferImpl::~CommandBufferImpl() { client_->DidDestroy(); }
 
 void CommandBufferImpl::Initialize(
     ScopedCommandBufferSyncClientHandle sync_client,
-    const ShmHandle& shared_state) {
+    mojo::ScopedSharedBufferHandle shared_state) {
   sync_client_.reset(sync_client.Pass(), NULL);
-  sync_client_->DidInitialize(DoInitialize(shared_state));
+  sync_client_->DidInitialize(DoInitialize(shared_state.Pass()));
 }
 
-bool CommandBufferImpl::DoInitialize(const ShmHandle& shared_state) {
+bool CommandBufferImpl::DoInitialize(
+    mojo::ScopedSharedBufferHandle shared_state) {
   // TODO(piman): offscreen surface.
   scoped_refptr<gfx::GLSurface> surface =
       gfx::GLSurface::CreateViewGLSurface(widget_);
@@ -126,13 +128,12 @@ bool CommandBufferImpl::DoInitialize(const ShmHandle& shared_state) {
   // TODO(piman): other callbacks
 
   const size_t kSize = sizeof(gpu::CommandBufferSharedState);
-  scoped_ptr<base::SharedMemory> shared_state_shm(
-      new base::SharedMemory(shared_state, false));
-  if (!shared_state_shm->Map(kSize))
+  scoped_ptr<gpu::BufferBacking> backing(
+      gles2::MojoBufferBacking::Create(shared_state.Pass(), kSize));
+  if (!backing.get())
     return false;
 
-  command_buffer_->SetSharedStateBuffer(
-      gpu::MakeBackingFromSharedMemory(shared_state_shm.Pass(), kSize));
+  command_buffer_->SetSharedStateBuffer(backing.Pass());
   return true;
 }
 
@@ -150,20 +151,19 @@ void CommandBufferImpl::MakeProgress(int32_t last_get_offset) {
   sync_client_->DidMakeProgress(command_buffer_->GetState());
 }
 
-void CommandBufferImpl::RegisterTransferBuffer(int32_t id,
-                                               const ShmHandle& transfer_buffer,
-                                               uint32_t size) {
+void CommandBufferImpl::RegisterTransferBuffer(
+    int32_t id,
+    mojo::ScopedSharedBufferHandle transfer_buffer,
+    uint32_t size) {
   // Take ownership of the memory and map it into this process.
   // This validates the size.
-  scoped_ptr<base::SharedMemory> shared_memory(
-      new base::SharedMemory(transfer_buffer, false));
-  if (!shared_memory->Map(size)) {
+  scoped_ptr<gpu::BufferBacking> backing(
+      gles2::MojoBufferBacking::Create(transfer_buffer.Pass(), size));
+  if (!backing.get()) {
     DVLOG(0) << "Failed to map shared memory.";
     return;
   }
-
-  command_buffer_->RegisterTransferBuffer(
-      id, gpu::MakeBackingFromSharedMemory(shared_memory.Pass(), size));
+  command_buffer_->RegisterTransferBuffer(id, backing.Pass());
 }
 
 void CommandBufferImpl::DestroyTransferBuffer(int32_t id) {

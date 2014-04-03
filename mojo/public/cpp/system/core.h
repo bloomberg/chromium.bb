@@ -468,14 +468,14 @@ inline MojoResult CreateSharedBuffer(
 // manually. (The template enforces that the in and out handles to be of the
 // same type.)
 template <class BufferHandleType>
-inline MojoResult DuplicatedBuffer(
+inline MojoResult DuplicateBuffer(
     BufferHandleType buffer,
     const MojoDuplicateBufferHandleOptions* options,
     ScopedHandleBase<BufferHandleType>* new_buffer) {
   assert(new_buffer);
   BufferHandleType handle;
-  MojoResult rv = MojoDuplicateSharedBuffer(buffer.value(), options,
-                                            handle.mutable_value());
+  MojoResult rv = MojoDuplicateBufferHandle(
+      buffer.value(), options, handle.mutable_value());
   // Reset even on failure (reduces the chances that a "stale"/incorrect handle
   // will be used).
   new_buffer->reset(handle);
@@ -488,7 +488,7 @@ inline MojoResult MapBuffer(BufferHandleType buffer,
                             uint64_t num_bytes,
                             void** pointer,
                             MojoMapBufferFlags flags) {
-  assert(buffer);
+  assert(buffer.is_valid());
   return MojoMapBuffer(buffer.value(), offset, num_bytes, pointer, flags);
 }
 

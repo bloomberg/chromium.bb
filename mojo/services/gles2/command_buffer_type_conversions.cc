@@ -4,33 +4,9 @@
 
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
 
-#include <string.h>
-
 #include "mojo/services/gles2/command_buffer.mojom.h"
 
 namespace mojo {
-
-COMPILE_ASSERT(sizeof(base::SharedMemoryHandle) <= sizeof(uint64_t),
-               mojo_ShmHandle_too_small_for_base_SharedMemoryHandle);
-
-ShmHandle TypeConverter<ShmHandle, base::SharedMemoryHandle>::ConvertFrom(
-    const base::SharedMemoryHandle& input,
-    Buffer* buffer) {
-  ShmHandle::Builder result(buffer);
-  uint64_t handle = 0;
-  memcpy(&handle, &input, sizeof(input));
-  result.set_handle_hack(handle);
-  return result.Finish();
-}
-
-base::SharedMemoryHandle
-TypeConverter<ShmHandle, base::SharedMemoryHandle>::ConvertTo(
-    const ShmHandle& input) {
-  base::SharedMemoryHandle output;
-  uint64_t handle = input.handle_hack();
-  memcpy(&output, &handle, sizeof(output));
-  return output;
-}
 
 CommandBufferState
 TypeConverter<CommandBufferState, gpu::CommandBuffer::State>::ConvertFrom(

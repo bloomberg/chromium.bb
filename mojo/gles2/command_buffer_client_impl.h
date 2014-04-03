@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "gpu/command_buffer/common/gpu_control.h"
@@ -96,17 +95,15 @@ class CommandBufferClientImpl : public CommandBufferClient,
   void TryUpdateState();
   void MakeProgressAndUpdateState();
 
-  gpu::CommandBufferSharedState* shared_state() const {
-    return reinterpret_cast<gpu::CommandBufferSharedState*>(
-        shared_state_shm_->memory());
-  }
+  gpu::CommandBufferSharedState* shared_state() const { return shared_state_; }
 
   CommandBufferDelegate* delegate_;
   RemotePtr<mojo::CommandBuffer> command_buffer_;
   scoped_ptr<SyncDispatcher<CommandBufferSyncClient> > sync_dispatcher_;
 
   State last_state_;
-  scoped_ptr<base::SharedMemory> shared_state_shm_;
+  mojo::ScopedSharedBufferHandle shared_state_handle_;
+  gpu::CommandBufferSharedState* shared_state_;
   int32 last_put_offset_;
   int32 next_transfer_buffer_id_;
 

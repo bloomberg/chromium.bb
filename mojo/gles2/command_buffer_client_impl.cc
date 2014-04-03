@@ -11,9 +11,36 @@
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/bindings/sync_dispatcher.h"
 #include "mojo/services/gles2/command_buffer_type_conversions.h"
+#include "mojo/services/gles2/mojo_buffer_backing.h"
 
 namespace mojo {
 namespace gles2 {
+
+namespace {
+
+bool CreateMapAndDupSharedBuffer(size_t size,
+                                 void** memory,
+                                 mojo::ScopedSharedBufferHandle* handle,
+                                 mojo::ScopedSharedBufferHandle* duped) {
+  MojoResult result = mojo::CreateSharedBuffer(NULL, size, handle);
+  if (result != MOJO_RESULT_OK)
+    return false;
+  DCHECK(handle->is_valid());
+
+  result = mojo::DuplicateBuffer(handle->get(), NULL, duped);
+  if (result != MOJO_RESULT_OK)
+    return false;
+  DCHECK(duped->is_valid());
+
+  result = mojo::MapBuffer(
+      handle->get(), 0, size, memory, MOJO_MAP_BUFFER_FLAG_NONE);
+  if (result != MOJO_RESULT_OK)
+    return false;
+  DCHECK(*memory);
+
+  return true;
+}
+}
 
 CommandBufferDelegate::~CommandBufferDelegate() {}
 
@@ -26,6 +53,7 @@ CommandBufferClientImpl::CommandBufferClientImpl(
     ScopedCommandBufferHandle command_buffer_handle)
     : delegate_(delegate),
       command_buffer_(command_buffer_handle.Pass(), this, this, async_waiter),
+      shared_state_(NULL),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
       initialize_result_(false) {}
@@ -33,15 +61,15 @@ CommandBufferClientImpl::CommandBufferClientImpl(
 CommandBufferClientImpl::~CommandBufferClientImpl() {}
 
 bool CommandBufferClientImpl::Initialize() {
-  shared_state_shm_.reset(new base::SharedMemory);
-  if (!shared_state_shm_->CreateAndMapAnonymous(
-           sizeof(gpu::CommandBufferSharedState)))
+  const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
+  void* memory = NULL;
+  mojo::ScopedSharedBufferHandle duped;
+  bool result = CreateMapAndDupSharedBuffer(
+      kSharedStateSize, &memory, &shared_state_handle_, &duped);
+  if (!result)
     return false;
 
-  base::SharedMemoryHandle handle;
-  shared_state_shm_->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  if (!base::SharedMemory::IsHandleValid(handle))
-    return false;
+  shared_state_ = static_cast<gpu::CommandBufferSharedState*>(memory);
 
   shared_state()->Initialize();
 
@@ -49,7 +77,7 @@ bool CommandBufferClientImpl::Initialize() {
   sync_dispatcher_.reset(new SyncDispatcher<CommandBufferSyncClient>(
       sync_pipe.handle_to_peer.Pass(), this));
   AllocationScope scope;
-  command_buffer_->Initialize(sync_pipe.handle_to_self.Pass(), handle);
+  command_buffer_->Initialize(sync_pipe.handle_to_self.Pass(), duped.Pass());
   // Wait for DidInitialize to come on the sync client pipe.
   if (!sync_dispatcher_->WaitAndDispatchOneMessage()) {
     VLOG(1) << "Channel encountered error while creating command buffer";
@@ -109,23 +137,21 @@ scoped_refptr<gpu::Buffer> CommandBufferClientImpl::CreateTransferBuffer(
   if (size >= std::numeric_limits<uint32_t>::max())
     return NULL;
 
-  scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  if (!shared_memory->CreateAndMapAnonymous(size))
-    return NULL;
-
-  base::SharedMemoryHandle handle;
-  shared_memory->ShareToProcess(base::GetCurrentProcessHandle(), &handle);
-  if (!base::SharedMemory::IsHandleValid(handle))
+  void* memory = NULL;
+  mojo::ScopedSharedBufferHandle handle;
+  mojo::ScopedSharedBufferHandle duped;
+  if (!CreateMapAndDupSharedBuffer(size, &memory, &handle, &duped))
     return NULL;
 
   *id = ++next_transfer_buffer_id_;
 
   AllocationScope scope;
   command_buffer_->RegisterTransferBuffer(
-      *id, handle, static_cast<uint32_t>(size));
+      *id, duped.Pass(), static_cast<uint32_t>(size));
 
-  scoped_refptr<gpu::Buffer> buffer =
-      gpu::MakeBufferFromSharedMemory(shared_memory.Pass(), size);
+  scoped_ptr<gpu::BufferBacking> backing(
+      new MojoBufferBacking(handle.Pass(), memory, size));
+  scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(backing.Pass()));
   return buffer;
 }
 

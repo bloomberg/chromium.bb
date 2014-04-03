@@ -33,13 +33,14 @@ class CommandBufferImpl : public CommandBuffer {
   virtual ~CommandBufferImpl();
 
   virtual void Initialize(ScopedCommandBufferSyncClientHandle sync_client,
-                          const ShmHandle& shared_state) OVERRIDE;
+                          mojo::ScopedSharedBufferHandle shared_state) OVERRIDE;
   virtual void SetGetBuffer(int32_t buffer) OVERRIDE;
   virtual void Flush(int32_t put_offset) OVERRIDE;
   virtual void MakeProgress(int32_t last_get_offset) OVERRIDE;
-  virtual void RegisterTransferBuffer(int32_t id,
-                                      const ShmHandle& transfer_buffer,
-                                      uint32_t size) OVERRIDE;
+  virtual void RegisterTransferBuffer(
+      int32_t id,
+      mojo::ScopedSharedBufferHandle transfer_buffer,
+      uint32_t size) OVERRIDE;
   virtual void DestroyTransferBuffer(int32_t id) OVERRIDE;
   virtual void Echo(const Callback<void()>& callback) OVERRIDE;
 
@@ -47,7 +48,7 @@ class CommandBufferImpl : public CommandBuffer {
   virtual void CancelAnimationFrames() OVERRIDE;
 
  private:
-  bool DoInitialize(const ShmHandle& shared_state);
+  bool DoInitialize(mojo::ScopedSharedBufferHandle shared_state);
 
   void OnParseError();
 

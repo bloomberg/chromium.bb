@@ -7,6 +7,8 @@
         'services/gles2/command_buffer.mojom',
         'services/gles2/command_buffer_type_conversions.cc',
         'services/gles2/command_buffer_type_conversions.h',
+        'services/gles2/mojo_buffer_backing.cc',
+        'services/gles2/mojo_buffer_backing.h',
       ],
       'variables': {
         'mojom_base_output_dir': 'mojo',
@@ -17,6 +19,7 @@
         'mojo_system',
       ],
       'dependencies': [
+        '../gpu/gpu.gyp:command_buffer_common',
         'mojo_bindings',
         'mojo_system',
       ],
