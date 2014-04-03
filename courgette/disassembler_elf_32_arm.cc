@@ -385,7 +385,7 @@ CheckBool DisassemblerElf32ARM::ParseRel32RelocsFromSection(
     // addressing mode?
 
     TypedRVAARM* rel32_rva = NULL;
-    RVA target_rva;
+    RVA target_rva = 0;
     bool found = false;
 
     // 16-bit thumb ops
