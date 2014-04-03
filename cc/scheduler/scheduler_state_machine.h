@@ -320,6 +320,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool skip_next_begin_main_frame_to_reduce_latency_;
   bool skip_begin_main_frame_to_reduce_latency_;
   bool continuous_painting_;
+  bool needs_back_to_back_readback_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

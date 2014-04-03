@@ -45,7 +45,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       smoothness_takes_priority_(false),
       skip_next_begin_main_frame_to_reduce_latency_(false),
       skip_begin_main_frame_to_reduce_latency_(false),
-      continuous_painting_(false) {}
+      continuous_painting_(false),
+      needs_back_to_back_readback_(false) {}
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
     OutputSurfaceState state) {
@@ -756,10 +757,26 @@ void SchedulerStateMachine::UpdateStateOnActivation() {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_ACTIVATION)
     forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_DRAW;
 
-  if (readback_state_ == READBACK_STATE_WAITING_FOR_ACTIVATION)
+  if (readback_state_ == READBACK_STATE_WAITING_FOR_ACTIVATION) {
     readback_state_ = READBACK_STATE_WAITING_FOR_DRAW_AND_READBACK;
-  else if (readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION)
-    readback_state_ = READBACK_STATE_IDLE;
+  } else if (readback_state_ ==
+             READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION) {
+    if (needs_back_to_back_readback_) {
+      if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT) {
+        // If main_frame_before_activation_enabled is true, it is possible that
+        // we will have already sent the BeginMainFrame here.
+        readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
+      } else {
+        // Replacement commit for incoming forced commit should be scheduled
+        // after current commit's draw & swap is finished.
+        needs_commit_ = true;
+        readback_state_ = READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME;
+      }
+      needs_back_to_back_readback_ = false;
+    } else {
+      readback_state_ = READBACK_STATE_IDLE;
+    }
+  }
 
   has_pending_tree_ = false;
   pending_tree_is_ready_for_activation_ = false;
@@ -1111,16 +1128,25 @@ void SchedulerStateMachine::SetNeedsForcedCommitForReadback() {
   // If this is called in READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT, this
   // is a back-to-back readback request that started before the replacement
   // commit had a chance to land.
+  // If this is called in READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION,
+  // this is a readback-commit-readback request when replacement commit is in
+  // impl-side painting.
   DCHECK(readback_state_ == READBACK_STATE_IDLE ||
-         readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT);
+         readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT ||
+         readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION);
 
-  // If there is already a commit in progress when we get the readback request
-  // (we are in COMMIT_STATE_BEGIN_MAIN_FRAME_SENT), then we don't need to send
-  // a BeginMainFrame for the replacement commit, since there's already a
-  // BeginMainFrame behind the readback request. In that case, we can skip
-  // READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME and go directly to
-  // READBACK_STATE_WAITING_FOR_COMMIT
-  if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT) {
+  if (readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION) {
+    // If new forced commit is requested when impl-side painting of replacement
+    // commit is in progress, it should not interrupt the draw & swap of current
+    // commit(replacement commit). New commit(incoming forced commit) should be
+    // started after current commit is finished.
+    needs_back_to_back_readback_ = true;
+  } else if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT) {
+    // If there is already a commit in progress when we get the readback request
+    // then we don't need to send a BeginMainFrame for the replacement commit,
+    // since there's already a BeginMainFrame behind the readback request. In
+    // that case, we can skip READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME and go
+    // directly to READBACK_STATE_WAITING_FOR_COMMIT.
     readback_state_ = READBACK_STATE_WAITING_FOR_COMMIT;
   } else {
     // Set needs_commit_ to true to trigger scheduling BeginMainFrame().
@@ -1179,6 +1205,11 @@ void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
 
 void SchedulerStateMachine::NotifyBeginMainFrameStarted() {
   DCHECK_EQ(commit_state_, COMMIT_STATE_BEGIN_MAIN_FRAME_SENT);
+
+  DCHECK(readback_state_ == READBACK_STATE_IDLE ||
+         readback_state_ == READBACK_STATE_WAITING_FOR_COMMIT ||
+         readback_state_ == READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT);
+
   commit_state_ = COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED;
 }
 

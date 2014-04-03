@@ -73,6 +73,7 @@ class StateMachine : public SchedulerStateMachine {
     return output_surface_state_;
   }
 
+  void SetReadbackState(SynchronousReadbackState rs) { readback_state_ = rs; }
   SynchronousReadbackState readback_state() const { return readback_state_; }
 
   bool NeedsCommit() const { return needs_commit_; }
@@ -105,6 +106,10 @@ class StateMachine : public SchedulerStateMachine {
 
   bool PendingActivationsShouldBeForced() const {
     return SchedulerStateMachine::PendingActivationsShouldBeForced();
+  }
+
+  void SetHasPendingTree(bool has_pending_tree) {
+    has_pending_tree_ = has_pending_tree;
   }
 };
 
@@ -1574,6 +1579,175 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenForcedCommitInProgress) {
             state.NextAction());
 
   // The normal commit can then proceed.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+}
+
+void TestForceCommitWhenReplacementActivationInProgress(
+    bool main_frame_before_draw_enabled) {
+  SchedulerSettings settings;
+  settings.impl_side_painting = true;
+  settings.main_frame_before_draw_enabled = main_frame_before_draw_enabled;
+  StateMachine state(settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // Impl-side painting of replacement commit is in-progress.
+  if (settings.main_frame_before_draw_enabled) {
+    state.SetCommitState(
+        SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_ACTIVATION);
+  } else {
+    state.SetCommitState(
+        SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
+  }
+  state.SetReadbackState(
+      SchedulerStateMachine::READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION);
+  state.SetHasPendingTree(true);
+
+  // Forced commit is requested during the impl-side painting.
+  state.SetNeedsForcedCommitForReadback();
+  EXPECT_FALSE(state.NeedsCommit());
+
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  // New replacement commit is needed for incoming forced commit.
+  EXPECT_EQ(SchedulerStateMachine::READBACK_STATE_NEEDS_BEGIN_MAIN_FRAME,
+            state.readback_state());
+  EXPECT_TRUE(state.NeedsCommit());
+  if (settings.main_frame_before_draw_enabled) {
+    // New replacement commit is scheduled.
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+    // Forced commit is started.
+    EXPECT_EQ(SchedulerStateMachine::READBACK_STATE_WAITING_FOR_COMMIT,
+              state.readback_state());
+  }
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // Perform the draw & swap of replacement commit.
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  if (!settings.main_frame_before_draw_enabled) {
+    // New replacement commit is scheduled.
+    EXPECT_ACTION_UPDATE_STATE(
+        SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+    // Forced commit is started.
+    EXPECT_EQ(SchedulerStateMachine::READBACK_STATE_WAITING_FOR_COMMIT,
+              state.readback_state());
+  }
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_NONE);
+
+  // Finish the forced commit and draw it.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_READBACK)
+  EXPECT_EQ(
+      SchedulerStateMachine::READBACK_STATE_WAITING_FOR_REPLACEMENT_COMMIT,
+      state.readback_state());
+  EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
+            state.CommitState());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Finish the replacement commit and draw it.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_EQ(SchedulerStateMachine::READBACK_STATE_IDLE, state.readback_state());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
+// Explicitly test when main_frame_before_draw_enabled = true.
+TEST(SchedulerStateMachineTest,
+     ForceCommitWhenReplacementActivationInProgressAndMainFrameEnabled) {
+  bool main_frame_before_draw_enabled = true;
+  TestForceCommitWhenReplacementActivationInProgress(
+      main_frame_before_draw_enabled);
+}
+
+// Explicitly test when main_frame_before_draw_enabled = false.
+TEST(SchedulerStateMachineTest,
+     ForceCommitWhenReplacementActivationInProgressAndMainFrameDisabled) {
+  bool main_frame_before_draw_enabled = false;
+  TestForceCommitWhenReplacementActivationInProgress(
+      main_frame_before_draw_enabled);
+}
+
+// Test with main_frame_before_activation_enable = true;
+TEST(SchedulerStateMachineTest,
+     ForceCommitWhenReplacementActivationInProgressWithMFBA) {
+  SchedulerSettings settings;
+  settings.impl_side_painting = true;
+  settings.main_frame_before_activation_enabled = true;
+  StateMachine state(settings);
+  state.SetCanStart();
+  state.UpdateState(state.NextAction());
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetVisible(true);
+  state.SetCanDraw(true);
+
+  // When impl-side painting of replacement commit is in-progress, commit state
+  // is idle because main_frame_before_activation is enabled.
+  state.SetCommitState(
+      SchedulerStateMachine::COMMIT_STATE_IDLE);
+  state.SetReadbackState(
+      SchedulerStateMachine::READBACK_STATE_WAITING_FOR_REPLACEMENT_ACTIVATION);
+  state.SetHasPendingTree(true);
+
+  // New commit is requested and scheduled when impl-side painting is in
+  // progress.
+  state.SetNeedsCommit();
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  // Forced commit is requested during the impl-side painting.
+  state.SetNeedsForcedCommitForReadback();
+  EXPECT_FALSE(state.NeedsCommit());
+
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  state.NotifyReadyToActivate();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE);
+  // Replacement commit for requested forced commit is already scheduled.
+  EXPECT_EQ(SchedulerStateMachine::READBACK_STATE_WAITING_FOR_COMMIT,
+            state.readback_state());
+  EXPECT_FALSE(state.NeedsCommit());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+
+  state.OnBeginImplFrame(BeginFrameArgs::CreateForTesting());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  // Perform the draw & swap of replacement commit.
+  state.OnBeginImplFrameDeadline();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_NONE);
+
+  // forced commit is started.
   state.NotifyBeginMainFrameStarted();
   state.NotifyReadyToCommit();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
