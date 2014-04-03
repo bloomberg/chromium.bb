@@ -4,9 +4,7 @@
 
 #include "gestures/include/filter_interpreter.h"
 
-#include <base/values.h>
-
-using base::DictionaryValue;
+#include <json/value.h>
 
 namespace gestures {
 
@@ -32,10 +30,10 @@ void FilterInterpreter::ConsumeGesture(const Gesture& gesture) {
   ProduceGesture(gesture);
 }
 
-DictionaryValue* FilterInterpreter::EncodeCommonInfo() {
-  DictionaryValue *root = Interpreter::EncodeCommonInfo();
+Json::Value FilterInterpreter::EncodeCommonInfo() {
+  Json::Value root = Interpreter::EncodeCommonInfo();
 #ifdef DEEP_LOGS
-  root->Set(ActivityLog::kKeyNext, next_->EncodeCommonInfo());
+  root[ActivityLog::kKeyNext] = next_->EncodeCommonInfo();
 #endif
   return root;
 }

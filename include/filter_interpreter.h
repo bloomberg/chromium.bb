@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 #include <memory>
-#include <base/values.h>
+
+#include <json/value.h>
 
 #include "gestures/include/interpreter.h"
 #include "gestures/include/macros.h"
@@ -26,7 +27,7 @@ class FilterInterpreter : public Interpreter, public GestureConsumer {
       : Interpreter(prop_reg, tracer, force_logging) { next_.reset(next); }
   virtual ~FilterInterpreter() {}
 
-  base::DictionaryValue* EncodeCommonInfo();
+  Json::Value EncodeCommonInfo();
   void Clear();
 
   virtual void Initialize(const HardwareProperties* hwprops,

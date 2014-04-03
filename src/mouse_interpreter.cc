@@ -6,6 +6,7 @@
 
 #include <math.h>
 
+#include "gestures/include/macros.h"
 #include "gestures/include/tracer.h"
 
 namespace gestures {

@@ -6,6 +6,7 @@
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
+#include "gestures/include/macros.h"
 
 namespace gestures {
 

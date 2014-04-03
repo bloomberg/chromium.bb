@@ -4,14 +4,11 @@
 
 #include <string>
 
-#include <base/json/json_writer.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_log.h"
 #include "gestures/include/prop_registry.h"
 
-using base::DictionaryValue;
-using base::Value;
 using std::string;
 
 // Mock struct GesturesProp implementation (outside of namespace gestures)
@@ -35,11 +32,9 @@ class PropRegistryTestDelegate : public PropertyDelegate {
 
 namespace {
 string ValueForProperty(const Property& prop) {
-  DictionaryValue temp;
-  temp.Set("tempkey", prop.NewValue());
-  string ret;
-  base::JSONWriter::Write(&temp, &ret);
-  return ret;
+  Json::Value temp(Json::objectValue);
+  temp["tempkey"] = prop.NewValue();
+  return temp.toStyledString();
 }
 
 }  // namespace {}
@@ -196,7 +191,7 @@ TEST(PropRegistryTest, DoublePromoteIntTest) {
   DoubleProperty my_double(&reg, "MyDouble", 1234.5, &delegate);
   EXPECT_TRUE(strstr(ValueForProperty(my_double).c_str(), "1234.5"));
   IntProperty my_int(&reg, "MyInt", 321, &delegate);
-  Value* my_int_val = my_int.NewValue();
+  Json::Value my_int_val = my_int.NewValue();
   EXPECT_TRUE(my_double.SetValue(my_int_val));
   EXPECT_TRUE(strstr(ValueForProperty(my_double).c_str(), "321"));
 }

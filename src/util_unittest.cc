@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include "gestures/include/macros.h"
 #include "gestures/include/util.h"
 
 namespace gestures {

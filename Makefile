@@ -142,13 +142,11 @@ CXXFLAGS+=\
 endif
 
 PKG_CONFIG ?= pkg-config
-BASE_VER ?= 242728
-PC_DEPS += libchrome-$(BASE_VER)
 PC_CFLAGS := $(shell $(PKG_CONFIG) --cflags $(PC_DEPS))
 PC_LIBS := $(shell $(PKG_CONFIG) --libs $(PC_DEPS))
 
-CXXFLAGS += $(PC_CFLAGS)
-LINK_FLAGS += $(PC_LIBS)
+CXXFLAGS += $(PC_CFLAGS) -I$(SYSROOT)/usr/include/jsoncpp
+LINK_FLAGS += $(PC_LIBS) -ljsoncpp
 
 LINK_FLAGS+=\
 	-lpthread \

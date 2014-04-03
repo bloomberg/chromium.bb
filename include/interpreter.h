@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include <base/values.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_log.h"
@@ -62,7 +61,7 @@ class Interpreter {
                           Metrics* metrics, MetricsProperties* mprops,
                           GestureConsumer* consumer);
 
-  virtual base::DictionaryValue* EncodeCommonInfo();
+  virtual Json::Value EncodeCommonInfo();
   std::string Encode();
 
   virtual void Clear() {

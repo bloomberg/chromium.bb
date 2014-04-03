@@ -8,8 +8,6 @@
 #include <fcntl.h>
 #include <string>
 
-#include <base/values.h>
-
 #include "gestures/include/logging.h"
 #include "gestures/include/file_util.h"
 

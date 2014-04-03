@@ -9,8 +9,8 @@
 
 #include <string>
 
-#include <base/values.h>
 #include <gtest/gtest.h>  // For FRIEND_TEST
+#include <json/value.h>
 
 // This is a class that circularly buffers all incoming and outgoing activity
 // so that end users can report issues and engineers can reproduce them.
@@ -75,8 +75,8 @@ class ActivityLog {
 
   // Returns a JSON string representing all the state in the buffer
   std::string Encode();
-  base::DictionaryValue* AddEncodeInfo(base::DictionaryValue* root);
-  base::DictionaryValue* EncodeCommonInfo();
+  void AddEncodeInfo(Json::Value* root);
+  Json::Value EncodeCommonInfo();
   size_t size() const { return size_; }
   size_t MaxSize() const { return kBufferSize; }
   Entry* GetEntry(size_t idx) {
@@ -191,15 +191,15 @@ class ActivityLog {
   size_t TailIdx() const { return (head_idx_ + size_ - 1) % kBufferSize; }
 
   // JSON-encoders for various types
-  base::Value* EncodeHardwareProperties() const;
-  base::Value* EncodeHardwareState(const HardwareState& hwstate);
-  base::Value* EncodeTimerCallback(stime_t timestamp);
-  base::Value* EncodeCallbackRequest(stime_t timestamp);
-  base::Value* EncodeGesture(const Gesture& gesture);
-  base::Value* EncodePropChange(const PropChangeEntry& prop_change);
+  Json::Value EncodeHardwareProperties() const;
+  Json::Value EncodeHardwareState(const HardwareState& hwstate);
+  Json::Value EncodeTimerCallback(stime_t timestamp);
+  Json::Value EncodeCallbackRequest(stime_t timestamp);
+  Json::Value EncodeGesture(const Gesture& gesture);
+  Json::Value EncodePropChange(const PropChangeEntry& prop_change);
 
   // Encode user-configurable properties
-  base::Value* EncodePropRegistry();
+  Json::Value EncodePropRegistry();
 
 #ifdef GESTURES_LARGE_LOGGING_BUFFER
   static const size_t kBufferSize = 65536;

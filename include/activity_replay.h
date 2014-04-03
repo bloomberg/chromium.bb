@@ -10,7 +10,7 @@
 #include <tr1/memory>
 #include <set>
 
-#include <base/values.h>
+#include <json/value.h>
 
 #include "gestures/include/activity_log.h"
 #include "gestures/include/gestures.h"
@@ -39,25 +39,25 @@ class ActivityReplay : public GestureConsumer {
 
  private:
   // These return true on success
-  bool ParseProperties(base::DictionaryValue* dict,
+  bool ParseProperties(const Json::Value& dict,
                        const std::set<std::string>& honor_props);
-  bool ParseHardwareProperties(base::DictionaryValue* obj,
+  bool ParseHardwareProperties(const Json::Value& obj,
                                HardwareProperties* out_props);
-  bool ParseEntry(base::DictionaryValue* entry);
-  bool ParseHardwareState(base::DictionaryValue* entry);
-  bool ParseFingerState(base::DictionaryValue* entry, FingerState* out_fs);
-  bool ParseTimerCallback(base::DictionaryValue* entry);
-  bool ParseCallbackRequest(base::DictionaryValue* entry);
-  bool ParseGesture(base::DictionaryValue* entry);
-  bool ParseGestureMove(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureScroll(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureSwipe(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureSwipeLift(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGesturePinch(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureButtonsChange(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureFling(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParseGestureMetrics(base::DictionaryValue* entry, Gesture* out_gs);
-  bool ParsePropChange(base::DictionaryValue* entry);
+  bool ParseEntry(const Json::Value& entry);
+  bool ParseHardwareState(const Json::Value& entry);
+  bool ParseFingerState(const Json::Value& entry, FingerState* out_fs);
+  bool ParseTimerCallback(const Json::Value& entry);
+  bool ParseCallbackRequest(const Json::Value& entry);
+  bool ParseGesture(const Json::Value& entry);
+  bool ParseGestureMove(const Json::Value& entry, Gesture* out_gs);
+  bool ParseGestureScroll(const Json::Value& entry, Gesture* out_gs);
+  bool ParseGestureSwipe(const Json::Value& entry, Gesture* out_gs);
+  bool ParseGestureSwipeLift(const Json::Value& entry, Gesture* out_gs);
+  bool ParseGesturePinch(const Json::Value& entry, Gesture* out_gs);
+  bool ParseGestureButtonsChange(const Json::Value& entry, Gesture* out_gs);
+  bool ParseGestureFling(const Json::Value& entry, Gesture* out_gs);
+  bool ParseGestureMetrics(const Json::Value& entry, Gesture* out_gs);
+  bool ParsePropChange(const Json::Value& entry);
 
   bool ReplayPropChange(const ActivityLog::PropChangeEntry& entry);
 

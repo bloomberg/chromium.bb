@@ -7,15 +7,11 @@
 #include <set>
 #include <string>
 
-#include <base/values.h>
+#include <json/value.h>
 
 #include "gestures/include/activity_log.h"
 #include "gestures/include/gestures.h"
 
-using base::FundamentalValue;
-using base::ListValue;
-using base::StringValue;
-using base::Value;
 using std::set;
 using std::string;
 
@@ -86,19 +82,15 @@ void BoolProperty::CreatePropImpl() {
     delegate_->BoolWasWritten(this);
 }
 
-Value* BoolProperty::NewValue() const {
-  return new FundamentalValue(val_ != 0);
+Json::Value BoolProperty::NewValue() const {
+  return Json::Value(val_ != 0);
 }
 
-bool BoolProperty::SetValue(Value* value) {
-  if (value->GetType() != Value::TYPE_BOOLEAN) {
+bool BoolProperty::SetValue(const Json::Value& value) {
+  if (value.type() != Json::booleanValue) {
     return false;
   }
-  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
-  bool val = false;
-  if (!type_value->GetAsBoolean(&val))
-    return false;
-  val_ = static_cast<GesturesPropBool>(val);
+  val_ = value.asBool();
   return true;
 }
 
@@ -127,26 +119,21 @@ void BoolArrayProperty::CreatePropImpl() {
     delegate_->BoolArrayWasWritten(this);
 }
 
-Value* BoolArrayProperty::NewValue() const {
-  ListValue* list = new ListValue();
+Json::Value BoolArrayProperty::NewValue() const {
+  Json::Value list(Json::arrayValue);
   for (size_t i = 0; i < count_; i++)
-    list->Append(new FundamentalValue(vals_[i] != 0));
+    list.append(new Json::Value(vals_[i] != 0));
   return list;
 }
 
-bool BoolArrayProperty::SetValue(Value* value) {
-  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
-  ListValue* list = static_cast<ListValue*>(value);
-  AssertWithReturnValue(list->GetSize() == count_, false);
+bool BoolArrayProperty::SetValue(const Json::Value& list) {
+  AssertWithReturnValue(list.type() == Json::arrayValue, false);
+  AssertWithReturnValue(list.size() == count_, false);
 
   for (size_t i = 0; i < count_; i++) {
-    Value* elt_value = NULL;
-    AssertWithReturnValue(list->Get(i, &elt_value), false);
-    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_BOOLEAN, false);
-    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
-    bool val;
-    AssertWithReturnValue(type_value->GetAsBoolean(&val), false);
-    vals_[i] = static_cast<GesturesPropBool>(val);
+    const Json::Value& elt_value = list[static_cast<int>(i)];
+    AssertWithReturnValue(elt_value.type() == Json::booleanValue, false);
+    vals_[i] = elt_value.asBool();
   }
 
   return true;
@@ -170,20 +157,17 @@ void DoubleProperty::CreatePropImpl() {
     delegate_->DoubleWasWritten(this);
 }
 
-Value* DoubleProperty::NewValue() const {
-  return new FundamentalValue(val_);
+Json::Value DoubleProperty::NewValue() const {
+  return Json::Value(val_);
 }
 
-bool DoubleProperty::SetValue(Value* value) {
-  if (value->GetType() != Value::TYPE_DOUBLE &&
-      value->GetType() != Value::TYPE_INTEGER) {
+bool DoubleProperty::SetValue(const Json::Value& value) {
+  if (value.type() != Json::realValue &&
+      value.type() != Json::intValue &&
+      value.type() != Json::uintValue) {
     return false;
   }
-  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
-  double val;
-  if (!type_value->GetAsDouble(&val))
-    return false;
-  val_ = val;
+  val_ = value.asDouble();
   return true;
 }
 
@@ -212,30 +196,26 @@ void DoubleArrayProperty::CreatePropImpl() {
     delegate_->DoubleArrayWasWritten(this);
 }
 
-Value* DoubleArrayProperty::NewValue() const {
-  ListValue* list = new ListValue();
+Json::Value DoubleArrayProperty::NewValue() const {
+  Json::Value list(Json::arrayValue);
   for (size_t i = 0; i < count_; i++) {
     // Avoid infinity
     double log_val = std::max(-1e30, std::min(vals_[i], 1e30));
-    list->Append(new FundamentalValue(log_val));
+    list.append(Json::Value(log_val));
   }
   return list;
 }
 
-bool DoubleArrayProperty::SetValue(Value* value) {
-  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
-  ListValue* list = static_cast<ListValue*>(value);
-  AssertWithReturnValue(list->GetSize() == count_, false);
+bool DoubleArrayProperty::SetValue(const Json::Value& list) {
+  AssertWithReturnValue(list.type() == Json::arrayValue, false);
+  AssertWithReturnValue(list.size() == count_, false);
 
   for (size_t i = 0; i < count_; i++) {
-    Value* elt_value = NULL;
-    AssertWithReturnValue(list->Get(i, &elt_value), false);
-    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_DOUBLE ||
-                          elt_value->GetType() == Value::TYPE_INTEGER, false);
-    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
-    double val;
-    AssertWithReturnValue(type_value->GetAsDouble(&val), false);
-    vals_[i] = static_cast<float>(val);
+    Json::Value elt_value = list[static_cast<int>(i)];
+    AssertWithReturnValue(elt_value.type() == Json::realValue ||
+                          elt_value.type() == Json::intValue ||
+                          elt_value.type() == Json::uintValue, false);
+    vals_[i] = elt_value.asDouble();
   }
 
   return true;
@@ -259,16 +239,18 @@ void IntProperty::CreatePropImpl() {
     delegate_->IntWasWritten(this);
 }
 
-Value* IntProperty::NewValue() const {
-  return new FundamentalValue(val_);
+Json::Value IntProperty::NewValue() const {
+  return Json::Value(val_);
 }
 
-bool IntProperty::SetValue(Value* value) {
-  if (value->GetType() != Value::TYPE_INTEGER) {
+bool IntProperty::SetValue(const Json::Value& value) {
+  if (value.type() != Json::intValue &&
+      value.type() != Json::uintValue) {
+    Err("Failing here %d", value.type());
     return false;
   }
-  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
-  return type_value->GetAsInteger(&val_);
+  val_ = value.asInt();
+  return true;
 }
 
 void IntProperty::HandleGesturesPropWritten() {
@@ -296,26 +278,22 @@ void IntArrayProperty::CreatePropImpl() {
     delegate_->IntArrayWasWritten(this);
 }
 
-Value* IntArrayProperty::NewValue() const {
-  ListValue* list = new ListValue();
+Json::Value IntArrayProperty::NewValue() const {
+  Json::Value list(Json::arrayValue);
   for (size_t i = 0; i < count_; i++)
-    list->Append(new FundamentalValue(vals_[i]));
+    list.append(Json::Value(vals_[static_cast<int>(i)]));
   return list;
 }
 
-bool IntArrayProperty::SetValue(Value* value) {
-  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
-  ListValue* list = static_cast<ListValue*>(value);
-  AssertWithReturnValue(list->GetSize() == count_, false);
+bool IntArrayProperty::SetValue(const Json::Value& list) {
+  AssertWithReturnValue(list.type() == Json::arrayValue, false);
+  AssertWithReturnValue(list.size() == count_, false);
 
   for (size_t i = 0; i < count_; i++) {
-    Value* elt_value = NULL;
-    AssertWithReturnValue(list->Get(i, &elt_value), false);
-    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_INTEGER, false);
-    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
-    int val;
-    AssertWithReturnValue(type_value->GetAsInteger(&val), false);
-    vals_[i] = static_cast<int>(val);
+    Json::Value elt_value = list[static_cast<int>(i)];
+    AssertWithReturnValue(elt_value.type() == Json::intValue ||
+                          elt_value.type() == Json::uintValue, false);
+    vals_[i] = elt_value.asInt();
   }
 
   return true;
@@ -339,19 +317,16 @@ void ShortProperty::CreatePropImpl() {
     delegate_->ShortWasWritten(this);
 }
 
-Value* ShortProperty::NewValue() const {
-  return new FundamentalValue(val_);
+Json::Value ShortProperty::NewValue() const {
+  return Json::Value(val_);
 }
 
-bool ShortProperty::SetValue(Value* value) {
-  if (value->GetType() != Value::TYPE_INTEGER) {
+bool ShortProperty::SetValue(const Json::Value& value) {
+  if (value.type() != Json::intValue &&
+      value.type() != Json::uintValue) {
     return false;
   }
-  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
-  int val;
-  if (!type_value->GetAsInteger(&val))
-    return false;
-  val_ = static_cast<short>(val);
+  val_ = value.asInt();
   return true;
 }
 
@@ -380,26 +355,22 @@ void ShortArrayProperty::CreatePropImpl() {
     delegate_->ShortArrayWasWritten(this);
 }
 
-Value* ShortArrayProperty::NewValue() const {
-  ListValue* list = new ListValue();
+Json::Value ShortArrayProperty::NewValue() const {
+  Json::Value list(Json::arrayValue);
   for (size_t i = 0; i < count_; i++)
-    list->Append(new FundamentalValue(vals_[i]));
+    list.append(Json::Value(vals_[i]));
   return list;
 }
 
-bool ShortArrayProperty::SetValue(Value* value) {
-  AssertWithReturnValue(value->GetType() == Value::TYPE_LIST, false);
-  ListValue* list = static_cast<ListValue*>(value);
-  AssertWithReturnValue(list->GetSize() == count_, false);
+bool ShortArrayProperty::SetValue(const Json::Value& list) {
+  AssertWithReturnValue(list.type() == Json::arrayValue, false);
+  AssertWithReturnValue(list.size() == count_, false);
 
   for (size_t i = 0; i < count_; i++) {
-    Value* elt_value = NULL;
-    AssertWithReturnValue(list->Get(i, &elt_value), false);
-    AssertWithReturnValue(elt_value->GetType() == Value::TYPE_INTEGER, false);
-    FundamentalValue* type_value = static_cast<FundamentalValue*>(elt_value);
-    int val;
-    AssertWithReturnValue(type_value->GetAsInteger(&val), false);
-    vals_[i] = static_cast<short>(val);
+    Json::Value elt_value = list[static_cast<int>(i)];
+    AssertWithReturnValue(elt_value.type() == Json::intValue ||
+                          elt_value.type() == Json::uintValue, false);
+    vals_[i] = elt_value.asInt();
   }
 
   return true;
@@ -422,17 +393,15 @@ void StringProperty::CreatePropImpl() {
     delegate_->StringWasWritten(this);
 }
 
-Value* StringProperty::NewValue() const {
-  return new StringValue(val_);
+Json::Value StringProperty::NewValue() const {
+  return Json::Value(val_);
 }
 
-bool StringProperty::SetValue(Value* value) {
-  if (value->GetType() != Value::TYPE_STRING) {
+bool StringProperty::SetValue(const Json::Value& value) {
+  if (value.type() != Json::stringValue) {
     return false;
   }
-  FundamentalValue* type_value = static_cast<FundamentalValue*>(value);
-  if (!type_value->GetAsString(&parsed_val_))
-    return false;
+  parsed_val_ = value.asString();
   val_ = parsed_val_.c_str();
   return true;
 }

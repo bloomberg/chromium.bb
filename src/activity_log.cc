@@ -11,8 +11,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <base/json/json_writer.h>
-#include <base/values.h>
+#include <json/value.h>
+#include <json/writer.h>
 
 #include "gestures/include/file_util.h"
 #include "gestures/include/logging.h"
@@ -26,11 +26,6 @@
 
 #define QUINTTAP_COUNT 5  /* BTN_TOOL_QUINTTAP - Five fingers on trackpad */
 
-using base::DictionaryValue;
-using base::FundamentalValue;
-using base::ListValue;
-using base::StringValue;
-using base::Value;
 using std::set;
 using std::string;
 
@@ -117,315 +112,306 @@ ActivityLog::Entry* ActivityLog::PushBack() {
   return &buffer_[TailIdx()];
 }
 
-Value* ActivityLog::EncodeHardwareProperties() const {
-  DictionaryValue* ret = new DictionaryValue;
-  ret->Set(kKeyHardwarePropLeft, new FundamentalValue(hwprops_.left));
-  ret->Set(kKeyHardwarePropTop, new FundamentalValue(hwprops_.top));
-  ret->Set(kKeyHardwarePropRight, new FundamentalValue(hwprops_.right));
-  ret->Set(kKeyHardwarePropBottom, new FundamentalValue(hwprops_.bottom));
-  ret->Set(kKeyHardwarePropXResolution, new FundamentalValue(hwprops_.res_x));
-  ret->Set(kKeyHardwarePropYResolution, new FundamentalValue(hwprops_.res_y));
-  ret->Set(kKeyHardwarePropXDpi, new FundamentalValue(hwprops_.screen_x_dpi));
-  ret->Set(kKeyHardwarePropYDpi, new FundamentalValue(hwprops_.screen_y_dpi));
-  ret->Set(kKeyHardwarePropOrientationMinimum,
-           new FundamentalValue(hwprops_.orientation_minimum));
-  ret->Set(kKeyHardwarePropOrientationMaximum,
-           new FundamentalValue(hwprops_.orientation_maximum));
-  ret->Set(kKeyHardwarePropMaxFingerCount,
-           new FundamentalValue(hwprops_.max_finger_cnt));
-  ret->Set(kKeyHardwarePropMaxTouchCount,
-           new FundamentalValue(hwprops_.max_touch_cnt));
+Json::Value ActivityLog::EncodeHardwareProperties() const {
+  Json::Value ret(Json::objectValue);
+  ret[kKeyHardwarePropLeft] = Json::Value(hwprops_.left);
+  ret[kKeyHardwarePropTop] = Json::Value(hwprops_.top);
+  ret[kKeyHardwarePropRight] = Json::Value(hwprops_.right);
+  ret[kKeyHardwarePropBottom] = Json::Value(hwprops_.bottom);
+  ret[kKeyHardwarePropXResolution] = Json::Value(hwprops_.res_x);
+  ret[kKeyHardwarePropYResolution] = Json::Value(hwprops_.res_y);
+  ret[kKeyHardwarePropXDpi] = Json::Value(hwprops_.screen_x_dpi);
+  ret[kKeyHardwarePropYDpi] = Json::Value(hwprops_.screen_y_dpi);
+  ret[kKeyHardwarePropOrientationMinimum] =
+      Json::Value(hwprops_.orientation_minimum);
+  ret[kKeyHardwarePropOrientationMaximum] =
+      Json::Value(hwprops_.orientation_maximum);
+  ret[kKeyHardwarePropMaxFingerCount] =
+      Json::Value(hwprops_.max_finger_cnt);
+  ret[kKeyHardwarePropMaxTouchCount] =
+      Json::Value(hwprops_.max_touch_cnt);
 
-  ret->Set(kKeyHardwarePropSupportsT5R2,
-           new FundamentalValue(hwprops_.supports_t5r2 != 0));
-  ret->Set(kKeyHardwarePropSemiMt,
-           new FundamentalValue(hwprops_.support_semi_mt != 0));
-  ret->Set(kKeyHardwarePropIsButtonPad,
-           new FundamentalValue(hwprops_.is_button_pad != 0));
-  ret->Set(kKeyHardwarePropHasWheel,
-           new FundamentalValue(hwprops_.has_wheel != 0));
+  ret[kKeyHardwarePropSupportsT5R2] =
+      Json::Value(hwprops_.supports_t5r2 != 0);
+  ret[kKeyHardwarePropSemiMt] =
+      Json::Value(hwprops_.support_semi_mt != 0);
+  ret[kKeyHardwarePropIsButtonPad] =
+      Json::Value(hwprops_.is_button_pad != 0);
+  ret[kKeyHardwarePropHasWheel] =
+      Json::Value(hwprops_.has_wheel != 0);
   return ret;
 }
 
-Value* ActivityLog::EncodeHardwareState(const HardwareState& hwstate) {
-  DictionaryValue* ret = new DictionaryValue;
-  ret->Set(kKeyType, new StringValue(kKeyHardwareState));
-  ret->Set(kKeyHardwareStateButtonsDown,
-           new FundamentalValue(hwstate.buttons_down));
-  ret->Set(kKeyHardwareStateTouchCnt,
-           new FundamentalValue(hwstate.touch_cnt));
-  ret->Set(kKeyHardwareStateTimestamp,
-           new FundamentalValue(hwstate.timestamp));
-  ListValue* fingers = new ListValue;
+Json::Value ActivityLog::EncodeHardwareState(const HardwareState& hwstate) {
+  Json::Value ret(Json::objectValue);
+  ret[kKeyType] = Json::Value(kKeyHardwareState);
+  ret[kKeyHardwareStateButtonsDown] =
+      Json::Value(hwstate.buttons_down);
+  ret[kKeyHardwareStateTouchCnt] =
+      Json::Value(hwstate.touch_cnt);
+  ret[kKeyHardwareStateTimestamp] =
+      Json::Value(hwstate.timestamp);
+  Json::Value fingers(Json::arrayValue);
   for (size_t i = 0; i < hwstate.finger_cnt; ++i) {
     if (hwstate.fingers == NULL) {
       Err("Have finger_cnt %d but fingers is NULL!", hwstate.finger_cnt);
       break;
     }
     const FingerState& fs = hwstate.fingers[i];
-    DictionaryValue* finger = new DictionaryValue;
-    finger->Set(kKeyFingerStateTouchMajor,
-                new FundamentalValue(fs.touch_major));
-    finger->Set(kKeyFingerStateTouchMinor,
-                new FundamentalValue(fs.touch_minor));
-    finger->Set(kKeyFingerStateWidthMajor,
-                new FundamentalValue(fs.width_major));
-    finger->Set(kKeyFingerStateWidthMinor,
-                new FundamentalValue(fs.width_minor));
-    finger->Set(kKeyFingerStatePressure,
-                new FundamentalValue(fs.pressure));
-    finger->Set(kKeyFingerStateOrientation,
-                new FundamentalValue(fs.orientation));
-    finger->Set(kKeyFingerStatePositionX,
-                new FundamentalValue(fs.position_x));
-    finger->Set(kKeyFingerStatePositionY,
-                new FundamentalValue(fs.position_y));
-    finger->Set(kKeyFingerStateTrackingId,
-                new FundamentalValue(fs.tracking_id));
-    finger->Set(kKeyFingerStateFlags,
-                new FundamentalValue(static_cast<int>(fs.flags)));
-    fingers->Append(finger);
+    Json::Value finger(Json::objectValue);
+    finger[kKeyFingerStateTouchMajor] =
+        Json::Value(fs.touch_major);
+    finger[kKeyFingerStateTouchMinor] =
+        Json::Value(fs.touch_minor);
+    finger[kKeyFingerStateWidthMajor] =
+        Json::Value(fs.width_major);
+    finger[kKeyFingerStateWidthMinor] =
+        Json::Value(fs.width_minor);
+    finger[kKeyFingerStatePressure] =
+        Json::Value(fs.pressure);
+    finger[kKeyFingerStateOrientation] =
+        Json::Value(fs.orientation);
+    finger[kKeyFingerStatePositionX] =
+        Json::Value(fs.position_x);
+    finger[kKeyFingerStatePositionY] =
+        Json::Value(fs.position_y);
+    finger[kKeyFingerStateTrackingId] =
+        Json::Value(fs.tracking_id);
+    finger[kKeyFingerStateFlags] =
+        Json::Value(static_cast<int>(fs.flags));
+    fingers.append(finger);
   }
-  ret->Set(kKeyHardwareStateFingers, fingers);
-  ret->Set(kKeyHardwareStateRelX,
-           new FundamentalValue(hwstate.rel_x));
-  ret->Set(kKeyHardwareStateRelY,
-           new FundamentalValue(hwstate.rel_y));
-  ret->Set(kKeyHardwareStateRelWheel,
-           new FundamentalValue(hwstate.rel_wheel));
-  ret->Set(kKeyHardwareStateRelHWheel,
-           new FundamentalValue(hwstate.rel_hwheel));
+  ret[kKeyHardwareStateFingers] = fingers;
+  ret[kKeyHardwareStateRelX] =
+      Json::Value(hwstate.rel_x);
+  ret[kKeyHardwareStateRelY] =
+      Json::Value(hwstate.rel_y);
+  ret[kKeyHardwareStateRelWheel] =
+      Json::Value(hwstate.rel_wheel);
+  ret[kKeyHardwareStateRelHWheel] =
+      Json::Value(hwstate.rel_hwheel);
   return ret;
 }
 
-Value* ActivityLog::EncodeTimerCallback(stime_t timestamp) {
-  DictionaryValue* ret = new DictionaryValue;
-  ret->Set(kKeyType, new StringValue(kKeyTimerCallback));
-  ret->Set(kKeyTimerCallbackNow, new FundamentalValue(timestamp));
+Json::Value ActivityLog::EncodeTimerCallback(stime_t timestamp) {
+  Json::Value ret(Json::objectValue);
+  ret[kKeyType] = Json::Value(kKeyTimerCallback);
+  ret[kKeyTimerCallbackNow] = Json::Value(timestamp);
   return ret;
 }
 
-Value* ActivityLog::EncodeCallbackRequest(stime_t timestamp) {
-  DictionaryValue* ret = new DictionaryValue;
-  ret->Set(kKeyType, new StringValue(kKeyCallbackRequest));
-  ret->Set(kKeyCallbackRequestWhen, new FundamentalValue(timestamp));
+Json::Value ActivityLog::EncodeCallbackRequest(stime_t timestamp) {
+  Json::Value ret(Json::objectValue);
+  ret[kKeyType] = Json::Value(kKeyCallbackRequest);
+  ret[kKeyCallbackRequestWhen] = Json::Value(timestamp);
   return ret;
 }
 
-Value* ActivityLog::EncodeGesture(const Gesture& gesture) {
-  DictionaryValue* ret = new DictionaryValue;
-  ret->Set(kKeyType, new StringValue(kKeyGesture));
-  ret->Set(kKeyGestureStartTime, new FundamentalValue(gesture.start_time));
-  ret->Set(kKeyGestureEndTime, new FundamentalValue(gesture.end_time));
+Json::Value ActivityLog::EncodeGesture(const Gesture& gesture) {
+  Json::Value ret(Json::objectValue);
+  ret[kKeyType] = Json::Value(kKeyGesture);
+  ret[kKeyGestureStartTime] = Json::Value(gesture.start_time);
+  ret[kKeyGestureEndTime] = Json::Value(gesture.end_time);
 
   bool handled = false;
   switch (gesture.type) {
     case kGestureTypeNull:
       handled = true;
-      ret->Set(kKeyGestureType, new StringValue("null"));
+      ret[kKeyGestureType] = Json::Value("null");
       break;
     case kGestureTypeContactInitiated:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeContactInitiated));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeContactInitiated);
       break;
     case kGestureTypeMove:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeMove));
-      ret->Set(kKeyGestureMoveDX,
-               new FundamentalValue(gesture.details.move.dx));
-      ret->Set(kKeyGestureMoveDY,
-               new FundamentalValue(gesture.details.move.dy));
-      ret->Set(kKeyGestureMoveOrdinalDX,
-               new FundamentalValue(gesture.details.move.ordinal_dx));
-      ret->Set(kKeyGestureMoveOrdinalDY,
-               new FundamentalValue(gesture.details.move.ordinal_dy));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeMove);
+      ret[kKeyGestureMoveDX] =
+          Json::Value(gesture.details.move.dx);
+      ret[kKeyGestureMoveDY] =
+          Json::Value(gesture.details.move.dy);
+      ret[kKeyGestureMoveOrdinalDX] =
+          Json::Value(gesture.details.move.ordinal_dx);
+      ret[kKeyGestureMoveOrdinalDY] =
+          Json::Value(gesture.details.move.ordinal_dy);
       break;
     case kGestureTypeScroll:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeScroll));
-      ret->Set(kKeyGestureScrollDX,
-               new FundamentalValue(gesture.details.scroll.dx));
-      ret->Set(kKeyGestureScrollDY,
-               new FundamentalValue(gesture.details.scroll.dy));
-      ret->Set(kKeyGestureScrollOrdinalDX,
-               new FundamentalValue(gesture.details.scroll.ordinal_dx));
-      ret->Set(kKeyGestureScrollOrdinalDY,
-               new FundamentalValue(gesture.details.scroll.ordinal_dy));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeScroll);
+      ret[kKeyGestureScrollDX] =
+          Json::Value(gesture.details.scroll.dx);
+      ret[kKeyGestureScrollDY] =
+          Json::Value(gesture.details.scroll.dy);
+      ret[kKeyGestureScrollOrdinalDX] =
+          Json::Value(gesture.details.scroll.ordinal_dx);
+      ret[kKeyGestureScrollOrdinalDY] =
+          Json::Value(gesture.details.scroll.ordinal_dy);
       break;
     case kGestureTypePinch:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypePinch));
-      ret->Set(kKeyGesturePinchDZ,
-               new FundamentalValue(gesture.details.pinch.dz));
-      ret->Set(kKeyGesturePinchOrdinalDZ,
-               new FundamentalValue(gesture.details.pinch.ordinal_dz));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypePinch);
+      ret[kKeyGesturePinchDZ] =
+          Json::Value(gesture.details.pinch.dz);
+      ret[kKeyGesturePinchOrdinalDZ] =
+          Json::Value(gesture.details.pinch.ordinal_dz);
       break;
     case kGestureTypeButtonsChange:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeButtonsChange));
-      ret->Set(kKeyGestureButtonsChangeDown,
-               new FundamentalValue(
-                   static_cast<int>(gesture.details.buttons.down)));
-      ret->Set(kKeyGestureButtonsChangeUp,
-               new FundamentalValue(
-                   static_cast<int>(gesture.details.buttons.up)));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeButtonsChange);
+      ret[kKeyGestureButtonsChangeDown] =
+          Json::Value(
+                   static_cast<int>(gesture.details.buttons.down));
+      ret[kKeyGestureButtonsChangeUp] =
+          Json::Value(
+                   static_cast<int>(gesture.details.buttons.up));
       break;
     case kGestureTypeFling:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeFling));
-      ret->Set(kKeyGestureFlingVX,
-               new FundamentalValue(gesture.details.fling.vx));
-      ret->Set(kKeyGestureFlingVY,
-               new FundamentalValue(gesture.details.fling.vy));
-      ret->Set(kKeyGestureFlingOrdinalVX,
-               new FundamentalValue(gesture.details.fling.ordinal_vx));
-      ret->Set(kKeyGestureFlingOrdinalVY,
-               new FundamentalValue(gesture.details.fling.ordinal_vy));
-      ret->Set(kKeyGestureFlingState,
-               new FundamentalValue(
-                   static_cast<int>(gesture.details.fling.fling_state)));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeFling);
+      ret[kKeyGestureFlingVX] =
+          Json::Value(gesture.details.fling.vx);
+      ret[kKeyGestureFlingVY] =
+          Json::Value(gesture.details.fling.vy);
+      ret[kKeyGestureFlingOrdinalVX] =
+          Json::Value(gesture.details.fling.ordinal_vx);
+      ret[kKeyGestureFlingOrdinalVY] =
+          Json::Value(gesture.details.fling.ordinal_vy);
+      ret[kKeyGestureFlingState] =
+          Json::Value(
+                   static_cast<int>(gesture.details.fling.fling_state));
       break;
     case kGestureTypeSwipe:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeSwipe));
-      ret->Set(kKeyGestureSwipeDX,
-               new FundamentalValue(gesture.details.swipe.dx));
-      ret->Set(kKeyGestureSwipeDY,
-               new FundamentalValue(gesture.details.swipe.dy));
-      ret->Set(kKeyGestureSwipeOrdinalDX,
-               new FundamentalValue(gesture.details.swipe.ordinal_dx));
-      ret->Set(kKeyGestureSwipeOrdinalDY,
-               new FundamentalValue(gesture.details.swipe.ordinal_dy));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeSwipe);
+      ret[kKeyGestureSwipeDX] =
+          Json::Value(gesture.details.swipe.dx);
+      ret[kKeyGestureSwipeDY] =
+          Json::Value(gesture.details.swipe.dy);
+      ret[kKeyGestureSwipeOrdinalDX] =
+          Json::Value(gesture.details.swipe.ordinal_dx);
+      ret[kKeyGestureSwipeOrdinalDY] =
+          Json::Value(gesture.details.swipe.ordinal_dy);
       break;
     case kGestureTypeSwipeLift:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeSwipeLift));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeSwipeLift);
       break;
     case kGestureTypeMetrics:
       handled = true;
-      ret->Set(kKeyGestureType,
-               new StringValue(kValueGestureTypeMetrics));
-      ret->Set(kKeyGestureMetricsType,
-               new FundamentalValue(
-                   static_cast<int>(gesture.details.metrics.type)));
-      ret->Set(kKeyGestureMetricsData1,
-               new FundamentalValue(gesture.details.metrics.data[0]));
-      ret->Set(kKeyGestureMetricsData2,
-               new FundamentalValue(gesture.details.metrics.data[1]));
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeMetrics);
+      ret[kKeyGestureMetricsType] =
+          Json::Value(
+                   static_cast<int>(gesture.details.metrics.type));
+      ret[kKeyGestureMetricsData1] =
+          Json::Value(gesture.details.metrics.data[0]);
+      ret[kKeyGestureMetricsData2] =
+          Json::Value(gesture.details.metrics.data[1]);
       break;
   }
   if (!handled)
-    ret->Set(kKeyGestureType,
-             new StringValue(StringPrintf("Unhandled %d", gesture.type)));
+    ret[kKeyGestureType] =
+        Json::Value(StringPrintf("Unhandled %d", gesture.type));
   return ret;
 }
 
-Value* ActivityLog::EncodePropChange(const PropChangeEntry& prop_change) {
-  DictionaryValue* ret = new DictionaryValue;
-  ret->Set(kKeyType, new StringValue(kKeyPropChange));
-  ret->Set(kKeyPropChangeName, new StringValue(prop_change.name));
-  FundamentalValue* val = NULL;
-  StringValue* type = NULL;
+Json::Value ActivityLog::EncodePropChange(const PropChangeEntry& prop_change) {
+  Json::Value ret(Json::objectValue);
+  ret[kKeyType] = Json::Value(kKeyPropChange);
+  ret[kKeyPropChangeName] = Json::Value(prop_change.name);
+  Json::Value val;
+  Json::Value type;
   switch (prop_change.type) {
     case PropChangeEntry::kBoolProp:
-      val = new FundamentalValue(static_cast<bool>(prop_change.value.bool_val));
-      type = new StringValue(kValuePropChangeTypeBool);
+      val = Json::Value(static_cast<bool>(prop_change.value.bool_val));
+      type = Json::Value(kValuePropChangeTypeBool);
       break;
     case PropChangeEntry::kDoubleProp:
-      val = new FundamentalValue(prop_change.value.double_val);
-      type = new StringValue(kValuePropChangeTypeDouble);
+      val = Json::Value(prop_change.value.double_val);
+      type = Json::Value(kValuePropChangeTypeDouble);
       break;
     case PropChangeEntry::kIntProp:
-      val = new FundamentalValue(prop_change.value.int_val);
-      type = new StringValue(kValuePropChangeTypeInt);
+      val = Json::Value(prop_change.value.int_val);
+      type = Json::Value(kValuePropChangeTypeInt);
       break;
     case PropChangeEntry::kShortProp:
-      val = new FundamentalValue(prop_change.value.short_val);
-      type = new StringValue(kValuePropChangeTypeShort);
+      val = Json::Value(prop_change.value.short_val);
+      type = Json::Value(kValuePropChangeTypeShort);
       break;
   }
-  if (val)
-    ret->Set(kKeyPropChangeValue, val);
-  if (type)
-    ret->Set(kKeyPropChangeType, type);
+  if (!val.isNull())
+    ret[kKeyPropChangeValue] = val;
+  if (!type.isNull())
+    ret[kKeyPropChangeType] = type;
   return ret;
 }
 
-Value* ActivityLog::EncodePropRegistry() {
-  DictionaryValue* ret = new DictionaryValue;
+Json::Value ActivityLog::EncodePropRegistry() {
+  Json::Value ret(Json::objectValue);
   if (!prop_reg_)
     return ret;
 
   const set<Property*>& props = prop_reg_->props();
   for (set<Property*>::const_iterator it = props.begin(), e = props.end();
        it != e; ++it) {
-    ret->Set((*it)->name(), (*it)->NewValue());
+    ret[(*it)->name()] = (*it)->NewValue();
   }
   return ret;
 }
 
-DictionaryValue* ActivityLog::EncodeCommonInfo() {
-  DictionaryValue* root = new DictionaryValue;
+Json::Value ActivityLog::EncodeCommonInfo() {
+  Json::Value root(Json::objectValue);
 
-  ListValue* entries = new ListValue;
+  Json::Value entries(Json::arrayValue);
   for (size_t i = 0; i < size_; ++i) {
     const Entry& entry = buffer_[(i + head_idx_) % kBufferSize];
     switch (entry.type) {
       case kHardwareState:
-        entries->Append(EncodeHardwareState(entry.details.hwstate));
+        entries.append(EncodeHardwareState(entry.details.hwstate));
         continue;
       case kTimerCallback:
-        entries->Append(EncodeTimerCallback(entry.details.timestamp));
+        entries.append(EncodeTimerCallback(entry.details.timestamp));
         continue;
       case kCallbackRequest:
-        entries->Append(EncodeCallbackRequest(entry.details.timestamp));
+        entries.append(EncodeCallbackRequest(entry.details.timestamp));
         continue;
       case kGesture:
-        entries->Append(EncodeGesture(entry.details.gesture));
+        entries.append(EncodeGesture(entry.details.gesture));
         continue;
       case kPropChange:
-        entries->Append(EncodePropChange(entry.details.prop_change));
+        entries.append(EncodePropChange(entry.details.prop_change));
         continue;
     }
     Err("Unknown entry type %d", entry.type);
   }
-  root->Set(kKeyRoot, entries);
-  root->Set(kKeyHardwarePropRoot, EncodeHardwareProperties());
+  root[kKeyRoot] = entries;
+  root[kKeyHardwarePropRoot] = EncodeHardwareProperties();
 
   return root;
 }
 
-DictionaryValue* ActivityLog::AddEncodeInfo(DictionaryValue* root) {
-  root->Set("version", new FundamentalValue(1));
+void ActivityLog::AddEncodeInfo(Json::Value* root) {
+  (*root)["version"] = Json::Value(1);
   string gestures_version = VCSID;
 
   // Strip tailing whitespace.
   TrimWhitespaceASCII(gestures_version, TRIM_ALL, &gestures_version);
-  root->Set("gesturesVersion", new StringValue(gestures_version));
-  root->Set(kKeyProperties, EncodePropRegistry());
-
-  return root;
+  (*root)["gesturesVersion"] = Json::Value(gestures_version);
+  (*root)[kKeyProperties] = EncodePropRegistry();
 }
 
 string ActivityLog::Encode() {
-  DictionaryValue *root;
-  root = EncodeCommonInfo();
-  root = AddEncodeInfo(root);
-
-  string out;
-  base::JSONWriter::WriteWithOptions(root,
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &out);
-  delete root;
-  return out;
+  Json::Value root = EncodeCommonInfo();
+  AddEncodeInfo(&root);
+  return root.toStyledString();
 }
 
 const char ActivityLog::kKeyInterpreterName[] = "interpreterName";

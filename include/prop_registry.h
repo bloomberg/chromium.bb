@@ -8,7 +8,7 @@
 #include <set>
 #include <string>
 
-#include <base/values.h>
+#include <json/value.h>
 
 #include "gestures/include/gestures.h"
 #include "gestures/include/logging.h"
@@ -62,9 +62,9 @@ class Property {
 
   const char* name() { return name_; }
   // Returns a newly allocated Value object
-  virtual base::Value* NewValue() const = 0;
+  virtual Json::Value NewValue() const = 0;
   // Returns true on success
-  virtual bool SetValue(base::Value* value) = 0;
+  virtual bool SetValue(const Json::Value& value) = 0;
 
   static GesturesPropBool StaticHandleGesturesPropWillRead(void* data) {
     GesturesPropBool ret =
@@ -101,8 +101,8 @@ class BoolProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& value);
   virtual void HandleGesturesPropWritten();
 
   GesturesPropBool val_;
@@ -123,8 +123,8 @@ class BoolArrayProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& list);
   virtual void HandleGesturesPropWritten();
 
   GesturesPropBool* vals_;
@@ -145,8 +145,8 @@ class DoubleProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& value);
   virtual void HandleGesturesPropWritten();
 
   double val_;
@@ -167,8 +167,8 @@ class DoubleArrayProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& list);
   virtual void HandleGesturesPropWritten();
 
   double* vals_;
@@ -189,8 +189,8 @@ class IntProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& value);
   virtual void HandleGesturesPropWritten();
 
   int val_;
@@ -210,8 +210,8 @@ class IntArrayProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& list);
   virtual void HandleGesturesPropWritten();
 
   int* vals_;
@@ -232,8 +232,8 @@ class ShortProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& value);
   virtual void HandleGesturesPropWritten();
 
   short val_;
@@ -254,8 +254,8 @@ class ShortArrayProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& list);
   virtual void HandleGesturesPropWritten();
 
   short* vals_;
@@ -276,8 +276,8 @@ class StringProperty : public Property {
       parent_->Register(this);
   }
   virtual void CreatePropImpl();
-  virtual base::Value* NewValue() const;
-  virtual bool SetValue(base::Value* value);
+  virtual Json::Value NewValue() const;
+  virtual bool SetValue(const Json::Value& value);
   virtual void HandleGesturesPropWritten();
 
   std::string parsed_val_;
