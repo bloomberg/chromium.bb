@@ -101,4 +101,10 @@ leak:content::SpeechRecognitionBrowserTest::SetUpOnMainThread
 # http://crbug.com/355641
 leak:TrayAccessibilityTest
 
+# http://crbug.com/354644
+leak:CertificateViewerUITest::ShowModalCertificateViewer
+
+# http://crbug.com/356306
+leak:content::SetProcessTitleFromCommandLine
+
 # PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
