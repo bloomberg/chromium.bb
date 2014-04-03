@@ -197,7 +197,7 @@ void SigninManager::SignOut() {
 
   ClearTransientSigninData();
 
-  const std::string& username = GetAuthenticatedUsername();
+  const std::string username = GetAuthenticatedUsername();
   clear_authenticated_username();
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
 

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -14,6 +15,7 @@ GAIAInfoUpdateServiceFactory::GAIAInfoUpdateServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "GAIAInfoUpdateService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 GAIAInfoUpdateServiceFactory::~GAIAInfoUpdateServiceFactory() {}
