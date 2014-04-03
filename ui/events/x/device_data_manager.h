@@ -104,17 +104,8 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
   // Returns the DeviceDataManager singleton.
   static DeviceDataManager* GetInstance();
 
-  // Natural scroll setter/getter.
-  bool natural_scroll_enabled() const { return natural_scroll_enabled_; }
-  void set_natural_scroll_enabled(bool enabled) {
-    natural_scroll_enabled_ = enabled;
-  }
-
   // Returns if XInput2 is available on the system.
   bool IsXInput2Available() const;
-
-  // Get the natural scroll direction multiplier (1.0f or -1.0f).
-  float GetNaturalScrollFactor(int sourceid) const;
 
   // Updates the list of devices.
   void UpdateDeviceList(Display* display);
@@ -248,7 +239,6 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
   static const int kMaxDeviceNum = 128;
   static const int kMaxXIEventType = XI_LASTEVENT + 1;
   static const int kMaxSlotNum = 10;
-  bool natural_scroll_enabled_;
 
   // Major opcode for the XInput extension. Used to identify XInput events.
   int xi_opcode_;

@@ -442,7 +442,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     const bool enabled = natural_scroll_.GetValue();
     DVLOG(1) << "Natural scroll set to " << enabled;
     if (user_is_active)
-      ui::SetNaturalScroll(enabled);
+      touchpad_settings.SetNaturalScroll(enabled);
     if (reason == REASON_PREF_CHANGED)
       UMA_HISTOGRAM_BOOLEAN("Touchpad.NaturalScroll.Changed", enabled);
     else if (reason == REASON_INITIALIZATION)

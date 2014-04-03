@@ -110,8 +110,7 @@ DeviceDataManager* DeviceDataManager::GetInstance() {
 }
 
 DeviceDataManager::DeviceDataManager()
-    : natural_scroll_enabled_(false),
-      xi_opcode_(-1),
+    : xi_opcode_(-1),
       atom_cache_(gfx::GetXDisplay(), kCachedAtoms),
       button_map_count_(0) {
   CHECK(gfx::GetXDisplay());
@@ -175,14 +174,6 @@ bool DeviceDataManager::InitializeXInputInternal() {
 
 bool DeviceDataManager::IsXInput2Available() const {
   return xi_opcode_ != -1;
-}
-
-float DeviceDataManager::GetNaturalScrollFactor(int sourceid) const {
-  // Natural scroll is touchpad-only.
-  if (sourceid >= kMaxDeviceNum || !touchpads_[sourceid])
-    return -1.0f;
-
-  return natural_scroll_enabled_ ? 1.0f : -1.0f;
 }
 
 void DeviceDataManager::UpdateDeviceList(Display* display) {
@@ -460,20 +451,17 @@ void DeviceDataManager::GetScrollOffsets(const base::NativeEvent& native_event,
   *y_offset_ordinal = 0;
   *finger_count = 2;
 
-  XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-  const float natural_scroll_factor = GetNaturalScrollFactor(xiev->sourceid);
   EventData data;
   GetEventRawData(*native_event, &data);
 
   if (data.find(DT_CMT_SCROLL_X) != data.end())
-    *x_offset = data[DT_CMT_SCROLL_X] * natural_scroll_factor;
+    *x_offset = data[DT_CMT_SCROLL_X];
   if (data.find(DT_CMT_SCROLL_Y) != data.end())
-    *y_offset = data[DT_CMT_SCROLL_Y] * natural_scroll_factor;
+    *y_offset = data[DT_CMT_SCROLL_Y];
   if (data.find(DT_CMT_ORDINAL_X) != data.end())
-    *x_offset_ordinal = data[DT_CMT_ORDINAL_X] * natural_scroll_factor;
+    *x_offset_ordinal = data[DT_CMT_ORDINAL_X];
   if (data.find(DT_CMT_ORDINAL_Y) != data.end())
-    *y_offset_ordinal = data[DT_CMT_ORDINAL_Y] * natural_scroll_factor;
+    *y_offset_ordinal = data[DT_CMT_ORDINAL_Y];
   if (data.find(DT_CMT_FINGER_COUNT) != data.end())
     *finger_count = static_cast<int>(data[DT_CMT_FINGER_COUNT]);
 }
@@ -488,22 +476,19 @@ void DeviceDataManager::GetFlingData(const base::NativeEvent& native_event,
   *vy_ordinal = 0;
   *is_cancel = false;
 
-  XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-  const float natural_scroll_factor = GetNaturalScrollFactor(xiev->sourceid);
   EventData data;
   GetEventRawData(*native_event, &data);
 
   if (data.find(DT_CMT_FLING_X) != data.end())
-    *vx = data[DT_CMT_FLING_X] * natural_scroll_factor;
+    *vx = data[DT_CMT_FLING_X];
   if (data.find(DT_CMT_FLING_Y) != data.end())
-    *vy = data[DT_CMT_FLING_Y] * natural_scroll_factor;
+    *vy = data[DT_CMT_FLING_Y];
   if (data.find(DT_CMT_FLING_STATE) != data.end())
     *is_cancel = !!static_cast<unsigned int>(data[DT_CMT_FLING_STATE]);
   if (data.find(DT_CMT_ORDINAL_X) != data.end())
-    *vx_ordinal = data[DT_CMT_ORDINAL_X] * natural_scroll_factor;
+    *vx_ordinal = data[DT_CMT_ORDINAL_X];
   if (data.find(DT_CMT_ORDINAL_Y) != data.end())
-    *vy_ordinal = data[DT_CMT_ORDINAL_Y] * natural_scroll_factor;
+    *vy_ordinal = data[DT_CMT_ORDINAL_Y];
 }
 
 void DeviceDataManager::GetMetricsData(const base::NativeEvent& native_event,

@@ -96,6 +96,9 @@ class TouchpadSettings {
   void SetTapDragging(bool enabled);
   bool GetTapDragging() const;
 
+  void SetNaturalScroll(bool enabled);
+  bool GetNaturalScroll() const;
+
   // Updates |this| with |settings|. If at least one setting was updated returns
   // true.
   // |argv| is filled with arguments of script, that should be launched in order
@@ -107,6 +110,7 @@ class TouchpadSettings {
   internal::Optional<bool> tap_to_click_;
   internal::Optional<bool> three_finger_click_;
   internal::Optional<bool> tap_dragging_;
+  internal::Optional<bool> natural_scroll_;
 };
 
 // Auxiliary class used to update several mouse settings at a time. User
@@ -172,6 +176,9 @@ class InputDeviceSettings {
 
   // Turns tap-dragging on/off.
   virtual void SetTapDragging(bool enabled) = 0;
+
+  // Turns natural scrolling on/off for all devices except wheel mice
+  virtual void SetNaturalScroll(bool enabled) = 0;
 
   // Calls |callback| asynchronously after determining if a mouse is connected.
   virtual void MouseExists(const DeviceExistsCallback& callback) = 0;

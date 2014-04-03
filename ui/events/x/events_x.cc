@@ -667,14 +667,6 @@ bool GetGestureTimes(const base::NativeEvent& native_event,
   return true;
 }
 
-void SetNaturalScroll(bool enabled) {
-  DeviceDataManager::GetInstance()->set_natural_scroll_enabled(enabled);
-}
-
-bool IsNaturalScrollEnabled() {
-  return DeviceDataManager::GetInstance()->natural_scroll_enabled();
-}
-
 bool IsTouchpadEvent(const base::NativeEvent& event) {
   return DeviceDataManager::GetInstance()->IsTouchpadXInputEvent(event);
 }

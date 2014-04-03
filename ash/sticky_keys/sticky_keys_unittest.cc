@@ -618,9 +618,6 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
 }
 
 TEST_F(StickyKeysTest, ScrollEventOneshot) {
-  // Disable Australlian scrolling.
-  ui::DeviceDataManager::GetInstance()->set_natural_scroll_enabled(true);
-
   scoped_ptr<ui::ScrollEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
   MockStickyKeysHandlerDelegate* mock_delegate =
@@ -670,9 +667,6 @@ TEST_F(StickyKeysTest, ScrollEventOneshot) {
 }
 
 TEST_F(StickyKeysTest, ScrollDirectionChanged) {
-  // Disable Australlian scrolling.
-  ui::DeviceDataManager::GetInstance()->set_natural_scroll_enabled(true);
-
   scoped_ptr<ui::ScrollEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
   MockStickyKeysHandlerDelegate* mock_delegate =
@@ -707,9 +701,6 @@ TEST_F(StickyKeysTest, ScrollDirectionChanged) {
 }
 
 TEST_F(StickyKeysTest, ScrollEventLocked) {
-  // Disable Australlian scrolling.
-  ui::DeviceDataManager::GetInstance()->set_natural_scroll_enabled(true);
-
   scoped_ptr<ui::ScrollEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
   MockStickyKeysHandlerDelegate* mock_delegate =

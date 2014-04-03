@@ -123,12 +123,6 @@ EVENTS_EXPORT bool GetGestureTimes(const base::NativeEvent& native_event,
                                double* start_time,
                                double* end_time);
 
-// Enable/disable natural scrolling for touchpads.
-EVENTS_EXPORT void SetNaturalScroll(bool enabled);
-
-// In natural scrolling enabled for touchpads?
-EVENTS_EXPORT bool IsNaturalScrollEnabled();
-
 // Returns whether natural scrolling should be used for touchpad.
 EVENTS_EXPORT bool ShouldDefaultToNaturalScroll();
 
