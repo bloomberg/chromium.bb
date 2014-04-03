@@ -43,11 +43,17 @@ NCVAL ?= python $(NACL_SDK_ROOT)/tools/ncval.py
 # Architecture-specific flags
 X86_32_CFLAGS ?=
 X86_64_CFLAGS ?=
-ARM_CFLAGS ?=
-
 X86_32_CXXFLAGS ?=
 X86_64_CXXFLAGS ?=
+
+# Use DWARF v3 which is more commonly available when debugging
+ifeq ($(CONFIG),Debug)
+ARM_CFLAGS ?= -gdwarf-3
+ARM_CXXFLAGS ?= -gdwarf-3
+else
+ARM_CFLAGS ?=
 ARM_CXXFLAGS ?=
+endif
 
 X86_32_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_x86_32.map
 X86_64_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET)_x86_64.map
@@ -329,7 +335,7 @@ endif
 ifneq (,$(findstring arm,$(ARCHES)))
 all: $(OUTDIR)/$(1)_arm.nexe
 $(OUTDIR)/$(1)_arm.nexe: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_arm)) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(call LOG,LINK,$$@,$(ARM_LINK) -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
+	$(call LOG,LINK,$$@,$(ARM_LINK) -static -o $$@ $$(filter %.o,$$^) $(NACL_LDFLAGS) $(ARM_LDFLAGS) $(foreach path,$(6),-L$(path)/$(TOOLCHAIN)_arm/$(CONFIG)) $(foreach lib,$(3),-l$(lib)) $(5))
 	$(call LOG,VALIDATE,$$@,$(NCVAL) $$@)
 endif
 endef

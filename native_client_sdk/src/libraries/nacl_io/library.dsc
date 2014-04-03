@@ -1,5 +1,5 @@
 {
-  'TOOLS': ['newlib', 'glibc', 'pnacl', 'linux'],
+  'TOOLS': ['bionic', 'newlib', 'glibc', 'pnacl', 'linux'],
   'SEARCH': [
     '.',
     'pepper',
@@ -24,7 +24,7 @@
         "fusefs/fuse_fs.cc",
         "fusefs/fuse_fs_factory.cc",
         "getdents_helper.cc",
-        "h_errno.cc",
+        "h_errno.c",
         "host_resolver.cc",
         "html5fs/html5_fs.cc",
         "html5fs/html5_fs_node.cc",
@@ -35,6 +35,7 @@
         "kernel_intercept.cc",
         "kernel_object.cc",
         "kernel_proxy.cc",
+        "kernel_wrap_bionic.cc",
         "kernel_wrap_dummy.cc",
         "kernel_wrap_glibc.cc",
         "kernel_wrap_newlib.cc",

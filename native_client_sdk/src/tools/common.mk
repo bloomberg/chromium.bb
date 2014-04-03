@@ -14,9 +14,10 @@
 # your project only builds in one or the other then this should be overridden
 # accordingly.
 #
-ALL_TOOLCHAINS ?= pnacl newlib glibc
 ifneq ($(ENABLE_BIONIC),)
-ALL_TOOLCHAINS += bionic
+ALL_TOOLCHAINS ?= pnacl newlib glibc bionic
+else
+ALL_TOOLCHAINS ?= pnacl newlib glibc
 endif
 
 VALID_TOOLCHAINS ?= $(ALL_TOOLCHAINS)

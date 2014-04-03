@@ -64,7 +64,12 @@ int fsync(int fd);
 int ftruncate(int fd, off_t length) NOTHROW;
 char* NAME(getcwd)(char* buf, getcwd_size_t size) NOTHROW;
 char* getwd(char* buf) NOTHROW;
+#if !defined(__BIONIC__)
 int getdents(int fd, void* buf, unsigned int count) NOTHROW;
+#else
+struct dirent;
+int getdents(unsigned int fd, struct dirent* buf, unsigned int count) NOTHROW;
+#endif
 int NAME(isatty)(int fd) NOTHROW;
 int lchown(const char* path, uid_t owner, gid_t group) NOTHROW;
 int link(const char* oldpath, const char* newpath) NOTHROW;

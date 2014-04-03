@@ -6,7 +6,7 @@
 
 // The entire file is wrapped in this #if. We do this so this .cc file can be
 // compiled, even on a non-newlib build.
-#if defined(__native_client__) && !defined(__GLIBC__)
+#if defined(__native_client__) && !defined(__GLIBC__) && !defined(__BIONIC__)
 
 #include "nacl_io/kernel_wrap.h"
 
@@ -357,4 +357,4 @@ void kernel_wrap_uninit() {
 
 EXTERN_C_END
 
-#endif  // defined(__native_client__) && !defined(__GLIBC__)
+#endif  // defined(__native_client__) && !defined(__GLIBC__) ...

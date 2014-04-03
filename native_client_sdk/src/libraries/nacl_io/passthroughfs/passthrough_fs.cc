@@ -33,7 +33,7 @@ class PassthroughFsNode : public Node {
                      int* out_bytes) {
     *out_bytes = 0;
 
-    off_t new_offset;
+    int64_t new_offset;
     int err = _real_lseek(real_fd_, attr.offs, 0, &new_offset);
     if (err)
       return err;
@@ -53,7 +53,7 @@ class PassthroughFsNode : public Node {
                       int* out_bytes) {
     *out_bytes = 0;
 
-    off_t new_offset;
+    int64_t new_offset;
     int err = _real_lseek(real_fd_, attr.offs, 0, &new_offset);
     if (err)
       return err;

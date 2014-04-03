@@ -91,6 +91,7 @@ void MakeDummyStatbuf(struct stat* statbuf) {
   statbuf->st_ctime = 11;
 }
 
+const mode_t kDummyMode = 0xbeef;
 const int kDummyInt = 0xdedbeef;
 const int kDummyInt2 = 0xcabba6e;
 const int kDummyInt3 = 0xf00ba4;
@@ -151,9 +152,9 @@ TEST_F(KernelWrapTest, chdir) {
 }
 
 TEST_F(KernelWrapTest, chmod) {
-  EXPECT_CALL(mock, chmod(kDummyConstChar, kDummyInt))
+  EXPECT_CALL(mock, chmod(kDummyConstChar, kDummyMode))
       .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, chmod(kDummyConstChar, kDummyInt));
+  EXPECT_EQ(kDummyInt2,chmod(kDummyConstChar, kDummyMode));
 }
 
 TEST_F(KernelWrapTest, chown) {
@@ -195,11 +196,12 @@ TEST_F(KernelWrapTest, fchdir) {
 }
 
 TEST_F(KernelWrapTest, fchmod) {
-  EXPECT_CALL(mock, fchmod(kDummyInt, kDummyInt2)) .WillOnce(Return(-1));
-  EXPECT_EQ(-1, fchmod(kDummyInt, kDummyInt2));
+  EXPECT_CALL(mock, fchmod(kDummyInt, kDummyMode))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(-1, fchmod(kDummyInt, kDummyMode));
 
-  EXPECT_CALL(mock, fchmod(kDummyInt, kDummyInt2)) .WillOnce(Return(0));
-  EXPECT_EQ(0, fchmod(kDummyInt, kDummyInt2));
+  EXPECT_CALL(mock, fchmod(kDummyInt, kDummyMode)) .WillOnce(Return(0));
+  EXPECT_EQ(0, fchmod(kDummyInt, kDummyMode));
 }
 
 TEST_F(KernelWrapTest, fchown) {
@@ -256,7 +258,7 @@ TEST_F(KernelWrapTest, getcwd) {
 }
 
 TEST_F(KernelWrapTest, getdents) {
-#ifndef __GLIBC__
+#if !defined( __GLIBC__) && !defined(__BIONIC__)
   // TODO(sbc): Find a way to test the getdents wrapper under glibc.
   // It looks like the only way to exercise it is to call readdir(2).
   // There is an internal glibc function __getdents that will call the
@@ -290,10 +292,12 @@ TEST_F(KernelWrapTest, ioctl) {
   EXPECT_EQ(kDummyInt3, ioctl(kDummyInt, kDummyInt2, buffer));
 }
 
+#if !defined(__BIONIC__)
 TEST_F(KernelWrapTest, isatty) {
   EXPECT_CALL(mock, isatty(kDummyInt)).WillOnce(Return(kDummyInt2));
   EXPECT_EQ(kDummyInt2, isatty(kDummyInt));
 }
+#endif
 
 TEST_F(KernelWrapTest, kill) {
   EXPECT_CALL(mock, kill(kDummyInt, kDummyInt2)).WillOnce(Return(kDummyInt3));
@@ -323,9 +327,9 @@ TEST_F(KernelWrapTest, mkdir) {
   EXPECT_CALL(mock, mkdir(kDummyConstChar, 0777)).WillOnce(Return(kDummyInt2));
   EXPECT_EQ(kDummyInt2, mkdir(kDummyConstChar));
 #else
-  EXPECT_CALL(mock, mkdir(kDummyConstChar, kDummyInt))
+  EXPECT_CALL(mock, mkdir(kDummyConstChar, kDummyMode))
       .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, mkdir(kDummyConstChar, kDummyInt));
+  EXPECT_EQ(kDummyInt2, mkdir(kDummyConstChar, kDummyMode));
 #endif
 }
 
@@ -381,13 +385,14 @@ TEST_F(KernelWrapTest, munmap) {
 
 
 TEST_F(KernelWrapTest, open) {
-  EXPECT_CALL(mock, open(kDummyConstChar, kDummyInt))
+  // We pass O_RDONLY because we do not want an error in flags translation
+  EXPECT_CALL(mock, open(kDummyConstChar, 0))
       .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, kDummyInt));
+  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, 0));
 
-  EXPECT_CALL(mock, open(kDummyConstChar, kDummyInt))
+  EXPECT_CALL(mock, open(kDummyConstChar, 0))
       .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, kDummyInt));
+  EXPECT_EQ(kDummyInt2, open(kDummyConstChar, 0));
 }
 
 TEST_F(KernelWrapTest, pipe) {
@@ -483,6 +488,7 @@ TEST_F(KernelWrapTest, symlink) {
   EXPECT_EQ(kDummyInt, symlink(kDummyConstChar, kDummyConstChar2));
 }
 
+#ifndef __BIONIC__
 TEST_F(KernelWrapTest, tcflush) {
   EXPECT_CALL(mock, tcflush(kDummyInt, kDummyInt2))
       .WillOnce(Return(kDummyInt3));
@@ -501,6 +507,7 @@ TEST_F(KernelWrapTest, tcsetattr) {
       .WillOnce(Return(kDummyInt3));
   EXPECT_EQ(kDummyInt3, tcsetattr(kDummyInt, kDummyInt2, &term));
 }
+#endif
 
 TEST_F(KernelWrapTest, umount) {
   EXPECT_CALL(mock, umount(kDummyConstChar)).WillOnce(Return(kDummyInt));
@@ -515,6 +522,7 @@ TEST_F(KernelWrapTest, truncate) {
   EXPECT_EQ(0, truncate(kDummyConstChar, kDummyInt3));
 }
 
+#ifndef __BIONIC__
 TEST_F(KernelWrapTest, lstat) {
   struct stat buf;
   EXPECT_CALL(mock, lstat(kDummyConstChar, &buf)).WillOnce(Return(-1));
@@ -523,6 +531,7 @@ TEST_F(KernelWrapTest, lstat) {
   EXPECT_CALL(mock, lstat(kDummyConstChar, &buf)).WillOnce(Return(0));
   EXPECT_EQ(0, lstat(kDummyConstChar, &buf));
 }
+#endif
 
 TEST_F(KernelWrapTest, unlink) {
   EXPECT_CALL(mock, unlink(kDummyConstChar)).WillOnce(Return(kDummyInt));
@@ -547,7 +556,7 @@ TEST_F(KernelWrapTest, write) {
   EXPECT_EQ(kDummyInt3, write(kDummyInt, kDummyVoidPtr, kDummyInt2));
 }
 
-#ifdef PROVIDES_SOCKET_API
+#if defined(PROVIDES_SOCKET_API) and !defined(__BIONIC__)
 TEST_F(KernelWrapTest, poll) {
   struct pollfd fds;
   EXPECT_CALL(mock, poll(&fds, kDummyInt, kDummyInt2))
@@ -650,12 +659,14 @@ TEST_F(KernelWrapTest, recvfrom) {
       recvfrom(kDummyInt, dummy_void_ptr, kDummyInt2, kDummyInt3, &addr, &len));
 }
 
+#ifndef __BIONIC__
 TEST_F(KernelWrapTest, recvmsg) {
   struct msghdr msg;
   EXPECT_CALL(mock, recvmsg(kDummyInt, &msg, kDummyInt2))
       .WillOnce(Return(kDummyInt3));
   EXPECT_EQ(kDummyInt3, recvmsg(kDummyInt, &msg, kDummyInt2));
 }
+#endif
 
 TEST_F(KernelWrapTest, send) {
   EXPECT_CALL(mock, send(kDummyInt, kDummyVoidPtr, kDummySizeT, kDummyInt2))

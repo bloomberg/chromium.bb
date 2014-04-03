@@ -6,6 +6,10 @@
 #include <string.h>
 #include <sys/utsname.h>
 
+#if !defined(_UTSNAME_LENGTH) && defined(__BIONIC__)
+#define _UTSNAME_LENGTH SYS_NMLN
+#endif
+
 int uname(struct utsname* buf) {
   memset(buf, 0, sizeof(struct utsname));
   snprintf(buf->sysname, _UTSNAME_LENGTH, "NaCl");

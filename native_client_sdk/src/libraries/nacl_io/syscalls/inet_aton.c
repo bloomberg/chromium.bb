@@ -6,6 +6,7 @@
 
 #if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
 
+#include <stdio.h>
 #include <string.h>
 #include <limits.h>
 

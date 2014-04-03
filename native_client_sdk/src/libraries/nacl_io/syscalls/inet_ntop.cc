@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "nacl_io/ossocket.h"
-#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) && !defined(__BIONIC__)
 
 #include <errno.h>
 #include <string.h>
@@ -95,4 +95,4 @@ const char* inet_ntop(int af, const void* src, char* dst, socklen_t size) {
 
 EXTERN_C_END
 
-#endif  // defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#endif  // defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) ...

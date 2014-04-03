@@ -53,8 +53,10 @@ void TtyNode::InitTermios() {
   termios_.c_cflag = CREAD | 077;
   termios_.c_lflag =
       ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHOCTL | ECHOKE | IEXTEN;
+#if !defined(__BIONIC__)
   termios_.c_ispeed = B38400;
   termios_.c_ospeed = B38400;
+#endif
   termios_.c_cc[VINTR] = 3;
   termios_.c_cc[VQUIT] = 28;
   termios_.c_cc[VERASE] = 127;

@@ -7,7 +7,7 @@
 
 #if !defined(WIN23)
 #include <signal.h>
-#if defined(__GLIBC__)
+#if defined(__GLIBC__) || defined(__BIONIC__)
 typedef __sighandler_t sighandler_t;
 #else
 typedef _sig_func_ptr sighandler_t;

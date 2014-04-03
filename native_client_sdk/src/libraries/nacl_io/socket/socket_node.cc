@@ -266,6 +266,8 @@ Error SocketNode::SetSockOpt(int lvl,
                              int optname,
                              const void* optval,
                              socklen_t len) {
+  size_t buflen = static_cast<size_t>(len);
+
   if (lvl != SOL_SOCKET)
     return ENOPROTOOPT;
 
@@ -276,14 +278,14 @@ Error SocketNode::SetSockOpt(int lvl,
       // SO_REUSEADDR is effectivly always on since we can't
       // disable it with PPAPI sockets. Just return success
       // here regardless.
-      if (len < sizeof(int))
+      if (buflen < sizeof(int))
         return EINVAL;
       return 0;
     }
     case SO_LINGER: {
       // Not supported by the PPAPI interface but we preserve
       // the settings and pretend to support it.
-      if (len < sizeof(struct linger))
+      if (buflen < sizeof(struct linger))
         return EINVAL;
       struct linger new_linger = *static_cast<const linger*>(optval);
       // Don't allow setting linger to be enabled until we
@@ -298,7 +300,7 @@ Error SocketNode::SetSockOpt(int lvl,
     case SO_KEEPALIVE: {
       // Not supported by the PPAPI interface but we preserve
       // the flag and pretend to support it.
-      if (len < sizeof(int))
+      if (buflen < sizeof(int))
         return EINVAL;
       int value = *static_cast<const int*>(optval);
       keep_alive_ = value != 0;

@@ -5,7 +5,7 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
-#if defined(__native_client__) && !defined(__GLIBC__)
+#if defined(__native_client__) && !defined(__GLIBC__) && !defined(__BIONIC__)
 int sigdelset(sigset_t* set, const int signum) {
   *set &= ~(1 << signum);
   return 0;

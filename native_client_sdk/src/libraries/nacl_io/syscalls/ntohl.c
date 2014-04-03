@@ -4,7 +4,7 @@
 
 #include "nacl_io/ossocket.h"
 
-#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) && !defined(__BIONIC__)
 
 #include <string.h>
 
@@ -18,4 +18,4 @@ inline uint32_t ntohl(uint32_t networklong) {
           ((uint32_t) input[3]));
 }
 
-#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) ... */

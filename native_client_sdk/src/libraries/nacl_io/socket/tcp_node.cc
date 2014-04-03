@@ -318,7 +318,7 @@ Error TcpNode::GetSockOpt(int lvl, int optname, void* optval, socklen_t* len) {
   if (lvl == IPPROTO_TCP && optname == TCP_NODELAY) {
     AUTO_LOCK(node_lock_);
     int value = tcp_nodelay_;
-    socklen_t value_len = sizeof(value);
+    socklen_t value_len = static_cast<socklen_t>(sizeof(value));
     int copy_bytes = std::min(value_len, *len);
     memcpy(optval, &value, copy_bytes);
     *len = value_len;
@@ -345,7 +345,7 @@ Error TcpNode::SetSockOpt(int lvl,
                           const void* optval,
                           socklen_t len) {
   if (lvl == IPPROTO_TCP && optname == TCP_NODELAY) {
-    if (len < sizeof(int))
+    if (static_cast<size_t>(len) < sizeof(int))
       return EINVAL;
     AUTO_LOCK(node_lock_);
     tcp_nodelay_ = *static_cast<const int*>(optval) != 0;

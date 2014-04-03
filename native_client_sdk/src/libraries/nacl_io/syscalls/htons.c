@@ -4,7 +4,7 @@
 
 #include "nacl_io/ossocket.h"
 
-#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) && !defined(__BIONIC__)
 
 #include <string.h>
 
@@ -18,4 +18,4 @@ inline uint16_t htons(uint16_t hostshort) {
   return result;
 }
 
-#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) ... */

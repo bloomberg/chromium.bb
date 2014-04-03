@@ -368,6 +368,15 @@ def MakeNinjaRelPath(path):
 
 
 TOOLCHAIN_LIBS = {
+  'bionic' : [
+    'libminidump_generator.a',
+    'libnacl.a',
+    'libnacl_dyncode.a',
+    'libnacl_exception.a',
+    'libnacl_list_mappings.a',
+    'libppapi.a',
+    'libppapi_stub.a',
+  ],
   'newlib' : [
     'crti.o',
     'crtn.o',
@@ -448,6 +457,17 @@ def GypNinjaInstall(pepperdir, toolchains):
 
   InstallFiles(ninja_out_dir, os.path.join(pepperdir, 'tools'), tools_files)
 
+  # Add ARM binaries
+  if platform == 'linux':
+    tools_files = [
+      ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
+      ['irt_core_newlib_arm.nexe', 'irt_core_arm.nexe'],
+      ['sel_ldr', 'sel_ldr_arm'],
+      ['nacl_helper_bootstrap', 'nacl_helper_bootstrap_arm']
+    ]
+    ninja_out_dir = os.path.join(OUT_DIR, build_dir + '-arm', 'Release')
+    InstallFiles(ninja_out_dir, os.path.join(pepperdir, 'tools'), tools_files)
+
   for tc in set(toolchains) & set(['newlib', 'glibc', 'pnacl']):
     if tc == 'pnacl':
       xarches = (None,)
@@ -461,6 +481,11 @@ def GypNinjaInstall(pepperdir, toolchains):
       src_dir = GetGypBuiltLib(tc, xarch)
       dst_dir = GetOutputToolchainLib(pepperdir, tc, xarch)
       InstallFiles(src_dir, dst_dir, TOOLCHAIN_LIBS[tc])
+
+      # Copy ARM newlib components to bionic
+      if tc == 'newlib' and xarch == 'arm' and 'bionic' in toolchains:
+        bionic_dir = GetOutputToolchainLib(pepperdir, 'bionic', xarch)
+        InstallFiles(src_dir, bionic_dir, TOOLCHAIN_LIBS['bionic'])
 
       if tc != 'pnacl':
         src_dir = GetGypToolchainLib(tc, xarch)
@@ -890,6 +915,8 @@ def BuildStepBuildAppEngine(pepperdir, chrome_revision):
 
 def main(args):
   parser = optparse.OptionParser(description=__doc__)
+  parser.add_option('--qemu', help='Add qemu for ARM.',
+      action='store_true')
   parser.add_option('--bionic', help='Add bionic build.',
       action='store_true')
   parser.add_option('--tar', help='Force the tar step.',
@@ -995,6 +1022,10 @@ def main(args):
   if options.build_app_engine and getos.GetPlatform() == 'linux':
     BuildStepBuildAppEngine(pepperdir, chrome_revision)
 
+  if options.qemu:
+    qemudir = os.path.join(NACL_DIR, 'toolchain', 'linux_arm-trusted')
+    oshelpers.Copy(['-r', qemudir, pepperdir])
+
   # Archive on non-trybots.
   if options.archive:
     BuildStepArchiveBundle('build', pepper_ver, chrome_revision, nacl_revision,
@@ -1012,3 +1043,4 @@ if __name__ == '__main__':
     sys.exit(main(sys.argv))
   except KeyboardInterrupt:
     buildbot_common.ErrorExit('build_sdk: interrupted')
+

@@ -10,6 +10,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <termios.h>
 
 #include <algorithm>
 #include <cstdlib>

@@ -420,6 +420,7 @@ tools/getos.py
 tools/host_gcc.mk
 tools/host_vc.mk
 tools/httpd.py
+[linux]tools/irt_core_arm.nexe
 tools/irt_core_x86_32.nexe
 tools/irt_core_x86_64.nexe
 tools/lib/elf.py
@@ -430,6 +431,7 @@ tools/lib/quote.py
 [linux,mac]tools/minidump_stackwalk
 tools/nacl_config.py
 tools/nacl_gcc.mk
+[linux]tools/nacl_helper_bootstrap_arm
 [linux]tools/nacl_helper_bootstrap_x86_32
 [linux]tools/nacl_helper_bootstrap_x86_64
 tools/nacl_llvm.mk
@@ -438,5 +440,6 @@ tools/ncval.py
 tools/oshelpers.py
 tools/run.py
 tools/sel_ldr.py
+[linux]tools/sel_ldr_arm
 tools/sel_ldr_x86_32${EXE_EXT}
 tools/sel_ldr_x86_64${EXE_EXT}

@@ -19,6 +19,7 @@ struct dirent {
 
 #else
 
+#include <sys/types.h>
 #include <dirent.h>
 
 #endif

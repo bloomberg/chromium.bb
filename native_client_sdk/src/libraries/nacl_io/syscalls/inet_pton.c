@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 #include "nacl_io/ossocket.h"
-#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) && !defined(__BIONIC__)
 
 #include <ctype.h>
 #include <errno.h>
@@ -144,4 +144,4 @@ int inet_pton(int af, const char *src, void *dst) {
   return -1;
 }
 
-#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) ... */

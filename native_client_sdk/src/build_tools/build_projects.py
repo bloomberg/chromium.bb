@@ -185,6 +185,10 @@ def BuildProjectsBranch(pepperdir, branch, deps, clean, config, args=None):
   make_cmd = [make, '-j', jobs]
 
   make_cmd.append('CONFIG='+config)
+  # We always ENABLE_BIONIC in case we need it.  If neither --bionic nor
+  # -t bionic have been provided on the command line, then VALID_TOOLCHAINS
+  # will not contain a bionic target.
+  make_cmd.append('ENABLE_BIONIC=1')
   if not deps:
     make_cmd.append('IGNORE_DEPS=1')
 
@@ -224,6 +228,8 @@ def main(argv):
   parser.add_option('--config',
       help='Choose configuration to build (Debug or Release).  Builds both '
            'by default')
+  parser.add_option('--bionic',
+      help='Enable bionic projects', action='store_true')
   parser.add_option('-x', '--experimental',
       help='Build experimental projects', action='store_true')
   parser.add_option('-t', '--toolchain',
@@ -259,7 +265,7 @@ def main(argv):
     # e.g. If an example supports newlib and glibc, then the default will be
     # newlib.
     options.toolchain = ['pnacl', 'newlib', 'glibc', 'host']
-    if options.experimental:
+    if options.experimental or options.bionic:
       options.toolchain.append('bionic')
 
   if 'host' in options.toolchain:

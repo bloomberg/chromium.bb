@@ -8,7 +8,10 @@
 
 #include <stdio.h>
 
-#ifndef __GLIBC__
+#if !defined(__GLIBC__)
+#if defined(__BIONIC__)
+const
+#endif
 char* gai_strerror(int errcode) {
   switch (errcode) {
     case EAI_BADFLAGS: return "Invalid value for `ai_flags' field.";

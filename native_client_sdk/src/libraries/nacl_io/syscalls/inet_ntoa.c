@@ -4,7 +4,7 @@
 
 #include "nacl_io/ossocket.h"
 
-#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) && !defined(__BIONIC__)
 
 static uint8_t GetByte(const void* addr, int byte) {
   const char* buf = (const char*)addr;
@@ -19,4 +19,4 @@ char* inet_ntoa(struct in_addr in) {
   return addr;
 }
 
-#endif  // defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
+#endif  // defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) ...
