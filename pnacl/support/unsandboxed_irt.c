@@ -372,14 +372,16 @@ static int futex_wake(volatile int *addr, int nwake, int *count) {
   return 0;
 }
 
-static int irt_clock_getres(clockid_t clk_id, struct timespec *time_nacl) {
+static int irt_clock_getres(nacl_irt_clockid_t clk_id,
+                            struct timespec *time_nacl) {
   struct timespec time;
   int result = check_error(clock_getres(clk_id, &time));
   convert_to_nacl_timespec(time_nacl, &time);
   return result;
 }
 
-static int irt_clock_gettime(clockid_t clk_id, struct timespec *time_nacl) {
+static int irt_clock_gettime(nacl_irt_clockid_t clk_id,
+                             struct timespec *time_nacl) {
   struct timespec time;
   int result = check_error(clock_gettime(clk_id, &time));
   convert_to_nacl_timespec(time_nacl, &time);

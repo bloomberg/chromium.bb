@@ -20,6 +20,7 @@ struct NaClExceptionContext;
 struct NaClMemMappingInfo;
 
 typedef int64_t nacl_irt_off_t;
+typedef uint32_t nacl_irt_clockid_t;
 
 #if defined(__cplusplus)
 extern "C" {
@@ -35,6 +36,8 @@ extern "C" {
  * This function returns the number of bytes filled in at TABLE, which
  * is never larger than TABLESIZE.  If the interface identifier is not
  * recognized or TABLESIZE is too small, it returns zero.
+ *
+ * This function writes each function pointer to TABLE atomically.
  *
  * The interface of the query function avoids passing any data pointers
  * back from the IRT to user code.  Only code pointers are passed back.
@@ -350,8 +353,8 @@ struct nacl_irt_random {
 
 #define NACL_IRT_CLOCK_v0_1 "nacl-irt-clock_get-0.1"
 struct nacl_irt_clock {
-  int (*clock_getres)(clockid_t clk_id, struct timespec *res);
-  int (*clock_gettime)(clockid_t clk_id, struct timespec *tp);
+  int (*clock_getres)(nacl_irt_clockid_t clock_id, struct timespec *res);
+  int (*clock_gettime)(nacl_irt_clockid_t clock_id, struct timespec *tp);
 };
 
 /*

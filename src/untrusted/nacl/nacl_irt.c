@@ -125,9 +125,6 @@ void __libnacl_mandatory_irt_query(const char *interface,
   }
 }
 
-/*
- * Used to lazily initialize an IRT interface function.
- */
 int __libnacl_irt_init_fn(void *interface_field, void (*init)(void)) {
   if (*((void **) interface_field) == NULL) {
     init();

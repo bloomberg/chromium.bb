@@ -8,7 +8,17 @@
 
 #include "native_client/src/untrusted/nacl/nacl_irt.h"
 
-NACL_OPTIONAL_FN(__libnacl_irt_clock, NACL_IRT_CLOCK_v0_1,
-                 clock_getres,
-                 (clk_id, res), (clockid_t clk_id, struct timespec *res))
+int clock_getres(clockid_t clock_id, struct timespec *res) {
+  if (!__libnacl_irt_init_fn(&__libnacl_irt_clock.clock_getres,
+                             __libnacl_irt_clock_init)) {
+    return -1;
+  }
 
+  int error = __libnacl_irt_clock.clock_getres(clock_id, res);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
+}

@@ -52,8 +52,8 @@ struct timespec;
 /*
  * Basic functionality test: the syscalls are present.
  */
-int TimeTest(int (*func)(clockid_t clk_id, struct timespec *ts),
-             clockid_t clk_id,
+int TimeTest(int (*func)(nacl_irt_clockid_t clk_id, struct timespec *ts),
+             nacl_irt_clockid_t clk_id,
              char const *error_string,
              char const *success_name) {
   struct timespec       ts;
