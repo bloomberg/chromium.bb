@@ -1279,6 +1279,7 @@
         'browser/signin/signin_global_error_unittest.cc',
         'browser/signin/signin_manager_unittest.cc',
         'browser/signin/signin_names_io_thread_unittest.cc',
+        'browser/signin/signin_promo_unittest.cc',
         'browser/signin/signin_tracker_unittest.cc',
         'browser/speech/extension_api/extension_manifests_tts_unittest.cc',
         'browser/speech/speech_recognition_bubble_controller_unittest.cc',
