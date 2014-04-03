@@ -47,10 +47,7 @@ typedef Vector<RefPtr<HistoryItem> > HistoryItemVector;
 class HistoryItem : public RefCounted<HistoryItem> {
 public:
     static PassRefPtr<HistoryItem> create() { return adoptRef(new HistoryItem); }
-
     ~HistoryItem();
-
-    PassRefPtr<HistoryItem> copy() const;
 
     // Used when the frame this item represents was navigated to a different
     // url but a new item wasn't created.
@@ -94,15 +91,17 @@ public:
     void setFormData(PassRefPtr<FormData>);
     void setFormContentType(const AtomicString&);
 
-    void addChildItem(PassRefPtr<HistoryItem>);
-    const HistoryItemVector& children() const;
-    void clearChildren();
+    // HistoryItem's concept of children is deprecated and can be removed once chromium's
+    // HistoryItem serialization/deserialization code knows about HistoryController's
+    // representation of the histroy tree.
+    void deprecatedAddChildItem(PassRefPtr<HistoryItem>);
+    const HistoryItemVector& deprecatedChildren() const;
+    void deprecatedClearChildren();
 
     bool isCurrentDocument(Document*) const;
 
 private:
     HistoryItem();
-    explicit HistoryItem(const HistoryItem&);
 
     String m_urlString;
     Referrer m_referrer;

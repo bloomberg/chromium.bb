@@ -63,7 +63,7 @@ void addReferencedFilePaths(HistoryItem* item, HashSet<String>& results)
     for (size_t i = 0; i < filePaths.size(); ++i)
         results.add(filePaths[i]);
 
-    const HistoryItemVector& children = item->children();
+    const HistoryItemVector& children = item->deprecatedChildren();
     for (size_t i = 0; i < children.size(); ++i)
         addReferencedFilePaths(children[i].get(), results);
 }
@@ -92,7 +92,6 @@ WebString WebHistoryItem::urlString() const
 
 void WebHistoryItem::setURLString(const WebString& url)
 {
-    ensureMutable();
     m_private->setURLString(KURL(ParsedURLString, url).string());
 }
 
@@ -108,7 +107,6 @@ WebReferrerPolicy WebHistoryItem::referrerPolicy() const
 
 void WebHistoryItem::setReferrer(const WebString& referrer, WebReferrerPolicy referrerPolicy)
 {
-    ensureMutable();
     m_private->setReferrer(Referrer(referrer, static_cast<ReferrerPolicy>(referrerPolicy)));
 }
 
@@ -119,7 +117,6 @@ WebString WebHistoryItem::target() const
 
 void WebHistoryItem::setTarget(const WebString& target)
 {
-    ensureMutable();
     m_private->setTarget(target);
 }
 
@@ -130,7 +127,6 @@ WebPoint WebHistoryItem::scrollOffset() const
 
 void WebHistoryItem::setScrollOffset(const WebPoint& scrollOffset)
 {
-    ensureMutable();
     m_private->setScrollPoint(scrollOffset);
 }
 
@@ -141,7 +137,6 @@ float WebHistoryItem::pageScaleFactor() const
 
 void WebHistoryItem::setPageScaleFactor(float scale)
 {
-    ensureMutable();
     m_private->setPageScaleFactor(scale);
 }
 
@@ -152,7 +147,6 @@ WebVector<WebString> WebHistoryItem::documentState() const
 
 void WebHistoryItem::setDocumentState(const WebVector<WebString>& state)
 {
-    ensureMutable();
     // FIXME: would be nice to avoid the intermediate copy
     Vector<String> ds;
     for (size_t i = 0; i < state.size(); ++i)
@@ -167,7 +161,6 @@ long long WebHistoryItem::itemSequenceNumber() const
 
 void WebHistoryItem::setItemSequenceNumber(long long itemSequenceNumber)
 {
-    ensureMutable();
     m_private->setItemSequenceNumber(itemSequenceNumber);
 }
 
@@ -178,7 +171,6 @@ long long WebHistoryItem::documentSequenceNumber() const
 
 void WebHistoryItem::setDocumentSequenceNumber(long long documentSequenceNumber)
 {
-    ensureMutable();
     m_private->setDocumentSequenceNumber(documentSequenceNumber);
 }
 
@@ -189,7 +181,6 @@ WebSerializedScriptValue WebHistoryItem::stateObject() const
 
 void WebHistoryItem::setStateObject(const WebSerializedScriptValue& object)
 {
-    ensureMutable();
     m_private->setStateObject(object);
 }
 
@@ -200,7 +191,6 @@ WebString WebHistoryItem::httpContentType() const
 
 void WebHistoryItem::setHTTPContentType(const WebString& httpContentType)
 {
-    ensureMutable();
     m_private->setFormContentType(httpContentType);
 }
 
@@ -211,27 +201,24 @@ WebHTTPBody WebHistoryItem::httpBody() const
 
 void WebHistoryItem::setHTTPBody(const WebHTTPBody& httpBody)
 {
-    ensureMutable();
     m_private->setFormData(httpBody);
 }
 
 WebVector<WebHistoryItem> WebHistoryItem::children() const
 {
-    return m_private->children();
+    return m_private->deprecatedChildren();
 }
 
 void WebHistoryItem::setChildren(const WebVector<WebHistoryItem>& items)
 {
-    ensureMutable();
-    m_private->clearChildren();
+    m_private->deprecatedClearChildren();
     for (size_t i = 0; i < items.size(); ++i)
-        m_private->addChildItem(items[i]);
+        m_private->deprecatedAddChildItem(items[i]);
 }
 
 void WebHistoryItem::appendToChildren(const WebHistoryItem& item)
 {
-    ensureMutable();
-    m_private->addChildItem(item);
+    m_private->deprecatedAddChildItem(item);
 }
 
 WebVector<WebString> WebHistoryItem::getReferencedFilePaths() const
@@ -258,12 +245,6 @@ WebHistoryItem& WebHistoryItem::operator=(const PassRefPtr<HistoryItem>& item)
 WebHistoryItem::operator PassRefPtr<HistoryItem>() const
 {
     return m_private.get();
-}
-
-void WebHistoryItem::ensureMutable()
-{
-    if (!m_private->hasOneRef())
-        m_private = m_private->copy();
 }
 
 } // namespace blink

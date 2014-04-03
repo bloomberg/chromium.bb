@@ -114,7 +114,6 @@ public:
 #endif
 
 private:
-    void ensureMutable();
     WebPrivatePtr<WebCore::HistoryItem> m_private;
 };
 

@@ -52,33 +52,6 @@ HistoryItem::~HistoryItem()
 {
 }
 
-inline HistoryItem::HistoryItem(const HistoryItem& item)
-    : RefCounted<HistoryItem>()
-    , m_urlString(item.m_urlString)
-    , m_referrer(item.m_referrer)
-    , m_target(item.m_target)
-    , m_scrollPoint(item.m_scrollPoint)
-    , m_pageScaleFactor(item.m_pageScaleFactor)
-    , m_documentState(item.m_documentState)
-    , m_itemSequenceNumber(item.m_itemSequenceNumber)
-    , m_documentSequenceNumber(item.m_documentSequenceNumber)
-    , m_stateObject(item.m_stateObject)
-    , m_formContentType(item.m_formContentType)
-{
-    if (item.m_formData)
-        m_formData = item.m_formData->copy();
-
-    unsigned size = item.m_children.size();
-    m_children.reserveInitialCapacity(size);
-    for (unsigned i = 0; i < size; ++i)
-        m_children.uncheckedAppend(item.m_children[i]->copy());
-}
-
-PassRefPtr<HistoryItem> HistoryItem::copy() const
-{
-    return adoptRef(new HistoryItem(*this));
-}
-
 void HistoryItem::generateNewSequenceNumbers()
 {
     m_itemSequenceNumber = generateSequenceNumber();
@@ -173,17 +146,17 @@ void HistoryItem::setStateObject(PassRefPtr<SerializedScriptValue> object)
     m_stateObject = object;
 }
 
-void HistoryItem::addChildItem(PassRefPtr<HistoryItem> child)
+void HistoryItem::deprecatedAddChildItem(PassRefPtr<HistoryItem> child)
 {
     m_children.append(child);
 }
 
-const HistoryItemVector& HistoryItem::children() const
+const HistoryItemVector& HistoryItem::deprecatedChildren() const
 {
     return m_children;
 }
 
-void HistoryItem::clearChildren()
+void HistoryItem::deprecatedClearChildren()
 {
     m_children.clear();
 }
