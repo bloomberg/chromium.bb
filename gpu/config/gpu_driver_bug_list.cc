@@ -12,7 +12,12 @@ namespace gpu {
 
 namespace {
 
-const DriverBugInfo kFeatureList[] = {
+struct GpuDriverBugWorkaroundInfo {
+  GpuDriverBugWorkaroundType type;
+  const char* name;
+};
+
+const GpuDriverBugWorkaroundInfo kFeatureList[] = {
 #define GPU_OP(type, name) { type, #name },
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
 #undef GPU_OP
@@ -34,8 +39,8 @@ GpuDriverBugList* GpuDriverBugList::Create() {
   DCHECK_EQ(static_cast<int>(arraysize(kFeatureList)),
             NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES);
   for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; ++i) {
-    list->AddSupportedFeature(kFeatureList[i].feature_name,
-                              kFeatureList[i].feature_type);
+    list->AddSupportedFeature(kFeatureList[i].name,
+                              kFeatureList[i].type);
   }
   return list;
 }
@@ -43,13 +48,41 @@ GpuDriverBugList* GpuDriverBugList::Create() {
 std::string GpuDriverBugWorkaroundTypeToString(
     GpuDriverBugWorkaroundType type) {
   if (type < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES)
-    return kFeatureList[type].feature_name;
+    return kFeatureList[type].name;
   else
     return "unknown";
 }
 
-const struct DriverBugInfo* GetDriverBugWorkarounds() {
-  return kFeatureList;
+// static
+void GpuDriverBugList::AppendWorkaroundsFromCommandLine(
+    std::set<int>* workarounds, const CommandLine& command_line) {
+  DCHECK(workarounds);
+  for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; i++) {
+    if (!command_line.HasSwitch(kFeatureList[i].name))
+      continue;
+    // Removing conflicting workarounds.
+    switch (kFeatureList[i].type) {
+      case FORCE_DISCRETE_GPU:
+        workarounds->erase(FORCE_INTEGRATED_GPU);
+        workarounds->insert(FORCE_DISCRETE_GPU);
+        break;
+      case FORCE_INTEGRATED_GPU:
+        workarounds->erase(FORCE_DISCRETE_GPU);
+        workarounds->insert(FORCE_INTEGRATED_GPU);
+        break;
+      case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512:
+      case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024:
+      case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096:
+        workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512);
+        workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024);
+        workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096);
+        workarounds->insert(kFeatureList[i].type);
+        break;
+      default:
+        workarounds->insert(kFeatureList[i].type);
+        break;
+    }
+  }
 }
 
 }  // namespace gpu

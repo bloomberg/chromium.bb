@@ -65,11 +65,10 @@ void ApplyGpuDriverBugWorkarounds(
   scoped_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
   list->LoadList(kGpuDriverBugListJson,
                  GpuControlList::kCurrentOsOnly);
-  std::set<int> workarounds = WorkaroundsFromCommandLine(command_line);
-  if (workarounds.empty()) {
-    workarounds = list->MakeDecision(
-        GpuControlList::kOsAny, std::string(), gpu_info);
-  }
+  std::set<int> workarounds = list->MakeDecision(
+      GpuControlList::kOsAny, std::string(), gpu_info);
+  GpuDriverBugList::AppendWorkaroundsFromCommandLine(
+      &workarounds, *command_line);
   if (!workarounds.empty()) {
     command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
                                     IntSetToString(workarounds));
@@ -79,18 +78,6 @@ void ApplyGpuDriverBugWorkarounds(
 void StringToFeatureSet(
     const std::string& str, std::set<int>* feature_set) {
   StringToIntSet(str, feature_set);
-}
-
-std::set<int> WorkaroundsFromCommandLine(CommandLine* command_line) {
-  std::set<int> workarounds;
-  const struct DriverBugInfo* kFeatureList = GetDriverBugWorkarounds();
-
-  for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; i++) {
-    if (command_line->HasSwitch(kFeatureList[i].feature_name))
-      workarounds.insert(kFeatureList[i].feature_type);
-  }
-
-  return workarounds;
 }
 
 }  // namespace gpu

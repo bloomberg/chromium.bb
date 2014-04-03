@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/config/gpu_control_list_jsons.h"
@@ -123,6 +124,36 @@ TEST_F(GpuDriverBugListTest, GpuSwitching) {
   driver_bug_list->GetDecisionEntries(&entries, false);
   ASSERT_EQ(1u, entries.size());
   EXPECT_EQ(2u, entries[0]);
+}
+
+TEST_F(GpuDriverBugListTest, AppendSingleWorkaround) {
+  base::CommandLine command_line(0, NULL);
+  command_line.AppendSwitch(
+      GpuDriverBugWorkaroundTypeToString(DISABLE_MULTISAMPLING));
+  std::set<int> workarounds;
+  workarounds.insert(EXIT_ON_CONTEXT_LOST);
+  workarounds.insert(INIT_VERTEX_ATTRIBUTES);
+  EXPECT_EQ(2u, workarounds.size());
+  GpuDriverBugList::AppendWorkaroundsFromCommandLine(
+      &workarounds, command_line);
+  EXPECT_EQ(3u, workarounds.size());
+  EXPECT_EQ(1u, workarounds.count(DISABLE_MULTISAMPLING));
+}
+
+TEST_F(GpuDriverBugListTest, AppendForceGPUWorkaround) {
+  base::CommandLine command_line(0, NULL);
+  command_line.AppendSwitch(
+      GpuDriverBugWorkaroundTypeToString(FORCE_DISCRETE_GPU));
+  std::set<int> workarounds;
+  workarounds.insert(EXIT_ON_CONTEXT_LOST);
+  workarounds.insert(FORCE_INTEGRATED_GPU);
+  EXPECT_EQ(2u, workarounds.size());
+  EXPECT_EQ(1u, workarounds.count(FORCE_INTEGRATED_GPU));
+  GpuDriverBugList::AppendWorkaroundsFromCommandLine(
+      &workarounds, command_line);
+  EXPECT_EQ(2u, workarounds.size());
+  EXPECT_EQ(0u, workarounds.count(FORCE_INTEGRATED_GPU));
+  EXPECT_EQ(1u, workarounds.count(FORCE_DISCRETE_GPU));
 }
 
 }  // namespace gpu

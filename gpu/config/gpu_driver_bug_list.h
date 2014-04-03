@@ -5,8 +5,10 @@
 #ifndef GPU_CONFIG_GPU_DRIVER_BUG_LIST_H_
 #define GPU_CONFIG_GPU_DRIVER_BUG_LIST_H_
 
+#include <set>
 #include <string>
 
+#include "base/command_line.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
@@ -19,18 +21,16 @@ class GPU_EXPORT GpuDriverBugList : public GpuControlList {
 
   static GpuDriverBugList* Create();
 
+  // Append |workarounds| with these passed in through the
+  // |command_line|.
+  static void AppendWorkaroundsFromCommandLine(
+      std::set<int>* workarounds, const CommandLine& command_line);
+
  private:
   GpuDriverBugList();
 
   DISALLOW_COPY_AND_ASSIGN(GpuDriverBugList);
 };
-
-struct DriverBugInfo {
-  GpuDriverBugWorkaroundType feature_type;
-  const char* feature_name;
-};
-
-const struct DriverBugInfo* GetDriverBugWorkarounds();
 
 }  // namespace gpu
 

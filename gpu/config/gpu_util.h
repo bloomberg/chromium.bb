@@ -37,10 +37,6 @@ GPU_EXPORT void ApplyGpuDriverBugWorkarounds(
 GPU_EXPORT void StringToFeatureSet(
     const std::string& str, std::set<int>* feature_set);
 
-// Get the set of workarounds from switches provided in |command_line|
-GPU_EXPORT std::set<int> WorkaroundsFromCommandLine(
-    base::CommandLine* command_line);
-
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_

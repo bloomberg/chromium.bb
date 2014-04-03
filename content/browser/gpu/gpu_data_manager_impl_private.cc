@@ -304,21 +304,6 @@ void ApplyAndroidWorkarounds(const gpu::GPUInfo& gpu_info,
 }
 #endif  // OS_ANDROID
 
-// Overwrite force gpu workaround if a commandline switch exists.
-void AdjustGpuSwitchingOption(std::set<int>* workarounds) {
-  DCHECK(workarounds);
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string option = command_line.GetSwitchValueASCII(
-      switches::kGpuSwitching);
-  if (option == switches::kGpuSwitchingOptionNameForceDiscrete) {
-    workarounds->erase(gpu::FORCE_INTEGRATED_GPU);
-    workarounds->insert(gpu::FORCE_DISCRETE_GPU);
-  } else if (option == switches::kGpuSwitchingOptionNameForceIntegrated) {
-    workarounds->erase(gpu::FORCE_DISCRETE_GPU);
-    workarounds->insert(gpu::FORCE_INTEGRATED_GPU);
-  }
-}
-
 // Block all domains' use of 3D APIs for this many milliseconds if
 // approaching a threshold where system stability might be compromised.
 const int64 kBlockAllDomainsMs = 10000;
@@ -614,13 +599,12 @@ void GpuDataManagerImplPrivate::UpdateGpuInfoHelper() {
 
     UpdateBlacklistedFeatures(features);
   }
-  gpu_driver_bugs_ =
-      gpu::WorkaroundsFromCommandLine(CommandLine::ForCurrentProcess());
-  if (gpu_driver_bugs_.empty() && gpu_driver_bug_list_) {
+  if (gpu_driver_bug_list_) {
     gpu_driver_bugs_ = gpu_driver_bug_list_->MakeDecision(
         gpu::GpuControlList::kOsAny, std::string(), gpu_info_);
   }
-  AdjustGpuSwitchingOption(&gpu_driver_bugs_);
+  gpu::GpuDriverBugList::AppendWorkaroundsFromCommandLine(
+      &gpu_driver_bugs_, *CommandLine::ForCurrentProcess());
 
   // We have to update GpuFeatureType before notify all the observers.
   NotifyGpuInfoUpdate();
