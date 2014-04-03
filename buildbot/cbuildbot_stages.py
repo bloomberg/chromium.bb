@@ -2631,7 +2631,7 @@ class BuildImageStage(BuildPackagesStage):
           if 'test' in self._run.config.images:
             image_name = 'chromiumos_test_image.bin'
           elif 'dev' in self._run.config.images:
-            image_name = 'chromiumos_dev_image.bin'
+            image_name = 'chromiumos_image.bin'
           else:
             image_name = 'chromiumos_base_image.bin'
 

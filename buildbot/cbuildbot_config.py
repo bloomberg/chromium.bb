@@ -949,8 +949,8 @@ brillo = _config(
 # Base brillo config don't build tests and they only need the base image.
 brillo_non_testable = brillo.derive(
   # Literally build the minimal possible.
-  packages=['chromeos-base/chromeos'],
-  images=['base'],
+  packages=['chromeos-base/chromeos', 'chromeos-base/chromeos-dev'],
+  images=['base', 'dev'],
 
   # Disable all the tests!
   build_tests=False,
@@ -2153,15 +2153,6 @@ _config.add_group('beaglebone-release-group',
     signer_results=False,
     paygen=False,
   ).derive(_grouped_variant_config),
-)
-
-# Note this is named full since it doesn't use manifest_versions and uses
-# different scheduling. However, it still pushes releases.
-_arm_brillo_release.add_config('daisy_winter-full',
-  brillo_non_testable,
-  boards=['daisy_winter'],
-  manifest='lasercats.xml',
-  manifest_version=False,
 )
 
 _release.add_config('stumpy_moblab-release',
