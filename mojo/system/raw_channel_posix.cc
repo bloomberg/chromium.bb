@@ -33,9 +33,7 @@ namespace {
 class RawChannelPosix : public RawChannel,
                         public base::MessageLoopForIO::Watcher {
  public:
-  RawChannelPosix(embedder::ScopedPlatformHandle handle,
-                  Delegate* delegate,
-                  base::MessageLoopForIO* message_loop_for_io);
+  RawChannelPosix(embedder::ScopedPlatformHandle handle);
   virtual ~RawChannelPosix();
 
  private:
@@ -76,11 +74,8 @@ class RawChannelPosix : public RawChannel,
   DISALLOW_COPY_AND_ASSIGN(RawChannelPosix);
 };
 
-RawChannelPosix::RawChannelPosix(embedder::ScopedPlatformHandle handle,
-                                 Delegate* delegate,
-                                 base::MessageLoopForIO* message_loop_for_io)
-    : RawChannel(delegate, message_loop_for_io),
-      fd_(handle.Pass()),
+RawChannelPosix::RawChannelPosix(embedder::ScopedPlatformHandle handle)
+    : fd_(handle.Pass()),
       pending_read_(false),
       pending_write_(false),
       weak_ptr_factory_(this) {
@@ -335,10 +330,9 @@ void RawChannelPosix::WaitToWrite() {
 
 // Static factory method declared in raw_channel.h.
 // static
-RawChannel* RawChannel::Create(embedder::ScopedPlatformHandle handle,
-                               Delegate* delegate,
-                               base::MessageLoopForIO* message_loop_for_io) {
-  return new RawChannelPosix(handle.Pass(), delegate, message_loop_for_io);
+scoped_ptr<RawChannel> RawChannel::Create(
+    embedder::ScopedPlatformHandle handle) {
+  return scoped_ptr<RawChannel>(new RawChannelPosix(handle.Pass()));
 }
 
 }  // namespace system

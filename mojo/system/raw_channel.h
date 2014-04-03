@@ -72,15 +72,14 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
   // Static factory method. |handle| should be a handle to a
   // (platform-appropriate) bidirectional communication channel (e.g., a socket
-  // on POSIX, a named pipe on Windows). Does *not* take ownership of |delegate|
-  // and |message_loop_for_io|, which must remain alive while this object does.
-  static RawChannel* Create(embedder::ScopedPlatformHandle handle,
-                            Delegate* delegate,
-                            base::MessageLoopForIO* message_loop_for_io);
+  // on POSIX, a named pipe on Windows).
+  static scoped_ptr<RawChannel> Create(embedder::ScopedPlatformHandle handle);
 
-  // This must be called (on an I/O thread) before this object is used. Returns
-  // true on success. On failure, |Shutdown()| should *not* be called.
-  bool Init();
+  // This must be called (on an I/O thread) before this object is used. Does
+  // *not* take ownership of |delegate|. Both the I/O thread and |delegate| must
+  // remain alive for the lifetime of this object. Returns true on success. On
+  // failure, |Shutdown()| should *not* be called.
+  bool Init(Delegate* delegate);
 
   // This must be called (on the I/O thread) before this object is destroyed.
   void Shutdown();
@@ -150,7 +149,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
     DISALLOW_COPY_AND_ASSIGN(WriteBuffer);
   };
 
-  RawChannel(Delegate* delegate, base::MessageLoopForIO* message_loop_for_io);
+  RawChannel();
 
   base::MessageLoopForIO* message_loop_for_io() { return message_loop_for_io_; }
   base::Lock& write_lock() { return write_lock_; }
@@ -223,8 +222,10 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // Must be called only if |write_stopped_| is false and under |write_lock_|.
   bool OnWriteCompletedNoLock(bool result, size_t bytes_written);
 
-  Delegate* const delegate_;
-  base::MessageLoopForIO* const message_loop_for_io_;
+  // Set in |Init()| and never changed (hence usable on any thread without
+  // locking):
+  Delegate* delegate_;
+  base::MessageLoopForIO* message_loop_for_io_;
 
   // Only used on the I/O thread:
   bool read_stopped_;

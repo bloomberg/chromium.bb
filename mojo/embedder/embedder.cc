@@ -12,6 +12,7 @@
 #include "mojo/system/core_impl.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
+#include "mojo/system/raw_channel.h"
 
 namespace mojo {
 namespace embedder {
@@ -31,7 +32,8 @@ static void CreateChannelOnIOThread(
 
   // Create and initialize a |system::Channel|.
   channel_info->channel = new system::Channel();
-  bool success = channel_info->channel->Init(platform_handle.Pass());
+  bool success = channel_info->channel->Init(
+      system::RawChannel::Create(platform_handle.Pass()));
   DCHECK(success);
 
   // Attach the message pipe endpoint.

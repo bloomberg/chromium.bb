@@ -70,9 +70,7 @@ base::LazyInstance<VistaOrHigherFunctions> g_vista_or_higher_functions =
 
 class RawChannelWin : public RawChannel {
  public:
-  RawChannelWin(embedder::ScopedPlatformHandle handle,
-                Delegate* delegate,
-                base::MessageLoopForIO* message_loop);
+  RawChannelWin(embedder::ScopedPlatformHandle handle);
   virtual ~RawChannelWin();
 
  private:
@@ -324,11 +322,8 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
   }
 }
 
-RawChannelWin::RawChannelWin(embedder::ScopedPlatformHandle handle,
-                             Delegate* delegate,
-                             base::MessageLoopForIO* message_loop)
-    : RawChannel(delegate, message_loop),
-      handle_(handle.Pass()),
+RawChannelWin::RawChannelWin(embedder::ScopedPlatformHandle handle)
+    : handle_(handle.Pass()),
       io_handler_(NULL),
       skip_completion_port_on_success_(
           g_vista_or_higher_functions.Get().is_vista_or_higher()) {
@@ -521,10 +516,9 @@ void RawChannelWin::OnShutdownNoLock(scoped_ptr<ReadBuffer> read_buffer,
 
 // Static factory method declared in raw_channel.h.
 // static
-RawChannel* RawChannel::Create(embedder::ScopedPlatformHandle handle,
-                               Delegate* delegate,
-                               base::MessageLoopForIO* message_loop) {
-  return new RawChannelWin(handle.Pass(), delegate, message_loop);
+scoped_ptr<RawChannel> RawChannel::Create(
+    embedder::ScopedPlatformHandle handle) {
+  return scoped_ptr<RawChannel>(new RawChannelWin(handle.Pass()));
 }
 
 }  // namespace system

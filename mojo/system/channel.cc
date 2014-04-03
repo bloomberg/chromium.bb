@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/system/message_pipe_endpoint.h"
 
@@ -38,18 +37,16 @@ Channel::Channel()
     : next_local_id_(kBootstrapEndpointId) {
 }
 
-bool Channel::Init(embedder::ScopedPlatformHandle handle) {
+bool Channel::Init(scoped_ptr<RawChannel> raw_channel) {
   DCHECK(creation_thread_checker_.CalledOnValidThread());
+  DCHECK(raw_channel);
 
   // No need to take |lock_|, since this must be called before this object
   // becomes thread-safe.
-  DCHECK(!raw_channel_.get());
+  DCHECK(!raw_channel_);
+  raw_channel_ = raw_channel.Pass();
 
-  CHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_IO);
-  raw_channel_.reset(RawChannel::Create(handle.Pass(), this,
-                                        static_cast<base::MessageLoopForIO*>(
-                                            base::MessageLoop::current())));
-  if (!raw_channel_->Init()) {
+  if (!raw_channel_->Init(this)) {
     raw_channel_.reset();
     return false;
   }

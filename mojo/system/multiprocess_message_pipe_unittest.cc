@@ -17,6 +17,7 @@
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
+#include "mojo/system/raw_channel.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,7 +67,7 @@ class ChannelThread {
 
     // Create and initialize |Channel|.
     channel_ = new Channel();
-    CHECK(channel_->Init(platform_handle.Pass()));
+    CHECK(channel_->Init(RawChannel::Create(platform_handle.Pass())));
 
     // Attach the message pipe endpoint.
     // Note: On the "server" (parent process) side, we need not attach the

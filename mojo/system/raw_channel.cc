@@ -91,10 +91,9 @@ size_t RawChannel::WriteBuffer::GetTotalBytesToWrite() const {
   return message->total_size() - offset_;
 }
 
-RawChannel::RawChannel(Delegate* delegate,
-                       base::MessageLoopForIO* message_loop_for_io)
-    : delegate_(delegate),
-      message_loop_for_io_(message_loop_for_io),
+RawChannel::RawChannel()
+    : delegate_(NULL),
+      message_loop_for_io_(NULL),
       read_stopped_(false),
       write_stopped_(false),
       weak_ptr_factory_(this) {
@@ -110,8 +109,16 @@ RawChannel::~RawChannel() {
   DCHECK(!weak_ptr_factory_.HasWeakPtrs());
 }
 
-bool RawChannel::Init() {
-  DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io_);
+bool RawChannel::Init(Delegate* delegate) {
+  DCHECK(delegate);
+
+  DCHECK(!delegate_);
+  delegate_ = delegate;
+
+  CHECK_EQ(base::MessageLoop::current()->type(), base::MessageLoop::TYPE_IO);
+  DCHECK(!message_loop_for_io_);
+  message_loop_for_io_ =
+      static_cast<base::MessageLoopForIO*>(base::MessageLoop::current());
 
   // No need to take the lock. No one should be using us yet.
   DCHECK(!read_buffer_);

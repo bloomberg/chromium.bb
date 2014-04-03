@@ -20,6 +20,7 @@
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
+#include "mojo/system/raw_channel.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,7 +110,7 @@ class RemoteMessagePipeTest : public testing::Test {
 
     channels_[channel_index] = new Channel();
     CHECK(channels_[channel_index]->Init(
-        platform_handles_[channel_index].Pass()));
+        RawChannel::Create(platform_handles_[channel_index].Pass())));
   }
 
   void ConnectMessagePipesOnIOThread(scoped_refptr<MessagePipe> mp0,
