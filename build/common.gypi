@@ -4346,6 +4346,16 @@
                 '-fcolor-diagnostics',
               ],
             }],
+            ['OS=="ios" and target_subarch!="arm32" and \
+              "<(GENERATOR)"=="ninja"', {
+              'OTHER_CFLAGS': [
+                # TODO(ios): when building Chrome for iOS on 64-bit platform
+                # with Xcode, the -Wshorted-64-to-32 warning is automatically
+                # enabled. This cause failures when compiling protobuf code,
+                # so disable the warning. http://crbug.com/359107
+                '-Wno-shorten-64-to-32',
+              ],
+            }],
           ],
         },
         'conditions': [
