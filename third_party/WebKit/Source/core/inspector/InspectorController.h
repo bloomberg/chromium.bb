@@ -129,7 +129,7 @@ public:
     void willComposite();
     void didComposite();
 
-    void processGPUEvent(double timestamp, int phase, bool foreign, size_t usedGPUMemoryBytes);
+    void processGPUEvent(double timestamp, int phase, bool foreign, uint64_t usedGPUMemoryBytes, uint64_t limitGPUMemoryBytes);
 
     void scriptsEnabled(bool);
 

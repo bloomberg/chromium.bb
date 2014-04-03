@@ -73,20 +73,19 @@ public:
     virtual void willComposite() = 0;
     virtual void didComposite() = 0;
 
-    // FIXME: remove it once the client side stops firing these.
-    virtual void processGPUEvent(double timestamp, int phase, bool foreign) = 0;
-
     class GPUEvent {
     public:
-        GPUEvent(double timestamp, int phase, bool foreign, size_t usedGPUMemoryBytes) :
+        GPUEvent(double timestamp, int phase, bool foreign, uint64_t usedGPUMemoryBytes) :
             timestamp(timestamp),
             phase(phase),
             foreign(foreign),
-            usedGPUMemoryBytes(usedGPUMemoryBytes) { }
+            usedGPUMemoryBytes(usedGPUMemoryBytes),
+            limitGPUMemoryBytes(0) { }
         double timestamp;
         int phase;
         bool foreign;
-        size_t usedGPUMemoryBytes;
+        uint64_t usedGPUMemoryBytes;
+        uint64_t limitGPUMemoryBytes;
     };
     virtual void processGPUEvent(const GPUEvent&) = 0;
 

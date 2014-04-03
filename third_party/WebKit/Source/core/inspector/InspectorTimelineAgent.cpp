@@ -1066,6 +1066,7 @@ void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
         if (!event.foreign && m_state->getBoolean(TimelineAgentState::includeCounters)) {
             RefPtr<TypeBuilder::Timeline::Counters> counters = TypeBuilder::Timeline::Counters::create();
             counters->setGpuMemoryUsedKB(static_cast<double>(event.usedGPUMemoryBytes / 1024));
+            counters->setGpuMemoryLimitKB(static_cast<double>(event.limitGPUMemoryBytes / 1024));
             m_pendingGPURecord->setCounters(counters.release());
         }
         sendEvent(m_pendingGPURecord.release());

@@ -103,15 +103,17 @@ public:
     class GPUEvent {
     public:
         enum Phase { PhaseBegin, PhaseEnd };
-        GPUEvent(double timestamp, int phase, bool foreign, size_t usedGPUMemoryBytes) :
+        GPUEvent(double timestamp, int phase, bool foreign, uint64_t usedGPUMemoryBytes, uint64_t limitGPUMemoryBytes) :
             timestamp(timestamp),
             phase(static_cast<Phase>(phase)),
             foreign(foreign),
-            usedGPUMemoryBytes(usedGPUMemoryBytes) { }
+            usedGPUMemoryBytes(usedGPUMemoryBytes),
+            limitGPUMemoryBytes(limitGPUMemoryBytes) { }
         double timestamp;
         Phase phase;
         bool foreign;
-        size_t usedGPUMemoryBytes;
+        uint64_t usedGPUMemoryBytes;
+        uint64_t limitGPUMemoryBytes;
     };
 
     static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorLayerTreeAgent* layerTreeAgent,

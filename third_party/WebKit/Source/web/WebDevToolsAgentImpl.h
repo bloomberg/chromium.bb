@@ -95,8 +95,6 @@ public:
     virtual void evaluateInWebInspector(long callId, const WebString& script) OVERRIDE;
     virtual void setProcessId(long) OVERRIDE;
     virtual void setLayerTreeId(int) OVERRIDE;
-    // FIXME: remove it once the client side stops firing these.
-    virtual void processGPUEvent(double timestamp, int phase, bool foreign) OVERRIDE;
     virtual void processGPUEvent(const GPUEvent&) OVERRIDE;
 
     // InspectorClient implementation.
