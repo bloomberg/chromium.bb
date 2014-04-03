@@ -15,10 +15,10 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
 #include "base/prefs/pref_member.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/string_number_conversions.h"
@@ -94,9 +94,6 @@
 #include "chrome/browser/net/service_providers_win.h"
 #endif
 
-using base::PassPlatformFile;
-using base::PlatformFile;
-using base::PlatformFileError;
 using base::StringValue;
 using content::BrowserThread;
 using content::WebContents;
@@ -221,20 +218,13 @@ content::WebUIDataSource* CreateNetInternalsHTMLSource() {
 //     false);
 class DebugLogFileHelper {
  public:
-  typedef base::Callback<void(PassPlatformFile pass_platform_file,
-                              bool created,
-                              PlatformFileError error,
+  typedef base::Callback<void(base::File file,
                               const base::FilePath& file_path)>
       DebugLogFileCallback;
 
-  DebugLogFileHelper()
-      : file_handle_(base::kInvalidPlatformFileValue),
-        created_(false),
-        error_(base::PLATFORM_FILE_OK) {
-  }
+  DebugLogFileHelper() {}
 
-  ~DebugLogFileHelper() {
-  }
+  ~DebugLogFileHelper() {}
 
   void DoWork(const base::FilePath& fileshelf) {
     const base::FilePath::CharType kLogFileName[] =
@@ -244,22 +234,17 @@ class DebugLogFileHelper {
     file_path_ = logging::GenerateTimestampedName(file_path_,
                                                   base::Time::Now());
 
-    int flags =
-        base::PLATFORM_FILE_CREATE_ALWAYS |
-        base::PLATFORM_FILE_WRITE;
-    file_handle_ = base::CreatePlatformFile(file_path_, flags,
-                                            &created_, &error_);
+    int flags =  base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
+    file_.Initialize(file_path_, flags);
   }
 
   void Reply(const DebugLogFileCallback& callback) {
     DCHECK(!callback.is_null());
-    callback.Run(PassPlatformFile(&file_handle_), created_, error_, file_path_);
+    callback.Run(file_.Pass(), file_path_);
   }
 
  private:
-  PlatformFile file_handle_;
-  bool created_;
-  PlatformFileError error_;
+  base::File file_;
   base::FilePath file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(DebugLogFileHelper);
@@ -275,15 +260,15 @@ typedef base::Callback<void(const base::FilePath& log_path,
                             bool succeded)> StoreDebugLogsCallback;
 
 // Closes file handle, so, should be called on the WorkerPool thread.
-void CloseDebugLogFile(PassPlatformFile pass_platform_file) {
-  base::ClosePlatformFile(pass_platform_file.ReleaseValue());
+void CloseDebugLogFile(base::File file) {
+  file.Close();
 }
 
 // Closes file handle and deletes debug log file, so, should be called
 // on the WorkerPool thread.
-void CloseAndDeleteDebugLogFile(PassPlatformFile pass_platform_file,
+void CloseAndDeleteDebugLogFile(base::File file,
                                 const base::FilePath& file_path) {
-  CloseDebugLogFile(pass_platform_file);
+  file.Close();
   base::DeleteFile(file_path, false);
 }
 
@@ -291,19 +276,19 @@ void CloseAndDeleteDebugLogFile(PassPlatformFile pass_platform_file,
 // descriptor, deletes log file in the case of failure and calls
 // |callback|.
 void WriteDebugLogToFileCompleted(const StoreDebugLogsCallback& callback,
-                                  PassPlatformFile pass_platform_file,
+                                  base::File file,
                                   const base::FilePath& file_path,
                                   bool succeeded) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!succeeded) {
     bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
-        base::Bind(&CloseAndDeleteDebugLogFile, pass_platform_file, file_path),
+        base::Bind(&CloseAndDeleteDebugLogFile, Passed(&file), file_path),
         base::Bind(callback, file_path, false), false);
     DCHECK(posted);
     return;
   }
   bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
-      base::Bind(&CloseDebugLogFile, pass_platform_file),
+      base::Bind(&CloseDebugLogFile, Passed(&file)),
       base::Bind(callback, file_path, true), false);
   DCHECK(posted);
 }
@@ -311,26 +296,19 @@ void WriteDebugLogToFileCompleted(const StoreDebugLogsCallback& callback,
 // Stores into |file_path| debug logs in the .tgz format. Calls
 // |callback| upon completion.
 void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
-                         PassPlatformFile pass_platform_file,
-                         bool created,
-                         PlatformFileError error,
+                         base::File file,
                          const base::FilePath& file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!created) {
+  if (!file.IsValid()) {
     LOG(ERROR) <<
         "Can't create debug log file: " << file_path.AsUTF8Unsafe() << ", " <<
-        "error: " << error;
-    bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
-        base::Bind(&CloseDebugLogFile, pass_platform_file),
-        base::Bind(callback, file_path, false), false);
-    DCHECK(posted);
+        "error: " << file.error_details();
     return;
   }
-  PlatformFile platform_file = pass_platform_file.ReleaseValue();
   chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->GetDebugLogs(
-      platform_file,
+      file.GetPlatformFile(),
       base::Bind(&WriteDebugLogToFileCompleted,
-          callback, PassPlatformFile(&platform_file), file_path));
+                 callback, Passed(&file), file_path));
 }
 
 // Stores debug logs in the .tgz archive on the |fileshelf|. The file
