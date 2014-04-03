@@ -10,11 +10,10 @@
     "web-components"
   ],
   "author": "Polymer Authors <polymer-dev@googlegroups.com>",
-  "version": "0.2.1",
-  "main": [
-    "polymer.js"
-  ],
+  "private": true,
   "dependencies": {
-    "platform": "Polymer/platform#0.2.1"
-  }
+    "platform": "Polymer/platform#0.2.2",
+    "core-component-page": "Polymer/core-component-page#0.2.2"
+  },
+  "version": "0.2.2"
 }
