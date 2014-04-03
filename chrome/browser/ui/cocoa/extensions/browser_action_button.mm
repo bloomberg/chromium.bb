@@ -149,16 +149,14 @@ class ExtensionActionIconFactoryBridge
     [self setButtonType:NSMomentaryChangeButton];
     [self setShowsBorderOnlyWhileMouseInside:YES];
 
-    if (extension->ShowConfigureContextMenus()) {
-      contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
-          initWithExtension:extension
-                    browser:browser
-            extensionAction:browser_action]);
-      base::scoped_nsobject<NSMenu> contextMenu(
-          [[NSMenu alloc] initWithTitle:@""]);
-      [contextMenu setDelegate:self];
-      [self setMenu:contextMenu];
-    }
+    contextMenuController_.reset([[ExtensionActionContextMenuController alloc]
+        initWithExtension:extension
+                  browser:browser
+          extensionAction:browser_action]);
+    base::scoped_nsobject<NSMenu> contextMenu(
+        [[NSMenu alloc] initWithTitle:@""]);
+    [contextMenu setDelegate:self];
+    [self setMenu:contextMenu];
 
     tabId_ = tabId;
     extension_ = extension;
