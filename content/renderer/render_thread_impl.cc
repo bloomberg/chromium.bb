@@ -1426,7 +1426,6 @@ void RenderThreadImpl::OnCreateNewSharedWorker(
                                params.name,
                                params.content_security_policy,
                                params.security_policy_type,
-                               params.pause_on_start,
                                params.route_id);
 }
 

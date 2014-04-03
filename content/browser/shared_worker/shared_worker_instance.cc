@@ -24,15 +24,8 @@ SharedWorkerInstance::SharedWorkerInstance(
   DCHECK(resource_context_);
 }
 
-SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other)
-    : url_(other.url_),
-      name_(other.name_),
-      content_security_policy_(other.content_security_policy_),
-      security_policy_type_(other.security_policy_type_),
-      resource_context_(other.resource_context_),
-      partition_(other.partition_) {}
-
-SharedWorkerInstance::~SharedWorkerInstance() {}
+SharedWorkerInstance::~SharedWorkerInstance() {
+}
 
 bool SharedWorkerInstance::Matches(const GURL& match_url,
                                    const base::string16& match_name,
@@ -55,11 +48,6 @@ bool SharedWorkerInstance::Matches(const GURL& match_url,
     return url_ == match_url;
 
   return name_ == match_name;
-}
-
-bool SharedWorkerInstance::Matches(const SharedWorkerInstance& other) const {
-  return Matches(
-      other.url(), other.name(), other.partition(), other.resource_context());
 }
 
 }  // namespace content

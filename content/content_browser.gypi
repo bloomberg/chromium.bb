@@ -412,8 +412,6 @@
     'browser/devtools/render_view_devtools_agent_host.h',
     'browser/devtools/renderer_overrides_handler.cc',
     'browser/devtools/renderer_overrides_handler.h',
-    'browser/devtools/shared_worker_devtools_manager.cc',
-    'browser/devtools/shared_worker_devtools_manager.h',
     'browser/devtools/tethering_handler.h',
     'browser/devtools/tethering_handler.cc',
     'browser/devtools/worker_devtools_manager.cc',

@@ -13,7 +13,6 @@
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
-#include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/devtools_messages.h"
@@ -28,13 +27,9 @@ namespace content {
 scoped_refptr<DevToolsAgentHost> DevToolsAgentHost::GetForWorker(
     int worker_process_id,
     int worker_route_id) {
-  if (WorkerService::EmbeddedSharedWorkerEnabled()) {
-    return SharedWorkerDevToolsManager::GetInstance()
-        ->GetDevToolsAgentHostForWorker(worker_process_id, worker_route_id);
-  } else {
-    return WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
-        worker_process_id, worker_route_id);
-  }
+  return WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+      worker_process_id,
+      worker_route_id);
 }
 
 namespace {
@@ -212,7 +207,6 @@ struct WorkerDevToolsManager::InspectedWorker {
 
 // static
 WorkerDevToolsManager* WorkerDevToolsManager::GetInstance() {
-  DCHECK(!WorkerService::EmbeddedSharedWorkerEnabled());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return Singleton<WorkerDevToolsManager>::get();
 }
@@ -221,7 +215,6 @@ WorkerDevToolsManager* WorkerDevToolsManager::GetInstance() {
 DevToolsAgentHost* WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
     int worker_process_id,
     int worker_route_id) {
-  DCHECK(!WorkerService::EmbeddedSharedWorkerEnabled());
   WorkerId id(worker_process_id, worker_route_id);
   AgentHosts::iterator it = g_agent_map.Get().find(id);
   if (it == g_agent_map.Get().end())

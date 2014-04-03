@@ -28,16 +28,15 @@ class SharedWorkerInstance;
 // the browser <-> worker communication channel.
 class SharedWorkerHost {
  public:
-  SharedWorkerHost(SharedWorkerInstance* instance,
-                   SharedWorkerMessageFilter* filter);
+  explicit SharedWorkerHost(SharedWorkerInstance* instance);
   ~SharedWorkerHost();
 
   // Sends |message| to the SharedWorker.
   bool Send(IPC::Message* message);
 
   // Starts the SharedWorker in the renderer process which is associated with
-  // |filter_|.
-  void Start(bool pause_on_start);
+  // |filter|.
+  void Init(SharedWorkerMessageFilter* filter);
 
   // Returns true iff the given message from a renderer process was forwarded to
   // the worker.
@@ -80,7 +79,9 @@ class SharedWorkerHost {
   SharedWorkerMessageFilter* container_render_filter() const {
     return container_render_filter_;
   }
-  int process_id() const { return worker_process_id_; }
+  int process_id() const {
+    return container_render_filter_->render_process_id();
+  }
   int worker_route_id() const { return worker_route_id_; }
   bool load_failed() const { return load_failed_; }
   bool closed() const { return closed_; }
@@ -122,7 +123,6 @@ class SharedWorkerHost {
   scoped_refptr<WorkerDocumentSet> worker_document_set_;
   FilterList filters_;
   SharedWorkerMessageFilter* container_render_filter_;
-  int worker_process_id_;
   int worker_route_id_;
   bool load_failed_;
   bool closed_;

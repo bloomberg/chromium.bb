@@ -19,7 +19,6 @@ namespace content {
 class DevToolsAgentHost;
 
 // All methods are supposed to be called on the IO thread.
-// This class is not used when "enable-embedded-shared-worker" flag is set.
 class WorkerDevToolsManager {
  public:
   typedef std::pair<int, int> WorkerId;
@@ -42,8 +41,9 @@ class WorkerDevToolsManager {
 
   // Called on the IO thread.
   // Returns true when the worker must be paused on start.
-  bool WorkerCreated(WorkerProcessHost* process,
-                     const WorkerProcessHost::WorkerInstance& instance);
+  bool WorkerCreated(
+      WorkerProcessHost* process,
+      const WorkerProcessHost::WorkerInstance& instance);
   void WorkerDestroyed(WorkerProcessHost* process, int worker_route_id);
   void WorkerContextStarted(WorkerProcessHost* process, int worker_route_id);
 

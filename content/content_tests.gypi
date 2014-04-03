@@ -345,7 +345,6 @@
         'browser/device_orientation/sensor_manager_android_unittest.cc',
         'browser/devtools/devtools_http_handler_unittest.cc',
         'browser/devtools/devtools_manager_unittest.cc',
-        'browser/devtools/shared_worker_devtools_manager_unittest.cc',
         'browser/dom_storage/dom_storage_area_unittest.cc',
         'browser/dom_storage/dom_storage_context_impl_unittest.cc',
         'browser/dom_storage/dom_storage_database_unittest.cc',

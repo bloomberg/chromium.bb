@@ -16,8 +16,6 @@
 namespace content {
 class ResourceContext;
 
-// SharedWorkerInstance is copyable value-type data type. It could be passed to
-// the UI thread and be used for comparison in SharedWorkerDevToolsManager.
 class CONTENT_EXPORT SharedWorkerInstance {
  public:
   SharedWorkerInstance(const GURL& url,
@@ -26,7 +24,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
                        blink::WebContentSecurityPolicyType security_policy_type,
                        ResourceContext* resource_context,
                        const WorkerStoragePartition& partition);
-  SharedWorkerInstance(const SharedWorkerInstance& other);
   ~SharedWorkerInstance();
 
   // Checks if this SharedWorkerInstance matches the passed url/name params
@@ -40,7 +37,6 @@ class CONTENT_EXPORT SharedWorkerInstance {
       const base::string16& name,
       const WorkerStoragePartition& partition,
       ResourceContext* resource_context) const;
-  bool Matches(const SharedWorkerInstance& other) const;
 
   // Accessors.
   const GURL& url() const { return url_; }

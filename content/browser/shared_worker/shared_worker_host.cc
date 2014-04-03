@@ -5,19 +5,16 @@
 #include "content/browser/shared_worker/shared_worker_host.h"
 
 #include "base/metrics/histogram.h"
-#include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_message_filter.h"
-#include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/worker_host/worker_document_set.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 
 namespace content {
@@ -31,27 +28,13 @@ void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
     host->delegate()->WorkerCrashed(host);
 }
 
-void NotifyWorkerScriptLoadedOnUI(int worker_process_id, int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SharedWorkerDevToolsManager::GetInstance()->WorkerContextStarted(
-      worker_process_id, worker_route_id);
-}
-
-void NotifyWorkerDestroyedOnUI(int worker_process_id, int worker_route_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(worker_process_id,
-                                                              worker_route_id);
-}
-
 }  // namespace
 
-SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance,
-                                   SharedWorkerMessageFilter* filter)
+SharedWorkerHost::SharedWorkerHost(SharedWorkerInstance* instance)
     : instance_(instance),
       worker_document_set_(new WorkerDocumentSet()),
-      container_render_filter_(filter),
-      worker_process_id_(filter->render_process_id()),
-      worker_route_id_(filter->GetNextRoutingID()),
+      container_render_filter_(NULL),
+      worker_route_id_(MSG_ROUTING_NONE),
       load_failed_(false),
       closed_(false),
       creation_time_(base::TimeTicks::Now()) {
@@ -77,13 +60,6 @@ SharedWorkerHost::~SharedWorkerHost() {
                                          parent_iter->render_frame_id()));
     }
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &NotifyWorkerDestroyedOnUI, worker_process_id_, worker_route_id_));
-  SharedWorkerServiceImpl::GetInstance()->NotifyWorkerDestroyed(
-      worker_process_id_, worker_route_id_);
 }
 
 bool SharedWorkerHost::Send(IPC::Message* message) {
@@ -94,13 +70,17 @@ bool SharedWorkerHost::Send(IPC::Message* message) {
   return container_render_filter_->Send(message);
 }
 
-void SharedWorkerHost::Start(bool pause_on_start) {
+void SharedWorkerHost::Init(SharedWorkerMessageFilter* filter) {
+  CHECK(instance_);
+  DCHECK(worker_route_id_ == MSG_ROUTING_NONE);
+  container_render_filter_ = filter;
+  worker_route_id_ = filter->GetNextRoutingID();
+
   WorkerProcessMsg_CreateWorker_Params params;
   params.url = instance_->url();
   params.name = instance_->name();
   params.content_security_policy = instance_->content_security_policy();
   params.security_policy_type = instance_->security_policy_type();
-  params.pause_on_start = pause_on_start;
   params.route_id = worker_route_id_;
   Send(new WorkerProcessMsg_CreateWorker(params));
 
@@ -163,13 +143,9 @@ void SharedWorkerHost::WorkerContextDestroyed() {
 }
 
 void SharedWorkerHost::WorkerScriptLoaded() {
+  // TODO(horo): implement this.
   UMA_HISTOGRAM_TIMES("SharedWorker.TimeToScriptLoaded",
                       base::TimeTicks::Now() - creation_time_);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &NotifyWorkerScriptLoadedOnUI, worker_process_id_, worker_route_id_));
 }
 
 void SharedWorkerHost::WorkerScriptLoadFailed() {

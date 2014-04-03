@@ -20,7 +20,6 @@
 #include "content/common/worker_messages.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_utils.h"
 #include "ipc/ipc_sync_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -357,9 +356,6 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   // SharedWorkerConnector creates two message ports and sends
   // ViewHostMsg_CreateWorker.
   connector->Create("http://example.com/w.js", "name", 200, 300);
-  // We need to go to UI thread to call
-  // SharedWorkerDevToolsManager::WorkerCreated().
-  RunAllPendingInMessageLoop();
   EXPECT_EQ(2U, renderer_host->QueuedMessageCount());
   // WorkerProcessMsg_CreateWorker should be sent to the renderer in which
   // SharedWorker will be created.
@@ -445,9 +441,6 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   // SharedWorkerConnector creates two message ports and sends
   // ViewHostMsg_CreateWorker.
   connector1->Create("http://example.com/w.js", "name", 200, 300);
-  // We need to go to UI thread to call
-  // SharedWorkerDevToolsManager::WorkerCreated().
-  RunAllPendingInMessageLoop();
   EXPECT_EQ(2U, renderer_host1->QueuedMessageCount());
   // WorkerProcessMsg_CreateWorker should be sent to the renderer in which
   // SharedWorker will be created.
