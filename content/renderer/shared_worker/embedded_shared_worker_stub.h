@@ -25,6 +25,7 @@ class WebWorkerPermissionClientProxy;
 
 namespace content {
 class SharedWorkerDevToolsAgent;
+class WebApplicationCacheHostImpl;
 class WebMessagePortChannelImpl;
 
 class EmbeddedSharedWorkerStub : public IPC::Listener,
@@ -81,6 +82,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   PendingChannelList pending_channels_;
 
   ScopedChildProcessReference process_ref_;
+  WebApplicationCacheHostImpl* app_cache_host_;
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };
 
