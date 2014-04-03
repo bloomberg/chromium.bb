@@ -110,7 +110,7 @@ private:
     unsigned long m_bufferedAmount;
 };
 
-WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalScope* context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
+WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalScope& context, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     : m_workerGlobalScope(context)
     , m_workerClientWrapper(ThreadableWebSocketChannelClientWrapper::create(client))
     , m_bridge(Bridge::create(m_workerClientWrapper, m_workerGlobalScope))

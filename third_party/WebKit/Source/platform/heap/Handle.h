@@ -216,6 +216,17 @@ private:
     friend class ThreadState;
 };
 
+#ifndef NDEBUG
+    // For global persistent handles we cannot check that the
+    // pointer is in the heap because that would involve
+    // inspecting the heap of running threads.
+#define ASSERT_IS_VALID_PERSISTENT_POINTER(pointer) \
+    bool isGlobalPersistent = WTF::IsSubclass<RootsAccessor, GlobalPersistents>::value; \
+    ASSERT(!pointer || isGlobalPersistent || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(pointer))
+#else
+#define ASSERT_IS_VALID_PERSISTENT_POINTER(pointer)
+#endif
+
 template<typename T>
 class CrossThreadPersistent;
 
@@ -251,13 +262,13 @@ public:
     Persistent(T* raw) : m_raw(raw)
     {
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
-#ifndef NDEBUG
-        // For global persistent handles we cannot check that the
-        // pointer is in the heap because that would involve
-        // inspecting the heap of running threads.
-        bool isGlobalPersistent = WTF::IsSubclass<RootsAccessor, GlobalPersistents>::value;
-        ASSERT(!raw || isGlobalPersistent || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(raw));
-#endif
+        ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
+    }
+
+    explicit Persistent(T& raw) : m_raw(&raw)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
+        ASSERT_IS_VALID_PERSISTENT_POINTER(m_raw);
     }
 
     Persistent(const Persistent& other) : m_raw(other)
@@ -428,6 +439,11 @@ public:
     }
 
     Member(T* raw) : m_raw(raw)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    }
+
+    explicit Member(T& raw) : m_raw(&raw)
     {
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
     }

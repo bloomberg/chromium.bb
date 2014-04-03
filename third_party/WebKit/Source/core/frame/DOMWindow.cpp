@@ -113,7 +113,7 @@ class PostMessageTimer FINAL : public SuspendableTimer {
 public:
     PostMessageTimer(DOMWindow& window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtrWillBeRawPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
-        , m_window(&window)
+        , m_window(window)
         , m_message(message)
         , m_origin(sourceOrigin)
         , m_source(source)

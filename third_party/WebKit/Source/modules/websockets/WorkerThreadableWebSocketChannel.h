@@ -64,7 +64,7 @@ class WorkerRunLoop;
 class WorkerThreadableWebSocketChannel FINAL : public RefCounted<WorkerThreadableWebSocketChannel>, public WebSocketChannel {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<WebSocketChannel> create(WorkerGlobalScope* workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
+    static PassRefPtr<WebSocketChannel> create(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
     {
         return adoptRef(new WorkerThreadableWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber));
     }
@@ -181,7 +181,7 @@ private:
         WeakPtr<Peer> m_peer;
     };
 
-    WorkerThreadableWebSocketChannel(WorkerGlobalScope*, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
+    WorkerThreadableWebSocketChannel(WorkerGlobalScope&, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
 
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
     RefPtr<ThreadableWebSocketChannelClientWrapper> m_workerClientWrapper;
