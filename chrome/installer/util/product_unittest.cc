@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
@@ -71,19 +70,10 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
   BrowserDistribution* distribution = product->distribution();
   EXPECT_EQ(BrowserDistribution::CHROME_BROWSER, distribution->GetType());
 
-  std::vector<base::FilePath> user_data_paths;
-  product->GetUserDataPaths(&user_data_paths);
-  EXPECT_GE(user_data_paths.size(), static_cast<size_t>(1));
-  const base::FilePath& user_data = user_data_paths[0];
-  EXPECT_FALSE(user_data_paths[0].empty());
+  base::FilePath user_data(product->GetUserDataPath());
+  EXPECT_FALSE(user_data.empty());
   EXPECT_NE(std::wstring::npos,
-            user_data_paths[0].value().find(installer::kInstallUserDataDir));
-  if (user_data_paths.size() > 1) {
-    EXPECT_FALSE(user_data_paths[1].empty());
-    EXPECT_NE(
-        std::wstring::npos,
-        user_data_paths[1].value().find(chrome::kMetroChromeUserDataSubDir));
-  }
+            user_data.value().find(installer::kInstallUserDataDir));
 
   base::FilePath program_files;
   PathService::Get(base::DIR_PROGRAM_FILES, &program_files);

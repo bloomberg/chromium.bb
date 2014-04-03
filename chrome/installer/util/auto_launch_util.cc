@@ -53,10 +53,7 @@ base::string16 ProfileToKeyName(const base::string16& profile_directory) {
         BrowserDistribution::GetSpecificDistribution(
             BrowserDistribution::CHROME_BROWSER);
     installer::Product product(distribution);
-    std::vector<base::FilePath> data_dir_paths;
-    product.GetUserDataPaths(&data_dir_paths);
-    if (!data_dir_paths.empty())
-      path = data_dir_paths[0];
+    path = product.GetUserDataPath();
   }
   path = path.Append(profile_directory);
 

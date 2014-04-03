@@ -414,12 +414,11 @@ bool InstallUtil::GetSentinelFilePath(const base::FilePath::CharType* file,
                                       BrowserDistribution* dist,
                                       base::FilePath* path) {
   // TODO(msw): Use PathService to obtain the correct DIR_USER_DATA.
-  std::vector<base::FilePath> user_data_dir_paths;
-  installer::GetChromeUserDataPaths(dist, &user_data_dir_paths);
+  base::FilePath user_data_dir(installer::GetChromeUserDataPath(dist));
 
-  if (user_data_dir_paths.empty())
+  if (user_data_dir.empty())
     return false;
-  *path = user_data_dir_paths[0].Append(file);
+  *path = user_data_dir.Append(file);
   return true;
 }
 

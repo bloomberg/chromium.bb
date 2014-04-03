@@ -244,8 +244,6 @@ const int kHighestRendererOomScore = 1000;
 #endif
 
 #if defined(OS_WIN)
-// This is used by chrome in Windows 8 metro mode.
-const wchar_t kMetroChromeUserDataSubDir[] = L"Metro";
 const wchar_t kMetroNavigationAndSearchMessage[] =
     L"CHROME_METRO_NAV_SEARCH_REQUEST";
 const wchar_t kMetroGetCurrentTabInfoMessage[] =

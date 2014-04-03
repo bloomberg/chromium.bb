@@ -7,8 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/win/windows_version.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
@@ -43,27 +41,8 @@ base::FilePath GetChromeInstallPath(bool system_install,
   return GetChromeInstallBasePath(system_install, dist, kInstallBinaryDir);
 }
 
-// TODO(gab): Cleanup this method (kMetroChromeUserDataSubDir is deprecated).
-void GetChromeUserDataPaths(BrowserDistribution* dist,
-                            std::vector<base::FilePath>* paths) {
-  const bool has_metro_data =
-      base::win::GetVersion() >= base::win::VERSION_WIN8 &&
-      dist->GetDefaultBrowserControlPolicy() !=
-          BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED;
-
-  base::FilePath data_dir(GetChromeInstallBasePath(false, dist,
-                                                   kInstallUserDataDir));
-  if (data_dir.empty()) {
-    paths->clear();
-  } else {
-    paths->resize(has_metro_data ? 2 : 1);
-    (*paths)[0] = data_dir;
-    if (has_metro_data) {
-      (*paths)[1] = data_dir.DirName().Append(
-          chrome::kMetroChromeUserDataSubDir);
-    }
-  }
-  DCHECK(!paths->empty());
+base::FilePath GetChromeUserDataPath(BrowserDistribution* dist) {
+  return GetChromeInstallBasePath(false, dist, kInstallUserDataDir);
 }
 
 BrowserDistribution* GetBinariesDistribution(bool system_install) {

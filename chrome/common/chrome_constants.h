@@ -126,8 +126,6 @@ extern const int kHighestRendererOomScore;
 #endif
 
 #if defined(OS_WIN)
-// Used by Metro Chrome to create the profile under a custom subdirectory.
-extern const wchar_t kMetroChromeUserDataSubDir[];
 // Used by Metro Chrome to initiate navigation and search requests.
 extern const wchar_t kMetroNavigationAndSearchMessage[];
 // Used by Metro Chrome to get information about the current tab.

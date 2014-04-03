@@ -50,8 +50,8 @@
 #include "rlz/lib/rlz_lib.h"
 
 using base::win::RegKey;
-using installer::InstallStatus;
-using installer::MasterPreferences;
+
+namespace installer {
 
 namespace {
 
@@ -64,7 +64,7 @@ void DeleteInstallTempDir(const base::FilePath& target_path) {
   base::FilePath temp_path(target_path.DirName().Append(
       installer::kInstallTempDir));
   if (base::DirectoryExists(temp_path)) {
-    installer::SelfCleaningTempDir temp_dir;
+    SelfCleaningTempDir temp_dir;
     if (!temp_dir.Initialize(target_path.DirName(),
                              installer::kInstallTempDir) ||
         !temp_dir.Delete()) {
@@ -77,16 +77,16 @@ void DeleteInstallTempDir(const base::FilePath& target_path) {
 // adds to |update_list| the work item to update the corresponding "ap"
 // registry value specified in |channel_info|.
 void AddChannelValueUpdateWorkItems(
-    const installer::InstallationState& original_state,
-    const installer::InstallerState& installer_state,
-    const installer::ChannelInfo& channel_info,
+    const InstallationState& original_state,
+    const InstallerState& installer_state,
+    const ChannelInfo& channel_info,
     const std::vector<BrowserDistribution::Type>& dist_types,
     WorkItemList* update_list) {
   const bool system_level = installer_state.system_install();
   const HKEY reg_root = installer_state.root_key();
   for (size_t i = 0; i < dist_types.size(); ++i) {
     BrowserDistribution::Type dist_type = dist_types[i];
-    const installer::ProductState* product_state =
+    const ProductState* product_state =
         original_state.GetProductState(system_level, dist_type);
     // Only modify other products if they're installed and multi.
     if (product_state != NULL &&
@@ -112,17 +112,16 @@ void AddChannelValueUpdateWorkItems(
 // Specifically, removes the flags associated with this product ("-chrome" or
 // "-chromeframe") from the "ap" values for all other installed products and for
 // the multi-installer package.
-void ProcessGoogleUpdateItems(
-    const installer::InstallationState& original_state,
-    const installer::InstallerState& installer_state,
-    const installer::Product& product) {
+void ProcessGoogleUpdateItems(const InstallationState& original_state,
+                              const InstallerState& installer_state,
+                              const Product& product) {
   DCHECK(installer_state.is_multi_install());
   const bool system_level = installer_state.system_install();
   BrowserDistribution* distribution = product.distribution();
-  const installer::ProductState* product_state =
+  const ProductState* product_state =
       original_state.GetProductState(system_level, distribution->GetType());
   DCHECK(product_state != NULL);
-  installer::ChannelInfo channel_info;
+  ChannelInfo channel_info;
 
   // Remove product's flags from the channel value.
   channel_info.set_value(product_state->channel().value());
@@ -147,9 +146,8 @@ void ProcessGoogleUpdateItems(
   }
 }
 
-void ProcessOnOsUpgradeWorkItems(
-    const installer::InstallerState& installer_state,
-    const installer::Product& product) {
+void ProcessOnOsUpgradeWorkItems(const InstallerState& installer_state,
+                                 const Product& product) {
   scoped_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
   AddOsUpgradeWorkItems(installer_state, base::FilePath(), Version(), product,
@@ -158,12 +156,11 @@ void ProcessOnOsUpgradeWorkItems(
     LOG(ERROR) << "Failed to remove on-os-upgrade command.";
 }
 
-void ProcessIELowRightsPolicyWorkItems(
-    const installer::InstallerState& installer_state) {
+void ProcessIELowRightsPolicyWorkItems(const InstallerState& installer_state) {
   scoped_ptr<WorkItemList> work_items(WorkItem::CreateNoRollbackWorkItemList());
   AddDeleteOldIELowRightsPolicyWorkItems(installer_state, work_items.get());
   work_items->Do();
-  installer::RefreshElevationPolicy();
+  RefreshElevationPolicy();
 }
 
 void ClearRlzProductState() {
@@ -187,11 +184,10 @@ void ClearRlzProductState() {
 // * non-multi product being uninstalled: remove both
 // * any multi product left besides App Host: keep both
 // * only App Host left: keep setup.exe
-void CheckShouldRemoveSetupAndArchive(
-    const installer::InstallationState& original_state,
-    const installer::InstallerState& installer_state,
-    bool* remove_setup,
-    bool* remove_archive) {
+void CheckShouldRemoveSetupAndArchive(const InstallationState& original_state,
+                                      const InstallerState& installer_state,
+                                      bool* remove_setup,
+                                      bool* remove_archive) {
   *remove_setup = true;
   *remove_archive = true;
 
@@ -204,9 +200,8 @@ void CheckShouldRemoveSetupAndArchive(
     for (size_t i = 0; i < BrowserDistribution::NUM_TYPES; ++i) {
       BrowserDistribution::Type dist_type =
           static_cast<BrowserDistribution::Type>(i);
-      const installer::ProductState* product_state =
-          original_state.GetProductState(
-              installer_state.system_install(), dist_type);
+      const ProductState* product_state = original_state.GetProductState(
+          installer_state.system_install(), dist_type);
       // If the product is installed, in multi mode, and is not part of the
       // active uninstallation...
       if (product_state && product_state->is_multi_install() &&
@@ -259,10 +254,6 @@ bool RemoveInstallerFiles(const base::FilePath& installer_directory,
 
   return success;
 }
-
-}  // namespace
-
-namespace installer {
 
 // Kills all Chrome processes, immediately.
 void CloseAllChromeProcesses() {
@@ -395,62 +386,51 @@ DeleteResult DeleteEmptyDir(const base::FilePath& path) {
   return DELETE_FAILED;
 }
 
-void GetLocalStateFolders(const Product& product,
-                          std::vector<base::FilePath>* paths) {
+base::FilePath GetUserDataDir(const Product& product) {
   // Obtain the location of the user profile data.
-  product.GetUserDataPaths(paths);
-  LOG_IF(ERROR, paths->empty())
+  base::FilePath user_data_dir = product.GetUserDataPath();
+  LOG_IF(ERROR, user_data_dir.empty())
       << "Could not retrieve user's profile directory.";
+
+  return user_data_dir;
 }
 
 // Creates a copy of the local state file and returns a path to the copy.
-base::FilePath BackupLocalStateFile(
-    const std::vector<base::FilePath>& local_state_folders) {
+base::FilePath BackupLocalStateFile(const base::FilePath& user_data_dir) {
   base::FilePath backup;
-
-  // Copy the first local state file that is found.
-  for (size_t i = 0; i < local_state_folders.size(); ++i) {
-    const base::FilePath& local_state_folder = local_state_folders[i];
-    base::FilePath state_file(
-        local_state_folder.Append(chrome::kLocalStateFilename));
-    if (!base::PathExists(state_file))
-      continue;
-    if (!base::CreateTemporaryFile(&backup))
-      LOG(ERROR) << "Failed to create temporary file for Local State.";
-    else
-      base::CopyFile(state_file, backup);
-    break;
-  }
+  base::FilePath state_file(
+      user_data_dir.Append(chrome::kLocalStateFilename));
+  if (!base::CreateTemporaryFile(&backup))
+    LOG(ERROR) << "Failed to create temporary file for Local State.";
+  else
+    base::CopyFile(state_file, backup);
   return backup;
 }
 
-// Deletes all user data directories for a product.
-DeleteResult DeleteLocalState(
-    const std::vector<base::FilePath>& local_state_folders,
-    bool schedule_on_failure) {
-  if (local_state_folders.empty())
+// Deletes a given user data directory as well as the containing product
+// directories if they are empty (e.g., "Google\Chrome").
+DeleteResult DeleteUserDataDir(const base::FilePath& user_data_dir,
+                               bool schedule_on_failure) {
+  if (user_data_dir.empty())
     return DELETE_SUCCEEDED;
 
   DeleteResult result = DELETE_SUCCEEDED;
-  for (size_t i = 0; i < local_state_folders.size(); ++i) {
-    const base::FilePath& user_local_state = local_state_folders[i];
-    VLOG(1) << "Deleting user profile " << user_local_state.value();
-    if (!base::DeleteFile(user_local_state, true)) {
-      LOG(ERROR) << "Failed to delete user profile dir: "
-                 << user_local_state.value();
-      if (schedule_on_failure) {
-        ScheduleDirectoryForDeletion(user_local_state);
-        result = DELETE_REQUIRES_REBOOT;
-      } else {
-        result = DELETE_FAILED;
-      }
+  VLOG(1) << "Deleting user profile " << user_data_dir.value();
+  if (!base::DeleteFile(user_data_dir, true)) {
+    LOG(ERROR) << "Failed to delete user profile dir: "
+               << user_data_dir.value();
+    if (schedule_on_failure) {
+      ScheduleDirectoryForDeletion(user_data_dir);
+      result = DELETE_REQUIRES_REBOOT;
+    } else {
+      result = DELETE_FAILED;
     }
   }
 
   if (result == DELETE_REQUIRES_REBOOT) {
-    ScheduleParentAndGrandparentForDeletion(local_state_folders[0]);
+    ScheduleParentAndGrandparentForDeletion(user_data_dir);
   } else {
-    const base::FilePath user_data_dir(local_state_folders[0].DirName());
+    const base::FilePath user_data_dir(user_data_dir.DirName());
     if (!user_data_dir.empty() &&
         DeleteEmptyDir(user_data_dir) == DELETE_SUCCEEDED) {
       const base::FilePath product_dir(user_data_dir.DirName());
@@ -520,27 +500,6 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
     }
   }
   return true;
-}
-
-DeleteResult DeleteChromeDirectoriesIfEmpty(
-    const base::FilePath& application_directory) {
-  DeleteResult result(DeleteEmptyDir(application_directory));
-  if (result == DELETE_SUCCEEDED) {
-    // Now check and delete if the parent directories are empty
-    // For example Google\Chrome or Chromium
-    const base::FilePath product_directory(application_directory.DirName());
-    if (!product_directory.empty()) {
-        result = DeleteEmptyDir(product_directory);
-        if (result == DELETE_SUCCEEDED) {
-          const base::FilePath vendor_directory(product_directory.DirName());
-          if (!vendor_directory.empty())
-            result = DeleteEmptyDir(vendor_directory);
-        }
-    }
-  }
-  if (result == DELETE_NOT_EMPTY)
-    result = DELETE_SUCCEEDED;
-  return result;
 }
 
 DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
@@ -758,6 +717,164 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
   }
 }
 
+// Builds and executes a work item list to remove DelegateExecute verb handler
+// work items for |product|.  This will be a noop for products whose
+// corresponding BrowserDistribution implementations do not publish a CLSID via
+// GetCommandExecuteImplClsid.
+bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
+                                     const Product& product) {
+  scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
+  AddDelegateExecuteWorkItems(installer_state, base::FilePath(), Version(),
+                              product, item_list.get());
+  return item_list->Do();
+}
+
+// Removes Active Setup entries from the registry. This cannot be done through
+// a work items list as usual because of different paths based on conditionals,
+// but otherwise respects the no rollback/best effort uninstall mentality.
+// This will only apply for system-level installs of Chrome/Chromium and will be
+// a no-op for all other types of installs.
+void UninstallActiveSetupEntries(const InstallerState& installer_state,
+                                 const Product& product) {
+  VLOG(1) << "Uninstalling registry entries for ActiveSetup.";
+  BrowserDistribution* distribution = product.distribution();
+
+  if (!product.is_chrome() || !installer_state.system_install()) {
+    const char* install_level =
+        installer_state.system_install() ? "system" : "user";
+    VLOG(1) << "No Active Setup processing to do for " << install_level
+            << "-level " << distribution->GetDisplayName();
+    return;
+  }
+
+  const base::string16 active_setup_path(
+      InstallUtil::GetActiveSetupPath(distribution));
+  InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, active_setup_path);
+
+  // Windows leaves keys behind in HKCU\\Software\\(Wow6432Node\\)?Microsoft\\
+  //     Active Setup\\Installed Components\\{guid}
+  // for every user that logged in since system-level Chrome was installed.
+  // This is a problem because Windows compares the value of the Version subkey
+  // in there with the value of the Version subkey in the matching HKLM entries
+  // before running Chrome's Active Setup so if Chrome was to be reinstalled
+  // with a lesser version (e.g. switching back to a more stable channel), the
+  // affected users would not have Chrome's Active Setup called until Chrome
+  // eventually updated passed that user's registered Version.
+  //
+  // It is however very hard to delete those values as the registry hives for
+  // other users are not loaded by default under HKEY_USERS (unless a user is
+  // logged on or has a process impersonating him).
+  //
+  // Following our best effort uninstall practices, try to delete the value in
+  // all users hives. If a given user's hive is not loaded, try to load it to
+  // proceed with the deletion (failure to do so is ignored).
+
+  static const wchar_t kProfileList[] =
+      L"Software\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\";
+
+  // Windows automatically adds Wow6432Node when creating/deleting the HKLM key,
+  // but doesn't seem to do so when manually deleting the user-level keys it
+  // created.
+  base::string16 alternate_active_setup_path(active_setup_path);
+  alternate_active_setup_path.insert(arraysize("Software\\") - 1,
+                                     L"Wow6432Node\\");
+
+  // These two privileges are required by RegLoadKey() and RegUnloadKey() below.
+  ScopedTokenPrivilege se_restore_name_privilege(SE_RESTORE_NAME);
+  ScopedTokenPrivilege se_backup_name_privilege(SE_BACKUP_NAME);
+  if (!se_restore_name_privilege.is_enabled() ||
+      !se_backup_name_privilege.is_enabled()) {
+    // This is not a critical failure as those privileges aren't required to
+    // clean hives that are already loaded, but attempts to LoadRegKey() below
+    // will fail.
+    LOG(WARNING) << "Failed to enable privileges required to load registry "
+                    "hives.";
+  }
+
+  for (base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE, kProfileList);
+       it.Valid(); ++it) {
+    const wchar_t* profile_sid = it.Name();
+
+    // First check if this user's registry hive needs to be loaded in
+    // HKEY_USERS.
+    base::win::RegKey user_reg_root_probe(
+        HKEY_USERS, profile_sid, KEY_READ);
+    bool loaded_hive = false;
+    if (!user_reg_root_probe.Valid()) {
+      VLOG(1) << "Attempting to load registry hive for " << profile_sid;
+
+      base::string16 reg_profile_info_path(kProfileList);
+      reg_profile_info_path.append(profile_sid);
+      base::win::RegKey reg_profile_info_key(
+          HKEY_LOCAL_MACHINE, reg_profile_info_path.c_str(), KEY_READ);
+
+      base::string16 profile_path;
+      LONG result = reg_profile_info_key.ReadValue(L"ProfileImagePath",
+                                                   &profile_path);
+      if (result != ERROR_SUCCESS) {
+        LOG(ERROR) << "Error reading ProfileImagePath: " << result;
+        continue;
+      }
+      base::FilePath registry_hive_file(profile_path);
+      registry_hive_file = registry_hive_file.AppendASCII("NTUSER.DAT");
+
+      result = RegLoadKey(HKEY_USERS, profile_sid,
+                          registry_hive_file.value().c_str());
+      if (result != ERROR_SUCCESS) {
+        LOG(ERROR) << "Error loading registry hive: " << result;
+        continue;
+      }
+
+      VLOG(1) << "Loaded registry hive for " << profile_sid;
+      loaded_hive = true;
+    }
+
+    base::win::RegKey user_reg_root(
+        HKEY_USERS, profile_sid, KEY_ALL_ACCESS);
+
+    LONG result = user_reg_root.DeleteKey(active_setup_path.c_str());
+    if (result != ERROR_SUCCESS) {
+      result = user_reg_root.DeleteKey(alternate_active_setup_path.c_str());
+      if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
+        LOG(ERROR) << "Failed to delete key at " << active_setup_path
+                   << " and at " << alternate_active_setup_path
+                   << ", result: " << result;
+      }
+    }
+
+    if (loaded_hive) {
+      user_reg_root.Close();
+      if (RegUnLoadKey(HKEY_USERS, profile_sid) == ERROR_SUCCESS)
+        VLOG(1) << "Unloaded registry hive for " << profile_sid;
+      else
+        LOG(ERROR) << "Error unloading registry hive for " << profile_sid;
+    }
+  }
+}
+
+}  // namespace
+
+DeleteResult DeleteChromeDirectoriesIfEmpty(
+    const base::FilePath& application_directory) {
+  DeleteResult result(DeleteEmptyDir(application_directory));
+  if (result == DELETE_SUCCEEDED) {
+    // Now check and delete if the parent directories are empty
+    // For example Google\Chrome or Chromium
+    const base::FilePath product_directory(application_directory.DirName());
+    if (!product_directory.empty()) {
+        result = DeleteEmptyDir(product_directory);
+        if (result == DELETE_SUCCEEDED) {
+          const base::FilePath vendor_directory(product_directory.DirName());
+          if (!vendor_directory.empty())
+            result = DeleteEmptyDir(vendor_directory);
+        }
+    }
+  }
+  if (result == DELETE_NOT_EMPTY)
+    result = DELETE_SUCCEEDED;
+  return result;
+}
+
 bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
                                   BrowserDistribution* dist,
                                   HKEY root,
@@ -926,141 +1043,6 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
     ext_association.append(L"\\");
     ext_association.append(extensions::kExtensionFileExtension);
     InstallUtil::DeleteRegistryKey(roots[i], ext_association);
-  }
-}
-
-// Builds and executes a work item list to remove DelegateExecute verb handler
-// work items for |product|.  This will be a noop for products whose
-// corresponding BrowserDistribution implementations do not publish a CLSID via
-// GetCommandExecuteImplClsid.
-bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
-                                     const Product& product) {
-  scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
-  AddDelegateExecuteWorkItems(installer_state, base::FilePath(), Version(),
-                              product, item_list.get());
-  return item_list->Do();
-}
-
-// Removes Active Setup entries from the registry. This cannot be done through
-// a work items list as usual because of different paths based on conditionals,
-// but otherwise respects the no rollback/best effort uninstall mentality.
-// This will only apply for system-level installs of Chrome/Chromium and will be
-// a no-op for all other types of installs.
-void UninstallActiveSetupEntries(const InstallerState& installer_state,
-                                 const Product& product) {
-  VLOG(1) << "Uninstalling registry entries for ActiveSetup.";
-  BrowserDistribution* distribution = product.distribution();
-
-  if (!product.is_chrome() || !installer_state.system_install()) {
-    const char* install_level =
-        installer_state.system_install() ? "system" : "user";
-    VLOG(1) << "No Active Setup processing to do for " << install_level
-            << "-level " << distribution->GetDisplayName();
-    return;
-  }
-
-  const base::string16 active_setup_path(
-      InstallUtil::GetActiveSetupPath(distribution));
-  InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, active_setup_path);
-
-  // Windows leaves keys behind in HKCU\\Software\\(Wow6432Node\\)?Microsoft\\
-  //     Active Setup\\Installed Components\\{guid}
-  // for every user that logged in since system-level Chrome was installed.
-  // This is a problem because Windows compares the value of the Version subkey
-  // in there with the value of the Version subkey in the matching HKLM entries
-  // before running Chrome's Active Setup so if Chrome was to be reinstalled
-  // with a lesser version (e.g. switching back to a more stable channel), the
-  // affected users would not have Chrome's Active Setup called until Chrome
-  // eventually updated passed that user's registered Version.
-  //
-  // It is however very hard to delete those values as the registry hives for
-  // other users are not loaded by default under HKEY_USERS (unless a user is
-  // logged on or has a process impersonating him).
-  //
-  // Following our best effort uninstall practices, try to delete the value in
-  // all users hives. If a given user's hive is not loaded, try to load it to
-  // proceed with the deletion (failure to do so is ignored).
-
-  static const wchar_t kProfileList[] =
-      L"Software\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\";
-
-  // Windows automatically adds Wow6432Node when creating/deleting the HKLM key,
-  // but doesn't seem to do so when manually deleting the user-level keys it
-  // created.
-  base::string16 alternate_active_setup_path(active_setup_path);
-  alternate_active_setup_path.insert(arraysize("Software\\") - 1,
-                                     L"Wow6432Node\\");
-
-  // These two privileges are required by RegLoadKey() and RegUnloadKey() below.
-  ScopedTokenPrivilege se_restore_name_privilege(SE_RESTORE_NAME);
-  ScopedTokenPrivilege se_backup_name_privilege(SE_BACKUP_NAME);
-  if (!se_restore_name_privilege.is_enabled() ||
-      !se_backup_name_privilege.is_enabled()) {
-    // This is not a critical failure as those privileges aren't required to
-    // clean hives that are already loaded, but attempts to LoadRegKey() below
-    // will fail.
-    LOG(WARNING) << "Failed to enable privileges required to load registry "
-                    "hives.";
-  }
-
-  for (base::win::RegistryKeyIterator it(HKEY_LOCAL_MACHINE, kProfileList);
-       it.Valid(); ++it) {
-    const wchar_t* profile_sid = it.Name();
-
-    // First check if this user's registry hive needs to be loaded in
-    // HKEY_USERS.
-    base::win::RegKey user_reg_root_probe(
-        HKEY_USERS, profile_sid, KEY_READ);
-    bool loaded_hive = false;
-    if (!user_reg_root_probe.Valid()) {
-      VLOG(1) << "Attempting to load registry hive for " << profile_sid;
-
-      base::string16 reg_profile_info_path(kProfileList);
-      reg_profile_info_path.append(profile_sid);
-      base::win::RegKey reg_profile_info_key(
-          HKEY_LOCAL_MACHINE, reg_profile_info_path.c_str(), KEY_READ);
-
-      base::string16 profile_path;
-      LONG result = reg_profile_info_key.ReadValue(L"ProfileImagePath",
-                                                   &profile_path);
-      if (result != ERROR_SUCCESS) {
-        LOG(ERROR) << "Error reading ProfileImagePath: " << result;
-        continue;
-      }
-      base::FilePath registry_hive_file(profile_path);
-      registry_hive_file = registry_hive_file.AppendASCII("NTUSER.DAT");
-
-      result = RegLoadKey(HKEY_USERS, profile_sid,
-                          registry_hive_file.value().c_str());
-      if (result != ERROR_SUCCESS) {
-        LOG(ERROR) << "Error loading registry hive: " << result;
-        continue;
-      }
-
-      VLOG(1) << "Loaded registry hive for " << profile_sid;
-      loaded_hive = true;
-    }
-
-    base::win::RegKey user_reg_root(
-        HKEY_USERS, profile_sid, KEY_ALL_ACCESS);
-
-    LONG result = user_reg_root.DeleteKey(active_setup_path.c_str());
-    if (result != ERROR_SUCCESS) {
-      result = user_reg_root.DeleteKey(alternate_active_setup_path.c_str());
-      if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
-        LOG(ERROR) << "Failed to delete key at " << active_setup_path
-                   << " and at " << alternate_active_setup_path
-                   << ", result: " << result;
-      }
-    }
-
-    if (loaded_hive) {
-      user_reg_root.Close();
-      if (RegUnLoadKey(HKEY_USERS, profile_sid) == ERROR_SUCCESS)
-        VLOG(1) << "Unloaded registry hive for " << profile_sid;
-      else
-        LOG(ERROR) << "Error unloading registry hive for " << profile_sid;
-    }
   }
 }
 
@@ -1332,9 +1314,8 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   // When deleting files, we must make sure that we're either a "single"
   // (aka non-multi) installation or we are the Chrome Binaries.
 
-  std::vector<base::FilePath> local_state_folders;
-  GetLocalStateFolders(product, &local_state_folders);
-  base::FilePath backup_state_file(BackupLocalStateFile(local_state_folders));
+  base::FilePath user_data_dir(GetUserDataDir(product));
+  base::FilePath backup_state_file(BackupLocalStateFile(user_data_dir));
 
   if (product.is_chrome_app_host()) {
     DeleteAppHostFilesAndFolders(installer_state, product_state->version());
@@ -1350,7 +1331,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
   }
 
   if (delete_profile)
-    DeleteLocalState(local_state_folders, product.is_chrome_frame());
+    DeleteUserDataDir(user_data_dir, product.is_chrome_frame());
 
   if (!force_uninstall) {
     VLOG(1) << "Uninstallation complete. Launching post-uninstall operations.";

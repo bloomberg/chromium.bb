@@ -427,21 +427,15 @@ void LaunchBrowserUserExperiment(const CommandLine& base_cmd_line,
     }
     // Check browser usage inactivity by the age of the last-write time of the
     // most recently-used chrome user data directory.
-    std::vector<base::FilePath> user_data_dirs;
     BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BROWSER);
-    GetChromeUserDataPaths(dist, &user_data_dirs);
-    int dir_age_hours = -1;
-    for (size_t i = 0; i < user_data_dirs.size(); ++i) {
-      int this_age = GetDirectoryWriteAgeInHours(
-          user_data_dirs[i].value().c_str());
-      if (this_age >= 0 && (dir_age_hours < 0 || this_age < dir_age_hours))
-        dir_age_hours = this_age;
-    }
+    base::FilePath user_data_dir(GetChromeUserDataPath(dist));
 
     const bool experiment_enabled = false;
     const int kThirtyDays = 30 * 24;
 
+    int dir_age_hours = GetDirectoryWriteAgeInHours(
+        user_data_dir.value().c_str());
     if (!experiment_enabled) {
       VLOG(1) << "Toast experiment is disabled.";
       return;
