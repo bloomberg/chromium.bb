@@ -194,6 +194,7 @@ button:active {
 }
 
 .blue-button:hover {
+  color: #fff;
 <if expr="not is_android">
   background-image: -webkit-linear-gradient(#659efd, #659efd 38%, #6097f1);
   border: 1px solid rgba(45, 102, 195, 1);
