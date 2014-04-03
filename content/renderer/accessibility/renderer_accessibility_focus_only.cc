@@ -97,9 +97,9 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   // has focus, otherwise the focused node.
   event.id = node_has_focus ? next_id_ : 1;
 
-  event.nodes.resize(2);
-  ui::AXNodeData& root = event.nodes[0];
-  ui::AXNodeData& child = event.nodes[1];
+  event.update.nodes.resize(2);
+  ui::AXNodeData& root = event.update.nodes[0];
+  ui::AXNodeData& child = event.update.nodes[1];
 
   // Always include the root of the tree, the document. It always has id 1.
   root.id = 1;

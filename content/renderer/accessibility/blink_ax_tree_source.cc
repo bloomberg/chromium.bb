@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/accessibility/accessibility_node_serializer.h"
+#include "content/renderer/accessibility/blink_ax_tree_source.h"
 
 #include <set>
 
@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
+#include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -23,31 +24,36 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
+using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebDocumentType;
 using blink::WebElement;
+using blink::WebFrame;
 using blink::WebNode;
 using blink::WebVector;
+using blink::WebView;
 
 namespace content {
+
 namespace {
 
 // Returns true if |ancestor| is the first unignored parent of |child|,
 // which means that when walking up the parent chain from |child|,
 // |ancestor| is the *first* ancestor that isn't marked as
 // accessibilityIsIgnored().
-bool IsParentUnignoredOf(const WebAXObject& ancestor,
-                         const WebAXObject& child) {
+bool IsParentUnignoredOf(WebAXObject ancestor,
+                         WebAXObject child) {
   WebAXObject parent = child.parentObject();
   while (!parent.isDetached() && parent.accessibilityIsIgnored())
     parent = parent.parentObject();
   return parent.equals(ancestor);
 }
 
-  bool IsTrue(std::string html_value) {
+bool IsTrue(std::string html_value) {
   return LowerCaseEqualsASCII(html_value, "true");
 }
 
@@ -85,17 +91,88 @@ void AddIntListAttributeFromWebObjects(ui::AXIntListAttribute attr,
     dst->AddIntListAttribute(attr, ids);
 }
 
-
 }  // Anonymous namespace
 
-void SerializeAccessibilityNode(
-    const WebAXObject& src,
-    ui::AXNodeData* dst) {
+BlinkAXTreeSource::BlinkAXTreeSource(RenderViewImpl* render_view)
+    : render_view_(render_view) {
+}
+
+BlinkAXTreeSource::~BlinkAXTreeSource() {
+}
+
+blink::WebAXObject BlinkAXTreeSource::GetRoot() const {
+  return GetMainDocument().accessibilityObject();
+}
+
+blink::WebAXObject BlinkAXTreeSource::GetFromId(int32 id) const {
+  return GetMainDocument().accessibilityObjectFromID(id);
+}
+
+int32 BlinkAXTreeSource::GetId(blink::WebAXObject node) const {
+  return node.axID();
+}
+
+void BlinkAXTreeSource::GetChildren(
+    blink::WebAXObject parent,
+    std::vector<blink::WebAXObject>* out_children) const {
+  bool is_iframe = false;
+  WebNode node = parent.node();
+  if (!node.isNull() && node.isElementNode()) {
+    WebElement element = node.to<WebElement>();
+    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
+  }
+
+  for (unsigned i = 0; i < parent.childCount(); i++) {
+    blink::WebAXObject child = parent.childAt(i);
+
+    // The child may be invalid due to issues in blink accessibility code.
+    if (child.isDetached())
+      continue;
+
+    // Skip children whose parent isn't |parent|.
+    // As an exception, include children of an iframe element.
+    if (!is_iframe && !IsParentUnignoredOf(parent, child))
+      continue;
+
+    out_children->push_back(child);
+  }
+}
+
+blink::WebAXObject BlinkAXTreeSource::GetParent(
+    blink::WebAXObject node) const {
+  // Blink returns ignored objects when walking up the parent chain,
+  // we have to skip those here. Also, stop when we get to the root
+  // element.
+  blink::WebAXObject root = GetRoot();
+  do {
+    if (node.equals(root))
+      return blink::WebAXObject();
+    node = node.parentObject();
+  } while (!node.isDetached() && node.accessibilityIsIgnored());
+
+  return node;
+}
+
+bool BlinkAXTreeSource::IsValid(blink::WebAXObject node) const {
+  return !node.isDetached();  // This also checks if it's null.
+}
+
+bool BlinkAXTreeSource::IsEqual(blink::WebAXObject node1,
+                                blink::WebAXObject node2) const {
+  return node1.equals(node2);
+}
+
+blink::WebAXObject BlinkAXTreeSource::GetNull() const {
+  return blink::WebAXObject();
+}
+
+void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
+                                      ui::AXNodeData* dst) const {
   dst->role = AXRoleFromBlink(src.role());
   dst->state = AXStateFromBlink(src);
   dst->location = src.boundingBoxRect();
   dst->id = src.axID();
-  std::string name = base::UTF16ToUTF8(src.title());
+  std::string name = UTF16ToUTF8(src.title());
 
   std::string value;
   if (src.valueDescription().length()) {
@@ -140,9 +217,10 @@ void SerializeAccessibilityNode(
     dst->AddIntListAttribute(ui::AX_ATTR_WORD_ENDS, word_ends);
   }
 
-  if (src.accessKey().length())
+  if (src.accessKey().length()) {
     dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY,
-        UTF16ToUTF8(src.accessKey()));
+    UTF16ToUTF8(src.accessKey()));
+  }
   if (src.actionVerb().length())
     dst->AddStringAttribute(ui::AX_ATTR_ACTION, UTF16ToUTF8(src.actionVerb()));
   if (src.isAriaReadOnly())
@@ -183,7 +261,7 @@ void SerializeAccessibilityNode(
             dst->role == ui::AX_ROLE_ROW) &&
            src.hierarchicalLevel() > 0) {
     dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL,
-        src.hierarchicalLevel());
+                         src.hierarchicalLevel());
   }
 
   // Treat the active list box item as focused.
@@ -204,7 +282,7 @@ void SerializeAccessibilityNode(
 
   if (!node.isNull() && node.isElementNode()) {
     WebElement element = node.to<WebElement>();
-    is_iframe = (element.tagName() == base::ASCIIToUTF16("IFRAME"));
+    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
 
     if (LowerCaseEqualsASCII(element.getAttribute("aria-expanded"), "true"))
       dst->state |= (1 << ui::AX_STATE_EXPANDED);
@@ -216,9 +294,9 @@ void SerializeAccessibilityNode(
         ui::AX_ATTR_HTML_TAG,
         StringToLowerASCII(UTF16ToUTF8(element.tagName())));
     for (unsigned i = 0; i < element.attributeCount(); ++i) {
-      std::string name = StringToLowerASCII(base::UTF16ToUTF8(
+      std::string name = StringToLowerASCII(UTF16ToUTF8(
           element.attributeLocalName(i)));
-      std::string value = base::UTF16ToUTF8(element.attributeValue(i));
+      std::string value = UTF16ToUTF8(element.attributeValue(i));
       dst->html_attributes.push_back(std::make_pair(name, value));
     }
 
@@ -250,10 +328,10 @@ void SerializeAccessibilityNode(
     }
 
     // Live region attributes
-    live_atomic = base::UTF16ToUTF8(element.getAttribute("aria-atomic"));
-    live_busy = base::UTF16ToUTF8(element.getAttribute("aria-busy"));
-    live_status = base::UTF16ToUTF8(element.getAttribute("aria-live"));
-    live_relevant = base::UTF16ToUTF8(element.getAttribute("aria-relevant"));
+    live_atomic = UTF16ToUTF8(element.getAttribute("aria-atomic"));
+    live_busy = UTF16ToUTF8(element.getAttribute("aria-busy"));
+    live_status = UTF16ToUTF8(element.getAttribute("aria-live"));
+    live_relevant = UTF16ToUTF8(element.getAttribute("aria-relevant"));
   }
 
   // Walk up the parent chain to set live region attributes of containers
@@ -269,22 +347,22 @@ void SerializeAccessibilityNode(
       if (container_elem.hasAttribute("aria-atomic") &&
           container_live_atomic.empty()) {
         container_live_atomic =
-            base::UTF16ToUTF8(container_elem.getAttribute("aria-atomic"));
+            UTF16ToUTF8(container_elem.getAttribute("aria-atomic"));
       }
       if (container_elem.hasAttribute("aria-busy") &&
           container_live_busy.empty()) {
         container_live_busy =
-            base::UTF16ToUTF8(container_elem.getAttribute("aria-busy"));
+            UTF16ToUTF8(container_elem.getAttribute("aria-busy"));
       }
       if (container_elem.hasAttribute("aria-live") &&
           container_live_status.empty()) {
         container_live_status =
-            base::UTF16ToUTF8(container_elem.getAttribute("aria-live"));
+            UTF16ToUTF8(container_elem.getAttribute("aria-live"));
       }
       if (container_elem.hasAttribute("aria-relevant") &&
           container_live_relevant.empty()) {
         container_live_relevant =
-            base::UTF16ToUTF8(container_elem.getAttribute("aria-relevant"));
+            UTF16ToUTF8(container_elem.getAttribute("aria-relevant"));
       }
     }
     container_accessible = container_accessible.parentObject();
@@ -334,7 +412,7 @@ void SerializeAccessibilityNode(
     if (name.empty())
       name = UTF16ToUTF8(document.title());
     dst->AddStringAttribute(ui::AX_ATTR_DOC_TITLE,
-        UTF16ToUTF8(document.title()));
+                            UTF16ToUTF8(document.title()));
     dst->AddStringAttribute(ui::AX_ATTR_DOC_URL, document.url().spec());
     dst->AddStringAttribute(
         ui::AX_ATTR_DOC_MIMETYPE,
@@ -425,15 +503,15 @@ void SerializeAccessibilityNode(
   // parent is the row, the row adds it as a child, and the column adds it
   // as an indirect child.
   int child_count = src.childCount();
-  std::vector<int32> indirect_child_ids;
   for (int i = 0; i < child_count; ++i) {
     WebAXObject child = src.childAt(i);
+    std::vector<int32> indirect_child_ids;
     if (!is_iframe && !child.isDetached() && !IsParentUnignoredOf(src, child))
       indirect_child_ids.push_back(child.axID());
-  }
-  if (indirect_child_ids.size() > 0) {
-    dst->AddIntListAttribute(ui::AX_ATTR_INDIRECT_CHILD_IDS,
-                             indirect_child_ids);
+    if (indirect_child_ids.size() > 0) {
+      dst->AddIntListAttribute(
+          ui::AX_ATTR_INDIRECT_CHILD_IDS, indirect_child_ids);
+    }
   }
 
   WebVector<WebAXObject> controls;
@@ -461,26 +539,14 @@ void SerializeAccessibilityNode(
     AddIntListAttributeFromWebObjects(ui::AX_ATTR_OWNS_IDS, owns, dst);
 }
 
-bool ShouldIncludeChildNode(
-    const WebAXObject& parent,
-    const WebAXObject& child) {
-  // The child may be invalid due to issues in webkit accessibility code.
-  // Don't add children that are invalid thus preventing a crash.
-  // https://bugs.webkit.org/show_bug.cgi?id=44149
-  // TODO(ctguil): We may want to remove this check as webkit stabilizes.
-  if (child.isDetached())
-    return false;
+blink::WebDocument BlinkAXTreeSource::GetMainDocument() const {
+  WebView* view = render_view_->GetWebView();
+  WebFrame* main_frame = view ? view->mainFrame() : NULL;
 
-  // Skip children whose parent isn't this - see indirect_child_ids, above.
-  // As an exception, include children of an iframe element.
-  bool is_iframe = false;
-  WebNode node = parent.node();
-  if (!node.isNull() && node.isElementNode()) {
-    WebElement element = node.to<WebElement>();
-    is_iframe = (element.tagName() == base::ASCIIToUTF16("IFRAME"));
-  }
+  if (main_frame)
+    return main_frame->document();
 
-  return (is_iframe || IsParentUnignoredOf(parent, child));
+  return WebDocument();
 }
 
 }  // namespace content

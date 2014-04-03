@@ -1728,7 +1728,7 @@ void RenderViewHostImpl::OnAccessibilityEvents(
     for (unsigned int i = 0; i < params.size(); ++i) {
       const AccessibilityHostMsg_EventParams& param = params[i];
       AXEventNotificationDetails detail(
-          param.nodes, param.event_type, param.id, GetRoutingID());
+          param.update.nodes, param.event_type, param.id, GetRoutingID());
       details.push_back(detail);
     }
 
@@ -1747,12 +1747,10 @@ void RenderViewHostImpl::OnAccessibilityEvents(
     const AccessibilityHostMsg_EventParams& param = params[i];
     if (static_cast<int>(param.event_type) < 0)
       continue;
-    ui::AXTreeUpdate update;
-    update.nodes = param.nodes;
     if (!ax_tree_)
-      ax_tree_.reset(new ui::AXTree(update));
+      ax_tree_.reset(new ui::AXTree(param.update));
     else
-      CHECK(ax_tree_->Unserialize(update)) << ax_tree_->error();
+      CHECK(ax_tree_->Unserialize(param.update)) << ax_tree_->error();
     accessibility_testing_callback_.Run(param.event_type);
   }
 }
