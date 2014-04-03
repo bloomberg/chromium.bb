@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
@@ -68,6 +67,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#endif
+
+#if defined(OS_WIN)
+#include "chrome/browser/web_applications/web_app_win.h"
 #endif
 
 using content::NavigationController;

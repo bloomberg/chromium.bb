@@ -8,6 +8,10 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/shell_integration.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace gfx {
 class ImageFamily;
 }

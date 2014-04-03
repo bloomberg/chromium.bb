@@ -1,111 +1,37 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/web_applications/update_shortcut_worker_win.h"
+
+#include <algorithm>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/shortcut.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/history/select_favicon_frames.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_win.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "base/environment.h"
-#endif
-
-#if defined(OS_WIN)
-#include "base/win/shortcut.h"
-#include "base/win/windows_version.h"
-#include "chrome/browser/web_applications/web_app_win.h"
 #include "ui/gfx/icon_util.h"
-#endif
+#include "url/gurl.h"
 
 using content::BrowserThread;
 using content::NavigationController;
 using content::WebContents;
 
-namespace {
-
-// TODO(jackhou): Move all win-specific code to web_app_win.
-#if defined(OS_WIN)
-// UpdateShortcutWorker holds all context data needed for update shortcut.
-// It schedules a pre-update check to find all shortcuts that needs to be
-// updated. If there are such shortcuts, it schedules icon download and
-// update them when icons are downloaded. It observes TAB_CLOSING notification
-// and cancels all the work when the underlying tab is closing.
-class UpdateShortcutWorker : public content::NotificationObserver {
- public:
-  explicit UpdateShortcutWorker(WebContents* web_contents);
-
-  void Run();
-
- private:
-  // Overridden from content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
-  // Downloads icon via the FaviconTabHelper.
-  void DownloadIcon();
-
-  // Favicon download callback.
-  void DidDownloadFavicon(
-      int requested_size,
-      int id,
-      int http_status_code,
-      const GURL& image_url,
-      const std::vector<SkBitmap>& bitmaps,
-      const std::vector<gfx::Size>& original_bitmap_sizes);
-
-  // Checks if shortcuts exists on desktop, start menu and quick launch.
-  void CheckExistingShortcuts();
-
-  // Update shortcut files and icons.
-  void UpdateShortcuts();
-  void UpdateShortcutsOnFileThread();
-
-  // Callback after shortcuts are updated.
-  void OnShortcutsUpdated(bool);
-
-  // Deletes the worker on UI thread where it gets created.
-  void DeleteMe();
-  void DeleteMeOnUIThread();
-
-  content::NotificationRegistrar registrar_;
-
-  // Underlying WebContents whose shortcuts will be updated.
-  WebContents* web_contents_;
-
-  // Icons info from web_contents_'s web app data.
-  web_app::IconInfoList unprocessed_icons_;
-
-  // Cached shortcut data from the web_contents_.
-  ShellIntegration::ShortcutInfo shortcut_info_;
-
-  // Our copy of profile path.
-  base::FilePath profile_path_;
-
-  // File name of shortcut/ico file based on app title.
-  base::FilePath file_name_;
-
-  // Existing shortcuts.
-  std::vector<base::FilePath> shortcut_files_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateShortcutWorker);
-};
+namespace web_app {
 
 UpdateShortcutWorker::UpdateShortcutWorker(WebContents* web_contents)
     : web_contents_(web_contents),
@@ -311,43 +237,6 @@ void UpdateShortcutWorker::DeleteMe() {
 void UpdateShortcutWorker::DeleteMeOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   delete this;
-}
-#endif  // defined(OS_WIN)
-
-}  // namespace
-
-namespace web_app {
-
-void GetShortcutInfoForTab(WebContents* web_contents,
-                           ShellIntegration::ShortcutInfo* info) {
-  DCHECK(info);  // Must provide a valid info.
-
-  const FaviconTabHelper* favicon_tab_helper =
-      FaviconTabHelper::FromWebContents(web_contents);
-  const extensions::TabHelper* extensions_tab_helper =
-      extensions::TabHelper::FromWebContents(web_contents);
-  const WebApplicationInfo& app_info = extensions_tab_helper->web_app_info();
-
-  info->url = app_info.app_url.is_empty() ? web_contents->GetURL() :
-                                            app_info.app_url;
-  info->title = app_info.title.empty() ?
-      (web_contents->GetTitle().empty() ? base::UTF8ToUTF16(info->url.spec()) :
-                                          web_contents->GetTitle()) :
-      app_info.title;
-  info->description = app_info.description;
-  info->favicon.Add(favicon_tab_helper->GetFavicon());
-
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  info->profile_path = profile->GetPath();
-}
-
-void UpdateShortcutForTabContents(WebContents* web_contents) {
-#if defined(OS_WIN)
-  // UpdateShortcutWorker will delete itself when it's done.
-  UpdateShortcutWorker* worker = new UpdateShortcutWorker(web_contents);
-  worker->Run();
-#endif  // defined(OS_WIN)
 }
 
 }  // namespace web_app

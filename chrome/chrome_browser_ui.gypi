@@ -2211,8 +2211,6 @@
         'browser/ui/views/website_settings/permission_selector_view_observer.h',
         'browser/ui/views/website_settings/website_settings_popup_view.cc',
         'browser/ui/views/website_settings/website_settings_popup_view.h',
-        'browser/ui/web_applications/web_app_ui.cc',
-        'browser/ui/web_applications/web_app_ui.h',
         'browser/ui/website_settings/permission_bubble_manager.cc',
         'browser/ui/website_settings/permission_bubble_manager.h',
         'browser/ui/website_settings/permission_bubble_request.h',

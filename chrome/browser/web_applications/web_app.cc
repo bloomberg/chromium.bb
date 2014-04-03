@@ -13,6 +13,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
@@ -133,6 +135,34 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 }
 
 }  // namespace internals
+
+void GetShortcutInfoForTab(content::WebContents* web_contents,
+                           ShellIntegration::ShortcutInfo* info) {
+  DCHECK(info);  // Must provide a valid info.
+
+  const FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents);
+  const extensions::TabHelper* extensions_tab_helper =
+      extensions::TabHelper::FromWebContents(web_contents);
+  const WebApplicationInfo& app_info = extensions_tab_helper->web_app_info();
+
+  info->url = app_info.app_url.is_empty() ? web_contents->GetURL() :
+                                            app_info.app_url;
+  info->title = app_info.title.empty() ?
+      (web_contents->GetTitle().empty() ? base::UTF8ToUTF16(info->url.spec()) :
+                                          web_contents->GetTitle()) :
+      app_info.title;
+  info->description = app_info.description;
+  info->favicon.Add(favicon_tab_helper->GetFavicon());
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  info->profile_path = profile->GetPath();
+}
+
+#if !defined(OS_WIN)
+void UpdateShortcutForTabContents(content::WebContents* web_contents) {}
+#endif
 
 ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app, Profile* profile) {

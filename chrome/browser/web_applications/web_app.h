@@ -17,6 +17,10 @@
 
 class Profile;
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class Extension;
 }
@@ -36,6 +40,17 @@ enum ShortcutCreationReason {
 
 typedef base::Callback<void(const ShellIntegration::ShortcutInfo&)>
     ShortcutInfoCallback;
+
+// Extracts shortcut info of the given WebContents.
+void GetShortcutInfoForTab(content::WebContents* web_contents,
+                           ShellIntegration::ShortcutInfo* info);
+
+// Updates web app shortcut of the WebContents. This function checks and
+// updates web app icon and shortcuts if needed. For icon, the check is based
+// on MD5 hash of icon image. For shortcuts, it checks the desktop, start menu
+// and quick launch (as well as pinned shortcut) for shortcut and only
+// updates (recreates) them if they exits.
+void UpdateShortcutForTabContents(content::WebContents* web_contents);
 
 ShellIntegration::ShortcutInfo ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app,

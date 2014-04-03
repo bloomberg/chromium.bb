@@ -2585,6 +2585,8 @@
         'browser/usb/usb_context.h',
         'browser/usb/usb_service.cc',
         'browser/usb/usb_service.h',
+        'browser/web_applications/update_shortcut_worker_win.cc',
+        'browser/web_applications/update_shortcut_worker_win.h',
         'browser/web_applications/web_app.cc',
         'browser/web_applications/web_app.h',
         'browser/web_applications/web_app_android.cc',
