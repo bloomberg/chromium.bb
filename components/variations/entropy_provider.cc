@@ -50,7 +50,21 @@ void PermuteMappingUsingRandomizationSeed(uint32 randomization_seed,
     (*mapping)[i] = static_cast<uint16>(i);
 
   SeededRandGenerator generator(randomization_seed);
-  std::random_shuffle(mapping->begin(), mapping->end(), generator);
+
+  // Do a deterministic random shuffle of the mapping using |generator|.
+  //
+  // Note: This logic is identical to the following call with libstdc++ and VS:
+  //
+  //   std::random_shuffle(mapping->begin(), mapping->end(), generator);
+  //
+  // However, this is not guaranteed by the spec and some implementations (e.g.
+  // libc++) use a different algorithm. To ensure results are consistent
+  // regardless of the compiler toolchain used, use our own version.
+  for (size_t i = 1; i < mapping->size(); ++i) {
+    // Pick an element in mapping[:i+1] with which to exchange mapping[i].
+    size_t j = generator(i + 1);
+    std::swap((*mapping)[i], (*mapping)[j]);
+  }
 }
 
 }  // namespace internal
