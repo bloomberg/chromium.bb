@@ -20,6 +20,7 @@
 #include "skia/ext/vector_platform_device_emf_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
+#include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
@@ -53,47 +54,30 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
 
 // Windows-only DirectWrite support. These warm up the DirectWrite paths
 // before sandbox lock down to allow Skia access to the Font Manager service.
-bool CreateDirectWriteFactory(IDWriteFactory** factory) {
+void CreateDirectWriteFactory(IDWriteFactory** factory) {
   typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
   DWriteCreateFactoryProc dwrite_create_factory_proc =
       reinterpret_cast<DWriteCreateFactoryProc>(
           GetProcAddress(LoadLibraryW(L"dwrite.dll"), "DWriteCreateFactory"));
-  if (!dwrite_create_factory_proc)
-    return false;
+  CHECK(dwrite_create_factory_proc);
   CHECK(SUCCEEDED(
-      dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_SHARED,
+      dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_ISOLATED,
                                  __uuidof(IDWriteFactory),
                                  reinterpret_cast<IUnknown**>(factory))));
-  return true;
 }
 
 void WarmupDirectWrite() {
-  base::win::ScopedComPtr<IDWriteFactory> factory;
-  if (!CreateDirectWriteFactory(factory.Receive()))
-    return;
-
-  base::win::ScopedComPtr<IDWriteFontCollection> font_collection;
-  CHECK(SUCCEEDED(
-      factory->GetSystemFontCollection(font_collection.Receive(), FALSE)));
-  base::win::ScopedComPtr<IDWriteFontFamily> font_family;
-
-  UINT32 index;
-  BOOL exists;
-  CHECK(SUCCEEDED(
-      font_collection->FindFamilyName(L"Times New Roman", &index, &exists)));
-  CHECK(exists);
-  CHECK(
-      SUCCEEDED(font_collection->GetFontFamily(index, font_family.Receive())));
-  base::win::ScopedComPtr<IDWriteFont> font;
-  base::win::ScopedComPtr<IDWriteFontFace> font_face;
-  CHECK(SUCCEEDED(font_family->GetFirstMatchingFont(DWRITE_FONT_WEIGHT_NORMAL,
-                                                    DWRITE_FONT_STRETCH_NORMAL,
-                                                    DWRITE_FONT_STYLE_NORMAL,
-                                                    font.Receive())));
-  CHECK(SUCCEEDED(font->CreateFontFace(font_face.Receive())));
-  DWRITE_GLYPH_METRICS gm;
-  UINT16 glyph = L'S';
-  CHECK(SUCCEEDED(font_face->GetDesignGlyphMetrics(&glyph, 1, &gm)));
+  // The objects used here are intentionally not freed as we want the Skia
+  // code to use these objects after warmup.
+  IDWriteFactory* factory;
+  CreateDirectWriteFactory(&factory);
+  blink::WebFontRendering::setDirectWriteFactory(factory);
+  SkFontMgr* fontmgr = SkFontMgr_New_DirectWrite(factory);
+  SkTypeface* typeface = fontmgr->legacyCreateTypeface("Times New Roman", 0);
+  SkPaint paint_warmup;
+  paint_warmup.setTypeface(typeface);
+  wchar_t glyph = L'S';
+  paint_warmup.measureText(&glyph, 2);
 }
 
 }  // namespace
