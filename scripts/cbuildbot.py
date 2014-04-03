@@ -504,8 +504,7 @@ class SimpleBuilder(Builder):
     self._RunStage(stages.PatchChromeStage)
     self._RunStage(stages.SDKPackageStage)
     self._RunStage(stages.SDKTestStage)
-    self._RunStage(stages.UploadPrebuiltsStage,
-                   constants.CHROOT_BUILDER_BOARD, None)
+    self._RunStage(stages.UploadPrebuiltsStage, constants.CHROOT_BUILDER_BOARD)
 
   def _RunRefreshPackagesTypeBuild(self):
     """Runs through the stages of a REFRESH_PACKAGES_TYPE build."""
