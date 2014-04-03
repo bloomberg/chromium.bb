@@ -31,8 +31,6 @@ OUT_TOOLCHAINNAME=nacl_x86_glibc
 TOOL_TOOLCHAIN="$TOOLCHAINLOC/$TOOLCHAINNAME"
 OUT_TOOLCHAIN="${OUT_TOOLCHAINLOC}/${OUT_TOOLCHAINNAME}"
 
-GSUTIL=/b/build/scripts/slave/gsutil
-
 echo @@@BUILD_STEP gclient_runhooks@@@
 gclient runhooks --force
 

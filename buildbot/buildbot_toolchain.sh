@@ -102,15 +102,6 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
 
 fi
 
-echo @@@BUILD_STEP untar_toolchain@@@
-cd ..
-mkdir -p toolchain/${PLATFORM}_x86/nacl_x86_newlib/.tmp
-tar xfz tools/naclsdk.tgz \
-    -C toolchain/${PLATFORM}_x86/nacl_x86_newlib/.tmp
-mv toolchain/${PLATFORM}_x86/nacl_x86_newlib/.tmp/sdk/nacl-sdk/* \
-  toolchain/${PLATFORM}_x86/nacl_x86_newlib
-
-
 if [[ ${PLATFORM} == win ]]; then
   # Explicitly call the depot tools version of Python to avoid cygwin issues.
   python.bat buildbot/buildbot_standard.py opt 64 newlib

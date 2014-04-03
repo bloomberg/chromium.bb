@@ -31,8 +31,6 @@ OUT_TOOLCHAINNAME=nacl_x86_glibc
 TOOL_TOOLCHAIN="$TOOLCHAINLOC/$TOOLCHAINNAME"
 OUT_TOOLCHAIN="${OUT_TOOLCHAINLOC}/${OUT_TOOLCHAINNAME}"
 
-GSUTIL=buildbot/gsutil.sh
-
 export INST_GLIBC_PROGRAM="$PWD/tools/glibc_download.sh"
 # Workaround for broken autoconf mmap test (WOW64 limitation)
 # More info here: http://cygwin.com/ml/cygwin/2011-03/msg00596.html
