@@ -64,6 +64,20 @@ void RemoteDesktopBrowserTest::VerifyInternetAccess() {
   EXPECT_EQ(GetCurrentURL().host(), "www.google.com");
 }
 
+void RemoteDesktopBrowserTest::OpenClientBrowserPage() {
+  // Open the client browser page in a new tab
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL(http_server() + "/clientpage.html"),
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  // Save this web content for later reference
+  client_web_content_ = browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Go back to the previous tab that has chromoting opened
+  browser()->tab_strip_model()->SelectPreviousTab();
+}
+
 bool RemoteDesktopBrowserTest::HtmlElementVisible(const std::string& name) {
   _ASSERT_TRUE(HtmlElementExists(name));
 
@@ -551,6 +565,7 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
   me2me_pin_ = command_line->GetSwitchValueASCII(kMe2MePin);
   remote_host_name_ = command_line->GetSwitchValueASCII(kRemoteHostName);
   extension_name_ = command_line->GetSwitchValueASCII(kExtensionName);
+  http_server_ = command_line->GetSwitchValueASCII(kHttpServer);
 
   no_cleanup_ = command_line->HasSwitch(kNoCleanup);
   no_install_ = command_line->HasSwitch(kNoInstall);
@@ -710,6 +725,15 @@ bool RemoteDesktopBrowserTest::IsAuthenticatedInWindow(
     content::WebContents* web_contents) {
   return ExecuteScriptAndExtractBool(
       web_contents, "remoting.identity.isAuthenticated()");
+}
+
+// static
+bool RemoteDesktopBrowserTest::IsHostActionComplete(
+    content::WebContents* client_web_content,
+    std::string host_action_var) {
+  return ExecuteScriptAndExtractBool(
+      client_web_content,
+      host_action_var);
 }
 
 }  // namespace remoting

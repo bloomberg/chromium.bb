@@ -25,6 +25,7 @@ const char kkPassword[] = "password";
 const char kMe2MePin[] = "me2me-pin";
 const char kRemoteHostName[] = "remote-host-name";
 const char kExtensionName[] = "extension-name";
+const char kHttpServer[] = "http-server";
 
 // ASSERT_TRUE can only be used in void returning functions. This version
 // should be used in non-void-returning functions.
@@ -59,6 +60,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
 
   // Verify the test has access to the internet (specifically google.com)
   void VerifyInternetAccess();
+
+  // Open the client page for the browser test to get status of host actions
+  void OpenClientBrowserPage();
 
   // Install the chromoting extension from a crx file.
   void InstallChromotingAppCrx();
@@ -141,6 +145,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Helper to get the name of the remote host to connect to.
   std::string remote_host_name() { return remote_host_name_; }
 
+  // Helper to get the test controller URL.
+  std::string http_server() { return http_server_; }
+
   // Change behavior of the default host resolver to allow DNS lookup
   // to proceed instead of being blocked by the test infrastructure.
   void EnableDNSLookupForThisTest(
@@ -173,6 +180,11 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   content::WebContents* active_web_contents() {
     DCHECK(!web_contents_stack_.empty());
     return web_contents_stack_.back();
+  }
+
+  // The client WebContents instance the test needs to interact with.
+  content::WebContents* client_web_content() {
+    return client_web_content_;
   }
 
   // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
@@ -273,6 +285,11 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // successfully authenticated with the Google services.
   static bool IsAuthenticatedInWindow(content::WebContents* web_contents);
 
+  // Callback used to check whether a host action is completed.
+  // Used by browser tests while conditionally waiting for host actions.
+  static bool IsHostActionComplete(
+      content::WebContents* client_web_content, std::string host_action_var);
+
  private:
   // Fields
 
@@ -292,6 +309,11 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // we pop it off the stack, returning to the previous instance.
   std::vector<content::WebContents*> web_contents_stack_;
 
+  // WebContent of the client page that facilitates communication with
+  // the HTTP server. This is how the remoting browser tests
+  // will get acknowledgments of actions completed on the host.
+  content::WebContents* client_web_content_;
+
   bool no_cleanup_;
   bool no_install_;
   const Extension* extension_;
@@ -302,6 +324,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   std::string me2me_pin_;
   std::string remote_host_name_;
   std::string extension_name_;
+  std::string http_server_;
 };
 
 }  // namespace remoting

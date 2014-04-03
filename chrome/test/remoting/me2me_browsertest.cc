@@ -30,8 +30,13 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
 
   ConnectToLocalHost(false);
 
+  OpenClientBrowserPage();
+
   TestKeyboardInput();
-  TestMouseInput();
+
+  // TODO(chaitali): Change the mouse input test to also work in the
+  // HTTP server framework
+  // TestMouseInput();
 
   DisconnectMe2Me();
   Cleanup();
@@ -77,35 +82,31 @@ IN_PROC_BROWSER_TEST_F(Me2MeBrowserTest,
   Cleanup();
 }
 
-// Typing a command which writes to a temp file and then verify the contents of
-// the file.
 void Me2MeBrowserTest::TestKeyboardInput() {
-  // Start a terminal window with ctrl+alt+T
-  SimulateKeyPressWithCode(ui::VKEY_T, "KeyT", true, false, true, false);
+  // We will assume here that the browser window is already open on the host
+  // and in focus.
+  // Press tab to put focus on the textbox.
+  SimulateKeyPressWithCode(ui::VKEY_TAB, "Tab", false, false, false, false);
 
-  // Wait for the keyboard events to be sent to and processed by the host.
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(7)).Wait());
-
-  base::FilePath temp_file;
-  EXPECT_TRUE(base::CreateTemporaryFile(&temp_file));
-
-  // Write some text into the temp file.
+  // Write some text in the box and press enter
   std::string text = "Abigail";
-  std::string command = "echo -n " + text + " > " +
-                        temp_file.MaybeAsASCII() + "\n";
-  SimulateStringInput(command);
-  SimulateStringInput("exit\n");
+  SimulateStringInput(text);
+  SimulateKeyPressWithCode(
+      ui::VKEY_RETURN, "Enter", false, false, false, false);
 
-  // Wait for the keyboard events to be sent to and processed by the host.
-  ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(7)).Wait());
+  // Wait until the client tab sets the right variables
+  ConditionalTimeoutWaiter waiter(
+          base::TimeDelta::FromSeconds(10),
+          base::TimeDelta::FromMilliseconds(500),
+          base::Bind(&RemoteDesktopBrowserTest::IsHostActionComplete,
+                     client_web_content(),
+                     "testResult.keypressSucceeded"));
+  EXPECT_TRUE(waiter.Wait());
 
-  // Read the content of the temp file.
-  std::string content;
-  EXPECT_TRUE(base::ReadFileToString(temp_file, &content));
-
-  EXPECT_EQ(text, content);
-
-  EXPECT_TRUE(base::DeleteFile(temp_file, false));
+  // Check that the text we got is correct
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      client_web_content(),
+      "testResult.keypressText == '" + text + "'"));
 }
 
 void Me2MeBrowserTest::TestMouseInput() {
