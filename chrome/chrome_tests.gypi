@@ -1000,6 +1000,7 @@
         'browser/chromeos/login/oobe_base_test.cc',
         'browser/chromeos/login/oobe_base_test.h',
         'browser/chromeos/login/oobe_localization_browsertest.cc',
+        'browser/chromeos/login/reset_browsertest.cc',
         'browser/chromeos/login/saml/saml_browsertest.cc',
         'browser/chromeos/login/session_login_browsertest.cc',
         'browser/chromeos/login/screen_locker_tester.cc',

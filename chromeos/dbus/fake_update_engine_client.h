@@ -52,16 +52,29 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   void set_update_check_result(
       const UpdateEngineClient::UpdateCheckResult& result);
 
-  // Returns how many times RebootAfterUpdate() is called.
-  int reboot_after_update_call_count() {
-    return reboot_after_update_call_count_;
+  void set_can_rollback_check_result(bool result) {
+      can_rollback_stub_result_ = result;
   }
+
+  // Returns how many times RebootAfterUpdate() is called.
+  int reboot_after_update_call_count() const {
+      return reboot_after_update_call_count_;
+  }
+
+  // Returns how many times Rollback() is called.
+  int rollback_call_count() const { return rollback_call_count_; }
+
+  // Returns how many times Rollback() is called.
+  int can_rollback_call_count() const { return can_rollback_call_count_; }
 
  private:
   std::queue<UpdateEngineClient::Status> status_queue_;
   UpdateEngineClient::Status default_status_;
   UpdateEngineClient::UpdateCheckResult update_check_result_;
+  bool can_rollback_stub_result_;
   int reboot_after_update_call_count_;
+  int rollback_call_count_;
+  int can_rollback_call_count_;
 };
 
 }  // namespace chromeos

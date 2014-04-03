@@ -8,7 +8,10 @@ namespace chromeos {
 
 FakeUpdateEngineClient::FakeUpdateEngineClient()
     : update_check_result_(UpdateEngineClient::UPDATE_RESULT_SUCCESS),
-      reboot_after_update_call_count_(0) {
+      can_rollback_stub_result_(false),
+      reboot_after_update_call_count_(0),
+      rollback_call_count_(0),
+      can_rollback_call_count_(0) {
 }
 
 FakeUpdateEngineClient::~FakeUpdateEngineClient() {
@@ -33,10 +36,13 @@ void FakeUpdateEngineClient::RequestUpdateCheck(
 }
 
 void FakeUpdateEngineClient::Rollback() {
+  rollback_call_count_++;
 }
 
 void FakeUpdateEngineClient::CanRollbackCheck(
     const RollbackCheckCallback& callback) {
+  can_rollback_call_count_++;
+  callback.Run(can_rollback_stub_result_);
 }
 
 void FakeUpdateEngineClient::RebootAfterUpdate() {
