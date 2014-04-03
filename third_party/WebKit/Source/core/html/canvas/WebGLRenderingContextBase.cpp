@@ -5371,6 +5371,21 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
 
     blink::WebGraphicsContext3D::Attributes attributes = m_requestedAttributes->attributes(canvas()->document().topDocument().url().string(), settings);
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
+    RefPtr<DrawingBuffer> drawingBuffer;
+    if (context) {
+        // If the context was lost due to RealLostContext, we need to release FBOs before creating new DrawingBuffer to ensure resource budget enough.
+        m_drawingBuffer->releaseResources();
+        RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
+
+        // Construct a new drawing buffer with the new WebGraphicsContext3D.
+        DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes->preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
+        drawingBuffer = DrawingBuffer::create(context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
+
+        if (drawingBuffer->isZeroSized()) {
+            drawingBuffer.clear();
+            context.clear();
+        }
+    }
     if (!context) {
         if (m_contextLostMode == RealLostContext) {
             m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts, FROM_HERE);
@@ -5381,16 +5396,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
         return;
     }
 
-    RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
-
-    // Construct a new drawing buffer with the new WebGraphicsContext3D.
-    m_drawingBuffer->releaseResources();
-    DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes->preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    m_drawingBuffer = DrawingBuffer::create(context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
-
-    if (m_drawingBuffer->isZeroSized())
-        return;
-
+    m_drawingBuffer = drawingBuffer.release();
     m_drawingBuffer->bind();
 
     m_lostContextErrors.clear();
