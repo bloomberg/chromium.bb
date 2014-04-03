@@ -10,6 +10,10 @@
 
 class SkBitmap;
 
+namespace aura {
+class Window;
+}
+
 namespace base {
 class CommandLine;
 class Environment;
@@ -38,6 +42,16 @@ GdkModifierType GetGdkModifierForAccelerator(
 
 // Translates event flags into plaform independent event flags.
 int EventFlagsFromGdkState(guint state);
+
+// Sets |dialog| as transient for |parent|, which will keep it on top and center
+// it above |parent|.
+void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent);
+
+// Gets the transient parent aura window for |dialog|.
+aura::Window* GetAuraTransientParent(GtkWidget* dialog);
+
+// Clears the transient parent for |dialog|.
+void ClearAuraTransientParent(GtkWidget* dialog);
 
 }  // namespace libgtk2ui
 
