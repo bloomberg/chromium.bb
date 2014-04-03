@@ -7,23 +7,25 @@
 
 #include <string>
 
-#if defined(CLD2_DYNAMIC_MODE)
-#include "base/basictypes.h"
-#include "base/lazy_instance.h"
-#endif
 #include "base/memory/scoped_ptr.h"
-#if defined(CLD2_DYNAMIC_MODE)
-#include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
-#include "base/synchronization/lock.h"
-#include "base/task_runner.h"
-#endif
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+#if defined(CLD2_DYNAMIC_MODE)
+#include "base/basictypes.h"
+#include "base/lazy_instance.h"
+#include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
+#include "base/task_runner.h"
+#endif
+
+namespace base {
+class File;
+}
 
 namespace content {
 class BrowserContext;
@@ -131,7 +133,7 @@ class TranslateTabHelper
   void MaybeSendCLDDataAvailable();
 
   // Sends the renderer a response containing the data file handle. No locking.
-  void SendCLDDataAvailable(const base::PlatformFile handle,
+  void SendCLDDataAvailable(const base::File* handle,
                             const uint64 data_offset,
                             const uint64 data_length);
 
@@ -141,11 +143,11 @@ class TranslateTabHelper
 
   // The data file,  cached as long as the process stays alive.
   // We also track the offset at which the data starts, and its length.
-  static base::PlatformFile s_cached_platform_file_; // guarded by file_lock_
+  static base::File* s_cached_file_; // guarded by file_lock_
   static uint64 s_cached_data_offset_; // guarded by file_lock_
   static uint64 s_cached_data_length_; // guarded by file_lock_
 
-  // Guards s_cached_platform_file_
+  // Guards s_cached_file_
   static base::LazyInstance<base::Lock> s_file_lock_;
 
 #endif

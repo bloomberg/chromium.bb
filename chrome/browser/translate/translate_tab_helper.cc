@@ -4,17 +4,7 @@
 
 #include "chrome/browser/translate/translate_tab_helper.h"
 
-#if defined(CLD2_DYNAMIC_MODE)
-#include "base/basictypes.h"
-#include "base/lazy_instance.h"
-#endif
 #include "base/logging.h"
-#if defined(CLD2_DYNAMIC_MODE)
-#include "base/path_service.h"
-#include "base/platform_file.h"
-#include "base/synchronization/lock.h"
-#include "base/task_runner.h"
-#endif
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
@@ -26,31 +16,29 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
-#if defined(CLD2_DYNAMIC_MODE)
-#include "chrome/common/chrome_paths.h"
-#endif
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
-#if defined(CLD2_DYNAMIC_MODE)
-#include "content/public/browser/browser_thread.h"
-#endif
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
+
 #if defined(CLD2_DYNAMIC_MODE)
+#include "base/files/file.h"
+#include "base/path_service.h"
+#include "chrome/common/chrome_paths.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #endif
-#include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TranslateTabHelper);
 
 #if defined(CLD2_DYNAMIC_MODE)
 // Statics defined in the .h file:
-base::PlatformFile TranslateTabHelper::s_cached_platform_file_ =
-    base::kInvalidPlatformFileValue;
+base::File* TranslateTabHelper::s_cached_file_ = NULL;
 uint64 TranslateTabHelper::s_cached_data_offset_ = 0;
 uint64 TranslateTabHelper::s_cached_data_length_ = 0;
 base::LazyInstance<base::Lock> TranslateTabHelper::s_file_lock_ =
@@ -197,20 +185,20 @@ void TranslateTabHelper::WebContentsDestroyed(
 
 #if defined(CLD2_DYNAMIC_MODE)
 void TranslateTabHelper::OnCLDDataRequested() {
-  // Quickly try to read s_cached_platform_file_. If valid, the file handle is
+  // Quickly try to read s_cached_file_. If valid, the file handle is
   // cached and can be used immediately. Else, queue the caching task to the
   // blocking pool.
-  base::PlatformFile handle = base::kInvalidPlatformFileValue;
+  base::File* handle = NULL;
   uint64 data_offset = 0;
   uint64 data_length = 0;
   {
     base::AutoLock lock(s_file_lock_.Get());
-    handle = s_cached_platform_file_;
+    handle = s_cached_file_;
     data_offset = s_cached_data_offset_;
     data_length = s_cached_data_length_;
   }
 
-  if (handle != base::kInvalidPlatformFileValue) {
+  if (handle && handle->IsValid()) {
     // Cached data available. Respond to the request.
     SendCLDDataAvailable(handle, data_offset, data_length);
     return;
@@ -230,27 +218,27 @@ void TranslateTabHelper::OnCLDDataRequested() {
 }
 
 void TranslateTabHelper::MaybeSendCLDDataAvailable() {
-  base::PlatformFile handle = base::kInvalidPlatformFileValue;
+  base::File* handle = NULL;
   uint64 data_offset = 0;
   uint64 data_length = 0;
   {
     base::AutoLock lock(s_file_lock_.Get());
-    handle = s_cached_platform_file_;
+    handle = s_cached_file_;
     data_offset = s_cached_data_offset_;
     data_length = s_cached_data_length_;
   }
 
-  if (handle != base::kInvalidPlatformFileValue)
+  if (handle && handle->IsValid())
     SendCLDDataAvailable(handle, data_offset, data_length);
 }
 
-void TranslateTabHelper::SendCLDDataAvailable(const base::PlatformFile handle,
+void TranslateTabHelper::SendCLDDataAvailable(const base::File* handle,
                                               const uint64 data_offset,
                                               const uint64 data_length) {
   // Data available, respond to the request.
   IPC::PlatformFileForTransit ipc_platform_file =
       IPC::GetFileHandleForProcess(
-          handle,
+          handle->GetPlatformFile(),
           GetWebContents()->GetRenderViewHost()->GetProcess()->GetHandle(),
           false);
   // In general, sending a response from within the code path that is processing
@@ -272,7 +260,7 @@ void TranslateTabHelper::HandleCLDDataRequest() {
 
   {
     base::AutoLock lock(s_file_lock_.Get());
-    if (s_cached_platform_file_ != base::kInvalidPlatformFileValue)
+    if (s_cached_file_)
       return; // Already done, duplicate request
   }
 
@@ -289,20 +277,15 @@ void TranslateTabHelper::HandleCLDDataRequest() {
     return;
 
   // Attempt to open the file for reading.
-  bool created = false;
-  base::PlatformFileError error;
-  const base::PlatformFile file = base::CreatePlatformFile(
-      path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      &created, &error);
-  DCHECK(!created);
-  if (error != base::PLATFORM_FILE_OK) {
+  scoped_ptr<base::File> file(
+      new base::File(path, base::File::FLSG_OPEN | base::File::FLAG_READ);
+  if (!file->IsValid()) {
     LOG(WARNING) << "CLD data file exists but cannot be opened";
     return;
   }
 
-  base::PlatformFileInfo file_info;
-  if (!base::GetPlatformFileInfo(file, &file_info)) {
+  base::File::Info file_info;
+  if (!file->GetInfo(&file_info)) {
     LOG(WARNING) << "CLD data file exists but cannot be inspected";
     return;
   }
@@ -313,23 +296,16 @@ void TranslateTabHelper::HandleCLDDataRequest() {
   const uint64 data_offset = 0;
   const uint64 data_length = file_info.size;
 
-  bool racing = false;
   {
     base::AutoLock lock(s_file_lock_.Get());
-    if (s_cached_platform_file_ != base::kInvalidPlatformFileValue) {
+    if (s_cached_file_) {
       // Idempotence: Racing another request on the blocking pool, abort.
-      racing = true;
     } else {
       // Else, this request has taken care of it all. Cache all info.
-      s_cached_platform_file_ = file;
+      s_cached_file_ = file.release();
       s_cached_data_offset_ = data_offset;
       s_cached_data_length_ = data_length;
     }
-  }
-
-  if (racing) {
-    // Other thread wins, give up the redundant file handle.
-    base::ClosePlatformFile(file);
   }
 }
 #endif // defined(CLD2_DYNAMIC_MODE)
