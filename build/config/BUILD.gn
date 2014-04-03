@@ -1,0 +1,100 @@
+# Copyright (c) 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+config("nacl_defines") {
+  defines = [
+    "NACL_ANDROID=0",
+    "NACL_ENABLE_TMPFS_REDIRECT_VAR=0",
+    "_BSD_SOURCE=1",
+    "_POSIX_C_SOURCE=199506",
+    "_XOPEN_SOURCE=600",
+    "_GNU_SOURCE=1",
+    "_LARGEFILE64_SOURCE=1",
+    "__STDC_LIMIT_MACROS=1",
+    "__STDC_FORMAT_MACROS=1",
+  ]
+
+  if (is_win) {
+    defines += ["NACL_WINDOWS=1"]
+  } else {
+    defines += ["NACL_WINDOWS=0"]
+  }
+
+  if (is_linux) {
+    defines += ["NACL_LINUX=1"]
+  } else {
+    defines += ["NACL_LINUX=0"]
+  }
+
+  if (is_mac) {
+    defines += ["NACL_OSX=1"]
+  } else {
+    defines += ["NACL_OSX=0"]
+  }
+
+  if (cpu_arch == "arm") {
+    defines += [
+      "NACL_TARGET_ARCH=arm",
+      "NACL_TARGET_SUBARCH=32",
+      "NACL_BUILD_ARCH=arm",
+      "NACL_BUILD_SUBARCH=32"
+    ]
+  }
+
+  if (cpu_arch == "mips") {
+    defines += [
+      "NACL_TARGET_ARCH=mips",
+      "NACL_TARGET_SUBARCH=32",
+      "NACL_BUILD_ARCH=mips",
+      "NACL_BUILD_SUBARCH=32"
+    ]
+  }
+
+  if (cpu_arch == "x86") {
+    defines += [
+      "NACL_TARGET_ARCH=x86",
+      "NACL_TARGET_SUBARCH=32",
+      "NACL_BUILD_ARCH=x86",
+      "NACL_BUILD_SUBARCH=32",
+    ]
+  }
+
+  if (cpu_arch == "x64") {
+    defines += [
+      "NACL_TARGET_ARCH=x86",
+      "NACL_TARGET_SUBARCH=64",
+      "NACL_BUILD_ARCH=x86",
+      "NACL_BUILD_SUBARCH=64"
+    ]
+  }
+}
+
+config("debug") {
+  defines = [
+    "_DEBUG",
+    "DEBUG",
+    "DYNAMIC_ANNOTATIONS_ENABLED=1",
+  ]
+}
+
+config("release") {
+  defines = [
+    "NDEBUG"
+  ]
+}
+
+# Default libraries ------------------------------------------------------------
+# This config defines the default libraries applied to all targets.
+config("default_libs") {
+  if (os == "win") {
+    libs = [
+    ]
+  } else if (os == "linux") {
+    libs = [
+    ]
+  } else if (os == "mac") {
+    libs = [
+    ]
+  }
+}

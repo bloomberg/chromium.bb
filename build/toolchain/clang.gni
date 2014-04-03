@@ -1,0 +1,36 @@
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+declare_args() {
+  # Enable the optional type profiler in Clang, which will tag heap allocations
+  # with the allocation type.
+  use_clang_type_profiler = false
+}
+
+if (is_clang) {
+  # Define "make_clang_dir" which is the directory relative to the source root
+  # of the clang directory we're using. This is used for defining the header
+  # for GYP so it must match the directory format of GYP (rather than using
+  # GN-style "//..." paths).
+  if (is_linux && use_clang_type_profiler) {
+    if (cpu_arch == "x64") {
+      make_clang_dir = "third_party/llvm-allocated-type/Linux_x64"
+    } else {
+      # 32-bit Clang is unsupported. It may not build. Put your 32-bit Clang in
+      # this directory at your own risk if needed for some purpose (e.g. to
+      # compare 32-bit and 64-bit behavior like memory usage). Any failure by
+      # this compiler should not close the tree.
+      make_clang_dir = "third_party/llvm-allocated-type/Linux_ia32"
+    }
+  } else {
+    make_clang_dir = "third_party/llvm-build/Release+Asserts"
+  }
+
+  # This includes the array values but not the 'make_global_settings' name.
+  make_clang_global_settings =
+    "['CC', '$make_clang_dir/bin/clang']," +
+    "['CXX', '$make_clang_dir/bin/clang++']," +
+    "['CC.host', '\$(CC)']," +
+    "['CXX.host', '\$(CXX)'],"
+}

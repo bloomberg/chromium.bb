@@ -1,0 +1,88 @@
+# Copyright 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("all_desc") {
+  deps = [
+    ":desc_wrapper",
+    ":nrd_xfer"
+  ]
+}
+
+static_library("nrd_xfer") {
+  include_dirs = ["."]
+  sources = [
+    "nacl_desc_base.c",
+    "nacl_desc_base.h",
+    "nacl_desc_cond.c",
+    "nacl_desc_cond.h",
+    "nacl_desc_custom.c",
+    "nacl_desc_custom.h",
+    "nacl_desc_dir.c",
+    "nacl_desc_dir.h",
+    "nacl_desc_effector.h",
+    "nacl_desc_effector_trusted_mem.c",
+    "nacl_desc_effector_trusted_mem.h",
+    "nacl_desc_imc.c",
+    "nacl_desc_imc.h",
+    "nacl_desc_imc_shm.c",
+    "nacl_desc_imc_shm.h",
+    "nacl_desc_invalid.c",
+    "nacl_desc_invalid.h",
+    "nacl_desc_io.c",
+    "nacl_desc_io.h",
+    "nacl_desc_mutex.c",
+    "nacl_desc_mutex.h",
+    "nacl_desc_null.c",
+    "nacl_desc_null.h",
+    "nacl_desc_rng.c",
+    "nacl_desc_rng.h",
+    "nacl_desc_quota.c",
+    "nacl_desc_quota.h",
+    "nacl_desc_quota_interface.c",
+    "nacl_desc_quota_interface.h",
+    "nacl_desc_semaphore.c",
+    "nacl_desc_semaphore.h",
+    "nacl_desc_sync_socket.c",
+    "nacl_desc_sync_socket.h",
+    "nrd_all_modules.c",
+    "nrd_all_modules.h",
+    "nrd_xfer.c",
+    "nrd_xfer.h",
+    "nrd_xfer_intern.h",
+  ]
+
+  if (os == "linux") {
+    sources += [
+      "linux/nacl_desc_sysv_shm.c",
+      "linux/nacl_desc_sysv_shm.h",
+      "posix/nacl_desc.c",
+    ]
+  }
+
+  if (os == "mac") {
+    sources += ["posix/nacl_desc.c"]
+  }
+
+  if (os == "win") {
+    sources += [
+      "win/nacl_desc.c",
+      "nacl_desc_conn_cap.c",
+      "nacl_desc_imc_bound_desc.c",
+      "nacl_makeboundsock.c",
+    ]
+  } else {
+    sources += [
+      "posix/nacl_desc_conn_cap.c",
+      "posix/nacl_desc_imc_bound_desc.c",
+      "posix/nacl_makeboundsock.c",
+    ]
+  }
+}
+
+static_library("desc_wrapper") {
+  include_dirs = ["."]
+  sources = [
+    "nacl_desc_wrapper.cc"
+  ]
+}
