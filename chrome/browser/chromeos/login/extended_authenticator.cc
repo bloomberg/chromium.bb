@@ -288,7 +288,8 @@ void ExtendedAuthenticator::OnMountComplete(
   copy.CopyFrom(user_context);
   copy.username_hash = mount_hash;
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
-    success_callback.Run(mount_hash);
+    if (!success_callback.is_null())
+      success_callback.Run(mount_hash);
     if (old_consumer_)
       old_consumer_->OnLoginSuccess(copy);
     return;

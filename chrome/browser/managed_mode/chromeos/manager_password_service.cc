@@ -47,14 +47,14 @@ void ManagerPasswordService::Init(
       continue;
     OnSharedSettingsChange(
         supervised_user_manager->GetUserSyncId((*it)->email()),
-        managed_users::kUserPasswordRecord);
+        managed_users::kChromeOSPasswordData);
   }
 }
 
 void ManagerPasswordService::OnSharedSettingsChange(
     const std::string& mu_id,
     const std::string& key) {
-  if (key != managed_users::kUserPasswordRecord)
+  if (key != managed_users::kChromeOSPasswordData)
     return;
 
   SupervisedUserManager* supervised_user_manager =
@@ -209,13 +209,17 @@ void ManagerPasswordService::OnContextTransformed(
   cryptohome::KeyDefinition new_master_key(master_key_context.password,
                                            kCryptohomeMasterKeyLabel,
                                            cryptohome::PRIV_DEFAULT);
+  // Use new master key for further actions.
+  UserContext new_master_key_context;
+  new_master_key_context.CopyFrom(master_key_context);
+  new_master_key_context.key_label = kCryptohomeMasterKeyLabel;
   authenticator_->AddKey(
       master_key_context,
       new_master_key,
       true /* replace existing */,
       base::Bind(&ManagerPasswordService::OnNewManagerKeySuccess,
                  weak_ptr_factory_.GetWeakPtr(),
-                 master_key_context));
+                 new_master_key_context));
 }
 
 void ManagerPasswordService::OnNewManagerKeySuccess(

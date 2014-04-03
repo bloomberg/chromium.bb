@@ -246,13 +246,15 @@ void ManagedUserRegistrationUtilityImpl::Register(
     std::string key;
     bool need_keys = !info.password_signature_key.empty() ||
                      !info.password_encryption_key.empty();
-    bool keys_need_update =
-        need_keys &&
+    bool have_keys =
         value->GetString(ManagedUserSyncService::kPasswordSignatureKey, &key) &&
         !key.empty() &&
         value->GetString(ManagedUserSyncService::kPasswordEncryptionKey,
                          &key) &&
         !key.empty();
+
+    bool keys_need_update = need_keys && !have_keys;
+
     if (keys_need_update) {
       managed_user_sync_service_->UpdateManagedUser(
           pending_managed_user_id_,

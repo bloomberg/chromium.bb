@@ -176,6 +176,8 @@ void ManagedUserCreationControllerNew::StartCreationImpl() {
                                        creation_context_->password,
                                        &creation_context_->password_data,
                                        &extra);
+    creation_context_->password_data.GetStringWithoutPathExpansion(
+        kEncryptedPassword, &creation_context_->salted_password);
     extra.GetStringWithoutPathExpansion(kPasswordEncryptionKey,
                                         &creation_context_->encryption_key);
     extra.GetStringWithoutPathExpansion(kPasswordSignatureKey,
@@ -208,23 +210,12 @@ void ManagedUserCreationControllerNew::OnPasswordHashingSuccess(
   // Create home dir with two keys.
   std::vector<cryptohome::KeyDefinition> keys;
 
-  // First is plain text password, hashed and salted with individual salt.
-  // It can be used for mounting homedir, and can be replaced only when signed.
-  cryptohome::KeyDefinition password_key(creation_context_->salted_password,
-                                         kCryptohomeManagedUserKeyLabel,
-                                         kCryptohomeManagedUserKeyPrivileges);
-  base::Base64Decode(creation_context_->encryption_key,
-                     &password_key.encryption_key);
-  base::Base64Decode(creation_context_->signature_key,
-                     &password_key.signature_key);
-
-  // Second is the master key. Just as keys for plain GAIA users, it is salted
+  // Main key is the master key. Just as keys for plain GAIA users, it is salted
   // with system salt. It has all usual privileges.
   cryptohome::KeyDefinition master_key(creation_context_->salted_master_key,
                                        kCryptohomeMasterKeyLabel,
                                        cryptohome::PRIV_DEFAULT);
 
-  keys.push_back(password_key);
   keys.push_back(master_key);
   authenticator_->CreateMount(
       creation_context_->local_user_id,
@@ -259,9 +250,40 @@ void ManagedUserCreationControllerNew::OnMountSuccess(
     const std::string& mount_hash) {
   DCHECK(creation_context_);
   DCHECK(stage_ == KEYS_GENERATED);
-  stage_ = CRYPTOHOME_CREATED;
+  VLOG(1) << " Phase 2.2 : Created home dir with master key";
 
   creation_context_->mount_hash = mount_hash;
+
+  // Plain text password, hashed and salted with individual salt.
+  // It can be used for mounting homedir, and can be replaced only when signed.
+  cryptohome::KeyDefinition password_key(creation_context_->salted_password,
+                                         kCryptohomeManagedUserKeyLabel,
+                                         kCryptohomeManagedUserKeyPrivileges);
+  base::Base64Decode(creation_context_->encryption_key,
+                     &password_key.encryption_key);
+  base::Base64Decode(creation_context_->signature_key,
+                     &password_key.signature_key);
+
+  UserContext context(creation_context_->local_user_id,
+                      creation_context_->salted_master_key,
+                      std::string());
+  context.using_oauth = false;
+  context.need_password_hashing = false;
+  context.key_label = kCryptohomeMasterKeyLabel;
+
+  authenticator_->AddKey(
+      context,
+      password_key,
+      true,
+      base::Bind(&ManagedUserCreationControllerNew::OnAddKeySuccess,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ManagedUserCreationControllerNew::OnAddKeySuccess() {
+  DCHECK(creation_context_);
+  DCHECK(stage_ == KEYS_GENERATED);
+  stage_ = CRYPTOHOME_CREATED;
+
   VLOG(1) << " Phase 3 : Create/update user on chrome.com/manage";
 
   ProfileSyncService* sync_service =

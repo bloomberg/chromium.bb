@@ -148,6 +148,7 @@ class ManagedUserCreationControllerNew
 
   // Authenticator success callbacks.
   void OnMountSuccess(const std::string& mount_hash);
+  void OnAddKeySuccess();
   void OnPasswordHashingSuccess(const std::string& password_hash);
 
   void StartCreationImpl();

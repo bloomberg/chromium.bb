@@ -34,13 +34,13 @@ void ManagedUserPasswordService::Init(
       chromeos::UserManager::Get()->GetSupervisedUserManager();
 
   OnSharedSettingsChange(supervised_user_manager->GetUserSyncId(user_id),
-                         managed_users::kUserPasswordRecord);
+                         managed_users::kChromeOSPasswordData);
 }
 
 void ManagedUserPasswordService::OnSharedSettingsChange(
     const std::string& mu_id,
     const std::string& key) {
-  if (key != managed_users::kUserPasswordRecord)
+  if (key != managed_users::kChromeOSPasswordData)
     return;
   chromeos::SupervisedUserManager* supervised_user_manager =
       chromeos::UserManager::Get()->GetSupervisedUserManager();
