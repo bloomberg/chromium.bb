@@ -90,7 +90,19 @@ class CC_EXPORT TextureLayer : public Layer {
   static scoped_refptr<TextureLayer> CreateForMailbox(
       TextureLayerClient* client);
 
+  // Resets the client, which also resets the texture. This may synchronize with
+  // the impl thread if it is currently drawing a texture from the client, that
+  // was given via TextureLayerClient::PrepareTexture. After this call it is
+  // safe to destroy that texture. Note: it doesn't synchronize for mailboxes,
+  // those can only be destroyed after the release callback has been called.
   void ClearClient();
+
+  // Resets the texture. This may synchronize with the impl thread if it is
+  // currently drawing a texture from the client, that was given via
+  // TextureLayerClient::PrepareTexture. After this call it is safe to destroy
+  // that texture. Note: it doesn't synchronize for mailboxes, those can only be
+  // destroyed after the release callback has been called.
+  void ClearTexture();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
@@ -122,10 +134,6 @@ class CC_EXPORT TextureLayer : public Layer {
   // Requires a non-nil client.  Defaults to false.
   void SetRateLimitContext(bool rate_limit);
 
-  // Code path for plugins which supply their own texture ID.
-  // DEPRECATED. DO NOT USE.
-  void SetTextureId(unsigned texture_id);
-
   // Code path for plugins which supply their own mailbox.
   bool uses_mailbox() const { return uses_mailbox_; }
   void SetTextureMailbox(const TextureMailbox& mailbox,
@@ -136,8 +144,6 @@ class CC_EXPORT TextureLayer : public Layer {
   // WARNING: DON'T ACTUALLY USE THIS WHAT YOU ARE DOING IS WRONG.
   // TODO(danakj): Remove this when pepper doesn't need it. crbug.com/350204
   void SetTextureMailboxWithoutReleaseCallback(const TextureMailbox& mailbox);
-
-  void WillModifyTexture();
 
   virtual void SetNeedsDisplayRect(const gfx::RectF& dirty_rect) OVERRIDE;
 
@@ -170,7 +176,7 @@ class CC_EXPORT TextureLayer : public Layer {
   bool premultiplied_alpha_;
   bool blend_background_color_;
   bool rate_limit_context_;
-  bool content_committed_;
+  bool impl_may_draw_client_data_;
 
   unsigned texture_id_;
   scoped_ptr<TextureMailboxHolder::MainThreadReference> holder_ref_;
