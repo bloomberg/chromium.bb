@@ -1607,9 +1607,8 @@ void AppsGridView::MoveItemToFolder(views::View* item_view,
     size_t folder_item_index;
     if (item_list_->FindItemIndex(folder_item_id, &folder_item_index)) {
       int target_view_index = view_model_.GetIndexOfView(target_view);
-      view_model_.Remove(target_view_index);
       gfx::Rect target_view_bounds = target_view->bounds();
-      delete target_view;
+      DeleteItemViewAtIndex(target_view_index);
       views::View* target_folder_view =
           CreateViewForItemAtIndex(folder_item_index);
       target_folder_view->SetBoundsRect(target_view_bounds);
@@ -1690,8 +1689,7 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
     size_t new_folder_index;
     if (item_list_->FindItemIndex(new_folder_id, &new_folder_index)) {
       int target_view_index = view_model_.GetIndexOfView(target_view);
-      view_model_.Remove(target_view_index);
-      delete target_view;
+      DeleteItemViewAtIndex(target_view_index);
       views::View* new_folder_view =
           CreateViewForItemAtIndex(new_folder_index);
       view_model_.Add(new_folder_view, target_view_index);
@@ -1724,10 +1722,8 @@ void AppsGridView::RemoveLastItemFromReparentItemFolder(
   DCHECK_EQ(1u, source_folder->ChildItemCount());
 
   // Delete view associated with the folder item to be removed.
-  AppListItemView* folder_item_view = activated_item_view();
-  int folder_model_index = view_model_.GetIndexOfView(folder_item_view);
-  view_model_.Remove(folder_model_index);
-  delete folder_item_view;
+  int folder_model_index = view_model_.GetIndexOfView(activated_item_view());
+  DeleteItemViewAtIndex(folder_model_index);
 
   // Now make the data change to remove the folder item in model.
   AppListItem* last_item = source_folder->item_list()->item_at(0);
@@ -1787,6 +1783,14 @@ void AppsGridView::CancelContextMenusOnCurrentPage() {
   }
 }
 
+void AppsGridView::DeleteItemViewAtIndex(int index) {
+  views::View* item_view = view_model_.view_at(index);
+  view_model_.Remove(index);
+  if (item_view == activated_item_view_)
+    activated_item_view_ = NULL;
+  delete item_view;
+}
+
 bool AppsGridView::IsPointWithinDragBuffer(const gfx::Point& point) const {
   gfx::Rect rect(GetLocalBounds());
   rect.Inset(-kDragBufferPx, -kDragBufferPx, -kDragBufferPx, -kDragBufferPx);
@@ -1829,9 +1833,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
 void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
   EndDrag(true);
 
-  views::View* view = view_model_.view_at(index);
-  view_model_.Remove(index);
-  delete view;
+  DeleteItemViewAtIndex(index);
 
   // If there is only one item left under the folder, remove the folder.
   // We do allow OEM folder to contain only one item.

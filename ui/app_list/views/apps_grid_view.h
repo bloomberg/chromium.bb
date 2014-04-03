@@ -342,6 +342,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Cancels any context menus showing for app items on the current page.
   void CancelContextMenusOnCurrentPage();
 
+  // Removes the AppListItemView at |index| in |view_model_| and deletes it.
+  void DeleteItemViewAtIndex(int index);
+
   // Returns true if |point| lies within the bounds of this grid view plus a
   // buffer area surrounding it.
   bool IsPointWithinDragBuffer(const gfx::Point& point) const;
