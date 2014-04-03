@@ -11,11 +11,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <base/file_util.h>
-#include <base/files/file_path.h>
 #include <base/json/json_writer.h>
 #include <base/values.h>
 
+#include "gestures/include/file_util.h"
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
 #include "gestures/include/string_util.h"
@@ -105,9 +104,7 @@ void ActivityLog::LogPropChange(const PropChangeEntry& prop_change) {
 
 void ActivityLog::Dump(const char* filename) {
   string data = Encode();
-  std::string fn(filename);
-  base::FilePath fp(fn);
-  file_util::WriteFile(fp, data.c_str(), data.size());
+  WriteFile(filename, data.c_str(), data.size());
 }
 
 ActivityLog::Entry* ActivityLog::PushBack() {

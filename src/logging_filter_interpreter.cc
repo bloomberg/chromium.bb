@@ -8,11 +8,10 @@
 #include <fcntl.h>
 #include <string>
 
-#include <base/file_util.h>
-#include <base/files/file_path.h>
 #include <base/values.h>
 
 #include "gestures/include/logging.h"
+#include "gestures/include/file_util.h"
 
 namespace gestures {
 
@@ -41,8 +40,6 @@ std::string LoggingFilterInterpreter::EncodeActivityLog() {
 
 void LoggingFilterInterpreter::Dump(const char* filename) {
   std::string data = Encode();
-  std::string fn(filename);
-  base::FilePath fp(fn);
-  file_util::WriteFile(fp, data.c_str(), data.size());
+  WriteFile(filename, data.c_str(), data.size());
 }
 }  // namespace gestures

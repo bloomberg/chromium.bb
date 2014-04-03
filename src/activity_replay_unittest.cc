@@ -7,10 +7,10 @@
 #include <vector>
 
 #include <base/command_line.h>
-#include <base/file_util.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/activity_replay.h"
+#include "gestures/include/file_util.h"
 #include "gestures/include/finger_metrics.h"
 #include "gestures/include/logging_filter_interpreter.h"
 #include "gestures/include/gestures.h"
@@ -36,8 +36,8 @@ TEST(ActivityReplayTest, DISABLED_SimpleTest) {
     MetricsProperties mprops(prop_reg);
 
     string log_contents;
-    ASSERT_TRUE(base::ReadFileToString(cl->GetSwitchValuePath("in"),
-                                       &log_contents));
+    ASSERT_TRUE(ReadFileToString(cl->GetSwitchValueASCII("in").c_str(),
+                                 &log_contents));
 
     ActivityReplay replay(prop_reg);
     std::vector<string> honor_props;

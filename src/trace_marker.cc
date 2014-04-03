@@ -11,8 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <base/posix/eintr_wrapper.h>  // for HANDLE_EINTR
-
+#include "gestures/include/eintr_wrapper.h"
 #include "gestures/include/logging.h"
 
 namespace gestures {
