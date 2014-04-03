@@ -1006,8 +1006,13 @@ size_t BlinkPlatformImpl::maxDecodedImageBytes() {
     return 3 * 1024 * 1024 * 4;
   }
   // For other devices, limit decoded image size based on the amount of physical
-  // memory. For a device with 2GB physical memory the limit is 16M pixels.
-  return base::SysInfo::AmountOfPhysicalMemory() / 32;
+  // memory.
+  // In some cases all physical memory is not accessible by Chromium, as it can
+  // be reserved for direct use by certain hardware. Thus, we set the limit so
+  // that 1.6GB of reported physical memory on a 2GB device is enough to set the
+  // limit at 16M pixels, which is a desirable value since 4K*4K is a relatively
+  // common texture size.
+  return base::SysInfo::AmountOfPhysicalMemory() / 25;
 #else
   return noDecodedImageByteLimit;
 #endif
