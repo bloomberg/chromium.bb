@@ -74,7 +74,7 @@ bool DeepHeapProfile::AppendCommandLine(TextBuffer* buffer) {
            static_cast<int>(getpid()));
   fd = open(filename, O_RDONLY);
   if (fd == kIllegalRawFD) {
-    RAW_LOG(0, "Failed to open /proc/self/cmdline");
+    RAW_VLOG(0, "Failed to open /proc/self/cmdline");
     return false;
   }
 
@@ -130,7 +130,7 @@ void DeepHeapProfile::MemoryInfoGetterLinux::Initialize() {
     snprintf(filename, sizeof(filename), "/proc/kpagecount");
     kpagecount_fd_ = open(filename, O_RDONLY);
     if (kpagecount_fd_ == -1)
-      RAW_LOG(0, "Failed to open /proc/kpagecount");
+      RAW_VLOG(0, "Failed to open /proc/kpagecount");
   }
 }
 
@@ -154,7 +154,7 @@ size_t DeepHeapProfile::MemoryInfoGetterLinux::CommittedSize(
     if (Read(&state, pageframe_type_ != DUMP_NO_PAGEFRAME) == false) {
       // We can't read the last region (e.g vsyscall).
 #ifndef NDEBUG
-      RAW_LOG(0, "pagemap read failed @ %#llx %" PRId64 " bytes",
+      RAW_VLOG(0, "pagemap read failed @ %#llx %" PRId64 " bytes",
               first_address, last_address - first_address + 1);
 #endif
       return 0;
@@ -442,7 +442,7 @@ void DeepHeapProfile::DumpOrderedProfile(const char* reason,
 #ifndef NDEBUG
   int64 elapsed_cycles = CycleClock::Now() - starting_cycles;
   double elapsed_seconds = elapsed_cycles / CyclesPerSecond();
-  RAW_LOG(0, "Time spent on DeepProfiler: %.3f sec\n", elapsed_seconds);
+  RAW_VLOG(0, "Time spent on DeepProfiler: %.3f sec\n", elapsed_seconds);
 #endif
 }
 
@@ -979,10 +979,10 @@ void DeepHeapProfile::GlobalStats::SnapshotMaps(
       int written = procmaps_iter.FormatLine(buffer, sizeof(buffer),
                                              vma_start_addr, vma_last_addr,
                                              flags, offset, inode, filename, 0);
-      RAW_LOG(0, "[%d] Mismatched total in VMA %" PRId64 ":"
+      RAW_VLOG(0, "[%d] Mismatched total in VMA %" PRId64 ":"
               "%" PRId64 " (%" PRId64 ")",
               getpid(), vma_total, vma_subtotal, vma_total - vma_subtotal);
-      RAW_LOG(0, "[%d]   in %s", getpid(), buffer);
+      RAW_VLOG(0, "[%d]   in %s", getpid(), buffer);
     }
   }
 

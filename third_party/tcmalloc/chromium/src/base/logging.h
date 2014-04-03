@@ -210,22 +210,26 @@ inline void LogPrintf(int severity, const char* pat, va_list ap) {
   }
 #if defined(__ANDROID__) || defined(ANDROID)
   android_LogPriority priority = ANDROID_LOG_UNKNOWN;
-  switch (severity) {
-    case INFO: {
-      priority = ANDROID_LOG_INFO;
-      break;
-    }
-    case WARNING: {
-      priority = ANDROID_LOG_WARN;
-      break;
-    }
-    case ERROR: {
-      priority = ANDROID_LOG_ERROR;
-      break;
-    }
-    case FATAL: {
-      priority = ANDROID_LOG_FATAL;
-      break;
+  if (severity >= 0) {
+    priority = ANDROID_LOG_VERBOSE;
+  } else {
+    switch (severity) {
+      case INFO: {
+        priority = ANDROID_LOG_INFO;
+        break;
+      }
+      case WARNING: {
+        priority = ANDROID_LOG_WARN;
+        break;
+      }
+      case ERROR: {
+        priority = ANDROID_LOG_ERROR;
+        break;
+      }
+      case FATAL: {
+        priority = ANDROID_LOG_FATAL;
+        break;
+      }
     }
   }
   __android_log_write(priority, "gperftools", buf);

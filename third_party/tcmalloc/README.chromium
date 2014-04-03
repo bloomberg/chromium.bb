@@ -94,3 +94,4 @@ Modifications:
 - Inserted spaces around PRIx64, SCNx64 and friends, for c++11 compatibility.
 - Fix sprintf formatting warning in MaybeDumpProfileLocked
 - Added tc_malloc_skip_new_handler.
+- Fix logging issues in android
