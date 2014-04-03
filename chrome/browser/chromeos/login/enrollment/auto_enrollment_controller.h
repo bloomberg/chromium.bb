@@ -21,6 +21,26 @@ class AutoEnrollmentController {
   typedef base::CallbackList<void(policy::AutoEnrollmentState)>
       ProgressCallbackList;
 
+  // Parameter values for the kEnterpriseEnableForcedReEnrollment flag.
+  static const char kForcedReEnrollmentAlways[];
+  static const char kForcedReEnrollmentLegacy[];
+  static const char kForcedReEnrollmentNever[];
+  static const char kForcedReEnrollmentOfficialBuild[];
+
+  // Auto-enrollment modes.
+  enum Mode {
+    // No automatic enrollment.
+    MODE_NONE,
+    // Legacy auto-enrollment.
+    MODE_LEGACY_AUTO_ENROLLMENT,
+    // Forced re-enrollment.
+    MODE_FORCED_RE_ENROLLMENT,
+  };
+
+  // Gets the auto-enrollment mode based on command-line flags and official
+  // build status.
+  static Mode GetMode();
+
   AutoEnrollmentController();
   ~AutoEnrollmentController();
 

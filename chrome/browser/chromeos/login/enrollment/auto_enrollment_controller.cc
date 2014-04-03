@@ -49,6 +49,36 @@ int GetSanitizedArg(const std::string& switch_name) {
 
 }  // namespace
 
+const char AutoEnrollmentController::kForcedReEnrollmentAlways[] = "always";
+const char AutoEnrollmentController::kForcedReEnrollmentLegacy[] = "legacy";
+const char AutoEnrollmentController::kForcedReEnrollmentNever[] = "never";
+const char AutoEnrollmentController::kForcedReEnrollmentOfficialBuild[] =
+    "official";
+
+AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  if (!command_line->HasSwitch(switches::kEnterpriseEnableForcedReEnrollment))
+    return MODE_LEGACY_AUTO_ENROLLMENT;
+
+  std::string command_line_mode = command_line->GetSwitchValueASCII(
+      switches::kEnterpriseEnableForcedReEnrollment);
+  if (command_line_mode == kForcedReEnrollmentAlways) {
+    return MODE_FORCED_RE_ENROLLMENT;
+  } else if (command_line_mode.empty() ||
+             command_line_mode == kForcedReEnrollmentOfficialBuild) {
+#if defined(OFFICIAL_BUILD)
+    return MODE_FORCED_RE_ENROLLMENT;
+#else
+    return MODE_NONE;
+#endif
+  } else if (command_line_mode == kForcedReEnrollmentLegacy) {
+    return MODE_LEGACY_AUTO_ENROLLMENT;
+  }
+
+  return MODE_NONE;
+}
+
 AutoEnrollmentController::AutoEnrollmentController()
     : state_(policy::AUTO_ENROLLMENT_STATE_IDLE),
       weak_factory_(this) {}
@@ -63,12 +93,15 @@ void AutoEnrollmentController::Start() {
   // Do not communicate auto-enrollment data to the server if
   // 1. we are running integration or perf tests with telemetry.
   // 2. modulus configuration is not present.
+  // 3. Auto-enrollment is disabled via the command line.
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kOobeSkipPostLogin) ||
       (!command_line->HasSwitch(
            chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
        !command_line->HasSwitch(
-           chromeos::switches::kEnterpriseEnrollmentModulusLimit))) {
+           chromeos::switches::kEnterpriseEnrollmentModulusLimit)) ||
+      GetMode() == MODE_NONE) {
     VLOG(1) << "Auto-enrollment disabled.";
     UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
@@ -106,9 +139,8 @@ AutoEnrollmentController::RegisterProgressCallback(
 }
 
 bool AutoEnrollmentController::ShouldEnrollSilently() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-             chromeos::switches::kEnterpriseEnableForcedReEnrollment) &&
-         state_ == policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT;
+  return state_ == policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT &&
+         GetMode() == MODE_LEGACY_AUTO_ENROLLMENT;
 }
 
 void AutoEnrollmentController::OnOwnershipStatusCheckDone(
@@ -138,8 +170,7 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
 
   bool retrieve_device_state = false;
   std::string device_id;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
+  if (GetMode() == MODE_FORCED_RE_ENROLLMENT) {
     retrieve_device_state = true;
     device_id =
         policy::DeviceCloudPolicyManagerChromeOS::GetCurrentDeviceStateKey();

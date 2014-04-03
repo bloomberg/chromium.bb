@@ -29,8 +29,8 @@ AutoEnrollmentCheckStep::~AutoEnrollmentCheckStep() {
 }
 
 void AutoEnrollmentCheckStep::Start() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
+  if (AutoEnrollmentController::GetMode() !=
+      AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT) {
     SignalCompletion();
     return;
   }

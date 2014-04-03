@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
+#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
@@ -305,8 +306,8 @@ scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
 
   // Set state keys to upload immediately after creation so the first policy
   // fetch submits them to the server.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
+  if (chromeos::AutoEnrollmentController::GetMode() ==
+      chromeos::AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT) {
     std::vector<std::string> state_keys;
     if (GetDeviceStateKeys(base::Time::Now(), &state_keys))
       client->SetStateKeysToUpload(state_keys);

@@ -524,8 +524,9 @@ class WizardControllerEnrollmentFlowTest : public WizardControllerFlowTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
 
-    command_line->AppendSwitch(
-        switches::kEnterpriseEnableForcedReEnrollment);
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableForcedReEnrollment,
+        chromeos::AutoEnrollmentController::kForcedReEnrollmentAlways);
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnrollmentInitialModulus, "1");
     command_line->AppendSwitchASCII(
