@@ -76,10 +76,12 @@ void RunVerification(ProofVerifier* verifier,
 
   switch (status) {
     case ProofVerifier::FAILURE:
+      delete callback;
       ASSERT_FALSE(expected_ok);
       ASSERT_NE("", error_details);
       return;
     case ProofVerifier::SUCCESS:
+      delete callback;
       ASSERT_TRUE(expected_ok);
       ASSERT_EQ("", error_details);
       return;

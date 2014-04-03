@@ -46,8 +46,6 @@ class RecordingProofVerifier : public ProofVerifier {
                              string* error_details,
                              scoped_ptr<ProofVerifyDetails>* details,
                              ProofVerifierCallback* callback) OVERRIDE {
-    delete callback;
-
     common_name_.clear();
     if (certs.empty()) {
       return FAILURE;

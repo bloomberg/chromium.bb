@@ -110,7 +110,6 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
   DCHECK(verify_details);
   DCHECK(callback);
 
-  callback_.reset(callback);
   error_details->clear();
 
   if (STATE_NONE != next_state_) {
@@ -161,6 +160,7 @@ ProofVerifierChromium::Status ProofVerifierChromium::Job::VerifyProof(
       verify_details->reset(verify_details_.release());
       return SUCCESS;
     case ERR_IO_PENDING:
+      callback_.reset(callback);
       return PENDING;
     default:
       *error_details = error_details_;

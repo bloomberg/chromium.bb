@@ -711,7 +711,7 @@ void QuicCryptoClientConfig::PopulateFromCanonicalConfig(
     const QuicServerId& server_id,
     CachedState* server_state) {
   DCHECK(server_state->IsEmpty());
-  unsigned i = 0;
+  size_t i = 0;
   for (; i < canoncial_suffixes_.size(); ++i) {
     if (EndsWith(server_id.host(), canoncial_suffixes_[i], false)) {
       break;

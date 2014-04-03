@@ -156,8 +156,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   CHECK(client->CryptoConnect());
   CHECK_EQ(1u, client_conn->packets_.size());
 
-  scoped_ptr<TestClientSession> server_session(
-      new TestClientSession(server_conn, config_));
+  scoped_ptr<TestSession> server_session(new TestSession(server_conn, config_));
   scoped_ptr<QuicCryptoServerStream> server(
       new QuicCryptoServerStream(crypto_config_, server_session.get()));
   server_session->SetCryptoStream(server.get());
@@ -180,9 +179,9 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   // strike-register from rejecting the repeated nonce.
   reinterpret_cast<MockRandom*>(client_conn->random_generator())->ChangeValue();
   client_session.reset(new TestClientSession(client_conn, client_config));
-  server_session.reset(new TestClientSession(server_conn, config_));
-  client.reset(new QuicCryptoClientStream(
-      server_id, client_session.get(), NULL, &client_crypto_config));
+  server_session.reset(new TestSession(server_conn, config_));
+  client.reset(new QuicCryptoClientStream(server_id, client_session.get(),
+                                          NULL, &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
   server.reset(new QuicCryptoServerStream(crypto_config_,
@@ -255,7 +254,6 @@ TEST_P(QuicCryptoServerStreamTest, WithoutCertificates) {
 
 TEST_P(QuicCryptoServerStreamTest, ChannelID) {
   client_options_.channel_id_enabled = true;
-  // TODO(rtenneti): Enable testing of ProofVerifier.
   // CompleteCryptoHandshake verifies
   // stream_.crypto_negotiated_params().channel_id is correct.
   EXPECT_EQ(2, CompleteCryptoHandshake());
