@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_SIGNIN_TRACKER_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/signin/signin_tracker.h"
+#include "components/signin/core/browser/signin_tracker.h"
 
 class Profile;
 

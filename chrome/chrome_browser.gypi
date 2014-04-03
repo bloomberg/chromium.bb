@@ -2118,8 +2118,6 @@
         'browser/signin/signin_names_io_thread.h',
         'browser/signin/signin_header_helper.cc',
         'browser/signin/signin_header_helper.h',
-        'browser/signin/signin_tracker.cc',
-        'browser/signin/signin_tracker.h',
         'browser/signin/signin_tracker_factory.cc',
         'browser/signin/signin_tracker_factory.h',
         'browser/signin/signin_promo.cc',
