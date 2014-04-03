@@ -189,16 +189,9 @@ IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, DISABLED_DefaultAuto) {
   }
 }
 
-// TouchActionBrowserTest.TouchActionNone fails under ThreadSanitizer v2,
-// see http://crbug.com/357505.
-#if defined(THREAD_SANITIZER)
-#define MAYBE_TouchActionNone DISABLED_TouchActionNone
-#else
-#define MAYBE_TouchActionNone TouchActionNone
-#endif
 // Verify that touching a touch-action: none region disables scrolling and
 // enables all touch events to be sent.
-IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, MAYBE_TouchActionNone) {
+IN_PROC_BROWSER_TEST_F(TouchActionBrowserTest, TouchActionNone) {
   LoadURL();
 
   bool scrolled = DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 45));

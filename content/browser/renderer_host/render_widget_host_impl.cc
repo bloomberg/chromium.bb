@@ -2070,6 +2070,8 @@ OverscrollController* RenderWidgetHostImpl::GetOverscrollController() const {
 }
 
 void RenderWidgetHostImpl::DidFlush() {
+  if (synthetic_gesture_controller_)
+    synthetic_gesture_controller_->OnDidFlushInput();
   if (view_)
     view_->OnDidFlushInput();
 }

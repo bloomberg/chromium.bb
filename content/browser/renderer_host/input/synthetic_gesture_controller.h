@@ -38,6 +38,10 @@ class CONTENT_EXPORT SyntheticGestureController {
   // Forward input events of the currently processed gesture.
   void Flush(base::TimeTicks timestamp);
 
+  // To be called when all events generated from the current gesture have been
+  // fully flushed from the input pipeline (i.e., sent, processed and ack'ed).
+  void OnDidFlushInput();
+
  private:
   void StartGesture(const SyntheticGesture& gesture);
   void StopGesture(const SyntheticGesture& gesture,
@@ -45,6 +49,7 @@ class CONTENT_EXPORT SyntheticGestureController {
                    SyntheticGesture::Result result);
 
   scoped_ptr<SyntheticGestureTarget> gesture_target_;
+  scoped_ptr<SyntheticGesture::Result> pending_gesture_result_;
 
   // A queue of gesture/callback pairs.  Implemented as two queues to
   // simplify the ownership of SyntheticGesture pointers.

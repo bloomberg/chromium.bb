@@ -86,10 +86,15 @@ class CONTENT_EXPORT GestureEventQueue {
   // Returns the |TouchpadTapSuppressionController| instance.
   TouchpadTapSuppressionController* GetTouchpadTapSuppressionController();
 
-  // Returns whether there are any gesture event in the queue.
-  bool HasQueuedGestureEvents() const;
-
   void ForwardGestureEvent(const GestureEventWithLatencyInfo& gesture_event);
+
+  // Whether the queue is expecting a gesture event ack.
+  bool ExpectingGestureAck() const;
+
+  bool empty() const {
+    return coalesced_gesture_events_.empty() &&
+           debouncing_deferral_queue_.empty();
+  }
 
   void set_debounce_enabled_for_testing(bool enabled) {
     debounce_enabled_ = enabled;

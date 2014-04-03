@@ -180,6 +180,12 @@ private:
   // action and the command-line configured |touch_ack_timeout_supported_|.
   void UpdateTouchAckTimeoutEnabled();
 
+  // If a flush has been requested, signals a completed flush to the client if
+  // all events have been dispatched (i.e., |HasPendingEvents()| is false).
+  void SignalFlushedIfNecessary();
+
+  bool HasPendingEvents() const;
+
   bool IsInOverscrollGesture() const;
 
   int routing_id() const { return routing_id_; }
@@ -215,8 +221,6 @@ private:
   bool mouse_wheel_pending_;
   MouseWheelEventWithLatencyInfo current_wheel_event_;
 
-  typedef std::deque<MouseWheelEventWithLatencyInfo> WheelEventQueue;
-
   // (Similar to |next_mouse_move_|.) The next mouse wheel events to send.
   // Unlike mouse moves, mouse wheel events received while one is pending are
   // coalesced (by accumulating deltas) if they match the previous event in
@@ -224,18 +228,17 @@ private:
   // high rate; not waiting for the ack results in jankiness, and using the same
   // mechanism as for mouse moves (just dropping old events when multiple ones
   // would be queued) results in very slow scrolling.
+  typedef std::deque<MouseWheelEventWithLatencyInfo> WheelEventQueue;
   WheelEventQueue coalesced_mouse_wheel_events_;
-
-  // The time when an input event was sent to the RenderWidget.
-  base::TimeTicks input_event_start_time_;
-
-  // Queue of keyboard events that we need to track.
-  typedef std::deque<NativeWebKeyboardEvent> KeyQueue;
 
   // A queue of keyboard events. We can't trust data from the renderer so we
   // stuff key events into a queue and pop them out on ACK, feeding our copy
   // back to whatever unhandled handler instead of the returned version.
+  typedef std::deque<NativeWebKeyboardEvent> KeyQueue;
   KeyQueue key_queue_;
+
+  // The time when an input event was sent to the client.
+  base::TimeTicks input_event_start_time_;
 
   // Whether touch ack timeout handling has been enabled via the command line.
   bool touch_ack_timeout_supported_;
@@ -248,8 +251,12 @@ private:
   // Defaults to ACK_SOURCE_NONE.
   AckSource current_ack_source_;
 
-  scoped_ptr<TouchEventQueue> touch_event_queue_;
-  scoped_ptr<GestureEventQueue> gesture_event_queue_;
+  // Whether a call to |Flush()| has yet been accompanied by a |DidFlush()| call
+  // to the client_ after all events have been dispatched/acked.
+  bool flush_requested_;
+
+  TouchEventQueue touch_event_queue_;
+  GestureEventQueue gesture_event_queue_;
   TouchActionFilter touch_action_filter_;
   InputEventStreamValidator event_stream_validator_;
 

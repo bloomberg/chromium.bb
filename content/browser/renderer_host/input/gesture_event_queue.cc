@@ -243,7 +243,7 @@ TouchpadTapSuppressionController*
   return touchpad_tap_suppression_controller_.get();
 }
 
-bool GestureEventQueue::HasQueuedGestureEvents() const {
+bool GestureEventQueue::ExpectingGestureAck() const {
   return !coalesced_gesture_events_.empty();
 }
 
