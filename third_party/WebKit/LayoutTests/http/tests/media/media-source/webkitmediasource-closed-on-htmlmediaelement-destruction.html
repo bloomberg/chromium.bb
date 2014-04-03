@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
     <head>
+      <script src="/js-test-resources/js-test.js"></script>
       <script src="/media-resources/video-test.js"></script>
       <script src="webkitmediasource-util.js"></script>
 
       <script>
+          window.jsTestIsAsync = true;
+
           var ms = new WebKitMediaSource();
 
           function sourceOpened()
@@ -20,22 +23,23 @@
               vid = null;
 
               consoleWrite("Running the garbage collector.");
-              gc();
+              collectGarbage(function() {
+                  MediaSourceTest.expectSourceState(ms, "closed");
 
-              MediaSourceTest.expectSourceState(ms, "closed");
+                  try {
+                      buffer.timestampOffset = 42;
+                      failTest("Expected an exception");
+                  } catch (e) {
+                      consoleWrite("Setting timestampOffset failed as expected: " + e.name);
+                  }
 
-              try {
-                  buffer.timestampOffset = 42;
-                  failTest("Expected an exception");
-              } catch (e) {
-                  consoleWrite("Setting timestampOffset failed as expected: " + e.name);
-              }
+                  endTest();
+               });
           }
 
           function sourceClosed()
           {
               consoleWrite("sourceClosed called.");
-              endTest();
           }
 
           function onLoad()

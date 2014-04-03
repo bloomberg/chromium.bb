@@ -4,6 +4,7 @@
 </defs>
 <g id="g"/>
 <text x="50" y="50" id="log"/>
+<script xlink:href="../../resources/js-test.js"></script>
 <script id="script">
 <![CDATA[
 
@@ -34,22 +35,24 @@ function createAnimatedRectInstance() {
 
 function cleanup() {
     // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    GCController.collectAll();
-    var originalLiveElements = internals.numberOfLiveNodes();
+    collectGarbage(function() {
+        var originalLiveElements = internals.numberOfLiveNodes();
 
-    while (g.hasChildNodes())
-        g.removeChild(g.lastChild);
+        while (g.hasChildNodes())
+            g.removeChild(g.lastChild);
 
-    GCController.collectAll();
+        collectGarbage(function() {
+            // This is 400 instead of 200 as it creates shadow tree elements.
+            var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 400;
 
-    // This is 400 instead of 200 as it creates shadow tree elements.
-    var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 400;
-    if (liveDelta == 0)
-        log("PASS");
-    else
-        log("FAIL: " + liveDelta + " extra live node(s)");
+            if (liveDelta == 0)
+                log("PASS");
+            else
+                log("FAIL: " + liveDelta + " extra live node(s)");
 
-    testRunner.notifyDone();
+            testRunner.notifyDone();
+        });
+    });
 }
 
 function startTest() {

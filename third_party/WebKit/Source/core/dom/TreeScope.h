@@ -49,7 +49,7 @@ class RenderObject;
 // A class which inherits both Node and TreeScope must call clearRareData() in its destructor
 // so that the Node destructor no longer does problematic NodeList cache manipulation in
 // the destructor.
-class TreeScope {
+class TreeScope : public WillBeGarbageCollectedMixin {
 public:
     TreeScope* parentTreeScope() const { return m_parentTreeScope; }
 
@@ -109,21 +109,44 @@ public:
     // pointer without introducing reference cycles.
     void guardRef()
     {
+#if ENABLE(OILPAN)
+        if (!m_guardRefCount) {
+            ASSERT(!m_keepAlive);
+            m_keepAlive = adoptPtr(new Persistent<TreeScope>(this));
+        }
+#else
         ASSERT(!deletionHasBegun());
+#endif
         ++m_guardRefCount;
     }
 
     void guardDeref()
     {
+        ASSERT(m_guardRefCount > 0);
+#if !ENABLE(OILPAN)
         ASSERT(!deletionHasBegun());
+#endif
         --m_guardRefCount;
+#if ENABLE(OILPAN)
+        if (!m_guardRefCount)
+            clearKeepAlive();
+#else
         if (!m_guardRefCount && !refCount() && !rootNodeHasTreeSharedParent()) {
             beginDeletion();
             delete this;
         }
+#endif
     }
 
     void removedLastRefToScope();
+
+#if ENABLE(OILPAN)
+    void clearKeepAlive()
+    {
+        ASSERT(m_keepAlive);
+        m_keepAlive = nullptr;
+    }
+#endif
 
     bool isInclusiveAncestorOf(const TreeScope&) const;
     unsigned short comparePosition(const TreeScope&) const;
@@ -168,6 +191,20 @@ private:
 
     OwnPtr<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
+#if ENABLE(OILPAN)
+    // With Oilpan, a non-zero reference count will keep the TreeScope alive
+    // with a self-persistent handle. Whenever the ref count goes above zero
+    // we register the TreeScope as a root for garbage collection by allocating a
+    // persistent handle to the object itself. When the ref count goes to zero
+    // we deallocate the persistent handle again so the object can die if there
+    // are no other things keeping it alive.
+    //
+    // FIXME: Oilpan: Remove m_keepAlive and ref counting and use tracing instead.
+    GC_PLUGIN_IGNORE("359444")
+    OwnPtr<Persistent<TreeScope> > m_keepAlive;
+#endif
+
+    GC_PLUGIN_IGNORE("359444")
     mutable RefPtrWillBePersistent<DOMSelection> m_selection;
 };
 

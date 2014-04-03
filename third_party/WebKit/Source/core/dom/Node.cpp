@@ -98,6 +98,7 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+#if !ENABLE(OILPAN)
 void* Node::operator new(size_t size)
 {
     ASSERT(isMainThread());
@@ -109,6 +110,7 @@ void Node::operator delete(void* ptr)
     ASSERT(isMainThread());
     partitionFree(ptr);
 }
+#endif
 
 #if DUMP_NODE_STATISTICS
 static HashSet<Node*> liveNodeSet;
@@ -2346,10 +2348,12 @@ inline void TreeScope::removedLastRefToScope()
 #if !ASSERT_DISABLED
         rootNode().m_inRemovedLastRefFunction = false;
 #endif
+#if !ENABLE(OILPAN)
 #if SECURITY_ASSERT_ENABLED
         beginDeletion();
 #endif
         delete this;
+#endif
     }
 }
 
@@ -2365,10 +2369,12 @@ void Node::removedLastRef()
         return;
     }
 
+#if !ENABLE(OILPAN)
 #if SECURITY_ASSERT_ENABLED
     m_deletionHasBegun = true;
 #endif
     delete this;
+#endif
 }
 
 unsigned Node::connectedSubframeCount() const

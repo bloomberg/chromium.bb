@@ -12,20 +12,22 @@
 
     successfullyParsed = false;
 
+    testRunner.waitUntilDone;
+    window.jsTestIsAsync = true;
+
     var svgView = document.getElementById("container").childNodes[0].currentView;
     document.getElementById("container").removeChild(document.getElementById("container").childNodes[0]);
 
-    gc();
-
-    shouldBeNull("viewPreserveAspectRatio = svgView.preserveAspectRatio;");
-    shouldBeNull("viewTransform = svgView.transform;");
-    shouldBeNull("viewViewTarget = svgView.viewTarget;");
-    shouldNotThrow("viewViewBox = svgView.viewBox;");
-    shouldBeEqualToString("svgView.preserveAspectRatioString", "");
-    shouldBeEqualToString("svgView.transformString", "");
-    shouldBeEqualToString("svgView.viewBoxString", "");
-
-    gc();
+    collectGarbage(function() {
+        shouldBeNull("viewPreserveAspectRatio = svgView.preserveAspectRatio;");
+        shouldBeNull("viewTransform = svgView.transform;");
+        shouldBeNull("viewViewTarget = svgView.viewTarget;");
+        shouldNotThrow("viewViewBox = svgView.viewBox;");
+        shouldBeEqualToString("svgView.preserveAspectRatioString", "");
+        shouldBeEqualToString("svgView.transformString", "");
+        shouldBeEqualToString("svgView.viewBoxString", "");
+        finishJSTest();
+    });
 
     successfullyParsed = true;
 

@@ -43,6 +43,7 @@ class InsertionPoint;
 class ShadowRootRareData;
 
 class ShadowRoot FINAL : public DocumentFragment, public TreeScope, public DoublyLinkedListNode<ShadowRoot> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
     friend class WTF::DoublyLinkedListNode<ShadowRoot>;
 public:
     // FIXME: We will support multiple shadow subtrees, however current implementation does not work well

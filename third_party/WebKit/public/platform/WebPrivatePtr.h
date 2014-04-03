@@ -34,6 +34,9 @@
 #include "WebCommon.h"
 
 #if INSIDE_BLINK
+
+namespace WebCore { template<typename T> class TreeShared; }
+
 #include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/TypeTraits.h"
@@ -50,11 +53,20 @@ enum LifetimeManagementType {
 
 template<typename T>
 class LifetimeOf {
+    typedef char TreeSharedType;
+    typedef struct {
+        char padding[8];
+    } NotTreeSharedType;
+
+    template<typename U> static TreeSharedType checkTreeShared(WebCore::TreeShared<U>*);
+    static NotTreeSharedType checkTreeShared(...);
+
     static const bool isGarbageCollected = WTF::IsSubclassOfTemplate<T, WebCore::GarbageCollected>::value;
     static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, WebCore::RefCountedGarbageCollected>::value;
 public:
     static const LifetimeManagementType value =
-        !isGarbageCollected          ? RefCountedLifetime :
+        sizeof(checkTreeShared(static_cast<T*>(0))) == sizeof(TreeSharedType) ? RefCountedLifetime :
+        !isGarbageCollected ? RefCountedLifetime :
         isRefCountedGarbageCollected ? RefCountedGarbageCollectedLifetime : GarbageCollectedLifetime;
 };
 

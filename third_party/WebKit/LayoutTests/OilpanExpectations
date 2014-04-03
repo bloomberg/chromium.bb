@@ -8,6 +8,12 @@ crbug.com/345630 fast/dom/StyleSheet/gc-parent-stylesheet.html [ Failure ]
 crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure ]
 crbug.com/345655 fast/dom/StyleSheet/detached-stylesheet-without-wrapper.html [ Failure ]
 
+# With Oilpan, parent pointers in the DOM tree do not
+# mysteriously disappear. This is the intended behavior.
+crbug.com/356658 fast/dom/gc-3.html [ Failure ]
+crbug.com/356658 fast/dom/gc-5.html [ Failure ]
+crbug.com/356658 fast/dom/gc-dom-tree-lifetime.html [ Failure ]
+
 crbug.com/342574 [ Mac Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash Timeout ]
 
 crbug.com/350316 [ Linux Win Debug ] http/tests/eventsource/workers/eventsource-simple.html [ Crash ]

@@ -124,10 +124,12 @@ SVGElementInstance::~SVGElementInstance()
 // delete an SVGElementInstance at each deref call site.
 void SVGElementInstance::removedLastRef()
 {
+#if !ENABLE(OILPAN)
 #if SECURITY_ASSERT_ENABLED
     m_deletionHasBegun = true;
 #endif
     delete this;
+#endif
 }
 
 void SVGElementInstance::detach()

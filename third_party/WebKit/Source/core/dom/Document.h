@@ -231,6 +231,7 @@ private:
 
 class Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public ExecutionContextClient
     , public DocumentSupplementable, public LifecycleContext<Document> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Document);
 public:
     static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {

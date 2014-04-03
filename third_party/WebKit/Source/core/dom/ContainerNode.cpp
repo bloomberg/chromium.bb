@@ -172,9 +172,11 @@ bool ContainerNode::checkAcceptChildGuaranteedNodeTypes(const Node& newChild, Ex
 
 void ContainerNode::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
 {
+#if !ENABLE(OILPAN)
     // Check that this node is not "floating".
     // If it is, it can be deleted as a side effect of sending mutation events.
     ASSERT(refCount() || parentOrShadowHostNode());
+#endif
 
     RefPtr<Node> protect(this);
 
@@ -288,9 +290,11 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node& nextChil
 
 void ContainerNode::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
 {
+#if !ENABLE(OILPAN)
     // Check that this node is not "floating".
     // If it is, it can be deleted as a side effect of sending mutation events.
     ASSERT(refCount() || parentOrShadowHostNode());
+#endif
 
     RefPtr<Node> protect(this);
 
@@ -405,9 +409,11 @@ void ContainerNode::disconnectDescendantFrames()
 
 void ContainerNode::removeChild(Node* oldChild, ExceptionState& exceptionState)
 {
+#if !ENABLE(OILPAN)
     // Check that this node is not "floating".
     // If it is, it can be deleted as a side effect of sending mutation events.
     ASSERT(refCount() || parentOrShadowHostNode());
+#endif
 
     RefPtr<Node> protect(this);
 
