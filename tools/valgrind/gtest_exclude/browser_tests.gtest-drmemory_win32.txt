@@ -28,6 +28,8 @@ H*
 # I*: ~10  tests
 # DrM-i#1052-c#53
 InfoBarsTest.*
+# DrM-i#1052-c#56
+InspectUITest.*
 # J*: 0    tests
 # K*: 1    tests
 # L*: 62   tests
