@@ -611,6 +611,17 @@ hooks = [
     {
     'action':
          [
+    'python',
+    'src/third_party/binutils/download.py'
+],
+    'pattern':
+         'src/third_party/binutils',
+    'name':
+         'binutils'
+},
+    {
+    'action':
+         [
     'download_from_google_storage',
     '--no_resume',
     '--platform=linux*',
