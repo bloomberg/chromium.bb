@@ -9,13 +9,6 @@
 
 namespace content {
 
-// Empty method used for keeping a reference to the original media::VideoFrame
-// in RTCVideoRenderer::OnVideoFrame if a color conversion between I420 and
-// YV12 is needed.
-static void ReleaseOriginalFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
-}
-
 //static
 blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
@@ -108,30 +101,9 @@ void MediaStreamVideoTrack::OnVideoFrame(
   if (!enabled_)
     return;
 
-  scoped_refptr<media::VideoFrame> video_frame = frame;
-  if (frame->format() == media::VideoFrame::I420) {
-    // Rendering do not support I420 but video capture use I420.
-    // The only difference between YV12 and I420 is the order of U and V plane.
-    // To solve that the I420 frame is simply wrapped in an YV12 video frame.
-    // crbug/341452.
-    video_frame = media::VideoFrame::WrapExternalYuvData(
-        media::VideoFrame::YV12,
-        frame->coded_size(),
-        frame->visible_rect(),
-        frame->natural_size(),
-        frame->stride(media::VideoFrame::kYPlane),
-        frame->stride(media::VideoFrame::kUPlane),
-        frame->stride(media::VideoFrame::kVPlane),
-        frame->data(media::VideoFrame::kYPlane),
-        frame->data(media::VideoFrame::kUPlane),
-        frame->data(media::VideoFrame::kVPlane),
-        frame->GetTimestamp(),
-        base::Bind(&ReleaseOriginalFrame, frame));
-  }
-
   for (std::vector<MediaStreamVideoSink*>::iterator it = sinks_.begin();
        it != sinks_.end(); ++it) {
-    (*it)->OnVideoFrame(video_frame);
+    (*it)->OnVideoFrame(frame);
   }
 }
 

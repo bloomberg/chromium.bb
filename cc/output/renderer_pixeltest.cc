@@ -8,10 +8,12 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/video_resource_updater.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/pixel_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "media/base/video_frame.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -404,69 +406,77 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
  protected:
   scoped_ptr<YUVVideoDrawQuad> CreateTestYUVVideoDrawQuad(
       SharedQuadState* shared_state,
-      bool with_alpha,
+      media::VideoFrame::Format format,
       bool is_transparent,
       const gfx::RectF& tex_coord_rect) {
+    const bool with_alpha = (format == media::VideoFrame::YV12A);
     const gfx::Rect rect(this->device_viewport_size_);
-    const gfx::Rect uv_rect(
-        0, 0, (rect.width() + 1) / 2, (rect.height() + 1) / 2);
     const gfx::Rect opaque_rect(0, 0, 0, 0);
 
-    ResourceProvider::ResourceId y_resource =
-        resource_provider_->CreateResource(rect.size(),
-                                           GL_CLAMP_TO_EDGE,
-                                           ResourceProvider::TextureUsageAny,
-                                           LUMINANCE_8);
-    ResourceProvider::ResourceId u_resource =
-        resource_provider_->CreateResource(uv_rect.size(),
-                                           GL_CLAMP_TO_EDGE,
-                                           ResourceProvider::TextureUsageAny,
-                                           LUMINANCE_8);
-    ResourceProvider::ResourceId v_resource =
-        resource_provider_->CreateResource(uv_rect.size(),
-                                           GL_CLAMP_TO_EDGE,
-                                           ResourceProvider::TextureUsageAny,
-                                           LUMINANCE_8);
-    ResourceProvider::ResourceId a_resource = 0;
-    if (with_alpha) {
-      a_resource = resource_provider_->CreateResource(
-                       this->device_viewport_size_,
-                       GL_CLAMP_TO_EDGE,
-                       ResourceProvider::TextureUsageAny,
-                       LUMINANCE_8);
-    }
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::CreateFrame(
+            format, rect.size(), rect, rect.size(), base::TimeDelta());
 
-    const int y_plane_size = rect.size().GetArea();
-    const int uv_plane_size = uv_rect.size().GetArea();
-    scoped_ptr<uint8_t[]> y_plane(new uint8_t[y_plane_size]);
-    scoped_ptr<uint8_t[]> u_plane(new uint8_t[uv_plane_size]);
-    scoped_ptr<uint8_t[]> v_plane(new uint8_t[uv_plane_size]);
-    scoped_ptr<uint8_t[]> a_plane;
-    if (with_alpha)
-      a_plane.reset(new uint8_t[y_plane_size]);
     // YUV values representing a striped pattern, for validating texture
     // coordinates for sampling.
     uint8_t y_value = 0;
     uint8_t u_value = 0;
     uint8_t v_value = 0;
-    for (int i = 0; i < y_plane_size; ++i)
-      y_plane.get()[i] = (y_value += 1);
-    for (int i = 0; i < uv_plane_size; ++i) {
-      u_plane.get()[i] = (u_value += 3);
-      v_plane.get()[i] = (v_value += 5);
+    for (int i = 0; i < video_frame->rows(media::VideoFrame::kYPlane); ++i) {
+      uint8_t* y_row = video_frame->data(media::VideoFrame::kYPlane) +
+                       video_frame->stride(media::VideoFrame::kYPlane) * i;
+      for (int j = 0; j < video_frame->row_bytes(media::VideoFrame::kYPlane);
+           ++j) {
+        y_row[j] = (y_value += 1);
+      }
+    }
+    for (int i = 0; i < video_frame->rows(media::VideoFrame::kUPlane); ++i) {
+      uint8_t* u_row = video_frame->data(media::VideoFrame::kUPlane) +
+                       video_frame->stride(media::VideoFrame::kUPlane) * i;
+      uint8_t* v_row = video_frame->data(media::VideoFrame::kVPlane) +
+                       video_frame->stride(media::VideoFrame::kVPlane) * i;
+      for (int j = 0; j < video_frame->row_bytes(media::VideoFrame::kUPlane);
+           ++j) {
+        u_row[j] = (u_value += 3);
+        v_row[j] = (v_value += 5);
+      }
     }
     if (with_alpha)
-      memset(a_plane.get(), is_transparent ? 0 : 128, y_plane_size);
+      memset(video_frame->data(media::VideoFrame::kAPlane),
+             is_transparent ? 0 : 128,
+             video_frame->stride(media::VideoFrame::kAPlane) *
+                 video_frame->rows(media::VideoFrame::kAPlane));
 
-    resource_provider_->SetPixels(
-        y_resource, y_plane.get(), rect, rect, gfx::Vector2d());
-    resource_provider_->SetPixels(
-        u_resource, u_plane.get(), uv_rect, uv_rect, gfx::Vector2d());
-    resource_provider_->SetPixels(
-        v_resource, v_plane.get(), uv_rect, uv_rect, gfx::Vector2d());
+    VideoFrameExternalResources resources =
+        video_resource_updater_->CreateExternalResourcesFromVideoFrame(
+            video_frame);
+
+    EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+    EXPECT_EQ(media::VideoFrame::NumPlanes(format), resources.mailboxes.size());
+    EXPECT_EQ(media::VideoFrame::NumPlanes(format),
+              resources.release_callbacks.size());
+
+    ResourceProvider::ResourceId y_resource =
+        resource_provider_->CreateResourceFromTextureMailbox(
+            resources.mailboxes[media::VideoFrame::kYPlane],
+            SingleReleaseCallback::Create(
+                resources.release_callbacks[media::VideoFrame::kYPlane]));
+    ResourceProvider::ResourceId u_resource =
+        resource_provider_->CreateResourceFromTextureMailbox(
+            resources.mailboxes[media::VideoFrame::kUPlane],
+            SingleReleaseCallback::Create(
+                resources.release_callbacks[media::VideoFrame::kUPlane]));
+    ResourceProvider::ResourceId v_resource =
+        resource_provider_->CreateResourceFromTextureMailbox(
+            resources.mailboxes[media::VideoFrame::kVPlane],
+            SingleReleaseCallback::Create(
+                resources.release_callbacks[media::VideoFrame::kVPlane]));
+    ResourceProvider::ResourceId a_resource = 0;
     if (with_alpha) {
-      resource_provider_->SetPixels(a_resource, a_plane.get(), rect, rect,
-                                    gfx::Vector2d());
+      a_resource = resource_provider_->CreateResourceFromTextureMailbox(
+          resources.mailboxes[media::VideoFrame::kAPlane],
+          SingleReleaseCallback::Create(
+              resources.release_callbacks[media::VideoFrame::kAPlane]));
     }
 
     scoped_ptr<YUVVideoDrawQuad> yuv_quad = YUVVideoDrawQuad::Create();
@@ -481,6 +491,15 @@ class VideoGLRendererPixelTest : public GLRendererPixelTest {
                      a_resource);
     return yuv_quad.Pass();
   }
+
+  virtual void SetUp() OVERRIDE {
+    GLRendererPixelTest::SetUp();
+    video_resource_updater_.reset(new VideoResourceUpdater(
+        output_surface_->context_provider().get(), resource_provider_.get()));
+  }
+
+ private:
+  scoped_ptr<VideoResourceUpdater> video_resource_updater_;
 };
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
@@ -492,8 +511,11 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRect) {
   scoped_ptr<SharedQuadState> shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
-      shared_state.get(), false, false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
+      CreateTestYUVVideoDrawQuad(shared_state.get(),
+                                 media::VideoFrame::YV12,
+                                 false,
+                                 gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 
@@ -516,8 +538,12 @@ TEST_F(VideoGLRendererPixelTest, OffsetYUVRect) {
   scoped_ptr<SharedQuadState> shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
-      shared_state.get(), false, false, gfx::RectF(0.125f, 0.25f, 0.75f, 0.5f));
+  // Intentionally sets frame format to I420 for testing coverage.
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
+      CreateTestYUVVideoDrawQuad(shared_state.get(),
+                                 media::VideoFrame::I420,
+                                 false,
+                                 gfx::RectF(0.125f, 0.25f, 0.75f, 0.5f));
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 
@@ -540,8 +566,11 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVARect) {
   scoped_ptr<SharedQuadState> shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
-      shared_state.get(), true, false, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
+      CreateTestYUVVideoDrawQuad(shared_state.get(),
+                                 media::VideoFrame::YV12A,
+                                 false,
+                                 gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 
@@ -569,8 +598,11 @@ TEST_F(VideoGLRendererPixelTest, FullyTransparentYUVARect) {
   scoped_ptr<SharedQuadState> shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect);
 
-  scoped_ptr<YUVVideoDrawQuad> yuv_quad = CreateTestYUVVideoDrawQuad(
-      shared_state.get(), true, true, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
+  scoped_ptr<YUVVideoDrawQuad> yuv_quad =
+      CreateTestYUVVideoDrawQuad(shared_state.get(),
+                                 media::VideoFrame::YV12A,
+                                 true,
+                                 gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f));
 
   pass->quad_list.push_back(yuv_quad.PassAs<DrawQuad>());
 

@@ -98,7 +98,8 @@ std::string TestMediaStreamVideoTrack::TestGetFrame() {
     ASSERT_EQ(PP_OK, cc.result());
     pp::VideoFrame frame = cc.output();
     ASSERT_FALSE(frame.is_null());
-    ASSERT_EQ(frame.GetFormat(), PP_VIDEOFRAME_FORMAT_YV12);
+    ASSERT_TRUE(frame.GetFormat() == PP_VIDEOFRAME_FORMAT_YV12 ||
+                frame.GetFormat() == PP_VIDEOFRAME_FORMAT_I420);
 
     pp::Size size;
     ASSERT_TRUE(frame.GetSize(&size));
@@ -164,7 +165,13 @@ std::string TestMediaStreamVideoTrack::TestConfigure() {
       ASSERT_EQ(PP_OK, cc2.result());
       pp::VideoFrame frame = cc2.output();
       ASSERT_FALSE(frame.is_null());
-      ASSERT_EQ(frame.GetFormat(), formats[i].expected_format);
+      if (formats[i].format != PP_VIDEOFRAME_FORMAT_UNKNOWN) {
+        ASSERT_EQ(frame.GetFormat(), formats[i].expected_format);
+      } else {
+        // Both YV12 and I420 are acceptable as default YUV formats.
+        ASSERT_TRUE(frame.GetFormat() == PP_VIDEOFRAME_FORMAT_YV12 ||
+                    frame.GetFormat() == PP_VIDEOFRAME_FORMAT_I420);
+      }
 
       pp::Size size;
       ASSERT_TRUE(frame.GetSize(&size));
@@ -206,7 +213,8 @@ std::string TestMediaStreamVideoTrack::TestConfigure() {
       ASSERT_EQ(PP_OK, cc2.result());
       pp::VideoFrame frame = cc2.output();
       ASSERT_FALSE(frame.is_null());
-      ASSERT_EQ(frame.GetFormat(), PP_VIDEOFRAME_FORMAT_YV12);
+      ASSERT_TRUE(frame.GetFormat() == PP_VIDEOFRAME_FORMAT_YV12 ||
+                  frame.GetFormat() == PP_VIDEOFRAME_FORMAT_I420);
 
       pp::Size size;
       ASSERT_TRUE(frame.GetSize(&size));

@@ -100,14 +100,16 @@ void X11VideoRenderer::Paint(media::VideoFrame* video_frame) {
 
   // Convert YUV frame to RGB.
   DCHECK(video_frame->format() == media::VideoFrame::YV12 ||
+         video_frame->format() == media::VideoFrame::I420 ||
          video_frame->format() == media::VideoFrame::YV16);
   DCHECK(video_frame->stride(media::VideoFrame::kUPlane) ==
          video_frame->stride(media::VideoFrame::kVPlane));
 
   DCHECK(image_->data);
-  media::YUVType yuv_type =
-      (video_frame->format() == media::VideoFrame::YV12) ?
-      media::YV12 : media::YV16;
+  media::YUVType yuv_type = (video_frame->format() == media::VideoFrame::YV12 ||
+                             video_frame->format() == media::VideoFrame::I420)
+                                ? media::YV12
+                                : media::YV16;
   media::ConvertYUVToRGB32(video_frame->data(media::VideoFrame::kYPlane),
                            video_frame->data(media::VideoFrame::kUPlane),
                            video_frame->data(media::VideoFrame::kVPlane),

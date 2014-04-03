@@ -12,26 +12,23 @@
 
 namespace media {
 
-static bool IsEitherYV12OrYV16(media::VideoFrame::Format format) {
+static bool IsYUV(media::VideoFrame::Format format) {
   return format == media::VideoFrame::YV12 ||
+         format == media::VideoFrame::I420 ||
          format == media::VideoFrame::YV16 ||
          format == media::VideoFrame::YV12J;
 }
 
-static bool IsEitherYV12OrYV16OrNative(media::VideoFrame::Format format) {
-  return IsEitherYV12OrYV16(format) ||
-      format == media::VideoFrame::NATIVE_TEXTURE;
+static bool IsEitherYUVOrNative(media::VideoFrame::Format format) {
+  return IsYUV(format) || format == media::VideoFrame::NATIVE_TEXTURE;
 }
 
-static bool IsEitherYV12OrYV12AOrYV16(media::VideoFrame::Format format) {
-  return IsEitherYV12OrYV16(format) ||
-      format == media::VideoFrame::YV12A;
+static bool IsEitherYUVOrYUVA(media::VideoFrame::Format format) {
+  return IsYUV(format) || format == media::VideoFrame::YV12A;
 }
 
-static bool IsEitherYV12OrYV12AOrYV16OrNative(
-    media::VideoFrame::Format format) {
-  return IsEitherYV12OrYV16OrNative(format) ||
-      format == media::VideoFrame::YV12A;
+static bool IsEitherYUVOrYUVAOrNative(media::VideoFrame::Format format) {
+  return IsEitherYUVOrNative(format) || format == media::VideoFrame::YV12A;
 }
 
 // CanFastPaint is a helper method to determine the conditions for fast
@@ -40,13 +37,13 @@ static bool IsEitherYV12OrYV12AOrYV16OrNative(
 // 2. No flipping nor mirroring.
 // 3. Canvas has pixel format ARGB8888.
 // 4. Canvas is opaque.
-// 5. Frame format is YV12 or YV16.
+// 5. Frame format is YV12, I420 or YV16.
 //
 // TODO(hclam): The fast paint method should support flipping and mirroring.
 // Disable the flipping and mirroring checks once we have it.
 static bool CanFastPaint(SkCanvas* canvas, uint8 alpha,
                          media::VideoFrame::Format format) {
-  if (alpha != 0xFF || !IsEitherYV12OrYV16(format))
+  if (alpha != 0xFF || !IsYUV(format))
     return false;
 
   const SkMatrix& total_matrix = canvas->getTotalMatrix();
@@ -76,7 +73,7 @@ static void FastPaint(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkCanvas* canvas,
     const SkRect& dest_rect) {
-  DCHECK(IsEitherYV12OrYV16(video_frame->format())) << video_frame->format();
+  DCHECK(IsYUV(video_frame->format())) << video_frame->format();
   DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
             video_frame->stride(media::VideoFrame::kVPlane));
 
@@ -84,6 +81,7 @@ static void FastPaint(
   media::YUVType yuv_type = media::YV16;
   int y_shift = 0;
   if (video_frame->format() == media::VideoFrame::YV12 ||
+      video_frame->format() == media::VideoFrame::I420 ||
       video_frame->format() == media::VideoFrame::YV12A) {
     yuv_type = media::YV12;
     y_shift = 1;
@@ -189,9 +187,9 @@ static void FastPaint(
 static void ConvertVideoFrameToBitmap(
     const scoped_refptr<media::VideoFrame>& video_frame,
     SkBitmap* bitmap) {
-  DCHECK(IsEitherYV12OrYV12AOrYV16OrNative(video_frame->format()))
+  DCHECK(IsEitherYUVOrYUVAOrNative(video_frame->format()))
       << video_frame->format();
-  if (IsEitherYV12OrYV12AOrYV16(video_frame->format())) {
+  if (IsEitherYUVOrYUVA(video_frame->format())) {
     DCHECK_EQ(video_frame->stride(media::VideoFrame::kUPlane),
               video_frame->stride(media::VideoFrame::kVPlane));
   }
@@ -211,7 +209,7 @@ static void ConvertVideoFrameToBitmap(
 
   size_t y_offset = 0;
   size_t uv_offset = 0;
-  if (IsEitherYV12OrYV12AOrYV16(video_frame->format())) {
+  if (IsEitherYUVOrYUVA(video_frame->format())) {
     int y_shift = (video_frame->format() == media::VideoFrame::YV16) ? 0 : 1;
     // Use the "left" and "top" of the destination rect to locate the offset
     // in Y, U and V planes.
@@ -227,6 +225,7 @@ static void ConvertVideoFrameToBitmap(
 
   switch (video_frame->format()) {
     case media::VideoFrame::YV12:
+    case media::VideoFrame::I420:
     case media::VideoFrame::YV12J:
       media::ConvertYUVToRGB32(
           video_frame->data(media::VideoFrame::kYPlane) + y_offset,
@@ -306,8 +305,7 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
 
   // Paint black rectangle if there isn't a frame available or the
   // frame has an unexpected format.
-  if (!video_frame ||
-      !IsEitherYV12OrYV12AOrYV16OrNative(video_frame->format())) {
+  if (!video_frame || !IsEitherYUVOrYUVAOrNative(video_frame->format())) {
     canvas->drawRect(dest, paint);
     return;
   }

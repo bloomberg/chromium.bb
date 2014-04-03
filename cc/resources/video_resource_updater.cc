@@ -61,6 +61,7 @@ bool VideoResourceUpdater::VerifyFrame(
   switch (video_frame->format()) {
     // Acceptable inputs.
     case media::VideoFrame::YV12:
+    case media::VideoFrame::I420:
     case media::VideoFrame::YV12A:
     case media::VideoFrame::YV16:
     case media::VideoFrame::YV12J:
@@ -72,7 +73,6 @@ bool VideoResourceUpdater::VerifyFrame(
 
     // Unacceptable inputs. ¯\(°_o)/¯
     case media::VideoFrame::UNKNOWN:
-    case media::VideoFrame::I420:
       break;
   }
   return false;
@@ -107,10 +107,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   // Only YUV software video frames are supported.
   DCHECK(input_frame_format == media::VideoFrame::YV12 ||
+         input_frame_format == media::VideoFrame::I420 ||
          input_frame_format == media::VideoFrame::YV12A ||
          input_frame_format == media::VideoFrame::YV12J ||
          input_frame_format == media::VideoFrame::YV16);
   if (input_frame_format != media::VideoFrame::YV12 &&
+      input_frame_format != media::VideoFrame::I420 &&
       input_frame_format != media::VideoFrame::YV12A &&
       input_frame_format != media::VideoFrame::YV12J &&
       input_frame_format != media::VideoFrame::YV16)

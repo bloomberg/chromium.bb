@@ -41,6 +41,7 @@ namespace {
 scoped_refptr<media::VideoFrame> CopyFrameToYV12(
     const scoped_refptr<media::VideoFrame>& frame) {
   DCHECK(frame->format() == media::VideoFrame::YV12 ||
+         frame->format() == media::VideoFrame::I420 ||
          frame->format() == media::VideoFrame::NATIVE_TEXTURE);
   scoped_refptr<media::VideoFrame> new_frame =
       media::VideoFrame::CreateFrame(media::VideoFrame::YV12,
