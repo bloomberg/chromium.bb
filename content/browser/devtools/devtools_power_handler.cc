@@ -11,11 +11,6 @@
 
 namespace content {
 
-static inline base::Time convertMonotonicTimeToWallTime(
-    const base::TimeTicks& tick) {
-  return base::Time::UnixEpoch() + (tick - base::TimeTicks::UnixEpoch());
-}
-
 DevToolsPowerHandler::DevToolsPowerHandler() {
   RegisterCommandHandler(devtools::Power::start::kName,
                          base::Bind(&DevToolsPowerHandler::OnStart,
@@ -41,8 +36,10 @@ void DevToolsPowerHandler::OnPowerEvent(const PowerEventVector& events) {
 
     DCHECK(iter->type < PowerEvent::ID_COUNT);
     event_body->SetString("type", kPowerTypeNames[iter->type]);
-    event_body->SetDouble("timestamp",
-        convertMonotonicTimeToWallTime(iter->time).ToDoubleT() * 1000.0);
+    // Use internal value to be consistent with Blink's
+    // monotonicallyIncreasingTime.
+    event_body->SetDouble("timestamp", iter->time.ToInternalValue() /
+        static_cast<double>(base::Time::kMicrosecondsPerMillisecond));
     event_body->SetDouble("value", iter->value);
     event_list->Append(event_body);
   }
