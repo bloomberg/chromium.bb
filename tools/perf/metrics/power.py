@@ -86,6 +86,12 @@ class PowerMetric(Metric):
     energy_consumption_mwh = self._results['energy_consumption_mwh']
     results.Add('energy_consumption_mwh', 'mWh', energy_consumption_mwh)
 
+    # GPU Frequency.
+    gpu_power = self._results['component_utilization'].get('gpu', None)
+    if gpu_power and gpu_power.has_key('average_frequency_hz'):
+      gpu_freq_hz = gpu_power['average_frequency_hz']
+      results.Add('gpu_average_frequency_hz', 'hz', gpu_freq_hz)
+
     # Add idle wakeup numbers for all processes.
     for process_type in self._results['cpu_stats']:
       trace_name_for_process = 'idle_wakeups_%s' % (process_type.lower())
