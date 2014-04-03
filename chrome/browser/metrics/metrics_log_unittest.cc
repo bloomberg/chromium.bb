@@ -28,6 +28,7 @@
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/metrics/metrics_hashes.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/process_type.h"
@@ -467,6 +468,12 @@ TEST_F(MetricsLogTest, Plugins) {
 
 // Test that we properly write profiler data to the log.
 TEST_F(MetricsLogTest, RecordProfilerData) {
+  // WARNING: If you broke the below check, you've modified how
+  // metrics::HashMetricName works. Please also modify all server-side code that
+  // relies on the existing way of hashing.
+  EXPECT_EQ(GG_UINT64_C(1518842999910132863),
+            metrics::HashMetricName("birth_thread*"));
+
   TestMetricsLog log(kClientId, kSessionId);
   EXPECT_EQ(0, log.uma_proto().profiler_event_size());
 
@@ -474,7 +481,7 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
     ProcessDataSnapshot process_data;
     process_data.process_id = 177;
     process_data.tasks.push_back(TaskSnapshot());
-    process_data.tasks.back().birth.location.file_name = "file";
+    process_data.tasks.back().birth.location.file_name = "a/b/file.h";
     process_data.tasks.back().birth.location.function_name = "function";
     process_data.tasks.back().birth.location.line_number = 1337;
     process_data.tasks.back().birth.thread_name = "birth_thread";
@@ -487,7 +494,7 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
     process_data.tasks.back().death_data.queue_duration_sample = 3;
     process_data.tasks.back().death_thread_name = "Still_Alive";
     process_data.tasks.push_back(TaskSnapshot());
-    process_data.tasks.back().birth.location.file_name = "file2";
+    process_data.tasks.back().birth.location.file_name = "c\\d\\file2";
     process_data.tasks.back().birth.location.function_name = "function2";
     process_data.tasks.back().birth.location.line_number = 1773;
     process_data.tasks.back().birth.thread_name = "birth_thread2";
@@ -511,38 +518,38 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
 
     const ProfilerEventProto::TrackedObject* tracked_object =
         &log.uma_proto().profiler_event(0).tracked_object(0);
-    EXPECT_EQ(GG_UINT64_C(10123486280357988687),
+    EXPECT_EQ(metrics::HashMetricName("file.h"),
               tracked_object->source_file_name_hash());
-    EXPECT_EQ(GG_UINT64_C(13962325592283560029),
+    EXPECT_EQ(metrics::HashMetricName("function"),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(1337, tracked_object->source_line_number());
-    EXPECT_EQ(GG_UINT64_C(3400908935414830400),
+    EXPECT_EQ(metrics::HashMetricName("birth_thread"),
               tracked_object->birth_thread_name_hash());
     EXPECT_EQ(37, tracked_object->exec_count());
     EXPECT_EQ(31, tracked_object->exec_time_total());
     EXPECT_EQ(13, tracked_object->exec_time_sampled());
     EXPECT_EQ(8, tracked_object->queue_time_total());
     EXPECT_EQ(3, tracked_object->queue_time_sampled());
-    EXPECT_EQ(GG_UINT64_C(10151977472163283085),
+    EXPECT_EQ(metrics::HashMetricName("Still_Alive"),
               tracked_object->exec_thread_name_hash());
     EXPECT_EQ(177U, tracked_object->process_id());
     EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,
               tracked_object->process_type());
 
     tracked_object = &log.uma_proto().profiler_event(0).tracked_object(1);
-    EXPECT_EQ(GG_UINT64_C(2025659946535236365),
+    EXPECT_EQ(metrics::HashMetricName("file2"),
               tracked_object->source_file_name_hash());
-    EXPECT_EQ(GG_UINT64_C(55232426147951219),
+    EXPECT_EQ(metrics::HashMetricName("function2"),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(1773, tracked_object->source_line_number());
-    EXPECT_EQ(GG_UINT64_C(1518842999910132863),
+    EXPECT_EQ(metrics::HashMetricName("birth_thread*"),
               tracked_object->birth_thread_name_hash());
     EXPECT_EQ(19, tracked_object->exec_count());
     EXPECT_EQ(23, tracked_object->exec_time_total());
     EXPECT_EQ(7, tracked_object->exec_time_sampled());
     EXPECT_EQ(0, tracked_object->queue_time_total());
     EXPECT_EQ(0, tracked_object->queue_time_sampled());
-    EXPECT_EQ(GG_UINT64_C(14275151213201158253),
+    EXPECT_EQ(metrics::HashMetricName("death_thread"),
               tracked_object->exec_thread_name_hash());
     EXPECT_EQ(177U, tracked_object->process_id());
     EXPECT_EQ(ProfilerEventProto::TrackedObject::BROWSER,
@@ -565,6 +572,19 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
     process_data.tasks.back().death_data.queue_duration_max = 105;
     process_data.tasks.back().death_data.queue_duration_sample = 103;
     process_data.tasks.back().death_thread_name = "death_thread3";
+    process_data.tasks.push_back(TaskSnapshot());
+    process_data.tasks.back().birth.location.file_name = "";
+    process_data.tasks.back().birth.location.function_name = "";
+    process_data.tasks.back().birth.location.line_number = 7332;
+    process_data.tasks.back().birth.thread_name = "";
+    process_data.tasks.back().death_data.count = 138;
+    process_data.tasks.back().death_data.run_duration_sum = 132;
+    process_data.tasks.back().death_data.run_duration_max = 118;
+    process_data.tasks.back().death_data.run_duration_sample = 114;
+    process_data.tasks.back().death_data.queue_duration_sum = 109;
+    process_data.tasks.back().death_data.queue_duration_max = 106;
+    process_data.tasks.back().death_data.queue_duration_sample = 104;
+    process_data.tasks.back().death_thread_name = "";
 
     log.RecordProfilerData(process_data, content::PROCESS_TYPE_RENDERER);
     ASSERT_EQ(1, log.uma_proto().profiler_event_size());
@@ -572,25 +592,43 @@ TEST_F(MetricsLogTest, RecordProfilerData) {
               log.uma_proto().profiler_event(0).profile_type());
     EXPECT_EQ(ProfilerEventProto::WALL_CLOCK_TIME,
               log.uma_proto().profiler_event(0).time_source());
-    ASSERT_EQ(3, log.uma_proto().profiler_event(0).tracked_object_size());
+    ASSERT_EQ(4, log.uma_proto().profiler_event(0).tracked_object_size());
 
     const ProfilerEventProto::TrackedObject* tracked_object =
         &log.uma_proto().profiler_event(0).tracked_object(2);
-    EXPECT_EQ(GG_UINT64_C(2686523203278102732),
+    EXPECT_EQ(metrics::HashMetricName("file3"),
               tracked_object->source_file_name_hash());
-    EXPECT_EQ(GG_UINT64_C(5081672290546182009),
+    EXPECT_EQ(metrics::HashMetricName("function3"),
               tracked_object->source_function_name_hash());
     EXPECT_EQ(7331, tracked_object->source_line_number());
-    EXPECT_EQ(GG_UINT64_C(1518842999910132863),
+    EXPECT_EQ(metrics::HashMetricName("birth_thread*"),
               tracked_object->birth_thread_name_hash());
     EXPECT_EQ(137, tracked_object->exec_count());
     EXPECT_EQ(131, tracked_object->exec_time_total());
     EXPECT_EQ(113, tracked_object->exec_time_sampled());
     EXPECT_EQ(108, tracked_object->queue_time_total());
     EXPECT_EQ(103, tracked_object->queue_time_sampled());
-    EXPECT_EQ(GG_UINT64_C(2203893603452504755),
+    EXPECT_EQ(metrics::HashMetricName("death_thread*"),
               tracked_object->exec_thread_name_hash());
     EXPECT_EQ(1177U, tracked_object->process_id());
+    EXPECT_EQ(ProfilerEventProto::TrackedObject::RENDERER,
+              tracked_object->process_type());
+
+    tracked_object = &log.uma_proto().profiler_event(0).tracked_object(3);
+    EXPECT_EQ(metrics::HashMetricName(""),
+              tracked_object->source_file_name_hash());
+    EXPECT_EQ(metrics::HashMetricName(""),
+              tracked_object->source_function_name_hash());
+    EXPECT_EQ(7332, tracked_object->source_line_number());
+    EXPECT_EQ(metrics::HashMetricName(""),
+              tracked_object->birth_thread_name_hash());
+    EXPECT_EQ(138, tracked_object->exec_count());
+    EXPECT_EQ(132, tracked_object->exec_time_total());
+    EXPECT_EQ(114, tracked_object->exec_time_sampled());
+    EXPECT_EQ(109, tracked_object->queue_time_total());
+    EXPECT_EQ(104, tracked_object->queue_time_sampled());
+    EXPECT_EQ(metrics::HashMetricName(""),
+              tracked_object->exec_thread_name_hash());
     EXPECT_EQ(ProfilerEventProto::TrackedObject::RENDERER,
               tracked_object->process_type());
   }
