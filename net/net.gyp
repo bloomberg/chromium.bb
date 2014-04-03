@@ -1602,7 +1602,7 @@
               'third_party/nss/ssl.gyp:libssl',
             ],
             'sources!': [
-              'disk_cache/file_posix.cc',
+              'disk_cache/blockfile/file_posix.cc',
             ],
             'link_settings': {
               'libraries': [
