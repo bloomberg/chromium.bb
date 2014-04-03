@@ -17,11 +17,11 @@ static gfx::SurfaceFactoryOzone::BufferFormat GetOzoneFormat(
     case cc::BGRA_8888:
     case cc::LUMINANCE_8:
     case cc::RGB_565:
-    case cc::ETC1: {
-      NOTREACHED();
-      return gfx::SurfaceFactoryOzone::UNKNOWN;
-    }
+    case cc::ETC1:
+      break;
   }
+  NOTREACHED();
+  return gfx::SurfaceFactoryOzone::UNKNOWN;
 }
 
 OverlayCandidateValidatorOzone::OverlayCandidateValidatorOzone(
