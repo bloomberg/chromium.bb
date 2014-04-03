@@ -6,7 +6,6 @@
 
 #include "ash/screensaver/screensaver_view.h"
 #include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 using extensions::Extension;
 using extensions::SandboxedUnpacker;

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/recommendation_restorer.h"
 
 #include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace policy {
 
@@ -103,7 +103,7 @@ void RecommendationRestorer::Restore(bool allow_delay,
     allow_delay = false;
   } else if (allow_delay && ash::Shell::HasInstance()) {
     // Skip the delay if there has been no user input since the browser started.
-    const ash::UserActivityDetector* user_activity_detector =
+    const wm::UserActivityDetector* user_activity_detector =
         ash::Shell::GetInstance()->user_activity_detector();
     allow_delay = !user_activity_detector->last_activity_time().is_null();
   }
@@ -128,7 +128,7 @@ void RecommendationRestorer::StartTimer() {
   // active, causing it to fire only when the user remains idle for
   // |kRestoreDelayInMs|.
   if (ash::Shell::HasInstance()) {
-    ash::UserActivityDetector* user_activity_detector =
+    wm::UserActivityDetector* user_activity_detector =
         ash::Shell::GetInstance()->user_activity_detector();
     if (!user_activity_detector->HasObserver(this))
       user_activity_detector->AddObserver(this);

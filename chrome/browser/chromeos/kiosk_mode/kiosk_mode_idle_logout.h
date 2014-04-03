@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_KIOSK_MODE_KIOSK_MODE_IDLE_LOGOUT_H_
 #define CHROME_BROWSER_CHROMEOS_KIOSK_MODE_KIOSK_MODE_IDLE_LOGOUT_H_
 
-#include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/wm/core/user_activity_observer.h"
 
 namespace chromeos {
 
-class KioskModeIdleLogout : public ash::UserActivityObserver,
+class KioskModeIdleLogout : public wm::UserActivityObserver,
                             public content::NotificationObserver {
  public:
   static void Initialize();
@@ -33,7 +33,7 @@ class KioskModeIdleLogout : public ash::UserActivityObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // UserActivityObserver overrides:
+  // wm::UserActivityObserver overrides:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // Begins listening for user activity and calls ResetTimer().

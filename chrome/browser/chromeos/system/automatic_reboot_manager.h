@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_AUTOMATIC_REBOOT_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_AUTOMATIC_REBOOT_MANAGER_H_
 
-#include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,6 +17,7 @@
 #include "chromeos/dbus/update_engine_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/wm/core/user_activity_observer.h"
 
 class PrefRegistrySimple;
 
@@ -72,7 +72,7 @@ class AutomaticRebootManagerObserver;
 // /var/run ensures that it gets cleared automatically on every boot.
 class AutomaticRebootManager : public PowerManagerClient::Observer,
                                public UpdateEngineClient::Observer,
-                               public ash::UserActivityObserver,
+                               public wm::UserActivityObserver,
                                public content::NotificationObserver {
  public:
   // The current uptime and the uptime at which an update was applied and a
@@ -103,7 +103,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   virtual void UpdateStatusChanged(
       const UpdateEngineClient::Status& status) OVERRIDE;
 
-  // ash::UserActivityObserver:
+  // wm::UserActivityObserver:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // content::NotificationObserver:

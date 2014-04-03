@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_idle_logout.h"
 
 #include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 

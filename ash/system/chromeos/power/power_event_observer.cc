@@ -8,10 +8,10 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/power_button_controller.h"
-#include "ash/wm/user_activity_detector.h"
 #include "base/prefs/pref_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/display/chromeos/output_configurator.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
 namespace internal {

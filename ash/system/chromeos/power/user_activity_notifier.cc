@@ -4,13 +4,12 @@
 
 #include "ash/system/chromeos/power/user_activity_notifier.h"
 
-#include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace ash {
 namespace internal {
@@ -44,7 +43,7 @@ power_manager::UserActivityType GetUserActivityTypeForEvent(
 
 }  // namespace
 
-UserActivityNotifier::UserActivityNotifier(UserActivityDetector* detector)
+UserActivityNotifier::UserActivityNotifier(::wm::UserActivityDetector* detector)
     : detector_(detector) {
   detector_->AddObserver(this);
 }

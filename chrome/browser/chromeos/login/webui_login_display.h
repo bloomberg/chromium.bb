@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/wm/user_activity_observer.h"
 #include "base/compiler_specific.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/login_display.h"
@@ -16,13 +15,14 @@
 #include "chrome/browser/ui/webui/chromeos/login/native_window_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/user_activity_observer.h"
 
 namespace chromeos {
 // WebUI-based login UI implementation.
 class WebUILoginDisplay : public LoginDisplay,
                           public NativeWindowDelegate,
                           public SigninScreenHandlerDelegate,
-                          public ash::UserActivityObserver {
+                          public wm::UserActivityObserver {
  public:
   explicit WebUILoginDisplay(LoginDisplay::Delegate* delegate);
   virtual ~WebUILoginDisplay();
@@ -96,7 +96,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void LoginAsKioskApp(const std::string& app_id,
                                bool diagnostic_mode) OVERRIDE;
 
-  // UserActivityDetector implementation:
+  // wm::UserActivityDetector implementation:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
  private:

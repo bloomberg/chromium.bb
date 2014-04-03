@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/user_activity_detector.h"
+#include "ui/wm/core/user_activity_detector.h"
 
-#include "ash/wm/user_activity_observer.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/events/event.h"
+#include "ui/wm/core/user_activity_observer.h"
 
-namespace ash {
+namespace wm {
 
 namespace {
 
@@ -109,4 +109,4 @@ void UserActivityDetector::HandleActivity(const ui::Event* event) {
   }
 }
 
-}  // namespace ash
+}  // namespace wm

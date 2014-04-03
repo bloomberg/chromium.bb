@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_IDLE_DETECTOR_H_
 #define CHROME_BROWSER_CHROMEOS_IDLE_DETECTOR_H_
 
-#include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "ui/wm/core/user_activity_observer.h"
 
 namespace chromeos {
 
-class IdleDetector : public ash::UserActivityObserver {
+class IdleDetector : public wm::UserActivityObserver {
  public:
   IdleDetector(const base::Closure& on_active_callback,
                const base::Closure& on_idle_callback);
@@ -23,7 +23,7 @@ class IdleDetector : public ash::UserActivityObserver {
   void Start(const base::TimeDelta& timeout);
 
  private:
-  // UserActivityObserver overrides:
+  // wm::UserActivityObserver overrides:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // Resets |timer_| to fire when we reach our idle timeout.

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/pref_names.h"
 #include "ui/events/event.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 

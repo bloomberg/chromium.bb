@@ -71,7 +71,6 @@
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/toplevel_window_event_handler.h"
-#include "ash/wm/user_activity_detector.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioner.h"
@@ -107,6 +106,7 @@
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/shadow_controller.h"
+#include "ui/wm/core/user_activity_detector.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_modality_controller.h"
 
@@ -878,9 +878,9 @@ void Shell::Init() {
   AddPreTargetHandler(sticky_keys_controller_.get());
 #endif
 
-  // UserActivityDetector passes events to observers, so let them get
+  // wm::UserActivityDetector passes events to observers, so let them get
   // rewritten first.
-  user_activity_detector_.reset(new UserActivityDetector);
+  user_activity_detector_.reset(new ::wm::UserActivityDetector);
   AddPreTargetHandler(user_activity_detector_.get());
 
   overlay_filter_.reset(new internal::OverlayEventFilter);

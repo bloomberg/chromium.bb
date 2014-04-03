@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 
 #include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -20,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 
@@ -34,7 +34,7 @@ const int kPasswordClearTimeoutSec = 60;
 WebUILoginDisplay::~WebUILoginDisplay() {
   if (webui_handler_)
     webui_handler_->ResetSigninScreenHandlerDelegate();
-  ash::UserActivityDetector* activity_detector = ash::Shell::GetInstance()->
+  wm::UserActivityDetector* activity_detector = ash::Shell::GetInstance()->
       user_activity_detector();
   if (activity_detector->HasObserver(this))
     activity_detector->RemoveObserver(this);
@@ -66,7 +66,7 @@ void WebUILoginDisplay::Init(const UserList& users,
   show_users_ = show_users;
   show_new_user_ = show_new_user;
 
-  ash::UserActivityDetector* activity_detector = ash::Shell::GetInstance()->
+  wm::UserActivityDetector* activity_detector = ash::Shell::GetInstance()->
       user_activity_detector();
   if (!activity_detector->HasObserver(this))
     activity_detector->AddObserver(this);

@@ -1,33 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/user_activity_detector.h"
+#include "ui/wm/core/user_activity_detector.h"
 
-#include "ash/shell.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/wm/user_activity_observer.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "ui/aura/test/test_windows.h"
-#include "ui/aura/window.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
+#include "ui/wm/core/user_activity_observer.h"
 
-namespace {
-
-void SetEventTarget(ui::EventTarget* target, ui::Event* event) {
-  ui::Event::DispatcherApi dispatch_helper(event);
-  dispatch_helper.set_target(target);
-}
-
-}
-
-namespace ash {
-namespace test {
+namespace wm {
 
 // Implementation that just counts the number of times we've been told that the
 // user is active.
@@ -50,15 +37,15 @@ class TestUserActivityObserver : public UserActivityObserver {
   DISALLOW_COPY_AND_ASSIGN(TestUserActivityObserver);
 };
 
-class UserActivityDetectorTest : public AshTestBase {
+class UserActivityDetectorTest : public aura::test::AuraTestBase {
  public:
   UserActivityDetectorTest() {}
   virtual ~UserActivityDetectorTest() {}
 
   virtual void SetUp() OVERRIDE {
-    AshTestBase::SetUp();
+    AuraTestBase::SetUp();
     observer_.reset(new TestUserActivityObserver);
-    detector_ = Shell::GetInstance()->user_activity_detector();
+    detector_.reset(new UserActivityDetector);
     detector_->AddObserver(observer_.get());
 
     now_ = base::TimeTicks::Now();
@@ -67,7 +54,7 @@ class UserActivityDetectorTest : public AshTestBase {
 
   virtual void TearDown() OVERRIDE {
     detector_->RemoveObserver(observer_.get());
-    AshTestBase::TearDown();
+    AuraTestBase::TearDown();
   }
 
  protected:
@@ -77,8 +64,7 @@ class UserActivityDetectorTest : public AshTestBase {
     detector_->set_now_for_test(now_);
   }
 
-  UserActivityDetector* detector_;  // not owned
-
+  scoped_ptr<UserActivityDetector> detector_;
   scoped_ptr<TestUserActivityObserver> observer_;
 
   base::TimeTicks now_;
@@ -90,10 +76,7 @@ class UserActivityDetectorTest : public AshTestBase {
 // Checks that the observer is notified in response to different types of input
 // events.
 TEST_F(UserActivityDetectorTest, Basic) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(12345));
-
   ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
-  SetEventTarget(window.get(), &key_event);
   detector_->OnKeyEvent(&key_event);
   EXPECT_FALSE(key_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
@@ -106,7 +89,6 @@ TEST_F(UserActivityDetectorTest, Basic) {
   AdvanceTime(advance_delta);
   ui::MouseEvent mouse_event(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE, ui::EF_NONE);
-  SetEventTarget(window.get(), &mouse_event);
   detector_->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
@@ -148,7 +130,6 @@ TEST_F(UserActivityDetectorTest, Basic) {
   AdvanceTime(advance_delta);
   ui::TouchEvent touch_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
-  SetEventTarget(window.get(), &touch_event);
   detector_->OnTouchEvent(&touch_event);
   EXPECT_FALSE(touch_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
@@ -161,7 +142,6 @@ TEST_F(UserActivityDetectorTest, Basic) {
       ui::ET_GESTURE_TAP, 0, 0, ui::EF_NONE,
       base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 0, 0), 0U);
-  SetEventTarget(window.get(), &gesture_event);
   detector_->OnGestureEvent(&gesture_event);
   EXPECT_FALSE(gesture_event.handled());
   EXPECT_EQ(now_.ToInternalValue(),
@@ -172,18 +152,15 @@ TEST_F(UserActivityDetectorTest, Basic) {
 
 // Checks that observers aren't notified too frequently.
 TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(12345));
-
   // The observer should be notified about a key event.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
-  SetEventTarget(window.get(), &event);
   detector_->OnKeyEvent(&event);
   EXPECT_FALSE(event.handled());
   EXPECT_EQ(1, observer_->num_invocations());
   observer_->reset_stats();
 
-  // It shouldn't be notified if a second event occurs
-  // in the same instant in time.
+  // It shouldn't be notified if a second event occurs in the same instant in
+  // time.
   detector_->OnKeyEvent(&event);
   EXPECT_FALSE(event.handled());
   EXPECT_EQ(0, observer_->num_invocations());
@@ -210,11 +187,9 @@ TEST_F(UserActivityDetectorTest, RateLimitNotifications) {
 
 // Checks that the detector ignores synthetic mouse events.
 TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
-  scoped_ptr<aura::Window> window(CreateTestWindowInShellWithId(12345));
   ui::MouseEvent mouse_event(
       ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(), ui::EF_IS_SYNTHESIZED,
       ui::EF_NONE);
-  SetEventTarget(window.get(), &mouse_event);
   detector_->OnMouseEvent(&mouse_event);
   EXPECT_FALSE(mouse_event.handled());
   EXPECT_EQ(base::TimeTicks().ToInternalValue(),
@@ -222,5 +197,4 @@ TEST_F(UserActivityDetectorTest, IgnoreSyntheticMouseEvents) {
   EXPECT_EQ(0, observer_->num_invocations());
 }
 
-}  // namespace test
-}  // namespace ash
+}  // namespace wm

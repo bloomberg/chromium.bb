@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_KIOSK_MODE_KIOSK_MODE_SCREENSAVER_H_
 #define CHROME_BROWSER_CHROMEOS_KIOSK_MODE_KIOSK_MODE_SCREENSAVER_H_
 
-#include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/wm/core/user_activity_observer.h"
 
 namespace extensions {
 class Extension;
@@ -16,7 +16,7 @@ class Extension;
 
 namespace chromeos {
 
-class KioskModeScreensaver : public ash::UserActivityObserver {
+class KioskModeScreensaver : public wm::UserActivityObserver {
  public:
   KioskModeScreensaver();
   virtual ~KioskModeScreensaver();
@@ -24,7 +24,7 @@ class KioskModeScreensaver : public ash::UserActivityObserver {
  private:
   friend class KioskModeScreensaverTest;
 
-  // UserActivityObserver overrides:
+  // wm::UserActivityObserver overrides:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // Initialization functions, in order

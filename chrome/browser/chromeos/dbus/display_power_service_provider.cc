@@ -5,12 +5,12 @@
 #include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
 
 #include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/chromeos/output_configurator.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 

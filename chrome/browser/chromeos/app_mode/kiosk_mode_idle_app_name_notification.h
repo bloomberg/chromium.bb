@@ -5,17 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_MODE_IDLE_APP_NAME_NOTIFICATION_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_MODE_IDLE_APP_NAME_NOTIFICATION_H_
 
-#include "ash/wm/user_activity_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/wm/core/user_activity_observer.h"
 
 namespace chromeos {
 class IdleAppNameNotificationView;
 
-class KioskModeIdleAppNameNotification : public ash::UserActivityObserver,
+class KioskModeIdleAppNameNotification : public wm::UserActivityObserver,
                                          public PowerManagerClient::Observer {
  public:
   static void Initialize();
@@ -29,7 +29,7 @@ class KioskModeIdleAppNameNotification : public ash::UserActivityObserver,
   // Initialize idle app message when KioskModeHelper is initialized.
   void Setup();
 
-  // UserActivityObserver overrides:
+  // wm::UserActivityObserver overrides:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;
 
   // PowerManagerClient::Observer overrides:

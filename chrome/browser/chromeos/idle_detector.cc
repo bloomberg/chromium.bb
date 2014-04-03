@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/idle_detector.h"
 
 #include "ash/shell.h"
-#include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "ui/wm/core/user_activity_detector.h"
 
 namespace chromeos {
 

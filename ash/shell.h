@@ -68,6 +68,7 @@ class CompoundEventFilter;
 class InputMethodEventFilter;
 class ShadowController;
 class VisibilityController;
+class UserActivityDetector;
 class WindowModalityController;
 }
 
@@ -105,7 +106,6 @@ class SystemTray;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
-class UserActivityDetector;
 class UserWallpaperDelegate;
 class VideoDetector;
 class WebNotificationTray;
@@ -365,7 +365,7 @@ class ASH_EXPORT Shell
   MruWindowTracker* mru_window_tracker() {
     return mru_window_tracker_.get();
   }
-  UserActivityDetector* user_activity_detector() {
+  ::wm::UserActivityDetector* user_activity_detector() {
     return user_activity_detector_.get();
   }
   VideoDetector* video_detector() {
@@ -654,7 +654,7 @@ class ASH_EXPORT Shell
   scoped_ptr<PowerButtonController> power_button_controller_;
   scoped_ptr<LockStateController> lock_state_controller_;
   scoped_ptr<MruWindowTracker> mru_window_tracker_;
-  scoped_ptr<UserActivityDetector> user_activity_detector_;
+  scoped_ptr< ::wm::UserActivityDetector> user_activity_detector_;
   scoped_ptr<VideoDetector> video_detector_;
   scoped_ptr<WindowSelectorController> window_selector_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;

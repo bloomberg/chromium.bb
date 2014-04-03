@@ -1,22 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_USER_ACTIVITY_OBSERVER_H_
-#define ASH_WM_USER_ACTIVITY_OBSERVER_H_
+#ifndef UI_WM_CORE_USER_ACTIVITY_OBSERVER_H_
+#define UI_WM_CORE_USER_ACTIVITY_OBSERVER_H_
 
-#include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace ui {
 class Event;
 }
 
-namespace ash {
+namespace wm {
 
 // Interface for classes that want to be notified about user activity.
 // Implementations should register themselves with UserActivityDetector.
-class ASH_EXPORT UserActivityObserver {
+class WM_CORE_EXPORT UserActivityObserver {
  public:
   // Invoked periodically while the user is active (i.e. generating input
   // events). |event| is the event that triggered the notification; it may
@@ -30,6 +30,6 @@ class ASH_EXPORT UserActivityObserver {
   DISALLOW_COPY_AND_ASSIGN(UserActivityObserver);
 };
 
-}  // namespace ash
+}  // namespace wm
 
-#endif  // ASH_WM_USER_ACTIVITY_OBSERVER_H_
+#endif  // UI_WM_CORE_USER_ACTIVITY_OBSERVER_H_
