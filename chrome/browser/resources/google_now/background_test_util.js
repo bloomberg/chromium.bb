@@ -26,3 +26,6 @@ mockChromeEvent(instrumented, 'notifications.onShowSettings');
 mockChromeEvent(instrumented, 'pushMessaging.onMessage');
 mockChromeEvent(instrumented, 'runtime.onInstalled');
 mockChromeEvent(instrumented, 'runtime.onStartup');
+
+NOTIFICATION_CARDS_URL = 'https://test/';
+navigator = {language: 'en-US'};

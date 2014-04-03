@@ -24,7 +24,12 @@ GoogleNowBackgroundUnitTest.prototype = {
   ]
 };
 
-TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
+var TEST_NAME = 'GoogleNowBackgroundUnitTest';
+
+/**
+ * Tasks Conflict Test
+ */
+TEST_F(TEST_NAME, 'AreTasksConflicting', function() {
   function testTaskPair(newTaskName, scheduledTaskName, expected) {
     assertTrue(areTasksConflicting(newTaskName, scheduledTaskName) == expected,
                '(' + newTaskName + ', ' + scheduledTaskName + ')');
@@ -54,7 +59,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AreTasksConflicting', function() {
 /**
  * Server Request Tests
  */
-TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestSuccess', function() {
+TEST_F(TEST_NAME, 'AuthServerRequestSuccess', function() {
   expectServerRequests(this, 200, '{}');
   var callbackCalled = false;
   requestFromServer('GET', 'test/target').then(function(request) {
@@ -65,7 +70,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestSuccess', function() {
   assertTrue(callbackCalled);
 });
 
-TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestForbidden', function() {
+TEST_F(TEST_NAME, 'AuthServerRequestForbidden', function() {
   this.makeAndRegisterMockApis(['authenticationManager.removeToken']);
   this.mockApis.expects(once()).authenticationManager_removeToken(ANYTHING);
 
@@ -80,7 +85,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestForbidden', function() {
   assertTrue(callbackCalled);
 });
 
-TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestNoAuth', function() {
+TEST_F(TEST_NAME, 'AuthServerRequestNoAuth', function() {
   this.makeAndRegisterMockApis(['authenticationManager.removeToken']);
   this.mockApis.expects(once()).authenticationManager_removeToken(ANYTHING);
 
@@ -136,7 +141,7 @@ function expectServerRequests(fixture, httpStatus, responseText) {
       .will(invokeCallback(loadEndSavedArgs, 1, mockXMLHttpRequestProxy));
 }
 
-TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestNoToken', function() {
+TEST_F(TEST_NAME, 'AuthServerRequestNoToken', function() {
   this.makeAndRegisterMockApis([
     'authenticationManager.getAuthToken',
     'buildServerRequest'
@@ -156,6 +161,329 @@ TEST_F('GoogleNowBackgroundUnitTest', 'AuthServerRequestNoToken', function() {
   assertFalse(thenCalled);
   assertTrue(catchCalled);
 })
+
+/**
+ * requestNotificationGroupsFromServer Tests
+ */
+TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerEmpty', function() {
+  this.makeAndRegisterMockGlobals([
+    'shouldShowExplanatoryCard',
+    'recordEvent',
+    'requestFromServer'
+  ]);
+
+  this.mockGlobals.expects(once()).shouldShowExplanatoryCard()
+      .will(returnValue(false));
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
+
+  var requestFromServerArgs = new SaveMockArguments();
+  this.mockGlobals.expects(once()).requestFromServer(
+      requestFromServerArgs.match(eq('GET')),
+      requestFromServerArgs.match(ANYTHING))
+      .will(returnValue(
+          Promise.resolve({status: 200, responseText: "{}"})));
+
+  requestNotificationGroupsFromServer([]);
+
+  var pathAndQuery = requestFromServerArgs.arguments[1];
+  var query = pathAndQuery.split('?')[1];
+  assertTrue(query.search('timeZoneOffsetMs') >= 0);
+  assertTrue(query.search('uiLocale') >= 0);
+  assertFalse(query.search('cardExplanation') >= 0);
+});
+
+TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerWithGroups', function() {
+  this.makeAndRegisterMockGlobals([
+    'shouldShowExplanatoryCard',
+    'recordEvent',
+    'requestFromServer'
+  ]);
+
+  this.mockGlobals.expects(once()).shouldShowExplanatoryCard()
+      .will(returnValue(false));
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
+
+  var requestFromServerArgs = new SaveMockArguments();
+  this.mockGlobals.expects(once()).requestFromServer(
+      requestFromServerArgs.match(eq('GET')),
+      requestFromServerArgs.match(ANYTHING))
+      .will(returnValue(
+          Promise.resolve({status: 200, responseText: "{}"})));
+
+  requestNotificationGroupsFromServer(['A', 'B', 'C']);
+
+  var pathAndQuery = requestFromServerArgs.arguments[1];
+  var query = pathAndQuery.split('?')[1];
+  assertTrue(query.search('timeZoneOffsetMs') >= 0);
+  assertTrue(query.search('uiLocale') >= 0);
+  assertFalse(query.search('cardExplanation') >= 0);
+  assertTrue(query.search('requestTypes=A') >= 0);
+  assertTrue(query.search('requestTypes=B') >= 0);
+  assertTrue(query.search('requestTypes=C') >= 0);
+});
+
+TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerExplanatory', function() {
+  this.makeAndRegisterMockGlobals([
+    'shouldShowExplanatoryCard',
+    'recordEvent',
+    'requestFromServer'
+  ]);
+
+  this.mockGlobals.expects(once()).shouldShowExplanatoryCard()
+      .will(returnValue(true));
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
+
+  var requestFromServerArgs = new SaveMockArguments();
+  this.mockGlobals.expects(once()).requestFromServer(
+      requestFromServerArgs.match(eq('GET')),
+      requestFromServerArgs.match(ANYTHING))
+      .will(returnValue(
+          Promise.resolve({status: 200, responseText: "{}"})));
+
+  requestNotificationGroupsFromServer([]);
+
+  var pathAndQuery = requestFromServerArgs.arguments[1];
+  var query = pathAndQuery.split('?')[1];
+  assertTrue(query.search('timeZoneOffsetMs') >= 0);
+  assertTrue(query.search('uiLocale') >= 0);
+  assertTrue(query.search('cardExplanation=true') >= 0);
+});
+
+TEST_F(TEST_NAME, 'RequestNotificationGroupsFromServerFailure', function() {
+  this.makeAndRegisterMockGlobals([
+    'shouldShowExplanatoryCard',
+    'recordEvent',
+    'requestFromServer'
+  ]);
+
+  this.mockGlobals.expects(once()).shouldShowExplanatoryCard()
+      .will(returnValue(false));
+
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_TOTAL);
+
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
+
+  var requestFromServerArgs = new SaveMockArguments();
+  this.mockGlobals.expects(once()).requestFromServer(
+      requestFromServerArgs.match(eq('GET')),
+      requestFromServerArgs.match(ANYTHING))
+      .will(returnValue(
+          Promise.resolve({status: 401})));
+
+  requestNotificationGroupsFromServer([]);
+});
+
+/**
+ * requestAndUpdateOptIn Tests
+ */
+TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedIn', function() {
+  this.makeAndRegisterMockApis([
+    'chrome.storage.local.set',
+    'onStateChange',
+    'requestFromServer',
+    'scheduleNextPoll'
+  ]);
+
+  this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
+      .will(returnValue(Promise.resolve({
+        status: 200,
+        responseText: '{"value": true}'})));
+
+  this.mockApis.expects(once())
+      .chrome_storage_local_set(eqJSON({googleNowEnabled: true}));
+
+  this.mockApis.expects(once()).onStateChange();
+
+  this.mockApis.expects(never()).scheduleNextPoll();
+
+  var thenCalled = false;
+  var catchCalled = false;
+  requestAndUpdateOptedIn().then(function() {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertTrue(thenCalled);
+  assertFalse(catchCalled);
+});
+
+TEST_F(TEST_NAME, 'RequestAndUpdateOptInOptedOut', function() {
+  this.makeAndRegisterMockApis([
+    'chrome.storage.local.set',
+    'onStateChange',
+    'requestFromServer',
+    'scheduleNextPoll'
+  ]);
+
+  this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
+      .will(returnValue(Promise.resolve({
+        status: 200,
+        responseText: '{"value": false}'})));
+
+  this.mockApis.expects(never()).chrome_storage_local_set();
+
+  this.mockApis.expects(never()).onStateChange();
+
+  this.mockApis.expects(once()).scheduleNextPoll(eqJSON({}), false);
+
+  var thenCalled = false;
+  var catchCalled = false;
+  requestAndUpdateOptedIn().then(function() {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertFalse(thenCalled);
+  assertTrue(catchCalled);
+});
+
+TEST_F(TEST_NAME, 'RequestAndUpdateOptInFailure', function() {
+  this.makeAndRegisterMockApis([
+    'chrome.storage.local.set',
+    'onStateChange',
+    'requestFromServer',
+    'scheduleNextPoll'
+  ]);
+
+  this.mockApis.expects(once()).requestFromServer('GET', 'settings/optin')
+      .will(returnValue(Promise.resolve({status: 404})));
+
+  this.mockApis.expects(never()).chrome_storage_local_set();
+
+  this.mockApis.expects(never()).onStateChange();
+
+  this.mockApis.expects(never()).scheduleNextPoll();
+
+  var thenCalled = false;
+  var catchCalled = false;
+  requestAndUpdateOptedIn().then(function() {
+    thenCalled = true;
+  }).catch(function() {
+    catchCalled = true;
+  });
+  assertFalse(thenCalled);
+  assertTrue(catchCalled);
+});
+
+/**
+ * getGroupsToRequest Tests
+ */
+TEST_F(TEST_NAME, 'GetGroupsToRequestNone', function() {
+  this.makeAndRegisterMockApis([
+    'fillFromChromeLocalStorage',
+    'Date.now'
+  ]);
+
+  this.mockApis.expects(once())
+      .fillFromChromeLocalStorage(eqJSON({notificationGroups: {}}))
+      .will(returnValue(Promise.resolve({notificationGroups: {}})));
+
+  this.mockApis.expects(once()).Date_now().will(returnValue(20));
+
+  getGroupsToRequest().then(function(groupsToRequest) {
+    assertTrue(JSON.stringify(groupsToRequest) === '[]');
+  });
+});
+
+TEST_F(TEST_NAME, 'GetGroupsToRequestWithGroups', function() {
+  this.makeAndRegisterMockApis([
+    'fillFromChromeLocalStorage',
+    'Date.now'
+  ]);
+
+  this.mockApis.expects(once())
+      .fillFromChromeLocalStorage(eqJSON({notificationGroups: {}}))
+      .will(returnValue(Promise.resolve({notificationGroups: {
+        TIME18: {nextPollTime: 18},
+        TIME19: {nextPollTime: 19},
+        TIME20: {nextPollTime: 20},
+        TIME21: {nextPollTime: 21},
+        TIME22: {nextPollTime: 22},
+        TIMEUNDEF: {}
+      }})));
+
+  this.mockApis.expects(once()).Date_now().will(returnValue(20));
+
+  getGroupsToRequest().then(function(groupsToRequest) {
+    assertTrue(groupsToRequest.length == 3);
+    assertTrue(groupsToRequest.indexOf('TIME18') >= 0);
+    assertTrue(groupsToRequest.indexOf('TIME19') >= 0);
+    assertTrue(groupsToRequest.indexOf('TIME20') >= 0);
+  });
+});
+
+/**
+ * combineGroup Tests
+ */
+TEST_F(TEST_NAME, 'CombineGroup', function() {
+  // Tests combineGroup function. Verifies that both notifications with and
+  // without show time are handled correctly and that cards are correctly
+  // added to existing cards with same ID or start a new combined card.
+
+  // Setup and expectations.
+  var combinedCards = {
+    'EXISTING CARD': [1]
+  };
+
+  var receivedNotificationNoShowTime = {
+    chromeNotificationId: 'EXISTING CARD',
+    trigger: {hideTimeSec: 1}
+  };
+  var receivedNotificationWithShowTime = {
+    chromeNotificationId: 'NEW CARD',
+    trigger: {showTimeSec: 2, hideTimeSec: 3}
+  }
+
+  var storedGroup = {
+    cardsTimestamp: 10000,
+    cards: [
+      receivedNotificationNoShowTime,
+      receivedNotificationWithShowTime
+    ]
+  };
+
+  // Invoking the tested function.
+  combineGroup(combinedCards, storedGroup);
+
+  // Check the output value.
+  var expectedCombinedCards = {
+    'EXISTING CARD': [
+      1,
+      {
+        receivedNotification: receivedNotificationNoShowTime,
+        hideTime: 11000
+      }
+    ],
+    'NEW CARD': [
+      {
+        receivedNotification: receivedNotificationWithShowTime,
+        showTime: 12000,
+        hideTime: 13000
+      }
+    ]
+  };
+
+  assertEquals(
+      JSON.stringify(expectedCombinedCards),
+      JSON.stringify(combinedCards));
+});
 
 /**
  * Mocks global functions and APIs that initialize() depends upon.
@@ -257,45 +585,40 @@ function expectInitialization(mockApisObj) {
              updateCardsAttemptsIsRunningSavedArgs, 0, false));
 }
 
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'Initialize_ToastStateEmpty',
-    function() {
-      // Tests the case when getAuthToken fails most likely because the user is
-      // not signed in. In this case, the function should quietly exit after
-      // finding out that getAuthToken fails.
+TEST_F(TEST_NAME,'Initialize_ToastStateEmpty', function() {
+  // Tests the case when getAuthToken fails most likely because the user is
+  // not signed in. In this case, the function should quietly exit after
+  // finding out that getAuthToken fails.
 
-      // Setup and expectations.
-      var testIdentityToken = undefined;
-      var testExperimentVariationParams = {};
-      var testNotificationPermissionLevel = 'denied';
-      var testGoogleNowEnabled = undefined;
+  // Setup and expectations.
+  var testIdentityToken = undefined;
+  var testExperimentVariationParams = {};
+  var testNotificationPermissionLevel = 'denied';
+  var testGoogleNowEnabled = undefined;
 
-      mockInitializeDependencies(this);
+  mockInitializeDependencies(this);
 
-      this.mockGlobals.expects(once()).recordEvent(
-          GoogleNowEvent.EXTENSION_START);
+  this.mockGlobals.expects(once()).recordEvent(GoogleNowEvent.EXTENSION_START);
 
-      this.mockGlobals.expects(once()).recordEvent(
-          GoogleNowEvent.STOPPED);
+  this.mockGlobals.expects(once()).recordEvent(GoogleNowEvent.STOPPED);
 
-      this.mockGlobals.expects(once()).recordEvent(
-          GoogleNowEvent.SIGNED_OUT);
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.SIGNED_OUT);
 
-      expectInitialization(this.mockApis);
+  expectInitialization(this.mockApis);
 
-      expectStateMachineCalls(
-          this,
-          testIdentityToken,
-          testExperimentVariationParams,
-          testNotificationPermissionLevel,
-          testGoogleNowEnabled);
+  expectStateMachineCalls(
+      this,
+      testIdentityToken,
+      testExperimentVariationParams,
+      testNotificationPermissionLevel,
+      testGoogleNowEnabled);
 
-      // Invoking the tested function.
-      initialize();
-    });
+  // Invoking the tested function.
+  initialize();
+});
 
-TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
+TEST_F(TEST_NAME, 'Initialize_RunGoogleNow', function() {
   // Tests if Google Now will invoke startPollingCards when all
   // of the required state is fulfilled.
 
@@ -307,8 +630,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
 
   mockInitializeDependencies(this);
 
-  this.mockGlobals.expects(once()).recordEvent(
-        GoogleNowEvent.EXTENSION_START);
+  this.mockGlobals.expects(once()).recordEvent(GoogleNowEvent.EXTENSION_START);
 
   expectInitialization(this.mockApis);
 
@@ -328,7 +650,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
 /**
  * No Cards Event Recording Tests
  */
-TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsSignedOut', function() {
+TEST_F(TEST_NAME, 'NoCardsSignedOut', function() {
   var signedIn = false;
   var notificationEnabled = false;
   var googleNowEnabled = false;
@@ -351,33 +673,30 @@ TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsSignedOut', function() {
   updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
 });
 
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'NoCardsNotificationsDisabled',
-    function() {
-      var signedIn = true;
-      var notificationEnabled = false;
-      var googleNowEnabled = false;
-      this.makeAndRegisterMockGlobals([
-          'recordEvent',
-          'setBackgroundEnable',
-          'setShouldPollCards']);
+TEST_F(TEST_NAME, 'NoCardsNotificationsDisabled', function() {
+  var signedIn = true;
+  var notificationEnabled = false;
+  var googleNowEnabled = false;
+  this.makeAndRegisterMockGlobals([
+      'recordEvent',
+      'setBackgroundEnable',
+      'setShouldPollCards']);
 
-      this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
-      this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
+  this.mockGlobals.stubs().setBackgroundEnable(ANYTHING);
+  this.mockGlobals.stubs().setShouldPollCards(ANYTHING);
 
-      this.mockGlobals.expects(once()).recordEvent(
-          GoogleNowEvent.STOPPED);
-      this.mockGlobals.expects(never()).recordEvent(
-          GoogleNowEvent.SIGNED_OUT);
-      this.mockGlobals.expects(once()).recordEvent(
-          GoogleNowEvent.NOTIFICATION_DISABLED);
-      this.mockGlobals.expects(never()).recordEvent(
-          GoogleNowEvent.GOOGLE_NOW_DISABLED);
-      updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
-    });
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.STOPPED);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.SIGNED_OUT);
+  this.mockGlobals.expects(once()).recordEvent(
+      GoogleNowEvent.NOTIFICATION_DISABLED);
+  this.mockGlobals.expects(never()).recordEvent(
+      GoogleNowEvent.GOOGLE_NOW_DISABLED);
+  updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
+});
 
-TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsGoogleNowDisabled', function() {
+TEST_F(TEST_NAME, 'NoCardsGoogleNowDisabled', function() {
   var signedIn = true;
   var notificationEnabled = true;
   var googleNowEnabled = false;
@@ -400,7 +719,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsGoogleNowDisabled', function() {
   updateRunningState(signedIn, true, notificationEnabled, googleNowEnabled);
 });
 
-TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsEverythingEnabled', function() {
+TEST_F(TEST_NAME, 'NoCardsEverythingEnabled', function() {
   var signedIn = true;
   var notificationEnabled = true;
   var googleNowEnabled = true;
@@ -429,562 +748,375 @@ TEST_F('GoogleNowBackgroundUnitTest', 'NoCardsEverythingEnabled', function() {
  */
 function mockOnNotificationClickedDependencies(fixture) {
   fixture.makeAndRegisterMockApis([
-      'chrome.windows.create',
-      'chrome.windows.update',
-      'fillFromChromeLocalStorage',
-      'instrumented.tabs.create']);
+    'chrome.windows.create',
+    'chrome.windows.update',
+    'fillFromChromeLocalStorage',
+    'instrumented.tabs.create']);
 }
 
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'OnNotificationClicked_NoData',
-    function() {
-      // Tests the case when there is no data associated with notification id.
-      // In this case, the function should do nothing.
-
-      // Setup and expectations.
-      var testNotificationId = 'TEST_ID';
-      var testNotificationDataRequest = {notificationsData: {}};
-      var testNotificationData = {notificationsData: {}};
-
-      mockOnNotificationClickedDependencies(this);
-      this.makeMockLocalFunctions(['selector']);
-
-      expectChromeLocalStorageGet(
-          this, testNotificationDataRequest, testNotificationData);
-
-      // Invoking the tested function.
-      onNotificationClicked(
-          testNotificationId, this.mockLocalFunctions.functions().selector);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'OnNotificationClicked_ActionUrlsUndefined',
-    function() {
-      // Tests the case when the data associated with notification id is
-      // 'undefined'.
-      // In this case, the function should do nothing.
-
-      // Setup and expectations.
-      var testActionUrls = undefined;
-      var testNotificationId = 'TEST_ID';
-      var testNotificationDataRequest = {notificationsData: {}};
-      var testNotificationData = {
-          notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
-      };
-
-      mockOnNotificationClickedDependencies(this);
-      this.makeMockLocalFunctions(['selector']);
-
-      expectChromeLocalStorageGet(
-          this, testNotificationDataRequest, testNotificationData);
-
-      this.mockLocalFunctions.expects(once())
-          .selector(eqJSON(
-              testNotificationData.notificationsData[testNotificationId]))
-          .will(returnValue(undefined));
-
-      // Invoking the tested function.
-      onNotificationClicked(
-          testNotificationId, this.mockLocalFunctions.functions().selector);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'OnNotificationClicked_TabCreateSuccess',
-    function() {
-      // Tests the selected URL is OK and crome.tabs.create suceeds.
-
-      // Setup and expectations.
-      var testActionUrls = {testField: 'TEST VALUE'};
-      var testNotificationId = 'TEST_ID';
-      var testNotificationDataRequest = {notificationsData: {}};
-      var testNotificationData = {
-          notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
-      };
-      var testActionUrl = 'http://testurl.com';
-      var testCreatedTab = {windowId: 239};
-
-      mockOnNotificationClickedDependencies(this);
-      this.makeMockLocalFunctions(['selector']);
-
-      expectChromeLocalStorageGet(
-          this, testNotificationDataRequest, testNotificationData);
-      this.mockLocalFunctions.expects(once())
-          .selector(eqJSON(
-              testNotificationData.notificationsData[testNotificationId]))
-          .will(returnValue(testActionUrl));
-      var chromeTabsCreateSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_tabs_create(
-              chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
-              chromeTabsCreateSavedArgs.match(ANYTHING)).
-          will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
-      this.mockApis.expects(once()).chrome_windows_update(
-          testCreatedTab.windowId,
-          eqJSON({focused: true}));
-
-      // Invoking the tested function.
-      onNotificationClicked(
-          testNotificationId, this.mockLocalFunctions.functions().selector);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'OnNotificationClicked_TabCreateFail',
-    function() {
-      // Tests the selected URL is OK and crome.tabs.create fails.
-      // In this case, the function should invoke chrome.windows.create as a
-      // second attempt.
-
-      // Setup and expectations.
-      var testActionUrls = {testField: 'TEST VALUE'};
-      var testNotificationId = 'TEST_ID';
-      var testNotificationDataRequest = {notificationsData: {}};
-      var testNotificationData = {
-        notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
-      };
-      var testActionUrl = 'http://testurl.com';
-      var testCreatedTab = undefined; // chrome.tabs.create fails
-
-      mockOnNotificationClickedDependencies(this);
-      this.makeMockLocalFunctions(['selector']);
-
-      expectChromeLocalStorageGet(
-          this, testNotificationDataRequest, testNotificationData);
-      this.mockLocalFunctions.expects(once())
-          .selector(eqJSON(
-              testNotificationData.notificationsData[testNotificationId]))
-          .will(returnValue(testActionUrl));
-      var chromeTabsCreateSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_tabs_create(
-              chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
-              chromeTabsCreateSavedArgs.match(ANYTHING)).
-          will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
-      this.mockApis.expects(once()).chrome_windows_create(
-          eqJSON({url: testActionUrl, focused: true}));
-
-      // Invoking the tested function.
-      onNotificationClicked(
-          testNotificationId, this.mockLocalFunctions.functions().selector);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'ShowNotificationCards',
-    function() {
-      // Tests showNotificationCards function. Checks that the function properly
-      // deletes the card that didn't get an update, updates existing card and
-      // creates a new card that previously didn't exist.
-
-      // Setup and expectations.
-      var existingNotifications = {
-        'SHOULD BE DELETED': 'SOMETHING',
-        'SHOULD BE KEPT': 'SOMETHING'
-      };
-
-      var notificationGroups = {
-        TEST_FIELD: 'TEST VALUE'
-      };
-
-      var cards = {
-        'SHOULD BE KEPT': [1],
-        'NEW CARD': [2]
-      };
-
-      var fakeOnCardShownFunction = 'FAKE ON CARD SHOWN FUNCTION';
-
-      var expectedUpdatedNotifications = {
-        'SHOULD BE KEPT': 'KEPT CARD NOTIFICATION DATA',
-        'NEW CARD': 'NEW CARD NOTIFICATION DATA'
-      };
-
-      this.makeAndRegisterMockApis([
-        'cardSet.update',
-        'chrome.storage.local.set',
-        'instrumented.notifications.getAll'
-      ]);
-      this.makeMockLocalFunctions([
-        'onSuccess'
-      ]);
-
-      var notificationsGetAllSavedArgs = new SaveMockArguments();
-      this.mockApis.expects(once()).
-          instrumented_notifications_getAll(
-              notificationsGetAllSavedArgs.match(ANYTHING)).
-          will(invokeCallback(
-              notificationsGetAllSavedArgs, 0, existingNotifications));
-
-      this.mockApis.expects(once()).
-          cardSet_update(
-              'SHOULD BE KEPT',
-              [1],
-              eqJSON(notificationGroups),
-              fakeOnCardShownFunction).
-          will(returnValue('KEPT CARD NOTIFICATION DATA'));
-      this.mockApis.expects(once()).
-          cardSet_update(
-              'NEW CARD',
-              [2],
-              eqJSON(notificationGroups),
-              fakeOnCardShownFunction).
-          will(returnValue('NEW CARD NOTIFICATION DATA'));
-      this.mockApis.expects(once()).
-          cardSet_update(
-              'SHOULD BE DELETED',
-              [],
-              eqJSON(notificationGroups),
-              fakeOnCardShownFunction).
-          will(returnValue(undefined));
-
-      this.mockApis.expects(once()).
-          chrome_storage_local_set(
-              eqJSON({notificationsData: expectedUpdatedNotifications}));
-
-      this.mockLocalFunctions.expects(once()).
-          onSuccess();
-
-      // Invoking the tested function.
-      showNotificationCards(
-          notificationGroups,
-          cards,
-          this.mockLocalFunctions.functions().onSuccess,
-          fakeOnCardShownFunction);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'CombineGroup',
-    function() {
-      // Tests combineGroup function. Verifies that both notifications with and
-      // without show time are handled correctly and that cards are correctly
-      // added to existing cards with same ID or start a new combined card.
-
-      // Setup and expectations.
-      var combinedCards = {
-        'EXISTING CARD': [1]
-      };
-
-      var receivedNotificationNoShowTime = {
-        chromeNotificationId: 'EXISTING CARD',
-        trigger: {hideTimeSec: 1}
-      };
-      var receivedNotificationWithShowTime = {
-        chromeNotificationId: 'NEW CARD',
-        trigger: {showTimeSec: 2, hideTimeSec: 3}
-      }
-
-      var storedGroup = {
-        cardsTimestamp: 10000,
-        cards: [
-          receivedNotificationNoShowTime,
-          receivedNotificationWithShowTime
-        ]
-      };
-
-      // Invoking the tested function.
-      combineGroup(combinedCards, storedGroup);
-
-      // Check the output value.
-      var expectedCombinedCards = {
-        'EXISTING CARD': [
-          1,
-          {
-            receivedNotification: receivedNotificationNoShowTime,
-            hideTime: 11000
-          }
-        ],
-        'NEW CARD': [
-          {
-            receivedNotification: receivedNotificationWithShowTime,
-            showTime: 12000,
-            hideTime: 13000
-          }
-        ]
-      };
-
-      assertEquals(
-          JSON.stringify(expectedCombinedCards),
-          JSON.stringify(combinedCards));
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'CombineAndShowNotificationCards',
-    function() {
-      // Tests combineAndShowNotificationCards function.
-      // The test passes 2 groups to combineAndShowNotificationCards, checks
-      // that it calls combineGroup() for each of these groups and calls
-      // showNotificationCards() with the results of these combineGroup() calls.
-
-      // Setup and expectations.
-      var testGroups = {
-        'TEST GROUP 1': {testField: 'TEST VALUE 1'},
-        'TEST GROUP 2': {testField: 'TEST VALUE 2'}
-      };
-
-      var fakeOnSuccessFunction = 'FAKE ON SUCCESS FUNCTION';
-      var fakeOnCardShownFunction = 'FAKE ON CARD SHOWN FUNCTION';
-
-      this.makeAndRegisterMockGlobals(
-          ['combineGroup', 'showNotificationCards']);
-
-      var combineGroupSavedArgs = new SaveMockArguments();
-      this.mockGlobals.expects(once()).
-          combineGroup(
-              combineGroupSavedArgs.match(eqJSON({})),
-              combineGroupSavedArgs.match(eqJSON({testField: 'TEST VALUE 1'}))).
-          will(callFunction(function() {
-            combineGroupSavedArgs.arguments[0].card1 = {
-              testValue: 'TEST CARD VALUE 1'
-            };
-          }));
-      this.mockGlobals.expects(once()).
-          combineGroup(
-              combineGroupSavedArgs.match(
-                  eqJSON({card1: {testValue: 'TEST CARD VALUE 1'}})),
-              combineGroupSavedArgs.match(
-                  eqJSON({testField: 'TEST VALUE 2'}))).
-          will(callFunction(function() {
-              combineGroupSavedArgs.arguments[0].card2 = {
-                testValue: 'TEST CARD VALUE 2'
-              };
-          }));
-      this.mockGlobals.expects(once()).
-          showNotificationCards(
-              eqJSON(testGroups),
-              eqJSON({
-                card1: {testValue: 'TEST CARD VALUE 1'},
-                card2: {testValue: 'TEST CARD VALUE 2'}
-              }),
-              fakeOnSuccessFunction,
-              fakeOnCardShownFunction);
-
-      // Invoking the tested function.
-      combineAndShowNotificationCards(
-          testGroups, fakeOnSuccessFunction, fakeOnCardShownFunction);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'ProcessServerResponse',
-    function() {
-      // Tests processServerResponse function.
-
-      // Setup and expectations.
-      Date.now = function() { return 3000000; };
-
-      // GROUP1 was requested and contains cards c4 and c5. For c5, there is a
-      // non-expired dismissal, so it will be ignored.
-      // GROUP2 was not requested, but is contained in server response to
-      // indicate that the group still exists. Stored group GROUP2 won't change.
-      // GROUP3 is stored, but is not present in server's response, which means
-      // it doesn't exist anymore. This group will be deleted.
-      // GROUP4 doesn't contain cards, but it was requested. This is treated as
-      // if it had an empty array of cards. Cards in the stored group will be
-      // replaced with an empty array.
-      // GROUP5 doesn't have next poll time, and it will be stored without next
-      // poll time.
-      var serverResponse = {
-        groups: {
-          GROUP1: {requested: true, nextPollSeconds: 46},
-          GROUP2: {requested: false},
-          GROUP4: {requested: true, nextPollSeconds: 45},
-          GROUP5: {requested: true}
-        },
-        notifications: [
-          {notificationId: 'c4', groupName: 'GROUP1'},
-          {notificationId: 'c5', groupName: 'GROUP1'}
-        ]
-      };
-
-      var recentDismissals = {
-        c4: 1800000, // expired dismissal
-        c5: 1800001  // non-expired dismissal
-      };
-
-      var storedGroups = {
-        GROUP2: {
-          cards: [{notificationId: 'c2'}],
-          cardsTimestamp: 239,
-          nextPollTime: 10000
-        },
-        GROUP3: {
-          cards: [{notificationId: 'c3'}],
-          cardsTimestamp: 240,
-          nextPollTime: 10001
-        },
-        GROUP4: {
-          cards: [{notificationId: 'c6'}],
-          cardsTimestamp: 241,
-          nextPollTime: 10002
-        }
-      };
-
-      var expectedUpdatedGroups = {
-        GROUP1: {
-          cards: [{notificationId: 'c4', groupName: 'GROUP1'}],
-          cardsTimestamp: 3000000,
-          nextPollTime: 3046000
-        },
-        GROUP2: {
-          cards: [{notificationId: 'c2'}],
-          cardsTimestamp: 239,
-          nextPollTime: 10000
-        },
-        GROUP4: {
-          cards: [],
-          cardsTimestamp: 3000000,
-          nextPollTime: 3045000
-        },
-        GROUP5: {
-          cards: [],
-          cardsTimestamp: 3000000
-        }
-      };
-
-      var expectedUpdatedRecentDismissals = {
-        c5: 1800001
-      };
-
-      var fakeOnCardShownFunction = 'FAKE ON CARD SHOWN FUNCTION';
-
-      this.makeAndRegisterMockGlobals([
-        'combineAndShowNotificationCards',
-        'recordEvent',
-        'scheduleNextPoll'
-      ]);
-
-      this.makeAndRegisterMockApis([
-        'chrome.storage.local.set',
-        'fillFromChromeLocalStorage'
-      ]);
-
-      expectChromeLocalStorageGet(
-          this,
-          {
-            notificationGroups: {},
-            recentDismissals: {}
-          },
-          {
-            notificationGroups: storedGroups,
-            recentDismissals: recentDismissals
-          });
-
-      this.mockGlobals.expects(once()).
-          scheduleNextPoll(eqJSON(expectedUpdatedGroups), true);
-
-      var combineAndShowNotificationCardsSavedArgs = new SaveMockArguments();
-      this.mockGlobals.expects(once()).
-          combineAndShowNotificationCards(
-              combineAndShowNotificationCardsSavedArgs.match(
-                  eqJSON(expectedUpdatedGroups)),
-              combineAndShowNotificationCardsSavedArgs.match(
-                  ANYTHING),
-              combineAndShowNotificationCardsSavedArgs.match(
-                  eq(fakeOnCardShownFunction))).
-          will(invokeCallback(combineAndShowNotificationCardsSavedArgs, 1));
-
-      this.mockApis.expects(once()).
-          chrome_storage_local_set(
-              eqJSON({
-                notificationGroups: expectedUpdatedGroups,
-                recentDismissals: expectedUpdatedRecentDismissals}));
-
-      this.mockGlobals.expects(once()).
-          recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
-
-      // Invoking the tested function.
-      processServerResponse(serverResponse, fakeOnCardShownFunction);
-    });
-
-TEST_F(
-    'GoogleNowBackgroundUnitTest',
-    'ProcessServerResponseGoogleNowDisabled',
-    function() {
-      // Tests processServerResponse function for the case when the response
-      // indicates that Google Now is disabled.
-
-      // Setup and expectations.
-      var serverResponse = {
-        googleNowDisabled: true,
-        groups: {
-          GROUP1: {nextPollTimeSeconds: 200}
-        }
-      };
-
-      var storedGroups = {
-        GROUP2: {
-          cards: [{notificationId: 'c2'}],
-          cardsTimestamp: 239,
-          nextPollTime: 10000
-        },
-        GROUP3: {
-          cards: [{notificationId: 'c3'}],
-          cardsTimestamp: 240,
-          nextPollTime: 10001
-        }
-      };
-
-      var expectedUpdatedGroups = {
-      };
-
-      var fakeOnCardShownFunction = 'FAKE ON CARD SHOWN FUNCTION';
-
-      this.makeAndRegisterMockGlobals([
-        'combineAndShowNotificationCards',
-        'onStateChange',
-        'recordEvent',
-        'scheduleNextPoll'
-      ]);
-
-      this.makeAndRegisterMockApis([
-        'chrome.storage.local.set',
-        'fillFromChromeLocalStorage'
-      ]);
-
-      this.mockApis.expects(once()).
-          chrome_storage_local_set(
-              eqJSON({googleNowEnabled: false}));
-
-      this.mockGlobals.expects(once()).onStateChange();
-
-      expectChromeLocalStorageGet(
-          this,
-          {
-            notificationGroups: {},
-            recentDismissals: {}
-          },
-          {
-            notificationGroups: storedGroups,
-            recentDismissals: {}
-          });
-
-      this.mockGlobals.expects(once()).
-          scheduleNextPoll(eqJSON(expectedUpdatedGroups), false);
-
-      var combineAndShowNotificationCardsSavedArgs = new SaveMockArguments();
-      this.mockGlobals.expects(once()).
-          combineAndShowNotificationCards(
-              combineAndShowNotificationCardsSavedArgs.match(
-                  eqJSON(expectedUpdatedGroups)),
-              combineAndShowNotificationCardsSavedArgs.match(
-                  ANYTHING),
-              combineAndShowNotificationCardsSavedArgs.match(
-                  eq(fakeOnCardShownFunction))).
-          will(invokeCallback(combineAndShowNotificationCardsSavedArgs, 1));
-
-      this.mockApis.expects(once()).
-          chrome_storage_local_set(
-              eqJSON({
-                notificationGroups: expectedUpdatedGroups,
-                recentDismissals: {}}));
-
-      this.mockGlobals.expects(once()).
-          recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
-
-      // Invoking the tested function.
-      processServerResponse(serverResponse, fakeOnCardShownFunction);
-    });
+TEST_F(TEST_NAME, 'OnNotificationClicked_NoData', function() {
+  // Tests the case when there is no data associated with notification id.
+  // In this case, the function should do nothing.
+
+  // Setup and expectations.
+  var testNotificationId = 'TEST_ID';
+  var testNotificationDataRequest = {notificationsData: {}};
+  var testNotificationData = {notificationsData: {}};
+
+  mockOnNotificationClickedDependencies(this);
+  this.makeMockLocalFunctions(['selector']);
+
+  expectChromeLocalStorageGet(
+      this, testNotificationDataRequest, testNotificationData);
+
+  // Invoking the tested function.
+  onNotificationClicked(
+      testNotificationId, this.mockLocalFunctions.functions().selector);
+});
+
+TEST_F(TEST_NAME, 'OnNotificationClicked_ActionUrlsUndefined', function() {
+  // Tests the case when the data associated with notification id is
+  // 'undefined'.
+  // In this case, the function should do nothing.
+
+  // Setup and expectations.
+  var testActionUrls = undefined;
+  var testNotificationId = 'TEST_ID';
+  var testNotificationDataRequest = {notificationsData: {}};
+  var testNotificationData = {
+      notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
+  };
+
+  mockOnNotificationClickedDependencies(this);
+  this.makeMockLocalFunctions(['selector']);
+
+  expectChromeLocalStorageGet(
+      this, testNotificationDataRequest, testNotificationData);
+
+  this.mockLocalFunctions.expects(once())
+      .selector(eqJSON(
+          testNotificationData.notificationsData[testNotificationId]))
+      .will(returnValue(undefined));
+
+  // Invoking the tested function.
+  onNotificationClicked(
+      testNotificationId, this.mockLocalFunctions.functions().selector);
+});
+
+TEST_F(TEST_NAME, 'OnNotificationClicked_TabCreateSuccess', function() {
+  // Tests the selected URL is OK and crome.tabs.create suceeds.
+
+  // Setup and expectations.
+  var testActionUrls = {testField: 'TEST VALUE'};
+  var testNotificationId = 'TEST_ID';
+  var testNotificationDataRequest = {notificationsData: {}};
+  var testNotificationData = {
+      notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
+  };
+  var testActionUrl = 'http://testurl.com';
+  var testCreatedTab = {windowId: 239};
+
+  mockOnNotificationClickedDependencies(this);
+  this.makeMockLocalFunctions(['selector']);
+
+  expectChromeLocalStorageGet(
+      this, testNotificationDataRequest, testNotificationData);
+  this.mockLocalFunctions.expects(once())
+      .selector(eqJSON(
+          testNotificationData.notificationsData[testNotificationId]))
+      .will(returnValue(testActionUrl));
+  var chromeTabsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_tabs_create(
+          chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
+          chromeTabsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
+  this.mockApis.expects(once()).chrome_windows_update(
+      testCreatedTab.windowId,
+      eqJSON({focused: true}));
+
+  // Invoking the tested function.
+  onNotificationClicked(
+      testNotificationId, this.mockLocalFunctions.functions().selector);
+});
+
+TEST_F(TEST_NAME, 'OnNotificationClicked_TabCreateFail', function() {
+  // Tests the selected URL is OK and crome.tabs.create fails.
+  // In this case, the function should invoke chrome.windows.create as a
+  // second attempt.
+
+  // Setup and expectations.
+  var testActionUrls = {testField: 'TEST VALUE'};
+  var testNotificationId = 'TEST_ID';
+  var testNotificationDataRequest = {notificationsData: {}};
+  var testNotificationData = {
+    notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
+  };
+  var testActionUrl = 'http://testurl.com';
+  var testCreatedTab = undefined; // chrome.tabs.create fails
+
+  mockOnNotificationClickedDependencies(this);
+  this.makeMockLocalFunctions(['selector']);
+
+  expectChromeLocalStorageGet(
+      this, testNotificationDataRequest, testNotificationData);
+  this.mockLocalFunctions.expects(once())
+      .selector(eqJSON(
+          testNotificationData.notificationsData[testNotificationId]))
+      .will(returnValue(testActionUrl));
+  var chromeTabsCreateSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_tabs_create(
+          chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
+          chromeTabsCreateSavedArgs.match(ANYTHING)).
+      will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
+  this.mockApis.expects(once()).chrome_windows_create(
+      eqJSON({url: testActionUrl, focused: true}));
+
+  // Invoking the tested function.
+  onNotificationClicked(
+      testNotificationId, this.mockLocalFunctions.functions().selector);
+});
+
+TEST_F(TEST_NAME, 'ShowNotificationGroups', function() {
+  // Tests showNotificationGroups function. Checks that the function properly
+  // deletes the card that didn't get an update, updates existing card and
+  // creates a new card that previously didn't exist.
+
+  // Setup and expectations.
+  var existingNotifications = {
+    'SHOULD BE DELETED': 'SOMETHING',
+    'SHOULD BE KEPT': 'SOMETHING'
+  };
+
+  var keptCard = {
+    chromeNotificationId: 'SHOULD BE KEPT',
+    trigger: {showTimeSec: 0, hideTimeSec: 0}
+  };
+
+  var keptNotification = {
+    receivedNotification: keptCard,
+    showTime: 0,
+    hideTime: 0
+  };
+
+  var newCard = {
+    chromeNotificationId: 'NEW CARD',
+    trigger: {showTimeSec: 0, hideTimeSec: 0}
+  };
+
+  var newNotification = {
+    receivedNotification: newCard,
+    showTime: 0,
+    hideTime: 0
+  };
+
+  var notificationGroups = {
+    'TEST GROUP 1': {cards: [keptCard], cardsTimestamp: 0},
+    'TEST GROUP 2': {cards: [newCard], cardsTimestamp: 0}
+  };
+
+  var fakeOnCardShownFunction = 'FAKE ON CARD SHOWN FUNCTION';
+
+  var expectedUpdatedNotifications = {
+    'SHOULD BE KEPT': 'KEPT CARD NOTIFICATION DATA',
+    'NEW CARD': 'NEW CARD NOTIFICATION DATA'
+  };
+
+  this.makeAndRegisterMockApis([
+    'cardSet.update',
+    'chrome.storage.local.set',
+    'instrumented.notifications.getAll'
+  ]);
+  this.makeMockLocalFunctions([
+    'onSuccess'
+  ]);
+
+  var notificationsGetAllSavedArgs = new SaveMockArguments();
+  this.mockApis.expects(once()).
+      instrumented_notifications_getAll(
+          notificationsGetAllSavedArgs.match(ANYTHING)).
+      will(invokeCallback(
+          notificationsGetAllSavedArgs, 0, existingNotifications));
+
+  this.mockApis.expects(once()).
+      cardSet_update(
+          'SHOULD BE KEPT',
+          eqJSON([keptNotification]),
+          eqJSON(notificationGroups),
+          fakeOnCardShownFunction).
+      will(returnValue('KEPT CARD NOTIFICATION DATA'));
+  this.mockApis.expects(once()).
+      cardSet_update(
+          'NEW CARD',
+          eqJSON([newNotification]),
+          eqJSON(notificationGroups),
+          fakeOnCardShownFunction).
+      will(returnValue('NEW CARD NOTIFICATION DATA'));
+  this.mockApis.expects(once()).
+      cardSet_update(
+          'SHOULD BE DELETED',
+          [],
+          eqJSON(notificationGroups),
+          fakeOnCardShownFunction).
+      will(returnValue(undefined));
+
+  this.mockApis.expects(once()).
+      chrome_storage_local_set(
+          eqJSON({notificationsData: expectedUpdatedNotifications}));
+
+  this.mockLocalFunctions.expects(once()).
+      onSuccess(undefined);
+
+  // Invoking the tested function.
+  showNotificationGroups(notificationGroups, fakeOnCardShownFunction)
+      .then(this.mockLocalFunctions.functions().onSuccess);
+});
+
+TEST_F(TEST_NAME, 'ProcessServerResponse', function() {
+  // Tests processServerResponse function.
+
+  // Setup and expectations.
+  Date.now = function() { return 3000000; };
+
+  // GROUP1 was requested and contains cards c4 and c5. For c5, there is a
+  // non-expired dismissal, so it will be ignored.
+  // GROUP2 was not requested, but is contained in server response to
+  // indicate that the group still exists. Stored group GROUP2 won't change.
+  // GROUP3 is stored, but is not present in server's response, which means
+  // it doesn't exist anymore. This group will be deleted.
+  // GROUP4 doesn't contain cards, but it was requested. This is treated as
+  // if it had an empty array of cards. Cards in the stored group will be
+  // replaced with an empty array.
+  // GROUP5 doesn't have next poll time, and it will be stored without next
+  // poll time.
+  var serverResponse = {
+    groups: {
+      GROUP1: {requested: true, nextPollSeconds: 46},
+      GROUP2: {requested: false},
+      GROUP4: {requested: true, nextPollSeconds: 45},
+      GROUP5: {requested: true}
+    },
+    notifications: [
+      {notificationId: 'c4', groupName: 'GROUP1'},
+      {notificationId: 'c5', groupName: 'GROUP1'}
+    ]
+  };
+
+  var recentDismissals = {
+    c4: 1800000, // expired dismissal
+    c5: 1800001  // non-expired dismissal
+  };
+
+  var storedGroups = {
+    GROUP2: {
+      cards: [{notificationId: 'c2'}],
+      cardsTimestamp: 239,
+      nextPollTime: 10000
+    },
+    GROUP3: {
+      cards: [{notificationId: 'c3'}],
+      cardsTimestamp: 240,
+      nextPollTime: 10001
+    },
+    GROUP4: {
+      cards: [{notificationId: 'c6'}],
+      cardsTimestamp: 241,
+      nextPollTime: 10002
+    }
+  };
+
+  var expectedUpdatedGroups = {
+    GROUP1: {
+      cards: [{notificationId: 'c4', groupName: 'GROUP1'}],
+      cardsTimestamp: 3000000,
+      nextPollTime: 3046000
+    },
+    GROUP2: {
+      cards: [{notificationId: 'c2'}],
+      cardsTimestamp: 239,
+      nextPollTime: 10000
+    },
+    GROUP4: {
+      cards: [],
+      cardsTimestamp: 3000000,
+      nextPollTime: 3045000
+    },
+    GROUP5: {
+      cards: [],
+      cardsTimestamp: 3000000
+    }
+  };
+
+  var expectedUpdatedRecentDismissals = {
+    c5: 1800001
+  };
+
+  this.makeAndRegisterMockGlobals([
+    'scheduleNextPoll'
+  ]);
+
+  this.makeAndRegisterMockApis([
+    'fillFromChromeLocalStorage',
+  ]);
+
+  expectChromeLocalStorageGet(
+      this,
+      {
+        notificationGroups: {},
+        recentDismissals: {}
+      },
+      {
+        notificationGroups: storedGroups,
+        recentDismissals: recentDismissals
+      });
+
+  this.mockGlobals.expects(once()).
+      scheduleNextPoll(eqJSON(expectedUpdatedGroups), true);
+
+  // Invoking the tested function.
+  processServerResponse(serverResponse);
+});
+
+TEST_F(TEST_NAME, 'ProcessServerResponseGoogleNowDisabled', function() {
+  // Tests processServerResponse function for the case when the response
+  // indicates that Google Now is disabled.
+
+  // Setup and expectations.
+  var serverResponse = {
+    googleNowDisabled: true,
+    groups: {}
+  };
+
+  this.makeAndRegisterMockGlobals([
+    'onStateChange',
+    'scheduleNextPoll',
+  ]);
+
+  this.makeAndRegisterMockApis([
+    'chrome.storage.local.set',
+    'fillFromChromeLocalStorage'
+  ]);
+
+  this.mockApis.expects(once()).
+      chrome_storage_local_set(eqJSON({googleNowEnabled: false}));
+
+  this.mockGlobals.expects(once()).onStateChange();
+
+  expectChromeLocalStorageGet(
+      this,
+      {
+        notificationGroups: {},
+        recentDismissals: {}
+      },
+      {
+        notificationGroups: {},
+        recentDismissals: {}
+      });
+
+  this.mockGlobals.expects(once()).scheduleNextPoll(eqJSON({}), false);
+
+  // Invoking the tested function.
+  processServerResponse(serverResponse);
+});
+
