@@ -61,8 +61,8 @@ public:
         , m_orientation(Horizontal)
         , m_nonCJKGlyphOrientation(NonCJKGlyphOrientationVerticalRight)
         , m_widthVariant(RegularWidth)
-        , m_italic(FontStyleNormal)
-        , s_variant(FontVariantNormal)
+        , m_style(FontStyleNormal)
+        , m_variant(FontVariantNormal)
         , m_isAbsoluteSize(false)
         , m_weight(FontWeightNormal)
         , m_stretch(FontStretchNormal)
@@ -91,9 +91,9 @@ public:
     FontFamily& firstFamily() { return m_familyList; }
     float specifiedSize() const { return m_specifiedSize; }
     float computedSize() const { return m_computedSize; }
-    FontStyle style() const { return static_cast<FontStyle>(m_italic); }
+    FontStyle style() const { return static_cast<FontStyle>(m_style); }
     int computedPixelSize() const { return int(m_computedSize + 0.5f); }
-    FontVariant variant() const { return static_cast<FontVariant>(s_variant); }
+    FontVariant variant() const { return static_cast<FontVariant>(m_variant); }
     bool isAbsoluteSize() const { return m_isAbsoluteSize; }
     FontWeight weight() const { return static_cast<FontWeight>(m_weight); }
     FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }
@@ -135,8 +135,8 @@ public:
     void setFamily(const FontFamily& family) { m_familyList = family; }
     void setComputedSize(float s) { m_computedSize = clampToFloat(s); }
     void setSpecifiedSize(float s) { m_specifiedSize = clampToFloat(s); }
-    void setStyle(FontStyle i) { m_italic = i; }
-    void setVariant(FontVariant c) { s_variant = c; }
+    void setStyle(FontStyle i) { m_style = i; }
+    void setVariant(FontVariant c) { m_variant = c; }
     void setIsAbsoluteSize(bool s) { m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_weight = w; }
     void setStretch(FontStretch s) { m_stretch = s; }
@@ -187,8 +187,8 @@ private:
 
     unsigned m_widthVariant : 2; // FontWidthVariant
 
-    unsigned m_italic : 1; // FontStyle
-    unsigned s_variant : 1; // FontVariant
+    unsigned m_style : 1; // FontStyle
+    unsigned m_variant : 1; // FontVariant
     unsigned m_isAbsoluteSize : 1; // Whether or not CSS specified an explicit size
                                   // (logical sizes like "medium" don't count).
     unsigned m_weight : 4; // FontWeight
@@ -228,8 +228,8 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_computedSize == other.m_computedSize
         && m_letterSpacing == other.m_letterSpacing
         && m_wordSpacing == other.m_wordSpacing
-        && m_italic == other.m_italic
-        && s_variant == other.s_variant
+        && m_style == other.m_style
+        && m_variant == other.m_variant
         && m_isAbsoluteSize == other.m_isAbsoluteSize
         && m_weight == other.m_weight
         && m_stretch == other.m_stretch
