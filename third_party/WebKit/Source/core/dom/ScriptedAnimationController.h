@@ -26,7 +26,6 @@
 #ifndef ScriptedAnimationController_h
 #define ScriptedAnimationController_h
 
-#include "heap/Handle.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -55,8 +54,8 @@ public:
     void cancelCallback(CallbackId);
     void serviceScriptedAnimations(double monotonicTimeNow);
 
-    void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
-    void enqueuePerFrameEvent(PassRefPtrWillBeRawPtr<Event>);
+    void enqueueEvent(PassRefPtr<Event>);
+    void enqueuePerFrameEvent(PassRefPtr<Event>);
 
     void suspend();
     void resume();
@@ -76,7 +75,7 @@ private:
     Document* m_document;
     CallbackId m_nextCallbackId;
     int m_suspendCount;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_eventQueue;
+    Vector<RefPtr<Event> > m_eventQueue;
     ListHashSet<std::pair<const EventTarget*, const StringImpl*> > m_perFrameEvents;
 };
 

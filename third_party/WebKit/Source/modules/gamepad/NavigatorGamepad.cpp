@@ -149,7 +149,7 @@ void NavigatorGamepad::didConnectOrDisconnectGamepad(unsigned index, const blink
     m_gamepads->set(index, gamepad);
 
     const AtomicString& eventName = connected ? EventTypeNames::gamepadconnected : EventTypeNames::gamepaddisconnected;
-    RefPtrWillBeRawPtr<GamepadEvent> event = GamepadEvent::create(eventName, false, true, gamepad.get());
+    RefPtr<GamepadEvent> event = GamepadEvent::create(eventName, false, true, gamepad.get());
     window()->dispatchEvent(event);
 }
 
@@ -197,7 +197,7 @@ bool NavigatorGamepad::hasLastData()
     return false;
 }
 
-PassRefPtrWillBeRawPtr<Event> NavigatorGamepad::getLastEvent()
+PassRefPtr<Event> NavigatorGamepad::getLastEvent()
 {
     // This is called only when hasLastData() is true.
     ASSERT_NOT_REACHED();

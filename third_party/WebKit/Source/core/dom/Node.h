@@ -617,21 +617,21 @@ public:
     virtual void postDispatchEventHandler(Event*, void* /*dataFromPreDispatch*/) { }
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
-    void dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event>);
+    void dispatchScopedEvent(PassRefPtr<Event>);
     void dispatchScopedEventDispatchMediator(PassRefPtr<EventDispatchMediator>);
 
     virtual void handleLocalEvents(Event*);
 
     void dispatchSubtreeModifiedEvent();
-    bool dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
+    bool dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent);
 
     bool dispatchKeyEvent(const PlatformKeyboardEvent&);
     bool dispatchWheelEvent(const PlatformWheelEvent&);
     bool dispatchMouseEvent(const PlatformMouseEvent&, const AtomicString& eventType, int clickCount = 0, Node* relatedTarget = 0);
     bool dispatchGestureEvent(const PlatformGestureEvent&);
-    bool dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent>);
+    bool dispatchTouchEvent(PassRefPtr<TouchEvent>);
 
     void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents);
 

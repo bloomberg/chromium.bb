@@ -435,7 +435,7 @@ void HTMLFormElement::requestAutocomplete()
 
 void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 {
-    RefPtrWillBeRawPtr<Event> event;
+    RefPtr<Event> event;
     if (result == AutocompleteResultSuccess)
         event = Event::create(EventTypeNames::autocomplete);
     else if (result == AutocompleteResultErrorDisabled)
@@ -455,7 +455,7 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 
 void HTMLFormElement::requestAutocompleteTimerFired(Timer<HTMLFormElement>*)
 {
-    WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
+    Vector<RefPtr<Event> > pendingEvents;
     m_pendingAutocompleteEvents.swap(pendingEvents);
     for (size_t i = 0; i < pendingEvents.size(); ++i)
         dispatchEvent(pendingEvents[i].release());

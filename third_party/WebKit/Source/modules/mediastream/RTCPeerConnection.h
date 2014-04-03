@@ -135,7 +135,7 @@ private:
     RTCPeerConnection(ExecutionContext*, PassRefPtr<RTCConfiguration>, blink::WebMediaConstraints, ExceptionState&);
 
     static PassRefPtr<RTCConfiguration> parseConfiguration(const Dictionary& configuration, ExceptionState&);
-    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleDispatchEvent(PassRefPtr<Event>);
     void dispatchScheduledEvent();
     bool hasLocalStreamWithTrackId(const String& trackId);
 
@@ -155,7 +155,7 @@ private:
     OwnPtr<blink::WebRTCPeerConnectionHandler> m_peerHandler;
 
     AsyncMethodRunner<RTCPeerConnection> m_dispatchScheduledEventRunner;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
+    Vector<RefPtr<Event> > m_scheduledEvents;
 
     bool m_stopped;
 };

@@ -107,7 +107,7 @@ private:
     void abortConnectionAttempt();
     void parseEventStream();
     void parseEventStreamLine(unsigned pos, int fieldLength, int lineLength);
-    PassRefPtrWillBeRawPtr<MessageEvent> createMessageEvent();
+    PassRefPtr<MessageEvent> createMessageEvent();
 
     KURL m_url;
     bool m_withCredentials;

@@ -60,7 +60,7 @@ private:
 
     DeviceOrientationData* lastData();
     virtual bool hasLastData() OVERRIDE;
-    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE;
+    virtual PassRefPtr<Event> getLastEvent() OVERRIDE;
     virtual bool isNullEvent(Event*) OVERRIDE;
 
     RefPtrWillBePersistent<DeviceOrientationData> m_overrideOrientationData;

@@ -216,7 +216,7 @@ void ApplicationCacheHost::dispatchDOMEvent(EventID id, int progressTotal, int p
 {
     if (m_domApplicationCache) {
         const AtomicString& eventType = ApplicationCache::toEventType(id);
-        RefPtrWillBeRawPtr<Event> event;
+        RefPtr<Event> event;
         if (id == PROGRESS_EVENT)
             event = ProgressEvent::create(eventType, true, progressDone, progressTotal);
         else if (id == ERROR_EVENT)

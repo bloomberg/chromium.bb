@@ -95,12 +95,12 @@ void TouchEvent::trace(Visitor* visitor)
     MouseRelatedEvent::trace(visitor);
 }
 
-PassRefPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)
+PassRefPtr<TouchEventDispatchMediator> TouchEventDispatchMediator::create(PassRefPtr<TouchEvent> touchEvent)
 {
     return adoptRef(new TouchEventDispatchMediator(touchEvent));
 }
 
-TouchEventDispatchMediator::TouchEventDispatchMediator(PassRefPtrWillBeRawPtr<TouchEvent> touchEvent)
+TouchEventDispatchMediator::TouchEventDispatchMediator(PassRefPtr<TouchEvent> touchEvent)
     : EventDispatchMediator(touchEvent)
 {
 }

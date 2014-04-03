@@ -2164,7 +2164,7 @@ void Node::handleLocalEvents(Event* event)
     fireEventListeners(event);
 }
 
-void Node::dispatchScopedEvent(PassRefPtrWillBeRawPtr<Event> event)
+void Node::dispatchScopedEvent(PassRefPtr<Event> event)
 {
     dispatchScopedEventDispatchMediator(EventDispatchMediator::create(event));
 }
@@ -2174,7 +2174,7 @@ void Node::dispatchScopedEventDispatchMediator(PassRefPtr<EventDispatchMediator>
     EventDispatcher::dispatchScopedEvent(this, eventDispatchMediator);
 }
 
-bool Node::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool Node::dispatchEvent(PassRefPtr<Event> event)
 {
     if (event->isMouseEvent())
         return EventDispatcher::dispatchEvent(this, MouseEventDispatchMediator::create(static_pointer_cast<MouseEvent>(event), MouseEventDispatchMediator::SyntheticMouseEvent));
@@ -2196,10 +2196,10 @@ void Node::dispatchSubtreeModifiedEvent()
     dispatchScopedEvent(MutationEvent::create(EventTypeNames::DOMSubtreeModified, true));
 }
 
-bool Node::dispatchDOMActivateEvent(int detail, PassRefPtrWillBeRawPtr<Event> underlyingEvent)
+bool Node::dispatchDOMActivateEvent(int detail, PassRefPtr<Event> underlyingEvent)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
-    RefPtrWillBeRawPtr<UIEvent> event = UIEvent::create(EventTypeNames::DOMActivate, true, true, document().domWindow(), detail);
+    RefPtr<UIEvent> event = UIEvent::create(EventTypeNames::DOMActivate, true, true, document().domWindow(), detail);
     event->setUnderlyingEvent(underlyingEvent);
     dispatchScopedEvent(event);
     return event->defaultHandled();
@@ -2218,13 +2218,13 @@ bool Node::dispatchMouseEvent(const PlatformMouseEvent& event, const AtomicStrin
 
 bool Node::dispatchGestureEvent(const PlatformGestureEvent& event)
 {
-    RefPtrWillBeRawPtr<GestureEvent> gestureEvent = GestureEvent::create(document().domWindow(), event);
+    RefPtr<GestureEvent> gestureEvent = GestureEvent::create(document().domWindow(), event);
     if (!gestureEvent.get())
         return false;
     return EventDispatcher::dispatchEvent(this, GestureEventDispatchMediator::create(gestureEvent));
 }
 
-bool Node::dispatchTouchEvent(PassRefPtrWillBeRawPtr<TouchEvent> event)
+bool Node::dispatchTouchEvent(PassRefPtr<TouchEvent> event)
 {
     return EventDispatcher::dispatchEvent(this, TouchEventDispatchMediator::create(event));
 }

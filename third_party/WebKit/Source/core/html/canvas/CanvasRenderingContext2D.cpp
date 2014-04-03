@@ -163,7 +163,7 @@ void CanvasRenderingContext2D::restoreContext()
 void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)
 {
     if (contextLostRestoredEventsEnabled()) {
-        RefPtrWillBeRawPtr<Event> event = Event::createCancelable(EventTypeNames::contextlost);
+        RefPtr<Event> event(Event::createCancelable(EventTypeNames::contextlost));
         canvas()->dispatchEvent(event);
         if (event->defaultPrevented()) {
             m_contextRestorable = false;
@@ -208,7 +208,7 @@ void CanvasRenderingContext2D::dispatchContextRestoredEvent(Timer<CanvasRenderin
     reset();
     m_isContextLost = false;
     if (contextLostRestoredEventsEnabled()) {
-        RefPtrWillBeRawPtr<Event> event(Event::create(EventTypeNames::contextrestored));
+        RefPtr<Event> event(Event::create(EventTypeNames::contextrestored));
         canvas()->dispatchEvent(event);
     }
 }

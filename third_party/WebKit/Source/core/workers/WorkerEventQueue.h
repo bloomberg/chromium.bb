@@ -47,7 +47,7 @@ public:
     virtual ~WorkerEventQueue();
 
     // EventQueue
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual bool enqueueEvent(PassRefPtr<Event>) OVERRIDE;
     virtual bool cancelEvent(Event*) OVERRIDE;
     virtual void close() OVERRIDE;
 
@@ -59,7 +59,7 @@ private:
     bool m_isClosed;
 
     class EventDispatcherTask;
-    typedef WillBePersistentHeapHashMap<RefPtrWillBeMember<Event>, EventDispatcherTask*> EventTaskMap;
+    typedef HashMap<RefPtr<Event>, EventDispatcherTask*> EventTaskMap;
     EventTaskMap m_eventTaskMap;
 };
 

@@ -34,7 +34,6 @@
 
 #include "core/events/EventListenerMap.h"
 #include "core/events/ThreadLocalEventNames.h"
-#include "heap/Handle.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -118,8 +117,8 @@ public:
     bool removeEventListener(const AtomicString& eventType) { return false; }
     virtual bool removeEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false);
     virtual void removeAllEventListeners();
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>);
-    bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>, ExceptionState&); // DOM API
+    virtual bool dispatchEvent(PassRefPtr<Event>);
+    bool dispatchEvent(PassRefPtr<Event>, ExceptionState&); // DOM API
     virtual void uncaughtExceptionInEventHandler();
 
     // Used for legacy "onEvent" attribute APIs.

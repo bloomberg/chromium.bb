@@ -44,10 +44,10 @@ protected:
     explicit DeviceSensorEventController(Document&);
     virtual ~DeviceSensorEventController();
 
-    void dispatchDeviceEvent(const PassRefPtrWillBeRawPtr<Event>);
+    void dispatchDeviceEvent(const PassRefPtr<Event>);
 
     virtual bool hasLastData() = 0;
-    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() = 0;
+    virtual PassRefPtr<Event> getLastEvent() = 0;
     virtual void registerWithDispatcher() = 0;
     virtual void unregisterWithDispatcher() = 0;
     virtual bool isNullEvent(Event*) = 0;

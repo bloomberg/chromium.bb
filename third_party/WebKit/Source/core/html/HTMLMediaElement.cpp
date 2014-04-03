@@ -513,7 +513,7 @@ void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
     scheduleEvent(Event::createCancelable(eventName));
 }
 
-void HTMLMediaElement::scheduleEvent(PassRefPtrWillBeRawPtr<Event> event)
+void HTMLMediaElement::scheduleEvent(PassRefPtr<Event> event)
 {
 #if LOG_MEDIA_EVENTS
     WTF_LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", event->type().ascii().data());
@@ -1088,7 +1088,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
             affectedTracks.append(eventTasks[i].second->track());
 
         // 13 - Queue each task in events, in list order.
-        RefPtrWillBeRawPtr<Event> event;
+        RefPtr<Event> event;
 
         // Each event in eventTasks may be either an enterEvent or an exitEvent,
         // depending on the time that is associated with the event. This
@@ -1120,7 +1120,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
     // 15 - For each text track in affected tracks, in the list order, queue a
     // task to fire a simple event named cuechange at the TextTrack object, and, ...
     for (size_t i = 0; i < affectedTracks.size(); ++i) {
-        RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::cuechange);
+        RefPtr<Event> event = Event::create(EventTypeNames::cuechange);
         event->setTarget(affectedTracks[i]);
 
         m_asyncEventQueue->enqueueEvent(event.release());
@@ -1128,7 +1128,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
         // ... if the text track has a corresponding track element, to then fire a
         // simple event named cuechange at the track element as well.
         if (affectedTracks[i]->trackType() == TextTrack::TrackElement) {
-            RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::cuechange);
+            RefPtr<Event> event = Event::create(EventTypeNames::cuechange);
             HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i])->trackElement();
             ASSERT(trackElement);
             event->setTarget(trackElement);

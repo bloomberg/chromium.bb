@@ -5339,7 +5339,7 @@ void WebGLRenderingContextBase::vertexAttribfvImpl(const char* functionName, GLu
 
 void WebGLRenderingContextBase::dispatchContextLostEvent(Timer<WebGLRenderingContextBase>*)
 {
-    RefPtrWillBeRawPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
+    RefPtr<WebGLContextEvent> event = WebGLContextEvent::create(EventTypeNames::webglcontextlost, false, true, "");
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
     deactivateContext(this, m_contextLostMode != RealLostContext && m_restoreAllowed);

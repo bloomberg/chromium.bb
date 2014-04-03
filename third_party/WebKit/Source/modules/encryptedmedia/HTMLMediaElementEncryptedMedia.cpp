@@ -112,7 +112,7 @@ void HTMLMediaElementEncryptedMedia::setMediaKeys(HTMLMediaElement& element, Med
 }
 
 // Create a MediaKeyNeededEvent for WD EME.
-static PassRefPtrWillBeRawPtr<Event> createNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
+static PassRefPtr<Event> createNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaKeyNeededEventInit initializer;
     initializer.contentType = contentType;
@@ -124,7 +124,7 @@ static PassRefPtrWillBeRawPtr<Event> createNeedKeyEvent(const String& contentTyp
 }
 
 // Create a 'needkey' MediaKeyEvent for v0.1b EME.
-static PassRefPtrWillBeRawPtr<Event> createWebkitNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
+static PassRefPtr<Event> createWebkitNeedKeyEvent(const String& contentType, const unsigned char* initData, unsigned initDataLength)
 {
     MediaKeyEventInit webkitInitializer;
     webkitInitializer.keySystem = String();
@@ -258,7 +258,7 @@ void HTMLMediaElementEncryptedMedia::keyAdded(HTMLMediaElement& element, const S
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyadded, initializer);
+    RefPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyadded, initializer);
     event->setTarget(&element);
     element.scheduleEvent(event.release());
 }
@@ -297,7 +297,7 @@ void HTMLMediaElementEncryptedMedia::keyError(HTMLMediaElement& element, const S
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyerror, initializer);
+    RefPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeyerror, initializer);
     event->setTarget(&element);
     element.scheduleEvent(event.release());
 }
@@ -314,7 +314,7 @@ void HTMLMediaElementEncryptedMedia::keyMessage(HTMLMediaElement& element, const
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    RefPtrWillBeRawPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeymessage, initializer);
+    RefPtr<Event> event = MediaKeyEvent::create(EventTypeNames::webkitkeymessage, initializer);
     event->setTarget(&element);
     element.scheduleEvent(event.release());
 }
@@ -325,14 +325,14 @@ void HTMLMediaElementEncryptedMedia::keyNeeded(HTMLMediaElement& element, const 
 
     if (RuntimeEnabledFeatures::encryptedMediaEnabled()) {
         // Send event for WD EME.
-        RefPtrWillBeRawPtr<Event> event = createNeedKeyEvent(contentType, initData, initDataLength);
+        RefPtr<Event> event = createNeedKeyEvent(contentType, initData, initDataLength);
         event->setTarget(&element);
         element.scheduleEvent(event.release());
     }
 
     if (RuntimeEnabledFeatures::prefixedEncryptedMediaEnabled()) {
         // Send event for v0.1b EME.
-        RefPtrWillBeRawPtr<Event> event = createWebkitNeedKeyEvent(contentType, initData, initDataLength);
+        RefPtr<Event> event = createWebkitNeedKeyEvent(contentType, initData, initDataLength);
         event->setTarget(&element);
         element.scheduleEvent(event.release());
     }

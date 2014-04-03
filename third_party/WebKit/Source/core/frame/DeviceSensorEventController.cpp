@@ -56,12 +56,12 @@ void DeviceSensorEventController::fireDeviceEvent(Timer<DeviceSensorEventControl
     dispatchDeviceEvent(getLastEvent());
 }
 
-void DeviceSensorEventController::dispatchDeviceEvent(PassRefPtrWillBeRawPtr<Event> prpEvent)
+void DeviceSensorEventController::dispatchDeviceEvent(PassRefPtr<Event> prpEvent)
 {
     if (!m_document.domWindow() || m_document.activeDOMObjectsAreSuspended() || m_document.activeDOMObjectsAreStopped())
         return;
 
-    RefPtrWillBeRawPtr<Event> event = prpEvent;
+    RefPtr<Event> event = prpEvent;
     m_document.domWindow()->dispatchEvent(event);
 
     if (m_needsCheckingNullEvents) {

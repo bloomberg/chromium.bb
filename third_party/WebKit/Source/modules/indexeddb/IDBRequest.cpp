@@ -400,7 +400,7 @@ ExecutionContext* IDBRequest::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-bool IDBRequest::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBRequest::dispatchEvent");
     if (m_contextStopped || !executionContext())
@@ -500,7 +500,7 @@ void IDBRequest::transactionDidFinishAndDispatch()
     m_readyState = PENDING;
 }
 
-void IDBRequest::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+void IDBRequest::enqueueEvent(PassRefPtr<Event> event)
 {
     ASSERT(m_readyState == PENDING || m_readyState == DONE);
 

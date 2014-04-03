@@ -43,7 +43,7 @@ public:
     virtual ~GenericEventQueue();
 
     // EventQueue
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual bool enqueueEvent(PassRefPtr<Event>) OVERRIDE;
     virtual bool cancelEvent(Event*) OVERRIDE;
     virtual void close() OVERRIDE;
 
@@ -54,7 +54,7 @@ private:
     void timerFired(Timer<GenericEventQueue>*);
 
     EventTarget* m_owner;
-    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_pendingEvents;
+    Vector<RefPtr<Event> > m_pendingEvents;
     Timer<GenericEventQueue> m_timer;
 
     bool m_isClosed;

@@ -236,7 +236,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
 
         InspectorInstrumentation::scriptImported(executionContext(), scriptLoader->identifier(), scriptLoader->script());
 
-        RefPtrWillBeRawPtr<ErrorEvent> errorEvent;
+        RefPtr<ErrorEvent> errorEvent;
         m_script->evaluate(ScriptSourceCode(scriptLoader->script(), scriptLoader->responseURL()), &errorEvent);
         if (errorEvent) {
             m_script->rethrowExceptionFromImportedScript(errorEvent.release());

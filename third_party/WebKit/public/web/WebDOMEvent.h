@@ -92,8 +92,8 @@ public:
     BLINK_EXPORT bool isXMLHttpRequestProgressEvent() const;
 
 #if BLINK_IMPLEMENTATION
-    WebDOMEvent(const PassRefPtrWillBeRawPtr<WebCore::Event>&);
-    operator PassRefPtrWillBeRawPtr<WebCore::Event>() const;
+    WebDOMEvent(const WTF::PassRefPtr<WebCore::Event>&);
+    operator WTF::PassRefPtr<WebCore::Event>() const;
 #endif
 
     template<typename T> T to()

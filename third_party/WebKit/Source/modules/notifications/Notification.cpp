@@ -170,7 +170,7 @@ void Notification::requestPermission(ExecutionContext* context, PassOwnPtr<Notif
     NotificationController::from(toDocument(context)->page())->client()->requestPermission(context, callback);
 }
 
-bool Notification::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool Notification::dispatchEvent(PassRefPtr<Event> event)
 {
     ASSERT(m_state != Closed);
 

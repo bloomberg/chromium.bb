@@ -42,7 +42,7 @@ class NullEventQueue : public EventQueue {
 public:
     NullEventQueue() { }
     virtual ~NullEventQueue() { }
-    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE { return true; }
+    virtual bool enqueueEvent(PassRefPtr<Event>) OVERRIDE { return true; }
     virtual bool cancelEvent(Event*) OVERRIDE { return true; }
     virtual void close() OVERRIDE { }
 };

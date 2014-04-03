@@ -180,7 +180,7 @@ void Event::receivedTarget()
 {
 }
 
-void Event::setUnderlyingEvent(PassRefPtrWillBeRawPtr<Event> ue)
+void Event::setUnderlyingEvent(PassRefPtr<Event> ue)
 {
     // Prohibit creation of a cycle -- just do nothing in that case.
     for (Event* e = ue.get(); e; e = e->underlyingEvent())
@@ -213,9 +213,8 @@ PassRefPtr<NodeList> Event::path() const
     return StaticNodeList::createEmpty();
 }
 
-void Event::trace(Visitor* visitor)
+void Event::trace(Visitor*)
 {
-    visitor->trace(m_underlyingEvent);
 }
 
 } // namespace WebCore

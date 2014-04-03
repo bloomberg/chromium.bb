@@ -68,9 +68,9 @@ namespace WebCore {
 
         WorkerGlobalScope& workerGlobalScope() { return m_workerGlobalScope; }
 
-        void evaluate(const ScriptSourceCode&, RefPtrWillBeRawPtr<ErrorEvent>* = 0);
+        void evaluate(const ScriptSourceCode&, RefPtr<ErrorEvent>* = 0);
 
-        void rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent>);
+        void rethrowExceptionFromImportedScript(PassRefPtr<ErrorEvent>);
 
         // Async request to terminate a future JS execution. Eventually causes termination
         // exception raised during JS execution, if the worker thread happens to run JS.
@@ -111,7 +111,7 @@ namespace WebCore {
         bool m_executionForbidden;
         bool m_executionScheduledToTerminate;
         mutable Mutex m_scheduledTerminationMutex;
-        RefPtrWillBePersistent<ErrorEvent> m_errorEventFromImportedScript;
+        RefPtr<ErrorEvent> m_errorEventFromImportedScript;
         OwnPtr<V8IsolateInterruptor> m_interruptor;
     };
 

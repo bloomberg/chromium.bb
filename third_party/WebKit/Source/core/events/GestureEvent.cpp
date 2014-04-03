@@ -99,7 +99,7 @@ void GestureEvent::trace(Visitor* visitor)
     MouseRelatedEvent::trace(visitor);
 }
 
-GestureEventDispatchMediator::GestureEventDispatchMediator(PassRefPtrWillBeRawPtr<GestureEvent> gestureEvent)
+GestureEventDispatchMediator::GestureEventDispatchMediator(PassRefPtr<GestureEvent> gestureEvent)
     : EventDispatchMediator(gestureEvent)
 {
 }

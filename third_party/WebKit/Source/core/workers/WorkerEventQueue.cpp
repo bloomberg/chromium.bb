@@ -51,7 +51,7 @@ WorkerEventQueue::~WorkerEventQueue()
 
 class WorkerEventQueue::EventDispatcherTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<EventDispatcherTask> create(PassRefPtrWillBeRawPtr<Event> event, WorkerEventQueue* eventQueue)
+    static PassOwnPtr<EventDispatcherTask> create(PassRefPtr<Event> event, WorkerEventQueue* eventQueue)
     {
         return adoptPtr(new EventDispatcherTask(event, eventQueue));
     }
@@ -62,7 +62,7 @@ public:
             m_eventQueue->removeEvent(m_event.get());
     }
 
-    void dispatchEvent(ExecutionContext*, PassRefPtrWillBeRawPtr<Event> event)
+    void dispatchEvent(ExecutionContext*, PassRefPtr<Event> event)
     {
         event->target()->dispatchEvent(event);
     }
@@ -83,14 +83,14 @@ public:
     }
 
 private:
-    EventDispatcherTask(PassRefPtrWillBeRawPtr<Event> event, WorkerEventQueue* eventQueue)
+    EventDispatcherTask(PassRefPtr<Event> event, WorkerEventQueue* eventQueue)
         : m_event(event)
         , m_eventQueue(eventQueue)
         , m_isCancelled(false)
     {
     }
 
-    RefPtrWillBeRawPtr<Event> m_event;
+    RefPtr<Event> m_event;
     WorkerEventQueue* m_eventQueue;
     bool m_isCancelled;
 };
@@ -100,11 +100,11 @@ void WorkerEventQueue::removeEvent(Event* event)
     m_eventTaskMap.remove(event);
 }
 
-bool WorkerEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> prpEvent)
+bool WorkerEventQueue::enqueueEvent(PassRefPtr<Event> prpEvent)
 {
     if (m_isClosed)
         return false;
-    RefPtrWillBeRawPtr<Event> event = prpEvent;
+    RefPtr<Event> event = prpEvent;
     OwnPtr<EventDispatcherTask> task = EventDispatcherTask::create(event, this);
     m_eventTaskMap.add(event.release(), task.get());
     m_executionContext->postTask(task.release());

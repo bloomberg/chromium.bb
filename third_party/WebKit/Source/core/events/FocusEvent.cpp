@@ -70,12 +70,12 @@ void FocusEvent::trace(Visitor* visitor)
     UIEvent::trace(visitor);
 }
 
-PassRefPtr<FocusEventDispatchMediator> FocusEventDispatchMediator::create(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+PassRefPtr<FocusEventDispatchMediator> FocusEventDispatchMediator::create(PassRefPtr<FocusEvent> focusEvent)
 {
     return adoptRef(new FocusEventDispatchMediator(focusEvent));
 }
 
-FocusEventDispatchMediator::FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+FocusEventDispatchMediator::FocusEventDispatchMediator(PassRefPtr<FocusEvent> focusEvent)
     : EventDispatchMediator(focusEvent)
 {
 }
@@ -86,12 +86,12 @@ bool FocusEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 
-PassRefPtr<BlurEventDispatchMediator> BlurEventDispatchMediator::create(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+PassRefPtr<BlurEventDispatchMediator> BlurEventDispatchMediator::create(PassRefPtr<FocusEvent> focusEvent)
 {
     return adoptRef(new BlurEventDispatchMediator(focusEvent));
 }
 
-BlurEventDispatchMediator::BlurEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+BlurEventDispatchMediator::BlurEventDispatchMediator(PassRefPtr<FocusEvent> focusEvent)
     : EventDispatchMediator(focusEvent)
 {
 }
@@ -102,12 +102,12 @@ bool BlurEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 
-PassRefPtr<FocusInEventDispatchMediator> FocusInEventDispatchMediator::create(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+PassRefPtr<FocusInEventDispatchMediator> FocusInEventDispatchMediator::create(PassRefPtr<FocusEvent> focusEvent)
 {
     return adoptRef(new FocusInEventDispatchMediator(focusEvent));
 }
 
-FocusInEventDispatchMediator::FocusInEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+FocusInEventDispatchMediator::FocusInEventDispatchMediator(PassRefPtr<FocusEvent> focusEvent)
     : EventDispatchMediator(focusEvent)
 {
 }
@@ -118,12 +118,12 @@ bool FocusInEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) co
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 
-PassRefPtr<FocusOutEventDispatchMediator> FocusOutEventDispatchMediator::create(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+PassRefPtr<FocusOutEventDispatchMediator> FocusOutEventDispatchMediator::create(PassRefPtr<FocusEvent> focusEvent)
 {
     return adoptRef(new FocusOutEventDispatchMediator(focusEvent));
 }
 
-FocusOutEventDispatchMediator::FocusOutEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent> focusEvent)
+FocusOutEventDispatchMediator::FocusOutEventDispatchMediator(PassRefPtr<FocusEvent> focusEvent)
     : EventDispatchMediator(focusEvent)
 {
 }

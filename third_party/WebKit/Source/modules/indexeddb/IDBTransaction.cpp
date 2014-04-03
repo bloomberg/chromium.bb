@@ -338,7 +338,7 @@ ExecutionContext* IDBTransaction::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-bool IDBTransaction::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool IDBTransaction::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBTransaction::dispatchEvent");
     if (m_contextStopped || !executionContext()) {
@@ -386,7 +386,7 @@ void IDBTransaction::stop()
     abort(IGNORE_EXCEPTION);
 }
 
-void IDBTransaction::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+void IDBTransaction::enqueueEvent(PassRefPtr<Event> event)
 {
     ASSERT_WITH_MESSAGE(m_state != Finished, "A finished transaction tried to enqueue an event of type %s.", event->type().utf8().data());
     if (m_contextStopped || !executionContext())

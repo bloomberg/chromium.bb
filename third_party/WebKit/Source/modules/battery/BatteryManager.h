@@ -35,7 +35,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(dischargingtimechange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(levelchange);
 
-    void didChangeBatteryStatus(PassRefPtrWillBeRawPtr<Event>, PassOwnPtr<BatteryStatus>);
+    void didChangeBatteryStatus(PassRefPtr<Event>, PassOwnPtr<BatteryStatus>);
 
     void trace(Visitor*) { }
 

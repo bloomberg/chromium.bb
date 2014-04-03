@@ -124,7 +124,7 @@ public:
     {
     }
 
-    PassRefPtrWillBeRawPtr<MessageEvent> event()
+    PassRefPtr<MessageEvent> event()
     {
         return MessageEvent::create(m_channels.release(), m_message, m_origin, String(), m_source.get());
 
@@ -422,7 +422,7 @@ EventQueue* DOMWindow::eventQueue() const
     return m_eventQueue.get();
 }
 
-void DOMWindow::enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event> event)
+void DOMWindow::enqueueWindowEvent(PassRefPtr<Event> event)
 {
     if (!m_eventQueue)
         return;
@@ -430,7 +430,7 @@ void DOMWindow::enqueueWindowEvent(PassRefPtrWillBeRawPtr<Event> event)
     m_eventQueue->enqueueEvent(event);
 }
 
-void DOMWindow::enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event> event)
+void DOMWindow::enqueueDocumentEvent(PassRefPtr<Event> event)
 {
     if (!m_eventQueue)
         return;
@@ -866,7 +866,7 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
     if (!isCurrentlyDisplayedInFrame())
         return;
 
-    RefPtrWillBeRawPtr<MessageEvent> event = timer->event();
+    RefPtr<MessageEvent> event = timer->event();
 
     // Give the embedder a chance to intercept this postMessage because this
     // DOMWindow might be a proxy for another in browsers that support
@@ -880,7 +880,7 @@ void DOMWindow::postMessageTimerFired(PassOwnPtr<PostMessageTimer> t)
     dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->stackTrace());
 }
 
-void DOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event> event, PassRefPtr<ScriptCallStack> stackTrace)
+void DOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtr<Event> event, PassRefPtr<ScriptCallStack> stackTrace)
 {
     if (intendedTargetOrigin) {
         // Check target origin now since the target document may have changed since the timer was scheduled.
@@ -1571,7 +1571,7 @@ bool DOMWindow::removeEventListener(const AtomicString& eventType, EventListener
 
 void DOMWindow::dispatchLoadEvent()
 {
-    RefPtrWillBeRawPtr<Event> loadEvent(Event::create(EventTypeNames::load));
+    RefPtr<Event> loadEvent(Event::create(EventTypeNames::load));
     if (m_frame && m_frame->loader().documentLoader() && !m_frame->loader().documentLoader()->timing()->loadEventStart()) {
         // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed while dispatching
         // the event, so protect it to prevent writing the end time into freed memory.
@@ -1593,12 +1593,12 @@ void DOMWindow::dispatchLoadEvent()
     InspectorInstrumentation::loadEventFired(frame());
 }
 
-bool DOMWindow::dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget)
+bool DOMWindow::dispatchEvent(PassRefPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget)
 {
     ASSERT(!NoEventDispatchAssertion::isEventDispatchForbidden());
 
     RefPtr<EventTarget> protect = this;
-    RefPtrWillBeRawPtr<Event> event = prpEvent;
+    RefPtr<Event> event = prpEvent;
 
     event->setTarget(prpTarget ? prpTarget : this);
     event->setCurrentTarget(this);

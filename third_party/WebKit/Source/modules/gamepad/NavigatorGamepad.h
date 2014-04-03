@@ -74,7 +74,7 @@ private:
     virtual void registerWithDispatcher() OVERRIDE FINAL;
     virtual void unregisterWithDispatcher() OVERRIDE FINAL;
     virtual bool hasLastData() OVERRIDE FINAL;
-    virtual PassRefPtrWillBeRawPtr<Event> getLastEvent() OVERRIDE FINAL;
+    virtual PassRefPtr<Event> getLastEvent() OVERRIDE FINAL;
     virtual bool isNullEvent(Event*) OVERRIDE FINAL;
 
     // DOMWindowLifecycleObserver

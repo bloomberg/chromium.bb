@@ -49,7 +49,7 @@ bool EventDispatcher::dispatchEvent(Node* node, PassRefPtr<EventDispatchMediator
     return mediator->dispatchEvent(&dispatcher);
 }
 
-EventDispatcher::EventDispatcher(Node* node, PassRefPtrWillBeRawPtr<Event> event)
+EventDispatcher::EventDispatcher(Node* node, PassRefPtr<Event> event)
     : m_node(node)
     , m_event(event)
 #ifndef NDEBUG

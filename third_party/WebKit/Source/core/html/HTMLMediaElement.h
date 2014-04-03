@@ -263,7 +263,7 @@ public:
     MediaController* controller() const;
     void setController(PassRefPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
 
-    void scheduleEvent(PassRefPtrWillBeRawPtr<Event>);
+    void scheduleEvent(PassRefPtr<Event>);
 
     // Current volume that should be used by the webMediaPlayer(). This method takes muted state
     // and m_mediaController multipliers into account.

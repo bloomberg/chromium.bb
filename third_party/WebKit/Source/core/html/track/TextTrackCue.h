@@ -72,7 +72,7 @@ public:
     void invalidateCueIndex();
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
     bool isActive();
     void setIsActive(bool);

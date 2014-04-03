@@ -204,7 +204,7 @@ AudioScheduledSourceNode::NotifyEndedTask::NotifyEndedTask(PassRefPtr<AudioSched
 
 void AudioScheduledSourceNode::NotifyEndedTask::notifyEnded()
 {
-    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::ended);
+    RefPtr<Event> event = Event::create(EventTypeNames::ended);
     event->setTarget(m_scheduledNode);
     m_scheduledNode->dispatchEvent(event.get());
 }

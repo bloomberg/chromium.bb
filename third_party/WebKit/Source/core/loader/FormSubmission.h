@@ -32,7 +32,6 @@
 #define FormSubmission_h
 
 #include "core/loader/FormState.h"
-#include "heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 
@@ -93,7 +92,7 @@ public:
         String m_acceptCharset;
     };
 
-    static PassRefPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, PassRefPtrWillBeRawPtr<Event>, FormSubmissionTrigger);
+    static PassRefPtr<FormSubmission> create(HTMLFormElement*, const Attributes&, PassRefPtr<Event> event, FormSubmissionTrigger);
 
     void populateFrameLoadRequest(FrameLoadRequest&);
 
@@ -113,7 +112,7 @@ public:
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
+    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
@@ -125,7 +124,7 @@ private:
     RefPtr<FormState> m_formState;
     RefPtr<FormData> m_formData;
     String m_boundary;
-    RefPtrWillBePersistent<Event> m_event;
+    RefPtr<Event> m_event;
     Referrer m_referrer;
     String m_origin;
     String m_result;

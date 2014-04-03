@@ -62,7 +62,7 @@ DOMWindowEventQueue::~DOMWindowEventQueue()
 {
 }
 
-bool DOMWindowEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool DOMWindowEventQueue::enqueueEvent(PassRefPtr<Event> event)
 {
     if (m_isClosed)
         return false;
@@ -79,7 +79,7 @@ bool DOMWindowEventQueue::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 
 bool DOMWindowEventQueue::cancelEvent(Event* event)
 {
-    ListHashSet<RefPtrWillBePersistent<Event>, 16>::iterator it = m_queuedEvents.find(event);
+    ListHashSet<RefPtr<Event>, 16>::iterator it = m_queuedEvents.find(event);
     bool found = it != m_queuedEvents.end();
     if (found)
         m_queuedEvents.remove(it);
@@ -108,8 +108,8 @@ void DOMWindowEventQueue::pendingEventTimerFired()
     RefPtr<DOMWindowEventQueue> protector(this);
 
     while (!m_queuedEvents.isEmpty()) {
-        ListHashSet<RefPtrWillBePersistent<Event>, 16>::iterator iter = m_queuedEvents.begin();
-        RefPtrWillBeRawPtr<Event> event = *iter;
+        ListHashSet<RefPtr<Event>, 16>::iterator iter = m_queuedEvents.begin();
+        RefPtr<Event> event = *iter;
         m_queuedEvents.remove(iter);
         if (!event)
             break;
@@ -117,7 +117,7 @@ void DOMWindowEventQueue::pendingEventTimerFired()
     }
 }
 
-void DOMWindowEventQueue::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+void DOMWindowEventQueue::dispatchEvent(PassRefPtr<Event> event)
 {
     EventTarget* eventTarget = event->target();
     if (eventTarget->toDOMWindow())

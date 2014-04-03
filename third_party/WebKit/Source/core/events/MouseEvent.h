@@ -113,22 +113,22 @@ private:
 
 class SimulatedMouseEvent FINAL : public MouseEvent {
 public:
-    static PassRefPtrWillBeRawPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
+    static PassRefPtrWillBeRawPtr<SimulatedMouseEvent> create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);
     virtual ~SimulatedMouseEvent();
 
     virtual void trace(Visitor*) OVERRIDE;
 
 private:
-    SimulatedMouseEvent(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtrWillBeRawPtr<Event> underlyingEvent);
+    SimulatedMouseEvent(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView>, PassRefPtr<Event> underlyingEvent);
 };
 
 class MouseEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
     enum MouseEventType { SyntheticMouseEvent, NonSyntheticMouseEvent};
-    static PassRefPtr<MouseEventDispatchMediator> create(PassRefPtrWillBeRawPtr<MouseEvent>, MouseEventType = NonSyntheticMouseEvent);
+    static PassRefPtr<MouseEventDispatchMediator> create(PassRefPtr<MouseEvent>, MouseEventType = NonSyntheticMouseEvent);
 
 private:
-    explicit MouseEventDispatchMediator(PassRefPtrWillBeRawPtr<MouseEvent>, MouseEventType);
+    explicit MouseEventDispatchMediator(PassRefPtr<MouseEvent>, MouseEventType);
     MouseEvent* event() const;
 
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;

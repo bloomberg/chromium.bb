@@ -154,7 +154,7 @@ bool EventTarget::clearAttributeEventListener(const AtomicString& eventType)
     return removeEventListener(eventType, listener, false);
 }
 
-bool EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event, ExceptionState& exceptionState)
+bool EventTarget::dispatchEvent(PassRefPtr<Event> event, ExceptionState& exceptionState)
 {
     if (!event) {
         exceptionState.throwDOMException(InvalidStateError, "The event provided is null.");
@@ -175,7 +175,7 @@ bool EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event, ExceptionSt
     return dispatchEvent(event);
 }
 
-bool EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool EventTarget::dispatchEvent(PassRefPtr<Event> event)
 {
     event->setTarget(this);
     event->setCurrentTarget(this);

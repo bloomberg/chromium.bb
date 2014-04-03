@@ -55,10 +55,10 @@ NavigationAction::NavigationAction()
 }
 
 NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, FrameLoadType frameLoadType,
-    bool isFormSubmission, PassRefPtrWillBeRawPtr<Event> passEvent)
+    bool isFormSubmission, PassRefPtr<Event> passEvent)
     : m_resourceRequest(resourceRequest)
 {
-    RefPtrWillBeRawPtr<Event> event = passEvent;
+    RefPtr<Event> event = passEvent;
     m_type = navigationType(frameLoadType, isFormSubmission || resourceRequest.httpBody(), event);
     m_eventTimeStamp = event ? event->timeStamp() : 0;
 

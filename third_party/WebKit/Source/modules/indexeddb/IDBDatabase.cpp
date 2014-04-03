@@ -366,7 +366,7 @@ void IDBDatabase::onVersionChange(int64_t oldVersion, int64_t newVersion)
     enqueueEvent(IDBVersionChangeEvent::create(EventTypeNames::versionchange, oldVersion, newVersionNullable));
 }
 
-void IDBDatabase::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
+void IDBDatabase::enqueueEvent(PassRefPtr<Event> event)
 {
     ASSERT(!m_contextStopped);
     ASSERT(executionContext());
@@ -376,7 +376,7 @@ void IDBDatabase::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
     m_enqueuedEvents.append(event);
 }
 
-bool IDBDatabase::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
+bool IDBDatabase::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBDatabase::dispatchEvent");
     if (m_contextStopped || !executionContext())
