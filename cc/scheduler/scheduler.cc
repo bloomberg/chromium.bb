@@ -181,10 +181,11 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
       poll_for_draw_triggers_closure_.Reset(
           base::Bind(&Scheduler::PollForAnticipatedDrawTriggers,
                      weak_factory_.GetWeakPtr()));
+      base::TimeDelta delay = last_begin_impl_frame_args_.IsValid()
+                                  ? last_begin_impl_frame_args_.interval
+                                  : BeginFrameArgs::DefaultInterval();
       impl_task_runner_->PostDelayedTask(
-          FROM_HERE,
-          poll_for_draw_triggers_closure_.callback(),
-          last_begin_impl_frame_args_.interval);
+          FROM_HERE, poll_for_draw_triggers_closure_.callback(), delay);
     }
   } else {
     poll_for_draw_triggers_closure_.Cancel();
