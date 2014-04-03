@@ -29,6 +29,9 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
       const syncer::SyncChangeList& change_list) OVERRIDE;
   virtual syncer::SyncDataList GetAllSyncData(
       syncer::ModelType type) const OVERRIDE;
+  virtual syncer::SyncError UpdateDataTypeContext(
+      syncer::ModelType type,
+      const std::string& context) OVERRIDE;
 
   // syncer::SyncErrorFactory implementation.
   virtual syncer::SyncError CreateAndUploadError(

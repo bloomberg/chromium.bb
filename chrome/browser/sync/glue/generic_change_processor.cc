@@ -167,6 +167,13 @@ syncer::SyncDataList GenericChangeProcessor::GetAllSyncData(
   return data;
 }
 
+syncer::SyncError GenericChangeProcessor::UpdateDataTypeContext(
+    syncer::ModelType type,
+    const std::string& context) {
+  NOTIMPLEMENTED();
+  return syncer::SyncError();
+}
+
 syncer::SyncError GenericChangeProcessor::GetAllSyncDataReturnError(
     syncer::ModelType type,
     syncer::SyncDataList* current_sync_data) const {

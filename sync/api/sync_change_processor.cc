@@ -10,4 +10,11 @@ SyncChangeProcessor::SyncChangeProcessor() {}
 
 SyncChangeProcessor::~SyncChangeProcessor() {}
 
+syncer::SyncError SyncChangeProcessor::UpdateDataTypeContext(
+    ModelType type,
+    const std::string& context) {
+  // Do nothing.
+  return syncer::SyncError();
+}
+
 }  // namespace syncer

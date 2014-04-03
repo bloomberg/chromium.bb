@@ -63,6 +63,12 @@ class SYNC_EXPORT SyncChangeProcessor {
   virtual void GetSyncData(const ModelType& type,
                            const std::string& sync_tag,
                            const GetSyncDataCallback& callback) const {}
+
+  // Updates the context for |type|. Default implementation does nothing.
+  // A type's context is a per-client blob that can affect all SyncData
+  // sent to/from the server, much like a cookie.
+  virtual syncer::SyncError UpdateDataTypeContext(ModelType type,
+                                                  const std::string& context);
 };
 
 }  // namespace syncer
