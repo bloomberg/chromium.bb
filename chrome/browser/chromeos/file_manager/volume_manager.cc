@@ -66,13 +66,7 @@ bool FindDownloadsMountPointPath(Profile* profile, base::FilePath* path) {
   return mount_points->GetRegisteredPath(mount_point_name, path);
 }
 
-// Called on completion of MarkCacheFileAsUnmounted.
-void OnMarkCacheFileAsUnmounted(drive::FileError error) {
-  // Do nothing.
-}
-
-VolumeType MountTypeToVolumeType(
-    chromeos::MountType type) {
+VolumeType MountTypeToVolumeType(chromeos::MountType type) {
   switch (type) {
     case chromeos::MOUNT_TYPE_INVALID:
       // We don't expect this value, but list here, so that when any value
@@ -561,7 +555,7 @@ void VolumeManager::OnMountEvent(
       if (file_system) {
         file_system->MarkCacheFileAsUnmounted(
             base::FilePath(mount_info.source_path),
-            base::Bind(&OnMarkCacheFileAsUnmounted));
+            base::Bind(&drive::util::EmptyFileOperationCallback));
       }
     }
   }

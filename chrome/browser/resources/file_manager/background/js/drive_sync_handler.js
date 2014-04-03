@@ -12,7 +12,7 @@
  */
 function DriveSyncHandler(progressCenter) {
   /**
-   * Progress center to submit the progressng item.
+   * Progress center to submit the progressing item.
    * @type {ProgressCenter}
    * @private
    */

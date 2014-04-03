@@ -7,7 +7,7 @@
 /**
  * FileGrid constructor.
  *
- * Represents grid for the Grid Vew in the File Manager.
+ * Represents grid for the Grid View in the File Manager.
  * @constructor
  * @extends {cr.ui.Grid}
  */
@@ -259,10 +259,10 @@ FileGrid.prototype.shouldStartDragSelection = function(event) {
 
 /**
  * Obtains the column/row index that the coordinate points.
- * @param {number} coordinate Vertical/horizontal coodinate value that points
+ * @param {number} coordinate Vertical/horizontal coordinate value that points
  *     column/row.
  * @param {number} step Length from a column/row to the next one.
- * @param {number} threshold Threshold that determinds whether 1 offset is added
+ * @param {number} threshold Threshold that determines whether 1 offset is added
  *     to the return value or not. This is used in order to handle the margin of
  *     column/row.
  * @return {number} Index of hit column/row.

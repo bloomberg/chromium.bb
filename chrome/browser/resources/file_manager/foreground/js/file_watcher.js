@@ -70,7 +70,7 @@ FileWatcher.prototype.onFilesystemMetadataChanged_ = function(
 /**
  * Called when thumbnail metadata in the watched directory has been changed.
  *
- * @param {Array.<Entry>} entries Arrray of entries.
+ * @param {Array.<Entry>} entries Array of entries.
  * @param {Object.<string, Object>} properties Map from entry URLs to metadata
  *     properties.
  * @private

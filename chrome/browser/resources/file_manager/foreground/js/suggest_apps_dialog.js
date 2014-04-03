@@ -214,7 +214,7 @@ SuggestAppsDialog.prototype.showByFilename =
 };
 
 /**
- * Internal methdo to shows a dialog. This should be called only from 'Suggest.
+ * Internal method to show a dialog. This should be called only from 'Suggest.
  * appDialog.showXxxx()' functions.
  *
  * @param {string} filename Filename (without extension) of the file.

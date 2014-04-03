@@ -143,7 +143,7 @@ FileTasks.UMA_INDEX_KNOWN_EXTENSIONS_ = Object.freeze([
 ]);
 
 /**
- * The list of excutable file extensions.
+ * The list of executable file extensions.
  *
  * @const
  * @type {Array.<string>}

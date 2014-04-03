@@ -537,7 +537,6 @@ IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, Search) {
 }
 
 IN_PROC_BROWSER_TEST_F(DriveFileSystemExtensionApiTest, AppFileHandler) {
-  fake_drive_service_->set_default_max_results(1);
   EXPECT_TRUE(RunFileSystemExtensionApiTest(
       "file_browser/handler_test_runner",
       FILE_PATH_LITERAL("manifest.json"),

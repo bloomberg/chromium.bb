@@ -194,7 +194,7 @@ function LocalSearchContentScanner(entry, query) {
 }
 
 /**
- * Extedns ContentScanner.
+ * Extends ContentScanner.
  */
 LocalSearchContentScanner.prototype.__proto__ = ContentScanner.prototype;
 

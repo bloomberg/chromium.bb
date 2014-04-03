@@ -194,7 +194,7 @@ DeviceHandler.MountStatus = Object.freeze({
   NO_RESULT: 'noResult',
   // There is no error on the device.
   SUCCESS: 'success',
-  // There is only parent errors, that can be overrided by child results.
+  // There is only parent errors, that can be overridden by child results.
   ONLY_PARENT_ERROR: 'onlyParentError',
   // There is one child error.
   CHILD_ERROR: 'childError',

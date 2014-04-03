@@ -348,7 +348,7 @@ AudioPlayer.prototype.syncHeight_ = function() {
       targetHeight = this.lastExpandedHeight_;
     }
   } else {
-    // Not expaned.
+    // Not expanded.
     targetHeight = AudioPlayer.CONTROLS_HEIGHT + AudioPlayer.TRACK_HEIGHT;
   }
 

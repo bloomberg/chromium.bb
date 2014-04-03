@@ -43,11 +43,11 @@ var ProgressItemType = Object.freeze({
   COPY: 'copy',
   // The item is file move operation.
   MOVE: 'move',
-  // The item is file delete opeartion.
+  // The item is file delete operation.
   DELETE: 'delete',
   // The item is file zip operation.
   ZIP: 'zip',
-  // The item is drive sync operaiton.
+  // The item is drive sync operation.
   SYNC: 'sync',
   // The item is general file transfer operation.
   // This is used for the mixed operation of summarized item.

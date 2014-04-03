@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Number of runtime errors catched in the background page.
+ * Number of runtime errors caught in the background page.
  * @type {number}
  */
 var JSErrorCount = 0;
@@ -295,7 +295,7 @@ AppWindowWrapper.prototype.setIcon = function(iconPath) {
  *
  * @param {Object} appState App state.
  * @param {boolean} reopen True if the launching is triggered automatically.
- *     False otherwize.
+ *     False otherwise.
  * @param {function()=} opt_callback Completion callback.
  */
 AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
@@ -399,7 +399,7 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
     if (window.IN_TEST)
       contentWindow.IN_TEST = true;
 
-    // Register event listners.
+    // Register event listeners.
     appWindow.onBoundsChanged.addListener(this.onBoundsChanged_.bind(this));
     appWindow.onClosed.addListener(this.onClosed_.bind(this));
 
@@ -478,7 +478,7 @@ SingletonAppWindowWrapper.prototype = {__proto__: AppWindowWrapper.prototype};
  *
  * @param {Object} appState App state.
  * @param {boolean} reopen True if the launching is triggered automatically.
- *     False otherwize.
+ *     False otherwise.
  * @param {function()=} opt_callback Completion callback.
  */
 SingletonAppWindowWrapper.prototype.launch =
@@ -702,7 +702,7 @@ Background.prototype.onExecute_ = function(action, details) {
           return;
         }
         // If the disable-default-apps flag is on, Files.app is not opened
-        // automatically on device mount because it obstculs the manual test.
+        // automatically on device mount not to obstruct the manual test.
         chrome.commandLinePrivate.hasSwitch('disable-default-apps',
                                             function(flag) {
           launchEnable = !flag;
@@ -891,7 +891,7 @@ Background.prototype.onContextMenuClicked_ = function(info) {
  */
 Background.prototype.initContextMenu_ = function() {
   try {
-    // According to the spec [1], the callback is optional. But no callbacki
+    // According to the spec [1], the callback is optional. But no callback
     // causes an error for some reason, so we call it with null-callback to
     // prevent the error. http://crbug.com/353877
     // - [1] https://developer.chrome.com/extensions/contextMenus#method-remove

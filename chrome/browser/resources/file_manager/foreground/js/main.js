@@ -35,7 +35,7 @@ fileManager = new FileManager();
 // additional scripts.
 fileManager.initializeCore();
 
-// Final initialization is performed after all scripts and Dom is loaded.
+// Final initialization is performed after all scripts and DOM is loaded.
 util.addPageLoadHandler(init);
 
 metrics.recordInterval('Load.Script');  // Must be the last line.

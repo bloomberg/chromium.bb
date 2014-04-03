@@ -898,7 +898,7 @@ util.findPropertyDescriptor = function(object, propertyName) {
 
 /**
  * Calls inherited property setter (useful when property is
- * overriden).
+ * overridden).
  * @param {Object} object The object.
  * @param {string} propertyName The property name.
  * @param {*} value Value to set.

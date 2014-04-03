@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * An event handler of the background page for file operaitons.
+ * An event handler of the background page for file operations.
  * @param {Background} background Background page.
  * @constructor
  */

@@ -54,7 +54,7 @@
     /**
      * Invoked when the model changed.
      * @param {AudioPlayerModel} oldValue Old Value.
-     * @param {AudioPlayerModel} newValue Nld Value.
+     * @param {AudioPlayerModel} newValue New Value.
      */
     modelChanged: function(oldValue, newValue) {
       this.$.volumeSlider.model = newValue;

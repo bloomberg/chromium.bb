@@ -77,7 +77,7 @@ CWSContainerClient.prototype.onMessage_ = function(event) {
 };
 
 /**
- * Called when receiving 'loadstop' event from the <wevview>.
+ * Called when receiving 'loadstop' event from the <webview>.
  * @param {Event} event Message event.
  * @private
  */
@@ -186,7 +186,7 @@ CWSContainerClient.prototype.postInitializeMessage_ = function() {
   var message = {
     message: 'initialize',
     hl: util.getCurrentLocaleOrDefault(),
-    widgth: this.width_,
+    width: this.width_,
     height: this.height_,
     v: 1
   };

@@ -61,7 +61,7 @@
 
     /**
      * Height of the element in pixels. Must be specified before ready() is
-     * called. Dynamic change is not supprted.
+     * called. Dynamic change is not supported.
      * @type {number}
      */
     height: 100,

@@ -49,7 +49,7 @@ NavigationModelShortcutItem.prototype = {
 function NavigationModelVolumeItem(label, volumeInfo) {
   NavigationModelItem.call(this, label);
   this.volumeInfo_ = volumeInfo;
-  // Start resovling the display root because it is used
+  // Start resolving the display root because it is used
   // for determining executability of commands.
   this.volumeInfo_.resolveDisplayRoot(
       function() {}, function() {});
@@ -258,7 +258,7 @@ NavigationListModel.prototype.indexOf = function(modelItem, opt_fromIndex) {
 };
 
 /**
- * Called externally when one od the items is not found on the filesystem.
+ * Called externally when one of the items is not found on the filesystem.
  * @param {NavigationModelItem} modelItem The entry which is not found.
  */
 NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {

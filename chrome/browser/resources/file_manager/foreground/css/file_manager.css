@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 /* The order of z-index:
- * - 2: drag-selection-bodrder
+ * - 2: drag-selection-border
  * - 3: preview-panel
  * - 500: scrollbar
  * - 500: splitter
@@ -233,7 +233,7 @@ div.splitter {
 #navigation-list li.root-item {
   -webkit-box-align: center;
   display: -webkit-box;
-  line-height: 22px;  /* To accomodate for icons. */
+  line-height: 22px;  /* To accommodate for icons. */
   padding-left: 11px;
 }
 

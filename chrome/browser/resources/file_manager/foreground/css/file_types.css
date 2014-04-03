@@ -441,15 +441,6 @@ tree:focus .tree-item[selected] > .tree-row >
     url('../images/volumes/2x/black_optical.png') 2x);
 }
 
-list:focus div[selected]
-    [volume-type-icon='removable'][volume-subtype='optical'],
-tree:focus .tree-item[selected] > .tree-row >
-    [volume-type-icon='removable'][volume-subtype='optical'] {
-  background-image: -webkit-image-set(
-    url('../images/volumes/white_optical.png') 1x,
-    url('../images/volumes/2x/white_optical.png') 2x);
-}
-
 list:focus li[selected]
     [volume-type-icon='removable'][volume-subtype='optical'],
 tree:focus .tree-item[selected] > .tree-row >
@@ -463,13 +454,6 @@ tree:focus .tree-item[selected] > .tree-row >
   background-image: -webkit-image-set(
     url('../images/volumes/black_phone.png') 1x,
     url('../images/volumes/2x/black_phone.png') 2x);
-}
-
-list:focus div[selected] [volume-type-icon='mtp'],
-tree:focus .tree-item[selected] > .tree-row > [volume-type-icon='mtp'] {
-  background-image: -webkit-image-set(
-    url('../images/volumes/white_phone.png') 1x,
-    url('../images/volumes/2x/white_phone.png') 2x);
 }
 
 list:focus li[selected] [volume-type-icon='mtp'],

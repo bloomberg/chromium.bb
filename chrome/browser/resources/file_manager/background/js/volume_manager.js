@@ -362,7 +362,7 @@ VolumeInfoList.prototype.findIndex = function(volumeId) {
 
 /**
  * Searches the information of the volume that contains the passed entry.
- * @param {Entry|Object} entry Entry on the volume to be foudn.
+ * @param {Entry|Object} entry Entry on the volume to be found.
  * @return {VolumeInfo} The volume's information, or null if not found.
  */
 VolumeInfoList.prototype.findByEntry = function(entry) {
@@ -656,7 +656,7 @@ VolumeManager.prototype.getVolumeInfo = function(entry) {
 };
 
 /**
- * Obtains a volume infomration of the current profile.
+ * Obtains volume information of the current profile.
  *
  * @param {util.VolumeType} volumeType Volume type.
  * @return {VolumeInfo} Volume info.

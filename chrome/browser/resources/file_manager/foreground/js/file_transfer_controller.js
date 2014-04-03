@@ -246,7 +246,7 @@ FileTransferController.prototype = {
    *     share.
    */
   getMultiProfileShareEntries_: function(entries) {
-    // Utility funciton to concat arrays.
+    // Utility function to concat arrays.
     var concatArrays = function(arrays) {
       return Array.prototype.concat.apply([], arrays);
     };
@@ -294,7 +294,7 @@ FileTransferController.prototype = {
           },
           function(error) {
             console.warn(
-                'Error happens while reading driectory.', error);
+                'Error happens while reading directory.', error);
             return [];
           });
     }.bind(this);

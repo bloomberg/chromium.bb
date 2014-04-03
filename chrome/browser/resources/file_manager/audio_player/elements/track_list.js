@@ -45,7 +45,7 @@
 
     /**
      * Track index of the current track.
-     * If the tracks propertye is empty, it should be -1. Otherwise, be a valid
+     * If the tracks property is empty, it should be -1. Otherwise, be a valid
      * track number.
      *
      * @type {number}

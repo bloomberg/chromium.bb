@@ -12,9 +12,9 @@ Polymer('audio-player', {
   audioElement: null,
   trackList: null,
 
-  // Attributes of the element (little charactor only).
-  // These value must be used only to data binding and shouldn't be assignred
-  // anu value nowhere except in the handler.
+  // Attributes of the element (lower characters only).
+  // These values must be used only to data binding and shouldn't be assigned
+  // any value nowhere except in the handler.
   playing: false,
   currenttrackurl: '',
 
@@ -33,7 +33,7 @@ Polymer('audio-player', {
     this.audioElement = this.$.audio;
     this.trackList = this.$.trackList;
 
-    this.audioElement.volume = 0;  // Temporaly initial volume.
+    this.audioElement.volume = 0;  // Temporary initial volume.
     this.audioElement.addEventListener('ended', this.onAudioEnded.bind(this));
     this.audioElement.addEventListener('error', this.onAudioError.bind(this));
 
@@ -123,7 +123,7 @@ Polymer('audio-player', {
   /**
    * Invoked when the model changed.
    * @param {AudioPlayerModel} oldValue Old Value.
-   * @param {AudioPlayerModel} newValue Nld Value.
+   * @param {AudioPlayerModel} newValue New Value.
    */
   modelChanged: function(oldValue, newValue) {
     this.trackList.model = newValue;
