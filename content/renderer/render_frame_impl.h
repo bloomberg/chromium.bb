@@ -20,6 +20,7 @@
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
+#include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "ui/gfx/range/range.h"
 
 class TransportDIB;
@@ -242,6 +243,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebNavigationType type,
       blink::WebNavigationPolicy default_policy,
       bool is_redirect);
+  virtual blink::WebHistoryItem historyItemForNewChildFrame(
+      blink::WebFrame* frame);
   virtual void willSendSubmitEvent(blink::WebFrame* frame,
                                    const blink::WebFormElement& form);
   virtual void willSubmitForm(blink::WebFrame* frame,
@@ -254,6 +257,11 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didFailProvisionalLoad(
       blink::WebFrame* frame,
       const blink::WebURLError& error);
+  virtual void didCommitProvisionalLoad(
+      blink::WebFrame* frame,
+      const blink::WebHistoryItem& item,
+      blink::WebHistoryCommitType commit_type);
+  // DEPRECATED
   virtual void didCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation);
   virtual void didClearWindowObject(blink::WebFrame* frame, int world_id);
@@ -268,6 +276,10 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual void didFailLoad(blink::WebFrame* frame,
                            const blink::WebURLError& error);
   virtual void didFinishLoad(blink::WebFrame* frame);
+  virtual void didNavigateWithinPage(blink::WebFrame* frame,
+                                     const blink::WebHistoryItem& item,
+                                     blink::WebHistoryCommitType commit_type);
+  // DEPRECATED
   virtual void didNavigateWithinPage(blink::WebFrame* frame,
                                      bool is_new_navigation);
   virtual void didUpdateCurrentHistoryItem(blink::WebFrame* frame);

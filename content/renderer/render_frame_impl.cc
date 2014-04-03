@@ -1480,6 +1480,11 @@ blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       this, frame, extra_data, request, type, default_policy, is_redirect);
 }
 
+blink::WebHistoryItem RenderFrameImpl::historyItemForNewChildFrame(
+    blink::WebFrame* frame) {
+  return render_view_->webview()->itemForNewChildFrame(frame);
+}
+
 void RenderFrameImpl::willSendSubmitEvent(blink::WebFrame* frame,
                                           const blink::WebFormElement& form) {
   DCHECK(!frame_ || frame_ == frame);
@@ -1590,6 +1595,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebFrame* frame) {
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
     blink::WebFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
+  render_view_->webview()->removeChildrenForRedirect(frame);
   if (frame->parent())
     return;
   // Received a redirect on the main frame.
@@ -1709,6 +1715,18 @@ void RenderFrameImpl::didFailProvisionalLoad(
   // Load an error page.
   render_view_->LoadNavigationErrorPage(
       frame, failed_request, error, replace);
+}
+
+void RenderFrameImpl::didCommitProvisionalLoad(
+    blink::WebFrame* frame,
+    const blink::WebHistoryItem& item,
+    blink::WebHistoryCommitType commit_type) {
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  render_view_->webview()->updateForCommit(frame, item, commit_type,
+      document_state->navigation_state()->was_within_same_page());
+
+  didCommitProvisionalLoad(frame, commit_type == blink::WebStandardCommit);
 }
 
 void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,
@@ -1929,6 +1947,27 @@ void RenderFrameImpl::didFinishLoad(blink::WebFrame* frame) {
 
   Send(new FrameHostMsg_DidFinishLoad(routing_id_,
                                       ds->request().url()));
+}
+
+void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,
+    const blink::WebHistoryItem& item,
+    blink::WebHistoryCommitType commit_type) {
+  DCHECK(!frame_ || frame_ == frame);
+  // If this was a reference fragment navigation that we initiated, then we
+  // could end up having a non-null pending navigation params.  We just need to
+  // update the ExtraData on the datasource so that others who read the
+  // ExtraData will get the new NavigationState.  Similarly, if we did not
+  // initiate this navigation, then we need to take care to reset any pre-
+  // existing navigation state to a content-initiated navigation state.
+  // DidCreateDataSource conveniently takes care of this for us.
+  didCreateDataSource(frame, frame->dataSource());
+
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  NavigationState* new_state = document_state->navigation_state();
+  new_state->set_was_within_same_page(true);
+
+  didCommitProvisionalLoad(frame, item, commit_type);
 }
 
 void RenderFrameImpl::didNavigateWithinPage(blink::WebFrame* frame,
