@@ -263,7 +263,7 @@ class TestFaviconHandler : public FaviconHandler {
                                                      icon_type, callback));
   }
 
-  virtual void GetFavicon(
+  virtual void GetFaviconFromFaviconService(
       const GURL& icon_url,
       chrome::IconType icon_type,
       const FaviconService::FaviconResultsCallback& callback,
@@ -272,7 +272,7 @@ class TestFaviconHandler : public FaviconHandler {
                                                      icon_type, callback));
   }
 
-  virtual void GetFaviconForURL(
+  virtual void GetFaviconForURLFromFaviconService(
       const GURL& page_url,
       int icon_types,
       const FaviconService::FaviconResultsCallback& callback,
