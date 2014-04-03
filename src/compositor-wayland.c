@@ -167,6 +167,7 @@ struct wayland_input {
 		} cursor;
 	} parent;
 
+	enum weston_key_state_update keyboard_state_update;
 	uint32_t key_serial;
 	uint32_t enter_serial;
 	int focus;
@@ -1417,40 +1418,52 @@ input_handle_keymap(void *data, struct wl_keyboard *keyboard, uint32_t format,
 	struct xkb_keymap *keymap;
 	char *map_str;
 
-	if (!data) {
-		close(fd);
-		return;
+	if (!data)
+		goto error;
+
+	if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
+		map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
+		if (map_str == MAP_FAILED) {
+			weston_log("mmap failed: %m\n");
+			goto error;
+		}
+
+		keymap = xkb_map_new_from_string(input->compositor->base.xkb_context,
+						 map_str,
+						 XKB_KEYMAP_FORMAT_TEXT_V1,
+						 0);
+		munmap(map_str, size);
+
+		if (!keymap) {
+			weston_log("failed to compile keymap\n");
+			goto error;
+		}
+
+		input->keyboard_state_update = STATE_UPDATE_NONE;
+	} else if (format == WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP) {
+		weston_log("No keymap provided; falling back to defalt\n");
+		keymap = NULL;
+		input->keyboard_state_update = STATE_UPDATE_AUTOMATIC;
+	} else {
+		weston_log("Invalid keymap\n");
+		goto error;
 	}
 
-	if (format != WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
-		close(fd);
-		return;
-	}
-
-	map_str = mmap(NULL, size, PROT_READ, MAP_SHARED, fd, 0);
-	if (map_str == MAP_FAILED) {
-		close(fd);
-		return;
-	}
-
-	keymap = xkb_map_new_from_string(input->compositor->base.xkb_context,
-					 map_str,
-					 XKB_KEYMAP_FORMAT_TEXT_V1,
-					 0);
-	munmap(map_str, size);
 	close(fd);
-
-	if (!keymap) {
-		weston_log("failed to compile keymap\n");
-		return;
-	}
 
 	if (input->base.keyboard)
 		weston_seat_update_keymap(&input->base, keymap);
 	else
 		weston_seat_init_keyboard(&input->base, keymap);
 
-	xkb_map_unref(keymap);
+	if (keymap)
+		xkb_map_unref(keymap);
+
+	return;
+
+error:
+	wl_keyboard_release(input->parent.keyboard);
+	close(fd);
 }
 
 static void
@@ -1525,7 +1538,7 @@ input_handle_key(void *data, struct wl_keyboard *keyboard,
 	notify_key(&input->base, time, key,
 		   state ? WL_KEYBOARD_KEY_STATE_PRESSED :
 			   WL_KEYBOARD_KEY_STATE_RELEASED,
-		   STATE_UPDATE_NONE);
+		   input->keyboard_state_update);
 }
 
 static void
