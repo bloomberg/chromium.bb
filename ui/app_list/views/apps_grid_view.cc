@@ -89,7 +89,7 @@ const int kFolderDroppingDelay = 150;
 const int kReorderDelay = 120;
 
 // Delays in milliseconds to show folder item reparent UI.
-const int kFolderItemReparentDealy = 50;
+const int kFolderItemReparentDelay = 50;
 
 // Radius of the circle, in which if entered, show folder dropping preview
 // UI.
@@ -1287,7 +1287,7 @@ void AppsGridView::OnReorderTimer() {
 
 void AppsGridView::OnFolderItemReparentTimer() {
   DCHECK(folder_delegate_);
-  if (drag_out_of_folder_container_) {
+  if (drag_out_of_folder_container_ && drag_view_) {
     folder_delegate_->ReparentItem(drag_view_, last_drag_point_);
 
     // Set the flag in the folder's grid view.
@@ -1327,9 +1327,11 @@ void AppsGridView::UpdateDragStateInsideFolder(Pointer pointer,
       folder_delegate_->IsPointOutsideOfFolderBoundary(pt);
   if (is_item_dragged_out_of_folder) {
     if (!drag_out_of_folder_container_) {
-      folder_item_reparent_timer_.Start(FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kFolderItemReparentDealy),
-          this, &AppsGridView::OnFolderItemReparentTimer);
+      folder_item_reparent_timer_.Start(
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(kFolderItemReparentDelay),
+          this,
+          &AppsGridView::OnFolderItemReparentTimer);
       drag_out_of_folder_container_ = true;
     }
   } else {
