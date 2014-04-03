@@ -1,5 +1,0 @@
-deps = {
-  # This is only used by the buildbot master config for chrome official.
-  'src/third_party/webdriver/pylib/selenium':
-      'http://selenium.googlecode.com/svn/trunk/py/selenium@18337',
-}
