@@ -395,7 +395,8 @@ void APIUtilTest::TestListFiles() {
 }
 
 void APIUtilTest::TestListChanges() {
-  const int64 kStartChangestamp = 6;
+  const int64 old_changestamp =
+      fake_drive_service()->about_resource().largest_change_id();
   const std::string sync_root_id = SetUpSyncRootDirectory();
   const std::string origin_root_id = SetUpOriginRootDirectory(sync_root_id);
 
@@ -423,7 +424,7 @@ void APIUtilTest::TestListChanges() {
   error = google_apis::GDATA_OTHER_ERROR;
   document_feed.reset();
   api_util()->ListChanges(
-      kStartChangestamp,
+      old_changestamp + 6,
       base::Bind(&DidGetResourceList, &error, &document_feed));
   base::MessageLoop::current()->RunUntilIdle();
 

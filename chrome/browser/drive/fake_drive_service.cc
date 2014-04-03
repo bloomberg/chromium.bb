@@ -178,6 +178,11 @@ FakeDriveService::FakeDriveService()
       offline_(false),
       never_return_all_resource_list_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  about_resource_->set_largest_change_id(654321);
+  about_resource_->set_quota_bytes_total(9876543210);
+  about_resource_->set_quota_bytes_used(6789012345);
+  about_resource_->set_root_folder_id(GetRootResourceId());
 }
 
 FakeDriveService::~FakeDriveService() {
