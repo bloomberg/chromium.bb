@@ -264,8 +264,6 @@
       'cpp/dev/file_chooser_dev.h',
       'cpp/dev/font_dev.cc',
       'cpp/dev/font_dev.h',
-      'cpp/dev/graphics_2d_dev.cc',
-      'cpp/dev/graphics_2d_dev.h',
       'cpp/dev/ime_input_event_dev.cc',
       'cpp/dev/ime_input_event_dev.h',
       'cpp/dev/may_own_ptr_dev.h',

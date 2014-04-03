@@ -40,8 +40,6 @@ class PPAPI_PROXY_EXPORT Graphics2DResource
   virtual void ReplaceContents(PP_Resource image_data) OVERRIDE;
   virtual PP_Bool SetScale(float scale) OVERRIDE;
   virtual float GetScale() OVERRIDE;
-  virtual void SetOffset(const PP_Point* offset) OVERRIDE;
-  virtual void SetResizeMode(PP_Graphics2D_Dev_ResizeMode resize_mode) OVERRIDE;
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual bool ReadImageData(PP_Resource image,
                              const PP_Point* top_left) OVERRIDE;

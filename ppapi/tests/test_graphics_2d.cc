@@ -12,8 +12,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/graphics_2d_dev.h"
-#include "ppapi/cpp/dev/graphics_2d_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"
@@ -721,15 +719,14 @@ std::string TestGraphics2D::TestDev() {
   const float scale = 1.0f/2.0f;
   pp::Graphics2D dc(instance_, pp::Size(w, h), false);
   ASSERT_FALSE(dc.is_null());
-  pp::Graphics2D_Dev dc_dev(dc);
-  ASSERT_EQ(1.0f, dc_dev.GetScale());
-  ASSERT_TRUE(dc_dev.SetScale(scale));
-  ASSERT_EQ(scale, dc_dev.GetScale());
+  ASSERT_EQ(1.0f, dc.GetScale());
+  ASSERT_TRUE(dc.SetScale(scale));
+  ASSERT_EQ(scale, dc.GetScale());
   // Try setting a few invalid scale factors. Ensure that we catch these errors
   // and don't change the actual scale
-  ASSERT_FALSE(dc_dev.SetScale(-1.0f));
-  ASSERT_FALSE(dc_dev.SetScale(0.0f));
-  ASSERT_EQ(scale, dc_dev.GetScale());
+  ASSERT_FALSE(dc.SetScale(-1.0f));
+  ASSERT_FALSE(dc.SetScale(0.0f));
+  ASSERT_EQ(scale, dc.GetScale());
 
   // Verify that the context has the specified number of pixels, despite the
   // non-identity scale
@@ -737,7 +734,7 @@ std::string TestGraphics2D::TestDev() {
   size.width = -1;
   size.height = -1;
   PP_Bool is_always_opaque = PP_FALSE;
-  ASSERT_TRUE(graphics_2d_interface_->Describe(dc_dev.pp_resource(), &size,
+  ASSERT_TRUE(graphics_2d_interface_->Describe(dc.pp_resource(), &size,
                                                &is_always_opaque));
   ASSERT_EQ(w, size.width);
   ASSERT_EQ(h, size.height);

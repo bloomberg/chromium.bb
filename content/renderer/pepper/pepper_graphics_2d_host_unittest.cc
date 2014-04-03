@@ -41,7 +41,6 @@ class PepperGraphics2DHostTest : public testing::Test {
             const PP_Size& backing_store_size,
             const PP_Rect& plugin_rect) {
     renderer_view_data_.rect = plugin_rect;
-    PluginViewUpdated();
     test_globals_.GetResourceTracker()->DidCreateInstance(instance);
     scoped_refptr<PPB_ImageData_Impl> backing_store(
         new PPB_ImageData_Impl(instance, PPB_ImageData_Impl::ForTest()));
@@ -59,14 +58,10 @@ class PepperGraphics2DHostTest : public testing::Test {
                                    PP_Point(), false, PP_Rect());
   }
 
-  void SetOffset(const PP_Point& point) {
-    host_->OnHostMsgSetOffset(NULL, point);
-  }
-
   void Flush() {
     ppapi::host::HostMessageContext context(
         ppapi::proxy::ResourceMessageCallParams(host_->pp_resource(), 0));
-    host_->OnHostMsgFlush(&context, plugin_view_data_);
+    host_->OnHostMsgFlush(&context);
     host_->ViewFlushedPaint();
     host_->SendOffscreenFlushAck();
   }
@@ -76,19 +71,6 @@ class PepperGraphics2DHostTest : public testing::Test {
     gfx::Rect plugin_rect(PP_ToGfxRect(renderer_view_data_.rect));
     host_->Paint(canvas.get(), plugin_rect,
                  gfx::Rect(0, 0, plugin_rect.width(), plugin_rect.height()));
-  }
-
-  void DidChangeView(const PP_Rect& plugin_rect) {
-    renderer_view_data_.rect = plugin_rect;
-    host_->DidChangeView(renderer_view_data_);
-  }
-
-  void PluginViewUpdated() {
-    plugin_view_data_ = renderer_view_data_;
-  }
-
-  void SetResizeMode(PP_Graphics2D_Dev_ResizeMode resize_mode) {
-    host_->OnHostMsgSetResizeMode(NULL, resize_mode);
   }
 
   void ResetPageBitmap(SkBitmap* bitmap) {
@@ -105,7 +87,6 @@ class PepperGraphics2DHostTest : public testing::Test {
 
  private:
   ppapi::ViewData renderer_view_data_;
-  ppapi::ViewData plugin_view_data_;
   scoped_ptr<PepperGraphics2DHost> host_;
   base::MessageLoop message_loop_;
   MockRendererPpapiHost renderer_ppapi_host_;
@@ -179,214 +160,6 @@ TEST_F(PepperGraphics2DHostTest, ConvertToLogicalPixels) {
     ConvertToLogicalPixels(1.0f / tests[i].scale, &r1, NULL);
     EXPECT_TRUE(r1.Contains(orig));
   }
-}
-
-TEST_F(PepperGraphics2DHostTest, SetOffset) {
-  ppapi::ProxyAutoLock proxy_lock;
-
-  // Initialize the backing store.
-  PP_Instance instance = 12345;
-  PP_Size backing_store_size = { 300, 300 };
-  PP_Rect plugin_rect = PP_MakeRectFromXYWH(0, 0, 500, 500);
-  Init(instance, backing_store_size, plugin_rect);
-
-  // Paint the entire backing store red.
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      new PPB_ImageData_Impl(instance, PPB_ImageData_Impl::ForTest()));
-  image_data->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
-                   backing_store_size.width,
-                   backing_store_size.height,
-                   true);
-  {
-    ImageDataAutoMapper auto_mapper(image_data.get());
-    image_data->GetMappedBitmap()->eraseColor(
-        SkColorSetARGBMacro(255, 255, 0, 0));
-  }
-  PaintImageData(image_data.get());
-  Flush();
-
-  // Set up the actual and expected bitmaps/canvas.
-  SkBitmap actual_bitmap;
-  ResetPageBitmap(&actual_bitmap);
-  SkBitmap expected_bitmap;
-  ResetPageBitmap(&expected_bitmap);
-
-  // Paint the backing store to the canvas.
-  PaintToWebCanvas(&actual_bitmap);
-  expected_bitmap.eraseArea(
-      SkIRect::MakeWH(backing_store_size.width, backing_store_size.height),
-      SkColorSetARGBMacro(255, 255, 0, 0));
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-
-  // Set the offset.
-  PP_Point offset = { 20, 20 };
-  SetOffset(offset);
-  ResetPageBitmap(&actual_bitmap);
-  PaintToWebCanvas(&actual_bitmap);
-  // No flush has occurred so the result should be the same.
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-
-  // Flush the offset and the location of the rectangle should have shifted.
-  Flush();
-  ResetPageBitmap(&actual_bitmap);
-  PaintToWebCanvas(&actual_bitmap);
-  ResetPageBitmap(&expected_bitmap);
-  expected_bitmap.eraseArea(
-      SkIRect::MakeXYWH(offset.x, offset.y,
-                        backing_store_size.width, backing_store_size.height),
-      SkColorSetARGBMacro(255, 255, 0, 0));
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-}
-
-TEST_F(PepperGraphics2DHostTest, ResizeModeDefault) {
-  ppapi::ProxyAutoLock proxy_lock;
-
-  // Initialize the backing store.
-  PP_Instance instance = 12345;
-  PP_Size backing_store_size = { 300, 300 };
-  PP_Rect plugin_rect = PP_MakeRectFromXYWH(0, 0, 300, 300);
-  Init(instance, backing_store_size, plugin_rect);
-
-  // Paint the entire backing store red.
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      new PPB_ImageData_Impl(instance, PPB_ImageData_Impl::ForTest()));
-  image_data->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
-                   backing_store_size.width,
-                   backing_store_size.height,
-                   true);
-  {
-    ImageDataAutoMapper auto_mapper(image_data.get());
-    image_data->GetMappedBitmap()->eraseColor(
-        SkColorSetARGBMacro(255, 255, 0, 0));
-  }
-  PaintImageData(image_data.get());
-  Flush();
-
-  // Set up the actual and expected bitmaps/canvas.
-  SkBitmap actual_bitmap;
-  ResetPageBitmap(&actual_bitmap);
-  SkBitmap expected_bitmap;
-  ResetPageBitmap(&expected_bitmap);
-
-  // Paint the backing store to the canvas.
-  PaintToWebCanvas(&actual_bitmap);
-  expected_bitmap.eraseArea(
-      SkIRect::MakeWH(backing_store_size.width, backing_store_size.height),
-      SkColorSetARGBMacro(255, 255, 0, 0));
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-
-  // Resize the plugin.
-  DidChangeView(PP_MakeRectFromXYWH(0, 0, 500, 500));
-  // Paint the backing store again, it shouldn't have changed.
-  ResetPageBitmap(&actual_bitmap);
-  PaintToWebCanvas(&actual_bitmap);
-  ResetPageBitmap(&expected_bitmap);
-  expected_bitmap.eraseArea(
-      SkIRect::MakeWH(backing_store_size.width, backing_store_size.height),
-      SkColorSetARGBMacro(255, 255, 0, 0));
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-
-  // Let the plugin know about the updated view and reflush the original image.
-  PluginViewUpdated();
-  PaintImageData(image_data.get());
-  Flush();
-  // Paint the backing store again, it shouldn't have changed.
-  ResetPageBitmap(&actual_bitmap);
-  PaintToWebCanvas(&actual_bitmap);
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-}
-
-TEST_F(PepperGraphics2DHostTest, ResizeModeStretch) {
-  ppapi::ProxyAutoLock proxy_lock;
-
-  // Initialize the backing store.
-  PP_Instance instance = 12345;
-  PP_Size backing_store_size = { 300, 300 };
-  PP_Rect plugin_rect = PP_MakeRectFromXYWH(0, 0, 300, 300);
-  Init(instance, backing_store_size, plugin_rect);
-  SetResizeMode(PP_GRAPHICS2D_DEV_RESIZEMODE_STRETCH);
-
-  // Paint the entire backing store red.
-  scoped_refptr<PPB_ImageData_Impl> image_data(
-      new PPB_ImageData_Impl(instance, PPB_ImageData_Impl::ForTest()));
-  image_data->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
-                   backing_store_size.width,
-                   backing_store_size.height,
-                   true);
-  {
-    ImageDataAutoMapper auto_mapper(image_data.get());
-    image_data->GetMappedBitmap()->eraseColor(
-        SkColorSetARGBMacro(255, 255, 0, 0));
-  }
-  PaintImageData(image_data.get());
-  Flush();
-
-  // Set up the actual and expected bitmaps/canvas.
-  SkBitmap actual_bitmap;
-  ResetPageBitmap(&actual_bitmap);
-  SkBitmap expected_bitmap;
-  ResetPageBitmap(&expected_bitmap);
-
-  // Paint the backing store to the canvas.
-  PaintToWebCanvas(&actual_bitmap);
-  expected_bitmap.eraseArea(
-      SkIRect::MakeWH(backing_store_size.width, backing_store_size.height),
-      SkColorSetARGBMacro(255, 255, 0, 0));
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-
-  // Resize the plugin.
-  plugin_rect = PP_MakeRectFromXYWH(0, 0, 500, 500);
-  DidChangeView(plugin_rect);
-  ResetPageBitmap(&actual_bitmap);
-  ResetPageBitmap(&expected_bitmap);
-
-  // Paint the backing store again, it should be stretched even though no new
-  // image has been flushed.
-  PaintToWebCanvas(&actual_bitmap);
-  expected_bitmap.eraseColor(SkColorSetARGBMacro(255, 255, 0, 0));
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-
-  // Re-flush the original image data and paint it, it should be stretched as
-  // well.
-  PaintImageData(image_data.get());
-  Flush();
-  ResetPageBitmap(&actual_bitmap);
-  PaintToWebCanvas(&actual_bitmap);
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
-
-  // Let the plugin know about the updated view.
-  PluginViewUpdated();
-
-  // Now flush the image data again, it should be at the original size.
-  PaintImageData(image_data.get());
-  Flush();
-  ResetPageBitmap(&actual_bitmap);
-  PaintToWebCanvas(&actual_bitmap);
-  ResetPageBitmap(&expected_bitmap);
-  expected_bitmap.eraseArea(
-      SkIRect::MakeWH(backing_store_size.width, backing_store_size.height),
-      SkColorSetARGBMacro(255, 255, 0, 0));
-  EXPECT_EQ(memcmp(expected_bitmap.getAddr(0, 0),
-                   actual_bitmap.getAddr(0, 0),
-                   expected_bitmap.getSize()), 0);
 }
 
 }  // namespace content

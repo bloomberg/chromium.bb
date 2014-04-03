@@ -19,7 +19,6 @@
 #include "ppapi/cpp/dev/device_ref_dev.h"
 #include "ppapi/cpp/dev/file_chooser_dev.h"
 #include "ppapi/cpp/dev/font_dev.h"
-#include "ppapi/cpp/dev/graphics_2d_dev.h"
 #include "ppapi/cpp/dev/ime_input_event_dev.h"
 #include "ppapi/cpp/dev/may_own_ptr_dev.h"
 #include "ppapi/cpp/dev/memory_dev.h"

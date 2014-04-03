@@ -103,22 +103,13 @@ void Graphics2DResource::ReplaceContents(PP_Resource image_data) {
 PP_Bool Graphics2DResource::SetScale(float scale) {
   if (scale <= 0.0f)
     return PP_FALSE;
-  Post(RENDERER, PpapiHostMsg_Graphics2D_Dev_SetScale(scale));
+  Post(RENDERER, PpapiHostMsg_Graphics2D_SetScale(scale));
   scale_ = scale;
   return PP_TRUE;
 }
 
 float Graphics2DResource::GetScale() {
   return scale_;
-}
-
-void Graphics2DResource::SetOffset(const PP_Point* offset) {
-  Post(RENDERER, PpapiHostMsg_Graphics2D_SetOffset(*offset));
-}
-
-void Graphics2DResource::SetResizeMode(
-    PP_Graphics2D_Dev_ResizeMode resize_mode) {
-  Post(RENDERER, PpapiHostMsg_Graphics2D_SetResizeMode(resize_mode));
 }
 
 int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
@@ -131,20 +122,9 @@ int32_t Graphics2DResource::Flush(scoped_refptr<TrackedCallback> callback) {
     return PP_ERROR_INPROGRESS;  // Can't have >1 flush pending.
   current_flush_callback_ = callback;
 
-  // Send the current view data with the Flush() message. This allows the
-  // renderer to know what the plugin's view of the renderer is at the time
-  // Flush was called.
-  PluginDispatcher* dispatcher = PluginDispatcher::GetForInstance(
-      pp_instance());
-  ppapi::ViewData view_data;
-  if (dispatcher) {
-    InstanceData* data = dispatcher->GetInstanceData(pp_instance());
-    if (data)
-      view_data = data->view;
-  }
   Call<PpapiPluginMsg_Graphics2D_FlushAck>(
       RENDERER,
-      PpapiHostMsg_Graphics2D_Flush(view_data),
+      PpapiHostMsg_Graphics2D_Flush(),
       base::Bind(&Graphics2DResource::OnPluginMsgFlushACK, this));
   return PP_OK_COMPLETIONPENDING;
 }
