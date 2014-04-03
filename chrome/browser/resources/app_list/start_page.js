@@ -76,20 +76,6 @@ cr.define('appList.startPage', function() {
   }
 
   /**
-   * Invoked when the hotword recognition should start.
-   */
-  function startHotwordRecognition() {
-    speechManager.startHotwordRecognition();
-  }
-
-  /**
-   * Invoked when the hotword recognition should stop.
-   */
-  function stopHotwordRecognition() {
-    speechManager.stopHotwordRecognition();
-  }
-
-  /**
    * Invoked when the app-list bubble is shown.
    */
   function onAppListShown() {
@@ -115,8 +101,6 @@ cr.define('appList.startPage', function() {
     initialize: initialize,
     setRecommendedApps: setRecommendedApps,
     setHotwordEnabled: setHotwordEnabled,
-    startHotwordRecognition: startHotwordRecognition,
-    stopHotwordRecognition: stopHotwordRecognition,
     onAppListShown: onAppListShown,
     onAppListHidden: onAppListHidden,
     toggleSpeechRecognition: toggleSpeechRecognition

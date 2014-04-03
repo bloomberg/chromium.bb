@@ -2725,7 +2725,6 @@
           ],
           'sources': [
             'browser/ui/app_list/extension_app_model_builder_unittest.cc',
-            'browser/ui/app_list/hotword_background_activity_monitor_unittest.cc',
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
           ],
         }],

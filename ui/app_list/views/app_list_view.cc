@@ -333,8 +333,6 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   GetWidget()->Hide();
 #endif
 
-  OnSpeechRecognitionStateChanged(delegate_->GetSpeechUI()->state());
-
   if (delegate_)
     delegate_->ViewInitialized();
 }

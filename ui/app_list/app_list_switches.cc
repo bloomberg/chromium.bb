@@ -25,10 +25,6 @@ const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
 const char kEnableExperimentalAppListPosition[] =
     "enable-experimental-app-list-position";
 
-// If set, it will always listen to the audio locally and open the app-list
-// when the hotword is recognized.
-const char kEnableHotwordAlwaysOn[] = "enable-app-list-hotword-always-on";
-
 // Enables syncing of the app list independent of extensions.
 const char kEnableSyncAppList[] = "enable-sync-app-list";
 
@@ -53,15 +49,6 @@ bool IsVoiceSearchEnabled() {
   // Speech recognition in AppList is only for ChromeOS right now.
 #if defined(OS_CHROMEOS)
   return !CommandLine::ForCurrentProcess()->HasSwitch(kDisableVoiceSearch);
-#else
-  return false;
-#endif
-}
-
-bool IsHotwordAlwaysOnEnabled() {
-#if defined(OS_CHROMEOS)
-  return IsVoiceSearchEnabled() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(kEnableHotwordAlwaysOn);
 #else
   return false;
 #endif

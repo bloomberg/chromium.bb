@@ -25,8 +25,6 @@ bool APP_LIST_EXPORT IsFolderUIEnabled();
 
 bool APP_LIST_EXPORT IsVoiceSearchEnabled();
 
-bool APP_LIST_EXPORT IsHotwordAlwaysOnEnabled();
-
 bool APP_LIST_EXPORT IsAppInfoEnabled();
 
 bool APP_LIST_EXPORT IsExperimentalAppListEnabled();

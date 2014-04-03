@@ -12,7 +12,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "chrome/browser/ui/app_list/start_page_service_factory.h"
@@ -172,28 +171,20 @@ void StartPageService::OnSpeechSoundLevelChanged(int16 level) {
 
 void StartPageService::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
-  SpeechRecognitionState old_state = state_;
-  state_ = new_state;
-
-  if (!InSpeechRecognition(old_state) && InSpeechRecognition(new_state)) {
+  if (!InSpeechRecognition(state_) && InSpeechRecognition(new_state)) {
     if (!speech_button_toggled_manually_ &&
-        old_state == SPEECH_RECOGNITION_HOTWORD_LISTENING) {
+        state_ == SPEECH_RECOGNITION_HOTWORD_LISTENING) {
       RecordAction(UserMetricsAction("AppList_HotwordRecognized"));
-      AppListService* app_list_service =
-          AppListService::Get(chrome::GetActiveDesktop());
-      if (!app_list_service->IsAppListVisible())
-       app_list_service->Show();
     } else {
       RecordAction(UserMetricsAction("AppList_VoiceSearchStartedManually"));
     }
-  } else if (InSpeechRecognition(old_state) &&
-             !InSpeechRecognition(new_state) &&
+  } else if (InSpeechRecognition(state_) && !InSpeechRecognition(new_state) &&
              !speech_result_obtained_) {
     RecordAction(UserMetricsAction("AppList_VoiceSearchCanceled"));
   }
   speech_button_toggled_manually_ = false;
   speech_result_obtained_ = false;
-
+  state_ = new_state;
   FOR_EACH_OBSERVER(StartPageObserver,
                     observers_,
                     OnSpeechRecognitionStateChanged(new_state));

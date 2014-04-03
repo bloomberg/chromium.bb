@@ -17,7 +17,6 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/hotword_background_activity_monitor.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -26,14 +25,12 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/child_process_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/events/event_constants.h"
 
 namespace app_list {
@@ -62,11 +59,7 @@ scoped_ptr<base::DictionaryValue> CreateAppInfo(
 
 }  // namespace
 
-StartPageHandler::StartPageHandler()
-    : recommended_apps_(NULL),
-      has_hotword_recognizer_(false),
-      last_state_(SPEECH_RECOGNITION_OFF) {
-}
+StartPageHandler::StartPageHandler() : recommended_apps_(NULL) {}
 
 StartPageHandler::~StartPageHandler() {
   if (recommended_apps_)
@@ -80,10 +73,6 @@ void StartPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "launchApp",
       base::Bind(&StartPageHandler::HandleLaunchApp, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "setHotwordRecognizerState",
-      base::Bind(&StartPageHandler::HandleHotwordRecognizerState,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "speechResult",
       base::Bind(&StartPageHandler::HandleSpeechResult,
@@ -122,24 +111,6 @@ void StartPageHandler::Observe(int type,
     default:
       NOTREACHED();
       break;
-  }
-#endif
-}
-
-int StartPageHandler::GetRenderProcessID() {
-  if (!web_ui())
-    return content::ChildProcessHost::kInvalidUniqueID;
-  content::WebContents* web_contents = web_ui()->GetWebContents();
-  return web_contents->GetRenderProcessHost()->GetID();
-}
-
-void StartPageHandler::OnHotwordBackgroundActivityChanged() {
-#if defined(OS_CHROMEOS)
-  if (has_hotword_recognizer_ && switches::IsHotwordAlwaysOnEnabled()) {
-    web_ui()->CallJavascriptFunction(
-        (hotword_monitor_ && hotword_monitor_->IsHotwordBackgroundActive()) ?
-        "appList.startPage.startHotwordRecognition" :
-        "appList.startPage.stopHotwordRecognition");
   }
 #endif
 }
@@ -215,14 +186,8 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
                    content::Source<Profile>(profile));
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                    content::Source<Profile>(profile));
-    hotword_monitor_.reset(new HotwordBackgroundActivityMonitor(this));
   }
 #endif
-}
-
-bool StartPageHandler::ShouldRunHotwordBackground() {
-  return has_hotword_recognizer_ && switches::IsHotwordAlwaysOnEnabled() &&
-      hotword_monitor_ && hotword_monitor_->IsHotwordBackgroundActive();
 }
 
 void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
@@ -246,15 +211,6 @@ void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
                           app,
                           AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
                           ui::EF_NONE);
-}
-
-void StartPageHandler::HandleHotwordRecognizerState(
-    const base::ListValue* args) {
-  CHECK(args->GetBoolean(0, &has_hotword_recognizer_));
-  if (last_state_ == SPEECH_RECOGNITION_READY && ShouldRunHotwordBackground()) {
-    web_ui()->CallJavascriptFunction(
-        "appList.startPage.startHotwordRecognition");
-  }
 }
 
 void StartPageHandler::HandleSpeechResult(const base::ListValue* args) {
@@ -293,16 +249,10 @@ void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
   else if (state_string == "STOPPING")
     new_state = SPEECH_RECOGNITION_STOPPING;
 
-  last_state_ = new_state;
-  Profile* profile = Profile::FromWebUI(web_ui());
-  StartPageService* service = StartPageService::Get(profile);
+  StartPageService* service =
+      StartPageService::Get(Profile::FromWebUI(web_ui()));
   if (service)
     service->OnSpeechRecognitionStateChanged(new_state);
-
-  if (new_state == SPEECH_RECOGNITION_READY && ShouldRunHotwordBackground()) {
-    web_ui()->CallJavascriptFunction(
-        "appList.startPage.startHotwordRecognition");
-  }
 }
 
 }  // namespace app_list

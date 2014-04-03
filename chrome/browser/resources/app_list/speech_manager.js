@@ -85,7 +85,6 @@ cr.define('speech', function() {
       this.pluginManager_.stopRecognizer();
       this.setState_(SpeechState.READY);
     }
-    chrome.send('setHotwordRecognizerState', [true]);
   };
 
   /**
@@ -181,40 +180,9 @@ cr.define('speech', function() {
         return;
       document.body.removeChild(recognizer);
       this.pluginManager_ = null;
-      chrome.send('setHotwordRecognizerState', [false]);
       if (this.state == SpeechState.HOTWORD_RECOGNIZING)
         this.setState(SpeechState.READY);
     }
-  };
-
-  /**
-   * Starts the hotword recognizer.
-   */
-  SpeechManager.prototype.startHotwordRecognition = function() {
-    if (!this.pluginManager_)
-      return;
-
-    if (this.state == SpeechState.HOTWORD_RECOGNIZING)
-      return;
-
-    this.pluginManager_.startRecognizer();
-    this.audioManager_.start();
-    this.setState_(SpeechState.HOTWORD_RECOGNIZING);
-  };
-
-  /**
-   * Stops the hotword recognizer.
-   */
-  SpeechManager.prototype.stopHotwordRecognition = function() {
-    if (!this.pluginManager_)
-      return;
-
-    if (this.state != SpeechState.HOTWORD_RECOGNIZING)
-      return;
-
-    this.pluginManager_.stopRecognizer();
-    this.audioManager_.stop();
-    this.setState_(SpeechState.READY);
   };
 
   /**
@@ -222,8 +190,17 @@ cr.define('speech', function() {
    */
   SpeechManager.prototype.onShown = function() {
     this.shown_ = true;
-    if (this.state == SpeechState.READY)
-      this.startHotwordRecognition();
+    if (!this.pluginManager_)
+      return;
+
+    if (this.state == SpeechState.HOTWORD_RECOGNIZING) {
+      console.warn('Already in recognition state...');
+      return;
+    }
+
+    this.pluginManager_.startRecognizer();
+    this.audioManager_.start();
+    this.setState_(SpeechState.HOTWORD_RECOGNIZING);
   };
 
   /**
