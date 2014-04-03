@@ -1034,6 +1034,16 @@ Filter* URLRequestHttpJob::SetupFilter() const {
       ? Filter::Factory(encoding_types, *filter_context_) : NULL;
 }
 
+bool URLRequestHttpJob::CopyFragmentOnRedirect(const GURL& location) const {
+  // Allow modification of reference fragments by default, unless
+  // |allowed_unsafe_redirect_url_| is set and equal to the redirect URL.
+  // When this is the case, we assume that the network delegate has set the
+  // desired redirect URL (with or without fragment), so it must not be changed
+  // any more.
+  return !allowed_unsafe_redirect_url_.is_valid() ||
+       allowed_unsafe_redirect_url_ != location;
+}
+
 bool URLRequestHttpJob::IsSafeRedirect(const GURL& location) {
   // HTTP is always safe.
   // TODO(pauljensen): Remove once crbug.com/146591 is fixed.
@@ -1041,14 +1051,10 @@ bool URLRequestHttpJob::IsSafeRedirect(const GURL& location) {
       (location.scheme() == "http" || location.scheme() == "https")) {
     return true;
   }
-  // Delegates may mark an URL as safe for redirection.
-  if (allowed_unsafe_redirect_url_.is_valid()) {
-    GURL::Replacements replacements;
-    replacements.ClearRef();
-    if (allowed_unsafe_redirect_url_.ReplaceComponents(replacements) ==
-        location.ReplaceComponents(replacements)) {
-      return true;
-    }
+  // Delegates may mark a URL as safe for redirection.
+  if (allowed_unsafe_redirect_url_.is_valid() &&
+      allowed_unsafe_redirect_url_ == location) {
+    return true;
   }
   // Query URLRequestJobFactory as to whether |location| would be safe to
   // redirect to.

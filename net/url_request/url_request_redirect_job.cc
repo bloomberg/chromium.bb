@@ -44,6 +44,12 @@ bool URLRequestRedirectJob::IsRedirectResponse(GURL* location,
   return true;
 }
 
+bool URLRequestRedirectJob::CopyFragmentOnRedirect(const GURL& location) const {
+  // The instantiators have full control over the desired redirection target,
+  // including the reference fragment part of the URL.
+  return false;
+}
+
 URLRequestRedirectJob::~URLRequestRedirectJob() {}
 
 void URLRequestRedirectJob::StartAsync() {

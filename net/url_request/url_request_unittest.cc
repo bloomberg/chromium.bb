@@ -5331,33 +5331,6 @@ TEST_F(URLRequestTestHTTP, UnsafeRedirectToDifferentUnsafeURL) {
   }
 }
 
-// Redirects from an URL with fragment to an unsafe URL without fragment should
-// be allowed.
-TEST_F(URLRequestTestHTTP, UnsafeRedirectWithReferenceFragment) {
-  ASSERT_TRUE(test_server_.Start());
-
-  GURL original_url(test_server_.GetURL("original#fragment"));
-  GURL unsafe_url("data:,url-marked-safe-and-used-in-redirect");
-  GURL expected_url("data:,url-marked-safe-and-used-in-redirect#fragment");
-
-  default_network_delegate_.set_redirect_on_headers_received_url(unsafe_url);
-  default_network_delegate_.set_allowed_unsafe_redirect_url(unsafe_url);
-
-  TestDelegate d;
-  {
-    URLRequest r(original_url, DEFAULT_PRIORITY, &d, &default_context_);
-
-    r.Start();
-    base::RunLoop().Run();
-
-    EXPECT_EQ(2U, r.url_chain().size());
-    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
-    EXPECT_EQ(net::OK, r.status().error());
-    EXPECT_EQ(original_url, r.original_url());
-    EXPECT_EQ(expected_url, r.url());
-  }
-}
-
 // Redirects from an URL with fragment to an unsafe URL with fragment should
 // be allowed, and the reference fragment of the target URL should be preserved.
 TEST_F(URLRequestTestHTTP, UnsafeRedirectWithDifferentReferenceFragment) {
@@ -5387,7 +5360,7 @@ TEST_F(URLRequestTestHTTP, UnsafeRedirectWithDifferentReferenceFragment) {
 
 // When a delegate has specified a safe redirect URL, but it does not match the
 // redirect target, then do not prevent the reference fragment from being added.
-TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragment) {
+TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragmentAndUnrelatedUnsafeUrl) {
   ASSERT_TRUE(test_server_.Start());
 
   GURL original_url(test_server_.GetURL("original#expected-fragment"));
@@ -5411,6 +5384,58 @@ TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragment) {
     EXPECT_EQ(original_url, r.original_url());
     EXPECT_EQ(expected_redirect_url, r.url());
   }
+}
+
+// When a delegate has specified a safe redirect URL, assume that the redirect
+// URL should not be changed. In particular, the reference fragment should not
+// be modified.
+TEST_F(URLRequestTestHTTP, RedirectWithReferenceFragment) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL original_url(test_server_.GetURL("original#should-not-be-appended"));
+  GURL redirect_url("data:text/html,expect-no-reference-fragment");
+
+  default_network_delegate_.set_redirect_on_headers_received_url(redirect_url);
+  default_network_delegate_.set_allowed_unsafe_redirect_url(redirect_url);
+
+  TestDelegate d;
+  {
+    URLRequest r(original_url, DEFAULT_PRIORITY, &d, &default_context_);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(2U, r.url_chain().size());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(original_url, r.original_url());
+    EXPECT_EQ(redirect_url, r.url());
+  }
+}
+
+// When a URLRequestRedirectJob is created, the redirection must be followed and
+// the reference fragment of the target URL must not be modified.
+TEST_F(URLRequestTestHTTP, RedirectJobWithReferenceFragment) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL original_url(test_server_.GetURL("original#should-not-be-appended"));
+  GURL redirect_url(test_server_.GetURL("echo"));
+
+  TestDelegate d;
+  URLRequest r(original_url, DEFAULT_PRIORITY, &d, &default_context_);
+
+  URLRequestRedirectJob* job = new URLRequestRedirectJob(
+      &r, &default_network_delegate_, redirect_url,
+      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason");
+  AddTestInterceptor()->set_main_intercept_job(job);
+
+  r.Start();
+  base::RunLoop().Run();
+
+  EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+  EXPECT_EQ(net::OK, r.status().error());
+  EXPECT_EQ(original_url, r.original_url());
+  EXPECT_EQ(redirect_url, r.url());
 }
 
 TEST_F(URLRequestTestHTTP, NoUserPassInReferrer) {
@@ -5990,6 +6015,27 @@ TEST_F(URLRequestTestHTTP, Redirect307Tests) {
   HTTPRedirectMethodTest(url, "POST", "POST", true);
   HTTPRedirectMethodTest(url, "PUT", "PUT", true);
   HTTPRedirectMethodTest(url, "HEAD", "HEAD", false);
+}
+
+TEST_F(URLRequestTestHTTP, Redirect302PreserveReferenceFragment) {
+  ASSERT_TRUE(test_server_.Start());
+
+  GURL original_url(test_server_.GetURL("files/redirect302-to-echo#fragment"));
+  GURL expected_url(test_server_.GetURL("echo#fragment"));
+
+  TestDelegate d;
+  {
+    URLRequest r(original_url, DEFAULT_PRIORITY, &d, &default_context_);
+
+    r.Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(2U, r.url_chain().size());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(net::OK, r.status().error());
+    EXPECT_EQ(original_url, r.original_url());
+    EXPECT_EQ(expected_url, r.url());
+  }
 }
 
 TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {

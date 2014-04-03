@@ -107,6 +107,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   virtual bool GetResponseCookies(std::vector<std::string>* cookies) OVERRIDE;
   virtual int GetResponseCode() const OVERRIDE;
   virtual Filter* SetupFilter() const OVERRIDE;
+  virtual bool CopyFragmentOnRedirect(const GURL& location) const OVERRIDE;
   virtual bool IsSafeRedirect(const GURL& location) OVERRIDE;
   virtual bool NeedsAuth() OVERRIDE;
   virtual void GetAuthChallengeInfo(scoped_refptr<AuthChallengeInfo>*) OVERRIDE;
@@ -257,6 +258,8 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   scoped_refptr<HttpResponseHeaders> override_response_headers_;
 
   // The network delegate can mark a URL as safe for redirection.
+  // The reference fragment of the original URL is not appended to the redirect
+  // URL when the redirect URL is equal to |allowed_unsafe_redirect_url_|.
   GURL allowed_unsafe_redirect_url_;
 
   // Flag used to verify that |this| is not deleted while we are awaiting

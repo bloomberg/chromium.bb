@@ -157,6 +157,13 @@ class NET_EXPORT URLRequestJob
   // The default implementation inspects the response_info_.
   virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
 
+  // Called to determine if it is okay to copy the reference fragment from the
+  // original URL (if existent) to the redirection target when the redirection
+  // target has no reference fragment.
+  //
+  // The default implementation returns true.
+  virtual bool CopyFragmentOnRedirect(const GURL& location) const;
+
   // Called to determine if it is okay to redirect this job to the specified
   // location.  This may be used to implement protocol-specific restrictions.
   // If this function returns false, then the URLRequest will fail

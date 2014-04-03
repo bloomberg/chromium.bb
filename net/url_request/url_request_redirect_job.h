@@ -40,6 +40,7 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   virtual void Start() OVERRIDE;
   virtual bool IsRedirectResponse(GURL* location,
                                   int* http_status_code) OVERRIDE;
+  virtual bool CopyFragmentOnRedirect(const GURL& location) const OVERRIDE;
 
   virtual void GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE;

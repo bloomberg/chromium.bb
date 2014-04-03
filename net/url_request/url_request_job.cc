@@ -158,6 +158,10 @@ bool URLRequestJob::IsRedirectResponse(GURL* location,
   return true;
 }
 
+bool URLRequestJob::CopyFragmentOnRedirect(const GURL& location) const {
+  return true;
+}
+
 bool URLRequestJob::IsSafeRedirect(const GURL& location) {
   return true;
 }
@@ -335,7 +339,8 @@ void URLRequestJob::NotifyHeadersComplete() {
 
     // Move the reference fragment of the old location to the new one if the
     // new one has none. This duplicates mozilla's behavior.
-    if (url.is_valid() && url.has_ref() && !new_location.has_ref()) {
+    if (url.is_valid() && url.has_ref() && !new_location.has_ref() &&
+        CopyFragmentOnRedirect(new_location)) {
       GURL::Replacements replacements;
       // Reference the |ref| directly out of the original URL to avoid a
       // malloc.
