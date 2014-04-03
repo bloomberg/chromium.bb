@@ -85,8 +85,9 @@ def DownloadPackageInfoFiles(local_package_file, remote_package_file,
       raise IOError('Could not download archive file: %s.' %
                     remote_archive_file)
 
-def UploadPackageInfoFiles(storage, remote_package_file, local_package_file,
-                           annotate=False):
+def UploadPackageInfoFiles(storage, package_target, package_name,
+                           remote_package_file, local_package_file,
+                           skip_missing=False, annotate=False):
   """Uploads all package info files from a downloader.
 
   Uploads a package file to the cloud along with all of the archive info
@@ -98,6 +99,7 @@ def UploadPackageInfoFiles(storage, remote_package_file, local_package_file,
     storage: Cloud storage object to store the files to.
     remote_package_file: Remote package URL to upload to.
     local_package_file: Local package file where root file lives.
+    skip_missing: Whether to skip missing archive files or error.
     annotate: Whether to annotate build bot links.
   Returns:
     The URL where the root package file is located.
@@ -111,14 +113,23 @@ def UploadPackageInfoFiles(storage, remote_package_file, local_package_file,
   remote_archive_dir = posixpath.join(posixpath.dirname(remote_package_file),
                                       remote_package_name)
 
-  for archive in archive_list:
+  for index, archive in enumerate(archive_list):
     archive_file = archive + '.json'
     local_archive_file = os.path.join(local_archive_dir, archive_file)
     remote_archive_file = posixpath.join(remote_archive_dir, archive_file)
+    if skip_missing and not os.path.isfile(local_archive_file):
+      continue
+
+    if annotate:
+      print ('@@@BUILD_STEP %s:%s:Archive[%d] (upload)@@@' %
+             (package_target, package_name, index))
+
     archive_url = storage.PutFile(local_archive_file, remote_archive_file)
     if annotate:
       print '@@@STEP_LINK@download@%s@@@' % archive_url
 
+  if annotate:
+    print '@@@BUILD_STEP %s:%s (upload)@@@' % (package_target, package_name)
   package_url = storage.PutFile(local_package_file, remote_package_file)
   if annotate:
     print '@@@STEP_LINK@download@%s@@@' % package_url
@@ -131,11 +142,11 @@ class PackageInfo(object):
   PackageInfo will contain a list of ArchiveInfo objects, ArchiveInfo will
   contain all the necessary information for an archive (name, URL, hash...etc.).
   """
-  def __init__(self, package_file=None):
+  def __init__(self, package_file=None, skip_missing=False):
     self._archive_list = []
 
     if package_file is not None:
-      self.LoadPackageFile(package_file)
+      self.LoadPackageFile(package_file, skip_missing)
 
   def __eq__(self, other):
     if type(self) != type(other):
@@ -146,9 +157,9 @@ class PackageInfo(object):
     return set(archives1) == set(archives2)
 
   def __repr__(self):
-    return "PackageInfo(archive_list=" + str(self._archive_list) + ")"
+    return "PackageInfo(archive_list=" + str(self.GetArchiveList()) + ")"
 
-  def LoadPackageFile(self, package_file):
+  def LoadPackageFile(self, package_file, skip_missing=False):
     """Loads a package file into this object.
 
     Args:
@@ -173,13 +184,16 @@ class PackageInfo(object):
       package_name = GetLocalPackageName(package_file)
       archive_dir = os.path.join(os.path.dirname(package_file), package_name)
       for archive in archive_names:
-        archive_file = archive + '.json'
-        archive_path = os.path.join(archive_dir, archive_file)
-        if not os.path.isfile(archive_path):
-          raise RuntimeError(
-              'Package (%s) points to invalid archive info (%s).' %
-              (package_file, archive_path))
-        archive_desc = archive_info.ArchiveInfo(archive_info_file=archive_path)
+        arch_file = archive + '.json'
+        arch_path = os.path.join(archive_dir, arch_file)
+        if not os.path.isfile(arch_path):
+          if not skip_missing:
+            raise RuntimeError(
+                'Package (%s) points to invalid archive file (%s).' %
+                (package_file, arch_path))
+          archive_desc = archive_info.ArchiveInfo(archive)
+        else:
+          archive_desc = archive_info.ArchiveInfo(archive_info_file=arch_path)
         self._archive_list.append(archive_desc)
     else:
       raise RuntimeError('Invalid load package file type (%s): %s',
@@ -196,7 +210,8 @@ class PackageInfo(object):
     pynacl.file_tools.MakeDirectoryIfAbsent(archive_dir)
 
     package_json = []
-    for archive in self._archive_list:
+
+    for archive in self.GetArchiveList():
       archive_data = archive.GetArchiveData()
       package_json.append(archive_data.name)
 
@@ -210,7 +225,7 @@ class PackageInfo(object):
 
   def DumpPackageJson(self):
     """Returns a list representation of the JSON of this object."""
-    return [archive.DumpArchiveJson() for archive in self._archive_list]
+    return [archive.DumpArchiveJson() for archive in self.GetArchiveList()]
 
   def ClearArchiveList(self):
     """Clears this object so it represents no archives."""
@@ -221,5 +236,6 @@ class PackageInfo(object):
     self._archive_list.append(archive_info)
 
   def GetArchiveList(self):
-    """Returns the list of ARCHIVE_INFOs this object represents."""
-    return self._archive_list
+    """Returns the sorted list of ARCHIVE_INFOs this object represents."""
+    return sorted(self._archive_list,
+                  key=lambda archive : archive.GetArchiveData().name)

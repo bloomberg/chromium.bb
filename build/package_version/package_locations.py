@@ -62,7 +62,6 @@ def GetLocalPackageFile(tar_dir, package_target, package_name):
   return os.path.join(
       tar_dir,
       package_target,
-      package_name,
       package_name + '.json'
   )
 
@@ -82,7 +81,6 @@ def GetLocalPackageArchiveFile(tar_dir, package_target, package_name,
   return os.path.join(
       tar_dir,
       package_target,
-      package_name,
       archive_name
   )
 

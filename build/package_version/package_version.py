@@ -43,7 +43,9 @@ import logging
 import os
 import shutil
 import sys
-import tarfile
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import cygtar
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import pynacl.file_tools
@@ -95,7 +97,8 @@ def GetPackageTargetPackages(custom_package_name, package_target_packages):
   Returns:
     List of package target tuples matching the package name.
   """
-  package_path = os.path.normpath(custom_package_name)
+  package_path = custom_package_name.replace('\\', os.path.sep)
+  package_path = package_path.replace('/', os.path.sep)
   if os.path.sep in package_path:
     # Package target is part of the custom package name, just return it.
     package_target, package_name = package_path.split(os.path.sep, 1)
@@ -280,7 +283,8 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives):
 
 
 def UploadPackage(storage, revision, tar_dir, package_target, package_name,
-                  is_shared_package, annotate=False, custom_package_file=None):
+                  is_shared_package, annotate=False, skip_missing=False,
+                  custom_package_file=None):
   """Uploads a local package file to the supplied cloud storage object.
 
   By default local package files are expected to be found in the standardized
@@ -297,30 +301,33 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
     package_target: Package target of the package to archive.
     package_name: Package name of the package to archive.
     is_shared_package: Is this package shared among all package targets?
+    annotate: Print annotations for build bots?
+    skip_missing: Skip missing package archive files?
     custom_package_file: File location for a custom package file.
   Returns:
     Returns remote download key for the uploaded package file.
   """
-  if annotate:
-    print '@@@BUILD_STEP upload_package@@@'
   if custom_package_file is not None:
     local_package_file = custom_package_file
   else:
     local_package_file = package_locations.GetLocalPackageFile(
         tar_dir,
         package_target,
-        package_name
-    )
+        package_name)
 
   # Upload the package file and also upload any local package archives so
   # that they are downloadable.
-  package_desc = package_info.PackageInfo(local_package_file)
+  package_desc = package_info.PackageInfo(local_package_file,
+                                          skip_missing=skip_missing)
   upload_package_desc = package_info.PackageInfo()
 
   for archive_obj in package_desc.GetArchiveList():
     archive_desc = archive_obj.GetArchiveData()
     url = archive_desc.url
-    if url is None:
+    if archive_desc.hash and url is None:
+      if annotate:
+        print '@@@BUILD_STEP Archive:%s (upload)@@@' % archive_desc.name
+
       archive_file = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
           package_target,
@@ -333,20 +340,14 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
         raise IOError(
             'Archive hash does not match package hash: %s' % archive_file
             + '\n  Archive Hash: %s' % archive_hash
-            + '\n  Package Hash: %s' % archive_desc.hash
-        )
+            + '\n  Package Hash: %s' % archive_desc.hash)
 
       logging.warn('Missing archive URL: %s', archive_desc.name)
       logging.warn('Uploading archive to be publically available...')
       remote_archive_key = package_locations.GetRemotePackageArchiveKey(
           archive_desc.name,
-          archive_desc.hash
-      )
-      url = storage.PutFile(
-          archive_file,
-          remote_archive_key,
-          clobber=True
-      )
+          archive_desc.hash)
+      url = storage.PutFile(archive_file, remote_archive_key, clobber=True)
       if annotate:
         print '@@@STEP_LINK@download@%s@@@' % url
 
@@ -367,10 +368,11 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
       is_shared_package,
       revision,
       package_target,
-      package_name
-  )
-  package_info.UploadPackageInfoFiles(storage, remote_package_key,
-                                      upload_package_file, annotate)
+      package_name)
+  package_info.UploadPackageInfoFiles(storage, package_target, package_name,
+                                      remote_package_key, upload_package_file,
+                                      skip_missing=skip_missing,
+                                      annotate=annotate)
 
   return remote_package_key
 
@@ -413,13 +415,17 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
 
     # Only do the extraction if the extract packages do not match.
     if os.path.isfile(dest_package_file):
-      dest_package_desc = package_info.PackageInfo(dest_package_file)
-      if dest_package_desc == package_desc:
-        logging.debug('Skipping extraction for package (%s)', package_name)
-        continue
+      try:
+        dest_package_desc = package_info.PackageInfo(dest_package_file)
+        if dest_package_desc == package_desc:
+          logging.debug('Skipping extraction for package (%s)', package_name)
+          continue
+      except:
+        # Destination package file cannot be trusted, if invalid re-extract.
+        pass
 
     if os.path.isdir(dest_package_dir):
-      logging.info('Deleting old package directory: %s', dest_package_dir)
+      logging.debug('Deleting old package directory: %s', dest_package_dir)
       pynacl.file_tools.RemoveDir(dest_package_dir)
 
     logging.info('Extracting package (%s) to directory: %s',
@@ -452,20 +458,27 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
                         (archive_file, archive_desc.hash, archive_hash))
 
       destination_dir = os.path.join(dest_package_dir, archive_desc.extract_dir)
-      logging.info('Extracting %s to %s...', archive_desc.name, destination_dir)
+      logging.debug('Extracting %s to %s...',
+                    archive_desc.name, destination_dir)
 
       temp_dir = os.path.join(destination_dir, '.tmp')
       pynacl.file_tools.RemoveDir(temp_dir)
       os.makedirs(temp_dir)
-      with tarfile.TarFile(archive_file, 'r') as f:
-        f.extractall(temp_dir)
+      tar = cygtar.CygTar(archive_file, 'r:*', verbose=True)
+      curdir = os.getcwd()
+      os.chdir(temp_dir)
+      try:
+        tar.Extract()
+        tar.Close()
+      finally:
+        os.chdir(curdir)
 
       temp_src_dir = os.path.join(temp_dir, archive_desc.tar_src_dir)
       pynacl.file_tools.MoveAndMergeDirTree(temp_src_dir, destination_dir)
       pynacl.file_tools.RemoveDir(temp_dir)
 
     pynacl.file_tools.MakeParentDirectoryIfAbsent(dest_package_file)
-    shutil.copy(package_file, dest_package_file)
+    package_desc.SavePackageFile(dest_package_file)
 
 
 #
@@ -519,7 +532,7 @@ def _DoArchiveCmd(arguments):
     raise TypeError('Unknown package: %s.' % arguments.archive__package
                     + ' Did you forget to add "$PACKAGE_TARGET/"?')
 
-  for package_target, package in package_target_packages:
+  for package_target, package_name in package_target_packages:
     ArchivePackageArchives(
         arguments.tar_dir,
         package_target,
@@ -560,6 +573,10 @@ def _UploadCmdArgParser(subparser):
     default=None,
     help='Use custom package file instead of standard package file found'
          ' in the tar directory.')
+  subparser.add_argument(
+    '--skip-missing', dest='upload__skip_missing',
+    action='store_true', default=False,
+    help='Skip missing archive files when uploading package archives.')
 
 
 def _DoUploadCmd(arguments):
@@ -579,7 +596,8 @@ def _DoUploadCmd(arguments):
         package_target,
         package_name,
         arguments.packages_desc.IsSharedPackage(package_name),
-        arguments.annotate,
+        annotate=arguments.annotate,
+        skip_missing=arguments.upload__skip_missing,
         custom_package_file=arguments.upload__file
     )
 
@@ -807,8 +825,7 @@ def ParseArgs(args):
   if arguments.package_targets is None:
     package_targets = packages_desc.GetPackageTargets(
         pynacl.platform.GetOS(arguments.host_platform),
-        pynacl.platform.GetArch3264(arguments.host_arch)
-    )
+        pynacl.platform.GetArch3264(arguments.host_arch))
   else:
     package_targets = arguments.package_targets.split(',')
 
@@ -817,7 +834,11 @@ def ParseArgs(args):
   packages_set = set()
   if arguments.packages is None:
     for package_target in package_targets:
-      packages_set.update(packages_desc.GetPackages(package_target))
+      packages = packages_desc.GetPackages(package_target)
+      if packages is None:
+        raise TypeError('No packages defined for Package Target: %s.' %
+                        package_target)
+      packages_set.update(packages)
   else:
     packages_set.update(arguments.packages.split(','))
 
@@ -854,6 +875,7 @@ def ParseArgs(args):
   arguments.package_target_packages = package_target_packages
 
   # Create a GSD Storage object for those who need it.
+  cloud_bucket = arguments.cloud_bucket
   gsd_store = pynacl.gsd_storage.GSDStorage(cloud_bucket, [cloud_bucket])
   arguments.gsd_store = gsd_store
 

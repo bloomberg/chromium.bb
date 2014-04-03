@@ -8,9 +8,9 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
+import argparse
 import fnmatch
 import os
-import optparse
 import process
 import stat
 import shutil
@@ -105,8 +105,8 @@ def Clobber():
       Rmdir(os.path.join(TOOLCHAIN_BUILD_OUT, workdir % arch))
 
 
-def FetchAndBuild_gcc_libs():
-  tc_args = ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
+def FetchAndBuild_gcc_libs(extra_args):
+  tc_args = extra_args + ['-y', '--no-use-remote-cache', 'gcc_libs_arm']
   # TODO(dyen): Fill in PACKAGE_TARGETS for bionic.
   toolchain_main.PackageBuilder(toolchain_build.PACKAGES, {}, tc_args).Main()
 
@@ -531,36 +531,41 @@ def ArchiveAndUpload(version, zipname, zippath):
 
 
 def main(argv):
-  parser = optparse.OptionParser()
-  parser.add_option(
+  parser = argparse.ArgumentParser(add_help=False)
+  parser.add_argument(
       '-v', '--verbose', dest='verbose',
       default=False, action='store_true',
       help='Produce more output.')
-  parser.add_option(
+  parser.add_argument(
       '-c', '--clobber', dest='clobber',
       default=False, action='store_true',
       help='Clobber working directories before building.')
-  parser.add_option(
+  parser.add_argument(
       '-s', '--sync', dest='sync',
       default=False, action='store_true',
       help='Sync sources first.')
 
-  parser.add_option(
+  parser.add_argument(
       '-b', '--buildbot', dest='buildbot',
       default=False, action='store_true',
       help='Running on the buildbot.')
 
-  parser.add_option(
+  parser.add_argument(
       '-u', '--upload', dest='upload',
       default=False, action='store_true',
       help='Upload build artifacts.')
 
-  parser.add_option(
+  parser.add_argument(
       '--skip-gcc', dest='skip_gcc',
       default=False, action='store_true',
       help='Skip building GCC components.')
 
-  options, args = parser.parse_args(argv)
+  options, leftover_args = parser.parse_known_args()
+  if '-h' in leftover_args or '--help' in leftover_args:
+    print 'The following arguments are specific to toolchain_build_bionic.py:'
+    parser.print_help()
+    print 'The rest of the arguments are generic, in toolchain_main.py'
+
   if options.buildbot or options.upload:
     version = os.environ['BUILDBOT_REVISION']
 
@@ -581,7 +586,7 @@ def main(argv):
 
   if not options.skip_gcc:
     # Build newlib gcc_libs for use by bionic
-    FetchAndBuild_gcc_libs()
+    FetchAndBuild_gcc_libs(leftover_args)
 
   # Configure and build libgcc.a
   ConfigureAndBuild_libgcc()

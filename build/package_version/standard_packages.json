@@ -12,45 +12,31 @@
     "win": {
       # The second level of package targets is the host architecture.
       "x86-32": [
-        # The third level is a list of all the platform targets which include
-        # both the host platform, arch and target platform, arch by convention
-        "win_x86_nacl_arm",
-        "win_x86_nacl_x86",
-        "win_x86_pnacl"
+        # The third level is a list of all the platform targets.
+        # The standard one is just the host platform and arch by convention.
+        "win_x86"
       ],
       "x86-64": [
-        "win_x86_nacl_arm",
-        "win_x86_nacl_x86",
-        "win_x86_pnacl"
+        "win_x86"
       ]
     },
     "mac": {
       "x86-32": [
-        "mac_x86_nacl_arm",
-        "mac_x86_nacl_x86",
-        "mac_x86_pnacl"
+        "mac_x86"
       ],
       "x86-64": [
-        "mac_x86_nacl_arm",
-        "mac_x86_nacl_x86",
-        "mac_x86_pnacl"
+        "mac_x86"
       ]
     },
     "linux": {
       "x86-32": [
-        "linux_x86_linux_arm",
-        "linux_x86_nacl_x86",
-        "linux_x86_nacl_arm",
-        "linux_x86_pnacl"
+        "linux_x86"
       ],
       "x86-64": [
-        "linux_x86_linux_arm"
-        "linux_x86_nacl_x86",
-        "linux_x86_nacl_arm",
-        "linux_x86_pnacl"
+        "linux_x86"
       ],
       "arm": [
-        "linux_arm_pnacl"
+        "linux_arm"
       ]
     }
   },
@@ -64,43 +50,32 @@
 
   # For each package target, there should exists a list of packages.
   "packages": {
-    "win_x86_nacl_arm": [
-      "nacl_arm_newlib"
-    ],
-    "win_x86_nacl_x86": [
+    "win_x86": [
+      "nacl_arm_newlib",
       "nacl_x86_glibc",
-      "nacl_x86_newlib"
-    ],
-    "win_x86_pnacl": [
+      "nacl_x86_newlib",
       "pnacl_newlib",
       "pnacl_translator"
     ],
 
-    "mac_x86_nacl_arm": [
-      "nacl_arm_newlib"
-    ],
-    "mac_x86_nacl_x86": [
+    "mac_x86": [
+      "nacl_arm_newlib",
       "nacl_x86_glibc",
-      "nacl_x86_newlib"
-    ],
-    "mac_x86_pnacl": [
+      "nacl_x86_newlib",
       "pnacl_newlib",
       "pnacl_translator"
     ],
 
-    "linux_x86_nacl_arm": [
-      "nacl_arm_newlib"
-    ],
-    "linux_x86_nacl_x86": [
+    "linux_x86": [
+      "nacl_arm_newlib",
       "nacl_x86_glibc",
-      "nacl_x86_newlib"
-    ],
-    "linux_x86_pnacl": [
+      "nacl_x86_newlib",
       "pnacl_newlib",
       "pnacl_translator"
     ],
 
-    "linux_arm_pnacl": [
+    "linux_arm": [
       "pnacl_translator"
     ]
+  }
 }

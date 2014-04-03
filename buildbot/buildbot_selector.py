@@ -152,15 +152,27 @@ BOT_ASSIGNMENT = {
     'precise64-toolchain_x86': bash + ' buildbot/buildbot_toolchain.sh linux',
     # Toolchain newlib arm.
     'win7-toolchain_arm':
-        python + ' buildbot/buildbot_toolchain_build.py --buildbot',
+        python +
+        ' buildbot/buildbot_toolchain_build.py'
+        ' toolchain_build'
+        ' --buildbot',
     'mac-toolchain_arm':
-        python + ' buildbot/buildbot_toolchain_build.py --buildbot',
+        python +
+        ' buildbot/buildbot_toolchain_build.py'
+        ' toolchain_build'
+        ' --buildbot',
     'precise64-toolchain_arm':
-        python + ' buildbot/buildbot_toolchain_build.py --buildbot',
+        python +
+        ' buildbot/buildbot_toolchain_build.py'
+        ' toolchain_build'
+        ' --buildbot',
 
     # BIONIC toolchain builders.
     'precise64-toolchain_bionic':
-        python + ' buildbot/buildbot_toolchain_build_bionic.py --buildbot',
+        python +
+        ' buildbot/buildbot_toolchain_build.py'
+        ' toolchain_build_bionic'
+        ' --buildbot',
 
     # Pnacl toolchain builders.
     'linux-armtools-x86_32':
@@ -200,11 +212,20 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-mac-newlib': bash + ' buildbot/buildbot_toolchain.sh mac',
     'nacl-toolchain-win7-newlib': 'buildbot\\buildbot_toolchain_win.bat',
     'nacl-toolchain-precise64-newlib-arm':
-        python + ' buildbot/buildbot_toolchain_build.py --trybot',
+        python +
+        ' buildbot/buildbot_toolchain_build.py'
+        ' toolchain_build'
+        ' --trybot',
     'nacl-toolchain-mac-newlib-arm':
-        python + ' buildbot/buildbot_toolchain_build.py --trybot',
+        python +
+        ' buildbot/buildbot_toolchain_build.py'
+        ' toolchain_build'
+        ' --trybot',
     'nacl-toolchain-win7-newlib-arm':
-        python + ' buildbot/buildbot_toolchain_build.py --trybot',
+        python +
+        ' buildbot/buildbot_toolchain_build.py'
+        ' toolchain_build'
+        ' --trybot',
     'nacl-toolchain-precise64-glibc':
         bash + ' buildbot/buildbot_linux-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc':

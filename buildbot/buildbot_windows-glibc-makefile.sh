@@ -108,15 +108,14 @@ else
   done
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/@@@
 
-  echo @@@BUILD_STEP untar_toolchain@@@
-  (
-    mkdir -p .tmp
-    cd .tmp
-    tar JSxf ../tools/toolchain.tar.xz
-    rm -rf "../${OUT_TOOLCHAIN}"
-    mkdir -p "../${OUT_TOOLCHAINLOC}"
-    mv "${TOOL_TOOLCHAIN}" "../${OUT_TOOLCHAIN}"
-  )
+  echo @@@BUILD_STEP archive_extract_package@@@
+  python build/package_version/package_version.py archive \
+      --archive-package=nacl_x86_glibc --extract \
+      tools/toolchain.tar.xz,toolchain/win_x86@http://gsdview.appspot.com/nativeclient-archive2/x86_toolchain/r${BUILDBOT_GOT_REVISION}/toolchain_win_x86.tar.xz
+
+  echo @@@BUILD_STEP upload_package@@@
+  python build/package_version/package_version.py --annotate \
+      upload --upload-package=nacl_x86_glibc --revision=${BUILDBOT_GOT_REVISION}
 fi
 
 if [[ "${BUILD_COMPATIBLE_TOOLCHAINS:-yes}" != "no" ]]; then

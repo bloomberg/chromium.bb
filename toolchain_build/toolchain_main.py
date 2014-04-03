@@ -298,12 +298,13 @@ class PackageBuilder(object):
 
         include_package = False
         for component in components:
+          archive_name = component + '.tgz'
           cache_item = self._build_once.GetCachedDirItemForPackage(component)
           if cache_item is None:
-            archive_desc = archive_info.ArchiveInfo(name=component)
+            archive_desc = archive_info.ArchiveInfo(archive_name)
           else:
             include_package = True
-            archive_desc = archive_info.ArchiveInfo(cache_item.name,
+            archive_desc = archive_info.ArchiveInfo(archive_name,
                                                     cache_item.hash,
                                                     url=cache_item.url)
 
@@ -319,7 +320,7 @@ class PackageBuilder(object):
     if self._options.packages_file:
       pynacl.file_tools.MakeParentDirectoryIfAbsent(self._options.packages_file)
       with open(self._options.packages_file, 'wt') as f:
-        f.writelines(built_packages)
+        f.write('\n'.join(built_packages))
 
   def DecodeArgs(self, packages, args):
     """Decode command line arguments to this build.

@@ -54,13 +54,9 @@ class RevisionInfo(object):
     for package_target in sorted(self._package_targets):
       package_desc = self._package_targets[package_target]
       archive_list = package_desc.GetArchiveList()
-      sorted_archive_list = sorted(
-        archive_list,
-        key=lambda archive : archive.GetArchiveData().name
-      )
 
       hash_string += str(package_target)
-      for archive in sorted_archive_list:
+      for archive in archive_list:
         for field, member in archive.GetArchiveData()._asdict().iteritems():
           hash_string += '[%s:%s]' % (field, member)
 

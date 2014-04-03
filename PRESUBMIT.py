@@ -166,20 +166,15 @@ def GetPreferredTryMasters(_, change):
 
   for file in change.AffectedFiles(include_dirs=True):
     if IsFileInDirectories(file.AbsoluteLocalPath(),
-                           [os.path.join(NaClTopDir(), 'buildbot')]):
-      # Build bot script file changes should just trigger all the try bots.
+                           [os.path.join(NaClTopDir(), 'build'),
+                            os.path.join(NaClTopDir(), 'buildbot'),
+                            os.path.join(NaClTopDir(), 'pynacl')]):
+      # Buildbot and infrastructure changes should trigger all the try bots.
       has_pnacl = True
       has_toolchain_build = True
       has_others = True
       break
-    if IsFileInDirectories(file.AbsoluteLocalPath(),
-                           [os.path.join(NaClTopDir(), 'pynacl')]):
-      # The pynacl/ infrastructure code affects everybody's Python bits.
-      has_pnacl = True
-      has_toolchain_build = True
-      has_others = True
-      break
-    if IsFileInDirectories(file.AbsoluteLocalPath(),
+    elif IsFileInDirectories(file.AbsoluteLocalPath(),
                            [os.path.join(NaClTopDir(), 'pnacl')]):
       has_pnacl = True
     elif IsFileInDirectories(file.AbsoluteLocalPath(),
