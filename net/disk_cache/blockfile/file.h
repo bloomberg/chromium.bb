@@ -7,8 +7,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_FILE_H_
 #define NET_DISK_CACHE_BLOCKFILE_FILE_H_
 
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
-#include "base/platform_file.h"
 #include "net/base/net_export.h"
 
 namespace base {
@@ -39,14 +39,11 @@ class NET_EXPORT_PRIVATE File : public base::RefCounted<File> {
   // Initializes the object to use the passed in file instead of opening it with
   // the Init() call. No asynchronous operations can be performed with this
   // object.
-  explicit File(base::PlatformFile file);
+  explicit File(base::File file);
 
   // Initializes the object to point to a given file. The file must aready exist
   // on disk, and allow shared read and write.
   bool Init(const base::FilePath& name);
-
-  // Returns the handle or file descriptor.
-  base::PlatformFile platform_file() const;
 
   // Returns true if the file was opened properly.
   bool IsValid() const;
@@ -76,6 +73,9 @@ class NET_EXPORT_PRIVATE File : public base::RefCounted<File> {
  protected:
   virtual ~File();
 
+  // Returns the handle or file descriptor.
+  base::PlatformFile platform_file() const;
+
  private:
   // Performs the actual asynchronous write. If notify is set and there is no
   // callback, the call will be re-synchronized.
@@ -89,8 +89,8 @@ class NET_EXPORT_PRIVATE File : public base::RefCounted<File> {
 
   bool init_;
   bool mixed_;
-  base::PlatformFile platform_file_;  // Regular, asynchronous IO handle.
-  base::PlatformFile sync_platform_file_;  // Synchronous IO handle.
+  base::File base_file_;  // Regular, asynchronous IO handle.
+  base::File sync_base_file_;  // Synchronous IO handle.
 
   DISALLOW_COPY_AND_ASSIGN(File);
 };

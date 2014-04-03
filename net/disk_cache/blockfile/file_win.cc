@@ -69,9 +69,10 @@ MyOverlapped::MyOverlapped(disk_cache::File* file, size_t offset,
 
 namespace disk_cache {
 
-File::File(base::PlatformFile file)
-    : init_(true), mixed_(true), platform_file_(INVALID_HANDLE_VALUE),
-      sync_platform_file_(file) {
+File::File(base::File file)
+    : init_(true),
+      mixed_(true),
+      sync_base_file_(file.Pass()) {
 }
 
 bool File::Init(const base::FilePath& name) {
@@ -81,46 +82,31 @@ bool File::Init(const base::FilePath& name) {
 
   DWORD sharing = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
   DWORD access = GENERIC_READ | GENERIC_WRITE | DELETE;
-  platform_file_ = CreateFile(name.value().c_str(), access, sharing, NULL,
-                              OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+  base_file_ =
+      base::File(CreateFile(name.value().c_str(), access, sharing, NULL,
+                            OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL));
 
-  if (INVALID_HANDLE_VALUE == platform_file_)
+  if (!base_file_.IsValid())
     return false;
 
   base::MessageLoopForIO::current()->RegisterIOHandler(
-      platform_file_, g_completion_handler.Pointer());
+      base_file_.GetPlatformFile(), g_completion_handler.Pointer());
 
   init_ = true;
-  sync_platform_file_  = CreateFile(name.value().c_str(), access, sharing, NULL,
-                                    OPEN_EXISTING, 0, NULL);
+  sync_base_file_  =
+    base::File(CreateFile(name.value().c_str(), access, sharing, NULL,
+                          OPEN_EXISTING, 0, NULL));
 
-  if (INVALID_HANDLE_VALUE == sync_platform_file_)
+  if (!sync_base_file_.IsValid())
     return false;
 
   return true;
 }
 
-File::~File() {
-  if (!init_)
-    return;
-
-  if (INVALID_HANDLE_VALUE != platform_file_)
-    CloseHandle(platform_file_);
-  if (INVALID_HANDLE_VALUE != sync_platform_file_)
-    CloseHandle(sync_platform_file_);
-}
-
-base::PlatformFile File::platform_file() const {
-  DCHECK(init_);
-  return (INVALID_HANDLE_VALUE == platform_file_) ? sync_platform_file_ :
-                                                    platform_file_;
-}
-
 bool File::IsValid() const {
   if (!init_)
     return false;
-  return (INVALID_HANDLE_VALUE != platform_file_ ||
-          INVALID_HANDLE_VALUE != sync_platform_file_);
+  return base_file_.IsValid() || sync_base_file_.IsValid();
 }
 
 bool File::Read(void* buffer, size_t buffer_len, size_t offset) {
@@ -128,16 +114,9 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset) {
   if (buffer_len > ULONG_MAX || offset > LONG_MAX)
     return false;
 
-  DWORD ret = SetFilePointer(sync_platform_file_, static_cast<LONG>(offset),
-                             NULL, FILE_BEGIN);
-  if (INVALID_SET_FILE_POINTER == ret)
-    return false;
-
-  DWORD actual;
-  DWORD size = static_cast<DWORD>(buffer_len);
-  if (!ReadFile(sync_platform_file_, buffer, size, &actual, NULL))
-    return false;
-  return actual == size;
+  int ret = sync_base_file_.Read(offset, static_cast<char*>(buffer),
+                                 buffer_len);
+  return static_cast<int>(buffer_len) == ret;
 }
 
 bool File::Write(const void* buffer, size_t buffer_len, size_t offset) {
@@ -145,16 +124,9 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset) {
   if (buffer_len > ULONG_MAX || offset > ULONG_MAX)
     return false;
 
-  DWORD ret = SetFilePointer(sync_platform_file_, static_cast<LONG>(offset),
-                             NULL, FILE_BEGIN);
-  if (INVALID_SET_FILE_POINTER == ret)
-    return false;
-
-  DWORD actual;
-  DWORD size = static_cast<DWORD>(buffer_len);
-  if (!WriteFile(sync_platform_file_, buffer, size, &actual, NULL))
-    return false;
-  return actual == size;
+  int ret = sync_base_file_.Write(offset, static_cast<const char*>(buffer),
+                                 buffer_len);
+  return static_cast<int>(buffer_len) == ret;
 }
 
 // We have to increase the ref counter of the file before performing the IO to
@@ -176,7 +148,8 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset,
   DWORD size = static_cast<DWORD>(buffer_len);
 
   DWORD actual;
-  if (!ReadFile(platform_file_, buffer, size, &actual, data->overlapped())) {
+  if (!ReadFile(base_file_.GetPlatformFile(), buffer, size, &actual,
+                data->overlapped())) {
     *completed = false;
     if (GetLastError() == ERROR_IO_PENDING)
       return true;
@@ -204,6 +177,15 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
   return AsyncWrite(buffer, buffer_len, offset, callback, completed);
 }
 
+File::~File() {
+}
+
+base::PlatformFile File::platform_file() const {
+  DCHECK(init_);
+  return base_file_.IsValid() ? base_file_.GetPlatformFile() :
+                                sync_base_file_.GetPlatformFile();
+}
+
 bool File::AsyncWrite(const void* buffer, size_t buffer_len, size_t offset,
                       FileIOCallback* callback, bool* completed) {
   DCHECK(init_);
@@ -216,7 +198,8 @@ bool File::AsyncWrite(const void* buffer, size_t buffer_len, size_t offset,
   DWORD size = static_cast<DWORD>(buffer_len);
 
   DWORD actual;
-  if (!WriteFile(platform_file_, buffer, size, &actual, data->overlapped())) {
+  if (!WriteFile(base_file_.GetPlatformFile(), buffer, size, &actual,
+                 data->overlapped())) {
     *completed = false;
     if (GetLastError() == ERROR_IO_PENDING)
       return true;

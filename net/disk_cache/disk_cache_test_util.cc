@@ -4,6 +4,7 @@
 
 #include "net/disk_cache/disk_cache_test_util.h"
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -42,16 +43,14 @@ void CacheTestFillBuffer(char* buffer, size_t len, bool no_nulls) {
 }
 
 bool CreateCacheTestFile(const base::FilePath& name) {
-  int flags = base::PLATFORM_FILE_CREATE_ALWAYS |
-              base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_WRITE;
+  int flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ |
+              base::File::FLAG_WRITE;
 
-  scoped_refptr<disk_cache::File> file(new disk_cache::File(
-      base::CreatePlatformFile(name, flags, NULL, NULL)));
-  if (!file->IsValid())
+  base::File file(name, flags);
+  if (!file.IsValid())
     return false;
 
-  file->SetLength(4 * 1024 * 1024);
+  file.SetLength(4 * 1024 * 1024);
   return true;
 }
 

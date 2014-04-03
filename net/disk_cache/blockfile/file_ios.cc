@@ -144,7 +144,7 @@ void FileInFlightIO::OnOperationComplete(disk_cache::BackgroundIO* operation,
   callback->OnFileIOComplete(bytes);
 }
 
-// A static object tha will broker all async operations.
+// A static object that will broker all async operations.
 FileInFlightIO* s_file_operations = NULL;
 
 // Returns the current FileInFlightIO.
@@ -166,62 +166,46 @@ void DeleteFileInFlightIO() {
 
 namespace disk_cache {
 
-File::File(base::PlatformFile file)
+File::File(base::File file)
     : init_(true),
       mixed_(true),
-      platform_file_(file),
-      sync_platform_file_(base::kInvalidPlatformFileValue) {
+      base_file_(file.Pass()) {
 }
 
 bool File::Init(const base::FilePath& name) {
-  if (init_)
+  if (base_file_.IsValid())
     return false;
 
-  int flags = base::PLATFORM_FILE_OPEN |
-              base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_WRITE;
-  platform_file_ = base::CreatePlatformFile(name, flags, NULL, NULL);
-  if (platform_file_ < 0) {
-    platform_file_ = 0;
-    return false;
-  }
-
-  init_ = true;
-  return true;
-}
-
-base::PlatformFile File::platform_file() const {
-  return platform_file_;
+  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+              base::File::FLAG_WRITE;
+  base_file_.Initialize(name, flags);
+  return base_file_.IsValid();
 }
 
 bool File::IsValid() const {
-  if (!init_)
-    return false;
-  return (base::kInvalidPlatformFileValue != platform_file_);
+  return base_file_.IsValid();
 }
 
 bool File::Read(void* buffer, size_t buffer_len, size_t offset) {
-  DCHECK(init_);
+  DCHECK(base_file_.IsValid());
   if (buffer_len > static_cast<size_t>(kint32max) ||
       offset > static_cast<size_t>(kint32max)) {
     return false;
   }
 
-  int ret = base::ReadPlatformFile(platform_file_, offset,
-                                   static_cast<char*>(buffer), buffer_len);
+  int ret = base_file_.Read(offset, static_cast<char*>(buffer), buffer_len);
   return (static_cast<size_t>(ret) == buffer_len);
 }
 
 bool File::Write(const void* buffer, size_t buffer_len, size_t offset) {
-  DCHECK(init_);
+  DCHECK(base_file_.IsValid());
   if (buffer_len > static_cast<size_t>(kint32max) ||
       offset > static_cast<size_t>(kint32max)) {
     return false;
   }
 
-  int ret = base::WritePlatformFile(platform_file_, offset,
-                                    static_cast<const char*>(buffer),
-                                    buffer_len);
+  int ret = base_file_.Write(offset, static_cast<const char*>(buffer),
+                             buffer_len);
   return (static_cast<size_t>(ret) == buffer_len);
 }
 
@@ -230,7 +214,7 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset) {
 // closed while the IO is in flight).
 bool File::Read(void* buffer, size_t buffer_len, size_t offset,
                 FileIOCallback* callback, bool* completed) {
-  DCHECK(init_);
+  DCHECK(base_file_.IsValid());
   if (!callback) {
     if (completed)
       *completed = true;
@@ -248,7 +232,7 @@ bool File::Read(void* buffer, size_t buffer_len, size_t offset,
 
 bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
                  FileIOCallback* callback, bool* completed) {
-  DCHECK(init_);
+  DCHECK(base_file_.IsValid());
   if (!callback) {
     if (completed)
       *completed = true;
@@ -259,17 +243,16 @@ bool File::Write(const void* buffer, size_t buffer_len, size_t offset,
 }
 
 bool File::SetLength(size_t length) {
-  DCHECK(init_);
+  DCHECK(base_file_.IsValid());
   if (length > kuint32max)
     return false;
 
-  return base::TruncatePlatformFile(platform_file_, length);
+  return base_file_.SetLength(length);
 }
 
 size_t File::GetLength() {
-  DCHECK(init_);
-  int64 len = base::SeekPlatformFile(platform_file_,
-                                     base::PLATFORM_FILE_FROM_END, 0);
+  DCHECK(base_file_.IsValid());
+  int64 len = base_file_.GetLength();
 
   if (len > static_cast<int64>(kuint32max))
     return kuint32max;
@@ -292,13 +275,15 @@ void File::DropPendingIO() {
 }
 
 File::~File() {
-  if (IsValid())
-    base::ClosePlatformFile(platform_file_);
+}
+
+base::PlatformFile File::platform_file() const {
+  return base_file_.GetPlatformFile();
 }
 
 bool File::AsyncWrite(const void* buffer, size_t buffer_len, size_t offset,
                       FileIOCallback* callback, bool* completed) {
-  DCHECK(init_);
+  DCHECK(base_file_.IsValid());
   if (buffer_len > ULONG_MAX || offset > ULONG_MAX)
     return false;
 

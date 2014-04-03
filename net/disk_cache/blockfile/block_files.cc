@@ -445,12 +445,10 @@ bool BlockFiles::IsValid(Addr address) {
 
 bool BlockFiles::CreateBlockFile(int index, FileType file_type, bool force) {
   base::FilePath name = Name(index);
-  int flags =
-      force ? base::PLATFORM_FILE_CREATE_ALWAYS : base::PLATFORM_FILE_CREATE;
-  flags |= base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_EXCLUSIVE_WRITE;
+  int flags = force ? base::File::FLAG_CREATE_ALWAYS : base::File::FLAG_CREATE;
+  flags |= base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_WRITE;
 
-  scoped_refptr<File> file(new File(
-      base::CreatePlatformFile(name, flags, NULL, NULL)));
+  scoped_refptr<File> file(new File(base::File(name, flags)));
   if (!file->IsValid())
     return false;
 

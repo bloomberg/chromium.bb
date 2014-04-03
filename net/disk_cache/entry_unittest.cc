@@ -6,6 +6,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
@@ -2508,17 +2509,14 @@ bool DiskCacheEntryTest::SimpleCacheMakeBadChecksumEntry(const std::string& key,
   // Corrupt the last byte of the data.
   base::FilePath entry_file0_path = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
-  int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_OPEN;
-  base::PlatformFile entry_file0 =
-      base::CreatePlatformFile(entry_file0_path, flags, NULL, NULL);
-  if (entry_file0 == base::kInvalidPlatformFileValue)
+  base::File entry_file0(entry_file0_path,
+                         base::File::FLAG_WRITE | base::File::FLAG_OPEN);
+  if (!entry_file0.IsValid())
     return false;
 
   int64 file_offset =
       sizeof(disk_cache::SimpleFileHeader) + key.size() + kDataSize - 2;
-  EXPECT_EQ(1, base::WritePlatformFile(entry_file0, file_offset, "X", 1));
-  if (!base::ClosePlatformFile(entry_file0))
-    return false;
+  EXPECT_EQ(1, entry_file0.Write(file_offset, "X", 1));
   *data_size = kDataSize;
   return true;
 }
@@ -2570,14 +2568,10 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
 }
 
 bool TruncatePath(const base::FilePath& file_path, int64 length)  {
-  const int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_OPEN;
-  base::PlatformFile file =
-      base::CreatePlatformFile(file_path, flags, NULL, NULL);
-  if (base::kInvalidPlatformFileValue == file)
+  base::File file(file_path, base::File::FLAG_WRITE | base::File::FLAG_OPEN);
+  if (!file.IsValid())
     return false;
-  const bool result = base::TruncatePlatformFile(file, length);
-  base::ClosePlatformFile(file);
-  return result;
+  return file.SetLength(length);
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheNoEOF) {
@@ -3590,10 +3584,9 @@ TEST_F(DiskCacheEntryTest, SimpleCacheStream1SizeChanges) {
   ASSERT_EQ(net::OK, OpenEntry(key, &entry));
   base::FilePath entry_file0_path = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
-  int flags = base::PLATFORM_FILE_READ | base::PLATFORM_FILE_OPEN;
-  base::PlatformFile entry_file0 =
-      base::CreatePlatformFile(entry_file0_path, flags, NULL, NULL);
-  ASSERT_TRUE(entry_file0 != base::kInvalidPlatformFileValue);
+  base::File entry_file0(entry_file0_path,
+                         base::File::FLAG_READ | base::File::FLAG_OPEN);
+  ASSERT_TRUE(entry_file0.IsValid());
 
   int data_size[disk_cache::kSimpleEntryStreamCount] = {kSize, stream1_size, 0};
   int sparse_data_size = 0;
@@ -3601,11 +3594,9 @@ TEST_F(DiskCacheEntryTest, SimpleCacheStream1SizeChanges) {
       base::Time::Now(), base::Time::Now(), data_size, sparse_data_size);
   int eof_offset = entry_stat.GetEOFOffsetInFile(key, 0);
   disk_cache::SimpleFileEOF eof_record;
-  ASSERT_EQ(static_cast<int>(sizeof(eof_record)), base::ReadPlatformFile(
-      entry_file0,
-      eof_offset,
-      reinterpret_cast<char*>(&eof_record),
-      sizeof(eof_record)));
+  ASSERT_EQ(static_cast<int>(sizeof(eof_record)),
+            entry_file0.Read(eof_offset, reinterpret_cast<char*>(&eof_record),
+                             sizeof(eof_record)));
   EXPECT_EQ(disk_cache::kSimpleFinalMagicNumber, eof_record.final_magic_number);
   EXPECT_TRUE((eof_record.flags & disk_cache::SimpleFileEOF::FLAG_HAS_CRC32) ==
               disk_cache::SimpleFileEOF::FLAG_HAS_CRC32);
