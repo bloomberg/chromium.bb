@@ -920,6 +920,7 @@ EXTRA_DIST +=					\
 	protocol/text-cursor-position.xml	\
 	protocol/wayland-test.xml		\
 	protocol/xdg-shell.xml			\
+	protocol/fullscreen-shell.xml		\
 	protocol/scaler.xml
 
 man_MANS = weston.1 weston.ini.5
