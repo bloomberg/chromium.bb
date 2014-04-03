@@ -10,14 +10,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebChromeClient;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -76,11 +81,35 @@ public class AwShellActivity extends Activity {
         AwBrowserProcess.start(this);
         AwTestContainerView testContainerView = new AwTestContainerView(this);
         AwContentsClient awContentsClient = new NullContentsClient() {
+            private View mCustomView;
+
             @Override
             public void onPageStarted(String url) {
                 if (mUrlTextView != null) {
                     mUrlTextView.setText(url);
                 }
+            }
+
+            @Override
+            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+                getWindow().setFlags(
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+                getWindow().addContentView(view,
+                        new FrameLayout.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                Gravity.CENTER));
+                mCustomView = view;
+            }
+
+            @Override
+            public void onHideCustomView() {
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                FrameLayout decorView = (FrameLayout) getWindow().getDecorView();
+                decorView.removeView(mCustomView);
+                mCustomView = null;
             }
         };
 
