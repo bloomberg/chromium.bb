@@ -971,16 +971,6 @@ static inline AtomicString makeIdForStyleResolution(const AtomicString& value, b
     return value;
 }
 
-static bool checkNeedsStyleInvalidationForIdChange(const AtomicString& oldId, const AtomicString& newId, const RuleFeatureSet& features)
-{
-    ASSERT(newId != oldId);
-    if (!oldId.isEmpty() && features.hasSelectorForId(oldId))
-        return true;
-    if (!newId.isEmpty() && features.hasSelectorForId(newId))
-        return true;
-    return false;
-}
-
 void Element::attributeChanged(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (ElementShadow* parentElementShadow = shadowWhereNodeCanBeDistributed(*this)) {
@@ -994,7 +984,6 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 
     StyleResolver* styleResolver = document().styleResolver();
     bool testShouldInvalidateStyle = inActiveDocument() && styleResolver && styleChangeType() < SubtreeStyleChange;
-    bool shouldInvalidateStyle = false;
 
     if (isStyledElement() && name == styleAttr) {
         styleAttributeChanged(newValue, reason);
@@ -1008,7 +997,8 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         AtomicString newId = makeIdForStyleResolution(newValue, document().inQuirksMode());
         if (newId != oldId) {
             elementData()->setIdForStyleResolution(newId);
-            shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForIdChange(oldId, newId, styleResolver->ensureUpdatedRuleFeatureSet());
+            if (testShouldInvalidateStyle)
+                styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForIdChange(oldId, newId, *this);
         }
     } else if (name == classAttr) {
         classAttributeChanged(newValue);
@@ -1019,9 +1009,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
     invalidateNodeListCachesInAncestors(&name, this);
 
     // If there is currently no StyleResolver, we can't be sure that this attribute change won't affect style.
-    shouldInvalidateStyle |= !styleResolver;
-
-    if (shouldInvalidateStyle)
+    if (!styleResolver)
         setNeedsStyleRecalc(SubtreeStyleChange);
 
     if (AXObjectCache* cache = document().existingAXObjectCache())

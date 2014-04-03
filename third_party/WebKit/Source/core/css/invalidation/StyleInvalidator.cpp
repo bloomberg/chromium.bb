@@ -59,6 +59,7 @@ void StyleInvalidator::RecursionData::pushInvalidationSet(const DescendantInvali
 {
     invalidationSet.getClasses(m_invalidationClasses);
     invalidationSet.getAttributes(m_invalidationAttributes);
+    invalidationSet.getIds(m_invalidationIds);
     m_invalidateCustomPseudo = invalidationSet.customPseudoInvalid();
     m_foundInvalidationSet = true;
 }
@@ -77,6 +78,11 @@ bool StyleInvalidator::RecursionData::matchesCurrentInvalidationSets(Element& el
             if (element.hasAttribute(*it))
                 return true;
         }
+    }
+    if (element.hasID()) {
+        const AtomicString& id = element.idForStyleResolution();
+        if (m_invalidationIds.contains(id))
+            return true;
     }
     if (m_invalidateCustomPseudo && element.shadowPseudoId() != nullAtom)
         return true;

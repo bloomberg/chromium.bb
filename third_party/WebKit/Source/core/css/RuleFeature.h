@@ -71,18 +71,18 @@ public:
     inline bool hasSelectorForAttribute(const AtomicString& attributeName) const
     {
         ASSERT(!attributeName.isEmpty());
-        return m_attributeInvalidationSets.get(attributeName);
+        return m_attributeInvalidationSets.contains(attributeName);
     }
 
     inline bool hasSelectorForClass(const AtomicString& classValue) const
     {
         ASSERT(!classValue.isEmpty());
-        return m_classInvalidationSets.get(classValue);
+        return m_classInvalidationSets.contains(classValue);
     }
 
     inline bool hasSelectorForId(const AtomicString& idValue) const
     {
-        return m_metadata.idsInRules.contains(idValue);
+        return m_idInvalidationSets.contains(idValue);
     }
 
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element&);
@@ -90,9 +90,11 @@ public:
 
     void scheduleStyleInvalidationForAttributeChange(const QualifiedName& attributeName, Element&);
 
-    int hasIdsInSelectors() const
+    void scheduleStyleInvalidationForIdChange(const AtomicString& oldId, const AtomicString& newId, Element&);
+
+    bool hasIdsInSelectors() const
     {
-        return m_metadata.idsInRules.size() > 0;
+        return m_idInvalidationSets.size() > 0;
     }
 
     // Marks the given attribute name as "appearing in a selector". Used for
@@ -120,7 +122,6 @@ private:
         bool usesFirstLineRules;
         bool foundSiblingSelector;
         unsigned maxDirectAdjacentSelectors;
-        HashSet<AtomicString> idsInRules;
     };
 
     enum InvalidationSetMode {
@@ -136,6 +137,7 @@ private:
 
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
     DescendantInvalidationSet& ensureAttributeInvalidationSet(const AtomicString& attributeName);
+    DescendantInvalidationSet& ensureIdInvalidationSet(const AtomicString& attributeName);
     DescendantInvalidationSet* invalidationSetForSelector(const CSSSelector&);
 
     InvalidationSetMode updateInvalidationSets(const CSSSelector&);
@@ -158,6 +160,7 @@ private:
     FeatureMetadata m_metadata;
     InvalidationSetMap m_classInvalidationSets;
     InvalidationSetMap m_attributeInvalidationSets;
+    InvalidationSetMap m_idInvalidationSets;
     bool m_targetedStyleRecalcEnabled;
     StyleInvalidator m_styleInvalidator;
 };

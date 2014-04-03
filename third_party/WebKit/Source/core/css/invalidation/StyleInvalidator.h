@@ -41,6 +41,7 @@ private:
 
         Vector<AtomicString> m_invalidationClasses;
         Vector<AtomicString> m_invalidationAttributes;
+        Vector<AtomicString> m_invalidationIds;
         bool m_foundInvalidationSet;
         bool m_invalidateCustomPseudo;
     };
@@ -50,6 +51,7 @@ private:
         RecursionCheckpoint(RecursionData* data)
             : m_prevClassLength(data->m_invalidationClasses.size()),
             m_prevAttributeLength(data->m_invalidationAttributes.size()),
+            m_prevIdLength(data->m_invalidationIds.size()),
             m_prevFoundInvalidationSet(data->m_foundInvalidationSet),
             m_prevInvalidateCustomPseudo(data->m_invalidateCustomPseudo),
             m_data(data)
@@ -58,6 +60,7 @@ private:
         {
             m_data->m_invalidationClasses.remove(m_prevClassLength, m_data->m_invalidationClasses.size() - m_prevClassLength);
             m_data->m_invalidationAttributes.remove(m_prevAttributeLength, m_data->m_invalidationAttributes.size() - m_prevAttributeLength);
+            m_data->m_invalidationIds.remove(m_prevIdLength, m_data->m_invalidationIds.size() - m_prevIdLength);
             m_data->m_foundInvalidationSet = m_prevFoundInvalidationSet;
             m_data->m_invalidateCustomPseudo = m_prevInvalidateCustomPseudo;
         }
@@ -65,6 +68,7 @@ private:
     private:
         int m_prevClassLength;
         int m_prevAttributeLength;
+        int m_prevIdLength;
         bool m_prevFoundInvalidationSet;
         bool m_prevInvalidateCustomPseudo;
         RecursionData* m_data;

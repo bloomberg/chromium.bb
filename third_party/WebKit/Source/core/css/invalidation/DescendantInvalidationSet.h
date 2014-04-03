@@ -64,6 +64,9 @@ public:
     // Appends the attributes in this DescendantInvalidationSet to the vector.
     void getAttributes(Vector<AtomicString>& attributes) const;
 
+    // Appends the ids in this DescendantInvalidationSet to the vector.
+    void getIds(Vector<AtomicString>& ids) const;
+
     void setWholeSubtreeInvalid();
     bool wholeSubtreeInvalid() const { return m_allDescendantsMightBeInvalid; }
 
