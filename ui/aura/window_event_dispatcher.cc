@@ -307,7 +307,7 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
   if (invisible->Contains(old_dispatch_target_))
     old_dispatch_target_ = NULL;
 
-  CleanupGestureState(invisible);
+  invisible->CleanupGestureState();
 
   // Do not clear the capture, and the |event_dispatch_target_| if the
   // window is moving across hosts, because the target itself is actually still
@@ -330,17 +330,6 @@ void WindowEventDispatcher::OnWindowHidden(Window* invisible,
     // after this.
     if (invisible->Contains(capture_window) && invisible != window())
       capture_window->ReleaseCapture();
-  }
-}
-
-void WindowEventDispatcher::CleanupGestureState(Window* window) {
-  ui::GestureRecognizer::Get()->CancelActiveTouches(window);
-  ui::GestureRecognizer::Get()->CleanupStateForConsumer(window);
-  const Window::Windows& windows = window->children();
-  for (Window::Windows::const_iterator iter = windows.begin();
-      iter != windows.end();
-      ++iter) {
-    CleanupGestureState(*iter);
   }
 }
 

@@ -28,15 +28,19 @@ void TransferConsumer(GestureConsumer* current_consumer,
   }
 }
 
-void RemoveConsumerFromMap(GestureConsumer* consumer,
+bool RemoveConsumerFromMap(GestureConsumer* consumer,
                            GestureRecognizerImpl::TouchIdToConsumerMap* map) {
+  bool consumer_removed = false;
   for (GestureRecognizerImpl::TouchIdToConsumerMap::iterator i = map->begin();
        i != map->end();) {
-    if (i->second == consumer)
+    if (i->second == consumer) {
       map->erase(i++);
-    else
+      consumer_removed = true;
+    } else {
       ++i;
+    }
   }
+  return consumer_removed;
 }
 
 void TransferTouchIdToConsumerMap(
@@ -150,15 +154,16 @@ bool GestureRecognizerImpl::GetLastTouchPointForTarget(
   return true;
 }
 
-void GestureRecognizerImpl::CancelActiveTouches(
-    GestureConsumer* consumer) {
+bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
   std::vector<std::pair<int, GestureConsumer*> > ids;
   for (TouchIdToConsumerMap::const_iterator i = touch_id_target_.begin();
        i != touch_id_target_.end(); ++i) {
     if (i->second == consumer)
       ids.push_back(std::make_pair(i->first, i->second));
   }
+  bool cancelled_touch = !ids.empty();
   CancelTouches(&ids);
+  return cancelled_touch;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -218,14 +223,19 @@ GestureSequence::Gestures* GestureRecognizerImpl::ProcessTouchEventForGesture(
   return gesture_sequence->ProcessTouchEventForGesture(event, result);
 }
 
-void GestureRecognizerImpl::CleanupStateForConsumer(GestureConsumer* consumer) {
+bool GestureRecognizerImpl::CleanupStateForConsumer(
+    GestureConsumer* consumer) {
+  bool state_cleaned_up = false;
   if (consumer_sequence_.count(consumer)) {
+    state_cleaned_up = true;
     delete consumer_sequence_[consumer];
     consumer_sequence_.erase(consumer);
   }
 
-  RemoveConsumerFromMap(consumer, &touch_id_target_);
-  RemoveConsumerFromMap(consumer, &touch_id_target_for_gestures_);
+  state_cleaned_up |= RemoveConsumerFromMap(consumer, &touch_id_target_);
+  state_cleaned_up |=
+      RemoveConsumerFromMap(consumer, &touch_id_target_for_gestures_);
+  return state_cleaned_up;
 }
 
 void GestureRecognizerImpl::AddGestureEventHelper(GestureEventHelper* helper) {

@@ -36,8 +36,9 @@ class EVENTS_EXPORT GestureRecognizer {
                                                 GestureConsumer* consumer) = 0;
 
   // This is called when the consumer is destroyed. So this should cleanup any
-  // internal state maintained for |consumer|.
-  virtual void CleanupStateForConsumer(GestureConsumer* consumer) = 0;
+  // internal state maintained for |consumer|. Returns true iff there was
+  // state relating to |consumer| to clean up.
+  virtual bool CleanupStateForConsumer(GestureConsumer* consumer) = 0;
 
   // Return the window which should handle this TouchEvent, in the case where
   // the touch is already associated with a target.
@@ -71,8 +72,9 @@ class EVENTS_EXPORT GestureRecognizer {
   virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
                                           gfx::PointF* point) = 0;
 
-  // Sends a touch cancel event for every active touch.
-  virtual void CancelActiveTouches(GestureConsumer* consumer) = 0;
+  // Sends a touch cancel event for every active touch. Returns true iff any
+  // touch cancels were sent.
+  virtual bool CancelActiveTouches(GestureConsumer* consumer) = 0;
 
   // Subscribes |helper| for dispatching async gestures such as long press.
   // The Gesture Recognizer does NOT take ownership of |helper| and it is the

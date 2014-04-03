@@ -44,7 +44,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
                                 GestureConsumer* new_consumer) OVERRIDE;
   virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
                                           gfx::PointF* point) OVERRIDE;
-  virtual void CancelActiveTouches(GestureConsumer* consumer) OVERRIDE;
+  virtual bool CancelActiveTouches(GestureConsumer* consumer) OVERRIDE;
 
  protected:
   virtual GestureSequence* CreateSequence(GestureSequenceDelegate* delegate);
@@ -60,7 +60,8 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
       const TouchEvent& event,
       ui::EventResult result,
       GestureConsumer* target) OVERRIDE;
-  virtual void CleanupStateForConsumer(GestureConsumer* consumer) OVERRIDE;
+  virtual bool CleanupStateForConsumer(GestureConsumer* consumer)
+      OVERRIDE;
   virtual void AddGestureEventHelper(GestureEventHelper* helper) OVERRIDE;
   virtual void RemoveGestureEventHelper(GestureEventHelper* helper) OVERRIDE;
 

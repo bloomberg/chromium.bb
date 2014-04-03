@@ -162,10 +162,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // on capture (like DragDropTracker).
   void OnWindowHidden(Window* invisible, WindowHiddenReason reason);
 
-  // Cleans up the state of gestures for all windows in |window| (including
-  // |window| itself). This includes cancelling active touch points.
-  void CleanupGestureState(Window* window);
-
   // Returns a target window for the given gesture event.
   Window* GetGestureTarget(ui::GestureEvent* event);
 

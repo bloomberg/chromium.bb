@@ -326,6 +326,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void PrintWindowHierarchy(int depth) const;
 #endif
 
+  // Returns true if there was state needing to be cleaned up.
+  bool CleanupGestureState();
+
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for
   // use from the destructor.

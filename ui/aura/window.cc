@@ -235,6 +235,15 @@ Window::~Window() {
   if (host)
     host->dispatcher()->OnPostNotifiedWindowDestroying(this);
 
+  // The window should have already had its state cleaned up in
+  // WindowEventDispatcher::OnWindowHidden(), but there have been some crashes
+  // involving windows being destroyed without being hidden first. See
+  // crbug.com/342040. This should help us debug the issue. TODO(tdresser):
+  // remove this once we determine why we have windows that are destroyed
+  // without being hidden.
+  bool window_incorrectly_cleaned_up = CleanupGestureState();
+  CHECK(!window_incorrectly_cleaned_up);
+
   // Then destroy the children.
   RemoveOrDestroyChildren();
 
@@ -1322,6 +1331,19 @@ void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds) {
   FOR_EACH_OBSERVER(WindowObserver,
                     observers_,
                     OnWindowBoundsChanged(this, old_bounds, bounds()));
+}
+
+bool Window::CleanupGestureState() {
+  bool state_modified = false;
+  state_modified |= ui::GestureRecognizer::Get()->CancelActiveTouches(this);
+  state_modified |=
+      ui::GestureRecognizer::Get()->CleanupStateForConsumer(this);
+  for (Window::Windows::iterator iter = children_.begin();
+       iter != children_.end();
+       ++iter) {
+    state_modified |= (*iter)->CleanupGestureState();
+  }
+  return state_modified;
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
