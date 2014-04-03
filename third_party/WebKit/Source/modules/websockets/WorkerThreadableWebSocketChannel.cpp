@@ -569,6 +569,7 @@ bool WorkerThreadableWebSocketChannel::Bridge::waitForMethodCompletion()
     events.append(shutdownEvent);
     events.append(m_syncHelper->event());
 
+    ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
     blink::WebWaitableEvent* signalled = blink::Platform::current()->waitMultipleEvents(events);
     return signalled != shutdownEvent;
 }
