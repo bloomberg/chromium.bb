@@ -25,6 +25,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #ifndef DatabaseTask_h
 #define DatabaseTask_h
 
@@ -34,6 +35,7 @@
 #include "modules/webdatabase/DatabaseError.h"
 #include "modules/webdatabase/SQLTransactionBackend.h"
 #include "platform/Task.h"
+#include "platform/TaskSynchronizer.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -43,33 +45,6 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-// Can be used to wait until DatabaseTask is completed.
-// Has to be passed into DatabaseTask::create to be associated with the task.
-class DatabaseTaskSynchronizer {
-    WTF_MAKE_NONCOPYABLE(DatabaseTaskSynchronizer);
-public:
-    DatabaseTaskSynchronizer();
-
-    // Called from main thread to wait until task is completed.
-    void waitForTaskCompletion();
-
-    // Called by the task.
-    void taskCompleted();
-
-#ifndef NDEBUG
-    bool hasCheckedForTermination() const { return m_hasCheckedForTermination; }
-    void setHasCheckedForTermination() { m_hasCheckedForTermination = true; }
-#endif
-
-private:
-    bool m_taskCompleted;
-    Mutex m_synchronousMutex;
-    ThreadCondition m_synchronousCondition;
-#ifndef NDEBUG
-    bool m_hasCheckedForTermination;
-#endif
-};
 
 class DatabaseTask : public blink::WebThread::Task {
     WTF_MAKE_NONCOPYABLE(DatabaseTask); WTF_MAKE_FAST_ALLOCATED;
@@ -85,14 +60,14 @@ public:
 #endif
 
 protected:
-    DatabaseTask(DatabaseBackend*, DatabaseTaskSynchronizer*);
+    DatabaseTask(DatabaseBackend*, TaskSynchronizer*);
 
 private:
     virtual void doPerformTask() = 0;
     virtual void taskCancelled() { }
 
     RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;
-    DatabaseTaskSynchronizer* m_synchronizer;
+    TaskSynchronizer* m_synchronizer;
 
 #if !LOG_DISABLED
     virtual const char* debugTaskName() const = 0;
@@ -102,13 +77,13 @@ private:
 
 class DatabaseBackend::DatabaseOpenTask FINAL : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseOpenTask> create(DatabaseBackend* db, bool setVersionInNewDatabase, DatabaseTaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
+    static PassOwnPtr<DatabaseOpenTask> create(DatabaseBackend* db, bool setVersionInNewDatabase, TaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
     {
         return adoptPtr(new DatabaseOpenTask(db, setVersionInNewDatabase, synchronizer, error, errorMessage, success));
     }
 
 private:
-    DatabaseOpenTask(DatabaseBackend*, bool setVersionInNewDatabase, DatabaseTaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
+    DatabaseOpenTask(DatabaseBackend*, bool setVersionInNewDatabase, TaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
 
     virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED
@@ -123,13 +98,13 @@ private:
 
 class DatabaseBackend::DatabaseCloseTask FINAL : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseCloseTask> create(DatabaseBackend* db, DatabaseTaskSynchronizer* synchronizer)
+    static PassOwnPtr<DatabaseCloseTask> create(DatabaseBackend* db, TaskSynchronizer* synchronizer)
     {
         return adoptPtr(new DatabaseCloseTask(db, synchronizer));
     }
 
 private:
-    DatabaseCloseTask(DatabaseBackend*, DatabaseTaskSynchronizer*);
+    DatabaseCloseTask(DatabaseBackend*, TaskSynchronizer*);
 
     virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED
@@ -163,13 +138,13 @@ private:
 
 class DatabaseBackend::DatabaseTableNamesTask FINAL : public DatabaseTask {
 public:
-    static PassOwnPtr<DatabaseTableNamesTask> create(DatabaseBackend* db, DatabaseTaskSynchronizer* synchronizer, Vector<String>& names)
+    static PassOwnPtr<DatabaseTableNamesTask> create(DatabaseBackend* db, TaskSynchronizer* synchronizer, Vector<String>& names)
     {
         return adoptPtr(new DatabaseTableNamesTask(db, synchronizer, names));
     }
 
 private:
-    DatabaseTableNamesTask(DatabaseBackend*, DatabaseTaskSynchronizer*, Vector<String>& names);
+    DatabaseTableNamesTask(DatabaseBackend*, TaskSynchronizer*, Vector<String>& names);
 
     virtual void doPerformTask() OVERRIDE;
 #if !LOG_DISABLED

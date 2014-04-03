@@ -38,7 +38,7 @@ namespace WebCore {
 class Database;
 class DatabaseBackendBase;
 class DatabaseContext;
-class DatabaseTaskSynchronizer;
+class TaskSynchronizer;
 class DatabaseThread;
 class ExecutionContext;
 class SecurityOrigin;

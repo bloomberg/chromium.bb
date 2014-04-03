@@ -40,6 +40,7 @@
     'variables': { 'enable_wexit_time_destructors': 1 },
     'dependencies': [
       '../config.gyp:config',
+      '../heap/blink_heap.gyp:blink_heap',
       '../wtf/wtf.gyp:wtf',
       # FIXME: Can we remove the dependency on Skia?
       '<(DEPTH)/skia/skia.gyp:skia',
@@ -125,6 +126,7 @@
     'type': '<(component)',
     'dependencies': [
       '../config.gyp:config',
+      '../heap/blink_heap.gyp:blink_heap',
       '../wtf/wtf.gyp:wtf',
       'blink_common',
       'blink_prerequisites',

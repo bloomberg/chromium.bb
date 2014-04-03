@@ -25,36 +25,27 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef DatabaseTask_h
-#define DatabaseTask_h
 
-#include "heap/Handle.h"
-#include "modules/webdatabase/DatabaseBackend.h"
-#include "modules/webdatabase/DatabaseBasicTypes.h"
-#include "modules/webdatabase/DatabaseError.h"
-#include "modules/webdatabase/SQLTransactionBackend.h"
-#include "platform/Task.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
+#ifndef TaskSynchronizer_h
+#define TaskSynchronizer_h
+
+#include "platform/PlatformExport.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Threading.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 
-// Can be used to wait until DatabaseTask is completed.
-// Has to be passed into DatabaseTask::create to be associated with the task.
-class DatabaseTaskSynchronizer {
-    WTF_MAKE_NONCOPYABLE(DatabaseTaskSynchronizer);
+// TaskSynchronizer can be used to wait for task completion.
+class PLATFORM_EXPORT TaskSynchronizer {
+    WTF_MAKE_NONCOPYABLE(TaskSynchronizer);
 public:
-    DatabaseTaskSynchronizer();
+    TaskSynchronizer();
 
-    // Called from main thread to wait until task is completed.
+    // Called from a thread that waits for the task completion.
     void waitForTaskCompletion();
 
-    // Called by the task.
+    // Called from a thread that executes the task.
     void taskCompleted();
 
 #ifndef NDEBUG
@@ -71,114 +62,6 @@ private:
 #endif
 };
 
-class DatabaseTask : public blink::WebThread::Task {
-    WTF_MAKE_NONCOPYABLE(DatabaseTask); WTF_MAKE_FAST_ALLOCATED;
-public:
-    virtual ~DatabaseTask();
-
-    virtual void run() OVERRIDE FINAL;
-
-    DatabaseBackend* database() const { return m_database.get(); }
-#ifndef NDEBUG
-    bool hasSynchronizer() const { return m_synchronizer; }
-    bool hasCheckedForTermination() const { return m_synchronizer->hasCheckedForTermination(); }
-#endif
-
-protected:
-    DatabaseTask(DatabaseBackend*, DatabaseTaskSynchronizer*);
-
-private:
-    virtual void doPerformTask() = 0;
-    virtual void taskCancelled() { }
-
-    RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;
-    DatabaseTaskSynchronizer* m_synchronizer;
-
-#if !LOG_DISABLED
-    virtual const char* debugTaskName() const = 0;
-    bool m_complete;
-#endif
-};
-
-class DatabaseBackend::DatabaseOpenTask FINAL : public DatabaseTask {
-public:
-    static PassOwnPtr<DatabaseOpenTask> create(DatabaseBackend* db, bool setVersionInNewDatabase, DatabaseTaskSynchronizer* synchronizer, DatabaseError& error, String& errorMessage, bool& success)
-    {
-        return adoptPtr(new DatabaseOpenTask(db, setVersionInNewDatabase, synchronizer, error, errorMessage, success));
-    }
-
-private:
-    DatabaseOpenTask(DatabaseBackend*, bool setVersionInNewDatabase, DatabaseTaskSynchronizer*, DatabaseError&, String& errorMessage, bool& success);
-
-    virtual void doPerformTask() OVERRIDE;
-#if !LOG_DISABLED
-    virtual const char* debugTaskName() const OVERRIDE;
-#endif
-
-    bool m_setVersionInNewDatabase;
-    DatabaseError& m_error;
-    String& m_errorMessage;
-    bool& m_success;
-};
-
-class DatabaseBackend::DatabaseCloseTask FINAL : public DatabaseTask {
-public:
-    static PassOwnPtr<DatabaseCloseTask> create(DatabaseBackend* db, DatabaseTaskSynchronizer* synchronizer)
-    {
-        return adoptPtr(new DatabaseCloseTask(db, synchronizer));
-    }
-
-private:
-    DatabaseCloseTask(DatabaseBackend*, DatabaseTaskSynchronizer*);
-
-    virtual void doPerformTask() OVERRIDE;
-#if !LOG_DISABLED
-    virtual const char* debugTaskName() const OVERRIDE;
-#endif
-};
-
-class DatabaseBackend::DatabaseTransactionTask FINAL : public DatabaseTask {
-public:
-    virtual ~DatabaseTransactionTask();
-
-    // Transaction task is never synchronous, so no 'synchronizer' parameter.
-    static PassOwnPtr<DatabaseTransactionTask> create(PassRefPtrWillBeRawPtr<SQLTransactionBackend> transaction)
-    {
-        return adoptPtr(new DatabaseTransactionTask(transaction));
-    }
-
-    SQLTransactionBackend* transaction() const { return m_transaction.get(); }
-
-private:
-    explicit DatabaseTransactionTask(PassRefPtrWillBeRawPtr<SQLTransactionBackend>);
-
-    virtual void doPerformTask() OVERRIDE;
-    virtual void taskCancelled() OVERRIDE;
-#if !LOG_DISABLED
-    virtual const char* debugTaskName() const OVERRIDE;
-#endif
-
-    RefPtrWillBeCrossThreadPersistent<SQLTransactionBackend> m_transaction;
-};
-
-class DatabaseBackend::DatabaseTableNamesTask FINAL : public DatabaseTask {
-public:
-    static PassOwnPtr<DatabaseTableNamesTask> create(DatabaseBackend* db, DatabaseTaskSynchronizer* synchronizer, Vector<String>& names)
-    {
-        return adoptPtr(new DatabaseTableNamesTask(db, synchronizer, names));
-    }
-
-private:
-    DatabaseTableNamesTask(DatabaseBackend*, DatabaseTaskSynchronizer*, Vector<String>& names);
-
-    virtual void doPerformTask() OVERRIDE;
-#if !LOG_DISABLED
-    virtual const char* debugTaskName() const OVERRIDE;
-#endif
-
-    Vector<String>& m_tableNames;
-};
-
 } // namespace WebCore
 
-#endif // DatabaseTask_h
+#endif // TaskSynchronizer_h
