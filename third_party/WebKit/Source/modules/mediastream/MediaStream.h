@@ -95,7 +95,7 @@ private:
     virtual void addRemoteTrack(MediaStreamComponent*) OVERRIDE;
     virtual void removeRemoteTrack(MediaStreamComponent*) OVERRIDE;
 
-    void scheduleDispatchEvent(PassRefPtr<Event>);
+    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduledEventTimerFired(Timer<MediaStream>*);
 
     bool m_stopped;
@@ -105,7 +105,7 @@ private:
     RefPtr<MediaStreamDescriptor> m_descriptor;
 
     Timer<MediaStream> m_scheduledEventTimer;
-    Vector<RefPtr<Event> > m_scheduledEvents;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 };
 
 typedef Vector<RefPtr<MediaStream> > MediaStreamVector;

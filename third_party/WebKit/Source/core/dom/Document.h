@@ -926,7 +926,7 @@ public:
 
     void enqueueResizeEvent();
     void enqueueScrollEventForNode(Node*);
-    void enqueueAnimationFrameEvent(PassRefPtr<Event>);
+    void enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event>);
 
     bool hasFullscreenElementStack() const { return m_hasFullscreenElementStack; }
     void setHasFullscreenElementStack() { m_hasFullscreenElementStack = true; }

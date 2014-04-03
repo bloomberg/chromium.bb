@@ -79,7 +79,7 @@ bool DeviceOrientationController::hasLastData()
     return lastData();
 }
 
-PassRefPtr<Event> DeviceOrientationController::getLastEvent()
+PassRefPtrWillBeRawPtr<Event> DeviceOrientationController::getLastEvent()
 {
     return DeviceOrientationEvent::create(EventTypeNames::deviceorientation, lastData());
 }

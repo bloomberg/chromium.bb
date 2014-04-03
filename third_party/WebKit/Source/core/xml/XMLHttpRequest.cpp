@@ -1395,6 +1395,7 @@ void XMLHttpRequest::trace(Visitor* visitor)
 {
     visitor->trace(m_responseBlob);
     visitor->trace(m_responseStream);
+    visitor->trace(m_progressEventThrottle);
 }
 
 } // namespace WebCore

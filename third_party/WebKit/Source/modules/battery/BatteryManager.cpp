@@ -60,7 +60,7 @@ double BatteryManager::level()
     return m_batteryStatus ? m_batteryStatus->level() : 1;
 }
 
-void BatteryManager::didChangeBatteryStatus(PassRefPtr<Event> event, PassOwnPtr<BatteryStatus> batteryStatus)
+void BatteryManager::didChangeBatteryStatus(PassRefPtrWillBeRawPtr<Event> event, PassOwnPtr<BatteryStatus> batteryStatus)
 {
     ASSERT(RuntimeEnabledFeatures::batteryStatusEnabled());
 

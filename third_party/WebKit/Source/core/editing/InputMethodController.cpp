@@ -200,7 +200,7 @@ bool InputMethodController::finishComposition(const String& text, FinishComposit
             underline.endOffset -= baseOffset;
             underlines.append(underline);
         }
-        RefPtr<CompositionEvent> event = CompositionEvent::create(EventTypeNames::compositionend, m_frame.domWindow(), text, underlines);
+        RefPtrWillBeRawPtr<CompositionEvent> event = CompositionEvent::create(EventTypeNames::compositionend, m_frame.domWindow(), text, underlines);
         target->dispatchEvent(event, IGNORE_EXCEPTION);
     }
 
@@ -254,7 +254,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
         // 3. Canceling the ongoing composition.
         //    Send a compositionend event when function deletes the existing composition node, i.e.
         //    m_compositionNode != 0 && test.isEmpty().
-        RefPtr<CompositionEvent> event;
+        RefPtrWillBeRawPtr<CompositionEvent> event = nullptr;
         if (!hasComposition()) {
             // We should send a compositionstart event only when the given text is not empty because this
             // function doesn't create a composition node when the text is empty.

@@ -2541,7 +2541,7 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigatio
 
     RefPtr<Document> protect(this);
 
-    RefPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
+    RefPtrWillBeRawPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
     m_loadEventProgress = BeforeUnloadEventInProgress;
     m_domWindow->dispatchEvent(beforeUnloadEvent.get(), this);
     m_loadEventProgress = BeforeUnloadEventCompleted;
@@ -2585,7 +2585,7 @@ void Document::dispatchUnloadEvents()
             // time into freed memory.
             RefPtr<DocumentLoader> documentLoader =  m_frame->loader().provisionalDocumentLoader();
             m_loadEventProgress = UnloadEventInProgress;
-            RefPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
+            RefPtrWillBeRawPtr<Event> unloadEvent(Event::create(EventTypeNames::unload));
             if (documentLoader && !documentLoader->timing()->unloadEventStart() && !documentLoader->timing()->unloadEventEnd()) {
                 DocumentLoadTiming* timing = documentLoader->timing();
                 ASSERT(timing->navigationStart());
@@ -3756,7 +3756,7 @@ EventQueue* Document::eventQueue() const
     return m_domWindow->eventQueue();
 }
 
-void Document::enqueueAnimationFrameEvent(PassRefPtr<Event> event)
+void Document::enqueueAnimationFrameEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     ensureScriptedAnimationController().enqueueEvent(event);
 }
@@ -3764,14 +3764,14 @@ void Document::enqueueAnimationFrameEvent(PassRefPtr<Event> event)
 void Document::enqueueScrollEventForNode(Node* target)
 {
     // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
-    RefPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventTypeNames::scroll) : Event::create(EventTypeNames::scroll);
+    RefPtrWillBeRawPtr<Event> scrollEvent = target->isDocumentNode() ? Event::createBubble(EventTypeNames::scroll) : Event::create(EventTypeNames::scroll);
     scrollEvent->setTarget(target);
     ensureScriptedAnimationController().enqueuePerFrameEvent(scrollEvent.release());
 }
 
 void Document::enqueueResizeEvent()
 {
-    RefPtr<Event> event = Event::create(EventTypeNames::resize);
+    RefPtrWillBeRawPtr<Event> event = Event::create(EventTypeNames::resize);
     event->setTarget(domWindow());
     ensureScriptedAnimationController().enqueuePerFrameEvent(event.release());
 }

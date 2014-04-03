@@ -31,6 +31,7 @@
 #ifndef EventDispatchMediator_h
 #define EventDispatchMediator_h
 
+#include "heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -43,18 +44,18 @@ class Node;
 
 class EventDispatchMediator : public RefCounted<EventDispatchMediator> {
 public:
-    static PassRefPtr<EventDispatchMediator> create(PassRefPtr<Event>);
+    static PassRefPtr<EventDispatchMediator> create(PassRefPtrWillBeRawPtr<Event>);
     virtual ~EventDispatchMediator() { };
     virtual bool dispatchEvent(EventDispatcher*) const;
     Event* event() const { return m_event.get(); };
 
 protected:
-    explicit EventDispatchMediator(PassRefPtr<Event>);
+    explicit EventDispatchMediator(PassRefPtrWillBeRawPtr<Event>);
     EventDispatchMediator() { };
-    void setEvent(PassRefPtr<Event> event) { m_event = event; };
+    void setEvent(PassRefPtrWillBeRawPtr<Event> event) { m_event = event; };
 
 private:
-    RefPtr<Event> m_event;
+    RefPtrWillBePersistent<Event> m_event;
 };
 
 } // namespace WebCore

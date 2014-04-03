@@ -86,7 +86,7 @@ void WebKitSourceBufferList::createAndFireEvent(const AtomicString& eventName)
 {
     ASSERT(m_asyncEventQueue);
 
-    RefPtr<Event> event = Event::create(eventName);
+    RefPtrWillBeRawPtr<Event> event = Event::create(eventName);
     event->setTarget(this);
 
     m_asyncEventQueue->enqueueEvent(event.release());

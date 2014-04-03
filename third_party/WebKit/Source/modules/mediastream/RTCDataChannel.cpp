@@ -291,7 +291,7 @@ void RTCDataChannel::stop()
     m_executionContext = 0;
 }
 
-void RTCDataChannel::scheduleDispatchEvent(PassRefPtr<Event> event)
+void RTCDataChannel::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     m_scheduledEvents.append(event);
 
@@ -304,10 +304,10 @@ void RTCDataChannel::scheduledEventTimerFired(Timer<RTCDataChannel>*)
     if (m_stopped)
         return;
 
-    Vector<RefPtr<Event> > events;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > events;
     events.swap(m_scheduledEvents);
 
-    Vector<RefPtr<Event> >::iterator it = events.begin();
+    WillBeHeapVector<RefPtrWillBeMember<Event> >::iterator it = events.begin();
     for (; it != events.end(); ++it)
         dispatchEvent((*it).release());
 

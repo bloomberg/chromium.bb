@@ -71,7 +71,7 @@ WebSocket::EventQueue::EventQueue(EventTarget* target)
 
 WebSocket::EventQueue::~EventQueue() { stop(); }
 
-void WebSocket::EventQueue::dispatch(PassRefPtr<Event> event)
+void WebSocket::EventQueue::dispatch(PassRefPtrWillBeRawPtr<Event> event)
 {
     switch (m_state) {
     case Active:
@@ -127,7 +127,7 @@ void WebSocket::EventQueue::dispatchQueuedEvents()
 
     RefPtr<EventQueue> protect(this);
 
-    Deque<RefPtr<Event> > events;
+    Deque<RefPtrWillBePersistent<Event> > events;
     events.swap(m_events);
     while (!events.isEmpty()) {
         if (m_state == Stopped || m_state == Suspended)

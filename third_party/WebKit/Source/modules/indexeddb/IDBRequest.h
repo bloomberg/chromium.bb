@@ -120,7 +120,7 @@ public:
     virtual void uncaughtExceptionInEventHandler() OVERRIDE FINAL;
 
     using EventTarget::dispatchEvent;
-    virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
+    virtual bool dispatchEvent(PassRefPtrWillBeRawPtr<Event>) OVERRIDE;
 
     // Called by a version change transaction that has finished to set this
     // request back from DONE (following "upgradeneeded") back to PENDING (for
@@ -140,7 +140,7 @@ public:
 
 protected:
     IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
-    void enqueueEvent(PassRefPtr<Event>);
+    void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
     void dequeueEvent(Event*);
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(PassRefPtr<IDBAny>);
@@ -160,7 +160,7 @@ private:
     RefPtrWillBePersistent<DOMError> m_error;
 
     bool m_hasPendingActivity;
-    Vector<RefPtr<Event> > m_enqueuedEvents;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_enqueuedEvents;
 
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;

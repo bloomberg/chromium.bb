@@ -89,7 +89,7 @@ public:
 private:
     RTCDataChannel(ExecutionContext*, PassOwnPtr<blink::WebRTCDataChannelHandler>);
 
-    void scheduleDispatchEvent(PassRefPtr<Event>);
+    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDataChannel>*);
 
     ExecutionContext* m_executionContext;
@@ -113,7 +113,7 @@ private:
     BinaryType m_binaryType;
 
     Timer<RTCDataChannel> m_scheduledEventTimer;
-    Vector<RefPtr<Event> > m_scheduledEvents;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 };
 
 } // namespace WebCore

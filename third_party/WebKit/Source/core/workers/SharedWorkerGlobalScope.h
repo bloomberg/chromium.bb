@@ -67,7 +67,7 @@ namespace WebCore {
         String m_name;
     };
 
-    PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort>);
+    PassRefPtrWillBeRawPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort>);
 
 } // namespace WebCore
 

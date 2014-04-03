@@ -77,36 +77,36 @@ DEFINE_EVENT_TYPE_CASTS(FocusEvent);
 
 class FocusEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<FocusEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+    static PassRefPtr<FocusEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
-    explicit FocusEventDispatchMediator(PassRefPtr<FocusEvent>);
+    explicit FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
 class BlurEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<BlurEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+    static PassRefPtr<BlurEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
-    explicit BlurEventDispatchMediator(PassRefPtr<FocusEvent>);
+    explicit BlurEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
 class FocusInEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<FocusInEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+    static PassRefPtr<FocusInEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
-    explicit FocusInEventDispatchMediator(PassRefPtr<FocusEvent>);
+    explicit FocusInEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };
 
 class FocusOutEventDispatchMediator FINAL : public EventDispatchMediator {
 public:
-    static PassRefPtr<FocusOutEventDispatchMediator> create(PassRefPtr<FocusEvent>);
+    static PassRefPtr<FocusOutEventDispatchMediator> create(PassRefPtrWillBeRawPtr<FocusEvent>);
 private:
-    explicit FocusOutEventDispatchMediator(PassRefPtr<FocusEvent>);
+    explicit FocusOutEventDispatchMediator(PassRefPtrWillBeRawPtr<FocusEvent>);
     FocusEvent* event() const { return static_cast<FocusEvent*>(EventDispatchMediator::event()); }
     virtual bool dispatchEvent(EventDispatcher*) const OVERRIDE;
 };

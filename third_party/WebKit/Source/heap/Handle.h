@@ -35,6 +35,7 @@
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
 
+#include "wtf/HashFunctions.h"
 #include "wtf/Locker.h"
 #include "wtf/RawPtr.h"
 #include "wtf/RefCounted.h"
@@ -884,6 +885,15 @@ template<typename T> struct PtrHash<WebCore::Member<T> > : PtrHash<T*> {
 template<typename T> struct PtrHash<WebCore::WeakMember<T> > : PtrHash<WebCore::Member<T> > {
 };
 
+template<typename P> struct PtrHash<WebCore::Persistent<P> > : PtrHash<P*> {
+    using PtrHash<P*>::hash;
+    static unsigned hash(const RefPtr<P>& key) { return hash(key.get()); }
+    using PtrHash<P*>::equal;
+    static bool equal(const RefPtr<P>& a, const RefPtr<P>& b) { return a == b; }
+    static bool equal(P* a, const RefPtr<P>& b) { return a == b; }
+    static bool equal(const RefPtr<P>& a, P* b) { return a == b; }
+};
+
 // PtrHash is the default hash for hash tables with members.
 template<typename T> struct DefaultHash<WebCore::Member<T> > {
     typedef PtrHash<WebCore::Member<T> > Hash;
@@ -891,6 +901,10 @@ template<typename T> struct DefaultHash<WebCore::Member<T> > {
 
 template<typename T> struct DefaultHash<WebCore::WeakMember<T> > {
     typedef PtrHash<WebCore::WeakMember<T> > Hash;
+};
+
+template<typename T> struct DefaultHash<WebCore::Persistent<T> > {
+    typedef PtrHash<WebCore::Persistent<T> > Hash;
 };
 
 template<typename T>

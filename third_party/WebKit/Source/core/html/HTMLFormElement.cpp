@@ -435,7 +435,7 @@ void HTMLFormElement::requestAutocomplete()
 
 void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 {
-    RefPtr<Event> event;
+    RefPtrWillBeRawPtr<Event> event = nullptr;
     if (result == AutocompleteResultSuccess)
         event = Event::create(EventTypeNames::autocomplete);
     else if (result == AutocompleteResultErrorDisabled)
@@ -444,6 +444,8 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
         event = AutocompleteErrorEvent::create("cancel");
     else if (result == AutocompleteResultErrorInvalid)
         event = AutocompleteErrorEvent::create("invalid");
+    else
+        ASSERT_NOT_REACHED();
 
     event->setTarget(this);
     m_pendingAutocompleteEvents.append(event.release());
@@ -455,7 +457,7 @@ void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)
 
 void HTMLFormElement::requestAutocompleteTimerFired(Timer<HTMLFormElement>*)
 {
-    Vector<RefPtr<Event> > pendingEvents;
+    WillBeHeapVector<RefPtrWillBeMember<Event> > pendingEvents;
     m_pendingAutocompleteEvents.swap(pendingEvents);
     for (size_t i = 0; i < pendingEvents.size(); ++i)
         dispatchEvent(pendingEvents[i].release());

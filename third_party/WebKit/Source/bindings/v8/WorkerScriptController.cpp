@@ -197,7 +197,7 @@ ScriptValue WorkerScriptController::evaluate(const String& script, const String&
     return ScriptValue(result, m_isolate);
 }
 
-void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr<ErrorEvent>* errorEvent)
+void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtrWillBeRawPtr<ErrorEvent>* errorEvent)
 {
     if (isExecutionForbidden())
         return;
@@ -211,7 +211,12 @@ void WorkerScriptController::evaluate(const ScriptSourceCode& sourceCode, RefPtr
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(errorEvent->get(), state.exception.v8Value(), m_isolate);
         } else {
             ASSERT(!m_workerGlobalScope.shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
-            RefPtr<ErrorEvent> event = m_errorEventFromImportedScript ? m_errorEventFromImportedScript.release() : ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
+            RefPtrWillBeRawPtr<ErrorEvent> event = nullptr;
+            if (m_errorEventFromImportedScript) {
+                event = m_errorEventFromImportedScript.release();
+            } else {
+                event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
+            }
             m_workerGlobalScope.reportException(event, nullptr, NotSharableCrossOrigin);
         }
     }
@@ -253,7 +258,7 @@ void WorkerScriptController::disableEval(const String& errorMessage)
     m_disableEvalPending = errorMessage;
 }
 
-void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtr<ErrorEvent> errorEvent)
+void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent> errorEvent)
 {
     m_errorEventFromImportedScript = errorEvent;
     throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), m_isolate), m_isolate);

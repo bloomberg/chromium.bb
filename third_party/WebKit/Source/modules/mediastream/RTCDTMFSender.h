@@ -71,7 +71,7 @@ public:
 private:
     RTCDTMFSender(ExecutionContext*, PassRefPtr<MediaStreamTrack>, PassOwnPtr<blink::WebRTCDTMFSenderHandler>);
 
-    void scheduleDispatchEvent(PassRefPtr<Event>);
+    void scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event>);
     void scheduledEventTimerFired(Timer<RTCDTMFSender>*);
 
     // blink::WebRTCDTMFSenderHandlerClient
@@ -86,7 +86,7 @@ private:
     bool m_stopped;
 
     Timer<RTCDTMFSender> m_scheduledEventTimer;
-    Vector<RefPtr<Event> > m_scheduledEvents;
+    WillBePersistentHeapVector<RefPtrWillBeMember<Event> > m_scheduledEvents;
 };
 
 } // namespace WebCore

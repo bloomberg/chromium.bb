@@ -27,6 +27,7 @@
 #ifndef EventQueue_h
 #define EventQueue_h
 
+#include "heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
@@ -38,7 +39,7 @@ class Event;
 class EventQueue {
 public:
     virtual ~EventQueue() { }
-    virtual bool enqueueEvent(PassRefPtr<Event>) = 0;
+    virtual bool enqueueEvent(PassRefPtrWillBeRawPtr<Event>) = 0;
     virtual bool cancelEvent(Event*) = 0;
     // The accumulated and all the future events will be discarded, no events will be dispatched anymore.
     virtual void close() = 0;

@@ -81,7 +81,7 @@ public:
     void update(Uint8Array* response, ExceptionState&);
     void release(ExceptionState&);
 
-    void enqueueEvent(PassRefPtr<Event>);
+    void enqueueEvent(PassRefPtrWillBeRawPtr<Event>);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;

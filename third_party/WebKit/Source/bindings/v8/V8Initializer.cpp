@@ -112,7 +112,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
-    RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn() + 1, &world);
+    RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn() + 1, &world);
     if (V8DOMWrapper::isDOMWrapper(data)) {
         v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
         const WrapperTypeInfo* type = toWrapperTypeInfo(obj);
@@ -219,7 +219,7 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         String errorMessage = toCoreString(message->Get());
         V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, sourceURL, message->GetScriptResourceName());
 
-        RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, &DOMWrapperWorld::current(isolate));
+        RefPtrWillBeRawPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn() + 1, &DOMWrapperWorld::current(isolate));
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, isolate);

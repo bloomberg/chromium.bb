@@ -76,7 +76,7 @@ public:
     void didEndAudio();
     void didReceiveResults(const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& newFinalResults, const WillBeHeapVector<RefPtrWillBeMember<SpeechRecognitionResult> >& currentInterimResults);
     void didReceiveNoMatch(PassRefPtrWillBeRawPtr<SpeechRecognitionResult>);
-    void didReceiveError(PassRefPtr<SpeechRecognitionError>);
+    void didReceiveError(PassRefPtrWillBeRawPtr<SpeechRecognitionError>);
     void didStart();
     void didEnd();
 

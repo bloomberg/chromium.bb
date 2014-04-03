@@ -1749,7 +1749,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
     if (!view)
         return false;
 
-    RefPtr<MouseEvent> me = MouseEvent::create(eventType,
+    RefPtrWillBeRawPtr<MouseEvent> me = MouseEvent::create(eventType,
         true, true, m_frame->document()->domWindow(),
         0, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(),
         event.movementDelta().x(), event.movementDelta().y(),
@@ -3128,7 +3128,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     PlatformKeyboardEvent keyDownEvent = initialKeyEvent;
     if (keyDownEvent.type() != PlatformEvent::RawKeyDown)
         keyDownEvent.disambiguateKeyDownEvent(PlatformEvent::RawKeyDown);
-    RefPtr<KeyboardEvent> keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->domWindow());
+    RefPtrWillBeRawPtr<KeyboardEvent> keydown = KeyboardEvent::create(keyDownEvent, m_frame->document()->domWindow());
     if (matchedAnAccessKey)
         keydown->setDefaultPrevented(true);
     keydown->setTarget(node);
@@ -3157,7 +3157,7 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     keyPressEvent.disambiguateKeyDownEvent(PlatformEvent::Char);
     if (keyPressEvent.text().isEmpty())
         return keydownResult;
-    RefPtr<KeyboardEvent> keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
+    RefPtrWillBeRawPtr<KeyboardEvent> keypress = KeyboardEvent::create(keyPressEvent, m_frame->document()->domWindow());
     keypress->setTarget(node);
     if (keydownResult)
         keypress->setDefaultPrevented(true);
@@ -3409,7 +3409,7 @@ bool EventHandler::handleTextInputEvent(const String& text, Event* underlyingEve
     if (!target)
         return false;
 
-    RefPtr<TextEvent> event = TextEvent::create(m_frame->domWindow(), text, inputType);
+    RefPtrWillBeRawPtr<TextEvent> event = TextEvent::create(m_frame->domWindow(), text, inputType);
     event->setUnderlyingEvent(underlyingEvent);
 
     target->dispatchEvent(event, IGNORE_EXCEPTION);
@@ -3784,7 +3784,7 @@ bool EventHandler::handleTouchEvent(const PlatformTouchEvent& event)
             RefPtrWillBeRawPtr<TouchList> targetTouches(isTouchCancelEvent ? emptyList.get() : touchesByTarget.get(touchEventTarget));
             ASSERT(targetTouches);
 
-            RefPtr<TouchEvent> touchEvent =
+            RefPtrWillBeRawPtr<TouchEvent> touchEvent =
                 TouchEvent::create(effectiveTouches.get(), targetTouches.get(), changedTouches[state].m_touches.get(),
                     stateName, touchEventTarget->toNode()->document().domWindow(),
                     0, 0, 0, 0, event.ctrlKey(), event.altKey(), event.shiftKey(), event.metaKey());

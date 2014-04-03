@@ -424,9 +424,9 @@ void EventSource::stop()
     close();
 }
 
-PassRefPtr<MessageEvent> EventSource::createMessageEvent()
+PassRefPtrWillBeRawPtr<MessageEvent> EventSource::createMessageEvent()
 {
-    RefPtr<MessageEvent> event = MessageEvent::create();
+    RefPtrWillBeRawPtr<MessageEvent> event = MessageEvent::create();
     event->initMessageEvent(m_eventName.isEmpty() ? EventTypeNames::message : m_eventName, false, false, SerializedScriptValue::create(String(m_data)), m_eventStreamOrigin, m_lastEventId, 0, nullptr);
     m_data.clear();
     return event.release();
