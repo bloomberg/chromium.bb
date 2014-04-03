@@ -36,7 +36,9 @@ namespace ash {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 const int kMaxShutdownSoundDurationMs = 1500;
+#endif
 
 aura::Window* GetBackground() {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();

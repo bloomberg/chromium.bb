@@ -382,11 +382,13 @@ bool HandleScaleUI(bool up) {
   return true;
 }
 
+#if defined(OS_CHROMEOS)
 bool HandleSwapPrimaryDisplay() {
   base::RecordAction(UserMetricsAction("Accel_Swap_Primary_Display"));
   Shell::GetInstance()->display_controller()->SwapPrimaryDisplay();
   return true;
 }
+#endif
 
 bool HandleShowKeyboardOverlay() {
   base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
@@ -426,6 +428,7 @@ bool HandleShowTaskManager() {
   return true;
 }
 
+#if defined(OS_CHROMEOS)
 void HandleSilenceSpokenFeedback() {
   base::RecordAction(UserMetricsAction("Accel_Silence_Spoken_Feedback"));
 
@@ -435,6 +438,7 @@ void HandleSilenceSpokenFeedback() {
     return;
   delegate->SilenceSpokenFeedback();
 }
+#endif
 
 bool HandleSwitchIme(ImeControlDelegate* ime_control_delegate,
                      const ui::Accelerator& accelerator) {
