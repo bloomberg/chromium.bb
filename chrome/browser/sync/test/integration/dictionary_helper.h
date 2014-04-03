@@ -28,6 +28,14 @@ size_t GetVerifierDictionarySize();
 // verifier if DisableVerifier() hasn't been called.
 bool DictionariesMatch();
 
+// Waits until dictionaries match across all platforms.  Returns false
+// if this operation times out.
+bool AwaitDictionariesMatch();
+
+// Waits until the profile at the given index contains exactly |num| dictionary
+// entries.  Returns false if this operation times out.
+bool AwaitNumDictionaryEntries(int index, size_t num_words);
+
 // Used to verify that the dictionary within a particular sync profile matches
 // the dictionary within the verifier sync profile.
 bool DictionaryMatchesVerifier(int index);
