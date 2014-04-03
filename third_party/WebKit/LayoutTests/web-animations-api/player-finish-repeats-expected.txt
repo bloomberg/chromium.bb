@@ -1,0 +1,19 @@
+PASS: playerTop is target
+PASS: event currentTime equals player currentTime
+PASS: event timelineTime equals timeline currentTime
+PASS: playerTop is target
+PASS: event currentTime equals player currentTime
+PASS: event timelineTime equals timeline currentTime
+PASS: playerMiddle is target
+PASS: event currentTime equals player currentTime
+PASS: event timelineTime equals timeline currentTime
+PASS: playerMiddle is target
+PASS: event currentTime equals player currentTime
+PASS: event timelineTime equals timeline currentTime
+PASS: playerBottom is target
+PASS: event currentTime equals player currentTime
+PASS: event timelineTime equals timeline currentTime
+PASS: playerBottom is target
+PASS: event currentTime equals player currentTime
+PASS: event timelineTime equals timeline currentTime
+

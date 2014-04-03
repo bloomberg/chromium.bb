@@ -31,7 +31,7 @@ protected:
     {
         AnimationPlayer* player = timeline->createAnimationPlayer(animation);
         player->setStartTime(startTime);
-        player->update();
+        player->update(AnimationPlayer::UpdateOnDemand);
         return player;
     }
 

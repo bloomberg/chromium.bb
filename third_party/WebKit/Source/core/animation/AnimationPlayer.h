@@ -43,11 +43,16 @@ class ExceptionState;
 class AnimationPlayer FINAL : public RefCounted<AnimationPlayer>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(AnimationPlayer);
 public:
+    enum UpdateReason {
+        UpdateOnDemand,
+        UpdateForAnimationFrame
+    };
+
     ~AnimationPlayer();
     static PassRefPtr<AnimationPlayer> create(DocumentTimeline&, TimedItem*);
 
     // Returns whether this player is still current or in effect.
-    bool update();
+    bool update(UpdateReason);
 
     // timeToEffectChange returns:
     //  infinity  - if this player is no longer in effect
@@ -151,6 +156,8 @@ private:
     // This indicates timing information relevant to the player has changed by
     // means other than the ordinary progression of time
     bool m_outdated;
+
+    bool m_finished;
 };
 
 } // namespace

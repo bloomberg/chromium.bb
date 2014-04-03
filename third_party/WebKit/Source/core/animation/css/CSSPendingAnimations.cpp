@@ -61,7 +61,7 @@ bool CSSPendingAnimations::startPendingAnimations()
     } else {
         for (size_t i = 0; i < m_pending.size(); ++i) {
             m_pending[i]->setStartTime(m_pending[i]->timeline()->currentTime());
-            m_pending[i]->update();
+            m_pending[i]->update(AnimationPlayer::UpdateOnDemand);
         }
     }
     m_pending.clear();
@@ -85,7 +85,7 @@ void CSSPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnim
     for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
         AnimationPlayer* player = m_waitingForCompositorAnimationStart[i].get();
         player->setStartTime(monotonicAnimationStartTime - player->timeline()->zeroTime());
-        player->update();
+        player->update(AnimationPlayer::UpdateOnDemand);
     }
 
     m_waitingForCompositorAnimationStart.clear();

@@ -181,7 +181,7 @@ const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const
     if (!m_player)
         return m_calculated;
     if (m_player->outdated())
-        m_player->update();
+        m_player->update(AnimationPlayer::UpdateOnDemand);
     ASSERT(!m_player->outdated());
     return m_calculated;
 }

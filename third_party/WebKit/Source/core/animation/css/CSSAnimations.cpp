@@ -393,7 +393,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         if (inertAnimation->paused())
             player->pause();
         element->document().cssPendingAnimations().add(player.get());
-        player->update();
+        player->update(AnimationPlayer::UpdateOnDemand);
         m_animations.set(iter->name, player.get());
     }
 
@@ -445,7 +445,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         }
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
         RefPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
-        player->update();
+        player->update(AnimationPlayer::UpdateOnDemand);
         element->document().cssPendingAnimations().add(player.get());
         runningTransition.transition = transition.get();
         m_transitions.set(id, runningTransition);

@@ -46,10 +46,10 @@ namespace WebCore {
 
 namespace {
 
-void updateAnimationTiming(Document& document)
+void updateAnimationTiming(Document& document, AnimationPlayer::UpdateReason reason)
 {
-    document.timeline().serviceAnimations();
-    document.transitionTimeline().serviceAnimations();
+    document.timeline().serviceAnimations(reason);
+    document.transitionTimeline().serviceAnimations(reason);
 }
 
 } // namespace
@@ -57,13 +57,13 @@ void updateAnimationTiming(Document& document)
 void DocumentAnimations::updateAnimationTimingForAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
     document.animationClock().updateTime(monotonicAnimationStartTime);
-    updateAnimationTiming(document);
+    updateAnimationTiming(document, AnimationPlayer::UpdateForAnimationFrame);
 }
 
 void DocumentAnimations::updateOutdatedAnimationPlayersAfterFrameCallbacks(Document& document)
 {
     if (document.timeline().hasOutdatedAnimationPlayer()) {
-        updateAnimationTiming(document);
+        updateAnimationTiming(document, AnimationPlayer::UpdateOnDemand);
     }
 }
 
@@ -73,12 +73,12 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
         return;
     const Element& element = toElement(node);
     if (element.document().timeline().hasOutdatedAnimationPlayer()) {
-        updateAnimationTiming(element.document());
+        updateAnimationTiming(element.document(), AnimationPlayer::UpdateOnDemand);
         return;
     }
     if (const ActiveAnimations* activeAnimations = element.activeAnimations()) {
         if (activeAnimations->hasActiveAnimationsOnCompositor(property))
-            updateAnimationTiming(element.document());
+            updateAnimationTiming(element.document(), AnimationPlayer::UpdateOnDemand);
     }
 }
 

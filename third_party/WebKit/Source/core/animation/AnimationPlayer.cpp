@@ -33,6 +33,7 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/events/AnimationPlayerEvent.h"
 
 namespace WebCore {
 
@@ -63,6 +64,7 @@ AnimationPlayer::AnimationPlayer(DocumentTimeline& timeline, TimedItem* content)
     , m_held(false)
     , m_isPausedForTesting(false)
     , m_outdated(false)
+    , m_finished(false)
 {
     if (m_content) {
         if (m_content->player())
@@ -116,6 +118,7 @@ void AnimationPlayer::updateTimingState(double newCurrentTime)
     } else {
         m_holdTime = nullValue();
         m_storedTimeLag = currentTimeWithoutLag() - newCurrentTime;
+        m_finished = false;
         setOutdated();
     }
 }
@@ -206,6 +209,7 @@ void AnimationPlayer::play()
         setCurrentTime(0);
     else if (m_playbackRate < 0 && (currentTime <= 0 || currentTime > sourceEnd()))
         setCurrentTime(sourceEnd());
+    m_finished = false;
 }
 
 void AnimationPlayer::reverse()
@@ -257,6 +261,8 @@ void AnimationPlayer::setPlaybackRate(double playbackRate)
     if (!std::isfinite(playbackRate))
         return;
     double storedCurrentTime = currentTime();
+    if ((m_playbackRate < 0 && playbackRate >= 0) || (m_playbackRate > 0 && playbackRate <= 0))
+        m_finished = false;
     m_playbackRate = playbackRate;
     updateTimingState(storedCurrentTime);
 }
@@ -292,10 +298,11 @@ void AnimationPlayer::cancelAnimationOnCompositor()
         toAnimation(m_content.get())->cancelAnimationOnCompositor();
 }
 
-bool AnimationPlayer::update()
+bool AnimationPlayer::update(UpdateReason reason)
 {
     m_outdated = false;
 
+    // FIXME(ericwilligers): Support finish events with null m_content
     if (!m_timeline || !m_content)
         return false;
 
@@ -303,7 +310,17 @@ bool AnimationPlayer::update()
     m_content->updateInheritedTime(inheritedTime);
 
     ASSERT(!m_outdated);
-    return m_content->isCurrent() || m_content->isInEffect();
+    if (reason == UpdateForAnimationFrame) {
+        const AtomicString& eventType = EventTypeNames::finish;
+        if (finished() && !m_finished && executionContext() && hasEventListeners(eventType)) {
+            RefPtr<AnimationPlayerEvent> event = AnimationPlayerEvent::create(eventType, currentTime(), timeline()->currentTime());
+            event->setTarget(this);
+            event->setCurrentTarget(this);
+            m_timeline->document()->enqueueAnimationFrameEvent(event.release());
+        }
+        m_finished = finished();
+    }
+    return !m_finished || m_content->isCurrent() || m_content->isInEffect();
 }
 
 double AnimationPlayer::timeToEffectChange()

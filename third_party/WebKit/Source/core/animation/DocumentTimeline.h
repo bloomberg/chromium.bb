@@ -62,7 +62,7 @@ public:
     static PassRefPtr<DocumentTimeline> create(Document*, PassOwnPtr<PlatformTiming> = nullptr);
     ~DocumentTimeline();
 
-    void serviceAnimations();
+    void serviceAnimations(AnimationPlayer::UpdateReason);
 
     // Creates a player attached to this timeline, but without a start time.
     AnimationPlayer* createAnimationPlayer(TimedItem*);
