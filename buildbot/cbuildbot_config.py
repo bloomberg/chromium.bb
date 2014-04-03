@@ -2128,6 +2128,10 @@ _brillo_release.add_config('duck-release',
 
 _brillo_release.add_config('gizmo-release',
    boards=['gizmo'],
+
+   # This build doesn't generate signed images, so don't try to release them.
+   signer_results=False,
+   paygen=False,
 )
 
 _arm_brillo_release = _brillo_release.derive(arm)
@@ -2137,9 +2141,17 @@ _beaglebone_release = _arm_brillo_release.derive(beaglebone)
 _config.add_group('beaglebone-release-group',
   _beaglebone_release.add_config('beaglebone-release',
     boards=['beaglebone'],
+
+    # This build doesn't generate signed images, so don't try to release them.
+    signer_results=False,
+    paygen=False,
   ),
   _beaglebone_release.add_config('beaglebone_servo-release',
     boards=['beaglebone_servo'],
+
+    # This build doesn't generate signed images, so don't try to release them.
+    signer_results=False,
+    paygen=False,
   ).derive(_grouped_variant_config),
 )
 
