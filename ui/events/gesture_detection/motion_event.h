@@ -29,6 +29,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
 
   virtual ~MotionEvent() {}
 
+  virtual int GetId() const = 0;
   virtual Action GetAction() const = 0;
   virtual int GetActionIndex() const = 0;
   virtual size_t GetPointerCount() const = 0;

@@ -168,7 +168,7 @@ class TouchDispositionGestureFilterTest
   }
 
   static GestureEventData CreateGesture(EventType type) {
-    return GestureEventData(type, base::TimeTicks(), 0, 0);
+    return GestureEventData(type, 0, base::TimeTicks(), 0, 0);
   }
 
  private:
@@ -522,11 +522,14 @@ TEST_F(TouchDispositionGestureFilterTest, MultipleTouchSequences) {
 
 TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnNewTouchSequence) {
   // Simulate a fling.
+  PushGesture(ET_GESTURE_TAP_DOWN);
   PushGesture(ET_GESTURE_SCROLL_BEGIN);
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SCROLL_BEGIN),
-                            GetAndResetSentGestures()));
+  EXPECT_TRUE(GesturesMatch(
+      Gestures(
+          ET_GESTURE_TAP_DOWN, ET_GESTURE_TAP_CANCEL, ET_GESTURE_SCROLL_BEGIN),
+      GetAndResetSentGestures()));
   PushGesture(ET_SCROLL_FLING_START);
   ReleaseTouchPoint();
   SendTouchNotConsumedAck();
@@ -545,11 +548,14 @@ TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnNewTouchSequence) {
 
 TEST_F(TouchDispositionGestureFilterTest, ScrollEndedOnNewTouchSequence) {
   // Simulate a scroll.
+  PushGesture(ET_GESTURE_TAP_DOWN);
   PushGesture(ET_GESTURE_SCROLL_BEGIN);
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SCROLL_BEGIN),
-                            GetAndResetSentGestures()));
+  EXPECT_TRUE(GesturesMatch(
+      Gestures(
+          ET_GESTURE_TAP_DOWN, ET_GESTURE_TAP_CANCEL, ET_GESTURE_SCROLL_BEGIN),
+      GetAndResetSentGestures()));
   ReleaseTouchPoint();
   SendTouchNotConsumedAck();
 
@@ -562,11 +568,14 @@ TEST_F(TouchDispositionGestureFilterTest, ScrollEndedOnNewTouchSequence) {
 
 TEST_F(TouchDispositionGestureFilterTest, FlingCancelledOnScrollBegin) {
   // Simulate a fling sequence.
+  PushGesture(ET_GESTURE_TAP_DOWN);
   PushGesture(ET_GESTURE_SCROLL_BEGIN);
   PushGesture(ET_SCROLL_FLING_START);
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SCROLL_BEGIN,
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_DOWN,
+                                     ET_GESTURE_TAP_CANCEL,
+                                     ET_GESTURE_SCROLL_BEGIN,
                                      ET_SCROLL_FLING_START),
                             GetAndResetSentGestures()));
 

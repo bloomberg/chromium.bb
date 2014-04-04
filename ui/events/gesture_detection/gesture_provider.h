@@ -87,15 +87,12 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
 
   bool CanHandle(const MotionEvent& event) const;
 
-  void Fling(base::TimeTicks time,
-             float x,
-             float y,
-             float velocity_x,
-             float velocity_y);
+  void Fling(const MotionEvent& e, float velocity_x, float velocity_y);
   void Send(const GestureEventData& gesture);
   void SendTapCancelIfNecessary(const MotionEvent& event);
+  void SendTapCancelIfNecessary(const GestureEventData& event);
   bool SendLongTapIfNecessary(const MotionEvent& event);
-  void EndTouchScrollIfNecessary(base::TimeTicks time,
+  void EndTouchScrollIfNecessary(const MotionEvent& event,
                                  bool send_scroll_end_event);
   void UpdateDoubleTapDetectionSupport();
 

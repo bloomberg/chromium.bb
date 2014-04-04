@@ -32,9 +32,12 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
   class ScaleGestureListener {
    public:
     virtual ~ScaleGestureListener() {}
-    virtual bool OnScale(const ScaleGestureDetector& detector) = 0;
-    virtual bool OnScaleBegin(const ScaleGestureDetector& detector) = 0;
-    virtual void OnScaleEnd(const ScaleGestureDetector& detector) = 0;
+    virtual bool OnScale(const ScaleGestureDetector& detector,
+                         const MotionEvent& e) = 0;
+    virtual bool OnScaleBegin(const ScaleGestureDetector& detector,
+                              const MotionEvent& e) = 0;
+    virtual void OnScaleEnd(const ScaleGestureDetector& detector,
+                            const MotionEvent& e) = 0;
   };
 
   // A convenience class to extend when you only want to listen for a subset of
@@ -46,9 +49,12 @@ class ScaleGestureDetector : public GestureDetector::SimpleGestureListener {
   class SimpleScaleGestureListener : public ScaleGestureListener {
    public:
     // ScaleGestureListener implementation.
-    virtual bool OnScale(const ScaleGestureDetector&) OVERRIDE;
-    virtual bool OnScaleBegin(const ScaleGestureDetector&) OVERRIDE;
-    virtual void OnScaleEnd(const ScaleGestureDetector&) OVERRIDE;
+    virtual bool OnScale(const ScaleGestureDetector&,
+                         const MotionEvent&) OVERRIDE;
+    virtual bool OnScaleBegin(const ScaleGestureDetector&,
+                              const MotionEvent&) OVERRIDE;
+    virtual void OnScaleEnd(const ScaleGestureDetector&,
+                            const MotionEvent&) OVERRIDE;
   };
 
   ScaleGestureDetector(const Config& config, ScaleGestureListener* listener);

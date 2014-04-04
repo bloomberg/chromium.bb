@@ -17,6 +17,7 @@ class MotionEventWeb : public ui::MotionEvent {
   virtual ~MotionEventWeb();
 
   // ui::MotionEvent
+  virtual int GetId() const OVERRIDE;
   virtual Action GetAction() const OVERRIDE;
   virtual int GetActionIndex() const OVERRIDE;
   virtual size_t GetPointerCount() const OVERRIDE;

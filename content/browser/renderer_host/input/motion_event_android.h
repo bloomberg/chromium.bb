@@ -38,6 +38,7 @@ class MotionEventAndroid : public ui::MotionEvent {
   virtual ~MotionEventAndroid();
 
   // ui::MotionEvent methods.
+  virtual int GetId() const OVERRIDE;
   virtual Action GetAction() const OVERRIDE;
   virtual int GetActionIndex() const OVERRIDE;
   virtual size_t GetPointerCount() const OVERRIDE;

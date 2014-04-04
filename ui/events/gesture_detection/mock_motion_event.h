@@ -28,6 +28,7 @@ struct MockMotionEvent : public MotionEvent {
   virtual Action GetAction() const OVERRIDE;
   virtual int GetActionIndex() const OVERRIDE;
   virtual size_t GetPointerCount() const OVERRIDE;
+  virtual int GetId() const OVERRIDE;
   virtual int GetPointerId(size_t pointer_index) const OVERRIDE;
   virtual float GetX(size_t pointer_index) const OVERRIDE;
   virtual float GetY(size_t pointer_index) const OVERRIDE;
@@ -48,6 +49,7 @@ struct MockMotionEvent : public MotionEvent {
   virtual scoped_ptr<MotionEvent> Cancel() const OVERRIDE;
 
   // Utility methods.
+  void SetId(int new_id);
   void PressPoint(float x, float y);
   void MovePoint(size_t index, float x, float y);
   void ReleasePoint();
@@ -57,6 +59,7 @@ struct MockMotionEvent : public MotionEvent {
   size_t pointer_count;
   gfx::PointF points[MAX_POINTERS];
   base::TimeTicks time;
+  int id;
 };
 
 }  // namespace ui

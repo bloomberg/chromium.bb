@@ -33,17 +33,17 @@ ScaleGestureDetector::Config::Config()
 ScaleGestureDetector::Config::~Config() {}
 
 bool ScaleGestureDetector::SimpleScaleGestureListener::OnScale(
-    const ScaleGestureDetector&) {
+    const ScaleGestureDetector&, const MotionEvent&) {
   return false;
 }
 
 bool ScaleGestureDetector::SimpleScaleGestureListener::OnScaleBegin(
-    const ScaleGestureDetector&) {
+    const ScaleGestureDetector&, const MotionEvent&) {
   return true;
 }
 
 void ScaleGestureDetector::SimpleScaleGestureListener::OnScaleEnd(
-    const ScaleGestureDetector&) {}
+    const ScaleGestureDetector&, const MotionEvent&) {}
 
 ScaleGestureDetector::ScaleGestureDetector(const Config& config,
                                            ScaleGestureListener* listener)
@@ -99,7 +99,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     // If it's an ACTION_DOWN we're beginning a new event stream.
     // This means the app probably didn't give us all the events. Shame on it.
     if (in_progress_) {
-      listener_->OnScaleEnd(*this);
+      listener_->OnScaleEnd(*this, event);
       in_progress_ = false;
       initial_span_ = 0;
       double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
@@ -187,7 +187,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
   focus_y_ = focus_y;
   if (!InDoubleTapMode() && in_progress_ &&
       (span < min_span_ || config_changed)) {
-    listener_->OnScaleEnd(*this);
+    listener_->OnScaleEnd(*this, event);
     in_progress_ = false;
     initial_span_ = span;
     double_tap_mode_ = DOUBLE_TAP_MODE_NONE;
@@ -205,7 +205,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     prev_span_y_ = curr_span_y_ = span_y;
     prev_span_ = curr_span_ = span;
     prev_time_ = curr_time_;
-    in_progress_ = listener_->OnScaleBegin(*this);
+    in_progress_ = listener_->OnScaleBegin(*this, event);
   }
 
   // Handle motion; focal point and span/scale factor are changing.
@@ -217,7 +217,7 @@ bool ScaleGestureDetector::OnTouchEvent(const MotionEvent& event) {
     bool update_prev = true;
 
     if (in_progress_) {
-      update_prev = listener_->OnScale(*this);
+      update_prev = listener_->OnScale(*this, event);
     }
 
     if (update_prev) {

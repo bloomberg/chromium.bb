@@ -69,6 +69,10 @@ MotionEventWeb::MotionEventWeb(const WebTouchEvent& event)
 
 MotionEventWeb::~MotionEventWeb() {}
 
+int MotionEventWeb::GetId() const {
+  return 0;
+}
+
 MotionEventWeb::Action MotionEventWeb::GetAction() const {
   return cached_action_;
 }

@@ -14,16 +14,16 @@ const float kTouchMajor = 10.f;
 }  // namespace
 
 MockMotionEvent::MockMotionEvent()
-    : action(ACTION_CANCEL), pointer_count(1) {}
+    : action(ACTION_CANCEL), pointer_count(1), id(0) {}
 
 MockMotionEvent::MockMotionEvent(Action action)
-    : action(action), pointer_count(1) {}
+    : action(action), pointer_count(1), id(0) {}
 
 MockMotionEvent::MockMotionEvent(Action action,
                                  TimeTicks time,
                                  float x,
                                  float y)
-    : action(action), pointer_count(1), time(time) {
+    : action(action), pointer_count(1), time(time), id(0) {
   points[0].SetPoint(x, y);
 }
 
@@ -33,7 +33,7 @@ MockMotionEvent::MockMotionEvent(Action action,
                                  float y0,
                                  float x1,
                                  float y1)
-    : action(action), pointer_count(2), time(time) {
+    : action(action), pointer_count(2), time(time), id(0) {
   points[0].SetPoint(x0, y0);
   points[1].SetPoint(x1, y1);
 }
@@ -41,7 +41,8 @@ MockMotionEvent::MockMotionEvent(Action action,
 MockMotionEvent::MockMotionEvent(const MockMotionEvent& other)
     : action(other.action),
       pointer_count(other.pointer_count),
-      time(other.time) {
+      time(other.time),
+      id(other.GetId()) {
   points[0] = other.points[0];
   points[1] = other.points[1];
 }
@@ -56,7 +57,16 @@ int MockMotionEvent::GetActionIndex() const {
 
 size_t MockMotionEvent::GetPointerCount() const { return pointer_count; }
 
+int MockMotionEvent::GetId() const {
+  return id;
+}
+
+void MockMotionEvent::SetId(int new_id) {
+  id = new_id;
+}
+
 int MockMotionEvent::GetPointerId(size_t pointer_index) const {
+  DCHECK(pointer_index < pointer_count);
   return static_cast<int>(pointer_index);
 }
 

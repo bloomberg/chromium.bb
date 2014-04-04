@@ -9,23 +9,33 @@
 namespace ui {
 
 GestureEventData::GestureEventData(EventType type,
+                                   int motion_event_id,
                                    base::TimeTicks time,
                                    float x,
                                    float y,
                                    const GestureEventDetails& details)
-    : type(type), time(time), x(x), y(y), details(details) {
+    : type(type),
+      motion_event_id(motion_event_id),
+      time(time),
+      x(x),
+      y(y),
+      details(details) {
+  DCHECK(motion_event_id >= 0);
   DCHECK(ET_GESTURE_TYPE_START <= type && type <= ET_GESTURE_TYPE_END);
 }
 
 GestureEventData::GestureEventData(EventType type,
+                                   int motion_event_id,
                                    base::TimeTicks time,
                                    float x,
                                    float y)
     : type(type),
+      motion_event_id(motion_event_id),
       time(time),
       x(x),
       y(y),
       details(GestureEventDetails(type, 0, 0)) {
+  DCHECK(motion_event_id >= 0);
   DCHECK(ET_GESTURE_TYPE_START <= type && type <= ET_GESTURE_TYPE_END);
 }
 

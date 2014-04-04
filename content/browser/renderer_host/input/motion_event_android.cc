@@ -145,6 +145,10 @@ MotionEventAndroid::~MotionEventAndroid() {
     Java_MotionEvent_recycle(AttachCurrentThread(), event_.obj());
 }
 
+int MotionEventAndroid::GetId() const {
+  return 0;
+}
+
 MotionEventAndroid::Action MotionEventAndroid::GetAction() const {
   return cached_action_;
 }

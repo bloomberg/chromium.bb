@@ -15,9 +15,13 @@ namespace {
 COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
                gesture_type_count_too_large);
 
-GestureEventData CreateGesture(EventType type) {
-  return GestureEventData(
-      type, base::TimeTicks(), 0, 0, GestureEventDetails(type, 0, 0));
+GestureEventData CreateGesture(EventType type, int motion_event_id) {
+  return GestureEventData(type,
+                          motion_event_id,
+                          base::TimeTicks(),
+                          0,
+                          0,
+                          GestureEventDetails(type, 0, 0));
 }
 
 enum RequiredTouches {
@@ -205,6 +209,7 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
       break;
     case ET_GESTURE_TAP_DOWN:
       DCHECK(!needs_tap_ending_event_);
+      ending_event_motion_event_id_ = event.motion_event_id;
       needs_tap_ending_event_ = true;
       break;
     case ET_GESTURE_TAP:
@@ -217,6 +222,7 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
       CancelTapIfNecessary();
       CancelFlingIfNecessary();
       EndScrollIfNecessary();
+      ending_event_motion_event_id_ = event.motion_event_id;
       needs_scroll_ending_event_ = true;
       break;
     case ET_GESTURE_SCROLL_END:
@@ -224,6 +230,7 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
       break;
     case ET_SCROLL_FLING_START:
       CancelFlingIfNecessary();
+      ending_event_motion_event_id_ = event.motion_event_id;
       needs_fling_ending_event_ = true;
       needs_scroll_ending_event_ = false;
       break;
@@ -240,7 +247,8 @@ void TouchDispositionGestureFilter::CancelTapIfNecessary() {
   if (!needs_tap_ending_event_)
     return;
 
-  SendGesture(CreateGesture(ET_GESTURE_TAP_CANCEL));
+  SendGesture(
+      CreateGesture(ET_GESTURE_TAP_CANCEL, ending_event_motion_event_id_));
   DCHECK(!needs_tap_ending_event_);
 }
 
@@ -248,7 +256,8 @@ void TouchDispositionGestureFilter::CancelFlingIfNecessary() {
   if (!needs_fling_ending_event_)
     return;
 
-  SendGesture(CreateGesture(ET_SCROLL_FLING_CANCEL));
+  SendGesture(
+      CreateGesture(ET_SCROLL_FLING_CANCEL, ending_event_motion_event_id_));
   DCHECK(!needs_fling_ending_event_);
 }
 
@@ -256,7 +265,8 @@ void TouchDispositionGestureFilter::EndScrollIfNecessary() {
   if (!needs_scroll_ending_event_)
     return;
 
-  SendGesture(CreateGesture(ET_GESTURE_SCROLL_END));
+  SendGesture(
+      CreateGesture(ET_GESTURE_SCROLL_END, ending_event_motion_event_id_));
   DCHECK(!needs_scroll_ending_event_);
 }
 
