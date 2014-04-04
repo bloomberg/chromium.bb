@@ -240,14 +240,6 @@ void RenderLayerRepainter::setFilterBackendNeedsRepaintingInRect(const LayoutRec
     ASSERT(filterInfo);
     filterInfo->expandDirtySourceRect(rectForRepaint);
 
-    ASSERT(filterInfo->renderer());
-    if (filterInfo->renderer()->hasCustomShaderFilter()) {
-        // If we have at least one custom shader, we need to update the whole bounding box of the layer, because the
-        // shader can address any ouput pixel.
-        // Note: This is only for output rect, so there's no need to expand the dirty source rect.
-        rectForRepaint.unite(m_renderer->layer()->calculateLayerBounds(m_renderer->layer()));
-    }
-
     RenderLayer* parentLayer = enclosingFilterRepaintLayer();
     ASSERT(parentLayer);
     FloatQuad repaintQuad(rectForRepaint);

@@ -69,7 +69,6 @@ FilterEffectRenderer::FilterEffectRenderer()
     : Filter(AffineTransform())
     , m_graphicsBufferAttached(false)
     , m_hasFilterThatMovesPixels(false)
-    , m_hasCustomShaderFilter(false)
 {
     m_sourceGraphic = SourceGraphic::create(this);
 }
@@ -85,7 +84,6 @@ GraphicsContext* FilterEffectRenderer::inputContext()
 
 bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations& operations)
 {
-    m_hasCustomShaderFilter = false;
     m_hasFilterThatMovesPixels = operations.hasFilterThatMovesPixels();
 
     // Inverse zoom the pre-zoomed CSS shorthand filters, so that they are in the same zoom as the unzoomed reference filters.
@@ -299,11 +297,6 @@ void FilterEffectRenderer::apply()
 
 LayoutRect FilterEffectRenderer::computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect)
 {
-    if (hasCustomShaderFilter()) {
-        // When we have at least a custom shader in the chain, we need to compute the whole source image, because the shader can
-        // reference any pixel and we cannot control that.
-        return filterBoxRect;
-    }
     // The result of this function is the area in the "filterBoxRect" that needs to be repainted, so that we fully cover the "dirtyRect".
     FloatRect rectForRepaint = dirtyRect;
     float inf = std::numeric_limits<float>::infinity();

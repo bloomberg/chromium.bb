@@ -103,7 +103,6 @@ public:
     bool hasFilterThatMovesPixels() const { return m_hasFilterThatMovesPixels; }
     LayoutRect computeSourceImageRectForDirtyRect(const LayoutRect& filterBoxRect, const LayoutRect& dirtyRect);
 
-    bool hasCustomShaderFilter() const { return m_hasCustomShaderFilter; }
     PassRefPtr<FilterEffect> lastEffect() const
     {
         return m_lastEffect;
@@ -122,7 +121,6 @@ private:
 
     bool m_graphicsBufferAttached;
     bool m_hasFilterThatMovesPixels;
-    bool m_hasCustomShaderFilter;
 };
 
 } // namespace WebCore
