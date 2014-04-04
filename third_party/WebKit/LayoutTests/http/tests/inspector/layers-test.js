@@ -10,7 +10,7 @@ function initialize_LayerTreeTests()
 
     InspectorTest.labelForLayer = function(layer)
     {
-        var node = WebInspector.domModel.nodeForId(layer.nodeIdForSelfOrAncestor());
+        var node = layer.nodeForSelfOrAncestor();
         var label = node ? WebInspector.DOMPresentationUtils.fullQualifiedSelector(node, false) : "<invalid node id>";
         var height = layer.height();
         var width = layer.width();
@@ -77,9 +77,9 @@ function initialize_LayerTreeTests()
         var result;
         function testLayer(layer)
         {
-            if (!layer.nodeId())
+            var node = layer.node();
+            if (!node)
                 return false;
-            var node = WebInspector.domModel.nodeForId(layer.nodeId());
             if (!node || node.getAttribute("id") !== nodeIdAttribute)
                 return false;
             result = layer;
