@@ -35,13 +35,14 @@ import breakpad  # pylint: disable=W0611
 import clang_format
 import fix_encoding
 import gclient_utils
+import git_common
+import owners_finder
 import presubmit_support
 import rietveld
 import scm
 import subcommand
 import subprocess2
 import watchlists
-import owners_finder
 
 __version__ = '1.0'
 
@@ -551,7 +552,8 @@ or verify this branch is set up to track another (via the --track argument to
     return remote, upstream_branch
 
   def GetCommonAncestorWithUpstream(self):
-    return RunGit(['merge-base', self.GetUpstreamBranch(), 'HEAD']).strip()
+    return git_common.get_or_create_merge_base(self.GetBranch(),
+                                               self.GetUpstreamBranch())
 
   def GetUpstreamBranch(self):
     if self.upstream_branch is None:
@@ -2155,7 +2157,7 @@ def CMDtry(parser, args):
             "-bwin_rel:base_unittests:ValuesTest.*Value"))
   group.add_option(
       "-m", "--master", default='',
-      help=("Specify a try master where to run the tries."))           
+      help=("Specify a try master where to run the tries."))
   group.add_option(
       "-r", "--revision",
       help="Revision to use for the try job; default: the "

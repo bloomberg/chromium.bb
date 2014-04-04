@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from testing_support.auto_stub import TestCase
 
 import git_cl
+import git_common
 import subprocess2
 
 
@@ -76,6 +77,9 @@ class TestGitCl(TestCase):
     self.mock(subprocess2, 'check_output', self._mocked_call)
     self.mock(subprocess2, 'communicate', self._mocked_call)
     self.mock(subprocess2, 'Popen', self._mocked_call)
+    self.mock(git_common, 'get_or_create_merge_base',
+              lambda *a: (
+                  self._mocked_call(['get_or_create_merge_base']+list(a))))
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: '')
     self.mock(git_cl, 'ask_for_data', self._mocked_call)
     self.mock(git_cl.breakpad, 'post', self._mocked_call)
@@ -93,7 +97,7 @@ class TestGitCl(TestCase):
       self.assertEquals([], self.calls)
     super(TestGitCl, self).tearDown()
 
-  def _mocked_call(self, *args, **kwargs):
+  def _mocked_call(self, *args, **_kwargs):
     self.assertTrue(
         self.calls,
         '@%d  Expected: <Missing>   Actual: %r' % (self._calls_done, args))
@@ -158,7 +162,7 @@ class TestGitCl(TestCase):
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.merge'],), 'master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
-      ((['git', 'merge-base', 'master', 'HEAD'],),
+      ((['get_or_create_merge_base', 'master', 'master'],),
        'fake_ancestor_sha'),
       ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
@@ -538,8 +542,8 @@ class TestGitCl(TestCase):
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.merge'],), 'master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
-        ((['git',
-           'merge-base', 'master', 'HEAD'],), 'fake_ancestor_sha'),
+        ((['get_or_create_merge_base', 'master', 'master'],),
+         'fake_ancestor_sha'),
         ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
