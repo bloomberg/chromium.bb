@@ -273,7 +273,7 @@ void TextAutosizer::processClusterInternal(TextAutosizingClusterInfo& clusterInf
 {
     processContainer(multiplier, container, clusterInfo, subtreeRoot, windowInfo);
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
-    writeDebugInfo(clusterInfo.root, String::format("cluster:%f", multiplier));
+    writeDebugInfo(clusterInfo.root, AtomicString(String::format("cluster:%f", multiplier)));
 #endif
 
     Vector<Vector<TextAutosizingClusterInfo> > narrowDescendantsGroups;

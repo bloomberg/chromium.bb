@@ -47,6 +47,29 @@ using namespace std;
 
 namespace WebCore {
 
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+static void writeDebugInfo(RenderObject* renderObject, const AtomicString& output)
+{
+    Node* node = renderObject->node();
+    if (!node)
+        return;
+    if (node->isDocumentNode())
+        node = toDocument(node)->documentElement();
+    if (node->isElementNode())
+        toElement(node)->setAttribute("data-autosizing", output, ASSERT_NO_EXCEPTION);
+}
+
+static void writeDebugPageInfo(const Document* document, float baseMultiplier, int layoutWidth, int frameWidth)
+{
+    if (Element* element = document->documentElement()) {
+        element->setAttribute("data-autosizing-pageinfo",
+            AtomicString(String::format("bm %f * (lw %d / fw %d)",
+                baseMultiplier, layoutWidth, frameWidth)),
+            ASSERT_NO_EXCEPTION);
+    }
+}
+#endif
+
 static const RenderObject* parentElementRenderer(const RenderObject* renderer)
 {
     // At style recalc, the renderer's parent may not be attached,
@@ -297,6 +320,9 @@ void FastTextAutosizer::beginLayout(RenderBlock* block)
 #endif
 
     if (!m_firstBlock)  {
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+        writeDebugPageInfo(m_document, m_baseMultiplier, m_layoutWidth, m_frameWidth);
+#endif
         m_firstBlock = block;
         prepareClusterStack(block->parent());
     } else if (block == currentCluster()->m_root) {
@@ -683,25 +709,51 @@ const RenderBlock* FastTextAutosizer::deepestCommonAncestor(BlockSet& blocks)
 
 float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
 {
-    if (!cluster->m_multiplier) {
-        if (cluster->m_root->isTable()
-            || isIndependentDescendant(cluster->m_root)
-            || isWiderOrNarrowerDescendant(cluster)) {
+    if (cluster->m_multiplier)
+        return cluster->m_multiplier;
 
-            if (cluster->m_supercluster) {
-                cluster->m_multiplier = superclusterMultiplier(cluster);
-            } else if (clusterHasEnoughTextToAutosize(cluster)) {
-                cluster->m_multiplier = multiplierFromBlock(clusterWidthProvider(cluster->m_root));
-                // Do not inflate table descendants above the table's multiplier. See inflateTable(...) for details.
-                if (cluster->m_hasTableAncestor)
-                    cluster->m_multiplier = min(cluster->m_multiplier, clusterMultiplier(cluster->m_parent));
-            } else {
-                cluster->m_multiplier = 1.0f;
-            }
+    if (cluster->m_root->isTable()
+        || isIndependentDescendant(cluster->m_root)
+        || isWiderOrNarrowerDescendant(cluster)) {
+
+        if (cluster->m_supercluster) {
+            cluster->m_multiplier = superclusterMultiplier(cluster);
+        } else if (clusterHasEnoughTextToAutosize(cluster)) {
+            cluster->m_multiplier = multiplierFromBlock(clusterWidthProvider(cluster->m_root));
+            // Do not inflate table descendants above the table's multiplier. See inflateTable(...) for details.
+            if (cluster->m_hasTableAncestor)
+                cluster->m_multiplier = min(cluster->m_multiplier, clusterMultiplier(cluster->m_parent));
         } else {
-            cluster->m_multiplier = cluster->m_parent ? clusterMultiplier(cluster->m_parent) : 1.0f;
+            cluster->m_multiplier = 1.0f;
+        }
+    } else {
+        cluster->m_multiplier = cluster->m_parent ? clusterMultiplier(cluster->m_parent) : 1.0f;
+    }
+
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+    // FIXME(crbug.com/339213): Reduce redundant logic by storing the explanation category in the Cluster.
+    String explanation = "";
+    if (!cluster->m_autosize) {
+        explanation = "[suppressed]";
+    } else if (!(cluster->m_root->isTable() || isIndependentDescendant(cluster->m_root) || isWiderOrNarrowerDescendant(cluster))) {
+        explanation = "[inherited]";
+    } else if (cluster->m_supercluster) {
+        explanation = "[supercluster]";
+    } else if (!clusterHasEnoughTextToAutosize(cluster)) {
+        explanation = "[insufficient-text]";
+    } else {
+        const RenderBlock* widthProvider = clusterWidthProvider(cluster->m_root);
+        if (cluster->m_hasTableAncestor && cluster->m_multiplier < multiplierFromBlock(widthProvider)) {
+            explanation = "[table-ancestor-limited]";
+        } else {
+            explanation = String::format("[from width %d of %s]",
+                static_cast<int>(widthFromBlock(widthProvider)), widthProvider->debugName().utf8().data());
         }
     }
+    writeDebugInfo(const_cast<RenderBlock*>(cluster->m_root),
+        AtomicString(String::format("cluster: %f %s", cluster->m_multiplier, explanation.utf8().data())));
+#endif
+
     ASSERT(cluster->m_multiplier);
     return cluster->m_multiplier;
 }
