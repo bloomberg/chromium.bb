@@ -28025,12 +28025,80 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UpdateEngine.Check.DownloadErrorCode"
+    enum="UpdateEngineDownloadErrorCode">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    If unable to download a response from Omaha, a more detailed error code is
+    reported in this metric.
+
+    This is reported on every update check resulting in &quot;Download
+    error&quot;.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Check.Reaction" enum="UpdateEngineCheckReaction">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    If there is an update available, this metric will track what the device does
+    with the information. Possible values include &quot;Applying update&quot;,
+    &quot;Deferring update&quot;, &quot;Ignoring update&quot;, and &quot;Backing
+    off&quot;.
+
+    This is reported on update checks resulting in &quot;Update available&quot;.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Check.Result" enum="UpdateEngineCheckResult">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The response from Omaha. Possible values include &quot;No update
+    available&quot;, &quot;Update available&quot;, &quot;Download error&quot;,
+    &quot;Response parsing error&quot;, and &quot;Reboot pending&quot;.
+
+    This is reported on every update check.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Check.TimeSinceLastCheckMinutes" units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of minutes since the last check including the time the device
+    spent sleeping.
+
+    This is reported on every update check except for the first one.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
+<histogram name="UpdateEngine.Check.TimeSinceLastCheckUptimeMinutes"
+    units="minutes">
+  <owner>zeuthen@chromium.org</owner>
+  <summary>
+    The number of minutes since the last check excluding the time the device
+    spent sleeping.
+
+    This is reported on every update check except for the first one.
+
+    This metric is specific to ChromeOS.
+  </summary>
+</histogram>
+
 <histogram name="UpdateEngine.Daily.OSAgeDays" units="days">
   <owner>zeuthen@chromium.org</owner>
   <summary>
     The age of the OS in days, defined as the age of the /etc/lsb-release file.
 
     This is reported on every update check but at most once a day.
+
+    This metric is specific to ChromeOS.
   </summary>
 </histogram>
 
@@ -28042,6 +28110,8 @@ other types of suffix sets.
 
     This is reported every time the firmware fails to boot the slot with the
     update and fell back to the slot it originally updated from.
+
+    This metric is specific to ChromeOS.
   </summary>
 </histogram>
 
@@ -28054,6 +28124,8 @@ other types of suffix sets.
 
     This is reported when OOBE (Out Of Box Experience) completes (M34 or later)
     or when upgrading to a version with install-date-days support.
+
+    This metric is specific to ChromeOS.
   </summary>
 </histogram>
 
@@ -28066,6 +28138,8 @@ other types of suffix sets.
 
     This is reported every time the device is rebooted after an update has been
     applied.
+
+    This metric is specific to ChromeOS.
   </summary>
 </histogram>
 
@@ -40712,6 +40786,43 @@ other types of suffix sets.
   <int value="1" label="Group not reported"/>
   <int value="2" label="Trial was disabled"/>
   <int value="3" label="Group not reported and trial was disabled"/>
+</enum>
+
+<enum name="UpdateEngineCheckReaction" type="int">
+  <int value="0" label="Updating"/>
+  <int value="1" label="Ignoring"/>
+  <int value="2" label="Deferring"/>
+  <int value="3" label="Backing Off"/>
+</enum>
+
+<enum name="UpdateEngineCheckResult" type="int">
+  <int value="0" label="Update Available"/>
+  <int value="1" label="No Update Available"/>
+  <int value="2" label="Response Download Error"/>
+  <int value="3" label="Response Parsing Error"/>
+  <int value="4" label="Reboot Pending"/>
+</enum>
+
+<enum name="UpdateEngineDownloadErrorCode" type="int">
+  <int value="0" label="Download Error"/>
+  <int value="100" label="Input Malformed (Internal Error)"/>
+  <int value="101" label="Unknown HTTP Status (not 200-599)"/>
+  <int value="400" label="Bad Request (HTTP Status 400)"/>
+  <int value="401" label="Unauthorized (HTTP Status 401)"/>
+  <int value="402" label="Payment Required (HTTP Status 402)"/>
+  <int value="403" label="Forbidden (HTTP Status 403)"/>
+  <int value="404" label="Not Found (HTTP Status 404)"/>
+  <int value="405" label="Method Not Allowed (HTTP Status 405)"/>
+  <int value="406" label="Not Acceptable (HTTP Status 406)"/>
+  <int value="407" label="Proxy Auth Req (HTTP Status 407)"/>
+  <int value="408" label="Request Timeout (HTTP Status 408)"/>
+  <int value="409" label="Conflict (HTTP Status 409)"/>
+  <int value="410" label="Gone (HTTP Status 410)"/>
+  <int value="500" label="Internal Server Error (HTTP Status 500)"/>
+  <int value="501" label="Not Implemented (HTTP Status 501)"/>
+  <int value="502" label="Bad Gateway (HTTP Status 502)"/>
+  <int value="503" label="Service Unavailable (HTTP Status 503)"/>
+  <int value="504" label="Gateway Timeout (HTTP Status 504)"/>
 </enum>
 
 <enum name="UpdateEngineDownloadSources" type="int">
