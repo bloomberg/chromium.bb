@@ -128,12 +128,19 @@ void RenderBoxModelObject::willBeDestroyed()
     RenderLayerModelObject::willBeDestroyed();
 }
 
+bool RenderBoxModelObject::calculateHasBoxDecorations() const
+{
+    RenderStyle* styleToUse = style();
+    ASSERT(styleToUse);
+    return hasBackground() || styleToUse->hasBorder() || styleToUse->hasAppearance() || styleToUse->boxShadow();
+}
+
 void RenderBoxModelObject::updateFromStyle()
 {
     RenderLayerModelObject::updateFromStyle();
 
     RenderStyle* styleToUse = style();
-    setHasBoxDecorations(hasBackground() || styleToUse->hasBorder() || styleToUse->hasAppearance() || styleToUse->boxShadow());
+    setHasBoxDecorations(calculateHasBoxDecorations());
     setInline(styleToUse->isDisplayInlineType());
     setPositionState(styleToUse->position());
     setHorizontalWritingMode(styleToUse->isHorizontalWritingMode());

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+window.onload = runRepaintTest;
+
+function repaintTest() {
+  setTimeout(function() {
+    requestAnimationFrame(function() {
+      document.querySelector('svg').style.removeProperty('border');
+      if (window.testRunner)
+        finishRepaintTest();
+    });
+  }, 0);
+};
+</script>
+<svg style="border: 10px solid red; position: absolute" width="100" height="100">
+  <rect width="100" height="100" fill="green"/>
+</svg>
