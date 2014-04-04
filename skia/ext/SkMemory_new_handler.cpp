@@ -50,13 +50,15 @@ void* sk_malloc_throw(size_t size) {
     return throw_on_failure(size, malloc(size));
 }
 
-// Platform specific ways to try really hard to get a malloc that won't crash on failure.
 static void* sk_malloc_nothrow(size_t size) {
-#if defined(ANDROID)
-    // Android doesn't have std::set_new_handler, so we just call malloc.
-    return malloc(size);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-    return base::UncheckedMalloc(size);
+    // TODO(b.kelemen): we should always use UncheckedMalloc but currently it
+    // doesn't work as intended everywhere.
+#if  defined(LIBC_GLIBC) || defined(USE_TCMALLOC) || \
+     (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_ANDROID)
+    void* result;
+    // It's the responsibility of the caller to check the return value.
+    ignore_result(base::UncheckedMalloc(size, &result));
+    return result;
 #else
     // This is not really thread safe.  It only won't collide with itself, but we're totally
     // unprotected from races with other code that calls set_new_handler.
@@ -79,12 +81,15 @@ void* sk_calloc_throw(size_t size) {
     return throw_on_failure(size, calloc(size, 1));
 }
 
-// Jump through the same hoops as sk_malloc_nothrow to avoid a crash, but for calloc.
 void* sk_calloc(size_t size) {
-#if defined(ANDROID)
-    return calloc(size, 1);
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-    return base::UncheckedCalloc(size, 1);
+    // TODO(b.kelemen): we should always use UncheckedCalloc but currently it
+    // doesn't work as intended everywhere.
+#if  defined(LIBC_GLIBC) || defined(USE_TCMALLOC) || \
+     (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_ANDROID)
+    void* result;
+    // It's the responsibility of the caller to check the return value.
+    ignore_result(base::UncheckedCalloc(size, 1, &result));
+    return result;
 #else
     SkAutoMutexAcquire lock(gSkNewHandlerMutex);
     std::new_handler old_handler = std::set_new_handler(NULL);

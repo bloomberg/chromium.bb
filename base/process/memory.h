@@ -77,12 +77,6 @@ BASE_EXPORT WARN_UNUSED_RESULT bool UncheckedCalloc(size_t num_items,
                                                     size_t size,
                                                     void** result);
 
-// TODO(b.kelemen): make Skia use the new interface and remove these.
-#if defined(OS_MACOSX)
-BASE_EXPORT void* UncheckedMalloc(size_t size);
-BASE_EXPORT void* UncheckedCalloc(size_t num_items, size_t size);
-#endif
-
 }  // namespace base
 
 #endif  // BASE_PROCESS_MEMORY_H_
