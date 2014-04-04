@@ -211,7 +211,7 @@ TEST(JsonSchemaCompilerErrorTest, BadEnumValue) {
   {
     scoped_ptr<base::DictionaryValue> value = Dictionary(
         "enumeration", new base::StringValue("bad sauce"));
-    EXPECT_TRUE(EqualsUtf16("'enumeration': expected \"one\" or \"two\" "
+    EXPECT_TRUE(EqualsUtf16("'Enumeration': expected \"one\" or \"two\" "
               "or \"three\", got \"bad sauce\"",
         GetPopulateError<HasEnumeration>(*value)));
   }

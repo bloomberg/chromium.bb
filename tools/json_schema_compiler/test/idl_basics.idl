@@ -81,11 +81,20 @@
     // |cb|: Override callback comment.
     static void function18(Callback7 cb);
 
-    static long function19();
-    static MyType1 function20();
-    static MyType1[] function21();
-    static EnumType function22();
-    static EnumType[] function23();
+    static void function20(idl_other_namespace.SomeType value);
+    static void function21(idl_other_namespace.SomeType[] values);
+    static void function22(
+        idl_other_namespace.sub_namespace.AnotherType value);
+    static void function23(
+        idl_other_namespace.sub_namespace.AnotherType[] values);
+
+    static long function24();
+    static MyType1 function25();
+    static MyType1[] function26();
+    static EnumType function27();
+    static EnumType[] function28();
+    static idl_other_namespace.SomeType function29();
+    static idl_other_namespace.SomeType[] function30();
   };
 
   interface Events {

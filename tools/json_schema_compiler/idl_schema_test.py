@@ -41,30 +41,30 @@ class IdlSchemaTest(unittest.TestCase):
 
   def testSimpleCallbacks(self):
     schema = self.idl_basics
-    expected = [{'type':'function', 'name':'cb', 'parameters':[]}]
+    expected = [{'type': 'function', 'name': 'cb', 'parameters':[]}]
     self.assertEquals(expected, getParams(schema, 'function4'))
 
-    expected = [{'type':'function', 'name':'cb',
-                 'parameters':[{'name':'x', 'type':'integer'}]}]
+    expected = [{'type': 'function', 'name': 'cb',
+                 'parameters':[{'name': 'x', 'type': 'integer'}]}]
     self.assertEquals(expected, getParams(schema, 'function5'))
 
-    expected = [{'type':'function', 'name':'cb',
-                 'parameters':[{'name':'arg', '$ref':'MyType1'}]}]
+    expected = [{'type': 'function', 'name': 'cb',
+                 'parameters':[{'name': 'arg', '$ref': 'MyType1'}]}]
     self.assertEquals(expected, getParams(schema, 'function6'))
 
   def testCallbackWithArrayArgument(self):
     schema = self.idl_basics
-    expected = [{'type':'function', 'name':'cb',
-                 'parameters':[{'name':'arg', 'type':'array',
-                                'items':{'$ref':'MyType2'}}]}]
+    expected = [{'type': 'function', 'name': 'cb',
+                 'parameters':[{'name': 'arg', 'type': 'array',
+                                'items':{'$ref': 'MyType2'}}]}]
     self.assertEquals(expected, getParams(schema, 'function12'))
 
 
   def testArrayOfCallbacks(self):
     schema = idl_schema.Load('test/idl_function_types.idl')[0]
-    expected = [{'type':'array', 'name':'callbacks',
-                 'items':{'type':'function', 'name':'MyCallback',
-                          'parameters':[{'type':'integer', 'name':'x'}]}}]
+    expected = [{'type': 'array', 'name': 'callbacks',
+                 'items':{'type': 'function', 'name': 'MyCallback',
+                          'parameters':[{'type': 'integer', 'name': 'x'}]}}]
     self.assertEquals(expected, getParams(schema, 'whatever'))
 
   def testLegalValues(self):
@@ -91,14 +91,34 @@ class IdlSchemaTest(unittest.TestCase):
                 'type': 'string', 'id': 'EnumType'}
     self.assertEquals(expected, getType(schema, expected['id']))
 
-    expected = [{'name':'type', '$ref':'EnumType'},
-                {'type':'function', 'name':'cb',
-                  'parameters':[{'name':'type', '$ref':'EnumType'}]}]
+    expected = [{'name': 'type', '$ref': 'EnumType'},
+                {'type': 'function', 'name': 'cb',
+                  'parameters':[{'name': 'type', '$ref': 'EnumType'}]}]
     self.assertEquals(expected, getParams(schema, 'function13'))
 
     expected = [{'items': {'$ref': 'EnumType'}, 'name': 'types',
                  'type': 'array'}]
     self.assertEquals(expected, getParams(schema, 'function14'))
+
+  def testScopedArguments(self):
+    schema = self.idl_basics
+    expected = [{'name': 'value', '$ref': 'idl_other_namespace.SomeType'}]
+    self.assertEquals(expected, getParams(schema, 'function20'))
+
+    expected = [{'items': {'$ref': 'idl_other_namespace.SomeType'},
+                 'name': 'values',
+                 'type': 'array'}]
+    self.assertEquals(expected, getParams(schema, 'function21'))
+
+    expected = [{'name': 'value',
+                 '$ref': 'idl_other_namespace.sub_namespace.AnotherType'}]
+    self.assertEquals(expected, getParams(schema, 'function22'))
+
+    expected = [{'items': {'$ref': 'idl_other_namespace.sub_namespace.'
+                                   'AnotherType'},
+                 'name': 'values',
+                 'type': 'array'}]
+    self.assertEquals(expected, getParams(schema, 'function23'))
 
   def testNoCompile(self):
     schema = self.idl_basics
@@ -120,20 +140,27 @@ class IdlSchemaTest(unittest.TestCase):
 
   def testReturnTypes(self):
     schema = self.idl_basics
-    self.assertEquals({'name': 'function19', 'type': 'integer'},
-                      getReturns(schema, 'function19'))
-    self.assertEquals({'name': 'function20', '$ref': 'MyType1',
+    self.assertEquals({'name': 'function24', 'type': 'integer'},
+                      getReturns(schema, 'function24'))
+    self.assertEquals({'name': 'function25', '$ref': 'MyType1',
                        'optional': True},
-                      getReturns(schema, 'function20'))
-    self.assertEquals({'name': 'function21', 'type': 'array',
+                      getReturns(schema, 'function25'))
+    self.assertEquals({'name': 'function26', 'type': 'array',
                        'items': {'$ref': 'MyType1'}},
-                      getReturns(schema, 'function21'))
-    self.assertEquals({'name': 'function22', '$ref': 'EnumType',
+                      getReturns(schema, 'function26'))
+    self.assertEquals({'name': 'function27', '$ref': 'EnumType',
                        'optional': True},
-                      getReturns(schema, 'function22'))
-    self.assertEquals({'name': 'function23', 'type': 'array',
+                      getReturns(schema, 'function27'))
+    self.assertEquals({'name': 'function28', 'type': 'array',
                        'items': {'$ref': 'EnumType'}},
-                      getReturns(schema, 'function23'))
+                      getReturns(schema, 'function28'))
+    self.assertEquals({'name': 'function29', '$ref':
+                       'idl_other_namespace.SomeType',
+                       'optional': True},
+                      getReturns(schema, 'function29'))
+    self.assertEquals({'name': 'function30', 'type': 'array',
+                       'items': {'$ref': 'idl_other_namespace.SomeType'}},
+                      getReturns(schema, 'function30'))
 
   def testChromeOSPlatformsNamespace(self):
     schema = idl_schema.Load('test/idl_namespace_chromeos.idl')[0]

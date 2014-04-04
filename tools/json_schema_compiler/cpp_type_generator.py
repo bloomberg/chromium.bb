@@ -96,10 +96,7 @@ class CppTypeGenerator(object):
       ref_type = self._FindType(type_.ref_type)
       if ref_type is None:
         raise KeyError('Cannot find referenced type: %s' % type_.ref_type)
-      if self._default_namespace is ref_type.namespace:
-        cpp_type = ref_type.name
-      else:
-        cpp_type = '%s::%s' % (ref_type.namespace.unix_name, ref_type.name)
+      cpp_type = self.GetCppType(ref_type)
     elif type_.property_type == PropertyType.BOOLEAN:
       cpp_type = 'bool'
     elif type_.property_type == PropertyType.INTEGER:
@@ -110,13 +107,16 @@ class CppTypeGenerator(object):
       cpp_type = 'double'
     elif type_.property_type == PropertyType.STRING:
       cpp_type = 'std::string'
-    elif type_.property_type == PropertyType.ENUM:
-      cpp_type = cpp_util.Classname(type_.name)
+    elif type_.property_type in (PropertyType.ENUM,
+                                 PropertyType.OBJECT,
+                                 PropertyType.CHOICES):
+      if self._default_namespace is type_.namespace:
+        cpp_type = cpp_util.Classname(type_.name)
+      else:
+        cpp_type = '%s::%s' % (type_.namespace.unix_name,
+                               cpp_util.Classname(type_.name))
     elif type_.property_type == PropertyType.ANY:
       cpp_type = 'base::Value'
-    elif (type_.property_type == PropertyType.OBJECT or
-          type_.property_type == PropertyType.CHOICES):
-      cpp_type = cpp_util.Classname(type_.name)
     elif type_.property_type == PropertyType.FUNCTION:
       # Functions come into the json schema compiler as empty objects. We can
       # record these as empty DictionaryValues so that we know if the function

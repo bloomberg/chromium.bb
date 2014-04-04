@@ -733,7 +733,7 @@ class _Generator(object):
             ('*%(src_var)s', '&%(dst_var)s')))
           .Append('  return %(failure_value)s;'))
     elif underlying_type.property_type == PropertyType.ENUM:
-      c.Concat(self._GenerateStringToEnumConversion(type_,
+      c.Concat(self._GenerateStringToEnumConversion(underlying_type,
                                                     src_var,
                                                     dst_var,
                                                     failure_value))
@@ -812,8 +812,14 @@ class _Generator(object):
     type |type_| in |dst_var|. In the generated code, if |src_var| is not
     a valid enum name then the function will return |failure_value|.
     """
+    if type_.property_type != PropertyType.ENUM:
+      raise TypeError(type_)
     c = Code()
     enum_as_string = '%s_as_string' % type_.unix_name
+    cpp_type_namespace = ''
+    if type_.namespace != self._namespace:
+      cpp_type_namespace = '%s::' % type_.namespace.unix_name
+    cpp_type_name = self._type_helper.GetCppType(type_)
     (c.Append('std::string %s;' % enum_as_string)
       .Sblock('if (!%s->GetAsString(&%s)) {' % (src_var, enum_as_string))
       .Concat(self._GenerateError(
@@ -821,11 +827,13 @@ class _Generator(object):
         self._util_cc_helper.GetValueTypeString('%%(src_var)s', True)))
       .Append('return %s;' % failure_value)
       .Eblock('}')
-      .Append('%s = Parse%s(%s);' % (dst_var,
-                                     self._type_helper.GetCppType(type_),
-                                     enum_as_string))
-      .Sblock('if (%s == %s) {' % (dst_var,
-                                 self._type_helper.GetEnumNoneValue(type_)))
+      .Append('%s = %sParse%s(%s);' % (dst_var,
+                                       cpp_type_namespace,
+                                       cpp_util.Classname(type_.name),
+                                       enum_as_string))
+      .Sblock('if (%s == %s%s) {' % (dst_var,
+                                     cpp_type_namespace,
+                                     self._type_helper.GetEnumNoneValue(type_)))
       .Concat(self._GenerateError(
         '\"\'%%(key)s\': expected \\"' +
         '\\" or \\"'.join(

@@ -268,6 +268,33 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('modifiers', p)
 
 #
+# Scoped name is a name with an optional scope.
+#
+# Used for types and namespace names. eg. foo_bar.hello_world, or
+# foo_bar.hello_world.SomeType.
+#
+  def p_scoped_name(self, p):
+    """scoped_name : SYMBOL scoped_name_rest"""
+    p[0] = ''.join(p[1:])
+    if self.parse_debug: DumpReduction('scoped_name', p)
+
+  def p_scoped_name_rest(self, p):
+    """scoped_name_rest : '.' scoped_name
+                        |"""
+    p[0] = ''.join(p[1:])
+    if self.parse_debug: DumpReduction('scoped_name_rest', p)
+
+#
+# Type reference
+#
+#
+  def p_typeref(self, p):
+    """typeref : scoped_name"""
+    p[0] = p[1]
+    if self.parse_debug: DumpReduction('typeref', p)
+
+
+#
 # Comments
 #
 # Comments are optional list of C style comment objects.  Comments are returned
@@ -296,9 +323,8 @@ class IDLParser(IDLLexer):
 
   # We allow namespace names of the form foo.bar.baz.
   def p_namespace_name(self, p):
-    """namespace_name : SYMBOL
-                      | SYMBOL '.' namespace_name"""
-    p[0] = "".join(p[1:])
+    """namespace_name : scoped_name"""
+    p[0] = p[1]
 
 
 #
@@ -621,7 +647,7 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('param_list', p)
 
   def p_param_item(self, p):
-    """param_item : modifiers optional SYMBOL arrays identifier"""
+    """param_item : modifiers optional typeref arrays identifier"""
     typeref = self.BuildAttribute('TYPEREF', p[3])
     children = ListFromConcat(p[1], p[2], typeref, p[4])
     p[0] = self.BuildNamed('Param', p, 5, children)
@@ -760,7 +786,7 @@ class IDLParser(IDLLexer):
 # A member attribute or function of a struct or interface.
 #
   def p_member_attribute(self, p):
-    """member_attribute : modifiers SYMBOL arrays questionmark identifier"""
+    """member_attribute : modifiers typeref arrays questionmark identifier"""
     typeref = self.BuildAttribute('TYPEREF', p[2])
     children = ListFromConcat(p[1], typeref, p[3], p[4])
     p[0] = self.BuildNamed('Member', p, 5, children)
@@ -774,7 +800,7 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('attribute', p)
 
   def p_member_function(self, p):
-    """member_function : modifiers static SYMBOL arrays SYMBOL param_list"""
+    """member_function : modifiers static typeref arrays SYMBOL param_list"""
     typeref = self.BuildAttribute('TYPEREF', p[3])
     children = ListFromConcat(p[1], p[2], typeref, p[4], p[6])
     p[0] = self.BuildNamed('Member', p, 5, children)

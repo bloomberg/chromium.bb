@@ -20,6 +20,8 @@
           'functions_as_parameters.json',
           'functions_on_types.json',
           'idl_basics.idl',
+          'idl_other_namespace.idl',
+          'idl_other_namespace_sub_namespace.idl',
           'idl_object_types.idl',
           'objects.json',
           'simple_api.json',

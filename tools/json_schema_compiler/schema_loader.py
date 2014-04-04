@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 import os
+import re
 import sys
 
 import idl_schema
 import json_schema
-from model import Model
+from model import Model, UnixName
 
 class SchemaLoader(object):
   '''Resolves a type name into the namespace the type belongs to.
@@ -30,8 +31,13 @@ class SchemaLoader(object):
       return default_namespace
     namespace_name, type_name = name_parts
     real_name = None
+    # Try to find the file defining the namespace. Eg. for
+    # nameSpace.sub_name_space.Type' the following heuristics looks for:
+    # 1. name_space_sub_name_space.json,
+    # 2. name_space_sub_name_space.idl.
     for ext in ['json', 'idl']:
-      filename = '%s.%s' % (namespace_name, ext)
+      basename = UnixName(namespace_name)
+      filename = '%s.%s' % (basename, ext)
       filepath = os.path.join(self._real_path, filename);
       if os.path.exists(filepath):
         real_name = filename
