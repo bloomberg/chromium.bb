@@ -27,11 +27,11 @@ _TEST_DATA = {
       'alarms': {},
       'app': {},
       'app.runtime': {'noparent': True},
-      'app.runtime.experimental': {},
-      'app.runtime.experimental.foo': {},
+      'app.runtime.foo': {},
       'declarativeWebRequest': {},
       'devtools.inspectedWindow': {},
-      'experimental.accessibility': {},
+      'input': {},
+      'input.ime': {},
       'storage': {},
     }),
     '_manifest_features.json': '{}',
@@ -39,8 +39,7 @@ _TEST_DATA = {
     'alarms.idl': ReadFile(CHROME_API, 'alarms.idl'),
     'declarative_web_request.json': ReadFile(
         CHROME_API, 'declarative_web_request.json'),
-    'experimental_accessibility.json': ReadFile(
-        CHROME_API, 'experimental_accessibility.json'),
+    'input_ime.json': ReadFile(CHROME_API, 'input_ime.json'),
     'page_action.json': ReadFile(CHROME_API, 'page_action.json'),
   },
   'docs': {
@@ -67,12 +66,12 @@ class APIModelsTest(unittest.TestCase):
 
   def testGetNames(self):
     # Both 'app' and 'app.runtime' appear here because 'app.runtime' has
-    # noparent:true, but 'app.runtime.experimental' etc doesn't so it's a
-    # sub-feature of 'app.runtime' not a separate API.
-    # 'devtools.inspectedWindow' is an API because there is no 'devtools'.
+    # noparent:true, but 'app.runtime.foo' etc doesn't so it's a sub-feature of
+    # 'app.runtime' not a separate API. 'devtools.inspectedWindow' is an API
+    # because there is no 'devtools'.
     self.assertEqual(
         ['alarms', 'app', 'app.runtime', 'declarativeWebRequest',
-         'devtools.inspectedWindow', 'experimental.accessibility', 'storage'],
+         'devtools.inspectedWindow', 'input', 'storage'],
         sorted(self._api_models.GetNames()))
 
   def testGetModel(self):
@@ -95,13 +94,10 @@ class APIModelsTest(unittest.TestCase):
     self.assertEqual('declarativeWebRequest',
                      get_model_name(CHROME_API +
                                     'declarative_web_request.json'))
-    self.assertEqual('experimental.accessibility',
-                     get_model_name('experimental.accessibility'))
-    self.assertEqual('experimental.accessibility',
-                     get_model_name('experimental_accessibility.json'))
-    self.assertEqual('experimental.accessibility',
-                     get_model_name(CHROME_API +
-                                    'experimental_accessibility.json'))
+    self.assertEqual('input.ime', get_model_name('input.ime'))
+    self.assertEqual('input.ime', get_model_name('input_ime.json'))
+    self.assertEqual('input.ime',
+                     get_model_name(CHROME_API + 'input_ime.json'))
     self.assertEqual('pageAction', get_model_name('pageAction'))
     self.assertEqual('pageAction', get_model_name('page_action.json'))
     self.assertEqual('pageAction', get_model_name(CHROME_API +
