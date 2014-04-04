@@ -353,7 +353,6 @@ extern const char kSyncEnableGetUpdateAvoidance[];
 extern const char kSyncfsEnableDirectoryOperation[];
 extern const char kTabCapture[];
 extern const char kTestName[];
-extern const char kTestingChannelID[];
 extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUninstallExtension[];

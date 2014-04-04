@@ -426,11 +426,6 @@
             '../sandbox/sandbox.gyp:sandbox',
           ],
         }],
-        ['enable_automation==0', {
-          'sources/': [
-            ['exclude', '^renderer/automation/']
-          ]
-        }],
         ['enable_printing==0', {
           'sources/': [
             ['exclude', '^renderer/printing/']

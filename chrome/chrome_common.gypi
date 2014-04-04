@@ -63,10 +63,6 @@
         'common/auto_start_linux.h',
         'common/autocomplete_match_type.cc',
         'common/autocomplete_match_type.h',
-        'common/automation_constants.cc',
-        'common/automation_constants.h',
-        'common/automation_messages.h',
-        'common/automation_messages_internal.h',
         'common/badge_util.cc',
         'common/badge_util.h',
         'common/child_process_logging.h',
@@ -504,11 +500,6 @@
           'dependencies': [
             '../remoting/remoting.gyp:remoting_client_plugin',
           ],
-        }],
-        ['enable_automation==0', {
-          'sources/': [
-            ['exclude', '^common/automation_']
-          ]
         }],
         ['enable_plugins==0', {
           'source!' : [

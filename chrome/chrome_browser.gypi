@@ -3096,7 +3096,6 @@
           'conditions': [
             ['OS=="win"', {
               'sources/': [
-                ['exclude', '^browser/automation/automation_provider_aura.cc'],
                 ['exclude', '^browser/background/background_mode_manager_aura.cc'],
               ],
               'dependencies': [
@@ -3189,11 +3188,6 @@
           ],
           'sources/': [
             ['exclude', '^browser/themes/'],
-          ],
-        }],
-        ['enable_automation!=1', {
-          'sources/': [
-            ['exclude', '^browser/automation/'],
           ],
         }],
         ['enable_printing==0', {
@@ -3391,7 +3385,6 @@
             '../third_party/mozilla/mozilla.gyp:mozilla',
           ],
           'sources!': [
-            'browser/automation/automation_provider_list_generic.cc',
             'browser/first_run/upgrade_util.cc',
             'browser/lifetime/application_lifetime_stub.cc',
             'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',

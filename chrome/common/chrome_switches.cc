@@ -1306,10 +1306,6 @@ const char kSyncfsEnableDirectoryOperation[] =
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
-// Tells the app to listen for and broadcast testing-related messages on IPC
-// channel with the given ID.
-const char kTestingChannelID[]              = "testing-channel";
-
 // Disables same-origin check on HTTP resources pushed via a SPDY proxy.
 // The value is the host:port of the trusted proxy.
 const char kTrustedSpdyProxy[]              = "trusted-spdy-proxy";

@@ -217,16 +217,6 @@
         'renderer/safe_browsing/mock_feature_extractor_clock.h',
         'renderer/safe_browsing/test_utils.cc',
         'renderer/safe_browsing/test_utils.h',
-        'test/automation/automation_handle_tracker.cc',
-        'test/automation/automation_handle_tracker.h',
-        'test/automation/automation_proxy.cc',
-        'test/automation/automation_proxy.h',
-        'test/automation/browser_proxy.cc',
-        'test/automation/browser_proxy.h',
-        'test/automation/tab_proxy.cc',
-        'test/automation/tab_proxy.h',
-        'test/automation/window_proxy.cc',
-        'test/automation/window_proxy.h',
         'test/base/chrome_process_util.cc',
         'test/base/chrome_process_util.h',
         'test/base/chrome_process_util_mac.cc',
@@ -2240,11 +2230,6 @@
             'browser/ui/autofill/mock_autofill_dialog_view_delegate.h',
             'browser/ui/autofill/test_autofill_credit_card_bubble.cc',
             'browser/ui/autofill/test_autofill_credit_card_bubble.h',
-          ],
-        }],
-        ['enable_automation!=1', {
-          'sources/': [
-            ['exclude', '^browser/automation/'],
           ],
         }],
         ['enable_plugins==0', {

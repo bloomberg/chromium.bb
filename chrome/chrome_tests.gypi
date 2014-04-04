@@ -7,54 +7,6 @@
   ],
   'targets': [
     {
-      'target_name': 'test_support_ui',
-      'type': 'static_library',
-      'dependencies': [
-        'chrome_resources.gyp:chrome_resources',
-        'chrome_resources.gyp:chrome_strings',
-        'chrome_resources.gyp:theme_resources',
-        'test_support_common',
-        '../skia/skia.gyp:skia',
-        '../testing/gtest.gyp:gtest',
-      ],
-      'export_dependent_settings': [
-        'test_support_common',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'test/automation/proxy_launcher.cc',
-        'test/automation/proxy_launcher.h',
-        'test/ui/javascript_test_util.cc',
-        'test/ui/ui_perf_test.cc',
-        'test/ui/ui_perf_test.h',
-        'test/ui/ui_test.cc',
-        'test/ui/ui_test.h',
-        'test/ui/ui_test_suite.cc',
-        'test/ui/ui_test_suite.h',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'dependencies': [
-            'chrome.gyp:crash_service',  # run time dependency
-          ],
-        }],
-        ['OS=="win" and target_arch=="ia32"', {
-          'dependencies': [
-            'chrome.gyp:crash_service_win64',  # run time dependency
-          ],
-        }],
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        }],
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    {
       'target_name': 'interactive_ui_tests',
       'type': 'executable',
       'dependencies': [
@@ -66,8 +18,6 @@
         'debugger',
         'renderer',
         'test_support_common',
-        # NOTE: don't add test_support_ui, no more UITests. See
-        # http://crbug.com/137365
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../third_party/hunspell/hunspell.gyp:hunspell',
         '../net/net.gyp:net',

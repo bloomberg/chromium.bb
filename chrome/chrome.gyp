@@ -860,30 +860,6 @@
           ],
         },
         {
-          'target_name': 'automation',
-          'type': 'static_library',
-          'dependencies': [
-            'chrome_resources.gyp:theme_resources',
-            '../ui/accessibility/accessibility.gyp:ax_gen',
-            '../skia/skia.gyp:skia',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-             'test/automation/automation_handle_tracker.cc',
-             'test/automation/automation_handle_tracker.h',
-             'test/automation/automation_proxy.cc',
-             'test/automation/automation_proxy.h',
-             'test/automation/browser_proxy.cc',
-             'test/automation/browser_proxy.h',
-             'test/automation/tab_proxy.cc',
-             'test/automation/tab_proxy.h',
-             'test/automation/window_proxy.cc',
-             'test/automation/window_proxy.h',
-          ],
-        },
-        {
           'target_name': 'crash_service',
           'type': 'executable',
           'dependencies': [

@@ -420,9 +420,6 @@
       # Enable Chrome browser extensions
       'enable_extensions%': 1,
 
-      # Enable browser automation.
-      'enable_automation%': 1,
-
       # Enable Google Now.
       'enable_google_now%': 1,
 
@@ -655,7 +652,6 @@
         }],
 
         ['OS=="android"', {
-          'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
@@ -699,7 +695,6 @@
 
         ['OS=="ios"', {
           'disable_ftp_support%': 1,
-          'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
           'cld_version%': 1,
@@ -1015,7 +1010,6 @@
     'test_isolation_mode%': '<(test_isolation_mode)',
     'test_isolation_outdir%': '<(test_isolation_outdir)',
     'test_isolation_fail_on_missing': '<(test_isolation_fail_on_missing)',
-    'enable_automation%': '<(enable_automation)',
     'enable_printing%': '<(enable_printing)',
     'enable_spellcheck%': '<(enable_spellcheck)',
     'enable_google_now%': '<(enable_google_now)',
@@ -1574,7 +1568,6 @@
         'proprietary_codecs%': '<(proprietary_codecs)',
         'safe_browsing%': 2,
         'input_speech%': 0,
-        'enable_automation%': 0,
         'java_bridge%': 1,
         'build_ffmpegsumo%': 0,
         # TODO(dmikurube): Change the default of use_allocator to "none".
@@ -2522,9 +2515,6 @@
       }],
       ['enable_background==1', {
         'defines': ['ENABLE_BACKGROUND=1'],
-      }],
-      ['enable_automation==1', {
-        'defines': ['ENABLE_AUTOMATION=1'],
       }],
       ['enable_google_now==1', {
         'defines': ['ENABLE_GOOGLE_NOW=1'],

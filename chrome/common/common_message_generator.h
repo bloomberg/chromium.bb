@@ -16,10 +16,6 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/tts_messages.h"
 
-#if defined(ENABLE_AUTOMATION)
-#include "chrome/common/automation_messages.h"
-#endif
-
 #if defined(ENABLE_MDNS)
 #include "chrome/common/local_discovery/local_discovery_messages.h"
 #endif

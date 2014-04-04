@@ -39,7 +39,6 @@ config("feature_flags") {
       "ENABLE_THEMES=1",
       "ENABLE_AUTOFILL_DIALOG=1",
       "ENABLE_BACKGROUND=1",
-      "ENABLE_AUTOMATION=1",
       "ENABLE_GOOGLE_NOW=1",
       "ENABLE_CAPTIVE_PORTAL_DETECTION=1",
       "ENABLE_APP_LIST=1",
