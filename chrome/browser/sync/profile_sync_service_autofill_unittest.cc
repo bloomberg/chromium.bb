@@ -4,6 +4,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,6 +22,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -37,7 +39,9 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
@@ -108,6 +112,8 @@ class Id;
 }
 
 namespace {
+
+const char kTestProfileName[] = "test-profile";
 
 void RunAndSignal(const base::Closure& cb, WaitableEvent* event) {
   cb.Run();
@@ -471,7 +477,8 @@ class ProfileSyncServiceAutofillTest
 
  protected:
   ProfileSyncServiceAutofillTest()
-   : debug_ptr_factory_(this) {
+      : profile_manager_(TestingBrowserProcess::GetGlobal()),
+        debug_ptr_factory_(this) {
   }
   virtual ~ProfileSyncServiceAutofillTest() {
   }
@@ -492,22 +499,30 @@ class ProfileSyncServiceAutofillTest
 
   virtual void SetUp() OVERRIDE {
     AbstractProfileSyncServiceTest::SetUp();
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildAutoIssuingFakeProfileOAuth2TokenService);
-    profile_ = builder.Build().Pass();
+    ASSERT_TRUE(profile_manager_.SetUp());
+    TestingProfile::TestingFactories testing_factories;
+    testing_factories.push_back(std::make_pair(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        BuildAutoIssuingFakeProfileOAuth2TokenService));
+    profile_ = profile_manager_.CreateTestingProfile(
+        kTestProfileName,
+        scoped_ptr<PrefServiceSyncable>(),
+        base::UTF8ToUTF16(kTestProfileName),
+        0,
+        std::string(),
+        testing_factories);
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
     MockWebDataServiceWrapper* wrapper =
         static_cast<MockWebDataServiceWrapper*>(
             WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile_.get(), BuildMockWebDataServiceWrapper));
+                profile_, BuildMockWebDataServiceWrapper));
     web_data_service_ =
         static_cast<WebDataServiceFake*>(wrapper->GetAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
     personal_data_manager_ = static_cast<MockPersonalDataManager*>(
         autofill::PersonalDataManagerFactory::GetInstance()
-            ->SetTestingFactoryAndUse(profile_.get(),
+            ->SetTestingFactoryAndUse(profile_,
                                       MockPersonalDataManager::Build));
 
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
@@ -515,7 +530,7 @@ class ProfileSyncServiceAutofillTest
 
     personal_data_manager_->Init(
         WebDataServiceFactory::GetAutofillWebDataForProfile(
-            profile_.get(), Profile::EXPLICIT_ACCESS),
+            profile_, Profile::EXPLICIT_ACCESS),
         profile_->GetPrefs(),
         profile_->IsOffTheRecord());
 
@@ -524,17 +539,16 @@ class ProfileSyncServiceAutofillTest
 
   virtual void TearDown() OVERRIDE {
     // Note: The tear down order is important.
-    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), NULL);
+    ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(profile_, NULL);
     web_data_service_->ShutdownOnUIThread();
     web_data_service_->ShutdownSyncableService();
     web_data_service_ = NULL;
     // To prevent a leak, fully release TestURLRequestContext to ensure its
     // destruction on the IO message loop.
-    profile_.reset();
+    profile_ = NULL;
+    profile_manager_.DeleteTestingProfile(kTestProfileName);
     AbstractProfileSyncServiceTest::TearDown();
   }
-
 
   int GetSyncCount(syncer::ModelType type) {
     syncer::ReadTransaction trans(FROM_HERE, sync_service_->GetUserShare());
@@ -549,18 +563,15 @@ class ProfileSyncServiceAutofillTest
                         bool will_fail_association,
                         syncer::ModelType type) {
     AbstractAutofillFactory* factory = GetFactory(type);
-    SigninManagerBase* signin =
-        SigninManagerFactory::GetForProfile(profile_.get());
+    SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile_);
     signin->SetAuthenticatedUsername("test_user@gmail.com");
-    sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(
-        profile_.get(), callback);
+    sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
+                                                                    callback);
 
     ProfileSyncComponentsFactoryMock* components =
         sync_service_->components_factory_mock();
     DataTypeController* data_type_controller =
-        factory->CreateDataTypeController(components,
-                                          profile_.get(),
-                                          sync_service_);
+        factory->CreateDataTypeController(components, profile_, sync_service_);
     factory->SetExpectation(components,
                             sync_service_,
                             web_data_service_.get(),
@@ -574,7 +585,7 @@ class ProfileSyncServiceAutofillTest
         WillRepeatedly(Return(true));
 
     // We need tokens to get the tests going
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
         ->UpdateCredentials("test_user@gmail.com", "oauth2_login_token");
 
     sync_service_->RegisterDataTypeController(data_type_controller);
@@ -743,7 +754,8 @@ class ProfileSyncServiceAutofillTest
   friend class AddAutofillHelper<AutofillProfile>;
   friend class FakeServerUpdater;
 
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfileManager profile_manager_;
+  TestingProfile* profile_;
   AutofillTableMock autofill_table_;
   scoped_ptr<WebDatabaseFake> web_database_;
   scoped_refptr<WebDataServiceFake> web_data_service_;

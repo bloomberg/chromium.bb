@@ -25,7 +25,9 @@
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -66,6 +68,8 @@ using drive_backend::APIUtilInterface;
 using drive_backend::FakeDriveServiceHelper;
 
 namespace {
+
+const char kTestProfileName[] = "test-profile";
 
 #if !defined(OS_ANDROID)
 const char kExtensionName1[] = "example1";
@@ -165,20 +169,22 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
  public:
   DriveFileSyncServiceFakeTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        profile_manager_(TestingBrowserProcess::GetGlobal()),
         fake_drive_service_(NULL) {
   }
 
   virtual void SetUp() OVERRIDE {
-    profile_.reset(new TestingProfile());
+    ASSERT_TRUE(profile_manager_.SetUp());
+    profile_ = profile_manager_.CreateTestingProfile(kTestProfileName);
 
     // Add TestExtensionSystem with registered ExtensionIds used in tests.
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(profile_.get())));
+            extensions::ExtensionSystem::Get(profile_)));
     extension_system->CreateExtensionService(
         CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_ = extension_system->Get(
-        profile_.get())->extension_service();
+        profile_)->extension_service();
 
     AddTestExtension(extension_service_, FPL("example1"));
     AddTestExtension(extension_service_, FPL("example2"));
@@ -216,7 +222,7 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
 
   void SetUpDriveSyncService(bool enabled) {
     sync_service_ = DriveFileSyncService::CreateForTesting(
-        profile_.get(),
+        profile_,
         fake_drive_helper_->base_dir_path(),
         api_util_.PassAs<APIUtilInterface>(),
         metadata_store_.Pass()).Pass();
@@ -238,7 +244,8 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
     RevokeSyncableFileSystem();
 
     extension_service_ = NULL;
-    profile_.reset();
+    profile_ = NULL;
+    profile_manager_.DeleteTestingProfile(kTestProfileName);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -412,7 +419,8 @@ class DriveFileSyncServiceFakeTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfileManager profile_manager_;
+  TestingProfile* profile_;
 
   std::string sync_root_resource_id_;
 

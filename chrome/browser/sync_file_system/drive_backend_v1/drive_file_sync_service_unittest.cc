@@ -11,7 +11,9 @@
 #include "chrome/browser/sync_file_system/drive_backend_v1/fake_api_util.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,6 +23,8 @@ using drive_backend::APIUtilInterface;
 using drive_backend::FakeAPIUtil;
 
 namespace {
+
+const char kTestProfileName[] = "test-profile";
 
 const char kSyncRootResourceId[] = "folder:sync_root_resource_id";
 
@@ -47,10 +51,13 @@ class DriveFileSyncServiceTest : public testing::Test {
  public:
   DriveFileSyncServiceTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        profile_manager_(TestingBrowserProcess::GetGlobal()),
         fake_api_util_(NULL),
         metadata_store_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
+    ASSERT_TRUE(profile_manager_.SetUp());
+
     RegisterSyncableFileSystem();
     fake_api_util_ = new FakeAPIUtil;
 
@@ -65,7 +72,7 @@ class DriveFileSyncServiceTest : public testing::Test {
     EXPECT_TRUE(done);
 
     sync_service_ = DriveFileSyncService::CreateForTesting(
-        &profile_,
+        profile_manager_.CreateTestingProfile(kTestProfileName),
         base_dir_,
         scoped_ptr<APIUtilInterface>(fake_api_util_),
         scoped_ptr<DriveMetadataStore>(metadata_store_)).Pass();
@@ -140,7 +147,7 @@ class DriveFileSyncServiceTest : public testing::Test {
   base::ScopedTempDir scoped_base_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
 
-  TestingProfile profile_;
+  TestingProfileManager profile_manager_;
   base::FilePath base_dir_;
 
   FakeAPIUtil* fake_api_util_;          // Owned by |sync_service_|.

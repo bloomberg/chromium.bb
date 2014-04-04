@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,10 +17,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -43,7 +46,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/navigation_controller.h"
@@ -82,6 +88,8 @@ using testing::_;
 namespace browser_sync {
 
 namespace {
+
+const char kTestProfileName[] = "test-profile";
 
 class FakeProfileSyncService : public TestProfileSyncService {
  public:
@@ -131,26 +139,42 @@ class ProfileSyncServiceSessionTest
       public content::NotificationObserver {
  public:
   ProfileSyncServiceSessionTest()
-      : window_bounds_(0, 1, 2, 3),
+      : profile_manager_(TestingBrowserProcess::GetGlobal()),
+        window_bounds_(0, 1, 2, 3),
         notified_of_refresh_(false),
         notified_of_update_(false) {}
   ProfileSyncService* sync_service() { return sync_service_.get(); }
 
  protected:
   virtual TestingProfile* CreateProfile() OVERRIDE {
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildAutoIssuingFakeProfileOAuth2TokenService);
+    TestingProfile::TestingFactories testing_factories;
+    testing_factories.push_back(std::make_pair(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        BuildAutoIssuingFakeProfileOAuth2TokenService));
     // Don't want the profile to create a real ProfileSyncService.
-    builder.AddTestingFactory(ProfileSyncServiceFactory::GetInstance(), NULL);
-    scoped_ptr<TestingProfile> profile(builder.Build());
+    testing_factories.push_back(std::make_pair(
+        ProfileSyncServiceFactory::GetInstance(),
+        static_cast<BrowserContextKeyedServiceFactory::TestingFactoryFunction>(
+            NULL)));
+    TestingProfile* profile = profile_manager_.CreateTestingProfile(
+        kTestProfileName,
+        scoped_ptr<PrefServiceSyncable>(),
+        base::UTF8ToUTF16(kTestProfileName),
+        0,
+        std::string(),
+        testing_factories);
     invalidation::InvalidationServiceFactory::GetInstance()->SetTestingFactory(
-        profile.get(), invalidation::FakeInvalidationService::Build);
-    return profile.release();
+        profile, invalidation::FakeInvalidationService::Build);
+    return profile;
+  }
+
+  virtual void DestroyProfile(TestingProfile* profile) OVERRIDE {
+    EXPECT_EQ(kTestProfileName, profile->GetProfileName());
+    profile_manager_.DeleteTestingProfile(kTestProfileName);
   }
 
   virtual void SetUp() {
-    // BrowserWithTestWindowTest implementation.
+    ASSERT_TRUE(profile_manager_.SetUp());
     BrowserWithTestWindowTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     registrar_.Add(this, chrome::NOTIFICATION_FOREIGN_SESSION_UPDATED,
@@ -240,6 +264,7 @@ class ProfileSyncServiceSessionTest
 
   // Path used in testing.
   base::ScopedTempDir temp_dir_;
+  TestingProfileManager profile_manager_;
   SessionModelAssociator* model_associator_;
   SessionChangeProcessor* change_processor_;
   SessionID window_id_;

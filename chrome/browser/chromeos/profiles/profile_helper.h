@@ -17,6 +17,10 @@
 
 class Profile;
 
+namespace base {
+class FilePath;
+}
+
 namespace chromeos {
 
 // This helper class is used on Chrome OS to keep track of currently
@@ -46,6 +50,9 @@ class ProfileHelper : public BrowsingDataRemover::Observer,
   // Returns profile path that corresponds to a given |user_id_hash|.
   static base::FilePath GetProfilePathByUserIdHash(
       const std::string& user_id_hash);
+
+  // Returns the path that corresponds to the sign-in profile.
+  static base::FilePath GetSigninProfileDir();
 
   // Returns OffTheRecord profile for use during signing phase.
   static Profile* GetSigninProfile();

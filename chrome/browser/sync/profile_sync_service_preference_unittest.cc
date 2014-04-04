@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,9 +16,11 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -30,8 +33,10 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -56,6 +61,10 @@ using syncer::ChangeRecord;
 using testing::Invoke;
 using testing::Return;
 using testing::_;
+
+namespace {
+const char kTestProfileName[] = "test-profile";
+}
 
 typedef std::map<const std::string, const base::Value*> PreferenceValues;
 
@@ -119,7 +128,8 @@ class ProfileSyncServicePreferenceTest
 
  protected:
   ProfileSyncServicePreferenceTest()
-      : debug_ptr_factory_(this),
+      : profile_manager_(TestingBrowserProcess::GetGlobal()),
+        debug_ptr_factory_(this),
         example_url0_("http://example.com/0"),
         example_url1_("http://example.com/1"),
         example_url2_("http://example.com/2"),
@@ -129,12 +139,20 @@ class ProfileSyncServicePreferenceTest
 
   virtual void SetUp() {
     AbstractProfileSyncServiceTest::SetUp();
-    TestingProfile::Builder builder;
-    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
-                              BuildAutoIssuingFakeProfileOAuth2TokenService);
-    profile_ = builder.Build().Pass();
+    ASSERT_TRUE(profile_manager_.SetUp());
+    TestingProfile::TestingFactories testing_factories;
+    testing_factories.push_back(std::make_pair(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        BuildAutoIssuingFakeProfileOAuth2TokenService));
+    profile_ = profile_manager_.CreateTestingProfile(
+        kTestProfileName,
+        scoped_ptr<PrefServiceSyncable>(),
+        base::UTF8ToUTF16(kTestProfileName),
+        0,
+        std::string(),
+        testing_factories);
     invalidation::InvalidationServiceFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), invalidation::FakeInvalidationService::Build);
+        profile_, invalidation::FakeInvalidationService::Build);
     prefs_ = profile_->GetTestingPrefService();
 
     prefs_->registry()->RegisterStringPref(
@@ -144,7 +162,8 @@ class ProfileSyncServicePreferenceTest
   }
 
   virtual void TearDown() {
-    profile_.reset();
+    profile_ = NULL;
+    profile_manager_.DeleteTestingProfile(kTestProfileName);
     AbstractProfileSyncServiceTest::TearDown();
   }
 
@@ -163,10 +182,10 @@ class ProfileSyncServicePreferenceTest
       return false;
 
     SigninManagerBase* signin =
-         SigninManagerFactory::GetForProfile(profile_.get());
+         SigninManagerFactory::GetForProfile(profile_);
     signin->SetAuthenticatedUsername("test");
-    sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(
-        profile_.get(), callback);
+    sync_service_ = TestProfileSyncService::BuildAutoStartAsyncInit(profile_,
+                                                                    callback);
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(
         prefs_->GetSyncableService(syncer::PREFERENCES));
     if (!pref_sync_service_)
@@ -183,7 +202,7 @@ class ProfileSyncServicePreferenceTest
                                     base::Closure(),
                                     syncer::PREFERENCES,
                                     components,
-                                    profile_.get(),
+                                    profile_,
                                     sync_service_);
     EXPECT_CALL(*components, CreateSharedChangeProcessor()).
         WillOnce(Return(new SharedChangeProcessor()));
@@ -191,7 +210,7 @@ class ProfileSyncServicePreferenceTest
         WillOnce(CreateAndSaveChangeProcessor(
                      &change_processor_));
     sync_service_->RegisterDataTypeController(dtc_);
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
         ->UpdateCredentials("test", "oauth2_login_token");
 
     sync_service_->Initialize();
@@ -270,7 +289,8 @@ class ProfileSyncServicePreferenceTest
     return PrefModelAssociator::IsOldMigratedPreference(old_preference_name);
   }
 
-  scoped_ptr<TestingProfile> profile_;
+  TestingProfileManager profile_manager_;
+  TestingProfile* profile_;
   TestingPrefServiceSyncable* prefs_;
 
   UIDataTypeController* dtc_;

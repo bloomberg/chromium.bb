@@ -42,6 +42,8 @@ const char kChannelIdSeparator[] = "/";
 const char kUserNotSignedIn[] = "The user is not signed in.";
 const char kUserAccessTokenFailure[] =
     "Cannot obtain access token for the user.";
+const char kAPINotAvailableForUser[] =
+    "The API is not available for this user.";
 const int kObfuscatedGaiaIdTimeoutInDays = 30;
 
 namespace extensions {
@@ -102,9 +104,18 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
   // Balanced in ReportResult()
   AddRef();
 
-  if (!IsUserLoggedIn()) {
-    invalidation::InvalidationAuthProvider* auth_provider =
-        GetInvalidationAuthProvider();
+  invalidation::InvalidationService* invalidation_service =
+      invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
+  if (!invalidation_service) {
+    error_ = kAPINotAvailableForUser;
+    ReportResult(std::string(), error_);
+    return false;
+  }
+
+  invalidation::InvalidationAuthProvider* auth_provider =
+      invalidation_service->GetInvalidationAuthProvider();
+  if (!auth_provider->GetTokenService()->RefreshTokenIsAvailable(
+          auth_provider->GetAccountId())) {
     if (interactive_ && auth_provider->ShowLoginUI()) {
       auth_provider->GetTokenService()->AddObserver(this);
       return true;
@@ -122,11 +133,15 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
 }
 
 void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
+  invalidation::InvalidationService* invalidation_service =
+      invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
+  CHECK(invalidation_service);
+  invalidation::InvalidationAuthProvider* auth_provider =
+      invalidation_service->GetInvalidationAuthProvider();
+
   std::vector<std::string> scope_vector =
       extensions::ObfuscatedGaiaIdFetcher::GetScopes();
   OAuth2TokenService::ScopeSet scopes(scope_vector.begin(), scope_vector.end());
-  invalidation::InvalidationAuthProvider* auth_provider =
-      GetInvalidationAuthProvider();
   fetcher_access_token_request_ =
       auth_provider->GetTokenService()->StartRequest(
           auth_provider->GetAccountId(), scopes, this);
@@ -134,7 +149,11 @@ void PushMessagingGetChannelIdFunction::StartAccessTokenFetch() {
 
 void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  GetInvalidationAuthProvider()->GetTokenService()->RemoveObserver(this);
+  invalidation::InvalidationService* invalidation_service =
+      invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
+  CHECK(invalidation_service);
+  invalidation_service->GetInvalidationAuthProvider()->GetTokenService()->
+      RemoveObserver(this);
   DVLOG(2) << "Newly logged in: " << GetProfile()->GetProfileName();
   StartAccessTokenFetch();
 }
@@ -185,14 +204,6 @@ void PushMessagingGetChannelIdFunction::StartGaiaIdFetch(
   }
 
   fetcher_->Start();
-}
-
-// Check if the user is logged in.
-bool PushMessagingGetChannelIdFunction::IsUserLoggedIn() {
-  invalidation::InvalidationAuthProvider* auth_provider =
-      GetInvalidationAuthProvider();
-  return auth_provider->GetTokenService()->RefreshTokenIsAvailable(
-      auth_provider->GetAccountId());
 }
 
 void PushMessagingGetChannelIdFunction::ReportResult(
@@ -260,7 +271,11 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::ACCOUNT_DELETED:
     case GoogleServiceAuthError::ACCOUNT_DISABLED: {
-      if (!interactive_ || !GetInvalidationAuthProvider()->ShowLoginUI()) {
+      invalidation::InvalidationService* invalidation_service =
+          invalidation::InvalidationServiceFactory::GetForProfile(GetProfile());
+      CHECK(invalidation_service);
+      if (!interactive_ ||
+          !invalidation_service->GetInvalidationAuthProvider()->ShowLoginUI()) {
         ReportResult(std::string(), error_text);
       }
       return;
@@ -270,12 +285,6 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
       ReportResult(std::string(), error_text);
       return;
   }
-}
-
-invalidation::InvalidationAuthProvider*
-PushMessagingGetChannelIdFunction::GetInvalidationAuthProvider() {
-  return invalidation::InvalidationServiceFactory::GetForProfile(GetProfile())
-      ->GetInvalidationAuthProvider();
 }
 
 PushMessagingAPI::PushMessagingAPI(content::BrowserContext* context)
@@ -315,8 +324,6 @@ void PushMessagingAPI::Observe(int type,
                                const content::NotificationDetails& details) {
   invalidation::InvalidationService* invalidation_service =
       invalidation::InvalidationServiceFactory::GetForProfile(profile_);
-  // This may be NULL; for example, for the ChromeOS guest user. In these cases,
-  // just return without setting up anything, since it won't work anyway.
   if (!invalidation_service)
     return;
 

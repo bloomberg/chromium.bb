@@ -21,12 +21,6 @@ namespace chromeos {
 
 namespace {
 
-base::FilePath GetSigninProfileDir() {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  base::FilePath user_data_dir = profile_manager->user_data_dir();
-  return user_data_dir.AppendASCII(chrome::kInitialProfile);
-}
-
 bool ShouldAddProfileDirPrefix(const std::string& user_id_hash) {
   // Do not add profile dir prefix for legacy profile dir and test
   // user profile. The reason of not adding prefix for test user profile
@@ -76,6 +70,13 @@ base::FilePath ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch() {
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           chromeos::switches::kLoginProfile);
   return ProfileHelper::GetUserProfileDir(login_profile_value);
+}
+
+// static
+base::FilePath ProfileHelper::GetSigninProfileDir() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath user_data_dir = profile_manager->user_data_dir();
+  return user_data_dir.AppendASCII(chrome::kInitialProfile);
 }
 
 // static

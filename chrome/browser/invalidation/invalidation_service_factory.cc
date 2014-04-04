@@ -28,8 +28,10 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+#include "base/files/file_path.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/invalidation/device_invalidation_auth_provider_chromeos.h"
 #endif
@@ -39,6 +41,19 @@ namespace invalidation {
 // static
 InvalidationService* InvalidationServiceFactory::GetForProfile(
     Profile* profile) {
+#if defined(OS_CHROMEOS)
+  // Using ProfileHelper::GetSigninProfile() here would lead to an infinite loop
+  // when this method is called during the creation of the sign-in profile
+  // itself. Using ProfileHelper::GetSigninProfileDir() is safe because it does
+  // not try to access the sign-in profile.
+  if (profile->GetPath() == chromeos::ProfileHelper::GetSigninProfileDir()||
+      (chromeos::UserManager::IsInitialized() &&
+       chromeos::UserManager::Get()->IsLoggedInAsGuest())) {
+    // The Chrome OS login and Chrome OS guest profiles do not have GAIA
+    // credentials and do not support invalidation.
+    return NULL;
+  }
+#endif
   return static_cast<InvalidationService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }

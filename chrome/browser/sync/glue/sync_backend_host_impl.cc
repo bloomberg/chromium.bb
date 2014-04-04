@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
@@ -59,6 +60,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
           invalidation::InvalidationServiceFactory::GetForProfile(profile)),
       invalidation_handler_registered_(false),
       weak_ptr_factory_(this) {
+  CHECK(invalidator_);
   core_ = new SyncBackendHostCore(
       name_,
       profile_->GetPath().Append(kSyncDataFolderName),

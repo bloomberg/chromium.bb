@@ -27,10 +27,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace invalidation {
-class InvalidationAuthProvider;
-}
-
 namespace extensions {
 
 class PushMessagingInvalidationMapper;
@@ -99,17 +95,11 @@ class PushMessagingGetChannelIdFunction
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) OVERRIDE;
 
-  // Check if the user is signed into chrome.
-  bool IsUserLoggedIn();
-
   // ObfuscatedGiaiaIdFetcher::Delegate implementation.
   virtual void OnObfuscatedGaiaIdFetchSuccess(const std::string& gaia_id)
       OVERRIDE;
   virtual void OnObfuscatedGaiaIdFetchFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-
-  // Convenience helper to get the invalidation auth provider.
-  invalidation::InvalidationAuthProvider* GetInvalidationAuthProvider();
 
   scoped_ptr<ObfuscatedGaiaIdFetcher> fetcher_;
   bool interactive_;
