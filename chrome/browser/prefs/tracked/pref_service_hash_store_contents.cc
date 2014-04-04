@@ -150,3 +150,7 @@ void PrefServiceHashStoreContents::SetSuperMac(const std::string& super_mac) {
   PrefServiceMutableDictionary(kHashOfHashesDict, pref_service_)
       ->SetStringWithoutPathExpansion(hash_store_id_, super_mac);
 }
+
+void PrefServiceHashStoreContents::CommitPendingWrite() {
+  pref_service_->CommitPendingWrite();
+}

@@ -70,7 +70,8 @@ class MockPrefHashStore : public PrefHashStore {
       ValuePtrStrategyPair;
 
   MockPrefHashStore() : transactions_performed_(0),
-                        transaction_active_(false) {}
+                        transaction_active_(false),
+                        commit_performed_(false) {}
 
   virtual ~MockPrefHashStore() {
     EXPECT_FALSE(transaction_active_);
@@ -90,6 +91,10 @@ class MockPrefHashStore : public PrefHashStore {
 
   // Returns the number of transactions that were performed.
   size_t transactions_performed() { return transactions_performed_; }
+
+  // Returns true if this MockPrefHashStore's CommitPendingWrite method was
+  // called.
+  bool commit_performed() { return commit_performed_; }
 
   // Returns the number of paths checked.
   size_t checked_paths_count() const {
@@ -129,6 +134,7 @@ class MockPrefHashStore : public PrefHashStore {
 
   // PrefHashStore implementation.
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
+  virtual void CommitPendingWrite() OVERRIDE;
 
  private:
   // A MockPrefHashStoreTransaction is handed to the caller on
@@ -193,6 +199,9 @@ class MockPrefHashStore : public PrefHashStore {
   // active at a time).
   bool transaction_active_;
 
+  // Whether CommitPendingWrite() was called.
+  bool commit_performed_;
+
   DISALLOW_COPY_AND_ASSIGN(MockPrefHashStore);
 };
 
@@ -218,6 +227,11 @@ scoped_ptr<PrefHashStoreTransaction> MockPrefHashStore::BeginTransaction() {
   EXPECT_FALSE(transaction_active_);
   return scoped_ptr<PrefHashStoreTransaction>(
       new MockPrefHashStoreTransaction(this));
+}
+
+void MockPrefHashStore::CommitPendingWrite() {
+  EXPECT_FALSE(commit_performed_);
+  commit_performed_ = true;
 }
 
 PrefHashStoreTransaction::ValueState MockPrefHashStore::RecordCheckValue(
@@ -349,6 +363,7 @@ TEST_P(PrefHashFilterTest, EmptyAndUnchanged) {
   }
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   ASSERT_FALSE(RecordedReset());
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
@@ -371,6 +386,7 @@ TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   ASSERT_FALSE(RecordedReset());
+  EXPECT_TRUE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
@@ -395,6 +411,7 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   ASSERT_FALSE(RecordedReset());
+  EXPECT_TRUE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, FilterUntrackedPrefUpdate) {
@@ -461,6 +478,7 @@ TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
        mock_pref_hash_store_->stored_value(kSplitPref);
   ASSERT_EQ(dict_value, stored_value_split.first);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_value_split.second);
+  EXPECT_TRUE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
@@ -488,6 +506,7 @@ TEST_P(PrefHashFilterTest, EmptyAndUnknown) {
   ASSERT_EQ(NULL, stored_split_value.first);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
             stored_split_value.second);
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, InitialValueUnknown) {
@@ -546,6 +565,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
 
     ASSERT_FALSE(RecordedReset());
   }
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
@@ -589,6 +609,7 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
   ASSERT_EQ(dict_value, stored_split_value.first);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
             stored_split_value.second);
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, InitialValueChanged) {
@@ -668,6 +689,7 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
 
     ASSERT_FALSE(RecordedReset());
   }
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, EmptyCleared) {
@@ -698,6 +720,7 @@ TEST_P(PrefHashFilterTest, EmptyCleared) {
   ASSERT_EQ(NULL, stored_split_value.first);
   ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
             stored_split_value.second);
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, InitialValueMigrated) {
@@ -739,6 +762,7 @@ TEST_P(PrefHashFilterTest, InitialValueMigrated) {
 
     ASSERT_FALSE(RecordedReset());
   }
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
@@ -788,6 +812,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
   ASSERT_EQ(dict_value, stored_split_value.first);
 
   ASSERT_FALSE(RecordedReset());
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, DontResetReportOnly) {
@@ -854,6 +879,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
 
     ASSERT_FALSE(RecordedReset());
   }
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 TEST_P(PrefHashFilterTest, MigrateValuesTest) {
@@ -928,6 +954,7 @@ TEST_P(PrefHashFilterTest, MigrateValuesTest) {
     ASSERT_TRUE(destination->GetValue(kAtomicPref3, NULL));
     ASSERT_FALSE(destination->GetValue(kReportOnlyPref, NULL));
   }
+  EXPECT_FALSE(mock_pref_hash_store_->commit_performed());
 }
 
 INSTANTIATE_TEST_CASE_P(

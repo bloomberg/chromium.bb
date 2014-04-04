@@ -77,6 +77,8 @@ class DictionaryHashStoreContents : public HashStoreContents {
     version_.reset(new int(version));
   }
 
+  virtual void CommitPendingWrite() OVERRIDE {}
+
  private:
   class SimpleMutableDictionary
       : public HashStoreContents::MutableDictionary {

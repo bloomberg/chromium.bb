@@ -55,6 +55,7 @@ class PrefServiceHashStoreContents : public HashStoreContents {
   virtual scoped_ptr<MutableDictionary> GetMutableContents() OVERRIDE;
   virtual std::string GetSuperMac() const OVERRIDE;
   virtual void SetSuperMac(const std::string& super_mac) OVERRIDE;
+  virtual void CommitPendingWrite() OVERRIDE;
 
  private:
   const std::string hash_store_id_;

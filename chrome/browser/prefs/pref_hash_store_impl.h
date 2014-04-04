@@ -52,6 +52,7 @@ class PrefHashStoreImpl : public PrefHashStore {
 
   // PrefHashStore implementation.
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() OVERRIDE;
+  virtual void CommitPendingWrite() OVERRIDE;
 
   // Returns the current version of this hash store.
   StoreVersion GetCurrentVersion() const;
@@ -62,6 +63,10 @@ class PrefHashStoreImpl : public PrefHashStore {
   const PrefHashCalculator pref_hash_calculator_;
   scoped_ptr<HashStoreContents> contents_;
   const bool initial_hashes_dictionary_trusted_;
+
+  // True if hashes have been modified since the last call to
+  // CommitPendingWriteIfRequired().
+  bool has_pending_write_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImpl);
 };

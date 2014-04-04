@@ -207,4 +207,19 @@ void PrefHashFilter::FilterSerializeData(
     UMA_HISTOGRAM_TIMES("Settings.FilterSerializeDataTime",
                         base::TimeTicks::Now() - checkpoint);
   }
+
+  // Flush the |pref_hash_store_| to disk if it has pending writes. This is done
+  // here in an effort to flush the hash store to disk as close as possible to
+  // its matching value store (currently being flushed) to reduce the likelihood
+  // of MAC corruption in race condition scenarios where a crash occurs in the
+  // 10 seconds window where it would typically be possible that only one
+  // of the two stores has been flushed to disk (this now explicitly makes this
+  // race window as small as possible).
+  // Note that, if the |pref_hash_store_| has pending writes, this call will
+  // force serialization of its store to disk. As FilterSerializeData is already
+  // intercepting the serialization of its value store this would result in an
+  // infinite loop should the hash store also be the value store -- thus this
+  // should be removed when we move to such a model (where it will no longer be
+  // necessary anyways).
+  pref_hash_store_->CommitPendingWrite();
 }

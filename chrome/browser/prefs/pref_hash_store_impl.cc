@@ -63,7 +63,8 @@ PrefHashStoreImpl::PrefHashStoreImpl(const std::string& seed,
     : pref_hash_calculator_(seed, device_id),
       contents_(contents.Pass()),
       initial_hashes_dictionary_trusted_(
-          IsHashDictionaryTrusted(pref_hash_calculator_, *contents_)) {
+          IsHashDictionaryTrusted(pref_hash_calculator_, *contents_)),
+      has_pending_write_(false) {
   DCHECK(contents_);
   UMA_HISTOGRAM_BOOLEAN("Settings.HashesDictionaryTrusted",
                         initial_hashes_dictionary_trusted_);
@@ -93,6 +94,13 @@ PrefHashStoreImpl::StoreVersion PrefHashStoreImpl::GetCurrentVersion() const {
   return static_cast<StoreVersion>(current_version);
 }
 
+void PrefHashStoreImpl::CommitPendingWrite() {
+  if (has_pending_write_) {
+    contents_->CommitPendingWrite();
+    has_pending_write_ = false;
+  }
+}
+
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
     PrefHashStoreImpl* outer) : outer_(outer), has_changed_(false) {
 }
@@ -106,14 +114,23 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::
     const base::DictionaryValue* hashes_dict = outer_->contents_->GetContents();
     outer_->contents_->SetSuperMac(outer_->pref_hash_calculator_.Calculate(
         outer_->contents_->hash_store_id(), hashes_dict));
+
+    outer_->has_pending_write_ = true;
   }
 
   // Mark this hash store has having been updated to the latest version (in
   // practice only initialization transactions will actually do this, but
   // since they always occur before minor update transaction it's okay
-  // to unconditionally do this here). Do this even if |!has_changed_| to also
-  // seed version number on unchanged profiles.
-  outer_->contents_->SetVersion(VERSION_LATEST);
+  // to unconditionally do this here). Only do this if this store's version
+  // isn't already at VERSION_LATEST (to avoid scheduling a write when
+  // unecessary). Note, this is outside of |if (has_changed)| to also seed
+  // version number of otherwise unchanged profiles.
+  int current_version;
+  if (!outer_->contents_->GetVersion(&current_version) ||
+      current_version != VERSION_LATEST) {
+    outer_->contents_->SetVersion(VERSION_LATEST);
+    outer_->has_pending_write_ = true;
+  }
 }
 
 PrefHashStoreTransaction::ValueState

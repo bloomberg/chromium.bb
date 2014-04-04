@@ -65,6 +65,9 @@ class HashStoreContents {
 
   // Stores a super MAC value for this hash store.
   virtual void SetSuperMac(const std::string& super_mac) = 0;
+
+  // Commit pending writes to this hash store's contents.
+  virtual void CommitPendingWrite() = 0;
 };
 
 #endif  // CHROME_BROWSER_PREFS_TRACKED_HASH_STORE_CONTENTS_H_

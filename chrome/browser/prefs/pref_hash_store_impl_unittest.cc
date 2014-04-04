@@ -19,9 +19,20 @@ class MockHashStoreContents : public HashStoreContents {
   // by the test and reused. The API implementation is owned by the
   // PrefHashStoreImpl.
   struct Data {
+    Data() : commit_performed(false) {}
+
+    // Returns the current value of |commit_performed| and resets it to false
+    // immediately after.
+    bool GetCommitPerformedAndReset() {
+      bool current_commit_performed = commit_performed;
+      commit_performed = false;
+      return current_commit_performed;
+    }
+
     scoped_ptr<base::DictionaryValue> contents;
     std::string super_mac;
     scoped_ptr<int> version;
+    bool commit_performed;
   };
 
   explicit MockHashStoreContents(Data* data) : data_(data) {}
@@ -61,6 +72,11 @@ class MockHashStoreContents : public HashStoreContents {
     data_->super_mac = super_mac;
   }
 
+  virtual void CommitPendingWrite() OVERRIDE {
+    EXPECT_FALSE(data_->commit_performed);
+    data_->commit_performed = true;
+  }
+
  private:
   class MockMutableDictionary : public MutableDictionary {
    public:
@@ -77,6 +93,7 @@ class MockHashStoreContents : public HashStoreContents {
     Data* data_;
     DISALLOW_COPY_AND_ASSIGN(MockMutableDictionary);
   };
+
   Data* data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockHashStoreContents);
@@ -136,6 +153,12 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
     transaction->StoreHash("path1", &dict);
     EXPECT_EQ(PrefHashStoreTransaction::UNCHANGED,
               transaction->CheckValue("path1", &dict));
+
+    // Test that the |pref_hash_store| flushes its changes on request post
+    // transaction.
+    transaction.reset();
+    pref_hash_store.CommitPendingWrite();
+    EXPECT_TRUE(hash_store_data_.GetCommitPerformedAndReset());
   }
 
   {
@@ -151,6 +174,12 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
               transaction->CheckValue("new_path", &string_2));
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", NULL));
+
+    // Test that |pref_hash_store2| doesn't flush its contents to disk when it
+    // didn't change.
+    transaction.reset();
+    pref_hash_store2.CommitPendingWrite();
+    EXPECT_FALSE(hash_store_data_.GetCommitPerformedAndReset());
   }
 
   // Manually corrupt the super MAC.
@@ -169,6 +198,12 @@ TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
               transaction->CheckValue("new_path", &string_2));
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckValue("new_path", NULL));
+
+    // Test that |pref_hash_store3| doesn't flush its contents to disk when it
+    // didn't change.
+    transaction.reset();
+    pref_hash_store3.CommitPendingWrite();
+    EXPECT_FALSE(hash_store_data_.GetCommitPerformedAndReset());
   }
 }
 
@@ -254,6 +289,11 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     expected_invalid_keys2.push_back("c");
     EXPECT_EQ(expected_invalid_keys2, invalid_keys);
     invalid_keys.clear();
+
+    // Test that the |pref_hash_store| flushes its changes on request.
+    transaction.reset();
+    pref_hash_store.CommitPendingWrite();
+    EXPECT_TRUE(hash_store_data_.GetCommitPerformedAndReset());
   }
 
   {
@@ -266,6 +306,12 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     EXPECT_EQ(PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("new_path", &dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
+
+    // Test that |pref_hash_store2| doesn't flush its contents to disk when it
+    // didn't change.
+    transaction.reset();
+    pref_hash_store2.CommitPendingWrite();
+    EXPECT_FALSE(hash_store_data_.GetCommitPerformedAndReset());
   }
 
   // Manually corrupt the super MAC.
@@ -281,6 +327,12 @@ TEST_F(PrefHashStoreImplTest, SplitHashStoreAndCheck) {
     EXPECT_EQ(PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE,
               transaction->CheckSplitValue("new_path", &dict, &invalid_keys));
     EXPECT_TRUE(invalid_keys.empty());
+
+    // Test that |pref_hash_store3| doesn't flush its contents to disk when it
+    // didn't change.
+    transaction.reset();
+    pref_hash_store3.CommitPendingWrite();
+    EXPECT_FALSE(hash_store_data_.GetCommitPerformedAndReset());
   }
 }
 
@@ -396,6 +448,12 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
         pref_hash_store.BeginTransaction());
     base::StringValue string_value("foo");
     transaction->StoreHash("path1", &string_value);
+
+    // Test that |pref_hash_store| flushes its content to disk when it
+    // initializes its version.
+    transaction.reset();
+    pref_hash_store.CommitPendingWrite();
+    EXPECT_TRUE(hash_store_data_.GetCommitPerformedAndReset());
   }
   {
     PrefHashStoreImpl pref_hash_store(
@@ -404,6 +462,11 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
     // VERSION_LATEST after storing a hash.
     EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
               pref_hash_store.GetCurrentVersion());
+
+    // Test that |pref_hash_store| doesn't flush its contents to disk when it
+    // didn't change.
+    pref_hash_store.CommitPendingWrite();
+    EXPECT_FALSE(hash_store_data_.GetCommitPerformedAndReset());
   }
 
   // Manually clear the version number.
@@ -419,6 +482,12 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
 
     scoped_ptr<PrefHashStoreTransaction> transaction(
         pref_hash_store.BeginTransaction());
+
+    // Test that |pref_hash_store| flushes its content to disk when it
+    // re-initializes its version.
+    transaction.reset();
+    pref_hash_store.CommitPendingWrite();
+    EXPECT_TRUE(hash_store_data_.GetCommitPerformedAndReset());
   }
   {
     PrefHashStoreImpl pref_hash_store(
@@ -429,5 +498,14 @@ TEST_F(PrefHashStoreImplTest, GetCurrentVersion) {
     // sufficient, no need for the transaction itself to perform any work).
     EXPECT_EQ(PrefHashStoreImpl::VERSION_LATEST,
               pref_hash_store.GetCurrentVersion());
+
+    // Test that |pref_hash_store| doesn't flush its contents to disk when it
+    // didn't change (i.e., its version was already up-to-date and the only
+    // transaction performed was empty).
+    scoped_ptr<PrefHashStoreTransaction> transaction(
+        pref_hash_store.BeginTransaction());
+    transaction.reset();
+    pref_hash_store.CommitPendingWrite();
+    EXPECT_FALSE(hash_store_data_.GetCommitPerformedAndReset());
   }
 }

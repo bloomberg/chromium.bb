@@ -18,6 +18,10 @@ class PrefHashStore {
   // Returns a PrefHashStoreTransaction which can be used to perform a series
   // of checks/transformations on the hash store.
   virtual scoped_ptr<PrefHashStoreTransaction> BeginTransaction() = 0;
+
+  // Commits this store to disk if it has changed since the last call to this
+  // method.
+  virtual void CommitPendingWrite() = 0;
 };
 
 #endif  // CHROME_BROWSER_PREFS_PREF_HASH_STORE_H_
