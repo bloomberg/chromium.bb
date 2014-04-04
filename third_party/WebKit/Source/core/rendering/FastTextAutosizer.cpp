@@ -959,7 +959,7 @@ bool FastTextAutosizer::isWiderOrNarrowerDescendant(Cluster* cluster)
 
 FastTextAutosizer::Cluster* FastTextAutosizer::currentCluster() const
 {
-    ASSERT(!m_clusterStack.isEmpty());
+    ASSERT_WITH_SECURITY_IMPLICATION(!m_clusterStack.isEmpty());
     return m_clusterStack.last().get();
 }
 
