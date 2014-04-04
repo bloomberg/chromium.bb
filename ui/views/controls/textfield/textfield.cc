@@ -132,7 +132,6 @@ int GetCommandForKeyEvent(const ui::KeyEvent& event, bool has_selection) {
     default:
       return kNoCommand;
   }
-  return kNoCommand;
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
