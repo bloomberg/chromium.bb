@@ -117,7 +117,7 @@ VisibleSelection Editor::selectionForCommand(Event* event)
     HTMLTextFormControlElement* textFormControlOfSelectionStart = enclosingTextFormControl(selection.start());
     HTMLTextFormControlElement* textFromControlOfTarget = isHTMLTextFormControlElement(*event->target()->toNode()) ? toHTMLTextFormControlElement(event->target()->toNode()) : 0;
     if (textFromControlOfTarget && (selection.start().isNull() || textFromControlOfTarget != textFormControlOfSelectionStart)) {
-        if (RefPtr<Range> range = textFromControlOfTarget->selection())
+        if (RefPtrWillBeRawPtr<Range> range = textFromControlOfTarget->selection())
             return VisibleSelection(range.get(), DOWNSTREAM, selection.isDirectional());
     }
     return selection;
@@ -387,7 +387,7 @@ void Editor::pasteAsPlainTextWithPasteboard(Pasteboard* pasteboard)
 
 void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
 {
-    RefPtr<Range> range = selectedRange();
+    RefPtrWillBeRawPtr<Range> range = selectedRange();
     RefPtr<DocumentFragment> fragment;
     bool chosePlainText = false;
 
@@ -509,7 +509,7 @@ void Editor::replaceSelectionWithText(const String& text, bool selectReplacement
     replaceSelectionWithFragment(createFragmentFromText(selectedRange().get(), text), selectReplacement, smartReplace, true);
 }
 
-PassRefPtr<Range> Editor::selectedRange()
+PassRefPtrWillBeRawPtr<Range> Editor::selectedRange()
 {
     return m_frame.selection().toNormalizedRange();
 }
@@ -784,7 +784,6 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
     VisibleSelection selection = selectionForCommand(triggeringEvent);
     if (!selection.isContentEditable())
         return false;
-    RefPtr<Range> range = selection.toNormalizedRange();
 
     spellChecker().updateMarkersForWordsAffectedByEditing(isSpaceOrNewline(text[0]));
 
@@ -850,7 +849,7 @@ void Editor::cut()
         return; // DHTML did the whole operation
     if (!canCut())
         return;
-    RefPtr<Range> selection = selectedRange();
+    RefPtrWillBeRawPtr<Range> selection = selectedRange();
     if (shouldDeleteRange(selection.get())) {
         spellChecker().updateMarkersForWordsAffectedByEditing(true);
         String plainText = m_frame.selectedTextForClipboard();
@@ -994,7 +993,7 @@ void Editor::transpose()
     previous = previous.previous();
     if (!inSameParagraph(next, previous))
         return;
-    RefPtr<Range> range = makeRange(previous, next);
+    RefPtrWillBeRawPtr<Range> range = makeRange(previous, next);
     if (!range)
         return;
     VisibleSelection newSelection(range.get(), DOWNSTREAM);
@@ -1115,7 +1114,7 @@ bool Editor::findString(const String& target, FindOptions options)
 {
     VisibleSelection selection = m_frame.selection().selection();
 
-    RefPtr<Range> resultRange = rangeOfString(target, selection.firstRange().get(), options);
+    RefPtrWillBeRawPtr<Range> resultRange = rangeOfString(target, selection.firstRange().get(), options);
 
     if (!resultRange)
         return false;
@@ -1125,9 +1124,9 @@ bool Editor::findString(const String& target, FindOptions options)
     return true;
 }
 
-PassRefPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* previousMatch, FindOptions options)
 {
-    RefPtr<Range> nextMatch = rangeOfString(target, previousMatch, options);
+    RefPtrWillBeRawPtr<Range> nextMatch = rangeOfString(target, previousMatch, options);
     if (!nextMatch)
         return nullptr;
 
@@ -1137,14 +1136,14 @@ PassRefPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Ran
     return nextMatch.release();
 }
 
-PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRange, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRange, FindOptions options)
 {
     if (target.isEmpty())
         return nullptr;
 
     // Start from an edge of the reference range, if there's a reference range that's not in shadow content. Which edge
     // is used depends on whether we're searching forward or backward, and whether startInSelection is set.
-    RefPtr<Range> searchRange(rangeOfContents(m_frame.document()));
+    RefPtrWillBeRawPtr<Range> searchRange(rangeOfContents(m_frame.document()));
 
     bool forward = !(options & Backwards);
     bool startInReferenceRange = referenceRange && (options & StartInSelection);
@@ -1163,7 +1162,7 @@ PassRefPtr<Range> Editor::rangeOfString(const String& target, Range* referenceRa
             searchRange->setStart(shadowTreeRoot.get(), 0);
     }
 
-    RefPtr<Range> resultRange(findPlainText(searchRange.get(), target, options));
+    RefPtrWillBeRawPtr<Range> resultRange(findPlainText(searchRange.get(), target, options));
     // If we started in the reference range and the found range exactly matches the reference range, find again.
     // Build a selection with the found range to remove collapsed whitespace.
     // Compare ranges instead of selection objects to ignore the way that the current selection was made.

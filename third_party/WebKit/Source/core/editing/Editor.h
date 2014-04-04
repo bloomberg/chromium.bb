@@ -37,6 +37,7 @@
 #include "core/editing/WritingDirection.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "platform/PasteMode.h"
+#include "platform/heap/Handle.h"
 
 namespace WebCore {
 
@@ -188,7 +189,7 @@ public:
 
     EditingBehavior behavior() const;
 
-    PassRefPtr<Range> selectedRange();
+    PassRefPtrWillBeRawPtr<Range> selectedRange();
 
     void addToKillRing(Range*, bool prepend);
 
@@ -201,7 +202,7 @@ public:
     // FIXME: Switch callers over to the FindOptions version and retire this one.
     bool findString(const String&, bool forward, bool caseFlag, bool wrapFlag, bool startInSelection);
 
-    PassRefPtr<Range> findStringAndScrollToVisible(const String&, Range*, FindOptions);
+    PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisible(const String&, Range*, FindOptions);
 
     const VisibleSelection& mark() const; // Mark, to be used as emacs uses it.
     void setMark(const VisibleSelection&);
@@ -265,7 +266,7 @@ private:
 
     Node* findEventTargetFromSelection() const;
 
-    PassRefPtr<Range> rangeOfString(const String&, Range*, FindOptions);
+    PassRefPtrWillBeRawPtr<Range> rangeOfString(const String&, Range*, FindOptions);
 
     SpellChecker& spellChecker() const;
 

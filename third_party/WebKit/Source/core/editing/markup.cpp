@@ -713,7 +713,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkupWithContext(Document& docum
     if (!findNodesSurroundingContext(taggedDocument.get(), nodeBeforeContext, nodeAfterContext))
         return nullptr;
 
-    RefPtr<Range> range = Range::create(*taggedDocument.get(),
+    RefPtrWillBeRawPtr<Range> range = Range::create(*taggedDocument.get(),
         positionAfterNode(nodeBeforeContext.get()).parentAnchoredEquivalent(),
         positionBeforeNode(nodeAfterContext.get()).parentAnchoredEquivalent());
 

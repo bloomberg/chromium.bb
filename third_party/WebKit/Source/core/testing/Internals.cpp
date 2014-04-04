@@ -868,7 +868,7 @@ DocumentMarker* Internals::markerAt(Node* node, const String& markerType, unsign
     return markers[index];
 }
 
-PassRefPtr<Range> Internals::markerRangeForNode(Node* node, const String& markerType, unsigned index, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Range> Internals::markerRangeForNode(Node* node, const String& markerType, unsigned index, ExceptionState& exceptionState)
 {
     DocumentMarker* marker = markerAt(node, markerType, index, exceptionState);
     if (!marker)
@@ -1078,7 +1078,7 @@ void Internals::scrollElementToRect(Element* element, long x, long y, long w, lo
     frameView->scrollElementToRect(element, IntRect(x, y, w, h));
 }
 
-PassRefPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Range> Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState& exceptionState)
 {
     if (!scope) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));

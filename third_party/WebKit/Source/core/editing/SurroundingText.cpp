@@ -53,7 +53,7 @@ SurroundingText::SurroundingText(const VisiblePosition& visiblePosition, unsigne
     Position position = visiblePosition.deepEquivalent().parentAnchoredEquivalent();
     Document* document = position.document();
     ASSERT(document);
-    RefPtr<Range> forwardRange = forwardIterator.range();
+    RefPtrWillBeRawPtr<Range> forwardRange = forwardIterator.range();
     if (!forwardRange || !Range::create(*document, position, forwardRange->startPosition())->text().length()) {
         ASSERT(forwardRange);
         return;
@@ -63,7 +63,7 @@ SurroundingText::SurroundingText(const VisiblePosition& visiblePosition, unsigne
     if (!backwardsIterator.atEnd())
         backwardsIterator.advance(halfMaxLength);
 
-    RefPtr<Range> backwardsRange = backwardsIterator.range();
+    RefPtrWillBeRawPtr<Range> backwardsRange = backwardsIterator.range();
     if (!backwardsRange) {
         ASSERT(backwardsRange);
         return;
@@ -74,7 +74,7 @@ SurroundingText::SurroundingText(const VisiblePosition& visiblePosition, unsigne
     ASSERT(m_contentRange);
 }
 
-PassRefPtr<Range> SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent)
+PassRefPtrWillBeRawPtr<Range> SurroundingText::rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent)
 {
     if (startOffsetInContent >= endOffsetInContent || endOffsetInContent > content().length())
         return nullptr;

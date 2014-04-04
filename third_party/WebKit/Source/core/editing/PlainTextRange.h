@@ -26,6 +26,7 @@
 #ifndef PlainTextRange_h
 #define PlainTextRange_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/NotFound.h"
 #include "wtf/PassRefPtr.h"
 
@@ -48,8 +49,8 @@ public:
     bool isNotNull() const { return m_start != kNotFound; }
     size_t length() const { ASSERT(!isNull()); return m_end - m_start; }
 
-    PassRefPtr<Range> createRange(const ContainerNode& scope) const;
-    PassRefPtr<Range> createRangeForSelection(const ContainerNode& scope) const;
+    PassRefPtrWillBeRawPtr<Range> createRange(const ContainerNode& scope) const;
+    PassRefPtrWillBeRawPtr<Range> createRangeForSelection(const ContainerNode& scope) const;
 
     static PlainTextRange create(const Node& scope, const Range&);
 
@@ -57,7 +58,7 @@ private:
     PlainTextRange& operator=(const PlainTextRange&)  WTF_DELETED_FUNCTION;
 
     enum GetRangeFor { ForGeneric, ForSelection };
-    PassRefPtr<Range> createRangeFor(const ContainerNode& scope, GetRangeFor) const;
+    PassRefPtrWillBeRawPtr<Range> createRangeFor(const ContainerNode& scope, GetRangeFor) const;
 
     const size_t m_start;
     const size_t m_end;

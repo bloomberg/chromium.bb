@@ -57,26 +57,26 @@ PlainTextRange::PlainTextRange(int start, int end)
     ASSERT(start <= end);
 }
 
-PassRefPtr<Range> PlainTextRange::createRange(const ContainerNode& scope) const
+PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRange(const ContainerNode& scope) const
 {
     return createRangeFor(scope, ForGeneric);
 }
 
-PassRefPtr<Range> PlainTextRange::createRangeForSelection(const ContainerNode& scope) const
+PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeForSelection(const ContainerNode& scope) const
 {
     return createRangeFor(scope, ForSelection);
 }
 
-PassRefPtr<Range> PlainTextRange::createRangeFor(const ContainerNode& scope, GetRangeFor getRangeFor) const
+PassRefPtrWillBeRawPtr<Range> PlainTextRange::createRangeFor(const ContainerNode& scope, GetRangeFor getRangeFor) const
 {
     ASSERT(isNotNull());
 
-    RefPtr<Range> resultRange = scope.document().createRange();
+    RefPtrWillBeRawPtr<Range> resultRange = scope.document().createRange();
 
     size_t docTextPosition = 0;
     bool startRangeFound = false;
 
-    RefPtr<Range> textRunRange;
+    RefPtrWillBeRawPtr<Range> textRunRange = nullptr;
 
     TextIterator it(rangeOfContents(const_cast<ContainerNode*>(&scope)).get(), getRangeFor == ForSelection ? TextIteratorEmitsCharactersBetweenAllVisiblePositions : TextIteratorDefaultBehavior);
 
@@ -106,7 +106,7 @@ PassRefPtr<Range> PlainTextRange::createRangeFor(const ContainerNode& scope, Get
                 scope.document().updateLayoutIgnorePendingStylesheets();
                 it.advance();
                 if (!it.atEnd()) {
-                    RefPtr<Range> range = it.range();
+                    RefPtrWillBeRawPtr<Range> range = it.range();
                     textRunRange->setEnd(range->startContainer(), range->startOffset(), ASSERT_NO_EXCEPTION);
                 } else {
                     Position runStart = textRunRange->startPosition();
@@ -171,7 +171,7 @@ PlainTextRange PlainTextRange::create(const Node& scope, const Range& range)
     if (range.endContainer() != scope && !range.endContainer()->isDescendantOf(&scope))
         return PlainTextRange();
 
-    RefPtr<Range> testRange = Range::create(scope.document(), const_cast<Node*>(&scope), 0, range.startContainer(), range.startOffset());
+    RefPtrWillBeRawPtr<Range> testRange = Range::create(scope.document(), const_cast<Node*>(&scope), 0, range.startContainer(), range.startOffset());
     ASSERT(testRange->startContainer() == &scope);
     size_t start = TextIterator::rangeLength(testRange.get());
 

@@ -132,7 +132,7 @@ bool DragData::containsCompatibleContent() const
         || containsFiles();
 }
 
-PassRefPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame, PassRefPtr<Range>, bool, bool&) const
+PassRefPtr<DocumentFragment> DragData::asFragment(LocalFrame* frame, PassRefPtrWillBeRawPtr<Range>, bool, bool&) const
 {
     /*
      * Order is richest format first. On OSX this is:

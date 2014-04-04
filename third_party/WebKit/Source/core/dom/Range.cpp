@@ -71,9 +71,9 @@ inline Range::Range(Document& ownerDocument)
     m_ownerDocument->attachRange(this);
 }
 
-PassRefPtr<Range> Range::create(Document& ownerDocument)
+PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument)
 {
-    return adoptRef(new Range(ownerDocument));
+    return adoptRefWillBeNoop(new Range(ownerDocument));
 }
 
 inline Range::Range(Document& ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
@@ -94,14 +94,14 @@ inline Range::Range(Document& ownerDocument, Node* startContainer, int startOffs
     setEnd(endContainer, endOffset);
 }
 
-PassRefPtr<Range> Range::create(Document& ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
+PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument, Node* startContainer, int startOffset, Node* endContainer, int endOffset)
 {
-    return adoptRef(new Range(ownerDocument, startContainer, startOffset, endContainer, endOffset));
+    return adoptRefWillBeNoop(new Range(ownerDocument, startContainer, startOffset, endContainer, endOffset));
 }
 
-PassRefPtr<Range> Range::create(Document& ownerDocument, const Position& start, const Position& end)
+PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument, const Position& start, const Position& end)
 {
-    return adoptRef(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
+    return adoptRefWillBeNoop(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
 }
 
 Range::~Range()
@@ -1220,7 +1220,7 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
     }
 }
 
-PassRefPtr<Range> Range::cloneRange(ExceptionState& exceptionState) const
+PassRefPtrWillBeRawPtr<Range> Range::cloneRange(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
         exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
@@ -1611,10 +1611,10 @@ bool areRangesEqual(const Range* a, const Range* b)
     return a->startPosition() == b->startPosition() && a->endPosition() == b->endPosition();
 }
 
-PassRefPtr<Range> rangeOfContents(Node* node)
+PassRefPtrWillBeRawPtr<Range> rangeOfContents(Node* node)
 {
     ASSERT(node);
-    RefPtr<Range> range = Range::create(node->document());
+    RefPtrWillBeRawPtr<Range> range = Range::create(node->document());
     range->selectNodeContents(node, IGNORE_EXCEPTION);
     return range.release();
 }
@@ -1882,6 +1882,10 @@ FloatRect Range::boundingRect() const
         result.unite(quads[i].boundingBox());
 
     return result;
+}
+
+void Range::trace(Visitor*)
+{
 }
 
 } // namespace WebCore

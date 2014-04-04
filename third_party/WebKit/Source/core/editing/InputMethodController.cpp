@@ -95,7 +95,7 @@ bool InputMethodController::insertTextForConfirmedComposition(const String& text
 
 void InputMethodController::selectComposition() const
 {
-    RefPtr<Range> range = compositionRange();
+    RefPtrWillBeRawPtr<Range> range = compositionRange();
     if (!range)
         return;
 
@@ -309,7 +309,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
             unsigned start = std::min(baseOffset + selectionStart, extentOffset);
             unsigned end = std::min(std::max(start, baseOffset + selectionEnd), extentOffset);
-            RefPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
+            RefPtrWillBeRawPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
             m_frame.selection().setSelectedRange(selectedRange.get(), DOWNSTREAM, static_cast<FrameSelection::SetSelectionOption>(0));
         }
     }
@@ -349,7 +349,7 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     setComposition(m_frame.selectedText(), underlines, 0, 0);
 }
 
-PassRefPtr<Range> InputMethodController::compositionRange() const
+PassRefPtrWillBeRawPtr<Range> InputMethodController::compositionRange() const
 {
     if (!hasComposition())
         return nullptr;
@@ -363,7 +363,7 @@ PassRefPtr<Range> InputMethodController::compositionRange() const
 
 PlainTextRange InputMethodController::getSelectionOffsets() const
 {
-    RefPtr<Range> range = m_frame.selection().selection().firstRange();
+    RefPtrWillBeRawPtr<Range> range = m_frame.selection().selection().firstRange();
     if (!range)
         return PlainTextRange();
     Node* editable = m_frame.selection().rootEditableElementOrTreeScopeRootNode();
@@ -379,7 +379,7 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     if (!rootEditableElement)
         return false;
 
-    RefPtr<Range> range = selectionOffsets.createRange(*rootEditableElement);
+    RefPtrWillBeRawPtr<Range> range = selectionOffsets.createRange(*rootEditableElement);
     if (!range)
         return false;
 

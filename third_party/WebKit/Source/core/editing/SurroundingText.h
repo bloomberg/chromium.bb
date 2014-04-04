@@ -31,6 +31,7 @@
 #ifndef SurroundingText_h
 #define SurroundingText_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -46,10 +47,10 @@ public:
     String content() const;
     unsigned positionOffsetInContent() const;
 
-    PassRefPtr<Range> rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent);
+    PassRefPtrWillBeRawPtr<Range> rangeFromContentOffsets(unsigned startOffsetInContent, unsigned endOffsetInContent);
 
 private:
-    RefPtr<Range> m_contentRange;
+    RefPtrWillBePersistent<Range> m_contentRange;
     size_t m_positionOffsetInContent;
 };
 

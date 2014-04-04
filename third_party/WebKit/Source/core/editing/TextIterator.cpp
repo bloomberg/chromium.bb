@@ -1149,7 +1149,7 @@ void TextIterator::emitText(Node* textNode, int textStartOffset, int textEndOffs
     emitText(textNode, m_node->renderer(), textStartOffset, textEndOffset);
 }
 
-PassRefPtr<Range> TextIterator::range() const
+PassRefPtrWillBeRawPtr<Range> TextIterator::range() const
 {
     // use the current run information, if we have it
     if (m_positionNode) {
@@ -1171,7 +1171,7 @@ PassRefPtr<Range> TextIterator::range() const
 
 Node* TextIterator::node() const
 {
-    RefPtr<Range> textRange = range();
+    RefPtrWillBeRawPtr<Range> textRange = range();
     if (!textRange)
         return 0;
 
@@ -1467,7 +1467,7 @@ bool SimplifiedBackwardsTextIterator::advanceRespectingRange(Node* next)
     return true;
 }
 
-PassRefPtr<Range> SimplifiedBackwardsTextIterator::range() const
+PassRefPtrWillBeRawPtr<Range> SimplifiedBackwardsTextIterator::range() const
 {
     if (m_positionNode)
         return Range::create(m_positionNode->document(), m_positionNode, m_positionStartOffset, m_positionNode, m_positionEndOffset);
@@ -1501,9 +1501,9 @@ void CharacterIterator::initialize()
         m_textIterator.advance();
 }
 
-PassRefPtr<Range> CharacterIterator::range() const
+PassRefPtrWillBeRawPtr<Range> CharacterIterator::range() const
 {
-    RefPtr<Range> r = m_textIterator.range();
+    RefPtrWillBeRawPtr<Range> r = m_textIterator.range();
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() <= 1) {
             ASSERT(!m_runOffset);
@@ -1563,14 +1563,14 @@ void CharacterIterator::advance(int count)
     m_runOffset = 0;
 }
 
-static PassRefPtr<Range> characterSubrange(CharacterIterator& it, int offset, int length)
+static PassRefPtrWillBeRawPtr<Range> characterSubrange(CharacterIterator& it, int offset, int length)
 {
     it.advance(offset);
-    RefPtr<Range> start = it.range();
+    RefPtrWillBeRawPtr<Range> start = it.range();
 
     if (length > 1)
         it.advance(length - 1);
-    RefPtr<Range> end = it.range();
+    RefPtrWillBeRawPtr<Range> end = it.range();
 
     return Range::create(start->startContainer()->document(),
         start->startContainer(), start->startOffset(),
@@ -1587,9 +1587,9 @@ BackwardsCharacterIterator::BackwardsCharacterIterator(const Range* range, TextI
         m_textIterator.advance();
 }
 
-PassRefPtr<Range> BackwardsCharacterIterator::range() const
+PassRefPtrWillBeRawPtr<Range> BackwardsCharacterIterator::range() const
 {
-    RefPtr<Range> r = m_textIterator.range();
+    RefPtrWillBeRawPtr<Range> r = m_textIterator.range();
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() <= 1) {
             ASSERT(!m_runOffset);
@@ -2038,7 +2038,7 @@ int TextIterator::rangeLength(const Range* r, bool forSelectionPreservation)
     return length;
 }
 
-PassRefPtr<Range> TextIterator::subrange(Range* entireRange, int characterOffset, int characterCount)
+PassRefPtrWillBeRawPtr<Range> TextIterator::subrange(Range* entireRange, int characterOffset, int characterCount)
 {
     CharacterIterator entireRangeIterator(entireRange);
     return characterSubrange(entireRangeIterator, characterOffset, characterCount);
@@ -2066,9 +2066,9 @@ String plainText(const Range* r, TextIteratorBehaviorFlags behavior)
     return builder.toString();
 }
 
-static PassRefPtr<Range> collapsedToBoundary(const Range* range, bool forward)
+static PassRefPtrWillBeRawPtr<Range> collapsedToBoundary(const Range* range, bool forward)
 {
-    RefPtr<Range> result = range->cloneRange(ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Range> result = range->cloneRange(ASSERT_NO_EXCEPTION);
     result->collapse(!forward, ASSERT_NO_EXCEPTION);
     return result.release();
 }
@@ -2081,8 +2081,8 @@ static size_t findPlainTextInternal(CharacterIterator& it, const String& target,
     SearchBuffer buffer(target, options);
 
     if (buffer.needsMoreContext()) {
-        RefPtr<Range> startRange = it.range();
-        RefPtr<Range> beforeStartRange = startRange->ownerDocument().createRange();
+        RefPtrWillBeRawPtr<Range> startRange = it.range();
+        RefPtrWillBeRawPtr<Range> beforeStartRange = startRange->ownerDocument().createRange();
         beforeStartRange->setEnd(startRange->startContainer(), startRange->startOffset(), IGNORE_EXCEPTION);
         for (SimplifiedBackwardsTextIterator backwardsIterator(beforeStartRange.get()); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
             Vector<UChar, 1024> characters;
@@ -2121,7 +2121,7 @@ tryAgain:
 
 static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersAuthorShadowRoots;
 
-PassRefPtr<Range> findPlainText(const Range* range, const String& target, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> findPlainText(const Range* range, const String& target, FindOptions options)
 {
     // CharacterIterator requires renderers to be up-to-date
     range->ownerDocument().updateLayout();
@@ -2141,7 +2141,7 @@ PassRefPtr<Range> findPlainText(const Range* range, const String& target, FindOp
     return characterSubrange(computeRangeIterator, matchStart, matchLength);
 }
 
-PassRefPtr<Range> findPlainText(const Position& start, const Position& end, const String& target, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> findPlainText(const Position& start, const Position& end, const String& target, FindOptions options)
 {
     // CharacterIterator requires renderers to be up-to-date.
     if (!start.inDocument())

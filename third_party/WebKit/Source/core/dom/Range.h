@@ -30,6 +30,7 @@
 #include "core/dom/RangeBoundaryPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -47,11 +48,11 @@ class Node;
 class NodeWithIndex;
 class Text;
 
-class Range : public RefCounted<Range>, public ScriptWrappable {
+class Range FINAL : public RefCountedWillBeGarbageCollectedFinalized<Range>, public ScriptWrappable {
 public:
-    static PassRefPtr<Range> create(Document&);
-    static PassRefPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
-    static PassRefPtr<Range> create(Document&, const Position&, const Position&);
+    static PassRefPtrWillBeRawPtr<Range> create(Document&);
+    static PassRefPtrWillBeRawPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
+    static PassRefPtrWillBeRawPtr<Range> create(Document&, const Position&, const Position&);
     ~Range();
 
     Document& ownerDocument() const { ASSERT(m_ownerDocument); return *m_ownerDocument.get(); }
@@ -93,7 +94,7 @@ public:
     PassRefPtr<DocumentFragment> createContextualFragment(const String& html, ExceptionState&);
 
     void detach(ExceptionState&);
-    PassRefPtr<Range> cloneRange(ExceptionState&) const;
+    PassRefPtrWillBeRawPtr<Range> cloneRange(ExceptionState&) const;
 
     void setStartAfter(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void setEndBefore(Node*, ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -149,6 +150,8 @@ public:
     void formatForDebugger(char* buffer, unsigned length) const;
 #endif
 
+    void trace(Visitor*);
+
 private:
     explicit Range(Document&);
     Range(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
@@ -173,7 +176,7 @@ private:
     RangeBoundaryPoint m_end;
 };
 
-PassRefPtr<Range> rangeOfContents(Node*);
+PassRefPtrWillBeRawPtr<Range> rangeOfContents(Node*);
 
 bool areRangesEqual(const Range*, const Range*);
 

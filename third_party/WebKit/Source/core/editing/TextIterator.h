@@ -28,6 +28,7 @@
 
 #include "core/dom/Range.h"
 #include "core/editing/FindOptions.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -49,8 +50,8 @@ enum TextIteratorBehavior {
 typedef unsigned TextIteratorBehaviorFlags;
 
 String plainText(const Range*, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
-PassRefPtr<Range> findPlainText(const Range*, const String&, FindOptions);
-PassRefPtr<Range> findPlainText(const Position& start, const Position& end, const String&, FindOptions);
+PassRefPtrWillBeRawPtr<Range> findPlainText(const Range*, const String&, FindOptions);
+PassRefPtrWillBeRawPtr<Range> findPlainText(const Position& start, const Position& end, const String&, FindOptions);
 
 class BitStack {
 public:
@@ -103,11 +104,11 @@ public:
         }
     }
 
-    PassRefPtr<Range> range() const;
+    PassRefPtrWillBeRawPtr<Range> range() const;
     Node* node() const;
 
     static int rangeLength(const Range*, bool spacesForReplacedElements = false);
-    static PassRefPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
+    static PassRefPtrWillBeRawPtr<Range> subrange(Range* entireRange, int characterOffset, int characterCount);
 
 private:
     enum IterationProgress {
@@ -233,7 +234,7 @@ public:
             m_textContainer.prependTo(output, m_textOffset, m_textLength);
     }
 
-    PassRefPtr<Range> range() const;
+    PassRefPtrWillBeRawPtr<Range> range() const;
 
 private:
     void exitNode();
@@ -310,7 +311,7 @@ public:
     void appendTextTo(BufferType& output) { m_textIterator.appendTextTo(output, m_runOffset); }
 
     int characterOffset() const { return m_offset; }
-    PassRefPtr<Range> range() const;
+    PassRefPtrWillBeRawPtr<Range> range() const;
 
 private:
     void initialize();
@@ -330,7 +331,7 @@ public:
 
     bool atEnd() const { return m_textIterator.atEnd(); }
 
-    PassRefPtr<Range> range() const;
+    PassRefPtrWillBeRawPtr<Range> range() const;
 
 private:
     int m_offset;
@@ -343,6 +344,7 @@ private:
 // Very similar to the TextIterator, except that the chunks of text returned are "well behaved",
 // meaning they never end split up a word.  This is useful for spellcheck or (perhaps one day) searching.
 class WordAwareIterator {
+    STACK_ALLOCATED();
 public:
     explicit WordAwareIterator(const Range*);
     ~WordAwareIterator();
@@ -358,7 +360,7 @@ private:
     Vector<UChar> m_buffer;
     // Did we have to look ahead in the textIterator to confirm the current chunk?
     bool m_didLookAhead;
-    RefPtr<Range> m_range;
+    RefPtrWillBeMember<Range> m_range;
     TextIterator m_textIterator;
 };
 

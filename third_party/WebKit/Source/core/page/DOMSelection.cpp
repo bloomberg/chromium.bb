@@ -349,7 +349,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
     m_frame->selection().setExtent(VisiblePosition(createLegacyEditingPosition(node, offset), DOWNSTREAM));
 }
 
-PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)
 {
     if (!m_frame)
         return nullptr;
@@ -402,7 +402,7 @@ void DOMSelection::addRange(Range* newRange)
         return;
     }
 
-    RefPtr<Range> originalRange = selection.firstRange();
+    RefPtrWillBeRawPtr<Range> originalRange = selection.firstRange();
 
     if (originalRange->startContainer()->document() != newRange->startContainer()->document()) {
         addConsoleError("The given range does not belong to the current selection's document.");
@@ -426,7 +426,7 @@ void DOMSelection::addRange(Range* newRange)
 
     Range* start = originalRange->compareBoundaryPoints(Range::START_TO_START, newRange, ASSERT_NO_EXCEPTION) < 0 ? originalRange.get() : newRange;
     Range* end = originalRange->compareBoundaryPoints(Range::END_TO_END, newRange, ASSERT_NO_EXCEPTION) < 0 ? newRange : originalRange.get();
-    RefPtr<Range> merged = Range::create(originalRange->startContainer()->document(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
+    RefPtrWillBeRawPtr<Range> merged = Range::create(originalRange->startContainer()->document(), start->startContainer(), start->startOffset(), end->endContainer(), end->endOffset());
     EAffinity affinity = selection.selection().affinity();
     selection.setSelectedRange(merged.get(), affinity);
 }
@@ -444,7 +444,7 @@ void DOMSelection::deleteFromDocument()
     if (isCollapsed())
         selection.modify(FrameSelection::AlterationExtend, DirectionBackward, CharacterGranularity);
 
-    RefPtr<Range> selectedRange = selection.selection().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> selectedRange = selection.selection().toNormalizedRange();
     if (!selectedRange)
         return;
 
@@ -464,7 +464,7 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const
         return false;
 
     unsigned nodeIndex = n->nodeIndex();
-    RefPtr<Range> selectedRange = selection.selection().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> selectedRange = selection.selection().toNormalizedRange();
 
     ContainerNode* parentNode = n->parentNode();
     if (!parentNode)

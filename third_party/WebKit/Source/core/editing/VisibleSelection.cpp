@@ -181,7 +181,7 @@ void VisibleSelection::setExtent(const VisiblePosition& visiblePosition)
         didChange();
 }
 
-PassRefPtr<Range> VisibleSelection::firstRange() const
+PassRefPtrWillBeRawPtr<Range> VisibleSelection::firstRange() const
 {
     if (isNone())
         return nullptr;
@@ -190,7 +190,7 @@ PassRefPtr<Range> VisibleSelection::firstRange() const
     return Range::create(*start.document(), start, end);
 }
 
-PassRefPtr<Range> VisibleSelection::toNormalizedRange() const
+PassRefPtrWillBeRawPtr<Range> VisibleSelection::toNormalizedRange() const
 {
     if (isNone())
         return nullptr;
@@ -262,7 +262,7 @@ bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)
     return true;
 }
 
-static PassRefPtr<Range> makeSearchRange(const Position& pos)
+static PassRefPtrWillBeRawPtr<Range> makeSearchRange(const Position& pos)
 {
     Node* n = pos.deprecatedNode();
     if (!n)
@@ -275,7 +275,7 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
     if (!boundary)
         return nullptr;
 
-    RefPtr<Range> searchRange(Range::create(d));
+    RefPtrWillBeRawPtr<Range> searchRange(Range::create(d));
     TrackExceptionState exceptionState;
 
     Position start(pos.parentAnchoredEquivalent());
@@ -291,7 +291,7 @@ static PassRefPtr<Range> makeSearchRange(const Position& pos)
 
 void VisibleSelection::appendTrailingWhitespace()
 {
-    RefPtr<Range> searchRange = makeSearchRange(m_end);
+    RefPtrWillBeRawPtr<Range> searchRange = makeSearchRange(m_end);
     if (!searchRange)
         return;
 

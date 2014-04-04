@@ -139,7 +139,7 @@ void InsertListCommand::doApply()
             int indexForEndOfSelection = indexForVisiblePosition(endOfSelection, scope);
             bool forceCreateList = !selectionHasListOfType(selection, listTag);
 
-            RefPtr<Range> currentSelection = endingSelection().firstRange();
+            RefPtrWillBeRawPtr<Range> currentSelection = endingSelection().firstRange();
             VisiblePosition startOfCurrentParagraph = startOfSelection;
             while (!inSameParagraph(startOfCurrentParagraph, startOfLastParagraph, CanCrossEditingBoundary)) {
                 // doApply() may operate on and remove the last paragraph of the selection from the document

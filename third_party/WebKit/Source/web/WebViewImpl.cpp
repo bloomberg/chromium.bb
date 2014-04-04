@@ -1945,7 +1945,7 @@ bool WebViewImpl::setComposition(
     // editable because JavaScript may delete a parent node of the composition
     // node. In this case, WebKit crashes while deleting texts from the parent
     // node, which doesn't exist any longer.
-    RefPtr<Range> range = inputMethodController.compositionRange();
+    RefPtrWillBeRawPtr<Range> range = inputMethodController.compositionRange();
     if (range) {
         Node* node = range->startContainer();
         if (!node || !node->isContentEditable())
@@ -2009,7 +2009,7 @@ bool WebViewImpl::compositionRange(size_t* location, size_t* length)
     if (!focused || !m_imeAcceptEvents)
         return false;
 
-    RefPtr<Range> range = focused->inputMethodController().compositionRange();
+    RefPtrWillBeRawPtr<Range> range = focused->inputMethodController().compositionRange();
     if (!range)
         return false;
 
@@ -2050,7 +2050,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
     if (info.value.isEmpty())
         return info;
 
-    if (RefPtr<Range> range = selection.selection().firstRange()) {
+    if (RefPtrWillBeRawPtr<Range> range = selection.selection().firstRange()) {
         PlainTextRange plainTextRange(PlainTextRange::create(*node, *range.get()));
         if (plainTextRange.isNotNull()) {
             info.selectionStart = plainTextRange.start();
@@ -2058,7 +2058,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
         }
     }
 
-    if (RefPtr<Range> range = focused->inputMethodController().compositionRange()) {
+    if (RefPtrWillBeRawPtr<Range> range = focused->inputMethodController().compositionRange()) {
         PlainTextRange plainTextRange(PlainTextRange::create(*node, *range.get()));
         if (plainTextRange.isNotNull()) {
             info.compositionStart = plainTextRange.start();
@@ -2161,11 +2161,11 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     if (selection.isCaret()) {
         anchor = focus = selection.absoluteCaretBounds();
     } else {
-        RefPtr<Range> selectedRange = selection.toNormalizedRange();
+        RefPtrWillBeRawPtr<Range> selectedRange = selection.toNormalizedRange();
         if (!selectedRange)
             return false;
 
-        RefPtr<Range> range(Range::create(selectedRange->startContainer()->document(),
+        RefPtrWillBeRawPtr<Range> range(Range::create(selectedRange->startContainer()->document(),
             selectedRange->startContainer(),
             selectedRange->startOffset(),
             selectedRange->startContainer(),

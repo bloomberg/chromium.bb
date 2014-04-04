@@ -34,7 +34,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/NodeList.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -149,7 +149,7 @@ public:
 
     unsigned markerCountForNode(Node*, const String&, ExceptionState&);
     unsigned activeMarkerCountForNode(Node*, ExceptionState&);
-    PassRefPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     void addTextMatchMarker(const Range*, bool isActive);
     void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool, ExceptionState&);
@@ -166,7 +166,7 @@ public:
     void setAutofilled(Element*, bool enabled, ExceptionState&);
     void scrollElementToRect(Element*, long x, long y, long w, long h, ExceptionState&);
 
-    PassRefPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Range> rangeFromLocationAndLength(Element* scope, int rangeLocation, int rangeLength, ExceptionState&);
     unsigned locationFromRange(Element* scope, const Range*, ExceptionState&);
     unsigned lengthFromRange(Element* scope, const Range*, ExceptionState&);
     String rangeAsText(const Range*, ExceptionState&);

@@ -31,20 +31,17 @@
 #ifndef WebRange_h
 #define WebRange_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebVector.h"
 #include "WebFrame.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebPrivatePtr.h"
+#include "public/platform/WebVector.h"
 
-#if BLINK_IMPLEMENTATION
 namespace WebCore { class Range; }
-namespace WTF { template <typename T> class PassRefPtr; }
-#endif
 
 namespace blink {
 
 struct WebFloatQuad;
 class WebNode;
-class WebRangePrivate;
 class WebString;
 
 // Provides readonly access to some properties of a DOM range.
@@ -52,8 +49,8 @@ class WebRange {
 public:
     ~WebRange() { reset(); }
 
-    WebRange() : m_private(0) { }
-    WebRange(const WebRange& r) : m_private(0) { assign(r); }
+    WebRange() { }
+    WebRange(const WebRange& r) { assign(r); }
     WebRange& operator=(const WebRange& r)
     {
         assign(r);
@@ -63,7 +60,7 @@ public:
     BLINK_EXPORT void reset();
     BLINK_EXPORT void assign(const WebRange&);
 
-    bool isNull() const { return !m_private; }
+    bool isNull() const { return m_private.isNull(); }
 
     BLINK_EXPORT int startOffset() const;
     BLINK_EXPORT int endOffset() const;
@@ -80,14 +77,12 @@ public:
     BLINK_EXPORT WebVector<WebFloatQuad> textQuads() const;
 
 #if BLINK_IMPLEMENTATION
-    WebRange(const WTF::PassRefPtr<WebCore::Range>&);
-    WebRange& operator=(const WTF::PassRefPtr<WebCore::Range>&);
-    operator WTF::PassRefPtr<WebCore::Range>() const;
+    WebRange(const PassRefPtrWillBeRawPtr<WebCore::Range>&);
+    operator PassRefPtrWillBeRawPtr<WebCore::Range>() const;
 #endif
 
 private:
-    void assign(WebRangePrivate*);
-    WebRangePrivate* m_private;
+    WebPrivatePtr<WebCore::Range> m_private;
 };
 
 } // namespace blink

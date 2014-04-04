@@ -502,7 +502,7 @@ void CompositeEditCommand::replaceTextInNodePreservingMarkers(PassRefPtr<Text> p
     Vector<DocumentMarker> markers;
     copyMarkers(markerController.markersInRange(Range::create(document(), node.get(), offset, node.get(), offset + count).get(), DocumentMarker::AllMarkers()), markers);
     replaceTextInNode(node, offset, count, replacementText);
-    RefPtr<Range> newRange = Range::create(document(), node.get(), offset, node.get(), offset + replacementText.length());
+    RefPtrWillBeRawPtr<Range> newRange = Range::create(document(), node.get(), offset, node.get(), offset + replacementText.length());
     for (size_t i = 0; i < markers.size(); ++i)
         markerController.addMarker(newRange.get(), markers[i].type(), markers[i].description());
 }
@@ -1153,13 +1153,13 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
             startIndex = 0;
             if (startInParagraph) {
-                RefPtr<Range> startRange = Range::create(document(), startOfParagraphToMove.deepEquivalent().parentAnchoredEquivalent(), visibleStart.deepEquivalent().parentAnchoredEquivalent());
+                RefPtrWillBeRawPtr<Range> startRange = Range::create(document(), startOfParagraphToMove.deepEquivalent().parentAnchoredEquivalent(), visibleStart.deepEquivalent().parentAnchoredEquivalent());
                 startIndex = TextIterator::rangeLength(startRange.get(), true);
             }
 
             endIndex = 0;
             if (endInParagraph) {
-                RefPtr<Range> endRange = Range::create(document(), startOfParagraphToMove.deepEquivalent().parentAnchoredEquivalent(), visibleEnd.deepEquivalent().parentAnchoredEquivalent());
+                RefPtrWillBeRawPtr<Range> endRange = Range::create(document(), startOfParagraphToMove.deepEquivalent().parentAnchoredEquivalent(), visibleEnd.deepEquivalent().parentAnchoredEquivalent());
                 endIndex = TextIterator::rangeLength(endRange.get(), true);
             }
         }
@@ -1176,7 +1176,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // start and end can't be used directly to create a Range; they are "editing positions"
     Position startRangeCompliant = start.parentAnchoredEquivalent();
     Position endRangeCompliant = end.parentAnchoredEquivalent();
-    RefPtr<Range> range = Range::create(document(), startRangeCompliant.deprecatedNode(), startRangeCompliant.deprecatedEditingOffset(), endRangeCompliant.deprecatedNode(), endRangeCompliant.deprecatedEditingOffset());
+    RefPtrWillBeRawPtr<Range> range = Range::create(document(), startRangeCompliant.deprecatedNode(), startRangeCompliant.deprecatedEditingOffset(), endRangeCompliant.deprecatedNode(), endRangeCompliant.deprecatedEditingOffset());
 
     // FIXME: This is an inefficient way to preserve style on nodes in the paragraph to move. It
     // shouldn't matter though, since moved paragraphs will usually be quite small.
@@ -1220,7 +1220,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         document().updateLayoutIgnorePendingStylesheets();
     }
 
-    RefPtr<Range> startToDestinationRange(Range::create(document(), firstPositionInNode(document().documentElement()), destination.deepEquivalent().parentAnchoredEquivalent()));
+    RefPtrWillBeRawPtr<Range> startToDestinationRange(Range::create(document(), firstPositionInNode(document().documentElement()), destination.deepEquivalent().parentAnchoredEquivalent()));
     destinationIndex = TextIterator::rangeLength(startToDestinationRange.get(), true);
 
     setEndingSelection(VisibleSelection(destination, originalIsDirectional));
@@ -1244,8 +1244,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
             // causes spaces to be collapsed during the move operation. This results
             // in a call to rangeFromLocationAndLength with a location past the end
             // of the document (which will return null).
-            RefPtr<Range> start = PlainTextRange(destinationIndex + startIndex).createRangeForSelection(*documentElement);
-            RefPtr<Range> end = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*documentElement);
+            RefPtrWillBeRawPtr<Range> start = PlainTextRange(destinationIndex + startIndex).createRangeForSelection(*documentElement);
+            RefPtrWillBeRawPtr<Range> end = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*documentElement);
             if (start && end)
                 setEndingSelection(VisibleSelection(start->startPosition(), end->startPosition(), DOWNSTREAM, originalIsDirectional));
         }

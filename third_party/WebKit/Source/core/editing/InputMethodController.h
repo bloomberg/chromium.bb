@@ -66,7 +66,7 @@ public:
     // Deletes the existing composition text.
     void cancelComposition();
     void cancelCompositionIfSelectionIsInvalid();
-    PassRefPtr<Range> compositionRange() const;
+    PassRefPtrWillBeRawPtr<Range> compositionRange() const;
 
     // getting international text input composition state (for use by InlineTextBox)
     Text* compositionNode() const { return m_compositionNode.get(); }

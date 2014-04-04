@@ -720,7 +720,7 @@ void VisiblePosition::showTreeForThis() const
 
 #endif
 
-PassRefPtr<Range> makeRange(const VisiblePosition &start, const VisiblePosition &end)
+PassRefPtrWillBeRawPtr<Range> makeRange(const VisiblePosition &start, const VisiblePosition &end)
 {
     if (start.isNull() || end.isNull())
         return nullptr;

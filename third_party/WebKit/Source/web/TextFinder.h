@@ -34,6 +34,7 @@
 #include "WebFindOptions.h"
 #include "core/editing/FindOptions.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/heap/Handle.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
@@ -89,12 +90,10 @@ public:
 
     ~TextFinder();
 
-private:
-    class DeferredScopeStringMatches;
-    friend class DeferredScopeStringMatches;
-
-    struct FindMatch {
-        RefPtr<WebCore::Range> m_range;
+    class FindMatch {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        RefPtrWillBeMember<WebCore::Range> m_range;
 
         // 1-based index within this frame.
         int m_ordinal;
@@ -103,8 +102,14 @@ private:
         // Lazily calculated by updateFindMatchRects.
         WebCore::FloatRect m_rect;
 
-        FindMatch(PassRefPtr<WebCore::Range>, int ordinal);
+        FindMatch(PassRefPtrWillBeRawPtr<WebCore::Range>, int ordinal);
+
+        void trace(WebCore::Visitor*);
     };
+
+private:
+    class DeferredScopeStringMatches;
+    friend class DeferredScopeStringMatches;
 
     explicit TextFinder(WebFrameImpl& ownerFrame);
 
@@ -192,14 +197,14 @@ private:
     WebFrameImpl* m_currentActiveMatchFrame;
 
     // The range of the active match for the current frame.
-    RefPtr<WebCore::Range> m_activeMatch;
+    RefPtrWillBePersistent<WebCore::Range> m_activeMatch;
 
     // The index of the active match for the current frame.
     int m_activeMatchIndexInCurrentFrame;
 
     // The scoping effort can time out and we need to keep track of where we
     // ended our last search so we can continue from where we left of.
-    RefPtr<WebCore::Range> m_resumeScopingFromRange;
+    RefPtrWillBePersistent<WebCore::Range> m_resumeScopingFromRange;
 
     // Keeps track of the last string this frame searched for. This is used for
     // short-circuiting searches in the following scenarios: When a frame has
@@ -238,7 +243,7 @@ private:
     int m_findMatchMarkersVersion;
 
     // Local cache of the find match markers currently displayed for this frame.
-    Vector<FindMatch> m_findMatchesCache;
+    WillBePersistentHeapVector<FindMatch> m_findMatchesCache;
 
     // Contents size when find-in-page match rects were last computed for this
     // frame's cache.
@@ -262,5 +267,11 @@ private:
 };
 
 } // namespace blink
+
+namespace WTF {
+template <> struct VectorTraits<blink::TextFinder::FindMatch> : VectorTraitsBase<blink::TextFinder::FindMatch> {
+    static const bool canInitializeWithMemset = true;
+};
+}
 
 #endif

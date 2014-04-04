@@ -148,7 +148,7 @@ PassOwnPtr<DragController> DragController::create(Page* page, DragClient* client
     return adoptPtr(new DragController(page, client));
 }
 
-static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragData, LocalFrame* frame, RefPtr<Range> context,
+static PassRefPtr<DocumentFragment> documentFragmentFromDragData(DragData* dragData, LocalFrame* frame, RefPtrWillBeRawPtr<Range> context,
                                           bool allowPlainText, bool& chosePlainText)
 {
     ASSERT(dragData);
@@ -424,7 +424,7 @@ DragOperation DragController::operationForLoad(DragData* dragData)
     return dragOperation(dragData);
 }
 
-static bool setSelectionToDragCaret(LocalFrame* frame, VisibleSelection& dragCaret, RefPtr<Range>& range, const IntPoint& point)
+static bool setSelectionToDragCaret(LocalFrame* frame, VisibleSelection& dragCaret, RefPtrWillBeRawPtr<Range>& range, const IntPoint& point)
 {
     frame->selection().setSelection(dragCaret);
     if (frame->selection().isNone()) {
@@ -483,7 +483,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
 
     VisibleSelection dragCaret(m_page->dragCaretController().caretPosition());
     m_page->dragCaretController().clear();
-    RefPtr<Range> range = dragCaret.toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> range = dragCaret.toNormalizedRange();
     RefPtr<Element> rootEditableElement = innerFrame->selection().rootEditableElement();
 
     // For range to be null a WebKit client must have done something bad while
@@ -714,7 +714,7 @@ static Image* getImage(Element* element)
 static void prepareClipboardForImageDrag(LocalFrame* source, Clipboard* clipboard, Element* node, const KURL& linkURL, const KURL& imageURL, const String& label)
 {
     if (node->isContentRichlyEditable()) {
-        RefPtr<Range> range = source->document()->createRange();
+        RefPtrWillBeRawPtr<Range> range = source->document()->createRange();
         range->selectNode(node, ASSERT_NO_EXCEPTION);
         source->selection().setSelection(VisibleSelection(range.get(), DOWNSTREAM));
     }
@@ -747,7 +747,7 @@ bool DragController::populateDragClipboard(LocalFrame* src, const DragState& sta
         if (enclosingTextFormControl(src->selection().start())) {
             clipboard->writePlainText(src->selectedTextForClipboard());
         } else {
-            RefPtr<Range> selectionRange = src->selection().toNormalizedRange();
+            RefPtrWillBeRawPtr<Range> selectionRange = src->selection().toNormalizedRange();
             ASSERT(selectionRange);
 
             clipboard->writeRange(selectionRange.get(), src);

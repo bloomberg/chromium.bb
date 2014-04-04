@@ -54,10 +54,15 @@ using namespace WebCore;
 
 namespace blink {
 
-TextFinder::FindMatch::FindMatch(PassRefPtr<Range> range, int ordinal)
+TextFinder::FindMatch::FindMatch(PassRefPtrWillBeRawPtr<Range> range, int ordinal)
     : m_range(range)
     , m_ordinal(ordinal)
 {
+}
+
+void TextFinder::FindMatch::trace(WebCore::Visitor* visitor)
+{
+    visitor->trace(m_range);
 }
 
 class TextFinder::DeferredScopeStringMatches {
@@ -228,7 +233,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
     }
 
     WebFrameImpl* mainFrameImpl = m_ownerFrame.viewImpl()->mainFrameImpl();
-    RefPtr<Range> searchRange(rangeOfContents(m_ownerFrame.frame()->document()));
+    RefPtrWillBeRawPtr<Range> searchRange(rangeOfContents(m_ownerFrame.frame()->document()));
 
     Node* originalEndContainer = searchRange->endContainer();
     int originalEndOffset = searchRange->endOffset();
@@ -259,7 +264,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         // than the timeout value, and is not interruptible as it is currently
         // written. We may need to rewrite it with interruptibility in mind, or
         // find an alternative.
-        RefPtr<Range> resultRange(findPlainText(
+        RefPtrWillBeRawPtr<Range> resultRange(findPlainText(
             searchRange.get(), searchText, options.matchCase ? 0 : CaseInsensitive));
         if (resultRange->collapsed(exceptionState)) {
             if (!resultRange->startContainer()->isInShadowTree())
@@ -453,7 +458,7 @@ void TextFinder::updateFindMatchRects()
 
     // Remove any invalid matches from the cache.
     if (deadMatches) {
-        Vector<FindMatch> filteredMatches;
+        WillBeHeapVector<FindMatch> filteredMatches;
         filteredMatches.reserveCapacity(m_findMatchesCache.size() - deadMatches);
 
         for (Vector<FindMatch>::const_iterator it = m_findMatchesCache.begin(); it != m_findMatchesCache.end(); ++it) {
@@ -546,7 +551,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_findMatchesCache.size());
 
-    RefPtr<Range> range = m_findMatchesCache[index].m_range;
+    RefPtrWillBeRawPtr<Range> range = m_findMatchesCache[index].m_range;
     if (!range->boundaryPointsValid() || !range->startContainer()->inDocument())
         return -1;
 

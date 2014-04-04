@@ -147,9 +147,9 @@ public:
 
     // If this FrameSelection has a logical range which is still valid, this function return its clone. Otherwise,
     // the return value from underlying VisibleSelection's firstRange() is returned.
-    PassRefPtr<Range> firstRange() const;
+    PassRefPtrWillBeRawPtr<Range> firstRange() const;
 
-    PassRefPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
+    PassRefPtrWillBeRawPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
 
     void nodeWillBeRemoved(Node&);
     void didUpdateCharacterData(CharacterData*, unsigned offset, unsigned oldLength, unsigned newLength);
@@ -258,7 +258,7 @@ private:
     // The range specified by the user, which may not be visually canonicalized (hence "logical").
     // This will be invalidated if the underlying VisibleSelection changes. If that happens, this variable will
     // become null, in which case logical positions == visible positions.
-    RefPtr<Range> m_logicalRange;
+    RefPtrWillBePersistent<Range> m_logicalRange;
 
     RefPtr<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
 

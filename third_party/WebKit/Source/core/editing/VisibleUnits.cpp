@@ -43,6 +43,7 @@
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
 
 namespace WebCore {
@@ -456,14 +457,14 @@ static VisiblePosition previousBoundary(const VisiblePosition& c, BoundarySearch
     Document& d = boundary->document();
     Position start = createLegacyEditingPosition(boundary, 0).parentAnchoredEquivalent();
     Position end = pos.parentAnchoredEquivalent();
-    RefPtr<Range> searchRange = Range::create(d);
+    RefPtrWillBeRawPtr<Range> searchRange = Range::create(d);
 
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;
 
     TrackExceptionState exceptionState;
     if (requiresContextForWordBoundary(c.characterBefore())) {
-        RefPtr<Range> forwardsScanRange(d.createRange());
+        RefPtrWillBeRawPtr<Range> forwardsScanRange(d.createRange());
         forwardsScanRange->setEndAfter(boundary, exceptionState);
         forwardsScanRange->setStart(end.deprecatedNode(), end.deprecatedEditingOffset(), exceptionState);
         TextIterator forwardsIterator(forwardsScanRange.get());
@@ -535,14 +536,14 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         return VisiblePosition();
 
     Document& d = boundary->document();
-    RefPtr<Range> searchRange(d.createRange());
+    RefPtrWillBeRawPtr<Range> searchRange(d.createRange());
     Position start(pos.parentAnchoredEquivalent());
 
     Vector<UChar, 1024> string;
     unsigned prefixLength = 0;
 
     if (requiresContextForWordBoundary(c.characterAfter())) {
-        RefPtr<Range> backwardsScanRange(d.createRange());
+        RefPtrWillBeRawPtr<Range> backwardsScanRange(d.createRange());
         backwardsScanRange->setEnd(start.deprecatedNode(), start.deprecatedEditingOffset(), IGNORE_EXCEPTION);
         SimplifiedBackwardsTextIterator backwardsIterator(backwardsScanRange.get());
         while (!backwardsIterator.atEnd()) {
@@ -594,7 +595,7 @@ static VisiblePosition nextBoundary(const VisiblePosition& c, BoundarySearchFunc
         // Use the character iterator to translate the next value into a DOM position.
         CharacterIterator charIt(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
         charIt.advance(next - prefixLength - 1);
-        RefPtr<Range> characterRange = charIt.range();
+        RefPtrWillBeRawPtr<Range> characterRange = charIt.range();
         pos = characterRange->endPosition();
 
         if (charIt.characterAt(0) == '\n') {

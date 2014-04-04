@@ -12,6 +12,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Compiler.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -49,10 +50,10 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText)
     document().body()->setInnerHTML("1234", ASSERT_NO_EXCEPTION);
     Text* oldText = toText(document().body()->firstChild());
 
-    RefPtr<Range> range04 = Range::create(document(), oldText, 0, oldText, 4);
-    RefPtr<Range> range02 = Range::create(document(), oldText, 0, oldText, 2);
-    RefPtr<Range> range22 = Range::create(document(), oldText, 2, oldText, 2);
-    RefPtr<Range> range24 = Range::create(document(), oldText, 2, oldText, 4);
+    RefPtrWillBeRawPtr<Range> range04 = Range::create(document(), oldText, 0, oldText, 4);
+    RefPtrWillBeRawPtr<Range> range02 = Range::create(document(), oldText, 0, oldText, 2);
+    RefPtrWillBeRawPtr<Range> range22 = Range::create(document(), oldText, 2, oldText, 2);
+    RefPtrWillBeRawPtr<Range> range24 = Range::create(document(), oldText, 2, oldText, 4);
 
     oldText->splitText(2, ASSERT_NO_EXCEPTION);
     Text* newText = toText(oldText->nextSibling());
@@ -92,12 +93,12 @@ TEST_F(RangeTest, SplitTextNodeRangeOutsideText)
     Element* innerRight = document().getElementById(AtomicString::fromUTF8("inner-right"));
     Text* oldText = toText(outer->childNodes()->item(2));
 
-    RefPtr<Range> rangeOuterOutside = Range::create(document(), outer, 0, outer, 5);
-    RefPtr<Range> rangeOuterInside = Range::create(document(), outer, 1, outer, 4);
-    RefPtr<Range> rangeOuterSurroundingText = Range::create(document(), outer, 2, outer, 3);
-    RefPtr<Range> rangeInnerLeft = Range::create(document(), innerLeft, 0, innerLeft, 1);
-    RefPtr<Range> rangeInnerRight = Range::create(document(), innerRight, 0, innerRight, 1);
-    RefPtr<Range> rangeFromTextToMiddleOfElement = Range::create(document(), oldText, 6, outer, 3);
+    RefPtrWillBeRawPtr<Range> rangeOuterOutside = Range::create(document(), outer, 0, outer, 5);
+    RefPtrWillBeRawPtr<Range> rangeOuterInside = Range::create(document(), outer, 1, outer, 4);
+    RefPtrWillBeRawPtr<Range> rangeOuterSurroundingText = Range::create(document(), outer, 2, outer, 3);
+    RefPtrWillBeRawPtr<Range> rangeInnerLeft = Range::create(document(), innerLeft, 0, innerLeft, 1);
+    RefPtrWillBeRawPtr<Range> rangeInnerRight = Range::create(document(), innerRight, 0, innerRight, 1);
+    RefPtrWillBeRawPtr<Range> rangeFromTextToMiddleOfElement = Range::create(document(), oldText, 6, outer, 3);
 
     oldText->splitText(3, ASSERT_NO_EXCEPTION);
     Text* newText = toText(oldText->nextSibling());

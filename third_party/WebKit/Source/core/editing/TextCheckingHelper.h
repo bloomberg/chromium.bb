@@ -21,6 +21,7 @@
 #ifndef TextCheckingHelper_h
 #define TextCheckingHelper_h
 
+#include "platform/heap/Handle.h"
 #include "platform/text/TextChecking.h"
 #include "wtf/text/WTFString.h"
 
@@ -35,13 +36,14 @@ class TextCheckerClient;
 struct TextCheckingResult;
 
 class TextCheckingParagraph {
+    STACK_ALLOCATED();
 public:
-    explicit TextCheckingParagraph(PassRefPtr<Range> checkingRange);
-    TextCheckingParagraph(PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange);
+    explicit TextCheckingParagraph(PassRefPtrWillBeRawPtr<Range> checkingRange);
+    TextCheckingParagraph(PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange);
     ~TextCheckingParagraph();
 
     int rangeLength() const;
-    PassRefPtr<Range> subrange(int characterOffset, int characterCount) const;
+    PassRefPtrWillBeRawPtr<Range> subrange(int characterOffset, int characterCount) const;
     int offsetTo(const Position&, ExceptionState&) const;
     void expandRangeToNextEnd();
 
@@ -60,16 +62,16 @@ public:
     String checkingSubstring() const { return textSubstring(checkingStart(), checkingLength()); }
 
     bool checkingRangeCovers(int location, int length) const { return location < checkingEnd() && location + length > checkingStart(); }
-    PassRefPtr<Range> paragraphRange() const;
-    PassRefPtr<Range> checkingRange() const { return m_checkingRange; }
+    PassRefPtrWillBeRawPtr<Range> paragraphRange() const;
+    PassRefPtrWillBeRawPtr<Range> checkingRange() const { return m_checkingRange; }
 
 private:
     void invalidateParagraphRangeValues();
-    PassRefPtr<Range> offsetAsRange() const;
+    PassRefPtrWillBeRawPtr<Range> offsetAsRange() const;
 
-    RefPtr<Range> m_checkingRange;
-    mutable RefPtr<Range> m_paragraphRange;
-    mutable RefPtr<Range> m_offsetAsRange;
+    RefPtrWillBeMember<Range> m_checkingRange;
+    mutable RefPtrWillBeMember<Range> m_paragraphRange;
+    mutable RefPtrWillBeMember<Range> m_offsetAsRange;
     mutable String m_text;
     mutable int m_checkingStart;
     mutable int m_checkingEnd;
@@ -78,19 +80,20 @@ private:
 
 class TextCheckingHelper {
     WTF_MAKE_NONCOPYABLE(TextCheckingHelper);
+    STACK_ALLOCATED();
 public:
-    TextCheckingHelper(SpellCheckerClient&, PassRefPtr<Range>);
+    TextCheckingHelper(SpellCheckerClient&, PassRefPtrWillBeRawPtr<Range>);
     ~TextCheckingHelper();
 
-    String findFirstMisspelling(int& firstMisspellingOffset, bool markAll, RefPtr<Range>& firstMisspellingRange);
+    String findFirstMisspelling(int& firstMisspellingOffset, bool markAll, RefPtrWillBeRawPtr<Range>& firstMisspellingRange);
     String findFirstMisspellingOrBadGrammar(bool checkGrammar, bool& outIsSpelling, int& outFirstFoundOffset, GrammarDetail& outGrammarDetail);
     String findFirstBadGrammar(GrammarDetail& outGrammarDetail, int& outGrammarPhraseOffset, bool markAll);
-    void markAllMisspellings(RefPtr<Range>& firstMisspellingRange);
+    void markAllMisspellings(RefPtrWillBeRawPtr<Range>& firstMisspellingRange);
     void markAllBadGrammar();
 
 private:
     SpellCheckerClient* m_client;
-    RefPtr<Range> m_range;
+    RefPtrWillBeMember<Range> m_range;
 
     int findFirstGrammarDetail(const Vector<GrammarDetail>& grammarDetails, int badGrammarPhraseLocation, int startOffset, int endOffset, bool markAll) const;
     bool unifiedTextCheckerEnabled() const;

@@ -52,20 +52,14 @@ using namespace WebCore;
 
 namespace blink {
 
-class WebRangePrivate : public Range {
-};
-
 void WebRange::reset()
 {
-    assign(0);
+    m_private.reset();
 }
 
 void WebRange::assign(const WebRange& other)
 {
-    WebRangePrivate* p = const_cast<WebRangePrivate*>(other.m_private);
-    if (p)
-        p->ref();
-    assign(p);
+    m_private = other.m_private;
 }
 
 int WebRange::startOffset() const
@@ -143,28 +137,14 @@ WebVector<WebFloatQuad> WebRange::textQuads() const
     return quads;
 }
 
-WebRange::WebRange(const WTF::PassRefPtr<WebCore::Range>& range)
-    : m_private(static_cast<WebRangePrivate*>(range.leakRef()))
+WebRange::WebRange(const PassRefPtrWillBeRawPtr<WebCore::Range>& range)
+    : m_private(range)
 {
 }
 
-WebRange& WebRange::operator=(const WTF::PassRefPtr<WebCore::Range>& range)
+WebRange::operator PassRefPtrWillBeRawPtr<WebCore::Range>() const
 {
-    assign(static_cast<WebRangePrivate*>(range.leakRef()));
-    return *this;
-}
-
-WebRange::operator WTF::PassRefPtr<WebCore::Range>() const
-{
-    return PassRefPtr<Range>(const_cast<WebRangePrivate*>(m_private));
-}
-
-void WebRange::assign(WebRangePrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+    return m_private.get();
 }
 
 } // namespace blink

@@ -1230,7 +1230,7 @@ Element* Document::elementFromPoint(int x, int y) const
     return TreeScope::elementFromPoint(x, y);
 }
 
-PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
+PassRefPtrWillBeRawPtr<Range> Document::caretRangeFromPoint(int x, int y)
 {
     if (!renderView())
         return nullptr;
@@ -1477,7 +1477,7 @@ Settings* Document::settings() const
     return m_frame ? m_frame->settings() : 0;
 }
 
-PassRefPtr<Range> Document::createRange()
+PassRefPtrWillBeRawPtr<Range> Document::createRange()
 {
     return Range::create(*this);
 }

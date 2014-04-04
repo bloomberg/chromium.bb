@@ -85,7 +85,7 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtr<Range> textPiece = markedText.range();
+        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
         addMarker(textPiece->startContainer(), DocumentMarker(type, textPiece->startOffset(), textPiece->endOffset(), description, hash));
     }
 }
@@ -94,7 +94,7 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtr<Range> textPiece = markedText.range();
+        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
         addMarker(textPiece->startContainer(), DocumentMarker(type, textPiece->startOffset(), textPiece->endOffset(), description));
     }
 }
@@ -103,7 +103,7 @@ void DocumentMarkerController::addMarker(Range* range, DocumentMarker::MarkerTyp
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtr<Range> textPiece = markedText.range();
+        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
         addMarker(textPiece->startContainer(), DocumentMarker(type, textPiece->startOffset(), textPiece->endOffset()));
     }
 
@@ -124,7 +124,7 @@ void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activ
 {
     // Use a TextIterator to visit the potentially multiple nodes the range covers.
     for (TextIterator markedText(range); !markedText.atEnd(); markedText.advance()) {
-        RefPtr<Range> textPiece = markedText.range();
+        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
         unsigned startOffset = textPiece->startOffset();
         unsigned endOffset = textPiece->endOffset();
         addMarker(textPiece->startContainer(), DocumentMarker(startOffset, endOffset, activeMatch));
@@ -152,7 +152,7 @@ void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::Marke
             return;
         ASSERT(!m_markers.isEmpty());
 
-        RefPtr<Range> textPiece = markedText.range();
+        RefPtrWillBeRawPtr<Range> textPiece = markedText.range();
         int startOffset = textPiece->startOffset();
         int endOffset = textPiece->endOffset();
         removeMarkers(textPiece->startContainer(), startOffset, endOffset - startOffset, markerTypes, shouldRemovePartiallyOverlappingMarker);

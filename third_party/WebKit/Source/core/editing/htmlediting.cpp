@@ -525,9 +525,9 @@ VisiblePosition visiblePositionAfterNode(Node& node)
 // Create a range object with two visible positions, start and end.
 // create(Document*, const Position&, const Position&); will use deprecatedEditingOffset
 // Use this function instead of create a regular range object (avoiding editing offset).
-PassRefPtr<Range> createRange(Document& document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Range> createRange(Document& document, const VisiblePosition& start, const VisiblePosition& end, ExceptionState& exceptionState)
 {
-    RefPtr<Range> selectedRange = Range::create(document);
+    RefPtrWillBeRawPtr<Range> selectedRange = Range::create(document);
     selectedRange->setStart(start.deepEquivalent().containerNode(), start.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
     if (!exceptionState.hadException())
         selectedRange->setEnd(end.deepEquivalent().containerNode(), end.deepEquivalent().computeOffsetInContainerNode(), exceptionState);
@@ -1014,7 +1014,7 @@ int indexForVisiblePosition(const VisiblePosition& visiblePosition, RefPtr<Conta
     else
         scope = document.documentElement();
 
-    RefPtr<Range> range = Range::create(document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
+    RefPtrWillBeRawPtr<Range> range = Range::create(document, firstPositionInNode(scope.get()), p.parentAnchoredEquivalent());
 
     return TextIterator::rangeLength(range.get(), true);
 }
@@ -1023,7 +1023,7 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
 {
     if (!scope)
         return VisiblePosition();
-    RefPtr<Range> range = PlainTextRange(index).createRangeForSelection(*scope);
+    RefPtrWillBeRawPtr<Range> range = PlainTextRange(index).createRangeForSelection(*scope);
     // Check for an invalid index. Certain editing operations invalidate indices because
     // of problems with TextIteratorEmitsCharactersBetweenAllVisiblePositions.
     if (!range)

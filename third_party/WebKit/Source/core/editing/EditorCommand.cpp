@@ -213,12 +213,11 @@ static bool expandSelectionToGranularity(LocalFrame& frame, TextGranularity gran
 {
     VisibleSelection selection = frame.selection().selection();
     selection.expandUsingGranularity(granularity);
-    RefPtr<Range> newRange = selection.toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> newRange = selection.toNormalizedRange();
     if (!newRange)
         return false;
     if (newRange->collapsed(IGNORE_EXCEPTION))
         return false;
-    RefPtr<Range> oldRange = frame.selection().selection().toNormalizedRange();
     EAffinity affinity = frame.selection().affinity();
     frame.selection().setSelectedRange(newRange.get(), affinity, FrameSelection::CloseTyping);
     return true;
@@ -264,7 +263,7 @@ static unsigned verticalScrollDistance(LocalFrame& frame)
     return static_cast<unsigned>(max(max<int>(height * ScrollableArea::minFractionToStepWhenPaging(), height - ScrollableArea::maxOverlapBetweenPages()), 1));
 }
 
-static RefPtr<Range> unionDOMRanges(Range* a, Range* b)
+static PassRefPtrWillBeRawPtr<Range> unionDOMRanges(Range* a, Range* b)
 {
     Range* start = a->compareBoundaryPoints(Range::START_TO_START, b, ASSERT_NO_EXCEPTION) <= 0 ? a : b;
     Range* end = a->compareBoundaryPoints(Range::END_TO_END, b, ASSERT_NO_EXCEPTION) <= 0 ? b : a;
@@ -380,7 +379,7 @@ static bool executeDeleteToEndOfParagraph(LocalFrame& frame, Event*, EditorComma
 
 static bool executeDeleteToMark(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RefPtr<Range> mark = frame.editor().mark().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> mark = frame.editor().mark().toNormalizedRange();
     if (mark) {
         bool selected = frame.selection().setSelectedRange(unionDOMRanges(mark.get(), frame.editor().selectedRange().get()).get(), DOWNSTREAM, FrameSelection::CloseTyping);
         ASSERT(selected);
@@ -1028,8 +1027,8 @@ static bool executeSelectSentence(LocalFrame& frame, Event*, EditorCommandSource
 
 static bool executeSelectToMark(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RefPtr<Range> mark = frame.editor().mark().toNormalizedRange();
-    RefPtr<Range> selection = frame.editor().selectedRange();
+    RefPtrWillBeRawPtr<Range> mark = frame.editor().mark().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> selection = frame.editor().selectedRange();
     if (!mark || !selection)
         return false;
     frame.selection().setSelectedRange(unionDOMRanges(mark.get(), selection.get()).get(), DOWNSTREAM, FrameSelection::CloseTyping);

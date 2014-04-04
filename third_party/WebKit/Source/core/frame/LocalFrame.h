@@ -32,7 +32,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/FrameTree.h"
-#include "heap/Handle.h"
+#include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
 
 namespace WebCore {
@@ -131,7 +131,7 @@ namespace WebCore {
 
         VisiblePosition visiblePositionForPoint(const IntPoint& framePoint);
         Document* documentAtPoint(const IntPoint& windowPoint);
-        PassRefPtr<Range> rangeForPoint(const IntPoint& framePoint);
+        PassRefPtrWillBeRawPtr<Range> rangeForPoint(const IntPoint& framePoint);
 
         // Should only be called on the main frame of a page.
         void notifyChromeClientWheelEventHandlerCountChanged() const;

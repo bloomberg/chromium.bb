@@ -64,7 +64,7 @@ protected:
     Vector<String> iterate(TextIteratorBehavior = TextIteratorDefaultBehavior);
 
     void setBodyInnerHTML(const char*);
-    PassRefPtr<Range> getBodyRange() const;
+    PassRefPtrWillBeRawPtr<Range> getBodyRange() const;
 
 private:
     OwnPtr<DummyPageHolder> m_dummyPageHolder;
@@ -83,7 +83,7 @@ Vector<String> TextIteratorTest::iterate(TextIteratorBehavior iteratorBehavior)
 {
     document().view()->updateLayoutAndStyleIfNeededRecursive(); // Force renderers to be created; TextIterator needs them.
 
-    RefPtr<Range> range = getBodyRange();
+    RefPtrWillBeRawPtr<Range> range = getBodyRange();
     TextIterator textIterator(range.get(), iteratorBehavior);
     Vector<String> textChunks;
     while (!textIterator.atEnd()) {
@@ -103,9 +103,9 @@ void TextIteratorTest::setBodyInnerHTML(const char* bodyContent)
     document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
 }
 
-PassRefPtr<Range> TextIteratorTest::getBodyRange() const
+PassRefPtrWillBeRawPtr<Range> TextIteratorTest::getBodyRange() const
 {
-    RefPtr<Range> range(Range::create(document()));
+    RefPtrWillBeRawPtr<Range> range(Range::create(document()));
     range->selectNode(document().body());
     return range.release();
 }

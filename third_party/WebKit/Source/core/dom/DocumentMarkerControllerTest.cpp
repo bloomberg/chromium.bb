@@ -79,7 +79,7 @@ void DocumentMarkerControllerTest::markNodeContents(PassRefPtr<Node> node)
     // Force renderers to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.
     document().updateLayout();
-    RefPtr<Range> range = rangeOfContents(node.get());
+    RefPtrWillBeRawPtr<Range> range = rangeOfContents(node.get());
     markerController().addMarker(range.get(), DocumentMarker::Spelling);
 }
 

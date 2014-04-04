@@ -116,14 +116,14 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPo
     LocalFrame* frame = result.targetNode()->document().frame();
     FrameView* frameView = frame->view();
 
-    RefPtr<Range> range = frame->rangeForPoint(result.roundedPointInInnerNodeFrame());
+    RefPtrWillBeRawPtr<Range> range = frame->rangeForPoint(result.roundedPointInInnerNodeFrame());
     if (!range)
         return nil;
 
     // Expand to word under point.
     VisibleSelection selection(range.get());
     selection.expandUsingGranularity(WordGranularity);
-    RefPtr<Range> wordRange = selection.toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> wordRange = selection.toNormalizedRange();
 
     // Convert to NSAttributedString.
     NSAttributedString* string = attributedSubstringFromRange(wordRange.get());
@@ -153,7 +153,7 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
 
     Element* editable = frame->selection().rootEditableElementOrDocumentElement();
     ASSERT(editable);
-    RefPtr<Range> range(PlainTextRange(location, location + length).createRange(*editable));
+    RefPtrWillBeRawPtr<Range> range(PlainTextRange(location, location + length).createRange(*editable));
     if (!range)
         return nil;
 

@@ -169,6 +169,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollTypes.h"
@@ -210,7 +211,7 @@ static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBu
     document->updateLayout();
 
     // Select the document body.
-    RefPtr<Range> range(document->createRange());
+    RefPtrWillBeRawPtr<Range> range(document->createRange());
     TrackExceptionState exceptionState;
     range->selectNodeContents(document->body(), exceptionState);
 
@@ -1084,7 +1085,7 @@ bool WebFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length
 
     Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
     ASSERT(editable);
-    RefPtr<Range> range = PlainTextRange(location, location + length).createRange(*editable);
+    RefPtrWillBeRawPtr<Range> range = PlainTextRange(location, location + length).createRange(*editable);
     if (!range)
         return false;
     IntRect intRect = frame()->editor().firstRectForRange(range.get());
@@ -1100,7 +1101,7 @@ size_t WebFrameImpl::characterIndexForPoint(const WebPoint& webPoint) const
 
     IntPoint point = frame()->view()->windowToContents(webPoint);
     HitTestResult result = frame()->eventHandler().hitTestResultAtPoint(point, HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
-    RefPtr<Range> range = frame()->rangeForPoint(result.roundedPointInInnerNodeFrame());
+    RefPtrWillBeRawPtr<Range> range = frame()->rangeForPoint(result.roundedPointInInnerNodeFrame());
     if (!range)
         return kNotFound;
     Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
@@ -1210,13 +1211,13 @@ void WebFrameImpl::replaceMisspelledRange(const WebString& text)
     // If this caret selection has two or more markers, this function replace the range covered by the first marker with the specified word as Microsoft Word does.
     if (pluginContainerFromFrame(frame()))
         return;
-    RefPtr<Range> caretRange = frame()->selection().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> caretRange = frame()->selection().toNormalizedRange();
     if (!caretRange)
         return;
     Vector<DocumentMarker*> markers = frame()->document()->markers().markersInRange(caretRange.get(), DocumentMarker::MisspellingMarkers());
     if (markers.size() < 1 || markers[0]->startOffset() >= markers[0]->endOffset())
         return;
-    RefPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
+    RefPtrWillBeRawPtr<Range> markerRange = Range::create(caretRange->ownerDocument(), caretRange->startContainer(), markers[0]->startOffset(), caretRange->endContainer(), markers[0]->endOffset());
     if (!markerRange)
         return;
     frame()->selection().setSelection(VisibleSelection(markerRange.get()), CharacterGranularity);
@@ -1249,7 +1250,7 @@ WebString WebFrameImpl::selectionAsText() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsText();
 
-    RefPtr<Range> range = frame()->selection().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> range = frame()->selection().toNormalizedRange();
     if (!range)
         return WebString();
 
@@ -1267,7 +1268,7 @@ WebString WebFrameImpl::selectionAsMarkup() const
     if (pluginContainer)
         return pluginContainer->plugin()->selectionAsMarkup();
 
-    RefPtr<Range> range = frame()->selection().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> range = frame()->selection().toNormalizedRange();
     if (!range)
         return WebString();
 
@@ -1300,7 +1301,7 @@ void WebFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent)
 
 void WebFrameImpl::selectRange(const WebRange& webRange)
 {
-    if (RefPtr<Range> range = static_cast<PassRefPtr<Range> >(webRange))
+    if (RefPtrWillBeRawPtr<Range> range = static_cast<PassRefPtrWillBeRawPtr<Range> >(webRange))
         frame()->selection().setSelectedRange(range.get(), WebCore::VP_DEFAULT_AFFINITY, false);
 }
 

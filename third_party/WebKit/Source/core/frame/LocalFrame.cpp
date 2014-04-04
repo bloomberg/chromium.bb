@@ -304,7 +304,7 @@ Document* LocalFrame::documentAtPoint(const IntPoint& point)
     return result.innerNode() ? &result.innerNode()->document() : 0;
 }
 
-PassRefPtr<Range> LocalFrame::rangeForPoint(const IntPoint& framePoint)
+PassRefPtrWillBeRawPtr<Range> LocalFrame::rangeForPoint(const IntPoint& framePoint)
 {
     VisiblePosition position = visiblePositionForPoint(framePoint);
     if (position.isNull())
@@ -312,14 +312,14 @@ PassRefPtr<Range> LocalFrame::rangeForPoint(const IntPoint& framePoint)
 
     VisiblePosition previous = position.previous();
     if (previous.isNotNull()) {
-        RefPtr<Range> previousCharacterRange = makeRange(previous, position);
+        RefPtrWillBeRawPtr<Range> previousCharacterRange = makeRange(previous, position);
         LayoutRect rect = editor().firstRectForRange(previousCharacterRange.get());
         if (rect.contains(framePoint))
             return previousCharacterRange.release();
     }
 
     VisiblePosition next = position.next();
-    if (RefPtr<Range> nextCharacterRange = makeRange(position, next)) {
+    if (RefPtrWillBeRawPtr<Range> nextCharacterRange = makeRange(position, next)) {
         LayoutRect rect = editor().firstRectForRange(nextCharacterRange.get());
         if (rect.contains(framePoint))
             return nextCharacterRange.release();

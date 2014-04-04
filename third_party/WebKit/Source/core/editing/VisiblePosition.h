@@ -28,6 +28,7 @@
 
 #include "core/dom/Position.h"
 #include "core/editing/EditingBoundary.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/TextDirection.h"
 
 namespace WebCore {
@@ -126,7 +127,7 @@ inline bool operator!=(const VisiblePosition& a, const VisiblePosition& b)
     return !(a == b);
 }
 
-PassRefPtr<Range> makeRange(const VisiblePosition&, const VisiblePosition&);
+PassRefPtrWillBeRawPtr<Range> makeRange(const VisiblePosition&, const VisiblePosition&);
 bool setStart(Range*, const VisiblePosition&);
 bool setEnd(Range*, const VisiblePosition&);
 VisiblePosition startVisiblePosition(const Range*, EAffinity);

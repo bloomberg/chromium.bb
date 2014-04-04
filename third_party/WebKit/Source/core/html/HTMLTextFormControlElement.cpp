@@ -42,6 +42,7 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderTheme.h"
+#include "platform/heap/Handle.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
@@ -311,7 +312,7 @@ VisiblePosition HTMLTextFormControlElement::visiblePositionForIndex(int index) c
 {
     if (index <= 0)
         return VisiblePosition(firstPositionInNode(innerTextElement()), DOWNSTREAM);
-    RefPtr<Range> range = Range::create(document());
+    RefPtrWillBeRawPtr<Range> range = Range::create(document());
     range->selectNodeContents(innerTextElement(), ASSERT_NO_EXCEPTION);
     CharacterIterator it(range.get());
     it.advance(index - 1);
@@ -324,7 +325,7 @@ int HTMLTextFormControlElement::indexForVisiblePosition(const VisiblePosition& p
     if (enclosingTextFormControl(indexPosition) != this)
         return 0;
     ASSERT(indexPosition.document());
-    RefPtr<Range> range = Range::create(*indexPosition.document());
+    RefPtrWillBeRawPtr<Range> range = Range::create(*indexPosition.document());
     range->setStart(innerTextElement(), 0, ASSERT_NO_EXCEPTION);
     range->setEnd(indexPosition.containerNode(), indexPosition.offsetInContainerNode(), ASSERT_NO_EXCEPTION);
     return TextIterator::rangeLength(range.get());
@@ -420,7 +421,7 @@ static inline void setContainerAndOffsetForRange(Node* node, int offset, Node*& 
     }
 }
 
-PassRefPtr<Range> HTMLTextFormControlElement::selection() const
+PassRefPtrWillBeRawPtr<Range> HTMLTextFormControlElement::selection() const
 {
     if (!renderer() || !isTextFormControl() || !hasCachedSelection())
         return nullptr;

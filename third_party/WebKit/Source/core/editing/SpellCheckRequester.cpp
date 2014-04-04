@@ -37,8 +37,8 @@
 namespace WebCore {
 
 SpellCheckRequest::SpellCheckRequest(
-    PassRefPtr<Range> checkingRange,
-    PassRefPtr<Range> paragraphRange,
+    PassRefPtrWillBeRawPtr<Range> checkingRange,
+    PassRefPtrWillBeRawPtr<Range> paragraphRange,
     const String& text,
     TextCheckingTypeMask mask,
     TextCheckingProcessType processType,
@@ -59,7 +59,7 @@ SpellCheckRequest::~SpellCheckRequest()
 }
 
 // static
-PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, int requestNumber)
+PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange, int requestNumber)
 {
     ASSERT(checkingRange);
     ASSERT(paragraphRange);

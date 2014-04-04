@@ -4220,7 +4220,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange)
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
     frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
-    RefPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
 
     EXPECT_EQ(1, spellcheck.numberOfTimesChecked());
     EXPECT_EQ(1U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
@@ -4253,7 +4253,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers)
     const int allTextBeginOffset = 0;
     const int allTextLength = 11;
     frame->selectRange(WebRange::fromDocumentRange(frame, allTextBeginOffset, allTextLength));
-    RefPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
+    RefPtrWillBeRawPtr<Range> selectionRange = frame->frame()->selection().toNormalizedRange();
 
     EXPECT_EQ(0U, document->markers().markersInRange(selectionRange.get(), DocumentMarker::Spelling).size());
 }

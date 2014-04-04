@@ -543,7 +543,7 @@ bool EventHandler::handleMousePressEventTripleClick(const MouseEventWithHitTestR
 
 static int textDistance(const Position& start, const Position& end)
 {
-    RefPtr<Range> range = Range::create(*start.document(), start, end);
+    RefPtrWillBeRawPtr<Range> range = Range::create(*start.document(), start, end);
     return TextIterator::rangeLength(range.get(), true);
 }
 
@@ -2836,7 +2836,7 @@ bool EventHandler::sendContextMenuEventForKey()
     bool shouldTranslateToRootView = true;
 
     if (start.deprecatedNode() && (selection.rootEditableElement() || selection.isRange())) {
-        RefPtr<Range> selectionRange = selection.toNormalizedRange();
+        RefPtrWillBeRawPtr<Range> selectionRange = selection.toNormalizedRange();
         IntRect firstRect = m_frame->editor().firstRectForRange(selectionRange.get());
 
         int x = rightAligned ? firstRect.maxX() : firstRect.x();

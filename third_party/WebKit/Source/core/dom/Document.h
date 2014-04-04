@@ -49,9 +49,9 @@
 #include "core/page/FocusType.h"
 #include "core/page/PageVisibilityState.h"
 #include "core/rendering/HitTestRequest.h"
-#include "heap/Handle.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/HashSet.h"
@@ -340,7 +340,7 @@ public:
         unsigned topPadding, unsigned rightPadding, unsigned bottomPadding, unsigned leftPadding,
         HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent) const;
     Element* elementFromPoint(int x, int y) const;
-    PassRefPtr<Range> caretRangeFromPoint(int x, int y);
+    PassRefPtrWillBeRawPtr<Range> caretRangeFromPoint(int x, int y);
 
     String readyState() const;
 
@@ -465,7 +465,7 @@ public:
 
     float devicePixelRatio() const;
 
-    PassRefPtr<Range> createRange();
+    PassRefPtrWillBeRawPtr<Range> createRange();
 
     PassRefPtr<NodeIterator> createNodeIterator(Node* root, ExceptionState&);
     PassRefPtr<NodeIterator> createNodeIterator(Node* root, unsigned whatToShow, ExceptionState&);

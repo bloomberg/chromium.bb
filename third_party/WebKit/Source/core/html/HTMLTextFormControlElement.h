@@ -69,7 +69,7 @@ public:
     virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&);
     void setSelectionRange(int start, int end, const String& direction);
     void setSelectionRange(int start, int end, TextFieldSelectionDirection = SelectionHasNoDirection);
-    PassRefPtr<Range> selection() const;
+    PassRefPtrWillBeRawPtr<Range> selection() const;
 
     virtual void dispatchFormControlChangeEvent() OVERRIDE FINAL;
 
