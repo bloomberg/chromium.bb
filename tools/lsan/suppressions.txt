@@ -6,6 +6,9 @@ leak:base::ToolsSanityTest_MemoryLeak_Test::TestBody
 # False positives in libfontconfig. http://crbug.com/39050
 leak:libfontconfig
 
+# Leaks in Nvidia's libGL.
+leak:libGL.so
+
 # False positive in Blink due to bit twiddling on pointers. http://crbug.com/242672
 # TODO(earthdok): Annotate.
 leak:WTF::BitVector::resizeOutOfLine
