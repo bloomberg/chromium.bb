@@ -8,7 +8,7 @@ any modification below this line.
 
 =====================================================================
 
-Let's make a story. Add one sentence for every commit: 
+Let's make a story. Add one sentence for every commit:
 
 CHÄPTER 1:
 It was a dark and blinky night; the rain fell in torrents -- except at
@@ -76,10 +76,11 @@ BEING SURE OF YOURSELF MEANS YOU'RE A FOOL
 AM NOT
 ARE TOO
 IF AT FIRST YOU DON'T SUCCEED: TRY, EXCEPT, FINALLY
-AND THEN, TIME LEAPT BACKWARDS 
+AND THEN, TIME LEAPT BACKWARDS
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaaaaaaaaaaaaaaaaaaaaaaaaaaahhhh LOT
 I'm really tempted to change something above the line.
 Reeccciiiipppppeeeeeesssssss!!!!!!!!!
 PEOPLE SAY "FAILURE IS NOT AN OPTION", BUT FAILURE IS ALWAYS AN OPTION.
+WHAT GOES UP MUST HAVE A NON-ZERO VELOCITY
 
 I can feel the heat closing in, feel them out there making their moves...
