@@ -297,7 +297,7 @@ static v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context> contex
 bool V8WindowShell::installDOMWindow()
 {
     DOMWindow* window = m_frame->domWindow();
-    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_scriptState->perContextData()->constructorForType(&V8Window::wrapperTypeInfo));
+    v8::Local<v8::Object> windowWrapper = V8ObjectConstructor::newInstance(m_isolate, m_scriptState->perContextData()->constructorForType(&V8Window::wrapperTypeInfo));
     if (windowWrapper.IsEmpty())
         return false;
 

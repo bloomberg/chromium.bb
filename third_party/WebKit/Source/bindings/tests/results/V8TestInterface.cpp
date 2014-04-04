@@ -1307,7 +1307,7 @@ static void configureV8TestInterfaceTemplate(v8::Handle<v8::FunctionTemplate> fu
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "partial2StaticLongAttribute"), TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeGetterCallback, TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
-    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestInterface::domTemplate(v8::Isolate* isolate)

@@ -136,7 +136,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     else if (!m_workerGlobalScope.isDedicatedWorkerGlobalScope())
         contextType = &V8SharedWorkerGlobalScope::wrapperTypeInfo;
     v8::Handle<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(contextType);
-    v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(workerGlobalScopeConstructor);
+    v8::Local<v8::Object> jsWorkerGlobalScope = V8ObjectConstructor::newInstance(m_isolate, workerGlobalScopeConstructor);
     if (jsWorkerGlobalScope.IsEmpty()) {
         m_scriptState->disposePerContextData();
         return false;

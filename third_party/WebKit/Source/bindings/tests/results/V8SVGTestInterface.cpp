@@ -95,7 +95,7 @@ static void configureV8SVGTestInterfaceTemplate(v8::Handle<v8::FunctionTemplate>
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
 
     // Custom toString template
-    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::from(isolate)->toStringTemplate());
 }
 
 v8::Handle<v8::FunctionTemplate> V8SVGTestInterface::domTemplate(v8::Isolate* isolate)
