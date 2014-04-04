@@ -55,7 +55,6 @@ class SharedBuffer;
 // This class also does the actual communication with the loader to obtain the resource from the network.
 class Resource {
     WTF_MAKE_NONCOPYABLE(Resource); WTF_MAKE_FAST_ALLOCATED;
-    friend class MemoryCache;
     friend class InspectorResource;
 
 public:
@@ -85,13 +84,6 @@ public:
 
     Resource(const ResourceRequest&, Type);
     virtual ~Resource();
-
-    // Determines the order in which CachedResources are evicted
-    // from the decoded resources cache.
-    enum CacheLiveResourcePriority {
-        CacheLiveResourcePriorityLow = 0,
-        CacheLiveResourcePriorityHigh
-    };
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
@@ -170,9 +162,6 @@ public:
     // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
     bool passesAccessControlCheck(SecurityOrigin*);
     bool passesAccessControlCheck(SecurityOrigin*, String& errorDescription);
-
-    void setCacheLiveResourcePriority(CacheLiveResourcePriority);
-    unsigned cacheLiveResourcePriority() const { return m_cacheLiveResourcePriority; }
 
     void clearLoader();
 
@@ -281,7 +270,7 @@ protected:
 
     void setEncodedSize(size_t);
     void setDecodedSize(size_t);
-    void didAccessDecodedData(double timeStamp);
+    void didAccessDecodedData();
 
     virtual void switchClientsToRevalidatedResource();
     void clearResourceToRevalidate();
@@ -351,7 +340,6 @@ private:
 
     ResourceError m_error;
 
-    double m_lastDecodedAccessTime; // Used as a "thrash guard" in the cache
     double m_loadFinishTime;
 
     unsigned long m_identifier;
@@ -363,7 +351,6 @@ private:
     unsigned m_protectorCount;
 
     unsigned m_preloadResult : 2; // PreloadResult
-    unsigned m_cacheLiveResourcePriority : 2; // CacheLiveResourcePriority
     unsigned m_requestedFromNetworkingLayer : 1;
 
     unsigned m_loading : 1;

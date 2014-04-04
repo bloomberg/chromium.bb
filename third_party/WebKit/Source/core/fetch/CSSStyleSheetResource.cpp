@@ -165,7 +165,7 @@ PassRefPtrWillBeRawPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedS
     if (m_parsedStyleSheetCache->parserContext() != context)
         return nullptr;
 
-    didAccessDecodedData(currentTime());
+    didAccessDecodedData();
 
     return m_parsedStyleSheetCache;
 }

@@ -28,6 +28,7 @@
 #include "core/events/EventSender.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -361,7 +362,7 @@ void ImageLoader::addClient(ImageLoaderClient* client)
 {
     if (client->requestsHighLiveResourceCachePriority()) {
         if (m_image && !m_highPriorityClientCount++)
-            m_image->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityHigh);
+            memoryCache()->updateDecodedResource(m_image.get(), UpdateForPropertyChange, MemoryCacheLiveResourcePriorityHigh);
     }
     m_clients.add(client);
 }
@@ -371,7 +372,7 @@ void ImageLoader::removeClient(ImageLoaderClient* client)
         ASSERT(m_highPriorityClientCount);
         m_highPriorityClientCount--;
         if (m_image && !m_highPriorityClientCount)
-            m_image->setCacheLiveResourcePriority(Resource::CacheLiveResourcePriorityLow);
+            memoryCache()->updateDecodedResource(m_image.get(), UpdateForPropertyChange, MemoryCacheLiveResourcePriorityLow);
     }
     m_clients.remove(client);
 }

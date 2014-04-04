@@ -97,7 +97,6 @@ Resource::Resource(const ResourceRequest& request, Type type)
     : m_resourceRequest(request)
     , m_responseTimestamp(currentTime())
     , m_cancelTimer(this, &Resource::cancelTimerFired)
-    , m_lastDecodedAccessTime(0)
     , m_loadFinishTime(0)
     , m_identifier(0)
     , m_encodedSize(0)
@@ -106,7 +105,6 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_preloadCount(0)
     , m_protectorCount(0)
     , m_preloadResult(PreloadNotReferenced)
-    , m_cacheLiveResourcePriority(CacheLiveResourcePriorityLow)
     , m_requestedFromNetworkingLayer(false)
     , m_loading(false)
     , m_switchingClientsToRevalidatedResource(false)
@@ -410,16 +408,6 @@ CachedMetadata* Resource::cachedMetadata(unsigned dataTypeID) const
     return m_cachedMetadata.get();
 }
 
-void Resource::setCacheLiveResourcePriority(CacheLiveResourcePriority priority)
-{
-    if (memoryCache()->contains(this) && memoryCache()->isInLiveDecodedResourcesList(this) && cacheLiveResourcePriority() != static_cast<unsigned>(priority)) {
-        memoryCache()->removeFromLiveDecodedResourcesList(this);
-        m_cacheLiveResourcePriority = priority;
-        memoryCache()->insertInLiveDecodedResourcesList(this);
-        memoryCache()->prune();
-    }
-}
-
 void Resource::clearLoader()
 {
     m_loader = nullptr;
@@ -468,8 +456,8 @@ bool Resource::addClientToSet(ResourceClient* client)
         else
             m_preloadResult = PreloadReferenced;
     }
-    if (!hasClients() && memoryCache()->contains(this))
-        memoryCache()->addToLiveResourcesSize(this);
+    if (!hasClients())
+        memoryCache()->makeLive(this);
 
     // If we have existing data to send to the new client and the resource type supprts it, send it asynchronously.
     if (!m_response.isNull() && !m_proxyResource && !shouldSendCachedDataSynchronouslyForType(type()) && !m_needsSynchronousCacheHit) {
@@ -497,10 +485,7 @@ void Resource::removeClient(ResourceClient* client)
 
     bool deleted = deleteIfPossible();
     if (!deleted && !hasClients()) {
-        if (memoryCache()->contains(this)) {
-            memoryCache()->removeFromLiveResourcesSize(this);
-            memoryCache()->removeFromLiveDecodedResourcesList(this);
-        }
+        memoryCache()->makeDead(this);
         if (!m_switchingClientsToRevalidatedResource)
             allClientsRemoved();
 
@@ -557,23 +542,8 @@ void Resource::setDecodedSize(size_t decodedSize)
         return;
     size_t oldSize = size();
     m_decodedSize = decodedSize;
-
-    if (memoryCache()->contains(this)) {
-        // Insert into or remove from the live decoded list if necessary.
-        // When inserting into the LiveDecodedResourcesList it is possible
-        // that the m_lastDecodedAccessTime is still zero or smaller than
-        // the m_lastDecodedAccessTime of the current list head. This is a
-        // violation of the invariant that the list is to be kept sorted
-        // by access time. The weakening of the invariant does not pose
-        // a problem. For more details please see: https://bugs.webkit.org/show_bug.cgi?id=30209
-        if (m_decodedSize && !memoryCache()->isInLiveDecodedResourcesList(this) && hasClients())
-            memoryCache()->insertInLiveDecodedResourcesList(this);
-        else if (!m_decodedSize && memoryCache()->isInLiveDecodedResourcesList(this))
-            memoryCache()->removeFromLiveDecodedResourcesList(this);
-
-        // Update the cache's size totals.
-        memoryCache()->update(this, oldSize, size());
-    }
+    memoryCache()->update(this, oldSize, size());
+    memoryCache()->updateDecodedResource(this, UpdateForPropertyChange);
 }
 
 void Resource::setEncodedSize(size_t encodedSize)
@@ -582,20 +552,13 @@ void Resource::setEncodedSize(size_t encodedSize)
         return;
     size_t oldSize = size();
     m_encodedSize = encodedSize;
-    if (memoryCache()->contains(this))
-        memoryCache()->update(this, oldSize, size());
+    memoryCache()->update(this, oldSize, size());
 }
 
-void Resource::didAccessDecodedData(double timeStamp)
+void Resource::didAccessDecodedData()
 {
-    m_lastDecodedAccessTime = timeStamp;
-    if (memoryCache()->contains(this)) {
-        if (memoryCache()->isInLiveDecodedResourcesList(this)) {
-            memoryCache()->removeFromLiveDecodedResourcesList(this);
-            memoryCache()->insertInLiveDecodedResourcesList(this);
-        }
-        memoryCache()->prune();
-    }
+    memoryCache()->updateDecodedResource(this, UpdateForAccess);
+    memoryCache()->prune();
 }
 
 void Resource::finishPendingClients()
