@@ -79,6 +79,8 @@
     "channel": "stable",
     "extension_types": ["extension"]
   },
+  // TODO(finnur): Remove channel check for SettingsApiControllerTest when this
+  //               goes to stable.
   "chrome_settings_overrides": [{
     "channel": "dev",
     "extension_types": ["extension"],

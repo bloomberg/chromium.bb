@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
 #include "chrome/browser/extensions/suspicious_extension_bubble_controller.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
@@ -465,6 +466,11 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
 #endif
 
 TEST_F(ExtensionMessageBubbleTest, MAYBE_SettingsApiControllerTest) {
+  // The API this test is exercising has not been release on all channels.
+  // TODO(finnur): Remove the if check once it is released.
+  if (chrome::VersionInfo::GetChannel() > chrome::VersionInfo::CHANNEL_DEV)
+    return;
+
   Init();
   extensions::ExtensionPrefs* prefs =
       extensions::ExtensionPrefs::Get(profile());
