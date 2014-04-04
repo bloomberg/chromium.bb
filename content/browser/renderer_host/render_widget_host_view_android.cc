@@ -1263,8 +1263,11 @@ void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(content_view_core_);
   DCHECK(!using_synchronous_compositor_);
-  root_window_destroyed_ = true;
   RunAckCallbacks();
+}
+
+void RenderWidgetHostViewAndroid::OnWillDestroyWindow() {
+  root_window_destroyed_ = true;
 }
 
 void RenderWidgetHostViewAndroid::OnLostResources() {

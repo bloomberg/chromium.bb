@@ -14,6 +14,7 @@ class UI_BASE_EXPORT WindowAndroidObserver {
   virtual void OnCompositingDidCommit() = 0;
   virtual void OnAttachCompositor() = 0;
   virtual void OnDetachCompositor() = 0;
+  virtual void OnWillDestroyWindow() = 0;
 
  protected:
   virtual ~WindowAndroidObserver() {}

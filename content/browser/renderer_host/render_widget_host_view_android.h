@@ -194,6 +194,7 @@ class RenderWidgetHostViewAndroid
   virtual void OnCompositingDidCommit() OVERRIDE;
   virtual void OnAttachCompositor() OVERRIDE {}
   virtual void OnDetachCompositor() OVERRIDE;
+  virtual void OnWillDestroyWindow() OVERRIDE;
 
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;
