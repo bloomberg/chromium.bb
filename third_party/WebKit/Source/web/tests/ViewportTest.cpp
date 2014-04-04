@@ -2937,7 +2937,7 @@ TEST_F(ViewportTest, viewportLimitsAdjustedForNoUserScaleControl)
     EXPECT_TRUE(page->viewportDescription().userZoom);
 }
 
-class ConsoleMessageWebViewClient : public WebViewClient {
+class ConsoleMessageWebFrameClient : public WebFrameClient {
 public:
     virtual void didAddMessageToConsole(const WebConsoleMessage& msg, const WebString& sourceName, unsigned sourceLine, const WebString& stackTrace)
     {
@@ -2949,17 +2949,17 @@ public:
 
 TEST_F(ViewportTest, viewportWarnings1)
 {
-    ConsoleMessageWebViewClient webViewClient;
+    ConsoleMessageWebFrameClient webFrameClient;
 
     registerMockedHttpURLLoad("viewport/viewport-warnings-1.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-1.html", true, 0, &webViewClient, setViewportSettings);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-1.html", true, &webFrameClient, 0, setViewportSettings);
 
     Page* page = webViewHelper.webViewImpl()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_TRUE(webViewClient.messages.empty());
+    EXPECT_TRUE(webFrameClient.messages.empty());
 
     EXPECT_EQ(320, constraints.layoutSize.width());
     EXPECT_EQ(352, constraints.layoutSize.height());
@@ -2971,19 +2971,19 @@ TEST_F(ViewportTest, viewportWarnings1)
 
 TEST_F(ViewportTest, viewportWarnings2)
 {
-    ConsoleMessageWebViewClient webViewClient;
+    ConsoleMessageWebFrameClient webFrameClient;
 
     registerMockedHttpURLLoad("viewport/viewport-warnings-2.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-2.html", true, 0, &webViewClient, setViewportSettings);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-2.html", true, &webFrameClient, 0, setViewportSettings);
 
     Page* page = webViewHelper.webViewImpl()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_EQ(1U, webViewClient.messages.size());
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[0].level);
-    EXPECT_STREQ("The key \"wwidth\" is not recognized and ignored.", webViewClient.messages[0].text.utf8().c_str());
+    EXPECT_EQ(1U, webFrameClient.messages.size());
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
+    EXPECT_STREQ("The key \"wwidth\" is not recognized and ignored.", webFrameClient.messages[0].text.utf8().c_str());
 
     EXPECT_EQ(980, constraints.layoutSize.width());
     EXPECT_EQ(1078, constraints.layoutSize.height());
@@ -2995,20 +2995,20 @@ TEST_F(ViewportTest, viewportWarnings2)
 
 TEST_F(ViewportTest, viewportWarnings3)
 {
-    ConsoleMessageWebViewClient webViewClient;
+    ConsoleMessageWebFrameClient webFrameClient;
 
     registerMockedHttpURLLoad("viewport/viewport-warnings-3.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-3.html", true, 0, &webViewClient, setViewportSettings);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-3.html", true, &webFrameClient, 0, setViewportSettings);
 
     Page* page = webViewHelper.webViewImpl()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_EQ(1U, webViewClient.messages.size());
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[0].level);
+    EXPECT_EQ(1U, webFrameClient.messages.size());
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
     EXPECT_STREQ("The value \"unrecognized-width\" for key \"width\" is invalid, and has been ignored.",
-        webViewClient.messages[0].text.utf8().c_str());
+        webFrameClient.messages[0].text.utf8().c_str());
 
     EXPECT_NEAR(64.0f, constraints.layoutSize.width(), 0.01);
     EXPECT_NEAR(70.4f, constraints.layoutSize.height(), 0.01);
@@ -3020,20 +3020,20 @@ TEST_F(ViewportTest, viewportWarnings3)
 
 TEST_F(ViewportTest, viewportWarnings4)
 {
-    ConsoleMessageWebViewClient webViewClient;
+    ConsoleMessageWebFrameClient webFrameClient;
 
     registerMockedHttpURLLoad("viewport/viewport-warnings-4.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-4.html", true, 0, &webViewClient, setViewportSettings);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-4.html", true, &webFrameClient, 0, setViewportSettings);
 
     Page* page = webViewHelper.webViewImpl()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_EQ(1U, webViewClient.messages.size());
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[0].level);
+    EXPECT_EQ(1U, webFrameClient.messages.size());
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
     EXPECT_STREQ("The value \"123x456\" for key \"width\" was truncated to its numeric prefix.",
-        webViewClient.messages[0].text.utf8().c_str());
+        webFrameClient.messages[0].text.utf8().c_str());
 
     EXPECT_NEAR(123.0f, constraints.layoutSize.width(), 0.01);
     EXPECT_NEAR(135.3f, constraints.layoutSize.height(), 0.01);
@@ -3045,37 +3045,37 @@ TEST_F(ViewportTest, viewportWarnings4)
 
 TEST_F(ViewportTest, viewportWarnings5)
 {
-    ConsoleMessageWebViewClient webViewClient;
+    ConsoleMessageWebFrameClient webFrameClient;
 
     registerMockedHttpURLLoad("viewport/viewport-warnings-5.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-5.html", true, 0, &webViewClient, setViewportSettings);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-5.html", true, &webFrameClient, 0, setViewportSettings);
 
     Page* page = webViewHelper.webViewImpl()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_EQ(5U, webViewClient.messages.size());
+    EXPECT_EQ(5U, webFrameClient.messages.size());
 
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[0].level);
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
     EXPECT_STREQ("The value \"device-width;\" for key \"width\" is invalid, and has been ignored.",
-        webViewClient.messages[0].text.utf8().c_str());
+        webFrameClient.messages[0].text.utf8().c_str());
 
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[1].level);
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[1].level);
     EXPECT_STREQ("The value \"1.0;\" for key \"initial-scale\" was truncated to its numeric prefix.",
-        webViewClient.messages[1].text.utf8().c_str());
+        webFrameClient.messages[1].text.utf8().c_str());
 
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[2].level);
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[2].level);
     EXPECT_STREQ("The value \"1.0;\" for key \"maximum-scale\" was truncated to its numeric prefix.",
-        webViewClient.messages[2].text.utf8().c_str());
+        webFrameClient.messages[2].text.utf8().c_str());
 
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[3].level);
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[3].level);
     EXPECT_STREQ("The value \"0;\" for key \"user-scalable\" was truncated to its numeric prefix.",
-        webViewClient.messages[3].text.utf8().c_str());
+        webFrameClient.messages[3].text.utf8().c_str());
 
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[4].level);
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[4].level);
     EXPECT_STREQ("Error parsing a meta element's content: ';' is not a valid key-value pair separator. Please use ',' instead.",
-        webViewClient.messages[4].text.utf8().c_str());
+        webFrameClient.messages[4].text.utf8().c_str());
 
     EXPECT_NEAR(320.0f, constraints.layoutSize.width(), 0.01);
     EXPECT_NEAR(352.0f, constraints.layoutSize.height(), 0.01);
@@ -3087,20 +3087,20 @@ TEST_F(ViewportTest, viewportWarnings5)
 
 TEST_F(ViewportTest, viewportWarnings6)
 {
-    ConsoleMessageWebViewClient webViewClient;
+    ConsoleMessageWebFrameClient webFrameClient;
 
     registerMockedHttpURLLoad("viewport/viewport-warnings-6.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-6.html", true, 0, &webViewClient, setViewportSettings);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-6.html", true, &webFrameClient, 0, setViewportSettings);
 
     Page* page = webViewHelper.webViewImpl()->page();
     PageScaleConstraints constraints = runViewportTest(page, 320, 352);
 
-    EXPECT_EQ(1U, webViewClient.messages.size());
-    EXPECT_EQ(WebConsoleMessage::LevelWarning, webViewClient.messages[0].level);
+    EXPECT_EQ(1U, webFrameClient.messages.size());
+    EXPECT_EQ(WebConsoleMessage::LevelWarning, webFrameClient.messages[0].level);
     EXPECT_STREQ("The value \"\" for key \"width\" is invalid, and has been ignored.",
-        webViewClient.messages[0].text.utf8().c_str());
+        webFrameClient.messages[0].text.utf8().c_str());
 
     EXPECT_NEAR(64.0f, constraints.layoutSize.width(), 0.01);
     EXPECT_NEAR(70.4f, constraints.layoutSize.height(), 0.01);
@@ -3112,17 +3112,17 @@ TEST_F(ViewportTest, viewportWarnings6)
 
 TEST_F(ViewportTest, viewportWarnings7)
 {
-    ConsoleMessageWebViewClient webViewClient;
+    ConsoleMessageWebFrameClient webFrameClient;
 
     registerMockedHttpURLLoad("viewport/viewport-warnings-7.html");
 
     FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-7.html", true, 0, &webViewClient, setViewportSettings);
+    webViewHelper.initializeAndLoad(m_baseURL + "viewport/viewport-warnings-7.html", true, &webFrameClient, 0, setViewportSettings);
 
     Page* page = webViewHelper.webViewImpl()->page();
     runViewportTest(page, 320, 352);
 
-    EXPECT_EQ(0U, webViewClient.messages.size());
+    EXPECT_EQ(0U, webFrameClient.messages.size());
 }
 
 } // namespace

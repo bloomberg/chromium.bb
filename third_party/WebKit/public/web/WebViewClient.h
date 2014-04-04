@@ -125,13 +125,6 @@ public:
 
     // Misc ----------------------------------------------------------------
 
-    // Whether or not we should report a detailed message for the given source.
-    virtual bool shouldReportDetailedMessageForSource(const WebString& source) { return false; }
-
-    // A new message was added to the console.
-    virtual void didAddMessageToConsole(
-        const WebConsoleMessage&, const WebString& sourceName, unsigned sourceLine, const WebString& stackTrace) { }
-
     // Called when script in the page calls window.print().  If frame is
     // non-null, then it selects a particular frame, including its
     // children, to print.  Otherwise, the main frame and its children
