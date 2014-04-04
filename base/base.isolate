@@ -2,50 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
-  'conditions': [
-    ['OS=="linux" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/lib/libbase.so',
-          '<(PRODUCT_DIR)/lib/libbase_i18n.so',
-        ],
-      },
-    }],
-    ['OS=="mac" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libbase.dylib',
-          '<(PRODUCT_DIR)/libbase_i18n.dylib',
-        ],
-      },
-    }],
-    ['OS=="win" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/base.dll',
-          '<(PRODUCT_DIR)/base_i18n.dll',
-        ],
-      },
-    }],
-  ],
-  # Important note:
-  # Running:
-  #  1. GYP_DEFINES=component=shared_library build/gyp_chromium
-  #  2. ninja -C out/Debug base
-  # will result with only libbase.so being built. Building base by itself won't
-  # force the build of icu or nss. This is because base is not usable by itself.
-  # But on the other hand any test that includes base will be building and
-  # loading at runtime both icu and nss. So define here what is brought by
-  # importing base, not what base would load at runtime.
-  #
-  # There is no such thing as direct_dependent in .isolate, so it's not the best
-  # format to describe this kind of thing. But as a user of base.so, the user
-  # will be importing these other libraries:
   'includes': [
-    # While the target 'base' doesn't depend on ../build/linux/system.gyp:ssl
-    # itself, virtually all targets using it has to include
-    # ../third_party/nss/ssl.gyp:libssl through system.gyp.
-    '../build/linux/system.isolate',
     # While the target 'base' doesn't depend on ../third_party/icu/icu.gyp
     # itself, virtually all targets using it has to include icu. The only
     # exception is the Windows sandbox (?).

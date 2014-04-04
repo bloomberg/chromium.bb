@@ -35,34 +35,10 @@
         ],
       },
     }],
-    ['OS=="win" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/base.dll',
-          '<(PRODUCT_DIR)/base_i18n.dll',
-          '<(PRODUCT_DIR)/gin.dll',
-          '<(PRODUCT_DIR)/mojo_system_impl.dll',
-          '<(PRODUCT_DIR)/msvcp120d.dll',
-          '<(PRODUCT_DIR)/msvcr120d.dll',
-          '<(PRODUCT_DIR)/v8.dll',
-        ],
-      },
-    }],
     ['OS=="linux"', {
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/lib/libmojo_test_support.so',
-        ],
-      },
-    }],
-    ['OS=="linux" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/lib/libbase.so',
-          '<(PRODUCT_DIR)/lib/libbase_i18n.so',
-          '<(PRODUCT_DIR)/lib/libgin.so',
-          '<(PRODUCT_DIR)/lib/libmojo_system_impl.so',
-          '<(PRODUCT_DIR)/lib/libv8.so',
         ],
       },
     }],
@@ -71,24 +47,6 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/libmojo_gles2.dylib',
           '<(PRODUCT_DIR)/libmojo_test_support.dylib',
-        ],
-      },
-    }],
-    ['OS=="mac" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libbase.dylib',
-          '<(PRODUCT_DIR)/libbase_i18n.dylib',
-          '<(PRODUCT_DIR)/libgfx.dylib',
-          '<(PRODUCT_DIR)/libgfx_geometry.dylib',
-          '<(PRODUCT_DIR)/libgin.dylib',
-          '<(PRODUCT_DIR)/libgl_wrapper.dylib',
-          '<(PRODUCT_DIR)/libgles2_utils.dylib',
-          '<(PRODUCT_DIR)/libmojo_common_lib.dylib',
-          '<(PRODUCT_DIR)/libmojo_environment_chromium_impl.dylib',
-          '<(PRODUCT_DIR)/libmojo_system_impl.dylib',
-          '<(PRODUCT_DIR)/libskia.dylib',
-          '<(PRODUCT_DIR)/libv8.dylib',
         ],
       },
     }],

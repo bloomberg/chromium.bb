@@ -38,15 +38,8 @@
         'read_only': 1,
       },
     }],
-    ['OS=="linux" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/lib/libopenssl.so',
-        ],
-      },
-    }],
   ],
   'includes': [
-    'net.isolate',
+    '../base/base.isolate',
   ],
 }

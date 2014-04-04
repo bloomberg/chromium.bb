@@ -3,37 +3,8 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/lib/libnet.so',
-          '<(PRODUCT_DIR)/lib/libnet_with_v8.so',
-        ],
-      },
-    }],
-    ['OS=="mac" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/libnet.dylib',
-          '<(PRODUCT_DIR)/libnet_with_v8.dylib',
-        ],
-      },
-    }],
-    ['OS=="win" and component=="shared_library"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/net.dll',
-          '<(PRODUCT_DIR)/net_with_v8.dll',
-        ],
-      },
-    }],
   ],
   'includes': [
     '../base/base.isolate',
-    '../crypto/crypto.isolate',
-    '../third_party/nss.isolate',
-    '../url/url.isolate',
-    'third_party/nss/ssl.isolate',
-    'v8.isolate',
   ],
 }
