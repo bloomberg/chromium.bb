@@ -249,7 +249,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
   void Display();
-  void DisplayInvalidatedRegion();
 
   bool GlobalFlag();
   void SetGlobalFlag(bool value);
@@ -480,8 +479,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("display", &TestRunnerBindings::Display)
-      .SetMethod("displayInvalidatedRegion",
-                 &TestRunnerBindings::DisplayInvalidatedRegion)
 
       // Properties.
       .SetProperty("globalFlag", &TestRunnerBindings::GlobalFlag,
@@ -1234,11 +1231,6 @@ void TestRunnerBindings::RemoveWebPageOverlay() {
 void TestRunnerBindings::Display() {
   if (runner_)
     runner_->Display();
-}
-
-void TestRunnerBindings::DisplayInvalidatedRegion() {
-  if (runner_)
-    runner_->DisplayInvalidatedRegion();
 }
 
 bool TestRunnerBindings::GlobalFlag() {
@@ -2575,10 +2567,6 @@ void TestRunner::RemoveWebPageOverlay() {
 
 void TestRunner::Display() {
   proxy_->display();
-}
-
-void TestRunner::DisplayInvalidatedRegion() {
-  proxy_->displayInvalidatedRegion();
 }
 
 void TestRunner::LocationChangeDone() {

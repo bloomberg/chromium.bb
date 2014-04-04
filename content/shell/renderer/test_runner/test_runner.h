@@ -503,7 +503,6 @@ class TestRunner : public ::WebTestRunner::WebTestRunner,
   void RemoveWebPageOverlay();
 
   void Display();
-  void DisplayInvalidatedRegion();
 
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers

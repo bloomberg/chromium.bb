@@ -112,7 +112,6 @@ public:
     bool isChooserShown();
 
     void display();
-    void displayInvalidatedRegion();
     void discardBackingStore();
 
     blink::WebMIDIClientMock* midiClientMock();

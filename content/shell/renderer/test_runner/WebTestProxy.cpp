@@ -649,12 +649,6 @@ void WebTestProxyBase::display()
     displayRepaintMask();
 }
 
-void WebTestProxyBase::displayInvalidatedRegion()
-{
-    paintInvalidatedRegion();
-    displayRepaintMask();
-}
-
 void WebTestProxyBase::discardBackingStore()
 {
     m_canvas.reset();
