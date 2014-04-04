@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script>
+    if (window.testRunner)
+        window.testRunner.dumpAsText();
+
+    if (window.internals) {
+        window.internals.settings.setForceCompositingMode(true);
+        window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
+        window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(false);
+    }
+
+    function isScrollbarRepaint(rect) {
+        return rect.width == 15 && rect.height == 285;
+    }
+
+    function hasNonScrollbarRepaint(repaintRects) {
+        for (var i = 0; i < repaintRects.length; ++i) {
+           if (!isScrollbarRepaint(repaintRects[i]))
+              return true;
+        }
+        return false;
+    }
+
+    function testRepaint() {
+        var result = "";
+        var container = document.getElementById("container");
+
+        document.body.offsetTop;
+
+        if (window.internals)
+            window.internals.startTrackingRepaints(document);
+
+        container.scrollTop = 100;
+
+        if (window.internals) {
+            var repaintRects = window.internals.repaintRects(container);
+            var repainted = hasNonScrollbarRepaint(repaintRects);
+            if (repainted === true)
+                result += "PASS repainted when expected\n";
+            else
+                result += "FAIL did not repaint when expected\n";
+            window.internals.stopTrackingRepaints(document);
+        }
+
+        var pre = document.createElement('pre');
+        document.body.appendChild(pre);
+        pre.innerHTML = result;
+        if (!window.internals)
+            document.getElementById("description").style.display = "block";
+    }
+
+    window.onload = testRepaint;
+</script>
+<style>
+    #container {
+        width: 100px;
+        height: 300px;
+        box-shadow: inset 3px 3px 10px grey;
+        overflow: auto;
+        border: 1px black solid;
+        overflow: scroll;
+        position: relative;
+        -webkit-backface-visibility: hidden;
+    }
+
+    #neg-z {
+        position: relative;
+        z-index: -1;
+    }
+
+    .scrolled {
+        width: 50px;
+        height: 50px;
+        margin: 10px;
+        position: relative;
+        background-color: green;    
+    }
+
+    #description {
+        display: none;
+    }
+</style>
+</head>
+<body>
+    <pre id="description">
+        This test ensures that the logic for ensuring that we don't repaint when
+        scrolling composited layers works correctly in the face of neg z-order
+        descendants.
+    </pre>
+    <div id="container">
+        <div id="neg-z">
+            <div class="scrolled"></div>
+            <div class="scrolled"></div>
+            <div class="scrolled"></div>
+            <div class="scrolled"></div>
+            <div class="scrolled"></div>
+            <div class="scrolled"></div>
+            <div class="scrolled"></div>
+        </div>
+    </div>
+</body>
+</html>

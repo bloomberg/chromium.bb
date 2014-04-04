@@ -223,13 +223,16 @@ public:
     void setHasOutOfFlowPositionedDescendant(bool hasDescendant) { m_hasOutOfFlowPositionedDescendant = hasDescendant; }
     void setHasOutOfFlowPositionedDescendantDirty(bool dirty) { m_hasOutOfFlowPositionedDescendantDirty = dirty; }
 
+
     bool hasUnclippedDescendant() const { return m_hasUnclippedDescendant; }
     void setHasUnclippedDescendant(bool hasDescendant) { m_hasUnclippedDescendant = hasDescendant; }
     void updateHasUnclippedDescendant();
     bool isUnclippedDescendant() const { return m_isUnclippedDescendant; }
 
+    // Will ensure that hasUnclippedDescendant and hasNonCompositiedChild are up to date.
+    void updateScrollingStateAfterCompositingChange();
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
-    void updateHasVisibleNonLayerContent();
+    bool hasNonCompositedChild() const { return m_compositingProperties.hasNonCompositedChild; }
 
     bool usedTransparency() const { return m_usedTransparency; }
 
@@ -499,9 +502,6 @@ public:
 
     bool hasCompositingDescendant() const { return m_compositingProperties.hasCompositingDescendant; }
     void setHasCompositingDescendant(bool b)  { m_compositingProperties.hasCompositingDescendant = b; }
-
-    bool hasNonCompositedChild() const { return m_compositingProperties.hasNonCompositedChild; }
-    void setHasNonCompositedChild(bool b)  { m_compositingProperties.hasNonCompositedChild = b; }
 
     bool shouldIsolateCompositedDescendants() const { return m_compositingProperties.shouldIsolateCompositedDescendants; }
     void setShouldIsolateCompositedDescendants(bool b)  { m_compositingProperties.shouldIsolateCompositedDescendants = b; }

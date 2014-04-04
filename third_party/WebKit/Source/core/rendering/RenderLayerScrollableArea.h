@@ -124,6 +124,8 @@ public:
     void updateAfterLayout();
     void updateAfterStyleChange(const RenderStyle*);
 
+    virtual void updateAfterCompositingChange() OVERRIDE;
+
     bool hasScrollbar() const { return m_hBar || m_vBar; }
 
     // FIXME: This should be removed.
@@ -220,8 +222,6 @@ private:
     void updateCompositingLayersAfterScroll();
     virtual void updateNeedsCompositedScrolling() OVERRIDE;
     bool setNeedsCompositedScrolling(bool);
-
-    virtual void updateHasVisibleNonLayerContent() OVERRIDE;
 
     void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 

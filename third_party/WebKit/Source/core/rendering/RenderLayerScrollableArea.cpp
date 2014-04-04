@@ -756,6 +756,11 @@ void RenderLayerScrollableArea::updateAfterStyleChange(const RenderStyle* oldSty
         layer->compositor()->setCompositingLayersNeedRebuild();
 }
 
+void RenderLayerScrollableArea::updateAfterCompositingChange()
+{
+    layer()->updateScrollingStateAfterCompositingChange();
+}
+
 IntSize RenderLayerScrollableArea::clampScrollOffset(const IntSize& scrollOffset) const
 {
     int maxX = scrollWidth() - m_box->pixelSnappedClientWidth();
@@ -1498,11 +1503,6 @@ bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsComposited
     m_needsCompositedScrolling = needsCompositedScrolling;
 
     return true;
-}
-
-void RenderLayerScrollableArea::updateHasVisibleNonLayerContent()
-{
-    layer()->updateHasVisibleNonLayerContent();
 }
 
 void RenderLayerScrollableArea::updateCompositingLayersAfterScroll()

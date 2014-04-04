@@ -797,15 +797,23 @@ void RenderLayer::updateHasUnclippedDescendant()
 }
 
 // FIXME: this is quite brute-force. We could be more efficient if we were to
-// track state and update it as appropriate as changes are made in the RenderObject tree.
-void RenderLayer::updateHasVisibleNonLayerContent()
+// track state and update it as appropriate as changes are made in the Render tree.
+void RenderLayer::updateScrollingStateAfterCompositingChange()
 {
-    TRACE_EVENT0("blink_rendering", "RenderLayer::updateHasVisibleNonLayerContent");
+    TRACE_EVENT0("blink_rendering", "RenderLayer::updateScrollingStateAfterCompositingChange");
     m_hasVisibleNonLayerContent = false;
     for (RenderObject* r = renderer()->firstChild(); r; r = r->nextSibling()) {
         if (!r->hasLayer()) {
             m_hasVisibleNonLayerContent = true;
             break;
+        }
+    }
+
+    m_compositingProperties.hasNonCompositedChild = false;
+    for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
+        if (child->compositingState() == NotComposited) {
+            m_compositingProperties.hasNonCompositedChild = true;
+            return;
         }
     }
 }
