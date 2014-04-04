@@ -98,7 +98,7 @@ bool NativeViewportAndroid::TouchEvent(JNIEnv* env, jobject obj,
 void NativeViewportAndroid::Init(const gfx::Rect& bounds) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_NativeViewportAndroid_createForActivity(env, context_->activity(),
-                                               reinterpret_cast<jint>(this));
+                                               reinterpret_cast<jlong>(this));
 }
 
 void NativeViewportAndroid::Show() {

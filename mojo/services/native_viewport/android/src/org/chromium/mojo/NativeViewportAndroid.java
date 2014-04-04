@@ -25,7 +25,7 @@ public class NativeViewportAndroid extends SurfaceView {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    public static void createForActivity(Activity activity, int nativeViewport) {
+    public static void createForActivity(Activity activity, long nativeViewport) {
         activity.setContentView(new NativeViewportAndroid(activity, nativeViewport));
     }
 
