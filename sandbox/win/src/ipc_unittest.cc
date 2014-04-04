@@ -159,7 +159,7 @@ TEST(IPCTest, CrossCallStrPacking) {
 
   CrossCallReturn answer;
   uint32 tag1 = 666;
-  const wchar_t text[] = L"98765 - 43210";
+  const wchar_t *text = L"98765 - 43210";
   base::string16 copied_text;
   CrossCallParamsEx* actual_params;
 
@@ -206,7 +206,7 @@ TEST(IPCTest, CrossCallStrPacking) {
   param_size = 1;
   base::string16 copied_text_p0, copied_text_p2;
 
-  const wchar_t text2[] = L"AeFG";
+  const wchar_t *text2 = L"AeFG";
   CrossCall(client, tag1, text2, null_text, text, &answer);
   actual_params = reinterpret_cast<CrossCallParamsEx*>(client.GetBuffer());
   EXPECT_EQ(3, actual_params->GetParamsCount());
@@ -235,7 +235,7 @@ TEST(IPCTest, CrossCallIntPacking) {
 
   uint32 tag1 = 999;
   uint32 tag2 = 111;
-  const wchar_t text[] = L"godzilla";
+  const wchar_t *text = L"godzilla";
   CrossCallParamsEx* actual_params;
 
   char* mem = reinterpret_cast<char*>(client_control);

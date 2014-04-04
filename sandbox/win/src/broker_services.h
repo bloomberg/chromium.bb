@@ -36,8 +36,8 @@ class PolicyBase;
 // of the associated TargetProcess interface. In this implementation
 // TargetProcess is a friend of BrokerServices where the later manages a
 // collection of the former.
-class BrokerServicesBase : public BrokerServices,
-                           public SingletonBase<BrokerServicesBase>  {
+class BrokerServicesBase FINAL : public BrokerServices,
+                                 public SingletonBase<BrokerServicesBase> {
  public:
   BrokerServicesBase();
 
