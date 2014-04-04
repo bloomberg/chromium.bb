@@ -20,11 +20,6 @@ namespace util {
 // Opens the file manager for the freshly mounted removable drive specified
 // by |file_path|.
 // If there is another file manager instance open, this call does nothing.
-// The mount event will cause the file manager to show the new drive in
-// the left panel.
-// If there is no file manager open, this call opens a new one pointing to
-// |file_path|. In this case the tab will automatically close on |file_path|
-// unmount.
 void OpenRemovableDrive(Profile* profile, const base::FilePath& file_path);
 
 // Opens an item (file or directory). If the target is a directory, the
