@@ -59,11 +59,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def InstallTestPackage(self):
     self.test_package.Install(self.adb)
 
-  def GetAllTests(self):
-    """Install test package and get a list of all tests."""
-    self.test_package.Install(self.adb)
-    return self.test_package.GetAllTests(self.adb)
-
   #override
   def PushDataDeps(self):
     self.adb.WaitForSdCardReady(20)
