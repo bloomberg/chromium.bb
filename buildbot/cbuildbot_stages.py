@@ -1605,6 +1605,11 @@ class PreCQLauncherStage(SyncStage):
   # again from scratch in the next run.
   LAUNCH_DELAY = 30
 
+  # The number of minutes we allow before considering a launching or in-flight
+  # job failed. If this window isn't hit in a given launcher run, the window
+  # will start again from scratch in the next run.
+  LAUNCH_OR_INFLIGHT_DELAY = 120
+
   # The maximum number of patches we will allow in a given trybot run. This is
   # needed because our trybot infrastructure can only handle so many patches at
   # once.
@@ -1613,7 +1618,8 @@ class PreCQLauncherStage(SyncStage):
   def __init__(self, builder_run, **kwargs):
     super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
     self.skip_sync = True
-    self.launching = {}
+    # Mapping from launching or inflight changes to their launch time.
+    self.inflight_or_launching = {}
     self.retried = set()
 
   def _HasLaunchTimedOut(self, change):
@@ -1625,10 +1631,23 @@ class PreCQLauncherStage(SyncStage):
       True if the change has timed out. False otherwise.
     """
     diff = datetime.timedelta(minutes=self.LAUNCH_DELAY)
-    return datetime.datetime.now() - self.launching[change] > diff
+    return datetime.datetime.now() - self.inflight_or_launching[change] > diff
+
+  def _HasInflightTimedOut(self, change):
+    """Check whether a given |change| has timed out while trybot inflight.
+
+    Assumes that the change's trybot is inflight.
+
+    Returns:
+      True if the change has timed out. False otherwise.
+    """
+    diff = datetime.timedelta(minutes=self.LAUNCH_OR_INFLIGHT_DELAY)
+    return datetime.datetime.now() - self.inflight_or_launching[change] > diff
 
   def GetPreCQStatus(self, pool, changes):
     """Get the Pre-CQ status of a list of changes.
+
+    Side effect: reject or retry changes that have timed out.
 
     Args:
       pool: The validation pool.
@@ -1643,16 +1662,17 @@ class PreCQLauncherStage(SyncStage):
     for change in changes:
       status = pool.GetCLStatus(PRE_CQ, change)
 
-      if status != self.STATUS_LAUNCHING:
-        # The trybot has finished launching, so we should remove it from our
-        # data structures.
-        self.launching.pop(change, None)
+      if (status != self.STATUS_LAUNCHING and
+          status != self.STATUS_INFLIGHT):
+        # The trybot is neither inflight nor launching.
+        self.inflight_or_launching.pop(change, None)
 
       if status == self.STATUS_LAUNCHING:
         # The trybot is in the process of launching.
         busy.add(change)
-        if change not in self.launching:
-          self.launching[change] = datetime.datetime.now()
+        if change not in self.inflight_or_launching:
+          # Record the launch time of changes in our timeout map.
+          self.inflight_or_launching[change] = datetime.datetime.now()
         elif self._HasLaunchTimedOut(change):
           if change in self.retried:
             msg = ('We were not able to launch a pre-cq trybot for your change.'
@@ -1677,6 +1697,19 @@ class PreCQLauncherStage(SyncStage):
         # Once a Pre-CQ run actually starts, it'll set the status to
         # STATUS_INFLIGHT.
         busy.add(change)
+        if self._HasInflightTimedOut(change):
+          msg = ('The pre-cq trybot for your change timed out after %s minutes.'
+                 '\n\n'
+                 'This problem can happen if your change causes the builder '
+                 'to hang, or if there is some infrastructure issue. If your '
+                 'change is not at fault you may mark your change as ready '
+                 'again. If this problem occurs multiple times please notify '
+                 'the sheriff and file a bug.' % self.LAUNCH_OR_INFLIGHT_DELAY)
+
+          pool.SendNotification(change, '%(details)s', details=msg)
+          pool.RemoveCommitReady(change)
+          pool.UpdateCLStatus(PRE_CQ, change, self.STATUS_FAILED,
+                              self._run.options.debug)
       elif status == self.STATUS_FAILED:
         # The Pre-CQ run failed for this change. It's possible that we got
         # unlucky and this change was just marked as 'Not Ready' by a bot. To
@@ -1710,6 +1743,8 @@ class PreCQLauncherStage(SyncStage):
 
   def GetDisjointTransactionsToTest(self, pool, changes):
     """Get the list of disjoint transactions to test.
+
+    Side effect: reject or retry changes that have timed out.
 
     Returns:
       A list of disjoint transactions to test. Each transaction should be sent
