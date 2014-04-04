@@ -40,7 +40,6 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
@@ -56,17 +55,17 @@ namespace WebCore {
 
 static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>&);
 
-CustomElementConstructorBuilder::CustomElementConstructorBuilder(ScriptState* state, const Dictionary* options)
-    : m_context(state->context())
+CustomElementConstructorBuilder::CustomElementConstructorBuilder(NewScriptState* scriptState, const Dictionary* options)
+    : m_scriptState(scriptState)
     , m_options(options)
     , m_wrapperType(0)
 {
-    ASSERT(m_context == v8::Isolate::GetCurrent()->GetCurrentContext());
+    ASSERT(m_scriptState->context() == v8::Isolate::GetCurrent()->GetCurrentContext());
 }
 
 bool CustomElementConstructorBuilder::isFeatureAllowed() const
 {
-    return DOMWrapperWorld::world(m_context).isMainWorld();
+    return m_scriptState->world().isMainWorld();
 }
 
 bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState& exceptionState)
@@ -81,8 +80,8 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
         }
         m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
     } else {
-        m_prototype = v8::Object::New(m_context->GetIsolate());
-        v8::Local<v8::Object> basePrototype = V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
+        m_prototype = v8::Object::New(m_scriptState->isolate());
+        v8::Local<v8::Object> basePrototype = m_scriptState->perContextData()->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
         if (!basePrototype.IsEmpty())
             m_prototype->SetPrototype(basePrototype);
     }
@@ -90,7 +89,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     AtomicString extends;
     bool extendsProvidedAndNonNull = m_options->get("extends", extends);
 
-    if (!V8PerContextData::from(m_context)) {
+    if (!m_scriptState->perContextData()) {
         // FIXME: This should generate an InvalidContext exception at a later point.
         CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, exceptionState);
         return false;
@@ -137,7 +136,7 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
 {
     ASSERT(!m_prototype.IsEmpty());
 
-    RefPtr<ExecutionContext> executionContext(toExecutionContext(m_context));
+    RefPtr<ExecutionContext> executionContext = m_scriptState->executionContext();
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
@@ -166,7 +165,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     ASSERT(m_constructor.IsEmpty());
     ASSERT(document);
 
-    v8::Isolate* isolate = m_context->GetIsolate();
+    v8::Isolate* isolate = m_scriptState->isolate();
 
     if (!prototypeIsValid(definition->descriptor().type(), exceptionState))
         return false;
@@ -190,7 +189,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
     m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
 
-    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementDocument(isolate), toV8(document, m_context->Global(), isolate));
+    V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementDocument(isolate), toV8(document, m_scriptState->context()->Global(), isolate));
     V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementNamespaceURI(isolate), v8String(isolate, descriptor.namespaceURI()));
     V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementTagName(isolate), v8TagName);
     V8HiddenValue::setHiddenValue(isolate, m_constructor, V8HiddenValue::customElementType(isolate), v8Type);
@@ -214,12 +213,12 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
 bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type, ExceptionState& exceptionState) const
 {
-    if (m_prototype->InternalFieldCount() || !V8HiddenValue::getHiddenValue(m_context->GetIsolate(), m_prototype, V8HiddenValue::customElementIsInterfacePrototypeObject(m_context->GetIsolate())).IsEmpty()) {
+    if (m_prototype->InternalFieldCount() || !V8HiddenValue::getHiddenValue(m_scriptState->isolate(), m_prototype, V8HiddenValue::customElementIsInterfacePrototypeObject(m_scriptState->isolate())).IsEmpty()) {
         CustomElementException::throwException(CustomElementException::PrototypeInUse, type, exceptionState);
         return false;
     }
 
-    if (m_prototype->GetPropertyAttributes(v8String(m_context->GetIsolate(), "constructor")) & v8::DontDelete) {
+    if (m_prototype->GetPropertyAttributes(v8String(m_scriptState->isolate(), "constructor")) & v8::DontDelete) {
         CustomElementException::throwException(CustomElementException::ConstructorPropertyNotConfigurable, type, exceptionState);
         return false;
     }
@@ -231,17 +230,17 @@ bool CustomElementConstructorBuilder::didRegisterDefinition(CustomElementDefinit
 {
     ASSERT(!m_constructor.IsEmpty());
 
-    return m_callbacks->setBinding(definition, CustomElementBinding::create(m_context->GetIsolate(), m_prototype, m_wrapperType));
+    return m_callbacks->setBinding(definition, CustomElementBinding::create(m_scriptState->isolate(), m_prototype, m_wrapperType));
 }
 
 ScriptValue CustomElementConstructorBuilder::bindingsReturnValue() const
 {
-    return ScriptValue(m_constructor, m_context->GetIsolate());
+    return ScriptValue(m_constructor, m_scriptState->isolate());
 }
 
 bool CustomElementConstructorBuilder::hasValidPrototypeChainFor(const WrapperTypeInfo* type) const
 {
-    v8::Handle<v8::Object> elementPrototype = V8PerContextData::from(m_context)->prototypeForType(type);
+    v8::Handle<v8::Object> elementPrototype = m_scriptState->perContextData()->prototypeForType(type);
     if (elementPrototype.IsEmpty())
         return false;
 

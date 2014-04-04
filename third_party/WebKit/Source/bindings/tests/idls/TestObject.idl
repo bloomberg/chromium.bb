@@ -418,6 +418,11 @@ interface TestObject {
     [CallWith=ScriptState&ExecutionContext] void callWithScriptStateExecutionContextVoidMethod();
     [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethod();
     [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
+    [CallWith=NewScriptState] void callWithNewScriptStateVoidMethod();
+    [CallWith=NewScriptState] long callWithNewScriptStateLongMethod();
+    [CallWith=NewScriptState&ExecutionContext] void callWithNewScriptStateExecutionContextVoidMethod();
+    [CallWith=NewScriptState&ScriptArguments] void callWithNewScriptStateScriptArgumentsVoidMethod();
+    [CallWith=NewScriptState&ScriptArguments] void callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
     [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();

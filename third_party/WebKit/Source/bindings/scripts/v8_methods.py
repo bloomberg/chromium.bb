@@ -64,6 +64,9 @@ def generate_method(interface, method):
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     if is_call_with_script_state:
         includes.add('bindings/v8/ScriptState.h')
+    is_call_with_new_script_state = has_extended_attribute_value(method, 'CallWith', 'NewScriptState')
+    if is_call_with_new_script_state:
+        includes.add('bindings/v8/NewScriptState.h')
     is_check_security_for_node = 'CheckSecurity' in extended_attributes
     if is_check_security_for_node:
         includes.add('bindings/v8/BindingSecurity.h')
@@ -104,6 +107,7 @@ def generate_method(interface, method):
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,
+        'is_call_with_new_script_state': is_call_with_new_script_state,
         'is_check_security_for_frame': is_check_security_for_frame,
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom': 'Custom' in extended_attributes,
@@ -217,8 +221,9 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
         return None
 
     release = False
-    # [CallWith=ScriptState], [RaisesException]
+    # [CallWith=ScriptState|NewScriptState], [RaisesException]
     if (has_extended_attribute_value(method, 'CallWith', 'ScriptState') or
+        has_extended_attribute_value(method, 'CallWith', 'NewScriptState') or
         'RaisesException' in extended_attributes or
         idl_type.is_union_type):
         cpp_value = 'result'  # use local variable for value

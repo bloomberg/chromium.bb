@@ -783,19 +783,19 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     return element;
 }
 
-ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, ExceptionState& exceptionState)
+ScriptValue Document::registerElement(WebCore::NewScriptState* scriptState, const AtomicString& name, ExceptionState& exceptionState)
 {
-    return registerElement(state, name, Dictionary(), exceptionState);
+    return registerElement(scriptState, name, Dictionary(), exceptionState);
 }
 
-ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
+ScriptValue Document::registerElement(WebCore::NewScriptState* scriptState, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");
         return ScriptValue();
     }
 
-    CustomElementConstructorBuilder constructorBuilder(state, &options);
+    CustomElementConstructorBuilder constructorBuilder(scriptState, &options);
     registrationContext()->registerElement(this, &constructorBuilder, name, validNames, exceptionState);
     return constructorBuilder.bindingsReturnValue();
 }

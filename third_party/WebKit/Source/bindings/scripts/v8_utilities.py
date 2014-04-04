@@ -148,7 +148,8 @@ def activity_logging_world_list(member, access_type=None):
 
 # [CallWith]
 CALL_WITH_ARGUMENTS = {
-    'ScriptState': '&state',
+    'ScriptState': 'state',
+    'NewScriptState': 'state',
     'ExecutionContext': 'scriptContext',
     'ScriptArguments': 'scriptArguments.release()',
     'ActiveWindow': 'callingDOMWindow(info.GetIsolate())',
@@ -157,6 +158,7 @@ CALL_WITH_ARGUMENTS = {
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [
     'ScriptState',
+    'NewScriptState',
     'ExecutionContext',
     'ScriptArguments',
     'ActiveWindow',

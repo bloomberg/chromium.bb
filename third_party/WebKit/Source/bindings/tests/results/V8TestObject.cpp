@@ -30,6 +30,7 @@
 #include "bindings/v8/BindingSecurity.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "bindings/v8/ScriptState.h"
@@ -6801,14 +6802,13 @@ static void activityLoggingAccessForAllWorldsMethodMethodCallback(const v8::Func
 static void callWithScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
+    ScriptState* state = ScriptState::current();
+    if (!state)
         return;
-    ScriptState& state = *currentState;
-    impl->callWithScriptStateVoidMethod(&state);
-    if (state.hadException()) {
-        v8::Local<v8::Value> exception = state.exception();
-        state.clearException();
+    impl->callWithScriptStateVoidMethod(state);
+    if (state->hadException()) {
+        v8::Local<v8::Value> exception = state->exception();
+        state->clearException();
         throwError(exception, info.GetIsolate());
         return;
     }
@@ -6824,14 +6824,13 @@ static void callWithScriptStateVoidMethodMethodCallback(const v8::FunctionCallba
 static void callWithScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
+    ScriptState* state = ScriptState::current();
+    if (!state)
         return;
-    ScriptState& state = *currentState;
-    int result = impl->callWithScriptStateLongMethod(&state);
-    if (state.hadException()) {
-        v8::Local<v8::Value> exception = state.exception();
-        state.clearException();
+    int result = impl->callWithScriptStateLongMethod(state);
+    if (state->hadException()) {
+        v8::Local<v8::Value> exception = state->exception();
+        state->clearException();
         throwError(exception, info.GetIsolate());
         return;
     }
@@ -6862,15 +6861,14 @@ static void callWithExecutionContextVoidMethodMethodCallback(const v8::FunctionC
 static void callWithScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
+    ScriptState* state = ScriptState::current();
+    if (!state)
         return;
-    ScriptState& state = *currentState;
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
-    impl->callWithScriptStateExecutionContextVoidMethod(&state, scriptContext);
-    if (state.hadException()) {
-        v8::Local<v8::Value> exception = state.exception();
-        state.clearException();
+    impl->callWithScriptStateExecutionContextVoidMethod(state, scriptContext);
+    if (state->hadException()) {
+        v8::Local<v8::Value> exception = state->exception();
+        state->clearException();
         throwError(exception, info.GetIsolate());
         return;
     }
@@ -6886,15 +6884,14 @@ static void callWithScriptStateExecutionContextVoidMethodMethodCallback(const v8
 static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
+    ScriptState* state = ScriptState::current();
+    if (!state)
         return;
-    ScriptState& state = *currentState;
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 0));
-    impl->callWithScriptStateScriptArgumentsVoidMethod(&state, scriptArguments.release());
-    if (state.hadException()) {
-        v8::Local<v8::Value> exception = state.exception();
-        state.clearException();
+    impl->callWithScriptStateScriptArgumentsVoidMethod(state, scriptArguments.release());
+    if (state->hadException()) {
+        v8::Local<v8::Value> exception = state->exception();
+        state->clearException();
         throwError(exception, info.GetIsolate());
         return;
     }
@@ -6911,30 +6908,28 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
-        ScriptState* currentState = ScriptState::current();
-        if (!currentState)
+        ScriptState* state = ScriptState::current();
+        if (!state)
             return;
-        ScriptState& state = *currentState;
         RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
-        impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(&state, scriptArguments.release());
-        if (state.hadException()) {
-            v8::Local<v8::Value> exception = state.exception();
-            state.clearException();
+        impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
+        if (state->hadException()) {
+            v8::Local<v8::Value> exception = state->exception();
+            state->clearException();
             throwError(exception, info.GetIsolate());
             return;
         }
         return;
     }
     V8TRYCATCH_VOID(bool, optionalBooleanArg, info[0]->BooleanValue());
-    ScriptState* currentState = ScriptState::current();
-    if (!currentState)
+    ScriptState* state = ScriptState::current();
+    if (!state)
         return;
-    ScriptState& state = *currentState;
     RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
-    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(&state, scriptArguments.release(), optionalBooleanArg);
-    if (state.hadException()) {
-        v8::Local<v8::Value> exception = state.exception();
-        state.clearException();
+    impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release(), optionalBooleanArg);
+    if (state->hadException()) {
+        v8::Local<v8::Value> exception = state->exception();
+        state->clearException();
         throwError(exception, info.GetIsolate());
         return;
     }
@@ -6944,6 +6939,87 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void callWithNewScriptStateVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    impl->callWithNewScriptStateVoidMethod(state);
+}
+
+static void callWithNewScriptStateVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::callWithNewScriptStateVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void callWithNewScriptStateLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    int result = impl->callWithNewScriptStateLongMethod(state);
+    v8SetReturnValueInt(info, result);
+}
+
+static void callWithNewScriptStateLongMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::callWithNewScriptStateLongMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void callWithNewScriptStateExecutionContextVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
+    impl->callWithNewScriptStateExecutionContextVoidMethod(state, scriptContext);
+}
+
+static void callWithNewScriptStateExecutionContextVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::callWithNewScriptStateExecutionContextVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void callWithNewScriptStateScriptArgumentsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 0));
+    impl->callWithNewScriptStateScriptArgumentsVoidMethod(state, scriptArguments.release());
+}
+
+static void callWithNewScriptStateScriptArgumentsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
+static void callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    if (UNLIKELY(info.Length() <= 0)) {
+        NewScriptState* state = NewScriptState::current(info.GetIsolate());
+        RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
+        impl->callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release());
+        return;
+    }
+    V8TRYCATCH_VOID(bool, optionalBooleanArg, info[0]->BooleanValue());
+    NewScriptState* state = NewScriptState::current(info.GetIsolate());
+    RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, 1));
+    impl->callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(state, scriptArguments.release(), optionalBooleanArg);
+}
+
+static void callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -7889,6 +7965,11 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"callWithScriptStateExecutionContextVoidMethod", TestObjectV8Internal::callWithScriptStateExecutionContextVoidMethodMethodCallback, 0, 0},
     {"callWithScriptStateScriptArgumentsVoidMethod", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0},
     {"callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0},
+    {"callWithNewScriptStateVoidMethod", TestObjectV8Internal::callWithNewScriptStateVoidMethodMethodCallback, 0, 0},
+    {"callWithNewScriptStateLongMethod", TestObjectV8Internal::callWithNewScriptStateLongMethodMethodCallback, 0, 0},
+    {"callWithNewScriptStateExecutionContextVoidMethod", TestObjectV8Internal::callWithNewScriptStateExecutionContextVoidMethodMethodCallback, 0, 0},
+    {"callWithNewScriptStateScriptArgumentsVoidMethod", TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0},
+    {"callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectV8Internal::callWithNewScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0},
     {"callWithActiveWindow", TestObjectV8Internal::callWithActiveWindowMethodCallback, 0, 0},
     {"callWithActiveWindowScriptWindow", TestObjectV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0},
     {"checkSecurityForNodeVoidMethod", TestObjectV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0},

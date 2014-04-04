@@ -36,7 +36,7 @@
 ActiveDOMObject
 ActivityLogging=ForAllWorlds|GetterForAllWorlds|SetterForAllWorlds|ForIsolatedWorlds|GetterForIsolatedWorlds|SetterForIsolatedWorlds
 CachedAttribute=*
-CallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
+CallWith=ExecutionContext|ScriptState|NewScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity=Frame|Node
 Clamp
 Conditional=*

@@ -183,10 +183,12 @@ if (!{{argument.name}}.isUndefinedOrNull() && !{{argument.name}}.isObject()) {
 ASSERT(impl);
 {% endif %}
 {% if method.is_call_with_script_state %}
-ScriptState* currentState = ScriptState::current();
-if (!currentState)
+ScriptState* state = ScriptState::current();
+if (!state)
     return;
-ScriptState& state = *currentState;
+{% endif %}
+{% if method.is_call_with_new_script_state %}
+NewScriptState* state = NewScriptState::current(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_execution_context %}
 ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
@@ -197,7 +199,7 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {# Call #}
 {% if method.idl_type == 'void' %}
 {{cpp_value}};
-{% elif method.is_call_with_script_state or method.is_raises_exception %}
+{% elif method.is_call_with_script_state or method.is_call_with_new_script_state or method.is_raises_exception %}
 {# FIXME: consider always using a local variable #}
 {{method.cpp_type}} result = {{cpp_value}};
 {% endif %}
@@ -207,9 +209,9 @@ if (exceptionState.throwIfNeeded())
     return;
 {% endif %}
 {% if method.is_call_with_script_state %}
-if (state.hadException()) {
-    v8::Local<v8::Value> exception = state.exception();
-    state.clearException();
+if (state->hadException()) {
+    v8::Local<v8::Value> exception = state->exception();
+    state->clearException();
     throwError(exception, info.GetIsolate());
     return;
 }
