@@ -44,6 +44,8 @@ bool MockCryptoClientStream::CryptoConnect() {
     case CONFIRM_HANDSHAKE: {
       encryption_established_ = true;
       handshake_confirmed_ = true;
+      crypto_negotiated_params_.key_exchange = kC255;
+      crypto_negotiated_params_.aead = kAESG;
       if (proof_verify_details_) {
         client_session()->OnProofVerifyDetailsAvailable(*proof_verify_details_);
       }

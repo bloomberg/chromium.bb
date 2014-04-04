@@ -346,17 +346,31 @@ bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->cert_status = cert_verify_result_->cert_status;
   ssl_info->cert = cert_verify_result_->verified_cert;
 
-  // TODO(rtenneti): Figure out what to set for the following.
-  // Temporarily hard coded cipher_suite as 0xc031 to represent
-  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (from
-  // net/ssl/ssl_cipher_suite_names.cc) and encryption as 256.
-  int cipher_suite = 0xc02f;
+  // TODO(wtc): Define QUIC "cipher suites".
+  // Report the TLS cipher suite that most closely resembles the crypto
+  // parameters of the QUIC connection.
+  QuicTag aead = crypto_stream_->crypto_negotiated_params().aead;
+  int cipher_suite;
+  int security_bits;
+  switch (aead) {
+    case kAESG:
+      cipher_suite = 0xc02f;  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+      security_bits = 128;
+      break;
+    case kCC12:
+      cipher_suite = 0xcc13;  // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+      security_bits = 256;
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
   int ssl_connection_status = 0;
   ssl_connection_status |=
       (cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK) <<
        SSL_CONNECTION_CIPHERSUITE_SHIFT;
   ssl_connection_status |=
-      (SSL_CONNECTION_VERSION_TLS1_2 & SSL_CONNECTION_VERSION_MASK) <<
+      (SSL_CONNECTION_VERSION_QUIC & SSL_CONNECTION_VERSION_MASK) <<
        SSL_CONNECTION_VERSION_SHIFT;
 
   ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
@@ -366,7 +380,7 @@ bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
   ssl_info->connection_status = ssl_connection_status;
   ssl_info->client_cert_sent = false;
   ssl_info->channel_id_sent = false;
-  ssl_info->security_bits = 256;
+  ssl_info->security_bits = security_bits;
   ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
   return true;
 }
