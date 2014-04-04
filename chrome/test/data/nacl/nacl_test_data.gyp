@@ -981,6 +981,18 @@
             'sources': [
               '<(DEPTH)/native_client/tests/stubout_mode/partly_invalid.c',
             ],
+            'conditions': [
+              ['target_arch=="mipsel"', {
+                'compile_flags': [
+                  '--pnacl-mips-bias',
+                  '-arch', 'mips32',
+                  '--pnacl-allow-translate',
+                ],
+                'link_flags': [
+                  '--pnacl-allow-native',
+                ],
+              }],
+            ],
           },
           'dependencies': [
             '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
