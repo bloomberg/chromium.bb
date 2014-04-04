@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "cc/debug/micro_benchmark_controller.h"
+#include "cc/resources/picture.h"
 
 namespace base {
 class DictionaryValue;
@@ -45,7 +46,7 @@ class RasterizeAndRecordBenchmark : public MicroBenchmark {
     ~RecordResults();
 
     int pixels_recorded;
-    base::TimeDelta total_best_time;
+    base::TimeDelta total_best_time[Picture::RECORDING_MODE_COUNT];
   };
 
   RecordResults record_results_;

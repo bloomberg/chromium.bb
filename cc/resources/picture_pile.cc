@@ -243,7 +243,8 @@ bool PicturePile::Update(ContentLayerClient* painter,
                                   painter,
                                   tile_grid_info_,
                                   gather_pixel_refs,
-                                  num_raster_threads);
+                                  num_raster_threads,
+                                  Picture::RECORD_NORMALLY);
         base::TimeDelta duration =
             stats_instrumentation->EndRecording(start_time);
         best_duration = std::min(duration, best_duration);
