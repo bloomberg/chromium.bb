@@ -3050,6 +3050,8 @@ shell_destroy_shell_surface(struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
+	if (!wl_list_empty(&shsurf->popup.grab_link))
+		remove_popup_grab(shsurf);
 	shsurf->resource = NULL;
 }
 
