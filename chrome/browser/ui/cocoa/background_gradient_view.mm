@@ -151,9 +151,10 @@
 }
 
 - (void)setFrameOrigin:(NSPoint)origin {
-  // The background color depends on the view's vertical position.
+  // The background color depends on the view's vertical position. This impacts
+  // any child views that draw using this view's functions.
   if (NSMinY([self frame]) != origin.y)
-    [self setNeedsDisplay:YES];
+    [self cr_recursivelySetNeedsDisplay:YES];
 
   [super setFrameOrigin:origin];
 }
