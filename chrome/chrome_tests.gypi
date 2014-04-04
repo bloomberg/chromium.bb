@@ -1279,6 +1279,7 @@
         'browser/media/chrome_webrtc_audio_quality_browsertest.cc',
         'browser/media/chrome_webrtc_typing_detection_browsertest.cc',
         'browser/media/chrome_webrtc_video_quality_browsertest.cc',
+        'browser/media/chrome_webrtc_webcam_browsertest.cc',
         'browser/media/encrypted_media_istypesupported_browsertest.cc',
         'browser/media/test_license_server.cc',
         'browser/media/test_license_server.h',

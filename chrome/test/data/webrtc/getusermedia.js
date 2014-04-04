@@ -83,14 +83,21 @@ function obtainGetUserMediaResult() {
 }
 
 /**
- * Stops the local stream.
+ * Stops all tracks of the last acquired local stream.
  */
 function stopLocalStream() {
   if (gLocalStream == null)
     throw failTest('Tried to stop local stream, ' +
                    'but media access is not granted.');
 
-  gLocalStream.stop();
+  gLocalStream.getVideoTracks().forEach(function(track) {
+    track.stop();
+  });
+  gLocalStream.getAudioTracks().forEach(function(track) {
+    track.stop();
+  });
+  gLocalStream = null;
+  gRequestWebcamAndMicrophoneResult = 'not-called-yet';
   returnToTest('ok-stopped');
 }
 
@@ -168,65 +175,7 @@ function getUserMediaOkCallback_(stream) {
   gLocalStream = stream;
   gRequestWebcamAndMicrophoneResult = 'ok-got-stream';
 
-  if (stream.getVideoTracks().length > 0) {
-    // Show the video tag if we did request video in the getUserMedia call.
-    var videoTag = $('local-view');
-    attachMediaStream(videoTag, stream);
-
-    // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
-    // videoTag.onloadedmetadata = displayVideoSize_(videoTag);.
-    // Use setTimeout as a workaround for now.
-    setTimeout(function() {displayVideoSize_(videoTag);}, 500);
-  }
-}
-
-/**
- * @private
- * @param {string} videoTagId The ID of the video tag to update.
- * @param {string} width The width of the video to update the video tag, if
- *     width or height is 0, size will be taken from videoTag.videoWidth.
- * @param {string} height The height of the video to update the video tag, if
- *     width or height is 0 size will be taken from the videoTag.videoHeight.
- */
-function updateVideoTagSize_(videoTagId, width, height) {
-  var videoTag = $(videoTagId);
-  if (width > 0 || height > 0) {
-    videoTag.width = width;
-    videoTag.height = height;
-  }
-  else {
-    if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
-      videoTag.width = videoTag.videoWidth;
-      videoTag.height = videoTag.videoHeight;
-    }
-    else {
-      debug('"' + videoTagId + '" video stream size is 0, skipping resize');
-    }
-  }
-  debug('Set video tag "' + videoTagId + '" size to ' + videoTag.width + 'x' +
-        videoTag.height);
-  displayVideoSize_(videoTag);
-}
-
-/**
- * @private
- * @param {string} videoTag The ID of the video tag + stream used to
- *     write the size to a HTML tag based on id if the div's exists.
- */
-function displayVideoSize_(videoTag) {
-  if ($(videoTag.id + '-stream-size') && $(videoTag.id + '-size')) {
-    if (videoTag.videoWidth > 0 || videoTag.videoHeight > 0) {
-      $(videoTag.id + '-stream-size').innerHTML = '(stream size: ' +
-                                                  videoTag.videoWidth + 'x' +
-                                                  videoTag.videoHeight + ')';
-      $(videoTag.id + '-size').innerHTML = videoTag.width + 'x' +
-                                           videoTag.height;
-    }
-  }
-  else {
-    debug('Skipping updating -stream-size and -size tags due to div\'s are ' +
-          'missing');
-  }
+  attachMediaStream($('local-view'), stream);
 }
 
 /**

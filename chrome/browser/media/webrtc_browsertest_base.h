@@ -24,7 +24,11 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kAudioVideoCallConstraints[];
   static const char kAudioOnlyCallConstraints[];
   static const char kVideoOnlyCallConstraints[];
+  static const char kAudioVideoCallConstraintsQVGA[];
   static const char kAudioVideoCallConstraints360p[];
+  static const char kAudioVideoCallConstraintsVGA[];
+  static const char kAudioVideoCallConstraints720p[];
+  static const char kAudioVideoCallConstraints1080p[];
 
   static const char kFailedWithPermissionDeniedError[];
   static const char kFailedWithPermissionDismissedError[];
@@ -64,6 +68,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // means and accepts the user media request.
   content::WebContents* OpenPageAndAcceptUserMedia(const GURL& url) const;
 
+  // Closes the last local stream acquired by the GetUserMedia* methods.
+  void CloseLastLocalStream(content::WebContents* tab_contents) const;
+
   void ConnectToPeerConnectionServer(const std::string& peer_name,
                                      content::WebContents* tab_contents) const;
   std::string ExecuteJavascript(const std::string& javascript,
@@ -87,6 +94,13 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void StartDetectingVideo(content::WebContents* tab_contents,
                            const std::string& video_element) const;
   void WaitForVideoToPlay(content::WebContents* tab_contents) const;
+
+  // Returns the stream size as a string on the format <width>x<height>.
+  std::string GetStreamSize(content::WebContents* tab_contents,
+                            const std::string& video_element) const;
+
+  // Methods to check what devices we have on the system.
+  bool HasWebcamAvailableOnSystem(content::WebContents* tab_contents) const;
 
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,

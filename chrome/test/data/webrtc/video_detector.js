@@ -71,6 +71,21 @@ function isVideoPlaying() {
   returnToTest('video-not-playing');
 }
 
+/**
+ * Queries for the stream size (not necessarily the size at which the video tag
+ * is rendered).
+ *
+ * @param videoElementId The video element to check.
+ * @return {string} ok-<width>x<height>, e.g. ok-640x480 for VGA.
+ */
+function getStreamSize(videoElementId) {
+  var video = document.getElementById(videoElementId);
+  if (!video)
+    throw failTest('Could not find video element with id ' + videoElementId);
+
+  returnToTest('ok-' + video.videoWidth + 'x' + video.videoHeight);
+}
+
 // Internals.
 
 /** @private */
