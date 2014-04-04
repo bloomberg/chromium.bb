@@ -526,6 +526,8 @@ cr.define('options.internet', function() {
                                     !$('proxy-use-pac-url').checked;
       $('auto-proxy-parms').hidden = !$('auto-proxy').checked;
       $('manual-proxy-parms').hidden = !$('manual-proxy').checked;
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_NetworkManualProxy_Disable']);
     },
 
     /**
@@ -556,6 +558,8 @@ cr.define('options.internet', function() {
       $('proxy-pac-url').disabled = true;
       $('auto-proxy-parms').hidden = !$('auto-proxy').checked;
       $('manual-proxy-parms').hidden = !$('manual-proxy').checked;
+      chrome.send('coreOptionsUserMetricsAction',
+                  ['Options_NetworkManualProxy_Enable']);
     },
   };
 
@@ -626,6 +630,8 @@ cr.define('options.internet', function() {
     updateHidden('#details-internet-page .action-area', true);
     detailsPage.updateControls();
     detailsPage.visible = true;
+    chrome.send('coreOptionsUserMetricsAction',
+                ['Options_NetworkShowProxyTab']);
   };
 
   /**

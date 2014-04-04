@@ -499,6 +499,8 @@ cr.define('options.network', function() {
           var dialog = options.PreferredNetworks.getInstance();
           OptionsPage.showPageByName('preferredNetworksPage', false);
           dialog.update(list);
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_NetworkShowPreferred']);
         };
         addendum.push({label: loadTimeData.getString('preferredNetworks'),
                        command: callback,

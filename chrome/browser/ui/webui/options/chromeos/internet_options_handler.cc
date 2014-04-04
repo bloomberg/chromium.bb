@@ -65,6 +65,7 @@
 #include "chromeos/network/shill_property_util.h"
 #include "components/onc/onc_constants.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
@@ -1046,12 +1047,14 @@ void InternetOptionsHandler::RegisterMessages() {
 }
 
 void InternetOptionsHandler::EnableWifiCallback(const base::ListValue* args) {
+  content::RecordAction(base::UserMetricsAction("Options_NetworkWifiToggle"));
   NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), true,
       base::Bind(&ShillError, "EnableWifiCallback"));
 }
 
 void InternetOptionsHandler::DisableWifiCallback(const base::ListValue* args) {
+  content::RecordAction(base::UserMetricsAction("Options_NetworkWifiToggle"));
   NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false,
       base::Bind(&ShillError, "DisableWifiCallback"));
@@ -1392,6 +1395,7 @@ void InternetOptionsHandler::SetPreferNetworkCallback(
     NOTREACHED();
     return;
   }
+  content::RecordAction(base::UserMetricsAction("Options_NetworkSetPrefer"));
   int priority = (prefer_network_str == kTagTrue) ? kPreferredPriority : 0;
   SetNetworkProperty(service_path, shill::kPriorityProperty,
                      base::Value::CreateIntegerValue(priority));
@@ -1406,6 +1410,7 @@ void InternetOptionsHandler::SetAutoConnectCallback(
     NOTREACHED();
     return;
   }
+  content::RecordAction(base::UserMetricsAction("Options_NetworkAutoConnect"));
   bool auto_connect = auto_connect_str == kTagTrue;
   SetNetworkProperty(service_path, shill::kAutoConnectProperty,
                      base::Value::CreateBooleanValue(auto_connect));
@@ -1604,15 +1609,34 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
   NetworkPropertyUIData auto_connect_ui_data(onc_source);
   std::string onc_path_to_auto_connect;
   if (type == shill::kTypeWifi) {
+    content::RecordAction(
+        base::UserMetricsAction("Options_NetworkShowDetailsWifi"));
+    if (network->IsConnectedState()) {
+      content::RecordAction(
+          base::UserMetricsAction("Options_NetworkShowDetailsWifiConnected"));
+    }
     onc_path_to_auto_connect = base::StringPrintf(
         "%s.%s",
         ::onc::network_config::kWiFi,
         ::onc::wifi::kAutoConnect);
   } else if (type == shill::kTypeVPN) {
+    content::RecordAction(
+        base::UserMetricsAction("Options_NetworkShowDetailsVPN"));
+    if (network->IsConnectedState()) {
+      content::RecordAction(
+          base::UserMetricsAction("Options_NetworkShowDetailsVPNConnected"));
+    }
     onc_path_to_auto_connect = base::StringPrintf(
         "%s.%s",
         ::onc::network_config::kVPN,
         ::onc::vpn::kAutoConnect);
+  } else if (type == shill::kTypeCellular) {
+    content::RecordAction(
+        base::UserMetricsAction("Options_NetworkShowDetailsCellular"));
+    if (network->IsConnectedState()) {
+      content::RecordAction(base::UserMetricsAction(
+          "Options_NetworkShowDetailsCellularConnected"));
+    }
   }
   if (!onc_path_to_auto_connect.empty()) {
     auto_connect_ui_data.ParseOncProperty(
@@ -1950,8 +1974,22 @@ void InternetOptionsHandler::NetworkCommandCallback(
                    weak_factory_.GetWeakPtr()),
         base::Bind(&ShillError, "NetworkCommand: " + command));
   } else if (command == kTagConnect) {
+    const NetworkState* network = GetNetworkState(service_path);
+    if (network && network->type() == shill::kTypeWifi)
+      content::RecordAction(
+          base::UserMetricsAction("Options_NetworkConnectToWifi"));
+    else if (network && network->type() == shill::kTypeVPN)
+      content::RecordAction(
+          base::UserMetricsAction("Options_NetworkConnectToVPN"));
     ash::network_connect::ConnectToNetwork(service_path, GetNativeWindow());
   } else if (command == kTagDisconnect) {
+    const NetworkState* network = GetNetworkState(service_path);
+    if (network && network->type() == shill::kTypeWifi)
+      content::RecordAction(
+          base::UserMetricsAction("Options_NetworkDisconnectWifi"));
+    else if (network && network->type() == shill::kTypeVPN)
+      content::RecordAction(
+          base::UserMetricsAction("Options_NetworkDisconnectVPN"));
     NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
         service_path,
         base::Bind(&base::DoNothing),
@@ -1970,14 +2008,19 @@ void InternetOptionsHandler::NetworkCommandCallback(
 }
 
 void InternetOptionsHandler::AddConnection(const std::string& type) {
-  if (type == shill::kTypeWifi)
+  if (type == shill::kTypeWifi) {
+    content::RecordAction(
+        base::UserMetricsAction("Options_NetworkJoinOtherWifi"));
     NetworkConfigView::ShowForType(shill::kTypeWifi, GetNativeWindow());
-  else if (type == shill::kTypeVPN)
+  } else if (type == shill::kTypeVPN) {
+    content::RecordAction(
+        base::UserMetricsAction("Options_NetworkJoinOtherVPN"));
     NetworkConfigView::ShowForType(shill::kTypeVPN, GetNativeWindow());
-  else if (type == shill::kTypeCellular)
+  } else if (type == shill::kTypeCellular) {
     ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
-  else
+  } else {
     NOTREACHED();
+  }
 }
 
 base::ListValue* InternetOptionsHandler::GetWiredList() {

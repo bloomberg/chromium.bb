@@ -8341,6 +8341,152 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_NetworkAutoConnect">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail: Auto Connect to network
+  </description>
+</action>
+
+<action name="Options_NetworkConnectToVPN">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (VPN): Connect
+  </description>
+</action>
+
+<action name="Options_NetworkConnectToWifi">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (Wifi): Connect
+  </description>
+</action>
+
+<action name="Options_NetworkDisconnectVPN">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (VPN): Disconnect
+  </description>
+</action>
+
+<action name="Options_NetworkDisconnectWifi">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (Wifi): Disconnect
+  </description>
+</action>
+
+<action name="Options_NetworkJoinOtherVPN">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: VPN dropdown: Join other
+  </description>
+</action>
+
+<action name="Options_NetworkJoinOtherWifi">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Wifi dropdown: Join other
+  </description>
+</action>
+
+<action name="Options_NetworkManualProxy_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail: direct or automatic proxy
+    config
+  </description>
+</action>
+
+<action name="Options_NetworkManualProxy_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail: manual proxy config
+  </description>
+</action>
+
+<action name="Options_NetworkSetPrefer">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail: Prefer this network
+  </description>
+</action>
+
+<action name="Options_NetworkShowDetailsCellular">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (cellular)
+  </description>
+</action>
+
+<action name="Options_NetworkShowDetailsCellularConnected">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (connected cellular)
+  </description>
+</action>
+
+<action name="Options_NetworkShowDetailsVPN">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Internet connection: Network detail (VPN)</description>
+</action>
+
+<action name="Options_NetworkShowDetailsVPNConnected">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (connected VPN)
+  </description>
+</action>
+
+<action name="Options_NetworkShowDetailsWifi">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (wifi)
+  </description>
+</action>
+
+<action name="Options_NetworkShowDetailsWifiConnected">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail (connected wifi)
+  </description>
+</action>
+
+<action name="Options_NetworkShowPreferred">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Wifi dropdiwn: Preferred networks...
+  </description>
+</action>
+
+<action name="Options_NetworkShowProxyTab">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Network detail: select proxy tab
+  </description>
+</action>
+
+<action name="Options_NetworkUseSharedProxies_Disable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Allow proxies for shared networks
+  </description>
+</action>
+
+<action name="Options_NetworkUseSharedProxies_Enable">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Allow proxies for shared networks
+  </description>
+</action>
+
+<action name="Options_NetworkWifiToggle">
+  <owner>stevenjb@chromium.org</owner>
+  <description>
+    Settings: Internet connection: Wifi dropdown: Enable/Disable Wifi
+  </description>
+</action>
+
 <action name="Options_PasswordGenerationCheckbox_Disable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
