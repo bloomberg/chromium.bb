@@ -116,9 +116,7 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
             }
     }
 
-    // Additional aliases.
-    // These are present in modern versions of ICU, but not in ICU 3.2 (shipped with Mac OS X 10.4).
-    registrar("macroman", "macintosh");
+    // Additional alias for MacCyrillic not present in ICU.
     registrar("maccyrillic", "x-mac-cyrillic");
 
     // Additional aliases that historically were present in the encoding
@@ -156,11 +154,6 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("x-uhc", "EUC-KR");
     registrar("shift-jis", "Shift_JIS");
 
-    // These aliases are present in modern versions of ICU, but use different codecs, and have no standard names.
-    // They are not present in ICU 3.2.
-    registrar("dos-720", "cp864");
-    registrar("jis7", "ISO-2022-JP");
-
     // Alternative spelling of ISO encoding names.
     registrar("ISO8859-1", "ISO-8859-1");
     registrar("ISO8859-2", "ISO-8859-2");
@@ -176,10 +169,10 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar)
     registrar("ISO8859-13", "ISO-8859-13");
     registrar("ISO8859-14", "ISO-8859-14");
     registrar("ISO8859-15", "ISO-8859-15");
-    // Not registering ISO8859-16, because Firefox (as of version 3.6.6) doesn't know this particular alias,
-    // and because older versions of ICU don't support ISO-8859-16 encoding at all.
+    // No need to have an entry for ISO8859-16. ISO-8859-16 has just one label
+    // listed in WHATWG Encoding Living Standard (http://encoding.spec.whatwg.org/ ).
 
-    // Additional aliases present in the WHATWG Encoding Standard (http://encoding.spec.whatwg.org/)
+    // Additional aliases present in the WHATWG Encoding Standard
     // and Firefox (24), but not in ICU 4.6.
     registrar("csiso58gb231280", "GBK");
     registrar("csiso88596e", "ISO-8859-6");
