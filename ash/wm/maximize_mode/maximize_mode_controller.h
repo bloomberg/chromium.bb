@@ -12,7 +12,7 @@ namespace ash {
 
 // MaximizeModeController listens to accelerometer events and automatically
 // enters and exits maximize mode when the lid is opened beyond the triggering
-// angle.
+// angle and rotates the display to match the device when in maximize mode.
 class MaximizeModeController : public AccelerometerObserver {
  public:
   MaximizeModeController();
@@ -21,6 +21,15 @@ class MaximizeModeController : public AccelerometerObserver {
   virtual void OnAccelerometerUpdated(const gfx::Vector3dF& base,
                                       const gfx::Vector3dF& lid) OVERRIDE;
  private:
+  // Detect hinge rotation from |base| and |lid| accelerometers and
+  // automatically start / stop maximize mode.
+  void HandleHingeRotation(const gfx::Vector3dF& base,
+                           const gfx::Vector3dF& lid);
+
+  // Detect screen rotation from |lid| accelerometer and automatically rotate
+  // screen.
+  void HandleScreenRotation(const gfx::Vector3dF& lid);
+
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeController);
 };
 

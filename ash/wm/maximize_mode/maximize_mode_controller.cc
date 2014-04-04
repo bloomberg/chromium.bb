@@ -5,6 +5,7 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 #include "ash/accelerometer/accelerometer_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ui/gfx/vector3d_f.h"
 
@@ -32,6 +33,15 @@ const float kFullyOpenAngleErrorTolerance = 10.0f;
 // This is the angle from vertical under which we will not compute a hinge
 // angle.
 const float kHingeAxisAlignedThreshold = 15.0f;
+
+// The angle which the screen has to be rotated past before the display will
+// rotate to match it (i.e. 45.0f is no stickiness).
+const float kDisplayRotationStickyAngleDegrees = 60.0f;
+
+// The minimum acceleration in a direction required to trigger screen rotation.
+// This prevents rapid toggling of rotation when the device is near flat and
+// there is very little screen aligned force on it.
+const float kMinimumAccelerationScreenRotation = 0.3f;
 
 const float kRadiansToDegrees = 180.0f / 3.14159265f;
 
@@ -71,15 +81,26 @@ MaximizeModeController::~MaximizeModeController() {
 void MaximizeModeController::OnAccelerometerUpdated(
     const gfx::Vector3dF& base,
     const gfx::Vector3dF& lid) {
+  // Responding to the hinge rotation can change the maximize mode state which
+  // affects screen rotation, so we handle hinge rotation first.
+  HandleHingeRotation(base, lid);
+  HandleScreenRotation(lid);
+}
+
+void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
+                                                 const gfx::Vector3dF& lid) {
   static const gfx::Vector3dF hinge_vector(0.0f, 1.0f, 0.0f);
+  bool maximize_mode_engaged =
+      Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
 
   // As the hinge approaches a vertical angle, the base and lid accelerometers
   // approach the same values making any angle calculations highly inaccurate.
   // Bail out early when it is too close.
   float hinge_angle = AngleBetweenVectorsInDegrees(base, hinge_vector);
   if (hinge_angle < kHingeAxisAlignedThreshold ||
-      hinge_angle > 180.0f - kHingeAxisAlignedThreshold)
+      hinge_angle > 180.0f - kHingeAxisAlignedThreshold) {
     return;
+  }
 
   // Compute the angle between the base and the lid.
   float angle = ClockwiseAngleBetweenVectorsInDegrees(base, lid, hinge_vector);
@@ -88,8 +109,6 @@ void MaximizeModeController::OnAccelerometerUpdated(
   // TODO(flackr): Make MaximizeModeController own the MaximizeModeWindowManager
   // such that observations of state changes occur after the change and shell
   // has fewer states to track.
-  bool maximize_mode_engaged =
-      Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
   if (maximize_mode_engaged &&
       angle > kFullyOpenAngleErrorTolerance &&
       angle < kExitMaximizeModeAngle) {
@@ -97,6 +116,85 @@ void MaximizeModeController::OnAccelerometerUpdated(
   } else if (!maximize_mode_engaged &&
       angle > kEnterMaximizeModeAngle) {
     Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  }
+}
+
+void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
+  bool maximize_mode_engaged =
+      Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
+
+  DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+  gfx::Display::Rotation current_rotation = display_manager->GetDisplayInfo(
+      gfx::Display::InternalDisplayId()).rotation();
+
+  // If maximize mode is not engaged, ensure the screen is not rotated and
+  // do not rotate to match the current device orientation.
+  if (!maximize_mode_engaged) {
+    if (current_rotation != gfx::Display::ROTATE_0) {
+      // TODO(flackr): Currently this will prevent setting a manual rotation on
+      // the screen of a device with an accelerometer, this should only set it
+      // back to ROTATE_0 if it was last set by the accelerometer.
+      // Also, SetDisplayRotation will save the setting to the local store,
+      // this should be stored in a way that we can distinguish what the
+      // rotation was set by.
+      display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                          gfx::Display::ROTATE_0);
+    }
+    return;
+  }
+
+  // After determining maximize mode state, determine if the screen should
+  // be rotated.
+  gfx::Vector3dF lid_flattened(lid.x(), lid.y(), 0.0f);
+  float lid_flattened_length = lid_flattened.Length();
+  // When the lid is close to being flat, don't change rotation as it is too
+  // sensitive to slight movements.
+  if (lid_flattened_length < kMinimumAccelerationScreenRotation)
+    return;
+
+  // The reference vector is the angle of gravity when the device is rotated
+  // clockwise by 45 degrees. Computing the angle between this vector and
+  // gravity we can easily determine the expected display rotation.
+  static gfx::Vector3dF rotation_reference(-1.0f, 1.0f, 0.0f);
+
+  // Set the down vector to match the expected direction of gravity given the
+  // last configured rotation. This is used to enforce a stickiness that the
+  // user must overcome to rotate the display and prevents frequent rotations
+  // when holding the device near 45 degrees.
+  gfx::Vector3dF down(0.0f, 0.0f, 0.0f);
+  if (current_rotation == gfx::Display::ROTATE_0)
+    down.set_x(-1.0f);
+  else if (current_rotation == gfx::Display::ROTATE_90)
+    down.set_y(1.0f);
+  else if (current_rotation == gfx::Display::ROTATE_180)
+    down.set_x(1.0f);
+  else
+    down.set_y(-1.0f);
+
+  // Don't rotate if the screen has not passed the threshold.
+  if (AngleBetweenVectorsInDegrees(down, lid_flattened) <
+      kDisplayRotationStickyAngleDegrees) {
+    return;
+  }
+
+  float angle = ClockwiseAngleBetweenVectorsInDegrees(rotation_reference,
+      lid_flattened, gfx::Vector3dF(0.0f, 0.0f, -1.0f));
+
+  gfx::Display::Rotation new_rotation = gfx::Display::ROTATE_90;
+  if (angle < 90.0f)
+    new_rotation = gfx::Display::ROTATE_0;
+  else if (angle < 180.0f)
+    new_rotation = gfx::Display::ROTATE_270;
+  else if (angle < 270.0f)
+    new_rotation = gfx::Display::ROTATE_180;
+
+  // When exiting maximize mode return rotation to 0. When entering, rotate to
+  // match screen orientation.
+  if (new_rotation == gfx::Display::ROTATE_0 ||
+      maximize_mode_engaged) {
+    display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                        new_rotation);
   }
 }
 
