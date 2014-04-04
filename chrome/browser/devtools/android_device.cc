@@ -29,9 +29,13 @@ const int kBufferSize = 16 * 1024;
 #if defined(DEBUG_DEVTOOLS)
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
+const char kOpenedUnixSocketsResponse[] =
+    "Num       RefCount Protocol Flags    Type St Inode Path\n"
+    "00000000: 00000002 00000000 00010000 0001 01 20894 @%s\n";
+const char kRemoteDebuggingSocket[] = "chrome_devtools_remote";
 const char kLocalChrome[] = "Local Chrome";
 const char kLocalhost[] = "127.0.0.1";
-const int kTcpPort = 9222;
+const int kLocalDebuggingPort = 9222;
 #endif
 
 
@@ -459,9 +463,8 @@ void SelfAsDevice::RunCommand(const std::string& command,
   if (command == kDeviceModelCommand) {
     response = kLocalChrome;
   } else if (command == kOpenedUnixSocketsCommand) {
-    response = "Num       RefCount Protocol Flags    Type St Inode Path\n"
-        "00000000: 00000002 00000000"
-        " 00010000 0001 01 20894 @chrome_devtools_remote\n";
+    response = base::StringPrintf(kOpenedUnixSocketsResponse,
+                                  kRemoteDebuggingSocket);
   }
 
   base::MessageLoop::current()->PostTask(FROM_HERE,
@@ -471,12 +474,19 @@ void SelfAsDevice::RunCommand(const std::string& command,
 
 void SelfAsDevice::OpenSocket(const std::string& socket_name,
                               const SocketCallback& callback) {
-  // Use plain socket for remote debugging on Desktop (debugging purposes).
+  // Use plain socket for remote debugging and port forwarding on Desktop
+  // (debugging purposes).
   net::IPAddressNumber ip_number;
   net::ParseIPLiteralToNumber(kLocalhost, &ip_number);
 
+  int port = 0;
+  if (socket_name == kRemoteDebuggingSocket)
+    port = kLocalDebuggingPort;
+  else
+    base::StringToInt(socket_name, &port);
+
   net::AddressList address_list =
-      net::AddressList::CreateFromIPAddress(ip_number, kTcpPort);
+      net::AddressList::CreateFromIPAddress(ip_number, port);
   net::TCPClientSocket* socket = new net::TCPClientSocket(
       address_list, NULL, net::NetLog::Source());
   socket->Connect(base::Bind(&SelfAsDevice::RunSocketCallback, this, callback,
