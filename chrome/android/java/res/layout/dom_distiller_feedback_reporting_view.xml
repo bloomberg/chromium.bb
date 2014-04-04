@@ -4,7 +4,7 @@
      found in the LICENSE file.
 -->
 
-<org.chromium.chrome.browser.dom_distiller.FeedbackReportingView
+<org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReportingView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/feedback_reporting_view"
     android:layout_width="match_parent"
@@ -85,4 +85,4 @@
         </LinearLayout>
     </LinearLayout>
 
-</org.chromium.chrome.browser.dom_distiller.FeedbackReportingView>
+</org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReportingView>

@@ -25,7 +25,7 @@ import org.chromium.content.browser.ContentView;
  */
 public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
     // XML layout for the BannerView.
-    private static final int VIEW_LAYOUT = R.layout.feedback_reporting_view;
+    private static final int VIEW_LAYOUT = R.layout.dom_distiller_feedback_reporting_view;
 
     // Class to alert about DomDistillerFeedbackReportingView events.
     private FeedbackObserver mFeedbackObserver;
