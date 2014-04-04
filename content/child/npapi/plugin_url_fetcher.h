@@ -73,6 +73,8 @@ class PluginURLFetcher : public RequestPeer {
                                   const base::TimeTicks& completion_time,
                                   int64 total_transfer_size) OVERRIDE;
 
+  // |plugin_stream_| becomes NULL after Cancel() to ensure no further calls
+  // |reach it.
   PluginStreamUrl* plugin_stream_;
   GURL url_;
   GURL first_party_for_cookies_;

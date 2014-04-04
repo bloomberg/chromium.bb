@@ -162,9 +162,21 @@ PluginURLFetcher::~PluginURLFetcher() {
 
 void PluginURLFetcher::Cancel() {
   bridge_->Cancel();
+
+  // Due to races and nested event loops, PluginURLFetcher may still receive
+  // events from the bridge before being destroyed. Do not forward additional
+  // events back to the plugin, via either |plugin_stream_| or
+  // |multipart_delegate_| which has its own pointer via
+  // MultiPartResponseClient.
+  if (multipart_delegate_)
+    multipart_delegate_->Cancel();
+  plugin_stream_ = NULL;
 }
 
 void PluginURLFetcher::URLRedirectResponse(bool allow) {
+  if (!plugin_stream_)
+    return;
+
   if (allow) {
     bridge_->SetDefersLoading(false);
   } else {
@@ -181,6 +193,9 @@ bool PluginURLFetcher::OnReceivedRedirect(
     const webkit_glue::ResourceResponseInfo& info,
     bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
+  if (!plugin_stream_)
+    return false;
+
   // TODO(jam): THIS LOGIC IS COPIED FROM WebPluginImpl::willSendRequest until
   // kDirectNPAPIRequests is the default and we can remove the old path there.
 
@@ -225,6 +240,9 @@ bool PluginURLFetcher::OnReceivedRedirect(
 
 void PluginURLFetcher::OnReceivedResponse(
     const webkit_glue::ResourceResponseInfo& info) {
+  if (!plugin_stream_)
+    return;
+
   // TODO(jam): THIS LOGIC IS COPIED FROM WebPluginImpl::didReceiveResponse
   // GetAllHeaders, and GetResponseInfo until kDirectNPAPIRequests is the
   // default and we can remove the old path there.
@@ -317,6 +335,9 @@ void PluginURLFetcher::OnDownloadedData(int len,
 void PluginURLFetcher::OnReceivedData(const char* data,
                                       int data_length,
                                       int encoded_data_length) {
+  if (!plugin_stream_)
+    return;
+
   if (multipart_delegate_) {
     multipart_delegate_->OnReceivedData(data, data_length, encoded_data_length);
   } else {
@@ -344,6 +365,9 @@ void PluginURLFetcher::OnCompletedRequest(
     const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64 total_transfer_size) {
+  if (!plugin_stream_)
+    return;
+
   if (multipart_delegate_) {
     multipart_delegate_->OnCompletedRequest();
     multipart_delegate_.reset();
