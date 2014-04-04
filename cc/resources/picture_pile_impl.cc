@@ -105,8 +105,8 @@ void PicturePileImpl::RasterToBitmap(
   // If this picture has opaque contents, it is guaranteeing that it will
   // draw an opaque rect the size of the layer.  If it is not, then we must
   // clear this canvas ourselves.
-  if (contents_opaque_) {
-    // Even if it is opaque, on any rasterizations that touch the edge of the
+  if (contents_opaque_ || contents_fill_bounds_completely_) {
+    // Even if completely covered, for rasterizations that touch the edge of the
     // layer, we also need to raster the background color underneath the last
     // texel (since the recording won't cover it) and outside the last texel
     // (due to linear filtering when using this texture).
@@ -133,7 +133,7 @@ void PicturePileImpl::RasterToBitmap(
       canvas->drawColor(background_color_, SkXfermode::kSrc_Mode);
       canvas->restore();
     }
-  } else if (!contents_fill_bounds_completely_) {
+  } else {
     TRACE_EVENT_INSTANT0("cc", "SkCanvas::clear", TRACE_EVENT_SCOPE_THREAD);
     // Clearing is about ~4x faster than drawing a rect even if the content
     // isn't covering a majority of the canvas.
