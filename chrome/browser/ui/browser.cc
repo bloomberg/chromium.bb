@@ -2241,8 +2241,11 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 
 void Browser::UpdateBookmarkBarState(BookmarkBarStateChangeReason reason) {
   BookmarkBar::State state;
-  // The bookmark bar is hidden in fullscreen mode, unless on the new tab page.
-  if (browser_defaults::bookmarks_enabled &&
+  // The bookmark bar is always hidden for Guest Sessions and in fullscreen
+  // mode, unless on the new tab page.
+  if (profile_->IsGuestSession()) {
+    state = BookmarkBar::HIDDEN;
+  } else if (browser_defaults::bookmarks_enabled &&
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) &&
       !ShouldHideUIForFullscreen()) {
     state = BookmarkBar::SHOW;
