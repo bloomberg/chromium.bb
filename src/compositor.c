@@ -1245,9 +1245,10 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 	}
 
 	if (vp->buffer.src_width != wl_fixed_from_int(-1)) {
-		surface_set_size(surface,
-				 fixed_round_up_to_int(vp->buffer.src_width),
-				 fixed_round_up_to_int(vp->buffer.src_height));
+		int32_t w = fixed_round_up_to_int(vp->buffer.src_width);
+		int32_t h = fixed_round_up_to_int(vp->buffer.src_height);
+
+		surface_set_size(surface, w ?: 1, h ?: 1);
 		return;
 	}
 
