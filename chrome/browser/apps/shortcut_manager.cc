@@ -37,17 +37,17 @@ namespace {
 
 // Creates a shortcut for an application in the applications menu, if there is
 // not already one present.
-void CreateShortcutsInApplicationsMenu(Profile* profile,
-                                       const Extension* app) {
+void CreateShortcutsInApplicationsMenu(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
   ShellIntegration::ShortcutLocations creation_locations;
   // Create the shortcut in the Chrome Apps subdir.
   creation_locations.applications_menu_location =
       ShellIntegration::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-  web_app::CreateShortcuts(
-      web_app::SHORTCUT_CREATION_AUTOMATED, creation_locations, profile, app);
+  web_app::CreateShortcuts(shortcut_info, creation_locations,
+                           web_app::SHORTCUT_CREATION_AUTOMATED);
 }
 
-bool ShouldCreateShortcutFor(const Extension* extension) {
+bool ShouldCreateShortcutFor(const extensions::Extension* extension) {
   return extension->is_platform_app() &&
       extension->location() != extensions::Manifest::COMPONENT &&
       extension->ShouldDisplayInAppLauncher();
@@ -120,18 +120,26 @@ void AppShortcutManager::Observe(int type,
       // If the app is being updated, update any existing shortcuts but do not
       // create new ones. If it is being installed, automatically create a
       // shortcut in the applications menu (e.g., Start Menu).
+      base::Callback<void(const ShellIntegration::ShortcutInfo&)>
+          create_or_update;
       if (installed_info->is_update) {
-        web_app::UpdateAllShortcuts(
-            base::UTF8ToUTF16(installed_info->old_name), profile_, extension);
+        base::string16 old_title =
+            base::UTF8ToUTF16(installed_info->old_name);
+        create_or_update = base::Bind(&web_app::UpdateAllShortcuts,
+                                      old_title);
       } else if (ShouldCreateShortcutFor(extension)) {
-        CreateShortcutsInApplicationsMenu(profile_, extension);
+        create_or_update = base::Bind(&CreateShortcutsInApplicationsMenu);
+      }
+      if (!create_or_update.is_null()) {
+        web_app::UpdateShortcutInfoAndIconForApp(extension, profile_,
+                                                 create_or_update);
       }
       break;
     }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       const Extension* extension = content::Details<const Extension>(
           details).ptr();
-      web_app::DeleteAllShortcuts(profile_, extension);
+      DeleteApplicationShortcuts(extension);
       break;
     }
     default:
@@ -179,6 +187,14 @@ void AppShortcutManager::OnceOffCreateShortcuts() {
   for (extensions::ExtensionSet::const_iterator it = apps->begin();
        it != apps->end(); ++it) {
     if (ShouldCreateShortcutFor(it->get()))
-      CreateShortcutsInApplicationsMenu(profile_, it->get());
+      web_app::UpdateShortcutInfoAndIconForApp(
+          it->get(), profile_, base::Bind(&CreateShortcutsInApplicationsMenu));
   }
+}
+
+void AppShortcutManager::DeleteApplicationShortcuts(
+    const Extension* extension) {
+  ShellIntegration::ShortcutInfo delete_info =
+      web_app::ShortcutInfoForExtensionAndProfile(extension, profile_);
+  web_app::DeleteAllShortcuts(delete_info);
 }

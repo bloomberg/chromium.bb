@@ -86,17 +86,6 @@ void UpdateShortcutsOnFileThread(
       shortcut_data_dir, old_app_title, shortcut_info);
 }
 
-void UpdateAllShortcutsForShortcutInfo(
-    const base::string16& old_app_title,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&UpdateShortcutsOnFileThread, old_app_title, shortcut_info));
-}
-
 void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
                    web_app::ShortcutInfoCallback callback,
                    const gfx::ImageFamily& image_family) {
@@ -143,19 +132,6 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 #endif
   file_util::ReplaceIllegalCharactersInPath(&file_name, '_');
   return base::FilePath(file_name);
-}
-
-bool CreateShortcutsOnFileThread(
-    ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  base::FilePath shortcut_data_dir = GetWebAppDataDirectory(
-      shortcut_info.profile_path, shortcut_info.extension_id,
-      shortcut_info.url);
-  return internals::CreatePlatformShortcuts(
-      shortcut_data_dir, shortcut_info, locations, reason);
 }
 
 }  // namespace internals
@@ -322,52 +298,50 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
   return app_name.substr(prefix.length());
 }
 
-void CreateShortcutsForShortcutInfo(
-    web_app::ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&web_app::internals::CreateShortcutsOnFileThread),
-          reason, locations, shortcut_info));
-}
-
 void CreateShortcuts(
-    ShortcutCreationReason reason,
-    const ShellIntegration::ShortcutLocations& locations,
-    Profile* profile,
-    const extensions::Extension* app) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  web_app::UpdateShortcutInfoAndIconForApp(
-      app,
-      profile,
-      base::Bind(&CreateShortcutsForShortcutInfo, reason, locations));
-}
-
-void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations,
+    ShortcutCreationReason creation_reason) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
       BrowserThread::FILE,
       FROM_HERE,
-      base::Bind(&DeleteShortcutsOnFileThread,
-                 web_app::ShortcutInfoForExtensionAndProfile(app, profile)));
+      base::Bind(base::IgnoreResult(&CreateShortcutsOnFileThread),
+                 shortcut_info, creation_locations, creation_reason));
+}
+
+void DeleteAllShortcuts(const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&DeleteShortcutsOnFileThread, shortcut_info));
 }
 
 void UpdateAllShortcuts(const base::string16& old_app_title,
-                        Profile* profile,
-                        const extensions::Extension* app) {
+                        const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  web_app::UpdateShortcutInfoAndIconForApp(
-      app,
-      profile,
-      base::Bind(&UpdateAllShortcutsForShortcutInfo, old_app_title));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&UpdateShortcutsOnFileThread, old_app_title, shortcut_info));
+}
+
+bool CreateShortcutsOnFileThread(
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const ShellIntegration::ShortcutLocations& creation_locations,
+    ShortcutCreationReason creation_reason) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  base::FilePath shortcut_data_dir = GetWebAppDataDirectory(
+      shortcut_info.profile_path, shortcut_info.extension_id,
+      shortcut_info.url);
+  return internals::CreatePlatformShortcuts(shortcut_data_dir, shortcut_info,
+                                            creation_locations,
+                                            creation_reason);
 }
 
 bool IsValidUrl(const GURL& url) {
