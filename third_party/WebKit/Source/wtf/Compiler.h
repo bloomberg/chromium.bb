@@ -81,7 +81,6 @@
 #undef WTF_COMPILER_SUPPORTS_CXX_STRONG_ENUMS
 #else
 #define WTF_COMPILER_SUPPORTS_CXX_OVERRIDE_CONTROL 1
-#define WTF_COMPILER_QUIRK_FINAL_IS_CALLED_SEALED 1
 #endif
 
 #endif
@@ -209,13 +208,7 @@
 
 #if COMPILER_SUPPORTS(CXX_OVERRIDE_CONTROL)
 #define OVERRIDE override
-
-#if COMPILER_QUIRK(FINAL_IS_CALLED_SEALED)
-#define FINAL sealed
-#else
 #define FINAL final
-#endif
-
 #else
 #define OVERRIDE
 #define FINAL
