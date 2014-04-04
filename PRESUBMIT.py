@@ -234,6 +234,15 @@ _BANNED_CPP_FUNCTIONS = (
         r'^ppapi[\\\/]tests[\\\/]test_broker\.cc$',
       ),
     ),
+    (
+      r'/v8::Extension\(',
+      (
+        'Do not introduce new v8::Extensions into the code base, use',
+        'gin::Wrappable instead. See http://crbug.com/334679',
+      ),
+      True,
+      (),
+    ),
 )
 
 
