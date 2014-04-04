@@ -1,14 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_
+#ifndef EXTENSIONS_BROWSER_API_TEST_TEST_API_H_
+#define EXTENSIONS_BROWSER_API_TEST_TEST_API_H_
 
 #include "base/values.h"
 #include "extensions/browser/extension_function.h"
 
-template <typename T> struct DefaultSingletonTraits;
+template <typename T>
+struct DefaultSingletonTraits;
 
 namespace extensions {
 
@@ -102,9 +103,7 @@ class TestGetConfigFunction : public SyncExtensionFunction {
       config_state_ = config_state;
     }
 
-    const base::DictionaryValue* config_state() {
-      return config_state_;
-    }
+    const base::DictionaryValue* config_state() { return config_state_; }
 
    private:
     friend struct DefaultSingletonTraits<TestConfigState>;
@@ -134,4 +133,4 @@ class TestWaitForRoundTripFunction : public TestExtensionFunction {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_TEST_TEST_API_H_
+#endif  // EXTENSIONS_BROWSER_API_TEST_TEST_API_H_

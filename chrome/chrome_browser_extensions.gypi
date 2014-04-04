@@ -562,8 +562,6 @@
         'browser/extensions/api/tabs/windows_event_router.h',
         'browser/extensions/api/tabs/windows_util.cc',
         'browser/extensions/api/tabs/windows_util.h',
-        'browser/extensions/api/test/test_api.cc',
-        'browser/extensions/api/test/test_api.h',
         'browser/extensions/api/top_sites/top_sites_api.cc',
         'browser/extensions/api/top_sites/top_sites_api.h',
         'browser/extensions/api/usb/usb_api.cc',

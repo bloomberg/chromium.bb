@@ -113,7 +113,6 @@
               'tab_capture.idl',
               'tabs.json',
               'terminal_private.json',
-              'test.json',
               'types.json',
               'usb.idl',
               'virtual_keyboard_private.json',

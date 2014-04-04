@@ -29,6 +29,7 @@
           'sockets_tcp_server.idl',
           'sockets_udp.idl',
           'storage.json',
+          'test.json',
         ],
         'cc_dir': 'extensions/common/api',
         'root_namespace': 'extensions::core_api',

@@ -1,20 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/test/test_api.h"
+#include "extensions/browser/api/test/test_api.h"
 
 #include <string>
 
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/extensions/api/test.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/quota_service.h"
+#include "extensions/common/api/test.h"
 
 namespace {
 
@@ -31,10 +31,10 @@ const char kNotTestProcessError[] =
 
 namespace extensions {
 
-namespace Log = api::test::Log;
-namespace NotifyFail = api::test::NotifyFail;
-namespace PassMessage = api::test::PassMessage;
-namespace WaitForRoundTrip = api::test::WaitForRoundTrip;
+namespace Log = core_api::test::Log;
+namespace NotifyFail = core_api::test::NotifyFail;
+namespace PassMessage = core_api::test::PassMessage;
+namespace WaitForRoundTrip = core_api::test::WaitForRoundTrip;
 
 TestExtensionFunction::~TestExtensionFunction() {}
 
@@ -89,8 +89,7 @@ bool TestResetQuotaFunction::RunImpl() {
 }
 
 bool TestSendMessageFunction::RunImpl() {
-  scoped_ptr<PassMessage::Params> params(
-      PassMessage::Params::Create(*args_));
+  scoped_ptr<PassMessage::Params> params(PassMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_MESSAGE,
@@ -114,7 +113,7 @@ void TestGetConfigFunction::set_test_config_state(
 }
 
 TestGetConfigFunction::TestConfigState::TestConfigState()
-  : config_state_(NULL) {}
+    : config_state_(NULL) {}
 
 // static
 TestGetConfigFunction::TestConfigState*

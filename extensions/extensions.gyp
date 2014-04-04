@@ -264,6 +264,8 @@
         'browser/api/storage/value_store_cache.h',
         'browser/api/storage/weak_unlimited_settings_storage.cc',
         'browser/api/storage/weak_unlimited_settings_storage.h',
+        'browser/api/test/test_api.cc',
+        'browser/api/test/test_api.h',
         'browser/api_activity_monitor.h',
         'browser/app_sorting.h',
         'browser/blacklist_state.h',

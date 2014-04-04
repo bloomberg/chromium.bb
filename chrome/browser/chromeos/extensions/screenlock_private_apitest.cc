@@ -5,9 +5,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/extensions/api/test/test_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/api/test/test_api.h"
 
 namespace extensions {
 
