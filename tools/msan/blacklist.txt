@@ -4,23 +4,12 @@
 #
 # Please think twice before you add or remove these rules.
 
-# V8 is blacklisted until it can properly support MSan. http://crbug.com/330709
-src:*/v8/src/*
-
-# False positive in ffmpeg due to assembly code.
+# False positive in ffmpeg due to assembly code. http://crbug.com/344505
 fun:ff_get_cpu_flags_x86
-
-# False positives due to missing interceptors.
-# TODO(earthdok): remove as clang is rolled forward.
-# strtoll_l and stroull_l added in clang r200316.
-fun:*__num_get_signed_integral*
-fun:*__num_get_unsigned_integral*
-# getresuid/getresgid added in clang r200925
-fun:*GetRESIds*
-
-# False positives in SSE intrinsics. To be fixed in Clang.
-# http://://code.google.com/p/memory-sanitizer/issues/detail?id=48
-fun:*S32A_Opaque_BlitRow32_SSE2*
 
 # Uninit in zlib. http://crbug.com/116277
 fun:*MOZ_Z_deflate*
+
+# Uninit in Mesa. http://crbug.com/347967
+fun:unpack_RGBA8888
+fun:unpack_RGB888
