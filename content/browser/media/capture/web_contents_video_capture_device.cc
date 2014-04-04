@@ -117,14 +117,33 @@ void DeleteOnWorkerThread(scoped_ptr<base::Thread> render_thread,
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 
+// Responsible for logging the effective frame rate.
+class VideoFrameDeliveryLog {
+ public:
+  VideoFrameDeliveryLog();
+
+  // Report that the frame posted with |frame_time| has been delivered.
+  void ChronicleFrameDelivery(base::TimeTicks frame_time);
+
+ private:
+  // The following keep track of and log the effective frame rate whenever
+  // verbose logging is turned on.
+  base::TimeTicks last_frame_rate_log_time_;
+  int count_frames_rendered_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoFrameDeliveryLog);
+};
+
 // FrameSubscriber is a proxy to the ThreadSafeCaptureOracle that's compatible
 // with RenderWidgetHostViewFrameSubscriber. We create one per event type.
 class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  public:
   FrameSubscriber(VideoCaptureOracle::Event event_type,
-                  const scoped_refptr<ThreadSafeCaptureOracle>& oracle)
+                  const scoped_refptr<ThreadSafeCaptureOracle>& oracle,
+                  VideoFrameDeliveryLog* delivery_log)
       : event_type_(event_type),
-        oracle_proxy_(oracle) {}
+        oracle_proxy_(oracle),
+        delivery_log_(delivery_log) {}
 
   virtual bool ShouldCaptureFrame(
       base::TimeTicks present_time,
@@ -135,6 +154,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
  private:
   const VideoCaptureOracle::Event event_type_;
   scoped_refptr<ThreadSafeCaptureOracle> oracle_proxy_;
+  VideoFrameDeliveryLog* const delivery_log_;
 };
 
 // ContentCaptureSubscription is the relationship between a RenderWidgetHost
@@ -180,6 +200,7 @@ class ContentCaptureSubscription : public content::NotificationObserver {
   const int render_process_id_;
   const int render_view_id_;
 
+  VideoFrameDeliveryLog delivery_log_;
   FrameSubscriber paint_subscriber_;
   FrameSubscriber timer_subscriber_;
   content::NotificationRegistrar registrar_;
@@ -316,26 +337,6 @@ class WebContentsCaptureMachine
   DISALLOW_COPY_AND_ASSIGN(WebContentsCaptureMachine);
 };
 
-// Responsible for logging the effective frame rate.
-// TODO(nick): Make this compatible with the push model and hook it back up.
-class VideoFrameDeliveryLog {
- public:
-  VideoFrameDeliveryLog();
-
-  // Treat |frame_number| as having been delivered, and update the
-  // frame rate statistics accordingly.
-  void ChronicleFrameDelivery(int frame_number);
-
- private:
-  // The following keep track of and log the effective frame rate whenever
-  // verbose logging is turned on.
-  base::TimeTicks last_frame_rate_log_time_;
-  int count_frames_rendered_;
-  int last_frame_number_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoFrameDeliveryLog);
-};
-
 bool FrameSubscriber::ShouldCaptureFrame(
     base::TimeTicks present_time,
     scoped_refptr<media::VideoFrame>* storage,
@@ -348,6 +349,8 @@ bool FrameSubscriber::ShouldCaptureFrame(
       event_type_, present_time, storage, &capture_frame_cb);
 
   *deliver_frame_cb = base::Bind(&InvokeCaptureFrameCallback, capture_frame_cb);
+  if (oracle_decision)
+    delivery_log_->ChronicleFrameDelivery(present_time);
   return oracle_decision;
 }
 
@@ -357,8 +360,11 @@ ContentCaptureSubscription::ContentCaptureSubscription(
     const CaptureCallback& capture_callback)
     : render_process_id_(source.GetProcess()->GetID()),
       render_view_id_(source.GetRoutingID()),
-      paint_subscriber_(VideoCaptureOracle::kSoftwarePaint, oracle_proxy),
-      timer_subscriber_(VideoCaptureOracle::kTimerPoll, oracle_proxy),
+      delivery_log_(),
+      paint_subscriber_(VideoCaptureOracle::kSoftwarePaint, oracle_proxy,
+                        &delivery_log_),
+      timer_subscriber_(VideoCaptureOracle::kTimerPoll, oracle_proxy,
+                        &delivery_log_),
       capture_callback_(capture_callback),
       timer_(true, true) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -371,7 +377,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   if (view && kAcceleratedSubscriberIsSupported) {
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber(
         new FrameSubscriber(VideoCaptureOracle::kCompositorUpdate,
-            oracle_proxy));
+            oracle_proxy, &delivery_log_));
     view->BeginFrameSubscription(subscriber.Pass());
   }
 
@@ -530,39 +536,29 @@ void RenderVideoFrame(const SkBitmap& input,
 
 VideoFrameDeliveryLog::VideoFrameDeliveryLog()
     : last_frame_rate_log_time_(),
-      count_frames_rendered_(0),
-      last_frame_number_(0) {
+      count_frames_rendered_(0) {
 }
 
-void VideoFrameDeliveryLog::ChronicleFrameDelivery(int frame_number) {
+void VideoFrameDeliveryLog::ChronicleFrameDelivery(base::TimeTicks frame_time) {
   // Log frame rate, if verbose logging is turned on.
   static const base::TimeDelta kFrameRateLogInterval =
       base::TimeDelta::FromSeconds(10);
-  const base::TimeTicks now = base::TimeTicks::Now();
   if (last_frame_rate_log_time_.is_null()) {
-    last_frame_rate_log_time_ = now;
+    last_frame_rate_log_time_ = frame_time;
     count_frames_rendered_ = 0;
-    last_frame_number_ = frame_number;
   } else {
     ++count_frames_rendered_;
-    const base::TimeDelta elapsed = now - last_frame_rate_log_time_;
+    const base::TimeDelta elapsed = frame_time - last_frame_rate_log_time_;
     if (elapsed >= kFrameRateLogInterval) {
       const double measured_fps =
           count_frames_rendered_ / elapsed.InSecondsF();
-      const int frames_elapsed = frame_number - last_frame_number_;
-      const int count_frames_dropped = frames_elapsed - count_frames_rendered_;
-      DCHECK_LE(0, count_frames_dropped);
-      UMA_HISTOGRAM_PERCENTAGE(
-          "TabCapture.FrameDropPercentage",
-          (count_frames_dropped * 100 + frames_elapsed / 2) / frames_elapsed);
       UMA_HISTOGRAM_COUNTS(
           "TabCapture.FrameRate",
           static_cast<int>(measured_fps));
       VLOG(1) << "Current measured frame rate for "
               << "WebContentsVideoCaptureDevice is " << measured_fps << " FPS.";
-      last_frame_rate_log_time_ = now;
+      last_frame_rate_log_time_ = frame_time;
       count_frames_rendered_ = 0;
-      last_frame_number_ = frame_number;
     }
   }
 }
