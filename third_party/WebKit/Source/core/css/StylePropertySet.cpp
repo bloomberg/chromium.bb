@@ -549,8 +549,9 @@ int MutableStylePropertySet::findPropertyIndex(CSSPropertyID propertyID) const
     // Convert here propertyID into an uint16_t to compare it with the metadata's m_propertyID to avoid
     // the compiler converting it to an int multiple times in the loop.
     uint16_t id = static_cast<uint16_t>(propertyID);
+    const CSSProperty* properties = m_propertyVector.data();
     for (int n = m_propertyVector.size() - 1 ; n >= 0; --n) {
-        if (m_propertyVector.at(n).metadata().m_propertyID == id) {
+        if (properties[n].metadata().m_propertyID == id) {
             // Only enabled or internal properties should be part of the style.
             ASSERT(RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID) || isInternalProperty(propertyID));
             return n;
