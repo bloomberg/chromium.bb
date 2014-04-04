@@ -34,7 +34,7 @@ class CONTENT_EXPORT VideoCapturerDelegate
   // Collects the formats that can currently be used.
   // |max_requested_height| and |max_requested_width| is used by Tab and Screen
   // capture to decide what resolution to generate.
-  // |callback| is triggered when the formats has been collected.
+  // |callback| is triggered when the formats have been collected.
   virtual void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,
@@ -76,6 +76,9 @@ class CONTENT_EXPORT VideoCapturerDelegate
       media::VideoCapture* capture,
       const scoped_refptr<media::VideoFrame>& frame);
   void OnErrorOnRenderThread(media::VideoCapture* capture);
+  void OnDeviceFormatsInUseReceived(const media::VideoCaptureFormats& formats);
+  void OnDeviceSupportedFormatsEnumerated(
+      const media::VideoCaptureFormats& formats);
 
   // The id identifies which video capture device is used for this video
   // capture session.
@@ -95,6 +98,8 @@ class CONTENT_EXPORT VideoCapturerDelegate
   StartedCallback started_callback_;
   // Message loop of the caller of StartDeliver.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
+
+  SupportedFormatsCallback source_formats_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCapturerDelegate);
 };

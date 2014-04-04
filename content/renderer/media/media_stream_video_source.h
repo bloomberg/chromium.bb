@@ -109,7 +109,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
                                           int max_requested_height) = 0;
   void OnSupportedFormats(const media::VideoCaptureFormats& formats);
 
-  // An implementation must starts capture frames using the resolution in
+  // An implementation must start capture frames using the resolution in
   // |params|. When the source has started or the source failed to start
   // OnStartDone must be called. An implementation must call
   // DeliverVideoFrame with the captured frames.

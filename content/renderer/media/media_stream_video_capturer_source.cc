@@ -19,15 +19,13 @@ struct SourceVideoFormat {
 };
 
 // List of formats used if the source doesn't support capability enumeration.
-const SourceVideoFormat kVideoFormats[] = {
-    {1920, 1080, 30},
-    {1280, 720, 30},
-    {960, 720, 30},
-    {640, 480, 30},
-    {640, 360, 30},
-    {320, 240, 30},
-    {320, 180, 30}
-};
+const SourceVideoFormat kVideoFormats[] = {{1920, 1080, 30},
+                                           {1280, 720, 30},
+                                           {960, 720, 30},
+                                           {640, 480, 30},
+                                           {640, 360, 30},
+                                           {320, 240, 30},
+                                           {320, 180, 30}};
 
 }  // namespace
 
@@ -77,18 +75,10 @@ void VideoCapturerDelegate::GetCurrentSupportedFormats(
     return;
   }
 
-  // This delegate implementation doesn't support capability enumeration.
-  // We need to guess what it supports.
-  media::VideoCaptureFormats formats;
-  for (size_t i = 0; i < arraysize(kVideoFormats); ++i) {
-    formats.push_back(
-        media::VideoCaptureFormat(
-            gfx::Size(kVideoFormats[i].width,
-                      kVideoFormats[i].height),
-            kVideoFormats[i].frame_rate,
-            media::PIXEL_FORMAT_I420));
-  }
-  callback.Run(formats);
+  DCHECK(source_formats_callback_.is_null());
+  source_formats_callback_ = callback;
+  capture_engine_->GetDeviceFormatsInUse(base::Bind(
+      &VideoCapturerDelegate::OnDeviceFormatsInUseReceived, this));
 }
 
 void VideoCapturerDelegate::StartDeliver(
@@ -114,6 +104,7 @@ void VideoCapturerDelegate::StopDeliver() {
   capture_engine_->StopCapture(this);
   new_frame_callback_.Reset();
   started_callback_.Reset();
+  source_formats_callback_.Reset();
 }
 
 void VideoCapturerDelegate::OnStarted(media::VideoCapture* capture) {
@@ -178,6 +169,51 @@ void VideoCapturerDelegate::OnErrorOnRenderThread(
     media::VideoCapture* capture) {
   if (!started_callback_.is_null())
     started_callback_.Run(false);
+}
+
+void VideoCapturerDelegate::OnDeviceFormatsInUseReceived(
+    const media::VideoCaptureFormats& formats_in_use) {
+  DVLOG(3) << "OnDeviceFormatsInUseReceived: " << formats_in_use.size();
+  DCHECK(message_loop_proxy_ == base::MessageLoopProxy::current());
+  // StopDeliver() might have destroyed |source_formats_callback_| before
+  // arriving here.
+  if (source_formats_callback_.is_null())
+    return;
+  if (!formats_in_use.empty()) {
+    source_formats_callback_.Run(formats_in_use);
+    source_formats_callback_.Reset();
+  } else {
+    // If there are no formats in use, try to retrieve the whole list of
+    // supported formats.
+    capture_engine_->GetDeviceSupportedFormats(base::Bind(
+        &VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated, this));
+  }
+}
+
+void VideoCapturerDelegate::OnDeviceSupportedFormatsEnumerated(
+    const media::VideoCaptureFormats& formats) {
+  DVLOG(3) << "OnDeviceSupportedFormatsEnumerated: " << formats.size()
+           << " received";
+  DCHECK(message_loop_proxy_ == base::MessageLoopProxy::current());
+  // StopDeliver() might have destroyed |source_formats_callback_| before
+  // arriving here.
+  if (source_formats_callback_.is_null())
+    return;
+  if (formats.size()) {
+    source_formats_callback_.Run(formats);
+  } else {
+    // The capture device doesn't seem to support capability enumeration,
+    // compose a fallback list of capabilities.
+    media::VideoCaptureFormats default_formats;
+    for (size_t i = 0; i < arraysize(kVideoFormats); ++i) {
+      default_formats.push_back(media::VideoCaptureFormat(
+          gfx::Size(kVideoFormats[i].width, kVideoFormats[i].height),
+          kVideoFormats[i].frame_rate,
+          media::PIXEL_FORMAT_I420));
+    }
+    source_formats_callback_.Run(default_formats);
+  }
+  source_formats_callback_.Reset();
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(

@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
   const std::string javascript = GenerateGetUserMediaCall(
-      "callAndForwardRemoteStream", 1280, 1280, 720, 720, 30, 30);
+      "callAndForwardRemoteStream", 1280, 1280, 720, 720, 10, 30);
   MakeTypicalPeerConnectionCall(javascript);
 }
 

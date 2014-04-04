@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::string constraints_4_3 = GenerateGetUserMediaCall(
-      kGetUserMediaAndAnalyseAndStop, 640, 640, 480, 480, 30, 30);
+      kGetUserMediaAndAnalyseAndStop, 640, 640, 480, 480, 10, 30);
 
   NavigateToURL(shell(), url);
   ASSERT_EQ("w=640:h=480",
@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::string constraints_16_9 = GenerateGetUserMediaCall(
-      kGetUserMediaAndAnalyseAndStop, 640, 640, 360, 360, 30, 30);
+      kGetUserMediaAndAnalyseAndStop, 640, 640, 360, 360, 10, 30);
 
   NavigateToURL(shell(), url);
   ASSERT_EQ("w=640:h=360",
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::string constraints_1_1 = GenerateGetUserMediaCall(
-      kGetUserMediaAndAnalyseAndStop, 320, 320, 320, 320, 30, 30);
+      kGetUserMediaAndAnalyseAndStop, 320, 320, 320, 320, 10, 30);
 
   NavigateToURL(shell(), url);
   ASSERT_EQ("w=320:h=320",
@@ -548,13 +548,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcConstraintsBrowserTest, GetUserMediaConstraints) {
 }
 
 static const UserMediaSizes kAllUserMediaSizes[] = {
-    {320, 320, 180, 180, 30, 30},
-    {320, 320, 240, 240, 30, 30},
-    {640, 640, 360, 360, 30, 30},
-    {640, 640, 480, 480, 30, 30},
-    {960, 960, 720, 720, 30, 30},
-    {1280, 1280, 720, 720, 30, 30},
-    {1920, 1920, 1080, 1080, 30, 30}};
+    {320, 320, 180, 180, 10, 30},
+    {320, 320, 240, 240, 10, 30},
+    {640, 640, 360, 360, 10, 30},
+    {640, 640, 480, 480, 10, 30},
+    {960, 960, 720, 720, 10, 30},
+    {1280, 1280, 720, 720, 10, 30}};
 
 INSTANTIATE_TEST_CASE_P(UserMedia,
                         WebRtcConstraintsBrowserTest,
