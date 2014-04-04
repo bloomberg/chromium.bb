@@ -392,6 +392,41 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
   ASSERT_EQ(new_registration, old_registration);
 }
 
+class FailToStartWorkerTestHelper : public EmbeddedWorkerTestHelper {
+ public:
+  FailToStartWorkerTestHelper(ServiceWorkerContextCore* context,
+                              int mock_render_process_id)
+      : EmbeddedWorkerTestHelper(context, mock_render_process_id) {}
+
+  virtual void OnStartWorker(int embedded_worker_id,
+                             int64 service_worker_version_id,
+                             const GURL& script_url) OVERRIDE {
+    // Simulate failure by sending worker stopped instead of started.
+    EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
+    registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
+  }
+};
+
+TEST_F(ServiceWorkerJobTest, Register_FailToStartWorker) {
+  helper_.reset(
+      new FailToStartWorkerTestHelper(context_.get(), render_process_id_));
+
+  bool called = false;
+  scoped_refptr<ServiceWorkerRegistration> registration;
+  job_coordinator()->Register(
+      GURL("http://www.example.com/*"),
+      GURL("http://www.example.com/service_worker.js"),
+      render_process_id_,
+      SaveRegistration(
+          SERVICE_WORKER_ERROR_START_WORKER_FAILED, &called, &registration));
+
+  ASSERT_FALSE(called);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(called);
+  ASSERT_EQ(scoped_refptr<ServiceWorkerRegistration>(NULL), registration);
+}
+
 // Register and then unregister the pattern, in parallel. Job coordinator should
 // process jobs until the last job.
 TEST_F(ServiceWorkerJobTest, ParallelRegUnreg) {

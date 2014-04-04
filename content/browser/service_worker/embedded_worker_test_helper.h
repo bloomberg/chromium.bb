@@ -97,6 +97,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                                     int request_id,
                                     const IPC::Message& message);
 
+ protected:
+  EmbeddedWorkerRegistry* registry();
+
  private:
   void OnStartWorkerStub(int embedded_worker_id,
                          int64 service_worker_version_id,
@@ -109,8 +112,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnActivateEventStub();
   void OnInstallEventStub(int active_version_id);
   void OnFetchEventStub(const ServiceWorkerFetchRequest& request);
-
-  EmbeddedWorkerRegistry* registry();
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
 

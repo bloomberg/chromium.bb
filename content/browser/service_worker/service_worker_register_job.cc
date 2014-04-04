@@ -144,7 +144,7 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
   for (std::vector<RegistrationCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end();
        ++it) {
-    it->Run(status, registration_);
+    it->Run(status, status == SERVICE_WORKER_OK ? registration_ : NULL);
   }
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
