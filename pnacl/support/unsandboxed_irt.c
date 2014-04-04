@@ -40,6 +40,22 @@
  */
 
 
+#if defined(__ANDROID__) && !defined(FUTEX_PRIVATE_FLAG)
+/* Android's Linux headers currently don't define this flag. */
+# define FUTEX_PRIVATE_FLAG 128
+#endif
+
+#if defined(__GLIBC__)
+/*
+ * glibc's headers will define st_atimensec fields, but only if
+ * _POSIX_SOURCE is defined, which disables many other declarations,
+ * such as nanosleep(), getpagesize(), MAP_ANON and clock_gettime().
+ */
+# define st_atimensec st_atim.tv_nsec
+# define st_mtimensec st_mtim.tv_nsec
+# define st_ctimensec st_ctim.tv_nsec
+#endif
+
 void _user_start(void *info);
 
 static __thread void *g_tls_value;
@@ -90,12 +106,12 @@ static void convert_to_nacl_stat(struct stat *dest_nacl,
   dest->nacl_abi_st_size = src->st_size;
   dest->nacl_abi_st_blksize = src->st_blksize;
   dest->nacl_abi_st_blocks = src->st_blocks;
-  dest->nacl_abi_st_atime = src->st_atim.tv_sec;
-  dest->nacl_abi_st_atimensec = src->st_atim.tv_nsec;
-  dest->nacl_abi_st_mtime = src->st_mtim.tv_sec;
-  dest->nacl_abi_st_mtimensec = src->st_mtim.tv_nsec;
-  dest->nacl_abi_st_ctime = src->st_ctim.tv_sec;
-  dest->nacl_abi_st_ctimensec = src->st_ctim.tv_nsec;
+  dest->nacl_abi_st_atime = src->st_atime;
+  dest->nacl_abi_st_atimensec = src->st_atimensec;
+  dest->nacl_abi_st_mtime = src->st_mtime;
+  dest->nacl_abi_st_mtimensec = src->st_mtimensec;
+  dest->nacl_abi_st_ctime = src->st_ctime;
+  dest->nacl_abi_st_ctimensec = src->st_ctimensec;
 }
 
 static void copy_flag(int *dest, int src, int new_flag, int old_flag) {
@@ -360,12 +376,13 @@ static int futex_wait_abs(volatile int *addr, int value,
       return ETIMEDOUT;
     reltime_ptr = &reltime;
   }
-  return check_error(syscall(SYS_futex, addr, FUTEX_WAIT_PRIVATE, value,
-                             reltime_ptr, 0, 0));
+  return check_error(syscall(__NR_futex, addr, FUTEX_WAIT | FUTEX_PRIVATE_FLAG,
+                             value, reltime_ptr, 0, 0));
 }
 
 static int futex_wake(volatile int *addr, int nwake, int *count) {
-  int result = syscall(SYS_futex, addr, FUTEX_WAKE_PRIVATE, nwake, 0, 0, 0);
+  int result = syscall(__NR_futex, addr, FUTEX_WAKE | FUTEX_PRIVATE_FLAG,
+                       nwake, 0, 0, 0);
   if (result < 0)
     return errno;
   *count = result;
