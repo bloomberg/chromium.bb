@@ -634,20 +634,12 @@ SkCanvas* WebTestProxyBase::canvas()
     return m_canvas.get();
 }
 
-// Paints the entire canvas a semi-transparent black (grayish). This is used
-// by the layout tests in fast/repaint. The alpha value matches upstream.
-void WebTestProxyBase::displayRepaintMask()
-{
-    canvas()->drawARGB(167, 0, 0, 0);
-}
-
 void WebTestProxyBase::display()
 {
     const blink::WebSize& size = webWidget()->size();
     WebRect rect(0, 0, size.width, size.height);
     m_paintRect = rect;
     paintInvalidatedRegion();
-    displayRepaintMask();
 }
 
 void WebTestProxyBase::discardBackingStore()

@@ -198,7 +198,6 @@ private:
     void paintInvalidatedRegion();
     void paintPagesWithBoundaries();
     SkCanvas* canvas();
-    void displayRepaintMask();
     void invalidateAll();
     void animateNow();
 
