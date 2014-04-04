@@ -70,6 +70,7 @@ void AutofillPopupViewBridge::UpdateBoundsAndRedrawPopup() {
   // TODO(isherman): The view should support scrolling if the popup gets too
   // big to fit on the screen.
   [window_ setFrame:frame display:YES];
+  [view_ setNeedsDisplay:YES];
 }
 
 AutofillPopupView* AutofillPopupView::Create(
