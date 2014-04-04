@@ -45,13 +45,13 @@ public:
     Node* currentNode() const { return m_current.get(); }
     void setCurrentNode(PassRefPtr<Node>, ExceptionState&);
 
-    Node* parentNode(ScriptState*);
-    Node* firstChild(ScriptState*);
-    Node* lastChild(ScriptState*);
-    Node* previousSibling(ScriptState*);
-    Node* nextSibling(ScriptState*);
-    Node* previousNode(ScriptState*);
-    Node* nextNode(ScriptState*);
+    Node* parentNode(ExceptionState&);
+    Node* firstChild(ExceptionState&);
+    Node* lastChild(ExceptionState&);
+    Node* previousSibling(ExceptionState&);
+    Node* nextSibling(ExceptionState&);
+    Node* previousNode(ExceptionState&);
+    Node* nextNode(ExceptionState&);
 
 private:
     TreeWalker(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);

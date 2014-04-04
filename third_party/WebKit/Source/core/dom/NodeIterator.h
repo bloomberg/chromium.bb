@@ -43,8 +43,8 @@ public:
     }
     ~NodeIterator();
 
-    PassRefPtr<Node> nextNode(ScriptState*, ExceptionState&);
-    PassRefPtr<Node> previousNode(ScriptState*, ExceptionState&);
+    PassRefPtr<Node> nextNode(ExceptionState&);
+    PassRefPtr<Node> previousNode(ExceptionState&);
     void detach();
 
     Node* referenceNode() const { return m_referenceNode.node.get(); }

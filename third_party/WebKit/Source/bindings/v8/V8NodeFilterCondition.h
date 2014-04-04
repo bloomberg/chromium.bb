@@ -31,6 +31,7 @@
 #ifndef V8NodeFilterCondition_h
 #define V8NodeFilterCondition_h
 
+#include "bindings/v8/NewScriptState.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "core/dom/NodeFilterCondition.h"
 #include <v8.h>
@@ -39,7 +40,7 @@
 namespace WebCore {
 
 class Node;
-class ScriptState;
+class ExceptionState;
 
 // V8NodeFilterCondition maintains a Javascript implemented callback for
 // filtering Node returned by NodeIterator/TreeWalker.
@@ -67,7 +68,7 @@ public:
 
     virtual ~V8NodeFilterCondition();
 
-    virtual short acceptNode(ScriptState*, Node*) const OVERRIDE;
+    virtual short acceptNode(Node*, ExceptionState&) const OVERRIDE;
 
 private:
     // As the value |filter| is maintained by V8GC, the |owner| which references
@@ -77,6 +78,7 @@ private:
 
     static void setWeakCallback(const v8::WeakCallbackData<v8::Value, V8NodeFilterCondition>&);
 
+    RefPtr<NewScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_filter;
 };
 

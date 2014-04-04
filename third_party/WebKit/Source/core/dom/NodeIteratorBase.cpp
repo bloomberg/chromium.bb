@@ -25,6 +25,7 @@
 #include "config.h"
 #include "core/dom/NodeIteratorBase.h"
 
+#include "bindings/v8/ExceptionState.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 
@@ -37,7 +38,7 @@ NodeIteratorBase::NodeIteratorBase(PassRefPtr<Node> rootNode, unsigned whatToSho
 {
 }
 
-short NodeIteratorBase::acceptNode(ScriptState* state, Node* node) const
+short NodeIteratorBase::acceptNode(Node* node, ExceptionState& exceptionState) const
 {
     // The bit twiddling here is done to map DOM node types, which are given as integers from
     // 1 through 14, to whatToShow bit masks.
@@ -45,7 +46,7 @@ short NodeIteratorBase::acceptNode(ScriptState* state, Node* node) const
         return NodeFilter::FILTER_SKIP;
     if (!m_filter)
         return NodeFilter::FILTER_ACCEPT;
-    return m_filter->acceptNode(state, node);
+    return m_filter->acceptNode(node, exceptionState);
 }
 
 } // namespace WebCore

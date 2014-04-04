@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-short NodeFilterCondition::acceptNode(ScriptState*, Node*) const
+short NodeFilterCondition::acceptNode(Node*, ExceptionState&) const
 {
     return NodeFilter::FILTER_ACCEPT;
 }

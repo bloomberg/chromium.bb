@@ -75,7 +75,7 @@ public:
         return adoptRef(new NodeFilter());
     }
 
-    short acceptNode(ScriptState*, Node*) const;
+    short acceptNode(Node*, ExceptionState&) const;
 
     void setCondition(PassRefPtr<NodeFilterCondition> condition)
     {

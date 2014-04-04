@@ -25,11 +25,11 @@
 #ifndef NodeIteratorBase_h
 #define NodeIteratorBase_h
 
-#include "bindings/v8/ScriptState.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
+class ExceptionState;
 class Node;
 class NodeFilter;
 
@@ -45,7 +45,7 @@ public:
 
 protected:
     NodeIteratorBase(PassRefPtr<Node>, unsigned whatToShow, PassRefPtr<NodeFilter>);
-    short acceptNode(ScriptState*, Node*) const;
+    short acceptNode(Node*, ExceptionState&) const;
 
 private:
     RefPtr<Node> m_root;

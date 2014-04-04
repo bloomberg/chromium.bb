@@ -25,18 +25,18 @@
 #ifndef NodeFilterCondition_h
 #define NodeFilterCondition_h
 
-#include "bindings/v8/ScriptState.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-    class Node;
+class ExceptionState;
+class Node;
 
-    class NodeFilterCondition : public RefCounted<NodeFilterCondition> {
-    public:
-        virtual ~NodeFilterCondition() { }
-        virtual short acceptNode(ScriptState*, Node*) const = 0;
-    };
+class NodeFilterCondition : public RefCounted<NodeFilterCondition> {
+public:
+    virtual ~NodeFilterCondition() { }
+    virtual short acceptNode(Node*, ExceptionState&) const = 0;
+};
 
 } // namespace WebCore
 
