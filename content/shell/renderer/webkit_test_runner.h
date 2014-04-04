@@ -13,7 +13,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/shell_test_configuration.h"
-#include "content/shell/common/test_runner/WebPreferences.h"
+#include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientation.h"
 #include "v8/include/v8.h"
@@ -80,7 +80,7 @@ class WebKitTestRunner : public RenderViewObserver,
       const blink::WebURL& file_url) OVERRIDE;
   virtual blink::WebURL rewriteLayoutTestsURL(
       const std::string& utf8_url) OVERRIDE;
-  virtual ::WebTestRunner::WebPreferences* preferences() OVERRIDE;
+  virtual TestPreferences* preferences() OVERRIDE;
   virtual void applyPreferences() OVERRIDE;
   virtual std::string makeURLErrorDescription(const blink::WebURLError& error);
   virtual void useUnfortunateSynchronousResizeMode(bool enable) OVERRIDE;
@@ -140,7 +140,7 @@ class WebKitTestRunner : public RenderViewObserver,
 
   RenderView* focused_view_;
 
-  ::WebTestRunner::WebPreferences prefs_;
+  TestPreferences prefs_;
 
   ShellTestConfiguration test_config_;
 

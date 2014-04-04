@@ -26,9 +26,12 @@ struct WebSize;
 struct WebURLError;
 }
 
+namespace content {
+struct TestPreferences;
+}
+
 namespace WebTestRunner {
 
-struct WebPreferences;
 class WebTask;
 class WebTestProxyBase;
 
@@ -82,7 +85,7 @@ public:
     virtual blink::WebURL rewriteLayoutTestsURL(const std::string& utf8URL) = 0;
 
     // Manages the settings to used for layout tests.
-    virtual WebPreferences* preferences() = 0;
+    virtual content::TestPreferences* preferences() = 0;
     virtual void applyPreferences() = 0;
 
     // Enables or disables synchronous resize mode. When enabled, all window-sizing machinery is

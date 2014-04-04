@@ -10,43 +10,44 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
-#include "content/shell/common/test_runner/WebPreferences.h"
+#include "content/shell/common/test_runner/test_preferences.h"
 #include "webkit/common/webpreferences.h"
 
 namespace content {
 
 void ExportLayoutTestSpecificPreferences(
-    const WebTestRunner::WebPreferences& from,
+    const TestPreferences& from,
     WebPreferences* to) {
   to->allow_universal_access_from_file_urls =
-      from.allowUniversalAccessFromFileURLs;
-  to->dom_paste_enabled = from.DOMPasteAllowed;
-  to->javascript_can_access_clipboard = from.javaScriptCanAccessClipboard;
-  to->xss_auditor_enabled = from.XSSAuditorEnabled;
+      from.allow_universal_access_from_file_urls;
+  to->dom_paste_enabled = from.dom_paste_allowed;
+  to->javascript_can_access_clipboard = from.java_script_can_access_clipboard;
+  to->xss_auditor_enabled = from.xss_auditor_enabled;
   to->editing_behavior = static_cast<webkit_glue::EditingBehavior>(
-      from.editingBehavior);
-  to->default_font_size = from.defaultFontSize;
-  to->minimum_font_size = from.minimumFontSize;
-  to->default_encoding = from.defaultTextEncodingName.utf8().data();
-  to->javascript_enabled = from.javaScriptEnabled;
-  to->supports_multiple_windows = from.supportsMultipleWindows;
-  to->loads_images_automatically = from.loadsImagesAutomatically;
-  to->plugins_enabled = from.pluginsEnabled;
-  to->java_enabled = from.javaEnabled;
-  to->application_cache_enabled = from.offlineWebApplicationCacheEnabled;
-  to->tabs_to_links = from.tabsToLinks;
-  to->experimental_webgl_enabled = from.experimentalWebGLEnabled;
+      from.editing_behavior);
+  to->default_font_size = from.default_font_size;
+  to->minimum_font_size = from.minimum_font_size;
+  to->default_encoding = from.default_text_encoding_name.utf8().data();
+  to->javascript_enabled = from.java_script_enabled;
+  to->supports_multiple_windows = from.supports_multiple_windows;
+  to->loads_images_automatically = from.loads_images_automatically;
+  to->plugins_enabled = from.plugins_enabled;
+  to->java_enabled = from.java_enabled;
+  to->application_cache_enabled = from.offline_web_application_cache_enabled;
+  to->tabs_to_links = from.tabs_to_links;
+  to->experimental_webgl_enabled = from.experimental_webgl_enabled;
   // experimentalCSSRegionsEnabled is deprecated and ignored.
-  to->hyperlink_auditing_enabled = from.hyperlinkAuditingEnabled;
-  to->caret_browsing_enabled = from.caretBrowsingEnabled;
-  to->allow_displaying_insecure_content = from.allowDisplayOfInsecureContent;
-  to->allow_running_insecure_content = from.allowRunningOfInsecureContent;
-  to->should_respect_image_orientation = from.shouldRespectImageOrientation;
+  to->hyperlink_auditing_enabled = from.hyperlink_auditing_enabled;
+  to->caret_browsing_enabled = from.caret_browsing_enabled;
+  to->allow_displaying_insecure_content =
+      from.allow_display_of_insecure_content;
+  to->allow_running_insecure_content = from.allow_running_of_insecure_content;
+  to->should_respect_image_orientation = from.should_respect_image_orientation;
   to->asynchronous_spell_checking_enabled =
-      from.asynchronousSpellCheckingEnabled;
-  to->allow_file_access_from_file_urls = from.allowFileAccessFromFileURLs;
+      from.asynchronous_spell_checking_enabled;
+  to->allow_file_access_from_file_urls = from.allow_file_access_from_file_urls;
   to->javascript_can_open_windows_automatically =
-      from.javaScriptCanOpenWindowsAutomatically;
+      from.java_script_can_open_windows_automatically;
 }
 
 // Applies settings that differ between layout tests and regular mode. Some

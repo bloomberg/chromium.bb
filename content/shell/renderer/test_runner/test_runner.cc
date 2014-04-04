@@ -7,7 +7,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "content/shell/common/test_runner/WebPreferences.h"
+#include "content/shell/common/test_runner/test_preferences.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechInputController.h"
 #include "content/shell/renderer/test_runner/MockWebSpeechRecognizer.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
@@ -2227,70 +2227,70 @@ void TestRunner::SetPointerLockWillRespondAsynchronously() {
 }
 
 void TestRunner::SetPopupBlockingEnabled(bool block_popups) {
-  delegate_->preferences()->javaScriptCanOpenWindowsAutomatically =
+  delegate_->preferences()->java_script_can_open_windows_automatically =
       !block_popups;
   delegate_->applyPreferences();
 }
 
 void TestRunner::SetJavaScriptCanAccessClipboard(bool can_access) {
-  delegate_->preferences()->javaScriptCanAccessClipboard = can_access;
+  delegate_->preferences()->java_script_can_access_clipboard = can_access;
   delegate_->applyPreferences();
 }
 
 void TestRunner::SetXSSAuditorEnabled(bool enabled) {
-  delegate_->preferences()->XSSAuditorEnabled = enabled;
+  delegate_->preferences()->xss_auditor_enabled = enabled;
   delegate_->applyPreferences();
 }
 
 void TestRunner::SetAllowUniversalAccessFromFileURLs(bool allow) {
-  delegate_->preferences()->allowUniversalAccessFromFileURLs = allow;
+  delegate_->preferences()->allow_universal_access_from_file_urls = allow;
   delegate_->applyPreferences();
 }
 
 void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
-  delegate_->preferences()->allowFileAccessFromFileURLs = allow;
+  delegate_->preferences()->allow_file_access_from_file_urls = allow;
   delegate_->applyPreferences();
 }
 
 void TestRunner::OverridePreference(const std::string key,
                                     v8::Handle<v8::Value> value) {
-  WebPreferences* prefs = delegate_->preferences();
+  TestPreferences* prefs = delegate_->preferences();
   if (key == "WebKitDefaultFontSize") {
-    prefs->defaultFontSize = value->Int32Value();
+    prefs->default_font_size = value->Int32Value();
   } else if (key == "WebKitMinimumFontSize") {
-    prefs->minimumFontSize = value->Int32Value();
+    prefs->minimum_font_size = value->Int32Value();
   } else if (key == "WebKitDefaultTextEncodingName") {
-    prefs->defaultTextEncodingName = V8StringToWebString(value->ToString());
+    prefs->default_text_encoding_name = V8StringToWebString(value->ToString());
   } else if (key == "WebKitJavaScriptEnabled") {
-    prefs->javaScriptEnabled = value->BooleanValue();
+    prefs->java_script_enabled = value->BooleanValue();
   } else if (key == "WebKitSupportsMultipleWindows") {
-    prefs->supportsMultipleWindows = value->BooleanValue();
+    prefs->supports_multiple_windows = value->BooleanValue();
   } else if (key == "WebKitDisplayImagesKey") {
-    prefs->loadsImagesAutomatically = value->BooleanValue();
+    prefs->loads_images_automatically = value->BooleanValue();
   } else if (key == "WebKitPluginsEnabled") {
-    prefs->pluginsEnabled = value->BooleanValue();
+    prefs->plugins_enabled = value->BooleanValue();
   } else if (key == "WebKitJavaEnabled") {
-    prefs->javaEnabled = value->BooleanValue();
+    prefs->java_enabled = value->BooleanValue();
   } else if (key == "WebKitOfflineWebApplicationCacheEnabled") {
-    prefs->offlineWebApplicationCacheEnabled = value->BooleanValue();
+    prefs->offline_web_application_cache_enabled = value->BooleanValue();
   } else if (key == "WebKitTabToLinksPreferenceKey") {
-    prefs->tabsToLinks = value->BooleanValue();
+    prefs->tabs_to_links = value->BooleanValue();
   } else if (key == "WebKitWebGLEnabled") {
-    prefs->experimentalWebGLEnabled = value->BooleanValue();
+    prefs->experimental_webgl_enabled = value->BooleanValue();
   } else if (key == "WebKitCSSRegionsEnabled") {
-    prefs->experimentalCSSRegionsEnabled = value->BooleanValue();
+    prefs->experimental_css_regions_enabled = value->BooleanValue();
   } else if (key == "WebKitCSSGridLayoutEnabled") {
-    prefs->experimentalCSSGridLayoutEnabled = value->BooleanValue();
+    prefs->experimental_css_grid_layout_enabled = value->BooleanValue();
   } else if (key == "WebKitHyperlinkAuditingEnabled") {
-    prefs->hyperlinkAuditingEnabled = value->BooleanValue();
+    prefs->hyperlink_auditing_enabled = value->BooleanValue();
   } else if (key == "WebKitEnableCaretBrowsing") {
-    prefs->caretBrowsingEnabled = value->BooleanValue();
+    prefs->caret_browsing_enabled = value->BooleanValue();
   } else if (key == "WebKitAllowDisplayingInsecureContent") {
-    prefs->allowDisplayOfInsecureContent = value->BooleanValue();
+    prefs->allow_display_of_insecure_content = value->BooleanValue();
   } else if (key == "WebKitAllowRunningInsecureContent") {
-    prefs->allowRunningOfInsecureContent = value->BooleanValue();
+    prefs->allow_running_of_insecure_content = value->BooleanValue();
   } else if (key == "WebKitShouldRespectImageOrientation") {
-    prefs->shouldRespectImageOrientation = value->BooleanValue();
+    prefs->should_respect_image_orientation = value->BooleanValue();
   } else if (key == "WebKitWebAudioEnabled") {
     DCHECK(value->BooleanValue());
   } else {
@@ -2302,7 +2302,7 @@ void TestRunner::OverridePreference(const std::string key,
 }
 
 void TestRunner::SetPluginsEnabled(bool enabled) {
-  delegate_->preferences()->pluginsEnabled = enabled;
+  delegate_->preferences()->plugins_enabled = enabled;
   delegate_->applyPreferences();
 }
 

@@ -344,7 +344,7 @@ WebURL WebKitTestRunner::rewriteLayoutTestsURL(const std::string& utf8_url) {
   return WebURL(GURL(new_url));
 }
 
-WebTestRunner::WebPreferences* WebKitTestRunner::preferences() {
+TestPreferences* WebKitTestRunner::preferences() {
   return &prefs_;
 }
 
@@ -626,7 +626,7 @@ void WebKitTestRunner::Reset() {
   // The proxy_ is always non-NULL, it is set right after construction.
   proxy_->setWidget(render_view()->GetWebView());
   proxy_->reset();
-  prefs_.reset();
+  prefs_.Reset();
   routing_ids_.clear();
   session_histories_.clear();
   current_entry_indexes_.clear();

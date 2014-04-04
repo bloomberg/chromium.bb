@@ -7,10 +7,6 @@
 
 struct WebPreferences;
 
-namespace WebTestRunner {
-struct WebPreferences;
-}
-
 namespace base {
 class FilePath;
 }
@@ -19,12 +15,14 @@ struct WebPreferences;
 
 namespace content {
 
+struct TestPreferences;
+
 // The TestRunner library keeps its settings in a WebTestRunner::WebPreferenes
 // object. The content_shell, however, uses WebPreferences. This
 // method exports the settings from the WebTestRunner library which are relevant
 // for layout tests.
 void ExportLayoutTestSpecificPreferences(
-    const WebTestRunner::WebPreferences& from, WebPreferences* to);
+    const TestPreferences& from, WebPreferences* to);
 
 // Applies settings that differ between layout tests and regular mode.
 void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs);

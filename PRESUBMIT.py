@@ -32,7 +32,6 @@ _EXCLUDED_PATHS = (
 # checks until it's transitioned to chromium coding style.
 _TESTRUNNER_PATHS = (
     r"^content[\\\/]shell[\\\/]renderer[\\\/]test_runner[\\\/].*",
-    r"^content[\\\/]shell[\\\/]common[\\\/]test_runner[\\\/].*",
     r"^content[\\\/]shell[\\\/]tools[\\\/]plugin[\\\/].*",
 )
 
