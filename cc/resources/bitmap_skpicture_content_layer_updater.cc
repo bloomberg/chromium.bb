@@ -69,8 +69,6 @@ BitmapSkPictureContentLayerUpdater::CreateResource(
 void BitmapSkPictureContentLayerUpdater::PaintContentsRect(
     SkCanvas* canvas,
     const gfx::Rect& source_rect) {
-  if (!canvas)
-    return;
   // Translate the origin of content_rect to that of source_rect.
   canvas->translate(content_rect().x() - source_rect.x(),
                     content_rect().y() - source_rect.y());
