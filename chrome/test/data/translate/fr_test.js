@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 if (typeof world != 'undefined') {
-  div_log('CSP doesn\'t work');
+  console.log('CSP does not work correctly.');
+  console.log(world);
   document.title = 'FAIL';
-  return;
+} else {
+  world='main';
 }
-world='main';

@@ -126,9 +126,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TranslateBrowserTest);
 };
 
-// Disabled - http://crbug.com/359730 (js has syntax errors which v8 hates)
-IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
-                       DISABLED_TranslateInIsolatedWorld) {
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
