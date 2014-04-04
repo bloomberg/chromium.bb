@@ -11,7 +11,7 @@
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/untrusted/irt/irt.h"
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/native_client/src/shared/ppapi_proxy/ppruntime.h"
 #include "ppapi/native_client/src/untrusted/irt_stub/thread_creator.h"
 

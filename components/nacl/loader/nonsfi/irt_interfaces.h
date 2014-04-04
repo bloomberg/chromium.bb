@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "native_client/src/untrusted/irt/irt.h"
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 
 namespace nacl {
 namespace nonsfi {

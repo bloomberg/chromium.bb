@@ -294,7 +294,7 @@ NACL_HEADER_MAP = {
       ('native_client/src/untrusted/pthread/pthread.h', ''),
       ('native_client/src/untrusted/pthread/semaphore.h', ''),
       ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
-      ('ppapi/nacl_irt/irt_ppapi.h', ''),
+      ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
   ],
   'glibc': [
       ('native_client/src/include/nacl/nacl_exception.h', 'nacl/'),
@@ -305,7 +305,7 @@ NACL_HEADER_MAP = {
       ('native_client/src/untrusted/nacl/nacl_startup.h', 'nacl/'),
       ('native_client/src/untrusted/nacl/nacl_thread.h', 'nacl/'),
       ('native_client/src/untrusted/valgrind/dynamic_annotations.h', 'nacl/'),
-      ('ppapi/nacl_irt/irt_ppapi.h', ''),
+      ('ppapi/nacl_irt/public/irt_ppapi.h', ''),
   ],
   'host': []
 }

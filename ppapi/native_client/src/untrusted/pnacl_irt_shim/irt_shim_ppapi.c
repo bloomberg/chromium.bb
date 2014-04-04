@@ -7,7 +7,7 @@
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/irt_shim_ppapi.h"
 
 #include "native_client/src/untrusted/irt/irt.h"
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_shim.h"
 #include "ppapi/proxy/plugin_main_irt.h"
 

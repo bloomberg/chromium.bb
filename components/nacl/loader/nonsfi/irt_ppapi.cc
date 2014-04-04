@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
 #include "ppapi/c/ppp.h"
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/proxy/plugin_main_irt.h"
 
 namespace nacl {

@@ -5,7 +5,7 @@
 #ifndef PPAPI_PROXY_PLUGIN_MAIN_IRT_H_
 #define PPAPI_PROXY_PLUGIN_MAIN_IRT_H_
 
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 #ifdef __cplusplus

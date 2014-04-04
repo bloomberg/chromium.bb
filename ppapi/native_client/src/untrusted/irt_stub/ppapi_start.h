@@ -7,7 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_UNTRUSTED_IRT_STUB_PPAPI_START_H_
 #define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_STUB_PPAPI_START_H_ 1
 
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 
 /*
  * Start PPAPI using the given set of callbacks to invoke the application code.

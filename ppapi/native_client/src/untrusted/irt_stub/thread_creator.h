@@ -8,7 +8,7 @@
 #define NATIVE_CLIENT_SRC_UNTRUSTED_IRT_STUB_THREAD_CREATOR_H_ 1
 
 #include "native_client/src/untrusted/irt/irt.h"
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 
 void __nacl_register_thread_creator(const struct nacl_irt_ppapihook *hooks);
 

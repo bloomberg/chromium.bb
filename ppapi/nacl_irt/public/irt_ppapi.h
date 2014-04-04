@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef PPAPI_NACL_IRT_IRT_PPAPI_H_
-#define PPAPI_NACL_IRT_IRT_PPAPI_H_
+#ifndef PPAPI_NACL_IRT_PUBLIC_IRT_PPAPI_H_
+#define PPAPI_NACL_IRT_PUBLIC_IRT_PPAPI_H_
 
 #include <stddef.h>
 
@@ -39,4 +39,4 @@ struct nacl_irt_ppapihook {
   void (*ppapi_register_thread_creator)(const struct PP_ThreadFunctions*);
 };
 
-#endif
+#endif  // PPAPI_NACL_IRT_PUBLIC_IRT_PPAPI_H_

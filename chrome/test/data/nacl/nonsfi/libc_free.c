@@ -17,7 +17,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/ppp_messaging.h"
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 
 static struct nacl_irt_basic __libnacl_irt_basic;
 static TYPE_nacl_irt_query __nacl_irt_query;

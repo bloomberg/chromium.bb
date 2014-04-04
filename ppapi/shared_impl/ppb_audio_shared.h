@@ -16,7 +16,7 @@
 #include "ppapi/thunk/ppb_audio_api.h"
 
 #if defined(OS_NACL)
-#include "ppapi/nacl_irt/irt_ppapi.h"
+#include "ppapi/nacl_irt/public/irt_ppapi.h"
 #endif
 
 namespace ppapi {
