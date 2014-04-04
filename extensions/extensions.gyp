@@ -383,6 +383,24 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'extensions_renderer',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'renderer/native_handler.cc',
+        'renderer/native_handler.h',
+        'renderer/scoped_persistent.h',
+        'renderer/unsafe_persistent.h',
+      ],
+      'dependencies': [
+        '../third_party/WebKit/public/blink.gyp:blink',
+      ],
+      # Disable c4267 warnings until we fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
       'target_name': 'extensions_test_support',
       'type': 'static_library',
       'dependencies': [

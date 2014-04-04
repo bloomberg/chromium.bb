@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_UNSAFE_PERSISTENT_H_
-#define CHROME_RENDERER_EXTENSIONS_UNSAFE_PERSISTENT_H_
+#ifndef EXTENSIONS_RENDERER_UNSAFE_PERSISTENT_H_
+#define EXTENSIONS_RENDERER_UNSAFE_PERSISTENT_H_
 
 #include "v8/include/v8.h"
 
@@ -14,9 +14,10 @@ namespace extensions {
 // memory pointed by it is not going away: 1) When GC cannot happen while the
 // UnsafePersistent is alive or 2) when there is a strong Persistent keeping the
 // memory alive while the UnsafePersistent is alive.
-template<typename T> class UnsafePersistent {
+template <typename T>
+class UnsafePersistent {
  public:
-  UnsafePersistent() : value_(0) { }
+  UnsafePersistent() : value_(0) {}
 
   explicit UnsafePersistent(v8::Persistent<T>* handle) {
     value_ = handle->ClearAndLeak();
@@ -47,4 +48,4 @@ template<typename T> class UnsafePersistent {
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_UNSAFE_PERSISTENT_H_
+#endif  // EXTENSIONS_RENDERER_UNSAFE_PERSISTENT_H_

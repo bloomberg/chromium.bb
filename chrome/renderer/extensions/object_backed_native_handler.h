@@ -10,8 +10,8 @@
 
 #include "base/bind.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/renderer/extensions/native_handler.h"
-#include "chrome/renderer/extensions/scoped_persistent.h"
+#include "extensions/renderer/native_handler.h"
+#include "extensions/renderer/scoped_persistent.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 

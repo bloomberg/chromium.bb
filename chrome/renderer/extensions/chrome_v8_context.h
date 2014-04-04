@@ -13,8 +13,8 @@
 #include "chrome/renderer/extensions/pepper_request_proxy.h"
 #include "chrome/renderer/extensions/request_sender.h"
 #include "chrome/renderer/extensions/safe_builtins.h"
-#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/renderer/scoped_persistent.h"
 #include "v8/include/v8.h"
 
 namespace blink {

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/renderer/extensions/native_handler.h"
+#include "extensions/renderer/native_handler.h"
 
 namespace extensions {
 
@@ -33,6 +33,6 @@ class BindingGeneratingNativeHandler : public NativeHandler {
   std::string bind_to_;
 };
 
-} // extensions
+}  // namespace extensions
 
 #endif  // CHROME_RENDERER_EXTENSIONS_BINDING_GENERATING_NATIVE_HANDLER_H_

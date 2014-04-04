@@ -7,9 +7,9 @@
 
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/module_system.h"
-#include "chrome/renderer/extensions/scoped_persistent.h"
-#include "v8/include/v8.h"
+#include "extensions/renderer/scoped_persistent.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "v8/include/v8.h"
 
 // Test fixture for testing JS that makes use of the module system.
 //

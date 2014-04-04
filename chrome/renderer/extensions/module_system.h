@@ -8,8 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/extensions/native_handler.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "extensions/renderer/native_handler.h"
 #include "v8/include/v8.h"
 
 #include <map>

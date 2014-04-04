@@ -78,6 +78,7 @@
         '<(DEPTH)/extensions/common/api/api.gyp:extensions_api',
         '<(DEPTH)/extensions/extensions.gyp:extensions_browser',
         '<(DEPTH)/extensions/extensions.gyp:extensions_common',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_renderer',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
         '<(DEPTH)/ui/views/views.gyp:views',

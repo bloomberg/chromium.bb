@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/renderer/extensions/scoped_persistent.h"
+#include "extensions/renderer/scoped_persistent.h"
 #include "v8/include/v8-util.h"
 #include "v8/include/v8.h"
 
