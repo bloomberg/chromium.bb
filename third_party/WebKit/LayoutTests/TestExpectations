@@ -1,3 +1,5 @@
+# This directly has manual tests that don't have to run with run-webkit-tests
+crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 

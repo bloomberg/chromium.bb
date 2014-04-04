@@ -103,7 +103,7 @@ ScriptSourceCode HTMLScriptRunner::sourceFromPendingScript(const PendingScript& 
 
 bool HTMLScriptRunner::isPendingScriptReady(const PendingScript& script)
 {
-    m_hasScriptsWaitingForResources = !m_document->haveStylesheetsAndImportsLoaded();
+    m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
     if (m_hasScriptsWaitingForResources)
         return false;
     if (script.resource() && !script.resource()->isLoaded())
@@ -115,7 +115,7 @@ void HTMLScriptRunner::executeParsingBlockingScript()
 {
     ASSERT(m_document);
     ASSERT(!isExecutingScript());
-    ASSERT(m_document->haveStylesheetsAndImportsLoaded());
+    ASSERT(m_document->isScriptExecutionReady());
     ASSERT(isPendingScriptReady(m_parserBlockingScript));
 
     InsertionPointRecord insertionPointRecord(m_host->inputStream());
@@ -134,7 +134,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     if (!isExecutingScript()) {
         Microtask::performCheckpoint();
         if (pendingScriptType == PendingScriptBlockingParser) {
-            m_hasScriptsWaitingForResources = !m_document->haveStylesheetsAndImportsLoaded();
+            m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
             // The parser cannot be unblocked as a microtask requested another resource
             if (m_hasScriptsWaitingForResources)
                 return;
@@ -221,7 +221,7 @@ void HTMLScriptRunner::executeScriptsWaitingForResources()
     // to prevent parser or script re-entry during </style> parsing.
     ASSERT(hasScriptsWaitingForResources());
     ASSERT(!isExecutingScript());
-    ASSERT(m_document->haveStylesheetsAndImportsLoaded());
+    ASSERT(m_document->isScriptExecutionReady());
     executeParsingBlockingScripts();
 }
 

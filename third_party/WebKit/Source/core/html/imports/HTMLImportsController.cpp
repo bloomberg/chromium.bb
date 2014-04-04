@@ -32,6 +32,7 @@
 #include "core/html/imports/HTMLImportsController.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/StyleEngine.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/imports/HTMLImportChild.h"
@@ -152,7 +153,7 @@ bool HTMLImportsController::hasLoader() const
 
 bool HTMLImportsController::isDone() const
 {
-    return !m_master->parsing() && m_master->haveStylesheetsLoaded();
+    return !m_master->parsing() && m_master->styleEngine()->haveStylesheetsLoaded();
 }
 
 void HTMLImportsController::stateDidChange()

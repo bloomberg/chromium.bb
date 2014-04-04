@@ -632,13 +632,14 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     // Once an element has a renderer, we don't try to destroy it, since otherwise the renderer
     // will vanish if a style recalc happens during loading.
-    if (sharingBehavior == AllowStyleSharing && !element->document().haveStylesheetsLoaded() && !element->renderer()) {
+    if (sharingBehavior == AllowStyleSharing && !document().styleEngine()->haveStylesheetsLoaded() && !element->renderer()) {
         if (!s_styleNotYetAvailable) {
             s_styleNotYetAvailable = RenderStyle::create().leakRef();
             s_styleNotYetAvailable->setDisplay(NONE);
             s_styleNotYetAvailable->font().update(document().styleEngine()->fontSelector());
         }
-        element->document().setHasNodesWithPlaceholderStyle();
+
+        document().setHasNodesWithPlaceholderStyle();
         return s_styleNotYetAvailable;
     }
 

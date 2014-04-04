@@ -2129,7 +2129,7 @@ void Element::focus(bool restorePreviousSelection, FocusType type)
     // If the stylesheets have already been loaded we can reliably check isFocusable.
     // If not, we continue and set the focused node on the focus controller below so
     // that it can be updated soon after attach.
-    if (doc.haveStylesheetsLoaded()) {
+    if (doc.isRenderingReady()) {
         doc.updateLayoutIgnorePendingStylesheets();
         if (!isFocusable())
             return;

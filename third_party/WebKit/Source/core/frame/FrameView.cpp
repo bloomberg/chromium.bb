@@ -1571,7 +1571,7 @@ bool FrameView::scrollToAnchor(const String& name)
 {
     ASSERT(m_frame->document());
 
-    if (!m_frame->document()->haveStylesheetsLoaded()) {
+    if (!m_frame->document()->isRenderingReady()) {
         m_frame->document()->setGotoAnchorNeededAfterStylesheetsLoad(true);
         return false;
     }

@@ -2631,7 +2631,7 @@ bool Document::shouldScheduleLayout() const
     //    (a) Only schedule a layout once the stylesheets are loaded.
     //    (b) Only schedule layout once we have a body element.
 
-    return (haveStylesheetsAndImportsLoaded() && body())
+    return (isRenderingReady() && body())
         || (documentElement() && !isHTMLHtmlElement(*documentElement()));
 }
 
@@ -2918,7 +2918,7 @@ void Document::didLoadAllScriptBlockingResources()
 
 void Document::executeScriptsWaitingForResourcesIfNeeded()
 {
-    if (!haveStylesheetsAndImportsLoaded())
+    if (!isRenderingReady())
         return;
     if (ScriptableDocumentParser* parser = scriptableDocumentParser())
         parser->executeScriptsWaitingForResources();

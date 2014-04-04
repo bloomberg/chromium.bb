@@ -421,8 +421,8 @@ public:
 
     void notifyRemovePendingSheetIfNeeded();
 
-    bool haveStylesheetsLoaded() const;
-    bool haveStylesheetsAndImportsLoaded() const { return haveImportsLoaded() && haveStylesheetsLoaded(); }
+    bool isRenderingReady() const { return haveImportsLoaded() && haveStylesheetsLoaded(); }
+    bool isScriptExecutionReady() const { return isRenderingReady(); }
 
     // This is a DOM function.
     StyleSheetList* styleSheets();
@@ -1158,6 +1158,7 @@ private:
 
     bool needsRenderTreeUpdate() const;
     bool shouldScheduleRenderTreeUpdate() const;
+    bool haveStylesheetsLoaded() const;
 
     DocumentLifecycle m_lifecycle;
 

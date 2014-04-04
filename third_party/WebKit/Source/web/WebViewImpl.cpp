@@ -3431,10 +3431,10 @@ void WebViewImpl::willInsertBody(WebFrameImpl* webframe)
     if (webframe != mainFrameImpl())
         return;
 
-    // If we get to the <body> tag and we have no pending stylesheet loads, we
+    // If we get to the <body> tag and we have no pending stylesheet and import load, we
     // can be fairly confident we'll have something sensible to paint soon and
     // can turn off deferred commits.
-    if (m_page->mainFrame()->document()->haveStylesheetsLoaded())
+    if (m_page->mainFrame()->document()->isRenderingReady())
         resumeTreeViewCommits();
 }
 
