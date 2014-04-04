@@ -1900,7 +1900,7 @@ private:
         double numberValue;
         if (!doReadNumber(&numberValue))
             return false;
-        *value = v8DateOrNull(numberValue, m_isolate);
+        *value = v8DateOrNaN(numberValue, m_isolate);
         return true;
     }
 

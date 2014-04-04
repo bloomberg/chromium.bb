@@ -433,10 +433,10 @@ inline double toCoreDate(v8::Handle<v8::Value> object)
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-inline v8::Handle<v8::Value> v8DateOrNull(double value, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> v8DateOrNaN(double value, v8::Isolate* isolate)
 {
     ASSERT(isolate);
-    return std::isfinite(value) ? v8::Date::New(isolate, value) : v8::Handle<v8::Value>::Cast(v8::Null(isolate));
+    return v8::Date::New(isolate, std::isfinite(value) ? value : std::numeric_limits<double>::quiet_NaN());
 }
 
 // FIXME: Remove the special casing for NodeFilter and XPathNSResolver.

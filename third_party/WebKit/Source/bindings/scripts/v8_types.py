@@ -581,7 +581,7 @@ IdlUnionType.release = property(
 
 CPP_VALUE_TO_V8_VALUE = {
     # Built-in types
-    'Date': 'v8DateOrNull({cpp_value}, {isolate})',
+    'Date': 'v8DateOrNaN({cpp_value}, {isolate})',
     'DOMString': 'v8String({isolate}, {cpp_value})',
     'boolean': 'v8Boolean({cpp_value}, {isolate})',
     'int': 'v8::Integer::New({isolate}, {cpp_value})',
