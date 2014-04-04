@@ -96,7 +96,6 @@ if [[ "${BUILDBOT_SLAVE_TYPE:-Trybot}" != "Trybot" ]]; then
   )
   echo @@@STEP_LINK@download@http://gsdview.appspot.com/nativeclient-archive2/toolchain/${BUILDBOT_GOT_REVISION}/@@@
 
-  echo @@@BUILD_STEP upload_package@@@
   ${NATIVE_PYTHON} ../build/package_version/package_version.py --annotate \
       upload --upload-package=nacl_x86_newlib \
       --revision=${BUILDBOT_GOT_REVISION}

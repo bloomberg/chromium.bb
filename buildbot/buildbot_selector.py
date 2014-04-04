@@ -330,9 +330,7 @@ def Main():
   # Use .boto file from home-dir instead of buildbot supplied one.
   if 'AWS_CREDENTIAL_FILE' in env:
     del env['AWS_CREDENTIAL_FILE']
-  if 'BOTO_CONFIG' in env:
-    del env['BOTO_CONFIG']
-
+  env['BOTO_CONFIG'] = os.path.expanduser('~/.boto')
   env['GSUTIL'] = '/b/build/third_party/gsutil/gsutil'
 
   # When running from cygwin, we sometimes want to use a native python.
