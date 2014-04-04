@@ -1291,6 +1291,10 @@ void Dispatcher::WillReleaseScriptContext(
   if (!context)
     return;
 
+  // If the V8 context has an OOM exception, javascript execution has been
+  // stopped, so dispatching an onUnload event is pointless.
+  if (!v8_context->HasOutOfMemoryException())
+    context->DispatchOnUnloadEvent();
   // TODO(kalman): add an invalidation observer interface to ChromeV8Context.
   request_sender_->InvalidateSource(context);
 
