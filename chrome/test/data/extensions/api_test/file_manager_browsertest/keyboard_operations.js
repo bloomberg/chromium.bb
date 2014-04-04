@@ -183,6 +183,71 @@ function createNewFolder(path, initialEntrySet) {
   });
 };
 
+/**
+ * Renames a file.
+ * @param {string} windowId ID of window.
+ * @param {string} oldName Old name of a file.
+ * @param {string} newName New name of a file.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+function renameFile(windowId, oldName, newName) {
+  return callRemoteTestUtil('selectFile', windowId, [oldName]).then(function() {
+    // Push Ctrl+Enter.
+    return fakeKeyDown(windowId, '#detail-table', 'Enter', true);
+  }).then(function() {
+    // Wait for rename text field.
+    return waitForElement(windowId, 'input.rename');
+  }).then(function() {
+    // Type new file name.
+    return callRemoteTestUtil(
+        'inputText', windowId, ['input.rename', newName]);
+  }).then(function() {
+    // Push Enter.
+    return fakeKeyDown(windowId, 'input.rename', 'Enter', false);
+  });
+}
+
+/**
+ * Test for renaming a file.
+ * @param {string} path Initial path.
+ * @param {Array.<TestEntryInfo>} initialEntrySet Initial set of entries.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+function testRenameFile(path, initialEntrySet) {
+  var windowId;
+
+  // Make expected rows.
+  var expectedEntryRows = TestEntryInfo.getExpectedRows(initialEntrySet);
+  for (var i = 0; i < expectedEntryRows.length; i++) {
+    if (expectedEntryRows[i][0] === 'hello.txt')
+      break;
+  }
+  expectedEntryRows[i][0] = 'New File Name.txt';
+
+  // Open window.
+  return new Promise(function(callback) {
+    setupAndWaitUntilReady(null, path, callback);
+  }).then(function(inWindowId) {
+    windowId = inWindowId;
+    return renameFile(windowId, 'hello.txt', 'New File Name.txt');
+  }).then(function() {
+    // Wait for the new file name.
+    return waitForFiles(windowId,
+                        expectedEntryRows,
+                        {ignoreLastModifiedTime: true});
+  }).then(function() {
+    return renameFile(windowId, 'New File Name.txt', '.hidden file');
+  }).then(function() {
+    // The error dialog is shown.
+    return waitAndAcceptDialog(windowId);
+  }).then(function() {
+    // The name does not changed.
+    return waitForFiles(windowId,
+                        expectedEntryRows,
+                        {ignoreLastModifiedTime: true});
+  });
+};
+
 testcase.keyboardCopyDownloads = function() {
   keyboardCopy(RootPath.DOWNLOADS);
 };
@@ -205,4 +270,12 @@ testcase.createNewFolderDownloads = function() {
 
 testcase.createNewFolderDrive = function() {
   testPromise(createNewFolder(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET));
+};
+
+testcase.renameFileDownloads = function() {
+  testPromise(testRenameFile(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET));
+};
+
+testcase.renameFileDrive = function() {
+  testPromise(testRenameFile(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET));
 };

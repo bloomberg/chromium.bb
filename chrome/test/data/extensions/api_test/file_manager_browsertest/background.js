@@ -340,6 +340,29 @@ function waitUntilTaskExecutes(windowId, taskId) {
 }
 
 /**
+ * Sends fake key down event.
+ * @param {string} windowId Window ID.
+ * @param {string} query Query for target element.
+ * @param {string} keyIdentifer Key identifier.
+ * @param {boolean} ctrlKey Control key flag.
+ * @return {Promise} Promise to be fulfilled or rejected depending on the
+ *     result.
+ */
+function fakeKeyDown(windowId, query, keyIdentifer, ctrlKey) {
+  return new Promise(function(fulfill, reject) {
+    callRemoteTestUtil('fakeKeyDown',
+                       windowId,
+                       [query, keyIdentifer, ctrlKey],
+                       function(result) {
+                         if (result)
+                           fulfill();
+                         else
+                           reject(new Error('Fail to fake key down.'));
+                       });
+  });
+}
+
+/**
  * Executes a sequence of test steps.
  * @constructor
  */
