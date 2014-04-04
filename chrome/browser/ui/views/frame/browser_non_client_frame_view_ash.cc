@@ -9,6 +9,7 @@
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter_util.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
@@ -83,14 +84,18 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
       window_icon_(NULL),
       frame_border_hit_test_controller_(
           new ash::FrameBorderHitTestController(frame)) {
+  ash::Shell::GetInstance()->AddShellObserver(this);
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
+  ash::Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
   caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame(),
       ash::FrameCaptionButtonContainerView::MINIMIZE_ALLOWED);
+  caption_button_container_->UpdateSizeButtonVisibility(
+      ash::Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled());
   AddChildView(caption_button_container_);
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
@@ -119,7 +124,7 @@ void BrowserNonClientFrameViewAsh::Init() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserNonClientFrameView overrides:
+// BrowserNonClientFrameView:
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
     views::View* tabstrip) const {
@@ -172,7 +177,7 @@ void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// views::NonClientFrameView overrides:
+// views::NonClientFrameView:
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForClientView() const {
   // The ClientView must be flush with the top edge of the widget so that the
@@ -241,7 +246,7 @@ void BrowserNonClientFrameViewAsh::UpdateWindowTitle() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// views::View overrides:
+// views::View:
 
 void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldPaint())
@@ -337,7 +342,24 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// chrome::TabIconViewModel overrides:
+// ash::ShellObserver:
+
+void BrowserNonClientFrameViewAsh::OnMaximizeModeStarted() {
+  caption_button_container_->UpdateSizeButtonVisibility(true);
+  InvalidateLayout();
+  frame()->client_view()->InvalidateLayout();
+  frame()->GetRootView()->Layout();
+}
+
+void BrowserNonClientFrameViewAsh::OnMaximizeModeEnded() {
+  caption_button_container_->UpdateSizeButtonVisibility(false);
+  InvalidateLayout();
+  frame()->client_view()->InvalidateLayout();
+  frame()->GetRootView()->Layout();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// chrome::TabIconViewModel:
 
 bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the

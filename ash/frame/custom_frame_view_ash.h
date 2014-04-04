@@ -11,6 +11,7 @@
 
 namespace ash {
 class FrameBorderHitTestController;
+class FrameCaptionButtonContainerView;
 class ImmersiveFullscreenController;
 }
 namespace views {
@@ -69,6 +70,10 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
  private:
   class OverlayView;
   friend class TestWidgetConstraintsDelegate;
+
+  // Returns the container for the minimize/maximize/close buttons that is held
+  // by the HeaderView. Used in testing.
+  FrameCaptionButtonContainerView* GetFrameCaptionButtonContainerViewForTest();
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;

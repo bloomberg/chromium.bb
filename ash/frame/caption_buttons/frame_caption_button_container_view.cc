@@ -67,7 +67,7 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     size_button_ = new FrameMaximizeButton(this, frame);
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
-  size_button_->SetVisible(frame_->widget_delegate()->CanMaximize());
+  UpdateSizeButtonVisibility(false);
   AddChildView(size_button_);
 
   close_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_CLOSE);
@@ -133,6 +133,18 @@ int FrameCaptionButtonContainerView::NonClientHitTest(
     return HTMINBUTTON;
   }
   return HTNOWHERE;
+}
+
+void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility(
+    bool force_hidden) {
+  // TODO(flackr): Refactor the Maximize Mode notifications. Currently
+  // UpdateSizeButtonVisibilty requires a force_hidden parameter. This is
+  // because Shell::IsMaximizeWindowManagerEnabled is still false at the
+  // time when ShellObserver::OnMaximizeModeStarted is called. This prevents
+  // this method from performing that check, and instead relies on the calling
+  // code to tell it to force being hidden.
+  size_button_->SetVisible(
+      !force_hidden && frame_->widget_delegate()->CanMaximize());
 }
 
 gfx::Size FrameCaptionButtonContainerView::GetPreferredSize() {

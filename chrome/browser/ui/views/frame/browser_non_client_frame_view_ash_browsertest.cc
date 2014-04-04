@@ -8,6 +8,7 @@
 #include "ash/ash_switches.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_painter.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -26,8 +27,7 @@ using views::Widget;
 typedef InProcessBrowserTest BrowserNonClientFrameViewAshTest;
 
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, NonClientHitTest) {
-  // We know we're using Views, so static cast.
-  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   Widget* widget = browser_view->GetWidget();
   // We know we're using Ash, so static cast.
   BrowserNonClientFrameViewAsh* frame_view =
@@ -55,8 +55,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, NonClientHitTest) {
 // fullscreen.
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
                        NonImmersiveFullscreen) {
-  // We know we're using Views, so static cast.
-  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
   Widget* widget = browser_view->GetWidget();
   // We know we're using Ash, so static cast.
@@ -98,8 +97,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
 // Immersive fullscreen is CrOS only for now.
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
-  // We know we're using Views, so static cast.
-  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
   Widget* widget = browser_view->GetWidget();
   // We know we're using Ash, so static cast.
@@ -199,3 +197,25 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
             frame_view->header_painter_->GetHeaderHeightForPainting());
 }
 #endif  // defined(OS_CHROMEOS)
+
+// Tests that FrameCaptionButtonContainer has been relaid out in response to
+// maximize mode being toggled.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
+                       ToggleMaximizeModeRelayout) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  Widget* widget = browser_view->GetWidget();
+  // We know we're using Ash, so static cast.
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+
+  const gfx::Rect initial = frame_view->caption_button_container_->bounds();
+  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  const gfx::Rect during_maximize = frame_view->caption_button_container_->
+      bounds();
+  EXPECT_GT(initial.width(), during_maximize.width());
+  ash::Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  const gfx::Rect after_restore = frame_view->caption_button_container_->
+      bounds();
+  EXPECT_EQ(initial, after_restore);
+}

@@ -4,6 +4,8 @@
 
 #include "ash/frame/custom_frame_view_ash.h"
 
+#include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_session_state_delegate.h"
@@ -11,6 +13,7 @@
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -19,10 +22,8 @@ namespace ash {
 // A views::WidgetDelegate which uses a CustomFrameViewAsh.
 class TestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() {
-  }
-  virtual ~TestWidgetDelegate() {
-  }
+  TestWidgetDelegate() {}
+  virtual ~TestWidgetDelegate() {}
 
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE {
@@ -43,12 +44,10 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 
 class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
  public:
-  TestWidgetConstraintsDelegate() {
-  }
-  virtual ~TestWidgetConstraintsDelegate() {
-  }
+  TestWidgetConstraintsDelegate() {}
+  virtual ~TestWidgetConstraintsDelegate() {}
 
-  // views::View implementation.
+  // views::View:
   virtual gfx::Size GetMinimumSize() OVERRIDE {
     return minimum_size_;
   }
@@ -63,12 +62,22 @@ class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
     return this;
   }
 
+  // views::WidgetDelegate:
+  virtual bool CanMaximize() const OVERRIDE {
+    return true;
+  }
+
   void set_minimum_size(const gfx::Size& min_size) {
     minimum_size_ = min_size;
   }
 
   void set_maximum_size(const gfx::Size& max_size) {
     maximum_size_ = max_size;
+  }
+
+  const gfx::Rect& GetFrameCaptionButtonContainerViewBounds() {
+    return custom_frame_view()->GetFrameCaptionButtonContainerViewForTest()->
+        bounds();
   }
 
   int GetTitleBarHeight() const {
@@ -189,6 +198,25 @@ TEST_F(CustomFrameViewAshTest, AvatarIcon) {
   widget->Hide();
   widget->Show();
   EXPECT_FALSE(custom_frame_view->GetAvatarIconViewForTest());
+}
+
+// The visibility of the size button is updated when maximize mode is toggled.
+// Verify that the layout of the HeaderView is updated for the size button's
+// new visibility.
+TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
+  TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
+  scoped_ptr<views::Widget> widget(CreateWidget(delegate));
+
+  const gfx::Rect initial = delegate->
+      GetFrameCaptionButtonContainerViewBounds();
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+  const gfx::Rect maximize_mode_bounds = delegate->
+      GetFrameCaptionButtonContainerViewBounds();
+  EXPECT_GT(initial.width(), maximize_mode_bounds.width());
+  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+  const gfx::Rect after_restore = delegate->
+      GetFrameCaptionButtonContainerViewBounds();
+  EXPECT_EQ(initial, after_restore);
 }
 
 }  // namespace ash

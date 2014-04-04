@@ -91,7 +91,12 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // be in the coordinates of the FrameCaptionButtonContainerView.
   int NonClientHitTest(const gfx::Point& point) const;
 
-  // views::View overrides:
+  // Updates the size button's visibility based on whether |frame_| can be
+  // maximized and |force_hidden|. A parent view should relayout to reflect the
+  // change in visibility.
+  void UpdateSizeButtonVisibility(bool force_hidden);
+
+  // views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
@@ -121,11 +126,11 @@ class ASH_EXPORT FrameCaptionButtonContainerView
                      CaptionButtonIcon icon,
                      Animate animate);
 
-  // views::ButtonListener override:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // AlternateFrameSizeButton::Delegate overrides:
+  // AlternateFrameSizeButtonDelegate:
   virtual bool IsMinimizeButtonVisible() const OVERRIDE;
   virtual void SetButtonsToNormal(Animate animate) OVERRIDE;
   virtual void SetButtonIcons(CaptionButtonIcon minimize_button_icon,
