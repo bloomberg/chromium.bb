@@ -44,3 +44,6 @@ Modifications made:
 
 - #pragma optimize off around _swrast_write_zoomed_z_span, ICEing on
   VS2013: http://crbug.com/348350.
+
+- Porting to x64 Android. Remove redefinitions of log2 and log2f.
+  https://codereview.chromium.org/216773005/
