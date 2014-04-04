@@ -1,10 +1,10 @@
-CONSOLE ERROR: line 1: Uncaught TypeError: var 'bar' has already been declared
+CONSOLE ERROR: line 1: Uncaught TypeError: Identifier 'bar' has already been declared
 This test checks that const declarations in JavaScript work and are readonly.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS const redef='a'; const redef='a'; threw exception TypeError: const 'redef' has already been declared.
+PASS const redef='a'; const redef='a'; threw exception TypeError: Identifier 'redef' has already been declared.
 PASS x is "RIGHT"
 PASS y is "RIGHT"
 PASS a is 1
