@@ -26,9 +26,7 @@ namespace test {
 class ReliableQuicStreamPeer;
 }  // namespace test
 
-class IPEndPoint;
 class QuicSession;
-class SSLInfo;
 
 class NET_EXPORT_PRIVATE ReliableQuicStream {
  public:
