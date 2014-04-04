@@ -28,7 +28,6 @@ const int kPadding = 14;
 const int kBottomSeparatorWidth = 380;
 const int kBottomSeparatorHeight = 1;
 const int kMaxFolderNameWidth = 300;
-const int kFolderNameLeftRightPaddingChars = 4;
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
@@ -145,11 +144,11 @@ void FolderHeaderView::Layout() {
   back_button_->SetBoundsRect(back_bounds);
 
   gfx::Rect text_bounds(rect);
-  int text_char_num = folder_item_->name().size()
-                          ? folder_item_->name().size()
-                          : folder_name_placeholder_text_.size();
-  int text_width = folder_name_view_->GetFontList().GetExpectedTextWidth(
-      text_char_num + kFolderNameLeftRightPaddingChars);
+  base::string16 text = folder_item_->name().empty()
+                            ? folder_name_placeholder_text_
+                            : base::UTF8ToUTF16(folder_item_->name());
+  int text_width =
+      gfx::Canvas::GetStringWidth(text, folder_name_view_->GetFontList());
   text_width = std::min(text_width, kMaxFolderNameWidth);
   text_bounds.set_x(back_bounds.x() + (rect.width() - text_width) / 2);
   text_bounds.set_width(text_width);
