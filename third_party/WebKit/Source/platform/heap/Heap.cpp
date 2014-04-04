@@ -683,11 +683,18 @@ void ThreadHeap<Header>::getScannedStats(HeapStats& scannedStats)
 }
 #endif
 
+// STRICT_ASAN_FINALIZATION_CHECKING turns on poisoning of all objects during
+// sweeping to catch cases where dead objects touch eachother. This is not
+// turned on by default because it also triggers for cases that are safe.
+// Examples of such safe cases are context life cycle observers and timers
+// embedded in garbage collected objects.
+#define STRICT_ASAN_FINALIZATION_CHECKING 0
+
 template<typename Header>
 void ThreadHeap<Header>::sweep()
 {
     ASSERT(isConsistentForGC());
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) && STRICT_ASAN_FINALIZATION_CHECKING
     // When using ASAN do a pre-sweep where all unmarked objects are poisoned before
     // calling their finalizer methods. This can catch the cases where one objects
     // finalizer tries to modify another object as part of finalization.

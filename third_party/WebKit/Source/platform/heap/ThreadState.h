@@ -478,6 +478,10 @@ public:
     // Visit local thread stack and trace all pointers conservatively.
     void visitStack(Visitor*);
 
+    // Visit the asan fake stack frame corresponding to a slot on the
+    // real machine stack if there is one.
+    void visitAsanFakeStackForPointer(Visitor*, Address);
+
     // Visit all persistents allocated on this thread.
     void visitPersistents(Visitor*);
 
@@ -565,6 +569,10 @@ private:
     bool m_isCleaningUp;
 
     CallbackStack* m_weakCallbackStack;
+
+#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+    void* m_asanFakeStack;
+#endif
 };
 
 template<ThreadAffinity affinity> class ThreadStateFor;

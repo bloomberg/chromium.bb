@@ -242,6 +242,9 @@ ThreadState::ThreadState()
     , m_inGC(false)
     , m_heapContainsCache(adoptPtr(new HeapContainsCache()))
     , m_isCleaningUp(false)
+#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+    , m_asanFakeStack(__asan_get_current_fake_stack())
+#endif
 {
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
@@ -344,6 +347,34 @@ void ThreadState::visitRoots(Visitor* visitor)
 }
 
 NO_SANITIZE_ADDRESS
+void ThreadState::visitAsanFakeStackForPointer(Visitor* visitor, Address ptr)
+{
+#if defined(ADDRESS_SANITIZER) && !OS(WIN)
+    Address* start = reinterpret_cast<Address*>(m_startOfStack);
+    Address* end = reinterpret_cast<Address*>(m_endOfStack);
+    Address* fakeFrameStart = 0;
+    Address* fakeFrameEnd = 0;
+    Address* maybeFakeFrame = reinterpret_cast<Address*>(ptr);
+    Address* realFrameForFakeFrame =
+        reinterpret_cast<Address*>(
+            __asan_addr_is_in_fake_stack(
+                m_asanFakeStack, maybeFakeFrame,
+                reinterpret_cast<void**>(&fakeFrameStart),
+                reinterpret_cast<void**>(&fakeFrameEnd)));
+    if (realFrameForFakeFrame) {
+        // This is a fake frame from the asan fake stack.
+        if (realFrameForFakeFrame > end && start > realFrameForFakeFrame) {
+            // The real stack address for the asan fake frame is
+            // within the stack range that we need to scan so we need
+            // to visit the values in the fake frame.
+            for (Address* p = fakeFrameStart; p < fakeFrameEnd; p++)
+                Heap::checkAndMarkPointer(visitor, *p);
+        }
+    }
+#endif
+}
+
+NO_SANITIZE_ADDRESS
 void ThreadState::visitStack(Visitor* visitor)
 {
     Address* start = reinterpret_cast<Address*>(m_startOfStack);
@@ -360,11 +391,15 @@ void ThreadState::visitStack(Visitor* visitor)
     // will read past start address.
     current = reinterpret_cast<Address*>(reinterpret_cast<intptr_t>(current) & ~(sizeof(Address) - 1));
 
-    for (; current < start; ++current)
+    for (; current < start; ++current) {
         Heap::checkAndMarkPointer(visitor, *current);
+        visitAsanFakeStackForPointer(visitor, *current);
+    }
 
-    for (Vector<Address>::iterator it = m_safePointStackCopy.begin(); it != m_safePointStackCopy.end(); ++it)
+    for (Vector<Address>::iterator it = m_safePointStackCopy.begin(); it != m_safePointStackCopy.end(); ++it) {
         Heap::checkAndMarkPointer(visitor, *it);
+        visitAsanFakeStackForPointer(visitor, *it);
+    }
 }
 
 void ThreadState::visitPersistents(Visitor* visitor)
