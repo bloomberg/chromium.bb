@@ -3218,6 +3218,14 @@ TEST_F(LayerTreeHostImplTest, NoOverscrollWhenNotAtEdge) {
     EXPECT_EQ(gfx::Vector2dF(0.000000f, 17.699997f).ToString(),
               host_impl_->accumulated_root_overscroll().ToString());
     host_impl_->ScrollEnd();
+    // TestCase to check  kEpsilon, which prevents minute values to trigger
+    // gloweffect without reaching edge.
+    EXPECT_EQ(InputHandler::ScrollStarted,
+              host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::Wheel));
+    host_impl_->ScrollBy(gfx::Point(), gfx::Vector2dF(-0.12f, 0.1f));
+    EXPECT_EQ(gfx::Vector2dF().ToString(),
+              host_impl_->accumulated_root_overscroll().ToString());
+    host_impl_->ScrollEnd();
   }
 }
 
