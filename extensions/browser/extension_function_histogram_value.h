@@ -768,6 +768,7 @@ enum HistogramValue {
   BLUETOOTHPRIVATE_ENABLEPAIRING,
   BLUETOOTHPRIVATE_DISABLEPAIRING,
   BLUETOOTHPRIVATE_SETPAIRINGRESPONSE,
+  NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

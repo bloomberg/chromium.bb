@@ -59,6 +59,11 @@
         "id": "NetworkType",
         "type": "string",
         "enum": ["Ethernet", "WiFi", "Cellular"]
+      },
+      {
+        "id": "CaptivePortalStatus",
+        "type": "string",
+        "enum": ["Unknown", "Offline", "Online", "Portal", "ProxyAuthRequired"]
       }
     ],
     "functions": [
@@ -400,6 +405,28 @@
               }
             ],
             "description": "A callback function that receives a string with the current TDLS status which can be 'Connected', 'Disabled', 'Disconnected', 'Nonexistent', or 'Unknown'"
+          }
+        ]
+      },
+      {
+        "name": "getCaptivePortalStatus",
+        "description": "Returns captive portal status for the network with networkGuid.",
+        "parameters": [
+          {
+            "name": "networkGuid",
+            "type": "string",
+            "description": "The unique identifier of the network to get captive portal status."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "parameters": [
+              {
+                "name": "status",
+                "$ref": "CaptivePortalStatus",
+                "description": "Results of the query for network captive portal status."
+              }
+            ]
           }
         ]
       }

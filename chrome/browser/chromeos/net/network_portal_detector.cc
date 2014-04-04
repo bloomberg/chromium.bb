@@ -20,8 +20,7 @@ const char kCaptivePortalStatusUnknown[] = "Unknown";
 const char kCaptivePortalStatusOffline[] = "Offline";
 const char kCaptivePortalStatusOnline[]  = "Online";
 const char kCaptivePortalStatusPortal[]  = "Portal";
-const char kCaptivePortalStatusProxyAuthRequired[] =
-    "Proxy authentication required";
+const char kCaptivePortalStatusProxyAuthRequired[] = "ProxyAuthRequired";
 const char kCaptivePortalStatusUnrecognized[] = "Unrecognized";
 
 NetworkPortalDetector* g_network_portal_detector = NULL;

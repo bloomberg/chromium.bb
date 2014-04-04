@@ -501,3 +501,17 @@ bool NetworkingPrivateGetWifiTDLSStatusFunction::RunImpl() {
   SetError("not-implemented");
   return false;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetCaptivePortalStatusFunction
+
+NetworkingPrivateGetCaptivePortalStatusFunction::
+    ~NetworkingPrivateGetCaptivePortalStatusFunction() {}
+
+bool NetworkingPrivateGetCaptivePortalStatusFunction::RunImpl() {
+  scoped_ptr<api::GetCaptivePortalStatus::Params> params =
+      api::GetCaptivePortalStatus::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+  SetError("not-implemented");
+  return false;
+}

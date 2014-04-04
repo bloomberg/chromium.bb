@@ -381,6 +381,22 @@ var availableTests = [
       callbackPass(function(result) {
         assertEq("Connected", result);
       }));
+  },
+  function getCaptivePortalStatus() {
+    var networks = [['stub_ethernet', 'Online'],
+                    ['stub_wifi1', 'Offline'],
+                    ['stub_wifi2', 'Portal'],
+                    ['stub_cellular1', 'ProxyAuthRequired'],
+                    ['stub_vpn1', 'Unknown']];
+    networks.forEach(function(network) {
+      var servicePath = network[0];
+      var expectedStatus = network[1];
+      chrome.networkingPrivate.getCaptivePortalStatus(
+        servicePath,
+        callbackPass(function(status) {
+          assertEq(expectedStatus, status);
+        }));
+    });
   }
 ];
 

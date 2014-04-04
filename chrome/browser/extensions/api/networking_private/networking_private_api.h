@@ -379,4 +379,21 @@ class NetworkingPrivateGetWifiTDLSStatusFunction
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetWifiTDLSStatusFunction);
 };
 
+class NetworkingPrivateGetCaptivePortalStatusFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  NetworkingPrivateGetCaptivePortalStatusFunction() {}
+  DECLARE_EXTENSION_FUNCTION("networkingPrivate.getCaptivePortalStatus",
+                             NETWORKINGPRIVATE_GETCAPTIVEPORTALSTATUS);
+
+  // AsyncExtensionFunction overrides.
+  virtual bool RunImpl() OVERRIDE;
+
+ protected:
+  virtual ~NetworkingPrivateGetCaptivePortalStatusFunction();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateGetCaptivePortalStatusFunction);
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_API_H_

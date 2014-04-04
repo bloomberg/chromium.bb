@@ -14,6 +14,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -45,6 +47,8 @@ using chromeos::CryptohomeClient;
 using chromeos::DBUS_METHOD_CALL_SUCCESS;
 using chromeos::DBusMethodCallStatus;
 using chromeos::DBusThreadManager;
+using chromeos::NetworkPortalDetector;
+using chromeos::NetworkPortalDetectorTestImpl;
 using chromeos::ShillDeviceClient;
 using chromeos::ShillManagerClient;
 using chromeos::ShillProfileClient;
@@ -454,6 +458,30 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("getWifiTDLSStatus")) << message_;
 }
 #endif
+
+// NetworkPortalDetector is only enabled for Chrome OS.
+#if defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
+                       GetCaptivePortalStatus) {
+  NetworkPortalDetectorTestImpl* detector = new NetworkPortalDetectorTestImpl();
+  NetworkPortalDetector::InitializeForTesting(detector);
+  NetworkPortalDetector::CaptivePortalState state;
+  state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+  detector->SetDetectionResultsForTesting("stub_ethernet", state);
+
+  state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
+  detector->SetDetectionResultsForTesting("stub_wifi1", state);
+
+  state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
+  detector->SetDetectionResultsForTesting("stub_wifi2", state);
+
+  state.status =
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED;
+  detector->SetDetectionResultsForTesting("stub_cellular1", state);
+
+  EXPECT_TRUE(RunNetworkingSubtest("getCaptivePortalStatus")) << message_;
+}
+#endif  // defined(OS_CHROMEOS)
 
 INSTANTIATE_TEST_CASE_P(ExtensionNetworkingPrivateApiTestInstantiation,
                         ExtensionNetworkingPrivateApiTest,

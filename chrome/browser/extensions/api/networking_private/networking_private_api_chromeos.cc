@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
+#include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/networking_private.h"
@@ -31,6 +32,7 @@ namespace api = extensions::api::networking_private;
 using chromeos::DBusThreadManager;
 using chromeos::ManagedNetworkConfigurationHandler;
 using chromeos::NetworkHandler;
+using chromeos::NetworkPortalDetector;
 using chromeos::NetworkState;
 using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
@@ -687,4 +689,33 @@ void NetworkingPrivateGetWifiTDLSStatusFunction::Failure(
     scoped_ptr<base::DictionaryValue> error_data) {
   error_ = error_name;
   SendResponse(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkingPrivateGetCaptivePortalStatusFunction
+
+NetworkingPrivateGetCaptivePortalStatusFunction::
+    ~NetworkingPrivateGetCaptivePortalStatusFunction() {}
+
+bool NetworkingPrivateGetCaptivePortalStatusFunction::RunImpl() {
+  scoped_ptr<api::GetCaptivePortalStatus::Params> params =
+      api::GetCaptivePortalStatus::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // The |network_guid| parameter is storing the service path.
+  const std::string& service_path = params->network_guid;
+
+  NetworkPortalDetector* detector = NetworkPortalDetector::Get();
+  if (!detector) {
+    error_ = "Error.NotReady";
+    return false;
+  }
+
+  NetworkPortalDetector::CaptivePortalState state =
+      detector->GetCaptivePortalState(service_path);
+
+  SetResult(new base::StringValue(
+      NetworkPortalDetector::CaptivePortalStatusString(state.status)));
+  SendResponse(true);
+  return true;
 }
