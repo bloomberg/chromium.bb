@@ -473,10 +473,10 @@ void ReportLoadAbort(PP_Instance instance) {
     load_manager->ReportLoadAbort();
 }
 
-void ReportDeadNexe(PP_Instance instance, int64_t crash_time) {
+void NexeDidCrash(PP_Instance instance, const char* crash_log) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
-    load_manager->ReportDeadNexe(crash_time);
+    load_manager->NexeDidCrash(crash_log);
 }
 
 void InstanceCreated(PP_Instance instance) {
@@ -531,14 +531,6 @@ void LogToConsole(PP_Instance instance, const char* message) {
     load_manager->LogToConsole(std::string(message));
 }
 
-PP_Bool GetNexeErrorReported(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    return PP_FromBool(load_manager->nexe_error_reported());
-  return PP_FALSE;
-}
-
 PP_NaClReadyState GetNaClReadyState(PP_Instance instance) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
@@ -569,19 +561,11 @@ void SetIsInstalled(PP_Instance instance, PP_Bool installed) {
     load_manager->set_is_installed(PP_ToBool(installed));
 }
 
-int64_t GetReadyTime(PP_Instance instance) {
+void SetReadyTime(PP_Instance instance) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
   if (load_manager)
-    return load_manager->ready_time();
-  return 0;
-}
-
-void SetReadyTime(PP_Instance instance, int64_t ready_time) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  DCHECK(load_manager);
-  if (load_manager)
-    load_manager->set_ready_time(ready_time);
+    load_manager->set_ready_time();
 }
 
 int32_t GetExitStatus(PP_Instance instance) {
@@ -616,19 +600,17 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportLoadSuccess,
   &ReportLoadError,
   &ReportLoadAbort,
-  &ReportDeadNexe,
+  &NexeDidCrash,
   &InstanceCreated,
   &InstanceDestroyed,
   &NaClDebugEnabledForURL,
   &GetSandboxArch,
   &GetUrlScheme,
   &LogToConsole,
-  &GetNexeErrorReported,
   &GetNaClReadyState,
   &SetNaClReadyState,
   &GetIsInstalled,
   &SetIsInstalled,
-  &GetReadyTime,
   &SetReadyTime,
   &GetExitStatus,
   &SetExitStatus
