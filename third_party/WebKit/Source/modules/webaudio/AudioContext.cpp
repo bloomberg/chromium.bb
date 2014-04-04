@@ -185,6 +185,8 @@ void AudioContext::lazyInitialize()
         // Don't allow the context to initialize a second time after it's already been explicitly uninitialized.
         ASSERT(!m_isAudioThreadFinished);
         if (!m_isAudioThreadFinished) {
+            // Creation of a destination node should not start the audio HW. The
+            // creation of any other AudioNode will initialize the audio HW and start processing
             if (m_destinationNode.get()) {
                 m_destinationNode->initialize();
 
@@ -197,8 +199,8 @@ void AudioContext::lazyInitialize()
                     ++s_hardwareContextCount;
                 }
 
+                m_isInitialized = true;
             }
-            m_isInitialized = true;
         }
     }
 }
@@ -346,7 +348,6 @@ void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassOwnPtr<AudioBuffe
 PassRefPtr<AudioBufferSourceNode> AudioContext::createBufferSource()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     RefPtr<AudioBufferSourceNode> node = AudioBufferSourceNode::create(this, m_destinationNode->sampleRate());
 
     // Because this is an AudioScheduledSourceNode, the context keeps a reference until it has finished playing.
@@ -358,15 +359,13 @@ PassRefPtr<AudioBufferSourceNode> AudioContext::createBufferSource()
 
 PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(HTMLMediaElement* mediaElement, ExceptionState& exceptionState)
 {
+    ASSERT(isMainThread());
     if (!mediaElement) {
         exceptionState.throwDOMException(
             InvalidStateError,
             "invalid HTMLMedialElement.");
         return nullptr;
     }
-
-    ASSERT(isMainThread());
-    lazyInitialize();
 
     // First check if this media element already has a source node.
     if (mediaElement->audioSourceNode()) {
@@ -386,15 +385,13 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
 
 PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionState& exceptionState)
 {
+    ASSERT(isMainThread());
     if (!mediaStream) {
         exceptionState.throwDOMException(
             InvalidStateError,
             "invalid MediaStream source");
         return nullptr;
     }
-
-    ASSERT(isMainThread());
-    lazyInitialize();
 
     MediaStreamTrackVector audioTracks = mediaStream->getAudioTracks();
     if (audioTracks.isEmpty()) {
@@ -443,7 +440,6 @@ PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t buffe
 PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     RefPtr<ScriptProcessorNode> node = ScriptProcessorNode::create(this, m_destinationNode->sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
 
     if (!node.get()) {
@@ -479,49 +475,42 @@ PassRefPtr<ScriptProcessorNode> AudioContext::createScriptProcessor(size_t buffe
 PassRefPtr<BiquadFilterNode> AudioContext::createBiquadFilter()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     return BiquadFilterNode::create(this, m_destinationNode->sampleRate());
 }
 
 PassRefPtr<WaveShaperNode> AudioContext::createWaveShaper()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     return WaveShaperNode::create(this);
 }
 
 PassRefPtr<PannerNode> AudioContext::createPanner()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     return PannerNode::create(this, m_destinationNode->sampleRate());
 }
 
 PassRefPtr<ConvolverNode> AudioContext::createConvolver()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     return ConvolverNode::create(this, m_destinationNode->sampleRate());
 }
 
 PassRefPtr<DynamicsCompressorNode> AudioContext::createDynamicsCompressor()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     return DynamicsCompressorNode::create(this, m_destinationNode->sampleRate());
 }
 
 PassRefPtr<AnalyserNode> AudioContext::createAnalyser()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     return AnalyserNode::create(this, m_destinationNode->sampleRate());
 }
 
 PassRefPtr<GainNode> AudioContext::createGain()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     return GainNode::create(this, m_destinationNode->sampleRate());
 }
 
@@ -534,7 +523,6 @@ PassRefPtr<DelayNode> AudioContext::createDelay(ExceptionState& exceptionState)
 PassRefPtr<DelayNode> AudioContext::createDelay(double maxDelayTime, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    lazyInitialize();
     RefPtr<DelayNode> node = DelayNode::create(this, m_destinationNode->sampleRate(), maxDelayTime, exceptionState);
     if (exceptionState.hadException())
         return nullptr;
@@ -550,8 +538,6 @@ PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(ExceptionSta
 PassRefPtr<ChannelSplitterNode> AudioContext::createChannelSplitter(size_t numberOfOutputs, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    lazyInitialize();
-
     RefPtr<ChannelSplitterNode> node = ChannelSplitterNode::create(this, m_destinationNode->sampleRate(), numberOfOutputs);
 
     if (!node.get()) {
@@ -575,8 +561,6 @@ PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(ExceptionState& 
 PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(size_t numberOfInputs, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    lazyInitialize();
-
     RefPtr<ChannelMergerNode> node = ChannelMergerNode::create(this, m_destinationNode->sampleRate(), numberOfInputs);
 
     if (!node.get()) {
@@ -594,8 +578,6 @@ PassRefPtr<ChannelMergerNode> AudioContext::createChannelMerger(size_t numberOfI
 PassRefPtr<OscillatorNode> AudioContext::createOscillator()
 {
     ASSERT(isMainThread());
-    lazyInitialize();
-
     RefPtr<OscillatorNode> node = OscillatorNode::create(this, m_destinationNode->sampleRate());
 
     // Because this is an AudioScheduledSourceNode, the context keeps a reference until it has finished playing.
@@ -648,7 +630,6 @@ PassRefPtr<PeriodicWave> AudioContext::createPeriodicWave(Float32Array* real, Fl
         return nullptr;
     }
 
-    lazyInitialize();
     return PeriodicWave::create(sampleRate(), real, imag);
 }
 

@@ -85,6 +85,8 @@ public:
     virtual ~AudioContext();
 
     bool isInitialized() const;
+    // The constructor of an AudioNode must call this to initialize the context.
+    void lazyInitialize();
 
     bool isOfflineContext() { return m_isOfflineContext; }
 
@@ -245,7 +247,6 @@ protected:
 private:
     void constructCommon();
 
-    void lazyInitialize();
     void uninitialize();
 
     // ExecutionContext calls stop twice.
@@ -258,6 +259,7 @@ private:
     void scheduleNodeDeletion();
     static void deleteMarkedNodesDispatch(void* userData);
 
+    // Set to true when the destination node has been initialized and is ready to process data.
     bool m_isInitialized;
     bool m_isAudioThreadFinished;
 
