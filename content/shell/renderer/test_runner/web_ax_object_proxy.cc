@@ -615,18 +615,22 @@ std::string WebAXObjectProxy::StringValue() {
 }
 
 int WebAXObjectProxy::X() {
+  accessibility_object_.updateBackingStoreAndCheckValidity();
   return accessibility_object().boundingBoxRect().x;
 }
 
 int WebAXObjectProxy::Y() {
+  accessibility_object_.updateBackingStoreAndCheckValidity();
   return accessibility_object().boundingBoxRect().y;
 }
 
 int WebAXObjectProxy::Width() {
+  accessibility_object_.updateBackingStoreAndCheckValidity();
   return accessibility_object().boundingBoxRect().width;
 }
 
 int WebAXObjectProxy::Height() {
+  accessibility_object_.updateBackingStoreAndCheckValidity();
   return accessibility_object().boundingBoxRect().height;
 }
 
@@ -783,6 +787,9 @@ int WebAXObjectProxy::LineForIndex(int index) {
 
 std::string WebAXObjectProxy::BoundsForRange(int start, int end) {
   if (accessibility_object().role() != blink::WebAXRoleStaticText)
+    return std::string();
+
+  if (!accessibility_object_.updateBackingStoreAndCheckValidity())
     return std::string();
 
   int len = end - start;
