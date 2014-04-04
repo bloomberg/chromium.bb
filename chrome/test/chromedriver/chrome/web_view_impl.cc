@@ -118,7 +118,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
       build_no_(build_no),
       dom_tracker_(new DomTracker(client.get())),
       frame_tracker_(new FrameTracker(client.get())),
-      navigation_tracker_(new NavigationTracker(client.get())),
+      navigation_tracker_(new NavigationTracker(client.get(), build_no)),
       dialog_manager_(new JavaScriptDialogManager(client.get())),
       geolocation_override_manager_(
           new GeolocationOverrideManager(client.get())),

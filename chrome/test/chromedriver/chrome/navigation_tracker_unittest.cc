@@ -14,6 +14,12 @@
 
 namespace {
 
+// NavigationTracker::OnEvent handles the Page.frameStoppedLoading event
+// differently, depending on whether the build number. See the comment in that
+// function for details.
+static const int kOld = 1916;
+static const int kNew = 1917;
+
 void AssertPendingState(NavigationTracker* tracker,
                         const std::string& frame_id,
                         bool expected_is_pending) {
@@ -26,7 +32,7 @@ void AssertPendingState(NavigationTracker* tracker,
 
 TEST(NavigationTracker, FrameLoadStartStop) {
   StubDevToolsClient client;
-  NavigationTracker tracker(&client);
+  NavigationTracker tracker(&client, kNew);
 
   base::DictionaryValue params;
   ASSERT_EQ(
@@ -37,9 +43,61 @@ TEST(NavigationTracker, FrameLoadStartStop) {
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
+TEST(NavigationTracker, MultipleFramesLoadWithOldDevtools) {
+  StubDevToolsClient client;
+  NavigationTracker tracker(&client, kOld);
+  base::DictionaryValue params;
+
+  // num_frames_pending_ == 0
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStartedLoading", params).code());
+  // num_frames_pending_ == 1
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStartedLoading", params).code());
+  // num_frames_pending_ == 2
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStoppedLoading", params).code());
+  // num_frames_pending_ == 0
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
+}
+
+TEST(NavigationTracker, MultipleFramesLoad) {
+  StubDevToolsClient client;
+  NavigationTracker tracker(&client, kNew);
+  base::DictionaryValue params;
+
+  // num_frames_pending_ == 0
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStartedLoading", params).code());
+  // num_frames_pending_ == 1
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStartedLoading", params).code());
+  // num_frames_pending_ == 2
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStoppedLoading", params).code());
+  // num_frames_pending_ == 1
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStoppedLoading", params).code());
+  // num_frames_pending_ == 0
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStoppedLoading", params).code());
+  // num_frames_pending_ == 0
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
+  ASSERT_EQ(
+      kOk, tracker.OnEvent(&client, "Page.frameStartedLoading", params).code());
+  // num_frames_pending_ == 1
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+}
+
 TEST(NavigationTracker, NavigationScheduledThenLoaded) {
   StubDevToolsClient client;
-  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading, kNew);
   base::DictionaryValue params;
   params.SetString("frameId", "f");
   base::DictionaryValue params_scheduled;
@@ -66,7 +124,7 @@ TEST(NavigationTracker, NavigationScheduledThenLoaded) {
 
 TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
   StubDevToolsClient client;
-  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading, kNew);
   base::DictionaryValue params_scheduled;
   params_scheduled.SetInteger("delay", 0);
   params_scheduled.SetString("frameId", "other");
@@ -80,7 +138,7 @@ TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
 
 TEST(NavigationTracker, NavigationScheduledThenCancelled) {
   StubDevToolsClient client;
-  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading, kNew);
   base::DictionaryValue params;
   params.SetString("frameId", "f");
   base::DictionaryValue params_scheduled;
@@ -101,7 +159,7 @@ TEST(NavigationTracker, NavigationScheduledThenCancelled) {
 
 TEST(NavigationTracker, NavigationScheduledTooFarAway) {
   StubDevToolsClient client;
-  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading, kNew);
 
   base::DictionaryValue params_scheduled;
   params_scheduled.SetInteger("delay", 10);
@@ -115,7 +173,7 @@ TEST(NavigationTracker, NavigationScheduledTooFarAway) {
 
 TEST(NavigationTracker, DiscardScheduledNavigationsOnMainFrameCommit) {
   StubDevToolsClient client;
-  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading, kNew);
 
   base::DictionaryValue params_scheduled;
   params_scheduled.SetString("frameId", "subframe");
@@ -158,7 +216,7 @@ class FailToEvalScriptDevToolsClient : public StubDevToolsClient {
 
 TEST(NavigationTracker, UnknownStateFailsToDetermineState) {
   FailToEvalScriptDevToolsClient client;
-  NavigationTracker tracker(&client);
+  NavigationTracker tracker(&client, kNew);
   bool is_pending;
   ASSERT_EQ(kUnknownError,
             tracker.IsPendingNavigation("f", &is_pending).code());
@@ -206,7 +264,7 @@ class DeterminingLoadStateDevToolsClient : public StubDevToolsClient {
 TEST(NavigationTracker, UnknownStateForcesStart) {
   base::DictionaryValue params;
   DeterminingLoadStateDevToolsClient client(true, std::string(), &params);
-  NavigationTracker tracker(&client);
+  NavigationTracker tracker(&client, kNew);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
 }
 
@@ -214,7 +272,7 @@ TEST(NavigationTracker, UnknownStateForcesStartReceivesStop) {
   base::DictionaryValue params;
   DeterminingLoadStateDevToolsClient client(
       true, "Page.frameStoppedLoading", &params);
-  NavigationTracker tracker(&client);
+  NavigationTracker tracker(&client, kNew);
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
 
@@ -222,7 +280,7 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   base::DictionaryValue params;
   DeterminingLoadStateDevToolsClient client(
       true, "Page.frameStoppedLoading", &params);
-  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading, kNew);
   tracker.OnCommandSuccess(&client, "Page.navigate");
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", false));
 }
@@ -230,7 +288,7 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
 TEST(NavigationTracker, OnSuccessfulNavigateStillWaiting) {
   base::DictionaryValue params;
   DeterminingLoadStateDevToolsClient client(true, std::string(), &params);
-  NavigationTracker tracker(&client, NavigationTracker::kNotLoading);
+  NavigationTracker tracker(&client, NavigationTracker::kNotLoading, kNew);
   tracker.OnCommandSuccess(&client, "Page.navigate");
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
 }

@@ -29,8 +29,10 @@ class NavigationTracker : public DevToolsEventListener {
     kNotLoading,
   };
 
-  explicit NavigationTracker(DevToolsClient* client);
-  NavigationTracker(DevToolsClient* client, LoadingState known_state);
+  NavigationTracker(DevToolsClient* client, int build_no);
+  NavigationTracker(DevToolsClient* client,
+                    LoadingState known_state,
+                    int build_no);
   virtual ~NavigationTracker();
 
   // Gets whether a navigation is pending for the specified frame. |frame_id|
@@ -48,7 +50,11 @@ class NavigationTracker : public DevToolsEventListener {
  private:
   DevToolsClient* client_;
   LoadingState loading_state_;
+  int build_no_;
+  int num_frames_pending_;
   std::set<std::string> scheduled_frame_set_;
+
+  void ResetLoadingState(LoadingState loading_state);
 
   DISALLOW_COPY_AND_ASSIGN(NavigationTracker);
 };

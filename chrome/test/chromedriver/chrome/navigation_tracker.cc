@@ -9,16 +9,21 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
-NavigationTracker::NavigationTracker(DevToolsClient* client)
+NavigationTracker::NavigationTracker(DevToolsClient* client, int build_no)
     : client_(client),
-      loading_state_(kUnknown) {
+      loading_state_(kUnknown),
+      build_no_(build_no),
+      num_frames_pending_(0) {
   client_->AddListener(this);
 }
 
 NavigationTracker::NavigationTracker(DevToolsClient* client,
-                                     LoadingState known_state)
+                                     LoadingState known_state,
+                                     int build_no)
     : client_(client),
-      loading_state_(known_state) {
+      loading_state_(known_state),
+      build_no_(build_no),
+      num_frames_pending_(0) {
   client_->AddListener(this);
 }
 
@@ -69,8 +74,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
 }
 
 Status NavigationTracker::OnConnected(DevToolsClient* client) {
-  loading_state_ = kUnknown;
-  scheduled_frame_set_.clear();
+  ResetLoadingState(kUnknown);
 
   // Enable page domain notifications to allow tracking navigation state.
   base::DictionaryValue empty_params;
@@ -80,13 +84,25 @@ Status NavigationTracker::OnConnected(DevToolsClient* client) {
 Status NavigationTracker::OnEvent(DevToolsClient* client,
                                   const std::string& method,
                                   const base::DictionaryValue& params) {
-  // Chrome does not send Page.frameStoppedLoading until all frames have
-  // run their onLoad handlers (including frames created during the handlers).
-  // When it does, it only sends one stopped event for all frames.
   if (method == "Page.frameStartedLoading") {
     loading_state_ = kLoading;
+    num_frames_pending_++;
   } else if (method == "Page.frameStoppedLoading") {
-    loading_state_ = kNotLoading;
+    // Chrome 35.0.1916.x and earlier does not send Page.frameStoppedLoading
+    // until all frames have run their onLoad handlers (including frames created
+    // during the handlers).  When it does, it only sends one stopped event for
+    // all frames.
+    //
+    // This was introduced in blink revision 170248, which was rolled into the
+    // chromium tree in revision 260203.
+    //
+    // TODO(samuong): we can get rid of this once we stop supporting Chrome 35,
+    // which will be when Chrome 39 is released.
+    num_frames_pending_--;
+    if (num_frames_pending_ <= 0 || build_no_ <= 1916) {
+      num_frames_pending_ = 0;
+      loading_state_ = kNotLoading;
+    }
   } else if (method == "Page.frameScheduledNavigation") {
     double delay;
     if (!params.GetDouble("delay", &delay))
@@ -118,8 +134,7 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     if (!params.Get("frame.parentId", &unused_value))
       scheduled_frame_set_.clear();
   } else if (method == "Inspector.targetCrashed") {
-    loading_state_ = kNotLoading;
-    scheduled_frame_set_.clear();
+    ResetLoadingState(kNotLoading);
   }
   return Status(kOk);
 }
@@ -165,4 +180,10 @@ Status NavigationTracker::OnCommandSuccess(DevToolsClient* client,
       loading_state_ = kLoading;
   }
   return Status(kOk);
+}
+
+void NavigationTracker::ResetLoadingState(LoadingState loading_state) {
+  loading_state_ = loading_state;
+  num_frames_pending_ = 0;
+  scheduled_frame_set_.clear();
 }
