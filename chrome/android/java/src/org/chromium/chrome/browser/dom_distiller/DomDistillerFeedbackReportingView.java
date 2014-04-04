@@ -23,11 +23,11 @@ import org.chromium.content.browser.ContentView;
  * interact with the view, and it is ready for dismissal. The selected option stays visibly
  * selected.
  */
-public class FeedbackReportingView extends SwipableOverlayView {
+public class DomDistillerFeedbackReportingView extends SwipableOverlayView {
     // XML layout for the BannerView.
     private static final int VIEW_LAYOUT = R.layout.feedback_reporting_view;
 
-    // Class to alert about FeedbackReportingView events.
+    // Class to alert about DomDistillerFeedbackReportingView events.
     private FeedbackObserver mFeedbackObserver;
 
     // The button to click for selecting 'No'.
@@ -44,35 +44,36 @@ public class FeedbackReportingView extends SwipableOverlayView {
      * with the view.
      */
     interface FeedbackObserver {
-        void onYesPressed(FeedbackReportingView view);
+        void onYesPressed(DomDistillerFeedbackReportingView view);
 
-        void onNoPressed(FeedbackReportingView view);
+        void onNoPressed(DomDistillerFeedbackReportingView view);
     }
 
     /**
-     * Creates a FeedbackReportingView and adds it to the given ContentView.
+     * Creates a DomDistillerFeedbackReportingView and adds it to the given ContentView.
      *
-     * @param contentView      ContentView to display the FeedbackReportingView for.
-     * @param feedbackObserver Class that is alerted for FeedbackReportingView events.
+     * @param contentView      ContentView to display the DomDistillerFeedbackReportingView for.
+     * @param feedbackObserver Class that is alerted for DomDistillerFeedbackReportingView events.
      * @return The created banner.
      */
-    public static FeedbackReportingView create(ContentView contentView,
+    public static DomDistillerFeedbackReportingView create(ContentView contentView,
                                                FeedbackObserver feedbackObserver) {
         Context context = contentView.getContext().getApplicationContext();
-        FeedbackReportingView banner =
-                (FeedbackReportingView) LayoutInflater.from(context).inflate(VIEW_LAYOUT, null);
-        banner.initialize(feedbackObserver);
-        banner.addToView(contentView);
-        return banner;
+        DomDistillerFeedbackReportingView view =
+                (DomDistillerFeedbackReportingView) LayoutInflater.from(context)
+                        .inflate(VIEW_LAYOUT, null);
+        view.initialize(feedbackObserver);
+        view.addToView(contentView);
+        return view;
     }
 
     /**
-     * Creates a FeedbackReportingView.
+     * Creates a DomDistillerFeedbackReportingView.
      *
      * @param context Context for acquiring resources.
      * @param attrs   Attributes from the XML layout inflation.
      */
-    public FeedbackReportingView(Context context, AttributeSet attrs) {
+    public DomDistillerFeedbackReportingView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -90,7 +91,7 @@ public class FeedbackReportingView extends SwipableOverlayView {
                 mNoButton.setImageResource(R.drawable.distillation_quality_answer_no_pressed);
                 disableUI();
                 if (mFeedbackObserver != null) {
-                    mFeedbackObserver.onNoPressed(FeedbackReportingView.this);
+                    mFeedbackObserver.onNoPressed(DomDistillerFeedbackReportingView.this);
                 }
             }
         });
@@ -102,7 +103,7 @@ public class FeedbackReportingView extends SwipableOverlayView {
                 mYesButton.setImageResource(R.drawable.distillation_quality_answer_yes_pressed);
                 disableUI();
                 if (mFeedbackObserver != null) {
-                    mFeedbackObserver.onYesPressed(FeedbackReportingView.this);
+                    mFeedbackObserver.onYesPressed(DomDistillerFeedbackReportingView.this);
                 }
             }
         });
@@ -121,11 +122,9 @@ public class FeedbackReportingView extends SwipableOverlayView {
 
     /**
      * This is overridden since the method visibility is protected in the parent
-     * {@link SwipableOverlayView}. The
-     * {@link org.chromium.chrome.browser.dom_distiller.FeedbackReporter} needs to be able to
-     * dismiss this {@link org.chromium.chrome.browser.dom_distiller.FeedbackReportingView}, so by
-     * overriding this method in this class, it is callable from
-     * {@link org.chromium.chrome.browser.dom_distiller.FeedbackReporter}.
+     * {@link SwipableOverlayView}. The {@link DomDistillerFeedbackReporter} needs to be able to
+     * dismiss this {@link DomDistillerFeedbackReportingView}, so by overriding this method in this
+     * class, it is callable from {@link DomDistillerFeedbackReporter}.
      */
     @Override
     protected boolean dismiss(boolean horizontally) {

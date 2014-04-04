@@ -26,11 +26,21 @@ public final class DomDistillerUrlUtils {
         return nativeGetDistillerViewUrlFromUrl(scheme, url);
     }
 
+    /**
+     * Returns the original URL of a distillation given the viewer URL.
+     *
+     * @param url The current viewer URL.
+     * @return the URL of the original page.
+     */
+    public static String getOriginalUrlFromDistillerUrl(String url) {
+        return nativeGetOriginalUrlFromDistillerUrl(url);
+    }
+
     public static boolean isUrlReportable(String scheme, String url) {
         return nativeIsUrlReportable(scheme, url);
     }
 
     private static native String nativeGetDistillerViewUrlFromUrl(String scheme, String url);
-
+    private static native String nativeGetOriginalUrlFromDistillerUrl(String viewerUrl);
     private static native boolean nativeIsUrlReportable(String scheme, String url);
 }

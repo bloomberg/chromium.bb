@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
-import org.chromium.chrome.browser.dom_distiller.FeedbackReporter;
+import org.chromium.chrome.browser.dom_distiller.DomDistillerFeedbackReporter;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -129,7 +129,7 @@ public class Tab implements NavigationClient {
     private WebContentsObserverAndroid mWebContentsObserver;
     private VoiceSearchTabHelper mVoiceSearchTabHelper;
     private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
-    private FeedbackReporter mFeedbackReporter;
+    private DomDistillerFeedbackReporter mDomDistillerFeedbackReporter;
 
     /**
      * If this tab was opened from another tab, store the id of the tab that
@@ -810,8 +810,8 @@ public class Tab implements NavigationClient {
             mAppBannerManager = new AppBannerManager(this);
         }
 
-        if (FeedbackReporter.isEnabled() && mFeedbackReporter == null) {
-            mFeedbackReporter = new FeedbackReporter(this);
+        if (DomDistillerFeedbackReporter.isEnabled() && mDomDistillerFeedbackReporter == null) {
+            mDomDistillerFeedbackReporter = new DomDistillerFeedbackReporter(this);
         }
 
         for (TabObserver observer : mObservers) observer.onContentChanged(this);

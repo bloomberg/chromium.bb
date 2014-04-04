@@ -3726,7 +3726,7 @@
             'android/java/src/org/chromium/chrome/browser/contextmenu/ContextMenuParams.java',
             'android/java/src/org/chromium/chrome/browser/DevToolsServer.java',
             'android/java/src/org/chromium/chrome/browser/database/SQLiteCursor.java',
-            'android/java/src/org/chromium/chrome/browser/dom_distiller/FeedbackReporter.java',
+            'android/java/src/org/chromium/chrome/browser/dom_distiller/DomDistillerFeedbackReporter.java',
             'android/java/src/org/chromium/chrome/browser/favicon/FaviconHelper.java',
             'android/java/src/org/chromium/chrome/browser/FieldTrialHelper.java',
             'android/java/src/org/chromium/chrome/browser/ForeignSessionHelper.java',

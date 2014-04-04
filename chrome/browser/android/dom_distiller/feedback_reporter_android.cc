@@ -14,7 +14,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
-#include "jni/FeedbackReporter_jni.h"
+#include "jni/DomDistillerFeedbackReporter_jni.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -54,11 +54,11 @@ void FeedbackReporterAndroid::DidNavigateMainFrame(
   ScopedJavaLocalRef<jobject> jobj = weak_java_feedback_reporter_.get(env);
   if (jobj.is_null())
     return;
-  Java_FeedbackReporter_dismissOverlay(env, jobj.obj());
+  Java_DomDistillerFeedbackReporter_dismissOverlay(env, jobj.obj());
   GURL url = details.entry->GetURL();
   if (dom_distiller::url_utils::IsUrlReportable(
       chrome::kDomDistillerScheme, url)) {
-    Java_FeedbackReporter_showOverlay(env, jobj.obj());
+    Java_DomDistillerFeedbackReporter_showOverlay(env, jobj.obj());
   }
 }
 

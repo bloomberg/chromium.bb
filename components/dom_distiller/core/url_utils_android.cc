@@ -7,8 +7,10 @@
 #include <string>
 
 #include "base/android/jni_string.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "jni/DomDistillerUrlUtils_jni.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
@@ -32,6 +34,23 @@ jstring GetDistillerViewUrlFromUrl(JNIEnv* env,
     return NULL;
   }
   return base::android::ConvertUTF8ToJavaString(env, view_url.spec()).Release();
+}
+
+jstring GetOriginalUrlFromDistillerUrl(JNIEnv* env,
+                                       jclass clazz,
+                                       jstring j_url) {
+  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
+  if (!url.is_valid())
+    return NULL;
+
+  std::string original_url_str;
+  net::GetValueForKeyInQuery(url, kUrlKey, &original_url_str);
+  GURL original_url(original_url_str);
+  if (!original_url.is_valid())
+    return NULL;
+
+  return base::android::ConvertUTF8ToJavaString(env, original_url.spec())
+      .Release();
 }
 
 jboolean IsUrlReportable(JNIEnv* env,
