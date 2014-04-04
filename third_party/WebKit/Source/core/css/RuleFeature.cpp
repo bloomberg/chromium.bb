@@ -135,8 +135,12 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
             foundDescendantRelation = true;
             // Fall through!
         case CSSSelector::SubSelector:
+        case CSSSelector::DirectAdjacent:
+        case CSSSelector::IndirectAdjacent:
             continue;
         default:
+            // All combinators should be handled above.
+            ASSERT_NOT_REACHED();
             return UseLocalStyleChange;
         }
     }
@@ -181,11 +185,12 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateInvalidationSets(const
 
     InvalidationSetFeatures features;
     const CSSSelector* current = extractInvalidationSetFeatures(selector, features);
-    if (current)
+    if (current) {
+        bool wholeSubtree = current->relation() == CSSSelector::DirectAdjacent || current->relation() == CSSSelector::IndirectAdjacent;
         current = current->tagHistory();
-
-    if (current)
-        addFeaturesToInvalidationSets(*current, features);
+        if (current)
+            addFeaturesToInvalidationSets(*current, features, wholeSubtree);
+    }
     return AddFeatures;
 }
 
@@ -209,25 +214,47 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
     return lastSelector;
 }
 
-void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, const InvalidationSetFeatures& features)
+void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, const InvalidationSetFeatures& features, bool wholeSubtree)
 {
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (DescendantInvalidationSet* invalidationSet = invalidationSetForSelector(*current)) {
-            if (!features.id.isEmpty())
-                invalidationSet->addId(features.id);
-            if (!features.tagName.isEmpty())
-                invalidationSet->addTagName(features.tagName);
-            for (Vector<AtomicString>::const_iterator it = features.classes.begin(); it != features.classes.end(); ++it)
-                invalidationSet->addClass(*it);
-            for (Vector<AtomicString>::const_iterator it = features.attributes.begin(); it != features.attributes.end(); ++it)
-                invalidationSet->addAttribute(*it);
-            if (features.customPseudoElement)
-                invalidationSet->setCustomPseudoInvalid();
+            if (wholeSubtree) {
+                invalidationSet->setWholeSubtreeInvalid();
+            } else {
+                if (!features.id.isEmpty())
+                    invalidationSet->addId(features.id);
+                if (!features.tagName.isEmpty())
+                    invalidationSet->addTagName(features.tagName);
+                for (Vector<AtomicString>::const_iterator it = features.classes.begin(); it != features.classes.end(); ++it)
+                    invalidationSet->addClass(*it);
+                for (Vector<AtomicString>::const_iterator it = features.attributes.begin(); it != features.attributes.end(); ++it)
+                    invalidationSet->addAttribute(*it);
+                if (features.customPseudoElement)
+                    invalidationSet->setCustomPseudoInvalid();
+            }
         } else if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny) {
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-                    addFeaturesToInvalidationSets(*selector, features);
+                    addFeaturesToInvalidationSets(*selector, features, wholeSubtree);
             }
+        }
+        switch (current->relation()) {
+        case CSSSelector::Descendant:
+        case CSSSelector::Child:
+        case CSSSelector::ShadowPseudo:
+        case CSSSelector::ShadowDeep:
+            wholeSubtree = false;
+            break;
+        case CSSSelector::DirectAdjacent:
+        case CSSSelector::IndirectAdjacent:
+            wholeSubtree = true;
+            break;
+        case CSSSelector::SubSelector:
+            break;
+        default:
+            // All combinators should be handled above.
+            ASSERT_NOT_REACHED();
+            break;
         }
     }
 }

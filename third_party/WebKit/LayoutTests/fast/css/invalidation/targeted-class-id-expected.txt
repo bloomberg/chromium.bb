@@ -7,7 +7,7 @@ PASS getComputedStyle(b1, null).backgroundColor is transparent
 PASS getComputedStyle(b2, null).backgroundColor is transparent
 PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(b1, null).backgroundColor is green
-PASS internals.updateStyleAndReturnAffectedElementCount() is 3
+PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(b2, null).backgroundColor is green
 PASS successfullyParsed is true
 

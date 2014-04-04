@@ -58,7 +58,7 @@ document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t2").className = "a2";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "5");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
 shouldBe("getComputedStyle(children[1][0], null).backgroundColor", "transparent");
 shouldBe("getComputedStyle(children[1][1], null).backgroundColor", "transparent");
 shouldBe("getComputedStyle(children[1][2], null).backgroundColor", "green");

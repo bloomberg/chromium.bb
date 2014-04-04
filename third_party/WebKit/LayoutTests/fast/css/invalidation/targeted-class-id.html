@@ -35,7 +35,7 @@ document.body.offsetLeft; // force style recalc.
 
 document.getElementById("t2").className = "a2";
 if (window.internals)
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "3");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 shouldBe("getComputedStyle(b2, null).backgroundColor", "green");
 
 </script>

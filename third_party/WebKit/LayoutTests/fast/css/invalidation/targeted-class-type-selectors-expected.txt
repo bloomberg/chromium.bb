@@ -20,7 +20,7 @@ PASS getComputedStyle(children[0][0], null).backgroundColor is green
 PASS getComputedStyle(children[0][1], null).backgroundColor is green
 PASS getComputedStyle(children[0][2], null).backgroundColor is transparent
 PASS getComputedStyle(children[0][3], null).backgroundColor is transparent
-PASS internals.updateStyleAndReturnAffectedElementCount() is 5
+PASS internals.updateStyleAndReturnAffectedElementCount() is 3
 PASS getComputedStyle(children[1][0], null).backgroundColor is transparent
 PASS getComputedStyle(children[1][1], null).backgroundColor is transparent
 PASS getComputedStyle(children[1][2], null).backgroundColor is green
