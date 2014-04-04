@@ -223,11 +223,6 @@
             '../google_apis/gcm/gcm.gyp:*',
           ],
         }],
-        ['chromeos==1 or (OS=="linux" and use_aura==1) or (OS=="win" and use_aura==1)', {
-          'dependencies': [
-            '../apps/shell/app_shell.gyp:*',
-          ],
-        }],
       ],
     }, # target_name: All
     {

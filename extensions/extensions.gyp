@@ -11,7 +11,6 @@
       'target_name': 'extensions_common',
       'type': 'static_library',
       'dependencies': [
-        'common/api/api.gyp:extensions_api',
         '../third_party/re2/re2.gyp:re2',
         # TODO(benwells): figure out what to do with the api target and
         # api resources compiled into the chrome resource bundle.
@@ -19,6 +18,7 @@
         '../chrome/chrome_resources.gyp:chrome_resources',
         # TODO(jamescook|derat): Pull strings into extensions module.
         '../chrome/chrome_resources.gyp:chrome_strings',
+        '../chrome/common/extensions/api/api.gyp:chrome_api',
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
       ],
@@ -197,7 +197,7 @@
         'common/api/api.gyp:extensions_api',
         # TODO(jamescook|derat): Pull strings into extensions module.
         '../chrome/chrome_resources.gyp:chrome_strings',
-        '../components/components.gyp:keyed_service_content',
+        '../chrome/common/extensions/api/api.gyp:chrome_api',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
