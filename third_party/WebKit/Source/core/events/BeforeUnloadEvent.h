@@ -35,7 +35,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<BeforeUnloadEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new BeforeUnloadEvent);
+        return adoptRefWillBeNoop(new BeforeUnloadEvent);
     }
 
     virtual bool isBeforeUnloadEvent() const OVERRIDE;

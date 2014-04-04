@@ -46,11 +46,11 @@ class ResourceProgressEvent FINAL : public ProgressEvent {
 public:
     static PassRefPtrWillBeRawPtr<ResourceProgressEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ResourceProgressEvent);
+        return adoptRefWillBeNoop(new ResourceProgressEvent);
     }
     static PassRefPtrWillBeRawPtr<ResourceProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total, const String& url)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ResourceProgressEvent(type, lengthComputable, loaded, total, url));
+        return adoptRefWillBeNoop(new ResourceProgressEvent(type, lengthComputable, loaded, total, url));
     }
 
     const String& url() const;

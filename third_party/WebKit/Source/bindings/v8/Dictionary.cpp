@@ -480,7 +480,7 @@ bool Dictionary::get(const String& key, RefPtr<TrackBase>& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<SpeechRecognitionError>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeMember<SpeechRecognitionError>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

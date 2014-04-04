@@ -32,12 +32,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new OfflineAudioCompletionEvent);
+    return adoptRefWillBeNoop(new OfflineAudioCompletionEvent);
 }
 
 PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create(PassRefPtr<AudioBuffer> renderedBuffer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new OfflineAudioCompletionEvent(renderedBuffer));
+    return adoptRefWillBeNoop(new OfflineAudioCompletionEvent(renderedBuffer));
 }
 
 OfflineAudioCompletionEvent::OfflineAudioCompletionEvent()

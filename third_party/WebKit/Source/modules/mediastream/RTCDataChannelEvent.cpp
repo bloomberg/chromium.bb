@@ -29,12 +29,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<RTCDataChannelEvent> RTCDataChannelEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new RTCDataChannelEvent);
+    return adoptRefWillBeNoop(new RTCDataChannelEvent);
 }
 
 PassRefPtrWillBeRawPtr<RTCDataChannelEvent> RTCDataChannelEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<RTCDataChannel> channel)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new RTCDataChannelEvent(type, canBubble, cancelable, channel));
+    return adoptRefWillBeNoop(new RTCDataChannelEvent(type, canBubble, cancelable, channel));
 }
 
 

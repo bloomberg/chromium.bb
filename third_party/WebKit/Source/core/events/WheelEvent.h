@@ -56,12 +56,12 @@ public:
 
     static PassRefPtrWillBeRawPtr<WheelEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WheelEvent);
+        return adoptRefWillBeNoop(new WheelEvent);
     }
 
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const AtomicString& type, const WheelEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WheelEvent(type, initializer));
+        return adoptRefWillBeNoop(new WheelEvent(type, initializer));
     }
 
     static PassRefPtrWillBeRawPtr<WheelEvent> create(const FloatPoint& wheelTicks,
@@ -69,7 +69,7 @@ public:
         const IntPoint& screenLocation, const IntPoint& pageLocation,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
+        return adoptRefWillBeNoop(new WheelEvent(wheelTicks, rawDelta, deltaMode, view,
         screenLocation, pageLocation, ctrlKey, altKey, shiftKey, metaKey, directionInvertedFromDevice));
     }
 

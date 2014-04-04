@@ -43,12 +43,12 @@ public:
 
     static PassRefPtrWillBeRawPtr<TrackEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TrackEvent);
+        return adoptRefWillBeNoop(new TrackEvent);
     }
 
     static PassRefPtrWillBeRawPtr<TrackEvent> create(const AtomicString& type, const TrackEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TrackEvent(type, initializer));
+        return adoptRefWillBeNoop(new TrackEvent(type, initializer));
     }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;

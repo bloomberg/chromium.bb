@@ -33,27 +33,27 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent);
+    return adoptRefWillBeNoop(new TextEvent);
 }
 
 PassRefPtrWillBeRawPtr<TextEvent> TextEvent::create(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, TextEventInputType inputType)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, data, inputType));
+    return adoptRefWillBeNoop(new TextEvent(view, data, inputType));
 }
 
 PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForPlainTextPaste(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, bool shouldSmartReplace)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, data, nullptr, shouldSmartReplace, false));
+    return adoptRefWillBeNoop(new TextEvent(view, data, nullptr, shouldSmartReplace, false));
 }
 
 PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForFragmentPaste(PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtr<DocumentFragment> data, bool shouldSmartReplace, bool shouldMatchStyle)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle));
+    return adoptRefWillBeNoop(new TextEvent(view, "", data, shouldSmartReplace, shouldMatchStyle));
 }
 
 PassRefPtrWillBeRawPtr<TextEvent> TextEvent::createForDrop(PassRefPtrWillBeRawPtr<AbstractView> view, const String& data)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new TextEvent(view, data, TextEventInputDrop));
+    return adoptRefWillBeNoop(new TextEvent(view, data, TextEventInputDrop));
 }
 
 TextEvent::TextEvent()

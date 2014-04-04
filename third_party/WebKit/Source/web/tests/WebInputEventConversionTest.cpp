@@ -52,14 +52,14 @@ using namespace WebCore;
 
 namespace {
 
-PassRefPtr<WebCore::KeyboardEvent> createKeyboardEventWithLocation(WebCore::KeyboardEvent::KeyLocationCode location)
+PassRefPtrWillBeRawPtr<WebCore::KeyboardEvent> createKeyboardEventWithLocation(WebCore::KeyboardEvent::KeyLocationCode location)
 {
     return WebCore::KeyboardEvent::create("keydown", true, true, 0, "", location, false, false, false, false, false);
 }
 
 int getModifiersForKeyLocationCode(WebCore::KeyboardEvent::KeyLocationCode location)
 {
-    RefPtr<WebCore::KeyboardEvent> event = createKeyboardEventWithLocation(location);
+    RefPtrWillBeRawPtr<WebCore::KeyboardEvent> event = createKeyboardEventWithLocation(location);
     blink::WebKeyboardEventBuilder convertedEvent(*event);
     return convertedEvent.modifiers;
 }
@@ -85,7 +85,7 @@ TEST(WebInputEventConversionTest, WebKeyboardEventBuilder)
 
 TEST(WebInputEventConversionTest, WebTouchEventBuilder)
 {
-    RefPtr<WebCore::TouchEvent> event = WebCore::TouchEvent::create();
+    RefPtrWillBeRawPtr<WebCore::TouchEvent> event = WebCore::TouchEvent::create();
     WebMouseEventBuilder mouse(0, 0, *event);
     EXPECT_EQ(WebInputEvent::Undefined, mouse.type);
 }
@@ -481,7 +481,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions)
         EXPECT_EQ(10, platformGestureBuilder.globalPosition().y());
         EXPECT_EQ(1, platformGestureBuilder.tapCount());
 
-        RefPtr<WebCore::GestureEvent> coreGestureEvent = WebCore::GestureEvent::create(domWindow, platformGestureBuilder);
+        RefPtrWillBeRawPtr<WebCore::GestureEvent> coreGestureEvent = WebCore::GestureEvent::create(domWindow, platformGestureBuilder);
         WebGestureEventBuilder recreatedWebGestureEvent(view, docRenderer, *coreGestureEvent);
         EXPECT_EQ(webGestureEvent.type, recreatedWebGestureEvent.type);
         EXPECT_EQ(webGestureEvent.x, recreatedWebGestureEvent.x);

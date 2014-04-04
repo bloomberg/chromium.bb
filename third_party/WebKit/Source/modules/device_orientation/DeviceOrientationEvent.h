@@ -38,11 +38,11 @@ public:
     virtual ~DeviceOrientationEvent();
     static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DeviceOrientationEvent);
+        return adoptRefWillBeNoop(new DeviceOrientationEvent);
     }
     static PassRefPtrWillBeRawPtr<DeviceOrientationEvent> create(const AtomicString& eventType, DeviceOrientationData* orientation)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DeviceOrientationEvent(eventType, orientation));
+        return adoptRefWillBeNoop(new DeviceOrientationEvent(eventType, orientation));
     }
 
     void initDeviceOrientationEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceOrientationData*);

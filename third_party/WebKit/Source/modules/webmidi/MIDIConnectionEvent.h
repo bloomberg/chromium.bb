@@ -49,17 +49,17 @@ class MIDIConnectionEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIConnectionEvent());
+        return adoptRefWillBeNoop(new MIDIConnectionEvent());
     }
 
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString& type, PassRefPtr<MIDIPort> port)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIConnectionEvent(type, port));
+        return adoptRefWillBeNoop(new MIDIConnectionEvent(type, port));
     }
 
     static PassRefPtrWillBeRawPtr<MIDIConnectionEvent> create(const AtomicString& type, const MIDIConnectionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIConnectionEvent(type, initializer));
+        return adoptRefWillBeNoop(new MIDIConnectionEvent(type, initializer));
     }
 
     RefPtr<MIDIPort> port() { return m_port; }

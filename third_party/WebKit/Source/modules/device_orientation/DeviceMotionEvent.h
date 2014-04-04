@@ -40,11 +40,11 @@ public:
     virtual ~DeviceMotionEvent();
     static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DeviceMotionEvent);
+        return adoptRefWillBeNoop(new DeviceMotionEvent);
     }
     static PassRefPtrWillBeRawPtr<DeviceMotionEvent> create(const AtomicString& eventType, DeviceMotionData* deviceMotionData)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new DeviceMotionEvent(eventType, deviceMotionData));
+        return adoptRefWillBeNoop(new DeviceMotionEvent(eventType, deviceMotionData));
     }
 
     void initDeviceMotionEvent(const AtomicString& type, bool bubbles, bool cancelable, DeviceMotionData*);

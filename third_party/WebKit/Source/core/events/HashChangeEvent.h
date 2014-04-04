@@ -38,17 +38,17 @@ class HashChangeEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<HashChangeEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new HashChangeEvent);
+        return adoptRefWillBeNoop(new HashChangeEvent);
     }
 
     static PassRefPtrWillBeRawPtr<HashChangeEvent> create(const String& oldURL, const String& newURL)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new HashChangeEvent(oldURL, newURL));
+        return adoptRefWillBeNoop(new HashChangeEvent(oldURL, newURL));
     }
 
     static PassRefPtrWillBeRawPtr<HashChangeEvent> create(const AtomicString& type, const HashChangeEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new HashChangeEvent(type, initializer));
+        return adoptRefWillBeNoop(new HashChangeEvent(type, initializer));
     }
 
     void initHashChangeEvent(const AtomicString& eventType, bool canBubble, bool cancelable, const String& oldURL, const String& newURL)

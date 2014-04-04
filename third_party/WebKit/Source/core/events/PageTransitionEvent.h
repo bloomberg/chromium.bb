@@ -40,15 +40,15 @@ class PageTransitionEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<PageTransitionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PageTransitionEvent);
+        return adoptRefWillBeNoop(new PageTransitionEvent);
     }
     static PassRefPtrWillBeRawPtr<PageTransitionEvent> create(const AtomicString& type, bool persisted)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PageTransitionEvent(type, persisted));
+        return adoptRefWillBeNoop(new PageTransitionEvent(type, persisted));
     }
     static PassRefPtrWillBeRawPtr<PageTransitionEvent> create(const AtomicString& type, const PageTransitionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new PageTransitionEvent(type, initializer));
+        return adoptRefWillBeNoop(new PageTransitionEvent(type, initializer));
     }
 
     virtual ~PageTransitionEvent();

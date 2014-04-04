@@ -42,17 +42,17 @@ class CompositionEvent FINAL : public UIEvent {
 public:
     static PassRefPtrWillBeRawPtr<CompositionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CompositionEvent);
+        return adoptRefWillBeNoop(new CompositionEvent);
     }
 
     static PassRefPtrWillBeRawPtr<CompositionEvent> create(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CompositionEvent(type, view, data, underlines));
+        return adoptRefWillBeNoop(new CompositionEvent(type, view, data, underlines));
     }
 
     static PassRefPtrWillBeRawPtr<CompositionEvent> create(const AtomicString& type, const CompositionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CompositionEvent(type, initializer));
+        return adoptRefWillBeNoop(new CompositionEvent(type, initializer));
     }
 
     virtual ~CompositionEvent();

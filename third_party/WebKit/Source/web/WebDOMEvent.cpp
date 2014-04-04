@@ -38,9 +38,6 @@
 
 namespace blink {
 
-class WebDOMEventPrivate : public WebCore::Event {
-};
-
 void WebDOMEvent::reset()
 {
     assign(nullptr);
@@ -51,7 +48,7 @@ void WebDOMEvent::assign(const WebDOMEvent& other)
     m_private = other.m_private;
 }
 
-void WebDOMEvent::assign(const WTF::PassRefPtr<WebDOMEventPrivate>& event)
+void WebDOMEvent::assign(const PassRefPtrWillBeRawPtr<WebCore::Event>& event)
 {
     m_private = event;
 }

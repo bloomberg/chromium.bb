@@ -42,15 +42,15 @@ class ProgressEvent : public Event {
 public:
     static PassRefPtrWillBeRawPtr<ProgressEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ProgressEvent);
+        return adoptRefWillBeNoop(new ProgressEvent);
     }
     static PassRefPtrWillBeRawPtr<ProgressEvent> create(const AtomicString& type, bool lengthComputable, unsigned long long loaded, unsigned long long total)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ProgressEvent(type, lengthComputable, loaded, total));
+        return adoptRefWillBeNoop(new ProgressEvent(type, lengthComputable, loaded, total));
     }
     static PassRefPtrWillBeRawPtr<ProgressEvent> create(const AtomicString& type, const ProgressEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ProgressEvent(type, initializer));
+        return adoptRefWillBeNoop(new ProgressEvent(type, initializer));
     }
 
     bool lengthComputable() const { return m_lengthComputable; }

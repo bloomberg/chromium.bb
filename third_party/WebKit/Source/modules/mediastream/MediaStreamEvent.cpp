@@ -34,17 +34,17 @@ MediaStreamEventInit::MediaStreamEventInit()
 
 PassRefPtrWillBeRawPtr<MediaStreamEvent> MediaStreamEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MediaStreamEvent);
+    return adoptRefWillBeNoop(new MediaStreamEvent);
 }
 
 PassRefPtrWillBeRawPtr<MediaStreamEvent> MediaStreamEvent::create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<MediaStream> stream)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MediaStreamEvent(type, canBubble, cancelable, stream));
+    return adoptRefWillBeNoop(new MediaStreamEvent(type, canBubble, cancelable, stream));
 }
 
 PassRefPtrWillBeRawPtr<MediaStreamEvent> MediaStreamEvent::create(const AtomicString& type, const MediaStreamEventInit& initializer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MediaStreamEvent(type, initializer));
+    return adoptRefWillBeNoop(new MediaStreamEvent(type, initializer));
 }
 
 MediaStreamEvent::MediaStreamEvent()

@@ -43,17 +43,17 @@ class FocusEvent FINAL : public UIEvent {
 public:
     static PassRefPtrWillBeRawPtr<FocusEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new FocusEvent);
+        return adoptRefWillBeNoop(new FocusEvent);
     }
 
     static PassRefPtrWillBeRawPtr<FocusEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail, EventTarget* relatedTarget)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget));
+        return adoptRefWillBeNoop(new FocusEvent(type, canBubble, cancelable, view, detail, relatedTarget));
     }
 
     static PassRefPtrWillBeRawPtr<FocusEvent> create(const AtomicString& type, const FocusEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new FocusEvent(type, initializer));
+        return adoptRefWillBeNoop(new FocusEvent(type, initializer));
     }
 
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }

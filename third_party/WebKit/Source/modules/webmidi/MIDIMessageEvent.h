@@ -50,17 +50,17 @@ class MIDIMessageEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIMessageEvent());
+        return adoptRefWillBeNoop(new MIDIMessageEvent());
     }
 
     static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create(double receivedTime, PassRefPtr<Uint8Array> data)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIMessageEvent(receivedTime, data));
+        return adoptRefWillBeNoop(new MIDIMessageEvent(receivedTime, data));
     }
 
     static PassRefPtrWillBeRawPtr<MIDIMessageEvent> create(const AtomicString& type, const MIDIMessageEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MIDIMessageEvent(type, initializer));
+        return adoptRefWillBeNoop(new MIDIMessageEvent(type, initializer));
     }
 
     double receivedTime() { return m_receivedTime; }

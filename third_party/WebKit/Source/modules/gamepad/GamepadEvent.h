@@ -20,15 +20,15 @@ class GamepadEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<GamepadEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new GamepadEvent);
+        return adoptRefWillBeNoop(new GamepadEvent);
     }
     static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<Gamepad> gamepad)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new GamepadEvent(type, canBubble, cancelable, gamepad));
+        return adoptRefWillBeNoop(new GamepadEvent(type, canBubble, cancelable, gamepad));
     }
     static PassRefPtrWillBeRawPtr<GamepadEvent> create(const AtomicString& type, const GamepadEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new GamepadEvent(type, initializer));
+        return adoptRefWillBeNoop(new GamepadEvent(type, initializer));
     }
     virtual ~GamepadEvent();
 

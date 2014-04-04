@@ -48,15 +48,15 @@ public:
 
     static PassRefPtrWillBeRawPtr<OverflowEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new OverflowEvent);
+        return adoptRefWillBeNoop(new OverflowEvent);
     }
     static PassRefPtrWillBeRawPtr<OverflowEvent> create(bool horizontalOverflowChanged, bool horizontalOverflow, bool verticalOverflowChanged, bool verticalOverflow)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new OverflowEvent(horizontalOverflowChanged, horizontalOverflow, verticalOverflowChanged, verticalOverflow));
+        return adoptRefWillBeNoop(new OverflowEvent(horizontalOverflowChanged, horizontalOverflow, verticalOverflowChanged, verticalOverflow));
     }
     static PassRefPtrWillBeRawPtr<OverflowEvent> create(const AtomicString& type, const OverflowEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new OverflowEvent(type, initializer));
+        return adoptRefWillBeNoop(new OverflowEvent(type, initializer));
     }
 
     unsigned short orient() const { return m_orient; }

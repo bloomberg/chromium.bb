@@ -36,7 +36,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<BeforeTextInsertedEvent> create(const String& text)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new BeforeTextInsertedEvent(text));
+        return adoptRefWillBeNoop(new BeforeTextInsertedEvent(text));
     }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;

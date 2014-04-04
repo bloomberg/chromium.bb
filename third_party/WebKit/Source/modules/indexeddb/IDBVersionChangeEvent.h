@@ -49,15 +49,15 @@ class IDBVersionChangeEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new IDBVersionChangeEvent());
+        return adoptRefWillBeNoop(new IDBVersionChangeEvent());
     }
     static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, unsigned long long oldVersion, const Nullable<unsigned long long>& newVersion, blink::WebIDBDataLoss dataLoss = blink::WebIDBDataLossNone, const String& dataLossMessage = String())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new IDBVersionChangeEvent(eventType, oldVersion, newVersion, dataLoss, dataLossMessage));
+        return adoptRefWillBeNoop(new IDBVersionChangeEvent(eventType, oldVersion, newVersion, dataLoss, dataLossMessage));
     }
     static PassRefPtrWillBeRawPtr<IDBVersionChangeEvent> create(const AtomicString& eventType, const IDBVersionChangeEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new IDBVersionChangeEvent(eventType, initializer));
+        return adoptRefWillBeNoop(new IDBVersionChangeEvent(eventType, initializer));
     }
 
     unsigned long long oldVersion() const { return m_oldVersion; }

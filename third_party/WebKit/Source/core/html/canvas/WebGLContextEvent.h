@@ -40,15 +40,15 @@ class WebGLContextEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<WebGLContextEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebGLContextEvent);
+        return adoptRefWillBeNoop(new WebGLContextEvent);
     }
     static PassRefPtrWillBeRawPtr<WebGLContextEvent> create(const AtomicString& type, bool canBubble, bool cancelable, const String& statusMessage)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebGLContextEvent(type, canBubble, cancelable, statusMessage));
+        return adoptRefWillBeNoop(new WebGLContextEvent(type, canBubble, cancelable, statusMessage));
     }
     static PassRefPtrWillBeRawPtr<WebGLContextEvent> create(const AtomicString& type, const WebGLContextEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebGLContextEvent(type, initializer));
+        return adoptRefWillBeNoop(new WebGLContextEvent(type, initializer));
     }
     virtual ~WebGLContextEvent();
 

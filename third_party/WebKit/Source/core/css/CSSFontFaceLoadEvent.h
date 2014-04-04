@@ -47,17 +47,17 @@ class CSSFontFaceLoadEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent());
+        return adoptRefWillBeNoop(new CSSFontFaceLoadEvent());
     }
 
     static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> create(const AtomicString& type, const CSSFontFaceLoadEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent(type, initializer));
+        return adoptRefWillBeNoop(new CSSFontFaceLoadEvent(type, initializer));
     }
 
     static PassRefPtrWillBeRawPtr<CSSFontFaceLoadEvent> createForFontFaces(const AtomicString& type, const FontFaceArray& fontfaces = FontFaceArray())
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFontFaceLoadEvent(type, fontfaces));
+        return adoptRefWillBeNoop(new CSSFontFaceLoadEvent(type, fontfaces));
     }
 
     virtual ~CSSFontFaceLoadEvent();

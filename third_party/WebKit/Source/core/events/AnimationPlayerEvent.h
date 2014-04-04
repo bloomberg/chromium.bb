@@ -20,15 +20,15 @@ class AnimationPlayerEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<AnimationPlayerEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new AnimationPlayerEvent);
+        return adoptRefWillBeNoop(new AnimationPlayerEvent);
     }
     static PassRefPtrWillBeRawPtr<AnimationPlayerEvent> create(const AtomicString& type, double currentTime, double timelineTime)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new AnimationPlayerEvent(type, currentTime, timelineTime));
+        return adoptRefWillBeNoop(new AnimationPlayerEvent(type, currentTime, timelineTime));
     }
     static PassRefPtrWillBeRawPtr<AnimationPlayerEvent> create(const AtomicString& type, const AnimationPlayerEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new AnimationPlayerEvent(type, initializer));
+        return adoptRefWillBeNoop(new AnimationPlayerEvent(type, initializer));
     }
 
     virtual ~AnimationPlayerEvent();

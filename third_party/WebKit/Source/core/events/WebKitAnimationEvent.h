@@ -44,15 +44,15 @@ class WebKitAnimationEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebKitAnimationEvent);
+        return adoptRefWillBeNoop(new WebKitAnimationEvent);
     }
     static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create(const AtomicString& type, const String& animationName, double elapsedTime)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebKitAnimationEvent(type, animationName, elapsedTime));
+        return adoptRefWillBeNoop(new WebKitAnimationEvent(type, animationName, elapsedTime));
     }
     static PassRefPtrWillBeRawPtr<WebKitAnimationEvent> create(const AtomicString& type, const WebKitAnimationEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new WebKitAnimationEvent(type, initializer));
+        return adoptRefWillBeNoop(new WebKitAnimationEvent(type, initializer));
     }
 
     virtual ~WebKitAnimationEvent();

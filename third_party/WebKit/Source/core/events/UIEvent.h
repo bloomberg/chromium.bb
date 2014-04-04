@@ -43,15 +43,15 @@ class UIEvent : public Event {
 public:
     static PassRefPtrWillBeRawPtr<UIEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new UIEvent);
+        return adoptRefWillBeNoop(new UIEvent);
     }
     static PassRefPtrWillBeRawPtr<UIEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView> view, int detail)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new UIEvent(type, canBubble, cancelable, view, detail));
+        return adoptRefWillBeNoop(new UIEvent(type, canBubble, cancelable, view, detail));
     }
     static PassRefPtrWillBeRawPtr<UIEvent> create(const AtomicString& type, const UIEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new UIEvent(type, initializer));
+        return adoptRefWillBeNoop(new UIEvent(type, initializer));
     }
     virtual ~UIEvent();
 

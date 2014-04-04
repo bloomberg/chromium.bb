@@ -50,12 +50,12 @@ class SecurityPolicyViolationEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SecurityPolicyViolationEvent());
+        return adoptRefWillBeNoop(new SecurityPolicyViolationEvent());
     }
 
     static PassRefPtrWillBeRawPtr<SecurityPolicyViolationEvent> create(const AtomicString& type, const SecurityPolicyViolationEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SecurityPolicyViolationEvent(type, initializer));
+        return adoptRefWillBeNoop(new SecurityPolicyViolationEvent(type, initializer));
     }
 
     const String& documentURI() const { return m_documentURI; }

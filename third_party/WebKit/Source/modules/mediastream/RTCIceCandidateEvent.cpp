@@ -32,12 +32,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new RTCIceCandidateEvent);
+    return adoptRefWillBeNoop(new RTCIceCandidateEvent);
 }
 
 PassRefPtrWillBeRawPtr<RTCIceCandidateEvent> RTCIceCandidateEvent::create(bool canBubble, bool cancelable, PassRefPtr<RTCIceCandidate> candidate)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new RTCIceCandidateEvent(canBubble, cancelable, candidate));
+    return adoptRefWillBeNoop(new RTCIceCandidateEvent(canBubble, cancelable, candidate));
 }
 
 RTCIceCandidateEvent::RTCIceCandidateEvent()

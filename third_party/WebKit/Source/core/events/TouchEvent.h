@@ -39,7 +39,7 @@ public:
 
     static PassRefPtrWillBeRawPtr<TouchEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TouchEvent);
+        return adoptRefWillBeNoop(new TouchEvent);
     }
     static PassRefPtrWillBeRawPtr<TouchEvent> create(TouchList* touches,
         TouchList* targetTouches, TouchList* changedTouches,
@@ -47,7 +47,7 @@ public:
         int screenX, int screenY, int pageX, int pageY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TouchEvent(touches, targetTouches, changedTouches,
+        return adoptRefWillBeNoop(new TouchEvent(touches, targetTouches, changedTouches,
             type, view, screenX, screenY, pageX, pageY,
             ctrlKey, altKey, shiftKey, metaKey));
     }

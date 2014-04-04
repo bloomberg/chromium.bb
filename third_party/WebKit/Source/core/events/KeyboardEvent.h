@@ -56,24 +56,24 @@ public:
 
     static PassRefPtrWillBeRawPtr<KeyboardEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent);
+        return adoptRefWillBeNoop(new KeyboardEvent);
     }
 
     static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const PlatformKeyboardEvent& platformEvent, AbstractView* view)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent(platformEvent, view));
+        return adoptRefWillBeNoop(new KeyboardEvent(platformEvent, view));
     }
 
     static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, const KeyboardEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent(type, initializer));
+        return adoptRefWillBeNoop(new KeyboardEvent(type, initializer));
     }
 
     static PassRefPtrWillBeRawPtr<KeyboardEvent> create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
         const String& keyIdentifier, unsigned location,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool altGraphKey)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, location,
+        return adoptRefWillBeNoop(new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, location,
         ctrlKey, altKey, shiftKey, metaKey, altGraphKey));
     }
 

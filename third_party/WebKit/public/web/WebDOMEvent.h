@@ -111,9 +111,8 @@ public:
     }
 
 protected:
-    typedef WebCore::Event WebDOMEventPrivate;
 #if BLINK_IMPLEMENTATION
-    void assign(const WTF::PassRefPtr<WebDOMEventPrivate>&);
+    void assign(const PassRefPtrWillBeRawPtr<WebCore::Event>&);
 
     template<typename T> T* unwrap()
     {
@@ -126,7 +125,7 @@ protected:
     }
 #endif
 
-    WebPrivatePtr<WebDOMEventPrivate> m_private;
+    WebPrivatePtr<WebCore::Event> m_private;
 };
 
 } // namespace blink

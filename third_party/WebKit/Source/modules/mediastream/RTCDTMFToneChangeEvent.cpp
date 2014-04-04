@@ -30,18 +30,18 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new RTCDTMFToneChangeEvent);
+    return adoptRefWillBeNoop(new RTCDTMFToneChangeEvent);
 }
 
 PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const String& tone)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new RTCDTMFToneChangeEvent(tone));
+    return adoptRefWillBeNoop(new RTCDTMFToneChangeEvent(tone));
 }
 
 PassRefPtrWillBeRawPtr<RTCDTMFToneChangeEvent> RTCDTMFToneChangeEvent::create(const AtomicString& type, const RTCDTMFToneChangeEventInit& initializer)
 {
     ASSERT(type == EventTypeNames::tonechange);
-    return adoptRefWillBeRefCountedGarbageCollected(new RTCDTMFToneChangeEvent(initializer));
+    return adoptRefWillBeNoop(new RTCDTMFToneChangeEvent(initializer));
 }
 
 RTCDTMFToneChangeEvent::RTCDTMFToneChangeEvent()

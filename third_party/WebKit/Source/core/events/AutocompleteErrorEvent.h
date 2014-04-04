@@ -37,17 +37,17 @@ class AutocompleteErrorEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<AutocompleteErrorEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new AutocompleteErrorEvent);
+        return adoptRefWillBeNoop(new AutocompleteErrorEvent);
     }
 
     static PassRefPtrWillBeRawPtr<AutocompleteErrorEvent> create(const String& reason)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new AutocompleteErrorEvent(reason));
+        return adoptRefWillBeNoop(new AutocompleteErrorEvent(reason));
     }
 
     static PassRefPtrWillBeRawPtr<AutocompleteErrorEvent> create(const AtomicString& eventType, const AutocompleteErrorEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new AutocompleteErrorEvent(eventType, initializer));
+        return adoptRefWillBeNoop(new AutocompleteErrorEvent(eventType, initializer));
     }
 
     const String& reason() const { return m_reason; }

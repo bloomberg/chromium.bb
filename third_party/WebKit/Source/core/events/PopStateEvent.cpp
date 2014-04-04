@@ -61,17 +61,17 @@ PopStateEvent::~PopStateEvent()
 
 PassRefPtrWillBeRawPtr<PopStateEvent> PopStateEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new PopStateEvent);
+    return adoptRefWillBeNoop(new PopStateEvent);
 }
 
 PassRefPtrWillBeRawPtr<PopStateEvent> PopStateEvent::create(PassRefPtr<SerializedScriptValue> serializedState, PassRefPtrWillBeRawPtr<History> history)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new PopStateEvent(serializedState, history));
+    return adoptRefWillBeNoop(new PopStateEvent(serializedState, history));
 }
 
 PassRefPtrWillBeRawPtr<PopStateEvent> PopStateEvent::create(const AtomicString& type, const PopStateEventInit& initializer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new PopStateEvent(type, initializer));
+    return adoptRefWillBeNoop(new PopStateEvent(type, initializer));
 }
 
 const AtomicString& PopStateEvent::interfaceName() const

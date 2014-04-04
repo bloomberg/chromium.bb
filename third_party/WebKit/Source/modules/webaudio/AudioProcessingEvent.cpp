@@ -32,12 +32,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<AudioProcessingEvent> AudioProcessingEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new AudioProcessingEvent);
+    return adoptRefWillBeNoop(new AudioProcessingEvent);
 }
 
 PassRefPtrWillBeRawPtr<AudioProcessingEvent> AudioProcessingEvent::create(PassRefPtr<AudioBuffer> inputBuffer, PassRefPtr<AudioBuffer> outputBuffer, double playbackTime)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime));
+    return adoptRefWillBeNoop(new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime));
 }
 
 AudioProcessingEvent::AudioProcessingEvent()

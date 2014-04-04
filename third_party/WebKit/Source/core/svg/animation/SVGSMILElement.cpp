@@ -51,7 +51,7 @@ class RepeatEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<RepeatEvent> create(const AtomicString& type, int repeat)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new RepeatEvent(type, false, false, repeat));
+        return adoptRefWillBeNoop(new RepeatEvent(type, false, false, repeat));
     }
 
     virtual ~RepeatEvent() { }

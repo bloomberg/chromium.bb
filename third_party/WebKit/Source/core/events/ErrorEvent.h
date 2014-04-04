@@ -51,19 +51,19 @@ class ErrorEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<ErrorEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ErrorEvent);
+        return adoptRefWillBeNoop(new ErrorEvent);
     }
     static PassRefPtrWillBeRawPtr<ErrorEvent> create(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ErrorEvent(message, fileName, lineNumber, columnNumber, world));
+        return adoptRefWillBeNoop(new ErrorEvent(message, fileName, lineNumber, columnNumber, world));
     }
     static PassRefPtrWillBeRawPtr<ErrorEvent> create(const AtomicString& type, const ErrorEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ErrorEvent(type, initializer));
+        return adoptRefWillBeNoop(new ErrorEvent(type, initializer));
     }
     static PassRefPtrWillBeRawPtr<ErrorEvent> createSanitizedError(DOMWrapperWorld* world)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ErrorEvent("Script error.", String(), 0, 0, world));
+        return adoptRefWillBeNoop(new ErrorEvent("Script error.", String(), 0, 0, world));
     }
     virtual ~ErrorEvent();
 

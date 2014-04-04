@@ -46,7 +46,7 @@ MouseEventInit::MouseEventInit()
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, const MouseEventInit& initializer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MouseEvent(type, initializer));
+    return adoptRefWillBeNoop(new MouseEvent(type, initializer));
 }
 
 PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, const PlatformMouseEvent& event, int detail, PassRefPtr<Node> relatedTarget)
@@ -71,7 +71,7 @@ PassRefPtrWillBeRawPtr<MouseEvent> MouseEvent::create(const AtomicString& type, 
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, unsigned short button,
     PassRefPtr<EventTarget> relatedTarget, PassRefPtrWillBeRawPtr<Clipboard> clipboard, bool isSimulated)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new MouseEvent(type, canBubble, cancelable, view,
+    return adoptRefWillBeNoop(new MouseEvent(type, canBubble, cancelable, view,
         detail, screenX, screenY, pageX, pageY,
         movementX, movementY,
         ctrlKey, altKey, shiftKey, metaKey, button, relatedTarget, clipboard, isSimulated));
@@ -198,7 +198,7 @@ void MouseEvent::trace(Visitor* visitor)
 
 PassRefPtrWillBeRawPtr<SimulatedMouseEvent> SimulatedMouseEvent::create(const AtomicString& eventType, PassRefPtrWillBeRawPtr<AbstractView> view, PassRefPtrWillBeRawPtr<Event> underlyingEvent)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SimulatedMouseEvent(eventType, view, underlyingEvent));
+    return adoptRefWillBeNoop(new SimulatedMouseEvent(eventType, view, underlyingEvent));
 }
 
 SimulatedMouseEvent::~SimulatedMouseEvent()

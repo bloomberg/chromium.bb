@@ -45,12 +45,12 @@ public:
 
     static PassRefPtrWillBeRawPtr<MediaKeyMessageEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MediaKeyMessageEvent);
+        return adoptRefWillBeNoop(new MediaKeyMessageEvent);
     }
 
     static PassRefPtrWillBeRawPtr<MediaKeyMessageEvent> create(const AtomicString& type, const MediaKeyMessageEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MediaKeyMessageEvent(type, initializer));
+        return adoptRefWillBeNoop(new MediaKeyMessageEvent(type, initializer));
     }
 
     virtual const AtomicString& interfaceName() const OVERRIDE;

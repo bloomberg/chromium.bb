@@ -30,12 +30,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SpeechSynthesisEvent());
+    return adoptRefWillBeNoop(new SpeechSynthesisEvent());
 }
 
 PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new SpeechSynthesisEvent(type, charIndex, elapsedTime, name));
+    return adoptRefWillBeNoop(new SpeechSynthesisEvent(type, charIndex, elapsedTime, name));
 }
 
 SpeechSynthesisEvent::SpeechSynthesisEvent()

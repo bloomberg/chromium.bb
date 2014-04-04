@@ -51,17 +51,17 @@ class CloseEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<CloseEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CloseEvent());
+        return adoptRefWillBeNoop(new CloseEvent());
     }
 
     static PassRefPtrWillBeRawPtr<CloseEvent> create(bool wasClean, unsigned short code, const String& reason)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CloseEvent(wasClean, code, reason));
+        return adoptRefWillBeNoop(new CloseEvent(wasClean, code, reason));
     }
 
     static PassRefPtrWillBeRawPtr<CloseEvent> create(const AtomicString& type, const CloseEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CloseEvent(type, initializer));
+        return adoptRefWillBeNoop(new CloseEvent(type, initializer));
     }
 
     bool wasClean() const { return m_wasClean; }

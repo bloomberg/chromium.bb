@@ -52,7 +52,7 @@ class MouseEvent : public MouseRelatedEvent {
 public:
     static PassRefPtrWillBeRawPtr<MouseEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new MouseEvent);
+        return adoptRefWillBeNoop(new MouseEvent);
     }
 
     static PassRefPtrWillBeRawPtr<MouseEvent> create(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtrWillBeRawPtr<AbstractView>,

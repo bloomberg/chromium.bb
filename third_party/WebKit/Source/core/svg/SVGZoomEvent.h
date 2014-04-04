@@ -32,7 +32,7 @@ class SVGZoomEvent FINAL : public UIEvent {
 public:
     static PassRefPtrWillBeRawPtr<SVGZoomEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new SVGZoomEvent);
+        return adoptRefWillBeNoop(new SVGZoomEvent);
     }
 
     // 'SVGZoomEvent' functions

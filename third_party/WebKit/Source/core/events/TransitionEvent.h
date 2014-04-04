@@ -43,15 +43,15 @@ class TransitionEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<TransitionEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TransitionEvent);
+        return adoptRefWillBeNoop(new TransitionEvent);
     }
     static PassRefPtrWillBeRawPtr<TransitionEvent> create(const AtomicString& type, const String& propertyName, double elapsedTime, const String& pseudoElement)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TransitionEvent(type, propertyName, elapsedTime, pseudoElement));
+        return adoptRefWillBeNoop(new TransitionEvent(type, propertyName, elapsedTime, pseudoElement));
     }
     static PassRefPtrWillBeRawPtr<TransitionEvent> create(const AtomicString& type, const TransitionEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new TransitionEvent(type, initializer));
+        return adoptRefWillBeNoop(new TransitionEvent(type, initializer));
     }
 
     virtual ~TransitionEvent();

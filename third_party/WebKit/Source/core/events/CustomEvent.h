@@ -40,12 +40,12 @@ public:
 
     static PassRefPtrWillBeRawPtr<CustomEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CustomEvent);
+        return adoptRefWillBeNoop(new CustomEvent);
     }
 
     static PassRefPtrWillBeRawPtr<CustomEvent> create(const AtomicString& type, const CustomEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CustomEvent(type, initializer));
+        return adoptRefWillBeNoop(new CustomEvent(type, initializer));
     }
 
     void initCustomEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<SerializedScriptValue>);

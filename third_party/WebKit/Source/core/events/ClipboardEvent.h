@@ -36,7 +36,7 @@ namespace WebCore {
 
         static PassRefPtrWillBeRawPtr<ClipboardEvent> create(const AtomicString& type, bool canBubbleArg, bool cancelableArg, PassRefPtrWillBeRawPtr<Clipboard> clipboardArg)
         {
-            return adoptRefWillBeRefCountedGarbageCollected(new ClipboardEvent(type, canBubbleArg, cancelableArg, clipboardArg));
+            return adoptRefWillBeNoop(new ClipboardEvent(type, canBubbleArg, cancelableArg, clipboardArg));
         }
 
         Clipboard* clipboard() const { return m_clipboard.get(); }

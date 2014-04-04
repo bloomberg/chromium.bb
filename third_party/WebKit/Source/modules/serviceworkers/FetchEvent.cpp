@@ -12,12 +12,12 @@ namespace WebCore {
 
 PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create()
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new FetchEvent());
+    return adoptRefWillBeNoop(new FetchEvent());
 }
 
 PassRefPtrWillBeRawPtr<FetchEvent> FetchEvent::create(PassRefPtr<RespondWithObserver> observer)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new FetchEvent(observer));
+    return adoptRefWillBeNoop(new FetchEvent(observer));
 }
 
 void FetchEvent::respondWith(const ScriptValue& value)

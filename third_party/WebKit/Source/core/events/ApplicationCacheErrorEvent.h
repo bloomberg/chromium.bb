@@ -29,17 +29,17 @@ public:
 
     static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create()
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCacheErrorEvent);
+        return adoptRefWillBeNoop(new ApplicationCacheErrorEvent);
     }
 
     static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(blink::WebApplicationCacheHost::ErrorReason reason, const String& url, int status, const String& message)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCacheErrorEvent(reason, url, status, message));
+        return adoptRefWillBeNoop(new ApplicationCacheErrorEvent(reason, url, status, message));
     }
 
     static PassRefPtrWillBeRawPtr<ApplicationCacheErrorEvent> create(const AtomicString& eventType, const ApplicationCacheErrorEventInit& initializer)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new ApplicationCacheErrorEvent(eventType, initializer));
+        return adoptRefWillBeNoop(new ApplicationCacheErrorEvent(eventType, initializer));
     }
 
     const String& reason() const { return m_reason; }
