@@ -867,6 +867,15 @@ base::DictionaryValue* DataTypeProgressMarkerToValue(
   return value;
 }
 
+base::DictionaryValue* DataTypeContextToValue(
+    const sync_pb::DataTypeContext& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_INT32(data_type_id);
+  SET_STR(context);
+  SET_INT64(version);
+  return value;
+}
+
 base::DictionaryValue* GetUpdatesCallerInfoToValue(
     const sync_pb::GetUpdatesCallerInfo& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
@@ -886,6 +895,7 @@ base::DictionaryValue* GetUpdatesMessageToValue(
   SET_BOOL(need_encryption_key);
   SET_BOOL(create_mobile_bookmarks_folder);
   SET_ENUM(get_updates_origin, GetUpdatesOriginString);
+  SET_REP(client_contexts, DataTypeContextToValue);
   return value;
 }
 
@@ -924,6 +934,7 @@ base::DictionaryValue* GetUpdatesResponseToValue(
              SyncEntitiesToValue(proto.entries(), include_specifics));
   SET_INT64(changes_remaining);
   SET_REP(new_progress_marker, DataTypeProgressMarkerToValue);
+  SET_REP(context_mutations, DataTypeContextToValue);
   return value;
 }
 

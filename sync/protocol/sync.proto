@@ -412,6 +412,9 @@ message CommitMessage {
   // syncing a particular data type regardless of whether a commit for that
   // datatype is currently being sent up.
   optional ClientConfigParams config_params = 4;
+
+  // Set of optional per-client datatype contexts.
+  repeated DataTypeContext client_contexts = 5;
 };
 
 // This message communicates additional per-type information related to
@@ -630,6 +633,9 @@ message GetUpdatesMessage {
   // Whether this GU also serves as a retry GU. Any GU that happens after
   // retry timer timeout is a retry GU effectively.
   optional bool is_retry = 10 [default = false];
+
+  // Set of optional per-client datatype contexts.
+  repeated DataTypeContext client_contexts = 11;
 };
 
 message AuthenticateMessage {
@@ -671,6 +677,17 @@ message ClientStatus {
   // taken.  There is no guarantee the problem will be addressed in a reasonable
   // amount of time.
   optional bool hierarchy_conflict_detected = 1;
+}
+
+// A single datatype's sync context. Allows the datatype to pass along
+// datatype specific information with its own server backend.
+message DataTypeContext {
+  // The type this context is associated with.
+  optional int32 data_type_id = 1;
+  // The context for the datatype.
+  optional bytes context = 2;
+  // The version of the context.
+  optional int64 version = 3;
 }
 
 message ClientToServerMessage {
@@ -836,6 +853,9 @@ message GetUpdatesResponse {
   // the server has updated the set of encryption keys (e.g. due to a key
   // rotation).
   repeated bytes encryption_keys = 6;
+
+  // Set of optional datatype contexts server mutations.
+  repeated DataTypeContext context_mutations = 7;
 };
 
 // The metadata response for GetUpdatesMessage.  This response is sent when

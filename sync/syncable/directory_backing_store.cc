@@ -35,7 +35,7 @@ namespace syncable {
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
-const int32 kCurrentDBVersion = 87;
+const int32 kCurrentDBVersion = 88;
 
 // Iterate over the fields of |entry| and bind each to |statement| for
 // updating.  Returns the number of args bound.
@@ -258,8 +258,11 @@ bool DirectoryBackingStore::SaveChanges(
     sql::Statement s2(db_->GetCachedStatement(
             SQL_FROM_HERE,
             "INSERT OR REPLACE "
-            "INTO models (model_id, progress_marker, transaction_version) "
-            "VALUES (?, ?, ?)"));
+            "INTO models (model_id, "
+                         "progress_marker, "
+                         "transaction_version, "
+                         "context) "
+            "VALUES (?, ?, ?, ?)"));
 
     ModelTypeSet protocol_types = ProtocolTypes();
     for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
@@ -272,6 +275,9 @@ bool DirectoryBackingStore::SaveChanges(
       s2.BindBlob(0, model_id.data(), model_id.length());
       s2.BindBlob(1, progress_marker.data(), progress_marker.length());
       s2.BindInt64(2, info.transaction_version[type]);
+      string context;
+      info.datatype_context[type].SerializeToString(&context);
+      s2.BindBlob(3, context.data(), context.length());
       if (!s2.Run())
         return false;
       DCHECK_EQ(db_->GetLastChangeCount(), 1);
@@ -410,6 +416,12 @@ bool DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 86) {
     if (MigrateVersion86To87())
       version_on_disk = 87;
+  }
+
+  // Version 88 migration adds datatype contexts to the models table.
+  if (version_on_disk == 87) {
+    if (MigrateVersion87To88())
+      version_on_disk = 88;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -566,7 +578,7 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
     sql::Statement s(
         db_->GetUniqueStatement(
             "SELECT model_id, progress_marker, "
-            "transaction_version FROM models"));
+            "transaction_version, context FROM models"));
 
     while (s.Step()) {
       ModelType type = ModelIdToModelTypeEnum(s.ColumnBlob(0),
@@ -575,6 +587,8 @@ bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
         info->kernel_info.download_progress[type].ParseFromArray(
             s.ColumnBlob(1), s.ColumnByteLength(1));
         info->kernel_info.transaction_version[type] = s.ColumnInt64(2);
+        info->kernel_info.datatype_context[type].ParseFromArray(
+            s.ColumnBlob(3), s.ColumnByteLength(3));
       }
     }
     if (!s.Succeeded())
@@ -1134,7 +1148,7 @@ bool DirectoryBackingStore::MigrateVersion84To85() {
   // Version 85 removes the initial_sync_ended flag.
   if (!db_->Execute("ALTER TABLE models RENAME TO temp_models"))
     return false;
-  if (!CreateModelsTable())
+  if (!CreateV81ModelsTable())
     return false;
   if (!db_->Execute("INSERT INTO models SELECT "
                     "model_id, progress_marker, transaction_version "
@@ -1284,6 +1298,15 @@ bool DirectoryBackingStore::MigrateVersion86To87() {
   return true;
 }
 
+bool DirectoryBackingStore::MigrateVersion87To88() {
+  // Version 88 adds the datatype context to the models table.
+  if (!db_->Execute("ALTER TABLE models ADD COLUMN context blob"))
+    return false;
+
+  SetVersion(88);
+  return true;
+}
+
 bool DirectoryBackingStore::CreateTables() {
   DVLOG(1) << "First run, creating tables";
   // Create two little tables share_version and share_info
@@ -1400,8 +1423,20 @@ bool DirectoryBackingStore::CreateV75ModelsTable() {
       "initial_sync_ended BOOLEAN default 0)");
 }
 
+bool DirectoryBackingStore::CreateV81ModelsTable() {
+  // This is an old schema for the Models table, used from versions 81 to 87.
+  return db_->Execute(
+      "CREATE TABLE models ("
+      "model_id BLOB primary key, "
+      "progress_marker BLOB, "
+      // Gets set if the syncer ever gets updates from the
+      // server and the server returns 0.  Lets us detect the
+      // end of the initial sync.
+      "transaction_version BIGINT default 0)");
+}
+
 bool DirectoryBackingStore::CreateModelsTable() {
-  // This is the current schema for the Models table, from version 81
+  // This is the current schema for the Models table, from version 88
   // onward.  If you change the schema, you'll probably want to double-check
   // the use of this function in the v84-v85 migration.
   return db_->Execute(
@@ -1411,7 +1446,8 @@ bool DirectoryBackingStore::CreateModelsTable() {
       // Gets set if the syncer ever gets updates from the
       // server and the server returns 0.  Lets us detect the
       // end of the initial sync.
-      "transaction_version BIGINT default 0)");
+      "transaction_version BIGINT default 0,"
+      "context BLOB)");
 }
 
 bool DirectoryBackingStore::CreateShareInfoTable(bool is_temporary) {

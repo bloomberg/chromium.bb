@@ -792,6 +792,22 @@ void Directory::IncrementTransactionVersion(ModelType type) {
   kernel_->persisted_info.transaction_version[type]++;
 }
 
+void Directory::GetDataTypeContext(BaseTransaction* trans,
+                                   ModelType type,
+                                   sync_pb::DataTypeContext* context) const {
+  ScopedKernelLock lock(this);
+  context->CopyFrom(kernel_->persisted_info.datatype_context[type]);
+}
+
+void Directory::SetDataTypeContext(
+    BaseWriteTransaction* trans,
+    ModelType type,
+    const sync_pb::DataTypeContext& context) {
+  ScopedKernelLock lock(this);
+  kernel_->persisted_info.datatype_context[type].CopyFrom(context);
+  kernel_->info_status = KERNEL_SHARE_INFO_DIRTY;
+}
+
 ModelTypeSet Directory::InitialSyncEndedTypes() {
   syncable::ReadTransaction trans(FROM_HERE, this);
   ModelTypeSet protocol_types = ProtocolTypes();

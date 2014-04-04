@@ -120,6 +120,8 @@ class SYNC_EXPORT Directory {
     // opaque to the client. This is the serialization of a message of type
     // ChipBag defined in sync.proto. It can contains NULL characters.
     std::string bag_of_chips;
+    // The per-datatype context.
+    sync_pb::DataTypeContext datatype_context[MODEL_TYPE_COUNT];
   };
 
   // What the Directory needs on initialization to create itself and its Kernel.
@@ -195,6 +197,14 @@ class SYNC_EXPORT Directory {
   // holding kernel mutex.
   int64 GetTransactionVersion(ModelType type) const;
   void IncrementTransactionVersion(ModelType type);
+
+  // Getter/setters for the per datatype context.
+  void GetDataTypeContext(BaseTransaction* trans,
+                          ModelType type,
+                          sync_pb::DataTypeContext* context) const;
+  void SetDataTypeContext(BaseWriteTransaction* trans,
+                          ModelType type,
+                          const sync_pb::DataTypeContext& context);
 
   ModelTypeSet InitialSyncEndedTypes();
   bool InitialSyncEndedForType(ModelType type);
