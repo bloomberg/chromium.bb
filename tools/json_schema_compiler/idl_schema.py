@@ -193,7 +193,8 @@ class Member(object):
         is_function = True
         name, parameters, return_type = (Callspec(node, parameter_comments)
                                          .process(callbacks))
-        properties['parameters'] = parameters
+        if parameters:
+          properties['parameters'] = parameters
         if return_type is not None:
           properties['returns'] = return_type
     properties['name'] = name
@@ -303,13 +304,16 @@ class Enum(object):
     enum = []
     for node in self.node.GetChildren():
       if node.cls == 'EnumItem':
-        enum_value = {'name': node.GetName()}
+        description = None
         for child in node.GetChildren():
           if child.cls == 'Comment':
-            enum_value['description'] = ProcessComment(child.GetName())[0]
+            description = ProcessComment(child.GetName())[0]
           else:
             raise ValueError('Did not process %s %s' % (child.cls, child))
-        enum.append(enum_value)
+        if description:
+          enum.append({'name': node.GetName(), 'description': description})
+        else:
+          enum.append(node.GetName())
       elif node.cls == 'Comment':
         self.description = ProcessComment(node.GetName())[0]
       else:
@@ -372,16 +376,24 @@ class Namespace(object):
       compiler_options = self.compiler_options
     else:
       compiler_options = {}
-    return {'namespace': self.namespace.GetName(),
-            'description': self.description,
-            'nodoc': self.nodoc,
-            'types': self.types,
-            'functions': self.functions,
-            'internal': self.internal,
-            'events': self.events,
-            'platforms': self.platforms,
-            'compiler_options': compiler_options,
-            'deprecated': self.deprecated}
+    # This slightly bizarre way of constructing a dictionary is so that we
+    # don't create a lot of vacuous JSON values like {"functions": []} which
+    # cause exceedingly long strings. See http://crbug.com/358449 for one bad
+    # thing this can do.
+    result = {}
+    for key, value in (('namespace', self.namespace.GetName()),
+                       ('description', self.description),
+                       ('nodoc', self.nodoc),
+                       ('types', self.types),
+                       ('functions', self.functions),
+                       ('internal', self.internal),
+                       ('events', self.events),
+                       ('platforms', self.platforms),
+                       ('compiler_options', compiler_options),
+                       ('deprecated', self.deprecated)):
+      if value:
+        result[key] = value
+    return result
 
   def process_interface(self, node):
     members = []
