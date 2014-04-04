@@ -372,10 +372,24 @@ void V8GCController::gcEpilogue(v8::GCType type, v8::GCCallbackFlags flags)
     // was forced from V8. This is used for tests that force GCs from
     // JavaScript to verify that objects die when expected.
     if (flags & v8::kGCCallbackFlagForced) {
-        // FIXME: Oilpan: Temporarily force multiple garbage collections here.
-        // In the transition period we have RefPtrs and Persistent handles that can
-        // cause objects to require multiple garbage collections to get collected.
-        Heap::collectAllGarbage(ThreadState::HeapPointersOnStack, Heap::ForcedForTesting);
+        // FIXME: oilpan: We should perform a single GC and everything
+        // should die. Unfortunately it is not the case for all objects
+        // because the hierarchy was not completely moved to the heap and
+        // some heap allocated objects own objects that contain persistents
+        // pointing to other heap allocated objects.
+        //
+        // Actually, even if we trigger multiple GCs, it is not guaranteed that
+        // all garbage is collected. In order to guarantee that all garbage is collected,
+        // we have to wait until a precise GC is triggered at the end of the current
+        // event loop. In that sense, in theory it does not make much sense to trigger
+        // multiple GCs here, but in practice it is helpful to decrease the flakiness of
+        // layout tests that are expecting that V8's GC collects all garbage synchronously.
+        // Once we finish rewriting those layout tests so that they don't rely on
+        // synchronous GCs, we can stop triggering multiple GCs here.
+        for (int i = 0; i < 5; i++) {
+            Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+        }
+        Heap::setForcePreciseGCForTesting();
     }
 }
 

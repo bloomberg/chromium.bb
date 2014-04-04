@@ -664,21 +664,8 @@ function shouldHaveHadError(message)
 // that something is dead need to use this asynchronous collectGarbage
 // function.
 function collectGarbage(callback) {
-    // Perform multiple GCs to break sequences of Oilpan Persistent handles
-    // or RefPtrs that will keep objects alive until the next GC.
-    // FIXME: Oilpan: Once everything is moved to the oilpan heap we can
-    // reduce the number of garbage collections.
-    GCController.collect();
-    setTimeout(function() {
-        GCController.collect();
-        setTimeout(function() {
-            GCController.collect();
-            setTimeout(function() {
-                GCController.collect();
-                setTimeout(callback, 0);
-            }, 0);
-        }, 0);
-    }, 0);
+    GCController.collectAll();
+    setTimeout(callback, 0);
 }
 
 function gc() {

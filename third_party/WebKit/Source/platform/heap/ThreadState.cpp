@@ -302,7 +302,7 @@ void ThreadState::cleanup()
     // After this GC we expect heap to be empty because
     // preCleanup tasks should have cleared all persistent
     // handles that were externally owned.
-    Heap::collectAllGarbage(ThreadState::NoHeapPointersOnStack);
+    Heap::collectAllGarbage();
 
     // Verify that all heaps are empty now.
     for (int i = 0; i < NumberOfHeaps; i++)
@@ -535,13 +535,17 @@ void ThreadState::clearGCRequested()
 
 void ThreadState::performPendingGC(StackState stackState)
 {
-    if (stackState == NoHeapPointersOnStack && (gcRequested() || forcePreciseGCForTesting())) {
-        setForcedForTesting(false);
-        Heap::collectGarbage(NoHeapPointersOnStack);
+    if (stackState == NoHeapPointersOnStack) {
+        if (forcePreciseGCForTesting()) {
+            setForcePreciseGCForTesting(false);
+            Heap::collectAllGarbage();
+        } else if (gcRequested()) {
+            Heap::collectGarbage(NoHeapPointersOnStack);
+        }
     }
 }
 
-void ThreadState::setForcedForTesting(bool value)
+void ThreadState::setForcePreciseGCForTesting(bool value)
 {
     checkThread();
     m_forcePreciseGCForTesting = value;

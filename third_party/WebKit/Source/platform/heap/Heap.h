@@ -757,11 +757,6 @@ private:
 
 class PLATFORM_EXPORT Heap {
 public:
-    enum GCType {
-        Normal,
-        ForcedForTesting
-    };
-
     static void init();
     static void shutdown();
 
@@ -799,8 +794,9 @@ public:
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
 
-    static void collectGarbage(ThreadState::StackState, GCType = Normal);
-    static void collectAllGarbage(ThreadState::StackState, GCType = Normal);
+    static void collectGarbage(ThreadState::StackState);
+    static void collectAllGarbage();
+    static void setForcePreciseGCForTesting();
 
     static void prepareForGC();
 

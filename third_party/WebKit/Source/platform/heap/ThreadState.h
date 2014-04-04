@@ -284,7 +284,7 @@ public:
     // This is used for layout tests that trigger GCs and check if objects are
     // dead at a given point in time. That only reliably works when we get
     // precise GCs with no conservative stack scanning.
-    void setForcedForTesting(bool);
+    void setForcePreciseGCForTesting(bool);
     bool forcePreciseGCForTesting();
 
     bool sweepRequested();

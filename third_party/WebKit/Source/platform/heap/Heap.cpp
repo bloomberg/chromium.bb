@@ -1310,10 +1310,8 @@ void Heap::prepareForGC()
         (*it)->prepareForGC();
 }
 
-void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
+void Heap::collectGarbage(ThreadState::StackState stackState)
 {
-    if (gcType == ForcedForTesting && stackState != ThreadState::NoHeapPointersOnStack)
-        ThreadState::current()->setForcedForTesting(true);
     ThreadState::current()->clearGCRequested();
     GCScope gcScope(stackState);
 
@@ -1337,7 +1335,7 @@ void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
     s_markingStack->assertIsEmpty();
 }
 
-void Heap::collectAllGarbage(ThreadState::StackState stackState, GCType gcType)
+void Heap::collectAllGarbage()
 {
     // FIXME: oilpan: we should perform a single GC and everything
     // should die. Unfortunately it is not the case for all objects
@@ -1345,7 +1343,12 @@ void Heap::collectAllGarbage(ThreadState::StackState stackState, GCType gcType)
     // some heap allocated objects own objects that contain persistents
     // pointing to other heap allocated objects.
     for (int i = 0; i < 5; i++)
-        collectGarbage(stackState, gcType);
+        collectGarbage(ThreadState::NoHeapPointersOnStack);
+}
+
+void Heap::setForcePreciseGCForTesting()
+{
+    ThreadState::current()->setForcePreciseGCForTesting(true);
 }
 
 void Heap::getStats(HeapStats* stats)
